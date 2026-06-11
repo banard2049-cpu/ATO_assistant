@@ -1,0 +1,9 @@
+services:
+  ato:
+    image: php:8.3-apache
+    container_name: ato
+    ports:
+      - "11451:80"
+    volumes:
+      - ./:/var/www/html
+    restart: unless-stopped

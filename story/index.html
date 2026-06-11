@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ATO 故事书跳转器</title>
+    <link rel="stylesheet" href="./styles.css?v=20260607aibplinks" />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="mark">ATO</div>
+        <div>
+          <h1>故事书跳转器</h1>
+          <p id="bookMeta">正在载入故事索引</p>
+        </div>
+      </div>
+      <a class="home-link" href="../index.html">返回主控台</a>
+
+      <label class="field">
+        <span>故事书</span>
+        <select id="bookSelect"></select>
+      </label>
+
+      <label class="field">
+        <span>模块 / 大章</span>
+        <select id="chapterSelect"></select>
+      </label>
+
+      <label class="field">
+        <span>入口层 / 小章节</span>
+        <select id="encounterSelect"></select>
+      </label>
+
+      <label class="field">
+        <span>段落号或关键词</span>
+        <input id="searchInput" autocomplete="off" placeholder="例如 0001、M009、21、尼采超人" />
+      </label>
+
+      <div class="quick-row">
+        <button id="goButton" type="button">读取</button>
+        <button id="backButton" type="button" title="返回上一段">返回</button>
+      </div>
+
+      <div class="memory-tools">
+        <button id="rememberButton" type="button">记下段落</button>
+      </div>
+
+      <div id="chapterSummary" class="chapter-summary"></div>
+
+      <section class="memory-panel" aria-label="已记下段落">
+        <div class="memory-title">已记下段落</div>
+        <div id="memoryList" class="memory-list"></div>
+      </section>
+
+      <nav id="resultList" class="result-list" aria-label="搜索结果"></nav>
+    </aside>
+
+    <main class="reader">
+      <header class="reader-head">
+        <div>
+          <div id="sectionLabel" class="section-label">选择一个模块</div>
+          <h2 id="entryTitle">选择模块或输入段落号后开始阅读</h2>
+        </div>
+        <div class="reader-actions">
+          <button id="ttsButton" type="button" class="tts-btn" title="朗读">朗读</button>
+          <select id="ttsSpeed" class="tts-select">
+            <option value="1" selected>1x</option>
+            <option value="1.25">1.25x</option>
+            <option value="1.5">1.5x</option>
+            <option value="1.75">1.75x</option>
+            <option value="2">2x</option>
+          </select>
+          <select id="ttsVoice" class="tts-select"></select>
+          <div id="entryBadge" class="entry-badge">----</div>
+        </div>
+      </header>
+
+      <article id="storyText" class="story-text">
+        <p>左侧先选择故事书、模块和入口层，再输入段落号。正文里的段落号会按当前上下文优先跳转。</p>
+      </article>
+
+      <footer class="reader-foot">
+        <div id="linkPanel" class="link-panel"></div>
+      </footer>
+    </main>
+
+    <script src="../page-focus-router.js?v=20260607a"></script>
+    <script src="./data.js?v=20260606c3"></script>
+    <script src="./audio/manifest.js?v=20260610offlineaudio4"></script>
+    <script src="./app.js?v=20260610offlineaudio5"></script>
+  </body>
+</html>

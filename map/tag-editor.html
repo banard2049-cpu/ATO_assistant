@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ATO 地图打标 GUI</title>
+  <link rel="stylesheet" href="./styles.css?v=20260607-map-editor">
+  <link rel="stylesheet" href="./tag-editor.css?v=20260607-map-editor">
+</head>
+<body>
+  <main class="app tag-editor-app">
+    <header class="topbar editor-topbar">
+      <div>
+        <a class="back-link" href="./index.html">返回地图</a>
+        <h1>ATO 地图打标 GUI</h1>
+        <p>一张一张过，直接改 <code>map/map-tile-tags.js</code>，保存后立刻写回文件。</p>
+      </div>
+      <div class="editor-actions">
+        <button id="saveButton" type="button">保存当前</button>
+        <button id="saveNextButton" type="button" class="secondary">保存并下一张</button>
+        <button id="prevButton" type="button" class="secondary" title="上一张，快捷键 K 或 ←">上一张 ←</button>
+        <button id="nextButton" type="button" class="secondary" title="下一张，快捷键 J 或 →">下一张 →</button>
+      </div>
+    </header>
+
+    <section class="editor-bar">
+      <div class="editor-filters">
+        <label>
+          选择 Cycle
+          <select id="cycleSelect"></select>
+        </label>
+        <label>
+          搜索板块
+          <input id="searchInput" placeholder="例如 001 / 07 / city">
+        </label>
+        <label class="check-label">
+          <input id="onlyUnreviewedToggle" type="checkbox">
+          只看未核对
+        </label>
+      </div>
+      <div class="editor-status">
+        <strong id="statusText">正在加载</strong>
+        <span id="statusMeta"></span>
+        <span class="shortcut-tip">切换：K / ← 上一张，J / → 下一张</span>
+      </div>
+    </section>
+
+    <section class="editor-layout">
+      <aside class="tile-sidebar">
+        <div class="sidebar-header">
+          <strong>板块列表</strong>
+          <span id="tileCount"></span>
+        </div>
+        <div id="tileList" class="tile-list" aria-label="板块列表"></div>
+      </aside>
+
+      <section class="tile-workbench">
+        <section class="tile-card-shell">
+          <div class="tile-shell-head">
+            <div>
+              <strong id="tileTitle">未选择</strong>
+              <p id="tileMeta">点击左侧板块开始打标。</p>
+            </div>
+            <span id="saveStatePill" class="state-pill">未保存</span>
+          </div>
+
+          <div class="tile-preview">
+            <img id="tileImage" alt="板块预览" src="">
+          </div>
+
+          <div class="tag-summary" id="tagSummary"></div>
+
+          <div class="tag-buttons" id="tagButtons"></div>
+
+          <label class="notes-field">
+            备注
+            <textarea id="notesInput" rows="6" placeholder="给这个板块写判断、提醒或剧情备注。"></textarea>
+          </label>
+
+          <label class="check-label reviewed-check">
+            <input id="reviewedToggle" type="checkbox">
+            已核对
+          </label>
+        </section>
+
+        <section class="tile-card-shell compact">
+          <div class="sidebar-header">
+            <strong>当前标签文件</strong>
+            <span id="fileMeta"></span>
+          </div>
+          <textarea id="rawPreview" class="raw-preview" readonly></textarea>
+        </section>
+      </section>
+    </section>
+  </main>
+
+  <script src="./map-data.js"></script>
+  <script src="./tag-editor.js"></script>
+</body>
+</html>

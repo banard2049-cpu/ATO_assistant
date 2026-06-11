@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ATO 地图模块</title>
+  <link rel="stylesheet" href="./styles.css?v=20260604-map-focus">
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div>
+        <a class="back-link" href="../index.html">返回主控台</a>
+        <h1>ATO 地图模块</h1>
+        <p>按 Cycle 管理地图板块、当前位置和已探索状态。</p>
+      </div>
+      <div class="cycle-tabs" id="cycleTabs"></div>
+    </header>
+
+    <div class="sticky-actions">
+    <section class="control-panel">
+      <label>
+        当前板块
+        <select id="currentTileSelect"></select>
+      </label>
+      <label>
+        搜索板块
+        <input id="searchInput" placeholder="例如 001、T03">
+      </label>
+      <label class="zoom-control">
+        地图缩放
+        <span class="zoom-row">
+          <input id="mapZoomInput" type="range" min="60" max="400" step="10" value="100">
+          <output id="mapZoomValue" for="mapZoomInput">100%</output>
+        </span>
+      </label>
+      <div class="toggle-row">
+        <label class="check-label">
+          <input id="showBackToggle" type="checkbox">
+          显示背面
+        </label>
+        <label class="check-label">
+          <input id="onlyExploredToggle" type="checkbox">
+          只看已探索
+        </label>
+        <label class="check-label">
+          <input id="showAdjacencyToggle" type="checkbox">
+          显示邻接
+        </label>
+      </div>
+    </section>
+
+    <section class="token-panel">
+      <div class="map-status">
+        <strong id="cycleTitle">Cycle</strong>
+        <span id="cycleMeta"></span>
+      </div>
+      <div class="tool-cluster token-cluster">
+        <span class="toolbar-label">图标</span>
+        <div class="token-palette" id="tokenPalette"></div>
+      </div>
+      <div class="map-actions" aria-label="地图操作">
+        <div class="action-group">
+          <span class="toolbar-label">侦察船</span>
+          <span id="scoutCount" class="scout-count">0</span>
+          <button id="hsProduceButton" type="button" class="secondary">生产</button>
+          <button id="hsRecallButton" type="button" class="secondary">收回</button>
+          <button id="hsDestroyButton" type="button" class="secondary danger">破坏</button>
+        </div>
+        <div class="action-group">
+          <span class="toolbar-label">仇敌</span>
+          <button id="adSpawnButton" type="button">生成</button>
+          <button id="adMoveButton" type="button" class="secondary">移动</button>
+        </div>
+        <div class="action-group">
+          <span class="toolbar-label">流程</span>
+          <button id="undoButton" type="button" class="secondary" disabled>撤回</button>
+          <button id="saveReturnButton" type="button">保存返回</button>
+          <button id="clearCycleButton" type="button" class="secondary danger">清空探索</button>
+        </div>
+      </div>
+    </section>
+    </div>
+
+    <section class="tile-grid-viewport" aria-label="地图显示区域">
+      <section id="tileGrid" class="tile-grid" aria-label="地图板块"></section>
+    </section>
+
+    <dialog id="tileNoteDialog" class="note-dialog">
+      <form method="dialog" class="note-card">
+        <div class="note-card-header">
+          <strong id="tileNoteTitle">地图笔记</strong>
+          <button id="closeNoteButton" type="button" class="icon-button" aria-label="关闭">×</button>
+        </div>
+        <textarea id="tileNoteInput" rows="7" placeholder="写下这个地图板块的线索、事件或提醒"></textarea>
+        <div class="note-actions">
+          <button id="deleteNoteButton" type="button" class="secondary danger">删除笔记</button>
+          <button id="saveNoteButton" type="button">保存笔记</button>
+        </div>
+      </form>
+    </dialog>
+  </main>
+
+  <script src="../page-focus-router.js?v=20260607a"></script>
+  <script src="./map-data.js"></script>
+  <script src="./map-tile-tags.js"></script>
+  <script src="./app.js?v=20260606-save-return"></script>
+</body>
+</html>

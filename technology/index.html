@@ -1,0 +1,2920 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ATO 科技树</title>
+<style>
+:root {
+  color-scheme: light;
+  --ink: #1d2328;
+  --muted: #66727d;
+  --line: #d6dde3;
+  --surface: #f7f8f5;
+  --panel: #ffffff;
+  --accent: #b44b34;
+  --accent-2: #1d6f78;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--surface);
+  color: var(--ink);
+}
+.app {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 100vh;
+}
+.main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.topbar {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--line);
+  background: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+.tabs { display: flex; gap: 8px; align-items: center; }
+.tab {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.tab.active {
+  border-color: var(--accent-2);
+  color: #fff;
+  background: var(--accent-2);
+}
+.tools { display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: 13px; }
+.tool-btn {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.tool-btn:hover { border-color: var(--accent-2); color: var(--accent-2); }
+.tool-btn.active {
+  border-color: var(--accent-2);
+  background: var(--accent-2);
+  color: #fff;
+}
+.tool-btn.return-main {
+  border-color: var(--accent-2);
+  background: var(--accent-2);
+  color: #fff;
+}
+.tool-btn.return-main:hover {
+  background: #15575f;
+  color: #fff;
+}
+.search {
+  width: 220px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font: inherit;
+  background: #fff;
+}
+.cycle-select,
+.account-select {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font: inherit;
+  background: #fff;
+  color: var(--ink);
+}
+.account-select { max-width: 150px; }
+.viewport {
+  min-height: 0;
+  overflow: auto;
+  padding: 18px;
+}
+.tree-wrap {
+  position: relative;
+  width: min(1400px, 100%);
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 30px rgba(27, 36, 44, .08);
+}
+.tree-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+}
+.node {
+  position: absolute;
+  border: 2px solid transparent;
+  background: transparent;
+  border-radius: 0;
+  cursor: pointer;
+  min-width: 14px;
+  min-height: 14px;
+  transition: border-color .12s ease, background .12s ease, box-shadow .12s ease, opacity .12s ease;
+}
+.node-label {
+  display: none;
+  pointer-events: none;
+}
+.tree-wrap.zh-labels .node {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 5px;
+  background: #fff;
+  color: var(--ink);
+  overflow: hidden;
+  text-align: center;
+  box-shadow: inset 0 0 0 1px #111;
+}
+.tree-wrap.zh-labels .node-label {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  width: 100%;
+  overflow: hidden;
+  font-family: "Noto Serif SC", "Songti SC", "Microsoft YaHei", serif;
+  font-size: 12px;
+  font-weight: 850;
+  line-height: 1.08;
+  letter-spacing: .02em;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .62);
+}
+.tree-wrap.zh-labels .node.unlocked {
+  background: #fff;
+  box-shadow: inset 0 0 0 1px #111, 0 0 0 1px rgba(30, 138, 85, .18);
+}
+.tree-wrap.zh-labels .node.unlockable {
+  background: #fff;
+  box-shadow: inset 0 0 0 1px #111, 0 0 0 1px rgba(216, 163, 25, .2);
+}
+.node::after {
+  display: none;
+}
+.node:hover {
+  background: rgba(29, 35, 40, .04);
+}
+.node.unlocked {
+  border-color: #1e8a55;
+  background: rgba(30, 138, 85, .08);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .72), 0 0 0 1px rgba(30, 138, 85, .18);
+}
+.node.unlockable {
+  border-color: #d8a319;
+  background: rgba(216, 163, 25, .08);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .72), 0 0 0 1px rgba(216, 163, 25, .2);
+}
+.node.unlocked:hover,
+.node.unlocked.active {
+  background: rgba(30, 138, 85, .14);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .8), 0 0 0 3px rgba(30, 138, 85, .2);
+}
+.node.unlockable:hover,
+.node.unlockable.active {
+  background: rgba(216, 163, 25, .16);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .8), 0 0 0 3px rgba(216, 163, 25, .24);
+}
+.node.active:not(.unlocked):not(.unlockable) {
+  background: rgba(29, 35, 40, .05);
+}
+.tree-wrap.zh-labels .node:hover,
+.tree-wrap.zh-labels .node.active:not(.unlocked):not(.unlockable) {
+  background: #fff;
+}
+.tree-wrap.zh-labels .node.unlocked:hover,
+.tree-wrap.zh-labels .node.unlocked.active {
+  background: #fff;
+  box-shadow: inset 0 0 0 1px #111, 0 0 0 3px rgba(30, 138, 85, .2);
+}
+.tree-wrap.zh-labels .node.unlockable:hover,
+.tree-wrap.zh-labels .node.unlockable.active {
+  background: #fff;
+  box-shadow: inset 0 0 0 1px #111, 0 0 0 3px rgba(216, 163, 25, .24);
+}
+.node.filtered { opacity: .16; pointer-events: none; }
+.badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #eef3f4;
+  color: #31575d;
+  font-size: 12px;
+  font-weight: 700;
+}
+.unlocked-page {
+  width: min(1440px, 100%);
+  margin: 0 auto;
+  --unlocked-card-short-edge: 156px;
+}
+.unlocked-columns {
+  display: grid;
+  gap: 14px;
+  align-items: start;
+}
+.unlocked-column {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 10px;
+}
+.unlocked-column > summary {
+  cursor: pointer;
+  user-select: none;
+  font-size: 13px;
+  font-weight: 850;
+  color: var(--ink);
+  padding: 2px 2px 8px;
+}
+.unlocked-column[open] > summary { margin-bottom: 2px; }
+.unlocked-list.big {
+  grid-template-columns: repeat(auto-fill, minmax(260px, max-content));
+  gap: 14px;
+}
+.unlocked-list.mixed {
+  grid-template-columns: repeat(auto-fill, 174px);
+}
+.unlocked-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 174px);
+  gap: 14px 10px;
+  align-items: start;
+  justify-content: start;
+}
+.unlocked-list.big .unlocked-item {
+  width: 100%;
+}
+.unlocked-item {
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  border-radius: 6px;
+  padding: 0;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 750;
+  text-align: center;
+  cursor: pointer;
+  min-width: 0;
+}
+.unlocked-item:hover {
+  color: #1e6647;
+}
+.unlocked-item.important .unlocked-thumb,
+.unlocked-item.important .unlocked-thumb-rotated,
+.unlocked-item.important .unlocked-thumb-img {
+  outline: 3px solid #268058;
+  outline-offset: 3px;
+}
+.unlocked-empty {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+  padding: 12px 0;
+}
+.unlocked-thumb {
+  margin: 0 auto;
+  background-repeat: no-repeat;
+  background-color: #e9ecef;
+  border-radius: 4px;
+  box-shadow: 0 2px 7px rgba(0,0,0,.16);
+}
+.unlocked-thumb-rotated {
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: 4px;
+  box-shadow: 0 2px 7px rgba(0,0,0,.16);
+}
+.unlocked-thumb-rotated .unlocked-thumb {
+  margin: 0;
+  box-shadow: none;
+}
+.unlocked-thumb-img {
+  display: block;
+  width: var(--unlocked-card-short-edge);
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  box-shadow: 0 2px 7px rgba(0,0,0,.16);
+  margin: 0 auto;
+}
+.unlocked-thumb-img.big {
+  width: auto;
+  height: var(--unlocked-card-short-edge);
+  max-width: 100%;
+}
+.unlocked-thumb-img.small.landscape {
+  width: auto;
+  height: var(--unlocked-card-short-edge);
+}
+.unlocked-thumb-img.small.portrait {
+  width: var(--unlocked-card-short-edge);
+}
+.unlocked-name {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.unlocked-cycle {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 2px;
+}
+.category-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: #eef3f4;
+  color: #31575d;
+  font-size: 12px;
+  font-weight: 800;
+}
+.category-pill.battle {
+  background: #f6e8e3;
+  color: #8f3e2b;
+}
+.empty {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.55;
+  padding: 16px 2px;
+}
+.card-block + .card-block { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--line); }
+.card-name { font-size: 20px; line-height: 1.15; font-weight: 850; margin: 0 0 10px; }
+.card-previews {
+  display: grid;
+  gap: 12px;
+  align-items: start;
+}
+.card-previews.side-by-side {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.card-previews.stacked {
+  grid-template-columns: 1fr;
+}
+.meta { display: grid; grid-template-columns: 96px 1fr; gap: 5px 8px; font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+.meta b { color: var(--ink); font-weight: 700; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
+.tag { border-radius: 999px; background: #f2eee5; color: #74531c; padding: 3px 7px; font-size: 12px; font-weight: 700; }
+.preview-frame {
+  width: 100%;
+  background: #f1f3f4;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+.preview-frame.landscape {
+  padding: 12px;
+}
+.preview-label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .04em;
+  margin: 0 0 8px;
+}
+.card-preview {
+  margin: 0 auto;
+  background-repeat: no-repeat;
+  box-shadow: 0 5px 15px rgba(0,0,0,.18);
+  border-radius: 4px;
+}
+.card-preview-rotated {
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: 4px;
+  box-shadow: 0 5px 15px rgba(0,0,0,.18);
+}
+.card-preview-rotated .card-preview {
+  margin: 0;
+  box-shadow: none;
+}
+.card-preview-img {
+  display: block;
+  width: min(100%, 300px);
+  height: auto;
+  margin: 0 auto;
+  box-shadow: 0 5px 15px rgba(0,0,0,.18);
+  border-radius: 4px;
+}
+.small-note { color: var(--muted); font-size: 12px; line-height: 1.45; margin-top: 10px; }
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 40;
+  background: rgba(16, 24, 28, .72);
+  padding: 20px;
+}
+.modal-backdrop.open { display: flex; }
+.unlocked-modal {
+  width: min(980px, 96vw);
+  max-height: 94vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 14px;
+  background: #fff;
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: 0 18px 50px rgba(0,0,0,.35);
+}
+.unlocked-modal-image {
+  min-height: 420px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  border-radius: 8px;
+  background: #f1f3f4;
+  padding: 12px;
+}
+.unlocked-modal-panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.unlocked-modal-title {
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1.16;
+  margin-bottom: 6px;
+}
+.unlocked-modal-meta {
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 14px;
+}
+.modal-tech-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.modal-tech-column {
+  border: 1px solid var(--line);
+  background: #fbfaf7;
+  padding: 10px;
+  min-width: 0;
+}
+.modal-tech-column h3 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--ink);
+}
+.modal-tech-list {
+  display: grid;
+  gap: 6px;
+}
+.modal-tech-or-group {
+  display: grid;
+  gap: 6px;
+  margin-top: 8px;
+}
+.modal-tech-or-label {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+.modal-tech-item {
+  display: block;
+  border: 1px solid rgba(32, 38, 41, .12);
+  background: #fff;
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.25;
+  padding: 6px 7px;
+  text-align: left;
+  width: 100%;
+}
+button.modal-tech-item {
+  cursor: pointer;
+  font: inherit;
+}
+button.modal-tech-item:hover {
+  border-color: var(--accent-2);
+  box-shadow: 0 2px 8px rgba(49, 87, 93, .14);
+}
+.modal-tech-item.met {
+  border-color: rgba(30, 138, 85, .45);
+  background: #eef8f2;
+}
+.modal-tech-item.missing {
+  border-color: rgba(216, 163, 25, .45);
+  background: #fff8e5;
+}
+.modal-tech-empty {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+.modal-tech-conditions {
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.4;
+  margin-top: 8px;
+  padding-top: 8px;
+}
+.modal-actions {
+  display: grid;
+  gap: 8px;
+  margin-top: auto;
+}
+.modal-btn {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  border-radius: 7px;
+  padding: 10px 12px;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+.modal-btn.primary {
+  border-color: #268058;
+  background: #268058;
+  color: #fff;
+}
+.modal-btn.warn {
+  border-color: #b7791f;
+  color: #8a5a14;
+}
+.modal-btn.hidden {
+  display: none;
+}
+.modal-card-list {
+  width: 100%;
+  display: grid;
+  gap: 14px;
+}
+.modal-card-img {
+  display: block;
+  max-width: min(100%, 760px);
+  max-height: 76vh;
+  height: auto;
+  border-radius: 4px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.22);
+}
+.modal-card-crop {
+  background-repeat: no-repeat;
+  border-radius: 4px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.22);
+}
+.modal-card-rotated {
+  overflow: hidden;
+  border-radius: 4px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.22);
+}
+.modal-card-rotated .modal-card-crop {
+  box-shadow: none;
+}
+/* Gear Production Tab */
+.gear-page { width: min(1200px, 100%); margin: 0 auto; }
+.gear-search-hint { color: var(--muted); font-size: 12px; margin-bottom: 14px; }
+.gear-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 9px 12px;
+  margin-bottom: 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+}
+.gear-filter-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+  user-select: none;
+}
+.gear-filter-option input { margin: 0; accent-color: var(--accent); }
+.gear-group { border: 1px solid var(--line); border-radius: 8px; background: #fff; margin-bottom: 14px; }
+.gear-group-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px; cursor: pointer; user-select: none;
+}
+.gear-group-header:hover { background: #f9fafb; }
+.gear-group-name { font-size: 14px; font-weight: 850; flex: 1; }
+button.gear-group-name {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+button.gear-group-name:hover {
+  color: #0d6274;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.gear-group-count { font-size: 12px; color: var(--muted); font-weight: 700; }
+.gear-group-chevron { color: var(--muted); transition: transform .15s; font-size: 12px; }
+.gear-group.collapsed .gear-group-chevron { transform: rotate(-90deg); }
+.gear-group.collapsed .gear-items { display: none; }
+.gear-items {
+  padding: 4px 14px 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+}
+.gear-item {
+  display: flex; flex-direction: column;
+  padding: 10px;
+  border: 1px solid #eef1f3; border-radius: 8px;
+  background: #fafbfc;
+  min-width: 0;
+  position: relative;
+}
+.gear-item:hover { border-color: var(--accent-2); background: #f4fafb; }
+.gear-card-thumb {
+  width: 100%;
+  aspect-ratio: 63 / 88;
+  padding: 0;
+  border-radius: 6px;
+  background: #edf1f3;
+  border: 1px solid #dde5ea;
+  overflow: hidden;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+.gear-card-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #fff;
+}
+.gear-card-thumb.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+  color: #8a98a4;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: default;
+}
+.gear-card-thumb.empty .empty-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f6e8e3;
+  color: #8f3e2b;
+  font-size: 11px;
+}
+.gear-item-main { min-width: 0; }
+.gear-item-main {
+  position: relative;
+  z-index: 1;
+}
+.gear-item-name {
+  font-size: 13px;
+  font-weight: 800;
+  margin-bottom: 6px;
+  line-height: 1.25;
+  position: relative;
+  z-index: 2;
+}
+.gear-item-main .gear-item-cost,
+.gear-item-main .gear-craft-panel {
+  pointer-events: auto;
+}
+.gear-item-cost {
+  display: flex; flex-wrap: wrap; gap: 4px 6px;
+  font-size: 11px; color: var(--muted); font-weight: 600;
+  position: relative;
+  z-index: 1;
+}
+.gear-craft-panel {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.gear-craft-status {
+  min-height: 15px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.gear-craft-status.ready { color: #16794a; font-weight: 800; }
+.gear-craft-status.blocked { color: #9f3a38; font-weight: 750; }
+.gear-craft-btn {
+  width: 100%;
+  border: 1px solid #b7d7df;
+  border-radius: 5px;
+  background: #e8f7fa;
+  color: #0f5968;
+  font-size: 12px;
+  font-weight: 850;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+.gear-craft-btn:hover:not(:disabled) { background: #d9f0f5; border-color: #8fc3ce; }
+.gear-craft-btn:disabled {
+  cursor: not-allowed;
+  color: #8a98a4;
+  background: #edf1f3;
+  border-color: #dde5ea;
+}
+.gear-cost-chip {
+  display: inline-flex; align-items: flex-start; gap: 3px;
+  background: #eef3f4; border-radius: 4px; padding: 2px 6px;
+  max-width: 100%;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.25;
+  font-size: 11px;
+}
+.gear-cost-chip .cost-amount { color: var(--ink); font-weight: 800; }
+.gear-cost-chip .cost-resource { min-width: 0; overflow-wrap: anywhere; }
+.gear-cost-chip.cost-or {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  background: #fff4e0;
+  border: 1px dashed #d8a319;
+  padding: 4px 8px;
+  gap: 3px;
+}
+.gear-cost-chip.cost-or .cost-or-alt {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 3px 6px;
+  min-width: 0;
+}
+.gear-cost-chip.cost-or .cost-or-part {
+  display: inline-flex; align-items: flex-start; gap: 3px;
+  min-width: 0;
+}
+.gear-cost-chip.cost-or .cost-or-sep {
+  color: #b7791f;
+  font-weight: 800;
+  font-size: 10px;
+}
+.gear-empty { color: var(--muted); font-size: 14px; padding: 24px 0; text-align: center; }
+.gear-group.filtered { display: none; }
+.gear-item.filtered { display: none; }
+.gear-image-modal-content {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  max-width: 92vw; max-height: 92vh;
+}
+.gear-image-modal-content img {
+  max-width: 92vw; max-height: 84vh; object-fit: contain;
+  border-radius: 6px; box-shadow: 0 18px 50px rgba(0,0,0,.45); background: #fff;
+}
+#gearImageModalCaption {
+  color: #fff; font-weight: 800; font-size: 14px;
+}
+@media (max-width: 980px) {
+  .app { grid-template-columns: 1fr; }
+  .topbar { position: static; flex-wrap: wrap; height: auto; padding: 10px; }
+  .search { width: 100%; }
+  .viewport { padding: 10px; }
+  .unlocked-columns { grid-template-columns: 1fr; }
+  .unlocked-modal { grid-template-columns: 1fr; }
+  .unlocked-modal-image { min-height: 300px; }
+  .modal-tech-links { grid-template-columns: 1fr; }
+  .card-previews.side-by-side { grid-template-columns: 1fr; }
+  .gear-items { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <main class="main">
+    <div class="topbar">
+      <div class="tabs" id="tabs"></div>
+      <div class="tools">
+        <button class="tool-btn return-main" id="returnMain" type="button">保存并返回主控台</button>
+        <select id="accountSelect" class="account-select" aria-label="账户" hidden></select>
+        <select id="cycleSelect" class="cycle-select" aria-label="当前循环"></select>
+        <button class="tool-btn" id="languageToggle" type="button">中文名</button>
+        <span class="badge" id="cycleBadge">Cycle I</span>
+        <input id="search" class="search" placeholder="搜索科技" autocomplete="off">
+        <button class="tool-btn" id="clearUnlocked" type="button">重置进度</button>
+        <span id="count"></span>
+      </div>
+    </div>
+    <div class="viewport" id="mainView"></div>
+  </main>
+</div>
+<div class="modal-backdrop" id="unlockedModal" aria-hidden="true">
+  <div class="unlocked-modal" role="dialog" aria-modal="true" aria-labelledby="unlockedModalTitle">
+    <div class="unlocked-modal-image" id="unlockedModalImage"></div>
+    <div class="unlocked-modal-panel">
+      <div class="unlocked-modal-title" id="unlockedModalTitle"></div>
+      <div class="unlocked-modal-meta" id="unlockedModalMeta"></div>
+      <div class="modal-tech-links" id="modalTechLinks"></div>
+      <div class="modal-actions">
+        <button class="modal-btn primary" id="modalViewTree" type="button">在科技树查看</button>
+        <button class="modal-btn primary hidden" id="modalToggleUnlock" type="button">解锁</button>
+        <button class="modal-btn warn" id="modalToggleUnimportant" type="button">设置为不重要</button>
+        <button class="modal-btn" id="modalClose" type="button">关闭</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../page-focus-router.js?v=20260607a"></script>
+<script>
+const TECH_DICTIONARY_URL = 'tech_card_dictionary.min.json';
+const GEAR_PRODUCTION_URL = 'ato_gear_production.json';
+const GEAR_CARD_IMAGES_URL = 'gear_card_images.json';
+const GEAR_PART_LABELS_URL = 'gear_part_labels.json';
+
+const RESOURCE_NAMES_ZH = {
+  ARMAMENT: '军备', RAW_AMBROSIA: '神浆原液', MUSCLE_CLUSTER: '肌肉簇',
+  TRIREME: '船材', MONUMENT: '石筑', CALCIFIED_KNUCKLE_BONE: '钙化指节骨',
+  FLESHY_MANTLE: '血肉块', INFUSED_MECHANISM: '浸液机件', ANCIENT_SHELL: '远古贝壳',
+  GROTESQUE_BEAK: '怪异喙片', POWDERED_MATTER: '粉化奇物',
+  FEAR_ESSENCE: '恐惧精华', MAZE_FRAGMENT: '迷宫碎片', VIOLENT_AMBROSIA: '不稳定神浆',
+  CHIMERIC_TAR: '奇美拉焦油', SUPERSOLID_RELIEF_MASS: '超固体块',
+  CYCLOPEAN_METAL: '独眼巨人甲胄', BLACK_CHAIN: '黑色锁链', CYCLOPEAN_TOOTH: '独眼巨人牙齿',
+  RELIEF: '岩雕', WAR_MACHINE: '战械', WAR_TRIREME: '舰材',
+  RETRACTABLE_MECHANISM: '伸缩机构', RELIEFSHELL_FRAGMENT: '岩壳碎片',
+  LIVING_ABYSS: '活体深渊', SKIN_OF_MALICE: '怨恨之皮',
+  CLOTHFLESH: '肉布', EYECLUSTER: '眼球簇', RAZORCLAW: '利爪',
+  ICARIAN_FEATHER: '伊卡洛斯之羽', WRITHING_TENTACLE: '扭动触手',
+  SUNBURNED_SKULL: '日灼头骨', OXIDIZED_AMBROSIA: '氧化神浆',
+  ATLANTEAN_TEKNE: '亚特兰蒂斯工艺', ORICHALCUM_CHUNK: '山铜块',
+  HYDRODYNAMIC_SCALES: '水动力鳞片', MICROWAVE_CELL: '微波电池',
+  LIQUID_AETHER: '液态以太', TITAN: '泰坦',
+  FROZEN_AMBROSIA: '凝固神浆', SIRENSHELL: '塞壬壳',
+  HYPERBOREAN_ALLOY: '冻土合金', DAEDALUS_MAKINA: '代达罗斯器械',
+  CORE: '核心', PRIESTS: '祭司',
+  SISYPHUS_TEARS: '西西弗斯之泪', PYGMALION_STONES: '皮格马利翁之石',
+  ECHOES: '记忆之回响',
+};
+
+const TITAN_NAMES_ZH = {
+  'tt_earthshaker': '撼地者',
+  'tt_mazerunner': '迷宫疾行者',
+  'tt_plogicbreaker': '破逻辑者',
+  'tt_warkeeper': '守战者',
+  'tt_firestarter': '燃火者',
+  'tt_pabysswatcher': '深渊凝望者',
+  'tt_shadowdancer': '影舞者',
+  'tt_fatebound': '命运束缚者',
+  'tt_chronoking': '时光之王',
+  'tt_helldiver': '潜渊者',
+  'tt_trespasser': '越界者',
+  'tt_executioner': '行刑者',
+  'tt_feareater': '无惧者',
+  'tt_lunarlander': '原型登月者',
+  'tt_messianic': '弥赛亚',
+};
+
+let gearProductionData = null;
+let gearCardImages = {};
+let gearPartLabels = {};
+
+async function loadGearProductionData() {
+  try {
+    const productionResponse = await fetch(GEAR_PRODUCTION_URL, { cache: 'no-cache' });
+    if (!productionResponse.ok) throw new Error('HTTP ' + productionResponse.status);
+    gearProductionData = await productionResponse.json();
+  } catch (e) {
+    console.warn('Failed to load gear production data:', e);
+    gearProductionData = null;
+  }
+  try {
+    const imagesResponse = await fetch(GEAR_CARD_IMAGES_URL, { cache: 'no-cache' });
+    if (imagesResponse.ok) {
+      const payload = await imagesResponse.json();
+      gearCardImages = payload?.images || {};
+    }
+  } catch (e) {
+    console.warn('Failed to load gear card images:', e);
+    gearCardImages = {};
+  }
+  try {
+    const labelsResponse = await fetch(GEAR_PART_LABELS_URL, { cache: 'no-cache' });
+    if (labelsResponse.ok) {
+      const payload = await labelsResponse.json();
+      gearPartLabels = payload?.labels || {};
+    }
+  } catch (e) {
+    console.warn('Failed to load gear part labels:', e);
+    gearPartLabels = {};
+  }
+}
+
+function gearImageSrc(gearId) {
+  if (!gearId) return '';
+  if (gearId.startsWith('T:tt_')) {
+    const titanKey = gearId.slice(2);
+    return `images/titans/${titanKey}.png`;
+  }
+  return gearCardImages[gearId] || gearCardImages[String(gearId).toUpperCase()] || '';
+}
+
+function normalizeGearId(gearId) {
+  return String(gearId || '').replace(/^1x/, '');
+}
+
+function getGearTechNodeKey(techId) {
+  if (!gearProductionData?.techCardNames?.[techId]) return null;
+  const fullName = gearProductionData.techCardNames[techId].trim();
+  // Extract English name (everything before the first CJK character)
+  const enName = fullName.replace(/[一-鿿㐀-䶿豈-﫿].*/g, '').trim();
+  return enName.toLowerCase();
+}
+
+function getGearName(gearId) {
+  gearId = normalizeGearId(gearId);
+  if (gearId.startsWith('T:')) {
+    const titanKey = gearId.slice(2);
+    if (treeLanguage === 'zh') {
+      return TITAN_NAMES_ZH[titanKey] || titanKey.replace(/^tt_/, '');
+    }
+    const en = titanKey.replace(/^tt_/, '').replace(/^p/, '');
+    return en.charAt(0).toUpperCase() + en.slice(1);
+  }
+  if (!gearProductionData?.gearCards?.[gearId]) return gearId;
+  const fullName = gearProductionData.gearCards[gearId].trim();
+  if (treeLanguage === 'zh') {
+    const zh = fullName.replace(/^[^一-鿿㐀-䶿豈-﫿]*/, '').trim();
+    return zh || fullName;
+  }
+  return fullName.replace(/[一-鿿㐀-䶿豈-﫿].*/g, '').trim() || fullName;
+}
+
+function getTechDisplayName(techId) {
+  if (!gearProductionData?.techCardNames?.[techId]) return techId;
+  const fullName = gearProductionData.techCardNames[techId].trim();
+  if (treeLanguage === 'zh') {
+    const zh = fullName.replace(/^[^一-鿿㐀-䶿豈-﫿]*/, '').trim();
+    return zh || fullName;
+  }
+  return fullName.replace(/[一-鿿㐀-䶿豈-﫿].*/g, '').trim() || fullName;
+}
+
+function formatCostPart(costStr) {
+  const match = String(costStr).match(/^(\d+)x(.+)$/);
+  if (!match) return { amount: '', resource: costStr };
+  const amount = match[1];
+  const key = match[2];
+  let name;
+  if (key.startsWith('CORE_')) {
+    const enemyKey = key.slice(5);
+    name = treeLanguage === 'zh'
+      ? `${RESOURCE_NAMES_ZH[enemyKey] || enemyKey} 核心`
+      : `${enemyKey.replace(/_/g, ' ').toLowerCase()} core`;
+  } else if (RESOURCE_NAMES_ZH[key]) {
+    name = treeLanguage === 'zh' ? RESOURCE_NAMES_ZH[key] : key.replace(/_/g, ' ').toLowerCase();
+  } else if (/^[A-Z]J\d+$/i.test(key)) {
+    // Gear-as-material reference (e.g. 1xAJ0280)
+    name = getGearName(key);
+  } else {
+    name = treeLanguage === 'zh' ? key : key.replace(/_/g, ' ').toLowerCase();
+  }
+  return { amount, resource: name };
+}
+
+function formatCost(costStr) {
+  // Support OR-cost: "2xA&&1xB||1xC" means (A and B) or C.
+  const orParts = String(costStr).split('||');
+  if (orParts.length === 1) return formatCostPart(orParts[0]);
+  return {
+    _or: true,
+    alternatives: orParts.map(part => part.split('&&').map(formatCostPart))
+  };
+}
+function productionRecordCycle(cycle) {
+  return PRODUCTION_CYCLE_TO_RECORD_CYCLE[String(cycle || '').toUpperCase()] || normalizeMainCycleId(cycle);
+}
+function recordResourceKey(rawKey, recordCycle) {
+  const normalized = String(rawKey || '').trim().toUpperCase();
+  if (normalized.startsWith('CORE_')) {
+    const coreKey = RECORD_CORE_KEYS[normalized.slice(5)];
+    return coreKey ? `${recordCycle}-core-${coreKey}` : null;
+  }
+  const baseKey = RECORD_RESOURCE_KEYS[normalized];
+  if (!baseKey) return null;
+  return SHARED_RECORD_RESOURCE_KEYS.has(baseKey) ? baseKey : `${recordCycle}-${baseKey}`;
+}
+function parseRawCostPart(costStr, recordCycle) {
+  const match = String(costStr).trim().match(/^(\d+)x(.+)$/);
+  if (!match) return { amount: 0, key: String(costStr), label: String(costStr), unsupported: true, reason: '无法识别' };
+  const amount = Math.max(0, Number(match[1] || 0));
+  const key = match[2].trim();
+  const formatted = formatCostPart(`${amount}x${key}`);
+  const label = `${amount}×${formatted.resource}`;
+  if (/^[A-Z]J\d+$/i.test(key)) {
+    return { amount, key, label, unsupported: true, reason: '装备库存未记录，需手动处理' };
+  }
+  if (key === 'TITAN' || key.startsWith('T:')) {
+    return { amount, key, label, unsupported: true, reason: '泰坦消耗需手动处理' };
+  }
+  const storageKey = recordResourceKey(key, recordCycle);
+  if (!storageKey) {
+    return { amount, key, label, unsupported: true, reason: '记录表未建档' };
+  }
+  return { amount, key, label, storageKey, unsupported: false };
+}
+function combineCostAlternatives(groups) {
+  return groups.reduce((options, group) => {
+    const next = [];
+    options.forEach(option => {
+      group.forEach(parts => next.push([...option, ...parts]));
+    });
+    return next;
+  }, [[]]);
+}
+function mergeCostParts(parts) {
+  const merged = new Map();
+  const result = [];
+  parts.forEach(part => {
+    const mergeKey = part.storageKey || `${part.key}:${part.reason || ''}`;
+    if (merged.has(mergeKey)) {
+      const existing = merged.get(mergeKey);
+      existing.amount += part.amount;
+      existing.label = `${existing.amount}×${formatCostPart(`${existing.amount}x${existing.key}`).resource}`;
+      existing.expandedFrom = [...new Set([...(existing.expandedFrom || []), ...(part.expandedFrom || [])])];
+    } else {
+      const copy = { ...part };
+      merged.set(mergeKey, copy);
+      result.push(copy);
+    }
+  });
+  return result;
+}
+function gearRecipeRecords(gearId) {
+  const normalized = normalizeGearId(gearId).toUpperCase();
+  const records = [];
+  (gearProductionData?.techProduction || []).forEach(entry => {
+    (entry.produces || []).forEach(gear => {
+      if (normalizeGearId(gear.gearId).toUpperCase() === normalized) records.push({ entry, gear });
+    });
+  });
+  return records;
+}
+function scaleExpandedCostParts(parts, multiplier, gearId) {
+  return parts.map(part => {
+    const amount = part.amount * multiplier;
+    return {
+      ...part,
+      amount,
+      label: `${amount}×${formatCostPart(`${amount}x${part.key}`).resource}`,
+      expandedFrom: [...new Set([...(part.expandedFrom || []), gearId])],
+    };
+  });
+}
+function parseCostPartAlternatives(costStr, recordCycle, ancestry) {
+  const direct = parseRawCostPart(costStr, recordCycle);
+  const alternatives = [[direct]];
+  if (!/^[A-Z]J\d+$/i.test(direct.key) || ancestry.has(direct.key.toUpperCase())) return alternatives;
+
+  const nextAncestry = new Set(ancestry);
+  nextAncestry.add(direct.key.toUpperCase());
+  gearRecipeRecords(direct.key).forEach(({ entry, gear }) => {
+    parseGearCostOptions(gear.cost, entry.cycle, nextAncestry).forEach(parts => {
+      alternatives.push(scaleExpandedCostParts(parts, direct.amount, direct.key));
+    });
+  });
+  return alternatives;
+}
+function parseGearCostOptions(costItems, productionCycle, ancestry = new Set()) {
+  const recordCycle = productionRecordCycle(productionCycle);
+  const groups = (Array.isArray(costItems) ? costItems : []).map(item =>
+    String(item).split('||').flatMap(alt => {
+      const partGroups = alt.split('&&').map(part => parseCostPartAlternatives(part, recordCycle, ancestry));
+      return combineCostAlternatives(partGroups);
+    })
+  );
+  return combineCostAlternatives(groups).map(mergeCostParts);
+}
+function resourceAmount(resources, storageKey) {
+  return Math.max(0, Math.floor(Number(resources?.[storageKey] || 0)));
+}
+function evaluateCraftOption(parts, resources) {
+  const unsupported = parts.filter(part => part.unsupported);
+  const missing = parts
+    .filter(part => !part.unsupported)
+    .map(part => ({ ...part, available: resourceAmount(resources, part.storageKey) }))
+    .filter(part => part.available < part.amount);
+  return {
+    parts,
+    unsupported,
+    missing,
+    canAutoCraft: unsupported.length === 0 && missing.length === 0,
+  };
+}
+function craftPlanForGear(entry, gear) {
+  const resources = gearRecordState?.resources || {};
+  const options = parseGearCostOptions(gear.cost, entry.cycle).map(parts => evaluateCraftOption(parts, resources));
+  const craftableIndex = options.findIndex(option => option.canAutoCraft);
+  const actionableIndex = options.findIndex(option => option.missing.length === 0);
+  const filterCraftable = actionableIndex >= 0;
+  return {
+    key: `${entry.techId}::${gear.gearId}`,
+    techId: entry.techId,
+    gearId: gear.gearId,
+    gearName: getGearName(gear.gearId),
+    cycle: entry.cycle,
+    options,
+    craftableIndex,
+    actionableIndex,
+    filterCraftable,
+  };
+}
+function describeCraftPlan(plan) {
+  if (gearRecordLoadInFlight && !gearRecordState) return { text: '正在检查记录表材料...', className: '' };
+  if (gearRecordError) return { text: `无法读取记录表：${gearRecordError}`, className: 'blocked' };
+  if (!gearRecordState) return { text: '未连接记录表', className: 'blocked' };
+  if (plan.craftableIndex >= 0) {
+    const expanded = plan.options[plan.craftableIndex].parts.flatMap(part => part.expandedFrom || []);
+    const detail = expanded.length ? ` 已展开前置装备：${[...new Set(expanded)].map(getGearName).join('、')}。` : '';
+    return { text: `材料足够，可制造并自动扣除。${detail}`, className: 'ready' };
+  }
+  if (plan.actionableIndex >= 0) {
+    const option = plan.options[plan.actionableIndex];
+    const manualText = option.unsupported.map(part => part.label).join('、');
+    return { text: `自动材料足够；确认已处理 ${manualText} 后可制造。`, className: 'ready' };
+  }
+  const automatic = plan.options
+    .filter(option => option.unsupported.length === 0)
+    .sort((a, b) => a.missing.length - b.missing.length)[0];
+  const manual = plan.options.find(option => option.unsupported.length);
+  if (automatic?.missing.length) {
+    const missingText = automatic.missing.map(part => `${part.label}，现有 ${part.available}`).join('；');
+    const manualText = manual
+      ? `；另有替代方案需手动处理：${manual.unsupported.map(part => part.label).join('，')}`
+      : '';
+    return { text: `材料不足：${missingText}${manualText}`, className: 'blocked' };
+  }
+  if (manual) {
+    const names = manual.unsupported.map(part => `${part.label}（${part.reason}）`).join('，');
+    return { text: `存在需手动处理的材料：${names}`, className: 'blocked' };
+  }
+  const missing = plan.options[0]?.missing || [];
+  if (missing.length) {
+    const text = missing.map(part => `${part.label}，现有 ${part.available}`).join('；');
+    return { text: `材料不足：${text}`, className: 'blocked' };
+  }
+  return { text: '没有可自动扣除的材料。', className: 'blocked' };
+}
+function renderCraftPanel(entry, gear) {
+  const plan = craftPlanForGear(entry, gear);
+  gearCraftPlans.set(plan.key, plan);
+  const status = describeCraftPlan(plan);
+  const disabled = gearRecordLoadInFlight && !gearRecordState;
+  const actionableOption = plan.options[plan.actionableIndex];
+  const buttonText = gearRecordLoadInFlight && !gearRecordState
+    ? '检查材料中'
+    : gearRecordError
+      ? '无法读取记录表'
+      : plan.actionableIndex >= 0
+        ? actionableOption?.unsupported.length
+          ? '确认手动材料并制造'
+          : '制造并扣除'
+        : plan.options.some(option => option.unsupported.length === 0)
+          ? '材料不足'
+          : '需手动处理';
+  return `<div class="gear-craft-panel">
+    <button type="button" class="gear-craft-btn" data-craft-key="${esc(plan.key)}" data-craft-option="${plan.actionableIndex}" ${disabled ? 'disabled' : ''}>${buttonText}</button>
+    <div class="gear-craft-status ${esc(status.className)}">${esc(status.text)}</div>
+  </div>`;
+}
+function normalizeCraftRecordResources(value) {
+  const resources = isPlainObject(value) ? JSON.parse(JSON.stringify(value)) : {};
+  SHARED_RECORD_RESOURCE_KEYS.forEach(key => {
+    if (resources[key] !== undefined) return;
+    const values = ['c1', 'c2', 'c3', 'c4', 'c5']
+      .map(cycle => resources[`${cycle}-${key}`])
+      .filter(item => item !== undefined && item !== null && item !== '');
+    if (!values.length) return;
+    const numeric = values.map(Number).filter(Number.isFinite);
+    if (numeric.length === values.length) resources[key] = Math.max(...numeric);
+  });
+  return resources;
+}
+function recordStateFromCampaign(campaign) {
+  const dashboard = campaign?.sections?.dashboard;
+  const userId = dashboard?.activeProfileId || activeAccountId || 'default';
+  const recordSection = campaign?.sections?.record;
+  const userState = recordSection?.users?.[userId] || (recordSection?.users ? null : recordSection);
+  const state = isPlainObject(userState) ? JSON.parse(JSON.stringify(userState)) : {};
+  state.resources = normalizeCraftRecordResources(state.resources);
+  return {
+    userId,
+    state,
+    revision: Math.max(0, Number(campaign?.sectionRevisions?.record || 0)),
+  };
+}
+async function readLatestRecordState() {
+  const response = await fetch(CAMPAIGN_STORAGE_URL, { cache: 'no-store' });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const payload = await response.json();
+  if (!payload.ok) throw new Error(payload.error || '读取记录表失败');
+  return recordStateFromCampaign(payload.campaign || {});
+}
+async function loadGearRecordState() {
+  if (gearRecordLoadInFlight) return;
+  gearRecordLoadInFlight = true;
+  gearRecordError = '';
+  try {
+    const latest = await readLatestRecordState();
+    gearRecordUserId = latest.userId;
+    gearRecordState = latest.state;
+    gearRecordRevision = latest.revision;
+  } catch (error) {
+    gearRecordError = String(error.message || error);
+  } finally {
+    gearRecordLoadInFlight = false;
+    if (currentTab === 'gear-production') renderGearProductionPage();
+  }
+}
+function requestGearRecordState() {
+  if (!gearRecordState && !gearRecordLoadInFlight && !gearRecordError) void loadGearRecordState();
+}
+async function mutateCampaignRecordState(mutator) {
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const latest = await readLatestRecordState();
+    const next = mutator(JSON.parse(JSON.stringify(latest.state)));
+    if (next == null) return null;
+    const response = await fetch(CAMPAIGN_RECORD_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ section: 'record', userId: latest.userId, state: next, expectedRevision: latest.revision }),
+    });
+    const payload = await response.json().catch(() => null);
+    if (response.status === 409 && payload?.code === 'SAVE_CONFLICT') continue;
+    if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+    gearRecordUserId = latest.userId;
+    gearRecordState = next;
+    gearRecordRevision = Math.max(0, Number(payload.revision || latest.revision + 1));
+    gearRecordSyncChannel?.postMessage({ revision: gearRecordRevision });
+    return next;
+  }
+  throw new Error('保存记录表失败：并发冲突重试次数过多');
+}
+async function craftGear(planKey, optionIndex) {
+  const plan = gearCraftPlans.get(planKey);
+  const option = plan?.options?.[Number(optionIndex)];
+  if (!plan) {
+    alert('制造方案已失效，请刷新装备制造页面后重试。');
+    return;
+  }
+  if (gearRecordError) {
+    alert(`暂时无法制造 ${plan.gearName}：无法读取记录表：${gearRecordError}`);
+    return;
+  }
+  if (!gearRecordState) {
+    alert(`暂时无法制造 ${plan.gearName}：记录表尚未加载完成。`);
+    return;
+  }
+  if (!option) {
+    alert(`暂时无法制造 ${plan.gearName}：${describeCraftPlan(plan).text}`);
+    return;
+  }
+  const initialCheck = evaluateCraftOption(option.parts, gearRecordState?.resources || {});
+  if (initialCheck.missing.length) {
+    const missingText = initialCheck.missing.map(part => `${part.label}，现有 ${part.available}`).join('；');
+    alert(`暂时无法制造 ${plan.gearName}：材料不足：${missingText}`);
+    return;
+  }
+  if (initialCheck.unsupported.length) {
+    const manualText = initialCheck.unsupported.map(part => part.label).join('、');
+    if (!confirm(`请确认已手动处理以下材料：${manualText}\n\n继续后只会从阿尔戈号记录表扣除其余材料。`)) return;
+  }
+  const buttons = mainView.querySelectorAll(`[data-craft-key="${CSS.escape(planKey)}"]`);
+  buttons.forEach(btn => { btn.disabled = true; btn.textContent = '制造中...'; });
+  try {
+    await mutateCampaignRecordState((recordState) => {
+      if (!isPlainObject(recordState.resources)) recordState.resources = {};
+      const checked = evaluateCraftOption(option.parts, recordState.resources);
+      if (checked.missing.length) {
+        const missingText = checked.missing.map(part => `${part.label}，现有 ${part.available}`).join('；');
+        throw new Error(`材料不足：${missingText}`);
+      }
+      option.parts.filter(part => !part.unsupported).forEach(part => {
+        recordState.resources[part.storageKey] = resourceAmount(recordState.resources, part.storageKey) - part.amount;
+      });
+      return recordState;
+    });
+    renderGearProductionPage();
+  } catch (error) {
+    alert(`制造 ${plan.gearName} 失败：${String(error.message || error)}`);
+    await loadGearRecordState();
+  }
+}
+
+function getUnlockedProductions() {
+  if (!gearProductionData?.techProduction) return [];
+  return gearProductionData.techProduction.filter(entry => {
+    const nodeKeyStr = getGearTechNodeKey(entry.techId);
+    if (!nodeKeyStr) return false;
+    return unlocked.has(nodeKeyStr) || unlocked.has(nodeKeyStr.replace(/ /g, ' '));
+  });
+}
+function currentProductionCycle() {
+  const mainCycle = MAIN_CYCLE_BY_TECH_CYCLE[currentCycle] || normalizeMainCycleId(currentCycle);
+  const number = String(mainCycle).replace(/\D/g, '').padStart(2, '0');
+  return `CYCLE_${number}`;
+}
+function gearPart(gearId) {
+  const manualPart = gearPartLabels[normalizeGearId(gearId).toUpperCase()];
+  const manualLabel = {
+    attachment: '附件', armor: '防具', arm: '手臂', aid: '助具', titan: '泰坦',
+  }[manualPart];
+  if (manualLabel) return { key: manualPart, label: manualLabel };
+  if (String(gearId).startsWith('T:tt_')) return { key: 'titan', label: '泰坦' };
+  const traits = String(gearProductionData?.gearTraits?.[gearId] || '').split(' - ')[0].toLowerCase();
+  const name = getGearName(gearId).toLowerCase();
+  const text = `${traits} ${name}`;
+  const has = words => words.some(word => text.includes(word));
+  if (has([
+    'helm', 'helmet', 'headgear', 'mask', 'visor', 'cowl', 'head ', 'sandals', 'kothornos',
+    'breakers', 'stilts', 'boots', 'greaves', 'feet', 'armor', 'linothorax', 'breastplate',
+    'thorax', 'vestment', 'garb', 'carapace', 'spolas', 'shield', 'aspis', 'buckler',
+    'guard', 'aegis', 'umbrella', 'suit',
+  ])) return { key: 'armor', label: '防具' };
+  if (has([
+    'weapon', 'sword', 'xiphos', 'kopis', 'khopesh', 'blade', 'knife', 'spear', 'javelin',
+    'axe', 'mace', 'hammer', 'club', 'cestus', 'fist', 'bow', 'gun', 'ballista', 'whip',
+    'discus', 'chakram', 'bident', 'lance', 'flail', 'thrower', 'ramaxe', 'pillarmace',
+    'harpoon', 'kusarigama',
+  ])) return { key: 'arm', label: '手臂' };
+  if (has([
+    'attachment', 'augment', 'module', 'belt', 'cloak', 'camo', 'sheath', 'talisman',
+    'necklace', 'amulet', 'badge', 'wreath', 'implant',
+  ])) return { key: 'attachment', label: '附件' };
+  return { key: 'aid', label: '助具' };
+}
+function findGearTechCard(techId) {
+  const key = getGearTechNodeKey(techId);
+  if (!key) return null;
+  const normalized = key.replace(/\s+/g, ' ').toLowerCase();
+  return (data.cards || []).find(card => String(card.key || '').trim().toLowerCase() === normalized) || null;
+}
+function showGearTechCard(techId) {
+  const card = findGearTechCard(techId);
+  if (!card) {
+    alert(`找不到对应的科技卡：${getTechDisplayName(techId)}`);
+    return;
+  }
+  activeUnlockedRecord = null;
+  activeModalMode = 'gear-production';
+  unlockedModalTitle.textContent = card.names?.zh || card.names?.en || card.key || getTechDisplayName(techId);
+  unlockedModalMeta.textContent = `${card.category === 'battle' ? '战斗科技' : '结构科技'} · ${card.key}`;
+  modalTechLinks.innerHTML = '';
+  unlockedModalImage.innerHTML = `<div class="modal-card-list">${renderCard(card, null)}</div>`;
+  modalViewTree.classList.add('hidden');
+  modalToggleUnlock.classList.add('hidden');
+  modalToggleUnimportant.classList.add('hidden');
+  unlockedModal.classList.add('open');
+  unlockedModal.setAttribute('aria-hidden', 'false');
+}
+function gearFilterBarHtml(visibleCount, totalCount) {
+  return `<div class="gear-filter-bar">
+    <label class="gear-filter-option"><input type="checkbox" data-gear-filter="cycle" ${gearOnlyCurrentCycle ? 'checked' : ''}>只显示本循环装备</label>
+    <label class="gear-filter-option"><input type="checkbox" data-gear-filter="craftable" ${gearOnlyCraftable ? 'checked' : ''}>只显示可制造装备</label>
+    <label class="gear-filter-option"><input type="checkbox" data-gear-filter="part" ${gearGroupByPart ? 'checked' : ''}>分部位显示</label>
+    <span class="gear-search-hint" style="margin:0 0 0 auto">显示 ${visibleCount}/${totalCount} 件</span>
+  </div>`;
+}
+function gearItemHtml(entry, gear) {
+  const gearName = getGearName(gear.gearId);
+  const isTitan = String(gear.gearId).startsWith('T:tt_');
+  const imgSrc = gearImageSrc(gear.gearId);
+  let html = `<div class="gear-item" data-gear-id="${esc(gear.gearId)}" data-search-text="${esc(gearName.toLowerCase())}">`;
+  if (imgSrc) {
+    const fallback = isTitan
+      ? `<div class=\\'gear-card-thumb empty\\'><span class=\\'empty-tag\\'>泰坦</span><span>${esc(gearName)}</span></div>`
+      : `<div class=\\'gear-card-thumb empty\\'>${esc(gear.gearId)}</div>`;
+    html += `<button type="button" class="gear-card-thumb" data-gear-img="${esc(imgSrc)}" data-gear-name="${esc(gearName)}" title="${esc(gearName)}"><img src="${esc(imgSrc)}" alt="${esc(gearName)}" loading="lazy" onerror="this.parentElement.outerHTML='${fallback}'"></button>`;
+  } else if (isTitan) {
+    html += `<div class="gear-card-thumb empty"><span class="empty-tag">泰坦</span><span>${esc(gearName)}</span></div>`;
+  } else {
+    html += `<div class="gear-card-thumb empty">${esc(gear.gearId)}</div>`;
+  }
+  html += `<div class="gear-item-main"><div class="gear-item-name">${esc(gearName)}</div><div class="gear-item-cost">`;
+  for (const c of gear.cost) {
+    const formatted = formatCost(c);
+    if (formatted._or) {
+      html += `<span class="gear-cost-chip cost-or">${formatted.alternatives.map(parts => `<span class="cost-or-alt">${parts.map(p => `<span class="cost-or-part"><span class="cost-amount">${esc(p.amount)}×</span><span class="cost-resource">${esc(p.resource)}</span></span>`).join('')}</span>`).join('<span class="cost-or-sep">或</span>')}</span>`;
+    } else {
+      html += `<span class="gear-cost-chip"><span class="cost-amount">${esc(formatted.amount)}×</span><span class="cost-resource">${esc(formatted.resource)}</span></span>`;
+    }
+  }
+  html += `</div>${renderCraftPanel(entry, gear)}</div></div>`;
+  return html;
+}
+
+function renderGearProductionPage() {
+  currentTab = 'gear-production';
+  cycleBadge.textContent = '装备制造';
+  gearCraftPlans = new Map();
+  requestGearRecordState();
+
+  const productions = getUnlockedProductions();
+  const allItems = productions.flatMap(entry => entry.produces.map(gear => ({ entry, gear })));
+  const productionCycle = currentProductionCycle();
+  const visibleItems = allItems.filter(({ entry, gear }) => {
+    if (gearOnlyCurrentCycle && entry.cycle !== productionCycle) return false;
+    if (gearOnlyCraftable && !gearRecordLoadInFlight && !craftPlanForGear(entry, gear).filterCraftable) return false;
+    return true;
+  });
+  if (!productions.length) {
+    mainView.innerHTML = `<div class="gear-page"><div class="gear-empty">还没有解锁任何生产科技。解锁 production 类型的科技卡后，这里将显示可制造的装备。</div></div>`;
+    applyGearSearch();
+    return;
+  }
+
+  let html = '<div class="gear-page">';
+  html += gearFilterBarHtml(visibleItems.length, allItems.length);
+  html += `<div class="gear-search-hint">共 ${productions.length} 项生产科技已解锁。使用搜索框继续过滤。</div>`;
+  const groups = new Map();
+  visibleItems.forEach(item => {
+    const group = gearGroupByPart
+      ? gearPart(item.gear.gearId)
+      : { key: item.entry.techId, label: getTechDisplayName(item.entry.techId), techId: item.entry.techId };
+    if (!groups.has(group.key)) groups.set(group.key, { ...group, items: [] });
+    groups.get(group.key).items.push(item);
+  });
+  if (!groups.size) html += `<div class="gear-empty">没有符合当前筛选条件的装备。</div>`;
+  for (const group of groups.values()) {
+    html += `<div class="gear-group" data-search-text="${esc(`${group.label} ${group.items.map(item => getGearName(item.gear.gearId)).join(' ')}`.toLowerCase())}">`;
+    const groupName = group.techId
+      ? `<button type="button" class="gear-group-name" data-tech-id="${esc(group.techId)}" title="点击查看科技卡">${esc(group.label)}</button>`
+      : `<span class="gear-group-name">${esc(group.label)}</span>`;
+    html += `<div class="gear-group-header">${groupName}<span class="gear-group-count">${group.items.length} 件装备</span><span class="gear-group-chevron">▼</span></div>`;
+    html += `<div class="gear-items">${group.items.map(({ entry, gear }) => gearItemHtml(entry, gear)).join('')}</div>`;
+    html += `</div>`;
+  }
+  html += '</div>';
+  mainView.innerHTML = html;
+
+  mainView.querySelectorAll('[data-gear-filter]').forEach(input => {
+    input.addEventListener('change', () => {
+      if (input.dataset.gearFilter === 'cycle') gearOnlyCurrentCycle = input.checked;
+      if (input.dataset.gearFilter === 'craftable') gearOnlyCraftable = input.checked;
+      if (input.dataset.gearFilter === 'part') gearGroupByPart = input.checked;
+      renderGearProductionPage();
+    });
+  });
+
+  // Toggle collapse
+  mainView.querySelectorAll('.gear-group-header').forEach(header => {
+    header.addEventListener('click', event => {
+      if (event.target.closest('.gear-group-name[data-tech-id]')) return;
+      header.parentElement.classList.toggle('collapsed');
+    });
+  });
+
+  mainView.querySelectorAll('.gear-group-name[data-tech-id]').forEach(btn => {
+    btn.addEventListener('click', event => {
+      event.stopPropagation();
+      showGearTechCard(btn.dataset.techId);
+    });
+  });
+
+  // Click thumbnail to enlarge
+  mainView.querySelectorAll('.gear-card-thumb[data-gear-img]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showGearImageModal(btn.dataset.gearImg, btn.dataset.gearName);
+    });
+  });
+
+  mainView.querySelectorAll('.gear-craft-btn[data-craft-key]').forEach(btn => {
+    btn.addEventListener('click', event => {
+      event.stopPropagation();
+      void craftGear(btn.dataset.craftKey, btn.dataset.craftOption);
+    });
+  });
+
+  applyGearSearch();
+}
+
+function showGearImageModal(src, name) {
+  let modal = document.getElementById('gearImageModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'gearImageModal';
+    modal.className = 'modal-backdrop';
+    modal.innerHTML = '<div class="gear-image-modal-content"><img id="gearImageModalImg"><div id="gearImageModalCaption"></div></div>';
+    document.body.appendChild(modal);
+    modal.addEventListener('click', () => {
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+    });
+  }
+  document.getElementById('gearImageModalImg').src = src;
+  document.getElementById('gearImageModalCaption').textContent = name || '';
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden', 'false');
+}
+
+function applyGearSearch() {
+  if (currentTab !== 'gear-production') return;
+  const query = search.value.trim().toLowerCase();
+  const groups = mainView.querySelectorAll('.gear-group');
+  let totalVisible = 0;
+  groups.forEach(group => {
+    if (!query) {
+      group.classList.remove('filtered');
+      group.querySelectorAll('.gear-item').forEach(item => item.classList.remove('filtered'));
+      totalVisible++;
+      return;
+    }
+    const groupText = group.dataset.searchText || '';
+    const items = group.querySelectorAll('.gear-item');
+    let hasVisibleItem = false;
+    items.forEach(item => {
+      const itemText = item.dataset.searchText || '';
+      const match = itemText.includes(query) || groupText.includes(query);
+      item.classList.toggle('filtered', !match);
+      if (match) hasVisibleItem = true;
+    });
+    group.classList.toggle('filtered', !hasVisibleItem);
+    if (hasVisibleItem) totalVisible++;
+  });
+  const productions = getUnlockedProductions();
+  count.textContent = query
+    ? `${totalVisible}/${productions.length} 科技匹配`
+    : `已解锁 ${productions.length} 项生产科技`;
+}
+
+
+const PAGE_METADATA = [
+  {
+    "key": "cycle1",
+    "label": "循环 I",
+    "pdf": "ATO_C1_TechTree_1.2.pdf",
+    "image": "images/tech_tree_pages/cycle1_tree_v24.png",
+    "width": 1190.5511474609375,
+    "height": 841.8897705078125,
+    "split_y": 425.1977844238281
+  },
+  {
+    "key": "cycle2",
+    "label": "循环 II",
+    "pdf": "ATO_C2_TechTree.pdf",
+    "image": "images/tech_tree_pages/cycle2_tree_v24.png",
+    "width": 1190.5511474609375,
+    "height": 841.8897705078125,
+    "split_y": 413.8587646484375
+  },
+  {
+    "key": "cycle3",
+    "label": "循环 III",
+    "pdf": "ATO_C3_TechTree.pdf",
+    "image": "images/tech_tree_pages/cycle3_tree_v24.png",
+    "width": 1190.5511474609375,
+    "height": 841.8897705078125,
+    "split_y": 411.0247802734375
+  }
+];
+
+let data = { pages: [], cards: [], tag_dictionary: {} };
+
+let PAGE_INDEX = new Map();
+
+let DISAMBIGUATED_TECH_NAMES = new Set();
+
+function computeDisambiguatedTechNames(pages) {
+    const byName = new Map();
+    for (const page of pages) {
+      for (const node of page.nodes) {
+        const key = String(node.name || '').trim().toLowerCase();
+        if (!byName.has(key)) byName.set(key, new Set());
+        byName.get(key).add((node.card_indexes || []).join(','));
+      }
+    }
+    return new Set([...byName].filter(([, cardSets]) => cardSets.size > 1).map(([key]) => key));
+  }
+
+function dictionaryToAppData(dictionary) {
+    const pages = PAGE_METADATA.map(page => ({ ...page, nodes: [] }));
+    const pagesByKey = new Map(pages.map(page => [page.key, page]));
+    const pageLabelsByKey = new Map(PAGE_METADATA.map(page => [page.key, page.label]));
+    const records = (Array.isArray(dictionary.cards) ? dictionary.cards : Object.values(dictionary.cards || {}))
+      .filter(Boolean)
+      .sort((a, b) => Number(a.index ?? 0) - Number(b.index ?? 0));
+    const cards = [];
+    const tagDictionary = {};
+    const mergedNodes = new Map();
+    const namesFor = record => record.names || { en: record.en, zh: record.zh };
+    const sheetFor = image => Array.isArray(image.sheet)
+      ? { width: image.sheet[0], height: image.sheet[1], col: image.sheet[2], row: image.sheet[3] }
+      : (image.sheet || {});
+    const cropFor = image => Array.isArray(image.crop)
+      ? { x: image.crop[0], y: image.crop[1], w: image.crop[2], h: image.crop[3] }
+      : (image.crop || {});
+    const boxFor = value => Array.isArray(value)
+      ? { x: value[0], y: value[1], w: value[2], h: value[3] }
+      : value;
+    const positionFor = value => Array.isArray(value)
+      ? { x: value[0], y: value[1], w: value[2], h: value[3] }
+      : (value || {});
+    const refKeys = refs => (refs || []).map(item => typeof item === 'string' ? item : item?.key).filter(Boolean);
+    const refKeyGroups = groups => {
+      if (!groups) return [];
+      const rawGroups = Array.isArray(groups?.[0]) ? groups : [groups];
+      return rawGroups.map(refKeys).filter(group => group.length);
+    };
+    const conditionsFor = conditions => (conditions || []).map(item => typeof item === 'string' ? { caption: item } : {
+      order: item.order,
+      caption: item.caption || item.text,
+    }).filter(item => item.caption || item.order != null);
+
+    for (const record of records) {
+      const image = record.image || {};
+      const sheet = sheetFor(image);
+      const crop = cropFor(image);
+      const tabletop = record.tabletop || {};
+      const type = record.type || {};
+      const names = namesFor(record);
+      const cardIndex = Number(record.index);
+      cards[cardIndex] = {
+        key: record.key || '',
+        guid: tabletop.guid,
+        name: names.en || '',
+        name_zh: names.zh || '',
+        tech_category: record.category || type.category || '',
+        card_id: tabletop.card_id,
+        deck_key: tabletop.deck_key,
+        deck_instance_id: tabletop.deck_instance_id,
+        tags: record.core ? ['CoreTechnology'] : (type.tags || []),
+        raw_tags: type.raw_tags || [],
+        cycle_tags: type.cycle_tags || [],
+        face_image_file: image.face,
+        back_image_file: image.back,
+        single_card_images: Boolean(image.single_card_images ?? image.single),
+        sheet_width: sheet.width,
+        sheet_height: sheet.height,
+        crop_x_px: crop.x,
+        crop_y_px: crop.y,
+        crop_width_px: crop.w,
+        crop_height_px: crop.h,
+        sheet_col_1_based: sheet.col,
+        sheet_row_1_based: sheet.row,
+      };
+
+      const nodePages = new Set();
+      for (const treeNode of record.tree_nodes || record.nodes || []) {
+        const page = pagesByKey.get(treeNode.page);
+        if (!page) continue;
+        nodePages.add(treeNode.page);
+        const position = positionFor(treeNode.position || treeNode.pos);
+        const nodeId = treeNode.node_id || treeNode.id;
+        const nodeKeyValue = treeNode.node_key || treeNode.key || record.key;
+        const nodeName = treeNode.name || names.en || '';
+        const xlsmType = treeNode.xlsm_type ?? treeNode.xlsm?.type ?? (treeNode.core ? 'Core' : null);
+        const requirements = refKeys(treeNode.requirements || treeNode.req);
+        const requirementAnyGroups = [
+          ...refKeyGroups(treeNode.requirements_any || treeNode.req_any),
+          ...refKeyGroups(treeNode.requirement_any_groups || treeNode.req_any_groups),
+        ];
+        const unlocks = refKeys(treeNode.unlocks);
+        const requirementConditions = conditionsFor(treeNode.requirement_conditions || treeNode.req_conditions);
+        const unlockConditions = conditionsFor(treeNode.unlock_conditions);
+        const mergeKey = treeNode.page + '::' + nodeId;
+        let node = mergedNodes.get(mergeKey);
+        if (!node) {
+          node = {
+            id: nodeId,
+            name: nodeName,
+            name_zh: treeNode.name_zh || treeNode.zh || names.zh || '',
+            tech_category: treeNode.category || record.category || type.category || '',
+            card_indexes: [],
+            x: position.x,
+            y: position.y,
+            w: position.w,
+            h: position.h,
+            tree_box: boxFor(treeNode.tree_box || treeNode.box),
+            requires: requirements,
+            requires_any_groups: requirementAnyGroups,
+            xlsm_requirements: requirements,
+            xlsm_requirement_any_groups: requirementAnyGroups,
+            xlsm_leads_to: unlocks,
+          };
+          if (xlsmType) {
+            node.xlsm = { type: xlsmType };
+            node.xlsm_type = xlsmType;
+          }
+          if (requirementConditions.length) {
+            node.xlsm_special_requirements = { tech: node.xlsm_requirements, conditions: requirementConditions };
+          }
+          if (unlockConditions.length) {
+            node.xlsm_special_leads_to = { tech: node.xlsm_leads_to, conditions: unlockConditions };
+          }
+          mergedNodes.set(mergeKey, node);
+          page.nodes.push(node);
+        }
+        if (!node.card_indexes.includes(cardIndex)) node.card_indexes.push(cardIndex);
+
+        const pageLabel = pageLabelsByKey.get(treeNode.page);
+        const tagRecord = tagDictionary[nodeKeyValue] || {
+          category: record.category || type.category || '',
+          cycles: [],
+          tag: {},
+        };
+        if (type.battle_card_type != null) tagRecord.tag.battle_card_type = type.battle_card_type;
+        if (type.loop_limited != null) tagRecord.tag.loop_limited = type.loop_limited;
+        if (pageLabel && !tagRecord.cycles.includes(pageLabel)) tagRecord.cycles.push(pageLabel);
+        tagDictionary[nodeKeyValue] = tagRecord;
+      }
+
+      if (record.key && !tagDictionary[record.key]) {
+        tagDictionary[record.key] = {
+          category: record.category || type.category || '',
+          cycles: [...nodePages].map(pageKey => pageLabelsByKey.get(pageKey)).filter(Boolean),
+          tag: {},
+        };
+        if (type.battle_card_type != null) tagDictionary[record.key].tag.battle_card_type = type.battle_card_type;
+        if (type.loop_limited != null) tagDictionary[record.key].tag.loop_limited = type.loop_limited;
+      }
+    }
+
+    for (const page of pages) {
+      page.nodes.sort((a, b) => String(a.id).localeCompare(String(b.id)) || String(a.name).localeCompare(String(b.name)));
+    }
+
+    return { pages, cards, tag_dictionary: tagDictionary };
+  }
+
+async function loadDictionaryData() {
+    const response = await fetch(TECH_DICTIONARY_URL, { cache: 'no-cache' });
+    if (!response.ok) throw new Error('HTTP ' + response.status + ' while loading ' + TECH_DICTIONARY_URL);
+    return dictionaryToAppData(await response.json());
+  }
+
+function showLoadError(error) {
+    console.error(error);
+    mainView.innerHTML = '<div class="empty">无法加载 ' + esc(TECH_DICTIONARY_URL) + '。请从本地 HTTP 服务打开此页面，不要直接用 file:// 打开。<br>' + esc(error.message || error) + '</div>';
+  }
+
+const ACCOUNT_KEY = 'ato-tech-tree-accounts-v1';
+const ACTIVE_ACCOUNT_KEY = 'ato-tech-tree-active-account-v1';
+const LEGACY_CYCLE_KEY = 'ato-tech-tree-current-cycle-v1';
+const LEGACY_UNLOCKED_KEY = 'ato-tech-tree-unlocked-v1';
+const LANGUAGE_KEY = 'ato-tech-tree-language-v1';
+const MAIN_ARCHIVE_KEY = 'ato-campaign-dashboard-profiles-v1';
+const CAMPAIGN_STORAGE_URL = '../api/campaign-state.php';
+const CAMPAIGN_TECH_URL = `${CAMPAIGN_STORAGE_URL}?section=technology`;
+const CAMPAIGN_DASHBOARD_URL = `${CAMPAIGN_STORAGE_URL}?section=dashboard`;
+const CAMPAIGN_RECORD_URL = `${CAMPAIGN_STORAGE_URL}?section=record`;
+const MAIN_CYCLE_BY_TECH_CYCLE = { cycle1: 'c1', cycle2: 'c2', cycle3: 'c3', cycle4: 'c4', cycle5: 'c5' };
+const TECH_CYCLE_BY_MAIN_CYCLE = { c1: 'cycle1', c2: 'cycle2', c3: 'cycle3', c4: 'cycle4', c5: 'cycle5' };
+const PRODUCTION_CYCLE_TO_RECORD_CYCLE = {
+  CYCLE_01: 'c1',
+  CYCLE_02: 'c2',
+  CYCLE_03: 'c3',
+  CYCLE_04: 'c4',
+  CYCLE_05: 'c5',
+};
+const SHARED_RECORD_RESOURCE_KEYS = new Set([
+  'fearEssence', 'grotesqueBeak', 'mazeFragment', 'powderedMatter',
+  'livingAbyss', 'retractableMechanism', 'skinOfMalice', 'reliefshellFragment',
+  'priests', 'sisyphusTears', 'pygmalionStones',
+]);
+const RECORD_RESOURCE_KEYS = {
+  ARMAMENT: 'armament',
+  BLACK_CHAIN: 'blackChain',
+  CALCIFIED_KNUCKLE_BONE: 'calcifiedKnuckle',
+  CHIMERIC_TAR: 'chimericTar',
+  CLOTHFLESH: 'clothflesh',
+  CYCLOPEAN_METAL: 'cyclopeanMetal',
+  DAEDALUS_MAKINA: 'daedalusMakina',
+  ECHOES: 'echoes',
+  EYECLUSTER: 'eyesCluster',
+  EYES_CLUSTER: 'eyesCluster',
+  FEAR_ESSENCE: 'fearEssence',
+  FLESHY_MANTLE: 'fleshyMantle',
+  FROZEN_AMBROSIA: 'frozenAmbrosia',
+  GROTESQUE_BEAK: 'grotesqueBeak',
+  HYPERBOREAN_ALLOY: 'hyperboreanAlloy',
+  ICARIAN_FEATHER: 'icarianFeather',
+  INFUSED_MECHANISM: 'infusedMechanism',
+  LIVING_ABYSS: 'livingAbyss',
+  MAZE_FRAGMENT: 'mazeFragment',
+  MONUMENT: 'monument',
+  MUSCLE_CLUSTER: 'muscleCluster',
+  POWDERED_MATTER: 'powderedMatter',
+  PRIESTS: 'priests',
+  PYGMALION_STONES: 'pygmalionStones',
+  RAW_AMBROSIA: 'rawAmbrosia',
+  RAZORCLAW: 'razorclaw',
+  RELIEF: 'relief',
+  RELIEFSHELL_FRAGMENT: 'reliefshellFragment',
+  RETRACTABLE_MECHANISM: 'retractableMechanism',
+  SIRENSHELL: 'sirenshell',
+  SISYPHUS_TEARS: 'sisyphusTears',
+  SKIN_OF_MALICE: 'skinOfMalice',
+  SUNBURNED_SKULL: 'sunburnedSkull',
+  SUPERSOLID_RELIEF_MASS: 'supersolidRelief',
+  TRIREME: 'trireme',
+  VIOLENT_AMBROSIA: 'violentAmbrosia',
+  WAR_MACHINE: 'warMachine',
+  WAR_TRIREME: 'warTrireme',
+  WRITHING_TENTACLE: 'writhingTentacle',
+};
+const RECORD_CORE_KEYS = {
+  HEKATON: 'hekaton',
+  LABYRINTHAUROS: 'labyrinthauros',
+  TEMENOS: 'temenos',
+  PURSUER: 'pursuer',
+  CYCLOPEAN: 'cyclonus',
+  CYCLONUS: 'cyclonus',
+  CHIMERA: 'chimera',
+  CHIMERA_METASTASIOS: 'chimera',
+  NIETZSCHEAN: 'nietzschean',
+  ADVERSARY: 'adversary',
+  BURDEN: 'adversary',
+  HYPERTIME_ORACLE: 'oracle',
+  ORACLE: 'oracle',
+  ICARIAN_HARPY: 'harpy',
+  HARPY: 'harpy',
+  SUN_DESCENDANT: 'sunDescendant',
+};
+let accounts = {};
+let activeAccountId = null;
+let currentCycle = null;
+let viewPage = null;
+let currentTab = null;
+let selectedNodeId = null;
+let treeLanguage = 'en';
+
+const tabs = document.getElementById('tabs');
+const mainView = document.getElementById('mainView');
+const count = document.getElementById('count');
+const search = document.getElementById('search');
+const accountSelect = document.getElementById('accountSelect');
+const returnMain = document.getElementById('returnMain');
+const cycleSelect = document.getElementById('cycleSelect');
+const languageToggle = document.getElementById('languageToggle');
+const cycleBadge = document.getElementById('cycleBadge');
+const clearUnlocked = document.getElementById('clearUnlocked');
+const unlockedModal = document.getElementById('unlockedModal');
+const unlockedModalImage = document.getElementById('unlockedModalImage');
+const unlockedModalTitle = document.getElementById('unlockedModalTitle');
+const unlockedModalMeta = document.getElementById('unlockedModalMeta');
+const modalTechLinks = document.getElementById('modalTechLinks');
+const modalViewTree = document.getElementById('modalViewTree');
+const modalToggleUnlock = document.getElementById('modalToggleUnlock');
+const modalToggleUnimportant = document.getElementById('modalToggleUnimportant');
+const modalClose = document.getElementById('modalClose');
+let unlocked = new Set();
+let unimportant = new Set();
+let activeUnlockedRecord = null;
+let activeModalMode = null;
+let campaignStorageAvailable = false;
+let campaignSaveTimer = null;
+let campaignSaveInFlight = false;
+let campaignSavePending = false;
+let campaignSaveQueuedBeforeReady = false;
+let campaignTechRevision = 0;
+let gearRecordState = null;
+let gearRecordRevision = 0;
+let gearRecordUserId = 'default';
+let gearRecordLoadInFlight = false;
+let gearRecordError = '';
+let gearCraftPlans = new Map();
+const gearRecordSyncChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('ato-record-sync-v1') : null;
+let gearOnlyCurrentCycle = false;
+let gearOnlyCraftable = false;
+let gearGroupByPart = false;
+
+function isPlainObject(value) {
+  return value && typeof value === 'object' && !Array.isArray(value);
+}
+function delay(ms) {
+  return new Promise(resolve => window.setTimeout(resolve, ms));
+}
+
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function validPageKey(key) { return PAGE_INDEX.has(key) || key === 'cycle4' ? key : null; }
+function viewPageFor(cycleKey) {
+  // cycle4 has no tree page; fall back to cycle1 for the tree view.
+  if (cycleKey === 'cycle4') return data.pages[0].key;
+  return cycleKey;
+}
+function pageByKey(key) { return data.pages.find(p => p.key === key); }
+function rel(path) { return path || ''; }
+const TECH_KEY_ALIASES = {
+  'upstream navigation': 'up-stream navigation',
+};
+function techKey(name) {
+  const key = String(name || '').trim().toLowerCase();
+  return TECH_KEY_ALIASES[key] || key;
+}
+function displayTechName(node) {
+  if (!node) return '';
+  return treeLanguage === 'zh' ? (node.name_zh || node.name) : node.name;
+}
+function displayCardName(card, fallback = '') {
+  if (!card) return fallback;
+  return treeLanguage === 'zh' ? (card.name_zh || card.name || fallback) : (card.name || fallback);
+}
+function updateLanguageToggle() {
+  languageToggle.textContent = treeLanguage === 'zh' ? 'English' : '中文名';
+  languageToggle.classList.toggle('active', treeLanguage === 'zh');
+  languageToggle.setAttribute('aria-pressed', treeLanguage === 'zh' ? 'true' : 'false');
+  search.placeholder = treeLanguage === 'zh' ? '搜索科技中文名' : '搜索科技';
+}
+function nodeKey(pageKey, node) {
+  const key = techKey(node?.name);
+  return DISAMBIGUATED_TECH_NAMES.has(key) ? `${key}@@${pageKey}` : key;
+}
+function isAutoUnlockedNode(pageKey, node) {
+  const pageIndex = PAGE_INDEX.get(pageKey);
+  const currentIndex = PAGE_INDEX.get(currentCycle) ?? 0;
+  if (pageIndex === undefined) return false;
+  if (pageIndex < currentIndex) return true;
+  return pageIndex === currentIndex && isCoreNode(node);
+}
+function isUnlockedNode(pageKey, node) {
+  return unlocked.has(nodeKey(pageKey, node)) || isAutoUnlockedNode(pageKey, node);
+}
+function isRequirementUnlocked(requirement) {
+  const key = techKey(requirement);
+  if (!key) return true;
+  if (unlocked.has(key)) return true;
+  const record = nodeRecordByName(key);
+  return record ? isUnlockedNode(record.page.key, record.node) : false;
+}
+function isUnlockableNode(pageKey, node) {
+  if (isUnlockedNode(pageKey, node)) return false;
+  const andReady = (node.requires || []).every(isRequirementUnlocked);
+  const orReady = (node.requires_any_groups || []).every(group => group.some(isRequirementUnlocked));
+  return andReady && orReady;
+}
+function applyNodeState(el, pageKey, node) {
+  const unlockedNow = isUnlockedNode(pageKey, node);
+  el.classList.toggle('unlocked', unlockedNow);
+  el.classList.toggle('unlockable', !unlockedNow && isUnlockableNode(pageKey, node));
+}
+function isUnimportantNode(pageKey, node) { return unimportant.has(nodeKey(pageKey, node)); }
+function cardsForNode(node) {
+  return (node.card_indexes || []).map(i => data.cards[i]).filter(Boolean);
+}
+function cardForNode(node) {
+  return cardsForNode(node).find(Boolean);
+}
+function isCoreNode(node) {
+  if (node?.xlsm_type === 'Core' || node?.xlsm?.type === 'Core') return true;
+  return cardsForNode(node).some(card =>
+    (card.tags || []).includes('CoreTechnology') ||
+    (card.raw_tags || []).includes('CoreTechnology')
+  );
+}
+function shouldRotateLargeCard(card) {
+  const cropW = Number(card?.crop_width_px || 0);
+  const cropH = Number(card?.crop_height_px || 0);
+  return cropW >= 800 && cropW <= 850 && cropH >= 1350 && cropH <= 1450;
+}
+function isLargeTechCard(card) {
+  const cropW = Number(card?.crop_width_px || 0);
+  const cropH = Number(card?.crop_height_px || 0);
+  return shouldRotateLargeCard(card) || cropW >= 1000 || cropH >= 1300;
+}
+function tagForNode(pageKey, node) {
+  return data.tag_dictionary?.[nodeKey(pageKey, node)] || data.tag_dictionary?.[techKey(node.name)] || null;
+}
+function shouldShowUnlockedNode(record) {
+  const tagRecord = tagForNode(record.page.key, record.node);
+  if (!tagRecord) return true;
+  if (record.node.tech_category === 'battle' || tagRecord.category === 'battle') {
+    return tagRecord.tag?.battle_card_type === 'skill';
+  }
+  if (tagRecord.tag?.loop_limited === false) return true;
+  if (tagRecord.tag?.loop_limited === true) {
+    const currentCycleLabel = pageByKey(currentCycle)?.label;
+    return (tagRecord.cycles || []).includes(currentCycleLabel);
+  }
+  return false;
+}
+function categoryLabel(category) {
+  return category === 'battle' ? '战斗科技' : '结构科技';
+}
+function displayTechRefName(ref) {
+  const record = nodeRecordByName(techKey(ref));
+  if (record) return displayTechName(record.node);
+  return ref;
+}
+function renderTechRefList(items, emptyText, statusForItem = null) {
+  if (!items?.length) return `<div class="modal-tech-empty">${esc(emptyText)}</div>`;
+  return `<div class="modal-tech-list">${items.map(item => {
+    const status = statusForItem ? statusForItem(item) : '';
+    const record = nodeRecordByName(techKey(item));
+    const label = esc(record ? displayTechName(record.node) : item);
+    if (!record) return `<span class="modal-tech-item ${esc(status)}">${label}</span>`;
+    return `<button class="modal-tech-item ${esc(status)}" type="button" data-page="${esc(record.page.key)}" data-node="${esc(record.node.id)}">${label}</button>`;
+  }).join('')}</div>`;
+}
+function renderRequirementAnyGroups(groups) {
+  if (!groups?.length) return '';
+  return groups.map((group, index) => `
+    <div class="modal-tech-or-group">
+      <div class="modal-tech-or-label">任选其一${groups.length > 1 ? ` ${index + 1}` : ''}</div>
+      ${renderTechRefList(group, '无可选需求', item => isRequirementUnlocked(item) ? 'met' : 'missing')}
+    </div>
+  `).join('');
+}
+function renderConditionNotes(special) {
+  const conditions = special?.conditions || [];
+  if (!conditions.length) return '';
+  const text = conditions.map(item => item.caption || item.text || '').filter(Boolean).join(' / ');
+  return text ? `<div class="modal-tech-conditions">条件：${esc(text)}</div>` : '';
+}
+function renderRequirementUnlockColumns(pageKey, node) {
+  const requirements = node?.requires || node?.xlsm_requirements || [];
+  const requirementAnyGroups = node?.requires_any_groups || node?.xlsm_requirement_any_groups || [];
+  const unlocks = node?.xlsm_leads_to || [];
+  const requirementList = renderTechRefList(
+    requirements,
+    requirementAnyGroups.length ? '无必须需求' : '无前置需求',
+    item => isRequirementUnlocked(item) ? 'met' : 'missing'
+  );
+  const unlockList = renderTechRefList(unlocks, '无直接解锁');
+  return `
+    <section class="modal-tech-column">
+      <h3>需求</h3>
+      ${requirementList}
+      ${renderRequirementAnyGroups(requirementAnyGroups)}
+      ${renderConditionNotes(node?.xlsm_special_requirements)}
+    </section>
+    <section class="modal-tech-column">
+      <h3>解锁</h3>
+      ${unlockList}
+      ${renderConditionNotes(node?.xlsm_special_leads_to)}
+    </section>
+  `;
+}
+function loadAccounts() {
+  return defaultAccounts();
+}
+function defaultAccounts() {
+  return {
+    default: {
+      name: '默认账户',
+      currentCycle: data.pages[0].key,
+      unlocked: [],
+      unimportant: [],
+    },
+  };
+}
+function resetTechnologyToDefault() {
+  accounts = defaultAccounts();
+  activeAccountId = 'default';
+  currentCycle = data.pages[0].key;
+  viewPage = currentCycle;
+  currentTab = viewPage;
+  unlocked = new Set();
+  unimportant = new Set();
+  unlockAutomaticCyclesThrough(currentCycle);
+  selectedNodeId = null;
+  updateLanguageToggle();
+  renderAccountSelect();
+  renderCycleSelect();
+  renderTabs();
+  renderTree();
+}
+function saveAccounts() {
+  const account = accounts[activeAccountId];
+  account.currentCycle = currentCycle;
+  account.unlocked = [...unlocked].sort();
+  account.unimportant = [...unimportant].filter(name => unlocked.has(name)).sort();
+  queueCampaignTechnologySave();
+}
+function technologySectionState() {
+  const account = accounts[activeAccountId] || {};
+  return {
+    currentCycle,
+    unlocked: [...unlocked].sort(),
+    unimportant: [...unimportant].filter(name => unlocked.has(name)).sort(),
+    treeLanguage,
+  };
+}
+function techAccountFromUser(profileId, profile, techSection) {
+  const saved = techSection?.users?.[profileId] || techSection?.accounts?.[profileId] || techSection || {};
+  return {
+    name: profile?.name || saved.name || profileId,
+    currentCycle: validPageKey(saved.currentCycle) || TECH_CYCLE_BY_MAIN_CYCLE[profile?.activeCycleId] || data.pages[0].key,
+    unlocked: Array.isArray(saved.unlocked) ? saved.unlocked : [],
+    unimportant: Array.isArray(saved.unimportant) ? saved.unimportant : [],
+  };
+}
+function applyCampaignUsersToTechnology(campaign) {
+  const dashboard = campaign?.sections?.dashboard;
+  const techSection = isPlainObject(campaign?.sections?.technology) ? campaign.sections.technology : {};
+  if (!isPlainObject(dashboard?.profiles)) return false;
+  accounts = {};
+  Object.entries(dashboard.profiles).forEach(([id, profile]) => {
+    accounts[id] = techAccountFromUser(id, profile, techSection);
+  });
+  if (!Object.keys(accounts).length) return false;
+  activeAccountId = accounts[dashboard.activeProfileId] ? dashboard.activeProfileId : Object.keys(accounts)[0];
+  const activeTech = isPlainObject(techSection?.users?.[activeAccountId]) ? techSection.users[activeAccountId] : techSection;
+  treeLanguage = activeTech.treeLanguage === 'zh' || techSection.treeLanguage === 'zh' ? 'zh' : 'en';
+  currentCycle = validPageKey(accounts[activeAccountId]?.currentCycle) || data.pages[0].key;
+  viewPage = viewPageFor(currentCycle);
+  currentTab = currentCycle === 'cycle4' ? 'gear-production' : viewPage;
+  unlocked = new Set(accounts[activeAccountId]?.unlocked || []);
+  unimportant = new Set(accounts[activeAccountId]?.unimportant || []);
+  unlockAutomaticCyclesThrough(currentCycle);
+  selectedNodeId = null;
+  updateLanguageToggle();
+  renderAccountSelect();
+  renderCycleSelect();
+  renderTabs();
+  if (currentCycle === 'cycle4') {
+    renderGearProductionPage();
+  } else {
+    renderTree();
+  }
+  return true;
+}
+async function loadCampaignTechnologySection() {
+  try {
+    const response = await fetch(CAMPAIGN_STORAGE_URL, { cache: 'no-store' });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    if (!payload.ok) throw new Error(payload.error || '读取失败');
+    campaignStorageAvailable = true;
+    const flushQueuedSave = campaignSaveQueuedBeforeReady;
+    campaignSaveQueuedBeforeReady = false;
+    campaignTechRevision = Math.max(0, Number(payload.campaign?.sectionRevisions?.technology || 0));
+    if (payload.exists && payload.campaign) applyCampaignUsersToTechnology(payload.campaign);
+    if (flushQueuedSave) queueCampaignTechnologySave();
+  } catch (error) {
+    campaignStorageAvailable = false;
+    console.warn(error);
+  }
+}
+function queueCampaignTechnologySave() {
+  if (!campaignStorageAvailable) {
+    campaignSaveQueuedBeforeReady = true;
+    return;
+  }
+  clearTimeout(campaignSaveTimer);
+  campaignSaveTimer = setTimeout(saveCampaignTechnologySection, 260);
+}
+async function saveCampaignTechnologySection() {
+  if (!campaignStorageAvailable) return;
+  if (campaignSaveInFlight) {
+    campaignSavePending = true;
+    return;
+  }
+  campaignSaveInFlight = true;
+  try {
+    do {
+      campaignSavePending = false;
+      const userId = activeAccountId;
+      const sectionState = JSON.parse(JSON.stringify(technologySectionState()));
+      const response = await fetch(CAMPAIGN_TECH_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ section: 'technology', userId, state: sectionState, expectedRevision: campaignTechRevision }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (response.status === 409 && payload?.code === 'SAVE_CONFLICT') {
+        // Another writer bumped this section. Re-read the latest revision and
+        // resend our value: the technology section is bucketed per profile and
+        // only this page writes it, so retrying with the local state is safe.
+        campaignTechRevision = Math.max(0, Number(payload.revision || 0));
+        campaignSavePending = true;
+        continue;
+      }
+      if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+      campaignTechRevision = Math.max(0, Number(payload.revision || campaignTechRevision));
+    } while (campaignSavePending);
+  } catch (error) {
+    console.warn(error);
+  } finally {
+    campaignSaveInFlight = false;
+  }
+}
+async function flushCampaignTechnologySave() {
+  if (!campaignStorageAvailable) {
+    campaignSaveQueuedBeforeReady = true;
+    return;
+  }
+  clearTimeout(campaignSaveTimer);
+  campaignSaveTimer = null;
+  if (campaignSaveInFlight) {
+    campaignSavePending = true;
+    while (campaignSaveInFlight) await delay(40);
+    return;
+  }
+  await saveCampaignTechnologySection();
+}
+async function readCampaignDashboardArchive() {
+  const response = await fetch(CAMPAIGN_DASHBOARD_URL, { cache: 'no-store' });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const payload = await response.json();
+  if (!payload.ok) throw new Error(payload.error || '读取失败');
+  return {
+    state: payload.exists && payload.state ? payload.state : null,
+    revision: Math.max(0, Number(payload.revision || 0)),
+  };
+}
+// Read-modify-write the dashboard section under the server's optimistic lock.
+// `mutator(archive)` gets the latest archive (or null) and returns the archive to
+// save, or null to skip the write. On a 409 we re-read and re-apply so a concurrent
+// dashboard edit from another page is merged in instead of being clobbered.
+async function mutateCampaignDashboardArchive(mutator) {
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const current = await readCampaignDashboardArchive();
+    const next = mutator(current.state);
+    if (next == null) return false;
+    const response = await fetch(CAMPAIGN_DASHBOARD_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ section: 'dashboard', state: next, expectedRevision: current.revision }),
+    });
+    const payload = await response.json().catch(() => null);
+    if (response.status === 409 && payload?.code === 'SAVE_CONFLICT') continue;
+    if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+    return true;
+  }
+  throw new Error('保存主控台存档失败：并发冲突重试次数过多');
+}
+function normalizeMainCycleId(value) {
+  const raw = String(value || '').trim().toLowerCase();
+  if (TECH_CYCLE_BY_MAIN_CYCLE[raw]) return raw;
+  if (MAIN_CYCLE_BY_TECH_CYCLE[raw]) return MAIN_CYCLE_BY_TECH_CYCLE[raw];
+  return MAIN_CYCLE_BY_TECH_CYCLE[currentCycle] || 'c2';
+}
+function requestedMainCycleId() {
+  const params = new URLSearchParams(window.location.search);
+  return normalizeMainCycleId(params.get('cycle'));
+}
+function unlockedTechSnapshot() {
+  saveAccounts();
+  const account = accounts[activeAccountId] || {};
+  const records = unlockedRecords();
+  return {
+    savedAt: new Date().toISOString(),
+    accountId: activeAccountId,
+    accountName: account.name || '默认账户',
+    techCycle: currentCycle,
+    techCycleLabel: pageByKey(currentCycle)?.label || currentCycle,
+    unlockedKeys: [...unlocked].sort(),
+    unimportantKeys: [...unimportant].filter(name => unlocked.has(name)).sort(),
+    unlocked: records.map(({ page, node }) => ({
+      key: nodeKey(page.key, node),
+      pageKey: page.key,
+      pageLabel: page.label,
+      name: node.name || '',
+      nameZh: node.name_zh || '',
+      displayName: displayTechName(node),
+      category: node.tech_category === 'battle' ? 'battle' : 'structure',
+      categoryLabel: categoryLabel(node.tech_category),
+      cardIndexes: Array.isArray(node.card_indexes) ? node.card_indexes.slice() : [],
+      unimportant: isUnimportantNode(page.key, node),
+    })),
+  };
+}
+async function writeSnapshotToMainArchive(snapshot) {
+  const cycleId = requestedMainCycleId();
+  await mutateCampaignDashboardArchive((current) => {
+    let archive = current;
+    if (!isPlainObject(archive) || !isPlainObject(archive.profiles)) {
+      archive = {
+        activeProfileId: 'default',
+        profiles: {
+          default: {
+            id: 'default',
+            name: '默认用户',
+            activeCycleId: cycleId,
+            cycles: {},
+          },
+        },
+      };
+    }
+
+    const profileId = archive.activeProfileId && archive.profiles[archive.activeProfileId]
+      ? archive.activeProfileId
+      : Object.keys(archive.profiles)[0] || 'default';
+    archive.activeProfileId = profileId;
+    archive.profiles[profileId] ||= { id: profileId, name: '默认用户', activeCycleId: cycleId, cycles: {} };
+    const profile = archive.profiles[profileId];
+    profile.activeCycleId ||= cycleId;
+    if (!isPlainObject(profile.cycles)) profile.cycles = {};
+    profile.cycles[cycleId] ||= { id: cycleId, state: {} };
+    profile.cycles[cycleId].id = cycleId;
+    if (!isPlainObject(profile.cycles[cycleId].state)) profile.cycles[cycleId].state = {};
+    profile.cycles[cycleId].state.unlockedTech = snapshot;
+    return archive;
+  });
+}
+async function saveAndReturnMain() {
+  const previousText = returnMain.textContent;
+  const dashboardUrl = new URL('../index.html', window.location.href).href;
+  returnMain.disabled = true;
+  try {
+    const snapshot = unlockedTechSnapshot();
+    await flushCampaignTechnologySave();
+    await writeSnapshotToMainArchive(snapshot);
+    returnMain.textContent = '已保存';
+    // Navigate this tab to dashboard. The save is already written to server;
+    // if a dashboard tab is open elsewhere it will pick up the change via its
+    // own 4-second polling / BroadcastChannel sync.
+    window.location.href = dashboardUrl;
+  } catch (error) {
+    console.error(error);
+    returnMain.textContent = previousText;
+    returnMain.disabled = false;
+    alert(`保存科技列表失败：${String(error.message || error)}`);
+  }
+}
+function renderAccountSelect() {
+  accountSelect.innerHTML = Object.entries(accounts)
+    .map(([id, account]) => `<option value="${esc(id)}">${esc(account.name)}</option>`)
+    .join('');
+  accountSelect.value = activeAccountId;
+}
+async function switchAccount(id) {
+  if (!accounts[id]) return;
+  saveAccounts();
+  try {
+    await mutateCampaignDashboardArchive((dashboard) => {
+      if (!dashboard?.profiles?.[id]) return null;
+      dashboard.activeProfileId = id;
+      return dashboard;
+    });
+  } catch (error) {
+    console.warn(error);
+  }
+  activeAccountId = id;
+  gearRecordState = null;
+  gearRecordRevision = 0;
+  gearRecordUserId = id;
+  gearRecordError = '';
+  currentCycle = validPageKey(accounts[id].currentCycle) || data.pages[0].key;
+  viewPage = viewPageFor(currentCycle);
+  currentTab = currentCycle === 'cycle4' ? 'gear-production' : viewPage;
+  unlocked = new Set(accounts[id].unlocked || []);
+  unimportant = new Set(accounts[id].unimportant || []);
+  unlockAutomaticCyclesThrough(currentCycle);
+  selectedNodeId = null;
+  renderAccountSelect();
+  renderCycleSelect();
+  renderTabs();
+  if (currentCycle === 'cycle4') {
+    renderGearProductionPage();
+  } else {
+    renderTree();
+  }
+  loadCampaignTechnologySection();
+}
+function allNodeKeys() {
+  return new Set(data.pages.flatMap(page => page.nodes.map(node => nodeKey(page.key, node))));
+}
+function nodeRecordByName(name) {
+  const key = name;
+  for (const page of data.pages) {
+    const node = page.nodes.find(item => nodeKey(page.key, item) === key);
+    if (node) return { page, node };
+  }
+  const legacyKey = techKey(name);
+  for (const page of data.pages) {
+    const node = page.nodes.find(item => techKey(item.name) === legacyKey);
+    if (node) return { page, node };
+  }
+  return null;
+}
+function unlockAutomaticCyclesThrough(pageKey) {
+  // Special: "cycle4" is a virtual cycle that unlocks every c1-c3 node.
+  if (pageKey === 'cycle4') {
+    for (const page of data.pages) {
+      for (const node of page.nodes) unlocked.add(nodeKey(page.key, node));
+    }
+    saveAccounts();
+    return;
+  }
+  const selectedIndex = PAGE_INDEX.get(pageKey) ?? 0;
+  for (const page of data.pages.slice(0, selectedIndex)) {
+    for (const node of page.nodes) unlocked.add(nodeKey(page.key, node));
+  }
+  const currentPage = data.pages[selectedIndex];
+  if (currentPage) {
+    for (const node of currentPage.nodes) {
+      if (isCoreNode(node)) unlocked.add(nodeKey(currentPage.key, node));
+    }
+  }
+  saveAccounts();
+}
+function unlockedVisibleCount() {
+  const known = allNodeKeys();
+  return [...unlocked].filter(name => known.has(name)).length;
+}
+function backThumb(card, size = 'small') {
+  if (!card) return '';
+  const imageFile = card.back_image_file || card.face_image_file;
+  const cropW = Number(card.crop_width_px || 1);
+  const cropH = Number(card.crop_height_px || 1);
+  const rotate = shouldRotateLargeCard(card);
+  const landscape = rotate || cropW > cropH;
+  if (card.single_card_images) {
+    const sizeClass = size === 'big' ? 'big' : 'small';
+    const orientationClass = landscape ? 'landscape' : 'portrait';
+    return `<img class="unlocked-thumb-img ${sizeClass} ${orientationClass}" src="${esc(rel(imageFile))}" alt="${esc(card.name)} 背面">`;
+  }
+  const sheetW = Number(card.sheet_width || cropW);
+  const sheetH = Number(card.sheet_height || cropH);
+  const thumbOuterW = size === 'big' ? 520 : (landscape ? 96 : 78);
+  const scale = thumbOuterW / (rotate ? cropH : cropW);
+  const thumbW = Math.round(cropW * scale);
+  const thumbH = Math.round(cropH * scale);
+  const outerW = rotate ? thumbH : thumbW;
+  const outerH = rotate ? thumbW : thumbH;
+  const bgW = Math.round(sheetW * scale);
+  const bgH = Math.round(sheetH * scale);
+  const x = -Math.round(Number(card.crop_x_px || 0) * scale);
+  const y = -Math.round(Number(card.crop_y_px || 0) * scale);
+  const crop = `<div class="unlocked-thumb ${landscape ? 'landscape' : ''}" style="width:${thumbW}px;height:${thumbH}px;background-image:url('${esc(rel(imageFile))}');background-size:${bgW}px ${bgH}px;background-position:${x}px ${y}px"></div>`;
+  if (!rotate) return crop;
+  return `<div class="unlocked-thumb-rotated" style="width:${outerW}px;height:${outerH}px">${crop.replace('style="', `style="transform:rotate(-90deg) translateX(-${thumbW}px);transform-origin:top left;`)}</div>`;
+}
+function unlockedRecords() {
+  return [...unlocked]
+    .map(name => nodeRecordByName(name))
+    .filter(Boolean)
+    .sort((a, b) => a.page.key.localeCompare(b.page.key) || a.node.name.localeCompare(b.node.name));
+}
+function modalCardImage(card, side = 'back') {
+  const imageFile = side === 'back' ? card.back_image_file : card.face_image_file;
+  if (card.single_card_images) {
+    return `<img class="modal-card-img" src="${esc(rel(imageFile))}" alt="${esc(card.name)} 大图">`;
+  }
+  const cropW = Number(card.crop_width_px || 1);
+  const cropH = Number(card.crop_height_px || 1);
+  const sheetW = Number(card.sheet_width || cropW);
+  const sheetH = Number(card.sheet_height || cropH);
+  const rotate = shouldRotateLargeCard(card);
+  const maxW = rotate ? 760 : (cropW > cropH ? 760 : 500);
+  const scale = Math.min(maxW / (rotate ? cropH : cropW), 1.25);
+  const w = Math.round(cropW * scale);
+  const h = Math.round(cropH * scale);
+  const outerW = rotate ? h : w;
+  const outerH = rotate ? w : h;
+  const bgW = Math.round(sheetW * scale);
+  const bgH = Math.round(sheetH * scale);
+  const x = -Math.round(Number(card.crop_x_px || 0) * scale);
+  const y = -Math.round(Number(card.crop_y_px || 0) * scale);
+  const crop = `<div class="modal-card-crop" style="width:${w}px;height:${h}px;background-image:url('${esc(rel(imageFile))}');background-size:${bgW}px ${bgH}px;background-position:${x}px ${y}px"></div>`;
+  if (!rotate) return crop;
+  return `<div class="modal-card-rotated" style="width:${outerW}px;height:${outerH}px">${crop.replace('style="', `style="transform:rotate(-90deg) translateX(-${w}px);transform-origin:top left;`)}</div>`;
+}
+function unlockedItemHtml(record) {
+  const { page, node, card } = record;
+  const size = isLargeTechCard(card) ? 'big' : 'small';
+  const label = displayTechName(node);
+  return `<button class="unlocked-item" type="button" title="${esc(label)} · ${esc(page.label)}" aria-label="${esc(label)} ${esc(page.label)}" data-page="${esc(page.key)}" data-node="${esc(node.id)}">${backThumb(card, size)}</button>`;
+}
+function unlockedGroupsHtml(records, emptyMessage = '还没有记录。可以在科技树节点详情里点“解锁”，或选择当前循环自动解锁之前循环全部科技和当前循环核心科技。', filterRecord = shouldShowUnlockedNode) {
+  const filteredRecords = records.filter(filterRecord);
+  if (!filteredRecords.length) {
+    return `<div class="unlocked-empty">${esc(emptyMessage)}</div>`;
+  }
+  const withCards = filteredRecords.map(record => ({ ...record, card: cardForNode(record.node) }));
+  const regular = withCards.filter(({ page, node }) => !isUnimportantNode(page.key, node));
+  const unimportantItems = withCards.filter(({ page, node }) => isUnimportantNode(page.key, node));
+  const large = regular.filter(({ card }) => isLargeTechCard(card));
+  const small = regular.filter(({ card }) => !isLargeTechCard(card));
+  const groups = [
+    ['big', '大卡', large],
+    ['structure', '结构科技小卡', small.filter(({ node }) => node.tech_category !== 'battle')],
+    ['battle', '战斗科技小卡', small.filter(({ node }) => node.tech_category === 'battle')],
+    ['unimportant', '不重要', unimportantItems],
+  ];
+  return `<div class="unlocked-columns">${groups.map(([category, label, items]) => `
+    <details class="unlocked-column" open>
+      <summary>${esc(label)} ${items.length}</summary>
+      <div class="unlocked-list ${category === 'big' ? 'big' : ''} ${category === 'unimportant' ? 'mixed' : ''}">${items.length ? items.map(unlockedItemHtml).join('') : `<div class="unlocked-empty">还没有记录。</div>`}</div>
+    </details>
+  `).join('')}</div>`;
+}
+function attachUnlockedItemHandlers(root) {
+  root.querySelectorAll('.unlocked-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      showUnlockedModal(btn.dataset.page, btn.dataset.node);
+    });
+  });
+}
+function navigateToNode(pageKey, nodeId) {
+  closeUnlockedModal();
+  viewPage = pageKey;
+  currentTab = viewPage;
+  selectedNodeId = nodeId;
+  renderTabs();
+  renderTree();
+  const page = pageByKey(viewPage);
+  const node = page?.nodes.find(item => item.id === selectedNodeId);
+  if (node) showNodeModal(node);
+}
+function showUnlockedModal(pageKey, nodeId) {
+  const page = pageByKey(pageKey);
+  const node = page?.nodes.find(item => item.id === nodeId);
+  const card = node ? cardForNode(node) : null;
+  if (!page || !node || !card) return;
+  activeUnlockedRecord = { page, node, card };
+  activeModalMode = 'unlocked';
+  unlockedModalTitle.textContent = displayTechName(node);
+  unlockedModalMeta.textContent = `${page.label} · ${categoryLabel(node.tech_category)}`;
+  modalTechLinks.innerHTML = renderRequirementUnlockColumns(page.key, node);
+  unlockedModalImage.innerHTML = modalCardImage(card, 'back');
+  modalViewTree.classList.remove('hidden');
+  modalToggleUnlock.classList.add('hidden');
+  modalToggleUnimportant.classList.remove('hidden');
+  modalToggleUnimportant.textContent = isUnimportantNode(page.key, node) ? '移出不重要' : '设置为不重要';
+  unlockedModal.classList.add('open');
+  unlockedModal.setAttribute('aria-hidden', 'false');
+}
+function showNodeModal(node) {
+  const page = pageByKey(viewPage);
+  const cards = node.card_indexes.map(i => data.cards[i]).filter(Boolean);
+  selectedNodeId = node.id;
+  document.querySelectorAll('.node').forEach(el => el.classList.toggle('active', el.dataset.nodeId === node.id));
+  activeUnlockedRecord = { page, node, card: cards[0] || null };
+  activeModalMode = 'tree';
+  unlockedModalTitle.textContent = displayTechName(node);
+  unlockedModalMeta.textContent = `${page?.label || ''} · ${categoryLabel(node.tech_category)}`;
+  modalTechLinks.innerHTML = renderRequirementUnlockColumns(page.key, node);
+  unlockedModalImage.innerHTML = cards.length
+    ? `<div class="modal-card-list">${cards.map(card => renderCard(card, node)).join('')}</div>`
+    : `<div class="empty">没有找到 ${esc(displayTechName(node))} 的卡牌记录。</div>`;
+  modalViewTree.classList.add('hidden');
+  modalToggleUnlock.classList.remove('hidden');
+  modalToggleUnimportant.classList.add('hidden');
+  updateModalUnlockButton(page.key, node);
+  unlockedModal.classList.add('open');
+  unlockedModal.setAttribute('aria-hidden', 'false');
+}
+function updateModalUnlockButton(pageKey, node) {
+  if (isAutoUnlockedNode(pageKey, node)) {
+    modalToggleUnlock.textContent = (PAGE_INDEX.get(pageKey) ?? 0) < (PAGE_INDEX.get(currentCycle) ?? 0)
+      ? '之前循环已自动解锁'
+      : '核心科技已自动解锁';
+    modalToggleUnlock.disabled = true;
+    modalToggleUnlock.classList.remove('primary', 'warn');
+    return;
+  }
+  const unlockedNow = isUnlockedNode(pageKey, node);
+  modalToggleUnlock.disabled = false;
+  modalToggleUnlock.textContent = unlockedNow ? '取消解锁' : '解锁';
+  modalToggleUnlock.classList.toggle('primary', !unlockedNow);
+  modalToggleUnlock.classList.toggle('warn', unlockedNow);
+}
+function closeUnlockedModal() {
+  activeUnlockedRecord = null;
+  activeModalMode = null;
+  unlockedModal.classList.remove('open');
+  unlockedModal.setAttribute('aria-hidden', 'true');
+}
+function toggleUnimportantForActive() {
+  if (!activeUnlockedRecord) return;
+  const key = nodeKey(activeUnlockedRecord.page.key, activeUnlockedRecord.node);
+  if (unimportant.has(key)) {
+    unimportant.delete(key);
+  } else {
+    unimportant.add(key);
+  }
+  saveAccounts();
+  renderUnlockedList();
+  showUnlockedModal(activeUnlockedRecord.page.key, activeUnlockedRecord.node.id);
+}
+function renderUnlockedPage() {
+  currentTab = 'unlocked';
+  document.querySelector('.app').classList.add('unlocked-mode');
+  cycleBadge.textContent = '已解锁';
+  const records = unlockedRecords();
+  mainView.innerHTML = `<div class="unlocked-page">
+    ${unlockedGroupsHtml(records)}
+  </div>`;
+  attachUnlockedItemHandlers(mainView);
+  applySearch();
+}
+function renderUnlockedList() {
+  if (currentTab === 'unlocked') renderUnlockedPage();
+}
+function toggleUnlocked(pageKey, node) {
+  if (isAutoUnlockedNode(pageKey, node)) {
+    refreshUnlockState();
+    if (activeModalMode === 'tree') updateModalUnlockButton(pageKey, node);
+    return;
+  }
+  const key = nodeKey(pageKey, node);
+  if (unlocked.has(key)) {
+    unlocked.delete(key);
+    unimportant.delete(key);
+  } else {
+    unlocked.add(key);
+  }
+  saveAccounts();
+  refreshUnlockState();
+  const page = pageByKey(viewPage);
+  const selectedNode = page?.nodes.find(item => item.id === selectedNodeId);
+  if (selectedNode && activeModalMode === 'tree') updateModalUnlockButton(page.key, selectedNode);
+}
+function refreshUnlockState() {
+  document.querySelectorAll('.node').forEach(el => {
+    const page = pageByKey(el.dataset.pageKey);
+    const node = page?.nodes.find(item => item.id === el.dataset.nodeId);
+    if (page && node) applyNodeState(el, page.key, node);
+  });
+  applySearch();
+  if (currentTab === 'unlocked') renderUnlockedPage();
+}
+function cardPreview(card, side = 'front') {
+  const imageFile = side === 'back' ? card.back_image_file : card.face_image_file;
+  const label = side === 'back' ? '背面' : '正面';
+  if (card.single_card_images) {
+    return `<div class="preview-frame"><div class="preview-label">${label}</div><img class="card-preview-img" src="${esc(rel(imageFile))}" alt="${esc(card.name)} ${label}"></div>`;
+  }
+  const cropW = Number(card.crop_width_px || 1);
+  const cropH = Number(card.crop_height_px || 1);
+  const sheetW = Number(card.sheet_width || cropW);
+  const sheetH = Number(card.sheet_height || cropH);
+  const rotate = shouldRotateLargeCard(card);
+  const landscape = rotate || cropW > cropH;
+  const maxW = landscape ? 430 : 300;
+  const scale = maxW / (rotate ? cropH : cropW);
+  const w = Math.round(cropW * scale);
+  const h = Math.round(cropH * scale);
+  const outerW = rotate ? h : w;
+  const outerH = rotate ? w : h;
+  const bgW = Math.round(sheetW * scale);
+  const bgH = Math.round(sheetH * scale);
+  const x = -Math.round(Number(card.crop_x_px || 0) * scale);
+  const y = -Math.round(Number(card.crop_y_px || 0) * scale);
+  const crop = `<div class="card-preview" style="width:${w}px;height:${h}px;background-image:url('${esc(rel(imageFile))}');background-size:${bgW}px ${bgH}px;background-position:${x}px ${y}px"></div>`;
+  const preview = rotate
+    ? `<div class="card-preview-rotated" style="width:${outerW}px;height:${outerH}px">${crop.replace('style="', `style="transform:rotate(-90deg) translateX(-${w}px);transform-origin:top left;`)}</div>`
+    : crop;
+  return `<div class="preview-frame ${landscape ? 'landscape' : ''}"><div class="preview-label">${label}</div>${preview}</div>`;
+}
+function renderCard(card, node) {
+  const layout = isLargeTechCard(card) ? 'stacked' : 'side-by-side';
+  return `<section class="card-block">
+    <h2 class="card-name">${esc(displayCardName(card, node?.name || ''))}</h2>
+    <div class="card-previews ${layout}">
+      ${cardPreview(card, 'front')}
+      ${cardPreview(card, 'back')}
+    </div>
+  </section>`;
+}
+function renderTabs() {
+  const tabItems = [
+    ...data.pages.map(page => ({ key: page.key, label: page.label })),
+    { key: 'unlocked', label: '已解锁科技' },
+    { key: 'gear-production', label: '装备制造' },
+  ];
+  tabs.innerHTML = tabItems.map(p => `<button class="tab ${p.key === currentTab ? 'active' : ''}" data-page="${esc(p.key)}">${esc(p.label)}</button>`).join('');
+  tabs.querySelectorAll('.tab').forEach(btn => btn.addEventListener('click', () => {
+    currentTab = btn.dataset.page;
+    if (currentTab === 'unlocked') {
+      selectedNodeId = null;
+      renderTabs();
+      renderUnlockedPage();
+      return;
+    }
+    if (currentTab === 'gear-production') {
+      selectedNodeId = null;
+      renderTabs();
+      renderGearProductionPage();
+      void loadGearRecordState();
+      return;
+    }
+    viewPage = currentTab;
+    selectedNodeId = null;
+    renderTabs();
+    renderTree();
+  }));
+}
+function renderCycleSelect() {
+  const baseOptions = data.pages.map(page => `<option value="${esc(page.key)}">当前${esc(page.label)}</option>`).join('');
+  cycleSelect.innerHTML = baseOptions + `<option value="cycle4">当前循环 IV</option>`;
+  cycleSelect.value = currentCycle;
+}
+function renderTree() {
+  document.querySelector('.app').classList.remove('unlocked-mode');
+  const page = pageByKey(viewPage);
+  currentTab = viewPage;
+  cycleBadge.textContent = page.label;
+  mainView.innerHTML = `<div class="tree-wrap" id="treeWrap"></div>`;
+  const treeWrap = document.getElementById('treeWrap');
+  treeWrap.style.aspectRatio = `${page.width} / ${page.height}`;
+  treeWrap.classList.toggle('zh-labels', treeLanguage === 'zh');
+  treeWrap.innerHTML = `<img class="tree-img" src="${esc(page.image)}" alt="${esc(page.label)} technology tree">`;
+  for (const node of page.nodes) {
+    const el = document.createElement('button');
+    el.type = 'button';
+    el.className = 'node';
+    el.title = displayTechName(node);
+    el.dataset.nodeId = node.id;
+    el.dataset.pageKey = page.key;
+    el.dataset.name = `${node.name || ''} ${node.name_zh || ''}`.toLowerCase();
+    el.dataset.techName = node.name;
+    el.dataset.progressKey = nodeKey(page.key, node);
+    applyNodeState(el, page.key, node);
+    const box = node.tree_box || node;
+    el.style.left = (box.x / page.width * 100) + '%';
+    el.style.top = (box.y / page.height * 100) + '%';
+    el.style.width = (box.w / page.width * 100) + '%';
+    el.style.height = (box.h / page.height * 100) + '%';
+    el.innerHTML = `<span class="node-label">${esc(node.name_zh || node.name)}</span>`;
+    let clickTimer = null;
+    el.addEventListener('click', (event) => {
+      if (event.detail > 1) return;
+      clickTimer = window.setTimeout(() => {
+        clickTimer = null;
+        showNodeModal(node);
+      }, 180);
+    });
+    el.addEventListener('dblclick', (event) => {
+      if (clickTimer) {
+        window.clearTimeout(clickTimer);
+        clickTimer = null;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      toggleUnlocked(page.key, node);
+    });
+    treeWrap.appendChild(el);
+  }
+  applySearch();
+}
+function applySearch() {
+  if (currentTab === 'gear-production') {
+    applyGearSearch();
+    return;
+  }
+  if (currentTab === 'unlocked') {
+    count.textContent = `已解锁 ${unlockedRecords().length}`;
+    return;
+  }
+  const query = search.value.trim().toLowerCase();
+  const nodes = [...document.querySelectorAll('.node')];
+  let visible = 0;
+  nodes.forEach(el => {
+    const ok = !query || el.dataset.name.includes(query);
+    el.classList.toggle('filtered', !ok);
+    if (ok) visible++;
+  });
+  count.textContent = `${visible}/${nodes.length} 节点 · 已解锁 ${unlockedVisibleCount()}`;
+}
+modalViewTree.addEventListener('click', () => {
+  if (!activeUnlockedRecord) return;
+  navigateToNode(activeUnlockedRecord.page.key, activeUnlockedRecord.node.id);
+});
+modalToggleUnlock.addEventListener('click', () => {
+  if (!activeUnlockedRecord) return;
+  toggleUnlocked(activeUnlockedRecord.page.key, activeUnlockedRecord.node);
+});
+modalToggleUnimportant.addEventListener('click', toggleUnimportantForActive);
+modalClose.addEventListener('click', closeUnlockedModal);
+unlockedModal.addEventListener('click', event => {
+  const techButton = event.target.closest('.modal-tech-item[data-page][data-node]');
+  if (techButton) {
+    event.preventDefault();
+    navigateToNode(techButton.dataset.page, techButton.dataset.node);
+    return;
+  }
+  if (event.target === unlockedModal) closeUnlockedModal();
+});
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && unlockedModal.classList.contains('open')) closeUnlockedModal();
+});
+gearRecordSyncChannel?.addEventListener('message', () => {
+  if (currentTab === 'gear-production') void loadGearRecordState();
+});
+window.addEventListener('focus', () => {
+  if (currentTab === 'gear-production') void loadGearRecordState();
+});
+search.addEventListener('input', applySearch);
+languageToggle.addEventListener('click', () => {
+  treeLanguage = treeLanguage === 'zh' ? 'en' : 'zh';
+  queueCampaignTechnologySave();
+  updateLanguageToggle();
+  if (currentTab === 'unlocked') {
+    renderUnlockedPage();
+  } else if (currentTab === 'gear-production') {
+    renderGearProductionPage();
+  } else {
+    renderTree();
+  }
+  if (activeUnlockedRecord) {
+    const { page, node } = activeUnlockedRecord;
+    if (activeModalMode === 'tree') showNodeModal(node);
+    if (activeModalMode === 'unlocked') showUnlockedModal(page.key, node.id);
+  }
+});
+cycleSelect.addEventListener('change', () => {
+  currentCycle = cycleSelect.value;
+  unlockAutomaticCyclesThrough(currentCycle);
+  selectedNodeId = null;
+  saveAccounts();
+  if (currentCycle === 'cycle4') {
+    // Virtual cycle: no tree page to render. Jump to gear production view.
+    currentTab = 'gear-production';
+    cycleBadge.textContent = '循环 IV · 装备制造';
+    renderTabs();
+    renderGearProductionPage();
+    refreshUnlockState();
+    return;
+  }
+  viewPage = currentCycle;
+  currentTab = viewPage;
+  renderTabs();
+  renderTree();
+  refreshUnlockState();
+});
+clearUnlocked.addEventListener('click', () => {
+  if (!confirm('重置当前账号的解锁进度？')) return;
+  unlocked.clear();
+  unimportant.clear();
+  currentCycle = data.pages[0].key;
+  viewPage = currentCycle;
+  currentTab = viewPage;
+  selectedNodeId = null;
+  unlockAutomaticCyclesThrough(currentCycle);
+  saveAccounts();
+  renderCycleSelect();
+  renderTabs();
+  renderTree();
+  refreshUnlockState();
+});
+returnMain.addEventListener('click', saveAndReturnMain);
+function boot(appData) {
+  data = appData;
+  PAGE_INDEX = new Map(data.pages.map((page, index) => [page.key, index]));
+  DISAMBIGUATED_TECH_NAMES = computeDisambiguatedTechNames(data.pages);
+  accounts = loadAccounts();
+  activeAccountId = 'default';
+  if (!accounts[activeAccountId]) activeAccountId = Object.keys(accounts)[0];
+  const params = new URLSearchParams(window.location.search);
+  const requestedTechCycle = validPageKey(TECH_CYCLE_BY_MAIN_CYCLE[String(params.get('cycle') || '').toLowerCase()] || params.get('cycle'));
+  currentCycle = requestedTechCycle || validPageKey(accounts[activeAccountId]?.currentCycle) || data.pages[0].key;
+  viewPage = viewPageFor(currentCycle);
+  currentTab = currentCycle === 'cycle4' ? 'gear-production' : viewPage;
+  selectedNodeId = null;
+  unlocked = new Set(accounts[activeAccountId]?.unlocked || []);
+  unimportant = new Set(accounts[activeAccountId]?.unimportant || []);
+  unlockAutomaticCyclesThrough(currentCycle);
+  updateLanguageToggle();
+  renderAccountSelect();
+  renderCycleSelect();
+  renderTabs();
+  if (currentCycle === 'cycle4') {
+    renderGearProductionPage();
+  } else {
+    renderTree();
+  }
+  loadCampaignTechnologySection();
+}
+
+loadDictionaryData().then(async (appData) => {
+  await loadGearProductionData();
+  boot(appData);
+}).catch(showLoadError);
+</script>
+</body>
+</html>

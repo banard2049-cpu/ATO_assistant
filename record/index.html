@@ -1,0 +1,3942 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>阿尔戈号记录表</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f0f3f2;
+      --paper: #fffdf8;
+      --panel: #ffffff;
+      --ink: #1c2422;
+      --muted: #66726d;
+      --line: #d9dfdc;
+      --line-strong: #aab6b0;
+      --accent: #176c62;
+      --accent-2: #8a5b17;
+      --red: #a03832;
+      --blue: #285f9f;
+      --green: #27724c;
+      --shadow: 0 16px 36px rgba(34, 44, 40, 0.11);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", system-ui, sans-serif;
+      letter-spacing: 0;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      min-height: 38px;
+      border: 0;
+      border-radius: 6px;
+      padding: 0 13px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    button:hover {
+      filter: brightness(0.92);
+    }
+
+    button.secondary {
+      border: 1px solid var(--line);
+      background: #f8faf8;
+      color: var(--ink);
+    }
+
+    button.danger {
+      background: var(--red);
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--ink);
+      padding: 9px 10px;
+    }
+
+    textarea {
+      min-height: 88px;
+      line-height: 1.55;
+      resize: vertical;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .app {
+      width: min(1480px, 100%);
+      margin: 0 auto;
+      padding: 22px clamp(14px, 3vw, 34px) 36px;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: start;
+      margin-bottom: 16px;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1.08;
+    }
+
+    .subtitle {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .topbar-tools {
+      display: grid;
+      gap: 10px;
+      justify-items: end;
+      min-width: min(560px, 48vw);
+    }
+
+    .header-fields {
+      display: grid;
+      grid-template-columns: minmax(230px, 1fr) minmax(170px, 0.7fr);
+      gap: 10px;
+      width: 100%;
+    }
+
+    .header-fields label {
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      gap: 9px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .header-fields input,
+    .header-fields select {
+      min-height: 38px;
+      background: #fff;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+      max-width: 680px;
+    }
+
+    .toolbar a {
+      display: inline-grid;
+      place-items: center;
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0 13px;
+      background: #f8faf8;
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .save-status {
+      min-height: 18px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-align: right;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 0.98fr) minmax(380px, 0.84fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .stack {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 16px;
+      min-width: 0;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-body {
+      padding: 15px;
+    }
+
+    .identity-grid,
+    .ship-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .record-basics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .panel-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 15px;
+      border-bottom: 1px solid var(--line);
+      background: #f8faf8;
+    }
+
+    .panel-heading h2 {
+      font-size: 16px;
+    }
+
+    .resource-grid,
+    .notes-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 12px;
+    }
+
+    .resource-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .identity-grid {
+      grid-template-columns: max-content max-content max-content;
+      column-gap: 28px;
+      justify-content: start;
+    }
+
+    .identity-grid label {
+      grid-template-columns: max-content max-content;
+      align-items: center;
+      gap: 8px;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .identity-grid input,
+    .identity-grid select {
+      min-height: 38px;
+    }
+
+    .identity-grid .number-field {
+      display: grid;
+      grid-template-columns: 24px 42px 24px;
+      gap: 4px;
+      align-items: center;
+      justify-content: start;
+      width: max-content;
+    }
+
+    .identity-grid .number-field.fate-number-field {
+      grid-template-columns: 24px 42px 24px 48px;
+      gap: 5px;
+    }
+
+    .identity-grid .number-field button {
+      width: 100%;
+      min-width: 0;
+      min-height: 30px;
+      padding: 0;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .identity-grid .fate-rollback {
+      width: 48px;
+      padding: 0 6px;
+      background: var(--accent-2);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .identity-grid .number-field input {
+      width: 42px;
+      min-width: 0;
+      min-height: 30px;
+      padding: 6px 4px;
+      text-align: center;
+      font-weight: 900;
+      font-size: 13px;
+    }
+
+    .identity-grid .number-field input::-webkit-outer-spin-button,
+    .identity-grid .number-field input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .identity-grid .number-field input[type="number"] {
+      appearance: textfield;
+      -moz-appearance: textfield;
+    }
+
+    .titan-list-panel {
+      grid-column: auto;
+      display: grid;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #fbfcfa;
+    }
+
+    .titan-list-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      list-style: none;
+      cursor: pointer;
+    }
+
+    .titan-list-head::-webkit-details-marker {
+      display: none;
+    }
+
+    .titan-list-head strong::before {
+      content: ">";
+      display: inline-block;
+      margin-right: 6px;
+      color: var(--accent);
+      transition: transform 0.16s ease;
+    }
+
+    .titan-list-panel[open] .titan-list-head strong::before {
+      transform: rotate(90deg);
+    }
+
+    .titan-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .titan-empty {
+      min-height: 42px;
+      display: grid;
+      place-items: center;
+      border: 1px dashed var(--line-strong);
+      border-radius: 7px;
+      background: #fff;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .titan-row,
+    .titan-add-row {
+      display: grid;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .titan-row {
+      grid-template-columns: minmax(120px, 1fr) 82px auto auto;
+    }
+
+    .titan-add-row {
+      grid-template-columns: minmax(120px, 1fr) 82px auto 96px auto;
+    }
+
+    .titan-row {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 8px;
+      background: #fff;
+    }
+
+    .titan-row input[type="text"],
+    .titan-add-row input[type="text"] {
+      min-width: 0;
+    }
+
+    .titan-row input[type="number"],
+    .titan-add-row input[type="number"] {
+      width: 100%;
+      padding: 8px 6px;
+      text-align: center;
+      font-weight: 900;
+    }
+
+    .titan-add-row .titan-total-limit {
+      width: 96px;
+    }
+
+    .titan-number-field {
+      display: grid;
+      gap: 3px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1.1;
+    }
+
+    .titan-crippled,
+    .titan-crippled-add {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .titan-crippled input,
+    .titan-crippled-add input {
+      width: 16px;
+      height: 16px;
+      padding: 0;
+      accent-color: var(--red);
+    }
+
+    .titan-remove {
+      min-height: 34px;
+      padding: 0 10px;
+      background: var(--red);
+      color: #fff;
+    }
+
+    .summon-panel {
+      display: grid;
+      gap: 14px;
+    }
+
+    .summon-controls {
+      display: grid;
+      grid-template-columns: repeat(4, max-content) auto;
+      gap: 8px;
+      align-items: end;
+    }
+
+    .summon-controls button {
+      min-height: 34px;
+      white-space: nowrap;
+    }
+
+    .summon-usage {
+      grid-template-columns: auto auto;
+      align-items: center;
+      gap: 8px;
+      min-height: 34px;
+    }
+
+    .summon-usage-fields {
+      display: grid;
+      grid-template-columns: 40px auto 40px;
+      gap: 4px;
+      align-items: center;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .summon-usage-fields.single {
+      grid-template-columns: 48px;
+    }
+
+    .summon-usage-fields.nymph-usage-fields {
+      grid-template-columns: 48px auto 48px;
+    }
+
+    .summon-usage-fields.aa-limit-field {
+      grid-template-columns: 54px;
+    }
+
+    .summon-usage input {
+      min-height: 34px;
+      padding: 6px 4px;
+      text-align: center;
+    }
+
+    .summon-controls input[readonly] {
+      background: #f8faf8;
+      color: var(--ink);
+      font-weight: 900;
+    }
+
+    .summon-pickers {
+      display: grid;
+      grid-template-columns: minmax(180px, 320px) auto;
+      gap: 8px;
+      align-items: end;
+      margin-top: 10px;
+    }
+
+    details.summon-group {
+      display: grid;
+      gap: 9px;
+    }
+
+    .summon-group-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      list-style: none;
+      cursor: pointer;
+    }
+
+    .summon-group-head::-webkit-details-marker {
+      display: none;
+    }
+
+    .summon-group-head strong::before {
+      content: ">";
+      display: inline-block;
+      margin-right: 6px;
+      color: var(--accent);
+      transition: transform 0.16s ease;
+    }
+
+    details.summon-group[open] .summon-group-head strong::before {
+      transform: rotate(90deg);
+    }
+
+    details.summon-group:not([open]) .summon-card-grid {
+      display: none;
+    }
+
+    .summon-card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 188px), 220px));
+      justify-content: start;
+      gap: 12px;
+    }
+
+    .summon-card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      cursor: pointer;
+      transition: border-color 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+    }
+
+    .summon-card.used {
+      border-color: var(--red);
+      box-shadow: inset 0 0 0 2px rgba(160, 56, 50, 0.18);
+      opacity: 0.78;
+    }
+
+    .summon-card.used::after {
+      content: "已用";
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      border-radius: 999px;
+      background: var(--red);
+      color: #fff;
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .summon-card:focus-visible {
+      outline: 3px solid rgba(23, 108, 98, 0.32);
+      outline-offset: 2px;
+    }
+
+    .summon-card-face {
+      display: block;
+      background: #f4f5f2;
+    }
+
+    .summon-card img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      object-fit: contain;
+      object-position: top center;
+    }
+
+    .summon-empty {
+      min-height: 48px;
+      display: grid;
+      place-items: center;
+      border: 1px dashed var(--line-strong);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      background: #fbfcfa;
+    }
+
+    .wide {
+      grid-column: 1 / -1;
+    }
+
+    .track {
+      display: grid;
+      gap: 8px;
+    }
+
+    .track-row {
+      display: grid;
+      grid-template-columns: minmax(124px, max-content) minmax(0, 1fr);
+      gap: 9px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .track-name strong {
+      display: block;
+      font-size: 14px;
+    }
+
+    .track-name span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .track-lock-button {
+      min-height: 30px;
+      margin-top: 7px;
+      border: 1px solid var(--line);
+      background: #f8faf8;
+      color: var(--ink);
+      padding: 0 10px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .track-lock-button:disabled {
+      cursor: default;
+      opacity: 0.68;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .chip-stack {
+      display: grid;
+      justify-items: center;
+      gap: 4px;
+    }
+
+    .chip {
+      min-width: 34px;
+      min-height: 30px;
+      border: 1px solid var(--line-strong);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--ink);
+      padding: 0 8px;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .chip.active {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .chip.locked-max {
+      border-style: dashed;
+      color: var(--muted);
+    }
+
+    .chip.locked-max.active {
+      color: #fff;
+    }
+
+    .chip.shared-stage {
+      box-shadow: inset 0 -3px 0 rgba(40, 95, 159, 0.36);
+    }
+
+    .chip.triangle-marker {
+      min-width: 30px;
+      padding: 0 6px;
+    }
+
+    .chip.warning.active {
+      border-color: var(--red);
+      background: var(--red);
+    }
+
+    .track-extra-box {
+      width: 26px;
+      height: 22px;
+      min-height: 0;
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      background: #fff;
+      padding: 0;
+    }
+
+    .track-extra-box.active {
+      border-color: var(--accent);
+      background: var(--accent);
+      box-shadow: inset 0 0 0 4px #fff;
+    }
+
+    .track-extra-box.refugee,
+    .track-extra-box.captive {
+      color: #fff;
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .track-extra-box.refugee {
+      border-color: var(--blue);
+      background: var(--blue);
+    }
+
+    .track-extra-box.captive {
+      border-color: var(--red);
+      background: var(--red);
+    }
+
+    .chip.blue.active {
+      border-color: var(--blue);
+      background: var(--blue);
+    }
+
+    .chip.green.active {
+      border-color: var(--green);
+      background: var(--green);
+    }
+
+    .diplomacy-row {
+      display: grid;
+      grid-template-columns: 112px minmax(0, 1fr);
+      gap: 8px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .diplomacy-scale {
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .diplomacy-markers,
+    .diplomacy-chips {
+      display: grid;
+      grid-template-columns: repeat(16, 34px);
+      gap: 6px;
+      width: max-content;
+      min-width: max-content;
+    }
+
+    .diplomacy-markers {
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1.1;
+    }
+
+    .diplomacy-marker {
+      display: grid;
+      justify-items: center;
+      gap: 2px;
+      min-width: 34px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .diplomacy-marker::after {
+      content: "";
+      width: 1px;
+      height: 10px;
+      background: var(--line-strong);
+    }
+
+    .diplomacy-chips {
+      grid-auto-flow: column;
+    }
+
+    .diplomacy-chips .chip {
+      min-width: 34px;
+      padding: 0;
+    }
+
+    .adventure-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .check-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      min-height: 64px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #fff;
+    }
+
+    .check-card strong {
+      display: block;
+      font-size: 14px;
+    }
+
+    .check-card span {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .adventure-boxes {
+      display: grid;
+      grid-template-columns: repeat(4, 32px);
+      gap: 6px;
+      align-items: center;
+    }
+
+    .adventure-box {
+      display: grid;
+      place-items: center;
+      width: 32px;
+      height: 32px;
+      border: 1px solid var(--line-strong);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--ink);
+      padding: 0;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .adventure-box.active {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .pygmalion-group {
+      display: grid;
+      grid-template-columns: repeat(3, 34px);
+      gap: 6px;
+    }
+
+    .pygmalion-cell {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      min-height: 34px;
+      border: 1px solid var(--line-strong);
+      background: #fff;
+      color: var(--ink);
+      padding: 0;
+      font-size: 12px;
+    }
+
+    .pygmalion-cell.special {
+      background: #f5f3ee;
+      color: var(--muted);
+    }
+
+    .pygmalion-cell.active {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .rooting-tools {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: end;
+    }
+
+    .rooting-list,
+    .rooting-deck {
+      display: grid;
+      gap: 6px;
+    }
+
+    .rooting-list {
+      margin-top: 12px;
+    }
+
+    .rooting-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 7px;
+      background: #fff;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .rooting-row span,
+    .rooting-deck span {
+      min-width: 0;
+    }
+
+    .rooting-row button {
+      min-height: 30px;
+      padding: 0 9px;
+    }
+
+    .rooting-deck {
+      max-height: 190px;
+      overflow: auto;
+      margin-top: 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 8px;
+      background: #fff;
+    }
+
+    .rooting-deck span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .number-field {
+      display: grid;
+      grid-template-columns: 20px 20px 44px 20px 20px;
+      gap: 2px;
+      align-items: center;
+      justify-content: start;
+    }
+
+    .number-field button {
+      width: 100%;
+      min-width: 0;
+      min-height: 26px;
+      padding: 0;
+      font-size: 10px;
+    }
+
+    .number-field input {
+      width: 38px;
+      min-width: 0;
+      min-height: 26px;
+      padding: 4px 2px;
+      text-align: center;
+      font-weight: 900;
+      font-size: 12px;
+    }
+
+    .number-field input::-webkit-outer-spin-button,
+    .number-field input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .number-field input[type="number"] {
+      appearance: textfield;
+      -moz-appearance: textfield;
+    }
+
+    .resource-text {
+      min-height: 38px;
+      padding: 8px 9px;
+      font-size: 13px;
+      line-height: 1.35;
+      resize: vertical;
+    }
+
+    .resource-card .resource-text {
+      min-height: 42px;
+    }
+
+    .resource-card {
+      display: grid;
+      gap: 7px;
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 7px;
+    }
+
+    .resource-card .number-field {
+      grid-template-columns: 20px 34px 44px 34px 20px;
+    }
+
+    .resource-card .number-field button:not(.resource-step-five) {
+      font-size: 11px;
+    }
+
+    .resource-heading {
+      display: grid;
+      grid-template-columns: 24px minmax(0, 1fr);
+      gap: 7px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .resource-face {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      overflow: hidden;
+      background: transparent;
+    }
+
+    .resource-face img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .resource-face-fallback {
+      width: 100%;
+      height: 100%;
+      min-height: 92px;
+      display: grid;
+      place-items: center;
+      padding: 8px;
+      background:
+        linear-gradient(135deg, rgba(23, 108, 98, 0.16), rgba(138, 91, 23, 0.18)),
+        #fbfaf5;
+      color: var(--ink);
+      text-align: center;
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 1.25;
+    }
+
+    .resource-name {
+      display: grid;
+      gap: 2px;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 900;
+      line-height: 1.05;
+      min-width: 0;
+    }
+
+    .resource-name span {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .matrix-wrap {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .matrix-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 15px;
+      border-bottom: 1px solid var(--line);
+      background: #f8faf8;
+      list-style: none;
+      cursor: pointer;
+    }
+
+    .matrix-head::-webkit-details-marker {
+      display: none;
+    }
+
+    .matrix-head::before {
+      content: ">";
+      color: var(--muted);
+      font-weight: 900;
+      transition: transform 0.16s ease;
+    }
+
+    details[open] > .matrix-head::before {
+      transform: rotate(90deg);
+    }
+
+    .matrix-head h2 {
+      font-size: 16px;
+      line-height: 1.2;
+      margin-right: auto;
+    }
+
+    .matrix-tools {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .matrix-tools button {
+      min-height: 34px;
+    }
+
+    .matrix {
+      display: grid;
+      grid-template-columns: repeat(12, 48px);
+      gap: 0;
+      width: max-content;
+      min-width: 100%;
+    }
+
+    .matrix button {
+      min-height: 36px;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      border-radius: 0;
+      background: #fff;
+      color: var(--ink);
+      padding: 0;
+      font-size: 12px;
+      cursor: default;
+    }
+
+    .matrix.unlocked button {
+      cursor: pointer;
+    }
+
+    .matrix.locked {
+      background: #fafafa;
+    }
+
+    .matrix button.marked {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .map-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .map-slot {
+      display: grid;
+      gap: 6px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 8px;
+    }
+
+    .map-slot span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+      gap: 6px;
+    }
+
+    .timeline-day {
+      display: grid;
+      gap: 3px;
+      min-height: 52px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      padding: 7px;
+      text-align: left;
+    }
+
+    .timeline-day.active {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .timeline-day.event {
+      box-shadow: inset 0 -3px 0 var(--accent-2);
+    }
+
+    .timeline-day small {
+      color: inherit;
+      font-size: 10px;
+      font-weight: 700;
+      line-height: 1.2;
+      opacity: 0.82;
+    }
+
+    .status-line {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 980px) {
+      .topbar,
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar-tools {
+        justify-items: stretch;
+        min-width: 0;
+      }
+
+      .header-fields {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .toolbar {
+        justify-content: flex-start;
+      }
+
+      .identity-grid,
+      .ship-grid,
+      .summon-pickers {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .resource-grid,
+      .notes-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .summon-controls button {
+        align-self: stretch;
+      }
+
+      .rooting-tools {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .identity-grid,
+      .header-fields,
+      .ship-grid,
+      .record-basics,
+      .resource-grid,
+      .summon-controls,
+      .summon-pickers,
+      .titan-row,
+      .titan-add-row,
+      .notes-grid,
+      .adventure-list,
+      .track-row,
+      .map-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .titan-list-panel {
+        grid-column: 1;
+      }
+
+      .summon-usage {
+        grid-template-columns: minmax(68px, auto) auto;
+        justify-content: start;
+      }
+
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+
+      .app {
+        width: 100%;
+        padding: 0;
+      }
+
+      .toolbar,
+      .number-field button {
+        display: none;
+      }
+
+      .panel {
+        box-shadow: none;
+        break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div>
+        <h1>阿尔戈号记录表</h1>
+        <p class="subtitle">把循环 I-III 的纸质记录表整理成可保存、可导出、可打印的战役记录页。</p>
+      </div>
+      <div class="topbar-tools">
+        <div class="header-fields">
+          <label>
+            存档名称
+            <input id="profileName" data-bind="profileName" placeholder="例如：周六团 Cycle II">
+          </label>
+          <label>
+            当前循环
+            <select id="cycleSelect" data-bind="cycle"></select>
+          </label>
+        </div>
+        <nav class="toolbar" aria-label="工具">
+          <a href="../index.html">返回主控台</a>
+          <button id="exportButton" type="button" class="secondary">导出</button>
+          <button id="importButton" type="button" class="secondary">导入</button>
+          <button id="printButton" type="button" class="secondary">打印</button>
+          <input id="importInput" type="file" accept="application/json,.json" class="hidden">
+        </nav>
+        <span id="saveStatus" class="save-status" aria-live="polite">正在检查 NAS 存档...</span>
+      </div>
+    </header>
+
+    <div class="layout">
+      <div class="stack">
+        <section class="panel">
+          <div class="panel-heading">
+            <h2 id="cycleTitle">循环记录</h2>
+            <span id="cycleWarning" class="status-line"></span>
+          </div>
+          <div class="panel-body identity-grid" id="identityGridPanel">
+            <span id="cycleTag" class="hidden"></span>
+            <label data-cycle-field="c1 c2 c3">
+              阿尔戈号命运
+              <input data-cycle-bind="fate" type="number" min="0" max="12">
+            </label>
+            <label data-cycle-field="c1 c2 c3">
+              AA 上限
+              <input data-cycle-bind="aaLimit" type="number" min="0">
+            </label>
+            <label data-cycle-field="c1 c3">
+              阿尔戈号知识
+              <input data-cycle-bind="knowledge" type="number" min="0">
+            </label>
+            <label data-cycle-field="c1">
+              陌生人
+              <input data-cycle-bind="strangers" type="number" min="0">
+            </label>
+            <label data-cycle-field="c2">
+              人性
+              <input data-cycle-bind="humanity" type="number" min="0">
+            </label>
+            <label data-cycle-field="c2">
+              变节者
+              <input data-cycle-bind="renegade" type="number" min="0">
+            </label>
+            <label data-cycle-field="c3">轮回长度<input data-cycle-bind="loopLength" type="number" min="0"></label>
+            <label data-cycle-field="c3">凝固时光<input data-cycle-bind="frozenTime" type="number" min="0"></label>
+            <label data-cycle-field="c3">悖论<input data-cycle-bind="paradox" type="number" min="0" max="12"></label>
+          </div>
+        </section>
+
+        <details class="panel titan-list-panel">
+          <summary class="titan-list-head">
+            <strong>泰坦列表</strong>
+            <span id="titanListCount"></span>
+          </summary>
+          <div id="titanList" class="titan-list"></div>
+          <div class="titan-add-row">
+            <input id="titanNameInput" type="text" placeholder="泰坦名称">
+            <label class="titan-number-field">
+              数量
+              <input id="titanCountInput" type="number" min="1" step="1" value="1" title="当前数量" aria-label="泰坦数量">
+            </label>
+            <label class="titan-crippled-add">
+              <input id="titanCrippledInput" type="checkbox">
+              残废
+            </label>
+            <label class="titan-number-field titan-total-limit">
+              总上限
+              <input id="titanLimitInput" type="number" min="0" step="1" value="0" title="泰坦总上限" aria-label="泰坦总上限">
+            </label>
+            <button id="addTitanButton" type="button">添加泰坦</button>
+          </div>
+        </details>
+
+        <section class="panel">
+          <div class="panel-body summon-panel">
+            <div class="summon-controls">
+              <label class="summon-usage">
+                <span>神之形态</span>
+                <span class="summon-usage-fields single">
+                  <input data-bind="godformUsed" type="number" min="0" readonly aria-label="神之形态已用">
+                </span>
+              </label>
+              <label class="summon-usage">
+                <span>宁芙</span>
+                <span class="summon-usage-fields nymph-usage-fields">
+                  <input data-bind="nymphCharges" type="number" min="0" aria-label="宁芙充能">
+                  <span>/</span>
+                  <input data-bind="nymphLimit" type="number" min="0" aria-label="宁芙上限">
+                </span>
+              </label>
+              <button id="powerTideButton" type="button">神力之潮</button>
+            </div>
+            <details class="summon-group">
+              <summary class="summon-group-head">
+                <strong>已添加神之形态</strong>
+                <span id="godformCount"></span>
+              </summary>
+              <div id="godformList" class="summon-card-grid"></div>
+              <div class="summon-pickers">
+                <label>
+                  神之形态
+                  <select id="godformSelect"></select>
+                </label>
+                <button id="addGodformButton" type="button">添加神之形态</button>
+              </div>
+            </details>
+            <details class="summon-group">
+              <summary class="summon-group-head">
+                <strong>已添加宁芙</strong>
+                <span id="nymphCount"></span>
+              </summary>
+              <div id="nymphList" class="summon-card-grid"></div>
+              <div class="summon-pickers">
+                <label>
+                  宁芙
+                  <select id="nymphSelect"></select>
+                </label>
+                <button id="addNymphButton" type="button">添加宁芙</button>
+              </div>
+            </details>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-body track">
+            <div id="hullTrack" class="track-row"></div>
+            <div id="crewTrack" class="track-row"></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div id="enemyTracks" class="panel-body track"></div>
+        </section>
+
+        <section class="panel">
+          <div id="diplomacyTracks" class="panel-body track"></div>
+        </section>
+
+        <section class="panel">
+          <span id="adventureMeta" class="hidden"></span>
+          <div id="adventureList" class="panel-body adventure-list"></div>
+        </section>
+
+        <details class="panel">
+          <summary class="matrix-head"><h2>航行时间表</h2><span id="timelineMeta" class="status-line"></span></summary>
+          <div id="timeline" class="panel-body timeline"></div>
+        </details>
+
+        <details class="panel">
+          <summary class="matrix-head"><h2>扎根 / Acclimation</h2><span id="rootingMeta" class="status-line"></span></summary>
+          <div id="rootingPanel" class="panel-body"></div>
+        </details>
+
+        <details class="panel">
+          <summary class="matrix-head">
+            <h2>抉择矩阵</h2>
+          </summary>
+          <div class="panel-body">
+            <div class="matrix-tools">
+              <span id="matrixHint">锁定中：点击解锁后双击修改</span>
+              <button id="matrixLockButton" type="button" class="secondary">解锁矩阵</button>
+            </div>
+            <div class="matrix-wrap">
+              <div id="choiceMatrix" class="matrix"></div>
+            </div>
+          </div>
+        </details>
+
+      </div>
+
+      <aside class="stack">
+        <section class="panel">
+          <div class="panel-heading"><h2>地图记录</h2></div>
+          <div id="mapGrid" class="panel-body map-grid"></div>
+        </section>
+
+        <section class="panel">
+          <div id="resourceGrid" class="panel-body resource-grid"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-body notes-grid">
+            <label>
+              恩惠
+              <textarea data-bind="boons" placeholder="获得的恩惠、盟友帮助、一次性奖励"></textarea>
+            </label>
+            <label>
+              苦痛
+              <textarea data-bind="afflictions" placeholder="负面状态、未结算灾祸、代价"></textarea>
+            </label>
+            <label>
+              计数标记
+              <textarea data-bind="counters" placeholder="需要随时擦写的标记、倒计时"></textarea>
+            </label>
+            <label class="wide">
+              战役笔记
+              <textarea data-bind="notes" placeholder="故事选择、待办事项、下次开局提醒"></textarea>
+            </label>
+            <label class="wide">
+              同步日志
+              <textarea data-bind="syncLog" placeholder="主控台跳转、定数写入等自动记录会出现在这里"></textarea>
+            </label>
+          </div>
+        </section>
+
+      </aside>
+    </div>
+  </main>
+
+  <script src="../page-focus-router.js?v=20260607a"></script>
+  <script>
+    const storageKey = "ato-argo-record-sheet-v1";
+    const serverStorageUrl = "../api/campaign-state.php";
+    const serverStorageSection = "record";
+
+    const cycleData = {
+      c1: {
+        label: "循环 I",
+        subtitle: "迷宫真相 / Truth of the Labyrinth",
+        fateWarning: "命运 >= 10 读 0981；船体 <= 0 读 0415；船员 <= 0 读 0562",
+        hull: [5, 4, 3, 2, 1, 0],
+        crew: [6, 5, 4, 3, 2, 1, 0],
+        enemies: [
+          {
+            key: "hekaton",
+            zh: "百臂巨人",
+            en: "Hekaton",
+            stages: [
+              { id: "0", label: "0" },
+              { id: "1a", label: "I" },
+              { id: "1b", label: "I", sharedWith: ["hekaton", "labyrinthauros"] },
+              { id: "2a", label: "II" },
+              { id: "2b", label: "II", sharedWith: ["hekaton", "labyrinthauros"] },
+              { id: "2c", label: "III", sharedWith: ["hekaton", "labyrinthauros"] },
+              { id: "3", label: "III" },
+              { id: "4a", label: "IV" },
+              { id: "4b", label: "IV" },
+              { id: "4c", label: "IV", sharedWith: ["hekaton", "labyrinthauros"] },
+            ],
+          },
+          {
+            key: "labyrinthauros",
+            zh: "迷宫机牛",
+            en: "Labyrinthauros",
+            stages: [
+              { id: "spacer", label: "", marker: "spacer" },
+              { id: "1a", label: "I" },
+              { id: "1b", label: "I", sharedWith: ["hekaton", "labyrinthauros"] },
+              { id: "2a", label: "II" },
+              { id: "2b", label: "II", sharedWith: ["hekaton", "labyrinthauros"] },
+              { id: "2c", label: "III", sharedWith: ["hekaton", "labyrinthauros"] },
+              { id: "3", label: "III" },
+              { id: "4a", label: "IV" },
+              { id: "4b", label: "IV" },
+              { id: "4c", label: "IV", sharedWith: ["hekaton", "labyrinthauros"] },
+            ],
+          },
+          { key: "temenos", zh: "吞域兽", en: "Temenos", stages: ["1", "2", "3", "4"] },
+          { key: "pursuer", zh: "赫尔墨斯追踪者", en: "Hermesian Pursuer", stages: ["1", "2", "3", "4", "5"], hasTriangle: true },
+        ],
+        adventures: [
+          ["宿命的谜题", "Fated Conundrum"],
+          ["人民的困境", "Plight of the People"],
+          ["隐匿于众目睽睽之下", "Hidden in Plain Sight"],
+          ["目标明确的人", "Man of Purpose"],
+          ["不安的头颅", "Uneasy Rests the Head"],
+          ["米诺陶洛斯之泪", "Tears of a Minotaur"],
+          ["暴露的梦境", "Dreams Laid Bare"],
+          ["教程", "Tutorial"],
+        ],
+        diplomacy: [
+          ["minoians", "米诺斯人", "Minoans", -10, 10],
+          ["labyrinthians", "迷宫徒", "Labyrinthians", -10, 10],
+          ["hornsworn", "角誓者", "Hornsworn", -10, 10],
+        ],
+        resources: [
+          ["trireme", "船材", "Trireme"],
+          ["monument", "石筑", "Monument"],
+          ["armament", "军备", "Armament"],
+          ["muscleCluster", "肌肉簇", "Muscle Cluster"],
+          ["fearEssence", "恐惧精华", "Fear Essence"],
+          ["rawAmbrosia", "神浆原液", "Raw Ambrosia"],
+          ["calcifiedKnuckle", "钙化指节骨", "Calcified Knuckle Bone"],
+          ["mazeFragment", "迷宫碎片", "Maze Fragment"],
+          ["grotesqueBeak", "怪异喙片", "Grotesque Beak"],
+          ["infusedMechanism", "浸液机件", "Infused Mechanism"],
+          ["fleshyMantle", "血肉块", "Fleshy Mantle"],
+          ["powderedMatter", "粉化奇物", "Powdered Matter"],
+          ["core", "核心", "Core"],
+          ["priests", "祭司", "Priests"],
+          ["sisyphusTears", "西西弗斯之泪", "Sisyphus Tears"],
+          ["rare", "稀有资源", "Rare Resources"],
+        ],
+        events: { 6: "Cackle Special Event", 18: "Acclimation 1", 36: "Acclimation 2", 54: "Acclimation 3" },
+        maxDay: 80,
+        prefixDays: ["T0", "T1", "T2", "T3", "T4", "T5", "T6/00"],
+      },
+      c2: {
+        label: "循环 II",
+        subtitle: "深渊凝望者 / Abysswatchers",
+        fateWarning: "命运 >= 10 读 0251；船体 <= 0 读 0248；船员 <= 0 读 0249",
+        hull: [6, 5, 4, 3, 2, 1, 0],
+        crew: [9, 8, 7, 6, 5, 4, 3, 2, 1, 0],
+        enemies: [
+          {
+            key: "cyclonus",
+            zh: "独眼巨人",
+            en: "Cyclonus",
+            stages: [
+              { id: "1a", label: "1" },
+              { id: "1b", label: "1", sharedWith: ["cyclonus", "chimera"] },
+              { id: "2a", label: "2" },
+              { id: "2b", label: "2", sharedWith: ["cyclonus", "chimera"] },
+              { id: "3a", label: "3", sharedWith: ["cyclonus", "chimera"] },
+              { id: "3b", label: "3" },
+              { id: "4a", label: "4" },
+              { id: "4b", label: "4" },
+              { id: "4c", label: "4", sharedWith: ["cyclonus", "chimera"] },
+            ],
+          },
+          {
+            key: "chimera",
+            zh: "蠕变奇美拉",
+            en: "Chimera Metastasios",
+            stages: [
+              { id: "1a", label: "1" },
+              { id: "1b", label: "1", sharedWith: ["cyclonus", "chimera"] },
+              { id: "2a", label: "2" },
+              { id: "2b", label: "2", sharedWith: ["cyclonus", "chimera"] },
+              { id: "3a", label: "3", sharedWith: ["cyclonus", "chimera"] },
+              { id: "3b", label: "3" },
+              { id: "4a", label: "4" },
+              { id: "4b", label: "4" },
+              { id: "4c", label: "4", sharedWith: ["cyclonus", "chimera"] },
+            ],
+          },
+          { key: "nietzschean", zh: "尼采超人", en: "Nietzschean", stages: ["1", "2", "3", "4"] },
+          { key: "adversary", zh: "重担", en: "The Burden", stages: ["1", "2", "3", "4", "5"] },
+        ],
+        adventures: [
+          ["凝视蝼蚁", "Consider the Ant"],
+          ["另一场温泉关之战", "The Other Thermopylae"],
+          ["尘归尘土归土", "From the Ashes"],
+          ["初始目标", "Intended Purpose"],
+          ["痛苦产业", "Misery Industry"],
+          ["蝴蝶寓言", "Parable of the Butterfly"],
+          ["真相映照弱点", "Truth to Weakness"],
+          ["当陆地与海洋相遇", "When the Land Meets the Sea"],
+        ],
+        diplomacy: [
+          ["helots", "希洛人", "Helots · 结盟读0289", 0, 15],
+          ["cyclopes", "独眼巨人", "Cyclopes · 结盟读0373", 0, 15],
+          ["symmachy", "邦联同盟", "Symmachy · 结盟读0290", 0, 15],
+        ],
+        resources: [
+          ["warTrireme", "舰材", "War Trireme"],
+          ["relief", "岩雕", "Relief"],
+          ["warMachine", "战械", "War Machine"],
+          ["fearEssence", "恐惧精华", "Fear Essence"],
+          ["chimericTar", "奇美拉焦油", "Chimeric Tar"],
+          ["grotesqueBeak", "怪异喙片", "Grotesque Beak"],
+          ["mazeFragment", "迷宫碎片", "Maze Fragment"],
+          ["supersolidRelief", "超固体块", "Supersolid Relief Mass"],
+          ["powderedMatter", "粉化奇物", "Powdered Matter"],
+          ["cyclopeanMetal", "独眼巨人甲胄", "Cyclopean Metal"],
+          ["livingAbyss", "活体深渊", "Living Abyss"],
+          ["retractableMechanism", "伸缩机构", "Retractable Mechanism"],
+          ["blackChain", "黑色锁链", "Black Chain"],
+          ["skinOfMalice", "怨恨之皮", "Skin of Malice"],
+          ["reliefshellFragment", "岩壳碎片", "Reliefshell Fragment"],
+          ["violentAmbrosia", "不稳定神浆", "Violent Ambrosia"],
+          ["core", "核心", "Core"],
+          ["priests", "祭司", "Priests"],
+          ["sisyphusTears", "西西弗斯之泪", "Sisyphus Tears"],
+          ["pygmalionStones", "皮格马利翁之石", "Pygmalion Stones"],
+          ["rare", "稀有资源", "Rare Resources"],
+        ],
+        events: { 6: "Relentless Adversary Special Event", 18: "Acclimation 1", 36: "Acclimation 2", 54: "Acclimation 3" },
+        maxDay: 80,
+      },
+      c3: {
+        label: "循环 III",
+        subtitle: "冷酷太阳 / Pitiless of the Sun",
+        fateWarning: "命运 >= 10 读 0273；悖论 >= 12 读 Homefront 特殊事件；船体 <= 0 读 0271；船员 <= 0 读 0272",
+        hull: [7, 6, 5, 4, 3, 2, 1, 0],
+        crew: [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0],
+        enemies: [
+          {
+            key: "oracle",
+            zh: "超时光先知",
+            en: "Hypertime Oracle",
+            stages: [
+              { id: "1a", label: "I" },
+              { id: "1b", label: "I", sharedWith: ["oracle", "harpy"] },
+              { id: "2a", label: "II" },
+              { id: "2b", label: "II", sharedWith: ["oracle", "harpy"] },
+              { id: "2c", label: "III", sharedWith: ["oracle", "harpy"] },
+              { id: "3", label: "III" },
+              { id: "4a", label: "IV" },
+              { id: "4b", label: "IV" },
+              { id: "4c", label: "IV" },
+              { id: "5", label: "V", sharedWith: ["oracle", "harpy"] },
+            ],
+          },
+          {
+            key: "harpy",
+            zh: "伊卡洛斯哈尔皮",
+            en: "Icarian Harpy",
+            stages: [
+              { id: "1a", label: "I" },
+              { id: "1b", label: "I", sharedWith: ["oracle", "harpy"] },
+              { id: "2a", label: "II" },
+              { id: "2b", label: "II", sharedWith: ["oracle", "harpy"] },
+              { id: "2c", label: "III", sharedWith: ["oracle", "harpy"] },
+              { id: "3", label: "III" },
+              { id: "4a", label: "IV" },
+              { id: "4b", label: "IV" },
+              { id: "4c", label: "IV" },
+              { id: "5", label: "V", sharedWith: ["oracle", "harpy"] },
+            ],
+          },
+          { key: "sunDescendant", zh: "坠落太阳", en: "Sun Descendant", stages: ["1", "2", "3", "4", "5"] },
+          { key: "adversary", zh: "重担", en: "The Burden", stages: ["1", "2", "3", "4", "5"] },
+        ],
+        adventures: [
+          ["鲜为人知的路", "Road Less Traveled"],
+          ["太阳之子", "Children of the Sun"],
+          ["我们身后留下的", "What We Left Behind"],
+          ["蜡与承诺", "Of Wax And Promises"],
+          ["无法回头", "Can’t Go Back"],
+          ["父辈们的罪孽", "Sin of the Fathers"],
+          ["步入成熟", "Coming of Age"],
+        ],
+        diplomacy: [
+          ["sunheirs", "太阳后裔", "Sunheirs · 结盟读0288", -10, 10],
+          ["delphians", "德尔菲人", "Delphians · 结盟读0287", -10, 10],
+          ["twilightWatch", "暮光守望", "Twilight Watch · 结盟读0286", -10, 10],
+        ],
+        resources: [
+          ["sirenshell", "塞壬壳", "Sirenshell"],
+          ["hyperboreanAlloy", "冻土合金", "Hyperborean Alloy"],
+          ["daedalusMakina", "代达罗斯器械", "Daedalus Makina"],
+          ["livingAbyss", "活体深渊", "Living Abyss"],
+          ["razorclaw", "利爪", "Razorclaw"],
+          ["grotesqueBeak", "怪异喙片", "Grotesque Beak"],
+          ["skinOfMalice", "怨恨之皮", "Skin of Malice"],
+          ["icarianFeather", "伊卡洛斯之羽", "Icarian Feather"],
+          ["powderedMatter", "粉化奇物", "Powdered Matter"],
+          ["clothflesh", "肉布", "Clothflesh"],
+          ["writhingTentacle", "扭动触手", "Writhing Tentacle"],
+          ["retractableMechanism", "伸缩机构", "Retractable Mechanism"],
+          ["eyesCluster", "眼球簇", "Eyes Cluster"],
+          ["sunburnedSkull", "日灼头骨", "Sunburned Skull"],
+          ["reliefshellFragment", "岩壳碎片", "Reliefshell Fragment"],
+          ["frozenAmbrosia", "凝固神浆", "Frozen Ambrosia"],
+          ["core", "核心", "Core"],
+          ["rare", "稀有资源", "Rare Resources"],
+          ["priests", "祭司", "Priests"],
+          ["echoes", "记忆之回响", "Echoes of Recollection"],
+          ["sisyphusTears", "西西弗斯之泪", "Sisyphus Tears"],
+          ["pygmalionStones", "皮格马利翁之石", "Pygmalion Stones"],
+        ],
+        events: {
+          1: "Vicious Circle (0040)",
+          10: "Relentless Adversary Special Event",
+          19: "Acclimation 1",
+          37: "Acclimation 2",
+          55: "Acclimation 3",
+        },
+        maxDay: 90,
+      },
+    };
+
+    const sharedResourceKeys = (() => {
+      const counts = {};
+      Object.values(cycleData).forEach((cycle) => {
+        const seen = new Set((cycle.resources || [])
+          .map(([key]) => key)
+          .filter((key) => key && key !== "core"));
+        seen.forEach((key) => {
+          counts[key] = (counts[key] || 0) + 1;
+        });
+      });
+      return new Set(Object.entries(counts)
+        .filter(([, count]) => count > 1)
+        .map(([key]) => key));
+    })();
+
+    const summonCards = {
+      godforms: [
+        { id: "zeus", zh: "宙斯", en: "Zeus", deck: 84, cardIndex: 6, cardId: 8406, image: "./assets/godforms-nymphs/006_Godform_Zeus.jpg" },
+        { id: "poseidon", zh: "波塞冬", en: "Poseidon", deck: 84, cardIndex: 7, cardId: 8407, image: "./assets/godforms-nymphs/007_Godform_Poseidon.jpg" },
+        { id: "demeter", zh: "德墨忒尔", en: "Demeter", deck: 84, cardIndex: 8, cardId: 8408, image: "./assets/godforms-nymphs/008_Godform_Demeter.jpg" },
+        { id: "hephaestus", zh: "赫菲斯托斯", en: "Hephaestus", deck: 162, cardIndex: 13, cardId: 16213, image: "./assets/godforms-nymphs/013_Godform_Hephaestus.jpg" },
+        { id: "hermes", zh: "赫尔墨斯", en: "Hermes", deck: 162, cardIndex: 14, cardId: 16214, image: "./assets/godforms-nymphs/014_Godform_Hermes.jpg" },
+        { id: "ares", zh: "阿瑞斯", en: "Ares", deck: 162, cardIndex: 15, cardId: 16215, image: "./assets/godforms-nymphs/015_Godform_Ares.jpg" },
+        { id: "artemis", zh: "阿尔忒弥斯", en: "Artemis", deck: 163, cardIndex: 11, cardId: 16311, image: "./assets/godforms-nymphs/011_Godform_Artemis.jpg" },
+        { id: "athena", zh: "雅典娜", en: "Athena", deck: 163, cardIndex: 12, cardId: 16312, image: "./assets/godforms-nymphs/012_Godform_Athena.jpg" },
+      ],
+      nymphs: [
+        { id: "engine", zh: "引擎宁芙", en: "Engine Nymph", deck: 84, cardIndex: 1, cardId: 8401, image: "./assets/godforms-nymphs/001_Nymph_Engine_Nymph.jpg" },
+        { id: "solitude", zh: "孤独宁芙", en: "Solitude Nymph", deck: 84, cardIndex: 2, cardId: 8402, image: "./assets/godforms-nymphs/002_Nymph_Solitude_Nymph.jpg" },
+        { id: "amalthean", zh: "阿玛尔忒娅宁芙", en: "Amalthean Nymph", deck: 84, cardIndex: 3, cardId: 8403, image: "./assets/godforms-nymphs/003_Nymph_Amalthean_Nymph.jpg" },
+        { id: "labyrinth", zh: "迷宫宁芙", en: "Labyrinth Nymph", deck: 84, cardIndex: 4, cardId: 8404, image: "./assets/godforms-nymphs/004_Nymph_Labyrinth_Nymph.jpg" },
+        { id: "depths", zh: "深海宁芙", en: "Depths Nymph", deck: 84, cardIndex: 5, cardId: 8405, image: "./assets/godforms-nymphs/005_Nymph_Depths_Nymph.jpg" },
+        { id: "sweets", zh: "甜食宁芙", en: "Sweets Nymph", deck: 162, cardIndex: 7, cardId: 16207, image: "./assets/godforms-nymphs/007_Nymph_Sweets_Nymph.jpg" },
+        { id: "nietzschean", zh: "尼采宁芙", en: "Nietzschean Nymph", deck: 162, cardIndex: 8, cardId: 16208, image: "./assets/godforms-nymphs/008_Nymph_Nietzschean_Nymph.jpg" },
+        { id: "forge", zh: "锻炉宁芙", en: "Forge Nymph", deck: 162, cardIndex: 9, cardId: 16209, image: "./assets/godforms-nymphs/009_Nymph_Forge_Nymph.jpg" },
+        { id: "blade", zh: "刀刃宁芙", en: "Blade Nymph", deck: 162, cardIndex: 10, cardId: 16210, image: "./assets/godforms-nymphs/010_Nymph_Blade_Nymph.jpg" },
+        { id: "knowledge", zh: "知识宁芙", en: "Knowledge Nymph", deck: 162, cardIndex: 11, cardId: 16211, image: "./assets/godforms-nymphs/011_Nymph_Knowledge_Nymph.jpg" },
+        { id: "mask", zh: "面具宁芙", en: "Mask Nymph", deck: 162, cardIndex: 12, cardId: 16212, image: "./assets/godforms-nymphs/012_Nymph_Mask_Nymph.jpg" },
+        { id: "curiosity", zh: "好奇宁芙", en: "Curiosity Nymph", deck: 163, cardIndex: 6, cardId: 16306, image: "./assets/godforms-nymphs/006_Nymph_Curiosity_Nymph.jpg" },
+        { id: "night", zh: "夜之宁芙", en: "Night Nymph", deck: 163, cardIndex: 7, cardId: 16307, image: "./assets/godforms-nymphs/007_Nymph_Night_Nymph.jpg" },
+        { id: "age", zh: "年岁宁芙", en: "Age Nymph", deck: 163, cardIndex: 8, cardId: 16308, image: "./assets/godforms-nymphs/008_Nymph_Age_Nymph.jpg" },
+        { id: "hope", zh: "希望宁芙", en: "Hope Nymph", deck: 163, cardIndex: 9, cardId: 16309, image: "./assets/godforms-nymphs/009_Nymph_Hope_Nymph.jpg" },
+        { id: "machina", zh: "机械宁芙", en: "Machina Nymph", deck: 163, cardIndex: 10, cardId: 16310, image: "./assets/godforms-nymphs/010_Nymph_Machina_Nymph.jpg" },
+      ],
+    };
+
+    const rootingData = {
+      c1: {
+        acclimations: [
+          { id: "a1", label: "Acclimation 1", day: 18, from: ["4", "5", "6", "8", "19"], to: ["10", "11", "12", "14", "22"] },
+          { id: "a2", label: "Acclimation 2", day: 36, from: ["3", "7", "9", "13", "23"], to: ["15", "16", "17", "18", "27"] },
+          { id: "a3", label: "Acclimation 3", day: 54, from: ["1", "2", "12", "14", "22"], to: ["20", "21", "24", "25", "26"] },
+        ],
+        cornerNumbers: {
+          6401: "29", 6402: "30", 6403: "31", 6404: "4", 6405: "8", 6406: "1",
+          6407: "7", 6408: "13", 6409: "23", 6410: "5", 6411: "2", 6412: "6",
+          6413: "19", 6414: "3", 6415: "9", 6416: "28", 6417: "10", 6418: "11",
+          6419: "12", 6420: "14", 6421: "22", 6422: "17", 6423: "27", 6424: "15",
+          6425: "18", 6426: "16", 6427: "24", 6428: "20", 6429: "25", 6430: "21",
+          6431: "26",
+        },
+        cards: [
+          { id: "6400", name: "Dog Days" },
+          { id: "6401", name: "Minoan Fleet" },
+          { id: "6402", name: "Hornsworn Fleet" },
+          { id: "6403", name: "Labyrinthian Vessel" },
+          { id: "6404", name: "Trade Post" },
+          { id: "6405", name: "Trade Post" },
+          { id: "6406", name: "Fishing Pier" },
+          { id: "6407", name: "Trireme Wreck" },
+          { id: "6408", name: "Trireme Wreck" },
+          { id: "6409", name: "Smithy" },
+          { id: "6410", name: "Smithy" },
+          { id: "6411", name: "Weapons Cache" },
+          { id: "6412", name: "Abandoned Shrine" },
+          { id: "6413", name: "Abandoned Shrine" },
+          { id: "6414", name: "Temple Ruins" },
+          { id: "6415", name: "Temple Ruins" },
+          { id: "6416", name: "Titan" },
+          { id: "6417", name: "Abandoned Fleet" },
+          { id: "6418", name: "Old Armory" },
+          { id: "6419", name: "Hidden Temple" },
+          { id: "6420", name: "Abandoned Fleet" },
+          { id: "6421", name: "Desecrated Temple" },
+          { id: "6422", name: "Shipyard" },
+          { id: "6423", name: "Shipyard" },
+          { id: "6424", name: "Weapons Cache" },
+          { id: "6425", name: "Desecrated Temple" },
+          { id: "6426", name: "Hidden Temple" },
+          { id: "6427", name: "Egyptian War Fleet" },
+          { id: "6428", name: "Egyptian War Fleet" },
+          { id: "6429", name: "Old Armory" },
+          { id: "6430", name: "Bronze People Armory" },
+          { id: "6431", name: "Grand Temple Ruins" },
+          { id: "6433", name: "Untamed Titan" },
+          { id: "6434", name: "Hekatrap" },
+          { id: "6435", name: "Informant Network" },
+          { id: "6436", name: "Cackle" },
+          { id: "6437", name: "Maze Pilgrim" },
+          { id: "6438", name: "Maze Storm" },
+          { id: "6439", name: "Recruitment Drive" },
+          { id: "6440", name: "Heart of the Maze" },
+          { id: "13400", name: "Theban Trader" },
+        ],
+      },
+      c2: {
+        acclimations: [
+          { id: "a1", label: "Acclimation 1", day: 18, from: ["7", "4", "8", "23", "6", "19"], to: ["14", "29", "30", "11", "12", "22"] },
+          { id: "a2", label: "Acclimation 2", day: 36, from: ["13", "1", "3", "9", "5"], to: ["28", "10", "16", "27", "15"] },
+          { id: "a3", label: "Acclimation 3", day: 54, from: ["14", "29", "12", "22", "2"], to: ["20", "17", "18", "26", "21"] },
+        ],
+        cornerNumbers: {
+          13600: "1", 13601: "2", 13602: "3", 13603: "4", 13604: "5", 13605: "6",
+          13606: "7", 13607: "8", 13608: "9", 13609: "10", 13610: "11", 13611: "12",
+          13612: "13", 13613: "14", 13614: "15", 13615: "16", 13616: "17", 13617: "18",
+          13618: "19", 13619: "20", 13620: "21", 13621: "22", 13622: "23", 13623: "26",
+          13624: "27", 13625: "28", 13626: "29", 13627: "30", 13628: "31", 13629: "32",
+          13630: "33", 13631: "34", 13632: "35", 13633: "36", 13634: "37",
+        },
+        cards: [
+          { id: "13600", name: "Temenos Fear Aquifer" },
+          { id: "13601", name: "Pre-Eschaton Armory" },
+          { id: "13602", name: "Temple of Ares" },
+          { id: "13603", name: "Temenos Mineshaft" },
+          { id: "13604", name: "Weapons Workshop" },
+          { id: "13605", name: "Shrine To Ares" },
+          { id: "13606", name: "Temenos Pit" },
+          { id: "13607", name: "Temenos Mineshaft" },
+          { id: "13608", name: "Temple of Ares" },
+          { id: "13609", name: "Spartan Wreckage" },
+          { id: "13610", name: "Daedalus Laboratory" },
+          { id: "13611", name: "Cyclopean Temple of Hyperion" },
+          { id: "13612", name: "Temenos Fear Aquifer" },
+          { id: "13613", name: "Palirroia Trireme" },
+          { id: "13614", name: "Daedalus Laboratory" },
+          { id: "13615", name: "Cyclopean Temple of Iapetus" },
+          { id: "13616", name: "Spartan Trireme" },
+          { id: "13617", name: "Cyclopean Temple of Gaia" },
+          { id: "13618", name: "Shrine to Ares" },
+          { id: "13619", name: "Marathonian-Class Trireme" },
+          { id: "13620", name: "Bronze People Foundry" },
+          { id: "13621", name: "Cyclopean Shrine of Hyperion" },
+          { id: "13622", name: "Temenos Fear Spring" },
+          { id: "13623", name: "Cyclopean Temple of Gaia" },
+          { id: "13624", name: "Cyclopean Shrine of Iapetus" },
+          { id: "13625", name: "Spartan Wreckage" },
+          { id: "13626", name: "White Trireme" },
+          { id: "13627", name: "Palirroia Trireme" },
+          { id: "13628", name: "Titan" },
+          { id: "13629", name: "Untamed Titan" },
+          { id: "13630", name: "Argo Engines" },
+          { id: "13631", name: "Propylon" },
+          { id: "13632", name: "Triskelion System" },
+          { id: "13633", name: "Titan Armory" },
+          { id: "13634", name: "Krypteia Assassination Attempt" },
+          { id: "13635", name: "Ambrosia Spill" },
+          { id: "13636", name: "Black Sludge" },
+          { id: "13637", name: "Cackle" },
+          { id: "13638", name: "Private Lesson" },
+          { id: "13639", name: "Moral Erosion" },
+          { id: "13640", name: "Smugglers" },
+          { id: "13641", name: "Spy Network" },
+        ],
+      },
+      c3: {
+        acclimations: [
+          { id: "a1", label: "Acclimation 1", day: 19, from: ["1", "23", "13", "8", "19", "6"], to: ["14", "10", "15", "11", "12", "16"] },
+          { id: "a2", label: "Acclimation 2", day: 37, from: ["7", "4", "9", "3", "5"], to: ["20", "17", "18", "22", "21"] },
+          { id: "a3", label: "Acclimation 3", day: 55, from: ["14", "10", "12", "16", "2"], to: ["24", "27", "26", "28", "25"] },
+        ],
+        cornerNumbers: {
+          13500: "1", 13501: "2", 13502: "3", 13503: "4", 13504: "5", 13505: "6",
+          13506: "7", 13507: "8", 13508: "9", 13509: "10", 13510: "11", 13511: "12",
+          13512: "13", 13513: "14", 13514: "15", 13515: "16", 13516: "17", 13517: "18",
+          13518: "19", 13519: "20", 13520: "21", 13521: "22", 13522: "23", 13523: "24",
+          13524: "25", 13525: "26", 13526: "27", 13527: "28", 13528: "29", 13529: "30",
+          13530: "32", 13531: "33", 13532: "34",
+        },
+        cards: Array.from({ length: 42 }, (_, index) => {
+          const id = String(13500 + index);
+          return { id, name: `Cycle III 探索卡 ${id}` };
+        }),
+      },
+    };
+
+    const defaultState = {
+      profileName: "阿尔戈号记录",
+      cycle: "c2",
+      day: 0,
+      location: "",
+      storyCard: "",
+      doomCard: "",
+      mapTiles: "",
+      fate: "",
+      knowledge: "",
+      nymph: "",
+      summonLimit: "",
+      godformLimit: "",
+      godformUsed: "0",
+      nymphLimit: "",
+      nymphUsed: "0",
+      nymphCharges: "0",
+      aaLimit: "",
+      humanity: "",
+      renegade: "",
+      hull: "5",
+      crew: "5",
+      crewBoxes: {},
+      cycleStats: {},
+      cycleDays: {},
+      titan: "",
+      titanLimit: "",
+      boons: "",
+      afflictions: "",
+      counters: "",
+      notes: "",
+      syncLog: "",
+      enemies: {},
+      adventures: {},
+      diplomacy: {},
+      resources: {},
+      map: {},
+      matrix: {},
+      maxUnlocked: {},
+      pygmalion: {},
+      rooting: {},
+      godforms: [],
+      nymphCards: [],
+      godformUsedCards: [],
+      nymphUsedCards: [],
+      titans: [],
+    };
+
+    const elements = {
+      cycleSelect: document.querySelector("#cycleSelect"),
+      cycleTag: document.querySelector("#cycleTag"),
+      saveStatus: document.querySelector("#saveStatus"),
+      hullTrack: document.querySelector("#hullTrack"),
+      crewTrack: document.querySelector("#crewTrack"),
+      enemyTracks: document.querySelector("#enemyTracks"),
+      adventureList: document.querySelector("#adventureList"),
+      adventureMeta: document.querySelector("#adventureMeta"),
+      diplomacyTracks: document.querySelector("#diplomacyTracks"),
+      resourceGrid: document.querySelector("#resourceGrid"),
+      choiceMatrix: document.querySelector("#choiceMatrix"),
+      cycleTitle: document.querySelector("#cycleTitle"),
+      cycleWarning: document.querySelector("#cycleWarning"),
+      timeline: document.querySelector("#timeline"),
+      timelineMeta: document.querySelector("#timelineMeta"),
+      rootingPanel: document.querySelector("#rootingPanel"),
+      rootingMeta: document.querySelector("#rootingMeta"),
+      mapGrid: document.querySelector("#mapGrid"),
+      matrixHint: document.querySelector("#matrixHint"),
+      matrixLockButton: document.querySelector("#matrixLockButton"),
+      importInput: document.querySelector("#importInput"),
+      godformSelect: document.querySelector("#godformSelect"),
+      nymphSelect: document.querySelector("#nymphSelect"),
+      addGodformButton: document.querySelector("#addGodformButton"),
+      addNymphButton: document.querySelector("#addNymphButton"),
+      powerTideButton: document.querySelector("#powerTideButton"),
+      godformList: document.querySelector("#godformList"),
+      nymphList: document.querySelector("#nymphList"),
+      godformCount: document.querySelector("#godformCount"),
+      nymphCount: document.querySelector("#nymphCount"),
+      titanList: document.querySelector("#titanList"),
+      titanListCount: document.querySelector("#titanListCount"),
+      titanNameInput: document.querySelector("#titanNameInput"),
+      titanCountInput: document.querySelector("#titanCountInput"),
+      titanLimitInput: document.querySelector("#titanLimitInput"),
+      titanCrippledInput: document.querySelector("#titanCrippledInput"),
+      addTitanButton: document.querySelector("#addTitanButton"),
+    };
+
+    let state = loadState();
+    let saveTimer = null;
+    let matrixUnlocked = false;
+    let serverStorageAvailable = false;
+    let campaignUserId = "default";
+    let serverSaveTimer = null;
+    let serverSaveInFlight = false;
+    let serverSavePending = false;
+    let serverSaveQueuedBeforeReady = false;
+    let serverSectionRevision = 0;
+    let serverStateBaseline = null;
+    let serverConflictMerging = false;
+    let serverExternalSyncInFlight = false;
+    const recordSyncChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-record-sync-v1") : null;
+    const summonUsageKeys = new Set(["godformUsed", "nymphLimit", "nymphCharges"]);
+    const cycleScopedBindKeys = new Set(["boons", "afflictions", "counters", "notes", "syncLog"]);
+    const requestedCycleFromUrl = getRequestedCycleFromUrl();
+
+    function getRequestedCycleFromUrl() {
+      const params = new URLSearchParams(window.location.search || "");
+      const cycle = params.get("cycle");
+      return cycleData[cycle] ? cycle : "";
+    }
+
+    function applyRequestedCycleFromUrl() {
+      if (!requestedCycleFromUrl) return false;
+      state.cycle = requestedCycleFromUrl;
+      return true;
+    }
+
+    function isPlainObject(value) {
+      return value && typeof value === "object" && !Array.isArray(value);
+    }
+
+    function cloneJson(value) {
+      return value === undefined ? undefined : JSON.parse(JSON.stringify(value));
+    }
+
+    function jsonEqual(left, right) {
+      if (left === right) return true;
+      if (Array.isArray(left) || Array.isArray(right)) {
+        return Array.isArray(left)
+          && Array.isArray(right)
+          && left.length === right.length
+          && left.every((value, index) => jsonEqual(value, right[index]));
+      }
+      if (isPlainObject(left) || isPlainObject(right)) {
+        if (!isPlainObject(left) || !isPlainObject(right)) return false;
+        const leftKeys = Object.keys(left);
+        const rightKeys = Object.keys(right);
+        return leftKeys.length === rightKeys.length
+          && leftKeys.every((key) => Object.prototype.hasOwnProperty.call(right, key) && jsonEqual(left[key], right[key]));
+      }
+      return false;
+    }
+
+    function mergeRecordChanges(base, local, remote, path = "") {
+      if (jsonEqual(local, remote)) return { value: cloneJson(local), conflicts: [] };
+      if (jsonEqual(local, base)) return { value: cloneJson(remote), conflicts: [] };
+      if (jsonEqual(remote, base)) return { value: cloneJson(local), conflicts: [] };
+
+      if (isPlainObject(base) || isPlainObject(local) || isPlainObject(remote)) {
+        const baseObject = isPlainObject(base) ? base : {};
+        const localObject = isPlainObject(local) ? local : {};
+        const remoteObject = isPlainObject(remote) ? remote : {};
+        const value = {};
+        const conflicts = [];
+        const keys = new Set([
+          ...Object.keys(baseObject),
+          ...Object.keys(localObject),
+          ...Object.keys(remoteObject),
+        ]);
+
+        keys.forEach((key) => {
+          const childPath = path ? `${path}.${key}` : key;
+          const result = mergeRecordChanges(baseObject[key], localObject[key], remoteObject[key], childPath);
+          if (result.value !== undefined) value[key] = result.value;
+          conflicts.push(...result.conflicts);
+        });
+        return { value, conflicts };
+      }
+
+      return {
+        value: cloneJson(local),
+        conflicts: [path || "record"],
+      };
+    }
+
+    function recordStateFromCampaign(campaign) {
+      const dashboard = campaign?.sections?.dashboard;
+      const userId = dashboard?.activeProfileId || campaignUserId || "default";
+      const recordSection = campaign?.sections?.record;
+      const userState = recordSection?.users?.[userId] || (recordSection?.users ? null : recordSection);
+      return {
+        userId,
+        state: normalizeState(userState || defaultState),
+        revision: Math.max(0, Number(campaign?.sectionRevisions?.record || 0)),
+      };
+    }
+
+    async function readLatestRecordState() {
+      const response = await fetch(serverStorageUrl, { cache: "no-store" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const payload = await response.json();
+      if (!payload.ok) throw new Error(payload.error || "读取失败");
+      return recordStateFromCampaign(payload.campaign || {});
+    }
+
+    async function syncRecordFromExternalUpdate(options = {}) {
+      if (!serverStorageAvailable || serverExternalSyncInFlight || serverConflictMerging || serverSaveInFlight) return;
+      serverExternalSyncInFlight = true;
+      try {
+        const latest = await readLatestRecordState();
+        if (latest.revision <= serverSectionRevision) {
+          if (options.retry && !options.retried) {
+            window.setTimeout(() => void syncRecordFromExternalUpdate({ retry: true, retried: true }), 500);
+          }
+          return;
+        }
+        const localChanged = !jsonEqual(state, serverStateBaseline || state);
+        campaignUserId = latest.userId;
+        serverSectionRevision = latest.revision;
+        if (!localChanged) {
+          serverStateBaseline = cloneJson(latest.state);
+          state = latest.state;
+          renderAll();
+          setSaveStatus("已自动载入其他页面的最新修改");
+          return;
+        }
+
+        const merged = mergeRecordChanges(serverStateBaseline || defaultState, state, latest.state);
+        serverStateBaseline = cloneJson(latest.state);
+        if (merged.conflicts.length) {
+          const shown = merged.conflicts.slice(0, 8).join("\n");
+          const more = merged.conflicts.length > 8 ? `\n另有 ${merged.conflicts.length - 8} 项` : "";
+          if (!window.confirm(`其他页面修改了记录表中的相同字段：\n${shown}${more}\n\n确定：保留当前页面的值并合并\n取消：加载其他页面的最新修改`)) {
+            state = latest.state;
+            renderAll();
+            setSaveStatus("已加载其他页面的最新记录表");
+            return;
+          }
+        }
+        state = normalizeState(merged.value);
+        renderAll();
+        setSaveStatus("已合并其他页面的修改，正在同步");
+        queueServerSave();
+      } catch (error) {
+        console.warn(error);
+      } finally {
+        serverExternalSyncInFlight = false;
+      }
+    }
+
+    function loadState() {
+      return normalizeState(defaultState);
+    }
+
+    function normalizeState(value) {
+      const legacySummonLimit = value?.summonLimit ?? "";
+      const titans = normalizeTitanList(value?.titans, value?.titan);
+      const hasTitanLimit = value && Object.prototype.hasOwnProperty.call(value, "titanLimit");
+      const { apotheosis: _removedApotheosis, ...storedState } = isPlainObject(value) ? value : {};
+      return {
+        ...defaultState,
+        ...storedState,
+        cycle: cycleData[value?.cycle] ? value.cycle : defaultState.cycle,
+        godformLimit: value?.godformLimit ?? legacySummonLimit,
+        nymphLimit: value?.nymphLimit ?? legacySummonLimit,
+        godformUsed: normalizeCount(value?.godformUsed),
+        nymphUsed: normalizeCount(value?.nymphUsed),
+        nymphCharges: normalizeCount(value?.nymphCharges),
+        hull: value?.hull === "" || value?.hull === null || value?.hull === undefined ? defaultState.hull : String(value.hull),
+        crew: value?.crew === "" || value?.crew === null || value?.crew === undefined ? defaultState.crew : String(value.crew),
+        enemies: isPlainObject(value?.enemies) ? value.enemies : {},
+        crewBoxes: isPlainObject(value?.crewBoxes) ? value.crewBoxes : {},
+        cycleStats: normalizeCycleStats(value),
+        cycleDays: isPlainObject(value?.cycleDays)
+          ? value.cycleDays
+          : { [cycleData[value?.cycle] ? value.cycle : defaultState.cycle]: String(value?.day ?? 0) },
+        adventures: isPlainObject(value?.adventures) ? value.adventures : {},
+        diplomacy: isPlainObject(value?.diplomacy) ? value.diplomacy : {},
+        resources: normalizeResources(value?.resources),
+        map: isPlainObject(value?.map) ? value.map : {},
+        matrix: normalizeMatrix(value?.matrix),
+        maxUnlocked: isPlainObject(value?.maxUnlocked) ? value.maxUnlocked : {},
+        pygmalion: isPlainObject(value?.pygmalion) ? value.pygmalion : {},
+        rooting: normalizeRooting(value?.rooting),
+        godforms: normalizeSummonSelection(value?.godforms, summonCards.godforms),
+        nymphCards: normalizeSummonSelection(value?.nymphCards, summonCards.nymphs),
+        godformUsedCards: normalizeSummonSelection(value?.godformUsedCards, summonCards.godforms),
+        nymphUsedCards: normalizeSummonSelection(value?.nymphUsedCards, summonCards.nymphs),
+        titans,
+        titanLimit: hasTitanLimit ? normalizeTitanLimit(value?.titanLimit) : migrateTitanLimit(titans),
+        titan: undefined,
+      };
+    }
+
+    function normalizeCycleStats(value) {
+      const stats = isPlainObject(value?.cycleStats) ? cloneJson(value.cycleStats) : {};
+      const activeCycle = cycleData[value?.cycle] ? value.cycle : defaultState.cycle;
+      stats[activeCycle] ||= {};
+      [
+        "storyCard", "doomCard", "mapTiles", "fate", "aaLimit", "knowledge",
+        "humanity", "renegade", "strangers", "loopLength", "frozenTime", "paradox", "hull", "crew",
+        "boons", "afflictions", "counters", "notes", "syncLog",
+      ].forEach((key) => {
+        if (stats[activeCycle][key] === undefined && value?.[key] !== undefined) {
+          stats[activeCycle][key] = value[key];
+        }
+      });
+      return stats;
+    }
+
+    function normalizeResources(value) {
+      const resources = isPlainObject(value) ? cloneJson(value) : {};
+      sharedResourceKeys.forEach((key) => {
+        migrateSharedResourceKey(resources, key);
+        migrateSharedResourceKey(resources, `${key}-names`);
+      });
+      return resources;
+    }
+
+    function migrateSharedResourceKey(resources, key) {
+      if (resources[key] !== undefined) return;
+      const values = Object.keys(cycleData)
+        .map((cycleId) => resources[`${cycleId}-${key}`])
+        .filter((value) => value !== undefined && value !== null && value !== "");
+      if (!values.length) return;
+      const numericValues = values
+        .map((value) => Number(value))
+        .filter((value) => Number.isFinite(value));
+      resources[key] = numericValues.length === values.length
+        ? Math.max(...numericValues)
+        : values.map(String).filter(Boolean).join("\n");
+    }
+
+    function normalizeRooting(value) {
+      const normalized = {};
+      if (!isPlainObject(value)) return normalized;
+      Object.entries(value).forEach(([cycleId, rows]) => {
+        normalized[cycleId] = Array.isArray(rows)
+          ? rows
+            .filter((row) => isPlainObject(row) && row.from && row.to)
+            .map((row) => ({ from: String(row.from), to: String(row.to) }))
+          : [];
+      });
+      return normalized;
+    }
+
+    function normalizeCount(value) {
+      if (value === "" || value === null || value === undefined) return "0";
+      return String(Math.max(0, Number(value || 0)));
+    }
+
+    function normalizeSummonSelection(selection, cardList) {
+      if (!Array.isArray(selection)) return [];
+      const validIds = new Set(cardList.map((card) => card.id));
+      return [...new Set(selection.map(String))].filter((id) => validIds.has(id));
+    }
+
+    function normalizeTitanList(value, legacyTitanCount = "") {
+      if (Array.isArray(value)) {
+        return value
+          .filter(isPlainObject)
+          .map((item) => ({
+            id: String(item.id || `titan-${Date.now()}-${Math.random().toString(16).slice(2)}`),
+            name: String(item.name || "泰坦"),
+            count: Math.max(1, Math.floor(Number(item.count || 1))),
+            limit: Math.max(1, Math.floor(Number(item.limit || item.count || 1))),
+            crippled: Boolean(item.crippled),
+          }));
+      }
+
+      const count = Math.max(0, Math.floor(Number(legacyTitanCount || 0)));
+      return count > 0
+        ? [{ id: "legacy-titan", name: "泰坦", count, limit: count, crippled: false }]
+        : [];
+    }
+
+    function normalizeTitanLimit(value) {
+      if (value !== "" && value !== null && value !== undefined) {
+        return String(Math.max(0, Math.floor(Number(value || 0))));
+      }
+      return "";
+    }
+
+    function migrateTitanLimit(titans = []) {
+      const migratedLimit = titans.reduce((sum, titan) => {
+        return sum + Math.max(1, Math.floor(Number(titan.limit || titan.count || 1)));
+      }, 0);
+      return migratedLimit ? String(migratedLimit) : "";
+    }
+
+    function normalizeMatrix(matrix) {
+      if (!isPlainObject(matrix)) return {};
+      const normalized = {};
+      Object.entries(matrix).forEach(([key, value]) => {
+        const sharedKey = key.replace(/^c\d-/, "");
+        normalized[sharedKey] = Boolean(value);
+      });
+      return normalized;
+    }
+
+    function currentCycle() {
+      return cycleData[state.cycle] || cycleData.c2;
+    }
+
+    function saveState() {
+      queueServerSave();
+      setSaveStatus(serverStorageAvailable
+        ? `正在同步 NAS ${new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })}`
+        : "NAS 存档接口不可用，当前修改只保留在页面内存中");
+    }
+
+    function setSaveStatus(message) {
+      if (elements.saveStatus) elements.saveStatus.textContent = message;
+    }
+
+    async function loadServerState() {
+      try {
+        const response = await fetch(serverStorageUrl, { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const payload = await response.json();
+        if (!payload.ok) throw new Error(payload.error || "读取失败");
+        serverStorageAvailable = true;
+        const flushQueuedSave = serverSaveQueuedBeforeReady;
+        serverSaveQueuedBeforeReady = false;
+        const latest = recordStateFromCampaign(payload.campaign || {});
+        campaignUserId = latest.userId;
+        serverSectionRevision = latest.revision;
+        serverStateBaseline = cloneJson(latest.state);
+        if (payload.campaign?.sections?.record) {
+          state = latest.state;
+          applyRequestedCycleFromUrl();
+          renderAll();
+          setSaveStatus(`已从 NAS 读取 ${new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })}`);
+        } else {
+          setSaveStatus("NAS 存档已启用，当前账号首次修改时会创建记录表存档");
+        }
+        if (flushQueuedSave) queueServerSave();
+      } catch (error) {
+        serverStorageAvailable = false;
+        console.warn(error);
+        setSaveStatus("NAS 存档接口不可用，当前仅保存到本机浏览器");
+      }
+    }
+
+    function queueServerSave() {
+      if (!serverStorageAvailable) {
+        serverSaveQueuedBeforeReady = true;
+        return;
+      }
+      clearTimeout(serverSaveTimer);
+      serverSaveTimer = setTimeout(saveStateToServer, 260);
+    }
+
+    async function saveStateToServer() {
+      if (!serverStorageAvailable) return;
+      if (serverSaveInFlight) {
+        serverSavePending = true;
+        return;
+      }
+      serverSaveInFlight = true;
+      serverSavePending = false;
+      const stateBeingSaved = cloneJson(state);
+      try {
+        const response = await fetch(serverStorageUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            section: serverStorageSection,
+            userId: campaignUserId,
+            state: stateBeingSaved,
+            expectedRevision: serverSectionRevision,
+          }),
+        });
+        const payload = await response.json().catch(() => null);
+        if (response.status === 409 && payload?.code === "SAVE_CONFLICT") {
+          serverSavePending = false;
+          if (!serverConflictMerging) {
+            serverConflictMerging = true;
+            const latest = await readLatestRecordState();
+            const merged = mergeRecordChanges(serverStateBaseline || defaultState, state, latest.state);
+            campaignUserId = latest.userId;
+            serverSectionRevision = latest.revision;
+            serverStateBaseline = cloneJson(latest.state);
+
+            if (merged.conflicts.length) {
+              const shown = merged.conflicts.slice(0, 8).join("\n");
+              const more = merged.conflicts.length > 8 ? `\n另有 ${merged.conflicts.length - 8} 项` : "";
+              const keepLocal = window.confirm(
+                `另一个页面修改了记录表中的相同字段：\n${shown}${more}\n\n确定：保留当前页面的值并合并保存\n取消：放弃当前页面修改并加载服务器最新数据`
+              );
+              if (!keepLocal) {
+                state = latest.state;
+                renderAll();
+                setSaveStatus("已加载服务器最新记录表");
+                serverConflictMerging = false;
+                return;
+              }
+            }
+
+            state = normalizeState(merged.value);
+            renderAll();
+            serverSavePending = true;
+            serverConflictMerging = false;
+            setSaveStatus("已自动合并其他页面的修改，正在重新同步");
+          }
+          return;
+        }
+        if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+        serverSectionRevision = Math.max(0, Number(payload.revision || serverSectionRevision));
+        serverStateBaseline = stateBeingSaved;
+        recordSyncChannel?.postMessage({ revision: serverSectionRevision });
+        setSaveStatus(`已同步到 NAS ${new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })}`);
+      } catch (error) {
+        serverConflictMerging = false;
+        console.warn(error);
+        setSaveStatus("NAS 同步失败，本机浏览器已有临时存档");
+      } finally {
+        serverSaveInFlight = false;
+        if (serverSavePending) saveStateToServer();
+      }
+    }
+
+    function normalizeAdventureTitle(value) {
+      return String(value || "")
+        .toLowerCase()
+        .replace(/travelled/g, "traveled")
+        .replace(/[^a-z0-9]+/g, "");
+    }
+
+    function adventureSlotLabel(slot) {
+      if (slot === "alpha") return "Alpha";
+      if (slot === "omega") return "Omega";
+      if (slot === "mid1") return "左侧空白格";
+      if (slot === "mid2") return "右侧空白格";
+      return slot || "";
+    }
+
+    function appendSyncLog(message) {
+      const stamp = new Date().toLocaleString("zh-CN", {
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      const line = `${stamp} ${message}`;
+      setCycleStat("syncLog", [line, getCycleStat("syncLog")].filter(Boolean).join("\n").slice(0, 6000));
+    }
+
+    function markAdventureFromSurvey(cycleId, adventureTitle, boxId) {
+      if (!cycleData[cycleId] || !adventureTitle) return false;
+      const target = normalizeAdventureTitle(adventureTitle);
+      const index = cycleData[cycleId].adventures.findIndex(([, en]) => normalizeAdventureTitle(en) === target);
+      if (index < 0) return false;
+
+      const prefix = `${cycleId}-${index}`;
+      let slot = "";
+      if (boxId === "alpha" || boxId === "omega") {
+        slot = boxId;
+      } else if (!state.adventures[`${prefix}-mid1`]) {
+        slot = "mid1";
+      } else if (!state.adventures[`${prefix}-mid2`]) {
+        slot = "mid2";
+      }
+
+      if (!slot) return false;
+      delete state.adventures[prefix];
+      state.adventures[`${prefix}-${slot}`] = true;
+      return slot;
+    }
+
+    function consumeDashboardSurveyNote() {
+      const params = new URLSearchParams(window.location.search || "");
+      if (params.get("surveyAction") !== "adventure") return false;
+
+      const cycle = params.get("cycle");
+      if (cycleData[cycle]) state.cycle = cycle;
+      const day = params.get("day");
+      const normalizedDay = Math.max(0, Number(day || 0));
+      if (day != null && day !== "") {
+        state.day = String(normalizedDay);
+        state.cycleDays[state.cycle] = String(normalizedDay);
+      }
+      const adventure = params.get("adventure") || "";
+      const slot = markAdventureFromSurvey(state.cycle, adventure, params.get("box") || "");
+      if (slot) {
+        appendSyncLog(`Day ${state.day} 定数写入：${adventure} -> ${adventureSlotLabel(slot)}`);
+      }
+
+      try {
+        window.history?.replaceState?.(null, "", window.location.pathname || "index.html");
+      } catch {
+      }
+      return true;
+    }
+
+    function queueSave() {
+      setSaveStatus("正在保存...");
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(saveState, 160);
+    }
+
+    function currentCycleStats() {
+      state.cycleStats ||= {};
+      state.cycleStats[state.cycle] ||= {};
+      return state.cycleStats[state.cycle];
+    }
+
+    function getCycleStat(key) {
+      return currentCycleStats()[key] ?? "";
+    }
+
+    function setCycleStat(key, value) {
+      currentCycleStats()[key] = value;
+      if (cycleScopedBindKeys.has(key)) {
+        delete state[key];
+      } else {
+        state[key] = value;
+      }
+    }
+
+    function getBindValue(key) {
+      return cycleScopedBindKeys.has(key) ? getCycleStat(key) : state[key] ?? "";
+    }
+
+    function setBindValue(key, value) {
+      if (cycleScopedBindKeys.has(key)) {
+        setCycleStat(key, value);
+        return;
+      }
+      state[key] = value;
+    }
+
+    function setupIdentityNumberFields() {
+      const config = {
+        fate: { min: 0, max: 12 },
+        humanity: { min: null, max: null },
+        renegade: { min: 0, max: null },
+        strangers: { min: 0, max: null },
+        loopLength: { min: 0, max: null },
+        frozenTime: { min: 0, max: null },
+        paradox: { min: 0, max: 12 },
+      };
+
+      Object.entries(config).forEach(([bindKey, limits]) => {
+        const input = document.querySelector(`[data-cycle-bind="${bindKey}"]`);
+        if (!input || input.dataset.stepBound === "1") return;
+        const label = input.closest("label");
+        if (!label) return;
+
+        const wrapper = document.createElement("span");
+        wrapper.className = "number-field";
+        if (bindKey === "fate") wrapper.classList.add("fate-number-field");
+        wrapper.dataset.stepField = bindKey;
+
+        const down = document.createElement("button");
+        down.type = "button";
+        down.dataset.step = "down";
+        down.textContent = "-";
+
+        const up = document.createElement("button");
+        up.type = "button";
+        up.dataset.step = "up";
+        up.textContent = "+";
+
+        if (limits.min !== null) {
+          input.min = String(limits.min);
+        } else {
+          input.removeAttribute("min");
+        }
+        if (limits.max !== null) {
+          input.max = String(limits.max);
+        } else {
+          input.removeAttribute("max");
+        }
+
+        input.replaceWith(wrapper);
+        wrapper.append(down, input, up);
+        if (bindKey === "fate") {
+          const rollback = document.createElement("button");
+          rollback.type = "button";
+          rollback.className = "fate-rollback";
+          rollback.textContent = "回退";
+          rollback.title = "C1 -2 命运，C2 -3 命运";
+          rollback.addEventListener("click", () => {
+            const delta = state.cycle === "c1" ? 2 : state.cycle === "c2" ? 3 : 0;
+            if (!delta) return;
+            sync(Number(input.value || 0) - delta);
+          });
+          wrapper.appendChild(rollback);
+        }
+        input.dataset.stepBound = "1";
+
+        const clamp = (value) => {
+          let next = Number(value || 0);
+          if (!Number.isFinite(next)) next = 0;
+          if (limits.min !== null) next = Math.max(limits.min, next);
+          if (limits.max !== null) next = Math.min(limits.max, next);
+          return next;
+        };
+
+        const sync = (value) => {
+          const next = clamp(value);
+          input.value = String(next);
+          setCycleStat(bindKey, String(next));
+          queueSave();
+        };
+
+        down.addEventListener("click", () => sync(Number(input.value || 0) - 1));
+        up.addEventListener("click", () => sync(Number(input.value || 0) + 1));
+        input.addEventListener("input", () => sync(input.value));
+      });
+    }
+
+    function setupAaLimitField() {
+      const input = document.querySelector('[data-cycle-bind="aaLimit"]');
+      const controls = document.querySelector(".summon-controls");
+      if (!input || !controls || input.closest(".summon-controls")) return;
+
+      const oldLabel = input.closest("label");
+      const label = document.createElement("label");
+      label.className = "summon-usage";
+
+      const text = document.createElement("span");
+      text.textContent = "AA 上限";
+
+      const field = document.createElement("span");
+      field.className = "summon-usage-fields aa-limit-field";
+
+      field.appendChild(input);
+      label.append(text, field);
+      elements.powerTideButton.after(label);
+      oldLabel?.remove();
+    }
+
+    function setupPanelOrder() {
+      const summonPanel = document.querySelector(".summon-panel")?.closest(".panel");
+      const enemyPanel = elements.enemyTracks?.closest(".panel");
+      const diplomacyPanel = elements.diplomacyTracks?.closest(".panel");
+      const adventurePanel = elements.adventureList?.closest(".panel");
+
+      if (enemyPanel && diplomacyPanel && enemyPanel.previousElementSibling !== diplomacyPanel) {
+        enemyPanel.before(diplomacyPanel);
+      }
+      if (summonPanel && adventurePanel && adventurePanel.previousElementSibling !== summonPanel) {
+        adventurePanel.before(summonPanel);
+      }
+    }
+
+    function bindInputs() {
+      setupPanelOrder();
+      setupAaLimitField();
+      setupIdentityNumberFields();
+      document.querySelectorAll("[data-bind]").forEach((input) => {
+        input.value = getBindValue(input.dataset.bind);
+        input.addEventListener("input", () => {
+          setBindValue(input.dataset.bind, input.value);
+          if (summonUsageKeys.has(input.dataset.bind)) {
+            renderSummons();
+          }
+          queueSave();
+        });
+        input.addEventListener("change", () => {
+          setBindValue(input.dataset.bind, input.value);
+          if (input.dataset.bind === "cycle") {
+            renderAll();
+          } else if (summonUsageKeys.has(input.dataset.bind)) {
+            renderSummons();
+          }
+          queueSave();
+        });
+      });
+      document.querySelectorAll("[data-cycle-bind]").forEach((input) => {
+        input.value = getCycleStat(input.dataset.cycleBind);
+        input.addEventListener("input", () => {
+          setCycleStat(input.dataset.cycleBind, input.value);
+          queueSave();
+        });
+      });
+    }
+
+    function renderCycleOptions() {
+      elements.cycleSelect.innerHTML = Object.entries(cycleData)
+        .map(([id, cycle]) => `<option value="${id}">${cycle.label}</option>`)
+        .join("");
+      elements.cycleSelect.value = state.cycle;
+    }
+
+    function renderSummons() {
+      renderSummonOptions();
+      renderSummonList(elements.godformList, "godforms", summonCards.godforms, "尚未添加神之形态");
+      renderSummonList(elements.nymphList, "nymphCards", summonCards.nymphs, "尚未添加宁芙");
+      renderSummonCounts();
+      updateSummonActionButtons();
+    }
+
+    function renderSummonCounts() {
+      syncSummonUsedCounts();
+      elements.godformCount.textContent = `已添加 ${state.godforms.length}/${summonCards.godforms.length} · 已用 ${state.godformUsedCards.length}`;
+      elements.nymphCount.textContent = `已添加 ${state.nymphCards.length}/${summonCards.nymphs.length} · 充能 ${formatLimitedUsage(state.nymphCharges, state.nymphLimit)} · 已召唤 ${state.nymphUsedCards.length}`;
+    }
+
+    function syncSummonUsedCounts() {
+      state.godformUsedCards = state.godformUsedCards.filter((id) => state.godforms.includes(id));
+      state.nymphUsedCards = state.nymphUsedCards.filter((id) => state.nymphCards.includes(id));
+      state.godformUsed = String(state.godformUsedCards.length);
+      state.nymphUsed = String(state.nymphUsedCards.length);
+      state.nymphCharges = String(getNymphCharges());
+      document.querySelector('[data-bind="godformUsed"]').value = state.godformUsed;
+      document.querySelector('[data-bind="nymphCharges"]').value = state.nymphCharges;
+    }
+
+    function formatUsage(used, limit) {
+      const usedValue = Math.max(0, Number(used || 0));
+      return limit === "" || limit === null || limit === undefined
+        ? String(usedValue)
+        : `${usedValue}/${Math.max(0, Number(limit || 0))}`;
+    }
+
+    function formatLimitedUsage(used, limit) {
+      const usedValue = Math.max(0, Number(used || 0));
+      return `${usedValue}/${limit === "" || limit === null || limit === undefined ? "-" : Math.max(0, Number(limit || 0))}`;
+    }
+
+    function getNymphCharges() {
+      const charges = Math.max(0, Math.floor(Number(state.nymphCharges || 0)));
+      return hasNymphLimit() ? Math.min(charges, getNymphLimit()) : charges;
+    }
+
+    function hasNymphLimit() {
+      return state.nymphLimit !== "" && state.nymphLimit !== null && state.nymphLimit !== undefined;
+    }
+
+    function getNymphLimit() {
+      return Math.max(0, Math.floor(Number(state.nymphLimit || 0)));
+    }
+
+    function isNymphSummonLimitReached() {
+      if (!hasNymphLimit()) return false;
+      return state.nymphUsedCards.length >= getNymphLimit();
+    }
+
+    function titanTotals() {
+      return state.titans.reduce((totals, titan) => {
+        const count = Math.max(1, Number(titan.count || 1));
+        totals.total += count;
+        if (titan.crippled) totals.crippled += count;
+        return totals;
+      }, { total: 0, crippled: 0 });
+    }
+
+    function updateTitanListCount() {
+      const totals = titanTotals();
+      const limit = state.titanLimit === "" ? "-" : Math.max(0, Number(state.titanLimit || 0));
+      elements.titanListCount.textContent = `总数 ${totals.total}/${limit} · 残废 ${totals.crippled}`;
+    }
+
+    function renderTitans() {
+      state.titans = normalizeTitanList(state.titans);
+      state.titanLimit = normalizeTitanLimit(state.titanLimit);
+      elements.titanLimitInput.value = state.titanLimit;
+      updateTitanListCount();
+      elements.titanList.innerHTML = "";
+
+      if (!state.titans.length) {
+        const empty = document.createElement("div");
+        empty.className = "titan-empty";
+        empty.textContent = "尚未添加泰坦";
+        elements.titanList.appendChild(empty);
+        return;
+      }
+
+      state.titans.forEach((titan, index) => {
+        const row = document.createElement("div");
+        row.className = "titan-row";
+
+        const nameInput = document.createElement("input");
+        nameInput.type = "text";
+        nameInput.value = titan.name;
+        nameInput.placeholder = "泰坦名称";
+        nameInput.addEventListener("input", () => {
+          state.titans[index].name = nameInput.value;
+          queueSave();
+        });
+
+        const countInput = document.createElement("input");
+        countInput.type = "number";
+        countInput.min = "1";
+        countInput.step = "1";
+        countInput.value = titan.count;
+        countInput.title = "当前数量";
+        countInput.setAttribute("aria-label", `${titan.name || "泰坦"} 数量`);
+        countInput.addEventListener("input", () => {
+          state.titans[index].count = Math.max(1, Math.floor(Number(countInput.value || 1)));
+          updateTitanListCount();
+          queueSave();
+        });
+        const countField = document.createElement("label");
+        countField.className = "titan-number-field";
+        countField.append("数量", countInput);
+
+        const crippledLabel = document.createElement("label");
+        crippledLabel.className = "titan-crippled";
+        const crippledInput = document.createElement("input");
+        crippledInput.type = "checkbox";
+        crippledInput.checked = Boolean(titan.crippled);
+        crippledInput.addEventListener("change", () => {
+          state.titans[index].crippled = crippledInput.checked;
+          updateTitanListCount();
+          queueSave();
+        });
+        const crippledText = document.createElement("span");
+        crippledText.textContent = "残废";
+        crippledLabel.append(crippledInput, crippledText);
+
+        const removeButton = document.createElement("button");
+        removeButton.type = "button";
+        removeButton.className = "titan-remove";
+        removeButton.textContent = "删除";
+        removeButton.addEventListener("click", () => {
+          state.titans.splice(index, 1);
+          renderTitans();
+          queueSave();
+        });
+
+        row.append(nameInput, countField, crippledLabel, removeButton);
+        elements.titanList.appendChild(row);
+      });
+    }
+
+    function addTitan() {
+      const name = elements.titanNameInput.value.trim() || "泰坦";
+      const count = Math.max(1, Math.floor(Number(elements.titanCountInput.value || 1)));
+      state.titans.push({
+        id: `titan-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        name,
+        count,
+        crippled: elements.titanCrippledInput.checked,
+      });
+      elements.titanNameInput.value = "";
+      elements.titanCountInput.value = "1";
+      elements.titanCrippledInput.checked = false;
+      renderTitans();
+      queueSave();
+    }
+
+    function renderAll() {
+      renderCycleOptions();
+      document.querySelectorAll("[data-bind]").forEach((input) => {
+        input.value = getBindValue(input.dataset.bind);
+      });
+      const cycle = currentCycle();
+      elements.cycleTag.textContent = `${cycle.subtitle} · ${cycle.fateWarning}`;
+      renderCycleFields();
+      renderCoreTracks();
+      renderEnemyTracks();
+      renderAdventures();
+      renderDiplomacy();
+      renderSummons();
+      renderTitans();
+      renderResources();
+      renderTimeline();
+      renderRooting();
+      renderMap();
+      renderMatrix();
+      toggleCycleVisibility();
+    }
+
+    function renderCycleFields() {
+      const cycle = currentCycle();
+      elements.cycleTitle.textContent = cycle.label;
+      elements.cycleWarning.textContent = cycle.fateWarning;
+      document.querySelectorAll("[data-cycle-field]").forEach((field) => {
+        field.classList.toggle("hidden", !field.dataset.cycleField.split(/\s+/).includes(state.cycle));
+      });
+      document.querySelectorAll("[data-cycle-bind]").forEach((input) => {
+        const value = getCycleStat(input.dataset.cycleBind);
+        input.value = value;
+        state[input.dataset.cycleBind] = value;
+      });
+      state.day = String(state.cycleDays?.[state.cycle] ?? 0);
+    }
+
+    function toggleCycleVisibility() {
+      const cyclePanels = [
+        elements.mapGrid?.closest(".panel"),
+        elements.timeline?.closest(".panel"),
+        elements.rootingPanel?.closest(".panel"),
+      ].filter(Boolean);
+
+      cyclePanels.forEach((el) => {
+        el.classList.add("hidden");
+      });
+
+      document.querySelectorAll("[data-cycle-bind='knowledge']").forEach((field) => {
+        field.closest("label")?.classList.add("hidden");
+      });
+    }
+
+    function renderTimeline() {
+      const cycle = currentCycle();
+      const prefixDays = cycle.prefixDays || [];
+      const firstNumericDay = prefixDays.length ? 1 : 0;
+      const days = [
+        ...prefixDays,
+        ...Array.from({ length: cycle.maxDay - firstNumericDay + 1 }, (_, index) => String(index + firstNumericDay).padStart(2, "0")),
+      ];
+      const currentDay = String(state.cycleDays?.[state.cycle] ?? state.day ?? 0);
+      elements.timelineMeta.textContent = `当前 ${currentDay} · 共 ${days.length} 格`;
+      elements.timeline.innerHTML = "";
+      days.forEach((label) => {
+        const numericDay = /^\d+$/.test(label) ? Number(label) : null;
+        const eventText = numericDay === null ? "" : cycle.events?.[numericDay] || "";
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `timeline-day${currentDay === label || (numericDay !== null && Number(currentDay) === numericDay) ? " active" : ""}${eventText ? " event" : ""}`;
+        button.append(document.createTextNode(label));
+        if (eventText) {
+          const small = document.createElement("small");
+          small.textContent = eventText;
+          button.appendChild(small);
+        }
+        button.addEventListener("click", () => {
+          state.cycleDays[state.cycle] = label;
+          state.day = label;
+          renderTimeline();
+          queueSave();
+        });
+        elements.timeline.appendChild(button);
+      });
+    }
+
+    function renderMap() {
+      elements.mapGrid.innerHTML = "";
+      for (let index = 1; index <= 10; index += 1) {
+        const key = `${state.cycle}-${index}`;
+        const label = document.createElement("label");
+        label.className = "map-slot";
+        const text = document.createElement("span");
+        text.textContent = `地图 ${index}`;
+        const input = document.createElement("input");
+        input.value = state.map[key] ?? "";
+        input.placeholder = "板块 / 标记";
+        input.addEventListener("input", () => {
+          state.map[key] = input.value;
+          queueSave();
+        });
+        label.append(text, input);
+        elements.mapGrid.appendChild(label);
+      }
+    }
+
+    function makeTrackTitle(zh, en) {
+      const title = document.createElement("div");
+      title.className = "track-name";
+      title.innerHTML = `<strong>${escapeHtml(zh)}</strong><span>${escapeHtml(en || "")}</span>`;
+      return title;
+    }
+
+    function renderTrack(container, zh, en, values, key, options = {}) {
+      container.innerHTML = "";
+      const title = makeTrackTitle(zh, en);
+      const unlockKey = `${state.cycle}-${key}`;
+      const cycleScoped = key === "hull" || key === "crew";
+      const selectedValue = cycleScoped ? getCycleStat(key) : state[key];
+      const isMaxLocked = (value) => Boolean(options.lockMax && (state.cycle === "c2" || state.cycle === "c3") && String(value) === String(values[0]) && !state.maxUnlocked[unlockKey]);
+      if (options.lockMax && (state.cycle === "c2" || state.cycle === "c3")) {
+        const unlockButton = document.createElement("button");
+        unlockButton.type = "button";
+        unlockButton.className = "track-lock-button";
+        unlockButton.textContent = state.maxUnlocked[unlockKey] ? "锁回最大值" : "解锁最大值";
+        unlockButton.addEventListener("click", () => {
+          state.maxUnlocked[unlockKey] = !state.maxUnlocked[unlockKey];
+          if (!state.maxUnlocked[unlockKey] && String(selectedValue ?? "") === String(values[0])) {
+            if (cycleScoped) setCycleStat(key, "");
+            else state[key] = "";
+          }
+          renderAll();
+          queueSave();
+        });
+        title.appendChild(unlockButton);
+      }
+      const chips = document.createElement("div");
+      chips.className = "chips";
+      values.forEach((value, index) => {
+        const locked = isMaxLocked(value);
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = [
+          "chip",
+          options.className || "",
+          String(selectedValue ?? "") === String(value) ? "active" : "",
+          locked ? "locked-max" : "",
+        ].filter(Boolean).join(" ");
+        button.textContent = value;
+        button.title = locked ? "循环 II 最大值需先解锁" : "";
+        button.addEventListener("click", () => {
+          if (locked) return;
+          if (cycleScoped) setCycleStat(key, String(value));
+          else state[key] = String(value);
+          renderAll();
+          queueSave();
+        });
+        if (options.extraBoxesKey) {
+          const stack = document.createElement("span");
+          stack.className = "chip-stack";
+          const boxKey = `${state.cycle}-${key}-${index}-${value}`;
+          const boxState = state[options.extraBoxesKey]?.[boxKey];
+          const normalizedBoxState = boxState === true ? "refugee" : boxState || "";
+          const extraBox = document.createElement("button");
+          extraBox.type = "button";
+          extraBox.className = `track-extra-box${normalizedBoxState ? ` ${normalizedBoxState}` : ""}`;
+          extraBox.textContent = normalizedBoxState === "refugee" ? "R" : normalizedBoxState === "captive" ? "C" : "";
+          extraBox.title = normalizedBoxState === "refugee" ? "难民" : normalizedBoxState === "captive" ? "俘虏" : "普通";
+          extraBox.addEventListener("click", () => {
+            state[options.extraBoxesKey] ||= {};
+            const current = state[options.extraBoxesKey][boxKey] === true ? "refugee" : state[options.extraBoxesKey][boxKey] || "";
+            const next = current === "" ? "refugee" : current === "refugee" ? "captive" : "";
+            if (next) {
+              state[options.extraBoxesKey][boxKey] = next;
+            } else {
+              delete state[options.extraBoxesKey][boxKey];
+            }
+            renderAll();
+            queueSave();
+          });
+          stack.append(button, extraBox);
+          chips.appendChild(stack);
+        } else {
+          chips.appendChild(button);
+        }
+      });
+      container.append(title, chips);
+    }
+
+    function getEvolutionStage(value, index) {
+      if (isPlainObject(value)) return value;
+      return { id: `${String(value)}-${index}`, label: String(value), legacyId: String(value) };
+    }
+
+    function evolutionStages(values) {
+      return values.map((value, index) => getEvolutionStage(value, index));
+    }
+
+    function getEvolutionStageKey(trackKey, stage) {
+      if (stage.sharedWith) {
+        return `${state.cycle}:shared:${[...stage.sharedWith].sort().join("+")}:${stage.id}`;
+      }
+      return `${state.cycle}:${trackKey}:${stage.id}`;
+    }
+
+    function clearEvolutionTrack(trackKey) {
+      const directPrefix = `${state.cycle}:${trackKey}:`;
+      const sharedPrefix = `${state.cycle}:shared:`;
+      Object.keys(state.enemies || {}).forEach((key) => {
+        if (key === trackKey || key.startsWith(directPrefix) || (key.startsWith(sharedPrefix) && key.includes(trackKey))) {
+          delete state.enemies[key];
+        }
+      });
+    }
+
+    function hasEvolutionProgress(trackKey) {
+      const directPrefix = `${state.cycle}:${trackKey}:`;
+      const sharedPrefix = `${state.cycle}:shared:`;
+      return Object.entries(state.enemies || {}).some(([key, value]) => {
+        return Boolean(value) && (key === trackKey || key.startsWith(directPrefix) || (key.startsWith(sharedPrefix) && key.includes(trackKey)));
+      });
+    }
+
+    function isEvolutionStageActive(trackKey, stage) {
+      const markKey = getEvolutionStageKey(trackKey, stage);
+      if (Object.prototype.hasOwnProperty.call(state.enemies, markKey)) {
+        return Boolean(state.enemies[markKey]);
+      }
+      if (stage.marker === "triangle") return false;
+      const legacyValue = state.enemies?.[trackKey];
+      return String(legacyValue ?? "") === String(stage.id) || String(legacyValue ?? "") === String(stage.legacyId ?? "");
+    }
+
+    function toggleEvolutionStage(trackKey, stage) {
+      const markKey = getEvolutionStageKey(trackKey, stage);
+      const nextValue = !isEvolutionStageActive(trackKey, stage);
+      if (stage.sharedWith) {
+        stage.sharedWith.forEach((sharedTrackKey) => {
+          delete state.enemies[sharedTrackKey];
+        });
+      } else {
+        delete state.enemies[trackKey];
+      }
+      state.enemies[markKey] = nextValue;
+    }
+
+    function renderObjectTrack(container, zh, en, values, group, key, options = {}) {
+      const row = document.createElement("div");
+      row.className = "track-row";
+      const chips = document.createElement("div");
+      chips.className = "chips";
+      const normalizedValues = group === "enemies" ? evolutionStages(values) : values;
+      const trackValues = group === "enemies" && (key === "adversary" || options.hasTriangle)
+        ? [{ id: "triangle", label: "▲", marker: "triangle", title: "三角标志" }, ...normalizedValues]
+        : normalizedValues;
+      trackValues.forEach((value, index) => {
+        const stage = group === "enemies" ? (isPlainObject(value) ? value : getEvolutionStage(value, index)) : (isPlainObject(value) ? value : { id: String(value), label: String(value) });
+        if (stage.marker === "spacer") {
+          const spacer = document.createElement("span");
+          spacer.className = "chip";
+          spacer.style.visibility = "hidden";
+          chips.appendChild(spacer);
+          return;
+        }
+        const active = group === "enemies"
+          ? isEvolutionStageActive(key, stage)
+          : String(state[group]?.[key] ?? "") === String(stage.id);
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = [
+          "chip",
+          options.className || "",
+          active ? "active" : "",
+          stage.sharedWith ? "shared-stage" : "",
+          stage.marker === "triangle" ? "triangle-marker" : "",
+        ].filter(Boolean).join(" ");
+        button.textContent = stage.label;
+        button.title = stage.title || (stage.sharedWith ? "共用格：只占用这个格子，不移动另一条轨的其它进度" : "");
+        button.addEventListener("click", () => {
+          if (group === "enemies") {
+            toggleEvolutionStage(key, stage);
+          } else {
+            state[group][key] = String(stage.id);
+          }
+          renderAll();
+          queueSave();
+        });
+        chips.appendChild(button);
+      });
+      row.append(makeTrackTitle(zh, en), chips);
+      container.appendChild(row);
+    }
+
+    function renderCoreTracks() {
+      const cycle = currentCycle();
+      renderTrack(elements.hullTrack, "船体", "Hull", cycle.hull, "hull", { className: "warning", lockMax: true });
+      const crewOptions = { className: "warning", lockMax: true };
+      if (state.cycle === "c2") {
+        crewOptions.extraBoxesKey = "crewBoxes";
+      }
+      renderTrack(elements.crewTrack, "船员", "Crew", cycle.crew, "crew", crewOptions);
+    }
+
+    function renderEnemyTracks() {
+      elements.enemyTracks.innerHTML = "";
+      currentCycle().enemies.forEach((enemy) => {
+        renderObjectTrack(elements.enemyTracks, enemy.zh, enemy.en, enemy.stages, "enemies", enemy.key, { className: "green", hasTriangle: enemy.hasTriangle });
+      });
+    }
+
+    function renderAdventures() {
+      const cycle = currentCycle();
+      elements.adventureMeta.textContent = `${cycle.adventures.length} 条`;
+      elements.adventureList.innerHTML = "";
+      const slots = [
+        { id: "alpha", label: "α" },
+        { id: "mid1", label: "" },
+        { id: "mid2", label: "" },
+        { id: "omega", label: "Ω" },
+      ];
+      cycle.adventures.forEach(([zh, en], index) => {
+        const legacyKey = `${state.cycle}-${index}`;
+        const card = document.createElement("article");
+        card.className = "check-card";
+        const text = document.createElement("span");
+        text.innerHTML = `<strong>${escapeHtml(zh)}</strong><span>${escapeHtml(en)}</span>`;
+        const boxes = document.createElement("div");
+        boxes.className = "adventure-boxes";
+        slots.forEach((slot) => {
+          const key = `${legacyKey}-${slot.id}`;
+          const active = Boolean(state.adventures[key] || (slot.id === "omega" && state.adventures[legacyKey]));
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = `adventure-box${active ? " active" : ""}`;
+          button.textContent = slot.label;
+          button.setAttribute("aria-label", `${zh} ${slot.id}`);
+          button.addEventListener("click", () => {
+            delete state.adventures[legacyKey];
+            state.adventures[key] = !active;
+            renderAdventures();
+            queueSave();
+          });
+          boxes.appendChild(button);
+        });
+        card.append(text, boxes);
+        elements.adventureList.appendChild(card);
+      });
+    }
+
+    function renderDiplomacy() {
+      elements.diplomacyTracks.innerHTML = "";
+      const diplomacyBonuses = {
+        c1: { "开战": "-3", "恶劣": "-2", "交恶": "-1", "中立": "0", "友善": "+1", "结盟": "+2" },
+        c3: { "开战": "-3", "恶劣": "-2", "交恶": "-1", "中立": "0", "友善": "+1", "结盟": "+2" },
+        c2: { "隐藏": "-1", "怀疑": "0", "友善": "+1", "结盟": "+2" },
+      };
+      const bonuses = diplomacyBonuses[state.cycle] || {};
+      currentCycle().diplomacy.forEach(([key, zh, en, min = 0, max = 15]) => {
+        const markers = min < 0
+          ? [
+              { value: -10, label: "开战" },
+              { value: -5, label: "恶劣" },
+              { value: -2, label: "交恶" },
+              { value: 0, label: "中立" },
+              { value: 4, label: "友善" },
+              { value: 8, label: "结盟" },
+            ]
+          : [
+              { value: 0, label: "隐藏" },
+              { value: 3, label: "怀疑" },
+              { value: 7, label: "友善" },
+              { value: 12, label: "结盟" },
+            ];
+        const stateKey = `${state.cycle}-${key}`;
+        const row = document.createElement("div");
+        row.className = "diplomacy-row";
+        const scale = document.createElement("div");
+        scale.className = "diplomacy-scale";
+        const markerRow = document.createElement("div");
+        markerRow.className = "diplomacy-markers";
+        markerRow.style.gridTemplateColumns = `repeat(${max - min + 1}, 34px)`;
+        markers.forEach((marker) => {
+          const item = document.createElement("span");
+          item.className = "diplomacy-marker";
+          item.style.gridColumn = String(marker.value - min + 1);
+          const bonus = bonuses[marker.label];
+          item.textContent = bonus != null ? `${marker.label}(${bonus})` : marker.label;
+          markerRow.appendChild(item);
+        });
+        const chips = document.createElement("div");
+        chips.className = "diplomacy-chips";
+        chips.style.gridTemplateColumns = `repeat(${max - min + 1}, 34px)`;
+        for (let value = min; value <= max; value += 1) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = `chip${String(state.diplomacy[stateKey] ?? "") === String(value) ? " active" : ""}`;
+          button.textContent = value > 0 ? `+${value}` : String(value);
+          button.addEventListener("click", () => {
+            state.diplomacy[stateKey] = String(value);
+            renderDiplomacy();
+            queueSave();
+          });
+          chips.appendChild(button);
+        }
+        scale.append(markerRow, chips);
+        row.append(makeTrackTitle(zh, en), scale);
+        elements.diplomacyTracks.appendChild(row);
+      });
+    }
+
+    function getRootingRows() {
+      if (!Array.isArray(state.rooting[state.cycle])) state.rooting[state.cycle] = [];
+      return state.rooting[state.cycle];
+    }
+
+    function getRootingCard(cycleId, cardId) {
+      return rootingData[cycleId]?.cards.find((card) => card.id === String(cardId)) || null;
+    }
+
+    function getRootingCardByCorner(cycleId, cornerNumber) {
+      const data = rootingData[cycleId];
+      if (!data) return null;
+      const id = Object.entries(data.cornerNumbers || {})
+        .find(([, number]) => String(number) === String(cornerNumber))?.[0];
+      return id ? getRootingCard(cycleId, id) : null;
+    }
+
+    function getRootingCardLabel(cycleId, cardId) {
+      const card = getRootingCard(cycleId, cardId);
+      const corner = rootingData[cycleId]?.cornerNumbers?.[cardId];
+      return card ? `${card.name} #${corner || card.id}` : `探索卡 #${cardId}`;
+    }
+
+    function applyAcclimation(acclimation) {
+      const rows = getRootingRows();
+      acclimation.from.forEach((fromCorner, index) => {
+        const toCorner = acclimation.to[index];
+        const fromCard = getRootingCardByCorner(state.cycle, fromCorner);
+        const toCard = getRootingCardByCorner(state.cycle, toCorner);
+        if (!fromCard || !toCard) return;
+        const existing = rows.find((row) => row.from === fromCard.id);
+        if (existing) {
+          existing.to = toCard.id;
+          existing.acclimation = acclimation.id;
+        } else {
+          rows.push({ from: fromCard.id, to: toCard.id, acclimation: acclimation.id });
+        }
+      });
+      renderRooting();
+      queueSave();
+    }
+
+    function renderRooting() {
+      const data = rootingData[state.cycle];
+      elements.rootingPanel.innerHTML = "";
+      elements.rootingMeta.textContent = data ? "按 Acclimation 自动替换探索卡" : "本循环暂无适应替换";
+      if (!data) {
+        const empty = document.createElement("p");
+        empty.className = "status-line";
+        empty.textContent = "当前循环没有 Acclimation 替换记录。";
+        elements.rootingPanel.appendChild(empty);
+        return;
+      }
+
+      const rows = getRootingRows();
+      const tools = document.createElement("div");
+      tools.className = "rooting-tools";
+      data.acclimations.forEach((acclimation) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = `${acclimation.label} D${acclimation.day}`;
+        button.title = `${acclimation.from.join(", ")} -> ${acclimation.to.join(", ")}`;
+        button.addEventListener("click", () => applyAcclimation(acclimation));
+        tools.appendChild(button);
+      });
+      elements.rootingPanel.appendChild(tools);
+
+      const list = document.createElement("div");
+      list.className = "rooting-list";
+      if (!rows.length) {
+        const empty = document.createElement("p");
+        empty.className = "status-line";
+        empty.textContent = "还没有应用 Acclimation 替换。";
+        list.appendChild(empty);
+      } else {
+        rows.forEach((row, index) => {
+          const item = document.createElement("div");
+          item.className = "rooting-row";
+          const text = document.createElement("span");
+          text.textContent = `${getRootingCardLabel(state.cycle, row.from)} -> ${getRootingCardLabel(state.cycle, row.to)}`;
+          const remove = document.createElement("button");
+          remove.type = "button";
+          remove.className = "secondary";
+          remove.textContent = "删除";
+          remove.addEventListener("click", () => {
+            rows.splice(index, 1);
+            renderRooting();
+            queueSave();
+          });
+          item.append(text, remove);
+          list.appendChild(item);
+        });
+      }
+      elements.rootingPanel.appendChild(list);
+
+      const deck = document.createElement("div");
+      deck.className = "rooting-deck";
+      const replacementMap = new Map(rows.map((row) => [row.from, row.to]));
+      data.cards
+        .filter((card) => data.cornerNumbers?.[card.id])
+        .sort((a, b) => Number(data.cornerNumbers[a.id]) - Number(data.cornerNumbers[b.id]))
+        .forEach((card) => {
+          const line = document.createElement("span");
+          const replacement = replacementMap.get(card.id);
+          const corner = data.cornerNumbers[card.id];
+          line.textContent = replacement
+            ? `${card.name} #${corner} -> ${getRootingCardLabel(state.cycle, replacement)}`
+            : `${card.name} #${corner}`;
+          deck.appendChild(line);
+        });
+      elements.rootingPanel.appendChild(deck);
+    }
+
+    function renderSummonOptions() {
+      [
+        [elements.godformSelect, summonCards.godforms],
+        [elements.nymphSelect, summonCards.nymphs],
+      ].forEach(([select, cardList]) => {
+        const selected = select.value;
+        select.innerHTML = cardList
+          .map((card) => `<option value="${escapeAttribute(card.id)}">${escapeHtml(card.zh)} / ${escapeHtml(card.en)}</option>`)
+          .join("");
+        if (cardList.some((card) => card.id === selected)) {
+          select.value = selected;
+        }
+      });
+    }
+
+    function addSummonCard(stateKey, select, cardList) {
+      const id = select.value;
+      if (!cardList.some((card) => card.id === id) || state[stateKey].includes(id)) return;
+      state[stateKey] = [...state[stateKey], id];
+      if (stateKey === "nymphCards") {
+        state.nymph = String(state.nymphCards.length);
+      }
+      renderSummons();
+      queueSave();
+    }
+
+    function toggleSummonCard(stateKey, select, cardList) {
+      const id = select.value;
+      if (!cardList.some((card) => card.id === id)) return;
+      if (state[stateKey].includes(id)) {
+        removeSummonCard(stateKey, id);
+      } else {
+        addSummonCard(stateKey, select, cardList);
+      }
+    }
+
+    function removeSummonCard(stateKey, id) {
+      const usedKey = getSummonUsedKey(stateKey);
+      state[stateKey] = state[stateKey].filter((cardId) => cardId !== id);
+      state[usedKey] = state[usedKey].filter((cardId) => cardId !== id);
+      if (stateKey === "nymphCards") {
+        state.nymph = String(state.nymphCards.length);
+      }
+      renderSummons();
+      queueSave();
+    }
+
+    function getSummonUsedKey(stateKey) {
+      return stateKey === "godforms" ? "godformUsedCards" : "nymphUsedCards";
+    }
+
+    function updateSummonActionButton(stateKey, select, button, addLabel, removeLabel) {
+      const id = select.value;
+      const selectedCard = (stateKey === "godforms" ? summonCards.godforms : summonCards.nymphs)
+        .find((card) => card.id === id);
+      const added = state[stateKey].includes(id);
+      button.textContent = added ? removeLabel : addLabel;
+      button.disabled = !selectedCard;
+      button.title = selectedCard ? `${added ? removeLabel : addLabel} ${selectedCard.zh}` : "";
+    }
+
+    function updateSummonActionButtons() {
+      updateSummonActionButton("godforms", elements.godformSelect, elements.addGodformButton, "添加神之形态", "移除神之形态");
+      updateSummonActionButton("nymphCards", elements.nymphSelect, elements.addNymphButton, "添加宁芙", "移除宁芙");
+    }
+
+    function toggleSummonUsed(stateKey, id) {
+      const usedKey = getSummonUsedKey(stateKey);
+      if (!state[stateKey].includes(id)) return;
+      const alreadyUsed = state[usedKey].includes(id);
+      if (stateKey === "nymphCards") {
+        const charges = getNymphCharges();
+        if (!alreadyUsed) {
+          if (isNymphSummonLimitReached() || charges <= 0) return;
+          state.nymphCharges = String(charges - 1);
+        } else {
+          state.nymphCharges = String(charges + 1);
+        }
+      }
+      state[usedKey] = alreadyUsed
+        ? state[usedKey].filter((cardId) => cardId !== id)
+        : [...state[usedKey], id];
+      renderSummons();
+      queueSave();
+    }
+
+    function restorePowerTide() {
+      const restore = () => {
+        state.godformUsedCards = [];
+        state.nymphUsedCards = [];
+        state.nymphCharges = String(hasNymphLimit() ? getNymphLimit() : 0);
+        renderSummons();
+        queueSave();
+      };
+      restore();
+      window.setTimeout(restore, 80);
+    }
+
+    function renderSummonList(container, stateKey, cardList, emptyText) {
+      container.innerHTML = "";
+      const selectedCards = state[stateKey]
+        .map((id) => cardList.find((card) => card.id === id))
+        .filter(Boolean);
+      if (!selectedCards.length) {
+        const empty = document.createElement("div");
+        empty.className = "summon-empty";
+        empty.textContent = emptyText;
+        container.appendChild(empty);
+        return;
+      }
+      selectedCards.forEach((card) => {
+        const item = document.createElement("article");
+        const used = state[getSummonUsedKey(stateKey)].includes(card.id);
+        item.className = `summon-card${used ? " used" : ""}`;
+        item.tabIndex = 0;
+        if (stateKey === "nymphCards" && !used && getNymphCharges() <= 0) {
+          item.title = "宁芙充能不足";
+        } else if (stateKey === "nymphCards" && !used && isNymphSummonLimitReached()) {
+          item.title = "宁芙召唤已达上限";
+        } else {
+          item.title = used ? "点击撤销召唤" : (stateKey === "nymphCards" ? "点击召唤宁芙，消耗 1 点充能" : "点击标记为已用");
+        }
+        item.setAttribute("role", "button");
+        item.setAttribute("aria-pressed", used ? "true" : "false");
+        item.setAttribute("aria-label", `${card.zh} / ${card.en}，${used ? "已用" : "未用"}`);
+        item.addEventListener("click", () => toggleSummonUsed(stateKey, card.id));
+        item.addEventListener("keydown", (event) => {
+          if (event.key !== "Enter" && event.key !== " ") return;
+          event.preventDefault();
+          toggleSummonUsed(stateKey, card.id);
+        });
+        const face = document.createElement("div");
+        face.className = "summon-card-face";
+        const image = document.createElement("img");
+        image.src = card.image;
+        image.alt = `${card.zh} ${card.en}`;
+        image.loading = "lazy";
+        face.appendChild(image);
+        item.appendChild(face);
+        container.appendChild(item);
+      });
+    }
+
+    const resourceImageMap = {
+      armament: "./assets/resource-icons/armament.png",
+      blackChain: "./assets/resource-icons/blackChain.png",
+      calcifiedKnuckle: "./assets/resource-icons/calcifiedKnuckle.png",
+      chimericTar: "./assets/resource-icons/chimericTar.png",
+      clothflesh: "./assets/resource-icons/clothflesh.png",
+      core: "./assets/resource-icons/core.png",
+      cyclopeanMetal: "./assets/resource-icons/cyclopeanMetal.png",
+      daedalusMakina: "./assets/resource-icons/daedalusMakina.png",
+      echoes: "./assets/resource-icons/echoes.png",
+      eyesCluster: "./assets/resource-icons/eyesCluster.png",
+      fearEssence: "./assets/resource-icons/fearEssence.png",
+      fleshyMantle: "./assets/resource-icons/fleshyMantle.png",
+      frozenAmbrosia: "./assets/resource-icons/frozenAmbrosia.png",
+      grotesqueBeak: "./assets/resource-icons/grotesqueBeak.png",
+      hyperboreanAlloy: "./assets/resource-icons/hyperboreanAlloy.png",
+      icarianFeather: "./assets/resource-icons/icarianFeather.png",
+      infusedMechanism: "./assets/resource-icons/infusedMechanism.png",
+      livingAbyss: "./assets/resource-icons/livingAbyss.png",
+      mazeFragment: "./assets/resource-icons/mazeFragment.png",
+      monument: "./assets/resource-icons/monument.png",
+      muscleCluster: "./assets/resource-icons/muscleCluster.png",
+      powderedMatter: "./assets/resource-icons/powderedMatter.png",
+      priests: "./assets/resource-icons/priests.png",
+      pygmalionStones: "./assets/resource-icons/pygmalionStones.png",
+      rare: "./assets/resource-icons/rare.png",
+      rawAmbrosia: "./assets/resource-icons/rawAmbrosia.png",
+      razorclaw: "./assets/resource-icons/razorclaw.png",
+      relief: "./assets/resource-icons/relief.png",
+      reliefshellFragment: "./assets/resource-icons/reliefshellFragment.png",
+      retractableMechanism: "./assets/resource-icons/retractableMechanism.png",
+      sirenshell: "./assets/resource-icons/sirenshell.png",
+      sisyphusTears: "./assets/resource-icons/sisyphusTears.png",
+      skinOfMalice: "./assets/resource-icons/skinOfMalice.png",
+      sunburnedSkull: "./assets/resource-icons/sunburnedSkull.png",
+      supersolidRelief: "./assets/resource-icons/supersolidRelief.png",
+      trireme: "./assets/resource-icons/trireme.png",
+      violentAmbrosia: "./assets/resource-icons/violentAmbrosia.png",
+      warMachine: "./assets/resource-icons/warMachine.png",
+      warTrireme: "./assets/resource-icons/warTrireme.png",
+      writhingTentacle: "./assets/resource-icons/writhingTentacle.png",
+    };
+
+    function createResourceCardImage(zh, en, key) {
+      const initials = en.split(/\s+/).map((part) => part[0] || "").join("").slice(0, 3).toUpperCase();
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="320" height="220" viewBox="0 0 320 220">
+          <defs>
+            <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0" stop-color="#f9f5e9"/>
+              <stop offset="1" stop-color="#dce9e3"/>
+            </linearGradient>
+          </defs>
+          <rect width="320" height="220" rx="18" fill="url(#bg)"/>
+          <rect x="14" y="14" width="292" height="192" rx="14" fill="none" stroke="#9ca9a4" stroke-width="3"/>
+          <text x="160" y="92" text-anchor="middle" font-family="Microsoft YaHei, Arial, sans-serif" font-size="42" font-weight="800" fill="#176c62">${escapeSvg(initials || key.slice(0, 3).toUpperCase())}</text>
+          <text x="160" y="136" text-anchor="middle" font-family="Microsoft YaHei, Arial, sans-serif" font-size="24" font-weight="800" fill="#1c2422">${escapeSvg(zh)}</text>
+          <text x="160" y="166" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#66726d">${escapeSvg(en)}</text>
+        </svg>`;
+      return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+    }
+
+    function escapeSvg(value) {
+      return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&apos;",
+      }[char]));
+    }
+
+    function currentResources() {
+      return currentCycle().resources.flatMap(([key, zh, en]) => {
+        if (key === "core") {
+          return currentCycle().enemies.map((enemy) => ({
+            key: `core-${enemy.key}`,
+            zh: `${enemy.zh}核心`,
+            en: `${enemy.en} Core`,
+            icon: "core",
+            type: "number",
+          }));
+        }
+        return [{
+          key,
+          zh,
+          en,
+          icon: key,
+          type: key === "rare" ? "text" : key === "priests" ? "number-text" : "number",
+        }];
+      });
+    }
+
+    function makeResourceHeading({ key, zh, en, icon }) {
+      const heading = document.createElement("div");
+      heading.className = "resource-heading";
+      const face = document.createElement("div");
+      face.className = "resource-face";
+      const image = document.createElement("img");
+      image.src = resourceImageMap[icon] || createResourceCardImage(zh, en, key);
+      image.alt = `${zh} ${en}`;
+      image.loading = "lazy";
+      face.appendChild(image);
+      const name = document.createElement("div");
+      name.className = "resource-name";
+      name.innerHTML = `${escapeHtml(zh)}<span>${escapeHtml(en)}</span>`;
+      heading.append(face, name);
+      return heading;
+    }
+
+    function makeNumberField(fullKey) {
+      const numberField = document.createElement("div");
+      numberField.className = "number-field";
+      const minusFive = document.createElement("button");
+      minusFive.type = "button";
+      minusFive.className = "resource-step-five";
+      minusFive.textContent = "-5";
+      const minus = document.createElement("button");
+      minus.type = "button";
+      minus.textContent = "-";
+      const input = document.createElement("input");
+      input.type = "number";
+      input.min = "0";
+      input.step = "1";
+      input.value = state.resources[fullKey] ?? 0;
+      const plus = document.createElement("button");
+      plus.type = "button";
+      plus.textContent = "+";
+      const plusFive = document.createElement("button");
+      plusFive.type = "button";
+      plusFive.className = "resource-step-five";
+      plusFive.textContent = "+5";
+      const update = (delta) => {
+        const next = Math.max(0, Number(input.value || 0) + delta);
+        input.value = next;
+        state.resources[fullKey] = next;
+        queueSave();
+      };
+      minusFive.addEventListener("click", () => update(-5));
+      minus.addEventListener("click", () => update(-1));
+      plus.addEventListener("click", () => update(1));
+      plusFive.addEventListener("click", () => update(5));
+      input.addEventListener("input", () => {
+        state.resources[fullKey] = Math.max(0, Number(input.value || 0));
+        queueSave();
+      });
+      input.addEventListener("wheel", (event) => {
+        event.preventDefault();
+      }, { passive: false });
+      input.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+          event.preventDefault();
+        }
+      });
+      numberField.append(minusFive, minus, input, plus, plusFive);
+      return numberField;
+    }
+
+    function makePygmalionResourceField(fullKey) {
+      const group = document.createElement("div");
+      group.className = "pygmalion-group";
+      const cellCount = 3;
+      group.style.gridTemplateColumns = `repeat(${cellCount}, 34px)`;
+      const progressKeys = Array.from({ length: cellCount }, (_, index) => `${fullKey}-progress-${index}`);
+      for (let index = 0; index < cellCount; index += 1) {
+        const progressKey = progressKeys[index];
+        const active = Boolean(state.pygmalion[progressKey]);
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `pygmalion-cell${active ? " active" : ""}`;
+        button.title = `Pygmalion Stone ${index + 1}`;
+        button.setAttribute("aria-label", `Pygmalion Stone ${index + 1}`);
+        button.addEventListener("click", () => {
+          state.pygmalion[progressKey] = !active;
+          const filled = progressKeys.every((key) => state.pygmalion[key]);
+          if (filled && window.confirm(`已点满 ${cellCount} 格，是否获得 1 个皮格马利翁之石？`)) {
+            progressKeys.forEach((key) => {
+              state.pygmalion[key] = false;
+            });
+            state.resources[fullKey] = Math.max(0, Number(state.resources[fullKey] || 0)) + 1;
+          }
+          renderResources();
+          queueSave();
+        });
+        group.appendChild(button);
+      }
+      return group;
+    }
+
+    function makeResourceTextField(fullKey, placeholder) {
+      const textarea = document.createElement("textarea");
+      textarea.className = "resource-text";
+      textarea.placeholder = placeholder;
+      textarea.value = state.resources[fullKey] ?? "";
+      textarea.addEventListener("input", () => {
+        state.resources[fullKey] = textarea.value;
+        queueSave();
+      });
+      return textarea;
+    }
+
+    function resourceStorageKey(key) {
+      return sharedResourceKeys.has(key) ? key : `${state.cycle}-${key}`;
+    }
+
+    function renderResources() {
+      elements.resourceGrid.innerHTML = "";
+      currentResources().forEach((resource) => {
+        const { key, zh, en, type } = resource;
+        const fullKey = resourceStorageKey(key);
+        const card = document.createElement("article");
+        card.className = "resource-card";
+        if (type === "text") card.classList.add("text-resource");
+        card.appendChild(makeResourceHeading(resource));
+        if (key === "pygmalionStones") {
+          card.appendChild(makeNumberField(fullKey));
+          card.appendChild(makePygmalionResourceField(fullKey));
+        } else if (type === "text") {
+          card.appendChild(makeResourceTextField(fullKey, "记录稀有资源名称"));
+        } else {
+          card.appendChild(makeNumberField(fullKey));
+          if (type === "number-text") {
+            card.appendChild(makeResourceTextField(`${fullKey}-names`, "记录祭司姓名"));
+          }
+        }
+        elements.resourceGrid.appendChild(card);
+      });
+    }
+
+    function renderMatrix() {
+      const rows = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").concat(["Aa", "Bb", "Cc", "Dd", "Ee", "Ff"]);
+      elements.choiceMatrix.innerHTML = "";
+      elements.choiceMatrix.className = `matrix ${matrixUnlocked ? "unlocked" : "locked"}`;
+      elements.matrixHint.textContent = matrixUnlocked ? "已解锁：双击格子勾选或取消" : "锁定中：点击解锁后双击修改";
+      elements.matrixLockButton.textContent = matrixUnlocked ? "锁定矩阵" : "解锁矩阵";
+      rows.forEach((row) => {
+        for (let col = 1; col <= 12; col += 1) {
+          const key = `${row}${col}`;
+          const checked = Boolean(state.matrix[key]);
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = checked ? "marked" : "";
+          button.textContent = `${row}${col}`;
+          button.title = matrixUnlocked ? "双击修改" : "矩阵已锁定";
+          button.addEventListener("dblclick", () => {
+            if (!matrixUnlocked) return;
+            state.matrix[key] = !state.matrix[key];
+            renderMatrix();
+            queueSave();
+          });
+          elements.choiceMatrix.appendChild(button);
+        }
+      });
+    }
+
+    function exportState() {
+      saveState();
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `${state.profileName || "argo-record"}.json`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function importState(file) {
+      const reader = new FileReader();
+      reader.addEventListener("load", () => {
+        try {
+          state = normalizeState(JSON.parse(reader.result));
+          renderAll();
+          saveState();
+        } catch (error) {
+          alert("导入失败：不是有效的记录 JSON。");
+        }
+      });
+      reader.readAsText(file);
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;",
+      }[char]));
+    }
+
+    function escapeAttribute(value) {
+      return escapeHtml(value).replace(/`/g, "&#096;");
+    }
+
+    elements.matrixLockButton.addEventListener("click", () => {
+      matrixUnlocked = !matrixUnlocked;
+      renderMatrix();
+    });
+    elements.godformSelect.addEventListener("change", updateSummonActionButtons);
+    elements.nymphSelect.addEventListener("change", updateSummonActionButtons);
+    elements.addGodformButton.addEventListener("click", () => toggleSummonCard("godforms", elements.godformSelect, summonCards.godforms));
+    elements.addNymphButton.addEventListener("click", () => toggleSummonCard("nymphCards", elements.nymphSelect, summonCards.nymphs));
+    elements.addTitanButton.addEventListener("click", addTitan);
+    elements.titanLimitInput.addEventListener("input", () => {
+      state.titanLimit = normalizeTitanLimit(elements.titanLimitInput.value);
+      updateTitanListCount();
+      queueSave();
+    });
+    elements.titanNameInput.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter") return;
+      event.preventDefault();
+      addTitan();
+    });
+    elements.powerTideButton.addEventListener("click", restorePowerTide);
+    document.querySelector("#exportButton").addEventListener("click", exportState);
+    document.querySelector("#importButton").addEventListener("click", () => elements.importInput.click());
+    document.querySelector("#printButton").addEventListener("click", () => window.print());
+    elements.importInput.addEventListener("change", (event) => {
+      const file = event.target.files?.[0];
+      if (file) importState(file);
+      event.target.value = "";
+    });
+    recordSyncChannel?.addEventListener("message", () => void syncRecordFromExternalUpdate({ retry: true }));
+    window.setInterval(() => void syncRecordFromExternalUpdate(), 4000);
+    window.addEventListener("focus", () => void syncRecordFromExternalUpdate());
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) void syncRecordFromExternalUpdate();
+    });
+
+    applyRequestedCycleFromUrl();
+    const importedDashboardSurveyNote = consumeDashboardSurveyNote();
+    bindInputs();
+    renderAll();
+    loadServerState();
+  </script>
+</body>
+</html>

@@ -1,0 +1,5098 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ATO 战役主控台</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #eef2f0;
+      --panel: #fffefa;
+      --ink: #1e2623;
+      --muted: #68736d;
+      --line: #d6ddd8;
+      --accent: #16675b;
+      --accent-strong: #0d4d44;
+      --gold: #a66d1d;
+      --danger: #9d332c;
+      --done: #1f7a4f;
+      --shadow: 0 18px 44px rgba(28, 38, 34, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", system-ui, sans-serif;
+      letter-spacing: 0;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    button {
+      min-height: 38px;
+      border: 0;
+      border-radius: 6px;
+      padding: 0 14px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: var(--accent-strong);
+    }
+
+    button.secondary {
+      border: 1px solid var(--line);
+      background: #f8faf7;
+      color: var(--ink);
+    }
+
+    button.secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--ink);
+      padding: 10px 12px;
+    }
+
+    textarea {
+      min-height: 106px;
+      resize: vertical;
+      line-height: 1.55;
+    }
+
+    .app {
+      width: min(1440px, 100%);
+      margin: 0 auto;
+      padding: 24px clamp(14px, 3vw, 34px) 34px;
+    }
+
+    .auth-gate {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .auth-panel {
+      width: min(420px, 100%);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      padding: 22px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .auth-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .auth-tabs button[aria-pressed="true"] {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .auth-form {
+      display: grid;
+      gap: 12px;
+    }
+
+    .auth-form label,
+    .session-card label {
+      display: grid;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .auth-message {
+      min-height: 20px;
+      color: var(--danger);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .session-card {
+      display: grid;
+      gap: 10px;
+    }
+
+    .session-account {
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      font-weight: 800;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: start;
+      margin-bottom: 18px;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.08;
+    }
+
+    .title-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .title-cycle-control {
+      min-width: min(280px, 100%);
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .title-cycle-control select {
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--ink);
+      padding: 0 10px;
+      font-weight: 900;
+    }
+
+    .subtitle {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .record-card-link {
+      align-self: stretch;
+      min-height: 88px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(166, 109, 29, 0.38);
+      border-radius: 6px;
+      padding: 0 12px;
+      background: #fff8ea;
+      color: var(--gold);
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .record-card-link:hover {
+      border-color: var(--gold);
+      background: #fff3d7;
+      color: #7f5015;
+    }
+
+    .day-card {
+      width: min(520px, 100%);
+      min-width: min(420px, 100%);
+      justify-self: end;
+      display: grid;
+      grid-template-columns: 116px minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: stretch;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .day-card label {
+      grid-column: 1;
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .day-card input {
+      width: 116px;
+      font-size: 28px;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .day-actions {
+      grid-column: 3;
+      align-self: stretch;
+      display: grid;
+      gap: 8px;
+    }
+
+    .profile-tools {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: end;
+      width: 100%;
+    }
+
+    .profile-tools label {
+      display: grid;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .profile-tools select {
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--ink);
+      padding: 0 10px;
+    }
+
+    .profile-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.8fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      min-height: 56px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #f8faf7;
+    }
+
+    .panel-head h2 {
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .flow-head-tools {
+      display: grid;
+      grid-template-columns: auto;
+      gap: 10px 14px;
+      align-items: center;
+      justify-content: end;
+      min-width: min(260px, 100%);
+    }
+
+    .flow-head-tools .field-note {
+      grid-column: 1 / -1;
+      justify-self: stretch;
+    }
+
+    .date-track-meta {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .date-track-list {
+      max-height: 560px;
+      overflow: auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 6px;
+      align-items: start;
+    }
+
+    .date-track-item {
+      min-height: 38px;
+      display: grid;
+      grid-template-columns: 46px minmax(88px, auto) minmax(0, 1fr);
+      gap: 8px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 6px 8px;
+      background: #fff;
+      color: var(--ink);
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .date-track-item:hover {
+      border-color: var(--accent);
+      background: #f5fbf8;
+    }
+
+    .date-track-item.current {
+      border-color: var(--accent);
+      border-left: 8px solid var(--accent);
+      padding-left: 12px;
+      background: #dff1ec;
+      box-shadow: inset 0 0 0 2px rgba(22, 103, 91, 0.28), 0 6px 16px rgba(22, 103, 91, 0.16);
+    }
+
+    .date-track-item.event {
+      border-color: rgba(166, 109, 29, 0.55);
+      background: #fff8ea;
+    }
+
+    .date-track-item.noted {
+      border-color: rgba(31, 122, 79, 0.24);
+      background: linear-gradient(90deg, rgba(31, 122, 79, 0.1), #fff 28px);
+    }
+
+    .date-track-item.current.noted {
+      border-color: var(--accent);
+      border-left-color: var(--accent);
+      background: #dff1ec;
+    }
+
+    .date-track-item:disabled,
+    .date-track-item.disabled {
+      cursor: default;
+      opacity: 0.72;
+    }
+
+    .date-track-day {
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .date-track-event {
+      grid-column: 3;
+      color: var(--gold);
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .date-track-actions {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 2px;
+    }
+
+    .date-track-action {
+      min-height: 28px;
+      border-radius: 5px;
+      padding: 0 8px;
+      font-size: 11px;
+    }
+
+    .date-track-action.applied {
+      background: #ecf6f2;
+      color: var(--accent);
+      border: 1px solid rgba(31, 122, 79, 0.28);
+    }
+
+    .date-track-icons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px;
+    }
+
+    .date-track-icon {
+      display: inline-flex;
+      align-items: center;
+      min-height: 16px;
+      border-radius: 4px;
+      padding: 0 4px;
+      background: #eef1ef;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      line-height: 1.1;
+    }
+
+    .date-track-icon.battle {
+      background: #f4ece8;
+      color: var(--danger);
+    }
+
+    .date-track-icon.structure-tech {
+      background: #e8f4ef;
+      color: var(--accent);
+    }
+
+    .date-track-icon.battle-tech {
+      background: #eef1f7;
+      color: #44536f;
+    }
+
+    .date-track-note {
+      grid-column: 3;
+      color: var(--done);
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1.2;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .field-note {
+      min-height: 30px;
+      border: 1px solid rgba(31, 122, 79, 0.28);
+      border-radius: 6px;
+      padding: 7px 9px;
+      background: #eef8f1;
+      color: var(--done);
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    .field-note[hidden] {
+      display: none;
+    }
+
+    .panel-body {
+      padding: 16px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .flow-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .flow-step {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .flow-step.done {
+      border-color: rgba(31, 122, 79, 0.35);
+      background: #f1faf5;
+    }
+
+    .flow-check {
+      width: 24px;
+      height: 24px;
+      margin-top: 2px;
+      accent-color: var(--done);
+      cursor: pointer;
+    }
+
+    .step-title {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 4px;
+      font-weight: 900;
+    }
+
+    .step-index {
+      color: var(--gold);
+      font-family: Consolas, monospace;
+      font-size: 15px;
+    }
+
+    .step-kind {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .step-desc {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .step-track-reminders {
+      display: grid;
+      gap: 7px;
+      margin-top: 10px;
+    }
+
+    .step-track-reminder {
+      padding: 8px 9px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+    }
+
+    .step-track-reminder.important {
+      border-color: rgba(157, 51, 44, 0.42);
+      background: #fff7f4;
+    }
+
+    .step-track-reminder.tech {
+      border-color: rgba(22, 103, 91, 0.35);
+      background: #f2faf6;
+    }
+
+    .step-track-title {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      align-items: center;
+      margin-bottom: 3px;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .step-track-tag {
+      min-height: 20px;
+      display: inline-flex;
+      align-items: center;
+      border-radius: 4px;
+      padding: 0 6px;
+      background: #eef1ef;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .step-track-tag.battle {
+      background: #f4ece8;
+      color: var(--danger);
+    }
+
+    .step-track-tag.structure-tech {
+      background: #e8f4ef;
+      color: var(--accent);
+    }
+
+    .step-track-tag.battle-tech {
+      background: #eef1f7;
+      color: #44536f;
+    }
+
+    .step-track-desc {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .exploration-tools {
+      display: grid;
+      gap: 9px;
+      margin-top: 11px;
+      padding: 10px;
+      border: 1px solid rgba(22, 103, 91, 0.28);
+      border-radius: 8px;
+      background: #f3faf7;
+    }
+
+    .exploration-toolbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 9px;
+      align-items: end;
+    }
+
+    .exploration-status {
+      display: grid;
+      gap: 5px;
+    }
+
+    .exploration-count {
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .exploration-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      justify-content: end;
+    }
+
+    .exploration-buttons button {
+      min-height: 36px;
+    }
+
+    .exploration-summary {
+      display: grid;
+      gap: 5px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .exploration-drawn {
+      display: grid;
+      gap: 8px;
+    }
+
+    .exploration-drawn-title {
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .exploration-drawn-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+      gap: 8px;
+      align-items: start;
+    }
+
+    .exploration-drawn-card {
+      display: grid;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .exploration-drawn-face {
+      width: 100%;
+      aspect-ratio: 470 / 740;
+      overflow: hidden;
+      border: 1px solid rgba(30, 38, 35, 0.2);
+      border-radius: 6px;
+      background-color: #e9eeeb;
+      background-repeat: no-repeat;
+      box-shadow: 0 6px 14px rgba(28, 38, 34, 0.12);
+    }
+
+    .exploration-drawn-meta {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+
+    .exploration-destruction {
+      border: 1px solid rgba(157, 51, 44, 0.2);
+      border-radius: 7px;
+      background: #fff8f5;
+    }
+
+    .exploration-destruction summary {
+      cursor: pointer;
+      padding: 9px 10px;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .exploration-destruction-body {
+      display: grid;
+      gap: 8px;
+      padding: 0 9px 9px;
+    }
+
+    .exploration-destruction-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .exploration-destruction-title {
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .exploration-destruction-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .exploration-destruction-card {
+      display: inline-flex;
+      min-height: 28px;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 3px 6px;
+      background: #fff;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .exploration-destruction-card button {
+      min-height: 22px;
+      padding: 0 7px;
+      font-size: 11px;
+    }
+
+    .exploration-builder {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+    }
+
+    .exploration-builder summary {
+      cursor: pointer;
+      padding: 9px 10px;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .exploration-builder-body {
+      display: grid;
+      gap: 9px;
+      padding: 0 10px 10px;
+    }
+
+    .exploration-builder-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .exploration-library {
+      max-height: 220px;
+      overflow: auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 6px;
+    }
+
+    .exploration-library label {
+      min-height: 34px;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 7px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 6px 8px;
+      background: #fbfcfa;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .exploration-library input {
+      width: 16px;
+      height: 16px;
+      padding: 0;
+      accent-color: var(--accent);
+    }
+
+    .exploration-library button {
+      min-height: 26px;
+      padding: 0 8px;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .survey-constants {
+      margin-top: 10px;
+      border: 1px solid rgba(166, 109, 29, 0.26);
+      border-radius: 7px;
+      background: #fffaf1;
+    }
+
+    .survey-constants summary {
+      cursor: pointer;
+      padding: 9px 10px;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .simple-constant-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      align-items: start;
+      margin-top: 10px;
+    }
+
+    .simple-constant-row .survey-constants {
+      margin-top: 0;
+      min-width: 0;
+    }
+
+    .survey-constants-body {
+      display: grid;
+      gap: 10px;
+      padding: 0 10px 10px;
+    }
+
+    .survey-constant-group {
+      display: grid;
+      gap: 7px;
+    }
+
+    .survey-constant-heading {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .survey-hub-summary {
+      overflow: auto;
+      border: 1px solid rgba(30, 38, 35, 0.12);
+      border-radius: 7px;
+      background: #fff;
+    }
+
+    .survey-hub-summary-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(52px, 0.5fr)) minmax(160px, 1.25fr) minmax(150px, 1fr);
+      gap: 8px;
+      align-items: center;
+      min-width: 660px;
+      border-top: 1px solid rgba(30, 38, 35, 0.08);
+      padding: 7px 8px;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .survey-hub-summary-row:first-child {
+      border-top: 0;
+    }
+
+    .survey-hub-summary-row.header {
+      background: #f7efe2;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 950;
+      text-transform: uppercase;
+    }
+
+    .survey-hub-summary-row.active {
+      background: #f1f8f5;
+      box-shadow: inset 3px 0 0 var(--accent);
+    }
+
+    .survey-hub-story {
+      color: var(--gold);
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .survey-hub-title {
+      font-weight: 950;
+    }
+
+    .survey-constant-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 8px;
+    }
+
+    .survey-constant-card {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 8px;
+      background: #fff;
+    }
+
+    .survey-constant-title {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      align-items: baseline;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 1.25;
+    }
+
+    .survey-constant-title span {
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .survey-constant-boxes {
+      display: grid;
+      gap: 5px;
+    }
+
+    .survey-constant-boxes label,
+    .survey-constant-row-item {
+      display: grid;
+      grid-template-columns: auto minmax(34px, auto) minmax(0, 1fr);
+      gap: 6px;
+      align-items: center;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .survey-constant-row-item.multi-slot {
+      grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .simple-constant-slots {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+      min-width: max-content;
+    }
+
+    .survey-constant-boxes input {
+      width: 15px;
+      height: 15px;
+      padding: 0;
+      accent-color: var(--gold);
+    }
+
+    .survey-constant-roll {
+      color: var(--gold);
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .flow-title-button {
+      min-height: 0;
+      border: 0;
+      border-bottom: 2px solid rgba(22, 103, 91, 0.35);
+      border-radius: 0;
+      padding: 0 1px 1px;
+      background: transparent;
+      color: var(--accent);
+      font: inherit;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .flow-title-button:hover {
+      background: transparent;
+      border-color: var(--accent);
+      color: var(--accent-strong);
+    }
+
+    .card-track-dialog {
+      width: min(1240px, calc(100vw - 28px));
+      max-height: min(920px, calc(100vh - 28px));
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0;
+      background: var(--panel);
+      color: var(--ink);
+      box-shadow: var(--shadow);
+    }
+
+    .card-track-dialog::backdrop {
+      background: rgba(30, 38, 35, 0.42);
+    }
+
+    .card-track-shell {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      max-height: min(920px, calc(100vh - 28px));
+    }
+
+    .card-track-head {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+      padding: 14px 16px;
+    }
+
+    .card-track-head h2 {
+      font-size: 20px;
+    }
+
+    .card-track-close {
+      width: 34px;
+      min-height: 34px;
+      padding: 0;
+      border: 1px solid var(--line);
+      background: #f8faf7;
+      color: var(--ink);
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .card-track-body {
+      overflow: auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));
+      gap: 14px;
+      padding: 14px;
+    }
+
+    .card-track-dialog[data-group="story"] .card-track-body {
+      grid-template-columns: minmax(620px, 1fr) minmax(260px, 340px);
+    }
+
+    .card-track-dialog[data-group="doom"] .card-track-body {
+      grid-template-columns: minmax(0, 1fr);
+      justify-items: center;
+    }
+
+    .card-track-dialog[data-group="doom"] .card-track-item {
+      width: min(100%, 720px);
+    }
+
+    .card-track-dialog[data-group="doom"] .card-track-face,
+    .card-track-dialog[data-group="doom"] .card-track-empty {
+      width: min(100%, 620px);
+    }
+
+    .card-track-item {
+      display: grid;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #fff;
+    }
+
+    .card-track-title {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .card-track-status {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .card-track-face {
+      width: min(100%, 920px);
+      justify-self: center;
+      aspect-ratio: 1.4;
+      overflow: hidden;
+      position: relative;
+      border: 1px solid rgba(30, 38, 35, 0.22);
+      border-radius: 7px;
+      background: #edf1ee;
+      box-shadow: 0 8px 18px rgba(28, 38, 34, 0.12);
+    }
+
+    .card-track-face img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+    }
+
+    .card-track-progress-badge {
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      min-height: 26px;
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      border-radius: 999px;
+      padding: 0 9px;
+      background: rgba(30, 38, 35, 0.78);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .card-track-side-badge {
+      position: absolute;
+      left: 8px;
+      top: 8px;
+      min-height: 30px;
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      border-radius: 6px;
+      padding: 0 10px;
+      background: rgba(255, 254, 250, 0.86);
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 950;
+    }
+
+    .card-track-preview-badge {
+      position: absolute;
+      left: 8px;
+      bottom: 8px;
+      min-height: 26px;
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      border-radius: 999px;
+      padding: 0 9px;
+      background: rgba(190, 102, 36, 0.84);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .card-track-empty {
+      width: min(100%, 920px);
+      justify-self: center;
+      aspect-ratio: 1.4;
+      display: grid;
+      place-items: center;
+      border: 1px dashed rgba(22, 103, 91, 0.34);
+      border-radius: 7px;
+      background: #fff;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 850;
+      text-align: center;
+      padding: 8px;
+    }
+
+    .card-track-knowledge {
+      min-height: 180px;
+      display: grid;
+      place-items: center;
+      gap: 8px;
+      border: 1px solid rgba(22, 103, 91, 0.28);
+      border-radius: 8px;
+      background: #f3faf7;
+      text-align: center;
+      padding: 18px;
+    }
+
+    .card-track-knowledge-value {
+      color: var(--accent-strong);
+      font-size: 52px;
+      font-weight: 950;
+      line-height: 1;
+    }
+
+    .card-track-knowledge-label {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .card-track-controls {
+      display: grid;
+      gap: 8px;
+    }
+
+    .card-track-progress {
+      display: grid;
+      grid-template-columns: 34px minmax(60px, 1fr) 34px;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .card-track-progress button,
+    .card-track-advance,
+    .card-track-retreat {
+      min-height: 34px;
+      border: 1px solid var(--line);
+      background: #f8faf7;
+      color: var(--ink);
+    }
+
+    .card-track-progress input {
+      height: 34px;
+      padding: 6px 8px;
+      text-align: center;
+      font-weight: 900;
+    }
+
+    .card-track-step-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .card-track-advance,
+    .card-track-retreat {
+      width: 100%;
+    }
+
+    .card-track-meta {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+      line-height: 1.4;
+    }
+
+    .step-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      margin: 0 0 0 auto;
+    }
+
+    .step-actions a {
+      min-height: 30px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fbfcfa;
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.18;
+      text-align: center;
+    }
+
+    .step-actions a:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .step-action-context {
+      grid-column: 1 / -1;
+      display: grid;
+      gap: 6px;
+      margin-top: 2px;
+      border-top: 1px solid var(--line);
+      padding-top: 8px;
+      color: var(--ink);
+      font-size: 12px;
+      line-height: 1.3;
+    }
+
+    .step-action-context-title {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 950;
+      text-transform: uppercase;
+    }
+
+    .step-action-context-row {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .step-action-context-label {
+      color: var(--gold);
+      font-weight: 950;
+    }
+
+    .step-action-context-value {
+      overflow-wrap: anywhere;
+      font-weight: 850;
+    }
+
+    .step-action-context-empty {
+      color: var(--muted);
+      font-weight: 750;
+    }
+
+    .step-action-context-count {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .progress {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 210px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .progress-track {
+      width: 120px;
+      height: 9px;
+      overflow: hidden;
+      border-radius: 99px;
+      background: #e2e8e4;
+    }
+
+    .progress-fill {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--done);
+      transition: width 160ms ease;
+    }
+
+    .stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    .event-tools {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .event-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .event-item {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 9px;
+      align-items: center;
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .event-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--done);
+    }
+
+    .event-item.done span {
+      color: var(--muted);
+      text-decoration: line-through;
+    }
+
+    .event-remove {
+      min-height: 30px;
+      padding: 0 9px;
+      background: #675d51;
+    }
+
+    .empty {
+      padding: 12px;
+      border: 1px dashed var(--line);
+      border-radius: 8px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .danger-zone {
+      display: grid;
+      gap: 12px;
+    }
+
+    .archive-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .danger {
+      background: var(--danger);
+    }
+
+    .danger:hover {
+      background: #76241f;
+    }
+
+    @media (max-width: 1040px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .day-card {
+        min-width: min(420px, 100%);
+      }
+
+      .date-track-list {
+        max-height: 280px;
+      }
+
+      .flow-step {
+        grid-template-columns: auto minmax(0, 1fr);
+      }
+
+      .simple-constant-row {
+        grid-template-columns: 1fr;
+      }
+
+      .flow-head-tools {
+        width: 100%;
+        min-width: 0;
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 780px) {
+      .topbar {
+        grid-template-columns: 1fr;
+      }
+
+      .day-card {
+        width: 100%;
+        min-width: 0;
+        justify-self: stretch;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .title-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .panel-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .progress {
+        width: 100%;
+      }
+
+      .progress-track {
+        width: 100%;
+      }
+
+      .day-card {
+        grid-template-columns: 1fr;
+      }
+
+      .day-card label,
+      .record-card-link,
+      .day-actions {
+        grid-column: 1;
+      }
+
+      .record-card-link {
+        min-height: 48px;
+      }
+
+      .day-actions {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .date-track-list {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .date-track-item {
+        grid-template-columns: 42px minmax(74px, auto) minmax(0, 1fr);
+      }
+
+      .card-track-body {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .card-track-dialog[data-group="story"] .card-track-body,
+      .card-track-dialog[data-group="doom"] .card-track-body {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .card-track-dialog {
+        width: calc(100vw - 14px);
+        max-height: calc(100vh - 14px);
+      }
+
+      .card-track-shell {
+        max-height: calc(100vh - 14px);
+      }
+
+      .card-track-face,
+      .card-track-empty {
+        width: min(100%, 520px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <section id="authGate" class="auth-gate" hidden>
+    <div class="auth-panel">
+      <div>
+        <h1>ATO 战役主控台</h1>
+        <p class="subtitle">使用账号和密码登录后，存档会自动同步到当前账号。</p>
+      </div>
+      <div class="auth-tabs" role="group" aria-label="账号入口">
+        <button id="loginModeButton" class="secondary" type="button" aria-pressed="true">登录</button>
+        <button id="registerModeButton" class="secondary" type="button" aria-pressed="false">注册</button>
+      </div>
+      <form id="authForm" class="auth-form">
+        <label>
+          账号
+          <input id="authUsername" autocomplete="username" required minlength="3" maxlength="32" pattern="[A-Za-z0-9_-]+">
+        </label>
+        <label>
+          密码
+          <input id="authPassword" type="password" autocomplete="current-password" required minlength="4">
+        </label>
+        <button id="authSubmitButton" type="submit">登录</button>
+        <div id="authMessage" class="auth-message" aria-live="polite"></div>
+      </form>
+    </div>
+  </section>
+
+  <main id="appShell" class="app" hidden>
+    <header class="topbar">
+      <div>
+        <div class="title-row">
+          <h1>ATO 战役主控台</h1>
+          <label class="title-cycle-control">
+            当前 Cycle
+            <select id="cycleSelect"></select>
+          </label>
+        </div>
+        <p class="subtitle">按每日流程推进战役，把故事书、AIBP 和科技工具接到同一张桌面上。</p>
+      </div>
+      <section class="day-card" aria-label="当前天数">
+        <label>
+          当前 Day
+          <input id="dayInput" type="number" min="0" step="1" value="0">
+        </label>
+        <a class="record-card-link" href="./record/index.html">阿尔戈号记录表</a>
+        <div class="day-actions">
+          <button id="nextDayButton" type="button">进入下一天</button>
+          <button id="resetTodayButton" type="button" class="secondary">重置今日</button>
+        </div>
+      </section>
+    </header>
+
+    <div class="grid">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>今日流程</h2>
+          <div class="flow-head-tools">
+            <div class="progress" aria-live="polite">
+              <div class="progress-track"><div id="progressFill" class="progress-fill"></div></div>
+              <span id="progressText">0 / 8</span>
+            </div>
+            <div id="currentDateNote" class="field-note" hidden></div>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div id="flowList" class="flow-list"></div>
+        </div>
+      </section>
+
+      <div class="stack">
+        <section class="panel date-track-panel">
+          <div class="panel-head">
+            <div>
+              <h2>日期轨</h2>
+              <span id="dateTrackMeta" class="date-track-meta"></span>
+            </div>
+          </div>
+          <div id="dateTrackList" class="panel-body date-track-list"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>战役笔记</h2>
+          </div>
+          <div class="panel-body">
+            <textarea id="notesInput" placeholder="记录资源变化、故事选择、未完成事项或下一天计划"></textarea>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>用户与存档</h2>
+          </div>
+          <div class="panel-body danger-zone">
+            <div class="session-card">
+              <label>
+                当前账号
+                <span id="sessionAccountName" class="session-account"></span>
+              </label>
+              <button id="logoutButton" type="button" class="secondary">登出</button>
+            </div>
+            <div class="archive-actions">
+              <button id="exportButton" type="button" class="secondary">导出状态</button>
+              <button id="importButton" type="button" class="secondary">导入状态</button>
+              <input id="importInput" type="file" accept="application/json,.json" hidden>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <dialog id="cardTrackDialog" class="card-track-dialog">
+    <div class="card-track-shell">
+      <div class="card-track-head">
+        <h2 id="cardTrackTitle">故事</h2>
+        <button id="cardTrackClose" class="card-track-close" type="button" aria-label="关闭">×</button>
+      </div>
+      <div id="cardTrackBody" class="card-track-body"></div>
+    </div>
+  </dialog>
+
+  <script src="./page-focus-router.js?v=20260607a"></script>
+  <script src="./story-doom-card-data.js"></script>
+  <script>
+    const legacyStorageKey = "ato-campaign-dashboard-v1";
+    const storageKey = "ato-campaign-dashboard-profiles-v1";
+    const argoRecordStorageKey = "ato-argo-record-sheet-v1";
+    const mapStorageKey = "ato-map-state-v2";
+    const technologyAccountsStorageKey = "ato-tech-tree-accounts-v1";
+    const technologyActiveAccountStorageKey = "ato-tech-tree-active-account-v1";
+    const technologyLanguageStorageKey = "ato-tech-tree-language-v1";
+    const authUrl = "./api/campaign-state.php";
+    const campaignStorageUrl = "./api/campaign-state.php?section=dashboard";
+    const campaignStorageSection = "dashboard";
+    const storyDoomData = window.ATO_STORY_DOOM_DATA || { cycles: {} };
+    const cardTrackGroups = {
+      story: {
+        title: "故事",
+        tracks: [
+          { key: "story", label: "故事卡", source: "storySteps", fixed: false },
+          { key: "inwardOdyssey", label: "内蕴奥德赛", source: "inwardOdyssey", fixed: true },
+        ],
+      },
+      doom: {
+        title: "灾祸",
+        tracks: [
+          { key: "doom", label: "灾祸卡", source: "doomSteps", fixed: false },
+        ],
+      },
+    };
+
+    const cycleConfigs = [
+      { id: "c1", label: "Cycle 1", storyBook: "c1", aibp: true, map: true },
+      { id: "c2", label: "Cycle 2", storyBook: "c2", aibp: true, map: true },
+      { id: "c3", label: "Cycle 3", storyBook: "c3", aibp: true, map: true },
+      { id: "c4", label: "Cycle 4", storyBook: "c4", aibp: false, map: false },
+      { id: "c5", label: "Cycle 5", storyBook: "c5", aibp: false, map: false },
+    ];
+    const inwardOdysseyStoryRanges = {
+      c2: { min: 21, max: 40 },
+      c4: { min: 61, max: 80 },
+    };
+
+    const flowSteps = [
+      {
+        id: "move",
+        title: "移动和时间表",
+        kind: "总是执行",
+        desc: "将**阿尔戈号**移动至不同的一块板块，**时间表前进 1 天**，并检查今天是否有定时事件。",
+      },
+      {
+        id: "explore",
+        title: "探索",
+        kind: "总是执行",
+        desc: "触发探索图标，**抽取并结算探索卡**；如有需要，移动仇敌并执行扎根。",
+      },
+      {
+        id: "survey",
+        title: "考察",
+        kind: "条件执行",
+        desc: "如果当前位置有**冒险或 R&R 图标**，查询冒险对照表并结算一段冒险。",
+        links: [{ label: "打开 Story", href: "./story/index.html" }],
+      },
+      {
+        id: "encounter",
+        title: "遭遇",
+        kind: "条件执行",
+        desc: "如果本日有**定时战斗或战斗事件**，完成战斗准备并进入对应战斗工具。",
+        links: [
+          { label: "战斗模块", href: "./story/index.html?module=battle" },
+        ],
+      },
+      {
+        id: "development",
+        title: "发展",
+        kind: "可选执行",
+        desc: "**打造装备**、结算发展事件、**开发新科技**，或使用已有科技。",
+        links: [{ label: "Technology", href: "./technology/index.html" }],
+      },
+      {
+        id: "story",
+        title: "故事",
+        kind: "条件执行",
+        desc: "如果有剧情事件、未结算的**回忆突破**，或故事进程被触发，进行结算。",
+        links: [{ label: "打开 Story", href: "./story/index.html" }],
+      },
+      {
+        id: "doom",
+        title: "灾祸",
+        kind: "条件执行",
+        desc: "如果本日有**灾祸事件**，或灾祸进程被触发，进行结算并记录后果。",
+      },
+    ];
+
+    const dateIconTypes = {
+      structureTech: { label: "结构科技", className: "structure-tech" },
+      battleTech: { label: "战斗科技", className: "battle-tech" },
+      battle: { label: "战斗", className: "battle" },
+    };
+
+    const dateTrackData = {
+      c1: {
+        label: "Cycle I 航行时间表",
+        entries: [
+          { label: "T0" },
+          { label: "T1" },
+          { label: "T2", icons: ["battleTech"] },
+          { label: "T3", icons: ["battleTech"] },
+          { label: "T4" },
+          { label: "T5", icons: ["battleTech"] },
+          { label: "T6/00", day: 0 },
+          ...Array.from({ length: 80 }, (_, index) => ({ day: index + 1 })),
+        ],
+        events: {
+          6: "Cackle Special Event",
+          18: "Acclimation 1",
+          36: "Acclimation 2",
+          54: "Acclimation 3",
+        },
+        structureTechDays: [1, 4, 7, 10, 14, 18, 22, 26, 30, 34, 38, 43, 48, 53, 58, 64, 70],
+        battleTechDays: [2, 5, 8, 11, 14, 17, 21, 25, 29, 33, 37, 41, 45, 49, 53, 57, 61, 65, 69, 73, 77],
+        battleDays: [1, 7, 13, 19, 25, 31, 37, 43, 49, 55, 61, 67, 73, 79],
+      },
+      c2: {
+        label: "Cycle II 航行时间表",
+        entries: Array.from({ length: 81 }, (_, index) => ({ day: index })),
+        events: {
+          6: "Relentless Adversary Special Event",
+          18: "Acclimation 1",
+          36: "Acclimation 2",
+          54: "Acclimation 3",
+        },
+        structureTechDays: [1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34, 37, 41, 45, 49, 53, 57, 61, 65, 69, 73, 77],
+        battleTechDays: [0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 43, 47, 51, 55, 59, 63, 67, 71, 75, 79],
+        battleDays: [1, 7, 13, 19, 25, 31, 37, 43, 49, 55, 61, 67, 73, 79],
+      },
+      c3: {
+        label: "Cycle III 航行时间表",
+        entries: Array.from({ length: 91 }, (_, index) => ({ day: index })),
+        events: {
+          1: "Vicious Circle (0040)",
+          9: "Acclimation 3",
+          10: "Relentless Adversary Special Event",
+          19: "Acclimation 1",
+          37: "Acclimation 2",
+        },
+        structureTechDays: [1, 4, 7, 10, 13, 16, 19, 22, 26, 30, 34, 38, 42, 46, 50, 54, 58, 62, 66, 70, 78, 82, 86],
+        battleTechDays: [0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51, 55, 59, 63, 67, 71, 75, 79, 83],
+        battleDays: [1, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 90],
+      },
+    };
+
+    const explorationDecks = {
+      c1: [
+        {
+          id: "main",
+          label: "探索卡组",
+          cards: [
+            { id: "6428", name: "Egyptian War Fleet" },
+            { id: "6427", name: "Egyptian War Fleet" },
+            { id: "6426", name: "Hidden Temple" },
+            { id: "6425", name: "Desecrated Temple" },
+            { id: "6424", name: "Weapons Cache" },
+            { id: "6423", name: "Shipyard" },
+            { id: "6422", name: "Shipyard" },
+            { id: "6421", name: "Desecrated Temple" },
+            { id: "6420", name: "Abandoned Fleet" },
+            { id: "6419", name: "Hidden Temple" },
+            { id: "6418", name: "Old Armory" },
+            { id: "6417", name: "Abandoned Fleet" },
+            { id: "6431", name: "Grand Temple Ruins" },
+            { id: "6430", name: "Bronze People Armory" },
+            { id: "6429", name: "Old Armory" },
+            { id: "6435", name: "Informant Network" },
+            { id: "6434", name: "Hekatrap" },
+            { id: "6433", name: "Untamed Titan" },
+            { id: "6438", name: "Maze Storm" },
+            { id: "6437", name: "Maze Pilgrim" },
+            { id: "6436", name: "Cackle" },
+            { id: "6440", name: "Heart of the Maze" },
+            { id: "6439", name: "Recruitment Drive" },
+            { id: "13400", name: "Theban Trader" },
+          ],
+        },
+        {
+          id: "start",
+          label: "起始探索卡组",
+          cards: [
+            { id: "6400", name: "Dog Days" },
+            { id: "6415", name: "Temple Ruins" },
+            { id: "6412", name: "Abandoned Shrine" },
+            { id: "6402", name: "Hornsworn Fleet" },
+            { id: "6406", name: "Fishing Pier" },
+            { id: "6411", name: "Weapons Cache" },
+            { id: "6407", name: "Trireme Wreck" },
+            { id: "6416", name: "Titan" },
+            { id: "6409", name: "Smithy" },
+            { id: "6401", name: "Minoan Fleet" },
+            { id: "6413", name: "Abandoned Shrine" },
+            { id: "6414", name: "Temple Ruins" },
+            { id: "6403", name: "Labyrinthian Vessel" },
+            { id: "6405", name: "Trade Post" },
+            { id: "6410", name: "Smithy" },
+            { id: "6408", name: "Trireme Wreck" },
+            { id: "6404", name: "Trade Post" },
+          ],
+        },
+      ],
+      c2: [
+        {
+          id: "main",
+          label: "探索卡组",
+          cards: [
+            { id: "13600", name: "Temenos Fear Aquifer" },
+            { id: "13601", name: "Pre-Eschaton Armory" },
+            { id: "13602", name: "Temple of Ares" },
+            { id: "13603", name: "Temenos Mineshaft" },
+            { id: "13604", name: "Weapons Workshop" },
+            { id: "13605", name: "Shrine To Ares" },
+            { id: "13606", name: "Temenos Pit" },
+            { id: "13607", name: "Temenos Mineshaft" },
+            { id: "13608", name: "Temple of Ares" },
+            { id: "13609", name: "Spartan Wreckage" },
+            { id: "13610", name: "Daedalus Laboratory" },
+            { id: "13611", name: "Cyclopean Temple of Hyperion" },
+            { id: "13612", name: "Temenos Fear Aquifer" },
+            { id: "13613", name: "Palirroia Trireme" },
+            { id: "13614", name: "Daedalus Laboratory" },
+            { id: "13615", name: "Cyclopean Temple of Iapetus" },
+            { id: "13616", name: "Spartan Trireme" },
+            { id: "13617", name: "Cyclopean Temple of Gaia" },
+            { id: "13618", name: "Shrine to Ares" },
+            { id: "13619", name: "Marathonian-Class Trireme" },
+            { id: "13620", name: "Bronze People Foundry" },
+            { id: "13621", name: "Cyclopean Shrine of Hyperion" },
+            { id: "13622", name: "Temenos Fear Spring" },
+            { id: "13623", name: "Cyclopean Temple of Gaia" },
+            { id: "13624", name: "Cyclopean Shrine of Iapetus" },
+            { id: "13625", name: "Spartan Wreckage" },
+            { id: "13626", name: "White Trireme" },
+            { id: "13627", name: "Palirroia Trireme" },
+            { id: "13628", name: "Titan" },
+            { id: "13629", name: "Untamed Titan" },
+            { id: "13630", name: "Argo Engines" },
+            { id: "13631", name: "Propylon" },
+            { id: "13632", name: "Triskelion System" },
+            { id: "13633", name: "Titan Armory" },
+            { id: "13634", name: "Krypteia Assassination Attempt" },
+            { id: "13635", name: "Ambrosia Spill" },
+            { id: "13636", name: "Black Sludge" },
+            { id: "13637", name: "Cackle" },
+            { id: "13638", name: "Private Lesson" },
+            { id: "13639", name: "Moral Erosion" },
+            { id: "13640", name: "Smugglers" },
+            { id: "13641", name: "Spy Network" },
+          ],
+        },
+      ],
+      c3: [
+        {
+          id: "main",
+          label: "探索卡组",
+          cards: Array.from({ length: 42 }, (_, index) => {
+            const id = String(13500 + index);
+            return { id, name: `Cycle III 探索卡 ${id}` };
+          }),
+        },
+      ],
+    };
+
+    const explorationCornerNumbers = {
+      c1: {
+        6401: "29", 6402: "30", 6403: "31", 6404: "4", 6405: "8", 6406: "1",
+        6407: "7", 6408: "13", 6409: "23", 6410: "5", 6411: "2", 6412: "6",
+        6413: "19", 6414: "3", 6415: "9", 6416: "28", 6417: "10", 6418: "11",
+        6419: "12", 6420: "14", 6421: "22", 6422: "17", 6423: "27", 6424: "15",
+        6425: "18", 6426: "16", 6427: "24", 6428: "20", 6429: "25", 6430: "21",
+        6431: "26", 6433: "32",
+      },
+      c2: {
+        13600: "1", 13601: "2", 13602: "3", 13603: "4", 13604: "5", 13605: "6",
+        13606: "7", 13607: "8", 13608: "9", 13609: "10", 13610: "11", 13611: "12",
+        13612: "13", 13613: "14", 13614: "15", 13615: "16", 13616: "17", 13617: "18",
+        13618: "19", 13619: "20", 13620: "21", 13621: "22", 13622: "23", 13623: "26",
+        13624: "27", 13625: "28", 13626: "29", 13627: "30", 13628: "31", 13629: "32",
+        13630: "33", 13631: "34", 13632: "35", 13633: "36", 13634: "37",
+      },
+      c3: {
+        13500: "1", 13501: "2", 13502: "3", 13503: "4", 13504: "5", 13505: "6",
+        13506: "7", 13507: "8", 13508: "9", 13509: "10", 13510: "11", 13511: "12",
+        13512: "13", 13513: "14", 13514: "15", 13515: "16", 13516: "17", 13517: "18",
+        13518: "19", 13519: "20", 13520: "21", 13521: "22", 13522: "23", 13523: "24",
+        13524: "25", 13525: "26", 13526: "27", 13527: "28", 13528: "29", 13529: "30",
+        13530: "32", 13531: "33", 13532: "34",
+      },
+    };
+
+    const defaultExplorationSelections = {
+      c1: [
+        "6406", "6411", "6414", "6404", "6410", "6412", "6407", "6405", "6415",
+        "6408", "6413", "6409", "6416", "6401", "6402", "6403", "6433",
+      ],
+      c2: [
+        "13600", "13601", "13602", "13603", "13604", "13605", "13606", "13607", "13608",
+        "13612", "13618", "13622", "13628", "13629",
+      ],
+      c3: [
+        "13500", "13501", "13502", "13503", "13504", "13505", "13506", "13507", "13508",
+        "13512", "13518", "13522", "13528", "13529", "13530", "13531", "13532",
+      ],
+    };
+
+    const explorationSpecialRules = {
+      c2: {
+        destructionIds: ["13630", "13631", "13632", "13633"],
+      },
+    };
+
+    const acclimationReplacementRules = {
+      c1: [
+        { id: "a1", day: 18, label: "Acclimation 1", from: ["4", "5", "6", "8", "19"], to: ["10", "11", "12", "14", "22"] },
+        { id: "a2", day: 36, label: "Acclimation 2", from: ["3", "7", "9", "13", "23"], to: ["15", "16", "17", "18", "27"] },
+        { id: "a3", day: 54, label: "Acclimation 3", from: ["1", "2", "12", "14", "22"], to: ["20", "21", "24", "25", "26"] },
+      ],
+      c2: [
+        { id: "a1", day: 18, label: "Acclimation 1", from: ["7", "4", "8", "23", "6", "19"], to: ["14", "29", "30", "11", "12", "22"] },
+        { id: "a2", day: 36, label: "Acclimation 2", from: ["13", "1", "3", "9", "5"], to: ["28", "10", "16", "27", "15"] },
+        { id: "a3", day: 54, label: "Acclimation 3", from: ["14", "29", "12", "22", "2"], to: ["20", "17", "18", "26", "21"] },
+      ],
+      c3: [
+        { id: "a3", day: 9, label: "Acclimation 3", from: ["14", "10", "12", "16", "2"], to: ["24", "27", "26", "28", "25"] },
+        { id: "a1", day: 19, label: "Acclimation 1", from: ["1", "23", "13", "8", "19", "6"], to: ["14", "10", "15", "11", "12", "16"] },
+        { id: "a2", day: 37, label: "Acclimation 2", from: ["7", "4", "9", "3", "5"], to: ["20", "17", "18", "22", "21"] },
+      ],
+    };
+
+    const surveyConstantData = {
+      c1: {
+        summary: [
+          { story: ["1-3", "1-2", "", ""], hubId: "fated-conundrum", hub: "Fated Conundrum", terrain: "Maze Outcrop (Inner 3)" },
+          { story: ["4-6", "3-4", "", ""], hubId: "plight-of-the-people", hub: "Plight of the People", terrain: "Giant Shell (Inner 3)" },
+          { story: ["7-9", "5-6", "1-2", ""], hubId: "hidden-in-plain-sight", hub: "Hidden in Plain Sight", terrain: "Minos Manos Unit (Outer 3)" },
+          { story: ["10", "7-8", "3-4", "1-2"], hubId: "man-of-purpose", hub: "Man of Purpose", terrain: "Abandoned Temple (Outer 3)" },
+          { story: ["", "9-10", "5-6", "3-5"], hubId: "uneasy-rests-the-head", hub: "Uneasy Rests the Head", terrain: "Giant Shell (Inner 3)" },
+          { story: ["", "", "7-8", "6-8"], hubId: "tears-of-a-minotaur", hub: "Tears of a Minotaur", terrain: "Minos Manos Unit (Outer 3)" },
+          { story: ["", "", "9-10", "9-10"], hubId: "dreams-laid-bare", hub: "Dreams Laid Bare", terrain: "Maze Outcrop (Inner 3)" },
+        ],
+        hubs: [
+          { id: "fated-conundrum", title: "Fated Conundrum", passage: "31", boxes: [["alpha", "α", "Bitter Seeds"], ["1-2", "1-2", "The Pilgrimage"], ["3-4", "3-4", "Dream of the Maw"], ["5-6", "5-6", "Stewards"], ["7-8", "7-8", "The Feast"], ["9-10", "9-10", "Mazed Tree"], ["omega", "Ω", "A City Made of Riddles"]] },
+          { id: "plight-of-the-people", title: "Plight of the People", passage: "38", boxes: [["alpha", "α", "The Catch"], ["1", "1", "Witness of Minos"], ["2-3", "2-3", "Discarded"], ["4-5", "4-5", "Cult of the Bull"], ["6", "6", "A Light in the Dark"], ["7-8", "7-8", "Beachhead"], ["9-10", "9-10", "Minotaurites"], ["omega", "Ω", "Sowing and Reaping"]] },
+          { id: "hidden-in-plain-sight", title: "Hidden in Plain Sight", passage: "44", boxes: [["alpha", "α", "Theseus's Light"], ["1-2", "1-2", "Konstantinos"], ["3-4", "3-4", "Friend of Theseus"], ["5-6", "5-6", "Good Deeds"], ["7", "7", "Runs Deep"], ["8-9", "8-9", "Balance of Terror"], ["10", "10", "A Peculiar Vessel"], ["omega", "Ω", "Theseus's Shadow"]] },
+          { id: "man-of-purpose", title: "Man of Purpose", passage: "51", boxes: [["alpha", "α", "Comes a Savior"], ["1-2", "1-2", "Mazed Forest"], ["3-4", "3-4", "Synoikismos"], ["5-6", "5-6", "Forced Perspective"], ["7", "7", "Words of Love"], ["8-9", "8-9", "Life of Theseus"], ["10", "10", "Ashes of Cydonia"], ["omega", "Ω", "Till Death"]] },
+          { id: "uneasy-rests-the-head", title: "Uneasy Rests the Head", passage: "59", boxes: [["alpha", "α", "Balance of Power"], ["1-2", "1-2", "Rites and Wrongs"], ["3-4", "3-4", "The Hand that Feeds"], ["5-6", "5-6", "The Hands of Minos"], ["7-8", "7-8", "The Minos-branded"], ["9-10", "9-10", "Erasing History"], ["omega", "Ω", "Withered Tree"]] },
+          { id: "tears-of-a-minotaur", title: "Tears of a Minotaur", passage: "67", boxes: [["alpha", "α", "Ariadne's Love"], ["1-2", "1-2", "Orphaned by the Minotaur"], ["3-4", "3-4", "Hooves and Saints"], ["5-6", "5-6", "Virgins for the Horned"], ["7-8", "7-8", "Trial by Bull"], ["9-10", "9-10", "The Last Goodbye"], ["omega", "Ω", "Poseidon's Gift"]] },
+          { id: "dreams-laid-bare", title: "Dreams Laid Bare", passage: "74", boxes: [["alpha", "α", "A Knife So Sharp"], ["1-2", "1-2", "Changing of the Guard"], ["3-4", "3-4", "Prisoners"], ["5-6", "5-6", "Stalked by the Maze"], ["7-8", "7-8", "Mazed Hull"], ["9-10", "9-10", "Among Broken Pottery and Trampled Grapes"], ["omega", "Ω", "Price of a Promise"]] },
+        ],
+        rr: [
+          ["1", "Catch of the Day"], ["2", "Clothes Make the Argonaut"], ["3", "The One with the Goats"], ["4", "Eschaton Deniers"], ["5", "Fete for the Aeons"], ["6", "Secret Admirer"], ["7", "Lysistrata"], ["8", "The Stray"], ["9", "The Burden"], ["10", "Drunken Odyssey"],
+        ],
+      },
+      c2: {
+        summary: [
+          { story: ["1-3", "1", "", ""], hubId: "consider-the-ant", hub: "Consider the Ant", terrain: "Graveyard of the Frail (Inner 3)" },
+          { story: ["4-5", "2-3", "", ""], hubId: "the-other-thermopylae", hub: "The Other Thermopylae", terrain: "Krypteia Outpost (Outer 3)" },
+          { story: ["6-7", "4-5", "", ""], hubId: "from-the-ashes", hub: "From the Ashes", terrain: "Cyclops Trap (Outer 3)" },
+          { story: ["8-9", "6-7", "1", ""], hubId: "intended-purpose", hub: "Intended Purpose", terrain: "Cyclops Trap (Outer 3)" },
+          { story: ["10", "8-9", "2-3", "1"], hubId: "misery-industry", hub: "Misery Industry", terrain: "Ambrosia Elephant (Outer 3)" },
+          { story: ["", "10", "4-5", "2-4"], hubId: "parable-of-the-butterfly", hub: "Parable of the Butterfly", terrain: "Ambrosia Elephant (Outer 3)" },
+          { story: ["", "", "6-8", "5-7"], hubId: "truth-to-weakness", hub: "Truth to Weakness", terrain: "Graveyard of the Frail (Inner 3)" },
+          { story: ["", "", "9-10", "8-10"], hubId: "when-the-land-meets-the-sea", hub: "When the Land Meets the Sea", terrain: "Krypteia Outpost (Outer 3)" },
+        ],
+        hubs: [
+          { id: "consider-the-ant", title: "Consider the Ant", passage: "41", boxes: [["alpha", "α", "To Walk a Mile"], ["1-2", "1-2", "Black Veins"], ["3-4", "3-4", "The Old Shepherd"], ["5-6", "5-6", "Food Farm"], ["7-8", "7-8", "Armorers"], ["9-10", "9-10", "Slaves of War"], ["omega", "Ω", "A Drone's Reward"]] },
+          { id: "the-other-thermopylae", title: "The Other Thermopylae", passage: "48", boxes: [["alpha", "α", "A War Out There"], ["1-2", "1-2", "Forsaken Aegises"], ["3-4", "3-4", "Cost of Freedom"], ["5-6", "5-6", "Justice of War"], ["7-8", "7-8", "People of Burden"], ["9-10", "9-10", "Those Who Live"], ["omega", "Ω", "Homefront"]] },
+          { id: "from-the-ashes", title: "From the Ashes", passage: "55", boxes: [["alpha", "α", "The Just War"], ["1-2", "1-2", "Sand and Stone"], ["3-4", "3-4", "Bones of the Past"], ["5-6", "5-6", "Unshackled"], ["7-8", "7-8", "Cult of the Fallen Sun"], ["9-10", "9-10", "Gears of Progress"], ["omega", "Ω", "A Peace for Our Aeon"]] },
+          { id: "intended-purpose", title: "Intended Purpose", passage: "62", boxes: [["alpha", "α", "The Once Was An Empire..."], ["1-2", "1-2", "Merchants of Death"], ["3-4", "3-4", "The Hand You're Dealt"], ["5-6", "5-6", "Breath of the Grave"], ["7-8", "7-8", "Face of the Enemy"], ["9-10", "9-10", "Shadowplay"], ["omega", "Ω", "... That Knew No Mercy"]] },
+          { id: "misery-industry", title: "Misery Industry", passage: "70", boxes: [["alpha", "α", "Dark Waters"], ["1-2", "1-2", "The Living and the Dead"], ["3-4", "3-4", "Maws of Byzantion"], ["5-6", "5-6", "Market Forces"], ["7-8", "7-8", "Night Trade"], ["9-10", "9-10", "Cost of Progress"], ["omega", "Ω", "Burn It Down"]] },
+          { id: "parable-of-the-butterfly", title: "Parable of the Butterfly", passage: "77", boxes: [["alpha", "α", "Bloody Butterfly"], ["1-2", "1-2", "Canal Runners"], ["3-4", "3-4", "Wild at Heart"], ["5-6", "5-6", "Agōgē"], ["7-8", "7-8", "Phantom Pain"], ["9-10", "9-10", "Abyss Horizon"], ["omega", "Ω", "Crippled Chrysalis"]] },
+          { id: "truth-to-weakness", title: "Truth to Weakness", passage: "85", boxes: [["alpha", "α", "Truth to Weakness"], ["1-2", "1-2", "Defeated by Victory"], ["3-4", "3-4", "Sowing"], ["5-6", "5-6", "The Taking"], ["7-8", "7-8", "Cornerstone of Bones"], ["9-10", "9-10", "The Last Great People"], ["omega", "Ω", "Truth to Power"]] },
+          { id: "when-the-land-meets-the-sea", title: "When the Land Meets the Sea", passage: "95", boxes: [["alpha", "α", "The Thousandth Ship"], ["1-2", "1-2", "Crosscurrent"], ["3-4", "3-4", "Weaponized Misery"], ["5-6", "5-6", "Nation of Ships"], ["7-8", "7-8", "War Within"], ["9-10", "9-10", "People of the Herds"], ["omega", "Ω", "Siege Eternal"]] },
+        ],
+        rr: [
+          ["1", "Artiazein"], ["2", "The Chiton Thief"], ["3", "Falling Stars"], ["4", "The New Muse"], ["5", "The Diogenes Method"], ["6", "The Argonaut Epic"], ["7", "An Augean Quandary"], ["8", "Pictophong Hunt"], ["9", "Denialwatchers"], ["10", "For the Fallen"],
+        ],
+      },
+      c3: {
+        summary: [
+          { story: ["1-3", "1-2", "", ""], hubId: "road-less-travelled", hub: "Road Less Travelled", terrain: "Giant Shell (Inner 2)" },
+          { story: ["4-6", "3-4", "", ""], hubId: "children-of-the-sun", hub: "Children of the Sun", terrain: "Black Lake (Inner 3)" },
+          { story: ["7-9", "5-6", "1-2", ""], hubId: "what-we-left-behind", hub: "What We Left Behind", terrain: "Hyperborean Ruins (Outer 3)" },
+          { story: ["10", "7-8", "3-4", "1-2"], hubId: "of-wax-and-promises", hub: "Of Wax And Promises", terrain: "Spot of Nothingness (Inner 3)" },
+          { story: ["", "9-10", "5-6", "3-5"], hubId: "cant-go-back", hub: "Can't Go Back", terrain: "Spot of Nothingness (Inner 3)" },
+          { story: ["", "", "7-8", "6-8"], hubId: "sin-of-the-fathers", hub: "Sin of the Fathers", terrain: "Hyperborean Ruins (Outer 3)" },
+          { story: ["", "", "9-10", "9-10"], hubId: "coming-of-age", hub: "Coming Of Age", terrain: "Abandoned Temple (Outer 3)" },
+        ],
+        hubs: [
+          { id: "road-less-travelled", title: "Road Less Travelled", passage: "45", boxes: [["alpha", "α", "Oracles Go Silent"], ["1-2", "1-2", "Turf Laws"], ["3-4", "3-4", "An Oath to Take"], ["5-6", "5-6", "A Way Back"], ["7-8", "7-8", "Between Two Fires"], ["9-10", "9-10", "Merchants of Hope"], ["omega", "Ω", "False Prophet"]] },
+          { id: "children-of-the-sun", title: "Children of the Sun", passage: "52", boxes: [["alpha", "α", "Senseless Chain"], ["1-2", "1-2", "Thaw and Frost"], ["3-4", "3-4", "Olympian Commandment"], ["5-6", "5-6", "Hyperborean Apocrypha"], ["7-8", "7-8", "Waning of the Light"], ["9-10", "9-10", "Daedalus's Failsafe"], ["omega", "Ω", "Helios's Halo"]] },
+          { id: "what-we-left-behind", title: "What We Left Behind", passage: "61", boxes: [["alpha", "α", "Doomed Pasts"], ["1-2", "1-2", "Gilded Cage"], ["3-4", "3-4", "Flashback"], ["5-6", "5-6", "Decimation"], ["7-8", "7-8", "Path of Regret"], ["9-10", "9-10", "The Dim"], ["omega", "Ω", "Dead-end Futures"]] },
+          { id: "of-wax-and-promises", title: "Of Wax And Promises", passage: "69", boxes: [["alpha", "α", "Challenge the Sun"], ["1-2", "1-2", "Matter of Survival"], ["3-4", "3-4", "Son of His Father"], ["5-6", "5-6", "Rule of Nations"], ["7-8", "7-8", "Ascension"], ["9-10", "9-10", "Rise and Fall"], ["omega", "Ω", "Concede to Shadow"]] },
+          { id: "cant-go-back", title: "Can't Go Back", passage: "77", boxes: [["alpha", "α", "Cancel the Eschaton"], ["1-2", "1-2", "Peace of Mind"], ["3-4", "3-4", "Living Fossils"], ["5-6", "5-6", "Divine Law"], ["7-8", "7-8", "Last Stand"], ["9-10", "9-10", "The Alluring Call"], ["omega", "Ω", "Inevitable"]] },
+          { id: "sin-of-the-fathers", title: "Sin of the Fathers", passage: "86", boxes: [["alpha", "α", "Prodigal Father"], ["1-2", "1-2", "Absent Hunger"], ["3-4", "3-4", "Death Seizures"], ["5-6", "5-6", "Submission and Assent"], ["7-8", "7-8", "Terror Theory"], ["9-10", "9-10", "Wayward"], ["omega", "Ω", "Forgiving Child"]] },
+          { id: "coming-of-age", title: "Coming Of Age", passage: "95", boxes: [["alpha", "α", "To Right All Wrongs"], ["1-2", "1-2", "Lie of the Labyrinth"], ["3-4", "3-4", "Abyssdwellers"], ["5-6", "5-6", "Pitiful of the Sun"], ["7-8", "7-8", "Graveyard of Finite Chances"], ["9-10", "9-10", "The Long Dark"], ["omega", "Ω", "Coming of Age"]] },
+        ],
+        rr: [
+          ["1", "Frozen Nostalgia"], ["2", "A Place I'll Return to Someday"], ["3", "Zeno's Scheme"], ["4", "Return of the Goats"], ["5", "Unexpected Byproduct"], ["6", "Firstborn of the Argo"], ["7", "A Quarter Stadium at a Time"], ["8", "Vanishing Concerns"], ["9", "Figurehead Measuring Contest"], ["10", "Argonalia"],
+        ],
+      },
+    };
+
+    const pharosDreamConstants = {
+      c2: {
+        title: "法洛斯之梦",
+        module: "dreams-of-pharos",
+        boxes: [
+          ["1", "1", "卷轴"],
+          ["2", "2", "石碑"],
+          ["3", "3", "错误"],
+          ["4", "4", "卷轴"],
+          ["5", "5", "卷轴"],
+          ["6", "6", "卷轴"],
+          ["7", "7", "卷轴"],
+          ["8", "8", "卷轴"],
+          ["9", "9", "卷轴"],
+          ["10", "10", "卷轴"],
+        ],
+      },
+    };
+
+    const mainStoryConstants = {
+      c2: {
+        title: "主线故事",
+        chapter: "main",
+        boxes: [
+          ["0248", "0248", "Hull Depleted"],
+          ["0249", "0249", "Crew Depleted"],
+        ],
+      },
+    };
+
+    const specialEventConstants = {
+      c2: {
+        title: "特殊事件",
+        chapter: "special-events",
+        boxes: [
+          ["残酷的万世-cruel-aeons", "Cruel Aeons", "残酷的万世", { count: 4, entry: "残酷的万世-cruel-aeons" }],
+        ],
+      },
+    };
+
+    const defaultState = {
+      day: 0,
+      location: "",
+      objective: "",
+      reminder: "",
+      notes: "",
+      mapSnapshot: null,
+      mapCurrentTileTags: [],
+      mapCurrentTileTagLabels: [],
+      mapLatestRevealedTileTags: [],
+      mapLatestRevealedTileTagLabels: [],
+      mapCurrentTileHasLastCityMarker: false,
+      mapCurrentTileIsLatestRevealed: false,
+      dateNotes: {},
+      surveyConstants: null,
+      surveyConstantsDay: null,
+      surveyConstantsTouchedDay: null,
+      latestSurveyAdventureAction: null,
+      pharosDreams: null,
+      pharosDreamsDay: null,
+      pharosDreamsActive: null,
+      mainStoryConstants: null,
+      mainStoryConstantsDay: null,
+      mainStoryConstantsActive: null,
+      specialEventConstants: null,
+      specialEventConstantsDay: null,
+      specialEventConstantsActive: null,
+      constantToolsOpen: {},
+      exploration: null,
+      cardTracks: {
+        story: { position: 0, progress: 0 },
+        doom: { position: 0, progress: 0 },
+        inwardOdyssey: { position: 0, progress: 0 },
+      },
+      cardTracksVersion: 2,
+      unlockedTech: null,
+      events: [],
+      nextBattleTerrain: null,
+      completed: {},
+    };
+
+    const defaultArchive = {
+      activeProfileId: "default",
+      profiles: {
+        default: {
+          id: "default",
+          name: "默认用户",
+          activeCycleId: "c2",
+          cycles: createDefaultCycles("c2"),
+        },
+      },
+    };
+
+    const elements = {
+      authGate: document.querySelector("#authGate"),
+      appShell: document.querySelector("#appShell"),
+      authForm: document.querySelector("#authForm"),
+      authUsername: document.querySelector("#authUsername"),
+      authPassword: document.querySelector("#authPassword"),
+      authSubmitButton: document.querySelector("#authSubmitButton"),
+      authMessage: document.querySelector("#authMessage"),
+      loginModeButton: document.querySelector("#loginModeButton"),
+      registerModeButton: document.querySelector("#registerModeButton"),
+      sessionAccountName: document.querySelector("#sessionAccountName"),
+      logoutButton: document.querySelector("#logoutButton"),
+      dayInput: document.querySelector("#dayInput"),
+      cycleSelect: document.querySelector("#cycleSelect"),
+      nextDayButton: document.querySelector("#nextDayButton"),
+      resetTodayButton: document.querySelector("#resetTodayButton"),
+      currentDateNote: document.querySelector("#currentDateNote"),
+      notesInput: document.querySelector("#notesInput"),
+      flowList: document.querySelector("#flowList"),
+      progressFill: document.querySelector("#progressFill"),
+      progressText: document.querySelector("#progressText"),
+      cardTrackDialog: document.querySelector("#cardTrackDialog"),
+      cardTrackTitle: document.querySelector("#cardTrackTitle"),
+      cardTrackBody: document.querySelector("#cardTrackBody"),
+      cardTrackClose: document.querySelector("#cardTrackClose"),
+      exportButton: document.querySelector("#exportButton"),
+      importButton: document.querySelector("#importButton"),
+      importInput: document.querySelector("#importInput"),
+      dateTrackMeta: document.querySelector("#dateTrackMeta"),
+      dateTrackList: document.querySelector("#dateTrackList"),
+    };
+
+    let archive = loadArchive();
+    let state = currentCycle().state;
+    let campaignStorageAvailable = false;
+    let campaignSaveTimer = null;
+    let campaignSaveInFlight = false;
+    let campaignSavePending = false;
+    let campaignSaveQueuedBeforeReady = false;
+    let campaignSectionRevision = 0;
+    let campaignConflictReloading = false;
+    let campaignSectionBaseline = null;
+    let campaignExternalSyncInFlight = false;
+    const campaignSyncChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-dashboard-sync-v1") : null;
+    const recordSyncChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-record-sync-v1") : null;
+    const constantToolsOpen = {};
+    let authMode = "login";
+    let sessionUser = null;
+
+    function isPlainObject(value) {
+      return value && typeof value === "object" && !Array.isArray(value);
+    }
+
+    function cloneJson(value) {
+      return value === undefined ? undefined : JSON.parse(JSON.stringify(value));
+    }
+
+    function jsonEqual(left, right) {
+      if (left === right) return true;
+      if (Array.isArray(left) || Array.isArray(right)) {
+        return Array.isArray(left)
+          && Array.isArray(right)
+          && left.length === right.length
+          && left.every((value, index) => jsonEqual(value, right[index]));
+      }
+      if (isPlainObject(left) || isPlainObject(right)) {
+        if (!isPlainObject(left) || !isPlainObject(right)) return false;
+        const leftKeys = Object.keys(left);
+        const rightKeys = Object.keys(right);
+        return leftKeys.length === rightKeys.length
+          && leftKeys.every((key) => Object.prototype.hasOwnProperty.call(right, key) && jsonEqual(left[key], right[key]));
+      }
+      return false;
+    }
+
+    function mergeDashboardChanges(base, local, remote, path = "") {
+      if (jsonEqual(local, remote)) return { value: cloneJson(local), conflicts: [] };
+      if (jsonEqual(local, base)) return { value: cloneJson(remote), conflicts: [] };
+      if (jsonEqual(remote, base)) return { value: cloneJson(local), conflicts: [] };
+
+      if (isPlainObject(base) || isPlainObject(local) || isPlainObject(remote)) {
+        const baseObject = isPlainObject(base) ? base : {};
+        const localObject = isPlainObject(local) ? local : {};
+        const remoteObject = isPlainObject(remote) ? remote : {};
+        const value = {};
+        const conflicts = [];
+        const keys = new Set([
+          ...Object.keys(baseObject),
+          ...Object.keys(localObject),
+          ...Object.keys(remoteObject),
+        ]);
+
+        keys.forEach((key) => {
+          const childPath = path ? `${path}.${key}` : key;
+          const result = mergeDashboardChanges(baseObject[key], localObject[key], remoteObject[key], childPath);
+          if (result.value !== undefined) value[key] = result.value;
+          conflicts.push(...result.conflicts);
+        });
+        return { value, conflicts };
+      }
+
+      return {
+        value: cloneJson(local),
+        conflicts: [path || "dashboard"],
+      };
+    }
+
+    function renderDashboardArchive(nextArchive) {
+      archive = normalizeArchive(nextArchive);
+      state = currentCycle().state;
+      syncInputs();
+      renderProfiles();
+      renderCycles();
+      renderFlow();
+      renderDateTrack();
+    }
+
+    async function readLatestDashboardSection() {
+      const response = await fetch(campaignStorageUrl, { cache: "no-store" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const payload = await response.json();
+      if (!payload.ok) throw new Error(payload.error || "读取失败");
+      return {
+        archive: normalizeArchive(payload.state || defaultArchive),
+        revision: Math.max(0, Number(payload.revision || 0)),
+      };
+    }
+
+    async function syncDashboardFromExternalUpdate() {
+      if (!campaignStorageAvailable || campaignExternalSyncInFlight || campaignConflictReloading || campaignSaveInFlight) return;
+      campaignExternalSyncInFlight = true;
+      try {
+        const latest = await readLatestDashboardSection();
+        if (latest.revision <= campaignSectionRevision) return;
+        const localChanged = !jsonEqual(archive, campaignSectionBaseline || archive);
+        if (!localChanged) {
+          campaignSectionRevision = latest.revision;
+          campaignSectionBaseline = cloneJson(latest.archive);
+          renderDashboardArchive(latest.archive);
+          return;
+        }
+
+        const merged = mergeDashboardChanges(campaignSectionBaseline || defaultArchive, archive, latest.archive);
+        campaignSectionRevision = latest.revision;
+        campaignSectionBaseline = cloneJson(latest.archive);
+        if (merged.conflicts.length) {
+          const shown = merged.conflicts.slice(0, 8).join("\n");
+          const more = merged.conflicts.length > 8 ? `\n另有 ${merged.conflicts.length - 8} 项` : "";
+          if (!window.confirm(`其他页面修改了相同字段：\n${shown}${more}\n\n确定：保留当前页面的值并合并\n取消：加载其他页面的最新修改`)) {
+            renderDashboardArchive(latest.archive);
+            return;
+          }
+        }
+        renderDashboardArchive(merged.value);
+        queueCampaignSave();
+      } catch (error) {
+        console.warn(error);
+      } finally {
+        campaignExternalSyncInFlight = false;
+      }
+    }
+
+    function createDefaultCycles(activeCycleId = "c2", seedState = null) {
+      return Object.fromEntries(cycleConfigs.map((cycle) => [
+        cycle.id,
+        {
+          id: cycle.id,
+          state: normalizeState(cycle.id === activeCycleId && seedState ? seedState : defaultState, cycle.id),
+        },
+      ]));
+    }
+
+    function loadArchive() {
+      return normalizeArchive(defaultArchive);
+    }
+
+    function normalizeArchive(value) {
+      const profiles = {};
+      Object.values(isPlainObject(value?.profiles) ? value.profiles : {}).forEach((profile) => {
+        if (!profile || !profile.id) return;
+        profiles[profile.id] = normalizeProfile(profile);
+      });
+
+      if (!Object.keys(profiles).length) {
+        profiles.default = {
+          id: "default",
+          name: "默认用户",
+          activeCycleId: "c2",
+          cycles: createDefaultCycles("c2"),
+        };
+      }
+
+      const activeProfileId = profiles[value?.activeProfileId] ? value.activeProfileId : Object.keys(profiles)[0];
+      return { activeProfileId, profiles };
+    }
+
+    function normalizeProfile(profile) {
+      const activeCycleId = cycleConfigs.some((cycle) => cycle.id === profile.activeCycleId)
+        ? profile.activeCycleId
+        : "c2";
+      const sourceCycles = isPlainObject(profile.cycles) ? profile.cycles : null;
+      const cycles = {};
+
+      cycleConfigs.forEach((cycle) => {
+        cycles[cycle.id] = {
+          id: cycle.id,
+          state: normalizeState(sourceCycles?.[cycle.id]?.state || (cycle.id === activeCycleId ? profile.state : null) || defaultState, cycle.id),
+        };
+      });
+
+      return {
+        id: profile.id,
+        name: profile.name || "未命名用户",
+        activeCycleId,
+        cycles,
+      };
+    }
+
+    function setAuthMode(mode) {
+      authMode = mode === "register" ? "register" : "login";
+      elements.loginModeButton.setAttribute("aria-pressed", String(authMode === "login"));
+      elements.registerModeButton.setAttribute("aria-pressed", String(authMode === "register"));
+      elements.authSubmitButton.textContent = authMode === "login" ? "登录" : "注册并登录";
+      elements.authPassword.autocomplete = authMode === "login" ? "current-password" : "new-password";
+      elements.authMessage.textContent = "";
+    }
+
+    function showAuth(message = "") {
+      campaignStorageAvailable = false;
+      elements.appShell.hidden = true;
+      elements.authGate.hidden = false;
+      elements.authMessage.textContent = message;
+      elements.authUsername.focus();
+    }
+
+    function startAuthenticatedApp(user) {
+      sessionUser = user;
+      elements.sessionAccountName.textContent = user?.username || "当前账号";
+      elements.authGate.hidden = true;
+      elements.appShell.hidden = false;
+      syncInputs();
+      renderProfiles();
+      renderCycles();
+      renderFlow();
+      renderDateTrack();
+      loadCampaignSection();
+    }
+
+    async function requestAuth(action, username, password) {
+      const response = await fetch(`${authUrl}?action=${action}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      const raw = await response.text();
+      let payload = null;
+      try {
+        payload = JSON.parse(raw);
+      } catch (error) {
+        const detail = raw.trim().slice(0, 500);
+        throw new Error(detail
+          ? `注册接口返回的不是 JSON：${detail}`
+          : `注册接口返回空内容（HTTP ${response.status}）`);
+      }
+      if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+      return payload.user;
+    }
+
+    async function initAuth() {
+      try {
+        const response = await fetch(`${authUrl}?action=me`, { cache: "no-store" });
+        const payload = await response.json();
+        if (payload.ok && payload.authenticated && payload.user) {
+          startAuthenticatedApp(payload.user);
+          return;
+        }
+      } catch (error) {
+        console.warn(error);
+      }
+      showAuth();
+    }
+
+    function normalizeCounterValue(value) {
+      return Math.max(0, Math.floor(Number(value || 0)));
+    }
+
+    function argoKnowledgeStart(cycleId = "c2") {
+      return { c1: 1, c2: 20, c3: 40 }[cycleId] || 0;
+    }
+
+    function normalizeCardTrackEntry(value = {}, legacyPosition = 0, physicalCardToStep = false) {
+      const position = normalizeCounterValue(value.position ?? legacyPosition);
+      return {
+        position: physicalCardToStep && position > 0 ? (position - 1) * 2 + 1 : position,
+        progress: normalizeCounterValue(value.progress),
+      };
+    }
+
+    function normalizeCardTracks(value = {}, legacyCounters = {}, physicalCardToStep = false, cycleId = "c2") {
+      const inwardPosition = normalizeCounterValue(value.inwardOdyssey?.position ?? legacyCounters.inwardOdyssey ?? legacyCounters.inwardOdysseyCount);
+      return {
+        story: normalizeCardTrackEntry(value.story, legacyCounters.story ?? legacyCounters.storyCount, physicalCardToStep),
+        doom: normalizeCardTrackEntry(value.doom, legacyCounters.doom ?? legacyCounters.doomCount, physicalCardToStep),
+        inwardOdyssey: normalizeCardTrackEntry({ ...value.inwardOdyssey, position: inwardPosition || argoKnowledgeStart(cycleId) }),
+      };
+    }
+
+    function normalizeState(value = {}, cycleId = "c2") {
+      const day = Math.max(0, Number(value.day ?? defaultState.day));
+      const surveyConstantsDay = typeof value.surveyConstantsDay === "string" ? value.surveyConstantsDay : null;
+      const surveyConstantsTouchedDay = typeof value.surveyConstantsTouchedDay === "string" ? value.surveyConstantsTouchedDay : null;
+      const currentSurveyDay = `${cycleId}:${day}`;
+      const pharosDreamsDay = typeof value.pharosDreamsDay === "string" ? value.pharosDreamsDay : null;
+      const mainStoryConstantsDay = typeof value.mainStoryConstantsDay === "string" ? value.mainStoryConstantsDay : null;
+      const specialEventConstantsDay = typeof value.specialEventConstantsDay === "string" ? value.specialEventConstantsDay : null;
+      return {
+        ...defaultState,
+        ...value,
+        day,
+        dateNotes: isPlainObject(value.dateNotes) ? value.dateNotes : {},
+        mapCurrentTileTags: Array.isArray(value.mapCurrentTileTags)
+          ? value.mapCurrentTileTags
+          : (Array.isArray(value.mapSnapshot?.currentTileTags) ? value.mapSnapshot.currentTileTags : []),
+        mapCurrentTileTagLabels: Array.isArray(value.mapCurrentTileTagLabels)
+          ? value.mapCurrentTileTagLabels
+          : (Array.isArray(value.mapSnapshot?.currentTileTagLabels) ? value.mapSnapshot.currentTileTagLabels : []),
+        mapLatestRevealedTileTags: Array.isArray(value.mapLatestRevealedTileTags)
+          ? value.mapLatestRevealedTileTags
+          : (Array.isArray(value.mapSnapshot?.latestRevealedTileTags) ? value.mapSnapshot.latestRevealedTileTags : []),
+        mapLatestRevealedTileTagLabels: Array.isArray(value.mapLatestRevealedTileTagLabels)
+          ? value.mapLatestRevealedTileTagLabels
+          : (Array.isArray(value.mapSnapshot?.latestRevealedTileTagLabels) ? value.mapSnapshot.latestRevealedTileTagLabels : []),
+        mapCurrentTileHasLastCityMarker: Boolean(value.mapCurrentTileHasLastCityMarker || value.mapSnapshot?.currentTileHasLastCityMarker),
+        mapCurrentTileIsLatestRevealed: Boolean(value.mapCurrentTileIsLatestRevealed),
+        surveyConstants: isPlainObject(value.surveyConstants) ? normalizeSurveyConstants(value.surveyConstants) : null,
+        surveyConstantsDay,
+        surveyConstantsTouchedDay,
+        latestSurveyAdventureAction: isPlainObject(value.latestSurveyAdventureAction) ? value.latestSurveyAdventureAction : null,
+        pharosDreams: isPlainObject(value.pharosDreams) ? value.pharosDreams : null,
+        pharosDreamsDay,
+        pharosDreamsActive: value.pharosDreams?.[value.pharosDreamsActive] ? String(value.pharosDreamsActive) : null,
+        mainStoryConstants: isPlainObject(value.mainStoryConstants) ? value.mainStoryConstants : null,
+        mainStoryConstantsDay,
+        mainStoryConstantsActive: value.mainStoryConstants?.[value.mainStoryConstantsActive] ? String(value.mainStoryConstantsActive) : null,
+        specialEventConstants: isPlainObject(value.specialEventConstants) ? value.specialEventConstants : null,
+        specialEventConstantsDay,
+        specialEventConstantsActive: value.specialEventConstants?.[value.specialEventConstantsActive] ? String(value.specialEventConstantsActive) : null,
+        constantToolsOpen: isPlainObject(value.constantToolsOpen) ? value.constantToolsOpen : {},
+        exploration: normalizeExploration(value.exploration),
+        cardTracks: normalizeCardTracks(value.cardTracks, value.cardCounters, value.cardTracks && value.cardTracksVersion !== 2, cycleId),
+        cardTracksVersion: 2,
+        cardCounters: undefined,
+        unlockedTech: isPlainObject(value.unlockedTech) ? value.unlockedTech : null,
+        events: Array.isArray(value.events) ? value.events : [],
+        nextBattleTerrain: normalizeNextBattleTerrain(value.nextBattleTerrain),
+        completed: isPlainObject(value.completed) ? value.completed : {},
+      };
+    }
+
+    function normalizeExploration(value = {}) {
+      return {
+        selectedByCycle: isPlainObject(value?.selectedByCycle) ? value.selectedByCycle : {},
+        drawStateByCycle: isPlainObject(value?.drawStateByCycle) ? value.drawStateByCycle : {},
+        destructionByCycle: isPlainObject(value?.destructionByCycle) ? value.destructionByCycle : {},
+        destructionCardIdsByCycle: isPlainObject(value?.destructionCardIdsByCycle) ? value.destructionCardIdsByCycle : {},
+        acclimationsByCycle: isPlainObject(value?.acclimationsByCycle) ? value.acclimationsByCycle : {},
+      };
+    }
+
+    function normalizeSurveyConstants(value = {}) {
+      return {
+        hubs: isPlainObject(value?.hubs) ? value.hubs : {},
+        rr: isPlainObject(value?.rr) ? value.rr : {},
+        activeHub: isPlainObject(value?.activeHub) ? value.activeHub : null,
+        activeRr: isPlainObject(value?.activeRr) ? value.activeRr : null,
+      };
+    }
+
+    function surveyConstantsDayKey() {
+      return `${currentCycleConfig().id}:${Math.max(0, Number(state.day || 0))}`;
+    }
+
+    function pharosDreamsDayKey() {
+      return `${currentCycleConfig().id}:${Math.max(0, Number(state.day || 0))}`;
+    }
+
+    function currentPharosDreamConstants() {
+      return pharosDreamConstants[currentCycleConfig().id] || null;
+    }
+
+    function currentMainStoryConstants() {
+      return mainStoryConstants[currentCycleConfig().id] || null;
+    }
+
+    function currentSpecialEventConstants() {
+      return specialEventConstants[currentCycleConfig().id] || null;
+    }
+
+    function ensureTodaySimpleConstants(valueKey, dayKey, activeKey) {
+      const currentDayKey = pharosDreamsDayKey();
+      if (!isPlainObject(state[valueKey])) {
+        state[valueKey] = {};
+        state[activeKey] = null;
+      }
+      state[dayKey] ||= currentDayKey;
+      return state[valueKey];
+    }
+
+    function ensureTodayPharosDreams() {
+      return ensureTodaySimpleConstants("pharosDreams", "pharosDreamsDay", "pharosDreamsActive");
+    }
+
+    function ensureTodayMainStoryConstants() {
+      return ensureTodaySimpleConstants("mainStoryConstants", "mainStoryConstantsDay", "mainStoryConstantsActive");
+    }
+
+    function ensureTodaySpecialEventConstants() {
+      return ensureTodaySimpleConstants("specialEventConstants", "specialEventConstantsDay", "specialEventConstantsActive");
+    }
+
+    function simpleConstantSlotIds(row) {
+      const count = Math.max(1, Number(row?.[3]?.count || 1));
+      return Array.from({ length: count }, (_, index) => count === 1 ? row[0] : `${row[0]}:${index + 1}`);
+    }
+
+    function findSimpleConstantRow(data, target) {
+      if (!data || !target) return null;
+      return data.boxes.find((row) => row[0] === target || simpleConstantSlotIds(row).includes(target)) || null;
+    }
+
+    function firstCheckedSimpleConstantId(data, values) {
+      const row = data?.boxes.find((item) => {
+        const slotIds = simpleConstantSlotIds(item);
+        return slotIds.some((slotId) => values[slotId]) || (slotIds.length > 1 && values[item[0]]);
+      });
+      if (!row) return null;
+      const slotIds = simpleConstantSlotIds(row);
+      return slotIds.find((slotId) => values[slotId]) || slotIds[0];
+    }
+
+    function getActiveSimpleConstantTarget(data, valueKey, activeKey, ensureFn) {
+      if (!data) return null;
+      const values = ensureFn();
+      const activeRow = findSimpleConstantRow(data, state[activeKey]);
+      if (activeRow) {
+        const activeSlots = simpleConstantSlotIds(activeRow);
+        if (values[state[activeKey]]) return state[activeKey];
+        if (activeSlots.length > 1 && values[activeRow[0]]) return activeSlots[0];
+      }
+      return firstCheckedSimpleConstantId(data, values);
+    }
+
+    function getActivePharosDreamTarget() {
+      return getActiveSimpleConstantTarget(currentPharosDreamConstants(), "pharosDreams", "pharosDreamsActive", ensureTodayPharosDreams);
+    }
+
+    function getActiveMainStoryTarget() {
+      return getActiveSimpleConstantTarget(currentMainStoryConstants(), "mainStoryConstants", "mainStoryConstantsActive", ensureTodayMainStoryConstants);
+    }
+
+    function getActiveSpecialEventTarget() {
+      return getActiveSimpleConstantTarget(currentSpecialEventConstants(), "specialEventConstants", "specialEventConstantsActive", ensureTodaySpecialEventConstants);
+    }
+
+    function ensureTodaySurveyConstants() {
+      const dayKey = surveyConstantsDayKey();
+      state.surveyConstantsDay ||= dayKey;
+      state.surveyConstants = normalizeSurveyConstants(state.surveyConstants);
+      return state.surveyConstants;
+    }
+
+    function normalizeNextBattleTerrain(value) {
+      if (!isPlainObject(value)) return null;
+      const terrain = String(value.terrain || "").trim();
+      if (!terrain) return null;
+      return {
+        terrain,
+        hubId: String(value.hubId || ""),
+        boxId: String(value.boxId || ""),
+        hub: String(value.hub || ""),
+        source: String(value.source || ""),
+        setAtDay: Math.max(0, Number(value.setAtDay || 0)),
+      };
+    }
+
+    function shuffleList(items) {
+      const result = [...items];
+      for (let index = result.length - 1; index > 0; index -= 1) {
+        const swapIndex = Math.floor(Math.random() * (index + 1));
+        [result[index], result[swapIndex]] = [result[swapIndex], result[index]];
+      }
+      return result;
+    }
+
+    function getExplorationLibrary() {
+      const cards = (explorationDecks[currentCycleConfig().id] || []).flatMap((deck) => deck.cards);
+      const seen = new Set();
+      return cards.filter((card) => {
+        if (seen.has(card.id)) return false;
+        seen.add(card.id);
+        return true;
+      });
+    }
+
+    function getSelectedExplorationIds() {
+      state.exploration = normalizeExploration(state.exploration);
+      const cycleId = currentCycleConfig().id;
+      const validIds = new Set(getExplorationLibrary().map((card) => card.id));
+      const storedSelection = state.exploration.selectedByCycle[cycleId];
+      const selected = Array.isArray(storedSelection)
+        ? storedSelection.filter((id) => validIds.has(id))
+        : (defaultExplorationSelections[cycleId] || []).filter((id) => validIds.has(id));
+      state.exploration.selectedByCycle[cycleId] = selected;
+      return selected;
+    }
+
+    function getExplorationCard(cardId) {
+      return getExplorationLibrary().find((card) => card.id === cardId) || null;
+    }
+
+    function getExplorationCardByCornerNumber(cycleId, cornerNumber) {
+      const id = Object.entries(explorationCornerNumbers[cycleId] || {})
+        .find(([, number]) => String(number) === String(cornerNumber))?.[0];
+      return id ? getExplorationLibrary().find((card) => card.id === id) || null : null;
+    }
+
+    function getExplorationCardLabel(cardId) {
+      const card = getExplorationCard(cardId);
+      const cornerNumber = getExplorationCornerNumber(cardId);
+      return `${card?.name || "探索卡"} #${cardId}${cornerNumber ? ` · 黑底${cornerNumber}` : ""}`;
+    }
+
+    function getAcclimationRule(day = state.day, cycleId = currentCycleConfig().id) {
+      return (acclimationReplacementRules[cycleId] || []).find((rule) => Number(rule.day) === Number(day)) || null;
+    }
+
+    function isAcclimationApplied(rule, cycleId = currentCycleConfig().id) {
+      state.exploration = normalizeExploration(state.exploration);
+      return Boolean(state.exploration.acclimationsByCycle?.[cycleId]?.[rule.id]);
+    }
+
+    function replaceExplorationId(value, replacements) {
+      return replacements.get(value) || value;
+    }
+
+    function replaceExplorationEntry(entry, replacements) {
+      if (!entry || !replacements.has(entry.id)) return entry;
+      const nextId = replacements.get(entry.id);
+      const nextCard = getExplorationCard(nextId);
+      return {
+        ...entry,
+        id: nextId,
+        name: nextCard?.name || entry.name,
+        acclimatedFrom: entry.id,
+      };
+    }
+
+    function applyAcclimationReplacement(rule) {
+      const cycleId = currentCycleConfig().id;
+      state.exploration = normalizeExploration(state.exploration);
+      const replacements = new Map();
+      rule.from.forEach((fromCorner, index) => {
+        const fromCard = getExplorationCardByCornerNumber(cycleId, fromCorner);
+        const toCard = getExplorationCardByCornerNumber(cycleId, rule.to[index]);
+        if (fromCard && toCard) replacements.set(fromCard.id, toCard.id);
+      });
+      if (!replacements.size) return;
+
+      const replaceIds = (ids) => [...new Set(ids.map((id) => replaceExplorationId(id, replacements)))];
+      const selectedIds = getSelectedExplorationIds();
+      const drawState = ensureExplorationDrawState();
+      state.exploration.selectedByCycle[cycleId] = replaceIds(selectedIds);
+      drawState.drawPile = replaceIds(drawState.drawPile);
+      drawState.history = drawState.history.map((entry) => replaceExplorationEntry(entry, replacements));
+      drawState.discardPile = drawState.discardPile.map((entry) => replaceExplorationEntry(entry, replacements));
+      drawState.current = replaceExplorationEntry(drawState.current, replacements);
+
+      const applied = isPlainObject(state.exploration.acclimationsByCycle[cycleId])
+        ? state.exploration.acclimationsByCycle[cycleId]
+        : {};
+      applied[rule.id] = true;
+      state.exploration.acclimationsByCycle[cycleId] = applied;
+
+      const summary = rule.from.map((fromCorner, index) => `${fromCorner}->${rule.to[index]}`).join(", ");
+      const noteKey = dateNoteKey(rule.day);
+      const note = state.dateNotes?.[noteKey] || "";
+      if (!note.includes(`${rule.label} 扎根`)) {
+        state.dateNotes[noteKey] = [note, `${rule.label} 扎根：${summary}`].filter(Boolean).join("\n");
+      }
+
+      saveState();
+      renderFlow();
+      renderDateTrack();
+    }
+
+    function getExplorationSpecialRule() {
+      return explorationSpecialRules[currentCycleConfig().id] || null;
+    }
+
+    function getDestructionCardIds() {
+      state.exploration = normalizeExploration(state.exploration);
+      const cycleId = currentCycleConfig().id;
+      const rule = getExplorationSpecialRule();
+      if (!rule?.destructionIds) return [];
+
+      const validIds = new Set(getExplorationLibrary().map((card) => card.id));
+      const storedIds = state.exploration.destructionCardIdsByCycle[cycleId];
+      const cardIds = Array.isArray(storedIds)
+        ? storedIds.filter((id) => validIds.has(id))
+        : rule.destructionIds.filter((id) => validIds.has(id));
+      state.exploration.destructionCardIdsByCycle[cycleId] = [...new Set(cardIds)];
+      return state.exploration.destructionCardIdsByCycle[cycleId];
+    }
+
+    function getDestructionPileIds() {
+      state.exploration = normalizeExploration(state.exploration);
+      const cycleId = currentCycleConfig().id;
+      const rule = getExplorationSpecialRule();
+      if (!rule?.destructionIds) return [];
+
+      const validIds = new Set(getDestructionCardIds());
+      const selectedIds = new Set(getSelectedExplorationIds());
+      const storedPile = state.exploration.destructionByCycle[cycleId];
+      const pile = Array.isArray(storedPile)
+        ? storedPile.filter((id) => validIds.has(id) && !selectedIds.has(id))
+        : getDestructionCardIds().filter((id) => !selectedIds.has(id));
+      state.exploration.destructionByCycle[cycleId] = pile;
+      return pile;
+    }
+
+    function createExplorationDrawState(cardIds) {
+      return {
+        drawPile: shuffleList(cardIds),
+        history: [],
+        discardPile: [],
+        current: null,
+      };
+    }
+
+    function ensureExplorationDrawState() {
+      state.exploration = normalizeExploration(state.exploration);
+      const cycleId = currentCycleConfig().id;
+      const selectedIds = getSelectedExplorationIds();
+      const existing = state.exploration.drawStateByCycle[cycleId];
+      if (!existing || !Array.isArray(existing.drawPile) || !Array.isArray(existing.history)) {
+        state.exploration.drawStateByCycle[cycleId] = createExplorationDrawState(selectedIds);
+        return state.exploration.drawStateByCycle[cycleId];
+      }
+
+      const validIds = new Set(selectedIds);
+      if (!Array.isArray(existing.discardPile)) existing.discardPile = [];
+      existing.drawPile = existing.drawPile.filter((id) => validIds.has(id));
+      existing.history = existing.history
+        .filter((entry) => entry && validIds.has(entry.id))
+        .map((entry) => ({ ...entry, day: Math.max(0, Number(entry.day || 0)) }));
+      existing.discardPile = existing.discardPile
+        .filter((entry) => entry && validIds.has(entry.id))
+        .map((entry) => ({ ...entry, day: Math.max(0, Number(entry.day || 0)) }));
+      existing.current = existing.current && validIds.has(existing.current.id) ? existing.current : null;
+
+      const knownIds = new Set([
+        ...existing.drawPile,
+        ...existing.history.map((entry) => entry.id),
+        ...existing.discardPile.map((entry) => entry.id),
+      ]);
+      if (existing.current) knownIds.add(existing.current.id);
+      const missingIds = selectedIds.filter((id) => !knownIds.has(id));
+      existing.drawPile.push(...shuffleList(missingIds));
+      return existing;
+    }
+
+    function applyExplorationSelection(cardIds) {
+      state.exploration = normalizeExploration(state.exploration);
+      const cycleId = currentCycleConfig().id;
+      const validIds = new Set(getExplorationLibrary().map((card) => card.id));
+      const selectedIds = [...new Set(cardIds)].filter((id) => validIds.has(id));
+      const drawState = ensureExplorationDrawState();
+      if ((drawState.history.length || drawState.discardPile.length || drawState.current) && !window.confirm("更新探索牌组会重洗并清空当前抽牌记录与弃牌堆。继续吗？")) return;
+      state.exploration.selectedByCycle[cycleId] = selectedIds;
+      const rule = getExplorationSpecialRule();
+      if (rule?.destructionIds) {
+        const destructionIds = new Set(getDestructionCardIds());
+        const selectedSet = new Set(selectedIds);
+        const storedPile = Array.isArray(state.exploration.destructionByCycle[cycleId])
+          ? state.exploration.destructionByCycle[cycleId]
+          : getDestructionCardIds();
+        state.exploration.destructionByCycle[cycleId] = storedPile.filter((id) => destructionIds.has(id) && !selectedSet.has(id));
+      }
+      state.exploration.drawStateByCycle[cycleId] = createExplorationDrawState(selectedIds);
+      saveState();
+      renderFlow();
+    }
+
+    function restoreDefaultExplorationSelection() {
+      const cycleId = currentCycleConfig().id;
+      const defaultIds = defaultExplorationSelections[cycleId];
+      if (!defaultIds?.length) return;
+
+      const drawState = ensureExplorationDrawState();
+      if ((drawState.history.length || drawState.discardPile.length || drawState.current) && !window.confirm("恢复初始探索牌组会重洗并清空当前抽牌记录与弃牌堆。继续吗？")) return;
+
+      const validIds = new Set(getExplorationLibrary().map((card) => card.id));
+      const selectedIds = defaultIds.filter((id) => validIds.has(id));
+      state.exploration = normalizeExploration(state.exploration);
+      state.exploration.selectedByCycle[cycleId] = selectedIds;
+      const rule = getExplorationSpecialRule();
+      if (rule?.destructionIds) {
+        state.exploration.destructionCardIdsByCycle[cycleId] = [...rule.destructionIds];
+        state.exploration.destructionByCycle[cycleId] = [...rule.destructionIds];
+      }
+      state.exploration.drawStateByCycle[cycleId] = createExplorationDrawState(selectedIds);
+      saveState();
+      renderFlow();
+    }
+
+    function drawExplorationCard() {
+      const library = getExplorationLibrary();
+      if (!library.length) {
+        window.alert("当前 Cycle 暂无探索卡组数据。");
+        return;
+      }
+
+      const selectedIds = getSelectedExplorationIds();
+      if (!selectedIds.length) {
+        window.alert("请先在探索卡库里选择本次探索牌组。");
+        return;
+      }
+
+      const drawState = ensureExplorationDrawState();
+      if (!drawState.drawPile.length) {
+        if (drawState.history.length && !drawState.discardPile.length) {
+          window.alert("探索牌堆已空。请先结束抽卡，将已抽卡放入弃牌堆后再重洗。");
+          return;
+        }
+        if (!drawState.discardPile.length || !window.confirm("探索牌堆已空。是否重洗弃牌堆并继续抽牌？")) return;
+        drawState.drawPile = shuffleList(drawState.discardPile.map((entry) => entry.id));
+        drawState.discardPile = [];
+        drawState.current = null;
+      }
+
+      const cardId = drawState.drawPile.shift();
+      const card = getExplorationCard(cardId);
+      if (!card) return;
+
+      const record = {
+        id: card.id,
+        name: card.name,
+        day: state.day,
+        drawnAt: new Date().toISOString(),
+      };
+      drawState.current = record;
+      drawState.history = [record, ...drawState.history].slice(0, 200);
+      saveState();
+      renderFlow();
+    }
+
+    function endExplorationDraw() {
+      const drawState = ensureExplorationDrawState();
+      if (!drawState.history.length) return;
+      drawState.discardPile = [...drawState.history, ...drawState.discardPile].slice(0, 500);
+      drawState.history = [];
+      drawState.current = null;
+      saveState();
+      renderFlow();
+    }
+
+    function addRandomDestructionCard() {
+      const rule = getExplorationSpecialRule();
+      if (!rule?.destructionIds) return;
+
+      const pile = getDestructionPileIds();
+      if (!pile.length) {
+        window.alert("破坏卡组已空。");
+        return;
+      }
+
+      const cardId = pile[Math.floor(Math.random() * pile.length)];
+      const cycleId = currentCycleConfig().id;
+      const selectedIds = [...getSelectedExplorationIds(), cardId];
+      state.exploration.selectedByCycle[cycleId] = [...new Set(selectedIds)];
+      state.exploration.destructionByCycle[cycleId] = pile.filter((id) => id !== cardId);
+      ensureExplorationDrawState();
+      saveState();
+      renderFlow();
+    }
+
+    function addCardToDestructionPile(cardId) {
+      const rule = getExplorationSpecialRule();
+      if (!rule?.destructionIds || !getExplorationCard(cardId)) return;
+
+      const cycleId = currentCycleConfig().id;
+      state.exploration = normalizeExploration(state.exploration);
+      const destructionCardIds = getDestructionCardIds();
+      if (!destructionCardIds.includes(cardId)) {
+        state.exploration.destructionCardIdsByCycle[cycleId] = [...destructionCardIds, cardId];
+      }
+
+      const pile = getDestructionPileIds();
+      if (!pile.includes(cardId)) {
+        state.exploration.destructionByCycle[cycleId] = [...pile, cardId];
+      }
+
+      state.exploration.selectedByCycle[cycleId] = getSelectedExplorationIds().filter((id) => id !== cardId);
+      state.exploration.destructionByCycle[cycleId] = getDestructionPileIds();
+      ensureExplorationDrawState();
+      saveState();
+      renderFlow();
+    }
+
+    function returnDestructionCard(cardId) {
+      const rule = getExplorationSpecialRule();
+      if (!rule?.destructionIds || !getDestructionCardIds().includes(cardId)) return;
+
+      const cycleId = currentCycleConfig().id;
+      state.exploration = normalizeExploration(state.exploration);
+      state.exploration.selectedByCycle[cycleId] = getSelectedExplorationIds().filter((id) => id !== cardId);
+
+      const pile = getDestructionPileIds();
+      if (!pile.includes(cardId)) {
+        state.exploration.destructionByCycle[cycleId] = [...pile, cardId];
+      }
+
+      ensureExplorationDrawState();
+      saveState();
+      renderFlow();
+    }
+
+    function resetExplorationDeck() {
+      const selectedIds = getSelectedExplorationIds();
+      if (!selectedIds.length) return;
+      if (!window.confirm("重洗并清空当前探索牌组的抽牌记录与弃牌堆吗？")) return;
+      state.exploration = normalizeExploration(state.exploration);
+      state.exploration.drawStateByCycle[currentCycleConfig().id] = createExplorationDrawState(selectedIds);
+      saveState();
+      renderFlow();
+    }
+
+    function getExplorationCardImageStyle(cardId) {
+      const cycleId = currentCycleConfig().id;
+      return [
+        `background-image: url("./assets/exploration-cards/${cycleId}/${cardId}.png")`,
+        "background-size: contain",
+        "background-position: center",
+      ].join(";");
+    }
+
+    function getExplorationCornerNumber(cardId) {
+      return explorationCornerNumbers[currentCycleConfig().id]?.[cardId] || "";
+    }
+
+    function createExplorationDestructionTools(selectedIds, destructionPileIds) {
+      const rule = getExplorationSpecialRule();
+      if (!rule?.destructionIds) return null;
+
+      const destructionSet = new Set(getDestructionCardIds());
+      const selectedDestructionIds = selectedIds.filter((id) => destructionSet.has(id));
+      const section = document.createElement("details");
+      section.className = "exploration-destruction";
+      const summary = document.createElement("summary");
+      summary.textContent = `破坏卡组（${destructionPileIds.length}） · 探索中 ${selectedDestructionIds.length}`;
+      const body = document.createElement("div");
+      body.className = "exploration-destruction-body";
+
+      const head = document.createElement("div");
+      head.className = "exploration-destruction-head";
+      const title = document.createElement("div");
+      title.className = "exploration-destruction-title";
+      title.textContent = `破坏卡组（${destructionPileIds.length}）`;
+      const addButton = document.createElement("button");
+      addButton.type = "button";
+      addButton.className = "danger";
+      addButton.textContent = "随机加入破坏卡";
+      addButton.disabled = destructionPileIds.length === 0;
+      addButton.addEventListener("click", addRandomDestructionCard);
+      head.append(title, addButton);
+
+      const pileList = document.createElement("div");
+      pileList.className = "exploration-destruction-list";
+      if (destructionPileIds.length) {
+        destructionPileIds.forEach((cardId) => {
+          const item = document.createElement("span");
+          item.className = "exploration-destruction-card";
+          item.textContent = getExplorationCardLabel(cardId);
+          pileList.appendChild(item);
+        });
+      } else {
+        const item = document.createElement("span");
+        item.className = "exploration-destruction-card";
+        item.textContent = "破坏卡组为空";
+        pileList.appendChild(item);
+      }
+
+      const selectedTitle = document.createElement("div");
+      selectedTitle.className = "exploration-destruction-title";
+      selectedTitle.textContent = `探索卡组中的破坏卡（${selectedDestructionIds.length}）`;
+
+      const selectedList = document.createElement("div");
+      selectedList.className = "exploration-destruction-list";
+      if (selectedDestructionIds.length) {
+        selectedDestructionIds.forEach((cardId) => {
+          const item = document.createElement("span");
+          item.className = "exploration-destruction-card";
+          const label = document.createElement("span");
+          label.textContent = getExplorationCardLabel(cardId);
+          const returnButton = document.createElement("button");
+          returnButton.type = "button";
+          returnButton.className = "secondary";
+          returnButton.textContent = "移回";
+          returnButton.addEventListener("click", () => returnDestructionCard(cardId));
+          item.append(label, returnButton);
+          selectedList.appendChild(item);
+        });
+      } else {
+        const item = document.createElement("span");
+        item.className = "exploration-destruction-card";
+        item.textContent = "暂无";
+        selectedList.appendChild(item);
+      }
+
+      body.append(head, pileList, selectedTitle, selectedList);
+      section.append(summary, body);
+      return section;
+    }
+
+    function currentProfile() {
+      return archive.profiles[archive.activeProfileId];
+    }
+
+    function currentCycle() {
+      const profile = currentProfile();
+      if (!profile.cycles?.[profile.activeCycleId]) {
+        profile.activeCycleId = "c2";
+        profile.cycles = createDefaultCycles("c2");
+      }
+      return profile.cycles[profile.activeCycleId];
+    }
+
+    function currentCycleConfig() {
+      return cycleConfigs.find((cycle) => cycle.id === currentProfile().activeCycleId) || cycleConfigs[1];
+    }
+
+    function saveState() {
+      currentCycle().state = state;
+      queueCampaignSave();
+    }
+
+    async function loadCampaignSection() {
+      try {
+        const response = await fetch(campaignStorageUrl, { cache: "no-store" });
+        if (response.status === 401) {
+          showAuth("登录已过期，请重新登录。");
+          return;
+        }
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const payload = await response.json();
+        if (!payload.ok) throw new Error(payload.error || "读取失败");
+        campaignStorageAvailable = true;
+        campaignSectionRevision = Math.max(0, Number(payload.revision || 0));
+        const flushQueuedSave = campaignSaveQueuedBeforeReady;
+        campaignSaveQueuedBeforeReady = false;
+        if (payload.exists && payload.state) {
+          renderDashboardArchive(payload.state);
+          campaignSectionBaseline = cloneJson(archive);
+        } else {
+          campaignSectionBaseline = cloneJson(archive);
+          queueCampaignSave();
+        }
+        if (flushQueuedSave) queueCampaignSave();
+      } catch (error) {
+        campaignStorageAvailable = false;
+        console.warn(error);
+      }
+    }
+
+    function queueCampaignSave() {
+      if (!campaignStorageAvailable) {
+        campaignSaveQueuedBeforeReady = true;
+        return;
+      }
+      clearTimeout(campaignSaveTimer);
+      campaignSaveTimer = setTimeout(saveCampaignSection, 260);
+    }
+
+    async function saveCampaignSection() {
+      if (!campaignStorageAvailable) return;
+      if (campaignSaveInFlight) {
+        campaignSavePending = true;
+        return;
+      }
+      campaignSaveInFlight = true;
+      campaignSavePending = false;
+      const archiveBeingSaved = cloneJson(archive);
+      try {
+        const response = await fetch(campaignStorageUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            section: campaignStorageSection,
+            state: archiveBeingSaved,
+            expectedRevision: campaignSectionRevision,
+          }),
+        });
+        if (response.status === 401) {
+          showAuth("登录已过期，请重新登录。");
+          return;
+        }
+        const payload = await response.json().catch(() => null);
+        if (response.status === 409 && payload?.code === "SAVE_CONFLICT") {
+          campaignSavePending = false;
+          if (!campaignConflictReloading) {
+            campaignConflictReloading = true;
+            const latest = await readLatestDashboardSection();
+            const merged = mergeDashboardChanges(campaignSectionBaseline || defaultArchive, archive, latest.archive);
+            campaignSectionRevision = latest.revision;
+            campaignSectionBaseline = cloneJson(latest.archive);
+
+            if (merged.conflicts.length) {
+              const shown = merged.conflicts.slice(0, 8).join("\n");
+              const more = merged.conflicts.length > 8 ? `\n另有 ${merged.conflicts.length - 8} 项` : "";
+              const keepLocal = window.confirm(
+                `另一个页面修改了相同字段：\n${shown}${more}\n\n确定：保留当前页面的值并合并保存\n取消：放弃当前页面修改并加载服务器最新数据`
+              );
+              if (!keepLocal) {
+                renderDashboardArchive(latest.archive);
+                campaignConflictReloading = false;
+                return;
+              }
+            }
+
+            renderDashboardArchive(merged.value);
+            campaignSavePending = true;
+            campaignConflictReloading = false;
+          }
+          return;
+        }
+        if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+        campaignSectionRevision = Math.max(0, Number(payload.revision || campaignSectionRevision));
+        campaignSectionBaseline = archiveBeingSaved;
+        campaignSyncChannel?.postMessage({ revision: campaignSectionRevision });
+      } catch (error) {
+        campaignConflictReloading = false;
+        console.warn(error);
+      } finally {
+        campaignSaveInFlight = false;
+        if (campaignSavePending) saveCampaignSection();
+      }
+    }
+
+    function activeStoryDoomData() {
+      return {
+        storyCards: [],
+        doomCards: [],
+        storySteps: [],
+        doomSteps: [],
+        inwardOdyssey: null,
+        ...(storyDoomData.cycles?.[currentCycleConfig().id] || {}),
+      };
+    }
+
+    function ensureCardTracks() {
+      state.cardTracks = normalizeCardTracks(state.cardTracks, state.cardCounters, state.cardTracks && state.cardTracksVersion !== 2, currentCycleConfig().id);
+      state.cardTracksVersion = 2;
+      const cycleData = activeStoryDoomData();
+      cardTrackGroups.story.tracks.concat(cardTrackGroups.doom.tracks).forEach((def) => {
+        if (def.fixed || !state.cardTracks[def.key]) return;
+        const deck = Array.isArray(cycleData[def.source]) ? cycleData[def.source] : [];
+        if (deck.length && state.cardTracks[def.key].position > deck.length) {
+          state.cardTracks[def.key].position = deck.length;
+          state.cardTracks[def.key].progress = 0;
+        }
+      });
+      return state.cardTracks;
+    }
+
+    function cardTrackCard(def, track, cycleData) {
+      if (def.fixed) return cycleData[def.source] || null;
+      const deck = Array.isArray(cycleData[def.source]) ? cycleData[def.source] : [];
+      return track.position > 0 ? deck[track.position - 1] || null : null;
+    }
+
+    function cardTrackPreviewCard(def, track, cycleData) {
+      if (def.fixed) return cardTrackCard(def, track, cycleData);
+      const deck = Array.isArray(cycleData[def.source]) ? cycleData[def.source] : [];
+      return track.position > 0 ? deck[track.position - 1] || null : deck[0] || null;
+    }
+
+    function cardTrackStatus(def, track, cycleData) {
+      if (def.fixed) return `阿尔戈号知识 ${track.position}`;
+      const deck = Array.isArray(cycleData[def.source]) ? cycleData[def.source] : [];
+      if (!track.position) return deck[0]?.label ? `未开始，下张 ${deck[0].label} / ${deck.length}` : `未开始 / ${deck.length}`;
+      const step = deck[track.position - 1];
+      return `${step?.label || `第 ${track.position} 步`} / ${deck.length || "?"}`;
+    }
+
+    function cardTrackMeta(def, track, cycleData, card) {
+      if (def.fixed) {
+        return `当前阿尔戈号知识 ${track.position}；已放进展 ${track.progress}`;
+      }
+      const deck = Array.isArray(cycleData[def.source]) ? cycleData[def.source] : [];
+      if (!track.position) return deck[0]
+        ? `未开始；当前预览 ${deck[0].label} ${deck[0].name}。点击推进后正式进入 ${deck[0].label}。`
+        : `mod 中找到 ${deck.length} 个 A/B 步骤。点击推进进入 1A。`;
+      if (!card) return `第 ${track.position} 步无对应卡面；已放进展 ${track.progress}`;
+      return `${card.label} ${card.name}；已放进展 ${track.progress}`;
+    }
+
+    function setCardTrackProgress(key, value) {
+      const tracks = ensureCardTracks();
+      if (!tracks[key]) return;
+      tracks[key].progress = normalizeCounterValue(value);
+      saveState();
+      renderCardTrackDialog();
+    }
+
+    function stepCardTrackProgress(key, delta) {
+      const tracks = ensureCardTracks();
+      if (!tracks[key]) return;
+      setCardTrackProgress(key, Number(tracks[key].progress || 0) + delta);
+    }
+
+    function advanceCardTrack(key) {
+      const tracks = ensureCardTracks();
+      if (!tracks[key]) return;
+      tracks[key].position = normalizeCounterValue(Number(tracks[key].position || 0) + 1);
+      tracks[key].progress = 0;
+      saveState();
+      renderCardTrackDialog();
+    }
+
+    function retreatCardTrack(key) {
+      const tracks = ensureCardTracks();
+      if (!tracks[key]) return;
+      const minimum = key === "inwardOdyssey" ? argoKnowledgeStart(currentCycleConfig().id) : 0;
+      tracks[key].position = Math.max(minimum, normalizeCounterValue(Number(tracks[key].position || 0) - 1));
+      tracks[key].progress = 0;
+      saveState();
+      renderCardTrackDialog();
+    }
+
+    function renderCardTrackDialog(groupId = elements.cardTrackDialog?.dataset.group) {
+      const group = cardTrackGroups[groupId];
+      if (!group) return;
+      const tracks = ensureCardTracks();
+      const cycleData = activeStoryDoomData();
+      elements.cardTrackTitle.textContent = group.title;
+      elements.cardTrackDialog.dataset.group = groupId;
+      elements.cardTrackBody.innerHTML = group.tracks.map((def) => {
+        const track = tracks[def.key] || { position: 0, progress: 0 };
+        const card = cardTrackCard(def, track, cycleData);
+        const previewCard = cardTrackPreviewCard(def, track, cycleData);
+        const displayedCard = card || previewCard;
+        const previewBadge = !def.fixed && !track.position && displayedCard ? '<span class="card-track-preview-badge">下张预览</span>' : "";
+        const face = def.fixed
+          ? `<div class="card-track-knowledge"><div class="card-track-knowledge-value">${track.position}</div><div class="card-track-knowledge-label">当前阿尔戈号知识</div></div>`
+          : (displayedCard?.image
+            ? `<div class="card-track-face"><img src="${escapeHtml(displayedCard.image)}" alt="${escapeHtml(`${displayedCard.label} ${displayedCard.name}`)}"><span class="card-track-side-badge">${escapeHtml(displayedCard.label)}</span><span class="card-track-progress-badge">进展 ${track.progress}</span>${previewBadge}</div>`
+            : '<div class="card-track-empty">无对应卡面</div>');
+        return `
+          <article class="card-track-item">
+            <div class="card-track-title">
+              <span>${escapeHtml(def.label)}</span>
+              <span class="card-track-status">${escapeHtml(cardTrackStatus(def, track, cycleData))}</span>
+            </div>
+            ${face}
+            <div class="card-track-controls">
+              <div class="card-track-progress">
+                <button type="button" data-card-progress="${escapeHtml(def.key)}" data-delta="-1" aria-label="${escapeHtml(def.label)}进展减一">-</button>
+                <input type="number" min="0" step="1" value="${track.progress}" data-card-progress-input="${escapeHtml(def.key)}" aria-label="${escapeHtml(def.label)}进展">
+                <button type="button" data-card-progress="${escapeHtml(def.key)}" data-delta="1" aria-label="${escapeHtml(def.label)}进展加一">+</button>
+              </div>
+              <div class="card-track-step-actions">
+                <button type="button" class="card-track-retreat" data-card-retreat="${escapeHtml(def.key)}">回退</button>
+                <button type="button" class="card-track-advance" data-card-advance="${escapeHtml(def.key)}">推进</button>
+              </div>
+              <div class="card-track-meta">${escapeHtml(cardTrackMeta(def, track, cycleData, card))}</div>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function openCardTrackDialog(groupId) {
+      if (!cardTrackGroups[groupId]) return;
+      renderCardTrackDialog(groupId);
+      if (typeof elements.cardTrackDialog.showModal === "function") {
+        elements.cardTrackDialog.showModal();
+      } else {
+        elements.cardTrackDialog.setAttribute("open", "");
+      }
+    }
+
+    function syncInputs() {
+      elements.dayInput.value = state.day;
+      elements.notesInput.value = state.notes;
+      renderCurrentDateNote();
+    }
+
+    function renderProfiles() {
+      if (sessionUser) elements.sessionAccountName.textContent = sessionUser.username;
+    }
+
+    function renderCycles() {
+      elements.cycleSelect.innerHTML = "";
+      cycleConfigs.forEach((cycle) => {
+        const option = document.createElement("option");
+        option.value = cycle.id;
+        const parts = [cycle.label];
+        if (cycle.map) parts.push("Map");
+        if (cycle.storyBook) parts.push("Story");
+        if (cycle.aibp) parts.push("AIBP");
+        if (!cycle.map && !cycle.storyBook && !cycle.aibp) parts.push("待补资源");
+        option.textContent = parts.join(" · ");
+        elements.cycleSelect.appendChild(option);
+      });
+      elements.cycleSelect.value = currentProfile().activeCycleId;
+    }
+
+    function switchCycle(cycleId) {
+      if (!cycleConfigs.some((cycle) => cycle.id === cycleId)) return;
+      saveState();
+      currentProfile().activeCycleId = cycleId;
+      state = currentCycle().state;
+      syncInputs();
+      renderCycles();
+      renderFlow();
+      renderDateTrack();
+    }
+
+    function getCurrentSurveyConstantData() {
+      return surveyConstantData[currentCycleConfig().id] || null;
+    }
+
+    function findSurveyHub(data, hubId) {
+      return data?.hubs?.find((hub) => hub.id === hubId) || null;
+    }
+
+    function findSurveyHubBox(hub, boxId) {
+      return hub?.boxes?.find(([id]) => id === boxId) || null;
+    }
+
+    function surveyStoryEntryId(boxId) {
+      if (boxId === "alpha") return "\u03b1";
+      if (boxId === "omega") return "\u03a9";
+      return boxId;
+    }
+
+    function surveyHubChapterKey(data, hubId) {
+      const index = data?.hubs?.findIndex((hub) => hub.id === hubId) ?? -1;
+      if (index < 0) return "";
+      return `hub-${String(index + 1).padStart(2, "0")}-${hubId}`;
+    }
+
+    function firstCheckedSurveyHubTarget(data) {
+      for (const hub of data?.hubs || []) {
+        const checkedBoxes = state.surveyConstants.hubs?.[hub.id] || {};
+        for (const [boxId] of hub.boxes) {
+          if (checkedBoxes[boxId]) return { itemId: hub.id, boxId };
+        }
+      }
+      return null;
+    }
+
+    function firstCheckedSurveyRrTarget(data) {
+      for (const [id] of data?.rr || []) {
+        if (state.surveyConstants.rr?.[id]) return { itemId: id };
+      }
+      return null;
+    }
+
+    function validSurveyHubTarget(data, target) {
+      if (!target?.itemId || !target?.boxId) return null;
+      if (!state.surveyConstants.hubs?.[target.itemId]?.[target.boxId]) return null;
+      const hub = findSurveyHub(data, target.itemId);
+      if (!findSurveyHubBox(hub, target.boxId)) return null;
+      return target;
+    }
+
+    function validSurveyRrTarget(data, target) {
+      if (!target?.itemId) return null;
+      if (!state.surveyConstants.rr?.[target.itemId]) return null;
+      return data?.rr?.some(([id]) => id === target.itemId) ? target : null;
+    }
+
+    function getActiveSurveyHubTarget() {
+      const data = getCurrentSurveyConstantData();
+      ensureTodaySurveyConstants();
+      return validSurveyHubTarget(data, state.surveyConstants.activeHub) || firstCheckedSurveyHubTarget(data);
+    }
+
+    function getActiveSurveyRrTarget() {
+      const data = getCurrentSurveyConstantData();
+      ensureTodaySurveyConstants();
+      return validSurveyRrTarget(data, state.surveyConstants.activeRr) || firstCheckedSurveyRrTarget(data);
+    }
+
+    function getSurveyHubStoryLink() {
+      const data = getCurrentSurveyConstantData();
+      const target = getActiveSurveyHubTarget();
+      if (!data || !target) return {
+        label: "冒险中枢",
+        href: getStoryHref({ module: "冒险中枢" }),
+      };
+
+      const hub = findSurveyHub(data, target.itemId);
+      const [, roll, title] = findSurveyHubBox(hub, target.boxId) || [];
+      return {
+        label: "冒险中枢",
+        title: `${hub?.title || ""}${roll ? ` ${roll}` : ""}${title ? ` · ${title}` : ""}`,
+        href: getStoryHref({
+          chapter: surveyHubChapterKey(data, target.itemId),
+          entry: surveyStoryEntryId(target.boxId),
+        }),
+      };
+    }
+
+    function getSurveyRrStoryLink() {
+      const data = getCurrentSurveyConstantData();
+      const target = getActiveSurveyRrTarget();
+      if (!data || !target) return {
+        label: "R&R",
+        href: getStoryHref({ module: "rr" }),
+      };
+
+      const row = data.rr.find(([id]) => id === target.itemId);
+      return {
+        label: "R&R",
+        title: row ? `${row[0]} · ${row[1]}` : "",
+        href: getStoryHref({
+          chapter: "rr-adventures",
+          entry: target.itemId,
+        }),
+      };
+    }
+
+    function getPharosDreamStoryLink() {
+      const data = currentPharosDreamConstants();
+      const target = getActivePharosDreamTarget();
+      if (!data || !target) return {
+        label: "法洛斯之梦",
+        href: getStoryHref({ module: "dreams-of-pharos" }),
+      };
+
+      const row = findSimpleConstantRow(data, target);
+      return {
+        label: "法洛斯之梦",
+        title: row ? `${row[1]} · ${row[2]}` : "",
+        href: getStoryHref({
+          chapter: data.module,
+          entry: row?.[3]?.entry || row?.[0] || target,
+        }),
+      };
+    }
+
+    function getMainStoryLink() {
+      const data = currentMainStoryConstants();
+      const target = getActiveMainStoryTarget();
+      if (!data || !target) return {
+        label: "主线",
+        href: getStoryHref({ module: "主线" }),
+      };
+
+      const row = findSimpleConstantRow(data, target);
+      return {
+        label: "主线",
+        title: row ? `${row[1]} · ${row[2]}` : "",
+        href: getStoryHref({
+          chapter: data.chapter,
+          entry: row?.[3]?.entry || row?.[0] || target,
+        }),
+      };
+    }
+
+    function getInwardOdysseyStoryLink() {
+      const cycleId = currentCycleConfig().id;
+      const range = inwardOdysseyStoryRanges[cycleId];
+      const tracks = ensureCardTracks();
+      const rawPosition = normalizeCounterValue(tracks.inwardOdyssey?.position);
+      const entry = range
+        ? Math.min(range.max, Math.max(range.min, rawPosition || range.min))
+        : rawPosition;
+      return {
+        label: "内蕴奥德赛",
+        title: range && entry !== rawPosition
+          ? `当前内蕴奥德赛 ${rawPosition || "未设置"}，跳转到可用段落 ${entry}`
+          : `当前内蕴奥德赛 ${entry || "未设置"}`,
+        href: getStoryHref({
+          chapter: "inward-odyssey",
+          entry: entry || undefined,
+        }),
+      };
+    }
+
+    function getSpecialEventLink() {
+      const data = currentSpecialEventConstants();
+      const target = getActiveSpecialEventTarget();
+      if (!data || !target) return {
+        label: "特殊事件",
+        href: getStoryHref({ module: "特殊事件" }),
+      };
+
+      const row = findSimpleConstantRow(data, target);
+      return {
+        label: "特殊事件",
+        title: row ? `${row[1]} · ${row[2]}` : "",
+        href: getStoryHref({
+          chapter: data.chapter,
+          entry: row?.[3]?.entry || row?.[0] || target,
+        }),
+      };
+    }
+
+    function countCheckedSurveyHubBoxes(data) {
+      ensureTodaySurveyConstants();
+      return (data?.hubs || []).reduce((total, hub) => {
+        const checkedBoxes = state.surveyConstants.hubs?.[hub.id] || {};
+        return total + Object.values(checkedBoxes).filter(Boolean).length;
+      }, 0);
+    }
+
+    function countCheckedSurveyRrBoxes(data) {
+      ensureTodaySurveyConstants();
+      return (data?.rr || []).filter(([id]) => state.surveyConstants.rr?.[id]).length;
+    }
+
+    function surveyHubTargetLabel(data, target) {
+      if (!target) return "";
+      const hub = findSurveyHub(data, target.itemId);
+      const [, roll, title] = findSurveyHubBox(hub, target.boxId) || [];
+      return [hub?.title, roll, title].filter(Boolean).join(" · ");
+    }
+
+    function surveyRrTargetLabel(data, target) {
+      if (!target) return "";
+      const row = data?.rr?.find(([id]) => id === target.itemId);
+      return row ? `${row[0]} · ${row[1]}` : "";
+    }
+
+    function surveyHubSummaryRow(data, hubId) {
+      return data?.summary?.find((row) => row.hubId === hubId) || null;
+    }
+
+    function setNextBattleTerrainFromHub(hubId, boxId) {
+      const data = getCurrentSurveyConstantData();
+      const row = surveyHubSummaryRow(data, hubId);
+      if (!row?.terrain) return;
+      const hub = findSurveyHub(data, hubId);
+      const [, roll, title] = findSurveyHubBox(hub, boxId) || [];
+      state.nextBattleTerrain = {
+        terrain: row.terrain,
+        hubId,
+        boxId,
+        hub: row.hub || hub?.title || "",
+        source: [roll, title].filter(Boolean).join(" · "),
+        setAtDay: Math.max(0, Number(state.day || 0)),
+      };
+    }
+
+    function clearNextBattleTerrainForHub(hubId, boxId) {
+      if (state.nextBattleTerrain?.hubId === hubId && state.nextBattleTerrain?.boxId === boxId) {
+        state.nextBattleTerrain = null;
+      }
+    }
+
+    function appendSurveyActionContextRow(parent, label, value) {
+      const row = document.createElement("div");
+      row.className = "step-action-context-row";
+      const labelEl = document.createElement("div");
+      labelEl.className = "step-action-context-label";
+      labelEl.textContent = label;
+      const valueEl = document.createElement("div");
+      valueEl.className = value ? "step-action-context-value" : "step-action-context-empty";
+      valueEl.textContent = value || "未勾选";
+      row.append(labelEl, valueEl);
+      parent.appendChild(row);
+    }
+
+    function createSurveyActionContext() {
+      const data = getCurrentSurveyConstantData();
+      if (!data) return null;
+
+      const hubTarget = getActiveSurveyHubTarget();
+      const rrTarget = getActiveSurveyRrTarget();
+      const hubCount = countCheckedSurveyHubBoxes(data);
+      const rrCount = countCheckedSurveyRrBoxes(data);
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "step-action-context";
+
+      const title = document.createElement("div");
+      title.className = "step-action-context-title";
+      title.textContent = "本次定数";
+      wrapper.appendChild(title);
+
+      appendSurveyActionContextRow(wrapper, "中枢", surveyHubTargetLabel(data, hubTarget));
+      appendSurveyActionContextRow(wrapper, "R&R", surveyRrTargetLabel(data, rrTarget));
+
+      const count = document.createElement("div");
+      count.className = "step-action-context-count";
+      count.textContent = `已勾选：中枢 ${hubCount} · R&R ${rrCount}`;
+      wrapper.appendChild(count);
+
+      return wrapper;
+    }
+
+    function latestSurveyAdventureRecordAction() {
+      const data = getCurrentSurveyConstantData();
+      const action = state.latestSurveyAdventureAction;
+      if (!data || !action || action.day !== Math.max(0, Number(state.day || 0)) || action.cycle !== currentCycleConfig().id) return null;
+      const hub = findSurveyHub(data, action.itemId);
+      if (!hub || !findSurveyHubBox(hub, action.boxId)) return null;
+      return {
+        cycle: action.cycle,
+        day: action.day,
+        adventure: hub.title,
+        box: action.boxId,
+      };
+    }
+
+    function readLocalArgoRecord() {
+      return {};
+    }
+
+    async function readServerArgoRecord() {
+      const response = await fetch(`${authUrl}?section=record`, { cache: "no-store" });
+      if (response.status === 401) return { available: false, record: null, error: "auth required" };
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const payload = await response.json();
+      if (!payload.ok) throw new Error(payload.error || "read failed");
+      const savedRecord = payload.exists && isPlainObject(payload.state) ? payload.state : null;
+      const profileRecord = isPlainObject(savedRecord?.users)
+        ? savedRecord.users[archive.activeProfileId] || null
+        : savedRecord;
+      return {
+        available: true,
+        record: isPlainObject(profileRecord) ? profileRecord : null,
+        revision: Math.max(0, Number(payload.revision || 0)),
+      };
+    }
+
+    async function writeServerArgoRecord(record, expectedRevision) {
+      const response = await fetch(`${authUrl}?section=record`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          section: "record",
+          userId: archive.activeProfileId,
+          state: record,
+          expectedRevision,
+        }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (response.status === 409 && payload?.code === "SAVE_CONFLICT") return { conflict: true };
+      if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+      return { conflict: false, revision: Math.max(0, Number(payload.revision || 0)) };
+    }
+
+    function mergeArgoRecords(serverRecord, localRecord) {
+      if (!isPlainObject(serverRecord)) return isPlainObject(localRecord) ? { ...localRecord } : {};
+      if (!isPlainObject(localRecord)) return { ...serverRecord };
+
+      const merged = { ...localRecord, ...serverRecord };
+      [
+        "crewBoxes",
+        "enemies",
+        "adventures",
+        "diplomacy",
+        "resources",
+        "map",
+        "matrix",
+        "maxUnlocked",
+        "pygmalion",
+        "rooting",
+      ].forEach((key) => {
+        merged[key] = {
+          ...(isPlainObject(localRecord[key]) ? localRecord[key] : {}),
+          ...(isPlainObject(serverRecord[key]) ? serverRecord[key] : {}),
+        };
+      });
+
+      ["godforms", "nymphCards", "godformUsedCards", "nymphUsedCards", "titans"].forEach((key) => {
+        const serverList = Array.isArray(serverRecord[key]) ? serverRecord[key] : [];
+        const localList = Array.isArray(localRecord[key]) ? localRecord[key] : [];
+        merged[key] = serverList.length ? serverList : localList;
+      });
+
+      return merged;
+    }
+
+    async function syncSurveyAdventureToArgoRecord() {
+      const action = latestSurveyAdventureRecordAction();
+      if (!action) return;
+
+      const localRecord = readLocalArgoRecord();
+      let serverAvailable = false;
+      let serverRecord = null;
+      let serverRevision = 0;
+      try {
+        const server = await readServerArgoRecord();
+        serverAvailable = server.available;
+        serverRecord = server.record;
+        serverRevision = server.revision || serverRevision;
+      } catch (error) {
+        console.warn(error);
+      }
+
+      const applyAction = (baseRecord) => {
+        const record = mergeArgoRecords(baseRecord, localRecord);
+        record.profileName ||= "阿尔戈号记录";
+        record.cycle = action.cycle;
+        record.day = action.day;
+        const slot = markRecordAdventure(record, action);
+        if (slot) appendRecordSyncLog(record, `Day ${action.day} 定数写入：${action.adventure} -> ${adventureSlotLabel(slot)}`);
+        return record;
+      };
+      let record = applyAction(serverRecord);
+      updateRecordLinks();
+
+      if (serverAvailable) {
+        try {
+          for (let attempt = 0; attempt < 3; attempt += 1) {
+            const writeResult = await writeServerArgoRecord(record, serverRevision);
+            if (!writeResult.conflict) {
+              recordSyncChannel?.postMessage({ revision: writeResult.revision });
+              break;
+            }
+            const latest = await readServerArgoRecord();
+            serverRevision = latest.revision || serverRevision;
+            record = applyAction(latest.record);
+          }
+        } catch (error) {
+          console.warn(error);
+        }
+      }
+    }
+
+    function normalizeAdventureTitle(value) {
+      return String(value || "").toLowerCase().replace(/travelled/g, "traveled").replace(/[^a-z0-9]+/g, "");
+    }
+
+    function adventureSlotLabel(slot) {
+      if (slot === "alpha") return "Alpha";
+      if (slot === "omega") return "Omega";
+      if (slot === "mid1") return "左侧空白格";
+      if (slot === "mid2") return "右侧空白格";
+      return slot || "";
+    }
+
+    function appendRecordSyncLog(record, message) {
+      const stamp = new Date().toLocaleString("zh-CN", {
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      const line = `${stamp} ${message}`;
+      record.syncLog = [line, record.syncLog].filter(Boolean).join("\n").slice(0, 6000);
+    }
+
+    function markRecordAdventure(record, action) {
+      const adventures = {
+        c1: ["Fated Conundrum", "Plight of the People", "Hidden in Plain Sight", "Man of Purpose", "Uneasy Rests the Head", "Tears of a Minotaur", "Dreams Laid Bare", "Tutorial"],
+        c2: ["Consider the Ant", "The Other Thermopylae", "From the Ashes", "Intended Purpose", "Misery Industry", "Parable of the Butterfly", "Truth to Weakness", "When the Land Meets the Sea"],
+        c3: ["Road Less Traveled", "Children of the Sun", "What We Left Behind", "Of Wax And Promises", "Can't Go Back", "Sin of the Fathers", "Coming of Age"],
+      };
+      const index = (adventures[action.cycle] || []).findIndex((title) => normalizeAdventureTitle(title) === normalizeAdventureTitle(action.adventure));
+      if (index < 0) return "";
+      record.adventures ||= {};
+      const prefix = `${action.cycle}-${index}`;
+      let slot = "";
+      if (action.box === "alpha" || action.box === "omega") {
+        slot = action.box;
+      } else if (!record.adventures[`${prefix}-mid1`]) {
+        slot = "mid1";
+      } else if (!record.adventures[`${prefix}-mid2`]) {
+        slot = "mid2";
+      }
+      if (!slot) return "";
+      delete record.adventures[prefix];
+      record.adventures[`${prefix}-${slot}`] = true;
+      return slot;
+    }
+
+    function createSurveyHubSummary(data) {
+      if (!data?.summary?.length) return null;
+      const activeTarget = getActiveSurveyHubTarget();
+      const summary = document.createElement("section");
+      summary.className = "survey-constant-group";
+      const heading = document.createElement("div");
+      heading.className = "survey-constant-heading";
+      heading.textContent = "冒险中枢总表";
+
+      const table = document.createElement("div");
+      table.className = "survey-hub-summary";
+      const header = document.createElement("div");
+      header.className = "survey-hub-summary-row header";
+      ["Story I", "Story II", "Story III", "Story IV", "Adventure Hub", "Battle Terrain"].forEach((text) => {
+        const cell = document.createElement("span");
+        cell.textContent = text;
+        header.appendChild(cell);
+      });
+      table.appendChild(header);
+
+      data.summary.forEach((row) => {
+        const item = document.createElement("div");
+        item.className = `survey-hub-summary-row${activeTarget?.itemId === row.hubId ? " active" : ""}`;
+        row.story.forEach((value) => {
+          const cell = document.createElement("span");
+          cell.className = "survey-hub-story";
+          cell.textContent = value || "-";
+          item.appendChild(cell);
+        });
+        const hubCell = document.createElement("span");
+        hubCell.className = "survey-hub-title";
+        hubCell.textContent = row.hub;
+        const terrainCell = document.createElement("span");
+        terrainCell.textContent = row.terrain;
+        item.append(hubCell, terrainCell);
+        table.appendChild(item);
+      });
+
+      summary.append(heading, table);
+      return summary;
+    }
+
+    function surveyConstantChecked(groupId, itemId, boxId) {
+      ensureTodaySurveyConstants();
+      if (groupId === "rr") return Boolean(state.surveyConstants.rr?.[itemId]);
+      return Boolean(state.surveyConstants.hubs?.[itemId]?.[boxId]);
+    }
+
+    function setSurveyConstant(groupId, itemId, boxId, checked) {
+      ensureTodaySurveyConstants();
+      state.surveyConstantsTouchedDay = surveyConstantsDayKey();
+      if (groupId === "rr") {
+        if (checked) {
+          state.surveyConstants.rr[itemId] = true;
+          state.surveyConstants.activeRr = { itemId };
+        } else {
+          delete state.surveyConstants.rr[itemId];
+          if (state.surveyConstants.activeRr?.itemId === itemId) {
+            state.surveyConstants.activeRr = firstCheckedSurveyRrTarget(getCurrentSurveyConstantData());
+          }
+        }
+      } else {
+        state.surveyConstants.hubs[itemId] ||= {};
+        if (checked) {
+          state.surveyConstants.hubs[itemId][boxId] = true;
+          state.surveyConstants.activeHub = { itemId, boxId };
+          state.latestSurveyAdventureAction = {
+            cycle: currentCycleConfig().id,
+            day: Math.max(0, Number(state.day || 0)),
+            itemId,
+            boxId,
+          };
+          setNextBattleTerrainFromHub(itemId, boxId);
+        } else {
+          delete state.surveyConstants.hubs[itemId][boxId];
+          if (state.surveyConstants.activeHub?.itemId === itemId && state.surveyConstants.activeHub?.boxId === boxId) {
+            state.surveyConstants.activeHub = firstCheckedSurveyHubTarget(getCurrentSurveyConstantData());
+          }
+          clearNextBattleTerrainForHub(itemId, boxId);
+        }
+        if (!Object.keys(state.surveyConstants.hubs[itemId]).length) delete state.surveyConstants.hubs[itemId];
+      }
+      if (groupId !== "rr" && checked) {
+        recordSyncChannel?.postMessage({ source: "dashboard-constant-pending" });
+        void syncSurveyAdventureToArgoRecord();
+      }
+      saveState();
+      renderFlow();
+    }
+
+    function createSurveyConstantCard(item, groupId) {
+      const card = document.createElement("article");
+      card.className = "survey-constant-card";
+
+      const title = document.createElement("div");
+      title.className = "survey-constant-title";
+      title.innerHTML = `${escapeHtml(item.title)}${item.passage ? ` <span>(${escapeHtml(item.passage)})</span>` : ""}`;
+
+      const boxes = document.createElement("div");
+      boxes.className = "survey-constant-boxes";
+      item.boxes.forEach(([boxId, roll, label]) => {
+        const row = document.createElement("label");
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.checked = surveyConstantChecked(groupId, item.id, boxId);
+        input.addEventListener("change", () => setSurveyConstant(groupId, item.id, boxId, input.checked));
+        const rollText = document.createElement("span");
+        rollText.className = "survey-constant-roll";
+        rollText.textContent = roll;
+        const labelText = document.createElement("span");
+        labelText.textContent = label;
+        row.append(input, rollText, labelText);
+        boxes.appendChild(row);
+      });
+
+      card.append(title, boxes);
+      return card;
+    }
+
+    function createSurveyConstantTools() {
+      const data = surveyConstantData[currentCycleConfig().id];
+      if (!data) return null;
+
+      ensureTodaySurveyConstants();
+      const wrapper = document.createElement("details");
+      wrapper.className = "survey-constants";
+      rememberConstantDetailsOpen(wrapper, "survey");
+      const summary = document.createElement("summary");
+      summary.textContent = "定数框";
+      const body = document.createElement("div");
+      body.className = "survey-constants-body";
+      const hubSummary = createSurveyHubSummary(data);
+      if (hubSummary) body.appendChild(hubSummary);
+
+      const hubGroup = document.createElement("section");
+      hubGroup.className = "survey-constant-group";
+      hubGroup.innerHTML = '<div class="survey-constant-heading">冒险中枢</div>';
+      const hubGrid = document.createElement("div");
+      hubGrid.className = "survey-constant-grid";
+      data.hubs.forEach((hub) => hubGrid.appendChild(createSurveyConstantCard(hub, "hubs")));
+      hubGroup.appendChild(hubGrid);
+
+      const rrGroup = document.createElement("section");
+      rrGroup.className = "survey-constant-group";
+      rrGroup.innerHTML = '<div class="survey-constant-heading">R&R 冒险</div>';
+      const rrGrid = document.createElement("div");
+      rrGrid.className = "survey-constant-grid";
+      data.rr.forEach(([id, title]) => {
+        rrGrid.appendChild(createSurveyConstantCard({
+          id,
+          title,
+          boxes: [[id, id, title]],
+        }, "rr"));
+      });
+      rrGroup.appendChild(rrGrid);
+
+      body.append(hubGroup, rrGroup);
+      wrapper.append(summary, body);
+      return wrapper;
+    }
+
+    function setSimpleConstant(valueKey, activeKey, ensureFn, boxId, checked) {
+      ensureFn();
+      if (checked) {
+        state[valueKey][boxId] = true;
+        state[activeKey] = boxId;
+      } else {
+        delete state[valueKey][boxId];
+        if (state[activeKey] === boxId) {
+          state[activeKey] = Object.keys(state[valueKey])[0] || null;
+        }
+      }
+      saveState();
+      renderFlow();
+    }
+
+    function setPharosDreamConstant(boxId, checked) {
+      setSimpleConstant("pharosDreams", "pharosDreamsActive", ensureTodayPharosDreams, boxId, checked);
+    }
+
+    function setMainStoryConstant(boxId, checked) {
+      setSimpleConstant("mainStoryConstants", "mainStoryConstantsActive", ensureTodayMainStoryConstants, boxId, checked);
+    }
+
+    function setSpecialEventConstant(boxId, checked) {
+      setSimpleConstant("specialEventConstants", "specialEventConstantsActive", ensureTodaySpecialEventConstants, boxId, checked);
+    }
+
+    function rememberConstantDetailsOpen(details, key) {
+      details.open = Boolean(constantToolsOpen[key]);
+      details.addEventListener("toggle", () => {
+        if (details.open) {
+          constantToolsOpen[key] = true;
+        } else {
+          delete constantToolsOpen[key];
+        }
+      });
+      return details;
+    }
+
+    function createSimpleConstantTools(data, options) {
+      if (!data) return null;
+
+      const values = options.ensure();
+      const wrapper = document.createElement("details");
+      wrapper.className = "survey-constants";
+      rememberConstantDetailsOpen(wrapper, options.openKey);
+      const summary = document.createElement("summary");
+      summary.textContent = options.summary;
+      const body = document.createElement("div");
+      body.className = "survey-constants-body";
+
+      const group = document.createElement("section");
+      group.className = "survey-constant-group";
+      group.innerHTML = `<div class="survey-constant-heading">${escapeHtml(data.title)}</div>`;
+      const grid = document.createElement("div");
+      grid.className = "survey-constant-grid";
+      const card = document.createElement("article");
+      card.className = "survey-constant-card";
+
+      const title = document.createElement("div");
+      title.className = "survey-constant-title";
+      title.innerHTML = `${escapeHtml(data.title)}${options.subtitle ? ` <span>${escapeHtml(options.subtitle)}</span>` : ""}`;
+      const boxes = document.createElement("div");
+      boxes.className = "survey-constant-boxes";
+      data.boxes.forEach((item) => {
+        const [boxId, roll, label] = item;
+        const slotIds = simpleConstantSlotIds(item);
+        const row = document.createElement(slotIds.length === 1 ? "label" : "div");
+        row.className = slotIds.length === 1 ? "" : "survey-constant-row-item multi-slot";
+        const slotWrap = document.createElement("span");
+        slotWrap.className = "simple-constant-slots";
+        slotIds.forEach((slotId, index) => {
+          const input = document.createElement("input");
+          input.type = "checkbox";
+          input.checked = Boolean(values[slotId] || (index === 0 && values[boxId]));
+          input.setAttribute("aria-label", `${roll} ${label} ${index + 1}`);
+          input.addEventListener("change", () => {
+            if (values[boxId]) delete values[boxId];
+            options.set(slotId, input.checked);
+          });
+          slotWrap.appendChild(input);
+        });
+        if (slotIds.length === 1) {
+          const rollText = document.createElement("span");
+          rollText.className = "survey-constant-roll";
+          rollText.textContent = roll;
+          const labelText = document.createElement("span");
+          labelText.textContent = label;
+          row.append(slotWrap.firstChild, rollText, labelText);
+        } else {
+          const text = document.createElement("span");
+          text.innerHTML = `<span class="survey-constant-roll">${escapeHtml(roll)}</span> ${escapeHtml(label)}`;
+          row.append(slotWrap, text);
+        }
+        boxes.appendChild(row);
+      });
+
+      card.append(title, boxes);
+      grid.appendChild(card);
+      group.appendChild(grid);
+      body.appendChild(group);
+      wrapper.append(summary, body);
+      return wrapper;
+    }
+
+    function createPharosDreamConstantTools() {
+      return createSimpleConstantTools(currentPharosDreamConstants(), {
+        summary: "法洛斯之梦定数框",
+        subtitle: "Dreams of Pharos",
+        openKey: "pharosDreams",
+        ensure: ensureTodayPharosDreams,
+        set: setPharosDreamConstant,
+      });
+    }
+
+    function createMainStoryConstantTools() {
+      return createSimpleConstantTools(currentMainStoryConstants(), {
+        summary: "主线故事定数框",
+        subtitle: "Main Story",
+        openKey: "mainStory",
+        ensure: ensureTodayMainStoryConstants,
+        set: setMainStoryConstant,
+      });
+    }
+
+    function createSpecialEventConstantTools() {
+      return createSimpleConstantTools(currentSpecialEventConstants(), {
+        summary: "特殊事件定数框",
+        subtitle: "Special Events",
+        openKey: "specialEvent",
+        ensure: ensureTodaySpecialEventConstants,
+        set: setSpecialEventConstant,
+      });
+    }
+
+    function renderStepDesc(desc) {
+      return escapeHtml(desc).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    }
+
+    function renderFlow() {
+      elements.flowList.innerHTML = "";
+      const fragment = document.createDocumentFragment();
+
+      flowSteps.forEach((step, index) => {
+        const item = document.createElement("article");
+        const checked = Boolean(state.completed[step.id]);
+        item.className = `flow-step${checked ? " done" : ""}`;
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.className = "flow-check";
+        checkbox.checked = checked;
+        checkbox.setAttribute("aria-label", `完成${step.title}`);
+        checkbox.addEventListener("change", () => {
+          state.completed[step.id] = checkbox.checked;
+          if (step.id === "encounter" && checkbox.checked) {
+            state.nextBattleTerrain = null;
+          }
+          saveState();
+          renderFlow();
+        });
+
+        const text = document.createElement("div");
+        const trackReminders = getStepTrackReminders(step.id);
+        const titleText = step.id === "story" || step.id === "doom"
+          ? `<button type="button" class="flow-title-button" data-card-track-open="${step.id}">${escapeHtml(step.title)}</button>`
+          : `<span>${escapeHtml(step.title)}</span>`;
+        text.innerHTML = `
+          <div class="step-title">
+            <span class="step-index">${String(index + 1).padStart(2, "0")}</span>
+            ${titleText}
+            <span class="step-kind">${escapeHtml(step.kind)}</span>
+          </div>
+          <p class="step-desc">${renderStepDesc(step.desc)}</p>
+          ${renderStepTrackReminders(trackReminders)}
+        `;
+        const actions = document.createElement("div");
+        actions.className = "step-actions";
+        getStepLinks(step).forEach((link) => {
+          const anchor = document.createElement("a");
+          anchor.href = link.href;
+          anchor.textContent = link.label;
+          if (link.title) anchor.title = link.title;
+          actions.appendChild(anchor);
+        });
+        if (actions.children.length) text.querySelector(".step-title")?.appendChild(actions);
+        if (step.id === "explore") {
+          text.appendChild(createExplorationTools());
+        }
+        if (step.id === "survey") {
+          const surveyTools = createSurveyConstantTools();
+          if (surveyTools) text.appendChild(surveyTools);
+        }
+        if (step.id === "story") {
+          const constantRow = document.createElement("div");
+          constantRow.className = "simple-constant-row";
+          [
+            createPharosDreamConstantTools(),
+            createMainStoryConstantTools(),
+            createSpecialEventConstantTools(),
+          ].filter(Boolean).forEach((tools) => constantRow.appendChild(tools));
+          if (constantRow.children.length) text.appendChild(constantRow);
+        }
+        item.append(checkbox, text);
+        fragment.appendChild(item);
+      });
+
+      elements.flowList.appendChild(fragment);
+      renderProgress();
+      updateRecordLinks();
+    }
+
+    function createExplorationTools() {
+      const library = getExplorationLibrary();
+      const selectedIds = getSelectedExplorationIds();
+      const drawState = ensureExplorationDrawState();
+      const specialRule = getExplorationSpecialRule();
+      const destructionPileIds = specialRule ? getDestructionPileIds() : [];
+      const wrapper = document.createElement("div");
+      wrapper.className = "exploration-tools";
+
+      if (!library.length) {
+        wrapper.innerHTML = '<div class="exploration-summary">当前 Cycle 暂无探索卡组数据。</div>';
+        return wrapper;
+      }
+
+      const toolbar = document.createElement("div");
+      toolbar.className = "exploration-toolbar";
+
+      const status = document.createElement("div");
+      status.className = "exploration-status";
+      status.innerHTML = `
+        <div class="exploration-count">已选 ${selectedIds.length} / ${library.length} 张</div>
+      `;
+
+      const buttons = document.createElement("div");
+      buttons.className = "exploration-buttons";
+      const drawButton = document.createElement("button");
+      drawButton.type = "button";
+      drawButton.textContent = "抽探索卡";
+      drawButton.disabled = selectedIds.length === 0;
+      drawButton.addEventListener("click", drawExplorationCard);
+
+      const resetButton = document.createElement("button");
+      resetButton.type = "button";
+      resetButton.className = "secondary";
+      resetButton.textContent = "重洗牌堆";
+      resetButton.disabled = selectedIds.length === 0;
+      resetButton.addEventListener("click", resetExplorationDeck);
+
+      const endButton = document.createElement("button");
+      endButton.type = "button";
+      endButton.className = "secondary";
+      endButton.textContent = "结束抽卡";
+      endButton.disabled = drawState.history.length === 0;
+      endButton.addEventListener("click", endExplorationDraw);
+
+      buttons.append(drawButton, endButton, resetButton);
+      toolbar.append(status, buttons);
+
+      const summary = document.createElement("div");
+      summary.className = "exploration-summary";
+      summary.innerHTML = `
+        <div>剩余 ${drawState.drawPile.length} / ${selectedIds.length}，已抽 ${drawState.history.length}，弃牌 ${drawState.discardPile.length}${specialRule ? `，破坏卡组 ${destructionPileIds.length}` : ""}</div>
+      `;
+
+      const drawnCards = document.createElement("section");
+      drawnCards.className = "exploration-drawn";
+      if (drawState.history.length) {
+        const drawnTitle = document.createElement("div");
+        drawnTitle.className = "exploration-drawn-title";
+        drawnTitle.textContent = `已抽卡面（${drawState.history.length}）`;
+        const drawnGrid = document.createElement("div");
+        drawnGrid.className = "exploration-drawn-grid";
+        drawState.history.forEach((entry) => {
+          const drawnCard = document.createElement("article");
+          drawnCard.className = "exploration-drawn-card";
+
+          const drawnFace = document.createElement("div");
+          drawnFace.className = "exploration-drawn-face";
+          drawnFace.setAttribute("aria-label", entry.name);
+          drawnFace.setAttribute("role", "img");
+          drawnFace.style.cssText = getExplorationCardImageStyle(entry.id);
+
+          const meta = document.createElement("div");
+          meta.className = "exploration-drawn-meta";
+          const cornerNumber = getExplorationCornerNumber(entry.id);
+          meta.textContent = `D${entry.day} · ${entry.name} #${entry.id}${cornerNumber ? ` · 黑底${cornerNumber}` : ""}`;
+
+          drawnCard.append(drawnFace, meta);
+          drawnGrid.appendChild(drawnCard);
+        });
+        drawnCards.append(drawnTitle, drawnGrid);
+      }
+
+      const builder = document.createElement("details");
+      builder.className = "exploration-builder";
+      const builderSummary = document.createElement("summary");
+      builderSummary.textContent = "选择探索卡库";
+      builder.appendChild(builderSummary);
+
+      const builderBody = document.createElement("div");
+      builderBody.className = "exploration-builder-body";
+      const builderActions = document.createElement("div");
+      builderActions.className = "exploration-builder-actions";
+
+      const applyButton = document.createElement("button");
+      applyButton.type = "button";
+      applyButton.textContent = "应用选择";
+
+      const selectAllButton = document.createElement("button");
+      selectAllButton.type = "button";
+      selectAllButton.className = "secondary";
+      selectAllButton.textContent = "全选";
+
+      const clearButton = document.createElement("button");
+      clearButton.type = "button";
+      clearButton.className = "secondary";
+      clearButton.textContent = "清空";
+
+      const restoreDefaultButton = document.createElement("button");
+      restoreDefaultButton.type = "button";
+      restoreDefaultButton.className = "secondary";
+      restoreDefaultButton.textContent = "恢复初始";
+      restoreDefaultButton.hidden = !defaultExplorationSelections[currentCycleConfig().id]?.length;
+      restoreDefaultButton.addEventListener("click", restoreDefaultExplorationSelection);
+
+      const libraryList = document.createElement("div");
+      libraryList.className = "exploration-library";
+      const selectedSet = new Set(selectedIds);
+      const destructionSet = new Set(specialRule ? getDestructionCardIds() : []);
+      library.forEach((card) => {
+        const item = document.createElement("label");
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.value = card.id;
+        checkbox.checked = selectedSet.has(card.id);
+        checkbox.disabled = destructionSet.has(card.id);
+        const text = document.createElement("span");
+        const cornerNumber = getExplorationCornerNumber(card.id);
+        text.textContent = `${card.name} #${card.id}${cornerNumber ? ` · 黑底${cornerNumber}` : ""}${destructionSet.has(card.id) ? " · 破坏卡" : ""}`;
+        item.append(checkbox, text);
+        if (specialRule && !destructionSet.has(card.id)) {
+          const destructionButton = document.createElement("button");
+          destructionButton.type = "button";
+          destructionButton.className = "secondary";
+          destructionButton.textContent = "加入破坏";
+          destructionButton.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            addCardToDestructionPile(card.id);
+          });
+          item.appendChild(destructionButton);
+        }
+        libraryList.appendChild(item);
+      });
+
+      const getCheckedIds = () => [...libraryList.querySelectorAll('input[type="checkbox"]:checked')].map((input) => input.value);
+      applyButton.addEventListener("click", () => applyExplorationSelection(getCheckedIds()));
+      selectAllButton.addEventListener("click", () => {
+        libraryList.querySelectorAll('input[type="checkbox"]:not(:disabled)').forEach((input) => {
+          input.checked = true;
+        });
+      });
+      clearButton.addEventListener("click", () => {
+        libraryList.querySelectorAll('input[type="checkbox"]:not(:disabled)').forEach((input) => {
+          input.checked = false;
+        });
+      });
+
+      builderActions.append(applyButton, selectAllButton, clearButton, restoreDefaultButton);
+      builderBody.append(builderActions, libraryList);
+      builder.appendChild(builderBody);
+
+      wrapper.append(toolbar, summary);
+      if (drawState.history.length) wrapper.appendChild(drawnCards);
+      const destructionTools = createExplorationDestructionTools(selectedIds, destructionPileIds);
+      if (destructionTools) wrapper.appendChild(destructionTools);
+      wrapper.appendChild(builder);
+      return wrapper;
+    }
+
+    function getStoryHref(options = {}) {
+      const config = currentCycleConfig();
+      if (!config.storyBook) return "./story/index.html";
+
+      const params = new URLSearchParams();
+      params.set("book", config.storyBook);
+      if (options.chapter) params.set("chapter", options.chapter);
+      if (options.module) params.set("module", options.module);
+      if (options.battle) params.set("battle", options.battle);
+      if (options.encounter) params.set("encounter", options.encounter);
+      if (options.entry) params.set("entry", options.entry);
+      return `./story/index.html?${params.toString()}`;
+    }
+
+    function getStoryShortcutModules(config) {
+      if (!config.storyBook) return [];
+      return [
+        {
+          title: "Story 主线",
+          text: "直接打开主线故事区域。",
+          href: getStoryHref({ module: "主线" }),
+          available: true,
+        },
+        {
+          title: "Story 冒险中枢",
+          text: "直接打开冒险中枢区域。",
+          href: getStoryHref({ module: "冒险中枢" }),
+          available: true,
+        },
+        {
+          title: "Story R&R",
+          text: "直接打开 R&R 冒险区域。",
+          href: getStoryHref({ module: "rr" }),
+          available: true,
+        },
+        {
+          title: "Story 特殊事件",
+          text: "直接打开特殊事件区域。",
+          href: getStoryHref({ module: "特殊事件" }),
+          available: true,
+        },
+      ];
+    }
+
+    function getMapHref() {
+      const config = currentCycleConfig();
+      return `./map/index.html?cycle=${encodeURIComponent(config.id)}`;
+    }
+
+    function getTechnologyHref() {
+      const config = currentCycleConfig();
+      return `./technology/index.html?cycle=${encodeURIComponent(config.id)}`;
+    }
+
+    function getRecordHref() {
+      const config = currentCycleConfig();
+      const action = latestSurveyAdventureRecordAction();
+      const params = new URLSearchParams();
+      params.set("cycle", action?.cycle || config.id);
+      if (action) {
+        params.set("surveyAction", "adventure");
+        params.set("day", String(action.day));
+        params.set("adventure", action.adventure);
+        params.set("box", action.box);
+      }
+      return `./record/index.html?${params.toString()}`;
+    }
+
+    function updateRecordLinks() {
+      document.querySelectorAll('a[href^="./record/index.html"], .record-card-link').forEach((anchor) => {
+        anchor.href = getRecordHref();
+      });
+    }
+
+    function getStepLinks(step) {
+      if (step.id === "move" || step.id === "explore" || step.id === "end") {
+        return currentCycleConfig().map ? [{ label: "Map", href: getMapHref() }] : [];
+      }
+      if (step.id === "survey") {
+        if (currentCycleConfig().storyBook) return [
+          getSurveyHubStoryLink(),
+          getSurveyRrStoryLink(),
+        ];
+        return currentCycleConfig().storyBook ? [{ label: "打开 Story", href: getStoryHref() }] : [];
+      }
+      if (step.id === "story") {
+        return currentCycleConfig().storyBook ? [
+          { label: "回忆突破", href: getStoryHref({ module: "mnemos-breakthrough" }) },
+          getInwardOdysseyStoryLink(),
+          getPharosDreamStoryLink(),
+          getMainStoryLink(),
+          getSpecialEventLink(),
+        ] : [];
+      }
+      if (step.id === "doom") {
+        return currentCycleConfig().storyBook ? [
+          getMainStoryLink(),
+          getSpecialEventLink(),
+        ] : [];
+      }
+      if (step.id === "encounter") {
+        return currentCycleConfig().storyBook ? [{ label: "战斗模块", href: getStoryHref({ module: "battle" }) }] : [];
+      }
+      if (step.id === "development") return [{ label: "Technology", href: getTechnologyHref() }];
+      return step.links || [];
+    }
+
+    function renderProgress() {
+      const completed = flowSteps.filter((step) => state.completed[step.id]).length;
+      const percent = Math.round((completed / flowSteps.length) * 100);
+      elements.progressFill.style.width = `${percent}%`;
+      elements.progressText.textContent = `${completed} / ${flowSteps.length}`;
+    }
+
+    function formatTrackDay(entry) {
+      if (entry.label) return entry.label;
+      return String(entry.day).padStart(2, "0");
+    }
+
+    function dateNoteKey(day) {
+      return String(day).padStart(2, "0");
+    }
+
+    function currentDateNoteText() {
+      return state.dateNotes?.[dateNoteKey(state.day)] || "";
+    }
+
+    function renderCurrentDateNote() {
+      const note = currentDateNoteText();
+      elements.currentDateNote.hidden = !note;
+      elements.currentDateNote.textContent = note ? `日期轨笔记：${note}` : "";
+    }
+
+    function keepCurrentDateVisible() {
+      const list = elements.dateTrackList;
+      if (currentCycleConfig().id === "c1" && Number(state.day) === 0) {
+        list.scrollTop = 0;
+        return;
+      }
+      const current = elements.dateTrackList.querySelector(".date-track-item.current");
+      if (!current) return;
+
+      const alignCurrent = () => {
+        const listRect = list.getBoundingClientRect();
+        const currentRect = current.getBoundingClientRect();
+        const centeredOffset = currentRect.top - listRect.top - (list.clientHeight - currentRect.height) / 2;
+        const maxScrollTop = Math.max(0, list.scrollHeight - list.clientHeight);
+        list.scrollTop = Math.min(maxScrollTop, Math.max(0, list.scrollTop + centeredOffset));
+
+        const updatedRect = current.getBoundingClientRect();
+        const viewportTop = 12;
+        const viewportBottom = window.innerHeight - 12;
+        if (updatedRect.top < viewportTop || updatedRect.bottom > viewportBottom) {
+          current.scrollIntoView({ block: "nearest", inline: "nearest" });
+        }
+      };
+
+      window.requestAnimationFrame(() => {
+        alignCurrent();
+        window.requestAnimationFrame(alignCurrent);
+      });
+    }
+
+    function dateTrackIcons(entry, track) {
+      const iconIds = [...(entry.icons || [])];
+      if (entry.day != null) {
+        if (track.structureTechDays?.includes(entry.day)) iconIds.push("structureTech");
+        if (track.battleTechDays?.includes(entry.day)) iconIds.push("battleTech");
+        if (track.battleDays?.includes(entry.day)) iconIds.push("battle");
+      }
+      return [...new Set(iconIds)]
+        .map((id) => dateIconTypes[id])
+        .filter(Boolean);
+    }
+
+    function todayTrackIcons() {
+      const track = dateTrackData[currentCycleConfig().id];
+      if (!track) return [];
+
+      const entry = track.entries.find((item) => item.day === state.day);
+      return dateTrackIcons(entry || { day: state.day }, track);
+    }
+
+    function currentMapTagSet() {
+      return new Set(Array.isArray(state.mapCurrentTileTags) ? state.mapCurrentTileTags : []);
+    }
+
+    function latestRevealedMapTagSet() {
+      return new Set(Array.isArray(state.mapLatestRevealedTileTags) ? state.mapLatestRevealedTileTags : []);
+    }
+
+    function currentMapTileLabel() {
+      return state.mapSnapshot?.currentTileLabel || state.location || "当前板块";
+    }
+
+    function latestRevealedMapTileLabel() {
+      return state.mapSnapshot?.latestRevealedTileLabel || "本轮刚翻开的板块";
+    }
+
+    function getSurveyMapReminders() {
+      const tags = currentMapTagSet();
+      if (!state.mapCurrentTileIsLatestRevealed) return [];
+
+      const reminders = [];
+      const location = currentMapTileLabel();
+
+      if (tags.has("central_adventure")) {
+        reminders.push({
+          title: "当前最新揭示板块有中枢冒险",
+          tag: { label: "中枢", className: "important" },
+          desc: `${location} 是最新揭示的板块，并带有中枢冒险标签，请在本步骤结算冒险中枢。`,
+          className: "important",
+        });
+      }
+
+      if (tags.has("rr_adventure")) {
+        reminders.push({
+          title: "当前最新揭示板块有 R&R 冒险",
+          tag: { label: "R&R", className: "battle-tech" },
+          desc: `${location} 是最新揭示的板块，并带有 R&R 冒险标签，请在本步骤结算 R&R。`,
+          className: "important",
+        });
+      }
+
+      return reminders;
+    }
+    function getExploreMapReminders() {
+      const tags = currentMapTagSet();
+      if (!tags.has("city") || state.mapCurrentTileHasLastCityMarker) return [];
+
+      return [{
+        title: "当前城市可谈判",
+        tag: { label: "谈判", className: "structure-tech" },
+        desc: `${currentMapTileLabel()} 是城市，且不是最后到访城市。探索阶段可以进行谈判。`,
+        className: "important",
+      }];
+    }
+
+    function getStoryMapReminders() {
+      const tags = currentMapTagSet();
+      if (!tags.has("progress") || !state.mapCurrentTileIsLatestRevealed) return [];
+
+      return [{
+        title: "新探索板块放置进展",
+        tag: { label: "进展", className: "structure-tech" },
+        desc: `${currentMapTileLabel()} 是最新揭示的板块，且带有进展指示物标记。请在故事步骤放置 1 个进展。`,
+        className: "tech",
+      }];
+    }
+
+    function getDoomMapReminders() {
+      const tags = currentMapTagSet();
+      if (!tags.has("calamity")) return [];
+
+      return [{
+        title: "当前板块放置灾祸指示物",
+        tag: { label: "灾祸", className: "battle" },
+        desc: `${currentMapTileLabel()} 带有灾祸标记。请在灾祸步骤放置 1 个灾祸指示物。`,
+        className: "important",
+      }];
+    }
+
+    function getNextBattleTerrainReminder() {
+      state.nextBattleTerrain = normalizeNextBattleTerrain(state.nextBattleTerrain);
+      if (!state.nextBattleTerrain) return [];
+
+      const terrain = state.nextBattleTerrain;
+      const source = [terrain.hub, terrain.source].filter(Boolean).join(" · ");
+      return [{
+        title: "下次战斗特殊板块",
+        tag: { label: "板块", className: "battle-tech" },
+        desc: `${terrain.terrain}${source ? `，来源：${source}` : ""}。`,
+        className: "tech",
+      }];
+    }
+
+    function getStepTrackReminders(stepId) {
+      const icons = todayTrackIcons();
+      if (stepId === "explore") {
+        return getExploreMapReminders();
+      }
+
+      if (stepId === "survey") {
+        return getSurveyMapReminders();
+      }
+
+      if (stepId === "story") {
+        return getStoryMapReminders();
+      }
+
+      if (stepId === "doom") {
+        return getDoomMapReminders();
+      }
+
+      if (stepId === "encounter") {
+        const reminders = getNextBattleTerrainReminder();
+        if (icons.some((icon) => icon.className === "battle")) {
+          reminders.push({
+            title: "今日战斗",
+            tag: { label: "战斗", className: "battle" },
+            desc: "时间表标记了今日战斗，请进入故事书战斗模块处理。",
+            className: "important",
+          });
+        }
+        return reminders;
+      }
+
+      if (stepId === "development") {
+        return icons
+          .filter((icon) => icon.className === "structure-tech" || icon.className === "battle-tech")
+          .map((icon) => ({
+            title: icon.label,
+            tag: icon,
+            desc: `时间表标记了今日${icon.label}突破，在发展阶段处理。`,
+            className: "tech",
+          }));
+      }
+
+      return [];
+    }
+
+    function renderStepTrackReminders(reminders) {
+      if (!reminders.length) return "";
+      return `
+        <div class="step-track-reminders">
+          ${reminders.map((reminder) => `
+            <div class="step-track-reminder ${reminder.className}">
+              <div class="step-track-title">
+                <span class="step-track-tag ${reminder.tag.className}">${escapeHtml(reminder.tag.label)}</span>
+                <span>${escapeHtml(reminder.title)}</span>
+              </div>
+              <p class="step-track-desc">${escapeHtml(reminder.desc)}</p>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function editDateNote(day) {
+      const key = dateNoteKey(day);
+      const current = state.dateNotes?.[key] || "";
+      const next = window.prompt(`记录 Day ${key}`, current);
+      if (next === null) return;
+
+      state.dateNotes ||= {};
+      const trimmed = next.trim();
+      if (trimmed) {
+        state.dateNotes[key] = trimmed;
+      } else {
+        delete state.dateNotes[key];
+      }
+      saveState();
+      renderCurrentDateNote();
+      renderDateTrack();
+    }
+
+    function renderDateTrack() {
+      const config = currentCycleConfig();
+      const track = dateTrackData[config.id];
+      elements.dateTrackList.innerHTML = "";
+      if (!track) {
+        elements.dateTrackMeta.textContent = "此循环暂无记录表日期轨。";
+        elements.dateTrackList.innerHTML = '<div class="empty">暂无日期轨。</div>';
+        renderCurrentDateNote();
+        return;
+      }
+
+      elements.dateTrackMeta.textContent = `${track.label} · 当前 Day ${state.day}`;
+      const fragment = document.createDocumentFragment();
+      track.entries.forEach((entry) => {
+        const eventText = entry.day == null ? "" : track.events[entry.day];
+        const noteText = entry.day == null ? "" : state.dateNotes?.[dateNoteKey(entry.day)] || "";
+        const icons = dateTrackIcons(entry, track);
+        const isCurrentDay = entry.day != null && Number(entry.day) === Number(state.day);
+        const item = document.createElement("div");
+        item.className = `date-track-item${isCurrentDay ? " current" : ""}${eventText ? " event" : ""}${noteText ? " noted" : ""}${entry.day == null ? " disabled" : ""}`;
+        item.title = noteText ? `Day ${formatTrackDay(entry)}：${noteText}` : `给 Day ${formatTrackDay(entry)} 写备注`;
+        if (entry.day != null) {
+          item.setAttribute("role", "button");
+          item.tabIndex = 0;
+          if (isCurrentDay) item.setAttribute("aria-current", "date");
+        }
+        item.innerHTML = `
+          <span class="date-track-day">${escapeHtml(formatTrackDay(entry))}</span>
+          ${icons.length ? `<span class="date-track-icons">${icons.map((icon) => `<span class="date-track-icon ${icon.className}">${escapeHtml(icon.label)}</span>`).join("")}</span>` : ""}
+          ${eventText ? `<span class="date-track-event">${escapeHtml(eventText)}</span>` : ""}
+          ${noteText ? `<span class="date-track-note">${escapeHtml(noteText)}</span>` : ""}
+        `;
+        if (entry.day != null) {
+          item.addEventListener("click", (event) => {
+            if (event.target.closest("button, a, input, select, textarea")) return;
+            editDateNote(entry.day);
+          });
+          item.addEventListener("keydown", (event) => {
+            if (event.key !== "Enter" && event.key !== " ") return;
+            event.preventDefault();
+            editDateNote(entry.day);
+          });
+          const acclimation = getAcclimationRule(entry.day, config.id);
+          if (acclimation && isCurrentDay) {
+            const actions = document.createElement("span");
+            actions.className = "date-track-actions";
+            const action = document.createElement("button");
+            action.type = "button";
+            action.className = `date-track-action${isAcclimationApplied(acclimation, config.id) ? " applied secondary" : ""}`;
+            action.textContent = isAcclimationApplied(acclimation, config.id) ? "已扎根" : "扎根";
+            action.title = `${acclimation.label}: ${acclimation.from.join(", ")} -> ${acclimation.to.join(", ")}`;
+            action.addEventListener("click", (event) => {
+              event.stopPropagation();
+              applyAcclimationReplacement(acclimation);
+            });
+            actions.appendChild(action);
+            item.appendChild(actions);
+          }
+        }
+        fragment.appendChild(item);
+      });
+      elements.dateTrackList.appendChild(fragment);
+      renderCurrentDateNote();
+      keepCurrentDateVisible();
+    }
+
+    function resetToday() {
+      state.completed = {};
+      state.events = state.events.map((item) => ({ ...item, done: false }));
+      saveState();
+      renderFlow();
+      renderDateTrack();
+    }
+
+    function nextDay() {
+      state.day = Math.max(0, Number(state.day || 0) + 1);
+      state.completed = {};
+      state.events = state.events.filter((item) => !item.done);
+      state.latestSurveyAdventureAction = null;
+      syncInputs();
+      saveState();
+      renderFlow();
+      renderDateTrack();
+    }
+
+    async function loadFullCampaign() {
+      try {
+        const response = await fetch(authUrl, { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const payload = await response.json();
+        if (!payload.ok) throw new Error(payload.error || "读取失败");
+        return payload.campaign || null;
+      } catch (error) {
+        console.warn(error);
+        return null;
+      }
+    }
+
+    async function saveImportedCampaignSection(section, sectionState) {
+      if (sectionState == null) return;
+      try {
+        const response = await fetch(`${authUrl}?section=${encodeURIComponent(section)}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ section, state: sectionState }),
+        });
+        const payload = await response.json().catch(() => null);
+        if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+        return payload;
+      } catch (error) {
+        console.warn(error);
+        return null;
+      }
+    }
+
+    function downloadJsonPayload(payload) {
+      const text = JSON.stringify(payload, null, 2);
+      const blob = new Blob([text], { type: "application/json;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+      anchor.href = url;
+      anchor.download = `ato-full-save-${stamp}.json`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    async function exportState() {
+      saveState();
+      const previousText = elements.exportButton.textContent;
+      elements.exportButton.textContent = "正在导出...";
+      elements.exportButton.disabled = true;
+      try {
+        const serverCampaign = await loadFullCampaign();
+        const serverSections = serverCampaign?.sections || {};
+        const sections = {
+          dashboard: serverSections.dashboard || archive || null,
+          map: serverSections.map || null,
+          record: serverSections.record || null,
+          technology: serverSections.technology || null,
+        };
+        const payload = {
+          app: "ATO Campaign Save Package",
+          version: 2,
+          exportedAt: new Date().toISOString(),
+          activeProfileId: archive.activeProfileId,
+          profiles: archive.profiles,
+          sections,
+          source: {
+            serverIncluded: Boolean(serverCampaign),
+            serverUpdatedAt: serverCampaign?.updatedAt || null,
+          },
+          legacyDashboard: {
+            activeProfileId: archive.activeProfileId,
+            profiles: archive.profiles,
+          },
+        };
+        downloadJsonPayload(payload);
+        elements.exportButton.textContent = "已下载";
+        window.setTimeout(() => {
+          elements.exportButton.textContent = previousText;
+        }, 1200);
+      } finally {
+        elements.exportButton.disabled = false;
+      }
+    }
+
+    function importStateFile(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const imported = JSON.parse(String(reader.result || "{}"));
+          const sections = imported.sections || imported.campaign?.sections || null;
+          const dashboardImport = sections?.dashboard || imported.legacyDashboard || imported;
+          const nextArchive = dashboardImport.profiles
+            ? normalizeArchive(dashboardImport)
+            : normalizeArchive({
+                activeProfileId: "imported",
+                profiles: {
+                  imported: {
+                    id: "imported",
+                    name: dashboardImport.name || "导入用户",
+                    state: dashboardImport.state || dashboardImport,
+                  },
+                },
+              });
+
+          archive = nextArchive;
+          state = currentCycle().state;
+          const [dashboardSave] = await Promise.all([
+            saveImportedCampaignSection("dashboard", archive),
+            sections?.map ? saveImportedCampaignSection("map", sections.map) : Promise.resolve(),
+            sections?.record ? saveImportedCampaignSection("record", sections.record) : Promise.resolve(),
+            sections?.technology ? saveImportedCampaignSection("technology", sections.technology) : Promise.resolve(),
+          ]);
+          campaignSectionRevision = Math.max(0, Number(dashboardSave?.revision || campaignSectionRevision));
+          campaignSectionBaseline = cloneJson(archive);
+          campaignSyncChannel?.postMessage({ revision: campaignSectionRevision });
+          syncInputs();
+          renderProfiles();
+          renderCycles();
+          renderFlow();
+          renderDateTrack();
+          window.alert("导入完成。");
+        } catch (error) {
+          window.alert(`导入失败：${String(error.message || error)}`);
+        } finally {
+          elements.importInput.value = "";
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function clearState() {
+      if (!window.confirm(`确定清空当前账号在 ${currentCycleConfig().label} 的 Day、流程、事件和笔记吗？`)) return;
+      state = { ...defaultState, completed: {}, dateNotes: {}, cardTracks: normalizeCardTracks({}, {}, false, currentCycleConfig().id), cardTracksVersion: 2, unlockedTech: null, events: [] };
+      currentCycle().state = state;
+      queueCampaignSave();
+      syncInputs();
+      renderFlow();
+      renderDateTrack();
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    elements.dayInput.addEventListener("input", () => {
+      state.day = Math.max(0, Number(elements.dayInput.value || 0));
+      state.latestSurveyAdventureAction = null;
+      saveState();
+      renderFlow();
+      renderDateTrack();
+    });
+    elements.flowList.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-card-track-open]");
+      if (!button) return;
+      openCardTrackDialog(button.dataset.cardTrackOpen);
+    });
+    elements.notesInput.addEventListener("input", () => {
+      state.notes = elements.notesInput.value;
+      saveState();
+    });
+    elements.resetTodayButton.addEventListener("click", resetToday);
+    elements.nextDayButton.addEventListener("click", nextDay);
+    elements.loginModeButton.addEventListener("click", () => setAuthMode("login"));
+    elements.registerModeButton.addEventListener("click", () => setAuthMode("register"));
+    elements.authForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      elements.authMessage.textContent = "";
+      elements.authSubmitButton.disabled = true;
+      try {
+        const user = await requestAuth(authMode, elements.authUsername.value, elements.authPassword.value);
+        elements.authPassword.value = "";
+        startAuthenticatedApp(user);
+      } catch (error) {
+        elements.authMessage.textContent = String(error.message || error);
+      } finally {
+        elements.authSubmitButton.disabled = false;
+      }
+    });
+    elements.logoutButton.addEventListener("click", async () => {
+      await fetch(`${authUrl}?action=logout`, { method: "POST" }).catch(() => null);
+      sessionUser = null;
+      showAuth();
+    });
+    elements.cycleSelect.addEventListener("change", () => switchCycle(elements.cycleSelect.value));
+    elements.exportButton.addEventListener("click", exportState);
+    elements.importButton.addEventListener("click", () => elements.importInput.click());
+    elements.importInput.addEventListener("change", () => importStateFile(elements.importInput.files[0]));
+    elements.cardTrackClose.addEventListener("click", () => elements.cardTrackDialog.close());
+    elements.cardTrackDialog.addEventListener("click", (event) => {
+      if (event.target === elements.cardTrackDialog) elements.cardTrackDialog.close();
+    });
+    elements.cardTrackBody.addEventListener("click", (event) => {
+      const retreatButton = event.target.closest("[data-card-retreat]");
+      if (retreatButton) {
+        retreatCardTrack(retreatButton.dataset.cardRetreat);
+        return;
+      }
+      const advanceButton = event.target.closest("[data-card-advance]");
+      if (advanceButton) {
+        advanceCardTrack(advanceButton.dataset.cardAdvance);
+        return;
+      }
+      const progressButton = event.target.closest("[data-card-progress]");
+      if (!progressButton) return;
+      stepCardTrackProgress(progressButton.dataset.cardProgress, Number(progressButton.dataset.delta || 0));
+    });
+    elements.cardTrackBody.addEventListener("change", (event) => {
+      const input = event.target.closest("[data-card-progress-input]");
+      if (!input) return;
+      setCardTrackProgress(input.dataset.cardProgressInput, input.value);
+    });
+    campaignSyncChannel?.addEventListener("message", () => void syncDashboardFromExternalUpdate());
+    window.setInterval(() => void syncDashboardFromExternalUpdate(), 4000);
+    window.addEventListener("focus", () => void syncDashboardFromExternalUpdate());
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) void syncDashboardFromExternalUpdate();
+    });
+
+    setAuthMode("login");
+    initAuth();
+  </script>
+</body>
+</html>

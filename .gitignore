@@ -1,0 +1,69 @@
+# Public-source repository guardrails
+#
+# This project is developed beside locally owned game assets and extracted
+# reference data. Keep those files local. Do not remove these rules unless the
+# relevant copyright holder has explicitly licensed the files for publishing.
+
+# Images, documents, audio, video, archives, and font files
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+*.bmp
+*.tif
+*.tiff
+*.svg
+*.pdf
+*.mp3
+*.wav
+*.ogg
+*.m4a
+*.flac
+*.mp4
+*.webm
+*.mov
+*.zip
+*.7z
+*.rar
+*.ttf
+*.otf
+*.woff
+*.woff2
+
+# Complete or extracted copyrighted game/story data
+/story/data.js
+/story/audio/
+
+# Asset-heavy/reference-only working areas
+/assets/
+/aibp/
+/map/images/
+/map/tokens/
+/record/assets/
+/story/battle-images/
+/story/c1-battle-images/
+/story/c3-battle-images/
+/technology/images/
+
+# Private campaign/user state and local backups
+/data/
+/logs/
+/log/
+php_errors.log
+error_log
+*.backup
+*.backup.*
+*.bak
+*.tmp
+*.tmp.*
+*.log
+*.lock
+
+# Local/editor/runtime files
+/.claude/
+/.vscode/
+/.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
