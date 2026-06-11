@@ -1,0 +1,5717 @@
+{
+  "version": 1,
+  "extractedFrom": "ATO Official APP 1.1.7",
+  "description": "ATO gear production database: tech cards, gear names, traits, recipes",
+  "gearCards": {
+    "AJ0156": "Fists 拳头 ",
+    "AJ0160": "Sail Spolas 帆布碎片 ",
+    "AJ0163": "Shipwrecker Shield 船骸盾 ",
+    "AJ0165": "Siren Panoply Armor 塞壬全甲 ",
+    "AJ0167": "Siren Shield 塞壬之盾 ",
+    "AJ0169": "Sirenteeth 塞壬尖牙 ",
+    "AJ0171": "Boatmace 船桨战锤 ",
+    "AJ0173": "Sirenblade 塞壬之刃 ",
+    "AJ0175": "Kratos Kopis 奎托斯弯刀 ",
+    "AJ0177": "Whale Knives 鲸鱼刀 ",
+    "AJ0179": "Great Tree Club 巨木棍棒 ",
+    "AJ0181": "Teeth Khopesh 利齿弯刀 ",
+    "AJ0183": "Naval Ram 撞角 ",
+    "AJ0185": "Heavy Kopis 重型弯刀 ",
+    "AJ0187": "Jawbone Axe 下颚骨战斧 ",
+    "AJ0189": "Ballista Gun 弩炮 ",
+    "AJ0191": "Petrified Javelin 石化标枪 ",
+    "AJ0193": "Liontail Whip 狮尾鞭 ",
+    "AJ0195": "Whalebone Bident 鲸骨叉 ",
+    "AJ0197": "Longmast Spear 长桅杆长矛 ",
+    "AJ0199": "Iapetus Lifeguard 伊阿珀托斯应急器 ",
+    "AJ0202": "Ares Aulos 阿瑞斯短笛 ",
+    "AJ0204": "Makesheath 护套 ",
+    "AJ0206": "Spring Harness 弹簧背带 ",
+    "AJ0209": "Smelted Breastplate 熔炼胸甲 ",
+    "AJ0211": "Smelted Aspis 熔炼盾牌 ",
+    "AJ0213": "Smelted Xiphos 熔炼短剑 ",
+    "AJ0215": "Impetus Breakers 冲力破坏者 ",
+    "AJ0217": "Analyticos Module 分析模块 ",
+    "AJ0219": "Primordial Lure 始徒诱饵 ",
+    "AJ0220": "Hekaton Panoply Armor 百臂巨人全甲 ",
+    "AJ0222": "Knuckle Shield 指节盾 ",
+    "AJ0224": "Pillarmace 柱状战锤 ",
+    "AJ0226": "Hekatomb 百臂巨人之祭 ",
+    "AJ0228": "Rebound Hammer 反弹锤 ",
+    "AJ0230": "Gigan 巨干 ",
+    "AJ0231": "Sail Camo 帆布伪装 ",
+    "AJ0233": "Tackle Sheath 渔具鞘 ",
+    "AJ0235": "Aeolipile Engine 汽转轮引擎 ",
+    "AJ0237": "Stabilizers 稳定器 ",
+    "AJ0239": "Grappling Hook 抓钩 ",
+    "AJ0241": "Safety Rope 安全绳 ",
+    "AJ0243": "Instinct Linothorax 本能胸甲 ",
+    "AJ0245": "Bull Aspis 公牛盾牌 ",
+    "AJ0247": "Maze Rake 迷宫耙 ",
+    "AJ0249": "Whaler Javelin 捕鲸标枪 ",
+    "AJ0251": "Hullbow 船首弓 ",
+    "AJ0253": "Ariadne's Hello 阿里阿德涅的问候 ",
+    "AJ0254": "Gigas 极巨干 ",
+    "AJ0255": "Mazemmer 迷宫魅影 ",
+    "AJ0256": "Ariadne's Goodbye 阿里阿德涅的告别 ",
+    "AJ0261": "Pursuer Imperative 追踪者指令 ",
+    "AJ0262": "Mothlame 飞蛾之焰 ",
+    "AJ0264": "Hermes Tatters 赫尔墨斯碎片 ",
+    "AJ0266": "Trireme Breastplate 三列桨战船胸甲 ",
+    "AJ0271": "Ancient Siren Panoply Armor 远古塞壬全甲 ",
+    "AJ0275": "Morpheus Module 墨菲斯模块 ",
+    "AJ0277": "Ambrosia Trocar 神浆穿刺器 ",
+    "BJ0827": "Labyrinth Armor 迷宫盔甲 ",
+    "BJ0831": "Labyrinthization 迷宫化 ",
+    "BJ0835": "Labyrinth Mauler 迷宫粉碎者 ",
+    "BJ0837": "Puzzle Axe 谜题战斧 ",
+    "BJ0841": "Amphoras Belt 双耳瓶腰带 ",
+    "BJ0844": "Stepping Stone 垫脚石 ",
+    "BJ0845": "Isokratos Limiter 伊索克拉底限制器 ",
+    "BJ0847": "Asklepios Node 阿斯克勒庇俄斯节点 ",
+    "BJ0849": "Lethe Guard 勒忒守护者 ",
+    "BJ0851": "Covenant 盟约 ",
+    "BJ0852": "Temple Camo 神庙伪装 ",
+    "BJ0854": "Medusa Extract 美杜莎提取物 ",
+    "BJ0856": "Ambrostilts 神浆高跷 ",
+    "BJ0862": "Mazed Cestus 迷宫拳套 ",
+    "BJ0864": "Scale Chakram 鳞片碟环 ",
+    "BJ0866": "Mazechute 迷宫降落伞 ",
+    "BJ0868": "Mazegma 迷宫岩浆 ",
+    "BJ0869": "Stonewall 石墙 ",
+    "BJ0871": "Eviscerators 掏空者 ",
+    "BJ0873": "Chain Whip 链鞭 ",
+    "BJ0875": "Fireboat 火船 ",
+    "BJ0877": "Stone Relief Armor 石雕盔甲 ",
+    "BJ0879": "Great Breaker 伟大破坏者 ",
+    "BJ0881": "Relief Cestus 浮雕拳套 ",
+    "BJ0885": "Vaulting Rope 撑跳绳 ",
+    "BJ0887": "Watchtower Pauldron 瞭望塔肩甲 ",
+    "BJ0889": "Siegetower Pauldron 攻城塔肩甲 ",
+    "BJ0891": "Iapetus Lifesaver 伊阿珀托斯救急器 ",
+    "BJ0894": "Boost Kothornos 强化护胫 ",
+    "BJ0896": "Achillean Hectors 阿喀琉斯英雄 ",
+    "BJ0898": "Control Module 控制模块 ",
+    "BJ0900": "Spartan War Axe 斯巴达战斧 ",
+    "BJ0901": "Heavy Spear 重型长矛 ",
+    "BJ0902": "Spartan Kopis 斯巴达弯刀 ",
+    "BJ0903": "Gastraphetes 强弩 ",
+    "BJ0904": "Carver Kopis 雕刻弯刀 ",
+    "BJ0905": "Cyclopean Khopesh 独眼巨人弯刀 ",
+    "BJ0906": "Cyclopean Linothorax 独眼巨人胸甲 ",
+    "BJ0907": "Cyclopean Knives 独眼巨人匕首 ",
+    "BJ0908": "Cyclopean Visor 独眼巨人面罩 ",
+    "BJ0909": "Cyclopean Totem 独眼巨人图腾 ",
+    "BJ0910": "Cyclopean Forge Hammer 独眼巨人锻造锤 ",
+    "BJ0911": "Impact Armor 冲击盔甲 ",
+    "BJ0913": "Collision Shield 碰撞盾牌 ",
+    "BJ0917": "Ambramat Armor 琥珀甲 ",
+    "BJ0919": "Muck Armor 泥沼盔甲 ",
+    "BJ0921": "Needle Sword 针剑 ",
+    "BJ0923": "Vaulting Spear 撑跳矛 ",
+    "BJ0925": "Katarus 卡塔罗斯 ",
+    "BJ0927": "Maulmace 重型战锤 ",
+    "BJ0930": "Dragon Bellow 龙吼 ",
+    "BJ0932": "Grand Ramaxe 巨型拉马克 ",
+    "BJ0934": "Chimeric Xiphos 奇美拉短剑 ",
+    "BJ0936": "Muck Bludgeon 泥沼棍棒 ",
+    "BJ0937": "Muckbane 泥沼克星 ",
+    "BJ0938": "Cyclostus 独眼巨人 ",
+    "BJ0946": "Faceshield 面甲 ",
+    "BJ0948": "Roll Breakers 翻滚破坏者 ",
+    "BJ0950": "Pithos Armor 皮托斯盔甲 ",
+    "BJ0952": "Squat Armor 矮人盔甲 ",
+    "BJ0965": "Pursuer Ultimatum 追踪者最后通牒 ",
+    "BJ0966": "Hermes Cape 赫尔墨斯斗篷 ",
+    "BJ0967": "Repurposed Cryptex 改造密码箱 ",
+    "BJ0968": "Conqueror Nail 征服者之钉 ",
+    "BJ0969": "Archon Pauldron 执政官肩甲 ",
+    "BJ0829": "Temenos Scale Shield / Temenos Scale Umbrella 吞域兽鳞片盾/吞域兽鳞片伞 ",
+    "BJ0839": "Temenos Xiphos / Temenos Whip 吞域兽短剑/吞域兽鞭 ",
+    "BJ0860": "Pseudomidion/ Longinus 伪中枢/朗基努斯 ",
+    "BJ0883": "Metasword (T)/ Metabow (T) 元剑(T)/元弓(T) ",
+    "BJ0915": "Ladder Buckler (T)/ Ladder Mode (T) 梯子盾牌(T)/梯子模式(T) ",
+    "BJ0928": "Boom Spear (T)/ Boom Pole (T) 爆炸长矛(T)/爆炸长杆(T) ",
+    "CJ1389": "Black Xiphos 黑曜短剑 ",
+    "CJ1391": "Smoldering Mace 阴燃战锤 ",
+    "CJ1393": "Abyssal Watchers 深渊守望者 ",
+    "CJ1395": "Hardened Cestus 坚固拳套 ",
+    "CJ1397": "Abyssal Spear 深渊长矛 ",
+    "CJ1399": "Black Javelin 黑曜标枪 ",
+    "CJ1401": "Excavated 挖掘物 ",
+    "CJ1403": "Abyss Linothorax 深渊胸甲 ",
+    "CJ1405": "Abyss Thorax 深渊胸膛 ",
+    "CJ1407": "Abyss Mirror 深渊镜 ",
+    "CJ1409": "Hourglass Necklace 沙漏项链 ",
+    "CJ1411": "Paradox Guard 悖论守护者 ",
+    "CJ1413": "Paradox Scanner 悖论扫描仪 ",
+    "CJ1415": "Fatesafe 命运保险 ",
+    "CJ1417": "Siren Coral Panoply 塞壬珊瑚全甲 ",
+    "CJ1419": "Siren Cataphract 塞壬重装骑兵 ",
+    "CJ1421": "Spiral Shield 螺旋盾牌 ",
+    "CJ1429": "Spiral Spada 螺旋剑 ",
+    "CJ1431": "Sirentusks 塞壬獠牙 ",
+    "CJ1433": "Spiradiscus 螺旋碟环 ",
+    "CJ1435": "True Sirenblade 真·塞壬之刃 ",
+    "CJ1437": "Siren Mask 塞壬面具 ",
+    "CJ1439": "Recall Shell 回响之壳 ",
+    "CJ1441": "Fatesafer 命运守护者 ",
+    "CJ1443": "Looper Guard 轮回守护者 ",
+    "CJ1445": "Ontological Module 本体论模块 ",
+    "CJ1447": "Prototype Trespass Device 原型破限装置 ",
+    "CJ1448": "Time Booster 时间加速器 ",
+    "CJ1450": "Sun Guard 太阳守护者 ",
+    "CJ1452": "Glacial Fabric 冰川织物 ",
+    "CJ1454": "Timeline Synchronizer 时间线同步器 ",
+    "CJ1456": "Parallel Anchor 平行锚点 ",
+    "CJ1458": "Icelixir 冰灵药 ",
+    "CJ1460": "Spike Breakers 尖刺破坏者 ",
+    "CJ1462": "Regression Agent 回归试剂 ",
+    "CJ1464": "Black Ice Kothornos 黑冰护胫 ",
+    "CJ1466": "Iceblock Armor 冰块盔甲 ",
+    "CJ1468": "Polished Ice Shield 抛光冰盾 ",
+    "CJ1470": "Ignition Spear 点燃长矛 ",
+    "CJ1476": "Scaling Gear Protype 攀爬装备原型 ",
+    "CJ1477": "Homeric Engine 荷马引擎 ",
+    "CJ1478": "Agathos Agitator 阿加索斯煽动者 ",
+    "CJ1479": "Kakos Implant 卡科斯植入物 ",
+    "CJ1480": "Aristeia Inducer 阿里斯提亚诱导器 ",
+    "CJ1481": "Lightsword 光剑 ",
+    "CJ1482": "Erratic Insignitor 不稳定点火器 ",
+    "CJ1483": "Arc Light Thrower 弧光投射器 ",
+    "CJ1484": "Sunlight Gun 阳光枪 ",
+    "CJ1485": "Believer Vestment 信徒法衣 ",
+    "CJ1486": "Probability Blade 概率之刃 ",
+    "CJ1487": "Shade Mace 阴影战锤 ",
+    "CJ1488": "Shade Armor 阴影盔甲 ",
+    "CJ1490": "Exiles Garb 流亡者衣物 ",
+    "CJ1491": "Shade Shield 阴影盾牌 ",
+    "CJ1492": "Oracowl 预言者头巾 ",
+    "CJ1494": "Feather Shield 羽毛盾牌 ",
+    "CJ1496": "Time’s Arrow 时间的箭矢 ",
+    "CJ1498": "Echo Eaters 回声吞噬者 ",
+    "CJ1500": "Beholder Fists 注视者之拳 ",
+    "CJ1504": "Paradont 悖论牙齿 ",
+    "CJ1505": "Skyfall 天坠 ",
+    "CJ1506": "Exobone Armor 外骨骼盔甲 ",
+    "CJ1508": "Feather Linothorax 羽毛胸甲 ",
+    "CJ1518": "Sunreach 日触 ",
+    "CJ1519": "Enigma Of Transformation 变形之谜 ",
+    "CJ1521": "Horseskull Pauldron 马头骨肩甲 ",
+    "CJ1523": "Extinction Cestus 灭绝拳套 ",
+    "CJ1525": "Black Ice Sword 黑冰之剑 ",
+    "CJ1529": "Daedalus Flight 代达罗斯之翼 ",
+    "CJ1536": "Argocryptex Alpha 阿尔戈密码箱α ",
+    "CJ1537": "Argocryptex Beta 阿尔戈密码箱β ",
+    "CJ1538": "Argocryptex Gamma 阿尔戈密码箱γ ",
+    "CJ1539": "Visage 面容 ",
+    "CJ1540": "Icebreakers 破冰者 ",
+    "CJ1542": "Pithos Linothorax 皮托斯胸甲 ",
+    "CJ1544": "Spherical Armor 球形盔甲 ",
+    "CJ1423": "Exoaegis / Razorbow 外神盾/剃刀弓 ",
+    "CJ1425": "Sun Spear / Sun Axe 太阳长矛/太阳战斧 ",
+    "CJ1427": "Sun Disc/ Sun Cutter 太阳圆盘/太阳切割器 ",
+    "CJ1472": "Hammersword / Hidden Xiphos 战锤剑/隐藏短剑 ",
+    "CJ1474": "Barbed Saw / Barbed Blade 带刺锯/带刺刀刃 ",
+    "CJ1510": "Spiral Whip / Spiral Buckler 螺旋鞭/螺旋盾牌 ",
+    "CJ1512": "Spiral Mace / Spiral Spear 螺旋战锤/螺旋长矛 ",
+    "CJ1514": "Devolver / Descender 反弹者/下降者 ",
+    "AJ0257": "Shieldblade 护盾之刃 ",
+    "AJ0258": "The Promise 誓约 ",
+    "AJ0259": "Mazemace 迷宫战锤 ",
+    "AJ0260": "Glimmer Shroud 流光轻纱 ",
+    "AJ0268": "Theseus's Razor 忒修斯的利刃 ",
+    "AJ0269": "Minohead 米诺斯头颅 ",
+    "AJ0270": "Medusalem 冥府陵寝 ",
+    "AJ0273": "Nail Spear 钉刺长矛 ",
+    "AJ0274": "Vulture Mask 秃鹫面具 ",
+    "AJ0279": "Manos Discus 曼陀罗轮盘 ",
+    "AJ0280": "Unsolved Enigma 未解之谜 ",
+    "AJ0281": "Yarn Talisman 线团护符 ",
+    "AJ0282": "\"Mazey  The Labyrintian Dog 迷宫犬·梅泽\" ",
+    "AJ0283": "Eschaton Stones 末日石碑 ",
+    "BJ0858": "Pyramidion 金字塔尖 ",
+    "BJ0940": "Right Maulfist 右巨力拳 ",
+    "BJ0941": "Left Maulfist 左巨力拳 ",
+    "BJ0942": "Remembrance 回忆 ",
+    "BJ0943": "Muck Virus 泥沼病毒 ",
+    "BJ0944": "Jaws Of The Lion 狮子的利齿 ",
+    "BJ0945": "Leg Khopesh / Leg Spear 腿弯刀/腿矛 ",
+    "BJ0956": "Cowl Of Char 焦土头巾 ",
+    "BJ0959": "The End 终结 ",
+    "BJ0960": "Red Polis 红色城邦 ",
+    "BJ0961": "Context 语境 ",
+    "BJ0962": "Immeasurable Weight 无法衡量的重量 ",
+    "BJ0963": "Voice Of The People / Peaceful Transition 民意/和平过渡 ",
+    "BJ0964": "Maw Of Byzantion 拜占庭巨口 ",
+    "BJ0970": "Sisyphus's Burden 西西弗斯的重担 ",
+    "BJ0971": "Sisyphus's Triumph 西西弗斯的胜利 ",
+    "BJ0939": "Bellerophon 贝勒洛丰 ",
+    "BJ0859": "Pyrasklepios 塔尖须杖 ",
+    "BJ0954": "Umbral Virus / Umbral Carapace 暗影病毒/暗影甲壳 ",
+    "BJ0955": "Elephantine Armor 巨象盔甲 ",
+    "BJ0957": "Necrotic Virus / Necroxiphos 坏死病毒/死灵短剑 ",
+    "BJ0958": "Fumeblade (Hidden) / Fumeblade (Bared) 烟刃(隐藏)/烟刃(显露) ",
+    "CJ1502": "Eye Of The Watcher 观察者之眼 ",
+    "CJ1503": "Paradox 悖论 ",
+    "CJ1516": "Right Talon Of Doom /  Icarian Katar 厄运之右爪/伊卡洛斯匕首 ",
+    "CJ1517": "Spherecast / Searing Pillar 球形投射/灼热之柱 ",
+    "CJ1527": "Icarus Lot 伊卡洛斯命运 ",
+    "CJ1528": "Icarus's Fall 伊卡洛斯的坠落 ",
+    "CJ1530": "Future Cryptex 未来密码箱 ",
+    "CJ1531": "Atlantean Oscillator 亚特兰蒂斯振荡器 ",
+    "CJ1532": "Phoenixiphos 不死鸟短剑 ",
+    "CJ1533": "Cyclopean Hand Mirror 独眼巨人手镜 ",
+    "CJ1534": "Grandfather's 祖父的 ",
+    "CJ1535": "Shellusalem 贝壳圣城 ",
+    "CJ1546": "Theogonias 神谱 ",
+    "EJ9981": "Harpoon Ballista Gun 鱼叉弩炮 ",
+    "DJ9991": "A Head of Time 超前一步 ",
+    "DJ9992": "Doomsday Clock 末日时钟 ",
+    "CJ9993": "Damocles Weight 达摩克利斯之重 ",
+    "EJ9980": "Nemesis Harpoon 复仇女神鱼叉 ",
+    "EJ9979": "Baleen Cloak 须鲸斗篷 ",
+    "EJ9978": "Ember of Guilt 罪恶余烬 ",
+    "AJ9987": "MWE-33b “Chainblade” MWE-33b“链刃” ",
+    "AJ9989": "MWE-6d “Sharkscourge” MWE-6d“鲨鱼灾厄” ",
+    "AJ9985": "MWE-33u “Gardeners” MWE-33u“园丁” ",
+    "AJ9984": "MWE-109a “Hermes Winch” MWE-109a“赫尔墨斯绞盘” ",
+    "AJ9983": "MWE-4 “Keelbow” MWE-4“肘关节” ",
+    "AJ1998": "Unseen Scar 隐形的伤疤 ",
+    "DJ2225": "Suntanned Fists/Stock Cryptex 晒黑拳头/库存密码箱 ",
+    "DJ2229": "Eclipse Sword 日蚀之剑 ",
+    "DJ2231": "Feathermace 羽毛战锤 ",
+    "DJ2233": "Burnout Whip 燃尽之鞭 ",
+    "DJ2235": "Descentaxe 下降战斧 ",
+    "DJ2237": "Duskedges 黄昏边缘 ",
+    "DJ2239": "Ember Spear 余烬长矛 ",
+    "DJ2241": "Withered Javelin 枯萎标枪 ",
+    "DJ2243": "Corona Discus 日冕碟环 ",
+    "DJ2245": "Accursed 被诅咒的 ",
+    "DJ2249": "Sunkissed Kalasiris 沐浴阳光的卡拉西里斯 ",
+    "DJ2251": "Feather Cataphract 羽毛重装骑兵 ",
+    "DJ2253": "Eclipse Shield 日蚀之盾 ",
+    "DJ2255": "Refracted Light Elixir 折射光灵药 ",
+    "DJ2257": "Hermes Guard 赫尔墨斯守护者 ",
+    "DJ2259": "Kaleidoscope Module 万花筒模块 ",
+    "DJ2261": "Hermes Grappling Hook 赫尔墨斯抓钩 ",
+    "DJ2265": "Lamellar Preemptive Armor 层甲先发制人盔甲 ",
+    "DJ2267": "Strikeback Dagger 反击匕首 ",
+    "DJ2269": "Persian Pillarmace 波斯柱状战锤 ",
+    "DJ2271": "Hunger Longknives 饥饿长刀 ",
+    "DJ2272": "Imperial Bow 帝国弓 ",
+    "DJ2274": "Paraguard 平行守护者 ",
+    "DJ2276": "Alchemic Catalyst 炼金催化剂 ",
+    "DJ2278": "Greed Limiter 贪婪限制器 ",
+    "DJ2280": "Glass Armor 玻璃盔甲 ",
+    "DJ2282": "Golden Armor 黄金盔甲 ",
+    "DJ2284": "Golden Discus Buckler 黄金碟环盾牌 ",
+    "DJ2286": "Statue Anchor 雕像锚 ",
+    "DJ2288": "Hermes Gear Prototype 赫尔墨斯装备原型 ",
+    "DJ2290": "Auric Bank 金库 ",
+    "DJ2292": "Lampward 灯火守护者 ",
+    "DJ2294": "Wish Dampener 愿望抑制器 ",
+    "DJ2296": "Curse Mediator 诅咒调解者 ",
+    "DJ2298": "Phantom Spear/Phantom Spear (Strikeback) 幻影长矛/幻影长矛(反击) ",
+    "DJ2299": "Igniter Sling 点火器投掷器 ",
+    "DJ2300": "Stillsuit 蒸馏服 ",
+    "DJ2302": "Solidifier 固化器 ",
+    "DJ2304": "Glassword 玻璃之剑 ",
+    "DJ2306": "Golden Sword 黄金之剑 ",
+    "DJ2308": "Gilded Axe 镀金战斧 ",
+    "DJ2309": "Hermes Ballista Gun 赫尔墨斯弩炮 ",
+    "DJ2311": "Silk Armor 丝绸盔甲 ",
+    "DJ2313": "Alchemist Armor 炼金术士盔甲 ",
+    "DJ2315": "Curse Translation Module 诅咒翻译模块 ",
+    "DJ2317": "Bloatpack 胀囊 ",
+    "DJ2319": "Hermes Gear Mk. I 赫尔墨斯装备I型 ",
+    "DJ2321": "Djinn Cryptex 迪精密码箱 ",
+    "DJ2322": "Liability Flail 责任鞭 ",
+    "DJ2323": "Debtguard 债务守护者 ",
+    "DJ2324": "Walking Tools 步行工具 ",
+    "DJ2325": "Golden Dawn 金色黎明 ",
+    "DJ2326": "Gnostic Pneumas 诺斯替灵 ",
+    "DJ2327": "Anemoi Bladeshield 风神刀盾 ",
+    "DJ2328": "Nabuchobulldozer 纳布霍推土机 ",
+    "DJ2329": "Sword Of Molten Wealth 熔融财富之剑 ",
+    "DJ2330": "Scales Great Bow 鳞片巨弓 ",
+    "DJ2331": "Antiwish Armor 反愿望盔甲 ",
+    "DJ2333": "Tornado Cape 龙卷风斗篷 ",
+    "DJ2335": "Basilisk Belcher 蛇怪吞噬者 ",
+    "DJ2336": "Bahamut Blade 巴哈姆特之刃 ",
+    "DJ2337": "Sarcophagus Greatrod 石棺巨杖 ",
+    "DJ2338": "Wingblade 羽刃 ",
+    "DJ2339": "Alchemic Lance 炼金长矛 ",
+    "DJ2340": "Midagun 迈达斯枪 ",
+    "DJ2341": "Garden Activator 花园启动器 ",
+    "DJ2343": "Hermes Gear Mk. Ii 赫尔墨斯装备II型 ",
+    "DJ2345": "Seeds Of Tomorrow 明日种子 ",
+    "DJ2347": "Pandoran Cryptex 潘多拉密码箱 ",
+    "DJ2348": "Everchanging Whip 变化之鞭 ",
+    "DJ2349": "Wondertide Gauntlets 奇迹潮拳套 ",
+    "DJ2350": "Neverending Spear 无尽长矛 ",
+    "DJ2351": "Jarmor 杰尔摩 ",
+    "DJ2353": "Anticurse Armor 反诅咒盔甲 ",
+    "DJ2355": "Salt Blade 盐刃 ",
+    "DJ2356": "The Open Wound 开放性伤口 ",
+    "DJ2357": "Babelian Lance 巴别塔长矛 ",
+    "DJ2358": "Auric Cloak 金光斗篷 ",
+    "DJ2359": "Golden Harp 黄金竖琴 ",
+    "DJ2360": "Bihorn Lance 双角长矛 ",
+    "DJ2361": "Wishblade 愿望之刃 ",
+    "DJ2362": "Djinn Cloak 迪精斗篷 ",
+    "DJ2363": "Pocket Wishlamp 口袋许愿灯 ",
+    "DJ2364": "Dahaka Blade/Dahaka Blade (Blindspot/Cloud) 达哈卡之刃/达哈卡之刃(盲点/云雾) ",
+    "DJ2365": "Dahaka Mask 达哈卡面具 ",
+    "DJ2366": "Shadowcleaver 暗影切割者 ",
+    "DJ2367": "Molten Gold Kalasiris 熔金卡拉西里斯 ",
+    "DJ2368": "Outrigger Bodysuit 支架紧身衣 ",
+    "DJ2369": "Bailout 紧急脱险 ",
+    "DJ2370": "Auric Kalaharis 金光卡拉哈里斯 ",
+    "DJ2371": "Trihorn Lance 三叉长矛 ",
+    "DJ2372": "Curseblade 诅咒之刃 ",
+    "DJ2373": "Djinn Exoskeleton 迪精外骨骼 ",
+    "DJ2374": "Dahakandys 达哈卡糖果 ",
+    "DJ2375": "Immortal Armor 不死盔甲 ",
+    "DJ2376": "Immortal Cestus 不死拳套 ",
+    "DJ2377": "Dahaka Predestinator 达哈卡预言者 ",
+    "DJ2378": "Willblade 意志之刃 ",
+    "DJ2379": "Cursebreaker 诅咒破坏者 ",
+    "DJ2380": "Regret 悔恨 ",
+    "DJ2381": "The Capital 都城 ",
+    "DJ2382": "Godhand 神之手 ",
+    "DJ2383": "Luminous Beacon 发光信标 ",
+    "DJ2384": "Divine Lure 神圣诱饵 ",
+    "DJ2385": "Airsac Mine 气囊矿 ",
+    "DJ2386": "Lesser Saphos/Greater Saphos 小萨福斯/大萨福斯 ",
+    "EJ2795": "Ambrosia Sword 神浆之剑 ",
+    "EJ2797": "Towerclub 塔状棍棒 ",
+    "EJ2799": "Ambrosia Whip 神浆之鞭 ",
+    "EJ2801": "Lunar Blade 月刃 ",
+    "EJ2803": "Slabspear 石板矛 ",
+    "EJ2806": "Liquid Bow 液体弓 ",
+    "EJ2807": "Congealed Harpoon 凝固鱼叉 ",
+    "EJ2809": "Splinterdarts 碎片飞镖 ",
+    "EJ2811": "Blackburned 烧焦的 ",
+    "EJ2815": "Lunaticape 月之斗篷 ",
+    "EJ2817": "Spire Panoply 尖塔全甲 ",
+    "EJ2819": "Panoptic Buckler 全景盾牌 ",
+    "EJ2821": "Trapped Moonlight 禁锢月光 ",
+    "EJ2823": "Moonflame 月焰 ",
+    "EJ2825": "Restart Module 重启模块 ",
+    "EJ2827": "Bloatank 胀囊坦克 ",
+    "EJ2829": "Abyss Wetsuit 深渊潜水服 ",
+    "EJ2831": "Babel Hardsuit 巴别塔硬质服 ",
+    "EJ2833": "Turtle Pavise 龟形盾牌 ",
+    "EJ2835": "Abyssaxe 深渊战斧 ",
+    "EJ2837": "Gutting Skewer 掏空尖刺 ",
+    "EJ2838": "Shard Harpoon 碎片鱼叉 ",
+    "EJ2840": "Iapetus Warning System 伊阿珀托斯预警系统 ",
+    "EJ2842": "Water-Resistant Beacon 防水信标 ",
+    "EJ2844": "Argotorch 阿尔戈火把 ",
+    "EJ2846": "Phos-Conductive Depthsuit 光导潜水服 ",
+    "EJ2848": "Heavy Reclaimed Depthsuit 重型回收潜水服 ",
+    "EJ2850": "Refractor Shield 折射盾牌 ",
+    "EJ2852": "Wrist Harpoon Chaser 腕部鱼叉追踪器 ",
+    "EJ2854": "Eyes Of The Argo 阿尔戈之眼 ",
+    "EJ2856": "Anxiety Regulator 焦虑调节器 ",
+    "EJ2858": "Magnesium Flashbang 镁闪光弹 ",
+    "EJ2860": "Nereidan Sonar 涅瑞伊得声呐 ",
+    "EJ2862": "Aether Extinguisher 以太熄灭器 ",
+    "EJ2864": "Ambrosia Filter 神浆过滤器 ",
+    "EJ2866": "Eggtank 蛋形坦克 ",
+    "EJ2868": "X-Iphos X型短剑 ",
+    "EJ2870": "Needleknives 针刺匕首 ",
+    "EJ2872": "Bladedance Armor 刀舞盔甲 ",
+    "EJ2874": "Pain Fuse 痛苦保险丝 ",
+    "EJ2876": "Atlantean Spada 亚特兰蒂斯剑 ",
+    "EJ2878": "Oscillating Spear 振荡长矛 ",
+    "EJ2880": "Lightwall Shield 光墙盾牌 ",
+    "EJ2882": "Subreme Harpoon 潜航鱼叉 ",
+    "EJ2884": "Skylight Breastplate 天窗胸甲 ",
+    "EJ2886": "Black Vent Camouflage 黑色通风口伪装 ",
+    "EJ2888": "Coral Armor 珊瑚盔甲 ",
+    "EJ2890": "Anxiety Ventilator 焦虑通风器 ",
+    "EJ2892": "Atlantean Rebreather 亚特兰蒂斯呼吸器 ",
+    "EJ2894": "Portable Hardlight Generator 便携式硬光发生器 ",
+    "EJ2896": "Phos Helm 光辉头盔 ",
+    "EJ2898": "Darklight Wiring 暗光线路 ",
+    "EJ2900": "Fire-Resistant Suit 防火服 ",
+    "EJ2902": "Protomachus Diving Amphora 普罗托马库斯潜水双耳瓶 ",
+    "EJ2904": "Infrared Module 红外模块 ",
+    "EJ2906": "Eys-Onmes 众目睽睽 ",
+    "EJ2908": "Chain Kusarigama 链镰 ",
+    "EJ2910": "Transcendance Wreath 超越花环 ",
+    "EJ2912": "Penitent Whip 忏悔之鞭 ",
+    "EJ2914": "Faith Kopis 信仰弯刀 ",
+    "EJ2916": "Cowl Of Shame 羞耻头巾 ",
+    "EJ2918": "Consecrated Lance 神圣长矛 ",
+    "EJ2920": "Illuminating Blinder 照明眩光弹 ",
+    "EJ2922": "Veristus 维里斯图斯 ",
+    "EJ2924": "Olympian Harpoon 奥林匹斯鱼叉 ",
+    "EJ2926": "Pearlstalk Mace 珍珠茎战锤 ",
+    "EJ2928": "Quicksilver Bow 水银弓 ",
+    "EJ2930": "Squirming Knives 扭动匕首 ",
+    "EJ2932": "Trench Khopesh 战壕弯刀 ",
+    "EJ2934": "Trench Kusarigama 战壕链镰 ",
+    "EJ2936": "Clawhorn Harpoon 爪角鱼叉 ",
+    "EJ2938": "Spiral Visor 螺旋面罩 ",
+    "EJ2940": "Silver Rebreather 银色呼吸器 ",
+    "EJ2942": "Ephemeral Pearl 短暂珍珠 ",
+    "EJ2944": "Silverlight Amulet 月光护符 ",
+    "EJ2946": "Medusian Wavegun 美杜莎波动枪 ",
+    "EJ2948": "Heatsword 热剑 ",
+    "EJ2950": "Fireraiser Shield 纵火者之盾 ",
+    "EJ2952": "Infrared Signaler 红外信号器 ",
+    "EJ2954": "Future Spirathorax 未来螺旋胸甲 ",
+    "EJ2956": "Silverskin 银色皮肤 ",
+    "EJ2958": "Mercurial Cryptex 水银密码箱 ",
+    "EJ2959": "Moonlung 月之肺 ",
+    "EJ2961": "Argocryptex Delta 阿尔戈密码箱δ ",
+    "EJ2962": "Self-Inflicted 自作自受 ",
+    "EJ2963": "Light Of Eos 厄俄斯之光 ",
+    "EJ2964": "Eternal Vow 永恒誓言 ",
+    "EJ2965": "Will Anthropos 人类意志 ",
+    "EJ2966": "Claw Cracker 爪裂器 ",
+    "EJ2967": "Phobos Whip 恐惧之鞭 ",
+    "EJ2968": "Grinmask 狞笑面具 ",
+    "EJ2969": "Oculus Headlamp 透镜头灯 ",
+    "EJ2970": "Veilwrappings 面纱包裹 ",
+    "EJ2791": "Microwave Shieldscale 微波护盾鳞片 ",
+    "EJ2972": "Pilfered Blade 偷来的刀刃 ",
+    "EJ2973": "Synergic Armor 协同盔甲 ",
+    "EJ2974": "Iapetus Helm 伊阿珀托斯头盔 ",
+    "EJ2975": "Flame-Hardened Plate 火焰硬化板甲 ",
+    "EJ2976": "Strungstring 弦线 ",
+    "EJ2977": "Headdress Of The Deep 深海头饰 ",
+    "EJ2978": "Dark Exemplar 黑暗典范 ",
+    "EJ2979": "Phobos Urumi 恐惧乌鲁米 ",
+    "EJ2980": "Oculus Lance 透镜长矛 ",
+    "EJ2981": "Crown Of The Trench 战壕王冠 ",
+    "EJ2982": "Hermes Highway 赫尔墨斯高速路 ",
+    "EJ2984": "Executioner Armor 行刑者盔甲 ",
+    "EJ2986": "Executioner Shortswords 行刑者短剑 ",
+    "EJ2988": "Executioner Helm 行刑者头盔 ",
+    "EJ2990": "Oculus Lighthouse 透镜灯塔 ",
+    "EJ2991": "Deadalive Spear 死而复生之矛 ",
+    "EJ2992": "Typhonic Cryptex 台风密码箱 ",
+    "EJ2993": "Dodonna Cryptex 多朵纳密码箱 ",
+    "EJ2994": "Hunter Killer 猎杀者 ",
+    "EJ2534": "Heir Apparent 继承人 ",
+    "EJ2995": "Big Boy Mazey 大块头梅泽 ",
+    "EJ2391": "Oxygen Destroyer 氧气破坏者 "
+  },
+  "gearTraits": {
+    "AJ0156": "Flesh 血肉 ",
+    "AJ0160": "Cloth  Flammable - 布料，易燃 \" ",
+    "AJ0163": "Wood  Shield  Flammable - 木材，盾牌，易燃 \" ",
+    "AJ0165": "Shell 贝壳 ",
+    "AJ0167": "Shell  Shield - 贝壳，盾牌 \" ",
+    "AJ0169": "Shell  Knife - 贝壳，刀刃 \" ",
+    "AJ0171": "Wood  Club  Flammable - 木材，棍棒，易燃 \" ",
+    "AJ0173": "Shell  Sword - 贝壳，剑 \" ",
+    "AJ0175": "Bone  Knife - 骨头，刀刃 \" ",
+    "AJ0177": "Bone  Knife - 骨头，刀刃 \" ",
+    "AJ0179": "Wood  Shell  Club  Flammable - 木材，贝壳，棍棒，易燃 \" ",
+    "AJ0181": "Bone  Kopesh - 骨头，弯刀 \" ",
+    "AJ0183": "Wood  Club  Flammable - 木材，棍棒，易燃 \" ",
+    "AJ0185": "Bone  Knife - 骨头，刀刃 \" ",
+    "AJ0187": "Bone  Axe - 骨头，斧头 \" ",
+    "AJ0189": "Wood  Bow  Flammable - 木材，弓，易燃 \" ",
+    "AJ0191": "Wood  Shell  Javelin  Flammable - 木材，贝壳，标枪，易燃 \" ",
+    "AJ0193": "Bone  Leather  Whip  Flammable - 骨头，皮革，鞭子，易燃 \" ",
+    "AJ0195": "Bone  Spear - 骨头，矛 \" ",
+    "AJ0197": "Wood  Spear  Flammable - 木材，矛，易燃 \" ",
+    "AJ0199": "Argotech  Augment  Helm - 阿尔戈科技，增幅，头盔 \" ",
+    "AJ0202": "Argotech  Augment  Helm - 阿尔戈科技，增幅，头盔 \" ",
+    "AJ0204": "Wood  Cloth  Sheath  Flammable - 木材，布料，刀鞘，易燃 \" ",
+    "AJ0206": "Argotech  Wood  Footwear  Metal  Flammable - 阿尔戈科技，木材，鞋类，金属，易燃 \" ",
+    "AJ0209": "Metal  Bronze - 金属，青铜 \" ",
+    "AJ0211": "Shield  Metal  Bronze - 盾牌，金属，青铜 \" ",
+    "AJ0213": "Metal  Bronze  Sword - 金属，青铜，剑 \" ",
+    "AJ0215": "Rope  Metal  Wood  Flammable - 绳索，金属，木材，易燃 \" ",
+    "AJ0217": "Argotech  Augment  Helm - 阿尔戈科技，增幅，头盔 \" ",
+    "AJ0219": "Primordial  Bone - 始徒，骨头 \" ",
+    "AJ0220": "Primordial  Bronze  Metal - 始徒，青铜，金属 \" ",
+    "AJ0222": "Primordial  Bone  Shield - 始徒，骨头，盾牌 \" ",
+    "AJ0224": "Relief  Stone  Club - 浮雕，石头，棍棒 \" ",
+    "AJ0226": "Wood  Metal  Blade  Flammable - 木材，金属，刀刃，易燃 \" ",
+    "AJ0228": "Relief  Stone  Club - 浮雕，石头，棍棒 \" ",
+    "AJ0230": "Labyrinth  Club  Slabsword  Primordial - 迷宫，棍棒，板剑，始徒 \" ",
+    "AJ0231": "Argotech  Cloth  Camo  Flammable - 阿尔戈科技，布料，伪装，易燃 \" ",
+    "AJ0233": "Leather  Sheath  Flammable - 皮革，刀鞘，易燃 \" ",
+    "AJ0235": "Metal  Bronze  Argotech  Ambrosia - 金属，青铜，阿尔戈科技，神浆 \" ",
+    "AJ0237": "Wood  Metal  Bronze  Argotech - 木材，金属，青铜，阿尔戈科技 \" ",
+    "AJ0239": "Rope  Cloth  Hook  Flammable - 绳索，布料，钩子，易燃 \" ",
+    "AJ0241": "Rope  Cloth  Hook  Flammable - 绳索，布料，钩子，易燃 \" ",
+    "AJ0243": "Metal  Bronze - 金属，青铜 \" ",
+    "AJ0245": "Metal  Bronze  Shield - 金属，青铜，盾牌 \" ",
+    "AJ0247": "Bone  Wood  Spear  Flammable - 骨头，木材，矛，易燃 \" ",
+    "AJ0249": "Bone  Javelin - 骨头，标枪 \" ",
+    "AJ0251": "Wood  Bow  Flammable - 木材，弓，易燃 \" ",
+    "AJ0253": "Whip  Primordial  Divine - 鞭子，始徒，神圣 \" ",
+    "AJ0254": "Club  Slabsword  Primordial  Labyrinth - 棍棒，板剑，始徒，迷宫 \" ",
+    "AJ0255": "Metal  Club  Hammer  Primordial - 金属，棍棒，锤子，始徒 \" ",
+    "AJ0256": "Whip  Primordial  Divine - 鞭子，始徒，神圣 \" ",
+    "AJ0261": "Primordial  Ambrosia  Argotech  Helm - 始徒，神浆，阿尔戈科技，头盔 \" ",
+    "AJ0262": "Primordial  Cloak  Skin  Flammable - 始徒，斗篷，皮肤，易燃 \" ",
+    "AJ0264": "Cloth  Cloak  Flammable - 布料，斗篷，易燃 \" ",
+    "AJ0266": "Wood  Flammable - 木材，易燃 \" ",
+    "AJ0271": "Shell  Primordial - 贝壳，始徒 \" ",
+    "AJ0275": "Argotech  Augment  Helm - 阿尔戈科技，增幅，头盔 \" ",
+    "AJ0277": "Argotech  Tool - 阿尔戈科技，工具 \" ",
+    "BJ0827": "Labyrinth  Stone  Primordial - 迷宫，石头，始徒 \" ",
+    "BJ0831": "Stone  Labyrinth - 石头，迷宫 \" ",
+    "BJ0835": "Stone  Primordial  Labyrinth  Club - 石头，始徒，迷宫，棍棒 \" ",
+    "BJ0837": "Stone  Primordial  Labyrinth  Axe - 石头，始徒，迷宫，斧头 \" ",
+    "BJ0841": "Cloth  Argotech  Belt  Flammable - 布料，阿尔戈科技，腰带，易燃 \" ",
+    "BJ0844": "Stone  Argotech - 石头，阿尔戈科技 \" ",
+    "BJ0845": "Argotech  Augment  Headgear - 阿尔戈科技，增幅，头饰 \" ",
+    "BJ0847": "Argotech  Augment - 阿尔戈科技，增幅 \" ",
+    "BJ0849": "Argotech  Cloth  Sheath  Flammable - 阿尔戈科技，布料，刀鞘，易燃 \" ",
+    "BJ0851": "Argotech  Tenet  Augment  Metal - 阿尔戈科技，信条，增幅，金属 \" ",
+    "BJ0852": "Stone  Argotech  Camo - 石头，阿尔戈科技，伪装 \" ",
+    "BJ0854": "Mythical  Potion - 神话，药剂 \" ",
+    "BJ0856": "Argotech  Wood  Sandals  Flammable - 阿尔戈科技，木材，凉鞋，易燃 \" ",
+    "BJ0862": "Stone  Primordial  Labyrinth  Cestus - 石头，始徒，迷宫，拳套 \" ",
+    "BJ0864": "Stone  Primordial  Labyrinth  Discus  Club* - 石头，始徒，迷宫，碟环，棍棒* \" ",
+    "BJ0866": "Primordial  Labyrinth  Artifact - 始徒，迷宫，神器 \" ",
+    "BJ0868": "Primordial  Labyrinth  Artifact - 始徒，迷宫，神器 \" ",
+    "BJ0869": "Primordial  Labyrinth  Artifact - 始徒，迷宫，神器 \" ",
+    "BJ0871": "Metal  Iron  Knife - 金属，铁，刀刃 \" ",
+    "BJ0873": "Metal  Iron  Whip - 金属，铁，鞭子 \" ",
+    "BJ0875": "Wood  Fire  Club  Flammable - 木材，火，棍棒，易燃 \" ",
+    "BJ0877": "Stone  Relief - 石头，浮雕 \" ",
+    "BJ0879": "Stone  Relief  Shield - 石头，浮雕，盾牌 \" ",
+    "BJ0881": "Relief  Cestus  Stone - 浮雕，拳套，石头 \" ",
+    "BJ0885": "Hook  Rope  Flammable  Argotech - 钩子，绳索，易燃，阿尔戈科技 \" ",
+    "BJ0887": "Stone  Argotech  Warriors - 石头，阿尔戈科技，战士 \" ",
+    "BJ0889": "Stone  Argotech  Warriors - 石头，阿尔戈科技，战士 \" ",
+    "BJ0891": "Argotech  Augment  Helm - 阿尔戈科技，增幅，头盔 \" ",
+    "BJ0894": "Leather  Argotech  Flammable  Sandals - 皮革，阿尔戈科技，易燃，凉鞋 \" ",
+    "BJ0896": "Leather  Argotech  Flammable  Sandals - 皮革，阿尔戈科技，易燃，凉鞋 \" ",
+    "BJ0898": "Argotech  Augment - 阿尔戈科技，增幅 \" ",
+    "BJ0900": "Iron  Metal  Axe - 铁，金属，斧头 \" ",
+    "BJ0901": "Iron  Metal  Spear - 铁，金属，矛 \" ",
+    "BJ0902": "Iron  Metal  Knife - 铁，金属，刀刃 \" ",
+    "BJ0903": "Wood  Iron  Flammable  Bow - 木材，铁，易燃，弓 \" ",
+    "BJ0904": "Stone  Cyclopean  Knife - 石头，独眼巨人的，刀刃 \" ",
+    "BJ0905": "Iron  Metal  Cyclopean  Kopesh - 铁，金属，独眼巨人的，弯刀 \" ",
+    "BJ0906": "Cyclopean  Cloth  Flammable  Armor - 独眼巨人的，布料，易燃，盔甲 \" ",
+    "BJ0907": "Stone  Cyclopean  Knife - 石头，独眼巨人的，刀刃 \" ",
+    "BJ0908": "Cyclopean  Augment  Helm - 独眼巨人的，增幅，头盔 \" ",
+    "BJ0909": "Cyclopean  Artifact - 独眼巨人的，神器 \" ",
+    "BJ0910": "Iron  Metal  Cyclopean  Hammer  Club - 铁，金属，独眼巨人的，锤子，棍棒 \" ",
+    "BJ0911": "Bronze  Cloth  Flammable  Armor - 青铜，布料，易燃，盔甲 \" ",
+    "BJ0913": "Bronze  Metal  Ambrosia  Primordial  Shield - 青铜，金属，神浆，始徒，盾牌 \" ",
+    "BJ0917": "Leather  Oil  Argotech - 皮革，油，阿尔戈科技 \" ",
+    "BJ0919": "Mud  Ambrosia - 泥土，神浆 \" ",
+    "BJ0921": "Iron  Metal  Sword - 铁，金属，剑 \" ",
+    "BJ0923": "Iron  Metal  Argotech  Pole  Spear - 铁，金属，阿尔戈科技，杆，矛 \" ",
+    "BJ0925": "Iron  Metal  Knife  Cestus - 铁，金属，刀刃，拳套 \" ",
+    "BJ0927": "Primordial  Abyss  Club - 始徒，深渊，棍棒 \" ",
+    "BJ0930": "Fire  Argotech  Flamethrower - 火，阿尔戈科技，火焰喷射器 \" ",
+    "BJ0932": "Iron  Metal  Club  Axe - 铁，金属，棍棒，斧头 \" ",
+    "BJ0934": "Primordial  Ambrosia  Sword - 始徒，神浆，剑 \" ",
+    "BJ0936": "Mud  Club - 泥土，棍棒 \" ",
+    "BJ0937": "Mud  Sword  Club - 泥土，剑，棍棒 \" ",
+    "BJ0938": "Primordial  Abyss  Cestus - 始徒，深渊，拳套 \" ",
+    "BJ0946": "Relief  Primordial  Shield - 浮雕，始徒，盾牌 \" ",
+    "BJ0948": "Metal  Relief  Rope - 金属，浮雕，绳索 \" ",
+    "BJ0950": "Wood  Metal  Flammable  Armor  Argotech - 木材，金属，易燃，盔甲，阿尔戈科技 \" ",
+    "BJ0952": "Relief  Primordial  Armor - 浮雕，始徒，盔甲 \" ",
+    "BJ0965": "Primordial  Ambrosia  Argotech - 始徒，神浆，阿尔戈科技 \" ",
+    "BJ0966": "Primordial  Flammable  Cloak - 始徒，易燃，斗篷 \" ",
+    "BJ0967": "Argotech  Primordial  Augment  Cryptex  Eldertech - 阿尔戈科技，始徒，增幅，密码箱，远古科技 \" ",
+    "BJ0968": "Primordial  Spear - 始徒，矛 \" ",
+    "BJ0969": "Stone  Argotech  Symmachy  Warriors - 石头，阿尔戈科技，同盟，战士 \" ",
+    "BJ0829": "Stone  Labyrinth  Primordial  Shield  Flesh  Hermetic  Umbrella  Flammable - 石头，迷宫，始徒，盾牌，血肉，赫尔墨斯的，雨伞，易燃 \" ",
+    "BJ0839": "Stone  Primordial  Labyrinth  Sword  Flesh  Whip  Flammable - 石头，始徒，迷宫，剑，血肉，鞭子，易燃 \" ",
+    "BJ0860": "Spear  Stone  Primordial  Labyrinth  Flammable - 矛，石头，始徒，迷宫，易燃 \" ",
+    "BJ0883": "Metal  Smelted  Argotech  Sword  Wood  Bow  Flammable - 金属，熔炼的，阿尔戈科技，剑，木材，弓，易燃 \" ",
+    "BJ0915": "Wood  Argotech  Flammable  Shield  Ladder - 木材，阿尔戈科技，易燃，盾牌，梯子 \" ",
+    "BJ0928": "Fire  Argotech  Club  Pole  Spear - 火，阿尔戈科技，棍棒，杆，矛 \" ",
+    "CJ1389": "Sword  Ambrosia  Fire  Iron  Metal  Abyss - 剑，神浆，火，铁，金属，深渊 \" ",
+    "CJ1391": "Club  Ambrosia  Fire  Iron  Metal  Abyss - 棍棒，神浆，火，铁，金属，深渊 \" ",
+    "CJ1393": "Knife  Ambrosia  Fire  Iron  Primordial  Metal  Abyss - 刀刃，神浆，火，铁，始徒，金属，深渊 \" ",
+    "CJ1395": "Cestus  Ambrosia  Fire  Iron  Primordial  Metal  Abyss - 拳套，神浆，火，铁，始徒，金属，深渊 \" ",
+    "CJ1397": "Spear  Ambrosia  Fire  Iron  Primordial  Metal  Abyss - 矛，神浆，火，铁，始徒，金属，深渊 \" ",
+    "CJ1399": "Javelin  Ambrosia  Fire  Iron  Metal  Abyss - 标枪，神浆，火，铁，金属，深渊 \" ",
+    "CJ1401": "Paradox  Ambrosia - 悖论，神浆 \" ",
+    "CJ1403": "Abyss  Ambrosia  Fire  Iron  Metal  Abyss - 深渊，神浆，火，铁，金属，深渊 \" ",
+    "CJ1405": "Armor  Ambrosia  Fire  Iron  Primoridal  Metal  Abyss - 盔甲，神浆，火，铁，始徒，金属，深渊 \" ",
+    "CJ1407": "Shield  Primordial  Argotech  Ambrosia  Fire  Abbyss - 盾牌，始徒，阿尔戈科技，神浆，火，深渊 \" ",
+    "CJ1409": "Hyperborean  Paradox - 冻土，悖论 \" ",
+    "CJ1411": "Paradox  Augment  Argotech  Umbrella - 悖论，增幅，阿尔戈科技，雨伞 \" ",
+    "CJ1413": "Paradox  Augment  Argotech - 悖论，增幅，阿尔戈科技 \" ",
+    "CJ1415": "Augment  Argotech  Paradox - 增幅，阿尔戈科技，悖论 \" ",
+    "CJ1417": "Armor  Primordial  Shell - 盔甲，始徒，贝壳 \" ",
+    "CJ1419": "Armor  Primordial  Shell - 盔甲，始徒，贝壳 \" ",
+    "CJ1421": "Shield  Primordial  Shell - 盾牌，始徒，贝壳 \" ",
+    "CJ1429": "Sword  Spada  Primordial  Shell - 剑，斯帕达，始徒，贝壳 \" ",
+    "CJ1431": "Knife  Primordial  Shell - 刀刃，始徒，贝壳 \" ",
+    "CJ1433": "Discus  Ambrosia  Primordial  Shell - 碟环，神浆，始徒，贝壳 \" ",
+    "CJ1435": "Sword  Primordial  Shell  Ambrosia - 剑，始徒，贝壳，神浆 \" ",
+    "CJ1437": "Mask  Ambrosia  Primordial  Shell - 面具，神浆，始徒，贝壳 \" ",
+    "CJ1439": "Primordial  Shell  Atemporal - 始徒，贝壳，时无 \" ",
+    "CJ1441": "Paradox  Augment  Argotech - 悖论，增幅，阿尔戈科技 \" ",
+    "CJ1443": "Paradox  Augment  Argotech  Atemporal - 悖论，增幅，阿尔戈科技，时无 \" ",
+    "CJ1445": "Paradox  Augment  Argotech  Atemporal - 悖论，增幅，阿尔戈科技，时无 \" ",
+    "CJ1447": "Paradox  Augment  Argotech  Atemporal  Divine - 悖论，增幅，阿尔戈科技，时无，神圣 \" ",
+    "CJ1448": "Paradox  Augment  Argotech  Atemporal - 悖论，增幅，阿尔戈科技，时无 \" ",
+    "CJ1450": "Augment  Argotech  Divine - 增幅，阿尔戈科技，神圣 \" ",
+    "CJ1452": "Paradox  Augment  Argotech  Primordial  Cloth  Flammable - 悖论，增幅，阿尔戈科技，始徒，布料，易燃 \" ",
+    "CJ1454": "Paradox  Augment  Argotech  Atemporal - 悖论，增幅，阿尔戈科技，时无 \" ",
+    "CJ1456": "Paradox  Augment  Argotech  Atemporal - 悖论，增幅，阿尔戈科技，时无 \" ",
+    "CJ1458": "Potion  Mythical - 药剂，神话 \" ",
+    "CJ1460": "Sandals  Leather  Argotech  Iron  Metal - 凉鞋，皮革，阿尔戈科技，铁，金属 \" ",
+    "CJ1462": "Ambrosia  Potion  Argotech  Atemporal - 神浆，药剂，阿尔戈科技，时无 \" ",
+    "CJ1464": "Sandals  Ambrosia  Leather - 凉鞋，神浆，皮革 \" ",
+    "CJ1466": "Ambrosia  Ice  Argotech - 神浆，冰，阿尔戈科技 \" ",
+    "CJ1468": "Shield  Ambrosia  Ice  Argotech - 盾牌，神浆，冰，阿尔戈科技 \" ",
+    "CJ1470": "Spear  Argotech  Iron  Metal  Fire - 矛，阿尔戈科技，铁，金属，火 \" ",
+    "CJ1476": "Hermes  Argotech  Rope  Hook - 赫尔墨斯的，阿尔戈科技，绳索，钩子 \" ",
+    "CJ1477": "Argotech  Tenet  Augment - 阿尔戈科技，信条，增幅 \" ",
+    "CJ1478": "Argotech  Tenet  Augment - 阿尔戈科技，信条，增幅 \" ",
+    "CJ1479": "Argotech  Tenet  Augment - 阿尔戈科技，信条，增幅 \" ",
+    "CJ1480": "Argotech  Divine  Augment - 阿尔戈科技，神圣，增幅 \" ",
+    "CJ1481": "Sword  Fire  Hyperborean  Divine  Metal - 剑，火，冻土，神圣，金属 \" ",
+    "CJ1482": "Whip  Fire  Hyperborean  Divine  Metal - 鞭子，火，冻土，神圣，金属 \" ",
+    "CJ1483": "Lightningthrower  Fire  Hyperborean  Divine  Metal - 闪电发射器，火，冻土，神圣，金属 \" ",
+    "CJ1484": "Bow  Pistol  Fire  Hyperborean  Divine  Metal - 弓，手枪，火，冻土，神圣，金属 \" ",
+    "CJ1485": "Cloth  Hyperborean  Divine  Metal - 布料，冻土，神圣，金属 \" ",
+    "CJ1486": "Blade  Paradox  Atemporal  Hyperborean  Hephaestum  Apostasis - 刀刃，悖论，时无，冻土，赫菲斯托斯的，背教的 \" ",
+    "CJ1487": "Club  Hyperborean  Hephaestum  Apostasis - 棍棒，冻土，赫菲斯托斯的，背教的 \" ",
+    "CJ1488": "Hyperborean  Hephaestum  Apostasis - 冻土，赫菲斯托斯的，背教的 \" ",
+    "CJ1490": "Cloth  Hyperborean  Apostatis - 布料，冻土，背教的 \" ",
+    "CJ1491": "Shield  Hyperborean  Hephaestum  Apostatis - 盾牌，冻土，赫菲斯托斯的，背教的 \" ",
+    "CJ1492": "Cloak  Skin  Primordial  Atemporal - 斗篷，皮肤，始徒，时无 \" ",
+    "CJ1494": "Shield  Feathers  Primordial  Atemporal - 盾牌，羽毛，始徒，时无 \" ",
+    "CJ1496": "Bow  Arrows  Argotech  Atemporal  Paradox - 弓，箭，阿尔戈科技，时无，悖论 \" ",
+    "CJ1498": "Knife  Paradox  Primordial  Bone - 刀刃，悖论，始徒，骨头 \" ",
+    "CJ1500": "Cestus  Atemporal  Primordial  Flesh - 拳套，时无，始徒，血肉 \" ",
+    "CJ1504": "Paradox  Atemporal  Primordial  Flesh  Argotech  Iron  Metal - 悖论，时无，始徒，血肉，阿尔戈科技，铁，金属 \" ",
+    "CJ1505": "Paradox  Atemporal  Primordial  Flesh  Argotech  Iron  Metal - 悖论，时无，始徒，血肉，阿尔戈科技，铁，金属 \" ",
+    "CJ1506": "Primordial  Atemporal  Bone - 始徒，时无，骨头 \" ",
+    "CJ1508": "Feathers  Primordial  Atemporal - 羽毛，始徒，时无 \" ",
+    "CJ1518": "Fire  Knife  Cestus  Mace  Slabsword  Primordial  Sun  Divine - 火，刀刃，拳套，战锤，板剑，始徒，太阳，神圣 \" ",
+    "CJ1519": "Flesh  Paradox  Primordial  Divine - 血肉，悖论，始徒，神圣 \" ",
+    "CJ1521": "Bone  Primordial  Divine  Paradox - 骨头，始徒，神圣，悖论 \" ",
+    "CJ1523": "Cestus  Paradox  Bone  Flesh  Primordial - 拳套，悖论，骨头，血肉，始徒 \" ",
+    "CJ1525": "Sword  Ambrosia  Ice  Iron  Metal - 剑，神浆，冰，铁，金属 \" ",
+    "CJ1529": "Slabsword  Feathers  Hephaestum  Divine - 板剑，羽毛，赫菲斯托斯的，神圣 \" ",
+    "CJ1536": "Argotech  Augment  Cryptex - 阿尔戈科技，增幅，密码箱 \" ",
+    "CJ1537": "Argotech  Augment  Cryptex - 阿尔戈科技，增幅，密码箱 \" ",
+    "CJ1538": "Argotech  Augment  Cryptex - 阿尔戈科技，增幅，密码箱 \" ",
+    "CJ1539": "Shield  Relief  Primordial - 盾牌，浮雕，始徒 \" ",
+    "CJ1540": "Rope Metal  Relief - 绳索，金属，浮雕 \" ",
+    "CJ1542": "Leather  Wood  Metal  Armor  Argotech  Flammable - 皮革，木材，金属，盔甲，阿尔戈科技，易燃 \" ",
+    "CJ1544": "Relief  Primordial  Armor - 浮雕，始徒，盔甲 \" ",
+    "CJ1423": "Shield  Argotech  Iron  Metal  Fire  Bow - 盾牌，阿尔戈科技，铁，金属，火，弓 \" ",
+    "CJ1425": "Spear  Argotech  Iron  Metal  Axe - 矛，阿尔戈科技，铁，金属，斧头 \" ",
+    "CJ1427": "Discus  Argotech  Iron  Metal  Blade - 碟环，阿尔戈科技，铁，金属，刀刃 \" ",
+    "CJ1472": "Hammer  Argotech  Iron  Metal  Stone  Sword - 锤子，阿尔戈科技，铁，金属，石头，剑 \" ",
+    "CJ1474": "Axe  Argotech  Iron  Metal  Blade - 斧头，阿尔戈科技，铁，金属，刀刃 \" ",
+    "CJ1510": "Whip  Primordial  Atemporal  Alive  Paradox  Shield - 鞭子，始徒，时无，活的，悖论，盾牌 \" ",
+    "CJ1512": "Club  Primordial  Atemporal  Alive  Paradox  Spear - 棍棒，始徒，时无，活的，悖论，矛 \" ",
+    "CJ1514": "Bow  Pistol  Argotech  Iron  Stone  Metal  Slabsword - 弓，手枪，阿尔戈科技，铁，石头，金属，板剑 \" ",
+    "AJ0257": "Labyrinth  Primordial  Sword  Shield - 迷宫，始徒，剑，盾牌 \" ",
+    "AJ0258": "Hephaestum  Metal  Sword  Ship - 赫菲斯托斯的，金属，剑，船 \" ",
+    "AJ0259": "Metal  Primordial  Club - 金属，始徒，棍棒 \" ",
+    "AJ0260": "Primordial  Cloth  Shawl  Flammable  Silk - 始徒，布料，披肩，易燃，丝绸 \" ",
+    "AJ0268": "Metal  Primordial  Divine  Sword - 金属，始徒，神圣，剑 \" ",
+    "AJ0269": "Primordial  Augment  Helm - 始徒，增幅，头盔 \" ",
+    "AJ0270": "Metal  Hephaestum  Divine  Shield - 金属，赫菲斯托斯的，神圣，盾牌 \" ",
+    "AJ0273": "Spear  Primordial - 矛，始徒 \" ",
+    "AJ0274": "Primordial  Augment  Mask - 始徒，增幅，面具 \" ",
+    "AJ0279": "Bronze  Metal  Discus - 青铜，金属，碟环 \" ",
+    "AJ0280": "Primordial  Alive - 始徒，活的 \" ",
+    "AJ0281": "Yarn  Amulet  Divine - 纱线，护身符，神圣 \" ",
+    "AJ0282": "Dog  Labyrinth  Pug  Cherished Companion - 狗，迷宫，巴哥犬，珍爱的伙伴 \" ",
+    "AJ0283": "Stones  Kidneys  Pain - 石头，肾脏，痛苦 \" ",
+    "BJ0858": "Slabsword  Club  Stone  Alive  Labyrinth  Primordial - 板剑，棍棒，石头，活的，迷宫，始徒 \" ",
+    "BJ0940": "Primordial  Club - 始徒，棍棒 \" ",
+    "BJ0941": "Primordial  Club - 始徒，棍棒 \" ",
+    "BJ0942": "Relief  Slabsword - 浮雕，板剑 \" ",
+    "BJ0943": "Ambrosia  Alive  Primordial  Infection - 神浆，活的，始徒，感染 \" ",
+    "BJ0944": "Mythical  Guard - 神话，守护者 \" ",
+    "BJ0945": "Hephaestum  Metal  Primordial  Khopesh  Spear - 赫菲斯托斯的，金属，始徒，弯刀，矛 \" ",
+    "BJ0956": "Ambrosia  Iron  Fire  Primordial  Metal - 神浆，铁，火，始徒，金属 \" ",
+    "BJ0959": "Abyss  Primordial  Leleges  Sword - 深渊，始徒，勒列格斯人，剑 \" ",
+    "BJ0960": "Iron  Metal  Leleges  Divine  Sword - 铁，金属，勒列格斯人，神圣，剑 \" ",
+    "BJ0961": "Hephaestum  Metal  Primordial  Blade  Leleges - 赫菲斯托斯的，金属，始徒，刀刃，勒列格斯人 \" ",
+    "BJ0962": "Beyond  Slabsword  Sword  Leleges - 超越，板剑，剑，勒列格斯人 \" ",
+    "BJ0963": "Electrum  Metal  Sword  Self-propelling wagon - 琥珀金，金属，剑，自动推进车 \" ",
+    "BJ0964": "Flamethrower  Fire  Argotech - 火焰喷射器，火，阿尔戈科技 \" ",
+    "BJ0970": "Hephaestum  Primordial  Club  Whip  Ambrosia - 赫菲斯托斯的，始徒，棍棒，鞭子，神浆 \" ",
+    "BJ0971": "Primordial  Hephaestum  Club  Hammer  Ambrosia - 始徒，赫菲斯托斯的，棍棒，锤子，神浆 \" ",
+    "BJ0939": "Relief  Eldertech  Lance - 浮雕，远古科技，长矛 \" ",
+    "BJ0859": "Lance  Stone  Primordial  Alive  Labyrinth - 长矛，石头，始徒，活的，迷宫 \" ",
+    "BJ0954": "Ambrosia  Alive  Infection  Primordial  Armor - 神浆，活的，感染，始徒，盔甲 \" ",
+    "BJ0955": "Ambrosia  Primordial - 神浆，始徒 \" ",
+    "BJ0957": "Primordial  Alive  Ambrosia  Infection  Sword  Leleges - 始徒，活的，神浆，感染，剑，勒列格斯人 \" ",
+    "BJ0958": "Abyss  Primordial  Ambrosia  Sword  Leleges - 深渊，始徒，神浆，剑，勒列格斯人 \" ",
+    "CJ1502": "Paradox  Atemporal  Primordial  Flesh - 悖论，时无，始徒，血肉 \" ",
+    "CJ1503": "Paradox  Atemporal  Primordial  Flesh  Iron  Metal - 悖论，时无，始徒，血肉，铁，金属 \" ",
+    "CJ1516": "Cestus  Primordial  Knife - 拳套，始徒，刀刃 \" ",
+    "CJ1517": "Discus  Fire  Primordial  Slabsword - 碟环，火，始徒，板剑 \" ",
+    "CJ1527": "Feathers  Primordial  Argotech - 羽毛，始徒，阿尔戈科技 \" ",
+    "CJ1528": "Slabsword  Feathers  Hephaestum  Mythic - 板剑，羽毛，赫菲斯托斯的，神话 \" ",
+    "CJ1530": "Argotech  Augment  Cryptex  Paradox - 阿尔戈科技，增幅，密码箱，悖论 \" ",
+    "CJ1531": "Engine  Atlantean  Oirchalcum - 引擎，亚特兰蒂斯的，山铜 \" ",
+    "CJ1532": "Sword  Mythic  Flesh  Bone  Atemporal - 剑，神话，血肉，骨头，时无 \" ",
+    "CJ1533": "Heirloom  Cyclopean  Hephaestum  Iron  Metal - 传家宝，独眼巨人的，赫菲斯托斯的，铁，金属 \" ",
+    "CJ1534": "Armor  Paradox  Electrum  Metal - 盔甲，悖论，琥珀金，金属 \" ",
+    "CJ1535": "Shell  Hephaestum  Primordial  Divine  Shield - 贝壳，赫菲斯托斯的，始徒，神圣，盾牌 \" ",
+    "CJ1546": "Sword  Elysium  Metal - 剑，极乐世界，金属 \" ",
+    "EJ9981": "Harpoon  Bow  Metal  Wood  Rope - 鱼叉，弓，金属，木材，绳索\" ",
+    "DJ9991": "Stone  Primordial  Helm  Atemporal - 石头，始徒，头盔，时无\" ",
+    "DJ9992": "Stone  Primordial  Atemporal  Shield - 石头，始徒，时无，盾牌\" ",
+    "CJ9993": "Sun  Ice  Badge  Primordial - 太阳，冰，徽章，始徒\" ",
+    "EJ9980": "Divine  Nemesistech  Hephaestum  Glass  Harpoon - 神圣，复仇女神科技，赫菲斯托斯的，玻璃，鱼叉\" ",
+    "EJ9979": "Cloth  Cloak  Primordial - 布料，斗篷，始徒\" ",
+    "EJ9978": "Atlantean  Orichalcum  Badge  Primordial - 亚特兰蒂斯的，山铜，徽章，始徒\" ",
+    "AJ9987": "Kusarigama  Chain  Blade  Metal  Argotech - 链镰，链条，刀刃，金属，阿尔戈科技\" ",
+    "AJ9989": "Spear  Wood  Metal  Rope  Argotech - 矛，木材，金属，绳索，阿尔戈科技\" ",
+    "AJ9985": "Kusarigama  Leather  Metal  Argotech - 链镰，皮革，金属，阿尔戈科技\" ",
+    "AJ9984": "Metal  Rope  Hook  Hermes Gear  Argotech  Flammable - 金属，绳索，钩子，赫尔墨斯装备，阿尔戈科技，易燃\" ",
+    "AJ9983": "Bow  Metal  Argotech - 弓，金属，阿尔戈科技\" ",
+    "AJ1998": "Labyrinth  Stone Badge  Primordial - 迷宫，石头，徽章，始徒\" ",
+    "DJ2225": "Flesh  Argotech  Cryptex - 血肉，阿尔戈科技，密码箱\" ",
+    "DJ2229": "Sword  Eclipse  Sun  Stone - 剑，日蚀，太阳，石头\" ",
+    "DJ2231": "Club  Feathers  Flammable  Bone  Primordial  Eclipse - 棍棒，羽毛，易燃，骨头，始徒，日蚀\" ",
+    "DJ2233": "Whip  Sun  Flammable  Eclipse  Primordial - 鞭子，太阳，易燃，日蚀，始徒\" ",
+    "DJ2235": "Axe  Stone  Eclipse  Sun - 斧头，石头，日蚀，太阳\" ",
+    "DJ2237": "Knife  Stone  Eclipse  Sun - 刀刃，石头，日蚀，太阳\" ",
+    "DJ2239": "Spear  Fire  Flammable  Sun  Eclipse  Stone - 矛，火，易燃，太阳，日蚀，石头\" ",
+    "DJ2241": "Javelin  Bone  Primordial  Eclipse - 标枪，骨头，始徒，日蚀\" ",
+    "DJ2243": "Discus  Sun  Eclipse  Fire  Stone - 碟环，太阳，日蚀，火，石头\" ",
+    "DJ2245": "Accursed  Eclipse - 被诅咒的，日蚀\" ",
+    "DJ2249": "Armor  Cloth  Flammable  Sun  Eclipse - 盔甲，布料，易燃，太阳，日蚀\" ",
+    "DJ2251": "Armor  Feather  Primordial  Flammable  Eclipse - 盔甲，羽毛，始徒，易燃，日蚀\" ",
+    "DJ2253": "Shield  Stone  Eclipse  Sun - 盾牌，石头，日蚀，太阳\" ",
+    "DJ2255": "Eclipse  Sun  Divine  Elixir - 日蚀，太阳，神圣，灵药\" ",
+    "DJ2257": "Metal  Rope  Hook  Argotech  Flammable - 金属，绳索，钩子，阿尔戈科技，易燃\" ",
+    "DJ2259": "Sun  Primordial  Augment  Argotech - 太阳，始徒，增幅，阿尔戈科技\" ",
+    "DJ2261": "Metal  Rope  Hook  Hermes Gear  Argotech  Flammable - 金属，绳索，钩子，赫尔墨斯装备，阿尔戈科技，易燃\" ",
+    "DJ2265": "Empire  Gold  Metal - 帝国的，金，金属\" ",
+    "DJ2267": "Empire  Gold  Metal  Knife - 帝国的，金，金属，刀刃\" ",
+    "DJ2269": "Empire  Gold  Relief  Fire  Club - 帝国的，金，浮雕，火，棍棒\" ",
+    "DJ2271": "Empire  Gold  Metal  Knife - 帝国的，金，金属，刀刃\" ",
+    "DJ2272": "Empire  Wood  Gold  Metal  Bow - 帝国的，木材，金，金属，弓\" ",
+    "DJ2274": "Empire  Argotech  Metal  Wood  Cloth - 帝国的，阿尔戈科技，金属，木材，布料\" ",
+    "DJ2276": "Empire  Midas  Augment  Elixir  Alchemy - 帝国的，迈达斯的，增幅，灵药，炼金术\" ",
+    "DJ2278": "Empire  Midas  Augment  Argotech  Alchemy - 帝国的，迈达斯的，增幅，阿尔戈科技，炼金术\" ",
+    "DJ2280": "Armor  Glass  Sun - 盔甲，玻璃，太阳\" ",
+    "DJ2282": "Armor  Gold  Sun - 盔甲，金，太阳\" ",
+    "DJ2284": "Shield  Discus  Gold  Irem - 盾牌，碟环，金，伊雷姆\" ",
+    "DJ2286": "Metal  Rope  Chain  Relief - 金属，绳索，链条，浮雕\" ",
+    "DJ2288": "Metal  Rope  Hook  Hermes Gear  Argotech  Flammable - 金属，绳索，钩子，赫尔墨斯装备，阿尔戈科技，易燃\" ",
+    "DJ2290": "Empire  Gold  Metal - 帝国的，金，金属\" ",
+    "DJ2292": "Argotech  Wish  Lamp - 阿尔戈科技，愿望，灯\" ",
+    "DJ2294": "Argotech  Wish  Augment - 阿尔戈科技，愿望，增幅\" ",
+    "DJ2296": "Argotech  Curse  Augment - 阿尔戈科技，诅咒，增幅\" ",
+    "DJ2298": "Argotech  Anemoi  Primordial  Alive - 阿尔戈科技，风神，始徒，活的\" ",
+    "DJ2299": "Argotech  Bow  Pistol  Fire  Ambrosia - 阿尔戈科技，弓，手枪，火，神浆\" ",
+    "DJ2300": "Argotech  Irem - 阿尔戈科技，伊雷姆\" ",
+    "DJ2302": "Potion  Metal  Ambrosia  Anemoi  Primordial - 药剂，金属，神浆，风神，始徒\" ",
+    "DJ2304": "Sword  Glass  Irem - 剑，玻璃，伊雷姆\" ",
+    "DJ2306": "Sword  Gold  Irem - 剑，金，伊雷姆\" ",
+    "DJ2308": "Axe  Gold  Irem - 斧头，金，伊雷姆\" ",
+    "DJ2309": "Bow  Wood  Flammable  Labyrinth  Argotech - 弓，木材，易燃，迷宫，阿尔戈科技\" ",
+    "DJ2311": "Silk  Flammable  Primordial - 丝绸，易燃，始徒\" ",
+    "DJ2313": "Gold  Ambrosia  Hephaestum  Orichalcum  Flesh  Primordial - 金，神浆，赫菲斯托斯的，山铜，血肉，始徒\" ",
+    "DJ2315": "Argotech  Curse  Augment  Irem - 阿尔戈科技，诅咒，增幅，伊雷姆\" ",
+    "DJ2317": "Flesh  Primordial  Gold  Flammable  Windcurse - 血肉，始徒，金，易燃，风诅咒\" ",
+    "DJ2319": "Metal  Rope  Hook  Hermes Gear  Argotech  Flammable - 金属，绳索，钩子，赫尔墨斯装备，阿尔戈科技，易燃\" ",
+    "DJ2321": "Augment  Cryptex  Djinn  Wish  Accursed - 增幅，密码箱，迪精，愿望，被诅咒的\" ",
+    "DJ2322": "Club  Djinn  Obsidian  Gold - 棍棒，迪精，黑曜石，金\" ",
+    "DJ2323": "Shield  Djinn  Obsidian  Gold - 盾牌，迪精，黑曜石，金\" ",
+    "DJ2324": "Axes  Hammers  Djinn  Obsidian  Gold - 斧头，锤子，迪精，黑曜石，金\" ",
+    "DJ2325": "Sun  Heaven  Fire  Eldertech  Old Babylon  Cursed - 太阳，天堂，火，远古科技，旧巴比伦，被诅咒的\" ",
+    "DJ2326": "Cestus  Metal  Hephaestum  Ambrosia  Old Babylon  Cursed - 拳套，金属，赫菲斯托斯的，神浆，旧巴比伦，被诅咒的\" ",
+    "DJ2327": "Blade  Shield  Umbrella  Anemoi  Ambrosia  Old Babylon - 刀刃，盾牌，雨伞，风神，神浆，旧巴比伦\" ",
+    "DJ2328": "Empire  Gold  Relief  Fire  Club - 帝国的，金，浮雕，火，棍棒\" ",
+    "DJ2329": "Empire  Gold  Fire  Stone  Blade  Whip - 帝国的，金，火，石头，刀刃，鞭子\" ",
+    "DJ2330": "Empire  Wood  Gold  Metal  Bow - 帝国的，木材，金，金属，弓\" ",
+    "DJ2331": "Armor  Accursed  Djinn  Primordial - 盔甲，被诅咒的，迪精，始徒\" ",
+    "DJ2333": "Anemoi  Djinn  Primordial  Cape  Alive - 风神，迪精，始徒，斗篷，活的\" ",
+    "DJ2335": "Acidthrower  Fire  Flammable  Babylonian  Metal - 酸液发射器，火，易燃，巴比伦的，金属\" ",
+    "DJ2336": "Sword  Accursed  Wish  Meteoric Iron  Djinn - 剑，被诅咒的，愿望，陨铁，迪精\" ",
+    "DJ2337": "Slabsword  Rod  Relief  Babylonian  Dead - 板剑，杖，浮雕，巴比伦的，死的\" ",
+    "DJ2338": "Sword  Primordial  Gold  Flesh - 剑，始徒，金，血肉\" ",
+    "DJ2339": "Lance  Metal  Djinn  Primordial - 长矛，金属，迪精，始徒\" ",
+    "DJ2340": "Bow  Pistol  Argotech  Gold  Metal  Accursed - 弓，手枪，阿尔戈科技，金，金属，被诅咒的\" ",
+    "DJ2341": "Argotech  Gaia  Augment  Flammable  Babylonian - 阿尔戈科技，盖亚，增幅，易燃，巴比伦的\" ",
+    "DJ2343": "Metal  Rope  Hook  Hermes Gear  Argotech - 金属，绳索，钩子，赫尔墨斯装备，阿尔戈科技\" ",
+    "DJ2345": "Eldertech  Gaia  Augment  Life  Flammable - 远古科技，盖亚，增幅，生命，易燃\" ",
+    "DJ2347": "Argotech  Augment  Cryptex  Pandoran - 阿尔戈科技，增幅，密码箱，潘多拉的\" ",
+    "DJ2348": "Whip  Accursed  Wish  Djinn - 鞭子，被诅咒的，愿望，迪精\" ",
+    "DJ2349": "Cestus  Accursed  Wish  Djinn - 拳套，被诅咒的，愿望，迪精\" ",
+    "DJ2350": "Cestus  Accursed  Spear  Djinn - 拳套，被诅咒的，矛，迪精\" ",
+    "DJ2351": "Relief  Primordial  Armor  Pandoran - 浮雕，始徒，盔甲，潘多拉的\" ",
+    "DJ2353": "Argotech  Primordial  Armor  Pandoran - 阿尔戈科技，始徒，盔甲，潘多拉的\" ",
+    "DJ2355": "Sword  Salt  Irem  Wish  Siren - 剑，盐，伊雷姆，愿望，塞壬\" ",
+    "DJ2356": "Babylonian  Relief  Glass  Club  Hammer - 巴比伦的，浮雕，玻璃，棍棒，锤子\" ",
+    "DJ2357": "Babylonian  Gold  Relief  Lance - 巴比伦的，金，浮雕，长矛\" ",
+    "DJ2358": "Primordial  Cloth  Flesh  Gold  Curse - 始徒，布料，血肉，金，诅咒\" ",
+    "DJ2359": "Primordial  Flesh  Gold  Harp  Curse - 始徒，血肉，金，竖琴，诅咒\" ",
+    "DJ2360": "Primorial  Bone  Flesh  Gold  Curse  Lance - 始徒，骨头，血肉，金，诅咒，长矛\" ",
+    "DJ2361": "Sword  Accursed  Wish  Primordial  Djinn - 剑，被诅咒的，愿望，始徒，迪精\" ",
+    "DJ2362": "Cloak  Wish  Primordial  Djinn  Divine - 斗篷，愿望，始徒，迪精，神圣\" ",
+    "DJ2363": "Bow  Pistol  Argotech  Djinn  Wish  Curse - 弓，手枪，阿尔戈科技，迪精，愿望，诅咒\" ",
+    "DJ2364": "Moirai  Ambrosia  Primordial  Flesh  Sword - 摩伊赖，神浆，始徒，血肉，剑\" ",
+    "DJ2365": "Moirai  Ambrosia  Primordial  Flesh  Mask - 摩伊赖，神浆，始徒，血肉，面具\" ",
+    "DJ2366": "Moirai  Ambrosia  Primordial  Flesh  Axe - 摩伊赖，神浆，始徒，血肉，斧头\" ",
+    "DJ2367": "Gold  Cloak  Primordial  Curse - 金，斗篷，始徒，诅咒\" ",
+    "DJ2368": "Stone  Exosuit  Primordial  Curse  Ambrosia - 石头，外骨骼，始徒，诅咒，神浆\" ",
+    "DJ2369": "Sword  Club  Primordial  Curse  Ambrosia - 剑，棍棒，始徒，诅咒，神浆\" ",
+    "DJ2370": "Primordial  Cloth  Flesh  Gold  Curse - 始徒，布料，血肉，金，诅咒\" ",
+    "DJ2371": "Primordial  Bone  Flesh  Gold  Curse  Lance - 始徒，骨头，血肉，金，诅咒，长矛\" ",
+    "DJ2372": "Sword  Accursed  Wish  Primordial  Djinn - 剑，被诅咒的，愿望，始徒，迪精\" ",
+    "DJ2373": "Exosuit  Primordial  Wish  Flesh  Curse - 外骨骼，始徒，愿望，血肉，诅咒\" ",
+    "DJ2374": "Cloak  Ambrosia  Primordial  Irem - 斗篷，神浆，始徒，伊雷姆\" ",
+    "DJ2375": "Bronze  Immortal  Primordial  Empire - 青铜，不朽的，始徒，帝国的\" ",
+    "DJ2376": "Cestus  Immortal  Wish  Djinn - 拳套，不朽的，愿望，迪精\" ",
+    "DJ2377": "Argotech  Augment  Primordial  Moirai - 阿尔戈科技，增幅，始徒，摩伊赖\" ",
+    "DJ2378": "Sword  Will  Primordial  Djinn - 剑，意志，始徒，迪精\" ",
+    "DJ2379": "Club  Hammer  Accursed  Wish  Primordial  Djinn - 棍棒，锤子，被诅咒的，愿望，始徒，迪精\" ",
+    "DJ2380": "Sword  Babylonian  Moirai  Gold - 剑，巴比伦的，摩伊赖，金\" ",
+    "DJ2381": "Slabsword  Rod  Relief  Babylonian  Dead - 板剑，杖，浮雕，巴比伦的，死的\" ",
+    "DJ2382": "Bow  Pistol  Fire  Flesh  Divine  Sun - 弓，手枪，火，血肉，神圣，太阳\" ",
+    "DJ2383": "Divine  Light  Heart  Flesh  Metal - 神圣，光，心，血肉，金属\" ",
+    "DJ2384": "Divine  Taint  Flesh - 神圣，污秽，血肉\" ",
+    "DJ2385": "Flesh  Primordial  Gold  Flammable  Windcurse  Bomb - 血肉，始徒，金，易燃，风诅咒，炸弹\" ",
+    "DJ2386": "Sword  Wood  Tree  Life  Elder  Gaia - 剑，木材，树，生命，古老的，盖亚\" ",
+    "EJ2795": "Sword  Ambrosia  Liquid  Babelian - 剑，神浆，液体，巴比伦的\" ",
+    "EJ2797": "Club  Stone  Bone  Primordial  Babelian - 棍棒，石头，骨头，始徒，巴比伦的\" ",
+    "EJ2799": "Whip  Liquid  Ambrosia  Primordial  Babelian - 鞭子，液体，神浆，始徒，巴比伦的\" ",
+    "EJ2801": "Blade  Metal  Stone  Selenian  Ambrosia - 刀刃，金属，石头，塞勒涅的，神浆\" ",
+    "EJ2803": "Spear  Hammer  Stone  Babelian - 矛，锤子，石头，巴比伦的\" ",
+    "EJ2806": "Bow  Liquid  Ambrosia  Babelian - 弓，液体，神浆，巴比伦的\" ",
+    "EJ2807": "Harpoon  Bone  Primordial  Babelian - 鱼叉，骨头，始徒，巴比伦的\" ",
+    "EJ2809": "Throwing Knife  Stone  Primordial  Babelian  Selenian - 飞刀，石头，始徒，巴比伦的，塞勒涅的\" ",
+    "EJ2811": "Blackburned  Ambrosia - 烧焦的，神浆\" ",
+    "EJ2815": "Armor  Ambrosia  Selenian  Liquid  Alive  Flammable - 盔甲，神浆，塞勒涅的，液体，活的，易燃\" ",
+    "EJ2817": "Armor  Stone  Primordial  Babelian - 盔甲，石头，始徒，巴比伦的\" ",
+    "EJ2819": "Shield  Stone  Primordial  Babelian - 盾牌，石头，始徒，巴比伦的\" ",
+    "EJ2821": "Primordial  Selenian  Babelian  Stone - 始徒，塞勒涅的，巴比伦的，石头\" ",
+    "EJ2823": "Primordial  Astral  Babelian  Stone - 始徒，星界的，巴比伦的，石头\" ",
+    "EJ2825": "Augment  Metal  Argotech - 增幅，金属，阿尔戈科技\" ",
+    "EJ2827": "Air  Argotech  Skin  Primordial  Flammable - 空气，阿尔戈科技，皮肤，始徒，易燃\" ",
+    "EJ2829": "Argotech  Skin  Ambrosia - 阿尔戈科技，皮肤，神浆\" ",
+    "EJ2831": "Argotech  Stone  Babelian  Alive - 阿尔戈科技，石头，巴比伦的，活的\" ",
+    "EJ2833": "Bone  Carapace  Shield - 骨头，甲壳，盾牌\" ",
+    "EJ2835": "Ambrosia  Liquid  Babelian  Axe - 神浆，液体，巴比伦的，斧头\" ",
+    "EJ2837": "Knife  Reclaimed  Atlantean  Telchines - 刀刃，回收的，亚特兰蒂斯的，特耳奇内斯人\" ",
+    "EJ2838": "Argotech  Metal  Harpoon  Stone - 阿尔戈科技，金属，鱼叉，石头\" ",
+    "EJ2840": "Augment  Metal  Argotech - 增幅，金属，阿尔戈科技\" ",
+    "EJ2842": "Fire  Beacon  Argotech  Skin - 火，信标，阿尔戈科技，皮肤\" ",
+    "EJ2844": "Argotech  Torch  Metal  Fire  Flammable - 阿尔戈科技，火把，金属，火，易燃\" ",
+    "EJ2846": "Metal  Phos  Reclaimed  Suit  Atlantean - 金属，光，回收的，套装，亚特兰蒂斯的\" ",
+    "EJ2848": "Metal  Orichalcum  Reclaimed  Suit  Atlantean - 金属，山铜，回收的，套装，亚特兰蒂斯的\" ",
+    "EJ2850": "Shield  Glass  Reclaimed  Atlantean - 盾牌，玻璃，回收的，亚特兰蒂斯的\" ",
+    "EJ2852": "Metal  Rope  Chain  Argotech - 金属，绳索，链条，阿尔戈科技\" ",
+    "EJ2854": "Metal  Helm  Argotech  Primordial - 金属，头盔，阿尔戈科技，始徒\" ",
+    "EJ2856": "Helm  Argotech  Augment - 头盔，阿尔戈科技，增幅\" ",
+    "EJ2858": "Flammable  Argotech  Augment  Apparatus - 易燃的，阿尔戈科技，增幅，装置\" ",
+    "EJ2860": "Argotech  Augment  Lamp - 阿尔戈科技，增幅，灯\" ",
+    "EJ2862": "Argotech  Aether  Primordial - 阿尔戈科技，以太，始徒\" ",
+    "EJ2864": "Argotech  Aether  Primordial  Ambrosia - 阿尔戈科技，以太，始徒，神浆\" ",
+    "EJ2866": "Air  Skin  Egg  Primordial - 空气，皮肤，蛋，始徒\" ",
+    "EJ2868": "Argotech  Reverse-Engineered  Sword - 阿尔戈科技，反向工程的，剑\" ",
+    "EJ2870": "Argotech  Reverse-Engineered  Knife  Pain - 阿尔戈科技，反向工程的，刀刃，痛苦\" ",
+    "EJ2872": "Argotech  Reverse-Engineered  Cloth - 阿尔戈科技，反向工程的，布料\" ",
+    "EJ2874": "Argotech  Reverse-Engineered  Augment - 阿尔戈科技，反向工程的，增幅\" ",
+    "EJ2876": "Sword  Orichalcum  Atlantean - 剑，山铜，亚特兰蒂斯的\" ",
+    "EJ2878": "Spear  Orichalcum  Atlantean - 矛，山铜，亚特兰蒂斯的\" ",
+    "EJ2880": "Shield  Phos  Orichalcum  Atlantean - 盾牌，光，山铜，亚特兰蒂斯的\" ",
+    "EJ2882": "Harpoon  Orichalcum  Atlantean - 鱼叉，山铜，亚特兰蒂斯的\" ",
+    "EJ2884": "Light  Primordial  Orichalcum  Stone  Telchines - 光，始徒，山铜，石头，特耳奇内斯人\" ",
+    "EJ2886": "Camo  Stone  Ambrosia  Smoke - 伪装，石头，神浆，烟雾\" ",
+    "EJ2888": "Flesh  Primordial  Stone - 血肉，始徒，石头\" ",
+    "EJ2890": "Flesh  Primordial  Argotech  Apparatus - 血肉，始徒，阿尔戈科技，装置\" ",
+    "EJ2892": "Tekne  Augment  Orichalcum  Atlantean - 科技，增幅，山铜，亚特兰蒂斯的\" ",
+    "EJ2894": "Tekne  Argotech  Orichalcum  Atlantean - 科技，阿尔戈科技，山铜，亚特兰蒂斯的\" ",
+    "EJ2896": "Tekne  Argotech  Orichalcum  Atlantean  Helmet - 科技，阿尔戈科技，山铜，亚特兰蒂斯的，头盔\" ",
+    "EJ2898": "Tekne  Augment  Orichalcum  Atlantean  Paracausal - 科技，增幅，山铜，亚特兰蒂斯的，超因果的\" ",
+    "EJ2900": "Flesh  Primordial  Orichalcum  Suit - 血肉，始徒，山铜，套装\" ",
+    "EJ2902": "Flesh  Primordial  Orichalcum  Argotech  Suit - 血肉，始徒，山铜，阿尔戈科技，套装\" ",
+    "EJ2904": "Argotech  Augment - 阿尔戈科技，增幅\" ",
+    "EJ2906": "Light  Argotech  Orichalcum  Primordial - 光，阿尔戈科技，山铜，始徒\" ",
+    "EJ2908": "Kusarigama  Rope  Areté  Moirai  Metal - 链镰，绳索，阿瑞特，摩伊赖，金属\" ",
+    "EJ2910": "Wreath  Areté  Moirai  Bone - 花环，阿瑞特，摩伊赖，骨头\" ",
+    "EJ2912": "Whip  Areté  Moirai  Metal - 鞭子，阿瑞特，摩伊赖，金属\" ",
+    "EJ2914": "Knife  Iron  Metal  Divine - 刀刃，铁，金属，神圣\" ",
+    "EJ2916": "Cloth  Atlantean  Divine  Metal - 布料，亚特兰蒂斯的，神圣，金属\" ",
+    "EJ2918": "Primordial  Bone  Flesh  Divine  Lance - 始徒，骨头，血肉，神圣，长矛\" ",
+    "EJ2920": "Mythic  Divine  Elder  Glass - 神话，神圣，古老的，玻璃\" ",
+    "EJ2922": "Cestus  Metal  Elder - 拳套，金属，古老的\" ",
+    "EJ2924": "Primordial  Mythic  Divine  Elder  Glass  Harpoon - 始徒，神话，神圣，古老的，玻璃，鱼叉\" ",
+    "EJ2926": "Siren  Orichalcum  Quicksilver  Club - 塞壬，山铜，水银，棍棒\" ",
+    "EJ2928": "Bow  Liquid  Siren  Quicksilver - 弓，液体，塞壬，水银\" ",
+    "EJ2930": "Knife  Liquid  Siren  Quicksilver - 刀刃，液体，塞壬，水银\" ",
+    "EJ2932": "Siren  Primordial  Khopesh  Atlantean  Bone - 塞壬，始徒，弯刀，亚特兰蒂斯的，骨头\" ",
+    "EJ2934": "Kusarigama  Rope  Primordial  Atlantean  Argotech  Metal - 链镰，绳索，始徒，亚特兰蒂斯的，阿尔戈科技，金属\" ",
+    "EJ2936": "Harpoon  Primordial  Atlantean  Argotech  Metal - 鱼叉，始徒，亚特兰蒂斯的，阿尔戈科技，金属\" ",
+    "EJ2938": "Siren  Quicksilver  Primordial - 塞壬，水银，始徒\" ",
+    "EJ2940": "Siren  Quicksilver  Primordial - 塞壬，水银，始徒\" ",
+    "EJ2942": "Siren  Quicksilver  Primordial  Shell - 塞壬，水银，始徒，贝壳\" ",
+    "EJ2944": "Eldertech  Gaia  Augment - 远古科技，盖亚，增幅\" ",
+    "EJ2946": "Bow  Pistol  Argotech  Fire  Primordial  Flesh - 弓，手枪，阿尔戈科技，火，始徒，血肉\" ",
+    "EJ2948": "Slabsword  Fire  Primordial  Flesh - 板剑，火，始徒，血肉\" ",
+    "EJ2950": "Shield  Fire  Primordial  Flesh  Stone - 盾牌，火，始徒，血肉，石头\" ",
+    "EJ2952": "Pistol  Fire  Primordial  Argotech  Apparatus - 手枪，火，始徒，阿尔戈科技，装置\" ",
+    "EJ2954": "Siren  Primordial  Shell - 塞壬，始徒，贝壳\" ",
+    "EJ2956": "Siren  Primordial  Flesh  Robes - 塞壬，始徒，血肉，长袍\" ",
+    "EJ2958": "Argotech  Augment  Cryptex  Siren - 阿尔戈科技，增幅，密码箱，塞壬\" ",
+    "EJ2959": "Primordial  Astral  Alive  Virus - 始徒，星界的，活的，病毒\" ",
+    "EJ2961": "Argotech  Augment  Cryptex  Pandoran - 阿尔戈科技，增幅，密码箱，潘多拉的\" ",
+    "EJ2962": "Sword  Atlantean  Areté  Pain  Elder - 剑，亚特兰蒂斯的，阿瑞特，痛苦，古老的\" ",
+    "EJ2963": "Spear  Ship  Metal  Hepheastum - 矛，船，金属，赫菲斯托斯的\" ",
+    "EJ2964": "Atlantean  Orichalcum  Relief  Hammer - 亚特兰蒂斯的，山铜，浮雕，锤子\" ",
+    "EJ2965": "Mortal  Mythical  Hepheastum  Orichalcum  Alloy - 凡人，神话，赫菲斯托斯的，山铜，合金\" ",
+    "EJ2966": "Primordial  Chitin  Flesh  Claw  Cestus - 始徒，几丁质，血肉，爪子，拳套\" ",
+    "EJ2967": "Primordial  Flesh  Whip  Selenian - 始徒，血肉，鞭子，塞勒涅的\" ",
+    "EJ2968": "Primordial  Flesh  Mask - 始徒，血肉，面具\" ",
+    "EJ2969": "Primordial  Flesh  Selenian  Argotech - 始徒，血肉，塞勒涅的，阿尔戈科技\" ",
+    "EJ2970": "Primordial  Flesh  Cloth  Cloak  Void - 始徒，血肉，布料，斗篷，虚无\" ",
+    "EJ2791": "Primordial  Flesh  Fire  Stone  Shield - 始徒，血肉，火，石头，盾牌\" ",
+    "EJ2972": "Argotech  Atlantean  Aether  Blade  Hephaestum - 阿尔戈科技，亚特兰蒂斯的，以太，刀刃，赫菲斯托斯的\" ",
+    "EJ2973": "Argotech  Atlantean  Aether  Hephaestum - 阿尔戈科技，亚特兰蒂斯的，以太，赫菲斯托斯的\" ",
+    "EJ2974": "Argotech  Atlantean  Aether  Augment  Helm - 阿尔戈科技，亚特兰蒂斯的，以太，增幅，头盔\" ",
+    "EJ2975": "Mnestis  Aether  Ceramic  Imaginary - 记忆，以太，陶瓷，虚构的\" ",
+    "EJ2976": "Mnestis  Aether  Imaginary  Sword  Vorpal - 记忆，以太，虚构的，剑，无坚不摧的\" ",
+    "EJ2977": "Primordial  Ambrosia  Olympian - 始徒，神浆，奥林匹斯的\" ",
+    "EJ2978": "Primordial  Flesh  Mask  Selenian - 始徒，血肉，面具，塞勒涅的\" ",
+    "EJ2979": "Primordial  Flesh  Whip  Sword  Selenian - 始徒，血肉，鞭子，剑，塞勒涅的\" ",
+    "EJ2980": "Primordial  Flesh  Selenian  Argotech  Lance - 始徒，血肉，塞勒涅的，阿尔戈科技，长矛\" ",
+    "EJ2981": "Primordial  Ambrosia  Olympian  Mortal - 始徒，神浆，奥林匹斯的，凡人的\" ",
+    "EJ2982": "Hermes  Argotech  Metal - 赫尔墨斯的，阿尔戈科技，金属\" ",
+    "EJ2984": "Atlantean  Nemesistech  Aether  Hephaestum - 亚特兰蒂斯的，复仇女神科技，以太，赫菲斯托斯的\" ",
+    "EJ2986": "Atlantean  Nemesistech  Aether  Hephaestum  Knife - 亚特兰蒂斯的，复仇女神科技，以太，赫菲斯托斯的，刀刃\" ",
+    "EJ2988": "Atlantean  Nemesistech  Hephaestum  Helm  Augment - 亚特兰蒂斯的，复仇女神科技，赫菲斯托斯的，头盔，增幅\" ",
+    "EJ2990": "Primordial  Flesh  Selenian  Argotech  Void - 始徒，血肉，塞勒涅的，阿尔戈科技，虚无\" ",
+    "EJ2991": "Spear  Primordial  Olympian  Flesh  Alive - 矛，始徒，奥林匹斯的，血肉，活的\" ",
+    "EJ2992": "Augment  Cryptex  Typhonic  Divine  Eldertech - 增幅，密码箱，台风的，神圣，远古科技\" ",
+    "EJ2993": "Argotech  Augment  Cryptex  Typhonic - 阿尔戈科技，增幅，密码箱，台风的\" ",
+    "EJ2994": "Harpoon  Orichalcum  Atlantean - 鱼叉，山铜，亚特兰蒂斯的\" ",
+    "EJ2534": "Divine  Nemesistech  Argotech  Hephaestum  Helmet - 神圣，复仇女神科技，阿尔戈科技，赫菲斯托斯的，头盔\" ",
+    "EJ2995": "Dog  Labyrinth  Pug  Cherished Companion - 狗，迷宫，巴哥犬，珍爱的伙伴\" ",
+    "EJ2391": "Sword  Fire  Argotech  Metal  Symmachy  Rhodian - 剑，火，阿尔戈科技，金属，同盟，罗得岛的\" "
+  },
+  "techCardNames": {
+    "AA0001": "Last Tome 最后的全书 ",
+    "AA0002": "Primordial Dawn 始徒黎明 ",
+    "AA0003": "Trireme Armor 三列桨战船盔甲 ",
+    "AA0004": "Siren Armor 塞壬盔甲 ",
+    "AA0005": "Smelted Gear 熔炼装备 ",
+    "AA0006": "Basic Support Equipment 基础支援装备 ",
+    "AA0007": "Advanced Support Equipment 高级支援装备 ",
+    "AA0008": "Trireme Weapons 三列桨战船武器 ",
+    "AA0009": "Advanced Trireme Weapons 高级三列桨战船武器 ",
+    "AA0010": "Specialized Trireme Weapons 特化三列桨战船武器 ",
+    "AA0011": "Trireme Ranged Weapons 三列桨战船远程武器 ",
+    "AA0012": "Trireme Reach Weapons 三列桨战船延伸武器 ",
+    "AA0013": "Hekaton Sighting 百臂巨人目击 ",
+    "AA0014": "Hekaton Autopsy 百臂巨人解剖 ",
+    "AA0015": "Hekaton Live Study 百臂巨人活体研究 ",
+    "AA0016": "Labyrinthauros Sighting 迷宫机牛目击 ",
+    "AA0017": "Labyrinthauros Autopsy 迷宫机牛解剖 ",
+    "AA0018": "Labyrinthauros Live Study 迷宫机牛活体研究 ",
+    "AA0019": "Temenos Sighting 吞域兽目击 ",
+    "AA0020": "Pursuer Sighting 追踪者目击 ",
+    "AA0021": "Antikratos Project 抗力制御计划 ",
+    "AA0022": "Forced Kratos Reaction 强制抗力反应 ",
+    "AA0023": "Teleresuscitation 远程复苏 ",
+    "AA0024": "Fate Sink 命运退却 ",
+    "AA0025": "Arrow Barrage 箭雨齐射 ",
+    "AA0026": "Crisis Protocol 危机规程 ",
+    "AA0027": "Pursuer Protocol 追踪者规程 ",
+    "AA0028": "Argo Works 阿尔戈工程 ",
+    "AA0029": "Titanogenesis 泰坦起源 ",
+    "AA0030": "Trading Solutions 贸易方案 ",
+    "AA0031": "Intelligence Gathering 情报收集 ",
+    "AA0032": "Shallows Navigation 浅滩航行 ",
+    "AA0033": "Rhetoric 雄辩术 ",
+    "AA0034": "Diplomatic Relations 外交关系 ",
+    "AA0035": "Pursuer Problem 追踪者难题 ",
+    "AA0036": "Peace 和平 ",
+    "AA0037": "Anti-indoctrination Philosophy 反洗脑哲学 ",
+    "AA0038": "Hope Logic 希望逻辑 ",
+    "AA0039": "Argo Onboarding 阿尔戈号上手 ",
+    "AA0040": "Deeply Embedded Spies 深度潜伏间谍 ",
+    "AA0041": "Excursion Propylon II 出击山门II ",
+    "AA0042": "Mnestis Thesis 记忆论 ",
+    "AA0043": "Minoan Investigations 米诺斯人调查 ",
+    "AA0044": "Titan Hunting 泰坦狩猎 ",
+    "AA0045": "Titan Rearing 泰坦培育 ",
+    "AA0046": "Archeolinguistics 考古语言学 ",
+    "AA0047": "Advanced Trading Solutions 高级贸易方案 ",
+    "AA0048": "Crew Expansion 船员扩张 ",
+    "AA0049": "Advanced Crew Expansion 高级船员扩张 ",
+    "AA0050": "Superior Trading Solutions 超级贸易方案 ",
+    "AA0051": "Spark of the Dead Gods 死神的火花 ",
+    "AA0052": "Strange Alliance 奇异同盟 ",
+    "BA0982": "Forgotten Knowledge 遗忘的知识 ",
+    "BA0983": "Argo’s Mission 阿尔戈号的使命 ",
+    "BA0984": "Temenos Armor 吞域兽盔甲 ",
+    "BA0985": "Temenos Weapons 吞域兽武器 ",
+    "BA0986": "Lakonian Support Equipment 拉科尼亚支援装备 ",
+    "BA0987": "Temenos Advanced Gear 吞域兽高级装备 ",
+    "BA0988": "Temenos Support Equipment 吞域兽支援装备 ",
+    "BA0989": "Relief Gear 浮雕装备 ",
+    "BA0990": "Metal Weapons 金属武器 ",
+    "BA0991": "Experimental Gear 实验性装备 ",
+    "BA0992": "Spartan Weapons 斯巴达武器 ",
+    "BA0993": "Spartan Advanced Weapons 斯巴达高级武器 ",
+    "BA0994": "War Support Equipment 战争支援装备 ",
+    "BA0995": "Cyclopean Gear 独眼巨人装备 ",
+    "BA0996": "Cyclopean Advanced Gear 独眼巨人高级装备 ",
+    "BA0997": "Cyclonus Sighting 独眼巨人目击 ",
+    "BA0998": "Cyclonus Autopsy 独眼巨人解剖 ",
+    "BA0999": "Cyclonus Live Study 独眼巨人活体研究 ",
+    "BA1000": "Chimera Metastasios Sighting 蠕变奇美拉目击 ",
+    "BA1001": "Chimera Metastasios Autopsy 蠕变奇美拉解剖 ",
+    "BA1002": "Chimera Metastasios Live Study 蠕变奇美拉活体研究 ",
+    "BA1003": "Nietzschean Sighting 尼采超人目击 ",
+    "BA1004": "Nietzschean Meeting Study 尼采超人会面研究 ",
+    "BA1005": "Bronze Lair 青铜巢穴 ",
+    "BA1006": "Burden Sighting 重担目击 ",
+    "BA1007": "Temenos Project 吞域兽计划 ",
+    "BA1008": "Trireme Ballista Fire 三列桨战船弩炮射击 ",
+    "BA1009": "Triskelion Power Boost 三幅节力量提升 ",
+    "BA1010": "Forced Kratos Cooldown 强制抗力冷却 ",
+    "BA1011": "Reflex Priming 反射预备 ",
+    "BA1012": "13th Muse Grand Cannon 第十三缪斯巨炮 ",
+    "BA1013": "Transport Trireme 运输三列桨战船 ",
+    "BA1014": "Ambrosia Containment 神浆收容 ",
+    "BA1015": "Hephaestan Oxybeles 赫菲斯托斯毒蛇 ",
+    "BA1016": "Hyperadrenaline Infusion 超肾上腺素注入 ",
+    "BA1017": "Pursuer Order 追踪者指令 ",
+    "BA1018": "Rendezvous Trireme 会合三列桨战船 ",
+    "BA1019": "Argo Works II 阿尔戈工程II ",
+    "BA1020": "Titanomorphosis 泰坦变形 ",
+    "BA1021": "Mnestis Theater 记忆剧场 ",
+    "BA1022": "Nymph Studies 宁芙研究 ",
+    "BA1023": "Political Protection 政治庇护 ",
+    "BA1024": "Refugee Relief Effort 难民救济工作 ",
+    "BA1025": "Recruitment Programs 招募计划 ",
+    "BA1026": "Refugee Integration 难民融合 ",
+    "BA1027": "Spartan Investigations 斯巴达调查 ",
+    "BA1028": "Theseus Method 忒修斯方法 ",
+    "BA1029": "Grassroot Support 基层支援 ",
+    "BA1030": "Mobile Trade Fleet Dock 移动贸易舰队码头 ",
+    "BA1031": "Alliance Contacts 同盟联络 ",
+    "BA1032": "Mobile Trade Fleet Hub 移动贸易舰队枢纽 ",
+    "BA1033": "Canal Reconnaissance 运河侦察 ",
+    "BA1034": "Upstream Navigation 上游航行 ",
+    "BA1035": "Sluice Gate System Integration 水闸系统整合 ",
+    "BA1036": "Argo Security 阿尔戈号安保 ",
+    "BA1037": "War Recruitment 战争招募 ",
+    "BA1038": "War Propylon 战争山门 ",
+    "BA1039": "Wartime Protocols 战时规程 ",
+    "BA1040": "Argo Maintenance 阿尔戈号维护 ",
+    "BA1041": "Titan Breeding 泰坦培育 ",
+    "BA1042": "Grand Stoa 大柱廊 ",
+    "BA1043": "Titan Training 泰坦训练 ",
+    "BA1044": "Old Transportation System 旧运输系统 ",
+    "BA1045": "Counterintelligence 反情报 ",
+    "BA1046": "Trauma Growth 创伤成长 ",
+    "BA1047": "Ambrosia Spill Solution 神浆泄漏结算方案 ",
+    "CA1568": "First Tome 第一古籍 ",
+    "CA1569": "Argo’s Destiny 阿尔戈号的命运 ",
+    "CA1570": "Nietzschean Weapons 尼采超人武器 ",
+    "CA1571": "Nietzschean Reach Weapons 尼采超人延伸武器 ",
+    "CA1572": "Nietzschean Armor 尼采超人盔甲 ",
+    "CA1573": "Temporal Support Equipment 时间支援装备 ",
+    "CA1574": "Delphian Siren Armor 德尔菲塞壬盔甲 ",
+    "CA1575": "Delphian Siren Weapons 德尔菲塞壬武器 ",
+    "CA1576": "Advanced Transforming Weapons 高级变形武器 ",
+    "CA1577": "Atemporal Support Equipment 无时间支援装备 ",
+    "CA1578": "Black Ice Armor 黑冰盔甲 ",
+    "CA1579": "Argoline Transforming Weapons 阿尔戈线变形武器 ",
+    "CA1580": "Cryptex Technology 密码箱科技 ",
+    "CA1581": "Helios Fanatics Equipment 赫利俄斯狂信徒装备 ",
+    "CA1582": "Helios Fanatics Light Weapons 赫利俄斯狂信徒轻型武器 ",
+    "CA1583": "Apostate Armor 背教者盔甲 ",
+    "CA1584": "Apostate Weapons 背教者武器 ",
+    "CA1585": "Hypertime Oracle Sighting 超时光先知目击 ",
+    "CA1586": "Hypertime Oracle Autopsy 超时光先知解剖 ",
+    "CA1587": "Hypertime Oracle Live Study 超时光先知活体研究 ",
+    "CA1588": "Icarian Harpy Sighting 伊卡洛斯哈尔皮目击 ",
+    "CA1589": "Icarian Harpy Autopsy 伊卡洛斯哈尔皮解剖 ",
+    "CA1590": "Icarian Harpy Live Study 伊卡洛斯哈尔皮活体研究 ",
+    "CA1591": "Sun Descendant Sighting 坠落太阳目击 ",
+    "CA1592": "Sun Descendant Partial Autopsy 坠落太阳部分解剖 ",
+    "CA1593": "Sun Descendant Live Study 坠落太阳活体研究 ",
+    "CA1594": "Monomythological Support 单一神话支援 ",
+    "CA1595": "Burden Autopsy 重担解剖 ",
+    "CA1596": "Abyss Expedition 深渊探险 ",
+    "CA1597": "Fate Converter 命运转换器 ",
+    "CA1598": "Reverse Timeflow 逆转时间流 ",
+    "CA1599": "Possibility Matrix 可能性矩阵 ",
+    "CA1600": "Telehealing 远程治疗 ",
+    "CA1601": "Transient Death 短暂的死亡 ",
+    "CA1602": "Quantum Armory 量子军械库 ",
+    "CA1603": "Opportunity Freeze 机会冻结 ",
+    "CA1604": "Chronosphere Warning System 时间圈预警系统 ",
+    "CA1605": "Time Skip 时间跳跃 ",
+    "CA1606": "Time Dilation 时间膨胀 ",
+    "CA1607": "Argo Works III 阿尔戈工程III ",
+    "CA1608": "Titanoaristia 泰坦竞技 ",
+    "CA1609": "Surviving the Loop 轮回生存 ",
+    "CA1610": "Chronosail 时间之帆 ",
+    "CA1611": "Trespass Protocol 破限规程 ",
+    "CA1612": "Icebreaker Protocol 破冰规程 ",
+    "CA1613": "Time Wounds 时间创伤 ",
+    "CA1614": "Time Solutions 时间结算方案 ",
+    "CA1615": "Advanced Time Solutions 高级时间结算方案 ",
+    "CA1616": "Temporal Aegis 时间神盾 ",
+    "CA1617": "Stasis Theory 静止理论 ",
+    "CA1618": "Moirai Operation 摩伊赖行动 ",
+    "CA1619": "Extinction Contingency 灭绝应急预案 ",
+    "CA1620": "Argo Timeline Security 阿尔戈号时间线安全 ",
+    "CA1621": "Extinction Protocols 灭绝规程 ",
+    "CA1622": "Delphian Diplomatic Relations 德尔菲外交关系 ",
+    "CA1623": "Chronopolitics 时间政治 ",
+    "CA1624": "Delphian Investigations 德尔菲调查 ",
+    "CA1625": "Ultimate Trading Solutions 终极贸易方案 ",
+    "CA1626": "Intelligence Gathering 情报收集 ",
+    "CA1627": "Delphi Peoples’ Support 德尔菲人民支援 ",
+    "CA1628": "Advanced Titan Breeding 高级泰坦培育 ",
+    "CA1629": "Titan Care 泰坦护理 ",
+    "CA1630": "Titan Genetic Memory 泰坦基因记忆 ",
+    "CA1631": "Sun Shielding 太阳防护 ",
+    "CA1632": "Quantum Propylon 量子山门 ",
+    "CA1633": "Awakening Studies 觉醒研究 ",
+    "CA1634": "Adyton Completion 至圣所完成 ",
+    "DA2160": "Argo Academy 阿尔戈学院 ",
+    "DA2161": "Argo’s Curse 阿尔戈号的诅咒 ",
+    "DA2162": "Cinder Weapons 余烬武器 ",
+    "DA2163": "Cinder Ranged Weapons 余烬远程武器 ",
+    "DA2164": "Cinder Armor 余烬盔甲 ",
+    "DA2165": "Cinder Support 余烬支援 ",
+    "DA2166": "Imperial Deprived Armorer 帝国贫困军械师 ",
+    "DA2167": "Imperial Deprived Outfitter 帝国贫困装备师 ",
+    "DA2168": "Imperial Deprived Stockpile 帝国贫困储备 ",
+    "DA2169": "Old Irem Dig 旧伊雷姆挖掘 ",
+    "DA2170": "Old Irem Excavation 旧伊雷姆挖掘 ",
+    "DA2171": "Old Irem Composite Shop 旧伊雷姆复合商店 ",
+    "DA2172": "Djinn Fundhoard 迪精宝藏 ",
+    "DA2173": "Curse Shapers 诅咒塑造者 ",
+    "DA2174": "Tekne Restorers 科技修复者 ",
+    "DA2175": "Midascore Sighting 迈达狮目击 ",
+    "DA2176": "Midascore Autopsy 迈达狮解剖 ",
+    "DA2177": "Midascore Live Study 迈达狮活体研究 ",
+    "DA2178": "Demidjinn Sighting 半神迪精目击 ",
+    "DA2179": "Demidjinn Autopsy 半神迪精解剖 ",
+    "DA2180": "Demidjinn Live Study 半神迪精活体研究 ",
+    "DA2181": "Babelian Lunacy Sighting 巴比伦疯塔目击 ",
+    "DA2182": "Grassroot Projects 基层项目 ",
+    "DA2183": "Insolvency Bulwark 破产防御 ",
+    "DA2184": "Highrise Projects 高层建筑项目 ",
+    "DA2185": "Dahaka Sighting 达哈卡目击 ",
+    "DA2186": "Dahaka Autopsy 达哈卡解剖 ",
+    "DA2187": "Mortal Mapmakers 凡人地图绘制者 ",
+    "DA2188": "Irem Protocols 伊雷姆规程 ",
+    "DA2189": "Wish Deflector 愿望偏转器 ",
+    "DA2190": "Gold Transmogrifier 黄金变形器 ",
+    "DA2191": "Archimedean Ballista 阿基米德弩炮 ",
+    "DA2192": "Cloud Support Fleet 云层支援舰队 ",
+    "DA2193": "Dahaka Phasing 达哈卡位移 ",
+    "DA2194": "Cloud Scout Fleet 云层侦察舰队 ",
+    "DA2195": "Ascension Protocols 登升规程 ",
+    "DA2196": "Curse Resistor 诅咒抵抗器 ",
+    "DA2197": "Argo Wonders 阿尔戈奇迹 ",
+    "DA2198": "Titanosyntrofia 泰坦共生 ",
+    "DA2199": "Law Mora 法律摩伊赖 ",
+    "DA2200": "Curse Economy Basics 诅咒经济基础 ",
+    "DA2201": "True Value of Life 生命的真正价值 ",
+    "DA2202": "Persian Investigations 波斯调查 ",
+    "DA2203": "Sustainable Oasis 可持续绿洲 ",
+    "DA2204": "Archeohistorians 考古历史学家 ",
+    "DA2205": "Curse Exchange 诅咒交易 ",
+    "DA2206": "Plutocratic Diplomacy 富豪外交 ",
+    "DA2207": "Plutocratic Agents 富豪特工 ",
+    "DA2208": "Imperial Bargain 帝国交易 ",
+    "DA2209": "Imperial Contact 帝国联络 ",
+    "DA2210": "Divine Deals 神圣交易 ",
+    "DA2211": "Sandstorm Navigation 沙暴航行 ",
+    "DA2212": "Sandstorm Sailing 沙暴航海 ",
+    "DA2213": "Odyssey Training 奥德赛训练 ",
+    "DA2214": "Merchants of the Waste 荒原商人 ",
+    "DA2215": "Bankers of the Waste 荒原银行家 ",
+    "DA2216": "Argo Cloud Operations 阿尔戈号云层行动 ",
+    "DA2217": "Superior Titan Breeding 高级泰坦培育 ",
+    "DA2218": "Kiss of Mnemosyne 摩涅莫绪涅之吻 ",
+    "DA2219": "Salvage Operations 打捞行动 ",
+    "DA2220": "The Dreamed Torus 梦境环面 ",
+    "DA2221": "Cryptex Technology 密码箱科技 ",
+    "DA2222": "Monomythological Support 单一神话支援 ",
+    "DA2223": "Ropeseller Theorem 绳索贩子定理 ",
+    "DA2224": "The Work Is Never Done 工作永无止境 ",
+    "EA2722": "Sharing the Knowledge 分享知识 ",
+    "EA2723": "Voyage Home 返航 ",
+    "EA2724": "Babelian Armor 巴比伦盔甲 ",
+    "EA2725": "Babelian Weapons 巴比伦武器 ",
+    "EA2726": "Babelian Ranged Weapons 巴比伦远程武器 ",
+    "EA2727": "Babelian Support 巴比伦支援 ",
+    "EA2728": "Abyss Armor 深渊盔甲 ",
+    "EA2729": "Abyss Weapons 深渊武器 ",
+    "EA2730": "Abyss Support 深渊支援 ",
+    "EA2731": "Vanguard Gear 先锋装备 ",
+    "EA2732": "Cycladean Protectorate 基克拉泽斯保护国 ",
+    "EA2733": "Followers of Areté Gear 阿瑞特追随者装备 ",
+    "EA2734": "Atlantean Armor 亚特兰蒂斯盔甲 ",
+    "EA2735": "Atlantean Weapons 亚特兰蒂斯武器 ",
+    "EA2736": "Atlantean Support 亚特兰蒂斯支援 ",
+    "EA2737": "Dragon of Phobos Sighting 深海惧龙目击 ",
+    "EA2738": "Dragon of Phobos Autopsy 深海惧龙解剖 ",
+    "EA2739": "Dragon of Phobos Live Study 深海惧龙活体研究 ",
+    "EA2740": "Meduketos Sighting 须目刻托斯目击 ",
+    "EA2741": "Meduketos Autopsy 须目刻托斯解剖 ",
+    "EA2742": "Meduketos Live Study 须目刻托斯活体研究 ",
+    "EA2743": "Silvered Weapons 镀银武器 ",
+    "EA2744": "Silvered Armor 镀银盔甲 ",
+    "EA2745": "Silvered Support 镀银支援 ",
+    "EA2746": "Ur-Fleece Sighting 乌尔-弗里斯目击 ",
+    "EA2747": "Titan X Sighting 泰坦X目击 ",
+    "EA2748": "Titan X Investigation 泰坦X调查 ",
+    "EA2749": "The Last Wish 最后的愿望 ",
+    "EA2750": "Calculate Statistical Certainty 计算统计确定性 ",
+    "EA2751": "Kintsukuroi Pharos 金缮法洛斯 ",
+    "EA2752": "Oxygen Tubes 氧气管 ",
+    "EA2753": "Drag It Back! 把它拖回来！ ",
+    "EA2754": "Underwater Support Fleet 水下支援舰队 ",
+    "EA2755": "Flash Backstep 闪回步 ",
+    "EA2756": "Painkiller Shot 止痛射击 ",
+    "EA2757": "Triskelion Override 三幅节重写 ",
+    "EA2758": "Inner Light 内在之光 ",
+    "EA2759": "Anchor Drop Pod 锚点投放舱 ",
+    "EA2760": "Soulbalm 灵魂香膏 ",
+    "EA2761": "The Future of the Argo 阿尔戈号的未来 ",
+    "EA2762": "Shared Fates 共享命运 ",
+    "EA2763": "Argo Crew Rebuilding 阿尔戈号船员重建 ",
+    "EA2764": "Argo Philosophy 阿尔戈号哲学 ",
+    "EA2765": "Argo Initiative 阿尔戈号计划 ",
+    "EA2766": "Atlantean Investigations 亚特兰蒂斯调查 ",
+    "EA2767": "Pattern Deciphering 模式破译 ",
+    "EA2768": "Scientific Debunking 科学驳斥 ",
+    "EA2769": "The Peace Mission 和平使命 ",
+    "EA2770": "Cyclades Intelligence 基克拉泽斯情报 ",
+    "EA2771": "Spiral Theory 螺旋理论 ",
+    "EA2772": "Fresher Start 新的开始 ",
+    "EA2773": "Grassroots Diplomacy 基层外交 ",
+    "EA2774": "Cyclades Commerce 基克拉泽斯商业 ",
+    "EA2775": "Cyclades Information Circulation 基克拉泽斯信息传播 ",
+    "EA2776": "Underwater Scouting 水下侦察 ",
+    "EA2777": "Improved Submergence 改进潜航 ",
+    "EA2778": "Tight-spaces Navigation 狭窄空间航行 ",
+    "EA2779": "Superior Submergence 超级潜航 ",
+    "EA2780": "Moirai Rebellion 摩伊赖叛乱 ",
+    "EA2781": "Phobian Psychology 恐惧心理学 ",
+    "EA2782": "Atlantean Docking Procedures 亚特兰蒂斯对接程序 ",
+    "EA2783": "Mortal Alliance 凡人同盟 ",
+    "EA2784": "Atlantean Maintenance Procedures 亚特兰蒂斯维护程序 ",
+    "EA2785": "Ultimate Titan Breeding 终极泰坦培育 ",
+    "EA2786": "New Oikos 新家园 ",
+    "EA2787": "Gaia’s Stepchildren 盖亚的庶子 ",
+    "EA2788": "Mnestis Training 记忆训练 ",
+    "EA2789": "Cryptex Technology 密码箱科技 ",
+    "EA2790": "Monomythological Support 单一神话支援 "
+  },
+  "techFacilities": {
+    "AA0003": "Trireme Armorsmith 三列桨战船盔甲匠 ",
+    "AA0004": "Siren Armor Sculptor 塞壬盔甲雕刻师 ",
+    "AA0005": "Bronze Smelter 青铜熔炼工 ",
+    "AA0006": "Small Artificery 小型工艺坊 ",
+    "AA0007": "Large Artificery 大型工艺坊 ",
+    "AA0008": "Trireme Weaponsmith 三列桨战船武器匠 ",
+    "AA0009": "Trireme Bone Carver 三列桨战船骨雕刻师 ",
+    "AA0010": "Trireme Weapon Workshop 三列桨战船武器工坊 ",
+    "AA0011": "Trireme Bowyer 三列桨战船制弓师 ",
+    "AA0012": "Trireme Spearatorium 三列桨战船矛兵营 ",
+    "AA0013": "Hekanasium 百臂巨人研究室 ",
+    "AA0014": "Hekarmory 百臂巨人军械库 ",
+    "AA0015": "Centimanes Workshop 多臂巨人工坊 ",
+    "AA0016": "Ropery 绳索工坊 ",
+    "AA0017": "Minoforge 米诺斯熔炉 ",
+    "AA0018": "Mazeworks 迷宫工坊 ",
+    "AA0019": "Crooked Pyramid 歪斜金字塔 ",
+    "AA0020": "Bronze Roost 青铜栖息地 ",
+    "BA0984": "Temenos Sculptor 吞域兽雕刻师 ",
+    "BA0985": "Temenodium 吞域兽工坊 ",
+    "BA0986": "Survivalist 生存专家 ",
+    "BA0987": "Deeper Temenodium 吞域兽深层工坊 ",
+    "BA0988": "Temenaos 吞域兽 ",
+    "BA0989": "Templeyard 神庙庭院 ",
+    "BA0990": "Metalworks 金属工坊 ",
+    "BA0991": "Experimental Division 实验部门 ",
+    "BA0992": "Spartan Workshop 斯巴达工坊 ",
+    "BA0993": "Spartan Armory 斯巴达军械库 ",
+    "BA0994": "War Artificery 战争工艺坊 ",
+    "BA0995": "Cyclopean Sculptor 独眼巨人雕刻师 ",
+    "BA0996": "Cyclopean Forge 独眼巨人熔炉 ",
+    "BA0997": "Cyclotinker 独眼巨人修理工 ",
+    "BA0998": "Armor Crafter 盔甲制造师 ",
+    "BA0999": "Cyclowright 独眼巨人工匠 ",
+    "BA1000": "Small Ambrosia Lab 小型神浆实验室 ",
+    "BA1001": "Chimeric Armorsmith 奇美拉盔甲匠 ",
+    "BA1002": "Chimeric Solutions 奇美拉结算方案中心 ",
+    "BA1004": "Abyss Gate 深渊之门 ",
+    "BA1005": "Sarcophagus 石棺 ",
+    "BA1006": "Spherical Quarry 球形采石场 ",
+    "CA1570": "Blackforge 黑曜熔炉 ",
+    "CA1571": "Abyss Circle 深渊圆环 ",
+    "CA1572": "Skinsculptor 皮肤雕刻师 ",
+    "CA1573": "Temporal Study 时间研究室 ",
+    "CA1574": "Siren Porta 塞壬门户 ",
+    "CA1575": "Siren Agora 塞壬广场 ",
+    "CA1576": "Advanced Projects Division 高级项目部门 ",
+    "CA1577": "Atemporal Study 无时间研究室 ",
+    "CA1578": "Black Ice Excavators 黑冰挖掘队 ",
+    "CA1579": "Argofoundry 阿尔戈铸造厂 ",
+    "CA1580": "Cryptexarium 密码箱档案馆 ",
+    "CA1581": "Helios Halo 赫利俄斯光环 ",
+    "CA1582": "Helios Prostratorios 赫利俄斯祈祷室 ",
+    "CA1583": "Exiles Redoubt 流亡者堡垒 ",
+    "CA1584": "Exiles Elpisos 流亡者希望之光 ",
+    "CA1585": "Paracausal Loom 超因果织机 ",
+    "CA1586": "Feathermill 羽毛磨坊 ",
+    "CA1587": "Prophecy Manufactory 预言制造厂 ",
+    "CA1588": "Glacial Evolutions 冰川进化室 ",
+    "CA1589": "Darwinian Armory 达尔文军械库 ",
+    "CA1590": "Lamarkian Forge 拉马克熔炉 ",
+    "CA1591": "Chronodiving Chamber 时间潜水舱 ",
+    "CA1592": "Extinction Event Armory 灭绝事件军械库 ",
+    "CA1593": "Extinction Event Arsenal 灭绝事件兵工厂 ",
+    "CA1594": "Monomythological Workshop 单一神话工坊 ",
+    "CA1595": "Spherical Strip Mine 球形露天矿 ",
+    "DA2162": "Sundown Crucible 日落熔炉 ",
+    "DA2163": "Seerbreakers 先知破坏者 ",
+    "DA2164": "Eclipse Screen 日蚀屏障 ",
+    "DA2165": "Practical Observatory 实用天文台 ",
+    "DA2166": "Empire Armor 帝国盔甲制造厂 ",
+    "DA2167": "Empire Weapons 帝国武器制造厂 ",
+    "DA2168": "Empire Support 帝国支援中心 ",
+    "DA2169": "Old Irem Armor 旧伊雷姆盔甲制造厂 ",
+    "DA2170": "Old Irem Weapons 旧伊雷姆武器制造厂 ",
+    "DA2171": "Old Irem Support 旧伊雷姆支援中心 ",
+    "DA2172": "Deprived Legacy 贫困遗产 ",
+    "DA2173": "Eternal Empire Spoils 永恒帝国战利品 ",
+    "DA2174": "Babylonian Contraband 巴比伦走私品 ",
+    "DA2175": "Midan Bank 迈达斯银行 ",
+    "DA2176": "Waiversmith 豁免术士 ",
+    "DA2177": "Midashoard 迈达斯宝库 ",
+    "DA2178": "Wish Desalination Plant 愿望淡化工厂 ",
+    "DA2179": "Tornado Centrifuge 龙卷风离心机 ",
+    "DA2180": "Wish Loop Generator 愿望循环发生器 ",
+    "DA2181": "Disillusionment Tank 幻灭之罐 ",
+    "DA2182": "Pandoran Support 潘多拉支援中心 ",
+    "DA2183": "Pandoran Armor 潘多拉盔甲制造厂 ",
+    "DA2184": "Pandoran Weapons 潘多拉武器制造厂 ",
+    "DA2185": "Smokestack Forge 烟囱熔炉 ",
+    "DA2186": "Saltmine 盐矿 ",
+    "DA2221": "Cryptexarium 密码箱档案馆 ",
+    "DA2222": "Monomythological Workshop 单一神话工坊 ",
+    "EA2724": "Root Masons 根基工匠 ",
+    "EA2725": "Tunnelforge 隧道熔炉 ",
+    "EA2726": "Steeplejack Crown 尖塔工匠王冠 ",
+    "EA2727": "Lampwright 灯匠 ",
+    "EA2728": "Umbilical Workshop 脐带工坊 ",
+    "EA2729": "Trench Works 战壕工坊 ",
+    "EA2730": "Bathysphere Research Station 深海球研究站 ",
+    "EA2731": "The Vanguard Reliquary 先锋圣物库 ",
+    "EA2732": "Protectorate Heritage Vault 保护国遗产库 ",
+    "EA2733": "Hoard Of Arete 阿瑞特宝库 ",
+    "EA2734": "Reclaimer Operations 回收行动中心 ",
+    "EA2735": "Atlantean Retrofitters 亚特兰蒂斯改装厂 ",
+    "EA2736": "Reverse-Engineering Atelier 反向工程工作室 ",
+    "EA2737": "Phobosian Starcharters 恐惧星图绘制者 ",
+    "EA2738": "Orrery Of Fear 恐惧天球仪 ",
+    "EA2739": "Tranquility Tank 宁静之罐 ",
+    "EA2740": "Blacksound Stage 黑音舞台 ",
+    "EA2741": "Hyperbaric Oven 高压釜 ",
+    "EA2742": "Microwave Solutions 微波结算方案中心 ",
+    "EA2743": "Silverstring Chorus 银弦合唱团 ",
+    "EA2744": "Non-Euclidean Vault 非欧几里得宝库 ",
+    "EA2745": "Silvered Organ 镀银器官 ",
+    "EA2746": "Mortal Gatehouse 凡人门楼 ",
+    "EA2747": "Crisis War Room 危机作战室 ",
+    "EA2748": "The Lookout 瞭望台 ",
+    "EA2789": "Cryptexarium 密码箱档案馆 ",
+    "EA2790": "Monomythological Workshop 单一神话工坊 "
+  },
+  "techTags": {
+    "AA0001": "reference;progress;timeline 参考；进度；时间表 ",
+    "AA0002": "reference;waterway;timeline;adventure;map 参考；水道；时间表；冒险；地图 ",
+    "AA0003": "support;shield;weapon;gear 支援；盾牌；武器；装备 ",
+    "AA0004": "shield;weapon;armor;gear 盾牌；武器；盔甲；装备 ",
+    "AA0005": "armor;weapon;gear 盔甲；武器；装备 ",
+    "AA0006": "support;gear 支援；装备 ",
+    "AA0007": "support;gear 支援；装备 ",
+    "AA0008": "gear;weapon 装备；武器 ",
+    "AA0009": "gear;weapon 装备；武器 ",
+    "AA0010": "gear;weapon 装备；武器 ",
+    "AA0011": "gear;weapon 装备；武器 ",
+    "AA0012": "gear;weapon 装备；武器 ",
+    "AA0013": "gear;support 装备；支援 ",
+    "AA0014": "titan;gear;shield;weapon;armor 泰坦；装备；盾牌；武器；盔甲 ",
+    "AA0015": "gear;weapon 装备；武器 ",
+    "AA0016": "gear;support 装备；支援 ",
+    "AA0017": "titan;gear;weapon 泰坦；装备；武器 ",
+    "AA0018": "gear;weapon 装备；武器 ",
+    "AA0019": "titan;gear;weapon 泰坦；装备；武器 ",
+    "AA0020": "gear;support;attachment;armor 装备；支援；附件；盔甲 ",
+    "AA0021": "permanent;argo ability 永久；阿尔戈能力 ",
+    "AA0022": "rage 怒气 ",
+    "AA0023": "titan 泰坦 ",
+    "AA0024": "titan 泰坦 ",
+    "AA0025": "kratos pool 协力池 ",
+    "AA0026": "titan 泰坦 ",
+    "AA0027": "reaction;window of oportunity;move 反应；机会窗口；移动 ",
+    "AA0028": "reference 参考 ",
+    "AA0029": "reference;permanent;limit;exploration;titan 参考；永久；限制；探索；泰坦 ",
+    "AA0030": "immediate;negotiation;city;argo fate;exploration 立即；交涉；城市；阿尔戈命运；探索 ",
+    "AA0031": "immediate;exploration 立即；探索 ",
+    "AA0032": "permanent;padlock;waterway 永久；锁闭；水道 ",
+    "AA0033": "save;argo fate;stranger;diplomacy'negotiation;city 豁免；阿尔戈命运；陌生人；外交；交涉；城市 ",
+    "AA0034": "negotiation;city;diplomacy;argo fate 交涉；城市；外交；阿尔戈命运 ",
+    "AA0035": "argo fate;adversary 阿尔戈命运；敌人 ",
+    "AA0036": "immediate;diplomacy 立即；外交 ",
+    "AA0037": "argo fate;diplomacy;affliction;priest 阿尔戈命运；外交；苦痛；祭司 ",
+    "AA0038": "save;argo fate;doom 豁免；阿尔戈命运；灾祸 ",
+    "AA0039": "immediate;hull;permanent;save;argo fate 立即；船体；永久；豁免；阿尔戈命运 ",
+    "AA0040": "argo fate;progress;diplomacy 阿尔戈命运；进度；外交 ",
+    "AA0041": "permanent;argo ability 永久；阿尔戈能力 ",
+    "AA0042": "argo fate 阿尔戈命运 ",
+    "AA0043": "permanent;adventure 永久；冒险 ",
+    "AA0044": "immediate;titan;exploration;argo fate;diplomacy 立即；泰坦；探索；阿尔戈命运；外交 ",
+    "AA0045": "permanent;titan;argo fate 永久；泰坦；阿尔戈命运 ",
+    "AA0046": "permanent;argo fate 永久；阿尔戈命运 ",
+    "AA0047": "permanent;negotiation;city;argo fate 永久；交涉；城市；阿尔戈命运 ",
+    "AA0048": "negotiation;city;argo fate;stranger;crew 交涉；城市；阿尔戈命运；陌生人；船员 ",
+    "AA0049": "save;argo fate;crew;exploration 豁免；阿尔戈命运；船员；探索 ",
+    "AA0050": "argo fate;cooldown 阿尔戈命运；冷却 ",
+    "AA0051": "permanent;awakening;godform;priest;argo fate 永久；觉醒；神化形态；祭司；阿尔戈命运 ",
+    "AA0052": "permanent;nymph;summon;doom;priest;argo fate 永久；宁芙；召唤；灾祸；祭司；阿尔戈命运 ",
+    "BA0982": "reference;secret 参考；秘密 ",
+    "BA0983": "trade;secret 贸易；秘密 ",
+    "BA0984": "gear;weapon;armor;shield 装备；武器；盔甲；盾牌 ",
+    "BA0985": "gear;weapon 装备；武器 ",
+    "BA0986": "gear;support 装备；支援 ",
+    "BA0987": "gear;weapon 装备；武器 ",
+    "BA0988": "gear;support 装备；支援 ",
+    "BA0989": "gear;weapon;armor 装备；武器；盔甲 ",
+    "BA0990": "gear;weapon 装备；武器 "
+  },
+  "techProduction": [
+    {
+      "techId": "AA0003",
+      "cycle": "CYCLE_01",
+      "requires": "AA0021",
+      "leadsTo": "AA0011",
+      "produces": [
+        {
+          "gearId": "AJ0160",
+          "cost": [
+            "3xARMAMENT",
+            "5xRAW_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "AJ0163",
+          "cost": [
+            "2xARMAMENT",
+            "3xRAW_AMBROSIA",
+            "1xMUSCLE_CLUSTER"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "AA0004",
+      "cycle": "CYCLE_01",
+      "requires": "AA0011",
+      "leadsTo": "AA0009;AA0022",
+      "produces": [
+        {
+          "gearId": "AJ0167",
+          "cost": [
+            "5xTRIREME",
+            "1xCALCIFIED_KNUCKLE_BONE"
+          ]
+        },
+        {
+          "gearId": "AJ0165",
+          "cost": [
+            "2xMONUMENT",
+            "2xARMAMENT",
+            "3xRAW_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "AJ0271",
+          "cost": [
+            "5xMONUMENT",
+            "5xRAW_AMBROSIA",
+            "1xANCIENT_SHELL"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "AA0005",
+      "cycle": "CYCLE_01",
+      "requires": "AA0010;AA0007||AA0014",
+      "leadsTo": "AA0018;AA0015",
+      "produces": [
+        {
+          "gearId": "AJ0209",
+          "cost": [
+            "9xMONUMENT",
+            "12xARMAMENT",
+            "5xMUSCLE_CLUSTER",
+            "3xFLESHY_MANTLE"
+          ]
+        },
+        {
+          "gearId": "AJ0211",
+          "cost": [
+            "17xTRIREME",
+            "19xRAW_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "AJ0213",
+          "cost": [
+            "4xTRIREME",
+            "11xMONUMENT",
+            "18xRAW_AMBROSIA"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "AA0006",
+      "cycle": "CYCLE_01",
+      "requires": "AA0025",
+      "leadsTo": "AA0020;AA0010;AA0016",
+      "produces": [
+        {
+          "gearId": "AJ0199",
+          "cost": [
+            "7xTRIREME",
+            "4xRAW_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "AJ0202",
+          "cost": [
+            "2xARMAMENT",
+            "2xINFUSED_MECHANISM"
+          ]
+        },
+        {
+          "gearId": "AJ0204",
+          "cost": [
+            "6xMONUMENT",
+            "1xMUSCLE_CLUSTER"
+          ]
+        },
+        {
+          "gearId": "AJ0206",
+          "cost": [
+            "4xARMAMENT",
+            "1xINFUSED_MECHANISM"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "AA0007",
+      "cycle": "CYCLE_01",
+      "requires": "AA0017",
+      "leadsTo": "AA0018;AA0005",
+      "produces": [
+        {
+          "gearId": "AJ0275",
+          "cost": [
+            "14xMONUMENT",
+            "4xMUSCLE_CLUSTER",
+            "7xINFUSED_MECHANISM"
+          ]
+        },
+        {
+          "gearId": "AJ0231",
+          "cost": [
+            "21xTRIREME",
+            "27xRAW_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "AJ0233",
+          "cost": [
+            "19xTRIREME",
+            "21xRAW_AMBROSIA"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "AA0008",
+      "cycle": "CYCLE_01",
+      "requires": "AA0021",
+      "leadsTo": "AA0011",
+      "produces": [
+        {
+          "gearId": "AJ0171",
+          "cost": [
+            "3xMONUMENT",
+            "1xCALCIFIED_KNUCKLE_BONE"
+          ]
+        },
+        {
+          "gearId": "AJ0175",
+          "cost": [
+            "2xTRIREME",
+            "3xRAW_AMBROSIA",
+            "1xINFUSED_MECHANISM"
+          ]
+        },
+        {
+          "gearId": "AJ0173",
+          "cost": [
+            "4xMONUMENT",
+            "1xFLESHY_MANTLE"
+          ]
+        },
+        {
+          "gearId": "AJ0169",
+          "cost": [
+            "5xTRIREME",
+            "2xMUSCLE_CLUSTER"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "AA0009",
+      "cycle": "CYCLE_01",
+      "requires": "AA0004",
+      "leadsTo": "AA0020;AA0010;AA0013",
+      "produces": [
+        {
+          "gearId": "AJ0181",
+          "cost": [
+            "2xMONUMENT",
+            "2xMUSCLE_CLUSTER",
+            "1xINFUSED_MECHANISM"
+          ]
+        },
+        {
+          "gearId": "AJ0179",
+          "cost": [
+            "3xTRIREME",
+            "2xFLESHY_MANTLE"
+          ]
+        },
+        {
+          "gearId": "AJ0177",
+          "cost": [
+            "3xMONUMENT",
+            "2xCALCIFIED_KNUCKLE_BONE"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "AA0010",
+      "cycle": "CYCLE_01",
+      "requires": "AA0006;AA0009;AA0023||AA0012",
+      "leadsTo": "AA0005;AA0014",
+      "produces": [
+        {
+          "gearId": "AJ0183",
+          "cost": [
+            "11xTRIREME",
+            "5xINFUSED_MECHANISM"
+          ]
+        },
+        {
+          "gearId": "AJ0187",
+          "cost": [
+            "6xARMAMENT",
+            "5xMUSCLE_CLUSTER"
+          ]
+        },
+        {
+          "gearId": "AJ0185",
+          "cost": [
+            "3xARMAMENT",
+            "4xFLESHY_MANTLE"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "AA0011",
+      "cycle": "CYCLE_01",
+      "requires": "AA0008;AA0003",
+      "leadsTo": "AA0025;AA0004",
+      "produces": [
+        {
+          "gearId": "AJ0189",
+          "cost": [
+            "5xTRIREME",
+            "1xFLESHY_MANTLE"
+          ]
+        },
+        {
+          "gearId": "AJ0191",
+          "cost": [
+            "3xTRIREME",
+            "5xRAW_AMBROSIA"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "AA0012",
+      "cycle": "CYCLE_01",
+      "requires": "AA0013",
+      "leadsTo": "AA0024;AA0010;AA0018",
+      "produces": [
+        {
+          "gearId": "AJ0197",
+          "cost": [
+            "8xTRIREME",
+            "10xRAW_AMBROSIA",
+            "1xCALCIFIED_KNUCKLE_BONE"
+          ]
+        },
+        {
+          "gearId": "AJ0195",
+          "cost": [
+            "12xTRIREME",
+            "3xCALCIFIED_KNUCKLE_BONE"
+          ]
+        },
+        {
+          "gearId": "AJ0193",
+          "cost": [
+            "6xMONUMENT",
+            "7xRAW_AMBROSIA"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "AA0013",
+      "cycle": "CYCLE_01",
+      "requires": "BTL:core_hekaton|2;AA0009;AA0022",
+      "leadsTo": "AA0012",
+      "produces": [
+        {
+          "gearId": "AJ0215",
+          "cost": [
+            "9xMONUMENT",
+            "7xRAW_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "AJ0219",
+          "cost": [
+            "7xMONUMENT",
+            "4xCALCIFIED_KNUCKLE_BONE",
+            "1xFEAR_ESSENCE"
+          ]
+        },
+        {
+          "gearId": "AJ0217",
+          "cost": [
+            "5xARMAMENT",
+            "3xMUSCLE_CLUSTER"
+          ]
+        },
+        {
+          "gearId": "AJ0241",
+          "cost": [
+            "10xTRIREME",
+            "7xRAW_AMBROSIA"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "AA0014",
+      "cycle": "CYCLE_01",
+      "requires": "BTL:core_hekaton|3;AA0010;AA0024",
+      "leadsTo": "AA0005;AA0015",
+      "produces": [
+        {
+          "gearId": "T:tt_earthshaker",
+          "cost": [
+            "1xTITAN",
+            "1xCORE_HEKATON"
+          ]
+        },
+        {
+          "gearId": "AJ0222",
+          "cost": [
+            "8xTRIREME",
+            "17xMONUMENT",
+            "7xCALCIFIED_KNUCKLE_BONE"
+          ]
+        },
+        {
+          "gearId": "AJ0220",
+          "cost": [
+            "7xARMAMENT",
+            "9xMUSCLE_CLUSTER",
+            "5xCALCIFIED_KNUCKLE_BONE"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "AA0015",
+      "cycle": "CYCLE_01",
+      "requires": "BTL:core_hekaton|4;AA0027;AA0014;AA0005",
+      "leadsTo": "AA0019",
+      "produces": [
+        {
+          "gearId": "AJ0224",
+          "cost": [
+            "11xMONUMENT",
+            "24xRAW_AMBROSIA",
+            "11xMUSCLE_CLUSTER"
+          ]
+        },
+        {
+          "gearId": "AJ0226",
+          "cost": [
+            "28xARMAMENT",
+            "38xRAW_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "AJ0228",
+          "cost": [
+            "26xTRIREME",
+            "28xMONUMENT",
+            "12xCALCIFIED_KNUCKLE_BONE"
+          ]
+        },
+        {
+          "gearId": "AJ0230",
+          "cost": [
+            "10xMONUMENT",
+            "29xRAW_AMBROSIA",
+            "33xMUSCLE_CLUSTER ",
+            "1xCORE_HEKATON",
+            "1xAJ0257"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "AA0016",
+      "cycle": "CYCLE_01",
+      "requires": "BTL:core_labyrinthauros|2;AA0026;AA0006",
+      "leadsTo": "AA0023",
+      "produces": [
+        {
+          "gearId": "AJ0239",
+          "cost": [
+            "7xMONUMENT",
+            "3xINFUSED_MECHANISM"
+          ]
+        },
+        {
+          "gearId": "AJ0235",
+          "cost": [
+            "5xMONUMENT",
+            "11xRAW_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "AJ0237",
+          "cost": [
+            "6xARMAMENT",
+            "2xFLESHY_MANTLE"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "AA0017",
+      "cycle": "CYCLE_01",
+      "requires": "BTL:core_labyrinthauros|3;AA0027;AA0023",
+      "leadsTo": "AA0007",
+      "produces": [
+        {
+          "gearId": "T:tt_mazerunner",
+          "cost": [
+            "1xTITAN",
+            "1xCORE_LABYRINTHAUROS"
+          ]
+        },
+        {
+          "gearId": "AJ0243",
+          "cost": [
+            "10xARMAMENT",
+            "9xFLESHY_MANTLE"
+          ]
+        },
+        {
+          "gearId": "AJ0245",
+          "cost": [
+            "5xARMAMENT",
+            "11xINFUSED_MECHANISM"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "AA0018",
+      "cycle": "CYCLE_01",
+      "requires": "BTL:core_labyrinthauros|4;AA0007;AA0012;AA0005",
+      "leadsTo": "AA0019",
+      "produces": [
+        {
+          "gearId": "AJ0247",
+          "cost": [
+            "20xMONUMENT",
+            "12xARMAMENT",
+            "30xRAW_AMBROSIA",
+            "1xFEAR_ESSENCE"
+          ]
+        },
+        {
+          "gearId": "AJ0249",
+          "cost": [
+            "15xTRIREME",
+            "4xARMAMENT",
+            "27xRAW_AMBROSIA",
+            "14xINFUSED_MECHANISM"
+          ]
+        },
+        {
+          "gearId": "AJ0251",
+          "cost": [
+            "38xTRIREME",
+            "13xFLESHY_MANTLE"
+          ]
+        },
+        {
+          "gearId": "AJ0253",
+          "cost": [
+            "19xTRIREME",
+            "19xINFUSED_MECHANISM",
+            "1xCORE_LABYRINTHAUROS",
+            "1xAJ0260"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "AA0019",
+      "cycle": "CYCLE_01",
+      "requires": "BTL:core_temenos|1;AA0018||AA0015",
+      "leadsTo": "",
+      "produces": [
+        {
+          "gearId": "T:tt_plogicbreaker",
+          "cost": [
+            "1xTITAN",
+            "6xMAZE_FRAGMENT"
+          ]
+        },
+        {
+          "gearId": "AJ0255",
+          "cost": [
+            "13xARMAMENT",
+            "65xRAW_AMBROSIA",
+            "24xINFUSED_MECHANISM",
+            "2xCORE_LABYRINTHAUROS",
+            "1xAJ0259"
+          ]
+        },
+        {
+          "gearId": "AJ0254",
+          "cost": [
+            "28xMONUMENT",
+            "16xMUSCLE_CLUSTER",
+            "25xCALCIFIED_KNUCKLE_BONE",
+            "1xCORE_HEKATON",
+            "1xAJ0230"
+          ]
+        },
+        {
+          "gearId": "AJ0256",
+          "cost": [
+            "25xTRIREME",
+            "12xRAW_AMBROSIA",
+            "23xFLESHY_MANTLE",
+            "1xFEAR_ESSENCE",
+            "1xCORE_LABYRINTHAUROS",
+            "1xAJ0253"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "AA0020",
+      "cycle": "CYCLE_01",
+      "requires": "BTL:core_pursuer|1;AA0006;AA0009",
+      "leadsTo": "AA0027",
+      "produces": [
+        {
+          "gearId": "AJ0261",
+          "cost": [
+            "9xGROTESQUE_BEAK"
+          ]
+        },
+        {
+          "gearId": "AJ0262",
+          "cost": [
+            "2xGROTESQUE_BEAK",
+            "2xPOWDERED_MATTER"
+          ]
+        },
+        {
+          "gearId": "AJ0266",
+          "cost": [
+            "6xGROTESQUE_BEAK",
+            "3xPOWDERED_MATTER"
+          ]
+        },
+        {
+          "gearId": "AJ0264",
+          "cost": [
+            "3xGROTESQUE_BEAK",
+            "8xPOWDERED_MATTER"
+          ]
+        },
+        {
+          "gearId": "AJ0277",
+          "cost": [
+            "2xGROTESQUE_BEAK",
+            "1xPOWDERED_MATTER"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "BA0984",
+      "cycle": "CYCLE_02",
+      "requires": "",
+      "leadsTo": "BA1008",
+      "produces": [
+        {
+          "gearId": "BJ0831",
+          "cost": [
+            "1xMAZE_FRAGMENT",
+            "1xVIOLENT_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "BJ0827",
+          "cost": [
+            "2xMAZE_FRAGMENT",
+            "5xVIOLENT_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "BJ0829",
+          "cost": [
+            "3xFEAR_ESSENCE",
+            "5xVIOLENT_AMBROSIA"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "BA0985",
+      "cycle": "CYCLE_02",
+      "requires": "",
+      "leadsTo": "BA1009",
+      "produces": [
+        {
+          "gearId": "BJ0839",
+          "cost": [
+            "2xFEAR_ESSENCE",
+            "5xRELIEF",
+            "1xCHIMERIC_TAR"
+          ]
+        },
+        {
+          "gearId": "BJ0837",
+          "cost": [
+            "3xWAR_MACHINE",
+            "2xCHIMERIC_TAR"
+          ]
+        },
+        {
+          "gearId": "BJ0835",
+          "cost": [
+            "3xMAZE_FRAGMENT",
+            "1xBLACK_CHAIN"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "BA0986",
+      "cycle": "CYCLE_02",
+      "requires": "",
+      "leadsTo": "",
+      "produces": [
+        {
+          "gearId": "BJ0844",
+          "cost": [
+            "3xRELIEF",
+            "1xSUPERSOLID_RELIEF_MASS"
+          ]
+        },
+        {
+          "gearId": "BJ0845",
+          "cost": [
+            "6xRELIEF",
+            "2xVIOLENT_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "BJ0841",
+          "cost": [
+            "3xWAR_MACHINE",
+            "1xCYCLOPEAN_METAL"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "BA0987",
+      "cycle": "CYCLE_02",
+      "requires": "BA1009;BA1008",
+      "leadsTo": "BA1012;BA0988",
+      "produces": [
+        {
+          "gearId": "BJ0862",
+          "cost": [
+            "3xFEAR_ESSENCE",
+            "2xMAZE_FRAGMENT",
+            "2xCYCLOPEAN_METAL"
+          ]
+        },
+        {
+          "gearId": "BJ0864",
+          "cost": [
+            "5xRELIEF",
+            "1xSUPERSOLID_RELIEF_MASS"
+          ]
+        },
+        {
+          "gearId": "BJ0860",
+          "cost": [
+            "4xFEAR_ESSENCE",
+            "1xBLACK_CHAIN"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "BA0988",
+      "cycle": "CYCLE_02",
+      "requires": "BA0987",
+      "leadsTo": "BA1016",
+      "produces": [
+        {
+          "gearId": "BJ0866",
+          "cost": [
+            "2xFEAR_ESSENCE",
+            "1xSUPERSOLID_RELIEF_MASS"
+          ]
+        },
+        {
+          "gearId": "BJ0869",
+          "cost": [
+            "3xMAZE_FRAGMENT",
+            "3xVIOLENT_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "BJ0868",
+          "cost": [
+            "2xWAR_MACHINE&&2xVIOLENT_AMBROSIA&&1xCHIMERIC_TAR||1xAJ0280"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "BA0989",
+      "cycle": "CYCLE_02",
+      "requires": "BA1014",
+      "leadsTo": "BA0994;BA1001;BA0990",
+      "produces": [
+        {
+          "gearId": "BJ0881",
+          "cost": [
+            "8xRELIEF",
+            "6xCYCLOPEAN_METAL",
+            "3xSUPERSOLID_RELIEF_MASS"
+          ]
+        },
+        {
+          "gearId": "BJ0877",
+          "cost": [
+            "12xRELIEF",
+            "3xSUPERSOLID_RELIEF_MASS"
+          ]
+        },
+        {
+          "gearId": "BJ0879",
+          "cost": [
+            "7xRELIEF",
+            "13xVIOLENT_AMBROSIA"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "BA0990",
+      "cycle": "CYCLE_02",
+      "requires": "BA0989",
+      "leadsTo": "BA0998;BA1002",
+      "produces": [
+        {
+          "gearId": "BJ0873",
+          "cost": [
+            "10xWAR_MACHINE",
+            "4xBLACK_CHAIN"
+          ]
+        },
+        {
+          "gearId": "BJ0871",
+          "cost": [
+            "7xWAR_MACHINE",
+            "3xBLACK_CHAIN"
+          ]
+        },
+        {
+          "gearId": "BJ0875",
+          "cost": [
+            "10xWAR_TRIREME",
+            "10xVIOLENT_AMBROSIA",
+            "4xCHIMERIC_TAR"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "BA0991",
+      "cycle": "CYCLE_02",
+      "requires": "BA1013;BA1012",
+      "leadsTo": "BA0998",
+      "produces": [
+        {
+          "gearId": "BJ0883",
+          "cost": [
+            "10xFEAR_ESSENCE",
+            "5xWAR_MACHINE",
+            "3xCHIMERIC_TAR"
+          ]
+        },
+        {
+          "gearId": "BJ0885",
+          "cost": [
+            "5xFEAR_ESSENCE",
+            "12xWAR_TRIREME"
+          ]
+        },
+        {
+          "gearId": "BJ0887",
+          "cost": [
+            "4xRELIEF",
+            "9xVIOLENT_AMBROSIA",
+            "1xSUPERSOLID_RELIEF_MASS"
+          ]
+        },
+        {
+          "gearId": "BJ0889",
+          "cost": [
+            "4xRELIEF",
+            "8xVIOLENT_AMBROSIA",
+            "2xSUPERSOLID_RELIEF_MASS"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "BA0992",
+      "cycle": "CYCLE_02",
+      "requires": "AL:f_helots",
+      "leadsTo": "BA0993",
+      "produces": [
+        {
+          "gearId": "BJ0902",
+          "cost": [
+            "7xWAR_MACHINE",
+            "13xVIOLENT_AMBROSIA",
+            "7xSUPERSOLID_RELIEF_MASS"
+          ]
+        },
+        {
+          "gearId": "BJ0901",
+          "cost": [
+            "7xWAR_MACHINE",
+            "40xVIOLENT_AMBROSIA"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "BA0993",
+      "cycle": "CYCLE_02",
+      "requires": "BA0992",
+      "leadsTo": "",
+      "produces": [
+        {
+          "gearId": "BJ0900",
+          "cost": [
+            "10xWAR_MACHINE",
+            "17xVIOLENT_AMBROSIA",
+            "8xCYCLOPEAN_METAL"
+          ]
+        },
+        {
+          "gearId": "BJ0903",
+          "cost": [
+            "11xWAR_TRIREME",
+            "30xVIOLENT_AMBROSIA"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "BA0994",
+      "cycle": "CYCLE_02",
+      "requires": "BA1016;BA0989",
+      "leadsTo": "BA1001",
+      "produces": [
+        {
+          "gearId": "BJ0891",
+          "cost": [
+            "6xRELIEF",
+            "10xVIOLENT_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "BJ0898",
+          "cost": [
+            "5xRELIEF",
+            "10xVIOLENT_AMBROSIA",
+            "1xSUPERSOLID_RELIEF_MASS"
+          ]
+        },
+        {
+          "gearId": "BJ0894",
+          "cost": [
+            "5xWAR_MACHINE",
+            "4xCYCLOPEAN_METAL"
+          ]
+        },
+        {
+          "gearId": "BJ0896",
+          "cost": [
+            "6xWAR_MACHINE",
+            "2xBLACK_CHAIN"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "BA0995",
+      "cycle": "CYCLE_02",
+      "requires": "AL:f_cyclopes",
+      "leadsTo": "BA0996",
+      "produces": [
+        {
+          "gearId": "BJ0904",
+          "cost": [
+            "9xRELIEF",
+            "12xVIOLENT_AMBROSIA",
+            "10xBLACK_CHAIN",
+            "1xCYCLOPEAN_TOOTH"
+          ]
+        },
+        {
+          "gearId": "BJ0909",
+          "cost": [
+            "5xRELIEF",
+            "5xCYCLOPEAN_METAL",
+            "8xSUPERSOLID_RELIEF_MASS"
+          ]
+        },
+        {
+          "gearId": "BJ0907",
+          "cost": [
+            "11xRELIEF",
+            "30xVIOLENT_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "BJ0906",
+          "cost": [
+            "9xWAR_TRIREME",
+            "30xVIOLENT_AMBROSIA",
+            "6xCHIMERIC_TAR"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "BA0996",
+      "cycle": "CYCLE_02",
+      "requires": "BA0995",
+      "leadsTo": "",
+      "produces": [
+        {
+          "gearId": "BJ0908",
+          "cost": [
+            "20xRELIEF",
+            "6xBLACK_CHAIN"
+          ]
+        },
+        {
+          "gearId": "BJ0905",
+          "cost": [
+            "14xRELIEF",
+            "10xVIOLENT_AMBROSIA",
+            "10xCYCLOPEAN_METAL",
+            "1xCYCLOPEAN_TOOTH"
+          ]
+        },
+        {
+          "gearId": "BJ0910",
+          "cost": [
+            "20xWAR_TRIREME",
+            "16xVIOLENT_AMBROSIA",
+            "11xCYCLOPEAN_METAL"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "BA0997",
+      "cycle": "CYCLE_02",
+      "requires": "BTL:core_cyclonus|2;BA1010;BA1008",
+      "leadsTo": "BA1013",
+      "produces": [
+        {
+          "gearId": "BJ0849",
+          "cost": [
+            "12xWAR_TRIREME",
+            "5xCYCLOPEAN_METAL"
+          ]
+        },
+        {
+          "gearId": "BJ0847",
+          "cost": [
+            "4xWAR_MACHINE",
+            "3xBLACK_CHAIN"
+          ]
+        },
+        {
+          "gearId": "BJ0851",
+          "cost": [
+            "6xWAR_MACHINE",
+            "1xCYCLOPEAN_METAL",
+            "2xBLACK_CHAIN"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "BA0998",
+      "cycle": "CYCLE_02",
+      "requires": "BTL:core_cyclonus|3;BA0991;BA0990",
+      "leadsTo": "BA0999",
+      "produces": [
+        {
+          "gearId": "T:tt_warkeeper",
+          "cost": [
+            "1xTITAN",
+            "1xCORE_CYCLONUS"
+          ]
+        },
+        {
+          "gearId": "BJ0911",
+          "cost": [
+            "7xWAR_TRIREME",
+            "4xWAR_MACHINE",
+            "13xVIOLENT_AMBROSIA",
+            "1xBLACK_CHAIN"
+          ]
+        },
+        {
+          "gearId": "BJ0913",
+          "cost": [
+            "3xWAR_MACHINE",
+            "6xVIOLENT_AMBROSIA",
+            "7xCYCLOPEAN_METAL"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "BA0999",
+      "cycle": "CYCLE_02",
+      "requires": "BTL:core_cyclonus|4;BA0998",
+      "leadsTo": "BA1004",
+      "produces": [
+        {
+          "gearId": "BJ0921",
+          "cost": [
+            "16xRELIEF",
+            "32xVIOLENT_AMBROSIA",
+            "2xSUPERSOLID_RELIEF_MASS"
+          ]
+        },
+        {
+          "gearId": "BJ0925",
+          "cost": [
+            "10xWAR_MACHINE",
+            "17xVIOLENT_AMBROSIA",
+            "6xCYCLOPEAN_METAL"
+          ]
+        },
+        {
+          "gearId": "BJ0923",
+          "cost": [
+            "10xWAR_MACHINE",
+            "14xVIOLENT_AMBROSIA",
+            "8xCYCLOPEAN_METAL"
+          ]
+        },
+        {
+          "gearId": "BJ0927",
+          "cost": [
+            "15xWAR_TRIREME",
+            "7xBLACK_CHAIN",
+            "1xCORE_CYCLONUS",
+            "1xBJ0941||1xBJ0940"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "BA1000",
+      "cycle": "CYCLE_02",
+      "requires": "BTL:core_chimera|2;BA1011;BA1009",
+      "leadsTo": "BA1014",
+      "produces": [
+        {
+          "gearId": "BJ0854",
+          "cost": [
+            "5xRELIEF",
+            "5xVIOLENT_AMBROSIA",
+            "3xCHIMERIC_TAR"
+          ]
+        },
+        {
+          "gearId": "BJ0852",
+          "cost": [
+            "7xRELIEF",
+            "2xSUPERSOLID_RELIEF_MASS"
+          ]
+        },
+        {
+          "gearId": "BJ0856",
+          "cost": [
+            "7xWAR_TRIREME",
+            "4xCHIMERIC_TAR"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "BA1001",
+      "cycle": "CYCLE_02",
+      "requires": "BTL:core_chimera|3;BA0994;BA0989",
+      "leadsTo": "BA1002",
+      "produces": [
+        {
+          "gearId": "T:tt_firestarter",
+          "cost": [
+            "1xTITAN",
+            "1xCORE_CHIMERA_METASTASIOS"
+          ]
+        },
+        {
+          "gearId": "BJ0917",
+          "cost": [
+            "12xWAR_TRIREME",
+            "9xRELIEF",
+            "2xCHIMERIC_TAR"
+          ]
+        },
+        {
+          "gearId": "BJ0915",
+          "cost": [
+            "9xWAR_TRIREME",
+            "13xVIOLENT_AMBROSIA",
+            "2xSUPERSOLID_RELIEF_MASS"
+          ]
+        },
+        {
+          "gearId": "BJ0919",
+          "cost": [
+            "10xWAR_TRIREME",
+            "5xVIOLENT_AMBROSIA",
+            "7xCHIMERIC_TAR"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "BA1002",
+      "cycle": "CYCLE_02",
+      "requires": "BTL:core_chimera|4;BA1001;BA0990",
+      "leadsTo": "BA1004",
+      "produces": [
+        {
+          "gearId": "BJ0934",
+          "cost": [
+            "17xRELIEF",
+            "6xSUPERSOLID_RELIEF_MASS"
+          ]
+        },
+        {
+          "gearId": "BJ0928",
+          "cost": [
+            "14xWAR_MACHINE",
+            "10xCHIMERIC_TAR"
+          ]
+        },
+        {
+          "gearId": "BJ0932",
+          "cost": [
+            "7xWAR_TRIREME",
+            "10xBLACK_CHAIN",
+            "5xSUPERSOLID_RELIEF_MASS"
+          ]
+        },
+        {
+          "gearId": "BJ0936",
+          "cost": [
+            "10xWAR_TRIREME",
+            "16xVIOLENT_AMBROSIA",
+            "10xCHIMERIC_TAR",
+            "1xCORE_CHIMERA_METASTASIOS",
+            "1xBJ0943"
+          ]
+        },
+        {
+          "gearId": "BJ0930",
+          "cost": [
+            "43xWAR_TRIREME",
+            "6xCHIMERIC_TAR"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "BA1004",
+      "cycle": "CYCLE_02",
+      "requires": "BA1003;BA0999||BA1002",
+      "leadsTo": "",
+      "produces": [
+        {
+          "gearId": "T:tt_pabysswatcher",
+          "cost": [
+            "1xTITAN",
+            "6xLIVING_ABYSS"
+          ]
+        },
+        {
+          "gearId": "BJ0937",
+          "cost": [
+            "15xWAR_TRIREME",
+            "31xVIOLENT_AMBROSIA",
+            "10xCHIMERIC_TAR",
+            "1xCORE_CHIMERA_METASTASIOS",
+            "1xBJ0936"
+          ]
+        },
+        {
+          "gearId": "BJ0938",
+          "cost": [
+            "28xRELIEF",
+            "10xCYCLOPEAN_METAL",
+            "2xCORE_CYCLONUS",
+            "1xBJ0941",
+            "1xBJ0940"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "BA1005",
+      "cycle": "CYCLE_02",
+      "requires": "AA0020;EVNT:lbl_tech_req_prusuits_end",
+      "leadsTo": "BA1017",
+      "produces": [
+        {
+          "gearId": "BJ0965",
+          "cost": [
+            "5xGROTESQUE_BEAK",
+            "2xPOWDERED_MATTER",
+            "1xAJ0261"
+          ]
+        },
+        {
+          "gearId": "BJ0966",
+          "cost": [
+            "7xGROTESQUE_BEAK",
+            "9xPOWDERED_MATTER",
+            "1xAJ0264"
+          ]
+        },
+        {
+          "gearId": "BJ0968",
+          "cost": [
+            "9xGROTESQUE_BEAK",
+            "9xPOWDERED_MATTER",
+            "1xAJ0273"
+          ]
+        },
+        {
+          "gearId": "BJ0967",
+          "cost": [
+            "2xWAR_MACHINE",
+            "1xDAMAGED_CRYPTEX"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "BA1006",
+      "cycle": "CYCLE_02",
+      "requires": "BTL:core_burden|1",
+      "leadsTo": "CA1595",
+      "produces": [
+        {
+          "gearId": "BJ0948",
+          "cost": [
+            "5xRETRACTABLE_MECHANISM",
+            "2xRELIEFSHELL_FRAGMENT"
+          ]
+        },
+        {
+          "gearId": "BJ0952",
+          "cost": [
+            "7xRETRACTABLE_MECHANISM",
+            "4xRELIEFSHELL_FRAGMENT"
+          ]
+        },
+        {
+          "gearId": "BJ0950",
+          "cost": [
+            "9xRETRACTABLE_MECHANISM",
+            "3xRELIEFSHELL_FRAGMENT"
+          ]
+        },
+        {
+          "gearId": "BJ0946",
+          "cost": [
+            "5xRETRACTABLE_MECHANISM",
+            "10xRELIEFSHELL_FRAGMENT"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "CA1570",
+      "cycle": "CYCLE_03",
+      "requires": "",
+      "leadsTo": "CA1600;CA1599",
+      "produces": [
+        {
+          "gearId": "CJ1395",
+          "cost": [
+            "2xSKIN_OF_MALICE",
+            "1xEYES_CLUSTER"
+          ]
+        },
+        {
+          "gearId": "CJ1389",
+          "cost": [
+            "6xLIVING_ABYSS",
+            "2xFROZEN_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "CJ1391",
+          "cost": [
+            "3xLIVING_ABYSS",
+            "3xFROZEN_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "CJ1393",
+          "cost": [
+            "4xSKIN_OF_MALICE",
+            "1xRAZORCLAW"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "CA1571",
+      "cycle": "CYCLE_03",
+      "requires": "",
+      "leadsTo": "CA1598;CA1597",
+      "produces": [
+        {
+          "gearId": "CJ1401",
+          "cost": [
+            "1xSIRENSHELL",
+            "1xFROZEN_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "CJ1397",
+          "cost": [
+            "2xLIVING_ABYSS",
+            "2xICARIAN_FEATHER"
+          ]
+        },
+        {
+          "gearId": "CJ1399",
+          "cost": [
+            "3xSKIN_OF_MALICE",
+            "3xFROZEN_AMBROSIA"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "CA1572",
+      "cycle": "CYCLE_03",
+      "requires": "",
+      "leadsTo": "CA1598;CA1597",
+      "produces": [
+        {
+          "gearId": "CJ1407",
+          "cost": [
+            "6xSIRENSHELL",
+            "1xCLOTHFLESH"
+          ]
+        },
+        {
+          "gearId": "CJ1403",
+          "cost": [
+            "2xSKIN_OF_MALICE",
+            "4xFROZEN_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "CJ1405",
+          "cost": [
+            "4xSKIN_OF_MALICE",
+            "1xCLOTHFLESH"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "CA1573",
+      "cycle": "CYCLE_03",
+      "requires": "",
+      "leadsTo": "CA1600;CA1599",
+      "produces": [
+        {
+          "gearId": "CJ1415",
+          "cost": [
+            "2xDAEDALUS_MAKINA",
+            "3xFROZEN_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "CJ1409",
+          "cost": [
+            "4xSIRENSHELL",
+            "1xRAZORCLAW"
+          ]
+        },
+        {
+          "gearId": "CJ1411",
+          "cost": [
+            "3xSKIN_OF_MALICE",
+            "1xCLOTHFLESH"
+          ]
+        },
+        {
+          "gearId": "CJ1413",
+          "cost": [
+            "3xLIVING_ABYSS",
+            "1xEYES_CLUSTER"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "CA1574",
+      "cycle": "CYCLE_03",
+      "requires": "CA1599;CA1598",
+      "leadsTo": "CA1604",
+      "produces": [
+        {
+          "gearId": "CJ1437",
+          "cost": [
+            "1xSKIN_OF_MALICE",
+            "3xSIRENSHELL",
+            "5xFROZEN_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "CJ1417",
+          "cost": [
+            "4xLIVING_ABYSS",
+            "1xCLOTHFLESH"
+          ]
+        },
+        {
+          "gearId": "CJ1419",
+          "cost": [
+            "4xSIRENSHELL",
+            "1xICARIAN_FEATHER"
+          ]
+        },
+        {
+          "gearId": "CJ1421",
+          "cost": [
+            "3xSIRENSHELL",
+            "5xFROZEN_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "CJ1439",
+          "cost": [
+            "2xDAEDALUS_MAKINA",
+            "1xCLOTHFLESH"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "CA1575",
+      "cycle": "CYCLE_03",
+      "requires": "CA1599;CA1598",
+      "leadsTo": "CA1604;CA1576",
+      "produces": [
+        {
+          "gearId": "CJ1435",
+          "cost": [
+            "3xLIVING_ABYSS",
+            "2xSIRENSHELL",
+            "2xFROZEN_AMBROSIA",
+            "1xRAZORCLAW"
+          ]
+        },
+        {
+          "gearId": "CJ1429",
+          "cost": [
+            "3xSIRENSHELL",
+            "3xFROZEN_AMBROSIA",
+            "1xICARIAN_FEATHER",
+            "1xANTEDELUVIAN_SIRENSHELL"
+          ]
+        },
+        {
+          "gearId": "CJ1431",
+          "cost": [
+            "5xSIRENSHELL",
+            "2xRAZORCLAW"
+          ]
+        },
+        {
+          "gearId": "CJ1433",
+          "cost": [
+            "4xDAEDALUS_MAKINA",
+            "1xFROZEN_AMBROSIA"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "CA1576",
+      "cycle": "CYCLE_03",
+      "requires": "CA1575;CA1588||CA1585",
+      "leadsTo": "CA1579",
+      "produces": [
+        {
+          "gearId": "T:tt_returner",
+          "cost": [
+            "1xTITAN",
+            "1xCORE_HYPERTIME_ORACLE"
+          ]
+        },
+        {
+          "gearId": "CJ1423",
+          "cost": [
+            "11xHYPERBOREAN_ALLOY",
+            "2xFROZEN_AMBROSIA",
+            "2xICARIAN_FEATHER"
+          ]
+        },
+        {
+          "gearId": "CJ1425",
+          "cost": [
+            "6xSIRENSHELL",
+            "4xRAZORCLAW"
+          ]
+        },
+        {
+          "gearId": "CJ1427",
+          "cost": [
+            "3xDAEDALUS_MAKINA",
+            "2xFROZEN_AMBROSIA",
+            "3xRAZORCLAW",
+            "1xICARIAN_FEATHER"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "CA1577",
+      "cycle": "CYCLE_03",
+      "requires": "CA1604",
+      "leadsTo": "CA1579",
+      "produces": [
+        {
+          "gearId": "CJ1445",
+          "cost": [
+            "5xHYPERBOREAN_ALLOY",
+            "2xEYES_CLUSTER"
+          ]
+        },
+        {
+          "gearId": "CJ1441",
+          "cost": [
+            "5xDAEDALUS_MAKINA",
+            "5xFROZEN_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "CJ1443",
+          "cost": [
+            "4xDAEDALUS_MAKINA",
+            "2xCLOTHFLESH"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "CA1578",
+      "cycle": "CYCLE_03",
+      "requires": "CA1604",
+      "leadsTo": "",
+      "produces": [
+        {
+          "gearId": "CJ1468",
+          "cost": [
+            "3xLIVING_ABYSS",
+            "2xDAEDALUS_MAKINA",
+            "9xFROZEN_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "CJ1464",
+          "cost": [
+            "5xLIVING_ABYSS",
+            "5xHYPERBOREAN_ALLOY",
+            "2xCLOTHFLESH"
+          ]
+        },
+        {
+          "gearId": "CJ1466",
+          "cost": [
+            "6xSIRENSHELL",
+            "8xFROZEN_AMBROSIA"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "CA1579",
+      "cycle": "CYCLE_03",
+      "requires": "CA1576;CA1577",
+      "leadsTo": "CA1589;CA1586;CA1594;CA1580;CA1601",
+      "produces": [
+        {
+          "gearId": "CJ1476",
+          "cost": [
+            "4xLIVING_ABYSS",
+            "2xDAEDALUS_MAKINA",
+            "4xFROZEN_AMBROSIA",
+            "1xEYES_CLUSTER"
+          ]
+        },
+        {
+          "gearId": "CJ1470",
+          "cost": [
+            "4xLIVING_ABYSS",
+            "6xSIRENSHELL",
+            "3xCLOTHFLESH"
+          ]
+        },
+        {
+          "gearId": "CJ1472",
+          "cost": [
+            "6xSIRENSHELL",
+            "2xCLOTHFLESH",
+            "2xEYES_CLUSTER"
+          ]
+        },
+        {
+          "gearId": "CJ1474",
+          "cost": [
+            "7xSIRENSHELL",
+            "2xRAZORCLAW",
+            "2xICARIAN_FEATHER"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "CA1580",
+      "cycle": "CYCLE_03",
+      "requires": "CA1579;EVNT:lbl_tech_req_prusuits_end;AK:51",
+      "leadsTo": "",
+      "produces": [
+        {
+          "gearId": "CJ1536",
+          "cost": [
+            "7xDAEDALUS_MAKINA",
+            "18xFROZEN_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "CJ1537",
+          "cost": [
+            "11xSIRENSHELL",
+            "8xFROZEN_AMBROSIA",
+            "4xCLOTHFLESH"
+          ]
+        },
+        {
+          "gearId": "CJ1538",
+          "cost": [
+            "11xSIRENSHELL",
+            "16xFROZEN_AMBROSIA"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "CA1581",
+      "cycle": "CYCLE_03",
+      "requires": "AL:f_sunheirs",
+      "leadsTo": "CA1582",
+      "produces": [
+        {
+          "gearId": "CJ1485",
+          "cost": [
+            "18xHYPERBOREAN_ALLOY",
+            "6xCLOTHFLESH"
+          ]
+        },
+        {
+          "gearId": "CJ1482",
+          "cost": [
+            "16xHYPERBOREAN_ALLOY",
+            "20xFROZEN_AMBROSIA"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "CA1582",
+      "cycle": "CYCLE_03",
+      "requires": "CA1581",
+      "leadsTo": "",
+      "produces": [
+        {
+          "gearId": "CJ1484",
+          "cost": [
+            "25xHYPERBOREAN_ALLOY",
+            "25xFROZEN_AMBROSIA",
+            "15xRAZORCLAW"
+          ]
+        },
+        {
+          "gearId": "CJ1481",
+          "cost": [
+            "23xHYPERBOREAN_ALLOY",
+            "20xFROZEN_AMBROSIA",
+            "2xEYES_CLUSTER",
+            "9xICARIAN_FEATHER"
+          ]
+        },
+        {
+          "gearId": "CJ1483",
+          "cost": [
+            "8xDAEDALUS_MAKINA",
+            "17xHYPERBOREAN_ALLOY",
+            "10xFROZEN_AMBROSIA",
+            "11xRAZORCLAW"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "CA1583",
+      "cycle": "CYCLE_03",
+      "requires": "AL:f_twilight",
+      "leadsTo": "CA1584",
+      "produces": [
+        {
+          "gearId": "CJ1491",
+          "cost": [
+            "12xSIRENSHELL",
+            "4xCLOTHFLESH",
+            "4xICARIAN_FEATHER",
+            "1xANTEDELUVIAN_SIRENSHELL"
+          ]
+        },
+        {
+          "gearId": "CJ1488",
+          "cost": [
+            "8xDAEDALUS_MAKINA",
+            "12xFROZEN_AMBROSIA",
+            "3xRAZORCLAW"
+          ]
+        },
+        {
+          "gearId": "CJ1490",
+          "cost": [
+            "15xHYPERBOREAN_ALLOY",
+            "10xFROZEN_AMBROSIA",
+            "3xICARIAN_FEATHER"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "CA1584",
+      "cycle": "CYCLE_03",
+      "requires": "CA1583",
+      "leadsTo": "",
+      "produces": [
+        {
+          "gearId": "CJ1487",
+          "cost": [
+            "22xHYPERBOREAN_ALLOY",
+            "22xFROZEN_AMBROSIA",
+            "10xRAZORCLAW"
+          ]
+        },
+        {
+          "gearId": "CJ1486",
+          "cost": [
+            "25xHYPERBOREAN_ALLOY",
+            "37xFROZEN_AMBROSIA",
+            "18xCLOTHFLESH"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "CA1585",
+      "cycle": "CYCLE_03",
+      "requires": "CA1600;CA1597;CA1598;BTL:core_oracle|2||PARADOX:1",
+      "leadsTo": "CA1603;CA1576;CA1591",
+      "produces": [
+        {
+          "gearId": "CJ1456",
+          "cost": [
+            "1xDAEDALUS_MAKINA",
+            "1xEYES_CLUSTER"
+          ]
+        },
+        {
+          "gearId": "CJ1452",
+          "cost": [
+            "2xSKIN_OF_MALICE",
+            "2xCLOTHFLESH"
+          ]
+        },
+        {
+          "gearId": "CJ1454",
+          "cost": [
+            "2xDAEDALUS_MAKINA",
+            "1xEYES_CLUSTER"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "CA1586",
+      "cycle": "CYCLE_03",
+      "requires": "BTL:core_oracle|3;CA1603;CA1579",
+      "leadsTo": "CA1606;CA1592",
+      "produces": [
+        {
+          "gearId": "CJ1492",
+          "cost": [
+            "14xHYPERBOREAN_ALLOY",
+            "7xCLOTHFLESH"
+          ]
+        },
+        {
+          "gearId": "CJ1494",
+          "cost": [
+            "8xSIRENSHELL",
+            "6xHYPERBOREAN_ALLOY",
+            "6xEYES_CLUSTER"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "CA1587",
+      "cycle": "CYCLE_03",
+      "requires": "BTL:core_oracle|4;CA1606",
+      "leadsTo": "CA1593",
+      "produces": [
+        {
+          "gearId": "CJ1498",
+          "cost": [
+            "21xSIRENSHELL",
+            "25xFROZEN_AMBROSIA",
+            "16xCLOTHFLESH"
+          ]
+        },
+        {
+          "gearId": "CJ1500",
+          "cost": [
+            "26xFROZEN_AMBROSIA",
+            "11xEYES_CLUSTER"
+          ]
+        },
+        {
+          "gearId": "CJ1496",
+          "cost": [
+            "18xSIRENSHELL",
+            "14xHYPERBOREAN_ALLOY",
+            "7xFROZEN_AMBROSIA",
+            "9xCLOTHFLESH"
+          ]
+        },
+        {
+          "gearId": "CJ1504",
+          "cost": [
+            "10xDAEDALUS_MAKINA",
+            "9xEYES_CLUSTER",
+            "9xRAZORCLAW",
+            "1xCORE_HYPERTIME_ORACLE",
+            "1xCJ1503"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "CA1588",
+      "cycle": "CYCLE_03",
+      "requires": "CA1599;CA1600;CA1597;BTL:core_harpy|2||PARADOX:1",
+      "leadsTo": "CA1602;CA1591;CA1576",
+      "produces": [
+        {
+          "gearId": "CJ1462",
+          "cost": [
+            "2xDAEDALUS_MAKINA",
+            "1xRAZORCLAW"
+          ]
+        },
+        {
+          "gearId": "CJ1458",
+          "cost": [
+            "5xLIVING_ABYSS",
+            "2xFROZEN_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "CJ1460",
+          "cost": [
+            "3xDAEDALUS_MAKINA",
+            "1xRAZORCLAW"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "CA1589",
+      "cycle": "CYCLE_03",
+      "requires": "BTL:core_harpy|3;CA1591;CA1579;CA1602",
+      "leadsTo": "CA1605;CA1592",
+      "produces": [
+        {
+          "gearId": "T:tt_ascender",
+          "cost": [
+            "1xTITAN",
+            "1xCORE_ICARIAN_HARPY"
+          ]
+        },
+        {
+          "gearId": "CJ1506",
+          "cost": [
+            "7xDAEDALUS_MAKINA",
+            "7xRAZORCLAW"
+          ]
+        },
+        {
+          "gearId": "CJ1508",
+          "cost": [
+            "7xDAEDALUS_MAKINA",
+            "5xICARIAN_FEATHER"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "CA1590",
+      "cycle": "CYCLE_03",
+      "requires": "BTL:core_harpy|4;CA1605",
+      "leadsTo": "CA1593",
+      "produces": [
+        {
+          "gearId": "CJ1514",
+          "cost": [
+            "16xDAEDALUS_MAKINA",
+            "14xHYPERBOREAN_ALLOY",
+            "27xFROZEN_AMBROSIA",
+            "9xRAZORCLAW",
+            "1xANTEDELUVIAN_SIRENSHELL"
+          ]
+        },
+        {
+          "gearId": "CJ1510",
+          "cost": [
+            "19xSIRENSHELL",
+            "11xFROZEN_AMBROSIA",
+            "9xICARIAN_FEATHER"
+          ]
+        },
+        {
+          "gearId": "CJ1512",
+          "cost": [
+            "27xSIRENSHELL",
+            "31xHYPERBOREAN_ALLOY",
+            "14xRAZORCLAW"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "CA1591",
+      "cycle": "CYCLE_03",
+      "requires": "BTL:core_descendant|1;CA1588;CA1585",
+      "leadsTo": "CA1592;CA1589",
+      "produces": [
+        {
+          "gearId": "CJ1450",
+          "cost": [
+            "7xHYPERBOREAN_ALLOY",
+            "8xFROZEN_AMBROSIA",
+            "1xWRITHING_TENTACLE"
+          ]
+        },
+        {
+          "gearId": "CJ1447",
+          "cost": [
+            "3xDAEDALUS_MAKINA",
+            "2xEYES_CLUSTER",
+            "3xSUNBURNED_SKULL"
+          ]
+        },
+        {
+          "gearId": "CJ1448",
+          "cost": [
+            "4xDAEDALUS_MAKINA",
+            "7xFROZEN_AMBROSIA",
+            "2xWRITHING_TENTACLE"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "CA1592",
+      "cycle": "CYCLE_03",
+      "requires": "CA1591;CA1589;CA1586",
+      "leadsTo": "CA1593",
+      "produces": [
+        {
+          "gearId": "CJ1521",
+          "cost": [
+            "22xSIRENSHELL",
+            "15xHYPERBOREAN_ALLOY",
+            "37xFROZEN_AMBROSIA",
+            "2xSUNBURNED_SKULL"
+          ]
+        },
+        {
+          "gearId": "CJ1519",
+          "cost": [
+            "16xDAEDALUS_MAKINA",
+            "34xFROZEN_AMBROSIA",
+            "2xWRITHING_TENTACLE"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "CA1593",
+      "cycle": "CYCLE_03",
+      "requires": "CA1592;CA1590;CA1587",
+      "leadsTo": "",
+      "produces": [
+        {
+          "gearId": "T:tt_pdawnburner",
+          "cost": [
+            "1xTITAN",
+            "6xSUNBURNED_SKULL||1xCORE_SUN_DESCENDANT"
+          ]
+        },
+        {
+          "gearId": "CJ1505",
+          "cost": [
+            "9xDAEDALUS_MAKINA",
+            "22xCLOTHFLESH",
+            "8xICARIAN_FEATHER",
+            "1xCORE_HYPERTIME_ORACLE",
+            "1xCJ1504"
+          ]
+        },
+        {
+          "gearId": "CJ1518",
+          "cost": [
+            "12xDAEDALUS_MAKINA",
+            "14xEYES_CLUSTER",
+            "13xRAZORCLAW",
+            "2xCORE_ICARIAN_HARPY",
+            "1xCJ1516",
+            "1xCJ1517"
+          ]
+        },
+        {
+          "gearId": "CJ1523",
+          "cost": [
+            "11xDAEDALUS_MAKINA",
+            "8xEYES_CLUSTER",
+            "10xICARIAN_FEATHER",
+            "2xSUNBURNED_SKULL"
+          ]
+        },
+        {
+          "gearId": "CJ1525",
+          "cost": [
+            "12xDAEDALUS_MAKINA",
+            "20xHYPERBOREAN_ALLOY",
+            "32xFROZEN_AMBROSIA",
+            "4xWRITHING_TENTACLE",
+            "1xFROZEN_TIME"
+          ]
+        },
+        {
+          "gearId": "CJ1529",
+          "cost": [
+            "17xSIRENSHELL",
+            "13xCLOTHFLESH",
+            "8xICARIAN_FEATHER",
+            "6xWRITHING_TENTACLE",
+            "1xCORE_SUN_DESCENDANT",
+            "1xCJ1528"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "CA1594",
+      "cycle": "CYCLE_03",
+      "requires": "CA1579;AK:48",
+      "leadsTo": "",
+      "produces": [
+        {
+          "gearId": "CJ1480",
+          "cost": [
+            "12xHYPERBOREAN_ALLOY",
+            "15xFROZEN_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "CJ1477",
+          "cost": [
+            "9xSIRENSHELL",
+            "7xRAZORCLAW"
+          ]
+        },
+        {
+          "gearId": "CJ1478",
+          "cost": [
+            "9xSIRENSHELL",
+            "15xFROZEN_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "CJ1479",
+          "cost": [
+            "7xSIRENSHELL",
+            "4xEYES_CLUSTER"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "CA1595",
+      "cycle": "CYCLE_03",
+      "requires": "BA1006;EVNT:lbl_tech_req_burden_final",
+      "leadsTo": "",
+      "produces": [
+        {
+          "gearId": "CJ1539",
+          "cost": [
+            "5xRETRACTABLE_MECHANISM",
+            "4xRELIEFSHELL_FRAGMENT",
+            "1xBJ0946",
+            "1xCORE_BURDEN"
+          ]
+        },
+        {
+          "gearId": "CJ1540",
+          "cost": [
+            "3xRETRACTABLE_MECHANISM",
+            "1xRELIEFSHELL_FRAGMENT",
+            "1xBJ0948"
+          ]
+        },
+        {
+          "gearId": "CJ1542",
+          "cost": [
+            "4xRETRACTABLE_MECHANISM",
+            "4xRELIEFSHELL_FRAGMENT",
+            "1xBJ0950"
+          ]
+        },
+        {
+          "gearId": "CJ1544",
+          "cost": [
+            "2xRETRACTABLE_MECHANISM",
+            "6xRELIEFSHELL_FRAGMENT",
+            "1xBJ0952"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "DA2162",
+      "cycle": "CYCLE_04",
+      "requires": "DA2165",
+      "leadsTo": "DA2166",
+      "produces": [
+        {
+          "gearId": "DJ2229",
+          "cost": [
+            "5xBLACKENED_HALO",
+            "1xMUTABLE_AMBROSIA",
+            "1xLIVING_GOLD"
+          ]
+        },
+        {
+          "gearId": "DJ2231",
+          "cost": [
+            "4xBURNED_OUT_GRACE",
+            "1xOLD_IREM_FRAGMENT"
+          ]
+        },
+        {
+          "gearId": "DJ2233",
+          "cost": [
+            "5xBLACKENED_HALO",
+            "6xMUTABLE_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "DJ2235",
+          "cost": [
+            "3xBABYLONIAN_CONTRAPTION",
+            "5xMUTABLE_AMBROSIA"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "DA2163",
+      "cycle": "CYCLE_04",
+      "requires": "",
+      "leadsTo": "DA2188;DA2189",
+      "produces": [
+        {
+          "gearId": "DJ2237",
+          "cost": [
+            "7xIMPERIAL_SCROLL",
+            "5xMUTABLE_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "DJ2239",
+          "cost": [
+            "3xBLACKENED_HALO",
+            "2xOLD_IREM_FRAGMENT"
+          ]
+        },
+        {
+          "gearId": "DJ2241",
+          "cost": [
+            "6xBLACKENED_HALO",
+            "4xMUTABLE_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "DJ2243",
+          "cost": [
+            "5xIMPERIAL_SCROLL",
+            "2xCURSED_BLOATSACK"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "DA2164",
+      "cycle": "CYCLE_04",
+      "requires": "",
+      "leadsTo": "DA2189;DA2166",
+      "produces": [
+        {
+          "gearId": "DJ2249",
+          "cost": [
+            "6xIMPERIAL_SCROLL",
+            "5xMUTABLE_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "DJ2251",
+          "cost": [
+            "3xBURNED_OUT_GRACE",
+            "5xMUTABLE_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "DJ2253",
+          "cost": [
+            "4xBURNED_OUT_GRACE",
+            "1xOLD_IREM_FRAGMENT"
+          ]
+        },
+        {
+          "gearId": "DJ2245",
+          "cost": [
+            "1xBLACKENED_HALO",
+            "1xBURNED_OUT_GRACE",
+            "1xMUTABLE_AMBROSIA"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "DA2165",
+      "cycle": "CYCLE_04",
+      "requires": "",
+      "leadsTo": "DA2162;DA2188",
+      "produces": [
+        {
+          "gearId": "DJ2255",
+          "cost": [
+            "5xBLACKENED_HALO",
+            "4xMUTABLE_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "DJ2257",
+          "cost": [
+            "3xBLACKENED_HALO",
+            "2xCURSED_BLOATSACK"
+          ]
+        },
+        {
+          "gearId": "DJ2259",
+          "cost": [
+            "3xBURNED_OUT_GRACE",
+            "2xWISH_EMBRYO"
+          ]
+        },
+        {
+          "gearId": "DJ2261",
+          "cost": [
+            "1xBABYLONIAN_CONTRAPTION"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "DA2166",
+      "cycle": "CYCLE_04",
+      "requires": "DA2164;DA2162",
+      "leadsTo": "DA2167;DA2191;DA2181",
+      "produces": [
+        {
+          "gearId": "DJ2265",
+          "cost": [
+            "3xBABYLONIAN_CONTRAPTION",
+            "1xCURSED_BLOATSACK",
+            "1xLIVING_GOLD"
+          ]
+        },
+        {
+          "gearId": "DJ2267",
+          "cost": [
+            "3xBABYLONIAN_CONTRAPTION",
+            "2xLIVING_GOLD"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "DA2167",
+      "cycle": "CYCLE_04",
+      "requires": "DA2166;DA2189",
+      "leadsTo": "DA2185;DA2178;DA2170",
+      "produces": [
+        {
+          "gearId": "DJ2269",
+          "cost": [
+            "8xIMPERIAL_SCROLL",
+            "1xWISH_EMBRYO"
+          ]
+        },
+        {
+          "gearId": "DJ2271",
+          "cost": [
+            "5xBURNED_OUT_GRACE",
+            "2xLIVING_GOLD",
+            "1xGOLDEN_BOUGH"
+          ]
+        },
+        {
+          "gearId": "DJ2272",
+          "cost": [
+            "4xBABYLONIAN_CONTRAPTION",
+            "1xOLD_IREM_FRAGMENT"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "DA2168",
+      "cycle": "CYCLE_04",
+      "requires": "DA2188",
+      "leadsTo": "DA2175;DA2170;DA2185",
+      "produces": [
+        {
+          "gearId": "DJ2274",
+          "cost": [
+            "6xIMPERIAL_SCROLL",
+            "2xCURSED_BLOATSACK"
+          ]
+        },
+        {
+          "gearId": "DJ2276",
+          "cost": [
+            "5x BURNED_OUT_GRACE",
+            "6xMUTABLE_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "DJ2278",
+          "cost": [
+            "3xBABYLONIAN_CONTRAPTION",
+            "2xWISH_EMBRYO"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "DA2169",
+      "cycle": "CYCLE_04",
+      "requires": "DA2178",
+      "leadsTo": "DA2196;DA2170",
+      "produces": [
+        {
+          "gearId": "DJ2280",
+          "cost": [
+            "5xIMPERIAL_SCROLL",
+            "9xMUTABLE_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "DJ2282",
+          "cost": [
+            "8xBURNED_OUT_GRACE",
+            "3xLIVING_GOLD"
+          ]
+        },
+        {
+          "gearId": "DJ2284",
+          "cost": [
+            "6xBABYLONIAN_CONTRAPTION",
+            "3x OLD_IREM_FRAGMENT"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "DA2170",
+      "cycle": "CYCLE_04",
+      "requires": "DA2168;DA2167;DA2192||DA2169",
+      "leadsTo": "DA2179;DA2184",
+      "produces": [
+        {
+          "gearId": "DJ2304",
+          "cost": [
+            "11xCURSED_DERELICT",
+            "13xMUTABLE_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "DJ2306",
+          "cost": [
+            "8xIMPERIAL_SCROLL",
+            "2xLIVING_GOLD"
+          ]
+        },
+        {
+          "gearId": "DJ2308",
+          "cost": [
+            "8xIMPERIAL_SCROLL",
+            "8xMUTABLE_AMBROSIA",
+            "2xCURSED_BLOATSACK"
+          ]
+        },
+        {
+          "gearId": "DJ2309",
+          "cost": [
+            "4xBABYLONIAN_CONTRAPTION",
+            "14xMUTABLE_AMBROSIA"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "DA2171",
+      "cycle": "CYCLE_04",
+      "requires": "DA2176",
+      "leadsTo": "DA2183;DA2194;DA2184;DA2177",
+      "produces": [
+        {
+          "gearId": "DJ2315",
+          "cost": [
+            "1xCURSED_DERELICT",
+            "5xWISH_EMBRYO"
+          ]
+        },
+        {
+          "gearId": "DJ2317",
+          "cost": [
+            "7xBABYLONIAN_CONTRAPTION",
+            "6xCURSED_BLOATSACK"
+          ]
+        },
+        {
+          "gearId": "DJ2319",
+          "cost": [
+            "6xBABYLONIAN_CONTRAPTION",
+            "5xMUTABLE_AMBROSIA",
+            "3xLIVING_GOLD"
+          ]
+        },
+        {
+          "gearId": "DJ2321",
+          "cost": [
+            "15xCURSED_DERELICT",
+            "2xWISH_EMBRYO",
+            "4xOLD_IREM_FRAGMENT"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "DA2172",
+      "cycle": "CYCLE_04",
+      "requires": "AL:f_wasters",
+      "leadsTo": "",
+      "produces": [
+        {
+          "gearId": "DJ2322",
+          "cost": [
+            "8xBABYLONIAN_CONTRAPTION",
+            "4xLIVING_GOLD",
+            "3xOLD_IREM_FRAGMENT",
+            "3xBLACK_TAINTED_STEPFINGER",
+            "2xPROMISED_FUTURES_CARCASS"
+          ]
+        },
+        {
+          "gearId": "DJ2323",
+          "cost": [
+            "10xIMPERIAL_SCROLL",
+            "19xMUTABLE_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "DJ2324",
+          "cost": [
+            "10xIMPERIAL_SCROLL",
+            "13xMUTABLE_AMBROSIA",
+            "3xWISH_EMBRYO"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "DA2173",
+      "cycle": "CYCLE_04",
+      "requires": "AL:f_aristotelians",
+      "leadsTo": "",
+      "produces": [
+        {
+          "gearId": "DJ2328",
+          "cost": [
+            "12xIMPERIAL_SCROLL",
+            "9xMUTABLE_AMBROSIA",
+            "4xOLD_IREM_FRAGMENT"
+          ]
+        },
+        {
+          "gearId": "DJ2329",
+          "cost": [
+            "15xCURSED_DERELICT",
+            "6xLIVING_GOLD",
+            "1xGOLDEN_BOUGH"
+          ]
+        },
+        {
+          "gearId": "DJ2330",
+          "cost": [
+            "3xCURSED_DERELICT",
+            "10xIMPERIAL_SCROLL",
+            "15xMUTABLE_AMBROSIA",
+            "2xWISH_EMBRYO"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "DA2174",
+      "cycle": "CYCLE_04",
+      "requires": "AL:f_cthieves",
+      "leadsTo": "",
+      "produces": [
+        {
+          "gearId": "DJ2325",
+          "cost": [
+            "11xCURSED_DERELICT",
+            "7xCURSED_BLOATSACK"
+          ]
+        },
+        {
+          "gearId": "DJ2326",
+          "cost": [
+            "6xCURSED_DERELICT",
+            "4xIMPERIAL_SCROLL",
+            "14xMUTABLE_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "DJ2327",
+          "cost": [
+            "6xIMPERIAL_SCROLL",
+            "4xBABYLONIAN_CONTRAPTION",
+            "10xMUTABLE_AMBROSIA",
+            "4xCURSED_BLOATSACK"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "DA2175",
+      "cycle": "CYCLE_04",
+      "requires": "BTL:core_midascore|2;DA2190;DA2168",
+      "leadsTo": "DA2192",
+      "produces": [
+        {
+          "gearId": "DJ2286",
+          "cost": [
+            "6xBURNED_OUT_GRACE",
+            "5xCURSED_DERELICT",
+            "3xCURSED_BLOATSACK"
+          ]
+        },
+        {
+          "gearId": "DJ2288",
+          "cost": [
+            "4xBABYLONIAN_CONTRAPTION",
+            "4xCURSED_BLOATSACK"
+          ]
+        },
+        {
+          "gearId": "DJ2290",
+          "cost": [
+            "11xCURSED_DERELICT",
+            "9xMUTABLE_AMBROSIA",
+            "1xLIVING_GOLD"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "DA2176",
+      "cycle": "CYCLE_04",
+      "requires": "BTL:core_midascore|3;DA2192;DA2193",
+      "leadsTo": "DA2171",
+      "produces": [
+        {
+          "gearId": "T:tt_cloudsoarer",
+          "cost": [
+            "1xTITAN",
+            "1xCORE_MIDASCORE"
+          ]
+        },
+        {
+          "gearId": "DJ2311",
+          "cost": [
+            "5xIMPERIAL_SCROLL",
+            "4xBABYLONIAN_CONTRAPTION",
+            "6xCURSED_BLOATSACK"
+          ]
+        },
+        {
+          "gearId": "DJ2313",
+          "cost": [
+            "8xBABYLONIAN_CONTRAPTION",
+            "6xMUTABLE_AMBROSIA",
+            "4xLIVING_GOLD"
+          ]
+        },
+        {
+          "gearId": "DJ2370",
+          "cost": [
+            "17xCURSED_DERELICT",
+            "2xCURSED_BLOATSACK",
+            "5xLIVING_GOLD",
+            "1xCORE_MIDASCORE",
+            "1xDJ2358"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "DA2177",
+      "cycle": "CYCLE_04",
+      "requires": "BTL:core_midascore|4;DA2171;DA2194",
+      "leadsTo": "DA2181",
+      "produces": [
+        {
+          "gearId": "DJ2338",
+          "cost": [
+            "21xIMPERIAL_SCROLL",
+            "17xCURSED_BLOATSACK"
+          ]
+        },
+        {
+          "gearId": "DJ2339",
+          "cost": [
+            "13xBABYLONIAN_CONTRAPTION",
+            "14xMUTABLE_AMBROSIA",
+            "6xLIVING_GOLD"
+          ]
+        },
+        {
+          "gearId": "DJ2340",
+          "cost": [
+            "9xBABYLONIAN_CONTRAPTION",
+            "10xLIVING_GOLD",
+            "1xGOLDEN_BOUGH"
+          ]
+        },
+        {
+          "gearId": "DJ2371",
+          "cost": [
+            "24xCURSED_DERELICT",
+            "8xCURSED_BLOATSACK",
+            "6xLIVING_GOLD",
+            "1xCORE_MIDASCORE",
+            "1xDJ2360"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "DA2178",
+      "cycle": "CYCLE_04",
+      "requires": "BTL:core_demidjinn|2;DA2167;DA2191",
+      "leadsTo": "DA2169",
+      "produces": [
+        {
+          "gearId": "DJ2292",
+          "cost": [
+            "6xIMPERIAL_SCROLL",
+            "4xWISH_EMBRYO"
+          ]
+        },
+        {
+          "gearId": "DJ2294",
+          "cost": [
+            "8xIMPERIAL_SCROLL",
+            "3xOLD_IREM_FRAGMENT"
+          ]
+        },
+        {
+          "gearId": "DJ2296",
+          "cost": [
+            "6xBABYLONIAN_CONTRAPTION",
+            "4xWISH_EMBRYO"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "DA2179",
+      "cycle": "CYCLE_04",
+      "requires": "BTL:core_demidjinn|3;DA2170;DA2196",
+      "leadsTo": "DA2184;DA2195",
+      "produces": [
+        {
+          "gearId": "T:tt_wishender",
+          "cost": [
+            "1xTITAN",
+            "1xCORE_DEMIDJINN"
+          ]
+        },
+        {
+          "gearId": "DJ2331",
+          "cost": [
+            "15xCURSED_DERELICT",
+            "6xOLD_IREM_FRAGMENT"
+          ]
+        },
+        {
+          "gearId": "DJ2333",
+          "cost": [
+            "13xIMPERIAL_SCROLL",
+            "8xWISH_EMBRYO"
+          ]
+        },
+        {
+          "gearId": "DJ2373",
+          "cost": [
+            "15xCURSED_DERELICT",
+            "3xWISH_EMBRYO",
+            "4xOLD_IREM_FRAGMENT",
+            "1xCORE_DEMIDJINN",
+            "1xDJ2362"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "DA2180",
+      "cycle": "CYCLE_04",
+      "requires": "BTL:core_demidjinn|4;DA2195;DA2184;DA2193",
+      "leadsTo": "DA2181",
+      "produces": [
+        {
+          "gearId": "DJ2348",
+          "cost": [
+            "19xIMPERIAL_SCROLL",
+            "15xWISH_EMBRYO",
+            "1xGOLDEN_BOUGH"
+          ]
+        },
+        {
+          "gearId": "DJ2349",
+          "cost": [
+            "14xBABYLONIAN_CONTRAPTION",
+            "16xWISH_EMBRYO"
+          ]
+        },
+        {
+          "gearId": "DJ2350",
+          "cost": [
+            "23xIMPERIAL_SCROLL",
+            "14xOLD_IREM_FRAGMENT",
+            "1xGOLDEN_BOUGH"
+          ]
+        },
+        {
+          "gearId": "DJ2372",
+          "cost": [
+            "26xCURSED_DERELICT",
+            "8xOLD_IREM_FRAGMENT",
+            "1xCORE_DEMIDJINN",
+            "1xDJ2361",
+            "1xCURSE_AFFLICTION"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "DA2181",
+      "cycle": "CYCLE_04",
+      "requires": "DA2166;DA2182;DA2177||DA2180",
+      "leadsTo": "",
+      "produces": [
+        {
+          "gearId": "T:tt_plunarlander",
+          "cost": [
+            "1xTITAN",
+            "6xBLACK_TAINTED_STEPFINGER"
+          ]
+        },
+        {
+          "gearId": "DJ2378",
+          "cost": [
+            "18xIMPERIAL_SCROLL",
+            "7xLIVING_GOLD",
+            "6xWISH_EMBRYO",
+            "12xBLACK_TAINTED_STEPFINGER",
+            "1xCORE_MIDASCORE",
+            "1xCORE_DEMIDJINN",
+            "1xDJ2372",
+            "1xCURSE_AFFLICTION"
+          ]
+        },
+        {
+          "gearId": "DJ2379",
+          "cost": [
+            "30xCURSED_DERELICT",
+            "14xCURSED_BLOATSACK",
+            "4xOLD_IREM_FRAGMENT",
+            "6xPROMISED_FUTURES_CARCASS",
+            "1xCORE_MIDASCORE",
+            "1xCORE_DEMIDJINN",
+            "1xDJ2372",
+            "1xCURSE_AFFLICTION"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "DA2182",
+      "cycle": "CYCLE_04",
+      "requires": "DA2184",
+      "leadsTo": "DA2181",
+      "produces": [
+        {
+          "gearId": "DJ2341",
+          "cost": [
+            "16xIMPERIAL_SCROLL",
+            "24xMUTABLE_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "DJ2343",
+          "cost": [
+            "11xBABYLONIAN_CONTRAPTION",
+            "15xMUTABLE_AMBROSIA",
+            "5xCURSED_BLOATSACK"
+          ]
+        },
+        {
+          "gearId": "DJ2345",
+          "cost": [
+            "25xCURSED_DERELICT",
+            "30xMUTABLE_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "DJ2347",
+          "cost": [
+            "11xBABYLONIAN_CONTRAPTION",
+            "7xMUTABLE_AMBROSIA",
+            "9xLIVING_GOLD",
+            "5xBLACK_TAINTED_STEPFINGER"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "DA2183",
+      "cycle": "CYCLE_04",
+      "requires": "DA2193;DA2171",
+      "leadsTo": "DA2186",
+      "produces": [
+        {
+          "gearId": "DJ2351",
+          "cost": [
+            "5xCURSED_DERELICT",
+            "5xBABYLONIAN_CONTRAPTION",
+            "19xMUTABLE_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "DJ2353",
+          "cost": [
+            "10xIMPERIAL_SCROLL",
+            "17xMUTABLE_AMBROSIA"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "DA2184",
+      "cycle": "CYCLE_04",
+      "requires": "DA2170;DA2171;DA2179",
+      "leadsTo": "DA2182;DA2180",
+      "produces": [
+        {
+          "gearId": "DJ2335",
+          "cost": [
+            "11xBABYLONIAN_CONTRAPTION",
+            "24xMUTABLE_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "DJ2336",
+          "cost": [
+            "19xCURSED_DERELICT",
+            "14xWISH_EMBRYO",
+            "1xCURSE_AFFLICTION"
+          ]
+        },
+        {
+          "gearId": "DJ2337",
+          "cost": [
+            "9xCURSED_DERELICT",
+            "10xIMPERIAL_SCROLL",
+            "12xOLD_IREM_FRAGMENT"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "DA2185",
+      "cycle": "CYCLE_04",
+      "requires": "BTL:core_dahaka|1;DA2168;DA2167",
+      "leadsTo": "DA2193",
+      "produces": [
+        {
+          "gearId": "T:tt_shadowdancer",
+          "cost": [
+            "1xTITAN",
+            "1xCORE_DAHAKA"
+          ]
+        },
+        {
+          "gearId": "DJ2298",
+          "cost": [
+            "12xCURSED_DERELICT",
+            "7xWISH_EMBRYO",
+            "5xONYX_DUST",
+            "5xIRE_ESSENCE"
+          ]
+        },
+        {
+          "gearId": "DJ2299",
+          "cost": [
+            "4xIMPERIAL_SCROLL",
+            "2xBABYLONIAN_CONTRAPTION",
+            "3xOLD_IREM_FRAGMENT",
+            "5xIRE_ESSENCE"
+          ]
+        },
+        {
+          "gearId": "DJ2300",
+          "cost": [
+            "8xIMPERIAL_SCROLL",
+            "12xMUTABLE_AMBROSIA",
+            "5xONYX_DUST"
+          ]
+        },
+        {
+          "gearId": "DJ2302",
+          "cost": [
+            "5xBABYLONIAN_CONTRAPTION",
+            "11xMUTABLE_AMBROSIA",
+            "2xONYX_DUST",
+            "2xIRE_ESSENCE"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "DA2186",
+      "cycle": "CYCLE_04",
+      "requires": "EVNT:lbl_tech_req_winnowing_victory;DA2193;DA2183",
+      "leadsTo": "",
+      "produces": [
+        {
+          "gearId": "DJ2374",
+          "cost": [
+            "12xBABYLONIAN_CONTRAPTION",
+            "14xMUTABLE_AMBROSIA",
+            "6xCURSED_BLOATSACK",
+            "7xONYX_DUST",
+            "4xIRE_ESSENCE"
+          ]
+        },
+        {
+          "gearId": "DJ2375",
+          "cost": [
+            "11xCURSED_DERELICT",
+            "6xBABYLONIAN_CONTRAPTION",
+            "14xCURSED_BLOATSACK",
+            "10xONYX_DUST"
+          ]
+        },
+        {
+          "gearId": "DJ2376",
+          "cost": [
+            "21xIMPERIAL_SCROLL",
+            "9xWISH_EMBRYO",
+            "6xOLD_IREM_FRAGMENT",
+            "7xIRE_ESSENCE",
+            "1xCORE_DAHAKA"
+          ]
+        },
+        {
+          "gearId": "DJ2377",
+          "cost": [
+            "11xBABYLONIAN_CONTRAPTION",
+            "25xMUTABLE_AMBROSIA",
+            "5xONYX_DUST",
+            "5xIRE_ESSENCE"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "DA2221",
+      "cycle": "CYCLE_04",
+      "requires": "EVNT:lbl_tech_req_prusuits_end;AK:51",
+      "leadsTo": "",
+      "produces": [
+        {
+          "gearId": "CJ1536",
+          "cost": [
+            "5xBABYLONIAN_CONTRAPTION",
+            "12x MUTABLE_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "CJ1537",
+          "cost": [
+            "8xIMPERIAL_SCROLL",
+            "4xWISH_EMBRYO"
+          ]
+        },
+        {
+          "gearId": "CJ1538",
+          "cost": [
+            "7xIMPERIAL_SCROLL",
+            "12xMUTABLE_AMBROSIA"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "DA2222",
+      "cycle": "CYCLE_04",
+      "requires": "AK:48",
+      "leadsTo": "",
+      "produces": [
+        {
+          "gearId": "CJ1480",
+          "cost": [
+            "8xCURSED_DERELICT",
+            "10xMUTABLE_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "CJ1477",
+          "cost": [
+            "7xIMPERIAL_SCROLL",
+            "3xCURSED_BLOATSACK"
+          ]
+        },
+        {
+          "gearId": "CJ1478",
+          "cost": [
+            "6xIMPERIAL_SCROLL",
+            "9xMUTABLE_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "CJ1479",
+          "cost": [
+            "6xIMPERIAL_SCROLL",
+            "2x OLD_IREM_FRAGMENT"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "EA2724",
+      "cycle": "CYCLE_05",
+      "requires": "",
+      "leadsTo": "EA2728;EA2751",
+      "produces": [
+        {
+          "gearId": "EJ2811",
+          "cost": [
+            "1xBLACK_TAINTED_STEPFINGER",
+            "1xPROMISED_FUTURES_CARCASS",
+            "1xOXIDIZED_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "EJ2815",
+          "cost": [
+            "3xLIQUID_AETHER",
+            "4xOXIDIZED_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "EJ2817",
+          "cost": [
+            "4xORICHALCUM_CHUNK",
+            "2xHYDRADYNAMIC_SCALES"
+          ]
+        },
+        {
+          "gearId": "EJ2819",
+          "cost": [
+            "6xORICHALCUM_CHUNK",
+            "1xAMYGDALAN_EXTRACT"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "EA2725",
+      "cycle": "CYCLE_05",
+      "requires": "EA2727",
+      "leadsTo": "EA2728",
+      "produces": [
+        {
+          "gearId": "EJ2795",
+          "cost": [
+            "4xPROMISED_FUTURES_CARCASS",
+            "5xOXIDIZED_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "EJ2797",
+          "cost": [
+            "4xORICHALCUM_CHUNK",
+            "1xMICROWAVE_CELL"
+          ]
+        },
+        {
+          "gearId": "EJ2799",
+          "cost": [
+            "5xPROMISED_FUTURES_CARCASS",
+            "5xOXIDIZED_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "EJ2801",
+          "cost": [
+            "2xPROMISED_FUTURES_CARCASS",
+            "2xORICHALCUM_CHUNK",
+            "4xOXIDIZED_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "EJ2803",
+          "cost": [
+            "4xORICHALCUM_CHUNK",
+            "2xPHOTOPHOBIC_FLESH"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "EA2726",
+      "cycle": "CYCLE_05",
+      "requires": "",
+      "leadsTo": "EA2750;EA2751",
+      "produces": [
+        {
+          "gearId": "EJ2806",
+          "cost": [
+            "2xBLACK_TAINTED_STEPFINGER",
+            "4xOXIDIZED_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "EJ2807",
+          "cost": [
+            "4xBLACK_TAINTED_STEPFINGER",
+            "1xAMYGDALAN_EXTRACT"
+          ]
+        },
+        {
+          "gearId": "EJ2809",
+          "cost": [
+            "6xORICHALCUM_CHUNK",
+            "2xHYDRADYNAMIC_SCALES"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "EA2727",
+      "cycle": "CYCLE_05",
+      "requires": "",
+      "leadsTo": "EA2725;EA2750",
+      "produces": [
+        {
+          "gearId": "EJ2821",
+          "cost": [
+            "4xBLACK_TAINTED_STEPFINGER",
+            "2xOXIDIZED_AMBROSIA",
+            "1xPHOTOPHOBIC_FLESH"
+          ]
+        },
+        {
+          "gearId": "EJ2823",
+          "cost": [
+            "5xPROMISED_FUTURES_CARCASS",
+            "1xMICROWAVE_CELL"
+          ]
+        },
+        {
+          "gearId": "EJ2825",
+          "cost": [
+            "4xPROMISED_FUTURES_CARCASS",
+            "1xMICROWAVE_CELL"
+          ]
+        },
+        {
+          "gearId": "EJ2827",
+          "cost": [
+            "3xBLACK_TAINTED_STEPFINGER",
+            "4xOXIDIZED_AMBROSIA"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "EA2728",
+      "cycle": "CYCLE_05",
+      "requires": "EA2724;EA2725",
+      "leadsTo": "EA2729",
+      "produces": [
+        {
+          "gearId": "EJ2829",
+          "cost": [
+            "3xLIQUID_AETHER",
+            "5xOXIDIZED_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "EJ2831",
+          "cost": [
+            "3xBLACK_TAINTED_STEPFINGER",
+            "1xLIQUID_AETHER",
+            "1xMICROWAVE_CELL"
+          ]
+        },
+        {
+          "gearId": "EJ2833",
+          "cost": [
+            "5xORICHALCUM_CHUNK",
+            "1xAMYGDALAN_EXTRACT"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "EA2729",
+      "cycle": "CYCLE_05",
+      "requires": "EA2728;EA2751",
+      "leadsTo": "EA2735;EA2740;EA2747",
+      "produces": [
+        {
+          "gearId": "EJ2835",
+          "cost": [
+            "4xPROMISED_FUTURES_CARCASS",
+            "2xOXIDIZED_AMBROSIA",
+            "1xPHOTOPHOBIC_FLESH"
+          ]
+        },
+        {
+          "gearId": "EJ2837",
+          "cost": [
+            "3xPROMISED_FUTURES_CARCASS",
+            "2xATLANTEAN_TEKNE",
+            "1xMICROWAVE_CELL",
+            "1xUNDEAD_SILVER"
+          ]
+        },
+        {
+          "gearId": "EJ2838",
+          "cost": [
+            "4xBLACK_TAINTED_STEPFINGER",
+            "2xHYDRADYNAMIC_SCALES"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "EA2730",
+      "cycle": "CYCLE_05",
+      "requires": "EA2750",
+      "leadsTo": "EA2735;EA2737;EA2747",
+      "produces": [
+        {
+          "gearId": "EJ2840",
+          "cost": [
+            "3xLIQUID_AETHER",
+            "1xAMYGDALAN_EXTRACT"
+          ]
+        },
+        {
+          "gearId": "EJ2842",
+          "cost": [
+            "2xLIQUID_AETHER",
+            "2xPHOTOPHOBIC_FLESH"
+          ]
+        },
+        {
+          "gearId": "EJ2844",
+          "cost": [
+            "3xLIQUID_AETHER",
+            "1xAMYGDALAN_EXTRACT"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "EA2731",
+      "cycle": "CYCLE_05",
+      "requires": "AL:f_vanguard",
+      "leadsTo": "",
+      "produces": [
+        {
+          "gearId": "EJ2914",
+          "cost": [
+            "11xORICHALCUM_CHUNK",
+            "19xOXIDIZED_AMBROSIA",
+            "1xFADING_CONSTRUCT",
+            "1xUNDEAD_SILVER"
+          ]
+        },
+        {
+          "gearId": "EJ2916",
+          "cost": [
+            "14xATLANTEAN_TEKNE",
+            "18xOXIDIZED_AMBROSIA",
+            "1xFADING_CONSTRUCT"
+          ]
+        },
+        {
+          "gearId": "EJ2918",
+          "cost": [
+            "9xATLANTEAN_TEKNE",
+            "5xAMYGDALAN_EXTRACT"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "EA2732",
+      "cycle": "CYCLE_05",
+      "requires": "AL:f_protectorate",
+      "leadsTo": "",
+      "produces": [
+        {
+          "gearId": "EJ2920",
+          "cost": [
+            "15xATLANTEAN_TEKNE",
+            "6xMICROWAVE_CELL",
+            "2xBLACKWOOL_STRAND"
+          ]
+        },
+        {
+          "gearId": "EJ2922",
+          "cost": [
+            "8xLIQUID_AETHER",
+            "18xOXIDIZED_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "EJ2924",
+          "cost": [
+            "7xLIQUID_AETHER",
+            "5xHYDRADYNAMIC_SCALES",
+            "5xPHOTOPHOBIC_FLESH",
+            "1xFADING_CONSTRUCT",
+            "1xUNDEAD_SILVER"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "EA2733",
+      "cycle": "CYCLE_05",
+      "requires": "AL:f_followers",
+      "leadsTo": "",
+      "produces": [
+        {
+          "gearId": "EJ2908",
+          "cost": [
+            "7xLIQUID_AETHER",
+            "3xOXIDIZED_AMBROSIA",
+            "4xMICROWAVE_CELL"
+          ]
+        },
+        {
+          "gearId": "EJ2910",
+          "cost": [
+            "11xATLANTEAN_TEKNE",
+            "3xHYDRADYNAMIC_SCALES",
+            "3xAMYGDALAN_EXTRACT"
+          ]
+        },
+        {
+          "gearId": "EJ2912",
+          "cost": [
+            "6xLIQUID_AETHER",
+            "16xOXIDIZED_AMBROSIA"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "EA2734",
+      "cycle": "CYCLE_05",
+      "requires": "EA2740",
+      "leadsTo": "EA2735;EA2756;EA2758",
+      "produces": [
+        {
+          "gearId": "EJ2846",
+          "cost": [
+            "9xATLANTEAN_TEKNE",
+            "9xOXIDIZED_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "EJ2848",
+          "cost": [
+            "4xBLACK_TAINTED_STEPFINGER",
+            "4xORICHALCUM_CHUNK",
+            "10xOXIDIZED_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "EJ2850",
+          "cost": [
+            "9xATLANTEAN_TEKNE",
+            "4xHYDRADYNAMIC_SCALES"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "EA2735",
+      "cycle": "CYCLE_05",
+      "requires": "EA2755;EA2730;EA2729;EA2734",
+      "leadsTo": "EA2736;EA2741;EA2743",
+      "produces": [
+        {
+          "gearId": "EJ2876",
+          "cost": [
+            "4xATLANTEAN_TEKNE",
+            "4xLIQUID_AETHER",
+            "6xOXIDIZED_AMBROSIA",
+            "2xMICROWAVE_CELL"
+          ]
+        },
+        {
+          "gearId": "EJ2878",
+          "cost": [
+            "4xBLACK_TAINTED_STEPFINGER",
+            "4xORICHALCUM_CHUNK",
+            "4xHYDRADYNAMIC_SCALES"
+          ]
+        },
+        {
+          "gearId": "EJ2880",
+          "cost": [
+            "6xORICHALCUM_CHUNK",
+            "6xOXIDIZED_AMBROSIA",
+            "1xAMYGDALAN_EXTRACT"
+          ]
+        },
+        {
+          "gearId": "EJ2882",
+          "cost": [
+            "6xATLANTEAN_TEKNE",
+            "5xORICHALCUM_CHUNK",
+            "4xOXIDIZED_AMBROSIA",
+            "2xMICROWAVE_CELL"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "EA2736",
+      "cycle": "CYCLE_05",
+      "requires": "EA2735;EA2738",
+      "leadsTo": "EA2739;EA2743;EA2744;EA2760",
+      "produces": [
+        {
+          "gearId": "EJ2892",
+          "cost": [
+            "6xLIQUID_AETHER",
+            "15xOXIDIZED_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "EJ2894",
+          "cost": [
+            "9xORICHALCUM_CHUNK",
+            "6xPHOTOPHOBIC_FLESH"
+          ]
+        },
+        {
+          "gearId": "EJ2896",
+          "cost": [
+            "12xATLANTEAN_TEKNE",
+            "7xOXIDIZED_AMBROSIA",
+            "2xAMYGDALAN_EXTRACT"
+          ]
+        },
+        {
+          "gearId": "EJ2898",
+          "cost": [
+            "9xORICHALCUM_CHUNK",
+            "6xHYDRADYNAMIC_SCALES"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "EA2737",
+      "cycle": "CYCLE_05",
+      "requires": "BTL:core_phobos|2;EA2730;EA2752",
+      "leadsTo": "EA2754",
+      "produces": [
+        {
+          "gearId": "EJ2852",
+          "cost": [
+            "2xATLANTEAN_TEKNE",
+            "3xLIQUID_AETHER",
+            "4xHYDRADYNAMIC_SCALES"
+          ]
+        },
+        {
+          "gearId": "EJ2854",
+          "cost": [
+            "4xBLACK_TAINTED_STEPFINGER",
+            "3xORICHALCUM_CHUNK",
+            "3xAMYGDALAN_EXTRACT"
+          ]
+        },
+        {
+          "gearId": "EJ2856",
+          "cost": [
+            "5xLIQUID_AETHER",
+            "3xAMYGDALAN_EXTRACT"
+          ]
+        },
+        {
+          "gearId": "EJ2858",
+          "cost": [
+            "2xLIQUID_AETHER",
+            "3xORICHALCUM_CHUNK",
+            "1xHYDRADYNAMIC_SCALES",
+            "2xAMYGDALAN_EXTRACT"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "EA2738",
+      "cycle": "CYCLE_05",
+      "requires": "BTL:core_phobos|3;EA2754;EA2755",
+      "leadsTo": "EA2736",
+      "produces": [
+        {
+          "gearId": "T:tt_feareater",
+          "cost": [
+            "1xTITAN",
+            "1xCORE_DRAGON_PHOBOS"
+          ]
+        },
+        {
+          "gearId": "EJ2884",
+          "cost": [
+            "9xORICHALCUM_CHUNK",
+            "7xHYDRADYNAMIC_SCALES"
+          ]
+        },
+        {
+          "gearId": "EJ2886",
+          "cost": [
+            "7xLIQUID_AETHER",
+            "8xOXIDIZED_AMBROSIA",
+            "3xAMYGDALAN_EXTRACT"
+          ]
+        },
+        {
+          "gearId": "EJ2888",
+          "cost": [
+            "11xORICHALCUM_CHUNK",
+            "3xHYDRADYNAMIC_SCALES",
+            "4xAMYGDALAN_EXTRACT"
+          ]
+        },
+        {
+          "gearId": "EJ2890",
+          "cost": [
+            "5xLIQUID_AETHER",
+            "4xATLANTEAN_TEKNE",
+            "6xOXIDIZED_AMBROSIA",
+            "2xHYDRADYNAMIC_SCALES",
+            "2xAMYGDALAN_EXTRACT"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "EA2739",
+      "cycle": "CYCLE_05",
+      "requires": "BTL:core_phobos|4;EA2736;EA2760",
+      "leadsTo": "EA2746",
+      "produces": [
+        {
+          "gearId": "EJ2932",
+          "cost": [
+            "14xATLANTEAN_TEKNE",
+            "7xAMYGDALAN_EXTRACT"
+          ]
+        },
+        {
+          "gearId": "EJ2934",
+          "cost": [
+            "11xATLANTEAN_TEKNE",
+            "7xORICHALCUM_CHUNK",
+            "6xHYDRADYNAMIC_SCALES",
+            "5xAMYGDALAN_EXTRACT"
+          ]
+        },
+        {
+          "gearId": "EJ2936",
+          "cost": [
+            "15xATLANTEAN_TEKNE",
+            "11xHYDRADYNAMIC_SCALES"
+          ]
+        },
+        {
+          "gearId": "EJ2979",
+          "cost": [
+            "16xORICHALCUM_CHUNK",
+            "7xHYDRADYNAMIC_SCALES",
+            "4xAMYGDALAN_EXTRACT",
+            "1xCORE_DRAGON_PHOBOS",
+            "1xEJ2967"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "EA2740",
+      "cycle": "CYCLE_05",
+      "requires": "BTL:core_meduketos|2;EA2729;EA2753",
+      "leadsTo": "EA2734",
+      "produces": [
+        {
+          "gearId": "EJ2860",
+          "cost": [
+            "4xBLACK_TAINTED_STEPFINGER",
+            "5xATLANTEAN_TEKNE",
+            "2xPHOTOPHOBIC_FLESH",
+            "2xMICROWAVE_CELL"
+          ]
+        },
+        {
+          "gearId": "EJ2862",
+          "cost": [
+            "4xLIQUID_AETHER",
+            "4xPHOTOPHOBIC_FLESH"
+          ]
+        },
+        {
+          "gearId": "EJ2864",
+          "cost": [
+            "4xLIQUID_AETHER",
+            "3xPHOTOPHOBIC_FLESH"
+          ]
+        },
+        {
+          "gearId": "EJ2866",
+          "cost": [
+            "3xBLACK_TAINTED_STEPFINGER",
+            "4xORICHALCUM_CHUNK",
+            "3xMICROWAVE_CELL"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "EA2741",
+      "cycle": "CYCLE_05",
+      "requires": "BTL:core_meduketos|3;EA2735;EA2756",
+      "leadsTo": "EA2743;EA2759",
+      "produces": [
+        {
+          "gearId": "T:tt_helldiver",
+          "cost": [
+            "1xTITAN",
+            "1xCORE_MEDUKETOS"
+          ]
+        },
+        {
+          "gearId": "EJ2900",
+          "cost": [
+            "9xORICHALCUM_CHUNK",
+            "5xPHOTOPHOBIC_FLESH",
+            "2xMICROWAVE_CELL"
+          ]
+        },
+        {
+          "gearId": "EJ2902",
+          "cost": [
+            "7xATLANTEAN_TEKNE",
+            "4xORICHALCUM_CHUNK",
+            "6xMICROWAVE_CELL"
+          ]
+        },
+        {
+          "gearId": "EJ2904",
+          "cost": [
+            "15xATLANTEAN_TEKNE",
+            "8xPHOTOPHOBIC_FLESH"
+          ]
+        },
+        {
+          "gearId": "EJ2906",
+          "cost": [
+            "7xORICHALCUM_CHUNK",
+            "5xATLANTEAN_TEKNE",
+            "5xOXIDIZED_AMBROSIA",
+            "2xPHOTOPHOBIC_FLESH",
+            "2xMICROWAVE_CELL"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "EA2742",
+      "cycle": "CYCLE_05",
+      "requires": "BTL:core_meduketos|4;EA2743;EA2755;EA2759",
+      "leadsTo": "EA2746",
+      "produces": [
+        {
+          "gearId": "EJ2946",
+          "cost": [
+            "8xATLANTEAN_TEKNE",
+            "4xLIQUID_AETHER",
+            "8xMICROWAVE_CELL"
+          ]
+        },
+        {
+          "gearId": "EJ2948",
+          "cost": [
+            "9xLIQUID_AETHER",
+            "6xPHOTOPHOBIC_FLESH",
+            "5xMICROWAVE_CELL"
+          ]
+        },
+        {
+          "gearId": "EJ2950",
+          "cost": [
+            "4xORICHALCUM_CHUNK",
+            "7xLIQUID_AETHER",
+            "12xPHOTOPHOBIC_FLESH"
+          ]
+        },
+        {
+          "gearId": "EJ2980",
+          "cost": [
+            "14xORICHALCUM_CHUNK",
+            "8xPHOTOPHOBIC_FLESH",
+            "3xMICROWAVE_CELL",
+            "1xCORE_MEDUKETOS",
+            "1xEJ2969"
+          ]
+        },
+        {
+          "gearId": "EJ2952",
+          "cost": [
+            "2xORICHALCUM_CHUNK",
+            "11xATLANTEAN_TEKNE",
+            "10xOXIDIZED_AMBROSIA",
+            "4xPHOTOPHOBIC_FLESH",
+            "3xMICROWAVE_CELL"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "EA2743",
+      "cycle": "CYCLE_05",
+      "requires": "EA2735;EA2736;EA2741",
+      "leadsTo": "EA2742;EA2744;EA2745",
+      "produces": [
+        {
+          "gearId": "EJ2926",
+          "cost": [
+            "15xORICHALCUM_CHUNK",
+            "34xOXIDIZED_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "EJ2928",
+          "cost": [
+            "5xORICHALCUM_CHUNK",
+            "6xLIQUID_AETHER",
+            "13xOXIDIZED_AMBROSIA",
+            "5xMICROWAVE_CELL"
+          ]
+        },
+        {
+          "gearId": "EJ2930",
+          "cost": [
+            "9xLIQUID_AETHER",
+            "19xOXIDIZED_AMBROSIA",
+            "5xHYDRADYNAMIC_SCALES",
+            "1xUNDEAD_SILVER"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "EA2744",
+      "cycle": "CYCLE_05",
+      "requires": "EA2736;EA2743;EA2755;EA2757",
+      "leadsTo": "EA2748",
+      "produces": [
+        {
+          "gearId": "EJ2958",
+          "cost": [
+            "16xATLANTEAN_TEKNE",
+            "4xOXIDIZED_AMBROSIA",
+            "9xPHOTOPHOBIC_FLESH"
+          ]
+        },
+        {
+          "gearId": "EJ2954",
+          "cost": [
+            "15xATLANTEAN_TEKNE",
+            "4xORICHALCUM_CHUNK",
+            "22xOXIDIZED_AMBROSIA",
+            "3xMICROWAVE_CELL"
+          ]
+        },
+        {
+          "gearId": "EJ2956",
+          "cost": [
+            "16xORICHALCUM_CHUNK",
+            "11xMICROWAVE_CELL"
+          ]
+        },
+        {
+          "gearId": "EJ2978",
+          "cost": [
+            "13xORICHALCUM_CHUNK",
+            "6xHYDRADYNAMIC_SCALES",
+            "4xAMYGDALAN_EXTRACT",
+            "2xCORE_DRAGON_PHOBOS",
+            "1xEJ2968"
+          ]
+        },
+        {
+          "gearId": "EJ2959",
+          "cost": [
+            "5xLIQUID_AETHER",
+            "8xORICHALCUM_CHUNK",
+            "11xOXIDIZED_AMBROSIA",
+            "4xHYDRADYNAMIC_SCALES",
+            "3xAMYGDALAN_EXTRACT"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "EA2745",
+      "cycle": "CYCLE_05",
+      "requires": "EA2743",
+      "leadsTo": "EA2746",
+      "produces": [
+        {
+          "gearId": "EJ2938",
+          "cost": [
+            "9xLIQUID_AETHER",
+            "30xOXIDIZED_AMBROSIA",
+            "1xUNDEAD_SILVER"
+          ]
+        },
+        {
+          "gearId": "EJ2940",
+          "cost": [
+            "6xORICHALCUM_CHUNK",
+            "4xLIQUID_AETHER",
+            "8xAMYGDALAN_EXTRACT"
+          ]
+        },
+        {
+          "gearId": "EJ2942",
+          "cost": [
+            "13xORICHALCUM_CHUNK",
+            "27xOXIDIZED_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "EJ2944",
+          "cost": [
+            "15xATLANTEAN_TEKNE",
+            "16xOXIDIZED_AMBROSIA",
+            "4xHYDRADYNAMIC_SCALES"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "EA2746",
+      "cycle": "CYCLE_05",
+      "requires": "BTL:core_urfleece|1;EA2745;EA2750;EA2739||EA2742",
+      "leadsTo": "",
+      "produces": [
+        {
+          "gearId": "T:tt_trespasser",
+          "cost": [
+            "1xTITAN",
+            "6xFADING_CONSTRUCT"
+          ]
+        },
+        {
+          "gearId": "EJ2961",
+          "cost": [
+            "19xATLANTEAN_TEKNE",
+            "31xOXIDIZED_AMBROSIA",
+            "4xBLACKWOOL_STRAND",
+            "2xFADING_CONSTRUCT"
+          ]
+        },
+        {
+          "gearId": "EJ2981",
+          "cost": [
+            "15xORICHALCUM_CHUNK",
+            "34xOXIDIZED_AMBROSIA",
+            "7xBLACKWOOL_STRAND",
+            "4xFADING_CONSTRUCT",
+            "1xEJ2977"
+          ]
+        },
+        {
+          "gearId": "EJ2990",
+          "cost": [
+            "22xATLANTEAN_TEKNE",
+            "14xPHOTOPHOBIC_FLESH",
+            "4xBLACKWOOL_STRAND",
+            "6xFADING_CONSTRUCT",
+            "2xCORE_MEDUKETOS",
+            "1xEJ2980"
+          ]
+        },
+        {
+          "gearId": "EJ2991",
+          "cost": [
+            "13xORICHALCUM_CHUNK",
+            "30xOXIDIZED_AMBROSIA",
+            "5xBLACKWOOL_STRAND",
+            "4xFADING_CONSTRUCT",
+            "1xEJ2981"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "EA2747",
+      "cycle": "CYCLE_05",
+      "requires": "BTL:core_titanx|1;EA2729;EA2730",
+      "leadsTo": "EA2755",
+      "produces": [
+        {
+          "gearId": "T:tt_executioner",
+          "cost": [
+            "1xTITAN",
+            "6xORICHALCUM_ALLOY",
+            "1xCORE_TITAN_X"
+          ]
+        },
+        {
+          "gearId": "EJ2868",
+          "cost": [
+            "6xORICHALCUM_CHUNK",
+            "9xOXIDIZED_AMBROSIA",
+            "3xORICHALCUM_ALLOY"
+          ]
+        },
+        {
+          "gearId": "EJ2870",
+          "cost": [
+            "5xLIQUID_AETHER",
+            "10xOXIDIZED_AMBROSIA",
+            "2xORICHALCUM_ALLOY",
+            "2xSLAVE_METAL"
+          ]
+        },
+        {
+          "gearId": "EJ2872",
+          "cost": [
+            "8xORICHALCUM_CHUNK",
+            "6xOXIDIZED_AMBROSIA",
+            "1xAMYGDALAN_EXTRACT",
+            "1xMICROWAVE_CELL",
+            "4xORICHALCUM_ALLOY",
+            "1xSLAVE_METAL"
+          ]
+        },
+        {
+          "gearId": "EJ2874",
+          "cost": [
+            "3xATLANTEAN_TEKNE",
+            "2xLIQUID_AETHER",
+            "3xPHOTOPHOBIC_FLESH",
+            "3xSLAVE_METAL"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "EA2748",
+      "cycle": "CYCLE_05",
+      "requires": "EVNT:lbl_tech_req_thicker_than_water_battle_victory;EA2744;EA2755",
+      "leadsTo": "",
+      "produces": [
+        {
+          "gearId": "EJ2982",
+          "cost": [
+            "14xATLANTEAN_TEKNE",
+            "10xPHOTOPHOBIC_FLESH",
+            "6xORICHALCUM_ALLOY"
+          ]
+        },
+        {
+          "gearId": "EJ2984",
+          "cost": [
+            "12xLIQUID_AETHER",
+            "10xAMYGDALAN_EXTRACT",
+            "2xORICHALCUM_ALLOY",
+            "8xSLAVE_METAL"
+          ]
+        },
+        {
+          "gearId": "EJ2986",
+          "cost": [
+            "9xLIQUID_AETHER",
+            "30xOXIDIZED_AMBROSIA",
+            "9xORICHALCUM_ALLOY",
+            "4xSLAVE_METAL"
+          ]
+        },
+        {
+          "gearId": "EJ2988",
+          "cost": [
+            "17xATLANTEAN_TEKNE",
+            "11xHYDRADYNAMIC_SCALES",
+            "3xORICHALCUM_ALLOY",
+            "3xSLAVE_METAL"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "EA2789",
+      "cycle": "CYCLE_05",
+      "requires": "EVNT:lbl_tech_req_prusuits_end;AK:51",
+      "leadsTo": "",
+      "produces": [
+        {
+          "gearId": "CJ1536",
+          "cost": [
+            "5xLIQUID_AETHER",
+            "12xOXIDIZED_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "CJ1537",
+          "cost": [
+            "8xORICHALCUM_CHUNK",
+            "4xPHOTOPHOBIC_FLESH"
+          ]
+        },
+        {
+          "gearId": "CJ1538",
+          "cost": [
+            "7xORICHALCUM_CHUNK",
+            "12xOXIDIZED_AMBROSIA"
+          ]
+        }
+      ]
+    },
+    {
+      "techId": "EA2790",
+      "cycle": "CYCLE_05",
+      "requires": "AK:48",
+      "leadsTo": "",
+      "produces": [
+        {
+          "gearId": "CJ1480",
+          "cost": [
+            "8xATLANTEAN_TEKNE",
+            "10xOXIDIZED_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "CJ1477",
+          "cost": [
+            "7xORICHALCUM_CHUNK",
+            "3xHYDRADYNAMIC_SCALES"
+          ]
+        },
+        {
+          "gearId": "CJ1478",
+          "cost": [
+            "6xORICHALCUM_CHUNK",
+            "9xOXIDIZED_AMBROSIA"
+          ]
+        },
+        {
+          "gearId": "CJ1479",
+          "cost": [
+            "6xORICHALCUM_CHUNK",
+            "2xMICROWAVE_CELL"
+          ]
+        }
+      ]
+    }
+  ]
+}

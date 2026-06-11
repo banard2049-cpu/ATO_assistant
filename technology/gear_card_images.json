@@ -1,0 +1,1299 @@
+﻿{
+    "version":  1,
+    "source":  "D:\\files\\My Games\\Tabletop Simulator\\Mods\\Workshop\\(Don)Aeon Trespass Odyssey.json",
+    "count":  258,
+    "images":  {
+                   "AJ0156":  "images/gear_cards/aj0156.jpg",
+                   "AJ0160":  "images/gear_cards/aj0160.jpg",
+                   "AJ0163":  "images/gear_cards/aj0163.jpg",
+                   "AJ0165":  "images/gear_cards/aj0165.jpg",
+                   "AJ0167":  "images/gear_cards/aj0167.jpg",
+                   "AJ0169":  "images/gear_cards/aj0169.jpg",
+                   "AJ0171":  "images/gear_cards/aj0171.jpg",
+                   "AJ0173":  "images/gear_cards/aj0173.jpg",
+                   "AJ0175":  "images/gear_cards/aj0175.jpg",
+                   "AJ0177":  "images/gear_cards/aj0177.jpg",
+                   "AJ0179":  "images/gear_cards/aj0179.jpg",
+                   "AJ0181":  "images/gear_cards/aj0181.jpg",
+                   "AJ0183":  "images/gear_cards/aj0183.jpg",
+                   "AJ0185":  "images/gear_cards/aj0185.jpg",
+                   "AJ0187":  "images/gear_cards/aj0187.jpg",
+                   "AJ0189":  "images/gear_cards/aj0189.jpg",
+                   "AJ0191":  "images/gear_cards/aj0191.jpg",
+                   "AJ0193":  "images/gear_cards/aj0193.jpg",
+                   "AJ0195":  "images/gear_cards/aj0195.jpg",
+                   "AJ0197":  "images/gear_cards/aj0197.jpg",
+                   "AJ0199":  "images/gear_cards/aj0199.jpg",
+                   "AJ0202":  "images/gear_cards/aj0202.jpg",
+                   "AJ0204":  "images/gear_cards/aj0204.jpg",
+                   "AJ0206":  "images/gear_cards/aj0206.jpg",
+                   "AJ0209":  "images/gear_cards/aj0209.jpg",
+                   "AJ0211":  "images/gear_cards/aj0211.jpg",
+                   "AJ0213":  "images/gear_cards/aj0213.jpg",
+                   "AJ0215":  "images/gear_cards/aj0215.jpg",
+                   "AJ0217":  "images/gear_cards/aj0217.jpg",
+                   "AJ0219":  "images/gear_cards/aj0219.jpg",
+                   "AJ0220":  "images/gear_cards/aj0220.jpg",
+                   "AJ0222":  "images/gear_cards/aj0222.jpg",
+                   "AJ0224":  "images/gear_cards/aj0224.jpg",
+                   "AJ0226":  "images/gear_cards/aj0226.jpg",
+                   "AJ0228":  "images/gear_cards/aj0228.jpg",
+                   "AJ0230":  "images/gear_cards/aj0230.jpg",
+                   "AJ0231":  "images/gear_cards/aj0231.jpg",
+                   "AJ0233":  "images/gear_cards/aj0233.jpg",
+                   "AJ0235":  "images/gear_cards/aj0235.jpg",
+                   "AJ0237":  "images/gear_cards/aj0237.jpg",
+                   "AJ0239":  "images/gear_cards/aj0239.jpg",
+                   "AJ0241":  "images/gear_cards/aj0241.jpg",
+                   "AJ0243":  "images/gear_cards/aj0243.jpg",
+                   "AJ0245":  "images/gear_cards/aj0245.jpg",
+                   "AJ0247":  "images/gear_cards/aj0247.jpg",
+                   "AJ0249":  "images/gear_cards/aj0249.jpg",
+                   "AJ0251":  "images/gear_cards/aj0251.jpg",
+                   "AJ0253":  "images/gear_cards/aj0253.jpg",
+                   "AJ0254":  "images/gear_cards/aj0254.jpg",
+                   "AJ0255":  "images/gear_cards/aj0255.jpg",
+                   "AJ0256":  "images/gear_cards/aj0256.jpg",
+                   "AJ0257":  "images/gear_cards/aj0257.jpg",
+                   "AJ0258":  "images/gear_cards/aj0258.jpg",
+                   "AJ0259":  "images/gear_cards/aj0259.jpg",
+                   "AJ0260":  "images/gear_cards/aj0260.jpg",
+                   "AJ0261":  "images/gear_cards/aj0261.jpg",
+                   "AJ0262":  "images/gear_cards/aj0262.jpg",
+                   "AJ0264":  "images/gear_cards/aj0264.jpg",
+                   "AJ0266":  "images/gear_cards/aj0266.jpg",
+                   "AJ0268":  "images/gear_cards/aj0268.jpg",
+                   "AJ0269":  "images/gear_cards/aj0269.jpg",
+                   "AJ0270":  "images/gear_cards/aj0270.jpg",
+                   "AJ0271":  "images/gear_cards/aj0271.jpg",
+                   "AJ0273":  "images/gear_cards/aj0273.jpg",
+                   "AJ0274":  "images/gear_cards/aj0274.jpg",
+                   "AJ0275":  "images/gear_cards/aj0275.jpg",
+                   "AJ0277":  "images/gear_cards/aj0277.jpg",
+                   "AJ0279":  "images/gear_cards/aj0279.jpg",
+                   "AJ0280":  "images/gear_cards/aj0280.jpg",
+                   "AJ0281":  "images/gear_cards/aj0281.jpg",
+                   "AJ0282":  "images/gear_cards/aj0282.jpg",
+                   "AJ0283":  "images/gear_cards/aj0283.jpg",
+                   "BJ0827":  "images/gear_cards/bj0827.jpg",
+                   "BJ0829":  "images/gear_cards/bj0829.jpg",
+                   "BJ0831":  "images/gear_cards/bj0831.jpg",
+                   "BJ0835":  "images/gear_cards/bj0835.jpg",
+                   "BJ0837":  "images/gear_cards/bj0837.jpg",
+                   "BJ0839":  "images/gear_cards/bj0839.jpg",
+                   "BJ0841":  "images/gear_cards/bj0841.jpg",
+                   "BJ0844":  "images/gear_cards/bj0844.jpg",
+                   "BJ0845":  "images/gear_cards/bj0845.jpg",
+                   "BJ0847":  "images/gear_cards/bj0847.jpg",
+                   "BJ0849":  "images/gear_cards/bj0849.jpg",
+                   "BJ0851":  "images/gear_cards/bj0851.jpg",
+                   "BJ0852":  "images/gear_cards/bj0852.jpg",
+                   "BJ0854":  "images/gear_cards/bj0854.jpg",
+                   "BJ0856":  "images/gear_cards/bj0856.jpg",
+                   "BJ0858":  "images/gear_cards/bj0858.jpg",
+                   "BJ0859":  "images/gear_cards/bj0859.jpg",
+                   "BJ0860":  "images/gear_cards/bj0860.jpg",
+                   "BJ0862":  "images/gear_cards/bj0862.jpg",
+                   "BJ0864":  "images/gear_cards/bj0864.jpg",
+                   "BJ0866":  "images/gear_cards/bj0866.jpg",
+                   "BJ0868":  "images/gear_cards/bj0868.jpg",
+                   "BJ0869":  "images/gear_cards/bj0869.jpg",
+                   "BJ0871":  "images/gear_cards/bj0871.jpg",
+                   "BJ0873":  "images/gear_cards/bj0873.jpg",
+                   "BJ0875":  "images/gear_cards/bj0875.jpg",
+                   "BJ0877":  "images/gear_cards/bj0877.jpg",
+                   "BJ0879":  "images/gear_cards/bj0879.jpg",
+                   "BJ0881":  "images/gear_cards/bj0881.jpg",
+                   "BJ0883":  "images/gear_cards/bj0883.jpg",
+                   "BJ0885":  "images/gear_cards/bj0885.jpg",
+                   "BJ0887":  "images/gear_cards/bj0887.jpg",
+                   "BJ0889":  "images/gear_cards/bj0889.jpg",
+                   "BJ0891":  "images/gear_cards/bj0891.jpg",
+                   "BJ0894":  "images/gear_cards/bj0894.jpg",
+                   "BJ0896":  "images/gear_cards/bj0896.jpg",
+                   "BJ0898":  "images/gear_cards/bj0898.jpg",
+                   "BJ0900":  "images/gear_cards/bj0900.jpg",
+                   "BJ0901":  "images/gear_cards/bj0901.jpg",
+                   "BJ0902":  "images/gear_cards/bj0902.jpg",
+                   "BJ0903":  "images/gear_cards/bj0903.jpg",
+                   "BJ0904":  "images/gear_cards/bj0904.jpg",
+                   "BJ0905":  "images/gear_cards/bj0905.jpg",
+                   "BJ0906":  "images/gear_cards/bj0906.jpg",
+                   "BJ0907":  "images/gear_cards/bj0907.jpg",
+                   "BJ0908":  "images/gear_cards/bj0908.jpg",
+                   "BJ0909":  "images/gear_cards/bj0909.jpg",
+                   "BJ0910":  "images/gear_cards/bj0910.jpg",
+                   "BJ0911":  "images/gear_cards/bj0911.jpg",
+                   "BJ0913":  "images/gear_cards/bj0913.jpg",
+                   "BJ0915":  "images/gear_cards/bj0915.jpg",
+                   "BJ0917":  "images/gear_cards/bj0917.jpg",
+                   "BJ0919":  "images/gear_cards/bj0919.jpg",
+                   "BJ0921":  "images/gear_cards/bj0921.jpg",
+                   "BJ0923":  "images/gear_cards/bj0923.jpg",
+                   "BJ0925":  "images/gear_cards/bj0925.jpg",
+                   "BJ0927":  "images/gear_cards/bj0927.jpg",
+                   "BJ0928":  "images/gear_cards/bj0928.jpg",
+                   "BJ0930":  "images/gear_cards/bj0930.jpg",
+                   "BJ0932":  "images/gear_cards/bj0932.jpg",
+                   "BJ0934":  "images/gear_cards/bj0934.jpg",
+                   "BJ0936":  "images/gear_cards/bj0936.jpg",
+                   "BJ0937":  "images/gear_cards/bj0937.jpg",
+                   "BJ0938":  "images/gear_cards/bj0938.jpg",
+                   "BJ0939":  "images/gear_cards/bj0939.jpg",
+                   "BJ0940":  "images/gear_cards/bj0940.jpg",
+                   "BJ0941":  "images/gear_cards/bj0941.jpg",
+                   "BJ0942":  "images/gear_cards/bj0942.jpg",
+                   "BJ0943":  "images/gear_cards/bj0943.jpg",
+                   "BJ0944":  "images/gear_cards/bj0944.jpg",
+                   "BJ0946":  "images/gear_cards/bj0946.jpg",
+                   "BJ0948":  "images/gear_cards/bj0948.jpg",
+                   "BJ0950":  "images/gear_cards/bj0950.jpg",
+                   "BJ0952":  "images/gear_cards/bj0952.jpg",
+                   "BJ0954":  "images/gear_cards/bj0954.jpg",
+                   "BJ0955":  "images/gear_cards/bj0955.jpg",
+                   "BJ0956":  "images/gear_cards/bj0956.jpg",
+                   "BJ0957":  "images/gear_cards/bj0957.jpg",
+                   "BJ0958":  "images/gear_cards/bj0958.jpg",
+                   "BJ0959":  "images/gear_cards/bj0959.jpg",
+                   "BJ0960":  "images/gear_cards/bj0960.jpg",
+                   "BJ0961":  "images/gear_cards/bj0961.jpg",
+                   "BJ0963":  "images/gear_cards/bj0963.jpg",
+                   "BJ0964":  "images/gear_cards/bj0964.jpg",
+                   "BJ0965":  "images/gear_cards/bj0965.jpg",
+                   "BJ0966":  "images/gear_cards/bj0966.jpg",
+                   "BJ0967":  "images/gear_cards/bj0967.jpg",
+                   "BJ0969":  "images/gear_cards/bj0969.jpg",
+                   "BJ0970":  "images/gear_cards/bj0970.jpg",
+                   "BJ0971":  "images/gear_cards/bj0971.jpg",
+                   "CJ1389":  "images/gear_cards/cj1389.jpg",
+                   "CJ1391":  "images/gear_cards/cj1391.jpg",
+                   "CJ1393":  "images/gear_cards/cj1393.jpg",
+                   "CJ1395":  "images/gear_cards/cj1395.jpg",
+                   "CJ1397":  "images/gear_cards/cj1397.jpg",
+                   "CJ1399":  "images/gear_cards/cj1399.jpg",
+                   "CJ1401":  "images/gear_cards/cj1401.jpg",
+                   "CJ1403":  "images/gear_cards/cj1403.jpg",
+                   "CJ1405":  "images/gear_cards/cj1405.jpg",
+                   "CJ1407":  "images/gear_cards/cj1407.jpg",
+                   "CJ1409":  "images/gear_cards/cj1409.jpg",
+                   "CJ1411":  "images/gear_cards/cj1411.jpg",
+                   "CJ1413":  "images/gear_cards/cj1413.jpg",
+                   "CJ1415":  "images/gear_cards/cj1415.jpg",
+                   "CJ1417":  "images/gear_cards/cj1417.jpg",
+                   "CJ1419":  "images/gear_cards/cj1419.jpg",
+                   "CJ1421":  "images/gear_cards/cj1421.jpg",
+                   "CJ1423":  "images/gear_cards/cj1423.jpg",
+                   "CJ1425":  "images/gear_cards/cj1425.jpg",
+                   "CJ1427":  "images/gear_cards/cj1427.jpg",
+                   "CJ1429":  "images/gear_cards/cj1429.jpg",
+                   "CJ1431":  "images/gear_cards/cj1431.jpg",
+                   "CJ1433":  "images/gear_cards/cj1433.jpg",
+                   "CJ1435":  "images/gear_cards/cj1435.jpg",
+                   "CJ1437":  "images/gear_cards/cj1437.jpg",
+                   "CJ1439":  "images/gear_cards/cj1439.jpg",
+                   "CJ1441":  "images/gear_cards/cj1441.jpg",
+                   "CJ1443":  "images/gear_cards/cj1443.jpg",
+                   "CJ1445":  "images/gear_cards/cj1445.jpg",
+                   "CJ1447":  "images/gear_cards/cj1447.jpg",
+                   "CJ1448":  "images/gear_cards/cj1448.jpg",
+                   "CJ1450":  "images/gear_cards/cj1450.jpg",
+                   "CJ1452":  "images/gear_cards/cj1452.jpg",
+                   "CJ1454":  "images/gear_cards/cj1454.jpg",
+                   "CJ1456":  "images/gear_cards/cj1456.jpg",
+                   "CJ1458":  "images/gear_cards/cj1458.jpg",
+                   "CJ1460":  "images/gear_cards/cj1460.jpg",
+                   "CJ1462":  "images/gear_cards/cj1462.jpg",
+                   "CJ1464":  "images/gear_cards/cj1464.jpg",
+                   "CJ1466":  "images/gear_cards/cj1466.jpg",
+                   "CJ1468":  "images/gear_cards/cj1468.jpg",
+                   "CJ1470":  "images/gear_cards/cj1470.jpg",
+                   "CJ1472":  "images/gear_cards/cj1472.jpg",
+                   "CJ1476":  "images/gear_cards/cj1476.jpg",
+                   "CJ1477":  "images/gear_cards/cj1477.jpg",
+                   "CJ1478":  "images/gear_cards/cj1478.jpg",
+                   "CJ1479":  "images/gear_cards/cj1479.jpg",
+                   "CJ1480":  "images/gear_cards/cj1480.jpg",
+                   "CJ1481":  "images/gear_cards/cj1481.jpg",
+                   "CJ1482":  "images/gear_cards/cj1482.jpg",
+                   "CJ1483":  "images/gear_cards/cj1483.jpg",
+                   "CJ1484":  "images/gear_cards/cj1484.jpg",
+                   "CJ1485":  "images/gear_cards/cj1485.jpg",
+                   "CJ1486":  "images/gear_cards/cj1486.jpg",
+                   "CJ1487":  "images/gear_cards/cj1487.jpg",
+                   "CJ1488":  "images/gear_cards/cj1488.jpg",
+                   "CJ1490":  "images/gear_cards/cj1490.jpg",
+                   "CJ1491":  "images/gear_cards/cj1491.jpg",
+                   "CJ1492":  "images/gear_cards/cj1492.jpg",
+                   "CJ1494":  "images/gear_cards/cj1494.jpg",
+                   "CJ1496":  "images/gear_cards/cj1496.jpg",
+                   "CJ1498":  "images/gear_cards/cj1498.jpg",
+                   "CJ1500":  "images/gear_cards/cj1500.jpg",
+                   "CJ1502":  "images/gear_cards/cj1502.jpg",
+                   "CJ1503":  "images/gear_cards/cj1503.jpg",
+                   "CJ1504":  "images/gear_cards/cj1504.jpg",
+                   "CJ1505":  "images/gear_cards/cj1505.jpg",
+                   "CJ1506":  "images/gear_cards/cj1506.jpg",
+                   "CJ1508":  "images/gear_cards/cj1508.jpg",
+                   "CJ1510":  "images/gear_cards/cj1510.jpg",
+                   "CJ1512":  "images/gear_cards/cj1512.jpg",
+                   "CJ1514":  "images/gear_cards/cj1514.jpg",
+                   "CJ1518":  "images/gear_cards/cj1518.jpg",
+                   "CJ1519":  "images/gear_cards/cj1519.jpg",
+                   "CJ1521":  "images/gear_cards/cj1521.jpg",
+                   "CJ1523":  "images/gear_cards/cj1523.jpg",
+                   "CJ1525":  "images/gear_cards/cj1525.jpg",
+                   "CJ1527":  "images/gear_cards/cj1527.jpg",
+                   "CJ1528":  "images/gear_cards/cj1528.jpg",
+                   "CJ1530":  "images/gear_cards/cj1530.jpg",
+                   "CJ1531":  "images/gear_cards/cj1531.jpg",
+                   "CJ1532":  "images/gear_cards/cj1532.jpg",
+                   "CJ1533":  "images/gear_cards/cj1533.jpg",
+                   "CJ1534":  "images/gear_cards/cj1534.jpg",
+                   "CJ1535":  "images/gear_cards/cj1535.jpg",
+                   "CJ1536":  "images/gear_cards/cj1536.jpg",
+                   "CJ1537":  "images/gear_cards/cj1537.jpg",
+                   "CJ1538":  "images/gear_cards/cj1538.jpg",
+                   "CJ1539":  "images/gear_cards/cj1539.jpg",
+                   "CJ1540":  "images/gear_cards/cj1540.jpg",
+                   "CJ1542":  "images/gear_cards/cj1542.jpg",
+                   "CJ1544":  "images/gear_cards/cj1544.jpg",
+                   "CJ1546":  "images/gear_cards/cj1546.jpg",
+                   "BJ0968":  "images/gear_cards/bj0968.jpg",
+                   "CJ1529":  "images/gear_cards/cj1529.jpg",
+                   "CJ1474":  "images/gear_cards/cj1475.jpg"
+               },
+    "cards":  {
+                  "AJ0156":  {
+                                 "src":  "images/gear_cards/aj0156.jpg",
+                                 "title":  "Fists"
+                             },
+                  "AJ0160":  {
+                                 "src":  "images/gear_cards/aj0160.jpg",
+                                 "title":  "Sail Spolas"
+                             },
+                  "AJ0163":  {
+                                 "src":  "images/gear_cards/aj0163.jpg",
+                                 "title":  "Shipwrecker Shield"
+                             },
+                  "AJ0165":  {
+                                 "src":  "images/gear_cards/aj0165.jpg",
+                                 "title":  "Siren Panoply Armor"
+                             },
+                  "AJ0167":  {
+                                 "src":  "images/gear_cards/aj0167.jpg",
+                                 "title":  "Siren Shield"
+                             },
+                  "AJ0169":  {
+                                 "src":  "images/gear_cards/aj0169.jpg",
+                                 "title":  "Sirenteeth"
+                             },
+                  "AJ0171":  {
+                                 "src":  "images/gear_cards/aj0171.jpg",
+                                 "title":  "Boatmace"
+                             },
+                  "AJ0173":  {
+                                 "src":  "images/gear_cards/aj0173.jpg",
+                                 "title":  "Sirenblade"
+                             },
+                  "AJ0175":  {
+                                 "src":  "images/gear_cards/aj0175.jpg",
+                                 "title":  "Kratos Kopis"
+                             },
+                  "AJ0177":  {
+                                 "src":  "images/gear_cards/aj0177.jpg",
+                                 "title":  "Whale Knives"
+                             },
+                  "AJ0179":  {
+                                 "src":  "images/gear_cards/aj0179.jpg",
+                                 "title":  "Great Tree Club"
+                             },
+                  "AJ0181":  {
+                                 "src":  "images/gear_cards/aj0181.jpg",
+                                 "title":  "Teeth Khopesh"
+                             },
+                  "AJ0183":  {
+                                 "src":  "images/gear_cards/aj0183.jpg",
+                                 "title":  "Naval Ram"
+                             },
+                  "AJ0185":  {
+                                 "src":  "images/gear_cards/aj0185.jpg",
+                                 "title":  "Heavy Kopis"
+                             },
+                  "AJ0187":  {
+                                 "src":  "images/gear_cards/aj0187.jpg",
+                                 "title":  "Jawbone Axe"
+                             },
+                  "AJ0189":  {
+                                 "src":  "images/gear_cards/aj0189.jpg",
+                                 "title":  "Ballista Gun"
+                             },
+                  "AJ0191":  {
+                                 "src":  "images/gear_cards/aj0191.jpg",
+                                 "title":  "Petrified Javelin"
+                             },
+                  "AJ0193":  {
+                                 "src":  "images/gear_cards/aj0193.jpg",
+                                 "title":  "Liontail Whip"
+                             },
+                  "AJ0195":  {
+                                 "src":  "images/gear_cards/aj0195.jpg",
+                                 "title":  "Whalebone Bident"
+                             },
+                  "AJ0197":  {
+                                 "src":  "images/gear_cards/aj0197.jpg",
+                                 "title":  "Longmast Spear"
+                             },
+                  "AJ0199":  {
+                                 "src":  "images/gear_cards/aj0199.jpg",
+                                 "title":  "Iapetus Lifeguard"
+                             },
+                  "AJ0202":  {
+                                 "src":  "images/gear_cards/aj0202.jpg",
+                                 "title":  "Ares Aulos"
+                             },
+                  "AJ0204":  {
+                                 "src":  "images/gear_cards/aj0204.jpg",
+                                 "title":  "Makesheath"
+                             },
+                  "AJ0206":  {
+                                 "src":  "images/gear_cards/aj0206.jpg",
+                                 "title":  "Spring Harness"
+                             },
+                  "AJ0209":  {
+                                 "src":  "images/gear_cards/aj0209.jpg",
+                                 "title":  "Smelted Breastplate"
+                             },
+                  "AJ0211":  {
+                                 "src":  "images/gear_cards/aj0211.jpg",
+                                 "title":  "Smelted Aspis"
+                             },
+                  "AJ0213":  {
+                                 "src":  "images/gear_cards/aj0213.jpg",
+                                 "title":  "Smelted Xiphos"
+                             },
+                  "AJ0215":  {
+                                 "src":  "images/gear_cards/aj0215.jpg",
+                                 "title":  "Impetus Breakers"
+                             },
+                  "AJ0217":  {
+                                 "src":  "images/gear_cards/aj0217.jpg",
+                                 "title":  "Analyticos Module"
+                             },
+                  "AJ0219":  {
+                                 "src":  "images/gear_cards/aj0219.jpg",
+                                 "title":  "Primordial Lure"
+                             },
+                  "AJ0220":  {
+                                 "src":  "images/gear_cards/aj0220.jpg",
+                                 "title":  "Hekaton Panoply Armor"
+                             },
+                  "AJ0222":  {
+                                 "src":  "images/gear_cards/aj0222.jpg",
+                                 "title":  "Knuckle Shield"
+                             },
+                  "AJ0224":  {
+                                 "src":  "images/gear_cards/aj0224.jpg",
+                                 "title":  "Pillarmace"
+                             },
+                  "AJ0226":  {
+                                 "src":  "images/gear_cards/aj0226.jpg",
+                                 "title":  "Hekatomb"
+                             },
+                  "AJ0228":  {
+                                 "src":  "images/gear_cards/aj0228.jpg",
+                                 "title":  "Rebound Hammer"
+                             },
+                  "AJ0230":  {
+                                 "src":  "images/gear_cards/aj0230.jpg",
+                                 "title":  "Gigan"
+                             },
+                  "AJ0231":  {
+                                 "src":  "images/gear_cards/aj0231.jpg",
+                                 "title":  "Sail Camo"
+                             },
+                  "AJ0233":  {
+                                 "src":  "images/gear_cards/aj0233.jpg",
+                                 "title":  "Tackle Sheath"
+                             },
+                  "AJ0235":  {
+                                 "src":  "images/gear_cards/aj0235.jpg",
+                                 "title":  "Aeolipile Engine"
+                             },
+                  "AJ0237":  {
+                                 "src":  "images/gear_cards/aj0237.jpg",
+                                 "title":  "Stabilizers"
+                             },
+                  "AJ0239":  {
+                                 "src":  "images/gear_cards/aj0239.jpg",
+                                 "title":  "Grappling Hook"
+                             },
+                  "AJ0241":  {
+                                 "src":  "images/gear_cards/aj0241.jpg",
+                                 "title":  "Safety Rope"
+                             },
+                  "AJ0243":  {
+                                 "src":  "images/gear_cards/aj0243.jpg",
+                                 "title":  "Instinct Linothorax"
+                             },
+                  "AJ0245":  {
+                                 "src":  "images/gear_cards/aj0245.jpg",
+                                 "title":  "Bull Aspis"
+                             },
+                  "AJ0247":  {
+                                 "src":  "images/gear_cards/aj0247.jpg",
+                                 "title":  "Maze Rake"
+                             },
+                  "AJ0249":  {
+                                 "src":  "images/gear_cards/aj0249.jpg",
+                                 "title":  "Whaler Javelin"
+                             },
+                  "AJ0251":  {
+                                 "src":  "images/gear_cards/aj0251.jpg",
+                                 "title":  "Hullbow"
+                             },
+                  "AJ0253":  {
+                                 "src":  "images/gear_cards/aj0253.jpg",
+                                 "title":  "Ariadne\u0027s Hello"
+                             },
+                  "AJ0254":  {
+                                 "src":  "images/gear_cards/aj0254.jpg",
+                                 "title":  "Gigas"
+                             },
+                  "AJ0255":  {
+                                 "src":  "images/gear_cards/aj0255.jpg",
+                                 "title":  "Mazemmer"
+                             },
+                  "AJ0256":  {
+                                 "src":  "images/gear_cards/aj0256.jpg",
+                                 "title":  "Ariadne\u0027s Goodbye"
+                             },
+                  "AJ0257":  {
+                                 "src":  "images/gear_cards/aj0257.jpg",
+                                 "title":  "Shieldblade"
+                             },
+                  "AJ0258":  {
+                                 "src":  "images/gear_cards/aj0258.jpg",
+                                 "title":  "The Promise"
+                             },
+                  "AJ0259":  {
+                                 "src":  "images/gear_cards/aj0259.jpg",
+                                 "title":  "Mazemace"
+                             },
+                  "AJ0260":  {
+                                 "src":  "images/gear_cards/aj0260.jpg",
+                                 "title":  "Glimmer Shroud"
+                             },
+                  "AJ0261":  {
+                                 "src":  "images/gear_cards/aj0261.jpg",
+                                 "title":  "Pursuer Imperative"
+                             },
+                  "AJ0262":  {
+                                 "src":  "images/gear_cards/aj0262.jpg",
+                                 "title":  "Mothlame"
+                             },
+                  "AJ0264":  {
+                                 "src":  "images/gear_cards/aj0264.jpg",
+                                 "title":  "Hermes Tatters"
+                             },
+                  "AJ0266":  {
+                                 "src":  "images/gear_cards/aj0266.jpg",
+                                 "title":  "Trireme Breastplate"
+                             },
+                  "AJ0268":  {
+                                 "src":  "images/gear_cards/aj0268.jpg",
+                                 "title":  "Theseus\u0027s Razor"
+                             },
+                  "AJ0269":  {
+                                 "src":  "images/gear_cards/aj0269.jpg",
+                                 "title":  "Minohead"
+                             },
+                  "AJ0270":  {
+                                 "src":  "images/gear_cards/aj0270.jpg",
+                                 "title":  "Medusalem"
+                             },
+                  "AJ0271":  {
+                                 "src":  "images/gear_cards/aj0271.jpg",
+                                 "title":  "Ancient Siren Panoply Armor"
+                             },
+                  "AJ0273":  {
+                                 "src":  "images/gear_cards/aj0273.jpg",
+                                 "title":  "Nail Spear"
+                             },
+                  "AJ0274":  {
+                                 "src":  "images/gear_cards/aj0274.jpg",
+                                 "title":  "Vulture Mask"
+                             },
+                  "AJ0275":  {
+                                 "src":  "images/gear_cards/aj0275.jpg",
+                                 "title":  "Morpheus Module"
+                             },
+                  "AJ0277":  {
+                                 "src":  "images/gear_cards/aj0277.jpg",
+                                 "title":  "Ambrosia Trocar"
+                             },
+                  "AJ0279":  {
+                                 "src":  "images/gear_cards/aj0279.jpg",
+                                 "title":  "Manos Discus"
+                             },
+                  "AJ0280":  {
+                                 "src":  "images/gear_cards/aj0280.jpg",
+                                 "title":  "Unsolved Enigma"
+                             },
+                  "AJ0281":  {
+                                 "src":  "images/gear_cards/aj0281.jpg",
+                                 "title":  "Yarn Talisman"
+                             },
+                  "AJ0282":  {
+                                 "src":  "images/gear_cards/aj0282.jpg",
+                                 "title":  "Mazey, The Labyrinthian Dog"
+                             },
+                  "AJ0283":  {
+                                 "src":  "images/gear_cards/aj0283.jpg",
+                                 "title":  "Eschaton Stones"
+                             },
+                  "BJ0827":  {
+                                 "src":  "images/gear_cards/bj0827.jpg",
+                                 "title":  "Labyrinth Armor"
+                             },
+                  "BJ0829":  {
+                                 "src":  "images/gear_cards/bj0829.jpg",
+                                 "title":  "Temenos Scale Umbrella/Temenos Scale Shield"
+                             },
+                  "BJ0831":  {
+                                 "src":  "images/gear_cards/bj0831.jpg",
+                                 "title":  "Labyrinthization"
+                             },
+                  "BJ0835":  {
+                                 "src":  "images/gear_cards/bj0835.jpg",
+                                 "title":  "Labyrinth Mauler"
+                             },
+                  "BJ0837":  {
+                                 "src":  "images/gear_cards/bj0837.jpg",
+                                 "title":  "Puzzle Axe"
+                             },
+                  "BJ0839":  {
+                                 "src":  "images/gear_cards/bj0839.jpg",
+                                 "title":  "Temenos Whip/Temenos Xiphos"
+                             },
+                  "BJ0841":  {
+                                 "src":  "images/gear_cards/bj0841.jpg",
+                                 "title":  "Amphoras Belt"
+                             },
+                  "BJ0844":  {
+                                 "src":  "images/gear_cards/bj0844.jpg",
+                                 "title":  "Stepping Stone"
+                             },
+                  "BJ0845":  {
+                                 "src":  "images/gear_cards/bj0845.jpg",
+                                 "title":  "Isokratos Limiter"
+                             },
+                  "BJ0847":  {
+                                 "src":  "images/gear_cards/bj0847.jpg",
+                                 "title":  "Asklepios Node"
+                             },
+                  "BJ0849":  {
+                                 "src":  "images/gear_cards/bj0849.jpg",
+                                 "title":  "Lethe Guard"
+                             },
+                  "BJ0851":  {
+                                 "src":  "images/gear_cards/bj0851.jpg",
+                                 "title":  "Covenant"
+                             },
+                  "BJ0852":  {
+                                 "src":  "images/gear_cards/bj0852.jpg",
+                                 "title":  "Temple Camo"
+                             },
+                  "BJ0854":  {
+                                 "src":  "images/gear_cards/bj0854.jpg",
+                                 "title":  "Medusa Extract"
+                             },
+                  "BJ0856":  {
+                                 "src":  "images/gear_cards/bj0856.jpg",
+                                 "title":  "Ambrostilts"
+                             },
+                  "BJ0858":  {
+                                 "src":  "images/gear_cards/bj0858.jpg",
+                                 "title":  "Pyramidion"
+                             },
+                  "BJ0859":  {
+                                 "src":  "images/gear_cards/bj0859.jpg",
+                                 "title":  "Pyrasklepios"
+                             },
+                  "BJ0860":  {
+                                 "src":  "images/gear_cards/bj0860.jpg",
+                                 "title":  "Longinus/Pseudomidion"
+                             },
+                  "BJ0862":  {
+                                 "src":  "images/gear_cards/bj0862.jpg",
+                                 "title":  "Mazed Cestus"
+                             },
+                  "BJ0864":  {
+                                 "src":  "images/gear_cards/bj0864.jpg",
+                                 "title":  "Scale Chakram"
+                             },
+                  "BJ0866":  {
+                                 "src":  "images/gear_cards/bj0866.jpg",
+                                 "title":  "Mazechute"
+                             },
+                  "BJ0868":  {
+                                 "src":  "images/gear_cards/bj0868.jpg",
+                                 "title":  "Mazegma"
+                             },
+                  "BJ0869":  {
+                                 "src":  "images/gear_cards/bj0869.jpg",
+                                 "title":  "Stonewall"
+                             },
+                  "BJ0871":  {
+                                 "src":  "images/gear_cards/bj0871.jpg",
+                                 "title":  "Eviscerators"
+                             },
+                  "BJ0873":  {
+                                 "src":  "images/gear_cards/bj0873.jpg",
+                                 "title":  "Chain Whip"
+                             },
+                  "BJ0875":  {
+                                 "src":  "images/gear_cards/bj0875.jpg",
+                                 "title":  "Fireboat"
+                             },
+                  "BJ0877":  {
+                                 "src":  "images/gear_cards/bj0877.jpg",
+                                 "title":  "Stone Relief Armor"
+                             },
+                  "BJ0879":  {
+                                 "src":  "images/gear_cards/bj0879.jpg",
+                                 "title":  "Great Breaker"
+                             },
+                  "BJ0881":  {
+                                 "src":  "images/gear_cards/bj0881.jpg",
+                                 "title":  "Relief Cestus"
+                             },
+                  "BJ0883":  {
+                                 "src":  "images/gear_cards/bj0883.jpg",
+                                 "title":  "Metabow/Metasword"
+                             },
+                  "BJ0885":  {
+                                 "src":  "images/gear_cards/bj0885.jpg",
+                                 "title":  "Vaulting Rope"
+                             },
+                  "BJ0887":  {
+                                 "src":  "images/gear_cards/bj0887.jpg",
+                                 "title":  "Watchtower Pauldron"
+                             },
+                  "BJ0889":  {
+                                 "src":  "images/gear_cards/bj0889.jpg",
+                                 "title":  "Siegetower Pauldron"
+                             },
+                  "BJ0891":  {
+                                 "src":  "images/gear_cards/bj0891.jpg",
+                                 "title":  "Iapetus Lifesaver"
+                             },
+                  "BJ0894":  {
+                                 "src":  "images/gear_cards/bj0894.jpg",
+                                 "title":  "Boost Kothornos"
+                             },
+                  "BJ0896":  {
+                                 "src":  "images/gear_cards/bj0896.jpg",
+                                 "title":  "Achillean Hectors"
+                             },
+                  "BJ0898":  {
+                                 "src":  "images/gear_cards/bj0898.jpg",
+                                 "title":  "Control Module"
+                             },
+                  "BJ0900":  {
+                                 "src":  "images/gear_cards/bj0900.jpg",
+                                 "title":  "Spartan War Axe"
+                             },
+                  "BJ0901":  {
+                                 "src":  "images/gear_cards/bj0901.jpg",
+                                 "title":  "Heavy Spear"
+                             },
+                  "BJ0902":  {
+                                 "src":  "images/gear_cards/bj0902.jpg",
+                                 "title":  "Spartan Kopis"
+                             },
+                  "BJ0903":  {
+                                 "src":  "images/gear_cards/bj0903.jpg",
+                                 "title":  "Gastraphetes"
+                             },
+                  "BJ0904":  {
+                                 "src":  "images/gear_cards/bj0904.jpg",
+                                 "title":  "Carver Kopis"
+                             },
+                  "BJ0905":  {
+                                 "src":  "images/gear_cards/bj0905.jpg",
+                                 "title":  "Cyclopean Khopesh"
+                             },
+                  "BJ0906":  {
+                                 "src":  "images/gear_cards/bj0906.jpg",
+                                 "title":  "Cyclopean Linothorax"
+                             },
+                  "BJ0907":  {
+                                 "src":  "images/gear_cards/bj0907.jpg",
+                                 "title":  "Cyclopean Knives"
+                             },
+                  "BJ0908":  {
+                                 "src":  "images/gear_cards/bj0908.jpg",
+                                 "title":  "Cyclopean Visor"
+                             },
+                  "BJ0909":  {
+                                 "src":  "images/gear_cards/bj0909.jpg",
+                                 "title":  "Cyclopean Totem"
+                             },
+                  "BJ0910":  {
+                                 "src":  "images/gear_cards/bj0910.jpg",
+                                 "title":  "Cyclopean Forge Hammer"
+                             },
+                  "BJ0911":  {
+                                 "src":  "images/gear_cards/bj0911.jpg",
+                                 "title":  "Impact Armor"
+                             },
+                  "BJ0913":  {
+                                 "src":  "images/gear_cards/bj0913.jpg",
+                                 "title":  "Collision Shield"
+                             },
+                  "BJ0915":  {
+                                 "src":  "images/gear_cards/bj0915.jpg",
+                                 "title":  "Ladder Mode/Ladder Buckler"
+                             },
+                  "BJ0917":  {
+                                 "src":  "images/gear_cards/bj0917.jpg",
+                                 "title":  "Ambramat Armor"
+                             },
+                  "BJ0919":  {
+                                 "src":  "images/gear_cards/bj0919.jpg",
+                                 "title":  "Muck Armor"
+                             },
+                  "BJ0921":  {
+                                 "src":  "images/gear_cards/bj0921.jpg",
+                                 "title":  "Needle Sword"
+                             },
+                  "BJ0923":  {
+                                 "src":  "images/gear_cards/bj0923.jpg",
+                                 "title":  "Vaulting Spear"
+                             },
+                  "BJ0925":  {
+                                 "src":  "images/gear_cards/bj0925.jpg",
+                                 "title":  "Katarus"
+                             },
+                  "BJ0927":  {
+                                 "src":  "images/gear_cards/bj0927.jpg",
+                                 "title":  "Maulmace"
+                             },
+                  "BJ0928":  {
+                                 "src":  "images/gear_cards/bj0928.jpg",
+                                 "title":  "Boom Pole/Boom Spear"
+                             },
+                  "BJ0930":  {
+                                 "src":  "images/gear_cards/bj0930.jpg",
+                                 "title":  "Dragon Bellow"
+                             },
+                  "BJ0932":  {
+                                 "src":  "images/gear_cards/bj0932.jpg",
+                                 "title":  "Grand Ramaxe"
+                             },
+                  "BJ0934":  {
+                                 "src":  "images/gear_cards/bj0934.jpg",
+                                 "title":  "Chimeric Xiphos"
+                             },
+                  "BJ0936":  {
+                                 "src":  "images/gear_cards/bj0936.jpg",
+                                 "title":  "Muck Bludgeon"
+                             },
+                  "BJ0937":  {
+                                 "src":  "images/gear_cards/bj0937.jpg",
+                                 "title":  "Muckbane"
+                             },
+                  "BJ0938":  {
+                                 "src":  "images/gear_cards/bj0938.jpg",
+                                 "title":  "Cyclostus"
+                             },
+                  "BJ0939":  {
+                                 "src":  "images/gear_cards/bj0939.jpg",
+                                 "title":  "Bellerophon"
+                             },
+                  "BJ0940":  {
+                                 "src":  "images/gear_cards/bj0940.jpg",
+                                 "title":  "Right Maulfist"
+                             },
+                  "BJ0941":  {
+                                 "src":  "images/gear_cards/bj0941.jpg",
+                                 "title":  "Left Maulfist"
+                             },
+                  "BJ0942":  {
+                                 "src":  "images/gear_cards/bj0942.jpg",
+                                 "title":  "Remembrance"
+                             },
+                  "BJ0943":  {
+                                 "src":  "images/gear_cards/bj0943.jpg",
+                                 "title":  "Muck Virus"
+                             },
+                  "BJ0944":  {
+                                 "src":  "images/gear_cards/bj0944.jpg",
+                                 "title":  "Jaws of the Lion"
+                             },
+                  "BJ0946":  {
+                                 "src":  "images/gear_cards/bj0946.jpg",
+                                 "title":  "Faceshield"
+                             },
+                  "BJ0948":  {
+                                 "src":  "images/gear_cards/bj0948.jpg",
+                                 "title":  "Roll Breakers"
+                             },
+                  "BJ0950":  {
+                                 "src":  "images/gear_cards/bj0950.jpg",
+                                 "title":  "Pithos Armor"
+                             },
+                  "BJ0952":  {
+                                 "src":  "images/gear_cards/bj0952.jpg",
+                                 "title":  "Squat Armor"
+                             },
+                  "BJ0954":  {
+                                 "src":  "images/gear_cards/bj0954.jpg",
+                                 "title":  "Umbral Carapace/Umbral Virus"
+                             },
+                  "BJ0955":  {
+                                 "src":  "images/gear_cards/bj0955.jpg",
+                                 "title":  "Elephantine Armor"
+                             },
+                  "BJ0956":  {
+                                 "src":  "images/gear_cards/bj0956.jpg",
+                                 "title":  "Cowl of Char"
+                             },
+                  "BJ0957":  {
+                                 "src":  "images/gear_cards/bj0957.jpg",
+                                 "title":  "Necroxiphos/Necrotic Virus"
+                             },
+                  "BJ0958":  {
+                                 "src":  "images/gear_cards/bj0958.jpg",
+                                 "title":  "Fumeblade"
+                             },
+                  "BJ0959":  {
+                                 "src":  "images/gear_cards/bj0959.jpg",
+                                 "title":  "The End"
+                             },
+                  "BJ0960":  {
+                                 "src":  "images/gear_cards/bj0960.jpg",
+                                 "title":  "Red Polis"
+                             },
+                  "BJ0961":  {
+                                 "src":  "images/gear_cards/bj0961.jpg",
+                                 "title":  "Context"
+                             },
+                  "BJ0963":  {
+                                 "src":  "images/gear_cards/bj0963.jpg",
+                                 "title":  "Peaceful Transition/Voice of the People"
+                             },
+                  "BJ0964":  {
+                                 "src":  "images/gear_cards/bj0964.jpg",
+                                 "title":  "Maw of Byzantion"
+                             },
+                  "BJ0965":  {
+                                 "src":  "images/gear_cards/bj0965.jpg",
+                                 "title":  "Pursuer Ultimatum"
+                             },
+                  "BJ0966":  {
+                                 "src":  "images/gear_cards/bj0966.jpg",
+                                 "title":  "Hermes Cape"
+                             },
+                  "BJ0967":  {
+                                 "src":  "images/gear_cards/bj0967.jpg",
+                                 "title":  "Repurposed Cryptex"
+                             },
+                  "BJ0969":  {
+                                 "src":  "images/gear_cards/bj0969.jpg",
+                                 "title":  "Archon Pauldron"
+                             },
+                  "BJ0970":  {
+                                 "src":  "images/gear_cards/bj0970.jpg",
+                                 "title":  "Sisyphus\u0027s Burden"
+                             },
+                  "BJ0971":  {
+                                 "src":  "images/gear_cards/bj0971.jpg",
+                                 "title":  "Sisyphus\u0027s Triumph"
+                             },
+                  "CJ1389":  {
+                                 "src":  "images/gear_cards/cj1389.jpg",
+                                 "title":  "Black Xiphos"
+                             },
+                  "CJ1391":  {
+                                 "src":  "images/gear_cards/cj1391.jpg",
+                                 "title":  "Smoldering Mace"
+                             },
+                  "CJ1393":  {
+                                 "src":  "images/gear_cards/cj1393.jpg",
+                                 "title":  "Abyssal Watchers"
+                             },
+                  "CJ1395":  {
+                                 "src":  "images/gear_cards/cj1395.jpg",
+                                 "title":  "Hardened Cestus"
+                             },
+                  "CJ1397":  {
+                                 "src":  "images/gear_cards/cj1397.jpg",
+                                 "title":  "Abyssal Spear"
+                             },
+                  "CJ1399":  {
+                                 "src":  "images/gear_cards/cj1399.jpg",
+                                 "title":  "Black Javelin"
+                             },
+                  "CJ1401":  {
+                                 "src":  "images/gear_cards/cj1401.jpg",
+                                 "title":  "Excavated"
+                             },
+                  "CJ1403":  {
+                                 "src":  "images/gear_cards/cj1403.jpg",
+                                 "title":  "Abyss Linothorax"
+                             },
+                  "CJ1405":  {
+                                 "src":  "images/gear_cards/cj1405.jpg",
+                                 "title":  "Abyss Thorax"
+                             },
+                  "CJ1407":  {
+                                 "src":  "images/gear_cards/cj1407.jpg",
+                                 "title":  "Abyss Mirror"
+                             },
+                  "CJ1409":  {
+                                 "src":  "images/gear_cards/cj1409.jpg",
+                                 "title":  "Hourglass Necklace"
+                             },
+                  "CJ1411":  {
+                                 "src":  "images/gear_cards/cj1411.jpg",
+                                 "title":  "Paradox Guard"
+                             },
+                  "CJ1413":  {
+                                 "src":  "images/gear_cards/cj1413.jpg",
+                                 "title":  "Paradox Scanner"
+                             },
+                  "CJ1415":  {
+                                 "src":  "images/gear_cards/cj1415.jpg",
+                                 "title":  "Fatesafe"
+                             },
+                  "CJ1417":  {
+                                 "src":  "images/gear_cards/cj1417.jpg",
+                                 "title":  "Siren Coral Panoply"
+                             },
+                  "CJ1419":  {
+                                 "src":  "images/gear_cards/cj1419.jpg",
+                                 "title":  "Siren Cataphract"
+                             },
+                  "CJ1421":  {
+                                 "src":  "images/gear_cards/cj1421.jpg",
+                                 "title":  "Spiral Shield"
+                             },
+                  "CJ1423":  {
+                                 "src":  "images/gear_cards/cj1423.jpg",
+                                 "title":  "Razorbow/Exoaegis"
+                             },
+                  "CJ1425":  {
+                                 "src":  "images/gear_cards/cj1425.jpg",
+                                 "title":  "Sun Axe/Sun Spear"
+                             },
+                  "CJ1427":  {
+                                 "src":  "images/gear_cards/cj1427.jpg",
+                                 "title":  "Sun Cutter/Sun Disc"
+                             },
+                  "CJ1429":  {
+                                 "src":  "images/gear_cards/cj1429.jpg",
+                                 "title":  "Spiral Spada"
+                             },
+                  "CJ1431":  {
+                                 "src":  "images/gear_cards/cj1431.jpg",
+                                 "title":  "Sirentusks"
+                             },
+                  "CJ1433":  {
+                                 "src":  "images/gear_cards/cj1433.jpg",
+                                 "title":  "Spiradiscus"
+                             },
+                  "CJ1435":  {
+                                 "src":  "images/gear_cards/cj1435.jpg",
+                                 "title":  "True Sirenblade"
+                             },
+                  "CJ1437":  {
+                                 "src":  "images/gear_cards/cj1437.jpg",
+                                 "title":  "Siren Mask"
+                             },
+                  "CJ1439":  {
+                                 "src":  "images/gear_cards/cj1439.jpg",
+                                 "title":  "Recall Shell"
+                             },
+                  "CJ1441":  {
+                                 "src":  "images/gear_cards/cj1441.jpg",
+                                 "title":  "Fatesafer"
+                             },
+                  "CJ1443":  {
+                                 "src":  "images/gear_cards/cj1443.jpg",
+                                 "title":  "Looper Guard"
+                             },
+                  "CJ1445":  {
+                                 "src":  "images/gear_cards/cj1445.jpg",
+                                 "title":  "Ontological Module"
+                             },
+                  "CJ1447":  {
+                                 "src":  "images/gear_cards/cj1447.jpg",
+                                 "title":  "Prototype Trespass Device"
+                             },
+                  "CJ1448":  {
+                                 "src":  "images/gear_cards/cj1448.jpg",
+                                 "title":  "Time Booster"
+                             },
+                  "CJ1450":  {
+                                 "src":  "images/gear_cards/cj1450.jpg",
+                                 "title":  "Sun Guard"
+                             },
+                  "CJ1452":  {
+                                 "src":  "images/gear_cards/cj1452.jpg",
+                                 "title":  "Glacial Fabric"
+                             },
+                  "CJ1454":  {
+                                 "src":  "images/gear_cards/cj1454.jpg",
+                                 "title":  "Timeline Synchronizer"
+                             },
+                  "CJ1456":  {
+                                 "src":  "images/gear_cards/cj1456.jpg",
+                                 "title":  "Parallel Anchor"
+                             },
+                  "CJ1458":  {
+                                 "src":  "images/gear_cards/cj1458.jpg",
+                                 "title":  "Icelixir"
+                             },
+                  "CJ1460":  {
+                                 "src":  "images/gear_cards/cj1460.jpg",
+                                 "title":  "Spike Breakers"
+                             },
+                  "CJ1462":  {
+                                 "src":  "images/gear_cards/cj1462.jpg",
+                                 "title":  "Regression Agent"
+                             },
+                  "CJ1464":  {
+                                 "src":  "images/gear_cards/cj1464.jpg",
+                                 "title":  "Black Ice Kothornos"
+                             },
+                  "CJ1466":  {
+                                 "src":  "images/gear_cards/cj1466.jpg",
+                                 "title":  "Iceblock Armor"
+                             },
+                  "CJ1468":  {
+                                 "src":  "images/gear_cards/cj1468.jpg",
+                                 "title":  "Polished Ice Shield"
+                             },
+                  "CJ1470":  {
+                                 "src":  "images/gear_cards/cj1470.jpg",
+                                 "title":  "Ignition Spear"
+                             },
+                  "CJ1472":  {
+                                 "src":  "images/gear_cards/cj1472.jpg",
+                                 "title":  "Hidden Xiphos/Hammer-Sword"
+                             },
+                  "CJ1476":  {
+                                 "src":  "images/gear_cards/cj1476.jpg",
+                                 "title":  "Scaling Gear Protype"
+                             },
+                  "CJ1477":  {
+                                 "src":  "images/gear_cards/cj1477.jpg",
+                                 "title":  "Homeric Engine"
+                             },
+                  "CJ1478":  {
+                                 "src":  "images/gear_cards/cj1478.jpg",
+                                 "title":  "Agathos Agitator"
+                             },
+                  "CJ1479":  {
+                                 "src":  "images/gear_cards/cj1479.jpg",
+                                 "title":  "Kakos Implant"
+                             },
+                  "CJ1480":  {
+                                 "src":  "images/gear_cards/cj1480.jpg",
+                                 "title":  "Aristeia Inducer"
+                             },
+                  "CJ1481":  {
+                                 "src":  "images/gear_cards/cj1481.jpg",
+                                 "title":  "Lightsword"
+                             },
+                  "CJ1482":  {
+                                 "src":  "images/gear_cards/cj1482.jpg",
+                                 "title":  "Erratic Insignitor"
+                             },
+                  "CJ1483":  {
+                                 "src":  "images/gear_cards/cj1483.jpg",
+                                 "title":  "Arc Light Thrower"
+                             },
+                  "CJ1484":  {
+                                 "src":  "images/gear_cards/cj1484.jpg",
+                                 "title":  "Sunlight Gun"
+                             },
+                  "CJ1485":  {
+                                 "src":  "images/gear_cards/cj1485.jpg",
+                                 "title":  "Believer Vestment"
+                             },
+                  "CJ1486":  {
+                                 "src":  "images/gear_cards/cj1486.jpg",
+                                 "title":  "Probability Blade"
+                             },
+                  "CJ1487":  {
+                                 "src":  "images/gear_cards/cj1487.jpg",
+                                 "title":  "Shade Mace"
+                             },
+                  "CJ1488":  {
+                                 "src":  "images/gear_cards/cj1488.jpg",
+                                 "title":  "Shade Armor"
+                             },
+                  "CJ1490":  {
+                                 "src":  "images/gear_cards/cj1490.jpg",
+                                 "title":  "Exiles Garb"
+                             },
+                  "CJ1491":  {
+                                 "src":  "images/gear_cards/cj1491.jpg",
+                                 "title":  "Shade Shield"
+                             },
+                  "CJ1492":  {
+                                 "src":  "images/gear_cards/cj1492.jpg",
+                                 "title":  "Oracowl"
+                             },
+                  "CJ1494":  {
+                                 "src":  "images/gear_cards/cj1494.jpg",
+                                 "title":  "Feather Shield"
+                             },
+                  "CJ1496":  {
+                                 "src":  "images/gear_cards/cj1496.jpg",
+                                 "title":  "Time\u0027s Arrow"
+                             },
+                  "CJ1498":  {
+                                 "src":  "images/gear_cards/cj1498.jpg",
+                                 "title":  "Echo Eaters"
+                             },
+                  "CJ1500":  {
+                                 "src":  "images/gear_cards/cj1500.jpg",
+                                 "title":  "Beholder Fists"
+                             },
+                  "CJ1502":  {
+                                 "src":  "images/gear_cards/cj1502.jpg",
+                                 "title":  "Eye of the Watcher"
+                             },
+                  "CJ1503":  {
+                                 "src":  "images/gear_cards/cj1503.jpg",
+                                 "title":  "Paradox"
+                             },
+                  "CJ1504":  {
+                                 "src":  "images/gear_cards/cj1504.jpg",
+                                 "title":  "Paradont"
+                             },
+                  "CJ1505":  {
+                                 "src":  "images/gear_cards/cj1505.jpg",
+                                 "title":  "Skyfall"
+                             },
+                  "CJ1506":  {
+                                 "src":  "images/gear_cards/cj1506.jpg",
+                                 "title":  "Exobone Armor"
+                             },
+                  "CJ1508":  {
+                                 "src":  "images/gear_cards/cj1508.jpg",
+                                 "title":  "Feather Linothorax"
+                             },
+                  "CJ1510":  {
+                                 "src":  "images/gear_cards/cj1510.jpg",
+                                 "title":  "Spiral Buckler/Spiral Whip"
+                             },
+                  "CJ1512":  {
+                                 "src":  "images/gear_cards/cj1512.jpg",
+                                 "title":  "Spiral Spear/Spiral Mace"
+                             },
+                  "CJ1514":  {
+                                 "src":  "images/gear_cards/cj1514.jpg",
+                                 "title":  "Descender/Devolver"
+                             },
+                  "CJ1518":  {
+                                 "src":  "images/gear_cards/cj1518.jpg",
+                                 "title":  "Sunreach"
+                             },
+                  "CJ1519":  {
+                                 "src":  "images/gear_cards/cj1519.jpg",
+                                 "title":  "Enigma of Transformation"
+                             },
+                  "CJ1521":  {
+                                 "src":  "images/gear_cards/cj1521.jpg",
+                                 "title":  "Horseskull Pauldron"
+                             },
+                  "CJ1523":  {
+                                 "src":  "images/gear_cards/cj1523.jpg",
+                                 "title":  "Extinction Cestus"
+                             },
+                  "CJ1525":  {
+                                 "src":  "images/gear_cards/cj1525.jpg",
+                                 "title":  "Black Ice Sword"
+                             },
+                  "CJ1527":  {
+                                 "src":  "images/gear_cards/cj1527.jpg",
+                                 "title":  "Icarus Lot"
+                             },
+                  "CJ1528":  {
+                                 "src":  "images/gear_cards/cj1528.jpg",
+                                 "title":  "Icarus\u0027s Fall"
+                             },
+                  "CJ1530":  {
+                                 "src":  "images/gear_cards/cj1530.jpg",
+                                 "title":  "Future Cryptex"
+                             },
+                  "CJ1531":  {
+                                 "src":  "images/gear_cards/cj1531.jpg",
+                                 "title":  "Atlantean Oscillator"
+                             },
+                  "CJ1532":  {
+                                 "src":  "images/gear_cards/cj1532.jpg",
+                                 "title":  "Phoenixiphos"
+                             },
+                  "CJ1533":  {
+                                 "src":  "images/gear_cards/cj1533.jpg",
+                                 "title":  "Cyclopean Hand Mirror"
+                             },
+                  "CJ1534":  {
+                                 "src":  "images/gear_cards/cj1534.jpg",
+                                 "title":  "Grandfather\u0027s"
+                             },
+                  "CJ1535":  {
+                                 "src":  "images/gear_cards/cj1535.jpg",
+                                 "title":  "Shellusalem"
+                             },
+                  "CJ1536":  {
+                                 "src":  "images/gear_cards/cj1536.jpg",
+                                 "title":  "Argocryptex Alpha"
+                             },
+                  "CJ1537":  {
+                                 "src":  "images/gear_cards/cj1537.jpg",
+                                 "title":  "Argocryptex Beta"
+                             },
+                  "CJ1538":  {
+                                 "src":  "images/gear_cards/cj1538.jpg",
+                                 "title":  "Argocryptex Gamma"
+                             },
+                  "CJ1539":  {
+                                 "src":  "images/gear_cards/cj1539.jpg",
+                                 "title":  "Visage"
+                             },
+                  "CJ1540":  {
+                                 "src":  "images/gear_cards/cj1540.jpg",
+                                 "title":  "Icebreakers"
+                             },
+                  "CJ1542":  {
+                                 "src":  "images/gear_cards/cj1542.jpg",
+                                 "title":  "Pithos Linothorax"
+                             },
+                  "CJ1544":  {
+                                 "src":  "images/gear_cards/cj1544.jpg",
+                                 "title":  "Spherical Armor"
+                             },
+                  "CJ1546":  {
+                                 "src":  "images/gear_cards/cj1546.jpg",
+                                 "title":  "Theogonias"
+                             },
+                  "BJ0968":  {
+                                 "src":  "images/gear_cards/bj0968.jpg",
+                                 "title":  "Conqueror Nail"
+                             },
+                  "CJ1529":  {
+                                 "src":  "images/gear_cards/cj1529.jpg",
+                                 "title":  "Daedalus Flight"
+                             },
+                  "CJ1474":  {
+                                 "src":  "images/gear_cards/cj1475.jpg",
+                                 "title":  "Barbed Saw / Barbed Blade"
+                             }
+              }
+}
