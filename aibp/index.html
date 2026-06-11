@@ -1,0 +1,3350 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AIBP Apostle Viewer</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #10100f;
+      --panel: #181816;
+      --panel-2: #22211e;
+      --line: #3a3832;
+      --text: #f0ede4;
+      --muted: #aaa396;
+      --accent: #b4342c;
+      --gold: #c7ad72;
+      --gap: 16px;
+      --header-height: 42px;
+      --pad: 10px;
+      --side-card-image-height: 255px;
+      --panel-image-height: calc(var(--side-card-image-height) * 2.2);
+      --card-min: 126px;
+      --card-max-width: calc(var(--side-card-image-height) * 63 / 89);
+      --aibp-column-width: 424px;
+      --draw-card-height: var(--side-card-image-height);
+      --draw-card-width: calc(var(--draw-card-height) * 63 / 89);
+      --radius: 14px;
+      --shadow: 0 16px 42px rgba(0, 0, 0, 0.32);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 18% 0%, rgba(180, 52, 44, 0.18), transparent 34%),
+        radial-gradient(circle at 82% 12%, rgba(199, 173, 114, 0.12), transparent 28%),
+        linear-gradient(180deg, #12110f 0%, var(--bg) 52%, #080808 100%);
+      color: var(--text);
+      font-family: "Microsoft YaHei UI", "Segoe UI", Arial, sans-serif;
+      letter-spacing: 0;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+      border-right: 1px solid rgba(199, 173, 114, 0.18);
+      background:
+        linear-gradient(180deg, rgba(34, 33, 30, 0.94), rgba(13, 13, 12, 0.98));
+      padding: 18px 14px;
+      box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.03);
+    }
+
+    .sidebar-toggle {
+      position: fixed;
+      z-index: 30;
+      top: 14px;
+      left: 14px;
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      border: 1px solid rgba(199, 173, 114, 0.42);
+      background: rgba(24, 24, 22, 0.94);
+      color: var(--gold);
+      font-size: 22px;
+      line-height: 1;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.34);
+    }
+
+    .sidebar-toggle:hover {
+      border-color: var(--gold);
+      background: #261a18;
+    }
+
+    body:not(.sidebar-collapsed) .sidebar-toggle {
+      left: 274px;
+    }
+
+    body.sidebar-collapsed .app {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    body.sidebar-collapsed aside {
+      display: none;
+    }
+
+    body.sidebar-collapsed main {
+      padding-left: 62px;
+    }
+
+    body.sidebar-collapsed .viewer {
+      width: calc(100% + 40px);
+      margin-left: -40px;
+    }
+
+    h1 {
+      margin: 0 0 14px;
+      color: var(--gold);
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .nav {
+      display: grid;
+      gap: 8px;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      cursor: pointer;
+      font: inherit;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+    }
+
+    .nav button {
+      width: 100%;
+      min-height: 42px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      text-align: left;
+    }
+
+    .nav button:hover,
+    .nav button.active,
+    .segmented button.active {
+      border-color: rgba(199, 173, 114, 0.55);
+      background: linear-gradient(180deg, #2a1c19, #201716);
+      box-shadow: inset 3px 0 0 var(--accent);
+    }
+
+    main {
+      min-width: 0;
+      padding: 22px;
+      overflow: auto;
+    }
+
+    .title-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .title-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .title-actions button {
+      min-height: 36px;
+      padding: 7px 12px;
+      border-radius: 6px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 26px;
+      line-height: 1.1;
+    }
+
+    .path {
+      color: var(--muted);
+      font-size: 13px;
+      overflow-wrap: anywhere;
+    }
+
+    .viewer {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: var(--gap);
+      margin-bottom: 18px;
+      overflow: auto;
+    }
+
+    .section {
+      flex: 0 0 auto;
+      overflow: hidden;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      height: var(--header-height);
+      padding: 8px 11px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(42, 40, 36, 0.98), rgba(28, 27, 24, 0.98));
+      color: var(--gold);
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .section-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-header button {
+      min-height: 28px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      border-color: rgba(199, 173, 114, 0.35);
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .section-header button:hover {
+      border-color: rgba(199, 173, 114, 0.7);
+      background: #261a18;
+    }
+
+    .image-wrap {
+      display: grid;
+      place-items: center;
+      padding: 0;
+      background: transparent;
+    }
+
+    img {
+      display: block;
+      width: auto;
+      max-width: none;
+      border-radius: 4px;
+    }
+
+    .panel-image {
+      height: var(--panel-image-height);
+    }
+
+    .panel-frame {
+      position: relative;
+      display: inline-block;
+      line-height: 0;
+    }
+
+    .panel-state-marker {
+      position: absolute;
+      left: var(--marker-left, 50%);
+      top: var(--marker-top, 50%);
+      transform: translate(-50%, -50%);
+      width: 64px;
+      height: 64px;
+      display: none;
+      place-items: center;
+      padding: 0;
+      border: 3px solid rgba(255, 88, 82, 0.88);
+      border-radius: 999px;
+      background: rgba(255, 88, 82, 0.04);
+      color: transparent;
+      font-size: 0;
+      font-weight: 0;
+      line-height: 1;
+      letter-spacing: 0;
+      text-shadow: none;
+      box-shadow:
+        0 0 0 1px rgba(20, 8, 6, 0.62),
+        0 0 10px rgba(255, 72, 66, 0.22),
+        inset 0 0 8px rgba(255, 72, 66, 0.12);
+      cursor: pointer;
+      user-select: none;
+      z-index: 3;
+    }
+
+    .panel-state-marker.show {
+      display: grid;
+    }
+
+    .panel-state-marker.chimera-state-marker {
+      width: var(--marker-width, 14%);
+      height: var(--marker-height, 5%);
+      border-width: 3px;
+      border-radius: 8px !important;
+      box-shadow:
+        0 0 0 1px rgba(20, 8, 6, 0.62),
+        0 0 12px rgba(255, 72, 66, 0.2),
+        inset 0 0 8px rgba(255, 72, 66, 0.1);
+    }
+
+    .state-button.hidden {
+      display: none;
+    }
+
+    .state-button {
+      border-color: rgba(199, 173, 114, 0.46);
+      color: var(--gold);
+      font-weight: 800;
+    }
+
+    .side-card-image {
+      height: var(--side-card-image-height);
+    }
+
+    .side-stack {
+      display: grid;
+      grid-template-rows: repeat(2, max-content);
+      gap: 10px;
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+    }
+
+    .extra-grid {
+      display: grid;
+      grid-auto-flow: column;
+      grid-template-rows: repeat(2, max-content);
+      grid-auto-columns: max-content;
+      grid-auto-rows: max-content;
+      gap: 10px;
+      align-content: start;
+      justify-content: start;
+      width: 100%;
+      max-height: calc(var(--side-card-image-height) * 2 + 10px);
+      overflow: auto;
+    }
+
+    .extra-grid img {
+      width: auto;
+      height: var(--side-card-image-height);
+      max-width: none;
+      border: 1px solid var(--line);
+      background: transparent;
+    }
+
+    .trait-dialog {
+      width: min(980px, calc(100vw - 28px));
+      max-height: min(760px, calc(100vh - 28px));
+      padding: 0;
+      border: 1px solid rgba(199, 173, 114, 0.28);
+      border-radius: var(--radius);
+      background: #141311;
+      color: var(--text);
+      box-shadow: 0 22px 70px rgba(0, 0, 0, 0.55);
+    }
+
+    .trait-dialog::backdrop {
+      background: rgba(0, 0, 0, 0.7);
+    }
+
+    .trait-dialog form {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      max-height: inherit;
+    }
+
+    .trait-dialog-head,
+    .trait-dialog-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(42, 40, 36, 0.98), rgba(28, 27, 24, 0.98));
+    }
+
+    .trait-dialog-actions {
+      justify-content: flex-end;
+      border-top: 1px solid var(--line);
+      border-bottom: 0;
+    }
+
+    .trait-dialog-title {
+      color: var(--gold);
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .trait-dialog-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(138px, 1fr));
+      gap: 12px;
+      padding: 14px;
+      overflow: auto;
+      background: #0b0b0a;
+    }
+
+    .trait-option {
+      position: relative;
+      display: grid;
+      gap: 7px;
+      min-width: 0;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      cursor: pointer;
+    }
+
+    .trait-option:hover,
+    .trait-option:has(input:checked) {
+      border-color: rgba(199, 173, 114, 0.72);
+      background: #211916;
+    }
+
+    .trait-option input {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+    }
+
+    .trait-option img {
+      width: 100%;
+      height: auto;
+      max-height: 214px;
+      object-fit: contain;
+      border: 1px solid rgba(199, 173, 114, 0.18);
+      background: #0b0b0a;
+    }
+
+    .trait-option span {
+      min-width: 0;
+      color: var(--muted);
+      font-size: 11px;
+      text-align: center;
+      overflow-wrap: anywhere;
+    }
+
+    .trait-dialog-actions button {
+      min-height: 34px;
+      padding: 6px 12px;
+      border-radius: 7px;
+    }
+
+    .cards-panel {
+      width: 85%;
+      max-width: 85%;
+      margin: 0 auto;
+      border: 1px solid rgba(199, 173, 114, 0.18);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(31, 30, 27, 0.96), rgba(18, 18, 16, 0.98));
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .cards-toolbar {
+      display: flex;
+      align-items: center;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel-2);
+    }
+
+    .cards-toolbar h3 {
+      margin: 0;
+      color: var(--gold);
+      font-size: 14px;
+      line-height: 1.1;
+    }
+
+    .deck-info {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 6px;
+      color: var(--muted);
+      font-family: Consolas, "Microsoft YaHei UI", monospace;
+      font-size: 16px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .deck-info span {
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+    }
+
+    .card-title-with-back {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      min-width: max-content;
+    }
+
+    .draw-panel {
+      display: contents;
+    }
+
+    .draw-box {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      align-items: start;
+      justify-content: stretch;
+      margin-bottom: 8px;
+      padding: 6px;
+      width: 100%;
+      max-width: 100%;
+      border: 1px solid rgba(199, 173, 114, 0.18);
+      border-radius: 12px;
+      background:
+        radial-gradient(circle at 100% 0%, rgba(199, 173, 114, 0.08), transparent 34%),
+        #141412;
+    }
+
+    .draw-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-content: start;
+      align-items: center;
+      width: 100%;
+    }
+
+    .draw-actions button,
+    .draw-panel button {
+      flex: 0 0 auto;
+      min-width: 58px;
+      min-height: 24px;
+      padding: 3px 6px;
+      border-radius: 7px;
+      font-size: 11px;
+      line-height: 1.05;
+      white-space: nowrap;
+      transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+    }
+
+
+
+    .draw-actions .damage-target {
+      flex: 1 1 100%;
+      min-height: 24px;
+      padding: 3px 5px;
+      border-radius: 7px;
+      font-size: 12px;
+    }
+
+    .draw-actions .damage-target select {
+      min-height: 24px;
+      padding: 1px 5px;
+      font-size: 12px;
+    }
+
+    .draw-actions button:not(:disabled):hover,
+    .draw-panel button:not(:disabled):hover,
+    .title-actions button:hover {
+      transform: translateY(-1px);
+      border-color: rgba(199, 173, 114, 0.58);
+      background: #241916;
+    }
+
+    #drawAiButton,
+    #drawBpButton {
+      min-width: 104px;
+      min-height: 54px;
+      padding: 12px 16px;
+      border-color: rgba(199, 173, 114, 0.58);
+      border-radius: 8px;
+      background: linear-gradient(180deg, #2a1c19, #1a1513);
+      color: var(--gold);
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1.1;
+      box-shadow: inset 3px 0 0 var(--accent), 0 8px 18px rgba(0, 0, 0, 0.24);
+    }
+
+    .draw-preview {
+      width: calc(var(--draw-card-width) + 8px);
+      height: calc(var(--draw-card-height) + 8px);
+      max-width: 100%;
+      display: grid;
+      place-items: center;
+      justify-self: center;
+      align-self: start;
+      padding: 4px;
+      border: 1px solid rgba(199, 173, 114, 0.18);
+      border-radius: 8px;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.03), transparent 36%),
+        #0b0b0a;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+      aspect-ratio: 63 / 89;
+      cursor: pointer;
+      transition: border-color 140ms ease, background 140ms ease;
+    }
+
+    .draw-preview.has-card {
+      cursor: zoom-in;
+    }
+
+    .draw-preview:not(.has-card):hover {
+      border-color: rgba(199, 173, 114, 0.58);
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.04), transparent 36%),
+        #181511;
+    }
+
+    .draw-preview img {
+      width: auto;
+      max-width: var(--draw-card-width);
+      height: auto;
+      max-height: var(--draw-card-height);
+      object-fit: contain;
+      border-radius: 7px;
+    }
+
+    .segmented {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 6px;
+    }
+
+    .segmented button {
+      min-width: 48px;
+      min-height: 26px;
+      padding: 3px 6px;
+      border-radius: 6px;
+    }
+
+    .aibp-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 0;
+      padding: 0;
+      width: 100%;
+    }
+
+    .card-column {
+      min-width: 0;
+      padding: 10px;
+      width: 100%;
+    }
+
+    .card-column + .card-column {
+      border-left: 1px solid rgba(199, 173, 114, 0.14);
+    }
+
+    .card-column-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .card-column-title {
+      margin: 0;
+      color: var(--gold);
+      font-size: 15px;
+      font-weight: 700;
+      text-align: left;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(var(--card-min), var(--card-max-width)));
+      justify-content: start;
+      gap: 14px;
+    }
+
+    .card-grid img {
+      width: 100%;
+      height: auto;
+      max-width: var(--card-max-width);
+      max-height: var(--side-card-image-height);
+      justify-self: center;
+      object-fit: contain;
+      background: #0b0b0a;
+      border: 1px solid rgba(199, 173, 114, 0.18);
+      border-radius: 10px;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.28);
+    }
+
+    .damage-target {
+      display: none;
+      gap: 5px;
+      align-items: start;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .damage-target.show {
+      display: grid;
+    }
+
+    .chimera-only-action {
+      display: none;
+    }
+
+    .chimera-only-action.show {
+      display: inline-grid;
+      align-items: center;
+    }
+
+    .labyrinthauros-only-action {
+      display: none;
+    }
+
+    .labyrinthauros-only-action.show {
+      display: inline-grid;
+      align-items: center;
+    }
+
+    .hermesian-only-action {
+      display: none;
+    }
+
+    .hermesian-only-action.show {
+      display: inline-grid;
+      align-items: center;
+    }
+
+    .damage-target select {
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #151411;
+      color: var(--text);
+      padding: 5px 8px;
+      font: inherit;
+    }
+
+    .card-tile {
+      position: relative;
+      min-width: 0;
+    }
+
+    .damage-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      min-width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      background: rgba(180, 52, 44, 0.92);
+      color: #fff;
+      font-weight: 800;
+      font-size: 15px;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.38);
+    }
+
+    .bp-damage-summary {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      width: fit-content;
+      padding: 4px 10px;
+      border: 1px solid rgba(180, 52, 44, 0.45);
+      border-radius: 999px;
+      background: rgba(180, 52, 44, 0.16);
+      color: #ffd6d2;
+      font-size: 13px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .missing {
+      display: grid;
+      place-items: center;
+      min-height: 120px;
+      padding: 18px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    @media (max-width: 1180px) {
+      .draw-box {
+        grid-template-columns: 128px auto;
+      }
+    }
+
+    @media (max-width: 980px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        position: static;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .nav {
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      }
+
+      .viewer {
+        justify-content: flex-start;
+      }
+
+      .cards-panel {
+        width: 100%;
+        max-width: 100%;
+      }
+
+      .cards-toolbar,
+      .aibp-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .draw-box {
+        grid-template-columns: 128px auto;
+      }
+
+      .card-column + .card-column {
+        border-left: 0;
+        border-top: 1px solid var(--line);
+      }
+    }
+
+    @media (max-width: 1180px) {
+      .draw-box {
+        grid-template-columns: 128px auto;
+      }
+    }
+
+    @media (max-width: 980px) {
+      .extra-grid {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .extra-card-grid {
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      }
+    }
+  
+
+    /* 本次调整：操作按钮在左，当前抽牌在右；两块共同铺满各自 AI/BP 区域 */
+    .draw-box {
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr) calc(var(--draw-card-width) + 8px) !important;
+      gap: 10px !important;
+      align-items: stretch !important;
+      justify-content: stretch !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      margin-bottom: 10px !important;
+      padding: 8px !important;
+    }
+
+    .draw-actions {
+      display: grid !important;
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 8px !important;
+      align-content: start !important;
+      align-items: stretch !important;
+      width: 100% !important;
+      min-width: 0 !important;
+    }
+
+    .draw-actions button,
+    .draw-panel button {
+      width: 100% !important;
+      min-width: 0 !important;
+      min-height: 32px !important;
+      padding: 5px 8px !important;
+      border-radius: 8px !important;
+      font-size: 14px !important;
+      line-height: 1.15 !important;
+      text-align: center !important;
+      white-space: nowrap !important;
+    }
+
+    #drawAiButton,
+    #drawBpButton {
+      grid-column: 1 / -1 !important;
+      min-height: 62px !important;
+      padding: 14px 16px !important;
+      font-size: 16px !important;
+      font-weight: 900 !important;
+    }
+
+    .draw-actions .damage-target {
+      grid-column: 1 / -1 !important;
+      width: 100% !important;
+      min-height: 32px !important;
+      padding: 5px 8px !important;
+      font-size: 13px !important;
+      align-items: center !important;
+    }
+
+    .draw-actions .damage-target select {
+      min-height: 28px !important;
+      font-size: 13px !important;
+    }
+
+    .draw-preview {
+      justify-self: end !important;
+      align-self: stretch !important;
+      width: calc(var(--draw-card-width) + 8px) !important;
+      height: calc(var(--draw-card-height) + 8px) !important;
+      max-width: none !important;
+      margin: 0 !important;
+      padding: 4px !important;
+      font-size: 13px !important;
+    }
+
+    .draw-preview img {
+      max-width: var(--draw-card-width) !important;
+      max-height: var(--draw-card-height) !important;
+    }
+
+    @media (max-width: 1180px) {
+      .draw-box {
+        grid-template-columns: minmax(0, 1fr) calc(var(--draw-card-width) + 8px) !important;
+      }
+    }
+
+    @media (max-width: 980px) {
+      .draw-box {
+        grid-template-columns: minmax(0, 1fr) calc(var(--draw-card-width) + 8px) !important;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .draw-box {
+        grid-template-columns: 1fr !important;
+      }
+      .draw-preview {
+        justify-self: center !important;
+      }
+    }
+
+
+    @media (max-width: 980px) {
+      body:not(.sidebar-collapsed) .sidebar-toggle {
+        left: 14px;
+      }
+
+      body.sidebar-collapsed main {
+        padding-left: 54px;
+      }
+
+      body.sidebar-collapsed .viewer {
+        width: calc(100% + 32px);
+        margin-left: -32px;
+      }
+    }
+
+
+    .trait-option.token-option {
+      cursor: default;
+    }
+
+    .trait-option.token-option img {
+      cursor: pointer;
+      transition: transform 120ms ease, border-color 120ms ease;
+    }
+
+    .trait-option.token-option img:hover {
+      transform: translateY(-1px);
+      border-color: rgba(199, 173, 114, 0.72);
+    }
+
+    .token-option-count {
+      display: grid;
+      grid-template-columns: 28px minmax(44px, 1fr) 28px;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .token-option-count-label {
+      grid-column: 1 / -1;
+      text-align: center;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.1;
+    }
+
+    .token-option-count input {
+      position: static !important;
+      top: auto !important;
+      right: auto !important;
+      width: 100% !important;
+      height: auto !important;
+      min-height: 30px;
+      margin: 0 !important;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #151411;
+      color: var(--text);
+      padding: 3px 6px;
+      font: inherit;
+      text-align: center;
+      accent-color: auto;
+    }
+
+    .token-count-step {
+      width: 28px;
+      min-width: 28px;
+      height: 30px;
+      min-height: 30px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border-radius: 7px;
+      border-color: rgba(199, 173, 114, 0.35);
+      color: var(--gold);
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .token-count-step:hover {
+      border-color: rgba(199, 173, 114, 0.72);
+      background: #261a18;
+    }
+
+
+
+    .token-folder-tools {
+      display: grid;
+      gap: 8px;
+      padding: 14px;
+      border-bottom: 1px solid var(--line);
+      background: #0b0b0a;
+    }
+
+    .token-folder-tools button {
+      min-height: 34px;
+      padding: 6px 12px;
+      border-radius: 7px;
+      border-color: rgba(199, 173, 114, 0.46);
+      color: var(--gold);
+      font-weight: 800;
+      justify-self: start;
+    }
+
+    .token-folder-hint {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .panel-token-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 4;
+    }
+
+    .panel-token-item {
+      position: absolute;
+      left: var(--token-left, 6%);
+      top: var(--token-top, 6%);
+      transform: translate(-50%, -50%);
+      width: clamp(34px, 7.2%, 68px);
+      min-width: 34px;
+      aspect-ratio: 1 / 1;
+      display: grid;
+      place-items: center;
+      pointer-events: auto;
+      cursor: grab;
+      user-select: none;
+      touch-action: none;
+      filter: drop-shadow(0 8px 13px rgba(0, 0, 0, 0.62));
+    }
+
+    .panel-token-item:active {
+      cursor: grabbing;
+    }
+
+    .panel-token-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 999px;
+    }
+
+    .panel-token-count {
+      position: absolute;
+      right: -8px;
+      bottom: -7px;
+      min-width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      padding: 0 5px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 999px;
+      background: rgba(180, 52, 44, 0.94);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+
+    .image-zoom-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: none;
+      place-items: center;
+      padding: 26px;
+      background: rgba(0, 0, 0, 0.82);
+      cursor: zoom-out;
+    }
+
+    .image-zoom-overlay.show {
+      display: grid;
+    }
+
+    .image-zoom-content {
+      position: relative;
+      max-width: min(96vw, 1180px);
+      max-height: 94vh;
+      display: grid;
+      grid-template-columns: minmax(0, auto) auto;
+      gap: 14px;
+      place-items: center;
+    }
+
+    .image-zoom-content img {
+      width: auto;
+      height: auto;
+      max-width: 96vw;
+      max-height: 94vh;
+      object-fit: contain;
+      border-radius: 10px;
+      background: #0b0b0a;
+      box-shadow: 0 24px 86px rgba(0, 0, 0, 0.72);
+      cursor: default;
+    }
+
+    .image-zoom-actions {
+      display: none;
+      width: 112px;
+      gap: 8px;
+      align-self: center;
+      cursor: default;
+    }
+
+    .image-zoom-actions.show {
+      display: grid;
+    }
+
+    .image-zoom-actions button {
+      min-height: 42px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border-color: rgba(199, 173, 114, 0.42);
+      background: rgba(24, 24, 22, 0.96);
+      color: var(--gold);
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .image-zoom-actions button:not(:disabled):hover {
+      border-color: var(--gold);
+      background: #261a18;
+    }
+
+    .image-zoom-actions button:disabled {
+      opacity: 0.42;
+    }
+
+    @media (max-width: 760px) {
+      .image-zoom-content {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .image-zoom-actions {
+        width: min(96vw, 360px);
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .image-zoom-close {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      z-index: 1001;
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      border: 1px solid rgba(199, 173, 114, 0.52);
+      background: rgba(24, 24, 22, 0.96);
+      color: var(--gold);
+      font-size: 26px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .image-zoom-close:hover {
+      border-color: var(--gold);
+      background: #261a18;
+    }
+
+    .card-grid img,
+    .extra-grid img,
+    .draw-preview img,
+    .side-card-image,
+    .panel-image,
+    .panel-token-item img {
+      cursor: zoom-in;
+    }
+
+
+  </style>
+</head>
+<body class="sidebar-collapsed">
+  <button type="button" class="sidebar-toggle" id="sidebarToggle" aria-label="展开左侧边栏" title="展开/折叠左侧边栏">☰</button>
+  <div class="app">
+    <aside>
+      <h1>使徒</h1>
+      <div class="nav" id="nav"></div>
+    </aside>
+
+    <main>
+      <div class="title-row">
+        <h2 id="title"></h2>
+        <div class="title-actions">
+          <div class="path" id="folderPath"></div>
+          <button type="button" id="traitButton">Trait</button>
+          <button type="button" id="tokenButton">Token</button>
+          <button type="button" id="newCampaignButton">开启新战役</button>
+        </div>
+      </div>
+
+      <div class="viewer" id="viewer">
+        <section class="section">
+          <div class="image-wrap" id="panelWrap"></div>
+        </section>
+
+        <section class="section">
+          <div class="side-stack">
+            <div class="image-wrap" id="routineWrap"></div>
+            <div class="image-wrap" id="signatureWrap"></div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="image-wrap">
+            <div class="extra-grid" id="extraGrid"></div>
+          </div>
+        </section>
+      </div>
+
+      <section class="cards-panel">
+        <div class="aibp-layout">
+          <div class="card-column">
+            <div class="card-column-head">
+              <div class="card-title-with-back">
+                <div class="card-column-title">AI</div>
+                <div class="deck-info">当前卡背：<span id="aiBackInfo"></span></div>
+              </div>
+              <div class="segmented" id="aiViewTabs"></div>
+            </div>
+            <div class="draw-box">
+              <div class="draw-actions">
+                <button type="button" id="drawAiButton">抽取 AI</button>
+                <button type="button" id="undoAiButton" disabled>撤销 AI</button>
+                <button type="button" id="confirmAiButton" disabled>弃置</button>
+                <button type="button" id="promoteAiSingleButton">AI 晋升</button>
+                <button type="button" id="drawFlareButton" class="hermesian-only-action">抽取闪粉</button>
+                <button type="button" id="nietzscheStateButton" class="state-button hidden">状态 1</button>
+              </div>
+              <div class="draw-preview" id="aiDrawPreview">未抽取 AI</div>
+            </div>
+            <div class="card-grid" id="aiGrid"></div>
+          </div>
+          <div class="card-column">
+            <div class="card-column-head">
+              <div class="card-title-with-back">
+                <div class="card-column-title">BP</div>
+                <div class="deck-info">当前卡背：<span id="bpBackInfo"></span></div>
+                <div class="bp-damage-summary" id="bpDamageSummary">当前损伤：0</div>
+              </div>
+              <div class="segmented" id="bpViewTabs"></div>
+            </div>
+            <div class="draw-box">
+              <div class="draw-actions">
+                <button type="button" id="drawBpButton">抽取 BP</button>
+                <button type="button" id="undoBpButton" disabled>撤销 BP</button>
+                <button type="button" id="discardBpButton" disabled>弃置</button>
+                <button type="button" id="defeatBpButton" disabled>击败</button>
+                <button type="button" id="criticalBpButton" disabled>暴击</button>
+                <label class="damage-target" id="chimeraDamageTarget">
+                  <span>奇美拉损伤进入</span>
+                  <select id="bpDamageTargetSelect">
+                    <option value="damage1">常规损伤堆</option>
+                    <option value="damage2">第二损伤堆</option>
+                  </select>
+                </label>
+                <button type="button" id="addSwButton">添加 SW</button>
+                <button type="button" id="addDwButton">添加 DW</button>
+                <button type="button" id="addSwDamage2Button" class="chimera-only-action">第二损伤 +SW</button>
+                <button type="button" id="removeSwDamage2Button" class="chimera-only-action">第二损伤 -SW</button>
+                <button type="button" id="addLabyrinthaurosSpecialBpButton" class="labyrinthauros-only-action">加入特殊 BP</button>
+                <button type="button" id="removeLabyrinthaurosSpecialBpButton" class="labyrinthauros-only-action">移出特殊 BP</button>
+                <button type="button" id="promoteBpSingleButton">BP 晋升</button>
+                <button type="button" id="promoteBpButton">联动晋升</button>
+              </div>
+              <div class="draw-preview" id="bpDrawPreview">未抽取 BP</div>
+            </div>
+            <div class="card-grid" id="bpGrid"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog class="trait-dialog" id="traitDialog">
+    <form method="dialog">
+      <div class="trait-dialog-head">
+        <div class="trait-dialog-title" id="traitDialogTitle">Trait 选择</div>
+        <button type="button" id="traitCloseButton">关闭</button>
+      </div>
+      <div class="trait-dialog-grid" id="traitDialogGrid"></div>
+      <div class="trait-dialog-actions">
+        <button type="button" id="traitClearButton">清空</button>
+        <button type="button" id="traitSaveButton">保存</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="trait-dialog" id="tokenDialog">
+    <form method="dialog">
+      <div class="trait-dialog-head">
+        <div class="trait-dialog-title" id="tokenDialogTitle">Token 选择</div>
+        <button type="button" id="tokenCloseButton">关闭</button>
+      </div>
+      <div class="token-folder-tools">
+        <div class="token-folder-hint" id="tokenFolderHint">Token 使用相对路径 ps/other/token/，加载方式和其他卡图一致。</div>
+      </div>
+      <div class="trait-dialog-grid" id="tokenDialogGrid"></div>
+      <div class="trait-dialog-actions">
+        <button type="button" id="tokenClearButton">清空</button>
+        <button type="button" id="tokenSaveButton">保存</button>
+      </div>
+    </form>
+  </dialog>
+
+
+  <div class="image-zoom-overlay" id="imageZoomOverlay" aria-hidden="true">
+    <button type="button" class="image-zoom-close" id="imageZoomClose" aria-label="关闭放大图">×</button>
+    <div class="image-zoom-content">
+      <img id="imageZoomImg" src="" alt="放大图片">
+      <div class="image-zoom-actions" id="imageZoomBpActions" aria-label="BP 处置">
+        <button type="button" data-bp-zoom-action="discard">弃置</button>
+        <button type="button" data-bp-zoom-action="defeat">击败</button>
+        <button type="button" data-bp-zoom-action="critical">暴击</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../page-focus-router.js?v=20260607a"></script>
+  <script src="ps/CHIMERA_METASTASIOS/bp_status_map.js"></script>
+  <script src="ps/other/token/token_manifest.js"></script>
+  <script>
+    const apostles = [
+      "HEKATON",
+      "LABYRINTHAUROS",
+      "HERMESIAN_PURSUER",
+      "ALPHA_TEMENOS",
+      "CHIMERA_METASTASIOS",
+      "CYCLONUS",
+      "THE_BURDEN",
+      "THE_NIETZSCJEAN",
+      "HYPERTIME_ORACLE",
+      "ICARIAN_HARPY",
+      "SUN_DESCENDANT"
+    ];
+    const aiViews = ["当前", "弃牌", "移除", "II", "III"];
+    const bpViews = ["当前", "弃牌", "损伤", "移除", "II", "III"];
+    const traitLevels = ["O", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
+    const traitProbeMaxIndex = 99;
+    const traitProbeExtensions = ["jpg", "png", "jpeg"];
+    const defaultTraitLevels = ["I", "X"];
+    const defaultTraitProbeMaxIndex = 12;
+    const tokenBasePath = "ps/other/token";
+    // token 文件夹里的所有图片都从 token_manifest.js 读取。
+    // 生成文件位置：ps/other/token/token_manifest.js
+    // 内容格式：window.AIBP_TOKEN_FILES = ["xxx.png", "yyy.jpg"];
+    const tokenFileNames = Array.isArray(window.AIBP_TOKEN_FILES) ? window.AIBP_TOKEN_FILES : [];
+    const aiExhaustedBonusTokens = ["DA+.png", "HT+.png", "ED+.png", "AT+.png"];
+    const tokenProbeMaxIndex = 199;
+    const tokenProbeExtensions = ["png", "jpg", "jpeg"];
+    const chimeraName = "CHIMERA_METASTASIOS";
+    const labyrinthaurosName = "LABYRINTHAUROS";
+    const hermesianName = "HERMESIAN_PURSUER";
+    const flareCardCount = 4;
+    const labyrinthaurosSpecialBp = {
+      type: "TP",
+      level: "X",
+      index: 1,
+      fileName: "LABYRINTHAUROS_TP_X_001.jpg",
+      specialBp: true
+    };
+    const chimeraPhaseStates = {
+      C: { label: "CORROSIVE", left: "87.4%", top: "4.6%", width: "12.6%", height: "6.1%" },
+      G: { label: "GELATINOUS", left: "79.5%", top: "28.8%", width: "14.2%", height: "6.1%" },
+      S: { label: "SUPERSOLID", left: "92.9%", top: "28.7%", width: "13.6%", height: "6.1%" }
+    };
+    const nietzscheName = "THE_NIETZSCJEAN";
+    const nietzscheStateKey = "aibp-nietzsche-state-v2";
+    const nietzscheDefaultStateIndex = 2;
+    const nietzscheStates = [
+      { label: "火焰", short: "火", left: "54.3%", top: "54.2%" },
+      { label: "神浆", short: "浆", left: "58.8%", top: "68.1%" },
+      { label: "巨剑", short: "剑", left: "49.4%", top: "67.6%" }
+    ];
+    const normalBpViews = bpViews;
+    const hermesianAiViews = [...aiViews, "闪粉牌组", "闪粉弃牌"];
+    const cyclonusName = "CYCLONUS";
+    const cyclonusStateKey = "aibp-cyclonus-state-v1";
+    const cyclonusStates = [
+      { label: "Mauls", short: "M", left: "86.4%", top: "8.7%" },
+      { label: "Chain", short: "C", left: "81.7%", top: "21.6%" },
+      { label: "Body", short: "B", left: "90.6%", top: "22.0%" }
+    ];
+    const chimeraBpViews = ["当前", "弃牌", "常规损伤堆", "第二损伤堆", "移除", "II", "III"];
+    const cardCount = 6;
+    const cardCountOverrides = {
+      HYPERTIME_ORACLE: { AI: { III: 7 } }
+    };
+    const panelRatio = 2.2;
+    const levelBack = { O: "0", I: "1", II: "2", III: "3", X: "X" };
+
+    const sidebarToggle = document.getElementById("sidebarToggle");
+    const nav = document.getElementById("nav");
+    const title = document.getElementById("title");
+    const folderPath = document.getElementById("folderPath");
+    const nietzscheStateButton = document.getElementById("nietzscheStateButton");
+    const panelWrap = document.getElementById("panelWrap");
+    const routineWrap = document.getElementById("routineWrap");
+    const signatureWrap = document.getElementById("signatureWrap");
+    const extraGrid = document.getElementById("extraGrid");
+    const aiViewTabs = document.getElementById("aiViewTabs");
+    const bpViewTabs = document.getElementById("bpViewTabs");
+    const aiGrid = document.getElementById("aiGrid");
+    const bpGrid = document.getElementById("bpGrid");
+    const aiBackInfo = document.getElementById("aiBackInfo");
+    const bpBackInfo = document.getElementById("bpBackInfo");
+    const bpDamageSummary = document.getElementById("bpDamageSummary");
+    const newCampaignButton = document.getElementById("newCampaignButton");
+    const traitButton = document.getElementById("traitButton");
+    const tokenButton = document.getElementById("tokenButton");
+    const traitDialog = document.getElementById("traitDialog");
+    const traitDialogTitle = document.getElementById("traitDialogTitle");
+    const traitDialogGrid = document.getElementById("traitDialogGrid");
+    const traitCloseButton = document.getElementById("traitCloseButton");
+    const traitClearButton = document.getElementById("traitClearButton");
+    const traitSaveButton = document.getElementById("traitSaveButton");
+    const tokenDialog = document.getElementById("tokenDialog");
+    const tokenDialogTitle = document.getElementById("tokenDialogTitle");
+    const tokenDialogGrid = document.getElementById("tokenDialogGrid");
+    const tokenFolderHint = document.getElementById("tokenFolderHint");
+    const tokenCloseButton = document.getElementById("tokenCloseButton");
+    const tokenClearButton = document.getElementById("tokenClearButton");
+    const tokenSaveButton = document.getElementById("tokenSaveButton");
+    const drawAiButton = document.getElementById("drawAiButton");
+    const undoAiButton = document.getElementById("undoAiButton");
+    const confirmAiButton = document.getElementById("confirmAiButton");
+    const promoteAiSingleButton = document.getElementById("promoteAiSingleButton");
+    const drawFlareButton = document.getElementById("drawFlareButton");
+    const aiDrawPreview = document.getElementById("aiDrawPreview");
+    const drawBpButton = document.getElementById("drawBpButton");
+    const undoBpButton = document.getElementById("undoBpButton");
+    const discardBpButton = document.getElementById("discardBpButton");
+    const defeatBpButton = document.getElementById("defeatBpButton");
+    const criticalBpButton = document.getElementById("criticalBpButton");
+    const addSwButton = document.getElementById("addSwButton");
+    const addDwButton = document.getElementById("addDwButton");
+    const addSwDamage2Button = document.getElementById("addSwDamage2Button");
+    const removeSwDamage2Button = document.getElementById("removeSwDamage2Button");
+    const addLabyrinthaurosSpecialBpButton = document.getElementById("addLabyrinthaurosSpecialBpButton");
+    const removeLabyrinthaurosSpecialBpButton = document.getElementById("removeLabyrinthaurosSpecialBpButton");
+    const chimeraDamageTarget = document.getElementById("chimeraDamageTarget");
+    const bpDamageTargetSelect = document.getElementById("bpDamageTargetSelect");
+    const promoteBpSingleButton = document.getElementById("promoteBpSingleButton");
+    const promoteBpButton = document.getElementById("promoteBpButton");
+    const bpDrawPreview = document.getElementById("bpDrawPreview");
+    const imageZoomOverlay = document.getElementById("imageZoomOverlay");
+    const imageZoomImg = document.getElementById("imageZoomImg");
+    const imageZoomClose = document.getElementById("imageZoomClose");
+    const imageZoomBpActions = document.getElementById("imageZoomBpActions");
+
+    function normalizeApostleName(value) {
+      return String(value || "").trim().toUpperCase().replace(/[\s-]+/g, "_");
+    }
+
+    function initialApostle() {
+      const params = new URLSearchParams(window.location.search);
+      const requested = normalizeApostleName(params.get("apostle") || decodeURIComponent(window.location.hash.replace(/^#/, "")));
+      return apostles.find((name) => name === requested) || apostles[0];
+    }
+
+    let currentApostle = initialApostle();
+    let currentAiView = "弃牌";
+    let currentBpView = "弃牌";
+    let nietzscheStateIndex = Number(localStorage.getItem(nietzscheStateKey) || String(nietzscheDefaultStateIndex));
+    if (!Number.isInteger(nietzscheStateIndex) || nietzscheStateIndex < 0 || nietzscheStateIndex >= nietzscheStates.length) {
+      nietzscheStateIndex = nietzscheDefaultStateIndex;
+    }
+    let cyclonusStateIndex = Number(localStorage.getItem(cyclonusStateKey) || "0");
+    if (!Number.isInteger(cyclonusStateIndex) || cyclonusStateIndex < 0 || cyclonusStateIndex >= cyclonusStates.length) {
+      cyclonusStateIndex = 0;
+    }
+    const piles = {};
+    const storageKey = "aibp-apostle-viewer-piles-v3";
+    const undoStacks = {};
+    const maxUndoSteps = 30;
+    let zoomCloseAction = null;
+    let traitLoadToken = 0;
+    let tokenLoadToken = 0;
+
+    function loadSavedPiles() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(storageKey) || "{}");
+        Object.assign(piles, saved);
+      } catch {
+        localStorage.removeItem(storageKey);
+      }
+    }
+
+    function savePiles() {
+      localStorage.setItem(storageKey, JSON.stringify(piles));
+    }
+
+    function clonePileState(state) {
+      if (typeof structuredClone === "function") {
+        return structuredClone(state);
+      }
+      return JSON.parse(JSON.stringify(state));
+    }
+
+    function rememberUndo(name, scope = "AIBP") {
+      ensurePiles(name);
+      undoStacks[name] ||= [];
+      undoStacks[name].push({
+        scope,
+        state: clonePileState(piles[name]),
+        aiView: currentAiView,
+        bpView: currentBpView
+      });
+      if (undoStacks[name].length > maxUndoSteps) {
+        undoStacks[name].shift();
+      }
+      updateUndoButtons();
+    }
+
+    function canUndo(name, type = "") {
+      const stack = undoStacks[name] || [];
+      const entry = stack[stack.length - 1];
+      if (!entry) return false;
+      if (!type) return true;
+      return entry.scope === type || entry.scope === "AIBP";
+    }
+
+    function undoLastAibp(type = "") {
+      ensurePiles(currentApostle);
+      const stack = undoStacks[currentApostle] || [];
+      const entry = stack[stack.length - 1];
+      if (!entry || (type && entry.scope !== type && entry.scope !== "AIBP")) return;
+      stack.pop();
+      piles[currentApostle] = clonePileState(entry.state);
+      currentAiView = entry.aiView;
+      currentBpView = entry.bpView;
+      savePiles();
+      updateAiViewTabs();
+      updateBpViewTabs();
+      updateNietzscheStateUi(panelWrap.querySelector(".panel-state-marker"));
+      renderAibpCards();
+      renderExtraCards();
+      renderPanelTokens();
+      updateUndoButtons();
+    }
+
+    function updateUndoButtons() {
+      if (undoAiButton) undoAiButton.disabled = !canUndo(currentApostle, "AI");
+      if (undoBpButton) undoBpButton.disabled = !canUndo(currentApostle, "BP");
+    }
+
+    function imageOrMessage(src, alt, className = "") {
+      const img = document.createElement("img");
+      img.src = src;
+      img.alt = alt;
+      img.className = className;
+      img.onerror = () => {
+        const fallback = document.createElement("div");
+        fallback.className = "missing";
+        fallback.textContent = `未找到图片：${src}`;
+        img.replaceWith(fallback);
+      };
+      return img;
+    }
+
+    function numberedName(name, type, level, index) {
+      return `${name}_${type}_${level}_${String(index).padStart(3, "0")}.jpg`;
+    }
+
+    function cardFileName(card, name = currentApostle) {
+      if (!card || card.special) return "";
+      if (card.fileName) return card.fileName;
+      return numberedName(name, card.type, card.level, card.index);
+    }
+
+    function sameCard(left, right) {
+      if (!left || !right) return false;
+      if (left.fileName || right.fileName) return left.fileName === right.fileName;
+      return left.type === right.type && left.level === right.level && left.index === right.index;
+    }
+
+    function pileCardCount(type, level) {
+      return cardCountOverrides[currentApostle]?.[type]?.[level] || cardCount;
+    }
+
+    function defaultPile(type) {
+      return Array.from({ length: pileCardCount(type, "I") }, (_, index) => ({
+        type,
+        level: "I",
+        index: index + 1
+      }));
+    }
+
+    function supplyPile(type, level) {
+      return shuffleCards(Array.from({ length: pileCardCount(type, level) }, (_, index) => ({
+        type,
+        level,
+        index: index + 1
+      })));
+    }
+
+    function initialFlarePile() {
+      return {
+        deck: shuffleCards(Array.from({ length: flareCardCount }, (_, index) => ({
+          type: "FL",
+          level: "X",
+          index: index + 1
+        }))),
+        discard: []
+      };
+    }
+
+    function initialState() {
+      return {
+        AI: {
+          deck: shuffleCards(defaultPile("AI")),
+          discard: [],
+          pending: null,
+          supply: {
+            I: [],
+            II: supplyPile("AI", "II"),
+            III: supplyPile("AI", "III")
+          },
+          removed: []
+        },
+        BP: {
+          deck: shuffleCards(defaultPile("BP")),
+          discard: [],
+          damage: [],
+          damage1: [],
+          damage2: [],
+          pending: null,
+          supply: {
+            I: [],
+            II: supplyPile("BP", "II"),
+            III: supplyPile("BP", "III")
+          },
+          removed: []
+        },
+        flare: initialFlarePile(),
+        chimeraPhase: "",
+        traits: [],
+        tokens: [],
+        aiExhaustedBonusIndex: 0
+      };
+    }
+
+    function ensurePiles(name) {
+      if (!piles[name]) {
+        piles[name] = initialState();
+        savePiles();
+      } else {
+        piles[name].AI ||= initialState().AI;
+        piles[name].BP ||= initialState().BP;
+        piles[name].AI.deck ||= [];
+        piles[name].AI.discard ||= [];
+        piles[name].AI.pending ||= null;
+        piles[name].AI.supply ||= { I: [], II: supplyPile("AI", "II"), III: supplyPile("AI", "III") };
+        piles[name].AI.supply.I ||= [];
+        piles[name].AI.supply.II ||= [];
+        piles[name].AI.supply.III ||= [];
+        piles[name].AI.removed ||= [];
+        piles[name].BP.deck ||= [];
+        piles[name].BP.discard ||= [];
+        piles[name].BP.damage ||= [];
+        piles[name].BP.damage1 ||= [];
+        piles[name].BP.damage2 ||= [];
+        if (name === chimeraName && piles[name].BP.damage.length > 0 && !piles[name].BP.chimeraDamageMigrated) {
+          piles[name].BP.damage1 = piles[name].BP.damage1.concat(piles[name].BP.damage);
+          piles[name].BP.damage = [];
+          piles[name].BP.chimeraDamageMigrated = true;
+        }
+        piles[name].BP.pending ||= null;
+        piles[name].BP.supply ||= { I: [], II: supplyPile("BP", "II"), III: supplyPile("BP", "III") };
+        piles[name].BP.supply.I ||= [];
+        piles[name].BP.supply.II ||= [];
+        piles[name].BP.supply.III ||= [];
+        piles[name].BP.removed ||= [];
+        piles[name].flare ||= initialFlarePile();
+        piles[name].flare.deck ||= [];
+        piles[name].flare.discard ||= [];
+        if (typeof piles[name].chimeraPhase !== "string") {
+          piles[name].chimeraPhase = "";
+        }
+        if (!Array.isArray(piles[name].traits)) {
+          piles[name].traits = [];
+        }
+        if (name === nietzscheName) {
+          const migratedTraits = [];
+          const migratedKeys = new Set();
+          piles[name].traits.forEach((card) => {
+            const migrated = card?.type === "TR" && (card.level === "I" || card.level === "X") && (card.index === 1 || card.index === 2)
+              ? { ...card, level: "II" }
+              : card;
+            const key = `${migrated?.type || "TR"}-${migrated?.level}-${migrated?.index}-${migrated?.ext || "jpg"}`;
+            if (!migratedKeys.has(key)) {
+              migratedKeys.add(key);
+              migratedTraits.push(migrated);
+            }
+          });
+          if (JSON.stringify(migratedTraits) !== JSON.stringify(piles[name].traits)) {
+            piles[name].traits = migratedTraits;
+            savePiles();
+          }
+        }
+        if (!Array.isArray(piles[name].tokens)) {
+          piles[name].tokens = [];
+        }
+        if (!Number.isInteger(piles[name].aiExhaustedBonusIndex)) {
+          piles[name].aiExhaustedBonusIndex = 0;
+        }
+      }
+    }
+
+    function isChimera() {
+      return currentApostle === chimeraName;
+    }
+
+    function bpViewsForCurrentApostle() {
+      return isChimera() ? chimeraBpViews : normalBpViews;
+    }
+
+    function currentBpDamageKey() {
+      if (!isChimera()) return "damage";
+      return bpDamageTargetSelect.value === "damage2" ? "damage2" : "damage1";
+    }
+
+    function currentBpDamageView() {
+      if (!isChimera()) return "损伤";
+      return currentBpDamageKey() === "damage2" ? "第二损伤堆" : "常规损伤堆";
+    }
+
+    function bpDamageValue(card) {
+      if (!card) return 0;
+      if (card.special === "DW" || card.level === "III") return 2;
+      return Math.max(1, Math.floor(Number(card.damageValue) || 1));
+    }
+
+    function bpDamageTotalForKey(key) {
+      ensurePiles(currentApostle);
+      const cards = piles[currentApostle].BP[key] || [];
+      return cards.reduce((sum, card) => sum + bpDamageValue(card), 0);
+    }
+
+    function currentBpDamageSummary() {
+      if (!isChimera()) {
+        return { total: bpDamageTotalForKey("damage") };
+      }
+      const damage1 = bpDamageTotalForKey("damage1");
+      const damage2 = bpDamageTotalForKey("damage2");
+      return { total: damage1 + damage2, damage1, damage2 };
+    }
+
+    function pushBpDamage(card) {
+      ensurePiles(currentApostle);
+      piles[currentApostle].BP[currentBpDamageKey()].push(card);
+    }
+
+    function chimeraPhaseForCard(card) {
+      const fileName = cardFileName(card, chimeraName);
+      const map = window.CHIMERA_BP_STATUS_MAP || {};
+      const phase = String(map[fileName] || "").toUpperCase();
+      return chimeraPhaseStates[phase] ? phase : "";
+    }
+
+    function setChimeraPhaseFromCard(card) {
+      if (!isChimera()) return;
+      const phase = chimeraPhaseForCard(card);
+      if (!phase) return;
+      piles[currentApostle].chimeraPhase = phase;
+      const marker = panelWrap.querySelector(".panel-state-marker");
+      updateNietzscheStateUi(marker);
+    }
+
+    function cardSrc(card) {
+      if (card.special) {
+        return `ps/other/${card.special}.jpg`;
+      }
+      return `ps/${currentApostle}/${cardFileName(card)}`;
+    }
+
+    function cardAlt(card) {
+      if (card.special) {
+        return `${card.special} 特殊损伤`;
+      }
+      if (card.damageValue && card.damageValue > 1) {
+        return `${card.type} ${card.level} ${card.index}，视作 ${card.damageValue} 个损伤`;
+      }
+      return `${card.type} ${card.level} ${card.index}`;
+    }
+
+    function renderCardsIntoGrid(grid, cards, emptyText) {
+      grid.replaceChildren();
+
+      if (cards.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "missing";
+        empty.textContent = emptyText;
+        grid.appendChild(empty);
+        return;
+      }
+
+      cards.forEach((card) => {
+        const tile = document.createElement("div");
+        tile.className = "card-tile";
+        tile.appendChild(imageOrMessage(cardSrc(card), cardAlt(card)));
+        if (card.damageValue && card.damageValue > 1) {
+          const badge = document.createElement("div");
+          badge.className = "damage-badge";
+          badge.textContent = `×${card.damageValue}`;
+          tile.appendChild(badge);
+        }
+        grid.appendChild(tile);
+      });
+    }
+
+    function cardsForView(type, view) {
+      ensurePiles(currentApostle);
+      if (type === "AI" && view === "闪粉牌组") {
+        return piles[currentApostle].flare.deck;
+      }
+      if (type === "AI" && view === "闪粉弃牌") {
+        return piles[currentApostle].flare.discard;
+      }
+      if (view === "当前") {
+        return piles[currentApostle][type].deck;
+      }
+      if (view === "弃牌") {
+        return piles[currentApostle][type].discard;
+      }
+      if (type === "AI" && view === "移除") {
+        return piles[currentApostle].AI.removed;
+      }
+      if (type === "BP" && view === "损伤") {
+        return piles[currentApostle].BP.damage;
+      }
+      if (type === "BP" && (view === "损伤1" || view === "常规损伤堆")) {
+        return piles[currentApostle].BP.damage1;
+      }
+      if (type === "BP" && (view === "损伤2" || view === "第二损伤堆")) {
+        return piles[currentApostle].BP.damage2;
+      }
+      if (type === "BP" && view === "移除") {
+        return piles[currentApostle].BP.removed;
+      }
+      if (["I", "II", "III"].includes(view)) {
+        return piles[currentApostle][type].supply[view] || [];
+      }
+      return [];
+    }
+
+    function deckBackText(cards) {
+      if (cards.length === 0) return "空";
+      return cards.map((card) => levelBack[card.level] || card.level).join("-");
+    }
+
+    function shuffleCards(cards) {
+      const shuffled = cards.slice();
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }
+
+    function insertRandom(deck, card) {
+      if (!card) return;
+      const position = Math.floor(Math.random() * (deck.length + 1));
+      deck.splice(position, 0, card);
+    }
+
+    function drawFromSupply(type, level) {
+      const pile = piles[currentApostle][type].supply[level];
+      if (!pile || pile.length === 0) return null;
+      return pile.pop();
+    }
+
+    function hasSupply(type, level) {
+      const pile = piles[currentApostle][type].supply[level];
+      return Array.isArray(pile) && pile.length > 0;
+    }
+
+    function reshuffleDiscardIfDeckEmpty(type) {
+      const pile = piles[currentApostle][type];
+      if (pile.deck.length === 0 && pile.discard.length > 0) {
+        pile.deck = shuffleCards(pile.discard);
+        pile.discard = [];
+      }
+    }
+
+    function removeFirstMatching(type, predicate) {
+      const pile = piles[currentApostle][type];
+      reshuffleDiscardIfDeckEmpty(type);
+      let index = pile.deck.findIndex(predicate);
+      if (index >= 0) {
+        const card = pile.deck.splice(index, 1)[0];
+        pile.removed.push(card);
+        reshuffleDiscardIfDeckEmpty(type);
+        return { card, from: "deck" };
+      }
+
+      index = pile.discard.findIndex(predicate);
+      if (index >= 0) {
+        const card = pile.discard.splice(index, 1)[0];
+        pile.removed.push(card);
+        pile.deck = shuffleCards(pile.deck.concat(pile.discard));
+        pile.discard = [];
+        return { card, from: "discard" };
+      }
+
+      return null;
+    }
+
+    function putIntoRemovedPile(type, card) {
+      if (!card || card.special) return;
+      piles[currentApostle][type].removed.push(card);
+    }
+
+    function removeFirstMatchingToRemoved(type, predicate) {
+      const pile = piles[currentApostle][type];
+      reshuffleDiscardIfDeckEmpty(type);
+      let index = pile.deck.findIndex(predicate);
+      if (index >= 0) {
+        const card = pile.deck.splice(index, 1)[0];
+        putIntoRemovedPile(type, card);
+        reshuffleDiscardIfDeckEmpty(type);
+        return { card, from: "deck" };
+      }
+
+      index = pile.discard.findIndex(predicate);
+      if (index >= 0) {
+        const card = pile.discard.splice(index, 1)[0];
+        putIntoRemovedPile(type, card);
+        pile.deck = shuffleCards(pile.deck.concat(pile.discard));
+        pile.discard = [];
+        return { card, from: "discard" };
+      }
+
+      return null;
+    }
+
+    function lowestLevelCard(type) {
+      const order = ["I", "II", "III"];
+      const pile = piles[currentApostle][type];
+      for (const level of order) {
+        const deckCard = pile.deck.find((card) => card.level === level);
+        if (deckCard) return deckCard;
+        const discardCard = pile.discard.find((card) => card.level === level);
+        if (discardCard) return discardCard;
+      }
+      return null;
+    }
+
+    function removeLowestCard(type) {
+      const lowest = lowestLevelCard(type);
+      if (!lowest) return null;
+      return removeFirstMatching(type, (card) => card.level === lowest.level && card.index === lowest.index);
+    }
+
+    function removeLowestCardToRemoved(type) {
+      const lowest = lowestLevelCard(type);
+      if (!lowest) return null;
+      return removeFirstMatchingToRemoved(type, (card) => card.level === lowest.level && card.index === lowest.index);
+    }
+
+    function removeLowestCardFromDeckOnly(type) {
+      const order = ["I", "II", "III"];
+      const pile = piles[currentApostle][type];
+      for (const level of order) {
+        const index = pile.deck.findIndex((card) => card.level === level);
+        if (index >= 0) {
+          const card = pile.deck.splice(index, 1)[0];
+          pile.removed.push(card);
+          return card;
+        }
+      }
+      return null;
+    }
+
+    function addPanelToken(file, amount = 1) {
+      ensurePiles(currentApostle);
+      const count = Math.max(0, Math.floor(Number(amount) || 0));
+      if (!file || count <= 0) return;
+
+      const tokens = piles[currentApostle].tokens;
+      const existing = tokens.find((item) => item.file === file);
+      if (existing) {
+        existing.count = clampTokenCount((Number(existing.count) || 0) + count);
+        return;
+      }
+
+      tokens.push({
+        file,
+        count: clampTokenCount(count),
+        x: 8 + (tokens.length % 5) * 8,
+        y: 8 + Math.floor(tokens.length / 5) * 8
+      });
+    }
+
+    function addAiExhaustedBonusTokens(damageCount = 1) {
+      ensurePiles(currentApostle);
+      const count = Math.max(0, Math.floor(Number(damageCount) || 0));
+      if (count <= 0) return;
+
+      let index = piles[currentApostle].aiExhaustedBonusIndex % aiExhaustedBonusTokens.length;
+      if (index < 0) index = 0;
+
+      for (let i = 0; i < count; i++) {
+        addPanelToken(aiExhaustedBonusTokens[index], 1);
+        index = (index + 1) % aiExhaustedBonusTokens.length;
+      }
+
+      piles[currentApostle].aiExhaustedBonusIndex = index;
+      renderPanelTokens();
+    }
+
+    function promoteAiFromLevel(fromLevel, toLevel, damageCount = 1) {
+      reshuffleDiscardIfDeckEmpty("AI");
+      if (toLevel === "III" && !hasSupply("AI", "III")) {
+        addAiExhaustedBonusTokens(damageCount);
+        return;
+      }
+      removeFirstMatchingToRemoved("AI", (card) => card.level === fromLevel);
+      insertRandom(piles[currentApostle].AI.deck, drawFromSupply("AI", toLevel));
+    }
+
+    function promoteAiForBpIII(damageCount = 2) {
+      reshuffleDiscardIfDeckEmpty("AI");
+      if (!hasSupply("AI", "III")) {
+        addAiExhaustedBonusTokens(damageCount);
+        return;
+      }
+      removeLowestCardToRemoved("AI");
+      insertRandom(piles[currentApostle].AI.deck, drawFromSupply("AI", "III"));
+    }
+
+    function resolveBpDefeat(card) {
+      const bp = piles[currentApostle].BP;
+
+      if (card.level === "I") {
+        pushBpDamage(card);
+        insertRandom(bp.deck, drawFromSupply("BP", "II"));
+        promoteAiFromLevel("I", "II");
+        return;
+      }
+
+      if (card.level === "II") {
+        pushBpDamage(card);
+        insertRandom(bp.deck, drawFromSupply("BP", "III"));
+        promoteAiFromLevel("II", "III");
+        return;
+      }
+
+      // BP III：按规则不把这张 BP3 当作普通损伤显示；它被放在一旁，损伤堆加入通用双重损伤 DW。
+      bp.removed.push(card);
+      pushBpDamage({ special: "DW" });
+
+      if (hasSupply("BP", "III")) {
+        removeLowestCard("BP");
+        insertRandom(bp.deck, drawFromSupply("BP", "III"));
+        bp.deck.push(card);
+      } else {
+        bp.deck = shuffleCards(bp.deck.concat(bp.discard));
+        bp.discard = [];
+        bp.deck.push(card);
+      }
+
+      promoteAiForBpIII();
+    }
+
+    function resolveBpCritical(card) {
+      const bp = piles[currentApostle].BP;
+
+      if (card.level !== "III") {
+        // 规则图中“关键一击”只列在 BP III；非 BP III 时按普通击败处理。
+        resolveBpDefeat(card);
+        return;
+      }
+
+      // BP III 关键一击：击伤的 BP3 本体进入损伤堆，视作 2 个损伤。
+      pushBpDamage({ ...card, damageValue: 2 });
+
+      if (hasSupply("BP", "III")) {
+        removeLowestCard("BP");
+        insertRandom(bp.deck, drawFromSupply("BP", "III"));
+        insertRandom(bp.deck, drawFromSupply("BP", "III"));
+      } else {
+        bp.deck = shuffleCards(bp.deck.concat(bp.discard));
+        bp.discard = [];
+      }
+    }
+
+    function addBpSpecialDamage(special) {
+      ensurePiles(currentApostle);
+      rememberUndo(currentApostle, "BP");
+      pushBpDamage({ special });
+      currentBpView = currentBpDamageView();
+      savePiles();
+      renderAibpCards();
+    }
+
+    function isLabyrinthauros() {
+      return currentApostle === labyrinthaurosName;
+    }
+
+    function isHermesian() {
+      return currentApostle === hermesianName;
+    }
+
+    function renderFlareButton() {
+      if (!drawFlareButton) return;
+      drawFlareButton.classList.toggle("show", isHermesian());
+      if (!isHermesian()) return;
+      const flare = piles[currentApostle].flare;
+      drawFlareButton.textContent = `抽取闪粉（${flare.deck.length}/${flare.discard.length}）`;
+    }
+
+    function drawFlare() {
+      if (!isHermesian()) return;
+      ensurePiles(currentApostle);
+      const flare = piles[currentApostle].flare;
+      if (flare.deck.length === 0 && flare.discard.length > 0) {
+        flare.deck = shuffleCards(flare.discard);
+        flare.discard = [];
+      }
+      if (flare.deck.length === 0) return;
+
+      rememberUndo(currentApostle, "AI");
+      const card = flare.deck.shift();
+      flare.discard.push(card);
+      savePiles();
+      renderAibpCards();
+      openImageZoom(cardSrc(card), "抽取的闪粉卡");
+    }
+
+    function addLabyrinthaurosSpecialBp() {
+      if (!isLabyrinthauros()) return;
+      ensurePiles(currentApostle);
+      const bp = piles[currentApostle].BP;
+      const locations = ["deck", "discard", "damage", "damage1", "damage2"];
+      const alreadyInPlay = locations.some((key) =>
+        (bp[key] || []).some((card) => sameCard(card, labyrinthaurosSpecialBp))
+      ) || sameCard(bp.pending, labyrinthaurosSpecialBp);
+      if (alreadyInPlay) return;
+
+      rememberUndo(currentApostle, "BP");
+      bp.removed = (bp.removed || []).filter((card) => !sameCard(card, labyrinthaurosSpecialBp));
+      insertRandom(bp.deck, { ...labyrinthaurosSpecialBp });
+      savePiles();
+      renderAibpCards();
+    }
+
+    function removeLabyrinthaurosSpecialBp() {
+      if (!isLabyrinthauros()) return;
+      ensurePiles(currentApostle);
+      const bp = piles[currentApostle].BP;
+      const locations = ["deck", "discard", "damage", "damage1", "damage2"];
+      const exists = locations.some((key) =>
+        (bp[key] || []).some((card) => sameCard(card, labyrinthaurosSpecialBp))
+      ) || sameCard(bp.pending, labyrinthaurosSpecialBp);
+      if (!exists) return;
+
+      rememberUndo(currentApostle, "BP");
+      locations.forEach((key) => {
+        bp[key] = (bp[key] || []).filter((card) => !sameCard(card, labyrinthaurosSpecialBp));
+      });
+      if (sameCard(bp.pending, labyrinthaurosSpecialBp)) bp.pending = null;
+      if (!(bp.removed || []).some((card) => sameCard(card, labyrinthaurosSpecialBp))) {
+        bp.removed.push({ ...labyrinthaurosSpecialBp });
+      }
+      currentBpView = "移除";
+      savePiles();
+      renderAibpCards();
+    }
+
+    function addChimeraDamage2Sw() {
+      ensurePiles(currentApostle);
+      if (!isChimera()) return;
+      rememberUndo(currentApostle, "BP");
+      piles[currentApostle].BP.damage2.push({ special: "SW" });
+      currentBpView = "第二损伤堆";
+      savePiles();
+      renderAibpCards();
+    }
+
+    function removeChimeraDamage2Sw() {
+      ensurePiles(currentApostle);
+      if (!isChimera()) return;
+      const damage2 = piles[currentApostle].BP.damage2;
+      const index = damage2.findLastIndex
+        ? damage2.findLastIndex((card) => card && card.special === "SW")
+        : (() => {
+            for (let i = damage2.length - 1; i >= 0; i--) {
+              if (damage2[i] && damage2[i].special === "SW") return i;
+            }
+            return -1;
+          })();
+      if (index < 0) return;
+      rememberUndo(currentApostle, "BP");
+      damage2.splice(index, 1);
+      currentBpView = "第二损伤堆";
+      savePiles();
+      renderAibpCards();
+    }
+
+    function promoteBpDeckForDefeatedLevel(level) {
+      const bp = piles[currentApostle].BP;
+      reshuffleDiscardIfDeckEmpty("BP");
+
+      if (level === "I") {
+        insertRandom(bp.deck, drawFromSupply("BP", "II"));
+        return;
+      }
+
+      if (level === "II") {
+        insertRandom(bp.deck, drawFromSupply("BP", "III"));
+        return;
+      }
+
+      if (level === "III") {
+        if (hasSupply("BP", "III")) {
+          removeLowestCardToRemoved("BP");
+          insertRandom(bp.deck, drawFromSupply("BP", "III"));
+        } else {
+          bp.deck = shuffleCards(bp.deck.concat(bp.discard));
+          bp.discard = [];
+        }
+      }
+    }
+
+
+    function lowestDeckCardWithIndex(type) {
+      const order = ["I", "II", "III"];
+      const deck = piles[currentApostle][type].deck;
+      for (const level of order) {
+        const index = deck.findIndex((card) => card.level === level);
+        if (index >= 0) {
+          return { card: deck[index], index };
+        }
+      }
+      return null;
+    }
+
+    function higherLevel(level) {
+      if (level === "I") return "II";
+      if (level === "II") return "III";
+      return null;
+    }
+
+    function promoteSinglePile(type) {
+      ensurePiles(currentApostle);
+      const target = lowestLevelCard(type);
+      if (!target) return;
+
+      const toLevel = higherLevel(target.level);
+      if (!toLevel) {
+        window.alert(`${type} 当前牌堆中最低等级已经是 III，没有更高等级可晋升。`);
+        return;
+      }
+
+      rememberUndo(currentApostle, type);
+      removeFirstMatchingToRemoved(type, (card) => card.level === target.level && card.index === target.index);
+      insertRandom(piles[currentApostle][type].deck, drawFromSupply(type, toLevel));
+
+      // 不再自动跳转到“当前”；保留用户当前正在查看的牌堆。
+      savePiles();
+      renderAibpCards();
+    }
+
+    function promoteBpByRemovingLowest() {
+      ensurePiles(currentApostle);
+      if (!lowestLevelCard("BP")) return;
+      rememberUndo(currentApostle, "AIBP");
+      const removed = removeLowestCardToRemoved("BP");
+      const removedCard = removed?.card;
+      if (!removedCard) return;
+
+      // 这张 BP 不进入损伤牌堆，而是进入 BP 的移除牌堆；
+      // 但仍按“这张 BP 被击败/造成损伤”完整结算 BP 卡组补新卡和 AI 卡组升级。
+      promoteBpDeckForDefeatedLevel(removedCard.level);
+
+      if (removedCard.level === "I") {
+        promoteAiFromLevel("I", "II");
+      } else if (removedCard.level === "II") {
+        promoteAiFromLevel("II", "III");
+      } else if (removedCard.level === "III") {
+        promoteAiForBpIII();
+      }
+
+      currentBpView = "移除";
+      savePiles();
+      renderAibpCards();
+    }
+
+    function startNewCampaign() {
+      if (!window.confirm("开启新战役会重置当前使徒的 AI/BP 牌堆、弃牌记录和战役标记。确定继续吗？")) return;
+      ensurePiles(currentApostle);
+      undoStacks[currentApostle] = [];
+      piles[currentApostle] = initialState();
+      currentAiView = "弃牌";
+      currentBpView = "弃牌";
+      savePiles();
+      updateNietzscheStateUi(panelWrap.querySelector(".panel-state-marker"));
+      renderAibpCards();
+      renderExtraCards();
+      renderPanelTokens();
+    }
+
+    function renderDeckInfo() {
+      ensurePiles(currentApostle);
+      aiBackInfo.textContent = deckBackText(piles[currentApostle].AI.deck);
+      bpBackInfo.textContent = deckBackText(piles[currentApostle].BP.deck);
+      const damageSummary = currentBpDamageSummary();
+      bpDamageSummary.textContent = isChimera()
+        ? `当前损伤：${damageSummary.total}（${damageSummary.damage1}+${damageSummary.damage2}）`
+        : `当前损伤：${damageSummary.total}`;
+    }
+
+    function renderDrawPreview() {
+      ensurePiles(currentApostle);
+      const aiPending = piles[currentApostle].AI.pending;
+      const bpPending = piles[currentApostle].BP.pending;
+      confirmAiButton.disabled = !aiPending;
+      discardBpButton.disabled = !bpPending;
+      defeatBpButton.disabled = !bpPending;
+      criticalBpButton.disabled = !bpPending || (bpPending.level !== "III" && !bpPending.specialBp);
+
+      if (!aiPending) {
+        aiDrawPreview.classList.remove("has-card");
+        aiDrawPreview.textContent = "未抽取 AI";
+      } else {
+        aiDrawPreview.classList.add("has-card");
+        aiDrawPreview.replaceChildren(imageOrMessage(cardSrc(aiPending), "抽取的 AI"));
+      }
+
+      if (!bpPending) {
+        bpDrawPreview.classList.remove("has-card");
+        bpDrawPreview.textContent = "未抽取 BP";
+      } else {
+        bpDrawPreview.classList.add("has-card");
+        bpDrawPreview.replaceChildren(imageOrMessage(cardSrc(bpPending), "抽取的 BP"));
+      }
+    }
+
+    function renderAibpCards() {
+      const aiEmptyText = currentAiView === "移除"
+        ? "AI 移除牌堆为空"
+        : currentAiView === "闪粉牌组"
+          ? "闪粉牌组为空"
+          : currentAiView === "闪粉弃牌"
+            ? "闪粉弃牌堆为空"
+            : `当前没有 AI ${currentAiView} 卡`;
+      const bpEmptyText = currentBpView === "损伤"
+        ? "BP 损伤牌堆为空"
+        : currentBpView === "损伤1" || currentBpView === "常规损伤堆"
+          ? "奇美拉 BP 常规损伤堆为空"
+          : currentBpView === "损伤2" || currentBpView === "第二损伤堆"
+            ? "奇美拉 BP 第二损伤堆为空"
+            : currentBpView === "移除"
+              ? "BP 移除牌堆为空"
+              : `当前没有 BP ${currentBpView} 卡`;
+      renderCardsIntoGrid(aiGrid, cardsForView("AI", currentAiView), aiEmptyText);
+      renderCardsIntoGrid(bpGrid, cardsForView("BP", currentBpView), bpEmptyText);
+      renderDeckInfo();
+      renderDrawPreview();
+      renderFlareButton();
+      updateUndoButtons();
+
+      document.querySelectorAll("#aiViewTabs button").forEach((button) => {
+        button.classList.toggle("active", button.dataset.view === currentAiView);
+      });
+      document.querySelectorAll("#bpViewTabs button").forEach((button) => {
+        button.classList.toggle("active", button.dataset.view === currentBpView);
+      });
+    }
+
+    function traitFileName(name, level, index, ext = "jpg") {
+      const safeExt = String(ext || "jpg").replace(/^\./, "").toLowerCase();
+      return `${name}_TR_${level}_${String(index).padStart(3, "0")}.${safeExt}`;
+    }
+
+    function traitSrc(name, level, index, ext = "jpg") {
+      return `ps/${name}/${traitFileName(name, level, index, ext)}`;
+    }
+
+    function traitKey(level, index, ext = "jpg") {
+      return `${level}-${index}-${String(ext || "jpg").replace(/^\./, "").toLowerCase()}`;
+    }
+
+    function selectedTraitKeySet() {
+      ensurePiles(currentApostle);
+      return new Set(piles[currentApostle].traits.map((card) => traitKey(card.level, card.index, card.ext)));
+    }
+
+    function renderTraitCandidates() {
+      ensurePiles(currentApostle);
+      const name = currentApostle;
+      const selected = selectedTraitKeySet();
+      const token = ++traitLoadToken;
+      let loaded = 0;
+
+      traitDialogTitle.textContent = `${name.replaceAll("_", " ")} - Trait 选择`;
+      traitDialogGrid.replaceChildren();
+      const loading = document.createElement("div");
+      loading.className = "missing";
+      loading.textContent = "正在试探加载 TR 图片……";
+      traitDialogGrid.appendChild(loading);
+
+      traitLevels.forEach((level) => {
+        for (let index = 1; index <= traitProbeMaxIndex; index++) {
+          traitProbeExtensions.forEach((ext) => {
+            const src = traitSrc(name, level, index, ext);
+            const img = new Image();
+            img.onload = () => {
+              if (token !== traitLoadToken) return;
+              if (loading.isConnected) loading.remove();
+              loaded += 1;
+
+              const option = document.createElement("label");
+              option.className = "trait-option";
+
+              const checkbox = document.createElement("input");
+              checkbox.type = "checkbox";
+              checkbox.dataset.level = level;
+              checkbox.dataset.index = String(index);
+              checkbox.dataset.ext = ext;
+              checkbox.checked = selected.has(traitKey(level, index, ext));
+
+              img.alt = `TR ${level} ${String(index).padStart(3, "0")}`;
+
+              const caption = document.createElement("span");
+              caption.textContent = `TR ${level} ${String(index).padStart(3, "0")}`;
+
+              option.append(checkbox, img, caption);
+              traitDialogGrid.appendChild(option);
+            };
+            img.onerror = () => {};
+            img.src = src;
+          });
+        }
+      });
+
+      window.setTimeout(() => {
+        if (token !== traitLoadToken) return;
+        if (loaded === 0 && traitDialogGrid.children.length === 1 && loading.isConnected) {
+          loading.textContent = `未找到 ${name}_TR_<O/I/II/III/IV/V/VI/VII/VIII/IX/X>_<编号>.(jpg/png/jpeg)`;
+        }
+      }, 700);
+    }
+
+    function openTraitDialog() {
+      renderTraitCandidates();
+      if (typeof traitDialog.showModal === "function") {
+        traitDialog.showModal();
+      } else {
+        window.alert("当前浏览器不支持 dialog 弹窗。请使用新版 Chrome / Edge。 ");
+      }
+    }
+
+    function saveTraitSelection() {
+      ensurePiles(currentApostle);
+      piles[currentApostle].traits = Array.from(traitDialogGrid.querySelectorAll("input[type='checkbox']:checked"))
+        .map((input) => ({
+          type: "TR",
+          level: input.dataset.level,
+          index: Number(input.dataset.index),
+          ext: input.dataset.ext || "jpg"
+        }))
+        .sort((a, b) => traitLevels.indexOf(a.level) - traitLevels.indexOf(b.level) || a.index - b.index || String(a.ext).localeCompare(String(b.ext)));
+      savePiles();
+      renderExtraCards();
+      traitDialog.close();
+    }
+
+    function clearTraitSelection() {
+      traitDialogGrid.querySelectorAll("input[type='checkbox']").forEach((input) => {
+        input.checked = false;
+      });
+    }
+
+    function renderExtraCards() {
+      ensurePiles(currentApostle);
+      const base = `ps/${currentApostle}`;
+      const candidates = [];
+      let loaded = 0;
+
+      extraGrid.replaceChildren();
+
+      const selectedTraitKeys = selectedTraitKeySet();
+
+      piles[currentApostle].traits.forEach((card) => {
+        const img = imageOrMessage(traitSrc(currentApostle, card.level, card.index, card.ext), `TR ${card.level} ${card.index}`);
+        extraGrid.appendChild(img);
+        loaded += 1;
+      });
+
+      defaultTraitLevels.forEach((level) => {
+        for (let index = 1; index <= defaultTraitProbeMaxIndex; index++) {
+          traitProbeExtensions.forEach((ext) => {
+            if (selectedTraitKeys.has(traitKey(level, index, ext))) return;
+            candidates.push({
+              src: traitSrc(currentApostle, level, index, ext),
+              alt: `TR ${level} ${String(index).padStart(3, "0")}`
+            });
+          });
+        }
+      });
+
+      ["AI", "BP"].forEach((type) => {
+        ["O", "X"].forEach((level) => {
+          for (let i = 1; i <= 12; i++) {
+            candidates.push({
+              src: `${base}/${numberedName(currentApostle, type, level, i)}`,
+              alt: numberedName(currentApostle, type, level, i)
+            });
+          }
+        });
+      });
+
+      candidates.forEach(({ src, alt }) => {
+        const img = document.createElement("img");
+        img.src = src;
+        img.alt = alt || src.split("/").pop();
+        img.onload = () => {
+          loaded += 1;
+        };
+        img.onerror = () => {
+          img.remove();
+        };
+        extraGrid.appendChild(img);
+      });
+
+      window.setTimeout(() => {
+        if (loaded === 0 && extraGrid.children.length === 0) {
+          const empty = document.createElement("div");
+          empty.className = "missing";
+          empty.textContent = "暂无其他卡牌";
+          extraGrid.appendChild(empty);
+        }
+      }, 300);
+    }
+
+    function confirmCurrentView() {
+      return window.confirm("你不应该查看此部分，要继续吗");
+    }
+
+    function aiViewsForCurrentApostle() {
+      return isHermesian() ? hermesianAiViews : aiViews;
+    }
+
+    function updateAiViewTabs() {
+      const allowedViews = aiViewsForCurrentApostle();
+      if (!allowedViews.includes(currentAiView)) {
+        currentAiView = allowedViews.includes("弃牌") ? "弃牌" : allowedViews[0];
+      }
+
+      aiViewTabs.replaceChildren();
+      allowedViews.forEach((view) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.dataset.view = view;
+        button.textContent = view;
+        button.addEventListener("click", () => {
+          if ((view === "当前" || view === "闪粉牌组") && !confirmCurrentView()) return;
+          currentAiView = view;
+          renderAibpCards();
+        });
+        aiViewTabs.appendChild(button);
+      });
+    }
+
+    function updateBpViewTabs() {
+      const allowedViews = bpViewsForCurrentApostle();
+      if (isChimera() && currentBpView === "损伤1") currentBpView = "常规损伤堆";
+      if (isChimera() && currentBpView === "损伤2") currentBpView = "第二损伤堆";
+      if (!allowedViews.includes(currentBpView)) {
+        currentBpView = allowedViews.includes("弃牌") ? "弃牌" : allowedViews[0];
+      }
+
+      bpViewTabs.replaceChildren();
+      allowedViews.forEach((view) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.dataset.view = view;
+        button.textContent = view;
+        button.addEventListener("click", () => {
+          if (view === "当前" && !confirmCurrentView()) return;
+          currentBpView = view;
+          renderAibpCards();
+        });
+        bpViewTabs.appendChild(button);
+      });
+
+      chimeraDamageTarget.classList.toggle("show", isChimera());
+      addSwDamage2Button.classList.toggle("show", isChimera());
+      removeSwDamage2Button.classList.toggle("show", isChimera());
+      addLabyrinthaurosSpecialBpButton.classList.toggle("show", isLabyrinthauros());
+      removeLabyrinthaurosSpecialBpButton.classList.toggle("show", isLabyrinthauros());
+    }
+
+    function isNietzsche() {
+      return currentApostle === nietzscheName;
+    }
+
+    function isCyclonus() {
+      return currentApostle === cyclonusName;
+    }
+
+    function hasPanelState() {
+      return Boolean(currentPanelState());
+    }
+
+    function hasManualPanelState() {
+      return isNietzsche() || isCyclonus();
+    }
+
+    function currentPanelState() {
+      if (isChimera()) {
+        return chimeraPhaseStates[piles[currentApostle]?.chimeraPhase] || null;
+      }
+      if (isCyclonus()) {
+        return cyclonusStates[cyclonusStateIndex];
+      }
+      if (isNietzsche()) {
+        return nietzscheStates[nietzscheStateIndex];
+      }
+      return null;
+    }
+
+    function updateNietzscheStateUi(marker = null) {
+      const state = currentPanelState();
+      nietzscheStateButton.classList.toggle("hidden", !hasManualPanelState());
+      if (state) {
+        nietzscheStateButton.textContent = `切换状态：${state.label}`;
+      }
+
+      if (marker) {
+        marker.classList.toggle("chimera-state-marker", isChimera());
+        if (!state) {
+          marker.classList.remove("show");
+          return;
+        }
+        marker.style.setProperty("--marker-left", state.left);
+        marker.style.setProperty("--marker-top", state.top);
+        marker.style.setProperty("--marker-width", state.width || "64px");
+        marker.style.setProperty("--marker-height", state.height || "64px");
+        marker.textContent = "";
+        marker.dataset.label = state.label;
+        marker.title = `${state.label}，点击切换到下个状态`;
+        marker.classList.toggle("show", hasPanelState());
+      }
+    }
+
+
+    function isTokenImageFileName(fileName) {
+      return /\.(png|jpe?g)$/i.test(fileName || "");
+    }
+
+    function naturalCompareTokenFile(a, b) {
+      return String(a).localeCompare(String(b), "zh-Hans-CN", { numeric: true, sensitivity: "base" });
+    }
+
+    function normalizeTokenFileName(file) {
+      return String(file || "").replace(/\\/g, "/").split("/").pop();
+    }
+
+    function tokenProbeFileNames() {
+      // 主要从 token_manifest.js 获取 token 文件夹中所有图片。
+      // 如果清单不存在，则只兜底试探常见图片命名。
+      const names = new Set(tokenFileNames.map(normalizeTokenFileName).filter(isTokenImageFileName));
+      for (let index = 1; index <= tokenProbeMaxIndex; index++) {
+        const padded3 = String(index).padStart(3, "0");
+        const padded2 = String(index).padStart(2, "0");
+        const loose = String(index);
+        tokenProbeExtensions.forEach((ext) => {
+          names.add(`${padded3}.${ext}`);
+          names.add(`${padded2}.${ext}`);
+          names.add(`${loose}.${ext}`);
+          names.add(`TOKEN_${padded3}.${ext}`);
+          names.add(`TOKEN_${padded2}.${ext}`);
+          names.add(`TOKEN${padded3}.${ext}`);
+          names.add(`TOKEN${loose}.${ext}`);
+          names.add(`token_${padded3}.${ext}`);
+          names.add(`token_${padded2}.${ext}`);
+          names.add(`token${padded3}.${ext}`);
+          names.add(`token${loose}.${ext}`);
+          names.add(`Token_${padded3}.${ext}`);
+          names.add(`Token${loose}.${ext}`);
+        });
+      }
+      return Array.from(names).sort(naturalCompareTokenFile);
+    }
+
+    function tokenSrc(file) {
+      return `${tokenBasePath}/${file}`;
+    }
+
+    function selectedTokenCountMap() {
+      ensurePiles(currentApostle);
+      const map = new Map();
+      piles[currentApostle].tokens.forEach((item) => {
+        map.set(item.file, Number(item.count) || 0);
+      });
+      return map;
+    }
+
+    function clampTokenCount(value) {
+      return Math.max(0, Math.min(99, Math.floor(Number(value) || 0)));
+    }
+
+    function changeTokenCount(input, delta) {
+      input.value = String(clampTokenCount((Number(input.value) || 0) + delta));
+    }
+
+    function appendTokenOption(file, img, selected) {
+      const option = document.createElement("div");
+      option.className = "trait-option token-option";
+
+      img.alt = file;
+      img.title = "点击图片：数量 +1";
+
+      const caption = document.createElement("span");
+      caption.textContent = file;
+
+      const countWrap = document.createElement("div");
+      countWrap.className = "token-option-count";
+
+      const countLabel = document.createElement("div");
+      countLabel.className = "token-option-count-label";
+      countLabel.textContent = "数量（点图片 +1）";
+
+      const minusButton = document.createElement("button");
+      minusButton.type = "button";
+      minusButton.className = "token-count-step";
+      minusButton.textContent = "−";
+      minusButton.title = "数量 -1";
+
+      const countInput = document.createElement("input");
+      countInput.type = "number";
+      countInput.min = "0";
+      countInput.max = "99";
+      countInput.step = "1";
+      countInput.value = String(selected.get(file) || 0);
+      countInput.dataset.file = file;
+
+      const plusButton = document.createElement("button");
+      plusButton.type = "button";
+      plusButton.className = "token-count-step";
+      plusButton.textContent = "+";
+      plusButton.title = "数量 +1";
+
+      img.addEventListener("click", () => changeTokenCount(countInput, 1));
+      minusButton.addEventListener("click", () => changeTokenCount(countInput, -1));
+      plusButton.addEventListener("click", () => changeTokenCount(countInput, 1));
+      countInput.addEventListener("change", () => {
+        countInput.value = String(clampTokenCount(countInput.value));
+      });
+
+      countWrap.append(countLabel, minusButton, countInput, plusButton);
+      option.append(img, caption, countWrap);
+      tokenDialogGrid.appendChild(option);
+    }
+
+    async function loadTokenFileNamesFromDirectoryIndex() {
+      // 只有当你用本地服务器打开，并且 ps/other/token/ 开启目录列表时才会成功。
+      // file:// 或普通静态服务器通常不允许 JS 直接枚举目录。
+      try {
+        const response = await fetch(`${tokenBasePath}/`, { cache: "no-store" });
+        if (!response.ok) return [];
+        const html = await response.text();
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        return Array.from(doc.querySelectorAll("a"))
+          .map((a) => decodeURIComponent(a.getAttribute("href") || ""))
+          .map((href) => normalizeTokenFileName(href))
+          .filter(isTokenImageFileName)
+          .sort(naturalCompareTokenFile);
+      } catch {
+        return [];
+      }
+    }
+
+    async function renderTokenCandidates() {
+      ensurePiles(currentApostle);
+      const selected = selectedTokenCountMap();
+      const token = ++tokenLoadToken;
+      let loaded = 0;
+
+      tokenDialogTitle.textContent = `${currentApostle.replaceAll("_", " ")} - Token 选择`;
+      tokenDialogGrid.replaceChildren();
+      const loading = document.createElement("div");
+      loading.className = "missing";
+      loading.textContent = "正在从相对路径 ps/other/token/ 加载所有 Token PNG……";
+      tokenDialogGrid.appendChild(loading);
+      tokenFolderHint.textContent = "Token 来源：ps/other/token/token_manifest.js 中列出的所有 .png；图片实际路径为 ps/other/token/文件名。";
+
+      const manifestNames = tokenFileNames.map(normalizeTokenFileName).filter(isTokenImageFileName);
+      const directoryNames = manifestNames.length > 0 ? [] : await loadTokenFileNamesFromDirectoryIndex();
+      const candidates = Array.from(new Set((manifestNames.length > 0 ? manifestNames : directoryNames).concat(tokenProbeFileNames())))
+        .filter(isTokenImageFileName)
+        .sort(naturalCompareTokenFile);
+
+      candidates.forEach((file) => {
+        const img = new Image();
+        img.onload = () => {
+          if (token !== tokenLoadToken) return;
+          if (loading.isConnected) loading.remove();
+          loaded += 1;
+          appendTokenOption(file, img, selected);
+        };
+        img.onerror = () => {};
+        img.src = tokenSrc(file);
+      });
+
+      window.setTimeout(() => {
+        if (token !== tokenLoadToken) return;
+        if (loaded === 0 && tokenDialogGrid.children.length === 1 && loading.isConnected) {
+          loading.textContent = "没有加载到 token。请先在 ps/other/token/ 里生成 token_manifest.js；静态 HTML 不能直接扫描文件夹。";
+        }
+      }, 900);
+    }
+
+    function openTokenDialog() {
+      renderTokenCandidates();
+      if (typeof tokenDialog.showModal === "function") {
+        tokenDialog.showModal();
+      } else {
+        window.alert("当前浏览器不支持 dialog 弹窗。请使用新版 Chrome / Edge。 ");
+      }
+    }
+
+    function saveTokenSelection() {
+      ensurePiles(currentApostle);
+      const oldByFile = new Map(piles[currentApostle].tokens.map((item) => [item.file, item]));
+      piles[currentApostle].tokens = Array.from(tokenDialogGrid.querySelectorAll("input[type='number']"))
+        .map((input) => ({
+          file: input.dataset.file,
+          count: Math.max(0, Math.min(99, Math.floor(Number(input.value) || 0)))
+        }))
+        .filter((item) => item.count > 0)
+        .map((item, index) => {
+          const old = oldByFile.get(item.file) || {};
+          return {
+            file: item.file,
+            count: item.count,
+            x: Number.isFinite(Number(old.x)) ? Number(old.x) : 8 + (index % 5) * 8,
+            y: Number.isFinite(Number(old.y)) ? Number(old.y) : 8 + Math.floor(index / 5) * 8
+          };
+        });
+      savePiles();
+      renderPanelTokens();
+      tokenDialog.close();
+    }
+
+    function clearTokenSelection() {
+      tokenDialogGrid.querySelectorAll("input[type='number']").forEach((input) => {
+        input.value = "0";
+      });
+    }
+
+
+    function setImageZoomBpActions(show = false) {
+      imageZoomBpActions.classList.toggle("show", Boolean(show));
+      if (!show) return;
+
+      const pending = piles[currentApostle]?.BP?.pending;
+      imageZoomBpActions.querySelectorAll("[data-bp-zoom-action]").forEach((button) => {
+        const action = button.dataset.bpZoomAction;
+        button.disabled = !pending || (action === "critical" && pending.level !== "III" && !pending.specialBp);
+      });
+    }
+
+    function openImageZoom(src, alt = "放大图片", onClose = null, options = {}) {
+      if (!src) return;
+      zoomCloseAction = typeof onClose === "function" ? onClose : null;
+      imageZoomImg.src = src;
+      imageZoomImg.alt = alt || "放大图片";
+      setImageZoomBpActions(Boolean(options.bpActions));
+      imageZoomOverlay.classList.add("show");
+      imageZoomOverlay.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeImageZoom() {
+      const closeAction = zoomCloseAction;
+      zoomCloseAction = null;
+      imageZoomOverlay.classList.remove("show");
+      imageZoomOverlay.setAttribute("aria-hidden", "true");
+      imageZoomImg.removeAttribute("src");
+      setImageZoomBpActions(false);
+      document.body.style.overflow = "";
+      if (closeAction) {
+        closeAction();
+      }
+    }
+
+    function shouldZoomImage(img) {
+      if (!img || !img.src) return false;
+      if (img.closest("dialog")) return false;
+      if (img.closest(".image-zoom-overlay")) return false;
+      if (img.closest("button, .segmented, .draw-actions, .title-actions")) return false;
+      return Boolean(img.closest("#panelWrap, #routineWrap, #signatureWrap, #extraGrid, #aiGrid, #bpGrid, #aiDrawPreview, #bpDrawPreview"));
+    }
+
+    function renderPanelTokens() {
+      ensurePiles(currentApostle);
+      const layer = panelWrap.querySelector(".panel-token-layer");
+      if (!layer) return;
+      layer.replaceChildren();
+
+      piles[currentApostle].tokens.forEach((item) => {
+        const tokenItem = document.createElement("div");
+        tokenItem.className = "panel-token-item";
+        tokenItem.style.setProperty("--token-left", `${item.x}%`);
+        tokenItem.style.setProperty("--token-top", `${item.y}%`);
+        tokenItem.dataset.file = item.file;
+        tokenItem.title = `${item.file} ×${item.count}，拖动可调整位置`;
+
+        const img = document.createElement("img");
+        img.src = tokenSrc(item.file);
+        img.alt = item.file;
+
+        tokenItem.appendChild(img);
+        if ((Number(item.count) || 0) > 1) {
+          const badge = document.createElement("div");
+          badge.className = "panel-token-count";
+          badge.textContent = `×${item.count}`;
+          tokenItem.appendChild(badge);
+        }
+
+        makePanelTokenDraggable(tokenItem);
+        layer.appendChild(tokenItem);
+      });
+    }
+
+    function makePanelTokenDraggable(tokenItem) {
+      tokenItem.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        const frame = panelWrap.querySelector(".panel-frame");
+        if (!frame) return;
+        tokenItem.setPointerCapture(event.pointerId);
+        const startX = event.clientX;
+        const startY = event.clientY;
+        tokenItem.dataset.dragged = "false";
+
+        const move = (moveEvent) => {
+          if (Math.hypot(moveEvent.clientX - startX, moveEvent.clientY - startY) > 4) {
+            tokenItem.dataset.dragged = "true";
+          }
+          const rect = frame.getBoundingClientRect();
+          const x = Math.max(0, Math.min(100, ((moveEvent.clientX - rect.left) / rect.width) * 100));
+          const y = Math.max(0, Math.min(100, ((moveEvent.clientY - rect.top) / rect.height) * 100));
+          tokenItem.style.setProperty("--token-left", `${x}%`);
+          tokenItem.style.setProperty("--token-top", `${y}%`);
+        };
+
+        const up = (upEvent) => {
+          tokenItem.releasePointerCapture(upEvent.pointerId);
+          tokenItem.removeEventListener("pointermove", move);
+          tokenItem.removeEventListener("pointerup", up);
+          tokenItem.removeEventListener("pointercancel", up);
+          const left = parseFloat(tokenItem.style.getPropertyValue("--token-left"));
+          const top = parseFloat(tokenItem.style.getPropertyValue("--token-top"));
+          const item = piles[currentApostle].tokens.find((entry) => entry.file === tokenItem.dataset.file);
+          if (item) {
+            item.x = left;
+            item.y = top;
+            savePiles();
+          }
+        };
+
+        tokenItem.addEventListener("pointermove", move);
+        tokenItem.addEventListener("pointerup", up);
+        tokenItem.addEventListener("pointercancel", up);
+      });
+    }
+
+    function renderPanelImage(base, name) {
+      const img = imageOrMessage(`${base}/${name}.jpg`, `${name} panel`, "panel-image");
+      const frame = document.createElement("div");
+      frame.className = "panel-frame";
+
+      const tokenLayer = document.createElement("div");
+      tokenLayer.className = "panel-token-layer";
+
+      if (name === nietzscheName || name === cyclonusName || name === chimeraName) {
+        const marker = document.createElement("button");
+        marker.type = "button";
+        marker.className = "panel-state-marker";
+        marker.addEventListener("click", cycleNietzscheState);
+        frame.append(img, tokenLayer, marker);
+        panelWrap.replaceChildren(frame);
+        updateNietzscheStateUi(marker);
+      } else {
+        frame.append(img, tokenLayer);
+        panelWrap.replaceChildren(frame);
+        updateNietzscheStateUi();
+      }
+
+      renderPanelTokens();
+    }
+
+    function cycleNietzscheState() {
+      if (!hasManualPanelState()) return;
+      if (isCyclonus()) {
+        cyclonusStateIndex = (cyclonusStateIndex + 1) % cyclonusStates.length;
+        localStorage.setItem(cyclonusStateKey, String(cyclonusStateIndex));
+      } else {
+        nietzscheStateIndex = (nietzscheStateIndex + 1) % nietzscheStates.length;
+        localStorage.setItem(nietzscheStateKey, String(nietzscheStateIndex));
+      }
+      const marker = panelWrap.querySelector(".panel-state-marker");
+      updateNietzscheStateUi(marker);
+    }
+
+    function renderApostle(name) {
+      currentApostle = name;
+      ensurePiles(name);
+      updateAiViewTabs();
+      updateBpViewTabs();
+      const base = `ps/${name}`;
+      title.textContent = name.replaceAll("_", " ");
+      folderPath.textContent = base;
+      if (window.location.hash !== `#${name}`) {
+        history.replaceState(null, "", `#${name}`);
+      }
+
+      renderPanelImage(base, name);
+      routineWrap.replaceChildren(imageOrMessage(`${base}/${name}_ROUTINE_X_001.jpg`, `${name} routine`, "side-card-image"));
+      signatureWrap.replaceChildren(imageOrMessage(`${base}/${name}_SIGNATURE_X_001.jpg`, `${name} signature`, "side-card-image"));
+
+      document.querySelectorAll(".nav button").forEach((button) => {
+        button.classList.toggle("active", button.dataset.name === name);
+      });
+
+      renderAibpCards();
+      renderExtraCards();
+      requestAnimationFrame(updateViewerScale);
+    }
+
+    function drawAi() {
+      ensurePiles(currentApostle);
+      const ai = piles[currentApostle].AI;
+      if (ai.pending) return;
+      if (ai.deck.length === 0 && ai.discard.length === 0) return;
+
+      rememberUndo(currentApostle, "AI");
+      if (ai.deck.length === 0 && ai.discard.length > 0) {
+        ai.deck = shuffleCards(ai.discard);
+        ai.discard = [];
+        savePiles();
+      }
+
+      if (ai.deck.length === 0) {
+        undoStacks[currentApostle].pop();
+        updateUndoButtons();
+        return;
+      }
+      ai.pending = ai.deck[0];
+      savePiles();
+      renderAibpCards();
+      const drawnCard = ai.pending;
+      const drawnApostle = currentApostle;
+      openImageZoom(cardSrc(drawnCard), "抽取的 AI", () => {
+        if (currentApostle !== drawnApostle) return;
+        const pending = piles[currentApostle]?.AI?.pending;
+        if (!pending || pending.level !== drawnCard.level || pending.index !== drawnCard.index) return;
+        discardAiPending(false);
+      });
+    }
+
+    function drawBp() {
+      ensurePiles(currentApostle);
+      const bp = piles[currentApostle].BP;
+      if (bp.pending) return;
+      if (bp.deck.length === 0 && bp.discard.length === 0) return;
+
+      rememberUndo(currentApostle, "BP");
+      if (bp.deck.length === 0 && bp.discard.length > 0) {
+        bp.deck = shuffleCards(bp.discard);
+        bp.discard = [];
+        savePiles();
+      }
+
+      if (bp.deck.length === 0) {
+        undoStacks[currentApostle].pop();
+        updateUndoButtons();
+        return;
+      }
+      bp.pending = bp.deck[0];
+      savePiles();
+      renderAibpCards();
+      openImageZoom(cardSrc(bp.pending), "抽取的 BP", null, { bpActions: true });
+    }
+
+    function removePendingFromDeck(type) {
+      const pile = piles[currentApostle][type];
+      const pending = pile.pending;
+      if (!pending) return null;
+
+      const first = pile.deck[0];
+      if (sameCard(first, pending)) {
+        return pile.deck.shift();
+      }
+
+      const index = pile.deck.findIndex((card) => sameCard(card, pending));
+      if (index >= 0) {
+        return pile.deck.splice(index, 1)[0];
+      }
+
+      return pending;
+    }
+
+    function resolveBp(mode) {
+      ensurePiles(currentApostle);
+      const bp = piles[currentApostle].BP;
+      if (!bp.pending) return;
+
+      rememberUndo(currentApostle, "BP");
+      const card = removePendingFromDeck("BP");
+      bp.pending = null;
+
+      if (card?.specialBp) {
+        bp.removed.push(card);
+        currentBpView = "移除";
+      } else if (mode === "discard") {
+        bp.discard.push(card);
+      } else if (mode === "defeat") {
+        setChimeraPhaseFromCard(card);
+        resolveBpDefeat(card);
+      } else if (mode === "critical") {
+        setChimeraPhaseFromCard(card);
+        resolveBpCritical(card);
+      }
+
+      savePiles();
+      renderAibpCards();
+    }
+
+    function discardAiPending(remember = true) {
+      ensurePiles(currentApostle);
+      const ai = piles[currentApostle].AI;
+      if (!ai.pending) return;
+
+      if (remember) {
+        rememberUndo(currentApostle, "AI");
+      }
+      const first = ai.deck[0];
+      if (first && first.level === ai.pending.level && first.index === ai.pending.index) {
+        ai.discard.push(ai.deck.shift());
+      } else {
+        ai.discard.push(ai.pending);
+        ai.deck = ai.deck.filter((card) => card !== ai.pending);
+      }
+      ai.pending = null;
+      savePiles();
+      renderAibpCards();
+    }
+
+    function confirmAiDiscard() {
+      discardAiPending(true);
+    }
+
+    function updateViewerScale() {
+      const main = document.querySelector("main");
+      const titleRow = document.querySelector(".title-row");
+      const availableWidth = Math.max(360, main.clientWidth - 36);
+      const availableHeight = Math.max(420, window.innerHeight - titleRow.offsetHeight - 70);
+
+      const sideByHeight = (availableHeight - 2 * 38 - 4 * 8 - 14) / panelRatio;
+      const sideByWidth = availableWidth / 5.55;
+      const baseSideHeight = Math.max(165, Math.min(sideByHeight, sideByWidth, 380));
+      const sideHeight = baseSideHeight * 1.1;
+      const panelHeight = baseSideHeight * panelRatio * 1.018;
+
+      // 只放大惯常、标志、其他卡牌、AI/BP 卡牌；面板保持原尺寸。
+      document.documentElement.style.setProperty("--side-card-image-height", `${sideHeight}px`);
+      document.documentElement.style.setProperty("--panel-image-height", `${panelHeight}px`);
+    }
+
+    apostles.forEach((name) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.dataset.name = name;
+      button.textContent = name.replaceAll("_", " ");
+      button.addEventListener("click", () => renderApostle(name));
+      nav.appendChild(button);
+    });
+
+    aiViews.forEach((view) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.dataset.view = view;
+      button.textContent = view;
+      button.addEventListener("click", () => {
+        if (view === "当前" && !confirmCurrentView()) return;
+        currentAiView = view;
+        renderAibpCards();
+      });
+      aiViewTabs.appendChild(button);
+    });
+
+    document.addEventListener("click", (event) => {
+      const img = event.target.closest("img");
+      if (!shouldZoomImage(img)) return;
+      const tokenItem = img.closest(".panel-token-item");
+      if (tokenItem && tokenItem.dataset.dragged === "true") {
+        tokenItem.dataset.dragged = "false";
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      openImageZoom(img.currentSrc || img.src, img.alt);
+    });
+
+    imageZoomOverlay.addEventListener("click", closeImageZoom);
+    imageZoomClose.addEventListener("click", (event) => {
+      event.stopPropagation();
+      closeImageZoom();
+    });
+    imageZoomImg.addEventListener("click", (event) => event.stopPropagation());
+    imageZoomBpActions.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const button = event.target.closest("[data-bp-zoom-action]");
+      if (!button || button.disabled) return;
+      const action = button.dataset.bpZoomAction;
+      resolveBp(action);
+      closeImageZoom();
+    });
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && imageZoomOverlay.classList.contains("show")) {
+        closeImageZoom();
+      }
+    });
+
+    bpDamageTargetSelect.addEventListener("change", () => {
+      if (isChimera()) {
+        currentBpView = currentBpDamageView();
+        renderAibpCards();
+      }
+    });
+    sidebarToggle.addEventListener("click", () => {
+      const collapsed = document.body.classList.toggle("sidebar-collapsed");
+      sidebarToggle.textContent = collapsed ? "☰" : "×";
+      sidebarToggle.setAttribute("aria-label", collapsed ? "展开左侧边栏" : "折叠左侧边栏");
+      window.setTimeout(updateViewerScale, 80);
+    });
+    nietzscheStateButton.addEventListener("click", cycleNietzscheState);
+    traitButton.addEventListener("click", openTraitDialog);
+    tokenButton.addEventListener("click", openTokenDialog);
+    traitCloseButton.addEventListener("click", () => traitDialog.close());
+    traitClearButton.addEventListener("click", clearTraitSelection);
+    traitSaveButton.addEventListener("click", saveTraitSelection);
+    tokenCloseButton.addEventListener("click", () => tokenDialog.close());
+    tokenClearButton.addEventListener("click", clearTokenSelection);
+    tokenSaveButton.addEventListener("click", saveTokenSelection);
+    newCampaignButton.addEventListener("click", startNewCampaign);
+    drawAiButton.addEventListener("click", drawAi);
+    aiDrawPreview.addEventListener("click", () => {
+      if (!piles[currentApostle]?.AI?.pending) drawAi();
+    });
+    undoAiButton.addEventListener("click", () => undoLastAibp("AI"));
+    confirmAiButton.addEventListener("click", confirmAiDiscard);
+    promoteAiSingleButton.addEventListener("click", () => promoteSinglePile("AI"));
+    drawFlareButton.addEventListener("click", drawFlare);
+    drawBpButton.addEventListener("click", drawBp);
+    bpDrawPreview.addEventListener("click", () => {
+      if (!piles[currentApostle]?.BP?.pending) drawBp();
+    });
+    undoBpButton.addEventListener("click", () => undoLastAibp("BP"));
+    discardBpButton.addEventListener("click", () => resolveBp("discard"));
+    defeatBpButton.addEventListener("click", () => resolveBp("defeat"));
+    criticalBpButton.addEventListener("click", () => resolveBp("critical"));
+    addSwButton.addEventListener("click", () => addBpSpecialDamage("SW"));
+    addDwButton.addEventListener("click", () => addBpSpecialDamage("DW"));
+    addSwDamage2Button.addEventListener("click", addChimeraDamage2Sw);
+    removeSwDamage2Button.addEventListener("click", removeChimeraDamage2Sw);
+    addLabyrinthaurosSpecialBpButton.addEventListener("click", addLabyrinthaurosSpecialBp);
+    removeLabyrinthaurosSpecialBpButton.addEventListener("click", removeLabyrinthaurosSpecialBp);
+    promoteBpSingleButton.addEventListener("click", () => promoteSinglePile("BP"));
+    promoteBpButton.addEventListener("click", promoteBpByRemovingLowest);
+    window.addEventListener("resize", updateViewerScale);
+    loadSavedPiles();
+    renderApostle(currentApostle);
+  </script>
+  <script src="ps/other/resouce/bp_resource_map.js"></script>
+  <script src="ps/other/resouce/bp_resource_map_c1_c3.js"></script>
+  <script src="bp_loot_calculator_addon.js?v=20260608-shared-record-resources"></script>
+</body>
+</html>

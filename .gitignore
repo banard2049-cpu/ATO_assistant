@@ -37,7 +37,6 @@
 
 # Asset-heavy/reference-only working areas
 /assets/
-/aibp/
 /map/images/
 /map/tokens/
 /record/assets/

@@ -12,7 +12,6 @@ $mediaExtensions = @(
 
 $blockedPaths = @(
   'assets/',
-  'aibp/',
   'data/',
   'logs/',
   'log/',
