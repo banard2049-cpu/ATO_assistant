@@ -188,7 +188,7 @@
 
     .viewer {
       display: flex;
-      justify-content: center;
+      justify-content: safe center;
       align-items: flex-start;
       gap: var(--gap);
       margin-bottom: 18px;
@@ -202,6 +202,12 @@
       border-radius: 0;
       background: transparent;
       box-shadow: none;
+    }
+
+    .section.extra-section {
+      flex: 0 1 min(34vw, calc(var(--side-card-image-height) * 2.4));
+      min-width: min(320px, 34vw);
+      max-width: min(34vw, calc(var(--side-card-image-height) * 2.4));
     }
 
     .section-header {
@@ -340,6 +346,7 @@
       align-content: start;
       justify-content: start;
       width: 100%;
+      max-width: 100%;
       max-height: calc(var(--side-card-image-height) * 2 + 10px);
       overflow: auto;
     }
@@ -350,6 +357,11 @@
       max-width: none;
       border: 1px solid var(--line);
       background: transparent;
+    }
+
+    .extra-grid img.panel-image {
+      grid-row: span 2;
+      height: calc(var(--side-card-image-height) * 2 + 10px);
     }
 
     .trait-dialog {
@@ -1278,7 +1290,7 @@
           </div>
         </section>
 
-        <section class="section">
+        <section class="section extra-section">
           <div class="image-wrap">
             <div class="extra-grid" id="extraGrid"></div>
           </div>
@@ -2638,6 +2650,10 @@
       return `${level}-${index}-${String(ext || "jpg").replace(/^\./, "").toLowerCase()}`;
     }
 
+    function isLargeTraitCard(apostle, card) {
+      return card.level === "O" || (apostle === "ICARIAN_HARPY" && card.level === "X" && card.index === 2);
+    }
+
     function selectedTraitKeySet() {
       ensurePiles(currentApostle);
       return new Set(piles[currentApostle].traits.map((card) => traitKey(card.level, card.index, card.ext)));
@@ -2740,7 +2756,8 @@
       const selectedTraitKeys = selectedTraitKeySet();
 
       piles[currentApostle].traits.forEach((card) => {
-        const img = imageOrMessage(traitSrc(currentApostle, card.level, card.index, card.ext), `TR ${card.level} ${card.index}`);
+        const imageClass = isLargeTraitCard(currentApostle, card) ? "panel-image" : "";
+        const img = imageOrMessage(traitSrc(currentApostle, card.level, card.index, card.ext), `TR ${card.level} ${card.index}`, imageClass);
         extraGrid.appendChild(img);
         loaded += 1;
       });
@@ -2749,9 +2766,11 @@
         for (let index = 1; index <= defaultTraitProbeMaxIndex; index++) {
           traitProbeExtensions.forEach((ext) => {
             if (selectedTraitKeys.has(traitKey(level, index, ext))) return;
+            const card = { level, index, ext };
             candidates.push({
               src: traitSrc(currentApostle, level, index, ext),
-              alt: `TR ${level} ${String(index).padStart(3, "0")}`
+              alt: `TR ${level} ${String(index).padStart(3, "0")}`,
+              className: isLargeTraitCard(currentApostle, card) ? "panel-image" : ""
             });
           });
         }
@@ -2768,10 +2787,11 @@
         });
       });
 
-      candidates.forEach(({ src, alt }) => {
+      candidates.forEach(({ src, alt, className = "" }) => {
         const img = document.createElement("img");
         img.src = src;
         img.alt = alt || src.split("/").pop();
+        img.className = className;
         img.onload = () => {
           loaded += 1;
         };
