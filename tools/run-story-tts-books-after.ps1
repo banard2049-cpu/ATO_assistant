@@ -5,7 +5,9 @@ param(
   [int]$DelayMs = 500,
   [int]$Retries = 2,
   [int]$RetryDelayMs = 20000,
-  [int]$BanRetryMs = 3600000
+  [int]$BanRetryMs = 3600000,
+  [string]$OutDir = "story\audio",
+  [switch]$NoSplit
 )
 
 $ErrorActionPreference = "Stop"
@@ -22,12 +24,19 @@ try {
 
 foreach ($book in $BookList) {
   Write-Output "Starting story TTS generation for $book at $(Get-Date -Format s)."
-  & $NodePath "tools\generate-story-tts.mjs" `
-    --book $book `
-    --delay-ms $DelayMs `
-    --retries $Retries `
-    --retry-delay-ms $RetryDelayMs `
-    --ban-retry-ms $BanRetryMs
+  $arguments = @(
+    "tools\generate-story-tts.mjs",
+    "--book", $book,
+    "--out", $OutDir,
+    "--delay-ms", $DelayMs,
+    "--retries", $Retries,
+    "--retry-delay-ms", $RetryDelayMs,
+    "--ban-retry-ms", $BanRetryMs
+  )
+  if ($NoSplit) {
+    $arguments += "--no-split"
+  }
+  & $NodePath @arguments
 
   if ($LASTEXITCODE -ne 0) {
     Write-Error "Story TTS generation failed for $book with exit code $LASTEXITCODE."

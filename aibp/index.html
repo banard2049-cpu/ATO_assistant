@@ -1160,7 +1160,7 @@
 
     .image-zoom-actions {
       display: none;
-      width: 112px;
+      width: 128px;
       gap: 8px;
       align-self: center;
       cursor: default;
@@ -1190,6 +1190,13 @@
       opacity: 0.42;
     }
 
+    .image-zoom-action-title {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+    }
+
     @media (max-width: 760px) {
       .image-zoom-content {
         grid-template-columns: minmax(0, 1fr);
@@ -1197,7 +1204,11 @@
 
       .image-zoom-actions {
         width: min(96vw, 360px);
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+      }
+
+      .image-zoom-action-title {
+        grid-column: 1 / -1;
       }
     }
 
@@ -1379,6 +1390,7 @@
         <button type="button" data-bp-zoom-action="defeat">击败</button>
         <button type="button" data-bp-zoom-action="critical">暴击</button>
       </div>
+      <div class="image-zoom-actions" id="imageZoomMoveActions" aria-label="移动卡牌"></div>
     </div>
   </div>
 
@@ -1513,6 +1525,7 @@
     const imageZoomImg = document.getElementById("imageZoomImg");
     const imageZoomClose = document.getElementById("imageZoomClose");
     const imageZoomBpActions = document.getElementById("imageZoomBpActions");
+    const imageZoomMoveActions = document.getElementById("imageZoomMoveActions");
 
     function normalizeApostleName(value) {
       return String(value || "").trim().toUpperCase().replace(/[\s-]+/g, "_");
@@ -1540,6 +1553,7 @@
     const undoStacks = {};
     const maxUndoSteps = 30;
     let zoomCloseAction = null;
+    let activeMoveContext = null;
     let traitLoadToken = 0;
     let tokenLoadToken = 0;
 
@@ -1850,7 +1864,7 @@
       return `${card.type} ${card.level} ${card.index}`;
     }
 
-    function renderCardsIntoGrid(grid, cards, emptyText) {
+    function renderCardsIntoGrid(grid, cards, emptyText, type = "", view = "") {
       grid.replaceChildren();
 
       if (cards.length === 0) {
@@ -1861,9 +1875,14 @@
         return;
       }
 
-      cards.forEach((card) => {
+      cards.forEach((card, index) => {
         const tile = document.createElement("div");
         tile.className = "card-tile";
+        if (type && view) {
+          tile.dataset.cardType = type;
+          tile.dataset.cardView = view;
+          tile.dataset.cardIndex = String(index);
+        }
         tile.appendChild(imageOrMessage(cardSrc(card), cardAlt(card)));
         if (card.damageValue && card.damageValue > 1) {
           const badge = document.createElement("div");
@@ -1910,6 +1929,164 @@
       return [];
     }
 
+    function pileLocationForView(type, view) {
+      if (type === "AI" && view === "闪粉牌组") {
+        return { type, owner: "flare", key: "deck", view, label: "闪粉牌组" };
+      }
+      if (type === "AI" && view === "闪粉弃牌") {
+        return { type, owner: "flare", key: "discard", view, label: "闪粉弃牌" };
+      }
+      if (view === "当前") {
+        return { type, owner: type, key: "deck", view, label: "抽牌堆" };
+      }
+      if (view === "弃牌") {
+        return { type, owner: type, key: "discard", view, label: "弃牌堆" };
+      }
+      if (type === "AI" && view === "移除") {
+        return { type, owner: "AI", key: "removed", view, label: "移出游戏" };
+      }
+      if (type === "BP" && view === "损伤") {
+        return { type, owner: "BP", key: "damage", view, label: "损伤堆" };
+      }
+      if (type === "BP" && (view === "损伤1" || view === "常规损伤堆")) {
+        return { type, owner: "BP", key: "damage1", view, label: "常规损伤堆" };
+      }
+      if (type === "BP" && (view === "损伤2" || view === "第二损伤堆")) {
+        return { type, owner: "BP", key: "damage2", view, label: "第二损伤堆" };
+      }
+      if (type === "BP" && view === "移除") {
+        return { type, owner: "BP", key: "removed", view, label: "移出游戏" };
+      }
+      if (["I", "II", "III"].includes(view)) {
+        return { type, owner: type, key: "supply", level: view, view, label: `${view} 备用牌堆` };
+      }
+      return null;
+    }
+
+    function pileArrayForLocation(location, create = false) {
+      if (!location) return null;
+      ensurePiles(currentApostle);
+      if (location.owner === "flare") {
+        piles[currentApostle].flare[location.key] ||= [];
+        return piles[currentApostle].flare[location.key];
+      }
+
+      const pile = piles[currentApostle][location.owner];
+      if (!pile) return null;
+      if (location.key === "supply") {
+        if (create) pile.supply[location.level] ||= [];
+        return pile.supply[location.level] || null;
+      }
+      if (create) pile[location.key] ||= [];
+      return pile[location.key] || null;
+    }
+
+    function samePileLocation(left, right) {
+      return Boolean(left && right)
+        && left.owner === right.owner
+        && left.key === right.key
+        && (left.level || "") === (right.level || "");
+    }
+
+    function sameMoveCard(left, right) {
+      if (!left || !right) return false;
+      if (left.special || right.special) {
+        return left.special === right.special && (left.damageValue || 1) === (right.damageValue || 1);
+      }
+      return sameCard(left, right)
+        && (left.damageValue || 1) === (right.damageValue || 1)
+        && Boolean(left.specialBp) === Boolean(right.specialBp);
+    }
+
+    function addMoveTarget(targets, context, location, label, placement = "end") {
+      if (!location) return;
+      if (samePileLocation(context.source, location)) {
+        if (placement !== "top" || location.key !== "deck" || context.index <= 0) return;
+      }
+      targets.push({ location, label, placement });
+    }
+
+    function moveTargetsForContext(context) {
+      const targets = [];
+      if (!context) return targets;
+
+      if (context.source.owner === "flare") {
+        addMoveTarget(targets, context, pileLocationForView("AI", "闪粉牌组"), "到闪粉牌组");
+        addMoveTarget(targets, context, pileLocationForView("AI", "闪粉弃牌"), "到闪粉弃牌");
+        return targets;
+      }
+
+      addMoveTarget(targets, context, pileLocationForView(context.type, "当前"), "到抽牌堆", "random");
+      addMoveTarget(targets, context, pileLocationForView(context.type, "当前"), "到抽牌堆顶", "top");
+      addMoveTarget(targets, context, pileLocationForView(context.type, "弃牌"), "到弃牌堆");
+
+      if (context.type === "BP") {
+        if (isChimera()) {
+          addMoveTarget(targets, context, pileLocationForView("BP", "常规损伤堆"), "到常规损伤堆");
+          addMoveTarget(targets, context, pileLocationForView("BP", "第二损伤堆"), "到第二损伤堆");
+        } else {
+          addMoveTarget(targets, context, pileLocationForView("BP", "损伤"), "到损伤堆");
+        }
+      }
+
+      addMoveTarget(targets, context, pileLocationForView(context.type, "移除"), "移出游戏");
+      addMoveTarget(targets, context, pileLocationForView(context.type, "II"), "到 II 备用");
+      addMoveTarget(targets, context, pileLocationForView(context.type, "III"), "到 III 备用");
+      return targets;
+    }
+
+    function moveContextFromImage(img) {
+      const tile = img?.closest(".card-tile");
+      if (!tile || (!tile.closest("#aiGrid") && !tile.closest("#bpGrid"))) return null;
+      const type = tile.dataset.cardType;
+      const view = tile.dataset.cardView;
+      const index = Number(tile.dataset.cardIndex);
+      if (!["AI", "BP"].includes(type) || !Number.isInteger(index)) return null;
+
+      const source = pileLocationForView(type, view);
+      const sourceCards = pileArrayForLocation(source);
+      const card = sourceCards?.[index];
+      if (!card) return null;
+
+      return {
+        type,
+        view,
+        index,
+        source,
+        card: clonePileState(card)
+      };
+    }
+
+    function placeCardInTarget(target, card) {
+      const targetCards = pileArrayForLocation(target.location, true);
+      if (!targetCards) return false;
+      if (target.placement === "top") {
+        targetCards.unshift(card);
+      } else if (target.placement === "random") {
+        insertRandom(targetCards, card);
+      } else {
+        targetCards.push(card);
+      }
+      return true;
+    }
+
+    function moveVisibleCard(context, target) {
+      const sourceCards = pileArrayForLocation(context?.source);
+      if (!sourceCards || !target?.location) return;
+
+      let sourceIndex = context.index;
+      if (!sameMoveCard(sourceCards[sourceIndex], context.card)) {
+        sourceIndex = sourceCards.findIndex((card) => sameMoveCard(card, context.card));
+      }
+      if (sourceIndex < 0) return;
+
+      rememberUndo(currentApostle, context.type);
+      const [card] = sourceCards.splice(sourceIndex, 1);
+      placeCardInTarget(target, card);
+      savePiles();
+      renderAibpCards();
+    }
+
     function deckBackText(cards) {
       if (cards.length === 0) return "空";
       return cards.map((card) => levelBack[card.level] || card.level).join("-");
@@ -1934,6 +2111,19 @@
       const pile = piles[currentApostle][type].supply[level];
       if (!pile || pile.length === 0) return null;
       return pile.pop();
+    }
+
+    function insertPromotedCard(type, level) {
+      const pile = piles[currentApostle][type];
+      const card = drawFromSupply(type, level);
+      if (!card) return false;
+
+      insertRandom(pile.deck, card);
+      if (pile.deck.length === 1 && pile.discard.length > 0) {
+        pile.deck = shuffleCards(pile.deck.concat(pile.discard));
+        pile.discard = [];
+      }
+      return true;
     }
 
     function hasSupply(type, level) {
@@ -2082,7 +2272,7 @@
         return;
       }
       removeFirstMatchingToRemoved("AI", (card) => card.level === fromLevel);
-      insertRandom(piles[currentApostle].AI.deck, drawFromSupply("AI", toLevel));
+      insertPromotedCard("AI", toLevel);
     }
 
     function promoteAiForBpIII(damageCount = 2) {
@@ -2092,7 +2282,7 @@
         return;
       }
       removeLowestCardToRemoved("AI");
-      insertRandom(piles[currentApostle].AI.deck, drawFromSupply("AI", "III"));
+      insertPromotedCard("AI", "III");
     }
 
     function resolveBpDefeat(card) {
@@ -2100,14 +2290,14 @@
 
       if (card.level === "I") {
         pushBpDamage(card);
-        insertRandom(bp.deck, drawFromSupply("BP", "II"));
+        insertPromotedCard("BP", "II");
         promoteAiFromLevel("I", "II");
         return;
       }
 
       if (card.level === "II") {
         pushBpDamage(card);
-        insertRandom(bp.deck, drawFromSupply("BP", "III"));
+        insertPromotedCard("BP", "III");
         promoteAiFromLevel("II", "III");
         return;
       }
@@ -2118,7 +2308,7 @@
 
       if (hasSupply("BP", "III")) {
         removeLowestCard("BP");
-        insertRandom(bp.deck, drawFromSupply("BP", "III"));
+        insertPromotedCard("BP", "III");
         bp.deck.push(card);
       } else {
         bp.deck = shuffleCards(bp.deck.concat(bp.discard));
@@ -2143,8 +2333,8 @@
 
       if (hasSupply("BP", "III")) {
         removeLowestCard("BP");
-        insertRandom(bp.deck, drawFromSupply("BP", "III"));
-        insertRandom(bp.deck, drawFromSupply("BP", "III"));
+        insertPromotedCard("BP", "III");
+        insertPromotedCard("BP", "III");
       } else {
         bp.deck = shuffleCards(bp.deck.concat(bp.discard));
         bp.discard = [];
@@ -2269,19 +2459,19 @@
       reshuffleDiscardIfDeckEmpty("BP");
 
       if (level === "I") {
-        insertRandom(bp.deck, drawFromSupply("BP", "II"));
+        insertPromotedCard("BP", "II");
         return;
       }
 
       if (level === "II") {
-        insertRandom(bp.deck, drawFromSupply("BP", "III"));
+        insertPromotedCard("BP", "III");
         return;
       }
 
       if (level === "III") {
         if (hasSupply("BP", "III")) {
           removeLowestCardToRemoved("BP");
-          insertRandom(bp.deck, drawFromSupply("BP", "III"));
+          insertPromotedCard("BP", "III");
         } else {
           bp.deck = shuffleCards(bp.deck.concat(bp.discard));
           bp.discard = [];
@@ -2321,7 +2511,7 @@
 
       rememberUndo(currentApostle, type);
       removeFirstMatchingToRemoved(type, (card) => card.level === target.level && card.index === target.index);
-      insertRandom(piles[currentApostle][type].deck, drawFromSupply(type, toLevel));
+      insertPromotedCard(type, toLevel);
 
       // 不再自动跳转到“当前”；保留用户当前正在查看的牌堆。
       savePiles();
@@ -2420,8 +2610,8 @@
             : currentBpView === "移除"
               ? "BP 移除牌堆为空"
               : `当前没有 BP ${currentBpView} 卡`;
-      renderCardsIntoGrid(aiGrid, cardsForView("AI", currentAiView), aiEmptyText);
-      renderCardsIntoGrid(bpGrid, cardsForView("BP", currentBpView), bpEmptyText);
+      renderCardsIntoGrid(aiGrid, cardsForView("AI", currentAiView), aiEmptyText, "AI", currentAiView);
+      renderCardsIntoGrid(bpGrid, cardsForView("BP", currentBpView), bpEmptyText, "BP", currentBpView);
       renderDeckInfo();
       renderDrawPreview();
       renderFlareButton();
@@ -2930,12 +3120,35 @@
       });
     }
 
+    function setImageZoomMoveActions(context = null) {
+      activeMoveContext = context;
+      imageZoomMoveActions.replaceChildren();
+      const targets = moveTargetsForContext(context);
+      if (context) context.targets = targets;
+      imageZoomMoveActions.classList.toggle("show", targets.length > 0);
+      if (!targets.length) return;
+
+      const title = document.createElement("div");
+      title.className = "image-zoom-action-title";
+      title.textContent = `从${context.source.label}移动到`;
+      imageZoomMoveActions.appendChild(title);
+
+      targets.forEach((target, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.dataset.moveTargetIndex = String(index);
+        button.textContent = target.label;
+        imageZoomMoveActions.appendChild(button);
+      });
+    }
+
     function openImageZoom(src, alt = "放大图片", onClose = null, options = {}) {
       if (!src) return;
       zoomCloseAction = typeof onClose === "function" ? onClose : null;
       imageZoomImg.src = src;
       imageZoomImg.alt = alt || "放大图片";
       setImageZoomBpActions(Boolean(options.bpActions));
+      setImageZoomMoveActions(options.moveContext || null);
       imageZoomOverlay.classList.add("show");
       imageZoomOverlay.setAttribute("aria-hidden", "false");
       document.body.style.overflow = "hidden";
@@ -2948,6 +3161,7 @@
       imageZoomOverlay.setAttribute("aria-hidden", "true");
       imageZoomImg.removeAttribute("src");
       setImageZoomBpActions(false);
+      setImageZoomMoveActions(null);
       document.body.style.overflow = "";
       if (closeAction) {
         closeAction();
@@ -3063,7 +3277,7 @@
     function cycleNietzscheState() {
       if (!hasManualPanelState()) return;
       if (isCyclonus()) {
-        cyclonusStateIndex = (cyclonusStateIndex + 1) % cyclonusStates.length;
+        cyclonusStateIndex = (cyclonusStateIndex + cyclonusStates.length - 1) % cyclonusStates.length;
         localStorage.setItem(cyclonusStateKey, String(cyclonusStateIndex));
       } else {
         nietzscheStateIndex = (nietzscheStateIndex + 1) % nietzscheStates.length;
@@ -3270,7 +3484,9 @@
       }
       event.preventDefault();
       event.stopPropagation();
-      openImageZoom(img.currentSrc || img.src, img.alt);
+      openImageZoom(img.currentSrc || img.src, img.alt, null, {
+        moveContext: moveContextFromImage(img)
+      });
     });
 
     imageZoomOverlay.addEventListener("click", closeImageZoom);
@@ -3285,6 +3501,15 @@
       if (!button || button.disabled) return;
       const action = button.dataset.bpZoomAction;
       resolveBp(action);
+      closeImageZoom();
+    });
+    imageZoomMoveActions.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const button = event.target.closest("[data-move-target-index]");
+      if (!button || !activeMoveContext) return;
+      const target = activeMoveContext.targets?.[Number(button.dataset.moveTargetIndex)];
+      if (!target) return;
+      moveVisibleCard(activeMoveContext, target);
       closeImageZoom();
     });
     window.addEventListener("keydown", (event) => {

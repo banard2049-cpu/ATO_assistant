@@ -6,6 +6,13 @@ import { fileURLToPath } from "node:url";
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dataPath = path.join(rootDir, "story", "data.js");
 const defaultOutDir = path.join(rootDir, "story", "audio");
+const legacyDefaultPrompts = [
+  "用沉稳、清晰、略带史诗感的中文旁白朗读。",
+  "用沧桑、带有史诗感的沉稳男声朗读。",
+];
+const defaultPrompt = "用苍老、低沉、饱经沧桑，带有宏大史诗感的沉稳男声，以稍快语速朗读。";
+const legacyDefaultVoices = ["mimo_default", "Dean"];
+const defaultVoice = "白桦";
 
 const defaults = {
   book: "c2",
@@ -15,6 +22,7 @@ const defaults = {
   configPath: "",
   dryRun: false,
   force: false,
+  noSplit: false,
   includeBattle: false,
   limit: 0,
   maxChars: 450,
@@ -24,9 +32,9 @@ const defaults = {
   banRetryMs: 3600000,
   baseUrl: "https://api.xiaomimimo.com/v1",
   model: "mimo-v2.5-tts",
-  voice: "mimo_default",
+  voice: defaultVoice,
   audioFormat: "mp3",
-  userMessage: "用沉稳、清晰、略带史诗感的中文旁白朗读。",
+  userMessage: defaultPrompt,
   timeout: 120000,
 };
 
@@ -43,7 +51,7 @@ Options:
   --out <dir>           Output dir. Default: story/audio
   --config <json>       Browser-exported TTS config JSON.
   --api-key <key>       MIMO API key. Env MIMO_API_KEY is preferred.
-  --voice <voice>       MIMO voice. Default: mimo_default
+  --voice <voice>       MIMO voice. Default: 白桦
   --model <model>       MIMO model. Default: mimo-v2.5-tts
   --format <format>     Audio format. Default: mp3
   --max-chars <n>       Max chars per API request chunk. Default: 450
@@ -53,6 +61,7 @@ Options:
   --ban-retry-ms <n>    Wait and retry same chunk after all keys fail. Default: 3600000
   --limit <n>           Generate first n matching entries.
   --include-battle      Include battle chapters. Default: skipped.
+  --no-split            Generate one audio file per story entry.
   --force               Regenerate existing audio files.
   --dry-run             Only print the plan; do not call MIMO or write audio.
 `;
@@ -83,6 +92,7 @@ function parseArgs(argv) {
     else if (arg === "--ban-retry-ms") args.banRetryMs = Number(next()) || defaults.banRetryMs;
     else if (arg === "--limit") args.limit = Number(next()) || 0;
     else if (arg === "--include-battle") args.includeBattle = true;
+    else if (arg === "--no-split") args.noSplit = true;
     else if (arg === "--force") args.force = true;
     else if (arg === "--dry-run") args.dryRun = true;
     else throw new Error(`Unknown option: ${arg}`);
@@ -102,9 +112,11 @@ async function loadConfig(args) {
     model: cloud.voiceCloneDataUrl && cloud.voiceCloneModel
       ? cloud.voiceCloneModel
       : (cloud.builtInModel || cloud.model || args.model),
-    voice: cloud.voiceCloneDataUrl || cloud.voice || args.voice,
+    voice: cloud.voiceCloneDataUrl || (cloud.voice && !legacyDefaultVoices.includes(cloud.voice) ? cloud.voice : args.voice),
     audioFormat: cloud.audioFormat || args.audioFormat,
-    userMessage: cloud.userMessage || args.userMessage,
+    userMessage: cloud.userMessage && !legacyDefaultPrompts.includes(cloud.userMessage)
+      ? cloud.userMessage
+      : args.userMessage,
     timeout: Number(cloud.timeout || args.timeout),
   };
 }
@@ -358,7 +370,9 @@ async function main() {
 
   for (const { book, entry } of selected) {
     const cleanText = cleanSpeechText(entry.text);
-    const chunks = createSpeechChunks(cleanText, args.maxChars);
+    const chunks = args.noSplit
+      ? (cleanText ? [cleanText] : [])
+      : createSpeechChunks(cleanText, args.maxChars);
     if (!chunks.length) {
       skippedNoChinese.push({ book, entry });
       continue;
@@ -393,6 +407,7 @@ async function main() {
     audioFormat: ext,
     skipEnglish: true,
     maxChars: args.maxChars,
+    noSplit: args.noSplit,
   };
 
   let written = 0;

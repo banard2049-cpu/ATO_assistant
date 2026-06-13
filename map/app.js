@@ -1308,9 +1308,11 @@ function adjacentPlacedTiles(tileId, tiles = placedTiles()) {
     if (targetId && placedById.has(targetId)) adjacentIds.add(targetId);
   });
   tiles.forEach((candidate) => {
+    if (candidate.id === tileId) return;
+    const physicallyAdjacent = manhattan(tile, candidate) === 1;
     const connectsBack = physicalDirections.some((direction) => candidate.neighbors?.[direction] === tileId)
       || Object.values(candidate.exits || {}).includes(tileId);
-    if (connectsBack) adjacentIds.add(candidate.id);
+    if (physicallyAdjacent || connectsBack) adjacentIds.add(candidate.id);
   });
   return [...adjacentIds].map((id) => placedById.get(id)).filter(Boolean);
 }
@@ -1318,23 +1320,34 @@ function adjacentPlacedTiles(tileId, tiles = placedTiles()) {
 function shortestPlacedPath(startId, targetId, tiles = placedTiles()) {
   if (startId === targetId) return [startId];
 
-  const queue = [[startId]];
-  const seen = new Set([startId]);
-  while (queue.length) {
-    const path = queue.shift();
-    const current = path[path.length - 1];
-    const neighbors = sortAdversaryMoveOptions(current, targetId, adjacentPlacedTiles(current, tiles));
+  const placedById = new Map(tiles.map((tile) => [tile.id, tile]));
+  if (!placedById.has(startId) || !placedById.has(targetId)) return [];
 
-    for (const neighbor of neighbors) {
-      if (seen.has(neighbor.id)) continue;
-      const nextPath = [...path, neighbor.id];
-      if (neighbor.id === targetId) return nextPath;
-      seen.add(neighbor.id);
-      queue.push(nextPath);
+  const distances = new Map([[targetId, 0]]);
+  const queue = [targetId];
+  while (queue.length) {
+    const current = queue.shift();
+    const nextDistance = distances.get(current) + 1;
+    for (const neighbor of adjacentPlacedTiles(current, tiles)) {
+      if (distances.has(neighbor.id)) continue;
+      distances.set(neighbor.id, nextDistance);
+      queue.push(neighbor.id);
     }
   }
 
-  return [];
+  if (!distances.has(startId)) return [];
+
+  const path = [startId];
+  while (path[path.length - 1] !== targetId) {
+    const current = path[path.length - 1];
+    const nextDistance = distances.get(current) - 1;
+    const options = adjacentPlacedTiles(current, tiles)
+      .filter((neighbor) => distances.get(neighbor.id) === nextDistance);
+    const next = sortAdversaryMoveOptions(current, targetId, options)[0];
+    if (!next) return [];
+    path.push(next.id);
+  }
+  return path;
 }
 
 function sortAdversaryMoveOptions(fromId, targetId, options) {
@@ -1343,10 +1356,6 @@ function sortAdversaryMoveOptions(fromId, targetId, options) {
   if (!from || !target) return options;
 
   return [...options].sort((a, b) => {
-    const aDistance = manhattan(a, target);
-    const bDistance = manhattan(b, target);
-    if (aDistance !== bDistance) return aDistance - bDistance;
-
     const preferVertical = state.activeCycleId === "c2";
     const aPreferredDirection = preferVertical
       ? (Number(a.nx) === Number(from.nx) ? 0 : 1)
@@ -1355,6 +1364,10 @@ function sortAdversaryMoveOptions(fromId, targetId, options) {
       ? (Number(b.nx) === Number(from.nx) ? 0 : 1)
       : (Number(b.ny) === Number(from.ny) ? 0 : 1);
     if (aPreferredDirection !== bPreferredDirection) return aPreferredDirection - bPreferredDirection;
+
+    const aDistance = manhattan(a, target);
+    const bDistance = manhattan(b, target);
+    if (aDistance !== bDistance) return aDistance - bDistance;
 
     return a.id.localeCompare(b.id);
   });

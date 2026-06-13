@@ -42,6 +42,13 @@
   const externalAudioCache = new Map();
   const externalAudioCacheMax = 90;
   const ttsStorageKey = "ato-story-tts-config-v1";
+  const legacyDefaultTtsPrompts = [
+    "用沉稳、清晰、略带史诗感的中文旁白朗读。",
+    "用沧桑、带有史诗感的沉稳男声朗读。",
+  ];
+  const defaultTtsPrompt = "用苍老、低沉、饱经沧桑，带有宏大史诗感的沉稳男声，以稍快语速朗读。";
+  const legacyDefaultTtsVoices = ["mimo_default", "Dean"];
+  const defaultTtsVoice = "白桦";
   const cloudPresetVoices = ["mimo_default", "冰糖", "茉莉", "苏打", "白桦", "Mia", "Chloe", "Milo", "Dean"];
 
   const defaultTtsConfig = {
@@ -55,9 +62,9 @@
       apiKey: "",
       builtInModel: "mimo-v2.5-tts",
       voiceCloneModel: "",
-      voice: "mimo_default",
+      voice: defaultTtsVoice,
       voiceCloneDataUrl: "",
-      userMessage: "用沉稳、清晰、略带史诗感的中文旁白朗读。",
+      userMessage: defaultTtsPrompt,
       audioFormat: "mp3",
       timeout: 120000,
     },
@@ -542,8 +549,12 @@
         config.cloud.baseUrl = defaultTtsConfig.cloud.baseUrl;
       }
       if (!config.cloud.builtInModel) config.cloud.builtInModel = defaultTtsConfig.cloud.builtInModel;
-      if (!config.cloud.voice) config.cloud.voice = defaultTtsConfig.cloud.voice;
-      if (!config.cloud.userMessage) config.cloud.userMessage = defaultTtsConfig.cloud.userMessage;
+      if (!config.cloud.voice || legacyDefaultTtsVoices.includes(config.cloud.voice)) {
+        config.cloud.voice = defaultTtsConfig.cloud.voice;
+      }
+      if (!config.cloud.userMessage || legacyDefaultTtsPrompts.includes(config.cloud.userMessage)) {
+        config.cloud.userMessage = defaultTtsConfig.cloud.userMessage;
+      }
       if (!config.cloud.audioFormat || config.cloud.audioFormat === "wav") config.cloud.audioFormat = defaultTtsConfig.cloud.audioFormat;
       return config;
     } catch (error) {
