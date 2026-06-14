@@ -1,5 +1,7 @@
 (function () {
   const data = window.STORYBOOK_DATA;
+  const characterData = window.STORY_CHARACTER_DATA || { characters: [] };
+  const entityData = buildEntityData(window.STORY_ENTITY_INDEX, characterData);
   const storageKey = "ato-story-memory-v1";
 
   const bookSelect = document.querySelector("#bookSelect");
@@ -39,6 +41,10 @@
   let statusEntries = [];
   let storyAudioManifest = null;
   let storyAudioManifestPromise = null;
+  let storyAudioManifestPack = "";
+  let entityOverlay = null;
+  const entityLookup = new Map();
+  let entityAliases = [];
   const externalAudioCache = new Map();
   const externalAudioCacheMax = 90;
   const ttsStorageKey = "ato-story-tts-config-v1";
@@ -50,6 +56,10 @@
   const legacyDefaultTtsVoices = ["mimo_default", "Dean"];
   const defaultTtsVoice = "白桦";
   const cloudPresetVoices = ["mimo_default", "冰糖", "茉莉", "苏打", "白桦", "Mia", "Chloe", "Milo", "Dean"];
+  const offlineAudioPacks = [
+    { id: "audio", label: "默认离线音色", dir: "audio-packs/audio" },
+    { id: "audio-baihua-nosplit-23451", label: "白桦（整段）", dir: "audio-packs/audio-baihua-nosplit-23451" },
+  ];
 
   const defaultTtsConfig = {
     activeEngine: "browser",
@@ -57,6 +67,7 @@
     rate: 1,
     volume: 1,
     statusCollapsed: false,
+    offlineAudioPack: "audio",
     cloud: {
       baseUrl: "https://api.xiaomimimo.com/v1",
       apiKey: "",
@@ -99,6 +110,85 @@
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
+  }
+
+  function escapeRegExp(value) {
+    return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+
+  function buildEntityData(indexData, fallbackCharacterData) {
+    if (indexData && Array.isArray(indexData.entities)) return indexData;
+    const characters = Array.isArray(fallbackCharacterData?.characters) ? fallbackCharacterData.characters : [];
+    return {
+      generatedAt: fallbackCharacterData?.generatedAt || "",
+      generator: fallbackCharacterData?.generator || "",
+      entityCount: characters.length,
+      categoryCounts: { 人物: characters.length },
+      entities: characters.map((character) => ({
+        ...character,
+        category: "人物",
+        intro: character.bioNonSpoiler || character.bio || "",
+        story: character.bioSpoiler || "",
+        entries: character.storyEntries || character.storyPreview || [],
+      })),
+    };
+  }
+
+  function initEntities() {
+    entityLookup.clear();
+    const aliasRecords = [];
+    (entityData.entities || []).forEach((entity) => {
+      if (!entity || !entity.id) return;
+      const aliases = entityMatchAliases(entity);
+      aliases.forEach((alias) => {
+        const key = alias.toLowerCase();
+        if (!entityLookup.has(key)) entityLookup.set(key, entity);
+        aliasRecords.push({ alias, entity });
+      });
+    });
+    entityAliases = aliasRecords
+      .filter((item, index, list) => {
+        const key = item.alias.toLowerCase();
+        return list.findIndex((other) => other.alias.toLowerCase() === key) === index;
+      })
+      .sort((a, b) => b.alias.length - a.alias.length);
+  }
+
+  function entityMatchAliases(entity) {
+    const source = Array.isArray(entity.matchAliases)
+      ? entity.matchAliases
+      : [entity.name, entity.englishName, ...(entity.aliases || [])];
+    return source
+      .map((alias) => String(alias || "").trim())
+      .filter(isMeaningfulEntityAlias);
+  }
+
+  function isMeaningfulEntityAlias(alias) {
+    const value = String(alias || "").trim();
+    if (!value) return false;
+    if (/^[A-Z0-9]{1,4}$/.test(value)) return false;
+    if (/^[A-Za-z]{1,2}$/.test(value)) return false;
+    if (/^[\u3400-\u9fff]$/.test(value)) return false;
+    if (value.length > 32) return false;
+    return true;
+  }
+
+  function annotateEntitiesInEscapedHtml(html) {
+    if (!entityAliases.length || !html) return html;
+    const pattern = new RegExp(entityAliases.map((item) => escapeRegExp(escapeHtml(item.alias))).join("|"), "gi");
+    return html.replace(pattern, (match, offset, source) => {
+      const before = source.slice(Math.max(0, offset - 80), offset);
+      const after = source.slice(offset, offset + match.length + 80);
+      if (/<[^>]*$/.test(before) && !/^[^<]*>/.test(after.slice(match.length))) return match;
+      if (/class="[^"]*$/.test(before) || /data-[a-z-]+="[^"]*$/i.test(before) || /href="[^"]*$/i.test(before)) return match;
+      const prevChar = source[offset - 1] || "";
+      const nextChar = source[offset + match.length] || "";
+      if (/^[A-Za-z]/.test(match) && (/[A-Za-z]/.test(prevChar) || /[A-Za-z]/.test(nextChar))) return match;
+      if (/[\u3400-\u9fff]/.test(match) && /[们的]/.test(nextChar)) return match;
+      const entity = entityLookup.get(match.toLowerCase());
+      if (!entity) return match;
+      return `<button class="character-link entity-link" type="button" data-entity-id="${escapeAttribute(entity.id)}">${match}</button>`;
+    });
   }
 
   function normalizeQuery(value) {
@@ -383,17 +473,17 @@
       const resolved = resolveId(rawId);
       const idStart = match.index + match[0].indexOf(rawId);
 
-      html += escapeHtml(text.slice(lastIndex, idStart));
+      html += annotateEntitiesInEscapedHtml(escapeHtml(text.slice(lastIndex, idStart)));
       if (resolved) {
         const hint = prefix ? ' data-chapter-hint="main"' : "";
         html += `<button class="jump-link" type="button" data-id="${resolved}"${hint}>${escapeHtml(rawId)}</button>`;
       } else {
-        html += escapeHtml(rawId);
+        html += annotateEntitiesInEscapedHtml(escapeHtml(rawId));
       }
       lastIndex = pattern.lastIndex;
     }
 
-    html += escapeHtml(text.slice(lastIndex));
+    html += annotateEntitiesInEscapedHtml(escapeHtml(text.slice(lastIndex)));
     return html;
   }
 
@@ -556,6 +646,9 @@
         config.cloud.userMessage = defaultTtsConfig.cloud.userMessage;
       }
       if (!config.cloud.audioFormat || config.cloud.audioFormat === "wav") config.cloud.audioFormat = defaultTtsConfig.cloud.audioFormat;
+      if (!offlineAudioPacks.some((pack) => pack.id === config.offlineAudioPack)) {
+        config.offlineAudioPack = defaultTtsConfig.offlineAudioPack;
+      }
       return config;
     } catch (error) {
       return JSON.parse(JSON.stringify(defaultTtsConfig));
@@ -576,6 +669,16 @@
       <option value="local">本地部署</option>
       <option value="cloud">云端 API</option>
     `;
+
+    const offlineVoiceSelect = document.createElement("select");
+    offlineVoiceSelect.id = "ttsOfflineVoice";
+    offlineVoiceSelect.className = "tts-select";
+    offlineAudioPacks.forEach((pack) => {
+      const option = document.createElement("option");
+      option.value = pack.id;
+      option.textContent = pack.label;
+      offlineVoiceSelect.appendChild(option);
+    });
 
     const configButton = document.createElement("button");
     configButton.id = "ttsConfigButton";
@@ -610,15 +713,19 @@
     importInput.hidden = true;
 
     ttsVoice.insertAdjacentElement("afterend", configButton);
+    ttsVoice.insertAdjacentElement("afterend", offlineVoiceSelect);
     ttsVoice.insertAdjacentElement("afterend", engineSelect);
     document.body.append(statusBox, overlay, cloneInput, importInput);
 
-    return { engineSelect, configButton, statusBox, overlay, cloneInput, importInput };
+    return { engineSelect, offlineVoiceSelect, configButton, statusBox, overlay, cloneInput, importInput };
   }
 
   function getEngineStatusLabel() {
     if (ttsConfig.activeEngine === "browser") return "浏览器原生";
-    if (ttsConfig.activeEngine === "offline") return "离线保存音频";
+    if (ttsConfig.activeEngine === "offline") {
+      const pack = offlineAudioPacks.find((item) => item.id === ttsConfig.offlineAudioPack) || offlineAudioPacks[0];
+      return `离线保存音频 [${pack.label}]`;
+    }
     if (ttsConfig.activeEngine === "local") return `本地部署 [${ttsConfig.local.model || "未配置"}]`;
     if (ttsConfig.cloud.voiceCloneDataUrl) return "云端 API [已导入克隆音色]";
     return `云端 API [${ttsConfig.cloud.voice || "动态音色"}]`;
@@ -683,29 +790,48 @@
   }
 
   function manifestAudioBaseUrl() {
-    return new URL("./audio/", window.location.href);
+    const pack = offlineAudioPacks.find((item) => item.id === ttsConfig.offlineAudioPack) || offlineAudioPacks[0];
+    return new URL(`./${pack.dir}/`, window.location.href);
+  }
+
+  function loadManifestScript(pack, force = false) {
+    return new Promise((resolve) => {
+      const previous = document.querySelector("#storyAudioManifestScript");
+      if (previous) previous.remove();
+      window.STORY_AUDIO_MANIFEST = null;
+
+      const script = document.createElement("script");
+      script.id = "storyAudioManifestScript";
+      script.src = `./${pack.dir}/manifest.js${force ? `?t=${Date.now()}` : ""}`;
+      script.onload = () => resolve(window.STORY_AUDIO_MANIFEST || null);
+      script.onerror = () => resolve(null);
+      document.head.appendChild(script);
+    });
   }
 
   async function ensureStoryAudioManifest(force = false) {
+    const pack = offlineAudioPacks.find((item) => item.id === ttsConfig.offlineAudioPack) || offlineAudioPacks[0];
+    const packId = pack.id;
+    if (storyAudioManifestPack && storyAudioManifestPack !== packId) {
+      storyAudioManifest = null;
+      storyAudioManifestPromise = null;
+    }
     if (force) {
       storyAudioManifest = null;
       storyAudioManifestPromise = null;
     }
-    if (!force && window.STORY_AUDIO_MANIFEST && window.STORY_AUDIO_MANIFEST.entries) {
+    if (!force && packId === "audio" && window.STORY_AUDIO_MANIFEST && window.STORY_AUDIO_MANIFEST.entries) {
       storyAudioManifest = window.STORY_AUDIO_MANIFEST;
+      storyAudioManifestPack = packId;
       return Promise.resolve(storyAudioManifest);
     }
     if (storyAudioManifest || storyAudioManifestPromise) return storyAudioManifestPromise;
-    const manifestUrl = force ? `./audio/manifest.json?t=${Date.now()}` : "./audio/manifest.json";
-    storyAudioManifestPromise = fetch(manifestUrl, { cache: "no-store" })
-      .then((response) => {
-        if (!response.ok) return null;
-        return response.json();
-      })
+    storyAudioManifestPromise = loadManifestScript(pack, force)
       .then((manifest) => {
         storyAudioManifest = manifest && manifest.entries ? manifest : null;
+        storyAudioManifestPack = storyAudioManifest ? packId : "";
         if (storyAudioManifest) {
-          pushTtsStatus(`Loaded offline audio: ${Object.keys(storyAudioManifest.entries).length} entries`, "success");
+          pushTtsStatus(`Loaded offline audio [${pack.label}]: ${Object.keys(storyAudioManifest.entries).length} entries`, "success");
         }
         return storyAudioManifest;
       })
@@ -813,23 +939,23 @@
   const localBattleImages = [
     {
       test: /hypertime-oracle-battle/i,
-      images: ["./c3-battle-images/超时光先知战斗1.jpg", "./c3-battle-images/超时光先知战斗2.jpg"],
+      images: ["./images/battles/c3/超时光先知战斗1.jpg", "./images/battles/c3/超时光先知战斗2.jpg"],
     },
     {
       test: /icarian-harpy-battle/i,
-      images: ["./c3-battle-images/伊卡洛斯哈尔皮战斗.jpg"],
+      images: ["./images/battles/c3/伊卡洛斯哈尔皮战斗.jpg"],
     },
     {
       test: /endure-the-sun-battle/i,
-      images: ["./c3-battle-images/忍受烈日战斗.jpg"],
+      images: ["./images/battles/c3/忍受烈日战斗.jpg"],
     },
     {
       test: /race-the-sun-battle/i,
-      images: ["./c3-battle-images/与日竞赛战斗.jpg"],
+      images: ["./images/battles/c3/与日竞赛战斗.jpg"],
     },
     {
       test: /burden-hardest-to-bear-battle/i,
-      images: ["./c3-battle-images/最难承受的重担战斗.jpg"],
+      images: ["./images/battles/c3/最难承受的重担战斗.jpg"],
     },
   ];
 
@@ -1008,6 +1134,160 @@
   function renderHtmlStory(entry, imagesHtml) {
     const gallery = imagesHtml ? `<div class="battle-gallery">${imagesHtml}</div>` : "";
     return `<div class="story-html">${entry.html}</div>${gallery}`;
+  }
+
+  function renderEntityNotes(entity) {
+    const notes = Array.isArray(entity.notes) ? entity.notes.filter(Boolean) : [];
+    if (!notes.length) return "";
+    return `<ul class="character-notes">${notes.map((note) => `<li>${escapeHtml(note)}</li>`).join("")}</ul>`;
+  }
+
+  function renderEntityStoryPreview(entity) {
+    const entries = Array.isArray(entity.entries)
+      ? entity.entries
+      : Array.isArray(entity.storyEntries)
+        ? entity.storyEntries
+        : Array.isArray(entity.storyPreview)
+        ? entity.storyPreview
+        : [];
+    if (!entries.length) return "";
+    const groups = [];
+    entries.forEach((entry) => {
+      const book = String(entry.book || "").toLowerCase() || "unknown";
+      let group = groups.find((item) => item.book === book);
+      if (!group) {
+        group = { book, entries: [] };
+        groups.push(group);
+      }
+      group.entries.push(entry);
+    });
+    return `
+      <section class="character-story-preview">
+        <h4>相关段落（${entries.length}）</h4>
+        <div class="character-story-groups">
+          ${groups.map((group) => `
+            <section class="character-story-group">
+              <h5>${escapeHtml(group.book.toUpperCase())}（${group.entries.length}）</h5>
+              <ol>
+                ${group.entries.map((entry) => `
+                  <li>
+                    <strong>${escapeHtml(`${String(entry.book || "").toUpperCase()} ${entry.id || ""}`.trim())}</strong>
+                    ${entry.title ? `<span>${escapeHtml(entry.title)}</span>` : ""}
+                    ${entry.snippet ? `<p>${escapeHtml(entry.snippet)}</p>` : ""}
+                  </li>
+                `).join("")}
+              </ol>
+            </section>
+          `).join("")}
+        </div>
+      </section>
+    `;
+  }
+
+  function renderEntityWikiIntro(entity) {
+    const intro = String(entity.wikiIntro || "").trim();
+    if (!intro) return "";
+    const title = String(entity.wikiTitle || "Wikipedia").trim();
+    const url = String(entity.wikiUrl || "").trim();
+    const source = url
+      ? `<a href="${escapeAttribute(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(title)}</a>`
+      : escapeHtml(title);
+    return `
+      <section class="character-wiki">
+        <h4>神话 / 来源介绍</h4>
+        <p>${escapeHtml(intro)}</p>
+        <div class="character-wiki-source">来源：${source}</div>
+      </section>
+    `;
+  }
+
+  function renderEntityAliases(aliases) {
+    if (!aliases.length) return "";
+    return `<div class="character-aliases"><strong>别名</strong>${aliases.map((alias) => `<span>${escapeHtml(alias)}</span>`).join("")}</div>`;
+  }
+
+  function ensureEntityOverlay() {
+    if (entityOverlay) return entityOverlay;
+    entityOverlay = document.createElement("div");
+    entityOverlay.id = "entityOverlay";
+    entityOverlay.className = "character-overlay entity-overlay";
+    entityOverlay.hidden = true;
+    document.body.appendChild(entityOverlay);
+    entityOverlay.addEventListener("click", (event) => {
+      if (event.target === entityOverlay || event.target.closest("[data-entity-close]")) {
+        closeEntityBio();
+      }
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && entityOverlay && !entityOverlay.hidden) closeEntityBio();
+    });
+    return entityOverlay;
+  }
+
+  function closeEntityBio() {
+    if (!entityOverlay) return;
+    entityOverlay.hidden = true;
+    entityOverlay.innerHTML = "";
+  }
+
+  function openEntityBio(entityId) {
+    const entity = (entityData.entities || []).find((item) => item.id === entityId);
+    if (!entity) return;
+    const overlay = ensureEntityOverlay();
+    const english = entity.englishName ? ` (${escapeHtml(entity.englishName)})` : "";
+    const meta = [
+      entity.category ? `分类：${entity.category}` : "",
+      entity.firstSeen ? `初见：${entity.firstSeen}` : "",
+      entity.mentionCount ? `提及：${entity.mentionCount}` : "",
+    ].filter(Boolean);
+    const aliases = [entity.name, entity.englishName, ...(entity.aliases || [])]
+      .map((alias) => String(alias || "").trim())
+      .filter(isMeaningfulEntityAlias)
+      .filter((alias, index, list) => list.indexOf(alias) === index);
+    const introBio = entity.intro || entity.bioNonSpoiler || entity.bio || "还没有填写简介。";
+    const storyBio = entity.detail || entity.story || entity.bioSpoiler || "";
+    const detailHtml = [
+      storyBio && storyBio !== introBio ? `<p class="character-bio">${escapeHtml(storyBio)}</p>` : "",
+      renderEntityAliases(aliases),
+      renderEntityNotes(entity),
+      renderEntityStoryPreview(entity),
+    ].filter(Boolean).join("");
+    const hasDetail = Boolean(detailHtml);
+    overlay.innerHTML = `
+      <section class="character-card entity-card" role="dialog" aria-modal="true" aria-label="${escapeAttribute(entity.name)}实体档案">
+        <header class="character-head">
+          <div>
+            <p class="character-kicker">实体档案</p>
+            <h3>${escapeHtml(entity.name)}${english}</h3>
+          </div>
+          <button type="button" data-entity-close>关闭</button>
+        </header>
+        <div class="character-body">
+          ${meta.length ? `<div class="character-meta">${meta.map((item) => `<span>${escapeHtml(item)}</span>`).join("")}</div>` : ""}
+          <div class="character-bio-tabs">
+            <button class="active" type="button" data-character-bio-tab="intro">简介</button>
+            ${hasDetail ? `<button type="button" data-character-bio-tab="story" title="包含后续剧情信息">详细介绍（含剧透）</button>` : ""}
+          </div>
+          <div class="character-tab-panel" data-character-panel="intro">
+            <p class="character-bio">${escapeHtml(introBio)}</p>
+            ${renderEntityWikiIntro(entity)}
+          </div>
+          ${hasDetail ? `<div class="character-tab-panel" data-character-panel="story" hidden>${detailHtml}</div>` : ""}
+        </div>
+      </section>
+    `;
+    overlay.hidden = false;
+    overlay.querySelectorAll("[data-character-bio-tab]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const mode = button.dataset.characterBioTab;
+        overlay.querySelectorAll("[data-character-panel]").forEach((panel) => {
+          panel.hidden = panel.dataset.characterPanel !== mode;
+        });
+        overlay.querySelectorAll("[data-character-bio-tab]").forEach((item) => item.classList.toggle("active", item === button));
+      });
+    });
+    const closeButton = overlay.querySelector("[data-entity-close]");
+    if (closeButton) closeButton.focus();
   }
 
   function battleAibpLink(entry) {
@@ -1811,6 +2091,7 @@
 
   function updateTtsControls() {
     ttsUi.engineSelect.value = ttsConfig.activeEngine;
+    ttsUi.offlineVoiceSelect.value = ttsConfig.offlineAudioPack || offlineAudioPacks[0].id;
     ttsSpeed.value = String(ttsConfig.rate || 1);
     renderTtsStatus();
   }
@@ -2038,7 +2319,7 @@
 
   function init() {
     if (!data || !data.books || !data.books.length) {
-      storyText.textContent = "没有找到故事索引 data.js，请先运行 build-data.ps1。";
+      storyText.textContent = "没有找到故事索引 data/storybook-data.js，请先运行数据生成脚本。";
       return;
     }
 
@@ -2054,6 +2335,7 @@
     if (deepLinkTarget.bookId) bookSelect.value = deepLinkTarget.bookId;
 
     loadMemories();
+    initEntities();
     renderMemories();
     loadVoices();
     updateTtsControls();
@@ -2129,6 +2411,22 @@
     renderTtsStatus();
     pushTtsStatus(`已切换至 ${getEngineStatusLabel()}。`, "info");
   });
+  ttsUi.offlineVoiceSelect.addEventListener("change", async (event) => {
+    ttsConfig.offlineAudioPack = event.target.value || offlineAudioPacks[0].id;
+    storyAudioManifest = null;
+    storyAudioManifestPromise = null;
+    storyAudioManifestPack = "";
+    saveTtsConfig();
+    renderTtsStatus();
+    pushTtsStatus(`已切换离线音色：${getEngineStatusLabel()}。`, "info");
+    if (ttsConfig.activeEngine === "offline") {
+      await ensureStoryAudioManifest(true);
+    }
+    if (currentUtterance) {
+      stopSpeech();
+      toggleSpeech();
+    }
+  });
   document.querySelector("#ttsStatusToggle").addEventListener("click", () => {
     ttsConfig.statusCollapsed = !ttsConfig.statusCollapsed;
     saveTtsConfig();
@@ -2197,6 +2495,12 @@
   });
 
   storyText.addEventListener("click", (event) => {
+    const entityTarget = event.target.closest("[data-entity-id]");
+    if (entityTarget) {
+      openEntityBio(entityTarget.dataset.entityId);
+      return;
+    }
+
     const target = event.target.closest("[data-id]");
     if (!target) return;
     jumpToId(target.dataset.id, { chapterHint: target.dataset.chapterHint });

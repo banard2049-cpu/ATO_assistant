@@ -33,7 +33,9 @@
 
 # Complete or extracted copyrighted game/story data
 /story/data.js
+/story/data/
 /story/audio/
+/story/audio-packs/
 
 # Asset-heavy/reference-only working areas
 /assets/
@@ -43,6 +45,7 @@
 /story/battle-images/
 /story/c1-battle-images/
 /story/c3-battle-images/
+/story/images/battles/
 /technology/images/
 
 # Private campaign/user state and local backups

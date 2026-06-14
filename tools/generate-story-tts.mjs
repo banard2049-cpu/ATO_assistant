@@ -4,8 +4,8 @@ import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const dataPath = path.join(rootDir, "story", "data.js");
-const defaultOutDir = path.join(rootDir, "story", "audio");
+const dataPath = path.join(rootDir, "story", "data", "storybook-data.js");
+const defaultOutDir = path.join(rootDir, "story", "audio-packs", "audio");
 const legacyDefaultPrompts = [
   "用沉稳、清晰、略带史诗感的中文旁白朗读。",
   "用沧桑、带有史诗感的沉稳男声朗读。",
@@ -48,7 +48,7 @@ Options:
   --book <id|all>       Story book id. Default: c2
   --chapter <key>       Limit to one chapterKey.
   --entry <key|id>      Limit to one entry key or paragraph id.
-  --out <dir>           Output dir. Default: story/audio
+  --out <dir>           Output dir. Default: story/audio-packs/audio
   --config <json>       Browser-exported TTS config JSON.
   --api-key <key>       MIMO API key. Env MIMO_API_KEY is preferred.
   --voice <voice>       MIMO voice. Default: 白桦

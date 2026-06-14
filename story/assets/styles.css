@@ -379,6 +379,21 @@ h2 {
   color: var(--danger);
 }
 
+.character-link {
+  border: 0;
+  min-height: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 800;
+}
+
+.character-link:hover {
+  background: transparent;
+  color: var(--accent-strong);
+}
+
 .reader-foot {
   max-width: 980px;
   margin-top: 18px;
@@ -612,6 +627,222 @@ h2 {
 
 .tts-overlay[hidden] {
   display: none;
+}
+
+.character-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(15, 12, 8, 0.52);
+}
+
+.character-overlay[hidden] {
+  display: none;
+}
+
+.character-card {
+  width: min(780px, 96vw);
+  max-height: 88vh;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--ink);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.34);
+}
+
+.character-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  background: #27231d;
+  color: #f8f0df;
+}
+
+.character-head h3 {
+  margin: 4px 0 0;
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+.character-kicker {
+  color: #ffd480;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.character-head button {
+  min-height: 32px;
+  background: #5d5141;
+}
+
+.character-body {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  line-height: 1.7;
+}
+
+.character-bio-tabs {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.character-bio-tabs button {
+  min-height: 30px;
+  padding: 5px 10px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--accent);
+  font-size: 13px;
+}
+
+.character-bio-tabs button.active {
+  border-color: var(--accent);
+  background: #e6f3ef;
+  color: var(--accent-strong);
+}
+
+.character-bio {
+  padding: 12px 14px;
+  border-left: 3px solid var(--accent);
+  background: #f8fbf8;
+  white-space: pre-line;
+}
+
+.character-wiki {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid #e4d8c7;
+  border-radius: 8px;
+  background: #fffaf0;
+}
+
+.character-wiki h4 {
+  margin: 0;
+  color: var(--gold);
+  font-size: 14px;
+}
+
+.character-wiki p {
+  color: #3a342c;
+  line-height: 1.65;
+}
+
+.character-wiki-source {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.character-wiki-source a {
+  color: var(--accent);
+  font-weight: 800;
+}
+
+.character-meta,
+.character-aliases {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.character-meta span,
+.character-aliases span {
+  padding: 4px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.character-aliases strong {
+  display: inline-flex;
+  align-items: center;
+  color: var(--accent);
+  font-size: 13px;
+}
+
+.character-notes {
+  margin: 0 0 0 1.2em;
+  padding: 0;
+  color: var(--muted);
+}
+
+.character-story-preview {
+  display: grid;
+  gap: 10px;
+  padding-top: 4px;
+  border-top: 1px solid var(--line);
+}
+
+.character-story-preview h4 {
+  margin: 0;
+  color: var(--accent-strong);
+  font-size: 15px;
+}
+
+.character-story-groups {
+  display: grid;
+  gap: 12px;
+  max-height: 46vh;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.character-story-group {
+  display: grid;
+  gap: 8px;
+}
+
+.character-story-group h5 {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin: 0;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #f2eadf;
+  color: var(--accent-strong);
+  font-size: 13px;
+}
+
+.character-story-preview ol {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 1.35em;
+}
+
+.character-story-preview li {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.character-story-preview li span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.character-story-preview li p {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
 }
 
 .tts-modal {

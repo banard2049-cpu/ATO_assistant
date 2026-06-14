@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const LOCAL_DATA_PATH = path.resolve("story/data.js");
+const LOCAL_DATA_PATH = path.resolve("story/data/storybook-data.js");
 const REMOTE_DATA_PATH = path.resolve("tools/bgstorybook-c2.json");
 const REPORT_PATH = path.resolve("tools/c2-storybook-diff.json");
 const IGNORED_CHAPTER_KEYS = new Set(["battle"]);
@@ -23,7 +23,7 @@ function normalizeTitle(value) {
 
 function loadLocalStorybook(source) {
   const prefix = "window.STORYBOOK_DATA = ";
-  if (!source.startsWith(prefix)) throw new Error("Unexpected story/data.js prefix");
+  if (!source.startsWith(prefix)) throw new Error("Unexpected story/data/storybook-data.js prefix");
   const json = source.slice(prefix.length).replace(/;\s*$/, "");
   return JSON.parse(json);
 }

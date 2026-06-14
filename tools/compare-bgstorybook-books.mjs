@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const LOCAL_DATA_PATH = path.resolve("story/data.js");
+const LOCAL_DATA_PATH = path.resolve("story/data/storybook-data.js");
 const REMOTE_BOOK_FILES = {
   c4: path.resolve("tools/bgstorybook-c4.json"),
   c5: path.resolve("tools/bgstorybook-c5.json"),
@@ -9,7 +9,7 @@ const REMOTE_BOOK_FILES = {
 
 function loadLocalStorybook(source) {
   const prefix = "window.STORYBOOK_DATA = ";
-  if (!source.startsWith(prefix)) throw new Error("Unexpected story/data.js prefix");
+  if (!source.startsWith(prefix)) throw new Error("Unexpected story/data/storybook-data.js prefix");
   return JSON.parse(source.slice(prefix.length).replace(/;\s*$/, ""));
 }
 
