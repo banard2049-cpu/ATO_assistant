@@ -521,8 +521,8 @@
       flex-direction: column;
       align-items: center;
       gap: 2px;
-      min-width: 26px;
-      padding: 5px 2px;
+      min-width: 20px;
+      padding: 5px 1px;
       border: 1px solid var(--line);
       border-radius: 4px;
       background: #fff;
@@ -557,8 +557,8 @@
     }
     .track-node-cell {
       align-self: center;
-      min-width: 30px;
-      padding: 4px 3px;
+      min-width: 28px;
+      padding: 4px 2px;
       border: 1px solid var(--accent-2);
       border-radius: 4px;
       background: rgba(138, 91, 23, 0.08);
@@ -569,6 +569,7 @@
       text-align: center;
       white-space: nowrap;
       cursor: pointer;
+      flex-shrink: 0;
     }
     .track-node-cell.filled {
       background: var(--accent-2);
@@ -1145,6 +1146,7 @@
     function normalizeState() {
       state.heroes = Array.isArray(state.heroes) ? state.heroes : [];
       state.heroes.forEach(h => {
+        if (!h.id) h.id = "hero-" + Date.now() + "-" + Math.random().toString(16).slice(2, 8);
         if (h.skills && !h.baseSkills) {
           h.baseSkills = h.skills;
           delete h.skills;
@@ -1152,12 +1154,12 @@
         if (!h.baseSkills) h.baseSkills = { courage: 0, wisdom: 0, will: 0, endurance: 0, cunning: 0, fury: 0 };
         SKILLS.forEach(s => { h.baseSkills[s.id] = Math.max(0, parseInt(h.baseSkills[s.id], 10) || 0); });
         if (h.skillsExpanded !== true) h.skillsExpanded = false;
-        h.mnemos = h.mnemos || {};
-        h.fatedMnemos = h.fatedMnemos || {};
+        if (!h.mnemos || typeof h.mnemos !== "object" || Array.isArray(h.mnemos)) h.mnemos = {};
+        if (!h.fatedMnemos || typeof h.fatedMnemos !== "object" || Array.isArray(h.fatedMnemos)) h.fatedMnemos = {};
         h.mnemosNodeProgress = h.mnemosNodeProgress || {};
         CYCLES.forEach(c => {
-          h.mnemos[c] = h.mnemos[c] || [];
-          h.fatedMnemos[c] = h.fatedMnemos[c] || [];
+          if (!Array.isArray(h.mnemos[c])) h.mnemos[c] = [];
+          if (!Array.isArray(h.fatedMnemos[c])) h.fatedMnemos[c] = [];
         });
       });
       if (state.heroes.length && !state.activeHeroId) state.activeHeroId = state.heroes[0].id;
@@ -1168,15 +1170,14 @@
     }
 
     function queueSave() {
+      persistLocal();
       clearTimeout(saveTimer);
       saveTimer = setTimeout(() => {
-        persistLocal();
         saveToServer();
       }, 200);
     }
 
     async function saveToServer() {
-      if (!serverStorageAvailable) return;
       try {
         const response = await fetch(serverStorageUrl, {
           method: "POST",
@@ -1189,8 +1190,29 @@
         });
         const payload = await response.json().catch(() => null);
         if (response.ok && payload?.ok) {
+          serverStorageAvailable = true;
           serverSectionRevision = payload.revision || serverSectionRevision;
           setSaveStatus("已同步 " + new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }));
+        } else if (response.status === 409 && payload?.revision) {
+          // Conflict — retry with correct revision (force overwrite with local)
+          serverSectionRevision = payload.revision;
+          const retry = await fetch(serverStorageUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              section: serverStorageSection,
+              state: state,
+              expectedRevision: serverSectionRevision,
+            }),
+          });
+          const retryPayload = await retry.json().catch(() => null);
+          if (retry.ok && retryPayload?.ok) {
+            serverStorageAvailable = true;
+            serverSectionRevision = retryPayload.revision || serverSectionRevision;
+            setSaveStatus("已同步 " + new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }));
+          } else {
+            setSaveStatus("同步失败，已保存到本机");
+          }
         } else {
           setSaveStatus("同步失败，已保存到本机");
         }
@@ -1206,15 +1228,41 @@
         const payload = await response.json();
         if (!payload.ok) throw new Error();
         serverStorageAvailable = true;
-        const serverState = payload.campaign?.sections?.[serverStorageSection];
-        serverSectionRevision = payload.campaign?.sectionRevisions?.[serverStorageSection] || 0;
-        if (serverState && Array.isArray(serverState.heroes) && serverState.heroes.length) {
+        const serverState = payload.state;
+        const serverRevision = payload.revision || 0;
+        serverSectionRevision = serverRevision;
+        const serverUser = payload.user?.id || "";
+        const localUser = state._userId || "";
+        const localHasData = state.heroes && state.heroes.length > 0;
+        const serverHasData = serverState && Array.isArray(serverState.heroes) && serverState.heroes.length > 0;
+        // Detect account switch — clear leftover data from previous account
+        if (serverUser && localUser && serverUser !== localUser) {
+          if (serverHasData) {
+            state = serverState;
+          } else {
+            state = { heroes: [], activeHeroId: "", graveyard: [] };
+          }
+          state._userId = serverUser;
+          normalizeState();
+          persistLocal();
+          renderAll();
+          setSaveStatus(serverHasData ? "已从 NAS 读取" : "NAS 已连接");
+        } else if (!localHasData && serverHasData) {
+          // Local is empty, pull from server
           state = serverState;
+          state._userId = serverUser;
           normalizeState();
           persistLocal();
           renderAll();
           setSaveStatus("已从 NAS 读取");
+        } else if (localHasData) {
+          // Local has data, push to server to keep it in sync
+          state._userId = serverUser;
+          setSaveStatus("NAS 已连接");
+          saveToServer();
         } else {
+          state._userId = serverUser;
+          persistLocal();
           setSaveStatus("NAS 已连接");
         }
       } catch {
@@ -2231,6 +2279,7 @@
     renderAll();
     loadFromServer();
   </script>
+  <script src="../page-focus-router.js?v=20260607a"></script>
 
 </body>
 </html>
