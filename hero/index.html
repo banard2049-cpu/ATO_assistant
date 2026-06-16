@@ -1192,6 +1192,8 @@
         if (response.ok && payload?.ok) {
           serverStorageAvailable = true;
           serverSectionRevision = payload.revision || serverSectionRevision;
+          state._lastSyncRevision = serverSectionRevision;
+          persistLocal();
           setSaveStatus("已同步 " + new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }));
         } else if (response.status === 409 && payload?.revision) {
           // Conflict — retry with correct revision (force overwrite with local)
@@ -1209,6 +1211,8 @@
           if (retry.ok && retryPayload?.ok) {
             serverStorageAvailable = true;
             serverSectionRevision = retryPayload.revision || serverSectionRevision;
+            state._lastSyncRevision = serverSectionRevision;
+            persistLocal();
             setSaveStatus("已同步 " + new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }));
           } else {
             setSaveStatus("同步失败，已保存到本机");
@@ -1233,9 +1237,10 @@
         serverSectionRevision = serverRevision;
         const serverUser = payload.user?.id || "";
         const localUser = state._userId || "";
+        const localRevision = state._lastSyncRevision || 0;
         const localHasData = state.heroes && state.heroes.length > 0;
         const serverHasData = serverState && Array.isArray(serverState.heroes) && serverState.heroes.length > 0;
-        // Detect account switch — clear leftover data from previous account
+        // Detect account switch
         if (serverUser && localUser && serverUser !== localUser) {
           if (serverHasData) {
             state = serverState;
@@ -1243,23 +1248,34 @@
             state = { heroes: [], activeHeroId: "", graveyard: [] };
           }
           state._userId = serverUser;
+          state._lastSyncRevision = serverRevision;
           normalizeState();
           persistLocal();
           renderAll();
           setSaveStatus(serverHasData ? "已从 NAS 读取" : "NAS 已连接");
-        } else if (!localHasData && serverHasData) {
-          // Local is empty, pull from server
+        } else if (serverHasData && serverRevision > localRevision) {
+          // Server is newer (another device pushed) — pull
           state = serverState;
           state._userId = serverUser;
+          state._lastSyncRevision = serverRevision;
           normalizeState();
           persistLocal();
           renderAll();
           setSaveStatus("已从 NAS 读取");
         } else if (localHasData) {
-          // Local has data, push to server to keep it in sync
+          // Local is current or newer — push to server
           state._userId = serverUser;
           setSaveStatus("NAS 已连接");
           saveToServer();
+        } else if (serverHasData) {
+          // Local empty, pull from server
+          state = serverState;
+          state._userId = serverUser;
+          state._lastSyncRevision = serverRevision;
+          normalizeState();
+          persistLocal();
+          renderAll();
+          setSaveStatus("已从 NAS 读取");
         } else {
           state._userId = serverUser;
           persistLocal();
