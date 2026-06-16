@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>回忆卡标签编辑器</title>
+  <style>
+    :root {
+      --bg: #f0f3f2;
+      --panel: #ffffff;
+      --ink: #1c2422;
+      --muted: #66726d;
+      --line: #d9dfdc;
+      --accent: #176c62;
+      --accent-2: #8a5b17;
+      --red: #a03832;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Microsoft YaHei", system-ui, sans-serif;
+      padding: 24px;
+    }
+    h1 { margin: 0 0 8px; font-size: 24px; }
+    .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    button {
+      min-height: 36px;
+      border: 0;
+      border-radius: 6px;
+      padding: 0 14px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    button:hover { filter: brightness(0.9); }
+    button.secondary {
+      border: 1px solid var(--line);
+      background: #f8faf8;
+      color: var(--ink);
+    }
+    .cycle-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+    .cycle-tab {
+      min-height: 34px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #f8faf8;
+      color: var(--ink);
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .cycle-tab.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .card-list { display: grid; gap: 8px; }
+    .card-row {
+      display: grid;
+      grid-template-columns: 240px repeat(3, 120px) auto;
+      gap: 8px;
+      align-items: center;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--panel);
+    }
+    .card-row.done { border-color: var(--accent); background: rgba(23,108,98,0.03); }
+    .card-name { font-weight: 900; font-size: 13px; }
+    .card-name span { display: block; color: var(--muted); font-size: 11px; font-weight: 700; }
+    select {
+      width: 100%;
+      min-height: 32px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 4px 6px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .progress { color: var(--muted); font-size: 13px; font-weight: 800; }
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .export-area { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>回忆卡标签编辑器</h1>
+  <p class="subtitle">为每张回忆卡选择三个属性标签，完成后导出 JSON 粘贴到代码中</p>
+
+  <div class="toolbar">
+    <span class="progress" id="progress">0 / 0 已完成</span>
+    <button onclick="exportJSON()">导出 JSON</button>
+    <button class="secondary" onclick="importJSON()">导入 JSON</button>
+    <button class="secondary" onclick="copyToClipboard()">复制到剪贴板</button>
+  </div>
+
+  <div class="cycle-tabs" id="cycleTabs"></div>
+  <div class="card-list" id="cardList"></div>
+
+  <div class="export-area">
+    <textarea id="output" placeholder="导出的 JSON 会显示在这里"></textarea>
+  </div>
+
+  <script>
+    const TAGS = [
+      { id: "voyage", en: "Voyage", zh: "航程" },
+      { id: "supernatural", en: "Supernatural", zh: "超自然" },
+      { id: "deed", en: "Deed", zh: "事迹" },
+      { id: "family", en: "Family", zh: "家庭" },
+      { id: "dream", en: "Dream", zh: "梦境" },
+      { id: "fate", en: "Fate", zh: "命运" },
+      { id: "curse", en: "Curse", zh: "诅咒" },
+      { id: "crime", en: "Crime", zh: "犯罪" },
+      { id: "tragedy", en: "Tragedy", zh: "悲剧" },
+      { id: "heritage", en: "Heritage", zh: "传承" },
+      { id: "gods", en: "Gods", zh: "众神" },
+    ];
+
+    const MNEMOS = {
+      c1: [
+        { id: "c1_00", en: "Siren Survivor", zh: "塞壬幸存者" },
+        { id: "c1_01", en: "Someone Waiting", zh: "有人在等待" },
+        { id: "c1_02", en: "A Dream You Hold", zh: "你所持有的梦" },
+        { id: "c1_03", en: "Family Feud", zh: "家族世仇" },
+        { id: "c1_04", en: "Imprisonment", zh: "监禁" },
+        { id: "c1_05", en: "Haunted", zh: "萦绕心头" },
+        { id: "c1_06", en: "A Broken Promise", zh: "破碎的承诺" },
+        { id: "c1_07", en: "A Night to Remember", zh: "难忘之夜" },
+        { id: "c1_08", en: "Death Follows", zh: "死神追随" },
+        { id: "c1_09", en: "Minoan Heritage", zh: "米诺斯传承" },
+        { id: "c1_10", en: "Blood on Your Hands", zh: "沾满鲜血的双手" },
+        { id: "c1_11", en: "A Familiar Curse", zh: "熟悉的诅咒" },
+        { id: "c1_12", en: "Curse of the Gods", zh: "神明的诅咒" },
+      ],
+      c2: [
+        { id: "c2_00", en: "Runt of the Litter", zh: "窝里最弱的" },
+        { id: "c2_01", en: "Mésalliance", zh: "错配" },
+        { id: "c2_02", en: "Left For Dead", zh: "被弃为死" },
+        { id: "c2_03", en: "Spewed by the Abyss", zh: "深渊吐出" },
+        { id: "c2_04", en: "Coward's Way", zh: "懦夫之道" },
+        { id: "c2_05", en: "Castoff", zh: "弃物" },
+        { id: "c2_06", en: "Death Precedes", zh: "死亡先行" },
+        { id: "c2_07", en: "Forbidden Love", zh: "禁忌之恋" },
+        { id: "c2_08", en: "Scorned Champion", zh: "被蔑视的冠军" },
+      ],
+      c3: [
+        { id: "c3_00", en: "A Fall From Eden", zh: "伊甸园的坠落" },
+        { id: "c3_01", en: "Unearned Life", zh: "不劳而获的生活" },
+        { id: "c3_02", en: "Life of Regret", zh: "充满遗憾的人生" },
+        { id: "c3_03", en: "Time-crossed Lovers", zh: "时空交错的爱人" },
+        { id: "c3_04", en: "Timekeeper's Child", zh: "时间守护者的孩子" },
+        { id: "c3_05", en: "Disgraceful Parent", zh: "耻辱的父母" },
+        { id: "c3_06", en: "Hero By Mistake", zh: "无心插柳的英雄" },
+        { id: "c3_07", en: "The Returned", zh: "回归者" },
+      ],
+      c4: [
+        { id: "c4_00", en: "Seed of Paradise", zh: "天堂之种" },
+        { id: "c4_01", en: "Third Wish", zh: "第三个愿望" },
+        { id: "c4_02", en: "The Beggar and the Prince", zh: "乞丐与王子" },
+        { id: "c4_03", en: "Updraft", zh: "风起云涌" },
+        { id: "c4_04", en: "Peddler of Misery", zh: "苦难掮客" },
+        { id: "c4_05", en: "Too Big to Fail", zh: "大而不倒" },
+        { id: "c4_06", en: "The Thousandth Night", zh: "千零一夜" },
+        { id: "c4_07", en: "The Mule", zh: "负重之骡" },
+      ],
+      c5: [
+        { id: "c5_00", en: "Vanishing Point", zh: "消失之点" },
+        { id: "c5_01", en: "In Your Image", zh: "神之形象" },
+        { id: "c5_02", en: "Shelter", zh: "庇护之所" },
+        { id: "c5_03", en: "Dogma", zh: "信条" },
+        { id: "c5_04", en: "Last Crusader", zh: "最后的十字军" },
+        { id: "c5_05", en: "Words and Deeds", zh: "言行合一" },
+        { id: "c5_06", en: "Twilight", zh: "暮光之刻" },
+        { id: "c5_07", en: "He Spoke Truth", zh: "他说出了真相" },
+      ],
+    };
+
+    const FATED_MNEMOS = {
+      c1: [
+        { id: "fm_c1_01", en: "Memory of Death", zh: "死亡的记忆" },
+        { id: "fm_c1_02", en: "Betrayal", zh: "背叛" },
+        { id: "fm_c1_03", en: "Alone", zh: "孤独" },
+        { id: "fm_c1_04", en: "Left Behind", zh: "被遗弃" },
+        { id: "fm_c1_05", en: "Oblivious", zh: "全然不知" },
+        { id: "fm_c1_06", en: "Ikari", zh: "真嗣" },
+        { id: "fm_c1_07", en: "Honorblind", zh: "荣誉盲" },
+        { id: "fm_c1_08", en: "Egotist", zh: "利己主义者" },
+        { id: "fm_c1_09", en: "Selfishness", zh: "自私" },
+      ],
+      c2: [
+        { id: "fm_c2_01", en: "Hapless", zh: "不幸" },
+        { id: "fm_c2_02", en: "Weak", zh: "虚弱" },
+        { id: "fm_c2_03", en: "Coward", zh: "懦夫" },
+        { id: "fm_c2_04", en: "Reluctant", zh: "不情愿" },
+        { id: "fm_c2_05", en: "Scapegoat", zh: "替罪羊" },
+        { id: "fm_c2_06", en: "Restless", zh: "焦躁不安" },
+        { id: "fm_c2_07", en: "Ambrosia Addiction", zh: "神浆成瘾" },
+        { id: "fm_c2_08", en: "Bloodthirsty", zh: "嗜血" },
+        { id: "fm_c2_09", en: "Clumsy", zh: "笨拙" },
+      ],
+      c3: [
+        { id: "fm_c3_01", en: "Psychosomatic Disorder", zh: "心理生理障碍" },
+        { id: "fm_c3_02", en: "Apathy", zh: "冷漠" },
+        { id: "fm_c3_03", en: "Fate-hexed", zh: "命运诅咒" },
+        { id: "fm_c3_04", en: "Timid", zh: "胆怯" },
+        { id: "fm_c3_05", en: "Enervated", zh: "精力耗弱" },
+        { id: "fm_c3_06", en: "Superstitious", zh: "迷信" },
+        { id: "fm_c3_07", en: "Queasy", zh: "恶心" },
+        { id: "fm_c3_08", en: "Late", zh: "迟到" },
+        { id: "fm_c3_09", en: "Denigrated", zh: "贬低" },
+      ],
+      c4: [
+        { id: "fm_c4_01", en: "Cursed", zh: "被诅咒" },
+        { id: "fm_c4_02", en: "Twice-Cursed", zh: "双重诅咒" },
+        { id: "fm_c4_03", en: "Thrice-Cursed", zh: "三重诅咒" },
+        { id: "fm_c4_04", en: "Fear of Heights", zh: "恐高" },
+        { id: "fm_c4_05", en: "Wishful Thinker", zh: "一厢情愿" },
+        { id: "fm_c4_06", en: "Deprived", zh: "被剥夺" },
+        { id: "fm_c4_07", en: "Hoarder", zh: "囤积者" },
+        { id: "fm_c4_08", en: "Indebted", zh: "负债" },
+        { id: "fm_c4_09", en: "Expendable", zh: "可牺牲的" },
+      ],
+      c5: [
+        { id: "fm_c5_01", en: "Sanctimonious", zh: "伪善" },
+        { id: "fm_c5_02", en: "Delusional", zh: "妄想" },
+        { id: "fm_c5_03", en: "Dogmatic", zh: "教条" },
+        { id: "fm_c5_04", en: "Humiliated", zh: "受辱" },
+        { id: "fm_c5_05", en: "Depressed", zh: "沮丧" },
+        { id: "fm_c5_06", en: "Memory of Drowning", zh: "溺水的记忆" },
+        { id: "fm_c5_07", en: "Phantom Pain", zh: "幻痛" },
+        { id: "fm_c5_08", en: "Godfearing", zh: "畏神" },
+        { id: "fm_c5_09", en: "Messianic", zh: "弥赛亚" },
+      ],
+    };
+
+    const CYCLES = ["c1", "c2", "c3", "c4", "c5"];
+    const CYCLE_LABELS = { c1: "循环 I", c2: "循环 II", c3: "循环 III", c4: "循环 IV", c5: "循环 V" };
+    const SECTIONS = ["mnemos", "fated"];
+    const SECTION_LABELS = { mnemos: "回忆卡", fated: "宿命回忆" };
+    let activeCycle = "c1";
+    let activeSection = "mnemos";
+    let tagData = {};
+
+    // Load from localStorage
+    try {
+      const saved = localStorage.getItem("mnemos-tag-editor");
+      if (saved) tagData = JSON.parse(saved);
+    } catch {}
+
+    function save() {
+      localStorage.setItem("mnemos-tag-editor", JSON.stringify(tagData));
+      updateProgress();
+    }
+
+    function renderTabs() {
+      const container = document.getElementById("cycleTabs");
+      let html = SECTIONS.map(s =>
+        `<button class="cycle-tab${s === activeSection ? " active" : ""}" onclick="switchSection('${s}')" style="${s==='fated'?'background:var(--red);color:#fff;border-color:var(--red)':''}">${SECTION_LABELS[s]}</button>`
+      ).join("");
+      html += '<span style="width:12px"></span>';
+      html += CYCLES.map(c =>
+        `<button class="cycle-tab${c === activeCycle ? " active" : ""}" onclick="switchCycle('${c}')">${CYCLE_LABELS[c]}</button>`
+      ).join("");
+      container.innerHTML = html;
+    }
+
+    function switchCycle(c) {
+      activeCycle = c;
+      renderTabs();
+      renderCards();
+    }
+
+    function switchSection(s) {
+      activeSection = s;
+      renderTabs();
+      renderCards();
+    }
+
+    function renderCards() {
+      const list = document.getElementById("cardList");
+      const source = activeSection === "fated" ? FATED_MNEMOS : MNEMOS;
+      const cards = source[activeCycle] || [];
+      list.innerHTML = cards.map(card => {
+        const tags = tagData[card.id] || ["", "", ""];
+        const done = tags[0] && tags[1] && tags[2];
+        const options = `<option value="">—</option>` + TAGS.map(t =>
+          `<option value="${t.id}">${t.en} ${t.zh}</option>`
+        ).join("");
+        return `<div class="card-row${done ? " done" : ""}">
+          <div class="card-name">${card.zh}<span>${card.en}</span></div>
+          <select onchange="setTag('${card.id}',0,this.value)">${options.replace(`value="${tags[0]}"`, `value="${tags[0]}" selected`)}</select>
+          <select onchange="setTag('${card.id}',1,this.value)">${options.replace(`value="${tags[1]}"`, `value="${tags[1]}" selected`)}</select>
+          <select onchange="setTag('${card.id}',2,this.value)">${options.replace(`value="${tags[2]}"`, `value="${tags[2]}" selected`)}</select>
+        </div>`;
+      }).join("");
+    }
+
+    function setTag(cardId, index, value) {
+      tagData[cardId] = tagData[cardId] || ["", "", ""];
+      tagData[cardId][index] = value;
+      save();
+      renderCards();
+    }
+
+    function updateProgress() {
+      let total = 0, done = 0;
+      const allSources = [MNEMOS, FATED_MNEMOS];
+      allSources.forEach(source => {
+        CYCLES.forEach(c => {
+          (source[c] || []).forEach(card => {
+            total++;
+            const tags = tagData[card.id] || ["", "", ""];
+            if (tags[0] && tags[1] && tags[2]) done++;
+          });
+        });
+      });
+      document.getElementById("progress").textContent = `${done} / ${total} 已完成`;
+    }
+
+    function exportJSON() {
+      document.getElementById("output").value = JSON.stringify(tagData, null, 2);
+    }
+
+    function importJSON() {
+      const text = prompt("粘贴之前导出的 JSON：");
+      if (!text) return;
+      try {
+        tagData = JSON.parse(text);
+        save();
+        renderCards();
+      } catch { alert("JSON 格式错误"); }
+    }
+
+    function copyToClipboard() {
+      const text = JSON.stringify(tagData, null, 2);
+      navigator.clipboard.writeText(text).then(() => alert("已复制到剪贴板"));
+    }
+
+    renderTabs();
+    renderCards();
+    updateProgress();
+  </script>
+</body>
+</html>

@@ -1,0 +1,2236 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>英雄记录表</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f0f3f2;
+      --paper: #fffdf8;
+      --panel: #ffffff;
+      --ink: #1c2422;
+      --muted: #66726d;
+      --line: #d9dfdc;
+      --line-strong: #aab6b0;
+      --accent: #176c62;
+      --accent-2: #8a5b17;
+      --red: #a03832;
+      --blue: #285f9f;
+      --green: #27724c;
+      --shadow: 0 16px 36px rgba(34, 44, 40, 0.11);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", system-ui, sans-serif;
+    }
+
+    button, input, select, textarea { font: inherit; }
+
+    button {
+      min-height: 38px;
+      border: 0;
+      border-radius: 6px;
+      padding: 0 13px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    button:hover { filter: brightness(0.92); }
+    button.secondary {
+      border: 1px solid var(--line);
+      background: #f8faf8;
+      color: var(--ink);
+    }
+    button.danger { background: var(--red); }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--ink);
+      padding: 9px 10px;
+    }
+    textarea { min-height: 88px; line-height: 1.55; resize: vertical; }
+
+    label {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .app {
+      width: min(1920px, 100%);
+      margin: 0 auto;
+      padding: 22px clamp(14px, 3vw, 34px) 36px;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: start;
+      margin-bottom: 16px;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-size: clamp(28px, 4vw, 42px); line-height: 1.08; }
+    .subtitle { margin-top: 8px; color: var(--muted); font-size: 15px; }
+
+    .topbar-tools { display: grid; gap: 10px; justify-items: end; }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .toolbar a {
+      display: inline-grid;
+      place-items: center;
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0 13px;
+      background: #f8faf8;
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 800;
+      text-decoration: none;
+    }
+    .icon-button {
+      display: inline-grid;
+      place-items: center;
+      width: 38px;
+      min-width: 38px;
+      min-height: 38px;
+      padding: 0;
+    }
+    .icon-button img {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+    }
+    .save-status {
+      min-height: 18px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-align: right;
+    }
+
+    .hero-tabs {
+      display: none;
+    }
+    .hero-tab {
+      min-height: 40px;
+      padding: 0 16px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #f8faf8;
+      color: var(--ink);
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .hero-tab.active {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+    }
+    .hero-tab:hover:not(.active) { border-color: var(--accent); }
+
+    .heroes-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      align-items: start;
+    }
+    .hero-column {
+      display: grid;
+      gap: 12px;
+      min-width: 0;
+    }
+    .hero-column .panel { font-size: 13px; }
+    .hero-column .panel-heading h2 { font-size: 14px; }
+    .hero-column .panel:first-child .panel-heading h2 { cursor: pointer; padding-left: 72px; }
+    .hero-column .panel-body { padding: 12px; }
+    .hero-column .identity-grid {
+      grid-template-columns: 64px minmax(0, 1fr);
+      gap: 10px;
+    }
+    .hero-column .portrait-box {
+      width: 64px;
+      height: 84px;
+      cursor: pointer;
+      margin-top: -38px;
+      position: relative;
+      z-index: 2;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      background: #f5f3ee;
+      overflow: hidden;
+      border: none;
+      border-radius: 4px;
+    }
+    .hero-column .portrait-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
+      display: block;
+    }
+    .hero-column .identity-fields {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    .hero-column .skill-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+    }
+    .hero-column .skill-card { padding: 6px 8px; }
+    .hero-column .skill-icon { width: 18px; height: 18px; }
+    .hero-column .skill-value { font-size: 16px; min-width: 22px; }
+    .hero-column .skill-number button { width: 22px; min-width: 22px; min-height: 22px; font-size: 11px; }
+    .hero-column .skill-number { grid-template-columns: 22px 30px 22px; gap: 2px; }
+    .hero-column .skill-number input { width: 30px; min-height: 22px; font-size: 12px; }
+
+    .likelihood-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .likelihood-badge img { width: 18px; height: 18px; }
+    .likelihood-badge.most { background: rgba(39, 114, 76, 0.12); color: var(--green); }
+    .likelihood-badge.least { background: rgba(160, 56, 50, 0.12); color: var(--red); }
+
+    .triskelion-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr)) 32px;
+      gap: 6px;
+      align-items: start;
+      margin-top: 0;
+    }
+    .triskelion-item {
+      display: grid;
+      gap: 2px;
+      justify-items: center;
+      text-align: center;
+    }
+    .triskelion-item img {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+      padding: 4px;
+      border-radius: 50%;
+      background: #2f3135;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18);
+    }
+    .triskelion-reset-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      min-height: 38px;
+    }
+    .triskelion-reset {
+      width: 30px;
+      min-width: 30px;
+      min-height: 30px;
+      border-color: #2f3135;
+      background: #2f3135;
+      color: #fff;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18);
+    }
+    .triskelion-reset:hover {
+      background: #202225;
+      border-color: #202225;
+    }
+    .triskelion-reset img {
+      width: 18px;
+      height: 18px;
+    }
+
+    .hero-empty-slot {
+      min-height: 200px;
+      display: grid;
+      place-items: center;
+      border: 1px dashed var(--line-strong);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+      text-align: center;
+      padding: 16px;
+    }
+
+    @media (max-width: 1200px) {
+      .heroes-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 680px) {
+      .heroes-grid { grid-template-columns: 1fr; }
+    }
+
+    .add-hero-btn {
+      min-height: 36px;
+      margin-bottom: 18px;
+      font-size: 13px;
+    }
+
+    .hidden { display: none; }
+
+    .empty-state {
+      min-height: 200px;
+      display: grid;
+      place-items: center;
+      border: 1px dashed var(--line-strong);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 0.7fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .stack { display: grid; gap: 16px; min-width: 0; }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .panel-heading {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 15px;
+      border-bottom: 1px solid var(--line);
+      background: #f8faf8;
+    }
+    .panel-heading h2 { font-size: 16px; }
+    .panel-body { padding: 15px; }
+
+    .identity-grid {
+      display: grid;
+      grid-template-columns: 80px minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+    }
+    .portrait-box {
+      width: 80px;
+      height: 100px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: linear-gradient(135deg, rgba(23,108,98,0.12), rgba(138,91,23,0.14)), #f5f3ee;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+    .portrait-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .portrait-placeholder {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      text-align: center;
+    }
+    .identity-fields {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .skill-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .skill-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 10px 12px;
+      background: #fff;
+    }
+    .skill-card.basic-active { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+    .skill-name { min-width: 0; display: flex; align-items: center; gap: 6px; }
+    .skill-name-text { min-width: 0; display: grid; gap: 1px; line-height: 1.05; }
+    .skill-name-zh {
+      min-width: 0;
+      font-size: 11px;
+      font-weight: 900;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+    .skill-name-en {
+      min-width: 0;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 700;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+    .skill-icon {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+    .skill-number {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .skill-number button {
+      width: 28px;
+      min-width: 28px;
+      min-height: 28px;
+      padding: 0;
+      font-size: 14px;
+      font-weight: 900;
+    }
+    .skill-value {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--ink);
+      min-width: 28px;
+      text-align: center;
+    }
+    .skill-preview {
+      display: inline-flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 4px;
+      margin-left: auto;
+    }
+    .skill-preview-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      min-height: 22px;
+      padding: 1px 4px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: #f8faf8;
+      font-size: 10px;
+      font-weight: 900;
+    }
+    .skill-preview-abbr {
+      font-size: 9px;
+      font-weight: 900;
+    }
+    .skill-preview-item img {
+      width: 14px;
+      height: 14px;
+      object-fit: contain;
+    }
+    .hero-column .skill-preview {
+      gap: 3px;
+    }
+    .hero-column .skill-preview-item {
+      min-height: 20px;
+      padding: 1px 3px;
+      font-size: 9px;
+    }
+    .hero-column .skill-preview-item img {
+      width: 12px;
+      height: 12px;
+    }
+    .skill-expand-toggle {
+      min-height: 24px;
+      padding: 0 8px;
+      font-size: 11px;
+    }
+    .mnemos-skill-badge.skill2 {
+      background: transparent;
+    }
+    .mnemos-skill-badge.fated-skill {
+      background: transparent;
+    }
+
+    .mnemos-tags-display {
+      display: none;
+    }
+    .mnemos-tag-badge {
+      display: inline-block;
+      padding: 1px 5px;
+      border-radius: 3px;
+      background: rgba(23, 108, 98, 0.08);
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      vertical-align: middle;
+      margin-left: 2px;
+    }
+
+    .mnemos-tags-row {
+      display: flex;
+      gap: 4px;
+      margin-top: 6px;
+    }
+    .tag-select {
+      width: auto;
+      min-width: 56px;
+      padding: 3px 6px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: #f8faf8;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .track-bar {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 3px;
+      margin-top: 8px;
+    }
+    .track-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      min-width: 26px;
+      padding: 5px 2px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 11px;
+      text-align: center;
+    }
+    .track-cell.filled {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .track-cell.milestone {
+      border-width: 2px;
+      border-color: var(--accent-2);
+    }
+    .track-cell.milestone.filled {
+      background: var(--accent-2);
+      border-color: var(--accent-2);
+    }
+    .track-cell.final-cell {
+      border-color: var(--accent-2);
+      background: rgba(138, 91, 23, 0.06);
+    }
+    .track-cell.final-cell.filled {
+      background: var(--accent-2);
+      color: #fff;
+    }
+    .track-num { font-weight: 900; font-size: 11px; }
+    .track-cell.milestone .track-num {
+      line-height: 1;
+    }
+    .track-node-cell {
+      align-self: center;
+      min-width: 30px;
+      padding: 4px 3px;
+      border: 1px solid var(--accent-2);
+      border-radius: 4px;
+      background: rgba(138, 91, 23, 0.08);
+      color: var(--accent-2);
+      font-size: 9px;
+      font-weight: 800;
+      line-height: 1;
+      text-align: center;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .track-node-cell.filled {
+      background: var(--accent-2);
+      color: #fff;
+    }
+    .track-final-label {
+      align-self: center;
+      margin-left: 6px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .fated-track .track-cell {
+      min-width: 42px;
+      padding: 7px 6px;
+    }
+    .fated-track .track-cell.milestone {
+      border-color: var(--red);
+    }
+    .fated-track .track-cell.filled {
+      background: var(--red);
+      border-color: var(--red);
+    }
+
+    .fated-keyword {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: var(--red);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 900;
+      margin-right: 6px;
+      letter-spacing: 0.3px;
+    }
+    .fated-card-badge {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 2px 6px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: #f8faf8;
+      color: var(--ink);
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .fated-item.active .fated-keyword {
+      background: var(--red);
+      opacity: 1;
+    }
+    .fated-item:not(.active) .fated-keyword {
+      opacity: 0.5;
+    }
+
+    .picker-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      display: grid;
+      place-items: center;
+      z-index: 1000;
+      padding: 24px;
+    }
+    .picker-dialog {
+      width: min(680px, 100%);
+      max-height: 80vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      border-radius: 10px;
+      background: var(--panel);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+      overflow: hidden;
+    }
+    .picker-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line);
+      background: #f8faf8;
+    }
+    .picker-head h2 { font-size: 16px; }
+    .picker-body {
+      overflow-y: auto;
+      padding: 16px 18px;
+    }
+    .argonaut-picker-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
+    }
+    .argonaut-picker-card {
+      display: grid;
+      gap: 4px;
+      justify-items: center;
+      text-align: center;
+      border: 2px solid var(--line);
+      border-radius: 8px;
+      padding: 8px 4px;
+      background: #fff;
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .argonaut-picker-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(23, 108, 98, 0.18);
+    }
+    .argonaut-picker-card img {
+      width: 64px;
+      height: 84px;
+      object-fit: cover;
+      border-radius: 4px;
+      background: linear-gradient(135deg, rgba(23,108,98,0.12), rgba(138,91,23,0.14)), #f5f3ee;
+    }
+    .argonaut-picker-card span {
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+    .graveyard-card {
+      display: grid;
+      grid-template-columns: 48px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #fff;
+      margin-bottom: 8px;
+    }
+    .graveyard-entry {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+    .graveyard-summary {
+      display: grid;
+      grid-template-columns: 40px minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 12px;
+      cursor: pointer;
+      list-style: none;
+    }
+    .graveyard-summary::-webkit-details-marker { display: none; }
+    .graveyard-body {
+      padding: 0 12px 12px;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .graveyard-section {
+      margin-bottom: 6px;
+    }
+    .graveyard-meta {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .graveyard-portrait {
+      width: 40px;
+      height: 52px;
+      border-radius: 4px;
+      overflow: hidden;
+      background: #f5f3ee;
+    }
+    .graveyard-portrait img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
+      display: block;
+    }
+    .graveyard-portrait span {
+      display: grid;
+      place-items: center;
+      width: 100%;
+      height: 100%;
+      font-size: 11px;
+      font-weight: 900;
+      color: var(--muted);
+    }
+    .graveyard-name {
+      font-size: 14px;
+      font-weight: 900;
+    }
+    .graveyard-detail {
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    .skill-number {
+      display: grid;
+      grid-template-columns: 26px 38px 26px;
+      gap: 3px;
+      align-items: center;
+    }
+    .skill-number button {
+      width: 100%;
+      min-width: 0;
+      min-height: 28px;
+      padding: 0;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .skill-number input {
+      width: 38px;
+      min-width: 0;
+      min-height: 28px;
+      padding: 4px 2px;
+      text-align: center;
+      font-weight: 900;
+      font-size: 13px;
+    }
+    .skill-number input::-webkit-outer-spin-button,
+    .skill-number input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .skill-number input[type="number"] { appearance: textfield; -moz-appearance: textfield; }
+
+    .mnemos-list { display: grid; gap: 8px; }
+    .mnemos-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 8px 10px;
+      background: #fff;
+      font-size: 13px;
+    }
+    .mnemos-item.active { border-color: var(--accent); background: rgba(23, 108, 98, 0.04); }
+    .mnemos-card {
+      margin-bottom: 8px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 6px 8px;
+      background: #fff;
+    }
+    .panel-heading-actions {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .mnemos-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    .mnemos-title {
+      min-width: 0;
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 1.25;
+    }
+    .mnemos-title-en,
+    .mnemos-cycle {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+    }
+    .mnemos-badges {
+      display: inline-flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 3px;
+      flex: 0 0 auto;
+    }
+    .mnemos-skill-icon {
+      width: 16px;
+      height: 16px;
+      object-fit: contain;
+      vertical-align: middle;
+      opacity: 0.7;
+    }
+    .mnemos-skill-icon.fated {
+      opacity: 0.5;
+    }
+    .mnemos-skill-badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .mnemos-toggle {
+      min-height: 28px;
+      min-width: 28px;
+      padding: 0 8px;
+      font-size: 11px;
+    }
+
+    .hero-remove-wrap {
+      display: flex;
+      justify-content: flex-end;
+      padding: 12px 15px;
+      border-top: 1px solid var(--line);
+    }
+
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
+      .skill-grid { grid-template-columns: 1fr; }
+      .identity-fields { grid-template-columns: 1fr; }
+    }
+
+    @media print {
+      body { background: #fff; }
+      .app { width: 100%; padding: 0; }
+      .toolbar, .add-hero-btn, .hero-remove-wrap, .topbar-tools { display: none; }
+      .panel { box-shadow: none; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div>
+        <h1>英雄记录表</h1>
+        <p class="subtitle">追踪阿尔戈号英雄的技能、记忆与成长</p>
+      </div>
+      <div class="topbar-tools">
+        <nav class="toolbar" aria-label="工具">
+          <a href="../index.html">返回主控台</a>
+          <button id="resetAllTriskelionButton" type="button" class="icon-button triskelion-reset" title="重置全部三幅节" aria-label="重置全部三幅节">
+            <img src="assets/reset_triskelion_F4F4F4.png" alt="" data-reset-triskelion-icon>
+          </button>
+          <button id="exportButton" type="button" class="secondary">导出</button>
+          <button id="graveyardButton" type="button" class="secondary">墓园</button>
+          <button id="importButton" type="button" class="secondary">导入</button>
+          <input id="importInput" type="file" accept="application/json,.json" class="hidden">
+        </nav>
+        <span id="saveStatus" class="save-status" aria-live="polite">正在检查 NAS 存档...</span>
+      </div>
+    </header>
+
+    <div class="hero-tabs hidden" id="heroTabs"></div>
+    <button id="addHeroButton" type="button" class="add-hero-btn">+ 添加英雄</button>
+
+    <div class="heroes-grid" id="heroContent">
+      <div class="hero-empty-slot" id="emptyState">
+        <p>点击「添加英雄」开始记录你的阿尔戈号英雄（最多4人）</p>
+      </div>
+    </div>
+  </main>
+<!-- PLACEHOLDER_SCRIPT -->
+  <script>
+    const storageKey = "ato-hero-record-v1";
+    const serverStorageUrl = "../api/campaign-state.php";
+    const serverStorageSection = "heroes";
+
+    const ARGONAUTS = [
+      { id: "odys", en: "Odys Zero", zh: "奥德修斯·零" },
+      { id: "circe", en: "Circegard", zh: "喀耳刻卫" },
+      { id: "phenelope", en: "Phenelope", zh: "珀涅罗珀" },
+      { id: "telebac", en: "Telebacchus", zh: "忒勒巴科斯" },
+      { id: "herakleides", en: "Herakleides", zh: "赫拉克莱德斯" },
+      { id: "olympia", en: "Olympia", zh: "奥林匹亚" },
+      { id: "leocules", en: "Leocules", zh: "莱奥库勒斯" },
+      { id: "raz", en: "Raz", zh: "拉兹" },
+      { id: "fisher", en: "Fisher", zh: "费舍尔" },
+      { id: "hypatia", en: "Hypatia", zh: "希帕提亚" },
+      { id: "anakreon", en: "Anakreon", zh: "阿纳克里翁" },
+      { id: "anathea", en: "Anathea", zh: "安纳忒亚" },
+      { id: "orphan", en: "Orphan", zh: "DMT的孤儿" },
+      { id: "aster", en: "Aster", zh: "阿斯特" },
+      { id: "dastan", en: "Dastan", zh: "达斯坦" },
+      { id: "aktisaeos", en: "Aktisaeos", zh: "阿克提赛俄斯" },
+      { id: "oleander", en: "Oleander", zh: "欧利安德" },
+      { id: "omorfos", en: "Omorfos", zh: "欧莫弗斯" },
+    ];
+
+    const ARGONAUT_PORTRAITS = {
+      odys: "argonaut_01_odys.png",
+      circe: "argonaut_02_circe.png",
+      phenelope: "argonaut_03_phenelope.png",
+      telebac: "argonaut_04_telebac.png",
+      herakleides: "argonaut_05_herakleides.png",
+      olympia: "argonaut_06_olympia.png",
+      leocules: "argonaut_07_leocules.png",
+      raz: "argonaut_08_raz.png",
+      fisher: "argonaut_09_fisher.png",
+      hypatia: "argonaut_17_hypatia.png",
+      anakreon: "argonaut_18_anakreon.png",
+      anathea: "argonaut_19_anathea.png",
+      orphan: "argonaut_20_orphan.png",
+      aster: "argonaut_21_aster.png",
+      dastan: "argonaut_22_dastan.png",
+      aktisaeos: "argonaut_23_aktisaeos.png",
+      oleander: "argonaut_24_oleander.png",
+      omorfos: "argonaut_25_omorfos.png",
+    };
+
+    const SKILLS = [
+      { id: "courage", en: "Courage", zh: "勇气", abbr: "勇" },
+      { id: "wisdom", en: "Wisdom", zh: "智慧", abbr: "智" },
+      { id: "will", en: "Will", zh: "意志", abbr: "志" },
+      { id: "endurance", en: "Endurance", zh: "耐力", abbr: "耐" },
+      { id: "cunning", en: "Cunning", zh: "狡黠", abbr: "巧" },
+      { id: "fury", en: "Fury", zh: "暴怒", abbr: "怒" },
+    ];
+
+    const MNEMOS_TAGS = [
+      { id: "curse", en: "Curse", zh: "诅咒" },
+      { id: "fate", en: "Fate", zh: "命运" },
+      { id: "family", en: "Family", zh: "家庭" },
+      { id: "tragedy", en: "Tragedy", zh: "悲剧" },
+      { id: "supernatural", en: "Supernatural", zh: "超自然" },
+      { id: "heritage", en: "Heritage", zh: "传承" },
+      { id: "dream", en: "Dream", zh: "梦境" },
+      { id: "voyage", en: "Voyage", zh: "航程" },
+      { id: "deed", en: "Deed", zh: "事迹" },
+      { id: "crime", en: "Crime", zh: "犯罪" },
+      { id: "gods", en: "Gods", zh: "众神" },
+    ];
+
+    const MNEMOS = {
+      c1: [
+        { id: "c1_00", en: "Siren Survivor", zh: "塞壬幸存者", skill1: "courage", skill2: "will", nodes: ["M003","M013","M023"], thresholds: [3,7,10], card: "AG0134", tags: ["voyage","supernatural","deed"] },
+        { id: "c1_01", en: "Someone Waiting", zh: "有人在等待", skill1: "cunning", skill2: "endurance", nodes: ["M005","M015","M025"], thresholds: [3,7,10], card: "AG0135", tags: ["voyage","family","gods"] },
+        { id: "c1_02", en: "A Dream You Hold", zh: "你所持有的梦", skill1: "wisdom", skill2: "will", nodes: ["M001","M011","M021"], thresholds: [3,7,10], card: "AG0136", tags: ["dream","voyage","fate"] },
+        { id: "c1_03", en: "Family Feud", zh: "家族世仇", skill1: "courage", skill2: "cunning", nodes: ["M008","M018","M028"], thresholds: [3,7,10], card: "AG0137", tags: ["family","tragedy","crime"] },
+        { id: "c1_04", en: "Imprisonment", zh: "监禁", skill1: "endurance", skill2: "wisdom", nodes: ["M002","M012","M022"], thresholds: [3,7,10], card: "AG0138", tags: ["curse","crime","dream"] },
+        { id: "c1_05", en: "Haunted", zh: "萦绕心头", skill1: "wisdom", skill2: "will", nodes: ["M009","M019","M029"], thresholds: [3,7,10], card: "AG0139", tags: ["fate","supernatural","curse"] },
+        { id: "c1_06", en: "A Broken Promise", zh: "破碎的承诺", skill1: "cunning", skill2: "fury", nodes: ["M006","M016","M026"], thresholds: [3,7,10], card: "AG0140", tags: ["deed","tragedy","family"] },
+        { id: "c1_07", en: "A Night to Remember", zh: "难忘之夜", skill1: "courage", skill2: "fury", nodes: ["M010","M020","M030"], thresholds: [3,7,10], card: "AG0141", tags: ["deed","heritage","dream"] },
+        { id: "c1_08", en: "Death Follows", zh: "死神追随", skill1: "endurance", skill2: "fury", nodes: ["M031","M041","M037"], thresholds: [3,7,10], card: "AG0142", tags: ["gods","heritage","fate"] },
+        { id: "c1_09", en: "Minoan Heritage", zh: "米诺斯传承", skill1: "wisdom", skill2: "courage", nodes: ["M004","M014","M024"], thresholds: [3,7,10], card: "AG0143", tags: ["voyage","heritage","fate"] },
+        { id: "c1_10", en: "Blood on Your Hands", zh: "沾满鲜血的双手", skill1: "fury", skill2: "cunning", nodes: ["M007","M017","M027"], thresholds: [3,7,10], card: "AG0144", tags: ["deed","crime","tragedy"] },
+        { id: "c1_11", en: "A Familiar Curse", zh: "熟悉的诅咒", skill1: "endurance", skill2: "wisdom", nodes: ["M032","M043","M034"], thresholds: [3,7,10], card: "AG0145", tags: ["fate","gods","curse"] },
+        { id: "c1_12", en: "Curse of the Gods", zh: "神明的诅咒", skill1: "endurance", skill2: "will", nodes: ["M033","M036","M038"], thresholds: [3,7,10], card: "AG0146", tags: ["heritage","fate","voyage"] },
+      ],
+      c2: [
+        { id: "c2_00", en: "Runt of the Litter", zh: "窝里最弱的", skill1: "cunning", skill2: "wisdom", nodes: ["M007","M017","M027"], thresholds: [3,7,10], card: "BG0645", tags: ["curse","heritage","fate"] },
+        { id: "c2_01", en: "Mésalliance", zh: "错配", skill1: "will", skill2: "courage", nodes: ["M002","M012","M022"], thresholds: [3,7,10], card: "BG0646", tags: ["deed","family","dream"] },
+        { id: "c2_02", en: "Left For Dead", zh: "被弃为死", skill1: "endurance", skill2: "fury", nodes: ["M008","M018","M028"], thresholds: [3,7,10], card: "BG0647", tags: ["deed","tragedy","crime"] },
+        { id: "c2_03", en: "Spewed by the Abyss", zh: "深渊吐出", skill1: "will", skill2: "fury", nodes: ["M004","M014","M024"], thresholds: [3,7,10], card: "BG0648", tags: ["fate","supernatural","gods"] },
+        { id: "c2_04", en: "Coward's Way", zh: "懦夫之道", skill1: "cunning", skill2: "wisdom", nodes: ["M003","M013","M023"], thresholds: [3,7,10], card: "BG0649", tags: ["deed","voyage","crime"] },
+        { id: "c2_05", en: "Castoff", zh: "弃物", skill1: "endurance", skill2: "wisdom", nodes: ["M009","M019","M029"], thresholds: [3,7,10], card: "BG0650", tags: ["family","heritage","gods"] },
+        { id: "c2_06", en: "Death Precedes", zh: "死亡先行", skill1: "fury", skill2: "courage", nodes: ["M005","M015","M025"], thresholds: [3,7,10], card: "BG0651", tags: ["tragedy","supernatural","curse"] },
+        { id: "c2_07", en: "Forbidden Love", zh: "禁忌之恋", skill1: "endurance", skill2: "courage", nodes: ["M001","M011","M021"], thresholds: [3,7,10], card: "BG0652", tags: ["deed","dream","curse"] },
+        { id: "c2_08", en: "Scorned Champion", zh: "被蔑视的冠军", skill1: "will", skill2: "fury", nodes: ["M006","M016","M026"], thresholds: [3,7,10], card: "BG0653", tags: ["fate","voyage","gods"] },
+      ],
+      c3: [
+        { id: "c3_00", en: "A Fall From Eden", zh: "伊甸园的坠落", skill1: "cunning", skill2: "wisdom", nodes: ["M007","M017","M027"], thresholds: [3,7,10], card: "CG1270", tags: ["dream","voyage","fate"] },
+        { id: "c3_01", en: "Unearned Life", zh: "不劳而获的生活", skill1: "cunning", skill2: "will", nodes: ["M002","M012","M022"], thresholds: [3,7,10], card: "CG1271", tags: ["family","tragedy","crime"] },
+        { id: "c3_02", en: "Life of Regret", zh: "充满遗憾的人生", skill1: "courage", skill2: "endurance", nodes: ["M008","M018","M028"], thresholds: [3,7,10], card: "CG1272", tags: ["deed","crime","tragedy"] },
+        { id: "c3_03", en: "Time-crossed Lovers", zh: "时空交错的爱人", skill1: "will", skill2: "fury", nodes: ["M004","M014","M024"], thresholds: [3,7,10], card: "CG1273", tags: ["gods","family","voyage"] },
+        { id: "c3_04", en: "Timekeeper's Child", zh: "时间守护者的孩子", skill1: "courage", skill2: "wisdom", nodes: ["M003","M013","M023"], thresholds: [3,7,10], card: "CG1274", tags: ["supernatural","tragedy","family"] },
+        { id: "c3_05", en: "Disgraceful Parent", zh: "耻辱的父母", skill1: "fury", skill2: "wisdom", nodes: ["M005","M015","M025"], thresholds: [3,7,10], card: "CG1275", tags: ["deed","heritage","supernatural"] },
+        { id: "c3_06", en: "Hero By Mistake", zh: "无心插柳的英雄", skill1: "endurance", skill2: "courage", nodes: ["M001","M011","M021"], thresholds: [3,7,10], card: "CG1276", tags: ["gods","voyage","fate"] },
+        { id: "c3_07", en: "The Returned", zh: "回归者", skill1: "fury", skill2: "cunning", nodes: ["M006","M016","M026"], thresholds: [3,7,10], card: "CG1277", tags: ["curse","heritage","fate"] },
+      ],
+      c4: [
+        { id: "c4_00", en: "Seed of Paradise", zh: "天堂之种", skill1: "courage", skill2: "fury", nodes: ["M008","M018","M028"], thresholds: [3,7,10], card: "DG2054", tags: ["voyage","family","gods"] },
+        { id: "c4_01", en: "Third Wish", zh: "第三个愿望", skill1: "cunning", skill2: "endurance", nodes: ["M003","M013","M023"], thresholds: [3,7,10], card: "DG2055", tags: ["family","tragedy","crime"] },
+        { id: "c4_02", en: "The Beggar and the Prince", zh: "乞丐与王子", skill1: "wisdom", skill2: "will", nodes: ["M002","M012","M022"], thresholds: [3,7,10], card: "DG2056", tags: ["deed","crime","tragedy"] },
+        { id: "c4_03", en: "Updraft", zh: "风起云涌", skill1: "courage", skill2: "cunning", nodes: ["M004","M014","M024"], thresholds: [3,7,10], card: "DG2057", tags: ["supernatural","tragedy","family"] },
+        { id: "c4_04", en: "Peddler of Misery", zh: "苦难掮客", skill1: "wisdom", skill2: "will", nodes: ["M005","M015","M025"], thresholds: [3,7,10], card: "DG2058", tags: ["fate","voyage","gods"] },
+        { id: "c4_05", en: "Too Big to Fail", zh: "大而不倒", skill1: "courage", skill2: "will", nodes: ["M001","M011","M021"], thresholds: [3,7,10], card: "DG2059", tags: ["voyage","fate","dream"] },
+        { id: "c4_06", en: "The Thousandth Night", zh: "千零一夜", skill1: "cunning", skill2: "fury", nodes: ["M007","M017","M027"], thresholds: [3,7,10], card: "DG2060", tags: ["fate","curse","heritage"] },
+        { id: "c4_07", en: "The Mule", zh: "负重之骡", skill1: "endurance", skill2: "wisdom", nodes: ["M006","M016","M026"], thresholds: [3,7,10], card: "DG2061", tags: ["supernatural","deed","heritage"] },
+      ],
+      c5: [
+        { id: "c5_00", en: "Vanishing Point", zh: "消失之点", skill1: "courage", skill2: "will", nodes: ["M005","M015","M025"], thresholds: [3,7,10], card: "EG2640", tags: ["curse","heritage","fate"] },
+        { id: "c5_01", en: "In Your Image", zh: "神之形象", skill1: "cunning", skill2: "will", nodes: ["M006","M016","M026"], thresholds: [3,7,10], card: "EG2641", tags: ["deed","family","dream"] },
+        { id: "c5_02", en: "Shelter", zh: "庇护之所", skill1: "wisdom", skill2: "cunning", nodes: ["M003","M013","M023"], thresholds: [3,7,10], card: "EG2642", tags: ["deed","tragedy","crime"] },
+        { id: "c5_03", en: "Dogma", zh: "信条", skill1: "fury", skill2: "cunning", nodes: ["M004","M014","M024"], thresholds: [3,7,10], card: "EG2643", tags: ["fate","supernatural","gods"] },
+        { id: "c5_04", en: "Last Crusader", zh: "最后的十字军", skill1: "endurance", skill2: "wisdom", nodes: ["M002","M012","M022"], thresholds: [3,7,10], card: "EG2644", tags: ["deed","voyage","crime"] },
+        { id: "c5_05", en: "Words and Deeds", zh: "言行合一", skill1: "courage", skill2: "will", nodes: ["M001","M011","M021"], thresholds: [3,7,10], card: "EG2645", tags: ["family","heritage","gods"] },
+        { id: "c5_06", en: "Twilight", zh: "暮光之刻", skill1: "endurance", skill2: "fury", nodes: ["M007","M017","M027"], thresholds: [3,7,10], card: "EG2646", tags: ["supernatural","tragedy","curse"] },
+        { id: "c5_07", en: "He Spoke Truth", zh: "他说出了真相", skill1: "courage", skill2: "wisdom", nodes: ["M008","M018","M028"], thresholds: [5,9,14], card: "EG2647", tags: ["deed","curse","voyage"] },
+      ],
+    };
+
+    const FATED_MNEMOS = {
+      c1: [
+        { id: "fm_c1_01", en: "Memory of Death", zh: "死亡的记忆", keyword: "Memory of Death", skill: "will", card: "AF0125", tags: ["heritage","gods","fate"] },
+        { id: "fm_c1_02", en: "Betrayal", zh: "背叛", keyword: "Betrayal", skill: "wisdom", card: "AF0126", tags: ["family","tragedy","crime"] },
+        { id: "fm_c1_03", en: "Alone", zh: "孤独", keyword: "Alone", skill: "courage", card: "AF0127", tags: ["curse","dream","crime"] },
+        { id: "fm_c1_04", en: "Left Behind", zh: "被遗弃", keyword: "Left Behind", skill: "courage", card: "AF0128", tags: ["fate","supernatural","curse"] },
+        { id: "fm_c1_05", en: "Oblivious", zh: "全然不知", keyword: "Oblivious", skill: "cunning", card: "AF0129", tags: ["deed","tragedy","family"] },
+        { id: "fm_c1_06", en: "Ikari", zh: "真嗣", keyword: "Ikari", skill: "will", card: "AF0130", tags: ["deed","heritage","dream"] },
+        { id: "fm_c1_07", en: "Honorblind", zh: "荣誉盲", keyword: "Honorblind", skill: "wisdom", card: "AF0131", tags: ["voyage","supernatural","deed"] },
+        { id: "fm_c1_08", en: "Egotist", zh: "利己主义者", keyword: "Egotist", skill: "fury", card: "AF0132", tags: ["voyage","family","gods"] },
+        { id: "fm_c1_09", en: "Selfishness", zh: "自私", keyword: "Selfishness", skill: "fury", card: "AF0133", tags: ["deed","heritage","curse"] },
+      ],
+      c2: [
+        { id: "fm_c2_01", en: "Hapless", zh: "不幸", keyword: "Hapless", skill: "endurance", card: "BF0636", tags: ["heritage","gods","fate"] },
+        { id: "fm_c2_02", en: "Weak", zh: "虚弱", keyword: "Weak", skill: "endurance", card: "BF0637", tags: ["voyage","tragedy","crime"] },
+        { id: "fm_c2_03", en: "Coward", zh: "懦夫", keyword: "Coward", skill: "fury", card: "BF0638", tags: ["curse","dream","crime"] },
+        { id: "fm_c2_04", en: "Reluctant", zh: "不情愿", keyword: "Reluctant", skill: "wisdom", card: "BF0639", tags: ["fate","supernatural","gods"] },
+        { id: "fm_c2_05", en: "Scapegoat", zh: "替罪羊", keyword: "Scapegoat", skill: "courage", card: "BF0640", tags: ["fate","tragedy","family"] },
+        { id: "fm_c2_06", en: "Restless", zh: "焦躁不安", keyword: "Restless", skill: "cunning", card: "BF0641", tags: ["deed","tragedy","dream"] },
+        { id: "fm_c2_07", en: "Ambrosia Addiction", zh: "神浆成瘾", keyword: "Ambrosia Addiction", skill: "will", card: "BF0642", tags: ["voyage","supernatural","deed"] },
+        { id: "fm_c2_08", en: "Bloodthirsty", zh: "嗜血", keyword: "Bloodthirsty", skill: "wisdom", card: "BF0643", tags: ["voyage","gods","family"] },
+        { id: "fm_c2_09", en: "Clumsy", zh: "笨拙", keyword: "Clumsy", skill: "cunning", card: "BF0644", tags: ["crime","heritage","curse"] },
+      ],
+      c3: [
+        { id: "fm_c3_01", en: "Psychosomatic Disorder", zh: "心理生理障碍", keyword: "Psychosomatic Disorder", skill: "endurance", card: "CF1260", tags: ["deed","gods","fate"] },
+        { id: "fm_c3_02", en: "Apathy", zh: "冷漠", keyword: "Apathy", skill: "will", card: "CF1261", tags: ["dream","tragedy","crime"] },
+        { id: "fm_c3_03", en: "Fate-hexed", zh: "命运诅咒", keyword: "Fate-hexed", skill: "cunning", card: "CF1262", tags: ["curse","dream","crime"] },
+        { id: "fm_c3_04", en: "Timid", zh: "胆怯", keyword: "Timid", skill: "courage", card: "CF1263", tags: ["fate","supernatural","gods"] },
+        { id: "fm_c3_05", en: "Enervated", zh: "精力耗弱", keyword: "Enervated", skill: "endurance", card: "CF1264", tags: ["fate","gods","family"] },
+        { id: "fm_c3_06", en: "Superstitious", zh: "迷信", keyword: "Superstitious", skill: "fury", card: "CF1265", tags: ["supernatural","deed","dream"] },
+        { id: "fm_c3_07", en: "Queasy", zh: "恶心", keyword: "Queasy", skill: "courage", card: "CF1266", tags: ["voyage","supernatural","deed"] },
+        { id: "fm_c3_08", en: "Late", zh: "迟到", keyword: "Late", skill: "wisdom", card: "CF1267", tags: ["voyage","dream","gods"] },
+        { id: "fm_c3_09", en: "Denigrated", zh: "贬低", keyword: "Denigrated", skill: "will", card: "CF1268", tags: ["supernatural","heritage","curse"] },
+      ],
+      c4: [
+        { id: "fm_c4_01", en: "Cursed", zh: "被诅咒", keyword: "Cursed", skill: "wisdom", card: "DF2070", tags: ["family","curse","heritage"] },
+        { id: "fm_c4_02", en: "Twice-Cursed", zh: "双重诅咒", keyword: "Twice-Cursed", skill: "endurance", card: "DF2071", tags: ["supernatural","curse","heritage"] },
+        { id: "fm_c4_03", en: "Thrice-Cursed", zh: "三重诅咒", keyword: "Thrice-Cursed", skill: "will", card: "DF2072", tags: ["curse","crime","dream"] },
+        { id: "fm_c4_04", en: "Fear of Heights", zh: "恐高", keyword: "Fear of Heights", skill: "fury", card: "DF2073", tags: ["voyage","dream","gods"] },
+        { id: "fm_c4_05", en: "Wishful Thinker", zh: "一厢情愿", keyword: "Wishful Thinker", skill: "cunning", card: "DF2074", tags: ["deed","supernatural","dream"] },
+        { id: "fm_c4_06", en: "Deprived", zh: "被剥夺", keyword: "Deprived", skill: "wisdom", card: "DF2075", tags: ["deed","supernatural","voyage"] },
+        { id: "fm_c4_07", en: "Hoarder", zh: "囤积者", keyword: "Hoarder", skill: "will", card: "DF2076", tags: ["fate","gods","family"] },
+        { id: "fm_c4_08", en: "Indebted", zh: "负债", keyword: "Indebted", skill: "courage", card: "DF2077", tags: ["dream","tragedy","crime"] },
+        { id: "fm_c4_09", en: "Expendable", zh: "可牺牲的", keyword: "Expendable", skill: "fury", card: "DF2078", tags: ["deed","heritage","fate"] },
+      ],
+      c5: [
+        { id: "fm_c5_01", en: "Sanctimonious", zh: "伪善", keyword: "Sanctimonious", skill: "courage", card: "EF2648", tags: ["gods","family","fate"] },
+        { id: "fm_c5_02", en: "Delusional", zh: "妄想", keyword: "Delusional", skill: "wisdom", card: "EF2649", tags: ["supernatural","tragedy","crime"] },
+        { id: "fm_c5_03", en: "Dogmatic", zh: "教条", keyword: "Dogmatic", skill: "will", card: "EF2650", tags: ["curse","dream","crime"] },
+        { id: "fm_c5_04", en: "Humiliated", zh: "受辱", keyword: "Humiliated", skill: "fury", card: "EF2651", tags: ["voyage","dream","gods"] },
+        { id: "fm_c5_05", en: "Depressed", zh: "沮丧", keyword: "Depressed", skill: "cunning", card: "EF2652", tags: ["deed","curse","dream"] },
+        { id: "fm_c5_06", en: "Memory of Drowning", zh: "溺水的记忆", keyword: "Memory of Drowning", skill: "endurance", card: "EF2653", tags: ["voyage","supernatural","deed"] },
+        { id: "fm_c5_07", en: "Phantom Pain", zh: "幻痛", keyword: "Phantom Pain", skill: "will", card: "EF2654", tags: ["deed","heritage","curse"] },
+        { id: "fm_c5_08", en: "Godfearing", zh: "畏神", keyword: "Godfearing", skill: "courage", card: "EF2655", tags: ["family","gods","fate"] },
+        { id: "fm_c5_09", en: "Messianic", zh: "弥赛亚", keyword: "Messianic", skill: "fury", card: "EF2656", tags: ["supernatural","heritage","curse"] },
+      ],
+    };
+
+    const CYCLES = ["c1", "c2", "c3", "c4", "c5"];
+    const CYCLE_LABELS = { c1: "C1", c2: "C2", c3: "C3", c4: "C4", c5: "C5" };
+
+    function defaultHero() {
+      return {
+        id: "hero-" + Date.now() + "-" + Math.random().toString(16).slice(2, 8),
+        argonaut: "",
+        customName: "",
+        playerName: "",
+        basicSkill: "",
+        skillsExpanded: false,
+        baseSkills: { courage: 0, wisdom: 0, will: 0, endurance: 0, cunning: 0, fury: 0 },
+        mnemos: {},
+        abilities: "",
+        notes: "",
+      };
+    }
+
+    let state = { heroes: [], activeHeroId: "", graveyard: [] };
+    let saveTimer = null;
+    let serverStorageAvailable = false;
+    let serverSectionRevision = 0;
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(storageKey);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && Array.isArray(parsed.heroes)) {
+            parsed.graveyard = Array.isArray(parsed.graveyard) ? parsed.graveyard : [];
+            return parsed;
+          }
+        }
+      } catch {}
+      return { heroes: [], activeHeroId: "", graveyard: [] };
+    }
+
+    function normalizeState() {
+      state.heroes = Array.isArray(state.heroes) ? state.heroes : [];
+      state.heroes.forEach(h => {
+        if (h.skills && !h.baseSkills) {
+          h.baseSkills = h.skills;
+          delete h.skills;
+        }
+        if (!h.baseSkills) h.baseSkills = { courage: 0, wisdom: 0, will: 0, endurance: 0, cunning: 0, fury: 0 };
+        SKILLS.forEach(s => { h.baseSkills[s.id] = Math.max(0, parseInt(h.baseSkills[s.id], 10) || 0); });
+        if (h.skillsExpanded !== true) h.skillsExpanded = false;
+        h.mnemos = h.mnemos || {};
+        h.fatedMnemos = h.fatedMnemos || {};
+        h.mnemosNodeProgress = h.mnemosNodeProgress || {};
+        CYCLES.forEach(c => {
+          h.mnemos[c] = h.mnemos[c] || [];
+          h.fatedMnemos[c] = h.fatedMnemos[c] || [];
+        });
+      });
+      if (state.heroes.length && !state.activeHeroId) state.activeHeroId = state.heroes[0].id;
+    }
+
+    function persistLocal() {
+      try { localStorage.setItem(storageKey, JSON.stringify(state)); } catch {}
+    }
+
+    function queueSave() {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => {
+        persistLocal();
+        saveToServer();
+      }, 200);
+    }
+
+    async function saveToServer() {
+      if (!serverStorageAvailable) return;
+      try {
+        const response = await fetch(serverStorageUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            section: serverStorageSection,
+            state: state,
+            expectedRevision: serverSectionRevision,
+          }),
+        });
+        const payload = await response.json().catch(() => null);
+        if (response.ok && payload?.ok) {
+          serverSectionRevision = payload.revision || serverSectionRevision;
+          setSaveStatus("已同步 " + new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }));
+        } else {
+          setSaveStatus("同步失败，已保存到本机");
+        }
+      } catch {
+        setSaveStatus("同步失败，已保存到本机");
+      }
+    }
+
+    async function loadFromServer() {
+      try {
+        const response = await fetch(serverStorageUrl + "?section=" + serverStorageSection, { cache: "no-store" });
+        if (!response.ok) throw new Error();
+        const payload = await response.json();
+        if (!payload.ok) throw new Error();
+        serverStorageAvailable = true;
+        const serverState = payload.campaign?.sections?.[serverStorageSection];
+        serverSectionRevision = payload.campaign?.sectionRevisions?.[serverStorageSection] || 0;
+        if (serverState && Array.isArray(serverState.heroes) && serverState.heroes.length) {
+          state = serverState;
+          normalizeState();
+          persistLocal();
+          renderAll();
+          setSaveStatus("已从 NAS 读取");
+        } else {
+          setSaveStatus("NAS 已连接");
+        }
+      } catch {
+        serverStorageAvailable = false;
+        setSaveStatus("NAS 不可用，使用本机存档");
+      }
+    }
+
+    function setSaveStatus(msg) {
+      document.getElementById("saveStatus").textContent = msg;
+    }
+
+    function activeHero() {
+      return state.heroes.find(h => h.id === state.activeHeroId) || null;
+    }
+
+    function heroMnemosNodeCount(hero) {
+      let count = 0;
+      hero.mnemosProgress = hero.mnemosProgress || {};
+      CYCLES.forEach(cycleId => {
+        (hero.mnemos[cycleId] || []).forEach(mId => {
+          const m = (MNEMOS[cycleId] || []).find(x => x.id === mId);
+          if (m) {
+            const progress = hero.mnemosProgress[m.id] || 0;
+            const thresholds = m.thresholds || [];
+            // Count progress steps excluding M-prefixed special nodes
+            for (let i = 1; i <= progress; i++) {
+              const nodeIndex = thresholds.indexOf(i);
+              if (nodeIndex >= 0 && (m.nodes[nodeIndex] || "").startsWith("M")) continue;
+              count++;
+            }
+          }
+        });
+      });
+      return count;
+    }
+
+    function computeLikelihood() {
+      if (state.heroes.length < 2) return {};
+      const counts = state.heroes.map(h => ({ id: h.id, count: heroMnemosNodeCount(h) }));
+      const max = Math.max(...counts.map(c => c.count));
+      const min = Math.min(...counts.map(c => c.count));
+      if (max === min) return {};
+      const result = {};
+      counts.forEach(c => {
+        if (c.count === max) result[c.id] = "most";
+        else if (c.count === min) result[c.id] = "least";
+      });
+      return result;
+    }
+
+    function heroDisplayName(hero) {
+      if (hero.customName) return hero.customName;
+      const arg = ARGONAUTS.find(a => a.id === hero.argonaut);
+      return arg ? arg.zh : (hero.playerName || "新英雄");
+    }
+
+    function renderAll() {
+      renderHeroContent();
+    }
+
+    function renderTabs() {}
+
+    function renderHeroContent() {
+      const container = document.getElementById("heroContent");
+      if (!state.heroes.length) {
+        container.innerHTML = '<div class="hero-empty-slot"><p>点击「添加英雄」开始记录你的阿尔戈号英雄（最多4人）</p></div>';
+        return;
+      }
+      const likelihood = computeLikelihood();
+      container.innerHTML = state.heroes.map(hero => renderHeroColumn(hero, likelihood[hero.id])).join("");
+      // Bind events for each hero
+      state.heroes.forEach(hero => {
+        setupHeroColumnEvents(hero);
+      });
+    }
+
+    function renderHeroColumn(hero, likelihoodType) {
+      const hid = hero.id;
+      const arg = ARGONAUTS.find(a => a.id === hero.argonaut);
+      const portraitSrc = arg ? argonautPortraitSrc(arg.id) : "";
+      const { total } = getHeroSkills(hero);
+      const mnemosCount = CYCLES.reduce((sum, c) => sum + (hero.mnemos[c] || []).length, 0);
+      const fatedCount = CYCLES.reduce((sum, c) => sum + (hero.fatedMnemos?.[c] || []).length, 0);
+      const likelihoodHtml = likelihoodType === "most"
+        ? `<span class="likelihood-badge most"><img src="${escHtml(assetSrc("ico_most_likely.png"))}" alt="最大似然">最大似然</span>`
+        : likelihoodType === "least"
+          ? `<span class="likelihood-badge least"><img src="${escHtml(assetSrc("ico_least_likely.png"))}" alt="最小似然">最小似然</span>`
+          : "";
+      hero.triskelion = hero.triskelion || { fury: 0, fate: 0, danger: 0 };
+      const skillPreviewHtml = SKILLS.map(skill => `<span class="skill-preview-item" title="${escHtml(skill.zh)} ${escHtml(skill.en)}"><img src="${escHtml(assetSrc(`skill_${skill.id}.png`))}" alt=""><span class="skill-preview-abbr">${escHtml(skill.abbr)}</span>${total[skill.id]}</span>`).join("");
+
+      return `<div class="hero-column" data-hero-id="${escHtml(hid)}">
+        <section class="panel">
+          <div class="panel-heading"><h2>${escHtml(heroDisplayName(hero))}</h2>${likelihoodHtml}</div>
+          <div class="panel-body">
+            <div class="identity-grid">
+              <div class="portrait-box" data-portrait="${escHtml(hid)}">
+                ${portraitSrc ? `<img src="${escHtml(portraitSrc)}" alt="${escHtml(heroDisplayName(hero))}" onerror="this.outerHTML='<span class=portrait-placeholder>肖像</span>'">` : `<span class="portrait-placeholder">肖像</span>`}
+              </div>
+              <div class="triskelion-row">
+                <div class="triskelion-item"><img src="${escHtml(assetSrc("tri_rage.png"))}" alt="怒气"><div class="skill-number"><button data-tri="fury" data-hero="${escHtml(hid)}" data-delta="-1">−</button><span class="skill-value">${hero.triskelion.fury}</span><button data-tri="fury" data-hero="${escHtml(hid)}" data-delta="1">+</button></div></div>
+                <div class="triskelion-item"><img src="${escHtml(assetSrc("tri_fate.png"))}" alt="命运"><div class="skill-number"><button data-tri="fate" data-hero="${escHtml(hid)}" data-delta="-1">−</button><span class="skill-value">${hero.triskelion.fate}</span><button data-tri="fate" data-hero="${escHtml(hid)}" data-delta="1">+</button></div></div>
+                <div class="triskelion-item"><img src="${escHtml(assetSrc("tri_danger.png"))}" alt="危险"><div class="skill-number"><button data-tri="danger" data-hero="${escHtml(hid)}" data-delta="-1">−</button><span class="skill-value">${hero.triskelion.danger}</span><button data-tri="danger" data-hero="${escHtml(hid)}" data-delta="1">+</button></div></div>
+                <div class="triskelion-reset-wrap">
+                  <button class="icon-button triskelion-reset" type="button" data-reset-triskelion="${escHtml(hid)}" title="重置三幅节" aria-label="重置三幅节">
+                    <img src="${escHtml(assetSrc("reset_triskelion_F4F4F4.png"))}" alt="">
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="panel">
+          <div class="panel-heading">
+            <h2>技能</h2>
+            <div class="skill-preview">${skillPreviewHtml}</div>
+            <button class="secondary skill-expand-toggle" type="button" data-toggle-skills="${escHtml(hid)}">${hero.skillsExpanded ? "收起" : "展开"}</button>
+          </div>
+          ${hero.skillsExpanded ? `<div class="panel-body">
+            <div class="skill-grid">${SKILLS.map(skill => {
+              const tot = total[skill.id];
+              const isBasic = hero.basicSkill === skill.id;
+              return `<div class="skill-card${isBasic ? " basic-active" : ""}">
+                <div class="skill-name">
+                  <img class="skill-icon" src="${escHtml(assetSrc(`skill_${skill.id}.png`))}" alt="${skill.zh}">
+                  <span class="skill-name-text"><span class="skill-name-zh">${skill.zh}${isBasic ? " ★" : ""}</span><span class="skill-name-en">${skill.en}</span></span>
+                </div>
+                <div class="skill-number">
+                  <button data-skill-adj="${skill.id}" data-hero="${escHtml(hid)}" data-delta="-1">−</button>
+                  <span class="skill-value">${tot}</span>
+                  <button data-skill-adj="${skill.id}" data-hero="${escHtml(hid)}" data-delta="1">+</button>
+                </div>
+              </div>`;
+            }).join("")}</div>
+          </div>` : ""}
+        </section>
+        <section class="panel">
+          <div class="panel-heading"><h2>回忆</h2><div class="panel-heading-actions"><button class="secondary" style="min-height:24px;font-size:11px;padding:0 8px" data-open-mnemos="${escHtml(hid)}">+ 添加</button><button class="danger" style="min-height:24px;font-size:11px;padding:0 8px" data-remove-mnemos="${escHtml(hid)}">删除</button></div></div>
+          <div class="panel-body" data-mnemos-panel="${escHtml(hid)}">${renderColumnMnemos(hero)}</div>
+        </section>
+        <section class="panel">
+          <div class="panel-heading"><h2>宿命</h2><div class="panel-heading-actions"><button class="secondary" style="min-height:24px;font-size:11px;padding:0 8px" data-open-fated="${escHtml(hid)}">+ 添加</button><button class="danger" style="min-height:24px;font-size:11px;padding:0 8px" data-remove-fated="${escHtml(hid)}">删除</button></div></div>
+          <div class="panel-body" data-fated-panel="${escHtml(hid)}">${renderColumnFated(hero)}</div>
+        </section>
+        <section class="panel">
+          <div class="panel-body">
+            <label>笔记<textarea data-field="notes" data-hero="${escHtml(hid)}" placeholder="装备、能力、战役笔记" rows="3">${escHtml(hero.notes || hero.abilities || "")}</textarea></label>
+          </div>
+        </section>
+        <div style="text-align:right">
+          <button class="secondary" style="min-height:28px;font-size:11px;padding:0 8px" data-retire-hero="${escHtml(hid)}">死亡/退休</button>
+          <button class="danger" style="min-height:28px;font-size:11px;padding:0 8px" data-remove-hero="${escHtml(hid)}">删除</button>
+        </div>
+      </div>`;
+    }
+
+    function setupHeroColumnEvents(hero) {
+      const col = document.querySelector(`.hero-column[data-hero-id="${hero.id}"]`);
+      if (!col) return;
+      // Double-click hero name to rename
+      const heading = col.querySelector(".panel-heading h2");
+      if (heading) heading.ondblclick = () => {
+        const current = heroDisplayName(hero);
+        const newName = prompt("修改英雄名称：", current);
+        if (newName === null) return;
+        hero.customName = newName.trim() || "";
+        queueSave();
+        renderAll();
+      };
+      // Double-click portrait to change hero
+      const portrait = col.querySelector(`[data-portrait="${hero.id}"]`);
+      if (portrait) portrait.ondblclick = () => {
+        openArgonautPicker((argId) => {
+          hero.argonaut = argId;
+          queueSave();
+          renderAll();
+        });
+      };
+      // Triskelion buttons
+      col.querySelectorAll(`[data-tri][data-hero="${hero.id}"]`).forEach(btn => {
+        btn.onclick = () => {
+          hero.triskelion = hero.triskelion || { fury: 0, fate: 0, danger: 0 };
+          const key = btn.dataset.tri;
+          const delta = Number(btn.dataset.delta);
+          hero.triskelion[key] = Math.max(0, (hero.triskelion[key] || 0) + delta);
+          queueSave();
+          renderAll();
+        };
+      });
+      const resetTriBtn = col.querySelector(`[data-reset-triskelion="${hero.id}"]`);
+      if (resetTriBtn) resetTriBtn.onclick = () => resetHeroTriskelion(hero.id);
+      const skillToggleBtn = col.querySelector(`[data-toggle-skills="${hero.id}"]`);
+      if (skillToggleBtn) skillToggleBtn.onclick = () => {
+        hero.skillsExpanded = !hero.skillsExpanded;
+        queueSave();
+        renderAll();
+      };
+      col.querySelectorAll(`[data-skill-adj][data-hero="${hero.id}"]`).forEach(btn => {
+        btn.onclick = () => {
+          const skillId = btn.dataset.skillAdj;
+          const delta = Number(btn.dataset.delta);
+          hero.baseSkills[skillId] = Math.max(0, (hero.baseSkills[skillId] || 0) + delta);
+          queueSave();
+          renderAll();
+        };
+      });
+      // Notes
+      const notesTA = col.querySelector(`[data-field="notes"][data-hero="${hero.id}"]`);
+      if (notesTA) notesTA.oninput = () => { hero.notes = notesTA.value; queueSave(); };
+      // Mnemos buttons
+      const mBtn = col.querySelector(`[data-open-mnemos="${hero.id}"]`);
+      if (mBtn) mBtn.onclick = () => { state.activeHeroId = hero.id; openMnemosPicker(); };
+      const rmMnemosBtn = col.querySelector(`[data-remove-mnemos="${hero.id}"]`);
+      if (rmMnemosBtn) rmMnemosBtn.onclick = () => { state.activeHeroId = hero.id; openMnemosRemovePicker(); };
+      const fBtn = col.querySelector(`[data-open-fated="${hero.id}"]`);
+      if (fBtn) fBtn.onclick = () => { state.activeHeroId = hero.id; openFatedPicker(); };
+      const rmFatedBtn = col.querySelector(`[data-remove-fated="${hero.id}"]`);
+      if (rmFatedBtn) rmFatedBtn.onclick = () => { state.activeHeroId = hero.id; openFatedRemovePicker(); };
+      // Remove
+      const rmBtn = col.querySelector(`[data-remove-hero="${hero.id}"]`);
+      if (rmBtn) rmBtn.onclick = () => { state.activeHeroId = hero.id; removeHero(); };
+      // Retire / Death
+      const retireBtn = col.querySelector(`[data-retire-hero="${hero.id}"]`);
+      if (retireBtn) retireBtn.onclick = () => { state.activeHeroId = hero.id; retireHero(); };
+    }
+
+    function renderColumnMnemos(hero) {
+      hero.mnemosProgress = hero.mnemosProgress || {};
+      const skillZhMap = {};
+      SKILLS.forEach(s => { skillZhMap[s.id] = s.zh; });
+      const allSelected = [];
+      CYCLES.forEach(cycleId => {
+        (hero.mnemos[cycleId] || []).forEach(mId => {
+          const m = (MNEMOS[cycleId] || []).find(x => x.id === mId);
+          if (m) allSelected.push({ ...m, cycleId });
+        });
+      });
+      if (!allSelected.length) return '<div style="color:var(--muted);font-size:12px;text-align:center">暂无回忆</div>';
+      return allSelected.map(m => {
+        const progress = hero.mnemosProgress[m.id] || 0;
+        const tagsHtml = (m.tags || []).map(t => `<span class="mnemos-tag-badge">${t}</span>`).join("");
+        return `<div class="mnemos-card">
+          <div class="mnemos-title-row">
+            <div class="mnemos-title">${escHtml(m.zh)} <span class="mnemos-title-en">${escHtml(m.en)}</span> <span class="mnemos-cycle">${escHtml(CYCLE_LABELS[m.cycleId] || "")}</span> ${tagsHtml}</div>
+            <div class="mnemos-badges"><img class="mnemos-skill-icon" src="${escHtml(assetSrc(`skill_${m.skill1}.png`))}" alt="${skillZhMap[m.skill1]}" title="${skillZhMap[m.skill1]} +1"><img class="mnemos-skill-icon skill2" src="${escHtml(assetSrc(`skill_${m.skill2}.png`))}" alt="${skillZhMap[m.skill2]}" title="${skillZhMap[m.skill2]} +1"></div>
+          </div>
+          ${renderTrack10(m, progress, hero.id, hero)}
+        </div>`;
+      }).join("");
+    }
+
+    function renderColumnFated(hero) {
+      hero.fatedMnemos = hero.fatedMnemos || {};
+      hero.fatedProgress = hero.fatedProgress || {};
+      const skillZhMap = {};
+      SKILLS.forEach(s => { skillZhMap[s.id] = s.zh; });
+      const allSelected = [];
+      CYCLES.forEach(cycleId => {
+        (hero.fatedMnemos[cycleId] || []).forEach(fmId => {
+          const fm = (FATED_MNEMOS[cycleId] || []).find(x => x.id === fmId);
+          if (fm) allSelected.push({ ...fm, cycleId });
+        });
+      });
+      if (!allSelected.length) return '<div style="color:var(--muted);font-size:12px;text-align:center">暂无宿命回忆</div>';
+      return allSelected.map(fm => {
+        const progress = hero.fatedProgress[fm.id] || 0;
+        const tagsHtml = (fm.tags || []).map(t => `<span class="mnemos-tag-badge">${t}</span>`).join("");
+        return `<div class="mnemos-card">
+          <div class="mnemos-title-row">
+            <div class="mnemos-title">${escHtml(fm.zh)} <span class="mnemos-title-en">${escHtml(fm.en)}</span> <span class="mnemos-cycle">${escHtml(CYCLE_LABELS[fm.cycleId] || "")}</span> ${tagsHtml}</div>
+            <div class="mnemos-badges"><img class="mnemos-skill-icon fated" src="${escHtml(assetSrc(`skill_${fm.skill}.png`))}" alt="${skillZhMap[fm.skill] || fm.skill}" title="${skillZhMap[fm.skill] || fm.skill} −1"></div>
+          </div>
+          ${renderTrack3(fm, progress, hero.id)}
+        </div>`;
+      }).join("");
+    }
+
+    function escHtml(s) {
+      return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+
+    function assetSrc(fileName) {
+      return new URL(`./assets/${fileName}`, window.location.href).href;
+    }
+
+    function setupArgonautSelect(hero) {
+      const sel = document.getElementById("argonautSelect");
+      sel.innerHTML = '<option value="">— 选择英雄 —</option>' +
+        ARGONAUTS.map(a => `<option value="${a.id}" ${hero.argonaut === a.id ? "selected" : ""}>${a.zh} ${a.en}</option>`).join("");
+      sel.onchange = () => { hero.argonaut = sel.value; queueSave(); renderTabs(); updatePortrait(hero); };
+      updatePortrait(hero);
+    }
+
+    function argonautPortraitSrc(argId) {
+      const fileName = ARGONAUT_PORTRAITS[argId];
+      return fileName ? assetSrc(fileName) : "";
+    }
+
+    function updatePortrait(hero) {
+      const box = document.getElementById("portraitBox");
+      if (!box) return;
+      const arg = ARGONAUTS.find(a => a.id === hero.argonaut);
+      if (arg) {
+        const src = argonautPortraitSrc(arg.id);
+        box.innerHTML = src
+          ? `<img src="${escHtml(src)}" alt="${arg.zh}" onerror="this.outerHTML='<span class=portrait-placeholder style=font-size:14px;font-weight:900>${arg.zh}</span>'">`
+          : `<span class="portrait-placeholder" style="font-size:14px;font-weight:900;">${arg.zh}</span>`;
+      } else {
+        box.innerHTML = '<span class="portrait-placeholder">肖像</span>';
+      }
+    }
+
+    function setupBasicSkillSelect(hero) {
+      const sel = document.getElementById("basicSkillSelect");
+      sel.innerHTML = '<option value="">— 无 —</option>' +
+        SKILLS.map(s => `<option value="${s.id}" ${hero.basicSkill === s.id ? "selected" : ""}>${s.zh} ${s.en}</option>`).join("");
+      sel.onchange = () => { hero.basicSkill = sel.value; queueSave(); renderSkillGrid(hero); };
+    }
+
+    function computeMnemosBonus(hero) {
+      const bonus = { courage: 0, wisdom: 0, will: 0, endurance: 0, cunning: 0, fury: 0 };
+      // Regular mnemos: +1 to each of two skills
+      CYCLES.forEach(cycleId => {
+        const selected = hero.mnemos[cycleId] || [];
+        const items = MNEMOS[cycleId] || [];
+        selected.forEach(mId => {
+          const m = items.find(x => x.id === mId);
+          if (m) {
+            if (m.skill1 && bonus[m.skill1] !== undefined) bonus[m.skill1]++;
+            if (m.skill2 && bonus[m.skill2] !== undefined) bonus[m.skill2]++;
+          }
+        });
+      });
+      // Fated mnemos: -1 to skill
+      const fated = hero.fatedMnemos || {};
+      CYCLES.forEach(cycleId => {
+        const selected = fated[cycleId] || [];
+        const items = FATED_MNEMOS[cycleId] || [];
+        selected.forEach(fId => {
+          const m = items.find(x => x.id === fId);
+          if (m && m.skill && bonus[m.skill] !== undefined) bonus[m.skill]--;
+        });
+      });
+      return bonus;
+    }
+
+    function getHeroSkills(hero) {
+      const bonus = computeMnemosBonus(hero);
+      const total = {};
+      SKILLS.forEach(s => {
+        total[s.id] = (hero.baseSkills[s.id] || 0) + (bonus[s.id] || 0);
+      });
+      return { bonus, total };
+    }
+
+    function renderSkillGrid(hero) {
+      const grid = document.getElementById("skillGrid");
+      if (!grid) return;
+      const { total } = getHeroSkills(hero);
+      grid.innerHTML = SKILLS.map(skill => {
+        const tot = total[skill.id];
+        const isBasic = hero.basicSkill === skill.id;
+        return `
+          <div class="skill-card${isBasic ? " basic-active" : ""}">
+            <div class="skill-name">
+              <img class="skill-icon" src="${escHtml(assetSrc(`skill_${skill.id}.png`))}" alt="${skill.zh}">
+              <span class="skill-name-text"><span class="skill-name-zh">${skill.zh}${isBasic ? " ★" : ""}</span><span class="skill-name-en">${skill.en}</span></span>
+            </div>
+            <div class="skill-number">
+              ${hero.skillsExpanded
+                ? `<button onclick="adjustSkill('${skill.id}', -1)">−</button><span class="skill-value">${tot}</span><button onclick="adjustSkill('${skill.id}', 1)">+</button>`
+                : `<span class="skill-value">${tot}</span>`}
+            </div>
+          </div>`;
+      }).join("");
+    }
+
+    function adjustSkill(skillId, delta) {
+      const hero = activeHero();
+      if (!hero) return;
+      hero.baseSkills[skillId] = Math.max(0, (hero.baseSkills[skillId] || 0) + delta);
+      queueSave();
+      renderSkillGrid(hero);
+    }
+
+    function renderActiveMnemos(hero) {
+      const panel = document.getElementById("mnemosActive");
+      if (!panel) return;
+      const skillZhMap = {};
+      SKILLS.forEach(s => { skillZhMap[s.id] = s.zh; });
+      hero.mnemosProgress = hero.mnemosProgress || {};
+
+      const allSelected = [];
+      CYCLES.forEach(cycleId => {
+        (hero.mnemos[cycleId] || []).forEach(mId => {
+          const m = (MNEMOS[cycleId] || []).find(x => x.id === mId);
+          if (m) allSelected.push({ ...m, cycleId });
+        });
+      });
+
+      if (!allSelected.length) {
+        panel.innerHTML = '<div style="text-align:center;padding:16px;"><button onclick="openMnemosPicker()">+ 添加回忆卡（最多2张）</button></div>';
+        return;
+      }
+
+      panel.innerHTML = allSelected.map(m => {
+        const s1 = skillZhMap[m.skill1] || m.skill1;
+        const s2 = skillZhMap[m.skill2] || m.skill2;
+        const progress = hero.mnemosProgress[m.id] || 0;
+        hero.mnemosTags = hero.mnemosTags || {};
+        const tags = hero.mnemosTags[m.id] || ["", "", ""];
+        const tagOptions = MNEMOS_TAGS.map(t => `<option value="${t.id}">${t.zh}</option>`).join("");
+        const tagSelects = [0,1,2].map(i => {
+          const opts = `<option value="">-</option>` + MNEMOS_TAGS.map(t =>
+            `<option value="${t.id}"${tags[i]===t.id?" selected":""}>${t.zh}</option>`
+          ).join("");
+          return `<select class="tag-select" onchange="setMnemosTag('${m.id}',${i},this.value)">${opts}</select>`;
+        }).join("");
+        return `<div class="mnemos-item active">
+          <div>
+            <div class="mnemos-title-row">
+              <div class="mnemos-title">${escHtml(m.zh)} <span class="mnemos-title-en">${escHtml(m.en)}</span> <span class="mnemos-cycle">${escHtml(CYCLE_LABELS[m.cycleId] || "")}</span></div>
+              <div class="mnemos-badges"><span class="mnemos-skill-badge">${s1} +1</span><span class="mnemos-skill-badge skill2">${s2} +1</span></div>
+            </div>
+            <div class="mnemos-tags-row">${tagSelects}</div>
+            ${renderTrack10(m, progress, hero.id, hero)}
+          </div>
+          <button class="mnemos-toggle danger" onclick="confirmRemoveMnemos('${m.cycleId}','${m.id}')">移除</button>
+        </div>`;
+      }).join("");
+    }
+
+    function renderActiveFated(hero) {
+      const panel = document.getElementById("fatedActive");
+      if (!panel) return;
+      const skillZhMap = {};
+      SKILLS.forEach(s => { skillZhMap[s.id] = s.zh; });
+      hero.fatedMnemos = hero.fatedMnemos || {};
+      hero.fatedProgress = hero.fatedProgress || {};
+
+      const allSelected = [];
+      CYCLES.forEach(cycleId => {
+        (hero.fatedMnemos[cycleId] || []).forEach(fId => {
+          const m = (FATED_MNEMOS[cycleId] || []).find(x => x.id === fId);
+          if (m) allSelected.push({ ...m, cycleId });
+        });
+      });
+
+      if (!allSelected.length) {
+        panel.innerHTML = '<div style="text-align:center;padding:16px;"><button onclick="openFatedPicker()">+ 添加宿命回忆（最多2张）</button></div>';
+        return;
+      }
+
+      panel.innerHTML = allSelected.map(m => {
+        const skillLabel = skillZhMap[m.skill] || m.skill;
+        const progress = hero.fatedProgress[m.id] || 0;
+        return `<div class="mnemos-item fated-item active">
+          <div>
+            <div class="mnemos-title-row">
+              <div class="mnemos-title"><span class="fated-keyword">${escHtml(m.keyword)}</span>${escHtml(m.zh)} <span class="mnemos-title-en">${escHtml(m.en)}</span> <span class="mnemos-cycle">${escHtml(CYCLE_LABELS[m.cycleId] || "")}</span></div>
+              <div class="mnemos-badges"><span class="mnemos-skill-badge fated-skill">${skillLabel} −1</span></div>
+            </div>
+            ${renderTrack3(m, progress)}
+          </div>
+          <button class="mnemos-toggle danger" onclick="confirmRemoveFated('${m.cycleId}','${m.id}')">移除</button>
+        </div>`;
+      }).join("");
+    }
+
+    function openMnemosPicker() {
+      const hero = activeHero();
+      if (!hero) return;
+      const skillZhMap = {};
+      SKILLS.forEach(s => { skillZhMap[s.id] = s.zh; });
+
+      let html = '<div class="picker-overlay" id="pickerOverlay" onclick="if(event.target===this)closePicker()">';
+      html += '<div class="picker-dialog">';
+      html += '<div class="picker-head"><h2>添加回忆</h2><button onclick="closePicker()">关闭</button></div>';
+      html += '<div class="picker-body">';
+      CYCLES.forEach(cycleId => {
+        const items = MNEMOS[cycleId] || [];
+        const heroMnemos = hero.mnemos[cycleId] || [];
+        html += `<details><summary style="cursor:pointer;font-weight:900;font-size:14px;margin-bottom:6px;">${CYCLE_LABELS[cycleId]}</summary><div class="mnemos-list" style="margin-bottom:12px">`;
+        items.forEach(m => {
+          const active = heroMnemos.includes(m.id);
+          const s1 = skillZhMap[m.skill1]; const s2 = skillZhMap[m.skill2];
+          html += `<div class="mnemos-item${active ? " active" : ""}">
+            <div><strong>${m.zh}</strong> <span style="color:var(--muted);font-size:12px">${m.en}</span><br>
+            <span class="mnemos-skill-badge">${s1} +1</span> <span class="mnemos-skill-badge skill2">${s2} +1</span></div>
+            <button class="mnemos-toggle ${active ? "danger" : ""}" onclick="toggleMnemos('${cycleId}','${m.id}');openMnemosPicker()">${active ? "移除" : "选择"}</button>
+          </div>`;
+        });
+        html += '</div></details>';
+      });
+      html += '</div></div></div>';
+      document.getElementById("pickerOverlay")?.remove();
+      document.body.insertAdjacentHTML("beforeend", html);
+    }
+
+    function openMnemosRemovePicker() {
+      const hero = activeHero();
+      if (!hero) return;
+      const skillZhMap = {};
+      SKILLS.forEach(s => { skillZhMap[s.id] = s.zh; });
+      let html = '<div class="picker-overlay" id="pickerOverlay" onclick="if(event.target===this)closePicker()">';
+      html += '<div class="picker-dialog">';
+      html += '<div class="picker-head"><h2>删除回忆</h2><button onclick="closePicker()">关闭</button></div>';
+      html += '<div class="picker-body">';
+      let count = 0;
+      CYCLES.forEach(cycleId => {
+        const selected = hero.mnemos[cycleId] || [];
+        if (!selected.length) return;
+        html += `<details open><summary style="cursor:pointer;font-weight:900;font-size:14px;margin-bottom:6px;">${CYCLE_LABELS[cycleId]}</summary><div class="mnemos-list" style="margin-bottom:12px">`;
+        selected.forEach(mId => {
+          const m = (MNEMOS[cycleId] || []).find(x => x.id === mId);
+          if (!m) return;
+          count++;
+          html += `<div class="mnemos-item active">
+            <div><strong>${escHtml(m.zh)}</strong> <span style="color:var(--muted);font-size:12px">${escHtml(m.en)}</span><br>
+            <span class="mnemos-skill-badge">${skillZhMap[m.skill1]} +1</span> <span class="mnemos-skill-badge skill2">${skillZhMap[m.skill2]} +1</span></div>
+            <button class="mnemos-toggle danger" onclick="removeMnemosFromPicker('${cycleId}','${m.id}')">删除</button>
+          </div>`;
+        });
+        html += '</div></details>';
+      });
+      if (!count) html += '<div style="color:var(--muted);font-size:13px;text-align:center;padding:18px">暂无可删除的回忆</div>';
+      html += '</div></div></div>';
+      document.getElementById("pickerOverlay")?.remove();
+      document.body.insertAdjacentHTML("beforeend", html);
+    }
+
+    function openFatedPicker() {
+      const hero = activeHero();
+      if (!hero) return;
+      const skillZhMap = {};
+      SKILLS.forEach(s => { skillZhMap[s.id] = s.zh; });
+      hero.fatedMnemos = hero.fatedMnemos || {};
+
+      let html = '<div class="picker-overlay" id="pickerOverlay" onclick="if(event.target===this)closePicker()">';
+      html += '<div class="picker-dialog">';
+      html += '<div class="picker-head"><h2>添加宿命回忆</h2><button onclick="closePicker()">关闭</button></div>';
+      html += '<div class="picker-body">';
+      CYCLES.forEach(cycleId => {
+        const items = FATED_MNEMOS[cycleId] || [];
+        const heroFated = hero.fatedMnemos[cycleId] || [];
+        html += `<details><summary style="cursor:pointer;font-weight:900;font-size:14px;margin-bottom:6px;">${CYCLE_LABELS[cycleId]}</summary><div class="mnemos-list" style="margin-bottom:12px">`;
+        items.forEach(m => {
+          const active = heroFated.includes(m.id);
+          const skillLabel = skillZhMap[m.skill];
+          html += `<div class="mnemos-item fated-item${active ? " active" : ""}">
+            <div><span class="fated-keyword">${m.keyword}</span> <strong>${m.zh}</strong><br>
+            <span class="mnemos-skill-badge fated-skill">${skillLabel} −1</span></div>
+            <button class="mnemos-toggle ${active ? "danger" : ""}" onclick="toggleFated('${cycleId}','${m.id}');openFatedPicker()">${active ? "移除" : "获得"}</button>
+          </div>`;
+        });
+        html += '</div></details>';
+      });
+      html += '</div></div></div>';
+      document.getElementById("pickerOverlay")?.remove();
+      document.body.insertAdjacentHTML("beforeend", html);
+    }
+
+    function openFatedRemovePicker() {
+      const hero = activeHero();
+      if (!hero) return;
+      const skillZhMap = {};
+      SKILLS.forEach(s => { skillZhMap[s.id] = s.zh; });
+      let html = '<div class="picker-overlay" id="pickerOverlay" onclick="if(event.target===this)closePicker()">';
+      html += '<div class="picker-dialog">';
+      html += '<div class="picker-head"><h2>删除宿命回忆</h2><button onclick="closePicker()">关闭</button></div>';
+      html += '<div class="picker-body">';
+      let count = 0;
+      CYCLES.forEach(cycleId => {
+        const selected = hero.fatedMnemos[cycleId] || [];
+        if (!selected.length) return;
+        html += `<details open><summary style="cursor:pointer;font-weight:900;font-size:14px;margin-bottom:6px;">${CYCLE_LABELS[cycleId]}</summary><div class="mnemos-list" style="margin-bottom:12px">`;
+        selected.forEach(fId => {
+          const m = (FATED_MNEMOS[cycleId] || []).find(x => x.id === fId);
+          if (!m) return;
+          count++;
+          html += `<div class="mnemos-item fated-item active">
+            <div><span class="fated-keyword">${escHtml(m.keyword)}</span> <strong>${escHtml(m.zh)}</strong> <span style="color:var(--muted);font-size:12px">${escHtml(m.en)}</span><br>
+            <span class="mnemos-skill-badge fated-skill">${skillZhMap[m.skill] || m.skill} −1</span></div>
+            <button class="mnemos-toggle danger" onclick="removeFatedFromPicker('${cycleId}','${m.id}')">删除</button>
+          </div>`;
+        });
+        html += '</div></details>';
+      });
+      if (!count) html += '<div style="color:var(--muted);font-size:13px;text-align:center;padding:18px">暂无可删除的宿命回忆</div>';
+      html += '</div></div></div>';
+      document.getElementById("pickerOverlay")?.remove();
+      document.body.insertAdjacentHTML("beforeend", html);
+    }
+
+    function closePicker() {
+      document.getElementById("pickerOverlay")?.remove();
+      renderAll();
+    }
+
+    function renderTrack10(m, progress, heroId, hero) {
+      const storyAt = {};
+      const nodeProgress = hero?.mnemosNodeProgress?.[m.id] || {};
+      m.thresholds.forEach((t, i) => { storyAt[t] = m.nodes[i]; });
+      let html = '<div class="track-bar">';
+      for (let i = 1; i <= 10; i++) {
+        const filled = progress >= i;
+        const story = storyAt[i] || "";
+        if (story) {
+          const nodeFilled = !!nodeProgress[story];
+          html += `<div class="track-cell milestone${filled ? " filled" : ""}" onclick="setMnemosProgress('${m.id}', ${i}, '${heroId || ""}')">
+            <span class="track-num">${i}</span>
+          </div>
+          <div class="track-node-cell${nodeFilled ? " filled" : ""}" onclick="toggleMnemosNode('${m.id}', '${escHtml(story)}', '${heroId || ""}')">${escHtml(story)}</div>`;
+        } else {
+          html += `<div class="track-cell${filled ? " filled" : ""}" onclick="setMnemosProgress('${m.id}', ${i}, '${heroId || ""}')">
+            <span class="track-num">${i}</span>
+          </div>`;
+        }
+      }
+      html += '</div>';
+      return html;
+    }
+
+    function setMnemosProgress(mnemosId, level, heroId) {
+      const hero = heroId
+        ? state.heroes.find(h => h.id === heroId)
+        : state.heroes.find(h => h.id === state.activeHeroId && CYCLES.some(cycleId => (h.mnemos?.[cycleId] || []).includes(mnemosId)))
+          || state.heroes.find(h => CYCLES.some(cycleId => (h.mnemos?.[cycleId] || []).includes(mnemosId)));
+      if (!hero) return;
+      hero.mnemosProgress = hero.mnemosProgress || {};
+      hero.mnemosProgress[mnemosId] = hero.mnemosProgress[mnemosId] === level ? level - 1 : level;
+      queueSave();
+      renderAll();
+    }
+
+    function toggleMnemosNode(mnemosId, nodeId, heroId) {
+      const hero = heroId
+        ? state.heroes.find(h => h.id === heroId)
+        : state.heroes.find(h => h.id === state.activeHeroId && CYCLES.some(cycleId => (h.mnemos?.[cycleId] || []).includes(mnemosId)))
+          || state.heroes.find(h => CYCLES.some(cycleId => (h.mnemos?.[cycleId] || []).includes(mnemosId)));
+      if (!hero) return;
+      hero.mnemosNodeProgress = hero.mnemosNodeProgress || {};
+      hero.mnemosNodeProgress[mnemosId] = hero.mnemosNodeProgress[mnemosId] || {};
+      hero.mnemosNodeProgress[mnemosId][nodeId] = !hero.mnemosNodeProgress[mnemosId][nodeId];
+      queueSave();
+      renderAll();
+    }
+
+    function setMnemosTag(mnemosId, index, value) {
+      const hero = activeHero();
+      if (!hero) return;
+      hero.mnemosTags = hero.mnemosTags || {};
+      hero.mnemosTags[mnemosId] = hero.mnemosTags[mnemosId] || ["", "", ""];
+      hero.mnemosTags[mnemosId][index] = value;
+      queueSave();
+    }
+
+    function countHeroMnemos(hero) {
+      let count = 0;
+      CYCLES.forEach(cycleId => { count += (hero.mnemos[cycleId] || []).length; });
+      return count;
+    }
+
+    function countHeroFated(hero) {
+      let count = 0;
+      hero.fatedMnemos = hero.fatedMnemos || {};
+      CYCLES.forEach(cycleId => { count += (hero.fatedMnemos[cycleId] || []).length; });
+      return count;
+    }
+
+    function confirmRemoveMnemos(cycleId, mnemosId) {
+      if (!confirm("确定移除这张回忆卡？")) return;
+      toggleMnemos(cycleId, mnemosId);
+    }
+
+    function confirmRemoveFated(cycleId, fatedId) {
+      if (!confirm("确定移除这张宿命回忆？")) return;
+      toggleFated(cycleId, fatedId);
+    }
+
+    function removeMnemosFromPicker(cycleId, mnemosId) {
+      if (!confirm("确定移除这张回忆卡？")) return;
+      toggleMnemos(cycleId, mnemosId);
+      openMnemosRemovePicker();
+    }
+
+    function removeFatedFromPicker(cycleId, fatedId) {
+      if (!confirm("确定移除这张宿命回忆？")) return;
+      toggleFated(cycleId, fatedId);
+      openFatedRemovePicker();
+    }
+
+    function toggleMnemos(cycleId, mnemosId) {
+      const hero = activeHero();
+      if (!hero) return;
+      hero.mnemos[cycleId] = hero.mnemos[cycleId] || [];
+      const idx = hero.mnemos[cycleId].indexOf(mnemosId);
+      if (idx >= 0) {
+        hero.mnemos[cycleId].splice(idx, 1);
+      } else {
+        if (countHeroMnemos(hero) >= 2) { alert("每位英雄最多持有 2 张回忆卡"); return; }
+        hero.mnemos[cycleId].push(mnemosId);
+      }
+      queueSave();
+      renderActiveMnemos(hero);
+      renderSkillGrid(hero);
+    }
+
+    function renderTrack3(m, progress, heroId) {
+      let html = '<div class="track-bar fated-track">';
+      for (let i = 1; i <= 3; i++) {
+        const filled = progress >= i;
+        html += `<div class="track-cell${filled ? " filled" : ""}" onclick="setFatedProgress('${m.id}', ${i}, '${heroId || ""}')">
+          <span class="track-num">${i}</span>
+        </div>`;
+      }
+      html += '</div>';
+      return html;
+    }
+
+    function setFatedProgress(fatedId, level, heroId) {
+      const hero = heroId
+        ? state.heroes.find(h => h.id === heroId)
+        : state.heroes.find(h => h.id === state.activeHeroId && CYCLES.some(cycleId => (h.fatedMnemos?.[cycleId] || []).includes(fatedId)))
+          || state.heroes.find(h => CYCLES.some(cycleId => (h.fatedMnemos?.[cycleId] || []).includes(fatedId)));
+      if (!hero) return;
+      hero.fatedProgress = hero.fatedProgress || {};
+      hero.fatedProgress[fatedId] = hero.fatedProgress[fatedId] === level ? level - 1 : level;
+      queueSave();
+      renderAll();
+    }
+
+    function toggleFated(cycleId, fatedId) {
+      const hero = activeHero();
+      if (!hero) return;
+      hero.fatedMnemos = hero.fatedMnemos || {};
+      hero.fatedMnemos[cycleId] = hero.fatedMnemos[cycleId] || [];
+      const idx = hero.fatedMnemos[cycleId].indexOf(fatedId);
+      if (idx >= 0) {
+        hero.fatedMnemos[cycleId].splice(idx, 1);
+      } else {
+        if (countHeroFated(hero) >= 2) { alert("每位英雄最多持有 2 张宿命回忆"); return; }
+        hero.fatedMnemos[cycleId].push(fatedId);
+      }
+      queueSave();
+      renderActiveFated(hero);
+      renderSkillGrid(hero);
+    }
+
+    function setupTextareas(hero) {
+      const abilitiesEl = document.getElementById("abilitiesInput");
+      const notesEl = document.getElementById("notesInput");
+      const playerEl = document.getElementById("playerNameInput");
+      if (abilitiesEl) abilitiesEl.oninput = () => { hero.abilities = abilitiesEl.value; queueSave(); };
+      if (notesEl) notesEl.oninput = () => { hero.notes = notesEl.value; queueSave(); };
+      if (playerEl) playerEl.oninput = () => { hero.playerName = playerEl.value; queueSave(); renderTabs(); };
+    }
+
+    function addHero() {
+      if (state.heroes.length >= 4) { alert("最多添加 4 个英雄。"); return; }
+      openArgonautPicker((argId) => {
+        const hero = defaultHero();
+        hero.argonaut = argId;
+        state.heroes.push(hero);
+        state.activeHeroId = hero.id;
+        queueSave();
+        renderAll();
+      });
+    }
+
+    function openArgonautPicker(onSelect) {
+      let html = '<div class="picker-overlay" id="pickerOverlay" onclick="if(event.target===this)closePicker()">';
+      html += '<div class="picker-dialog">';
+      html += '<div class="picker-head"><h2>选择英雄</h2><button onclick="closePicker()">关闭</button></div>';
+      html += '<div class="picker-body"><div class="argonaut-picker-grid">';
+      ARGONAUTS.forEach(a => {
+        const src = argonautPortraitSrc(a.id);
+        const imgHtml = src
+          ? `<img src="${escHtml(src)}" alt="${escHtml(a.zh)}" onerror="this.outerHTML='<span style=font-size:14px;font-weight:900;padding:20px>${escHtml(a.zh)}</span>'">`
+          : `<span style="font-size:14px;font-weight:900;padding:20px">${escHtml(a.zh)}</span>`;
+        html += `<div class="argonaut-picker-card" data-pick-argonaut="${escHtml(a.id)}">${imgHtml}<span>${escHtml(a.zh)}</span></div>`;
+      });
+      html += '</div></div></div></div>';
+      document.getElementById("pickerOverlay")?.remove();
+      document.body.insertAdjacentHTML("beforeend", html);
+      document.querySelectorAll("[data-pick-argonaut]").forEach(card => {
+        card.onclick = () => {
+          const argId = card.dataset.pickArgonaut;
+          closePicker();
+          onSelect(argId);
+        };
+      });
+    }
+
+    function removeHero() {
+      const hero = activeHero();
+      if (!hero) return;
+      const arg = ARGONAUTS.find(a => a.id === hero.argonaut);
+      const name = arg ? arg.zh : "此英雄";
+      if (!confirm(`确定要删除「${name}」的记录吗？此操作不可撤回。`)) return;
+      state.heroes = state.heroes.filter(h => h.id !== hero.id);
+      state.activeHeroId = state.heroes.length ? state.heroes[0].id : "";
+      queueSave();
+      renderAll();
+    }
+
+    function retireHero() {
+      const hero = activeHero();
+      if (!hero) return;
+      const name = heroDisplayName(hero);
+      const reason = prompt(`「${name}」死亡或退休的原因：`);
+      if (reason === null) return;
+      const katharsisCode = prompt("疏泄代码（Katharsis Code）：") || "";
+      state.graveyard = state.graveyard || [];
+      state.graveyard.push({
+        ...JSON.parse(JSON.stringify(hero)),
+        retiredAt: new Date().toISOString(),
+        retireReason: reason.trim(),
+        katharsisCode: katharsisCode.trim(),
+      });
+      state.heroes = state.heroes.filter(h => h.id !== hero.id);
+      state.activeHeroId = state.heroes.length ? state.heroes[0].id : "";
+      queueSave();
+      renderAll();
+    }
+
+    function openGraveyard() {
+      const graveyard = state.graveyard || [];
+      let html = '<div class="picker-overlay" id="pickerOverlay" onclick="if(event.target===this)closePicker()">';
+      html += '<div class="picker-dialog" style="width:min(900px,100%);max-height:90vh">';
+      html += '<div class="picker-head"><h2>墓园</h2><button onclick="closePicker()">关闭</button></div>';
+      html += '<div class="picker-body">';
+      if (!graveyard.length) {
+        html += '<div style="color:var(--muted);font-size:13px;text-align:center;padding:24px">暂无死亡或退休的英雄</div>';
+      } else {
+        const skillZhMap = {};
+        SKILLS.forEach(s => { skillZhMap[s.id] = s.zh; });
+        graveyard.forEach((hero, idx) => {
+          const arg = ARGONAUTS.find(a => a.id === hero.argonaut);
+          const displayName = hero.customName || (arg ? arg.zh : "未知英雄");
+          const portraitSrc = arg ? argonautPortraitSrc(arg.id) : "";
+          const date = hero.retiredAt ? new Date(hero.retiredAt).toLocaleDateString("zh-CN") : "";
+          const { total } = getHeroSkills(hero);
+          const skillText = SKILLS.map(s => `${s.abbr}${total[s.id]}`).join(" ");
+          hero.mnemosProgress = hero.mnemosProgress || {};
+          hero.fatedMnemos = hero.fatedMnemos || {};
+          hero.fatedProgress = hero.fatedProgress || {};
+          hero.triskelion = hero.triskelion || { fury: 0, fate: 0, danger: 0 };
+
+          // Mnemos list (read-only)
+          const mnemosHtml = (() => {
+            const allSelected = [];
+            CYCLES.forEach(cycleId => {
+              (hero.mnemos[cycleId] || []).forEach(mId => {
+                const m = (MNEMOS[cycleId] || []).find(x => x.id === mId);
+                if (m) allSelected.push({ ...m, cycleId });
+              });
+            });
+            if (!allSelected.length) return '<span style="color:var(--muted);font-size:12px">无</span>';
+            return allSelected.map(m => {
+              const progress = hero.mnemosProgress[m.id] || 0;
+              return `<div class="mnemos-card">${escHtml(m.zh)} <span style="color:var(--muted);font-size:11px">${escHtml(m.en)}</span> <span style="font-size:11px;font-weight:900">[${progress}/10]</span></div>`;
+            }).join("");
+          })();
+
+          // Fated list (read-only)
+          const fatedHtml = (() => {
+            const allSelected = [];
+            CYCLES.forEach(cycleId => {
+              (hero.fatedMnemos[cycleId] || []).forEach(fmId => {
+                const fm = (FATED_MNEMOS[cycleId] || []).find(x => x.id === fmId);
+                if (fm) allSelected.push({ ...fm, cycleId });
+              });
+            });
+            if (!allSelected.length) return '<span style="color:var(--muted);font-size:12px">无</span>';
+            return allSelected.map(fm => {
+              const progress = hero.fatedProgress[fm.id] || 0;
+              return `<div class="mnemos-card"><span class="fated-keyword">${escHtml(fm.keyword)}</span> ${escHtml(fm.zh)} <span style="font-size:11px;font-weight:900">[${progress}/3]</span></div>`;
+            }).join("");
+          })();
+
+          html += `<details class="graveyard-entry" ${idx === 0 ? "open" : ""}>
+            <summary class="graveyard-summary">
+              <div class="graveyard-portrait">${portraitSrc ? `<img src="${escHtml(portraitSrc)}" alt="${escHtml(displayName)}">` : `<span>${escHtml(displayName)}</span>`}</div>
+              <div class="graveyard-name">${escHtml(displayName)}</div>
+              <div class="graveyard-meta">${escHtml(hero.retireReason || "")} · ${escHtml(date)}</div>
+            </summary>
+            <div class="graveyard-body">
+              <div class="graveyard-section"><strong>技能：</strong>${escHtml(skillText)}</div>
+              <div class="graveyard-section"><strong>三幅节：</strong>怒${hero.triskelion.fury} / 命${hero.triskelion.fate} / 危${hero.triskelion.danger}</div>
+              <div class="graveyard-section"><strong>原因：</strong>${escHtml(hero.retireReason || "未记录")}</div>
+              ${hero.katharsisCode ? `<div class="graveyard-section"><strong>疏泄代码：</strong>${escHtml(hero.katharsisCode)}</div>` : ""}
+              <div class="graveyard-section"><strong>回忆：</strong>${mnemosHtml}</div>
+              <div class="graveyard-section"><strong>宿命：</strong>${fatedHtml}</div>
+              ${hero.notes ? `<div class="graveyard-section"><strong>笔记：</strong><span style="white-space:pre-wrap">${escHtml(hero.notes)}</span></div>` : ""}
+              <div style="margin-top:10px"><button class="secondary" style="min-height:30px;font-size:12px" data-revive-idx="${idx}">复活</button></div>
+            </div>
+          </details>`;
+        });
+      }
+      html += '</div></div></div>';
+      document.getElementById("pickerOverlay")?.remove();
+      document.body.insertAdjacentHTML("beforeend", html);
+      // Bind revive buttons
+      document.querySelectorAll("[data-revive-idx]").forEach(btn => {
+        btn.onclick = () => {
+          const idx = parseInt(btn.dataset.reviveIdx, 10);
+          reviveHero(idx);
+        };
+      });
+    }
+
+    function reviveHero(idx) {
+      const graveyard = state.graveyard || [];
+      if (idx < 0 || idx >= graveyard.length) return;
+      if (state.heroes.length >= 4) { alert("队伍已满（最多4人），请先移除一位英雄。"); return; }
+      const hero = graveyard[idx];
+      const name = hero.customName || (ARGONAUTS.find(a => a.id === hero.argonaut)?.zh || "英雄");
+      if (!confirm(`确定要复活「${name}」吗？`)) return;
+      // Remove retirement metadata, restore to active
+      delete hero.retiredAt;
+      delete hero.retireReason;
+      delete hero.katharsisCode;
+      state.heroes.push(hero);
+      state.graveyard.splice(idx, 1);
+      state.activeHeroId = hero.id;
+      queueSave();
+      closePicker();
+    }
+
+    function resetHeroTriskelion(heroId) {
+      const hero = state.heroes.find(h => h.id === heroId);
+      if (!hero) return;
+      const name = heroDisplayName(hero);
+      if (!confirm(`确定要重置「${name}」的三幅节吗？`)) return;
+      hero.triskelion = { fury: 0, fate: 0, danger: 0 };
+      queueSave();
+      renderAll();
+    }
+
+    function resetAllTriskelion() {
+      if (!state.heroes.length) return;
+      if (!confirm("确定要重置所有英雄的三幅节吗？")) return;
+      state.heroes.forEach(hero => {
+        hero.triskelion = { fury: 0, fate: 0, danger: 0 };
+      });
+      queueSave();
+      renderAll();
+    }
+
+    // Export / Import
+    document.getElementById("exportButton").onclick = () => {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "ato-hero-record.json";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    };
+
+    document.getElementById("importButton").onclick = () => {
+      document.getElementById("importInput").click();
+    };
+
+    document.getElementById("importInput").onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          if (data && Array.isArray(data.heroes)) {
+            state = data;
+            normalizeState();
+            state.activeHeroId = state.heroes.length ? state.heroes[0].id : "";
+            persistLocal();
+            renderAll();
+            setSaveStatus("已导入");
+          } else {
+            alert("文件格式不正确");
+          }
+        } catch { alert("导入失败：无法解析 JSON"); }
+      };
+      reader.readAsText(file);
+      e.target.value = "";
+    };
+
+    document.getElementById("addHeroButton").onclick = addHero;
+    document.getElementById("resetAllTriskelionButton").onclick = resetAllTriskelion;
+    document.getElementById("graveyardButton").onclick = openGraveyard;
+    document.querySelectorAll("[data-reset-triskelion-icon]").forEach(img => {
+      img.src = assetSrc("reset_triskelion_F4F4F4.png");
+    });
+
+    // Mnemos tag sync — reload hero state when dashboard modifies it
+    const heroMnemosSyncChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-hero-mnemos-sync-v1") : null;
+    if (heroMnemosSyncChannel) heroMnemosSyncChannel.addEventListener("message", (event) => {
+      const msg = event.data;
+      if (msg.type === "hero-state-updated") {
+        // Dashboard has updated our localStorage, reload
+        const reloaded = loadState();
+        if (reloaded && Array.isArray(reloaded.heroes)) {
+          state = reloaded;
+          normalizeState();
+          renderAll();
+        }
+      }
+    });
+
+    // Init
+    state = loadState();
+    normalizeState();
+    renderAll();
+    loadFromServer();
+  </script>
+
+</body>
+</html>

@@ -16,6 +16,8 @@
         </div>
       </div>
       <a class="home-link" href="../index.html">返回主控台</a>
+      <a class="home-link" href="../record/index.html" style="margin-top:-12px;margin-bottom:4px;font-size:13px;border-color:#c89742;color:#ffd480;background:#17140f;">阿尔戈号记录表</a>
+      <a class="home-link" href="../hero/index.html" style="margin-top:0;margin-bottom:18px;font-size:13px;border-color:#c89742;color:#ffd480;background:#17140f;">英雄记录表</a>
 
       <label class="field">
         <span>故事书</span>
@@ -85,10 +87,32 @@
       </footer>
     </main>
 
+    <aside class="side-panels" id="sidePanels">
+      <div class="side-panel-tabs">
+        <button class="side-panel-tab active" data-panel="record">记录表</button>
+        <button class="side-panel-tab" data-panel="hero">英雄</button>
+        <button class="side-panel-tab" data-panel="dashboard">主控台</button>
+      </div>
+      <iframe id="sidePanelRecord" class="side-panel-frame active" src="../record/index.html"></iframe>
+      <iframe id="sidePanelHero" class="side-panel-frame" src="../hero/index.html"></iframe>
+      <iframe id="sidePanelDashboard" class="side-panel-frame" src="../index.html"></iframe>
+    </aside>
+
     <script src="../page-focus-router.js?v=20260607a"></script>
     <script src="./data/storybook-data.js?v=20260614structure1"></script>
     <script src="./data/entity-index.js?v=20260614structure1"></script>
     <script src="./audio-packs/audio/manifest.js?v=20260614structure1"></script>
     <script src="./assets/app.js?v=20260614structure1"></script>
+    <script>
+      document.querySelectorAll(".side-panel-tab").forEach(tab => {
+        tab.addEventListener("click", () => {
+          document.querySelectorAll(".side-panel-tab").forEach(t => t.classList.remove("active"));
+          document.querySelectorAll(".side-panel-frame").forEach(f => f.classList.remove("active"));
+          tab.classList.add("active");
+          const panelMap = { record: "sidePanelRecord", hero: "sidePanelHero", dashboard: "sidePanelDashboard" };
+          document.getElementById(panelMap[tab.dataset.panel])?.classList.add("active");
+        });
+      });
+    </script>
   </body>
 </html>

@@ -1839,6 +1839,7 @@
         { id: "ares", zh: "阿瑞斯", en: "Ares", deck: 162, cardIndex: 15, cardId: 16215, image: "./assets/godforms-nymphs/015_Godform_Ares.jpg" },
         { id: "artemis", zh: "阿尔忒弥斯", en: "Artemis", deck: 163, cardIndex: 11, cardId: 16311, image: "./assets/godforms-nymphs/011_Godform_Artemis.jpg" },
         { id: "athena", zh: "雅典娜", en: "Athena", deck: 163, cardIndex: 12, cardId: 16312, image: "./assets/godforms-nymphs/012_Godform_Athena.jpg" },
+        { id: "hades", zh: "哈迪斯", en: "Hades", deck: 163, cardIndex: 13, cardId: 16313, image: "./assets/godforms-nymphs/013_Godform_Hades.png" },
       ],
       nymphs: [
         { id: "engine", zh: "引擎宁芙", en: "Engine Nymph", deck: 84, cardIndex: 1, cardId: 8401, image: "./assets/godforms-nymphs/001_Nymph_Engine_Nymph.jpg" },
@@ -2244,6 +2245,17 @@
       return normalizeState(defaultState);
     }
 
+    function defaultDayForCycle(cycleId) {
+      return cycleId === "c1" ? "T0" : "0";
+    }
+
+    function normalizeCycleDay(value, cycleId) {
+      const text = String(value ?? "").trim().toUpperCase();
+      if (cycleId === "c1" && /^(?:T[0-5]|T6\/00)$/.test(text)) return text;
+      if (text === "") return defaultDayForCycle(cycleId);
+      return String(Math.max(0, Math.floor(Number(text) || 0)));
+    }
+
     function normalizeState(value) {
       const legacySummonLimit = value?.summonLimit ?? "";
       const titans = normalizeTitanList(value?.titans, value?.titan);
@@ -2265,7 +2277,7 @@
         cycleStats: normalizeCycleStats(value),
         cycleDays: isPlainObject(value?.cycleDays)
           ? value.cycleDays
-          : { [cycleData[value?.cycle] ? value.cycle : defaultState.cycle]: String(value?.day ?? 0) },
+          : { [cycleData[value?.cycle] ? value.cycle : defaultState.cycle]: normalizeCycleDay(value?.day, value?.cycle) },
         adventures: isPlainObject(value?.adventures) ? value.adventures : {},
         diplomacy: isPlainObject(value?.diplomacy) ? value.diplomacy : {},
         resources: normalizeResources(value?.resources),
@@ -2310,10 +2322,12 @@
     }
 
     function migrateSharedResourceKey(resources, key) {
-      if (resources[key] !== undefined) return;
       const values = Object.keys(cycleData)
         .map((cycleId) => resources[`${cycleId}-${key}`])
         .filter((value) => value !== undefined && value !== null && value !== "");
+      if (resources[key] !== undefined && resources[key] !== null && resources[key] !== "") {
+        values.unshift(resources[key]);
+      }
       if (!values.length) return;
       const numericValues = values
         .map((value) => Number(value))
@@ -2321,6 +2335,9 @@
       resources[key] = numericValues.length === values.length
         ? Math.max(...numericValues)
         : values.map(String).filter(Boolean).join("\n");
+      Object.keys(cycleData).forEach((cycleId) => {
+        delete resources[`${cycleId}-${key}`];
+      });
     }
 
     function normalizeRooting(value) {
@@ -2567,10 +2584,10 @@
       const cycle = params.get("cycle");
       if (cycleData[cycle]) state.cycle = cycle;
       const day = params.get("day");
-      const normalizedDay = Math.max(0, Number(day || 0));
       if (day != null && day !== "") {
-        state.day = String(normalizedDay);
-        state.cycleDays[state.cycle] = String(normalizedDay);
+        const normalizedDay = normalizeCycleDay(day, state.cycle);
+        state.day = normalizedDay;
+        state.cycleDays[state.cycle] = normalizedDay;
       }
       const adventure = params.get("adventure") || "";
       const slot = markAdventureFromSurvey(state.cycle, adventure, params.get("box") || "");
@@ -2969,7 +2986,7 @@
         input.value = value;
         state[input.dataset.cycleBind] = value;
       });
-      state.day = String(state.cycleDays?.[state.cycle] ?? 0);
+      state.day = String(state.cycleDays?.[state.cycle] ?? defaultDayForCycle(state.cycle));
     }
 
     function toggleCycleVisibility() {
@@ -2996,7 +3013,7 @@
         ...prefixDays,
         ...Array.from({ length: cycle.maxDay - firstNumericDay + 1 }, (_, index) => String(index + firstNumericDay).padStart(2, "0")),
       ];
-      const currentDay = String(state.cycleDays?.[state.cycle] ?? state.day ?? 0);
+      const currentDay = String(state.cycleDays?.[state.cycle] ?? state.day ?? defaultDayForCycle(state.cycle));
       elements.timelineMeta.textContent = `当前 ${currentDay} · 共 ${days.length} 格`;
       elements.timeline.innerHTML = "";
       days.forEach((label) => {
@@ -3165,7 +3182,8 @@
       }
       if (stage.marker === "triangle") return false;
       const legacyValue = state.enemies?.[trackKey];
-      return String(legacyValue ?? "") === String(stage.id) || String(legacyValue ?? "") === String(stage.legacyId ?? "");
+      if (legacyValue === undefined || legacyValue === null || legacyValue === "") return false;
+      return String(legacyValue) === String(stage.id) || (stage.legacyId != null && String(legacyValue) === String(stage.legacyId));
     }
 
     function toggleEvolutionStage(trackKey, stage) {

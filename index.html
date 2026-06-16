@@ -209,18 +209,16 @@
     }
 
     .record-card-link {
-      align-self: stretch;
-      min-height: 88px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       border: 1px solid rgba(166, 109, 29, 0.38);
       border-radius: 6px;
-      padding: 0 12px;
+      padding: 8px 12px;
       background: #fff8ea;
       color: var(--gold);
       text-decoration: none;
-      font-size: 16px;
+      font-size: 13px;
       font-weight: 900;
       white-space: nowrap;
     }
@@ -229,6 +227,13 @@
       border-color: var(--gold);
       background: #fff3d7;
       color: #7f5015;
+    }
+
+    .record-links {
+      display: grid;
+      gap: 6px;
+      align-self: stretch;
+      align-content: stretch;
     }
 
     .day-card {
@@ -250,6 +255,7 @@
       grid-column: 1;
       display: grid;
       gap: 6px;
+      align-content: start;
       color: var(--muted);
       font-size: 13px;
       font-weight: 700;
@@ -267,6 +273,7 @@
       align-self: stretch;
       display: grid;
       gap: 8px;
+      align-content: stretch;
     }
 
     .profile-tools {
@@ -608,6 +615,9 @@
       font-size: 13px;
       font-weight: 900;
     }
+    .step-track-action {
+      margin-left: auto;
+    }
 
     .step-track-tag {
       min-height: 20px;
@@ -640,6 +650,30 @@
       color: var(--muted);
       font-size: 13px;
       line-height: 1.45;
+    }
+
+    .mnemos-node-link {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 4px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+      text-decoration: none;
+    }
+    .mnemos-node-link:hover { filter: brightness(0.9); }
+
+    .negotiation-card-back {
+      display: inline-block;
+      height: 180px;
+      width: auto;
+      margin: 6px 6px 0 0;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      box-shadow: 0 4px 10px rgba(28, 38, 34, 0.12);
+      object-fit: contain;
+      vertical-align: top;
     }
 
     .exploration-tools {
@@ -1021,6 +1055,17 @@
       color: var(--gold);
       font-weight: 900;
       white-space: nowrap;
+    }
+
+    .survey-constant-tag {
+      display: inline-block;
+      padding: 1px 5px;
+      border-radius: 3px;
+      background: rgba(138, 91, 23, 0.12);
+      color: var(--gold);
+      font-size: 10px;
+      font-weight: 800;
+      vertical-align: middle;
     }
 
     .flow-title-button {
@@ -1531,13 +1576,13 @@
       }
 
       .day-card label,
-      .record-card-link,
+      .record-links,
       .day-actions {
         grid-column: 1;
       }
 
       .record-card-link {
-        min-height: 48px;
+        min-height: 38px;
       }
 
       .day-actions {
@@ -1618,9 +1663,12 @@
       <section class="day-card" aria-label="当前天数">
         <label>
           当前 Day
-          <input id="dayInput" type="number" min="0" step="1" value="0">
+          <input id="dayInput" type="text" inputmode="numeric" value="0">
         </label>
-        <a class="record-card-link" href="./record/index.html">阿尔戈号记录表</a>
+        <div class="record-links">
+          <a class="record-card-link" href="./record/index.html">阿尔戈号记录表</a>
+          <a class="record-card-link hero-card-link" href="./hero/index.html">英雄记录表</a>
+        </div>
         <div class="day-actions">
           <button id="nextDayButton" type="button">进入下一天</button>
           <button id="resetTodayButton" type="button" class="secondary">重置今日</button>
@@ -1802,13 +1850,13 @@
       c1: {
         label: "Cycle I 航行时间表",
         entries: [
-          { label: "T0" },
-          { label: "T1" },
-          { label: "T2", icons: ["battleTech"] },
-          { label: "T3", icons: ["battleTech"] },
-          { label: "T4" },
-          { label: "T5", icons: ["battleTech"] },
-          { label: "T6/00", day: 0 },
+          { label: "T0", day: "T0" },
+          { label: "T1", day: "T1" },
+          { label: "T2", day: "T2", icons: ["battleTech"] },
+          { label: "T3", day: "T3", icons: ["battleTech"] },
+          { label: "T4", day: "T4" },
+          { label: "T5", day: "T5", icons: ["battleTech"] },
+          { label: "T6/00", day: "T6/00" },
           ...Array.from({ length: 80 }, (_, index) => ({ day: index + 1 })),
         ],
         events: {
@@ -2046,13 +2094,13 @@
           { story: ["", "", "9-10", "9-10"], hubId: "dreams-laid-bare", hub: "Dreams Laid Bare", terrain: "Maze Outcrop (Inner 3)" },
         ],
         hubs: [
-          { id: "fated-conundrum", title: "Fated Conundrum", passage: "31", boxes: [["alpha", "α", "Bitter Seeds"], ["1-2", "1-2", "The Pilgrimage"], ["3-4", "3-4", "Dream of the Maw"], ["5-6", "5-6", "Stewards"], ["7-8", "7-8", "The Feast"], ["9-10", "9-10", "Mazed Tree"], ["omega", "Ω", "A City Made of Riddles"]] },
-          { id: "plight-of-the-people", title: "Plight of the People", passage: "38", boxes: [["alpha", "α", "The Catch"], ["1", "1", "Witness of Minos"], ["2-3", "2-3", "Discarded"], ["4-5", "4-5", "Cult of the Bull"], ["6", "6", "A Light in the Dark"], ["7-8", "7-8", "Beachhead"], ["9-10", "9-10", "Minotaurites"], ["omega", "Ω", "Sowing and Reaping"]] },
-          { id: "hidden-in-plain-sight", title: "Hidden in Plain Sight", passage: "44", boxes: [["alpha", "α", "Theseus's Light"], ["1-2", "1-2", "Konstantinos"], ["3-4", "3-4", "Friend of Theseus"], ["5-6", "5-6", "Good Deeds"], ["7", "7", "Runs Deep"], ["8-9", "8-9", "Balance of Terror"], ["10", "10", "A Peculiar Vessel"], ["omega", "Ω", "Theseus's Shadow"]] },
-          { id: "man-of-purpose", title: "Man of Purpose", passage: "51", boxes: [["alpha", "α", "Comes a Savior"], ["1-2", "1-2", "Mazed Forest"], ["3-4", "3-4", "Synoikismos"], ["5-6", "5-6", "Forced Perspective"], ["7", "7", "Words of Love"], ["8-9", "8-9", "Life of Theseus"], ["10", "10", "Ashes of Cydonia"], ["omega", "Ω", "Till Death"]] },
-          { id: "uneasy-rests-the-head", title: "Uneasy Rests the Head", passage: "59", boxes: [["alpha", "α", "Balance of Power"], ["1-2", "1-2", "Rites and Wrongs"], ["3-4", "3-4", "The Hand that Feeds"], ["5-6", "5-6", "The Hands of Minos"], ["7-8", "7-8", "The Minos-branded"], ["9-10", "9-10", "Erasing History"], ["omega", "Ω", "Withered Tree"]] },
-          { id: "tears-of-a-minotaur", title: "Tears of a Minotaur", passage: "67", boxes: [["alpha", "α", "Ariadne's Love"], ["1-2", "1-2", "Orphaned by the Minotaur"], ["3-4", "3-4", "Hooves and Saints"], ["5-6", "5-6", "Virgins for the Horned"], ["7-8", "7-8", "Trial by Bull"], ["9-10", "9-10", "The Last Goodbye"], ["omega", "Ω", "Poseidon's Gift"]] },
-          { id: "dreams-laid-bare", title: "Dreams Laid Bare", passage: "74", boxes: [["alpha", "α", "A Knife So Sharp"], ["1-2", "1-2", "Changing of the Guard"], ["3-4", "3-4", "Prisoners"], ["5-6", "5-6", "Stalked by the Maze"], ["7-8", "7-8", "Mazed Hull"], ["9-10", "9-10", "Among Broken Pottery and Trampled Grapes"], ["omega", "Ω", "Price of a Promise"]] },
+          { id: "fated-conundrum", title: "Fated Conundrum", passage: "31", boxes: [["alpha", "α", "Bitter Seeds", "gods"], ["1-2", "1-2", "The Pilgrimage", "family"], ["3-4", "3-4", "Dream of the Maw", "dream"], ["5-6", "5-6", "Stewards", "crime"], ["7-8", "7-8", "The Feast", "supernatural"], ["9-10", "9-10", "Mazed Tree", "curse"], ["omega", "Ω", "A City Made of Riddles", "deed"]] },
+          { id: "plight-of-the-people", title: "Plight of the People", passage: "38", boxes: [["alpha", "α", "The Catch", "heritage"], ["1", "1", "Witness of Minos", "supernatural"], ["2-3", "2-3", "Discarded", "dream"], ["4-5", "4-5", "Cult of the Bull", "fate"], ["6", "6", "A Light in the Dark", "supernatural"], ["7-8", "7-8", "Beachhead", "voyage"], ["9-10", "9-10", "Minotaurites", "family"], ["omega", "Ω", "Sowing and Reaping", "tragedy"]] },
+          { id: "hidden-in-plain-sight", title: "Hidden in Plain Sight", passage: "44", boxes: [["alpha", "α", "Theseus's Light", "fate"], ["1-2", "1-2", "Konstantinos", "heritage"], ["3-4", "3-4", "Friend of Theseus", "gods"], ["5-6", "5-6", "Good Deeds", "deed"], ["7", "7", "Runs Deep", "crime"], ["8-9", "8-9", "Balance of Terror", "curse"], ["10", "10", "A Peculiar Vessel", "crime"], ["omega", "Ω", "Theseus's Shadow", "voyage"]] },
+          { id: "man-of-purpose", title: "Man of Purpose", passage: "51", boxes: [["alpha", "α", "Comes a Savior", "crime"], ["1-2", "1-2", "Mazed Forest", "supernatural"], ["3-4", "3-4", "Synoikismos", "fate"], ["5-6", "5-6", "Forced Perspective", "family"], ["7", "7", "Words of Love", "voyage"], ["8-9", "8-9", "Life of Theseus", "deed"], ["10", "10", "Ashes of Cydonia", "voyage"], ["omega", "Ω", "Till Death", "supernatural"]] },
+          { id: "uneasy-rests-the-head", title: "Uneasy Rests the Head", passage: "59", boxes: [["alpha", "α", "Balance of Power", "deed"], ["1-2", "1-2", "Rites and Wrongs", "gods"], ["3-4", "3-4", "The Hand that Feeds", "heritage"], ["5-6", "5-6", "The Hands of Minos", "crime"], ["7-8", "7-8", "The Minos-branded", "tragedy"], ["9-10", "9-10", "Erasing History", "dream"], ["omega", "Ω", "Withered Tree", "family"]] },
+          { id: "tears-of-a-minotaur", title: "Tears of a Minotaur", passage: "67", boxes: [["alpha", "α", "Ariadne's Love", "tragedy"], ["1-2", "1-2", "Orphaned by the Minotaur", "gods"], ["3-4", "3-4", "Hooves and Saints", "fate"], ["5-6", "5-6", "Virgins for the Horned", "family"], ["7-8", "7-8", "Trial by Bull", "curse"], ["9-10", "9-10", "The Last Goodbye", "dream"], ["omega", "Ω", "Poseidon's Gift", "curse"]] },
+          { id: "dreams-laid-bare", title: "Dreams Laid Bare", passage: "74", boxes: [["alpha", "α", "A Knife So Sharp", "voyage"], ["1-2", "1-2", "Changing of the Guard", "supernatural"], ["3-4", "3-4", "Prisoners", "family"], ["5-6", "5-6", "Stalked by the Maze", "curse"], ["7-8", "7-8", "Mazed Hull", "tragedy"], ["9-10", "9-10", "Among Broken Pottery and Trampled Grapes", "heritage"], ["omega", "Ω", "Price of a Promise", "dream"]] },
         ],
         rr: [
           ["1", "Catch of the Day"], ["2", "Clothes Make the Argonaut"], ["3", "The One with the Goats"], ["4", "Eschaton Deniers"], ["5", "Fete for the Aeons"], ["6", "Secret Admirer"], ["7", "Lysistrata"], ["8", "The Stray"], ["9", "The Burden"], ["10", "Drunken Odyssey"],
@@ -2070,14 +2118,14 @@
           { story: ["", "", "9-10", "8-10"], hubId: "when-the-land-meets-the-sea", hub: "When the Land Meets the Sea", terrain: "Krypteia Outpost (Outer 3)" },
         ],
         hubs: [
-          { id: "consider-the-ant", title: "Consider the Ant", passage: "41", boxes: [["alpha", "α", "To Walk a Mile"], ["1-2", "1-2", "Black Veins"], ["3-4", "3-4", "The Old Shepherd"], ["5-6", "5-6", "Food Farm"], ["7-8", "7-8", "Armorers"], ["9-10", "9-10", "Slaves of War"], ["omega", "Ω", "A Drone's Reward"]] },
-          { id: "the-other-thermopylae", title: "The Other Thermopylae", passage: "48", boxes: [["alpha", "α", "A War Out There"], ["1-2", "1-2", "Forsaken Aegises"], ["3-4", "3-4", "Cost of Freedom"], ["5-6", "5-6", "Justice of War"], ["7-8", "7-8", "People of Burden"], ["9-10", "9-10", "Those Who Live"], ["omega", "Ω", "Homefront"]] },
-          { id: "from-the-ashes", title: "From the Ashes", passage: "55", boxes: [["alpha", "α", "The Just War"], ["1-2", "1-2", "Sand and Stone"], ["3-4", "3-4", "Bones of the Past"], ["5-6", "5-6", "Unshackled"], ["7-8", "7-8", "Cult of the Fallen Sun"], ["9-10", "9-10", "Gears of Progress"], ["omega", "Ω", "A Peace for Our Aeon"]] },
-          { id: "intended-purpose", title: "Intended Purpose", passage: "62", boxes: [["alpha", "α", "The Once Was An Empire..."], ["1-2", "1-2", "Merchants of Death"], ["3-4", "3-4", "The Hand You're Dealt"], ["5-6", "5-6", "Breath of the Grave"], ["7-8", "7-8", "Face of the Enemy"], ["9-10", "9-10", "Shadowplay"], ["omega", "Ω", "... That Knew No Mercy"]] },
-          { id: "misery-industry", title: "Misery Industry", passage: "70", boxes: [["alpha", "α", "Dark Waters"], ["1-2", "1-2", "The Living and the Dead"], ["3-4", "3-4", "Maws of Byzantion"], ["5-6", "5-6", "Market Forces"], ["7-8", "7-8", "Night Trade"], ["9-10", "9-10", "Cost of Progress"], ["omega", "Ω", "Burn It Down"]] },
-          { id: "parable-of-the-butterfly", title: "Parable of the Butterfly", passage: "77", boxes: [["alpha", "α", "Bloody Butterfly"], ["1-2", "1-2", "Canal Runners"], ["3-4", "3-4", "Wild at Heart"], ["5-6", "5-6", "Agōgē"], ["7-8", "7-8", "Phantom Pain"], ["9-10", "9-10", "Abyss Horizon"], ["omega", "Ω", "Crippled Chrysalis"]] },
-          { id: "truth-to-weakness", title: "Truth to Weakness", passage: "85", boxes: [["alpha", "α", "Truth to Weakness"], ["1-2", "1-2", "Defeated by Victory"], ["3-4", "3-4", "Sowing"], ["5-6", "5-6", "The Taking"], ["7-8", "7-8", "Cornerstone of Bones"], ["9-10", "9-10", "The Last Great People"], ["omega", "Ω", "Truth to Power"]] },
-          { id: "when-the-land-meets-the-sea", title: "When the Land Meets the Sea", passage: "95", boxes: [["alpha", "α", "The Thousandth Ship"], ["1-2", "1-2", "Crosscurrent"], ["3-4", "3-4", "Weaponized Misery"], ["5-6", "5-6", "Nation of Ships"], ["7-8", "7-8", "War Within"], ["9-10", "9-10", "People of the Herds"], ["omega", "Ω", "Siege Eternal"]] },
+          { id: "consider-the-ant", title: "Consider the Ant", passage: "41", boxes: [["alpha", "α", "To Walk a Mile", "deed"], ["1-2", "1-2", "Black Veins", "supernatural"], ["3-4", "3-4", "The Old Shepherd", "family"], ["5-6", "5-6", "Food Farm", "crime"], ["7-8", "7-8", "Armorers", "curse"], ["9-10", "9-10", "Slaves of War", "tragedy"], ["omega", "Ω", "A Drone's Reward", "fate"]] },
+          { id: "the-other-thermopylae", title: "The Other Thermopylae", passage: "48", boxes: [["alpha", "α", "A War Out There", "fate"], ["1-2", "1-2", "Forsaken Aegises", "tragedy"], ["3-4", "3-4", "Cost of Freedom", "voyage"], ["5-6", "5-6", "Justice of War", "gods"], ["7-8", "7-8", "People of Burden", "deed"], ["9-10", "9-10", "Those Who Live", "dream"], ["omega", "Ω", "Homefront", "family"]] },
+          { id: "from-the-ashes", title: "From the Ashes", passage: "55", boxes: [["alpha", "α", "The Just War", "heritage"], ["1-2", "1-2", "Sand and Stone", "gods"], ["3-4", "3-4", "Bones of the Past", "curse"], ["5-6", "5-6", "Unshackled", "tragedy"], ["7-8", "7-8", "Cult of the Fallen Sun", "supernatural"], ["9-10", "9-10", "Gears of Progress", "deed"], ["omega", "Ω", "A Peace for Our Aeon", "crime"]] },
+          { id: "intended-purpose", title: "Intended Purpose", passage: "62", boxes: [["alpha", "α", "The Once Was An Empire...", "curse"], ["1-2", "1-2", "Merchants of Death", "voyage"], ["3-4", "3-4", "The Hand You're Dealt", "tragedy"], ["5-6", "5-6", "Breath of the Grave", "supernatural"], ["7-8", "7-8", "Face of the Enemy", "dream"], ["9-10", "9-10", "Shadowplay", "family"], ["omega", "Ω", "... That Knew No Mercy", "heritage"]] },
+          { id: "misery-industry", title: "Misery Industry", passage: "70", boxes: [["alpha", "α", "Dark Waters", "tragedy"], ["1-2", "1-2", "The Living and the Dead", "heritage"], ["3-4", "3-4", "Maws of Byzantion", "voyage"], ["5-6", "5-6", "Market Forces", "crime"], ["7-8", "7-8", "Night Trade", "dream"], ["9-10", "9-10", "Cost of Progress", "family"], ["omega", "Ω", "Burn It Down", "gods"]] },
+          { id: "parable-of-the-butterfly", title: "Parable of the Butterfly", passage: "77", boxes: [["alpha", "α", "Bloody Butterfly", "supernatural"], ["1-2", "1-2", "Canal Runners", "crime"], ["3-4", "3-4", "Wild at Heart", "family"], ["5-6", "5-6", "Agōgē", "fate"], ["7-8", "7-8", "Phantom Pain", "gods"], ["9-10", "9-10", "Abyss Horizon", "voyage"], ["omega", "Ω", "Crippled Chrysalis", "dream"]] },
+          { id: "truth-to-weakness", title: "Truth to Weakness", passage: "85", boxes: [["alpha", "α", "Truth to Weakness", "voyage"], ["1-2", "1-2", "Defeated by Victory", "fate"], ["3-4", "3-4", "Sowing", "crime"], ["5-6", "5-6", "The Taking", "curse"], ["7-8", "7-8", "Cornerstone of Bones", "heritage"], ["9-10", "9-10", "The Last Great People", "fate"], ["omega", "Ω", "Truth to Power", "deed"]] },
+          { id: "when-the-land-meets-the-sea", title: "When the Land Meets the Sea", passage: "95", boxes: [["alpha", "α", "The Thousandth Ship", "gods"], ["1-2", "1-2", "Crosscurrent", "deed"], ["3-4", "3-4", "Weaponized Misery", "curse"], ["5-6", "5-6", "Nation of Ships", "dream"], ["7-8", "7-8", "War Within", "family"], ["9-10", "9-10", "People of the Herds", "heritage"], ["omega", "Ω", "Siege Eternal", "supernatural"]] },
         ],
         rr: [
           ["1", "Artiazein"], ["2", "The Chiton Thief"], ["3", "Falling Stars"], ["4", "The New Muse"], ["5", "The Diogenes Method"], ["6", "The Argonaut Epic"], ["7", "An Augean Quandary"], ["8", "Pictophong Hunt"], ["9", "Denialwatchers"], ["10", "For the Fallen"],
@@ -2244,8 +2292,10 @@
     let campaignConflictReloading = false;
     let campaignSectionBaseline = null;
     let campaignExternalSyncInFlight = false;
+    let campaignSessionEpoch = 0;
     const campaignSyncChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-dashboard-sync-v1") : null;
     const recordSyncChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-record-sync-v1") : null;
+    const heroMnemosSyncChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-hero-mnemos-sync-v1") : null;
     const constantToolsOpen = {};
     let authMode = "login";
     let sessionUser = null;
@@ -2429,6 +2479,11 @@
     }
 
     function showAuth(message = "") {
+      campaignSessionEpoch += 1;
+      clearTimeout(campaignSaveTimer);
+      campaignSaveTimer = null;
+      campaignSavePending = false;
+      campaignSaveQueuedBeforeReady = false;
       campaignStorageAvailable = false;
       elements.appShell.hidden = true;
       elements.authGate.hidden = false;
@@ -2437,16 +2492,20 @@
     }
 
     function startAuthenticatedApp(user) {
+      campaignSessionEpoch += 1;
+      clearTimeout(campaignSaveTimer);
+      campaignSaveTimer = null;
+      campaignSavePending = false;
+      campaignSaveQueuedBeforeReady = false;
+      campaignSectionRevision = 0;
+      campaignSectionBaseline = null;
+      campaignStorageAvailable = false;
+      renderDashboardArchive(defaultArchive);
       sessionUser = user;
       elements.sessionAccountName.textContent = user?.username || "当前账号";
       elements.authGate.hidden = true;
       elements.appShell.hidden = false;
-      syncInputs();
-      renderProfiles();
-      renderCycles();
-      renderFlow();
-      renderDateTrack();
-      loadCampaignSection();
+      loadCampaignSection(campaignSessionEpoch);
     }
 
     async function requestAuth(action, username, password) {
@@ -2508,8 +2567,19 @@
       };
     }
 
+    function defaultDayForCycle(cycleId) {
+      return cycleId === "c1" ? "T0" : 0;
+    }
+
+    function normalizeCampaignDay(value, cycleId = "c2") {
+      const text = String(value ?? "").trim().toUpperCase();
+      if (cycleId === "c1" && /^(?:T[0-5]|T6\/00)$/.test(text)) return text;
+      if (text === "") return defaultDayForCycle(cycleId);
+      return Math.max(0, Math.floor(Number(text) || 0));
+    }
+
     function normalizeState(value = {}, cycleId = "c2") {
-      const day = Math.max(0, Number(value.day ?? defaultState.day));
+      const day = normalizeCampaignDay(value === defaultState ? undefined : value.day, cycleId);
       const surveyConstantsDay = typeof value.surveyConstantsDay === "string" ? value.surveyConstantsDay : null;
       const surveyConstantsTouchedDay = typeof value.surveyConstantsTouchedDay === "string" ? value.surveyConstantsTouchedDay : null;
       const currentSurveyDay = `${cycleId}:${day}`;
@@ -3147,15 +3217,17 @@
       queueCampaignSave();
     }
 
-    async function loadCampaignSection() {
+    async function loadCampaignSection(sessionEpoch = campaignSessionEpoch) {
       try {
         const response = await fetch(campaignStorageUrl, { cache: "no-store" });
+        if (sessionEpoch !== campaignSessionEpoch) return;
         if (response.status === 401) {
           showAuth("登录已过期，请重新登录。");
           return;
         }
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const payload = await response.json();
+        if (sessionEpoch !== campaignSessionEpoch) return;
         if (!payload.ok) throw new Error(payload.error || "读取失败");
         campaignStorageAvailable = true;
         campaignSectionRevision = Math.max(0, Number(payload.revision || 0));
@@ -3165,11 +3237,15 @@
           renderDashboardArchive(payload.state);
           campaignSectionBaseline = cloneJson(archive);
         } else {
+          renderDashboardArchive(defaultArchive);
           campaignSectionBaseline = cloneJson(archive);
           queueCampaignSave();
         }
         if (flushQueuedSave) queueCampaignSave();
+        // Load negotiation cards for explore reminders, then re-render flow.
+        loadNegotiationCards().then(() => renderFlow());
       } catch (error) {
+        if (sessionEpoch !== campaignSessionEpoch) return;
         campaignStorageAvailable = false;
         console.warn(error);
       }
@@ -3190,6 +3266,7 @@
         campaignSavePending = true;
         return;
       }
+      const sessionEpoch = campaignSessionEpoch;
       campaignSaveInFlight = true;
       campaignSavePending = false;
       const archiveBeingSaved = cloneJson(archive);
@@ -3203,6 +3280,7 @@
             expectedRevision: campaignSectionRevision,
           }),
         });
+        if (sessionEpoch !== campaignSessionEpoch) return;
         if (response.status === 401) {
           showAuth("登录已过期，请重新登录。");
           return;
@@ -3439,6 +3517,113 @@
 
     function findSurveyHubBox(hub, boxId) {
       return hub?.boxes?.find(([id]) => id === boxId) || null;
+    }
+
+    const HERO_STORAGE_KEY = "ato-hero-record-v1";
+    const MNEMOS_TAG_ZH = { curse: "诅咒", fate: "命运", family: "家庭", tragedy: "悲剧", supernatural: "超自然", heritage: "传承", dream: "梦境", voyage: "航程", deed: "事迹", crime: "犯罪", gods: "众神" };
+    // Mnemos card tags: { cardId: [tag1, tag2, tag3] }
+    const MNEMOS_CARD_TAGS = {"c1_00":["voyage","supernatural","deed"],"c1_01":["voyage","family","gods"],"c1_02":["dream","voyage","fate"],"c1_03":["family","tragedy","crime"],"c1_04":["curse","crime","dream"],"c1_05":["fate","supernatural","curse"],"c1_06":["deed","tragedy","family"],"c1_07":["deed","heritage","dream"],"c1_08":["gods","heritage","fate"],"c1_09":["voyage","heritage","fate"],"c1_10":["deed","crime","tragedy"],"c1_11":["fate","gods","curse"],"c1_12":["heritage","fate","voyage"],"c2_00":["curse","heritage","fate"],"c2_01":["deed","family","dream"],"c2_02":["deed","tragedy","crime"],"c2_03":["fate","supernatural","gods"],"c2_04":["deed","voyage","crime"],"c2_05":["family","heritage","gods"],"c2_06":["tragedy","supernatural","curse"],"c2_07":["deed","dream","curse"],"c2_08":["fate","voyage","gods"],"c3_00":["dream","voyage","fate"],"c3_01":["family","tragedy","crime"],"c3_02":["deed","crime","tragedy"],"c3_03":["gods","family","voyage"],"c3_04":["supernatural","tragedy","family"],"c3_05":["deed","heritage","supernatural"],"c3_06":["gods","voyage","fate"],"c3_07":["curse","heritage","fate"],"c4_00":["voyage","family","gods"],"c4_01":["family","tragedy","crime"],"c4_02":["deed","crime","tragedy"],"c4_03":["supernatural","tragedy","family"],"c4_04":["fate","voyage","gods"],"c4_05":["voyage","fate","dream"],"c4_06":["fate","curse","heritage"],"c4_07":["supernatural","deed","heritage"],"c5_00":["curse","heritage","fate"],"c5_01":["deed","family","dream"],"c5_02":["deed","tragedy","crime"],"c5_03":["fate","supernatural","gods"],"c5_04":["deed","voyage","crime"],"c5_05":["family","heritage","gods"],"c5_06":["supernatural","tragedy","curse"],"c5_07":["deed","curse","voyage"]};
+    const FATED_CARD_TAGS = {"fm_c1_01":["heritage","gods","fate"],"fm_c1_02":["family","tragedy","crime"],"fm_c1_03":["curse","dream","crime"],"fm_c1_04":["fate","supernatural","curse"],"fm_c1_05":["deed","tragedy","family"],"fm_c1_06":["deed","heritage","dream"],"fm_c1_07":["voyage","supernatural","deed"],"fm_c1_08":["voyage","family","gods"],"fm_c1_09":["deed","heritage","curse"],"fm_c2_01":["heritage","gods","fate"],"fm_c2_02":["voyage","tragedy","crime"],"fm_c2_03":["curse","dream","crime"],"fm_c2_04":["fate","supernatural","gods"],"fm_c2_05":["fate","tragedy","family"],"fm_c2_06":["deed","tragedy","dream"],"fm_c2_07":["voyage","supernatural","deed"],"fm_c2_08":["voyage","gods","family"],"fm_c2_09":["crime","heritage","curse"],"fm_c3_01":["deed","gods","fate"],"fm_c3_02":["dream","tragedy","crime"],"fm_c3_03":["curse","dream","crime"],"fm_c3_04":["fate","supernatural","gods"],"fm_c3_05":["fate","gods","family"],"fm_c3_06":["supernatural","deed","dream"],"fm_c3_07":["voyage","supernatural","deed"],"fm_c3_08":["voyage","dream","gods"],"fm_c3_09":["supernatural","heritage","curse"],"fm_c4_01":["family","curse","heritage"],"fm_c4_02":["supernatural","curse","heritage"],"fm_c4_03":["curse","crime","dream"],"fm_c4_04":["voyage","dream","gods"],"fm_c4_05":["deed","supernatural","dream"],"fm_c4_06":["deed","supernatural","voyage"],"fm_c4_07":["fate","gods","family"],"fm_c4_08":["dream","tragedy","crime"],"fm_c4_09":["deed","heritage","fate"],"fm_c5_01":["gods","family","fate"],"fm_c5_02":["supernatural","tragedy","crime"],"fm_c5_03":["curse","dream","crime"],"fm_c5_04":["voyage","dream","gods"],"fm_c5_05":["deed","curse","dream"],"fm_c5_06":["voyage","supernatural","deed"],"fm_c5_07":["deed","heritage","curse"],"fm_c5_08":["family","gods","fate"],"fm_c5_09":["supernatural","heritage","curse"]};
+    const HERO_CYCLES = ["c1", "c2", "c3", "c4", "c5"];
+    const MNEMOS_CARD_NAMES = {"c1_00":"塞壬幸存者","c1_01":"有人在等待","c1_02":"你所持有的梦","c1_03":"家族世仇","c1_04":"监禁","c1_05":"萦绕心头","c1_06":"破碎的承诺","c1_07":"难忘之夜","c1_08":"死神追随","c1_09":"米诺斯传承","c1_10":"沾满鲜血的双手","c1_11":"熟悉的诅咒","c1_12":"神明的诅咒","c2_00":"窝里最弱的","c2_01":"错配","c2_02":"被弃为死","c2_03":"深渊吐出","c2_04":"懦夫之道","c2_05":"弃物","c2_06":"死亡先行","c2_07":"禁忌之恋","c2_08":"被蔑视的冠军","c3_00":"伊甸园的坠落","c3_01":"不劳而获的生活","c3_02":"充满遗憾的人生","c3_03":"时空交错的爱人","c3_04":"时间守护者的孩子","c3_05":"耻辱的父母","c3_06":"无心插柳的英雄","c3_07":"回归者","c4_00":"天堂之种","c4_01":"第三个愿望","c4_02":"乞丐与王子","c4_03":"风起云涌","c4_04":"苦难掮客","c4_05":"大而不倒","c4_06":"千零一夜","c4_07":"负重之骡","c5_00":"消失之点","c5_01":"神之形象","c5_02":"庇护之所","c5_03":"信条","c5_04":"最后的十字军","c5_05":"言行合一","c5_06":"暮光之刻","c5_07":"他说出了真相"};
+    const FATED_CARD_NAMES = {"fm_c1_01":"死亡的记忆","fm_c1_02":"背叛","fm_c1_03":"孤独","fm_c1_04":"被遗弃","fm_c1_05":"全然不知","fm_c1_06":"真嗣","fm_c1_07":"荣誉盲","fm_c1_08":"利己主义者","fm_c1_09":"自私","fm_c2_01":"不幸","fm_c2_02":"虚弱","fm_c2_03":"懦夫","fm_c2_04":"不情愿","fm_c2_05":"替罪羊","fm_c2_06":"焦躁不安","fm_c2_07":"神浆成瘾","fm_c2_08":"嗜血","fm_c2_09":"笨拙","fm_c3_01":"心理生理障碍","fm_c3_02":"冷漠","fm_c3_03":"命运诅咒","fm_c3_04":"胆怯","fm_c3_05":"精力耗弱","fm_c3_06":"迷信","fm_c3_07":"恶心","fm_c3_08":"迟到","fm_c3_09":"贬低","fm_c4_01":"被诅咒","fm_c4_02":"双重诅咒","fm_c4_03":"三重诅咒","fm_c4_04":"恐高","fm_c4_05":"一厢情愿","fm_c4_06":"被剥夺","fm_c4_07":"囤积者","fm_c4_08":"负债","fm_c4_09":"可牺牲的","fm_c5_01":"伪善","fm_c5_02":"妄想","fm_c5_03":"教条","fm_c5_04":"受辱","fm_c5_05":"沮丧","fm_c5_06":"溺水的记忆","fm_c5_07":"幻痛","fm_c5_08":"畏神","fm_c5_09":"弥赛亚"};
+    const MNEMOS_CARD_NODES = {"c1_00":{"nodes":["M003","M013","M023"],"thresholds":[3,7,10]},"c1_01":{"nodes":["M005","M015","M025"],"thresholds":[3,7,10]},"c1_02":{"nodes":["M001","M011","M021"],"thresholds":[3,7,10]},"c1_03":{"nodes":["M008","M018","M028"],"thresholds":[3,7,10]},"c1_04":{"nodes":["M002","M012","M022"],"thresholds":[3,7,10]},"c1_05":{"nodes":["M009","M019","M029"],"thresholds":[3,7,10]},"c1_06":{"nodes":["M006","M016","M026"],"thresholds":[3,7,10]},"c1_07":{"nodes":["M010","M020","M030"],"thresholds":[3,7,10]},"c1_08":{"nodes":["M031","M041","M037"],"thresholds":[3,7,10]},"c1_09":{"nodes":["M004","M014","M024"],"thresholds":[3,7,10]},"c1_10":{"nodes":["M007","M017","M027"],"thresholds":[3,7,10]},"c1_11":{"nodes":["M032","M043","M034"],"thresholds":[3,7,10]},"c1_12":{"nodes":["M033","M036","M038"],"thresholds":[3,7,10]},"c2_00":{"nodes":["M007","M017","M027"],"thresholds":[3,7,10]},"c2_01":{"nodes":["M002","M012","M022"],"thresholds":[3,7,10]},"c2_02":{"nodes":["M008","M018","M028"],"thresholds":[3,7,10]},"c2_03":{"nodes":["M004","M014","M024"],"thresholds":[3,7,10]},"c2_04":{"nodes":["M003","M013","M023"],"thresholds":[3,7,10]},"c2_05":{"nodes":["M009","M019","M029"],"thresholds":[3,7,10]},"c2_06":{"nodes":["M005","M015","M025"],"thresholds":[3,7,10]},"c2_07":{"nodes":["M001","M011","M021"],"thresholds":[3,7,10]},"c2_08":{"nodes":["M006","M016","M026"],"thresholds":[3,7,10]},"c3_00":{"nodes":["M007","M017","M027"],"thresholds":[3,7,10]},"c3_01":{"nodes":["M002","M012","M022"],"thresholds":[3,7,10]},"c3_02":{"nodes":["M008","M018","M028"],"thresholds":[3,7,10]},"c3_03":{"nodes":["M004","M014","M024"],"thresholds":[3,7,10]},"c3_04":{"nodes":["M003","M013","M023"],"thresholds":[3,7,10]},"c3_05":{"nodes":["M005","M015","M025"],"thresholds":[3,7,10]},"c3_06":{"nodes":["M001","M011","M021"],"thresholds":[3,7,10]},"c3_07":{"nodes":["M006","M016","M026"],"thresholds":[3,7,10]},"c4_00":{"nodes":["M008","M018","M028"],"thresholds":[3,7,10]},"c4_01":{"nodes":["M003","M013","M023"],"thresholds":[3,7,10]},"c4_02":{"nodes":["M002","M012","M022"],"thresholds":[3,7,10]},"c4_03":{"nodes":["M004","M014","M024"],"thresholds":[3,7,10]},"c4_04":{"nodes":["M005","M015","M025"],"thresholds":[3,7,10]},"c4_05":{"nodes":["M001","M011","M021"],"thresholds":[3,7,10]},"c4_06":{"nodes":["M007","M017","M027"],"thresholds":[3,7,10]},"c4_07":{"nodes":["M006","M016","M026"],"thresholds":[3,7,10]},"c5_00":{"nodes":["M005","M015","M025"],"thresholds":[3,7,10]},"c5_01":{"nodes":["M006","M016","M026"],"thresholds":[3,7,10]},"c5_02":{"nodes":["M003","M013","M023"],"thresholds":[3,7,10]},"c5_03":{"nodes":["M004","M014","M024"],"thresholds":[3,7,10]},"c5_04":{"nodes":["M002","M012","M022"],"thresholds":[3,7,10]},"c5_05":{"nodes":["M001","M011","M021"],"thresholds":[3,7,10]},"c5_06":{"nodes":["M007","M017","M027"],"thresholds":[3,7,10]},"c5_07":{"nodes":["M008","M018","M028"],"thresholds":[5,9,14]}};
+
+    function applyMnemosTagToHeroes(tagId, hubTitle, boxLabel) {
+      let heroState;
+      try { heroState = JSON.parse(localStorage.getItem(HERO_STORAGE_KEY)); } catch { return; }
+      if (!heroState || !Array.isArray(heroState.heroes) || !heroState.heroes.length) return;
+
+      const tagZh = MNEMOS_TAG_ZH[tagId] || tagId;
+      const proposals = [];
+
+      heroState.heroes.forEach(hero => {
+        hero.mnemosProgress = hero.mnemosProgress || {};
+        // Find best mnemos card with this tag
+        let bestMnemos = null;
+        let bestProgress = -1;
+        HERO_CYCLES.forEach(cycleId => {
+          (hero.mnemos?.[cycleId] || []).forEach(mId => {
+            const cardTags = MNEMOS_CARD_TAGS[mId];
+            if (cardTags && cardTags.includes(tagId)) {
+              const progress = hero.mnemosProgress[mId] || 0;
+              if (progress < 10 && progress > bestProgress) {
+                bestProgress = progress;
+                bestMnemos = mId;
+              }
+            }
+          });
+        });
+        if (bestMnemos) {
+          proposals.push({ hero, type: "mnemos", cardId: bestMnemos, current: hero.mnemosProgress[bestMnemos] || 0 });
+        }
+
+        // Find best fated card with this tag
+        hero.fatedMnemos = hero.fatedMnemos || {};
+        hero.fatedProgress = hero.fatedProgress || {};
+        let bestFated = null;
+        let bestFatedProg = -1;
+        HERO_CYCLES.forEach(cycleId => {
+          (hero.fatedMnemos[cycleId] || []).forEach(fId => {
+            const cardTags = FATED_CARD_TAGS[fId];
+            if (cardTags && cardTags.includes(tagId)) {
+              const progress = hero.fatedProgress[fId] || 0;
+              if (progress < 3 && progress > bestFatedProg) {
+                bestFatedProg = progress;
+                bestFated = fId;
+              }
+            }
+          });
+        });
+        if (bestFated) {
+          proposals.push({ hero, type: "fated", cardId: bestFated, current: hero.fatedProgress[bestFated] || 0 });
+        }
+      });
+
+      if (!proposals.length) return;
+
+      const heroDisplayName = (hero) => {
+        const argonauts = [["odys","奥德修斯·零"],["circe","喀耳刻卫"],["phenelope","珀涅罗珀"],["telebac","忒勒巴科斯"],["herakleides","赫拉克莱德斯"],["olympia","奥林匹亚"],["leocules","莱奥库勒斯"],["raz","拉兹"],["fisher","费舍尔"],["hypatia","希帕提亚"],["anakreon","阿纳克里翁"],["anathea","安纳忒亚"],["orphan","DMT的孤儿"],["aster","阿斯特"],["dastan","达斯坦"],["aktisaeos","阿克提赛俄斯"],["oleander","欧利安德"],["omorfos","欧莫弗斯"]];
+        if (hero.customName) return hero.customName;
+        const found = argonauts.find(a => a[0] === hero.argonaut);
+        return found ? found[1] : (hero.playerName || "英雄");
+      };
+
+      const lines = proposals.map(p => {
+        const name = heroDisplayName(p.hero);
+        const cardName = p.type === "mnemos" ? (MNEMOS_CARD_NAMES[p.cardId] || p.cardId) : (FATED_CARD_NAMES[p.cardId] || p.cardId);
+        const label = p.type === "mnemos" ? "回忆" : "宿命";
+        const max = p.type === "mnemos" ? 10 : 3;
+        return `${name}「${cardName}」(${label}) ${p.current} → ${p.current + 1}/${max}`;
+      });
+      const confirmMsg = `定数框标签【${tagZh}】\n来源：${hubTitle} · ${boxLabel}\n\n以下英雄将获得回忆节点：\n${lines.join("\n")}\n\n确认增加？`;
+      if (!confirm(confirmMsg)) return;
+
+      // Apply changes
+      proposals.forEach(p => {
+        if (p.type === "mnemos") {
+          p.hero.mnemosProgress[p.cardId] = p.current + 1;
+        } else {
+          p.hero.fatedProgress[p.cardId] = p.current + 1;
+        }
+      });
+
+      // Save back to localStorage
+      try { localStorage.setItem(HERO_STORAGE_KEY, JSON.stringify(heroState)); } catch {}
+      // Also save to NAS
+      void saveHeroMnemosToServer(heroState);
+      // Notify hero page if open
+      heroMnemosSyncChannel?.postMessage({ type: "hero-state-updated" });
+    }
+
+    async function saveHeroMnemosToServer(heroState) {
+      try {
+        await fetch("./api/campaign-state.php?section=heroes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ data: heroState }),
+        });
+      } catch {}
     }
 
     function surveyStoryEntryId(boxId) {
@@ -3968,6 +4153,16 @@
       if (groupId !== "rr" && checked) {
         recordSyncChannel?.postMessage({ source: "dashboard-constant-pending" });
         void syncSurveyAdventureToArgoRecord();
+        // Apply mnemos tag to hero record
+        const surveyData = getCurrentSurveyConstantData();
+        const hub = findSurveyHub(surveyData, itemId);
+        if (hub) {
+          const box = hub.boxes.find(b => b[0] === boxId);
+          const tag = box?.[3];
+          if (tag) {
+            applyMnemosTagToHeroes(tag, hub.title, box[2]);
+          }
+        }
       }
       saveState();
       renderFlow();
@@ -3983,7 +4178,7 @@
 
       const boxes = document.createElement("div");
       boxes.className = "survey-constant-boxes";
-      item.boxes.forEach(([boxId, roll, label]) => {
+      item.boxes.forEach(([boxId, roll, label, tag]) => {
         const row = document.createElement("label");
         const input = document.createElement("input");
         input.type = "checkbox";
@@ -3994,6 +4189,12 @@
         rollText.textContent = roll;
         const labelText = document.createElement("span");
         labelText.textContent = label;
+        if (tag) {
+          const tagBadge = document.createElement("span");
+          tagBadge.className = "survey-constant-tag";
+          tagBadge.textContent = tag;
+          labelText.append(" ", tagBadge);
+        }
         row.append(input, rollText, labelText);
         boxes.appendChild(row);
       });
@@ -4494,9 +4695,19 @@
       return `./record/index.html?${params.toString()}`;
     }
 
+    function getHeroHref() {
+      const config = currentCycleConfig();
+      const params = new URLSearchParams();
+      params.set("cycle", config.id);
+      return `./hero/index.html?${params.toString()}`;
+    }
+
     function updateRecordLinks() {
-      document.querySelectorAll('a[href^="./record/index.html"], .record-card-link').forEach((anchor) => {
+      document.querySelectorAll('a[href^="./record/index.html"], .record-card-link:not(.hero-card-link)').forEach((anchor) => {
         anchor.href = getRecordHref();
+      });
+      document.querySelectorAll('a[href^="./hero/index.html"], .hero-card-link').forEach((anchor) => {
+        anchor.href = getHeroHref();
       });
     }
 
@@ -4561,7 +4772,7 @@
 
     function keepCurrentDateVisible() {
       const list = elements.dateTrackList;
-      if (currentCycleConfig().id === "c1" && Number(state.day) === 0) {
+      if (currentCycleConfig().id === "c1" && state.day === "T0") {
         list.scrollTop = 0;
         return;
       }
@@ -4605,7 +4816,7 @@
       const track = dateTrackData[currentCycleConfig().id];
       if (!track) return [];
 
-      const entry = track.entries.find((item) => item.day === state.day);
+      const entry = track.entries.find((item) => String(item.day) === String(state.day));
       return dateTrackIcons(entry || { day: state.day }, track);
     }
 
@@ -4619,6 +4830,57 @@
 
     function currentMapTileLabel() {
       return state.mapSnapshot?.currentTileLabel || state.location || "当前板块";
+    }
+
+    let _negotiationCardsCache = null;
+    async function loadNegotiationCards() {
+      if (_negotiationCardsCache) return _negotiationCardsCache;
+      try {
+        const resp = await fetch("./technology/tech_card_dictionary.min.json", { cache: "no-cache" });
+        if (!resp.ok) return [];
+        const dict = await resp.json();
+        const cards = Array.isArray(dict.cards) ? dict.cards : Object.values(dict.cards || {});
+        const result = [];
+        cards.forEach((card) => {
+          if (card?.type?.negotiation !== true) return;
+          const key = String(card.key || "").toLowerCase().trim();
+          if (!key) return;
+          const pages = (card.nodes || []).map((n) => n?.page || "").filter(Boolean);
+          if (!pages.length) return; // Skip cards not attached to any tree node.
+          result.push({
+            key,
+            nameZh: card.names?.zh || "",
+            nameEn: card.names?.en || key,
+            pages,
+            backImage: card.image?.back || "",
+          });
+        });
+        _negotiationCardsCache = result;
+        return result;
+      } catch { return []; }
+    }
+
+    function unlockedNegotiationTechs() {
+      if (!state.unlockedTech || !_negotiationCardsCache) return [];
+      const records = Array.isArray(state.unlockedTech.unlocked) ? state.unlockedTech.unlocked : [];
+      const activeCycleId = currentCycleConfig().id;
+      const activeCycleNum = Number(activeCycleId.replace(/\D/g, "") || 0);
+      // Build set of unlocked keys (strip @@pageKey suffix).
+      const unlockedKeys = new Set(records.filter((r) => !r.unimportant).map((r) => String(r.key || "").toLowerCase().trim().replace(/@@.*$/, "")));
+      return _negotiationCardsCache.filter((card) => {
+        if (!unlockedKeys.has(card.key)) return false;
+        // Exclude cycle-only cards from previous cycles.
+        if (card.pages.length > 0) {
+          const cardCycleNums = card.pages.map((p) => Number(String(p).replace(/\D/g, "") || 0));
+          const maxCycle = Math.max(...cardCycleNums);
+          if (maxCycle < activeCycleNum) return false;
+        }
+        return true;
+      });
+    }
+
+    function unlockedNegotiationTechNames() {
+      return unlockedNegotiationTechs().map((card) => card.nameZh || card.nameEn);
     }
 
     function latestRevealedMapTileLabel() {
@@ -4655,25 +4917,91 @@
     function getExploreMapReminders() {
       const tags = currentMapTagSet();
       if (!tags.has("city") || state.mapCurrentTileHasLastCityMarker) return [];
+      const techs = unlockedNegotiationTechs();
+      const negotiationTechText = techs.length
+        ? ` 已解锁谈判科技：${techs.map((t) => t.nameZh || t.nameEn).join("、")}。`
+        : " 暂无已解锁谈判科技。";
+      const cardImages = techs
+        .filter((t) => t.backImage)
+        .map((t) => `<img class="negotiation-card-back" src="./technology/${t.backImage}" alt="${t.nameZh || t.nameEn}" title="${t.nameZh || t.nameEn}">`)
+        .join("");
 
       return [{
         title: "当前城市可谈判",
         tag: { label: "谈判", className: "structure-tech" },
-        desc: `${currentMapTileLabel()} 是城市，且不是最后到访城市。探索阶段可以进行谈判。`,
+        desc: `${currentMapTileLabel()} 可谈判。${negotiationTechText}`,
+        html: cardImages || "",
         className: "important",
       }];
     }
 
     function getStoryMapReminders() {
       const tags = currentMapTagSet();
-      if (!tags.has("progress") || !state.mapCurrentTileIsLatestRevealed) return [];
+      const reminders = [];
+      if (tags.has("progress") && state.mapCurrentTileIsLatestRevealed) {
+        reminders.push({
+          title: "新探索板块放置进展",
+          tag: { label: "进展", className: "structure-tech" },
+          desc: `${currentMapTileLabel()} 是最新揭示的板块，且带有进展指示物标记。请在故事步骤放置 1 个进展。`,
+          className: "tech",
+        });
+      }
+      // Check hero mnemos nodes pending settlement
+      const mnemosPending = getMnemosPendingReminders();
+      reminders.push(...mnemosPending);
+      return reminders;
+    }
 
-      return [{
-        title: "新探索板块放置进展",
-        tag: { label: "进展", className: "structure-tech" },
-        desc: `${currentMapTileLabel()} 是最新揭示的板块，且带有进展指示物标记。请在故事步骤放置 1 个进展。`,
-        className: "tech",
-      }];
+    function getMnemosPendingReminders() {
+      let heroState;
+      try { heroState = JSON.parse(localStorage.getItem(HERO_STORAGE_KEY)); } catch { return []; }
+      if (!heroState || !Array.isArray(heroState.heroes) || !heroState.heroes.length) return [];
+
+      const reminders = [];
+      const heroDisplayName = (hero) => {
+        const argonauts = [["odys","奥德修斯·零"],["circe","喀耳刻卫"],["phenelope","珀涅罗珀"],["telebac","忒勒巴科斯"],["herakleides","赫拉克莱德斯"],["olympia","奥林匹亚"],["leocules","莱奥库勒斯"],["raz","拉兹"],["fisher","费舍尔"],["hypatia","希帕提亚"],["anakreon","阿纳克里翁"],["anathea","安纳忒亚"],["orphan","DMT的孤儿"],["aster","阿斯特"],["dastan","达斯坦"],["aktisaeos","阿克提赛俄斯"],["oleander","欧利安德"],["omorfos","欧莫弗斯"]];
+        if (hero.customName) return hero.customName;
+        const found = argonauts.find(a => a[0] === hero.argonaut);
+        return found ? found[1] : (hero.playerName || "英雄");
+      };
+
+      heroState.heroes.forEach(hero => {
+        hero.mnemosProgress = hero.mnemosProgress || {};
+        hero.mnemosNodeProgress = hero.mnemosNodeProgress || {};
+        HERO_CYCLES.forEach(cycleId => {
+          (hero.mnemos?.[cycleId] || []).forEach(mId => {
+            const cardDef = MNEMOS_CARD_NODES[mId];
+            if (!cardDef) return;
+            const progress = hero.mnemosProgress[mId] || 0;
+            const nodeProgress = hero.mnemosNodeProgress[mId] || {};
+            cardDef.thresholds.forEach((threshold, idx) => {
+              if (progress >= threshold) {
+                const node = cardDef.nodes[idx];
+                if (node && !nodeProgress[node]) {
+                  const cardName = MNEMOS_CARD_NAMES[mId] || mId;
+                  const name = heroDisplayName(hero);
+                  const storyBookParam = buildMnemosBreakthroughHref(node, cycleId);
+                  reminders.push({
+                    title: `${name}「${cardName}」→ ${node}`,
+                    tag: { label: "回忆突破", className: "battle-tech" },
+                    desc: `${name} 的回忆卡「${cardName}」进度已达 ${threshold}，节点 ${node} 待结算。`,
+                    html: storyBookParam ? `<a class="mnemos-node-link" href="${escapeHtml(storyBookParam)}" target="_blank">跳转故事书 ${node}</a>` : "",
+                    className: "important",
+                  });
+                }
+              }
+            });
+          });
+        });
+      });
+      return reminders;
+    }
+
+    function buildMnemosBreakthroughHref(nodeId, cycleId) {
+      const bookMap = { c1: "c1", c2: "c2", c3: "c3", c4: "c4", c5: "c5" };
+      const bookId = bookMap[cycleId];
+      if (!bookId) return "";
+      return `./story/index.html?book=${bookId}&chapter=mnemos-breakthroughs&entry=${encodeURIComponent(nodeId)}`;
     }
 
     function getDoomMapReminders() {
@@ -4756,6 +5084,7 @@
               <div class="step-track-title">
                 <span class="step-track-tag ${reminder.tag.className}">${escapeHtml(reminder.tag.label)}</span>
                 <span>${escapeHtml(reminder.title)}</span>
+                ${reminder.html ? `<span class="step-track-action">${reminder.html}</span>` : ""}
               </div>
               <p class="step-track-desc">${escapeHtml(reminder.desc)}</p>
             </div>
@@ -4799,7 +5128,7 @@
         const eventText = entry.day == null ? "" : track.events[entry.day];
         const noteText = entry.day == null ? "" : state.dateNotes?.[dateNoteKey(entry.day)] || "";
         const icons = dateTrackIcons(entry, track);
-        const isCurrentDay = entry.day != null && Number(entry.day) === Number(state.day);
+        const isCurrentDay = entry.day != null && String(entry.day) === String(state.day);
         const item = document.createElement("div");
         item.className = `date-track-item${isCurrentDay ? " current" : ""}${eventText ? " event" : ""}${noteText ? " noted" : ""}${entry.day == null ? " disabled" : ""}`;
         item.title = noteText ? `Day ${formatTrackDay(entry)}：${noteText}` : `给 Day ${formatTrackDay(entry)} 写备注`;
@@ -4857,7 +5186,11 @@
     }
 
     function nextDay() {
-      state.day = Math.max(0, Number(state.day || 0) + 1);
+      const track = dateTrackData[currentCycleConfig().id];
+      const currentIndex = track?.entries.findIndex((entry) => String(entry.day) === String(state.day)) ?? -1;
+      state.day = currentIndex >= 0 && currentIndex < track.entries.length - 1
+        ? track.entries[currentIndex + 1].day
+        : Math.max(0, Number(state.day || 0) + 1);
       state.completed = {};
       state.events = state.events.filter((item) => !item.done);
       state.latestSurveyAdventureAction = null;
@@ -5000,7 +5333,7 @@
 
     function clearState() {
       if (!window.confirm(`确定清空当前账号在 ${currentCycleConfig().label} 的 Day、流程、事件和笔记吗？`)) return;
-      state = { ...defaultState, completed: {}, dateNotes: {}, cardTracks: normalizeCardTracks({}, {}, false, currentCycleConfig().id), cardTracksVersion: 2, unlockedTech: null, events: [] };
+      state = { ...defaultState, day: defaultDayForCycle(currentCycleConfig().id), completed: {}, dateNotes: {}, cardTracks: normalizeCardTracks({}, {}, false, currentCycleConfig().id), cardTracksVersion: 2, unlockedTech: null, events: [] };
       currentCycle().state = state;
       queueCampaignSave();
       syncInputs();
@@ -5018,7 +5351,7 @@
     }
 
     elements.dayInput.addEventListener("input", () => {
-      state.day = Math.max(0, Number(elements.dayInput.value || 0));
+      state.day = normalizeCampaignDay(elements.dayInput.value, currentCycleConfig().id);
       state.latestSurveyAdventureAction = null;
       saveState();
       renderFlow();

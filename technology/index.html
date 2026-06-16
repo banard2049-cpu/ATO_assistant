@@ -624,6 +624,71 @@ button.modal-tech-item:hover {
   user-select: none;
 }
 .gear-filter-option input { margin: 0; accent-color: var(--accent); }
+.gear-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+  gap: 14px;
+  align-items: start;
+}
+.gear-resource-sidebar {
+  position: sticky;
+  top: 76px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 12px;
+  max-height: calc(100vh - 96px);
+  overflow: auto;
+}
+.gear-resource-title {
+  font-size: 13px;
+  font-weight: 850;
+  margin-bottom: 8px;
+}
+.gear-resource-meta {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.gear-resource-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.gear-resource-row {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: #f7f9fa;
+  font-size: 12px;
+}
+.gear-resource-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  object-fit: contain;
+  background: #fff;
+  border: 1px solid #e3e8eb;
+}
+.gear-resource-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-weight: 700;
+}
+.gear-resource-value {
+  color: #0d6274;
+  font-weight: 850;
+}
+.gear-resource-empty {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
 .gear-group { border: 1px solid var(--line); border-radius: 8px; background: #fff; margin-bottom: 14px; }
 .gear-group-header {
   display: flex; align-items: center; gap: 10px;
@@ -811,6 +876,8 @@ button.gear-group-name:hover {
   .topbar { position: static; flex-wrap: wrap; height: auto; padding: 10px; }
   .search { width: 100%; }
   .viewport { padding: 10px; }
+  .gear-layout { grid-template-columns: 1fr; }
+  .gear-resource-sidebar { position: static; max-height: none; }
   .unlocked-columns { grid-template-columns: 1fr; }
   .unlocked-modal { grid-template-columns: 1fr; }
   .unlocked-modal-image { min-height: 300px; }
@@ -938,6 +1005,7 @@ async function loadGearProductionData() {
     gearPartLabels = {};
   }
 }
+
 
 function gearImageSrc(gearId) {
   if (!gearId) return '';
@@ -1219,13 +1287,16 @@ function renderCraftPanel(entry, gear) {
 function normalizeCraftRecordResources(value) {
   const resources = isPlainObject(value) ? JSON.parse(JSON.stringify(value)) : {};
   SHARED_RECORD_RESOURCE_KEYS.forEach(key => {
-    if (resources[key] !== undefined) return;
     const values = ['c1', 'c2', 'c3', 'c4', 'c5']
       .map(cycle => resources[`${cycle}-${key}`])
       .filter(item => item !== undefined && item !== null && item !== '');
+    if (resources[key] !== undefined && resources[key] !== null && resources[key] !== '') values.unshift(resources[key]);
     if (!values.length) return;
     const numeric = values.map(Number).filter(Number.isFinite);
     if (numeric.length === values.length) resources[key] = Math.max(...numeric);
+    ['c1', 'c2', 'c3', 'c4', 'c5'].forEach(cycle => {
+      delete resources[`${cycle}-${key}`];
+    });
   });
   return resources;
 }
@@ -1353,6 +1424,79 @@ function currentProductionCycle() {
   const number = String(mainCycle).replace(/\D/g, '').padStart(2, '0');
   return `CYCLE_${number}`;
 }
+function isAdversaryProduction(entry) {
+  const techName = gearProductionData?.techCardNames?.[entry?.techId] || getTechDisplayName(entry?.techId);
+  return ADVERSARY_PRODUCTION_PATTERN.test(`${entry?.techId || ''} ${techName}`);
+}
+function currentRecordCycleForGear() {
+  return productionRecordCycle(currentProductionCycle());
+}
+function recordResourceBaseKey(storageKey) {
+  return String(storageKey || '').replace(/^c\d-/, '').replace(/^core-.+$/, 'core');
+}
+function recordResourceLabel(storageKey) {
+  const key = String(storageKey || '');
+  const coreMatch = key.match(/^c\d-core-(.+)$/);
+  if (coreMatch) return `核心 · ${RECORD_ENEMY_LABELS[coreMatch[1]] || coreMatch[1]}`;
+  const baseKey = recordResourceBaseKey(key);
+  return RECORD_RESOURCE_LABELS[baseKey] || baseKey;
+}
+function recordResourceIcon(storageKey) {
+  const key = String(storageKey || '');
+  const iconKey = key.includes('-core-') ? 'core' : recordResourceBaseKey(key);
+  return RECORD_RESOURCE_ICON_KEYS.has(iconKey) ? `../record/assets/resource-icons/${iconKey}.png` : '../record/assets/resource-icons/rare.png';
+}
+function splitRareResourceText(value) {
+  return String(value ?? '')
+    .split(/[\r\n;；,，、]+/)
+    .map(item => item.trim())
+    .filter(Boolean);
+}
+function recordResourceValue(value) {
+  if (value === undefined || value === null || value === '') return '';
+  const number = Number(value);
+  return Number.isFinite(number) ? String(Math.max(0, Math.floor(number))) : String(value);
+}
+function gearResourceSidebarHtml() {
+  if (gearRecordLoadInFlight && !gearRecordState) {
+    return `<aside class="gear-resource-sidebar"><div class="gear-resource-title">当前资源量</div><div class="gear-resource-empty">正在同步记录表资源...</div></aside>`;
+  }
+  if (gearRecordError) {
+    return `<aside class="gear-resource-sidebar"><div class="gear-resource-title">当前资源量</div><div class="gear-resource-empty">无法读取记录表：${esc(gearRecordError)}</div></aside>`;
+  }
+  if (!gearRecordState) {
+    return `<aside class="gear-resource-sidebar"><div class="gear-resource-title">当前资源量</div><div class="gear-resource-empty">记录表尚未连接。</div></aside>`;
+  }
+
+  const resources = normalizeCraftRecordResources(gearRecordState.resources || {});
+  const recordCycle = currentRecordCycleForGear();
+  const rows = Object.entries(resources)
+    .filter(([key, value]) => {
+      const text = recordResourceValue(value);
+      if (!text || text === '0') return false;
+      return key.startsWith(`${recordCycle}-`) || SHARED_RECORD_RESOURCE_KEYS.has(key);
+    })
+    .flatMap(([key, value]) => {
+      if (recordResourceBaseKey(key) !== 'rare') return [{ key, label: recordResourceLabel(key), value: recordResourceValue(value) }];
+      return splitRareResourceText(value).map(item => ({ key, label: item, value: '' }));
+    })
+    .sort((a, b) => {
+      const aCore = a.key.includes('-core-') ? 1 : 0;
+      const bCore = b.key.includes('-core-') ? 1 : 0;
+      const aRare = recordResourceBaseKey(a.key) === 'rare' ? 1 : 0;
+      const bRare = recordResourceBaseKey(b.key) === 'rare' ? 1 : 0;
+      return aCore - bCore || aRare - bRare || a.label.localeCompare(b.label, 'zh-Hans-CN');
+    });
+  const rowsHtml = rows.map(({ key, label, value }) => {
+    return `<div class="gear-resource-row"><img class="gear-resource-icon" src="${esc(recordResourceIcon(key))}" alt="${esc(label)}"><span class="gear-resource-name">${esc(label)}</span><span class="gear-resource-value">${esc(value)}</span></div>`;
+  }).join('');
+  const cycleLabel = recordCycle.replace(/^c/, '循环 ');
+  return `<aside class="gear-resource-sidebar">
+    <div class="gear-resource-title">当前资源量</div>
+    <div class="gear-resource-meta">${esc(cycleLabel)} · 来自阿尔戈号记录表</div>
+    ${rowsHtml ? `<div class="gear-resource-list">${rowsHtml}</div>` : `<div class="gear-resource-empty">本循环暂无已记录资源。</div>`}
+  </aside>`;
+}
 function gearPart(gearId) {
   const manualPart = gearPartLabels[normalizeGearId(gearId).toUpperCase()];
   const manualLabel = {
@@ -1452,12 +1596,12 @@ function renderGearProductionPage() {
   const allItems = productions.flatMap(entry => entry.produces.map(gear => ({ entry, gear })));
   const productionCycle = currentProductionCycle();
   const visibleItems = allItems.filter(({ entry, gear }) => {
-    if (gearOnlyCurrentCycle && entry.cycle !== productionCycle) return false;
+    if (gearOnlyCurrentCycle && entry.cycle !== productionCycle && !isAdversaryProduction(entry)) return false;
     if (gearOnlyCraftable && !gearRecordLoadInFlight && !craftPlanForGear(entry, gear).filterCraftable) return false;
     return true;
   });
   if (!productions.length) {
-    mainView.innerHTML = `<div class="gear-page"><div class="gear-empty">还没有解锁任何生产科技。解锁 production 类型的科技卡后，这里将显示可制造的装备。</div></div>`;
+    mainView.innerHTML = `<div class="gear-page"><div class="gear-layout"><div class="gear-content"><div class="gear-empty">还没有解锁任何生产科技。解锁 production 类型的科技卡后，这里将显示可制造的装备。</div></div>${gearResourceSidebarHtml()}</div></div>`;
     applyGearSearch();
     return;
   }
@@ -1465,6 +1609,7 @@ function renderGearProductionPage() {
   let html = '<div class="gear-page">';
   html += gearFilterBarHtml(visibleItems.length, allItems.length);
   html += `<div class="gear-search-hint">共 ${productions.length} 项生产科技已解锁。使用搜索框继续过滤。</div>`;
+  html += '<div class="gear-layout"><div class="gear-content">';
   const groups = new Map();
   visibleItems.forEach(item => {
     const group = gearGroupByPart
@@ -1483,7 +1628,7 @@ function renderGearProductionPage() {
     html += `<div class="gear-items">${group.items.map(({ entry, gear }) => gearItemHtml(entry, gear)).join('')}</div>`;
     html += `</div>`;
   }
-  html += '</div>';
+  html += `</div>${gearResourceSidebarHtml()}</div></div>`;
   mainView.innerHTML = html;
 
   mainView.querySelectorAll('[data-gear-filter]').forEach(input => {
@@ -1674,6 +1819,7 @@ function dictionaryToAppData(dictionary) {
         name: names.en || '',
         name_zh: names.zh || '',
         tech_category: record.category || type.category || '',
+        type: { ...type },
         card_id: tabletop.card_id,
         deck_key: tabletop.deck_key,
         deck_instance_id: tabletop.deck_instance_id,
@@ -1754,6 +1900,7 @@ function dictionaryToAppData(dictionary) {
         };
         if (type.battle_card_type != null) tagRecord.tag.battle_card_type = type.battle_card_type;
         if (type.loop_limited != null) tagRecord.tag.loop_limited = type.loop_limited;
+        if (type.negotiation != null) tagRecord.tag.negotiation = Boolean(type.negotiation);
         if (pageLabel && !tagRecord.cycles.includes(pageLabel)) tagRecord.cycles.push(pageLabel);
         tagDictionary[nodeKeyValue] = tagRecord;
       }
@@ -1766,6 +1913,7 @@ function dictionaryToAppData(dictionary) {
         };
         if (type.battle_card_type != null) tagDictionary[record.key].tag.battle_card_type = type.battle_card_type;
         if (type.loop_limited != null) tagDictionary[record.key].tag.loop_limited = type.loop_limited;
+        if (type.negotiation != null) tagDictionary[record.key].tag.negotiation = Boolean(type.negotiation);
       }
     }
 
@@ -1809,7 +1957,7 @@ const PRODUCTION_CYCLE_TO_RECORD_CYCLE = {
 const SHARED_RECORD_RESOURCE_KEYS = new Set([
   'fearEssence', 'grotesqueBeak', 'mazeFragment', 'powderedMatter',
   'livingAbyss', 'retractableMechanism', 'skinOfMalice', 'reliefshellFragment',
-  'priests', 'sisyphusTears', 'pygmalionStones',
+  'priests', 'sisyphusTears', 'pygmalionStones', 'rare',
 ]);
 const RECORD_RESOURCE_KEYS = {
   ARMAMENT: 'armament',
@@ -1870,6 +2018,34 @@ const RECORD_CORE_KEYS = {
   HARPY: 'harpy',
   SUN_DESCENDANT: 'sunDescendant',
 };
+const RECORD_RESOURCE_LABELS = Object.entries(RECORD_RESOURCE_KEYS).reduce((labels, [rawKey, recordKey]) => {
+  if (!labels[recordKey]) labels[recordKey] = RESOURCE_NAMES_ZH[rawKey] || rawKey.replace(/_/g, ' ').toLowerCase();
+  return labels;
+}, {});
+const RECORD_RESOURCE_ICON_KEYS = new Set([
+  'armament', 'blackChain', 'calcifiedKnuckle', 'chimericTar', 'clothflesh', 'core',
+  'cyclopeanMetal', 'daedalusMakina', 'echoes', 'eyesCluster', 'fearEssence',
+  'fleshyMantle', 'frozenAmbrosia', 'grotesqueBeak', 'hyperboreanAlloy',
+  'icarianFeather', 'infusedMechanism', 'livingAbyss', 'mazeFragment', 'monument',
+  'muscleCluster', 'powderedMatter', 'priests', 'pygmalionStones', 'rare',
+  'rawAmbrosia', 'razorclaw', 'relief', 'reliefshellFragment', 'retractableMechanism',
+  'sirenshell', 'sisyphusTears', 'skinOfMalice', 'sunburnedSkull', 'supersolidRelief',
+  'trireme', 'violentAmbrosia', 'warMachine', 'warTrireme', 'writhingTentacle',
+]);
+const RECORD_ENEMY_LABELS = {
+  hekaton: '百臂巨人',
+  labyrinthauros: '迷宫机牛',
+  temenos: '吞域兽',
+  pursuer: '赫尔墨斯追踪者',
+  cyclonus: '独眼巨人',
+  chimera: '奇美拉',
+  nietzschean: '尼采超人',
+  adversary: '重担',
+  oracle: '超时光先知',
+  harpy: '伊卡洛斯哈耳庇厄',
+  sunDescendant: '坠落太阳',
+};
+const ADVERSARY_PRODUCTION_PATTERN = /Pursuer|Burden|Bronze Lair|追踪|重担|青铜巢穴/i;
 let accounts = {};
 let activeAccountId = null;
 let currentCycle = null;
@@ -1914,7 +2090,7 @@ let gearRecordLoadInFlight = false;
 let gearRecordError = '';
 let gearCraftPlans = new Map();
 const gearRecordSyncChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('ato-record-sync-v1') : null;
-let gearOnlyCurrentCycle = false;
+let gearOnlyCurrentCycle = true;
 let gearOnlyCraftable = false;
 let gearGroupByPart = false;
 
@@ -1990,6 +2166,13 @@ function applyNodeState(el, pageKey, node) {
   el.classList.toggle('unlockable', !unlockedNow && isUnlockableNode(pageKey, node));
 }
 function isUnimportantNode(pageKey, node) { return unimportant.has(nodeKey(pageKey, node)); }
+function isNegotiationNode(pageKey, node) {
+  const tagRecord = tagForNode(pageKey, node);
+  if (tagRecord?.tag?.negotiation === true) return true;
+  const cards = cardsForNode(node);
+  return cards.some(card => card?.type?.negotiation === true);
+}
+function isStructureNode(node) { return node?.tech_category !== 'battle'; }
 function cardsForNode(node) {
   return (node.card_indexes || []).map(i => data.cards[i]).filter(Boolean);
 }
@@ -2182,6 +2365,8 @@ async function loadCampaignTechnologySection() {
     campaignTechRevision = Math.max(0, Number(payload.campaign?.sectionRevisions?.technology || 0));
     if (payload.exists && payload.campaign) applyCampaignUsersToTechnology(payload.campaign);
     if (flushQueuedSave) queueCampaignTechnologySave();
+    // Auto-sync snapshot to main dashboard so negotiation tags stay current.
+    try { await writeSnapshotToMainArchive(unlockedTechSnapshot()); } catch (e) { console.warn('Auto-sync snapshot:', e); }
   } catch (error) {
     campaignStorageAvailable = false;
     console.warn(error);
@@ -2306,6 +2491,7 @@ function unlockedTechSnapshot() {
       displayName: displayTechName(node),
       category: node.tech_category === 'battle' ? 'battle' : 'structure',
       categoryLabel: categoryLabel(node.tech_category),
+      negotiation: isNegotiationNode(page.key, node),
       cardIndexes: Array.isArray(node.card_indexes) ? node.card_indexes.slice() : [],
       unimportant: isUnimportantNode(page.key, node),
     })),
