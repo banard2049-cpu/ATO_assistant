@@ -15,7 +15,7 @@ session_start();
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 
-$allowedSections = ['dashboard', 'map', 'record', 'technology'];
+$allowedSections = ['dashboard', 'map', 'record', 'technology', 'heroes'];
 $dataDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'data';
 $usersFile = $dataDir . DIRECTORY_SEPARATOR . 'ato-users.json';
 $maxBytes = 1024 * 1024 * 8;
@@ -35,12 +35,14 @@ function default_campaign(): array {
       'map' => null,
       'record' => null,
       'technology' => null,
+      'heroes' => null,
     ],
     'sectionRevisions' => [
       'dashboard' => 0,
       'map' => 0,
       'record' => 0,
       'technology' => 0,
+      'heroes' => 0,
     ],
   ];
 }

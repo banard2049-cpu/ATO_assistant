@@ -634,6 +634,24 @@
       min-width: 0;
     }
 
+    .track-name.with-icon {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 7px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .track-faction-icon {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+    }
+
+    .track-name-text {
+      min-width: 0;
+    }
+
     .track-name strong {
       display: block;
       font-size: 14px;
@@ -760,7 +778,7 @@
 
     .diplomacy-row {
       display: grid;
-      grid-template-columns: 112px minmax(0, 1fr);
+      grid-template-columns: minmax(148px, max-content) minmax(0, 1fr);
       gap: 8px;
       align-items: center;
       min-width: 0;
@@ -795,6 +813,11 @@
       min-width: 34px;
       text-align: center;
       white-space: nowrap;
+    }
+
+    .diplomacy-marker.with-read {
+      justify-items: start;
+      text-align: left;
     }
 
     .diplomacy-marker::after {
@@ -3058,11 +3081,40 @@
       }
     }
 
-    function makeTrackTitle(zh, en) {
+    const diplomacyFactionIcons = {
+      minoians: "MINOANS",
+      labyrinthians: "LABYRINTHIANS",
+      hornsworn: "HORNSWORN",
+      helots: "HELOTS",
+      cyclopes: "CYCLOPES",
+      symmachy: "SYMMACHY",
+      sunheirs: "SUNHEIRS",
+      delphians: "DELPHIANS",
+      twilightWatch: "TWILIGHTWATCH",
+    };
+
+    function makeTrackTitle(zh, en, options = {}) {
       const title = document.createElement("div");
       title.className = "track-name";
-      title.innerHTML = `<strong>${escapeHtml(zh)}</strong><span>${escapeHtml(en || "")}</span>`;
+      if (options.icon) {
+        title.classList.add("with-icon");
+        const icon = document.createElement("img");
+        icon.className = "track-faction-icon";
+        icon.src = options.icon;
+        icon.alt = "";
+        icon.loading = "lazy";
+        title.appendChild(icon);
+      }
+      const text = document.createElement("div");
+      text.className = "track-name-text";
+      text.innerHTML = `<strong>${escapeHtml(zh)}</strong><span>${escapeHtml(en || "")}</span>`;
+      title.appendChild(text);
       return title;
+    }
+
+    function diplomacyFactionIcon(key) {
+      const fileName = diplomacyFactionIcons[key];
+      return fileName ? `./assets/ally/${fileName}.png` : "";
     }
 
     function renderTrack(container, zh, en, values, key, options = {}) {
@@ -3302,6 +3354,16 @@
       });
     }
 
+    function splitDiplomacyRead(en) {
+      const text = String(en || "");
+      const match = text.match(/\s*·\s*结盟读(\d{4})\s*$/);
+      if (!match) return { title: text, allianceRead: "" };
+      return {
+        title: text.slice(0, match.index).trim(),
+        allianceRead: match[1],
+      };
+    }
+
     function renderDiplomacy() {
       elements.diplomacyTracks.innerHTML = "";
       const diplomacyBonuses = {
@@ -3311,6 +3373,7 @@
       };
       const bonuses = diplomacyBonuses[state.cycle] || {};
       currentCycle().diplomacy.forEach(([key, zh, en, min = 0, max = 15]) => {
+        const diplomacyTitle = splitDiplomacyRead(en);
         const markers = min < 0
           ? [
               { value: -10, label: "开战" },
@@ -3339,7 +3402,13 @@
           item.className = "diplomacy-marker";
           item.style.gridColumn = String(marker.value - min + 1);
           const bonus = bonuses[marker.label];
-          item.textContent = bonus != null ? `${marker.label}(${bonus})` : marker.label;
+          const markerText = bonus != null ? `${marker.label}(${bonus})` : marker.label;
+          if (bonus === "+2" && diplomacyTitle.allianceRead) {
+            item.classList.add("with-read");
+            item.textContent = `${markerText} ${diplomacyTitle.allianceRead}`;
+          } else {
+            item.textContent = markerText;
+          }
           markerRow.appendChild(item);
         });
         const chips = document.createElement("div");
@@ -3358,7 +3427,7 @@
           chips.appendChild(button);
         }
         scale.append(markerRow, chips);
-        row.append(makeTrackTitle(zh, en), scale);
+        row.append(makeTrackTitle(zh, diplomacyTitle.title, { icon: diplomacyFactionIcon(key) }), scale);
         elements.diplomacyTracks.appendChild(row);
       });
     }

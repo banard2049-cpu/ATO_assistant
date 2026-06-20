@@ -670,16 +670,6 @@
       <option value="cloud">云端 API</option>
     `;
 
-    const offlineVoiceSelect = document.createElement("select");
-    offlineVoiceSelect.id = "ttsOfflineVoice";
-    offlineVoiceSelect.className = "tts-select";
-    offlineAudioPacks.forEach((pack) => {
-      const option = document.createElement("option");
-      option.value = pack.id;
-      option.textContent = pack.label;
-      offlineVoiceSelect.appendChild(option);
-    });
-
     const configButton = document.createElement("button");
     configButton.id = "ttsConfigButton";
     configButton.type = "button";
@@ -692,10 +682,13 @@
     statusBox.innerHTML = `
       <div class="tts-status-head">
         <strong id="ttsStatusTitle">TTS 状态</strong>
-        <button id="ttsStatusToggle" type="button">收起</button>
+        <div class="tts-status-actions">
+          <button id="ttsStatusToggle" type="button">收起</button>
+        </div>
       </div>
       <div id="ttsStatusBody" class="tts-status-body"></div>
     `;
+    statusBox.querySelector(".tts-status-actions").prepend(configButton);
 
     const overlay = document.createElement("div");
     overlay.id = "ttsConfigOverlay";
@@ -712,12 +705,10 @@
     importInput.accept = "application/json,.json";
     importInput.hidden = true;
 
-    ttsVoice.insertAdjacentElement("afterend", configButton);
-    ttsVoice.insertAdjacentElement("afterend", offlineVoiceSelect);
     ttsVoice.insertAdjacentElement("afterend", engineSelect);
     document.body.append(statusBox, overlay, cloneInput, importInput);
 
-    return { engineSelect, offlineVoiceSelect, configButton, statusBox, overlay, cloneInput, importInput };
+    return { engineSelect, configButton, statusBox, overlay, cloneInput, importInput };
   }
 
   function getEngineStatusLabel() {
@@ -2091,8 +2082,8 @@
 
   function updateTtsControls() {
     ttsUi.engineSelect.value = ttsConfig.activeEngine;
-    ttsUi.offlineVoiceSelect.value = ttsConfig.offlineAudioPack || offlineAudioPacks[0].id;
     ttsSpeed.value = String(ttsConfig.rate || 1);
+    syncVoiceSelect();
     renderTtsStatus();
   }
 
@@ -2253,30 +2244,68 @@
     URL.revokeObjectURL(url);
   }
 
-  function loadVoices() {
-    if (!window.speechSynthesis) {
-      ttsSpeed.disabled = true;
-      ttsVoice.disabled = true;
-      if (ttsConfig.activeEngine === "browser") ttsButton.disabled = true;
-    }
+  function syncVoiceSelect() {
+    const engine = ttsConfig.activeEngine;
+    ttsVoice.innerHTML = "";
+    ttsVoice.disabled = false;
 
-    const applyVoices = () => {
-      voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
-      const preferred = voices.filter((voice) => voice.lang.toLowerCase().startsWith("zh"));
-      const list = preferred.length ? preferred : voices;
-      ttsVoice.innerHTML = "";
-      list.forEach((voice, index) => {
+    if (engine === "browser") {
+      if (!window.speechSynthesis) {
+        ttsVoice.disabled = true;
+        return;
+      }
+      const allVoices = window.speechSynthesis.getVoices();
+      const preferred = allVoices.filter((v) => v.lang.toLowerCase().startsWith("zh"));
+      voices = preferred.length ? preferred : allVoices;
+      voices.forEach((voice, index) => {
         const option = document.createElement("option");
         option.value = String(index);
         option.textContent = voice.name;
         if (voice.name === ttsConfig.nativeVoice) option.selected = true;
         ttsVoice.appendChild(option);
       });
-      voices = list;
-    };
+    } else if (engine === "offline") {
+      voices = [];
+      offlineAudioPacks.forEach((pack) => {
+        const option = document.createElement("option");
+        option.value = pack.id;
+        option.textContent = pack.label;
+        if (pack.id === (ttsConfig.offlineAudioPack || offlineAudioPacks[0].id)) option.selected = true;
+        ttsVoice.appendChild(option);
+      });
+    } else if (engine === "cloud") {
+      voices = [];
+      cloudPresetVoices.forEach((v) => {
+        const option = document.createElement("option");
+        option.value = v;
+        option.textContent = v;
+        if (v === ttsConfig.cloud.voice) option.selected = true;
+        ttsVoice.appendChild(option);
+      });
+      if (ttsConfig.cloud.voiceCloneDataUrl) {
+        const option = document.createElement("option");
+        option.value = "__clone__";
+        option.textContent = "克隆音色";
+        option.selected = true;
+        ttsVoice.appendChild(option);
+      }
+    } else {
+      voices = [];
+      const option = document.createElement("option");
+      option.value = "";
+      option.textContent = ttsConfig.local.voice || "本地部署音色";
+      ttsVoice.appendChild(option);
+    }
+  }
 
-    applyVoices();
-    if (window.speechSynthesis) window.speechSynthesis.onvoiceschanged = applyVoices;
+  function loadVoices() {
+    ttsButton.disabled = ttsConfig.activeEngine === "browser" && !window.speechSynthesis;
+    syncVoiceSelect();
+    if (window.speechSynthesis) {
+      window.speechSynthesis.onvoiceschanged = () => {
+        if (ttsConfig.activeEngine === "browser") syncVoiceSelect();
+      };
+    }
   }
 
   function toggleSpeech() {
@@ -2407,25 +2436,10 @@
   ttsUi.engineSelect.addEventListener("change", (event) => {
     ttsConfig.activeEngine = event.target.value;
     ttsButton.disabled = ttsConfig.activeEngine === "browser" && !window.speechSynthesis;
+    syncVoiceSelect();
     saveTtsConfig();
     renderTtsStatus();
     pushTtsStatus(`已切换至 ${getEngineStatusLabel()}。`, "info");
-  });
-  ttsUi.offlineVoiceSelect.addEventListener("change", async (event) => {
-    ttsConfig.offlineAudioPack = event.target.value || offlineAudioPacks[0].id;
-    storyAudioManifest = null;
-    storyAudioManifestPromise = null;
-    storyAudioManifestPack = "";
-    saveTtsConfig();
-    renderTtsStatus();
-    pushTtsStatus(`已切换离线音色：${getEngineStatusLabel()}。`, "info");
-    if (ttsConfig.activeEngine === "offline") {
-      await ensureStoryAudioManifest(true);
-    }
-    if (currentUtterance) {
-      stopSpeech();
-      toggleSpeech();
-    }
   });
   document.querySelector("#ttsStatusToggle").addEventListener("click", () => {
     ttsConfig.statusCollapsed = !ttsConfig.statusCollapsed;
@@ -2484,10 +2498,26 @@
     }
   });
 
-  ttsVoice.addEventListener("change", () => {
-    const selectedVoice = voices[Number(ttsVoice.value || 0)];
-    ttsConfig.nativeVoice = selectedVoice ? selectedVoice.name : "";
+  ttsVoice.addEventListener("change", async () => {
+    const engine = ttsConfig.activeEngine;
+    if (engine === "browser") {
+      const selectedVoice = voices[Number(ttsVoice.value || 0)];
+      ttsConfig.nativeVoice = selectedVoice ? selectedVoice.name : "";
+    } else if (engine === "offline") {
+      ttsConfig.offlineAudioPack = ttsVoice.value || offlineAudioPacks[0].id;
+      storyAudioManifest = null;
+      storyAudioManifestPromise = null;
+      storyAudioManifestPack = "";
+      await ensureStoryAudioManifest(true);
+    } else if (engine === "cloud") {
+      const val = ttsVoice.value;
+      if (val && val !== "__clone__") {
+        ttsConfig.cloud.voice = val;
+        ttsConfig.cloud.voiceCloneDataUrl = "";
+      }
+    }
     saveTtsConfig();
+    renderTtsStatus();
     if (currentUtterance) {
       stopSpeech();
       toggleSpeech();

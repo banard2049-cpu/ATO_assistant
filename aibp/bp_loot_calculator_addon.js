@@ -175,6 +175,13 @@ Add these script tags after the main viewer script:
     CHIMERA_METASTASIOS: { 3: 3, 4: 12 },
     CYCLONUS: { 3: 3, 4: 12 }
   };
+  const NO_LEVEL_RESOURCE_MULTIPLIER_APOSTLES = new Set([
+    "HERMESIAN_PURSUER",
+    "THE_BURDEN",
+    "ALPHA_TEMENOS",
+    "THE_NIETZSCJEAN",
+    "SUN_DESCENDANT"
+  ]);
   const BURDEN_SUMMIT_BONUS = {
     1: { RT: 4, EF: 2 },
     2: { RT: 6, EF: 5 },
@@ -550,6 +557,11 @@ Add these script tags after the main viewer script:
     return Number(APOSTLE_LEVEL_UA_BONUS[apostle]?.[level] || 0);
   }
 
+  function resourceMultiplierForApostle(apostle, multiplier) {
+    if (NO_LEVEL_RESOURCE_MULTIPLIER_APOSTLES.has(apostle)) return 1;
+    return Math.max(1, Math.floor(Number(multiplier) || 1));
+  }
+
   function findChimeraBonusRow(level, regularCount, secondaryCount) {
     const table = CHIMERA_BONUS_TABLE[Math.max(1, Math.min(4, Math.floor(Number(level) || 1)))] || [];
     return table.find((row) => row.regular(regularCount) && row.secondary(secondaryCount)) || null;
@@ -719,6 +731,7 @@ Add these script tags after the main viewer script:
     const recordMultiplier = Number(options.recordMultiplier || 0);
     const manualMultiplier = Number(options.multiplier || 0);
     const multiplier = Math.max(1, Math.floor(manualMultiplier || recordMultiplier || inferredMultiplier || 1));
+    const resourceMultiplier = resourceMultiplierForApostle(apostle, multiplier);
     const multiplierSource = manualMultiplier > 0
       ? "manual"
       : recordMultiplier > 0
@@ -758,14 +771,14 @@ Add these script tags after the main viewer script:
         return;
       }
 
-      addResourceTotals(totals, res, multiplier);
+      addResourceTotals(totals, res, resourceMultiplier);
       directDetails.push({
         source: "BP损伤卡",
         card,
         fileName,
         cardSrc: safeCardSrc(card, apostle, fileName),
         resource: res,
-        multiplier
+        multiplier: resourceMultiplier
       });
     });
 
@@ -786,14 +799,14 @@ Add these script tags after the main viewer script:
         continue;
       }
 
-      addResourceTotals(totals, res, multiplier);
+      addResourceTotals(totals, res, resourceMultiplier);
       swDetails.push({
         source: "SW",
         card: drawn,
         fileName,
         cardSrc: safeCardSrc(drawn, apostle, fileName),
         resource: res,
-        multiplier
+        multiplier: resourceMultiplier
       });
     }
 
@@ -811,14 +824,14 @@ Add these script tags after the main viewer script:
         continue;
       }
 
-      addResourceTotals(totals, res, multiplier);
+      addResourceTotals(totals, res, resourceMultiplier);
       dwDetails.push({
         source: "DW",
         card: drawn,
         fileName,
         cardSrc: safeCardSrc(drawn, apostle, fileName),
         resource: res,
-        multiplier
+        multiplier: resourceMultiplier
       });
     }
 
@@ -846,6 +859,8 @@ Add these script tags after the main viewer script:
     return {
       apostle,
       multiplier,
+      resourceMultiplier,
+      ignoresLevelResourceMultiplier: resourceMultiplier === 1 && multiplier !== 1,
       multiplierSource,
       swCount,
       dwCount,
@@ -956,10 +971,12 @@ Add these script tags after the main viewer script:
 
   function migrateSharedRecordResources(resources) {
     RECORD_SHARED_RESOURCE_KEYS.forEach((key) => {
-      if (resources[key] !== undefined) return;
       const values = ["c1", "c2", "c3"]
         .map((cycleId) => resources[`${cycleId}-${key}`])
         .filter((value) => value !== undefined && value !== null && value !== "");
+      if (resources[key] !== undefined && resources[key] !== null && resources[key] !== "") {
+        values.unshift(resources[key]);
+      }
       if (!values.length) return;
       const numericValues = values
         .map((value) => Number(value))
@@ -967,6 +984,9 @@ Add these script tags after the main viewer script:
       resources[key] = numericValues.length === values.length
         ? Math.max(...numericValues)
         : values.map(String).filter(Boolean).join("\n");
+      ["c1", "c2", "c3"].forEach((cycleId) => {
+        delete resources[`${cycleId}-${key}`];
+      });
     });
   }
 
@@ -1217,6 +1237,7 @@ Add these script tags after the main viewer script:
         <div>双重损伤：${result.dwCount}</div>
         <div>暴击 BP III：${result.woundedBpIIICount}（核心 +${result.woundedBpIIICount}）</div>
         <div>倍率：×${result.multiplier}</div>
+        ${result.ignoresLevelResourceMultiplier ? `<div>资源倍率：×${result.resourceMultiplier}（该使徒不按等级乘资源）</div>` : ""}
         <div>倍率来源：${result.multiplierSource === "record" ? "记录表" : result.multiplierSource === "manual" ? "手动输入" : "AIBP牌堆推断"}</div>
         ${result.chimeraBonus ? `<div>奇美拉常规损伤：${escapeHtml(String(result.regularDamageCount))}</div>` : ""}
         ${result.chimeraBonus ? `<div>奇美拉第二损伤堆：${escapeHtml(String(result.secondaryDamageCount))}</div>` : ""}
@@ -1373,6 +1394,9 @@ Add these script tags after the main viewer script:
     const lines = [];
     lines.push(`使徒：${apostleZhName(result.apostle)}`);
     lines.push(`倍率：×${result.multiplier}`);
+    if (result.ignoresLevelResourceMultiplier) {
+      lines.push(`资源倍率：×${result.resourceMultiplier}（该使徒不按等级乘资源）`);
+    }
     lines.push(`损伤堆卡数：${result.damageCount}`);
     lines.push(`普通 BP 损伤：${result.normalDamageCount}`);
     lines.push(`单重损伤：${result.swCount}`);

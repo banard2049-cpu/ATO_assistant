@@ -524,10 +524,10 @@ h2 {
 }
 
 .tts-config-btn {
-  min-height: 34px;
-  padding: 0 12px;
+  min-height: 28px;
+  padding: 0 10px;
   background: #5d5141;
-  font-size: 0.85em;
+  font-size: 12px;
   white-space: nowrap;
 }
 
@@ -554,6 +554,13 @@ h2 {
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
+.tts-status-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
 .tts-status-head strong {
   min-width: 0;
   overflow: hidden;
@@ -563,7 +570,7 @@ h2 {
   white-space: nowrap;
 }
 
-.tts-status-head button {
+.tts-status-actions button {
   min-height: 28px;
   padding: 0 10px;
   background: #5d5141;
@@ -989,6 +996,22 @@ h2 {
   min-height: 100vh;
   border-left: 1px solid var(--line);
   background: var(--bg);
+  position: relative;
+}
+
+.side-panel-resize {
+  position: absolute;
+  top: 0;
+  left: -8px;
+  width: 16px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 10;
+  touch-action: none;
+}
+.side-panel-resize:hover,
+.side-panel-resize.active {
+  background: rgba(15, 107, 95, 0.18);
 }
 .side-panel-tabs {
   display: flex;

@@ -1,0 +1,28 @@
+ATO story supplement package
+
+Package name: ato-story-supplement-20260614-194359
+Generated at: 2026-06-14T11:45:34.065Z
+
+Usage:
+1. Clone or download the GitHub repository.
+2. Extract this supplement package at the repository root.
+3. Open story/index.html or serve the repository with any static file server.
+
+Included roots:
+- story/data
+- story/audio-packs
+- story/images/battles
+
+Files: 10343
+Bytes: 5438365097 (5186.43 MB)
+
+Story stats:
+- books: 5
+- entries: 4118
+- entities: 447
+- wikiIntroCount: 213
+- audioEntries: 4075
+- baihuaAudioEntries: 4075
+
+Integrity:
+- See ato-story-supplement-20260614-194359.manifest.json for SHA-256 checksums.

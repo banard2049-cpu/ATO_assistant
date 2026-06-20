@@ -5257,6 +5257,7 @@
           map: serverSections.map || null,
           record: serverSections.record || null,
           technology: serverSections.technology || null,
+          heroes: serverSections.heroes || null,
         };
         const payload = {
           app: "ATO Campaign Save Package",
@@ -5312,6 +5313,7 @@
             sections?.map ? saveImportedCampaignSection("map", sections.map) : Promise.resolve(),
             sections?.record ? saveImportedCampaignSection("record", sections.record) : Promise.resolve(),
             sections?.technology ? saveImportedCampaignSection("technology", sections.technology) : Promise.resolve(),
+            sections?.heroes ? saveImportedCampaignSection("heroes", sections.heroes) : Promise.resolve(),
           ]);
           campaignSectionRevision = Math.max(0, Number(dashboardSave?.revision || campaignSectionRevision));
           campaignSectionBaseline = cloneJson(archive);

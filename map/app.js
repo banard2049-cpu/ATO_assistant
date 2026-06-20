@@ -5,6 +5,21 @@ const campaignDashboardUrl = `${campaignStorageUrl}?section=dashboard`;
 const mapData = window.ATO_MAP_DATA || { cycles: [] };
 const mapTagData = window.ATO_MAP_TILE_TAGS || { tagDefinitions: [], tiles: {} };
 const cycleIds = mapData.cycles.map((cycle) => cycle.id);
+const c1AlternateTileAssets = Object.fromEntries(
+  ["009", "013", "014", "018", "022", "023", "035"].map((id) => [id, {
+    front: `./images/c1-tile-${id}-alt-front.jpg`,
+    back: `./images/c1-tile-${id}-alt-back.jpg`,
+  }]),
+);
+const c1AlternateTileConnections = {
+  "009": { up: "004", right: "010", down: "014", left: "008" },
+  "013": { up: "008", right: "", down: "", left: "012" },
+  "014": { up: "009", right: "015", down: "019", left: "" },
+  "018": { up: "", right: "019", down: "", left: "017" },
+  "022": { up: "017", right: "023", down: "027", left: "021" },
+  "023": { up: "", right: "024", down: "", left: "022" },
+  "035": { up: "030", right: "071", down: "040", left: "034" },
+};
 const tokenAssets = [
   { id: "reveal", label: "AG进入", path: "" },
   { id: "AG", label: "AG", path: "./tokens/AG.jpg", unique: true },
@@ -124,6 +139,7 @@ function defaultCycleState() {
     latestRevealedTile: "",
     explored: {},
     tileNotes: {},
+    tileVariants: {},
     tokens: {
       AG: "",
       AD: "",
@@ -165,6 +181,9 @@ function normalizeState(saved) {
         : {},
       tileNotes: isPlainObject(saved.cycles?.[id]?.tileNotes)
         ? saved.cycles[id].tileNotes
+        : {},
+      tileVariants: isPlainObject(saved.cycles?.[id]?.tileVariants)
+        ? saved.cycles[id].tileVariants
         : {},
       tokens: normalizeTokens(saved.cycles?.[id]),
     };
@@ -432,6 +451,9 @@ function activeCycleState() {
   if (!isPlainObject(state.cycles[state.activeCycleId].tileNotes)) {
     state.cycles[state.activeCycleId].tileNotes = {};
   }
+  if (!isPlainObject(state.cycles[state.activeCycleId].tileVariants)) {
+    state.cycles[state.activeCycleId].tileVariants = {};
+  }
   return state.cycles[state.activeCycleId];
 }
 
@@ -589,11 +611,13 @@ function renderTiles() {
     article.style.width = `${(tileWidth / mapWidth) * 100}%`;
     article.title = tileTooltip(tile, current, explored, hasNote, scouted);
 
-    const imageSrc = (!state.showBack && (explored || scouted)) || !tile.back ? tile.front : tile.back;
+    const assets = tileAssets(tile, cycleState);
+    const imageSrc = (!state.showBack && (explored || scouted)) || !assets.back ? assets.front : assets.back;
     article.innerHTML = `
       <div class="tile-image">
         <img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(tile.label)}">
       </div>
+      ${renderVariantToggle(tile, cycleState)}
       ${renderTileNoteMarker(hasNote)}
       ${renderTileTokens(tileTokens)}
       ${renderAdjacencyLabels(tile)}
@@ -607,6 +631,16 @@ function renderTiles() {
 
 function displayLayout(cycle) {
   const tileWidth = cycle.tileWidth || 1;
+  if (cycle.id === "c1") {
+    const positions = c1NeighborLayout(cycle);
+    return {
+      tileWidth,
+      width: positions.width,
+      height: positions.height,
+      position: (tile) => positions.byId.get(tile.id) || { x: 0, y: 0 },
+    };
+  }
+
   if (cycle.id !== "c3") {
     return {
       tileWidth,
@@ -622,6 +656,79 @@ function displayLayout(cycle) {
     width: positions.width,
     height: positions.height,
     position: (tile) => positions.byId.get(tile.id) || { x: 0, y: 0 },
+  };
+}
+
+function c1NeighborLayout(cycle) {
+  const numberedTiles = cycle.tiles.filter((tile) => /^\d{3}$/.test(tile.id));
+  const terrainTiles = cycle.tiles.filter((tile) => /^T\d{2}$/.test(tile.id));
+  const mainLayout = connectedTileLayout(numberedTiles);
+  const terrainLayout = connectedTileLayout(terrainTiles);
+  const byIdPosition = new Map();
+
+  mainLayout.byId.forEach((position, id) => {
+    byIdPosition.set(id, position);
+  });
+  terrainLayout.byId.forEach((position, id) => {
+    byIdPosition.set(id, {
+      x: position.x,
+      y: mainLayout.height + 1 + position.y,
+    });
+  });
+
+  return {
+    byId: byIdPosition,
+    width: Math.max(mainLayout.width, terrainLayout.width),
+    height: mainLayout.height + 1 + terrainLayout.height,
+  };
+}
+
+function connectedTileLayout(tiles) {
+  const byId = new Map(tiles.map((tile) => [tile.id, tile]));
+  const positions = new Map();
+  const sortedIds = [...byId.keys()].sort((a, b) => a.localeCompare(b));
+  const queue = sortedIds.length ? [sortedIds[0]] : [];
+  const directions = {
+    right: [1, 0],
+    left: [-1, 0],
+    down: [0, 1],
+    up: [0, -1],
+  };
+
+  if (queue.length) positions.set(queue[0], { x: 0, y: 0 });
+  while (queue.length) {
+    const id = queue.shift();
+    const tile = byId.get(id);
+    const position = positions.get(id);
+    Object.entries(directions).forEach(([direction, [dx, dy]]) => {
+      const targetId = tile?.neighbors?.[direction];
+      if (!targetId || targetId === id || !byId.has(targetId) || positions.has(targetId)) return;
+      positions.set(targetId, { x: position.x + dx, y: position.y + dy });
+      queue.push(targetId);
+    });
+    byId.forEach((candidate) => {
+      Object.entries(directions).forEach(([direction, [dx, dy]]) => {
+        if (candidate.id === id || candidate.neighbors?.[direction] !== id || positions.has(candidate.id)) return;
+        positions.set(candidate.id, { x: position.x - dx, y: position.y - dy });
+        queue.push(candidate.id);
+      });
+    });
+  }
+
+  const points = [...positions.values()];
+  const minX = Math.min(...points.map((point) => point.x), 0);
+  const minY = Math.min(...points.map((point) => point.y), 0);
+  const maxX = Math.max(...points.map((point) => point.x), 0);
+  const maxY = Math.max(...points.map((point) => point.y), 0);
+  const normalized = new Map();
+  positions.forEach((position, id) => {
+    normalized.set(id, { x: position.x - minX, y: position.y - minY });
+  });
+
+  return {
+    byId: normalized,
+    width: maxX - minX + 1,
+    height: maxY - minY + 1,
   };
 }
 
@@ -725,7 +832,68 @@ function cyclePhysicalLayout(cycle) {
   return { byId: byIdPosition, width, height };
 }
 
+function tileAssets(tile, cycleState = activeCycleState()) {
+  const alternate = state.activeCycleId === "c1" && cycleState.tileVariants?.[tile.id] === "alternate"
+    ? c1AlternateTileAssets[tile.id]
+    : null;
+  return alternate || tile;
+}
+
+function effectiveTile(tile, cycleState = activeCycleState()) {
+  const alternateConnections = state.activeCycleId === "c1" && cycleState.tileVariants?.[tile.id] === "alternate"
+    ? c1AlternateTileConnections[tile.id]
+    : null;
+  if (!alternateConnections) return tile;
+  const exits = {};
+  if (alternateConnections.up) exits.TOP_MIDDLE = alternateConnections.up;
+  if (alternateConnections.right) exits.RIGHT_MIDDLE = alternateConnections.right;
+  if (alternateConnections.down) exits.BOTTOM_MIDDLE = alternateConnections.down;
+  if (alternateConnections.left) exits.LEFT_MIDDLE = alternateConnections.left;
+  return {
+    ...tile,
+    neighbors: { ...alternateConnections, special: "" },
+    exits,
+  };
+}
+
+function isAlternateTile(tileId, cycleState = activeCycleState()) {
+  return state.activeCycleId === "c1" && cycleState.tileVariants?.[tileId] === "alternate";
+}
+
+function tileConnectsTo(tile, targetId) {
+  return ["left", "right", "up", "down"].some((direction) => tile.neighbors?.[direction] === targetId)
+    || Object.values(tile.exits || {}).includes(targetId);
+}
+
+function tileConnectsBackForAdversary(tile, targetId) {
+  return ["left", "right", "up", "down"].some((direction) => tile.neighbors?.[direction] === targetId)
+    || Object.entries(tile.exits || {}).some(([exit, destination]) => (
+      !String(exit).startsWith("SPECIAL_CYCLE_3") && destination === targetId
+    ));
+}
+
+function renderVariantToggle(tile, cycleState = activeCycleState()) {
+  if (state.activeCycleId !== "c1" || !c1AlternateTileAssets[tile.id]) return "";
+  const alternate = cycleState.tileVariants?.[tile.id] === "alternate";
+  return `<button class="tile-variant-toggle${alternate ? " active" : ""}" type="button" data-variant-tile="${escapeHtml(tile.id)}" title="${alternate ? "切换为标准版" : "切换为替代版"}" aria-label="${alternate ? "切换为标准版" : "切换为替代版"}">替</button>`;
+}
+
+function toggleTileVariant(tileId) {
+  if (state.activeCycleId !== "c1" || !c1AlternateTileAssets[tileId]) return;
+  const cycleState = activeCycleState();
+  pushUndo();
+  cycleState.tileVariants ||= {};
+  if (cycleState.tileVariants[tileId] === "alternate") {
+    delete cycleState.tileVariants[tileId];
+  } else {
+    cycleState.tileVariants[tileId] = "alternate";
+  }
+  saveState();
+  renderTiles();
+}
+
 function tileTooltip(tile, current, explored, hasNote = false, scouted = false) {
+  tile = effectiveTile(tile);
   const neighbors = tile.neighbors || {};
   const exitLabels = Object.entries(tile.exits || {}).map(([exit, target]) => `${exit} ${target}`);
   return [
@@ -744,6 +912,7 @@ function tileTooltip(tile, current, explored, hasNote = false, scouted = false) 
 
 function renderAdjacencyLabels(tile) {
   if (!state.showAdjacency) return "";
+  tile = effectiveTile(tile);
   const exits = tile.exits || {};
   const neighbors = tile.neighbors || {};
   const standard = [
@@ -1123,7 +1292,9 @@ function triggerAdversaryBattle(recordUndo = false) {
 
 function placedTiles() {
   const cycleState = activeCycleState();
-  return activeCycle().tiles.filter((tile) => cycleState.explored[tile.id] || tile.id === cycleState.currentTile || tile.id === cycleState.tokens.AD);
+  return activeCycle().tiles
+    .filter((tile) => cycleState.explored[tile.id] || tile.id === cycleState.currentTile || tile.id === cycleState.tokens.AD)
+    .map((tile) => effectiveTile(tile, cycleState));
 }
 
 function adversaryBattleUrl() {
@@ -1291,12 +1462,15 @@ async function saveAndReturnToDashboard() {
 
 function revealedTiles() {
   const cycleState = activeCycleState();
-  return activeCycle().tiles.filter((tile) => cycleState.explored[tile.id] || tile.id === cycleState.currentTile);
+  return activeCycle().tiles
+    .filter((tile) => cycleState.explored[tile.id] || tile.id === cycleState.currentTile)
+    .map((tile) => effectiveTile(tile, cycleState));
 }
 
 function adjacentPlacedTiles(tileId, tiles = placedTiles()) {
   const tile = tiles.find((item) => item.id === tileId);
   if (!tile) return [];
+  const cycleState = activeCycleState();
   const placedById = new Map(tiles.map((item) => [item.id, item]));
   const adjacentIds = new Set();
   const physicalDirections = ["left", "right", "up", "down"];
@@ -1309,10 +1483,15 @@ function adjacentPlacedTiles(tileId, tiles = placedTiles()) {
   });
   tiles.forEach((candidate) => {
     if (candidate.id === tileId) return;
-    const physicallyAdjacent = manhattan(tile, candidate) === 1;
-    const connectsBack = physicalDirections.some((direction) => candidate.neighbors?.[direction] === tileId)
-      || Object.values(candidate.exits || {}).includes(tileId);
-    if (physicallyAdjacent || connectsBack) adjacentIds.add(candidate.id);
+    const tileIsAlternate = isAlternateTile(tile.id, cycleState);
+    const candidateIsAlternate = isAlternateTile(candidate.id, cycleState);
+    const tileConnects = tileConnectsTo(tile, candidate.id);
+    const candidateConnects = tileConnectsBackForAdversary(candidate, tile.id);
+    const variantAllowsConnection = (!tileIsAlternate || tileConnects)
+      && (!candidateIsAlternate || candidateConnects);
+    const connectsBack = candidateConnects && variantAllowsConnection;
+    const physicallyAdjacent = tilesPhysicallyConnected(tile, candidate);
+    if ((tileConnects && variantAllowsConnection) || connectsBack || physicallyAdjacent) adjacentIds.add(candidate.id);
   });
   return [...adjacentIds].map((id) => placedById.get(id)).filter(Boolean);
 }
@@ -1323,31 +1502,24 @@ function shortestPlacedPath(startId, targetId, tiles = placedTiles()) {
   const placedById = new Map(tiles.map((tile) => [tile.id, tile]));
   if (!placedById.has(startId) || !placedById.has(targetId)) return [];
 
-  const distances = new Map([[targetId, 0]]);
-  const queue = [targetId];
+  const previous = new Map([[startId, ""]]);
+  const queue = [startId];
   while (queue.length) {
     const current = queue.shift();
-    const nextDistance = distances.get(current) + 1;
-    for (const neighbor of adjacentPlacedTiles(current, tiles)) {
-      if (distances.has(neighbor.id)) continue;
-      distances.set(neighbor.id, nextDistance);
+    const options = sortAdversaryMoveOptions(current, targetId, adjacentPlacedTiles(current, tiles));
+    for (const neighbor of options) {
+      if (previous.has(neighbor.id)) continue;
+      previous.set(neighbor.id, current);
+      if (neighbor.id === targetId) {
+        const path = [targetId];
+        while (previous.get(path[0])) path.unshift(previous.get(path[0]));
+        return path;
+      }
       queue.push(neighbor.id);
     }
   }
 
-  if (!distances.has(startId)) return [];
-
-  const path = [startId];
-  while (path[path.length - 1] !== targetId) {
-    const current = path[path.length - 1];
-    const nextDistance = distances.get(current) - 1;
-    const options = adjacentPlacedTiles(current, tiles)
-      .filter((neighbor) => distances.get(neighbor.id) === nextDistance);
-    const next = sortAdversaryMoveOptions(current, targetId, options)[0];
-    if (!next) return [];
-    path.push(next.id);
-  }
-  return path;
+  return [];
 }
 
 function sortAdversaryMoveOptions(fromId, targetId, options) {
@@ -1375,6 +1547,14 @@ function sortAdversaryMoveOptions(fromId, targetId, options) {
 
 function manhattan(a, b) {
   return Math.abs(Number(a.nx) - Number(b.nx)) + Math.abs(Number(a.ny) - Number(b.ny));
+}
+
+function tilesPhysicallyConnected(a, b) {
+  const layout = displayLayout(activeCycle());
+  const aPosition = layout.position(a);
+  const bPosition = layout.position(b);
+  return Math.abs(Number(aPosition.x) - Number(bPosition.x))
+    + Math.abs(Number(aPosition.y) - Number(bPosition.y)) === 1;
 }
 
 function escapeHtml(value) {
@@ -1441,6 +1621,12 @@ elements.tileNoteDialog.addEventListener("cancel", () => {
   editingNoteTileId = "";
 });
 elements.tileGrid.addEventListener("click", (event) => {
+  const variantToggle = event.target.closest("[data-variant-tile]");
+  if (variantToggle) {
+    window.clearTimeout(tileClickTimer);
+    toggleTileVariant(variantToggle.dataset.variantTile);
+    return;
+  }
   const tile = event.target.closest(".tile-card[data-id]");
   if (!tile) return;
   if (pendingAdversarySpawnCandidates.size) {
@@ -1457,6 +1643,7 @@ elements.tileGrid.addEventListener("click", (event) => {
   }, 220);
 });
 elements.tileGrid.addEventListener("dblclick", (event) => {
+  if (event.target.closest("[data-variant-tile]")) return;
   const tile = event.target.closest(".tile-card[data-id]");
   if (!tile) return;
   window.clearTimeout(tileClickTimer);

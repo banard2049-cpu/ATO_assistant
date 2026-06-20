@@ -88,6 +88,7 @@
     </main>
 
     <aside class="side-panels" id="sidePanels">
+      <div class="side-panel-resize" id="sidePanelResize"></div>
       <div class="side-panel-tabs">
         <button class="side-panel-tab active" data-panel="record">记录表</button>
         <button class="side-panel-tab" data-panel="hero">英雄</button>
@@ -113,6 +114,53 @@
           document.getElementById(panelMap[tab.dataset.panel])?.classList.add("active");
         });
       });
+
+      (function() {
+        const handle = document.getElementById("sidePanelResize");
+        const panels = document.getElementById("sidePanels");
+        let startX, startWidth;
+
+        function beginDrag(x) {
+          startX = x;
+          startWidth = panels.offsetWidth;
+          handle.classList.add("active");
+          document.body.style.cursor = "col-resize";
+          document.body.style.userSelect = "none";
+          document.querySelectorAll("iframe").forEach(f => f.style.pointerEvents = "none");
+        }
+        function doDrag(x) {
+          const delta = startX - x;
+          const newWidth = Math.max(200, Math.min(startWidth + delta, window.innerWidth * 0.6));
+          document.body.style.gridTemplateColumns =
+            `minmax(280px, 360px) minmax(480px, 1fr) ${newWidth}px`;
+        }
+        function endDrag() {
+          handle.classList.remove("active");
+          document.body.style.cursor = "";
+          document.body.style.userSelect = "";
+          document.querySelectorAll("iframe").forEach(f => f.style.pointerEvents = "");
+        }
+
+        handle.addEventListener("mousedown", (e) => {
+          e.preventDefault();
+          beginDrag(e.clientX);
+          const onMove = (ev) => doDrag(ev.clientX);
+          const onUp = () => { endDrag(); document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp); };
+          document.addEventListener("mousemove", onMove);
+          document.addEventListener("mouseup", onUp);
+        });
+
+        handle.addEventListener("touchstart", (e) => {
+          e.preventDefault();
+          beginDrag(e.touches[0].clientX);
+        }, { passive: false });
+        handle.addEventListener("touchmove", (e) => {
+          e.preventDefault();
+          doDrag(e.touches[0].clientX);
+        }, { passive: false });
+        handle.addEventListener("touchend", () => endDrag());
+        handle.addEventListener("touchcancel", () => endDrag());
+      })();
     </script>
   </body>
 </html>

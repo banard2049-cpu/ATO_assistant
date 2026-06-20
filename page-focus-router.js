@@ -23,6 +23,7 @@
     const path = url.pathname.replace(/\/+$/, "").toLowerCase();
     if (path.endsWith("/map/index.html") || path.endsWith("/map")) return "map";
     if (path.endsWith("/record/index.html") || path.endsWith("/record")) return "record";
+    if (path.endsWith("/hero/index.html") || path.endsWith("/hero")) return "hero";
     if (path.endsWith("/technology/index.html") || path.endsWith("/technology")) return "technology";
     if (path.endsWith("/story/index.html") || path.endsWith("/story")) return "story";
     if (path.endsWith("/aibp/index.html") || path.endsWith("/aibp")) return "aibp";
@@ -188,8 +189,13 @@
       // For manually-opened tabs window.open can't find them and opens a new one
       // — same as the old behavior the user is used to ("opens once, then works").
       if (options.insideGesture) {
-        openModuleTab(absolute, module);
-        return true;
+        if (openModuleTab(absolute, module)) return true;
+        // openModuleTab failed (popup blocked) — wait for BC ack as fallback.
+        const handled = await requestFocusFromExistingTab(absolute, module, options.timeout);
+        if (handled) return true;
+        // Nobody responded — navigate this tab.
+        window.location.href = absolute;
+        return false;
       }
       // Outside a gesture (e.g. technology page's saveAndReturnMain): can't
       // window.open without the popup blocker eating it. Wait for BC ack; if

@@ -600,7 +600,14 @@ button.modal-tech-item:hover {
   box-shadow: none;
 }
 /* Gear Production Tab */
-.gear-page { width: min(1200px, 100%); margin: 0 auto; }
+.gear-page {
+  width: min(1200px, 100%);
+  height: calc(100dvh - 92px);
+  min-height: 420px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
 .gear-search-hint { color: var(--muted); font-size: 12px; margin-bottom: 14px; }
 .gear-filter-bar {
   display: flex;
@@ -628,16 +635,24 @@ button.modal-tech-item:hover {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
   gap: 14px;
-  align-items: start;
+  align-items: stretch;
+  flex: 1;
+  min-height: 0;
+}
+.gear-content {
+  min-height: 0;
+  overflow: auto;
+  padding-right: 2px;
 }
 .gear-resource-sidebar {
   position: sticky;
-  top: 76px;
+  top: 0;
+  align-self: start;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fff;
   padding: 12px;
-  max-height: calc(100vh - 96px);
+  max-height: 100%;
   overflow: auto;
 }
 .gear-resource-title {
@@ -658,13 +673,32 @@ button.modal-tech-item:hover {
 }
 .gear-resource-row {
   display: grid;
-  grid-template-columns: 22px minmax(0, 1fr) auto;
-  gap: 8px;
+  grid-template-columns: 22px minmax(0, 1fr) auto auto auto;
+  gap: 6px;
   align-items: center;
   padding: 6px 8px;
   border-radius: 6px;
   background: #f7f9fa;
   font-size: 12px;
+}
+.gear-resource-btn {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0;
+  background: #fff;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+}
+.gear-resource-btn:hover {
+  border-color: var(--accent-2);
+  color: var(--accent-2);
 }
 .gear-resource-icon {
   width: 22px;
@@ -876,7 +910,9 @@ button.gear-group-name:hover {
   .topbar { position: static; flex-wrap: wrap; height: auto; padding: 10px; }
   .search { width: 100%; }
   .viewport { padding: 10px; }
+  .gear-page { height: auto; min-height: 0; display: block; }
   .gear-layout { grid-template-columns: 1fr; }
+  .gear-content { overflow: visible; padding-right: 0; }
   .gear-resource-sidebar { position: static; max-height: none; }
   .unlocked-columns { grid-template-columns: 1fr; }
   .unlocked-modal { grid-template-columns: 1fr; }
@@ -1410,6 +1446,22 @@ async function craftGear(planKey, optionIndex) {
     await loadGearRecordState();
   }
 }
+async function adjustGearResource(storageKey, delta) {
+  if (!storageKey || !delta) return;
+  if (!gearRecordState) { alert('记录表尚未加载。'); return; }
+  try {
+    await mutateCampaignRecordState((recordState) => {
+      if (!isPlainObject(recordState.resources)) recordState.resources = {};
+      const current = Number(recordState.resources[storageKey] || 0);
+      recordState.resources[storageKey] = Math.max(0, current + delta);
+      return recordState;
+    });
+    renderGearProductionPage();
+  } catch (error) {
+    alert(`调整资源失败：${String(error.message || error)}`);
+    await loadGearRecordState();
+  }
+}
 
 function getUnlockedProductions() {
   if (!gearProductionData?.techProduction) return [];
@@ -1488,7 +1540,11 @@ function gearResourceSidebarHtml() {
       return aCore - bCore || aRare - bRare || a.label.localeCompare(b.label, 'zh-Hans-CN');
     });
   const rowsHtml = rows.map(({ key, label, value }) => {
-    return `<div class="gear-resource-row"><img class="gear-resource-icon" src="${esc(recordResourceIcon(key))}" alt="${esc(label)}"><span class="gear-resource-name">${esc(label)}</span><span class="gear-resource-value">${esc(value)}</span></div>`;
+    const isNumeric = value !== '' && Number.isFinite(Number(value));
+    const buttons = isNumeric
+      ? `<button type="button" class="gear-resource-btn" data-resource-key="${esc(key)}" data-resource-delta="-1">−</button><button type="button" class="gear-resource-btn" data-resource-key="${esc(key)}" data-resource-delta="1">+</button>`
+      : '';
+    return `<div class="gear-resource-row"><img class="gear-resource-icon" src="${esc(recordResourceIcon(key))}" alt="${esc(label)}"><span class="gear-resource-name">${esc(label)}</span><span class="gear-resource-value">${esc(value)}</span>${buttons}</div>`;
   }).join('');
   const cycleLabel = recordCycle.replace(/^c/, '循环 ');
   return `<aside class="gear-resource-sidebar">
@@ -1667,6 +1723,13 @@ function renderGearProductionPage() {
     btn.addEventListener('click', event => {
       event.stopPropagation();
       void craftGear(btn.dataset.craftKey, btn.dataset.craftOption);
+    });
+  });
+
+  mainView.querySelectorAll('.gear-resource-btn[data-resource-key]').forEach(btn => {
+    btn.addEventListener('click', event => {
+      event.stopPropagation();
+      void adjustGearResource(btn.dataset.resourceKey, Number(btn.dataset.resourceDelta || 0));
     });
   });
 

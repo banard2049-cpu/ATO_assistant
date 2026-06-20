@@ -1303,7 +1303,7 @@
             <div class="card-column-head">
               <div class="card-title-with-back">
                 <div class="card-column-title">AI</div>
-                <div class="deck-info">当前卡背：<span id="aiBackInfo"></span></div>
+                <div class="deck-info">卡背：<span id="aiBackInfo"></span></div>
               </div>
               <div class="segmented" id="aiViewTabs"></div>
             </div>
@@ -1324,8 +1324,8 @@
             <div class="card-column-head">
               <div class="card-title-with-back">
                 <div class="card-column-title">BP</div>
-                <div class="deck-info">当前卡背：<span id="bpBackInfo"></span></div>
-                <div class="bp-damage-summary" id="bpDamageSummary">当前损伤：0</div>
+                <div class="deck-info">卡背：<span id="bpBackInfo"></span></div>
+                <div class="bp-damage-summary" id="bpDamageSummary">损伤：0</div>
               </div>
               <div class="segmented" id="bpViewTabs"></div>
             </div>
@@ -1402,7 +1402,16 @@
         <button type="button" data-bp-zoom-action="defeat">击败</button>
         <button type="button" data-bp-zoom-action="critical">暴击</button>
       </div>
+      <div class="image-zoom-actions" id="imageZoomFlipActions" aria-label="翻面">
+        <button type="button" id="imageZoomFlipButton">反面</button>
+      </div>
       <div class="image-zoom-actions" id="imageZoomMoveActions" aria-label="移动卡牌"></div>
+      <div class="image-zoom-actions" id="imageZoomTokenActions" aria-label="Token 数量">
+        <div class="image-zoom-action-title" id="imageZoomTokenTitle">Token</div>
+        <button type="button" data-token-zoom-action="plus">+1</button>
+        <button type="button" data-token-zoom-action="minus">-1</button>
+        <button type="button" data-token-zoom-action="clear">清空</button>
+      </div>
     </div>
   </div>
 
@@ -1537,7 +1546,11 @@
     const imageZoomImg = document.getElementById("imageZoomImg");
     const imageZoomClose = document.getElementById("imageZoomClose");
     const imageZoomBpActions = document.getElementById("imageZoomBpActions");
+    const imageZoomFlipActions = document.getElementById("imageZoomFlipActions");
+    const imageZoomFlipButton = document.getElementById("imageZoomFlipButton");
     const imageZoomMoveActions = document.getElementById("imageZoomMoveActions");
+    const imageZoomTokenActions = document.getElementById("imageZoomTokenActions");
+    const imageZoomTokenTitle = document.getElementById("imageZoomTokenTitle");
 
     function normalizeApostleName(value) {
       return String(value || "").trim().toUpperCase().replace(/[\s-]+/g, "_");
@@ -1566,6 +1579,7 @@
     const maxUndoSteps = 30;
     let zoomCloseAction = null;
     let activeMoveContext = null;
+    let activeTokenContext = null;
     let traitLoadToken = 0;
     let tokenLoadToken = 0;
 
@@ -1772,6 +1786,12 @@
         if (!Array.isArray(piles[name].traits)) {
           piles[name].traits = [];
         }
+        piles[name].traits = piles[name].traits.map((card) => {
+          if (card?.type === "TR" && !card.scope && card.level === "V" && card.index === 1) {
+            return { ...card, level: "COMMON", scope: "common" };
+          }
+          return card;
+        });
         if (name === nietzscheName) {
           const migratedTraits = [];
           const migratedKeys = new Set();
@@ -2066,6 +2086,25 @@
         index,
         source,
         card: clonePileState(card)
+      };
+    }
+
+    function flipContextFromImage(img) {
+      if (!img?.dataset?.frontSrc || !img?.dataset?.backSrc) return null;
+      return {
+        frontSrc: img.dataset.frontSrc,
+        backSrc: img.dataset.backSrc,
+        sourceId: img.id || "",
+        face: img.dataset.face || "front"
+      };
+    }
+
+    function tokenContextFromImage(img) {
+      const tokenItem = img?.closest(".panel-token-item");
+      if (!tokenItem?.dataset?.file) return null;
+      return {
+        apostle: currentApostle,
+        file: tokenItem.dataset.file
       };
     }
 
@@ -2575,8 +2614,8 @@
       bpBackInfo.textContent = deckBackText(piles[currentApostle].BP.deck);
       const damageSummary = currentBpDamageSummary();
       bpDamageSummary.textContent = isChimera()
-        ? `当前损伤：${damageSummary.total}（${damageSummary.damage1}+${damageSummary.damage2}）`
-        : `当前损伤：${damageSummary.total}`;
+        ? `损伤：${damageSummary.total}（${damageSummary.damage1}+${damageSummary.damage2}）`
+        : `损伤：${damageSummary.total}`;
     }
 
     function renderDrawPreview() {
@@ -2646,8 +2685,23 @@
       return `ps/${name}/${traitFileName(name, level, index, ext)}`;
     }
 
-    function traitKey(level, index, ext = "jpg") {
-      return `${level}-${index}-${String(ext || "jpg").replace(/^\./, "").toLowerCase()}`;
+    function commonTraitFileName(index, ext = "jpg") {
+      const safeExt = String(ext || "jpg").replace(/^\./, "").toLowerCase();
+      return `COMMON_TR_${String(index).padStart(3, "0")}.${safeExt}`;
+    }
+
+    function commonTraitSrc(index, ext = "jpg") {
+      return `ps/other/trait/${commonTraitFileName(index, ext)}`;
+    }
+
+    function traitCardSrc(name, card) {
+      return card.scope === "common"
+        ? commonTraitSrc(card.index, card.ext)
+        : traitSrc(name, card.level, card.index, card.ext);
+    }
+
+    function traitKey(level, index, ext = "jpg", scope = "") {
+      return `${scope || "apostle"}-${level}-${index}-${String(ext || "jpg").replace(/^\./, "").toLowerCase()}`;
     }
 
     function isLargeTraitCard(apostle, card) {
@@ -2656,7 +2710,7 @@
 
     function selectedTraitKeySet() {
       ensurePiles(currentApostle);
-      return new Set(piles[currentApostle].traits.map((card) => traitKey(card.level, card.index, card.ext)));
+      return new Set(piles[currentApostle].traits.map((card) => traitKey(card.level, card.index, card.ext, card.scope)));
     }
 
     function renderTraitCandidates() {
@@ -2691,7 +2745,8 @@
               checkbox.dataset.level = level;
               checkbox.dataset.index = String(index);
               checkbox.dataset.ext = ext;
-              checkbox.checked = selected.has(traitKey(level, index, ext));
+              checkbox.dataset.scope = "";
+              checkbox.checked = selected.has(traitKey(level, index, ext, ""));
 
               img.alt = `TR ${level} ${String(index).padStart(3, "0")}`;
 
@@ -2706,6 +2761,39 @@
           });
         }
       });
+
+      for (let index = 1; index <= traitProbeMaxIndex; index++) {
+        traitProbeExtensions.forEach((ext) => {
+          const src = commonTraitSrc(index, ext);
+          const img = new Image();
+          img.onload = () => {
+            if (token !== traitLoadToken) return;
+            if (loading.isConnected) loading.remove();
+            loaded += 1;
+
+            const option = document.createElement("label");
+            option.className = "trait-option";
+
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.dataset.level = "COMMON";
+            checkbox.dataset.index = String(index);
+            checkbox.dataset.ext = ext;
+            checkbox.dataset.scope = "common";
+            checkbox.checked = selected.has(traitKey("COMMON", index, ext, "common"));
+
+            img.alt = `通用特质 ${String(index).padStart(3, "0")}`;
+
+            const caption = document.createElement("span");
+            caption.textContent = `通用特质 ${String(index).padStart(3, "0")}`;
+
+            option.append(checkbox, img, caption);
+            traitDialogGrid.appendChild(option);
+          };
+          img.onerror = () => {};
+          img.src = src;
+        });
+      }
 
       window.setTimeout(() => {
         if (token !== traitLoadToken) return;
@@ -2731,9 +2819,14 @@
           type: "TR",
           level: input.dataset.level,
           index: Number(input.dataset.index),
-          ext: input.dataset.ext || "jpg"
+          ext: input.dataset.ext || "jpg",
+          scope: input.dataset.scope || ""
         }))
-        .sort((a, b) => traitLevels.indexOf(a.level) - traitLevels.indexOf(b.level) || a.index - b.index || String(a.ext).localeCompare(String(b.ext)));
+        .sort((a, b) => {
+          const scopeOrder = String(a.scope || "").localeCompare(String(b.scope || ""));
+          if (scopeOrder) return scopeOrder;
+          return traitLevels.indexOf(a.level) - traitLevels.indexOf(b.level) || a.index - b.index || String(a.ext).localeCompare(String(b.ext));
+        });
       savePiles();
       renderExtraCards();
       traitDialog.close();
@@ -2757,7 +2850,8 @@
 
       piles[currentApostle].traits.forEach((card) => {
         const imageClass = isLargeTraitCard(currentApostle, card) ? "panel-image" : "";
-        const img = imageOrMessage(traitSrc(currentApostle, card.level, card.index, card.ext), `TR ${card.level} ${card.index}`, imageClass);
+        const alt = card.scope === "common" ? `通用特质 ${card.index}` : `TR ${card.level} ${card.index}`;
+        const img = imageOrMessage(traitCardSrc(currentApostle, card), alt, imageClass);
         extraGrid.appendChild(img);
         loaded += 1;
       });
@@ -2765,7 +2859,7 @@
       defaultTraitLevels.forEach((level) => {
         for (let index = 1; index <= defaultTraitProbeMaxIndex; index++) {
           traitProbeExtensions.forEach((ext) => {
-            if (selectedTraitKeys.has(traitKey(level, index, ext))) return;
+            if (selectedTraitKeys.has(traitKey(level, index, ext, ""))) return;
             const card = { level, index, ext };
             candidates.push({
               src: traitSrc(currentApostle, level, index, ext),
@@ -3162,13 +3256,78 @@
       });
     }
 
+    function setImageZoomTokenActions(context = null) {
+      activeTokenContext = context;
+      imageZoomTokenActions.classList.toggle("show", Boolean(context));
+      if (!context) {
+        imageZoomTokenTitle.textContent = "Token";
+        return;
+      }
+
+      const item = piles[context.apostle]?.tokens?.find((entry) => entry.file === context.file);
+      const count = Number(item?.count) || 0;
+      imageZoomTokenTitle.textContent = `${context.file} x${count}`;
+      imageZoomTokenActions.querySelector("[data-token-zoom-action='minus']").disabled = count <= 0;
+      imageZoomTokenActions.querySelector("[data-token-zoom-action='clear']").disabled = count <= 0;
+    }
+
+    function changeZoomTokenCount(action) {
+      const context = activeTokenContext;
+      if (!context) return;
+      const tokenList = piles[context.apostle]?.tokens;
+      if (!Array.isArray(tokenList)) return;
+      const index = tokenList.findIndex((entry) => entry.file === context.file);
+      if (index < 0) return;
+
+      const item = tokenList[index];
+      if (action === "plus") {
+        item.count = clampTokenCount((Number(item.count) || 0) + 1);
+      } else if (action === "minus") {
+        item.count = clampTokenCount((Number(item.count) || 0) - 1);
+      } else if (action === "clear") {
+        item.count = 0;
+      }
+
+      if ((Number(item.count) || 0) <= 0) {
+        tokenList.splice(index, 1);
+        savePiles();
+        renderPanelTokens();
+        closeImageZoom();
+      } else {
+        savePiles();
+        renderPanelTokens();
+        setImageZoomTokenActions(context);
+      }
+    }
+
+    function setImageZoomFlipActions(context = null) {
+      imageZoomFlipActions.classList.toggle("show", Boolean(context));
+      imageZoomFlipButton.disabled = !context;
+      if (!context) {
+        imageZoomFlipButton.dataset.frontSrc = "";
+        imageZoomFlipButton.dataset.backSrc = "";
+        imageZoomFlipButton.dataset.sourceId = "";
+        imageZoomFlipButton.dataset.face = "front";
+        imageZoomFlipButton.textContent = "反面";
+        return;
+      }
+
+      imageZoomFlipButton.dataset.frontSrc = context.frontSrc;
+      imageZoomFlipButton.dataset.backSrc = context.backSrc;
+      imageZoomFlipButton.dataset.sourceId = context.sourceId || "";
+      imageZoomFlipButton.dataset.face = context.face || "front";
+      imageZoomFlipButton.textContent = context.face === "back" ? "正面" : "反面";
+    }
+
     function openImageZoom(src, alt = "放大图片", onClose = null, options = {}) {
       if (!src) return;
       zoomCloseAction = typeof onClose === "function" ? onClose : null;
       imageZoomImg.src = src;
       imageZoomImg.alt = alt || "放大图片";
       setImageZoomBpActions(Boolean(options.bpActions));
+      setImageZoomFlipActions(options.flipContext || null);
       setImageZoomMoveActions(options.moveContext || null);
+      setImageZoomTokenActions(options.tokenContext || null);
       imageZoomOverlay.classList.add("show");
       imageZoomOverlay.setAttribute("aria-hidden", "false");
       document.body.style.overflow = "hidden";
@@ -3181,7 +3340,9 @@
       imageZoomOverlay.setAttribute("aria-hidden", "true");
       imageZoomImg.removeAttribute("src");
       setImageZoomBpActions(false);
+      setImageZoomFlipActions(null);
       setImageZoomMoveActions(null);
+      setImageZoomTokenActions(null);
       document.body.style.overflow = "";
       if (closeAction) {
         closeAction();
@@ -3194,6 +3355,15 @@
       if (img.closest(".image-zoom-overlay")) return false;
       if (img.closest("button, .segmented, .draw-actions, .title-actions")) return false;
       return Boolean(img.closest("#panelWrap, #routineWrap, #signatureWrap, #extraGrid, #aiGrid, #bpGrid, #aiDrawPreview, #bpDrawPreview"));
+    }
+
+    function openZoomForImage(img) {
+      if (!shouldZoomImage(img)) return;
+      openImageZoom(img.currentSrc || img.src, img.alt, null, {
+        flipContext: flipContextFromImage(img),
+        moveContext: moveContextFromImage(img),
+        tokenContext: tokenContextFromImage(img)
+      });
     }
 
     function renderPanelTokens() {
@@ -3261,6 +3431,11 @@
             item.y = top;
             savePiles();
           }
+          if (tokenItem.dataset.dragged !== "true") {
+            const img = tokenItem.querySelector("img");
+            tokenItem.dataset.zoomHandled = "true";
+            openZoomForImage(img);
+          }
         };
 
         tokenItem.addEventListener("pointermove", move);
@@ -3294,6 +3469,19 @@
       renderPanelTokens();
     }
 
+    function renderFlipCard(wrap, base, name, kind) {
+      const frontSrc = `${base}/${name}_${kind}_X_001.jpg`;
+      const backSrc = `${base}/${name}_${kind}_X_001_BACK.jpg`;
+      const label = kind.toLowerCase();
+      const img = imageOrMessage(frontSrc, `${name} ${label}`, "side-card-image");
+      img.id = `${kind.toLowerCase()}CardImage`;
+      img.dataset.frontSrc = frontSrc;
+      img.dataset.backSrc = backSrc;
+      img.dataset.face = "front";
+      img.title = "点击放大，放大后可翻面";
+      wrap.replaceChildren(img);
+    }
+
     function cycleNietzscheState() {
       if (!hasManualPanelState()) return;
       if (isCyclonus()) {
@@ -3320,8 +3508,8 @@
       }
 
       renderPanelImage(base, name);
-      routineWrap.replaceChildren(imageOrMessage(`${base}/${name}_ROUTINE_X_001.jpg`, `${name} routine`, "side-card-image"));
-      signatureWrap.replaceChildren(imageOrMessage(`${base}/${name}_SIGNATURE_X_001.jpg`, `${name} signature`, "side-card-image"));
+      renderFlipCard(routineWrap, base, name, "ROUTINE");
+      renderFlipCard(signatureWrap, base, name, "SIGNATURE");
 
       document.querySelectorAll(".nav button").forEach((button) => {
         button.classList.toggle("active", button.dataset.name === name);
@@ -3502,11 +3690,13 @@
         tokenItem.dataset.dragged = "false";
         return;
       }
+      if (tokenItem && tokenItem.dataset.zoomHandled === "true") {
+        tokenItem.dataset.zoomHandled = "false";
+        return;
+      }
       event.preventDefault();
       event.stopPropagation();
-      openImageZoom(img.currentSrc || img.src, img.alt, null, {
-        moveContext: moveContextFromImage(img)
-      });
+      openZoomForImage(img);
     });
 
     imageZoomOverlay.addEventListener("click", closeImageZoom);
@@ -3515,6 +3705,24 @@
       closeImageZoom();
     });
     imageZoomImg.addEventListener("click", (event) => event.stopPropagation());
+    imageZoomFlipActions.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const button = event.target.closest("#imageZoomFlipButton");
+      if (!button || button.disabled) return;
+      const showingBack = button.dataset.face === "back";
+      const nextFace = showingBack ? "front" : "back";
+      const nextSrc = showingBack ? button.dataset.frontSrc : button.dataset.backSrc;
+      imageZoomImg.src = nextSrc;
+      button.dataset.face = nextFace;
+      button.textContent = showingBack ? "反面" : "正面";
+
+      const sourceImg = document.getElementById(button.dataset.sourceId || "");
+      if (sourceImg) {
+        sourceImg.src = nextSrc;
+        sourceImg.dataset.face = nextFace;
+        sourceImg.alt = sourceImg.alt.replace(/\s+(front|back)$/, "") + ` ${nextFace}`;
+      }
+    });
     imageZoomBpActions.addEventListener("click", (event) => {
       event.stopPropagation();
       const button = event.target.closest("[data-bp-zoom-action]");
@@ -3531,6 +3739,12 @@
       if (!target) return;
       moveVisibleCard(activeMoveContext, target);
       closeImageZoom();
+    });
+    imageZoomTokenActions.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const button = event.target.closest("[data-token-zoom-action]");
+      if (!button || button.disabled) return;
+      changeZoomTokenCount(button.dataset.tokenZoomAction);
     });
     window.addEventListener("keydown", (event) => {
       if (event.key === "Escape" && imageZoomOverlay.classList.contains("show")) {
