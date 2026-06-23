@@ -1150,19 +1150,38 @@
 
     .image-zoom-content {
       position: relative;
+      width: min(96vw, 1180px);
       max-width: min(96vw, 1180px);
       max-height: 94vh;
       display: grid;
-      grid-template-columns: minmax(0, auto) auto;
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-rows: 1fr auto 1fr;
       gap: 14px;
       place-items: center;
     }
 
-    .image-zoom-content img {
+    .image-zoom-content.has-notice {
+      grid-template-columns: minmax(0, 1fr) minmax(360px, 600px);
+    }
+
+    .image-zoom-content.has-side-notices {
+      width: fit-content;
+      max-width: min(96vw, 1880px);
+      grid-template-columns: minmax(260px, 400px) minmax(0, calc(90vh * 63 / 89)) minmax(260px, 400px);
+      gap: 6px;
+    }
+
+    .image-zoom-content.has-side-notices > img {
+      grid-column: 2;
+    }
+
+    .image-zoom-content > img {
+      grid-column: 1;
+      grid-row: 1 / -1;
       width: auto;
       height: auto;
-      max-width: 96vw;
-      max-height: 94vh;
+      max-width: 100%;
+      max-height: 90vh;
       object-fit: contain;
       border-radius: 10px;
       background: #0b0b0a;
@@ -1170,11 +1189,64 @@
       cursor: default;
     }
 
+    .image-zoom-notice {
+      display: none;
+      grid-column: 2;
+      grid-row: 1;
+      align-self: start;
+      width: min(42vw, 600px);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      cursor: default;
+    }
+
+    .image-zoom-notice.show {
+      display: grid;
+    }
+
+    .image-zoom-content.has-side-notices .image-zoom-notice {
+      display: contents;
+    }
+
+    .image-zoom-content.has-side-notices .image-zoom-notice img {
+      align-self: center;
+      max-height: 86vh;
+    }
+
+    .image-zoom-content.has-side-notices .image-zoom-notice img:nth-child(1) {
+      grid-column: 1;
+      grid-row: 1 / -1;
+      justify-self: end;
+    }
+
+    .image-zoom-content.has-side-notices .image-zoom-notice img:nth-child(2) {
+      grid-column: 3;
+      grid-row: 1 / -1;
+      justify-self: start;
+    }
+
+    .image-zoom-notice img {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 86vh;
+      object-fit: contain;
+      border-radius: 10px;
+      box-shadow: 0 18px 54px rgba(0, 0, 0, 0.48);
+    }
+
+    .image-zoom-notice img:only-child {
+      grid-column: 1 / -1;
+    }
+
     .image-zoom-actions {
       display: none;
+      grid-column: 2;
+      grid-row: 2;
       width: 128px;
       gap: 8px;
       align-self: center;
+      justify-self: start;
       cursor: default;
     }
 
@@ -1211,12 +1283,68 @@
 
     @media (max-width: 760px) {
       .image-zoom-content {
+        width: auto;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto;
+      }
+
+      .image-zoom-content.has-notice {
         grid-template-columns: minmax(0, 1fr);
       }
 
+      .image-zoom-content.has-side-notices {
+        width: auto;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .image-zoom-content.has-side-notices > img {
+        grid-column: 1 / -1;
+      }
+
+      .image-zoom-content.has-side-notices .image-zoom-notice {
+        display: contents;
+      }
+
+      .image-zoom-content.has-side-notices .image-zoom-notice img:nth-child(1),
+      .image-zoom-content.has-side-notices .image-zoom-notice img:nth-child(2) {
+        grid-row: auto;
+        max-height: 52vh;
+      }
+
+      .image-zoom-content.has-side-notices .image-zoom-notice img:nth-child(1) {
+        grid-column: 1;
+      }
+
+      .image-zoom-content.has-side-notices .image-zoom-notice img:nth-child(2) {
+        grid-column: 2;
+      }
+
+      .image-zoom-content > img {
+        grid-column: 1;
+        grid-row: auto;
+        max-width: 96vw;
+        max-height: 72vh;
+      }
+
       .image-zoom-actions {
+        grid-column: 1;
+        grid-row: auto;
         width: min(96vw, 360px);
         grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+        justify-self: center;
+      }
+
+      .image-zoom-notice {
+        grid-column: 1;
+        grid-row: auto;
+        align-self: center;
+        width: min(92vw, 520px);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .image-zoom-notice img {
+        max-height: 62vh;
       }
 
       .image-zoom-action-title {
@@ -1397,9 +1525,11 @@
     <button type="button" class="image-zoom-close" id="imageZoomClose" aria-label="关闭放大图">×</button>
     <div class="image-zoom-content">
       <img id="imageZoomImg" src="" alt="放大图片">
+      <div class="image-zoom-notice" id="imageZoomNotice"></div>
       <div class="image-zoom-actions" id="imageZoomBpActions" aria-label="BP 处置">
         <button type="button" data-bp-zoom-action="discard">弃置</button>
         <button type="button" data-bp-zoom-action="defeat">击败</button>
+        <button type="button" data-bp-zoom-action="vp-defeat" hidden>VP击败</button>
         <button type="button" data-bp-zoom-action="critical">暴击</button>
       </div>
       <div class="image-zoom-actions" id="imageZoomFlipActions" aria-label="翻面">
@@ -1544,6 +1674,7 @@
     const bpDrawPreview = document.getElementById("bpDrawPreview");
     const imageZoomOverlay = document.getElementById("imageZoomOverlay");
     const imageZoomImg = document.getElementById("imageZoomImg");
+    const imageZoomNotice = document.getElementById("imageZoomNotice");
     const imageZoomClose = document.getElementById("imageZoomClose");
     const imageZoomBpActions = document.getElementById("imageZoomBpActions");
     const imageZoomFlipActions = document.getElementById("imageZoomFlipActions");
@@ -3230,7 +3361,11 @@
       const pending = piles[currentApostle]?.BP?.pending;
       imageZoomBpActions.querySelectorAll("[data-bp-zoom-action]").forEach((button) => {
         const action = button.dataset.bpZoomAction;
-        button.disabled = !pending || (action === "critical" && pending.level !== "III" && !pending.specialBp);
+        const isVpDefeat = action === "vp-defeat";
+        button.hidden = isVpDefeat && !isChimera();
+        button.disabled = !pending
+          || (action === "critical" && pending.level !== "III" && !pending.specialBp)
+          || (isVpDefeat && !isChimera());
       });
     }
 
@@ -3324,6 +3459,17 @@
       zoomCloseAction = typeof onClose === "function" ? onClose : null;
       imageZoomImg.src = src;
       imageZoomImg.alt = alt || "放大图片";
+      const noticeImages = Array.isArray(options.noticeImages) ? options.noticeImages : [];
+      const sideNotices = options.noticeLayout === "sides" && noticeImages.length > 0;
+      imageZoomNotice.replaceChildren(...noticeImages.map((item) => {
+        const img = document.createElement("img");
+        img.src = item.src;
+        img.alt = item.alt || "";
+        return img;
+      }));
+      imageZoomNotice.classList.toggle("show", noticeImages.length > 0);
+      imageZoomNotice.parentElement.classList.toggle("has-notice", noticeImages.length > 0);
+      imageZoomNotice.parentElement.classList.toggle("has-side-notices", sideNotices);
       setImageZoomBpActions(Boolean(options.bpActions));
       setImageZoomFlipActions(options.flipContext || null);
       setImageZoomMoveActions(options.moveContext || null);
@@ -3339,6 +3485,10 @@
       imageZoomOverlay.classList.remove("show");
       imageZoomOverlay.setAttribute("aria-hidden", "true");
       imageZoomImg.removeAttribute("src");
+      imageZoomNotice.replaceChildren();
+      imageZoomNotice.classList.remove("show");
+      imageZoomNotice.parentElement.classList.remove("has-notice");
+      imageZoomNotice.parentElement.classList.remove("has-side-notices");
       setImageZoomBpActions(false);
       setImageZoomFlipActions(null);
       setImageZoomMoveActions(null);
@@ -3359,11 +3509,24 @@
 
     function openZoomForImage(img) {
       if (!shouldZoomImage(img)) return;
+      const isBpImage = Boolean(img.closest("#bpGrid, #bpDrawPreview"));
       openImageZoom(img.currentSrc || img.src, img.alt, null, {
         flipContext: flipContextFromImage(img),
         moveContext: moveContextFromImage(img),
-        tokenContext: tokenContextFromImage(img)
+        tokenContext: tokenContextFromImage(img),
+        noticeImages: isBpImage ? currentChimeraStatusImages() : []
       });
+    }
+
+    function currentChimeraStatusImages() {
+      if (!isChimera()) return [];
+      const phase = String(piles[currentApostle]?.chimeraPhase || "").toUpperCase();
+      const state = chimeraPhaseStates[phase];
+      if (!state) return [];
+      return [{
+        src: `ps/CHIMERA_METASTASIOS/${phase}.png`,
+        alt: `奇美拉当前状态：${state.label}`
+      }];
     }
 
     function renderPanelTokens() {
@@ -3548,6 +3711,20 @@
         const pending = piles[currentApostle]?.AI?.pending;
         if (!pending || pending.level !== drawnCard.level || pending.index !== drawnCard.index) return;
         discardAiPending(false);
+      }, {
+        noticeLayout: "sides",
+        noticeImages: drawnApostle === chimeraName
+          ? [
+              {
+                src: "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_I_002.jpg",
+                alt: "来势汹汹特性卡"
+              },
+              {
+                src: "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_I_001.jpg",
+                alt: "黏糊留痕特性卡"
+              }
+            ]
+          : []
       });
     }
 
@@ -3572,7 +3749,10 @@
       bp.pending = bp.deck[0];
       savePiles();
       renderAibpCards();
-      openImageZoom(cardSrc(bp.pending), "抽取的 BP", null, { bpActions: true });
+      openImageZoom(cardSrc(bp.pending), "抽取的 BP", null, {
+        bpActions: true,
+        noticeImages: currentChimeraStatusImages()
+      });
     }
 
     function removePendingFromDeck(type) {
@@ -3610,6 +3790,10 @@
       } else if (mode === "defeat") {
         setChimeraPhaseFromCard(card);
         resolveBpDefeat(card);
+      } else if (mode === "vp-defeat") {
+        setChimeraPhaseFromCard(card);
+        resolveBpDefeat(card);
+        bp.damage2.push({ special: "SW" });
       } else if (mode === "critical") {
         setChimeraPhaseFromCard(card);
         resolveBpCritical(card);
@@ -3705,6 +3889,7 @@
       closeImageZoom();
     });
     imageZoomImg.addEventListener("click", (event) => event.stopPropagation());
+    imageZoomNotice.addEventListener("click", (event) => event.stopPropagation());
     imageZoomFlipActions.addEventListener("click", (event) => {
       event.stopPropagation();
       const button = event.target.closest("#imageZoomFlipButton");
