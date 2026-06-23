@@ -1944,6 +1944,38 @@
     showEntry(entry, true);
   }
 
+  function navigateToStoryTarget(target = {}) {
+    const bookId = resolveBookId(target.bookId || target.book || "");
+    if (bookId) bookSelect.value = bookId;
+    activeBook = currentBook();
+
+    const chapterKey = resolveChapterKey(activeBook, target.chapterKey || target.chapter || "");
+    populateChapters(activeBook, chapterKey || undefined);
+    const encounterKey = resolveEncounterKey(activeBook, target.encounterKey || target.encounter || "");
+    if (encounterKey) populateEncounters(activeBook, encounterKey);
+
+    const entry = target.entryKey
+      ? activeBook.entries.find((item) => item.key === target.entryKey)
+      : preferredEntry(activeBook, target.entryId || target.entry || target.id || "", {
+        bookId: activeBook.id,
+        chapterKey: chapterKey || "",
+        encounterKey: encounterKey || "",
+      });
+
+    if (!entry) {
+      const query = target.entryId || target.entry || target.id || target.q || "";
+      if (query) {
+        searchInput.value = query;
+        renderResults(searchEntries(query));
+      }
+      return false;
+    }
+
+    searchInput.value = entry.id;
+    showEntry(entry, true);
+    return true;
+  }
+
   function goBack() {
     const previous = historyStack.pop();
     if (!previous) return;
@@ -2542,6 +2574,14 @@
       if (!target) return;
       prewarmJumpTarget(target.dataset.id, { chapterHint: target.dataset.chapterHint });
     }, true);
+  });
+
+  window.atoStoryNavigate = navigateToStoryTarget;
+  window.addEventListener("message", (event) => {
+    if (window.location.protocol !== "file:" && event.origin !== window.location.origin) return;
+    const message = event.data || {};
+    if (message.type !== "ato-story-jump") return;
+    navigateToStoryTarget(message.target || {});
   });
 
   init();

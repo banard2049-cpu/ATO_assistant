@@ -5124,6 +5124,39 @@
           ]
     };
 
+    let matrixClickTimer = 0;
+
+    function matrixSourceTarget(notes) {
+      const source = (notes || []).find((note) => /\bC[1-5]\s*\|/.test(note));
+      if (!source) return null;
+      const match = source.match(/\bC([1-5])\s*\|.*>\s*(.+?)\s+line\s+\d+:/);
+      if (!match) return null;
+      return {
+        bookId: `c${match[1]}`,
+        entryId: match[2].trim(),
+      };
+    }
+
+    function jumpToMatrixSource(notes) {
+      const target = matrixSourceTarget(notes);
+      if (!target) return;
+      const params = new URLSearchParams({ book: target.bookId, entry: target.entryId });
+      const url = `../story/index.html?${params.toString()}`;
+
+      if (window.parent && window.parent !== window) {
+        try {
+          if (typeof window.parent.atoStoryNavigate === "function" && window.parent.atoStoryNavigate(target)) return;
+        } catch (error) {
+          // Fall through to postMessage.
+        }
+        const targetOrigin = window.location.protocol === "file:" ? "*" : window.location.origin;
+        window.parent.postMessage({ type: "ato-story-jump", target }, targetOrigin);
+        return;
+      }
+
+      window.location.href = url;
+    }
+
     function renderMatrix() {
       const rows = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").concat(["AA", "BB", "CC", "DD", "EE", "FF"]);
       elements.choiceMatrix.innerHTML = "";
@@ -5140,9 +5173,15 @@
           button.className = [checked ? "marked" : "", notes.length ? "has-note" : ""].filter(Boolean).join(" ");
           button.textContent = `${row}${col}`;
           const noteText = notes.length ? notes.join("\n") : "未在 C1-C5 故事书中找到“标记/圈出/划掉此格”的来源。";
-          button.title = `${key}\n${noteText}\n${matrixUnlocked ? "双击修改" : "矩阵已锁定"}`;
+          button.title = `${key}\n${noteText}\n${notes.length ? "单击跳转来源；" : ""}${matrixUnlocked ? "双击修改" : "矩阵已锁定"}`;
           if (notes.length) button.setAttribute("aria-label", `${key}：${notes.join("；")}`);
+          button.addEventListener("click", () => {
+            if (!notes.length) return;
+            window.clearTimeout(matrixClickTimer);
+            matrixClickTimer = window.setTimeout(() => jumpToMatrixSource(notes), 180);
+          });
           button.addEventListener("dblclick", () => {
+            window.clearTimeout(matrixClickTimer);
             if (!matrixUnlocked) return;
             state.matrix[key] = !state.matrix[key];
             renderMatrix();
