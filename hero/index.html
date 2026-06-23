@@ -1119,6 +1119,12 @@
         skillsExpanded: false,
         baseSkills: { courage: 0, wisdom: 0, will: 0, endurance: 0, cunning: 0, fury: 0 },
         mnemos: {},
+        mnemosProgress: {},
+        mnemosNodeProgress: {},
+        mnemosTags: {},
+        fatedMnemos: {},
+        fatedProgress: {},
+        triskelion: { fury: 0, fate: 0, danger: 0 },
         abilities: "",
         notes: "",
       };
@@ -1156,7 +1162,14 @@
         if (h.skillsExpanded !== true) h.skillsExpanded = false;
         if (!h.mnemos || typeof h.mnemos !== "object" || Array.isArray(h.mnemos)) h.mnemos = {};
         if (!h.fatedMnemos || typeof h.fatedMnemos !== "object" || Array.isArray(h.fatedMnemos)) h.fatedMnemos = {};
-        h.mnemosNodeProgress = h.mnemosNodeProgress || {};
+        if (!h.mnemosProgress || typeof h.mnemosProgress !== "object" || Array.isArray(h.mnemosProgress)) h.mnemosProgress = {};
+        if (!h.mnemosNodeProgress || typeof h.mnemosNodeProgress !== "object" || Array.isArray(h.mnemosNodeProgress)) h.mnemosNodeProgress = {};
+        if (!h.mnemosTags || typeof h.mnemosTags !== "object" || Array.isArray(h.mnemosTags)) h.mnemosTags = {};
+        if (!h.fatedProgress || typeof h.fatedProgress !== "object" || Array.isArray(h.fatedProgress)) h.fatedProgress = {};
+        if (!h.triskelion || typeof h.triskelion !== "object" || Array.isArray(h.triskelion)) h.triskelion = { fury: 0, fate: 0, danger: 0 };
+        h.triskelion.fury = Math.max(0, parseInt(h.triskelion.fury, 10) || 0);
+        h.triskelion.fate = Math.max(0, parseInt(h.triskelion.fate, 10) || 0);
+        h.triskelion.danger = Math.max(0, parseInt(h.triskelion.danger, 10) || 0);
         CYCLES.forEach(c => {
           if (!Array.isArray(h.mnemos[c])) h.mnemos[c] = [];
           if (!Array.isArray(h.fatedMnemos[c])) h.fatedMnemos[c] = [];
@@ -1742,7 +1755,7 @@
               <div class="mnemos-title"><span class="fated-keyword">${escHtml(m.keyword)}</span>${escHtml(m.zh)} <span class="mnemos-title-en">${escHtml(m.en)}</span> <span class="mnemos-cycle">${escHtml(CYCLE_LABELS[m.cycleId] || "")}</span></div>
               <div class="mnemos-badges"><span class="mnemos-skill-badge fated-skill">${skillLabel} −1</span></div>
             </div>
-            ${renderTrack3(m, progress)}
+            ${renderTrack3(m, progress, hero.id)}
           </div>
           <button class="mnemos-toggle danger" onclick="confirmRemoveFated('${m.cycleId}','${m.id}')">移除</button>
         </div>`;

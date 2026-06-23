@@ -1190,6 +1190,14 @@
       color: #fff;
     }
 
+    .matrix button.has-note {
+      box-shadow: inset 0 -3px 0 rgba(138, 91, 23, 0.55);
+    }
+
+    .matrix button.marked.has-note {
+      box-shadow: inset 0 -3px 0 rgba(255, 255, 255, 0.55);
+    }
+
     .map-grid {
       display: grid;
       grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -2167,10 +2175,24 @@
       return false;
     }
 
+    // These UI groups must stay internally consistent; per-key merging can revive stale crew boxes/locks.
+    const atomicMergePaths = new Set([
+      "cycleStats",
+      "crewBoxes",
+      "maxUnlocked",
+    ]);
+
     function mergeRecordChanges(base, local, remote, path = "") {
       if (jsonEqual(local, remote)) return { value: cloneJson(local), conflicts: [] };
       if (jsonEqual(local, base)) return { value: cloneJson(remote), conflicts: [] };
       if (jsonEqual(remote, base)) return { value: cloneJson(local), conflicts: [] };
+
+      if (atomicMergePaths.has(path)) {
+        return {
+          value: cloneJson(local),
+          conflicts: [path],
+        };
+      }
 
       if (isPlainObject(base) || isPlainObject(local) || isPlainObject(remote)) {
         const baseObject = isPlainObject(base) ? base : {};
@@ -2424,10 +2446,15 @@
       if (!isPlainObject(matrix)) return {};
       const normalized = {};
       Object.entries(matrix).forEach(([key, value]) => {
-        const sharedKey = key.replace(/^c\d-/, "");
-        normalized[sharedKey] = Boolean(value);
+        const sharedKey = normalizeMatrixKey(key.replace(/^c\d-/, ""));
+        if (sharedKey) normalized[sharedKey] = Boolean(value);
       });
       return normalized;
+    }
+
+    function normalizeMatrixKey(key) {
+      const text = String(key || "").trim().replace(/^(Aa|Bb|Cc|Dd|Ee|Ff)(1[0-2]|[1-9])$/i, (_, row, col) => `${row.toUpperCase()}${col}`).toUpperCase();
+      return /^(?:AA|BB|CC|DD|EE|FF|[A-Z])(?:1[0-2]|[1-9])$/.test(text) ? text : "";
     }
 
     function currentCycle() {
@@ -3917,8 +3944,1111 @@
       });
     }
 
+    const choiceMatrixNotes = {
+          "A1": [
+                "C1 | 内蕴奥德赛 > 12 阿尔戈尼特人 (The Argonites) > 12-the-argonites line 13: 给这个泰坦 (Titan) 起个名字 / 标记 A1"
+          ],
+          "A2": [
+                "C3 | 冒险枢纽 04 - 蜡与承诺 > 0006 line 13: 获得 +1 船体 (Hull) / 标记 A2"
+          ],
+          "A3": [
+                "C3 | 冒险枢纽 05 - 无法回头 > 0029 line 35: 获得 +1 悖论 (Paradox) / 标记 A3"
+          ],
+          "A4": [
+                "C1 | 主线故事 - 迷宫真相 > 0101 line 98: 角誓者(Hornsworn)：外交 +1 / 标记 A4"
+          ],
+          "A6": [
+                "C1 | 主线故事 - 迷宫真相 > 0102 line 99: 角誓者(Hornsworn)：外交 +2 / 标记 A6"
+          ],
+          "A7": [
+                "C1 | 特殊事件 > 教程总结——跳过教程 (TUTORIAL SUMMARY - SKIPPING THE TUTORIAL) > tutorial-summary-skipping-the-tutorial line 9: 获得 1 个西西弗斯之泪 (Sisyphus Tear) 神圣资源 / 在选择矩阵 (Choice Matrix) 上标记 A7 或 A8（随机）"
+          ],
+          "A8": [
+                "C1 | 特殊事件 > 教程总结——跳过教程 (TUTORIAL SUMMARY - SKIPPING THE TUTORIAL) > tutorial-summary-skipping-the-tutorial line 9: 获得 1 个西西弗斯之泪 (Sisyphus Tear) 神圣资源 / 在选择矩阵 (Choice Matrix) 上标记 A7 或 A8（随机）"
+          ],
+          "A9": [
+                "C3 | 冒险枢纽 03 - 我们身后留下的 > 0009 line 16: 这对人民来说肯定是更好的结果吧 / 标记 A9"
+          ],
+          "A11": [
+                "C1 | 回忆突破 > 塞壬幸存者 (Siren Survivor) > M023 line 52: 接受死亡 / 标记 A11"
+          ],
+          "A12": [
+                "C2 | 回忆突破 > M023 > M023 line 10: 让阿尔戈号采取替代路线 / 标记 A12"
+          ],
+          "B1": [
+                "C1 | 冒险枢纽 03 - 隐匿于众目睽睽之下 > 0001 line 9: 你们拒绝提供帮助 / 标记 B1"
+          ],
+          "B3": [
+                "C1 | 休憩冒险 > 33 > 33 line 6: 很多很多的山羊 / 标记 B3"
+          ],
+          "B5": [
+                "C1 | 主线故事 - 迷宫真相 > 0103 line 100: 迷宫徒(Labyrinthians)：外交 +1，角誓者(Hornsworn)：外交 +1 / 标记 B5"
+          ],
+          "B6": [
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0004 line 4: 尝尝你们即将面对的真正力量……” / 每位阿尔戈英雄 (Argonaut) 获得 +1 愤怒 (Rage)，标记 B6"
+          ],
+          "B7": [
+                "C1 | 冒险枢纽 06 - 米诺陶洛斯之泪 > 0010 line 9: 获得 +1 泰坦 (Titan) 和 +1 阿尔戈号命运 (ArgoFate) / 标记 B7",
+                "C1 | 冒险枢纽 06 - 米诺陶洛斯之泪 > 0010 line 9: 一位阿尔戈英雄 (Argonaut) 可以移除迷宫印纹 (Mazetouched) 苦痛 (Affliction) / 标记 B7",
+                "C1 | 冒险枢纽 06 - 米诺陶洛斯之泪 > 0011 line 10: 一位阿尔戈英雄 (Argonaut) 可以移除迷宫印纹 (Mazetouched) 苦痛 (Affliction) / 标记 B7"
+          ],
+          "B8": [
+                "C2 | 凝视蝼蚁 (Consider the Ant) v2.0 > 0015 line 21: 队长 (Party Leader) 获得+1 怒气 (Rage) 和一张宿命回忆 (Fated Mnemos) 卡 / 标记 B8"
+          ],
+          "B9": [
+                "C1 | 冒险枢纽 07 - 暴露的梦境 > 0029 line 30: 获得 +1 船员 (Crew)，阿尔戈号命运 (ArgoFate) -1 / 标记 B9",
+                "C1 | 冒险枢纽 07 - 暴露的梦境 > 0030 line 31: 获得 +1 陌生人 (Strangers) 和 +1 灾祸指示物 (DoomToken) / 标记 B9",
+                "C2 | 另一场温泉关之战 (The Other Thermopylae) v2.0 > 0009 line 15: 获得+1 变节者 (Defector)、+1 阿尔戈号命运 (ArgoFate) 和+1 难民 (Refugees) / 标记 B9"
+          ],
+          "B10": [
+                "C2 | 另一场温泉关之战 (The Other Thermopylae) v2.0 > 0015 line 20: 当你看着他们巨大的身影慢慢消失在山丘后面时，你希望他们能再次找到他们的家人 / 标记 B10"
+          ],
+          "B11": [
+                "C1 | 回忆突破 > 米诺斯传承 (Minoan Heritage) > M040 line 47: 你们决定承认你们是米诺斯 (Minos) 的孩子 / 标记 B11",
+                "C1 | 回忆突破 > 米诺斯传承 (Minoan Heritage) > M042 line 48: 你们决定承认你们是米诺斯 (Minos) 的孩子 / 标记 B11"
+          ],
+          "B12": [
+                "C2 | 回忆突破 > M022 > M022 line 26: 离开阿尔戈号，与你的父亲和解 / 标记 B12"
+          ],
+          "C2": [
+                "C1 | 主线故事 - 迷宫真相 > 0067 line 67: 1: 帮助邦联同盟(Symmachy)将马拉松号(Marathonian)重新下水 / 标记 C2"
+          ],
+          "C3": [
+                "C1 | 主线故事 - 迷宫真相 > 0067 line 67: 你不会杀死他们，但你肯定不会帮助他们 / 标记 C3"
+          ],
+          "C4": [
+                "C2 | 痛苦产业 (Misery Industry) v2.0 > 0032 line 33: 你的决定引起了分歧，但你希望你做出了正确的选择 / 标记 c4"
+          ],
+          "C6": [
+                "C3 | 冒险枢纽 06 - 父辈们的罪孽 > 0040 line 47: 获得祖父 (Grandfather) 的装备卡（秘密卡组 8，卡牌 94） / 标记 C6"
+          ],
+          "C7": [
+                "C2 | 真相映照弱点 (Truth to Weakness) v2.0 > 0025 line 32: “结束这场战争，”当你们关上身后的门时，她说道 / 标记 C7",
+                "C2 | 真相映照弱点 (Truth to Weakness) v2.0 > 0026 line 33: 减去 -2 (ArgoFate) 并获得 +1 (DoomToken) / 标记 C7",
+                "C2 | 真相映照弱点 (Truth to Weakness) v2.0 > 0027 line 34: 队长 (Party Leader) 获得 +2 (Fate) / 标记 C7"
+          ],
+          "C8": [
+                "C2 | 尘归尘土归土 (From the Ashes) v2.0 > 0040 line 47: 获得+1 灾祸指示物 (Doom Token) 并失去-1 船体 (Hull) / 标记 C8"
+          ],
+          "C9": [
+                "C3 | 冒险枢纽 01 - 鲜为人知的路 > 0002 line 9: 德尔菲人 (Delphians)：外交 +1 (Diplomacy +1) / 标记 C9"
+          ],
+          "C10": [
+                "C3 | 冒险枢纽 01 - 鲜为人知的路 > 0023 line 30: 德尔菲人 (Delphians)：外交 +1 (Diplomacy +1) / 标记 C10"
+          ],
+          "C11": [
+                "C1 | 回忆突破 > 你所持有的梦 (A Dream You Hold) > M021 line 8: 离开阿尔戈号 (Argo)，继续追寻你们废弃已久的梦想 / 标记 C11"
+          ],
+          "C12": [
+                "C2 | 回忆突破 > M024 > M024 line 38: 这段旅程的一部分涉及找到你自己的生活，摆脱阿尔戈 / 标记 C12"
+          ],
+          "D2": [
+                "C1 | 冒险枢纽 05 - 不安的头颅 > 0048 line 44: 米诺斯人 (Minoans)：外交 (Diplomacy) -1 / 标记 D2"
+          ],
+          "D3": [
+                "C2 | 当陆地与海洋相遇 (When the Land Meets the Sea) v2.0 > 0040 line 36: 你们想起了你们为什么要打这场仗，于是你们没有打扰他们，而是去寻找更多的葡萄酒，脸上带着微笑 / 标记 D3"
+          ],
+          "D4": [
+                "C2 | 蝴蝶寓言 (Parable Of The Butterfly) v2.0 > 0004 line 11: 无论结果如何，其中一个男孩，埃菲 (Efi)，都紧紧地贴着你 / 标记 d4",
+                "C2 | 当陆地与海洋相遇 (When the Land Meets the Sea) v2.0 > 0023 line 25: 获得 +2 (ArgoFate) / 划掉 D4，并在阿尔戈英雄 (Argonaut) 的恩惠 (Boons) 部分失去埃菲吉尼亚 (Efigenia)"
+          ],
+          "D5": [
+                "C2 | 真相映照弱点 (Truth to Weakness) v2.0 > 0027 line 34: 获得 +1 (ProgressToken) / 标记 D5"
+          ],
+          "D6": [
+                "C2 | 真相映照弱点 (Truth to Weakness) v2.0 > 0028 line 35: 在阿尔戈号 (Argo) 面板恩惠 (Boons) 部分的过渡 (Transition) 下做一个计数标记 / 无论结果如何，获得 +1 (ProgressToken) 和 +1 (DoomToken)，标记 D6，然后返回航行阶段 (Voyage Phase)"
+          ],
+          "D8": [
+                "C2 | 尘归尘土归土 (From the Ashes) v2.0 > 0014 line 21: 你只需要坚持你的道路，并对你的选择保持信心 / 标记 D8"
+          ],
+          "D9": [
+                "C2 | 蝴蝶寓言 (Parable Of The Butterfly) v2.0 > 0040 line 36: 获得+1 (船员 (Crew) 和+2 (阿尔戈号命运 (Argofate) / 标记 d9"
+          ],
+          "D10": [
+                "C2 | 蝴蝶寓言 (Parable Of The Butterfly) v2.0 > 0041 line 37: 获得+1 (灾祸指示物 (Doomtoken) 和+2 难民 (Refugees) / 标记 d10"
+          ],
+          "D11": [
+                "C1 | 回忆突破 > 监禁 (Imprisonment) > M022 line 42: 离开阿尔戈号 (Argo)，开辟一条新的道路 / 标记 D11"
+          ],
+          "D12": [
+                "C2 | 回忆突破 > M025 > M025 line 14: 退出你的战斗生活，进行冥想并控制你的暴力冲动 / 标记D12"
+          ],
+          "E2": [
+                "C1 | 冒险枢纽 05 - 不安的头颅 > 0024 line 30: 角誓者 (Hornsworn)：外交 (Diplomacy) -1 / 标记 E2"
+          ],
+          "E3": [
+                "C1 | 休憩冒险 > 8 流浪狗 (The Stray) > 8-the-stray line 14: 获得迷宫狗 (Labyrinthian Dog) 梅齐 (Mazey)（装备 (Gear)）卡（秘密牌堆 2，第 22 张） / 标记 E3"
+          ],
+          "E4": [
+                "C1 | 冒险枢纽 01 - 宿命的谜题 > 0027 line 32: ” / 标记 E4"
+          ],
+          "E5": [
+                "C2 | 当陆地与海洋相遇 (When the Land Meets the Sea) v2.0 > 0048 line 44: 它仍然在坑里，抬起头，环顾着竞技场的看台，那里还有很多人坐着，欣赏着这场即兴的奇观，高喊着让泰坦 (Titan) 攻击你们 / 标记 E5"
+          ],
+          "E6": [
+                "C1 | 冒险枢纽 02 - 人民的困境 > 0005 line 13: 真正的屏障……在外面 / 标记 E6，请参阅 0020"
+          ],
+          "E7": [
+                "C1 | 主线故事 - 迷宫真相 > 0068 line 68: 让一个外人上船是不明智的，更不用说一个像克里特岛(Crete)这样的帝国主义王国的代表了 / 米诺斯人(Minoans)：外交 -1，标记 E7"
+          ],
+          "E8": [
+                "C3 | 冒险枢纽 04 - 蜡与承诺 > 0027 line 34: 获得 +1 阿尔戈号知识 (Argo Knowledge) / 标记 E8"
+          ],
+          "E9": [
+                "C3 | 冒险枢纽 04 - 蜡与承诺 > 0030 line 37: ”你点点头，晚上回到了你的船舱 / 标记 E9 并获得 1 张流放者碳水化合物 (Exiles Carb) 装备卡 (Gear card)",
+                "C3 | 冒险枢纽 04 - 蜡与承诺 > 0031 line 38: ”你点点头，看着地平线，阿尔戈号 (Argo) 启航了 / 标记 E9 并获得卡科斯植入体 (Kakos Implant) 装备卡 (Gear card)"
+          ],
+          "E11": [
+                "C1 | 回忆突破 > 有人在等待 (Someone Waiting) > M025 line 56: 离开阿尔戈号 (Argo)，与你们等待的人在一起 / 标记 E11"
+          ],
+          "E12": [
+                "C2 | 回忆突破 > M021 > M021 line 18: 认识到你的内在价值，从这种破坏性的爱中解脱出来 / 标记 E12"
+          ],
+          "F1": [
+                "C1 | 冒险枢纽 03 - 隐匿于众目睽睽之下 > 0001 line 9: 你们帮助了皮里托斯 (Pirithous) / 标记 F1"
+          ],
+          "F3": [
+                "C1 | 主线故事 - 迷宫真相 > 0024 line 24: 2: 撒谎，隐瞒邦联同盟(Symmachy)囚禁了刻希诺狄刻(Xenodice)的事实 / 标记 F3"
+          ],
+          "F4": [
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0240 line 215: 如果秘密俘虏 (Secret Captive) 是神盾 (Aegis) 小队的一员，划掉 O9 并标记 O10 / 如果第四人 (Fourth) 是神盾 (Aegis) 小队的一员，划掉 F4 并标记 L9",
+                "C2 | 内蕴奥德赛 > 32 第四 > 32 line 12: 随机一名阿尔戈英雄获得 1 个记忆节点 / 标记 F4"
+          ],
+          "F5": [
+                "C1 | 冒险枢纽 01 - 宿命的谜题 > 3—4 吞噬之渊的梦 | 梦境 (3—4 Dream of the Maw | Dream) > 3-4-3-4-dream-of-the-maw-dream line 3: 在你们的阿尔戈英雄 (Argonaut) 表上的恩惠 (Boons) 下方记下“不可能的逻辑 (Impossible Logic)” / 标记 F5"
+          ],
+          "F10": [
+                "C3 | 冒险枢纽 06 - 父辈们的罪孽 > 0002 line 9: ” / 标记 F10"
+          ],
+          "F11": [
+                "C1 | 回忆突破 > 破碎的承诺 (A Broken Promise) > M026 line 4: 你们离开了阿尔戈号 (Argo)，回到了你们的妹妹身边 / 标记 F11"
+          ],
+          "F12": [
+                "C2 | 回忆突破 > M026 > M026 line 34: 他们将成为你的遗产 / 标记 F12"
+          ],
+          "G1": [
+                "C1 | 冒险枢纽 03 - 隐匿于众目睽睽之下 > 0009 line 16: ” / 标记 G1",
+                "C1 | 冒险枢纽 03 - 隐匿于众目睽睽之下 > 0030 line 33: 获得 +1 进展指示物 (ProgressToken) 和 +1 灾祸指示物 (DoomToken) / 标记 G1"
+          ],
+          "G3": [
+                "C1 | 主线故事 - 迷宫真相 > 0109 line 105: ” / 标记 G3，并参见 0118",
+                "C1 | 主线故事 - 迷宫真相 > 0110 line 106: 角誓者(Hornsworn)：外交 +1 / 标记 G3",
+                "C1 | 主线故事 - 迷宫真相 > 0111 line 107: 每个阿尔戈英雄(Argonaut)获得 +1 怒气(Rage) / 标记 G3，并参见 0118",
+                "C1 | 主线故事 - 迷宫真相 > 0112 line 108: 如果阿尔戈号命运(Argo Fate) 6+，请参见 0117 / 否则，标记 G3，并前往第 116 页的“没有迷宫(There Is No Maze)”战斗",
+                "C1 | 主线故事 - 迷宫真相 > 0113 line 109: 如果阿尔戈号命运(Argo Fate) 6+，请参见 0117 / 否则，标记 G3，并前往第 116 页的“没有迷宫(There Is No Maze)”战斗",
+                "C1 | 主线故事 - 迷宫真相 > 0115 line 111: 如果阿尔戈号命运(Argo Fate) 6+，请参见 0117 / 否则，标记 G3，并前往第 116 页的“没有迷宫(There Is No Maze)”战斗",
+                "C1 | 主线故事 - 迷宫真相 > 0130 line 125: 如果没有标记 I4，阿卡卡利斯公主(Acacallis)就无处可寻 / 如果没有标记 G3，淮德拉公主(Phaedra)的葬礼将被推迟，直到岛屿的命运确定下来"
+          ],
+          "G4": [
+                "C1 | 主线故事 - 迷宫真相 > 0011 line 11: 弃掉“米诺斯向导(Minoan Guide)”盟友(Ally)卡，失去 -1 陌生人(Strangers) / 标记 G4，然后返回航行阶段(Voyage Phase)"
+          ],
+          "G5": [
+                "C3 | 冒险枢纽 01 - 鲜为人知的路 > Ω 假先知 (False Prophet) 家庭 > false-prophet line 7: 一进去，她就指着其中一个牢房，走到对面的墙边，双臂抱在胸前 / 如果没有标记，标记 G5",
+                "C3 | 冒险枢纽 04 - 蜡与承诺 > 0038 line 45: -1 阿尔戈号命运 (Argo Fate) / 标记 G5",
+                "C3 | 冒险枢纽 06 - 父辈们的罪孽 > 0010 line 17: 在你的阿尔戈英雄 (Argonaut) 面板上记下他的名字和奖励：“赞索斯 (Xanthos)，忏悔的祭司：获得 +1 命运 (Fate) 以忽略当前回合中的 1 个宿命回忆 (Fated Mnemos) / ”标记 G5",
+                "C3 | 冒险枢纽 06 - 父辈们的罪孽 > 0012 line 19: ” / 标记 G5"
+          ],
+          "G6": [
+                "C2 | 特殊事件 > 死于收割 Reaped > 死于收割-reaped line 6: 刚刚解决他们的播撒宿命回忆的阿尔戈英雄抛弃爱戈号，带着 1 个泰坦（如果有能力的话，就是颠覆者）、重新利用的密码箱和征服者之钉（装备）卡 / 在游戏术语中，他们死了，标记 G6，并查看突然醒来的特别事件"
+          ],
+          "G7": [
+                "C2 | 凝视蝼蚁 (Consider the Ant) v2.0 > α 跬步之路 (To Walk a Mile) | 行动 (Deed) > α line 1: 当有人叫你的名字帕西翁 (Pasion)，或者仅仅是“朋友”时，你的心中开始涌起阵阵愧疚 / 标记 G7"
+          ],
+          "G8": [
+                "C2 | 尘归尘土归土 (From the Ashes) v2.0 > 0051 line 58: 在阿尔戈号面板 (Argo Sheet) 的恩惠 (Boons) 部分的过渡 (Transition) 下面做 2 个标记 / 标记 G8"
+          ],
+          "G9": [
+                "C1 | 主线故事 - 迷宫真相 > 0034 line 34: 大地开始震动 / 标记 G9",
+                "C1 | 主线故事 - 迷宫真相 > 0045 line 45: 大地开始震动 / 标记 G9",
+                "C1 | 主线故事 - 迷宫真相 > 0046 line 46: 大地开始震动 / 标记 G9",
+                "C1 | 主线故事 - 迷宫真相 > 0152 line 146: 如果这是真的话 / 标记 G9"
+          ],
+          "G10": [
+                "C3 | 冒险枢纽 03 - 我们身后留下的 > 0010 line 17: 只有时间才能证明…… / 标记 G10"
+          ],
+          "G11": [
+                "C1 | 回忆突破 > 沾满鲜血的双手 (Blood on Your Hands) > M027 line 20: 你们离开了阿尔戈号 (Argo)，去服刑 / 标记 G11"
+          ],
+          "G12": [
+                "C2 | 回忆突破 > M027 > M027 line 30: 离开阿尔戈号去帮助其他人 / 标记 G12"
+          ],
+          "H1": [
+                "C1 | 冒险枢纽 02 - 人民的困境 > 0034 line 42: 你们带着对围绕克里特岛 (Crete) 的政治阴谋的更多了解离开了小岛 / 标记 H1",
+                "C1 | 冒险枢纽 02 - 人民的困境 > 0037 line 45: 营房被搜查了一遍，在建筑物的地基里发现了一批迷宫徒 (Labyrinthian) 大理石和其他遗物，是送给某个外国势力的礼物 / 标记 H1"
+          ],
+          "H2": [
+                "C1 | 冒险枢纽 02 - 人民的困境 > 0035 line 43: 让潜在的对手结成这样的联盟，真的明智吗 / 标记 H2",
+                "C1 | 冒险枢纽 02 - 人民的困境 > 0038 line 46: 你们勉强地允许他上船，然后离开了城镇 / 标记 H2"
+          ],
+          "H3": [
+                "C1 | 主线故事 - 迷宫真相 > 0124 line 120: 看来，让怪物溜进我们世界的裂缝不是阿里阿德涅(Ariadne)，而是一直都是忒修斯(Theseus) / 标记 H3",
+                "C1 | 主线故事 - 迷宫真相 > 0126 line 121: 看来，让怪物溜进我们世界的裂缝不是阿里阿德涅(Ariadne)，而是一直都是忒修斯(Theseus) / 标记 H3"
+          ],
+          "H4": [
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0006 line 6: 获得 +1 进展指示物 (ProgressToken) / 标记 H4"
+          ],
+          "H6": [
+                "C3 | 主线故事 - 冷酷太阳 > 0083 line 83: 你以前听过哲学家们的技术演讲，但这感觉像是另一个层次的 / 标记 H6"
+          ],
+          "H7": [
+                "C3 | 冒险枢纽 02 - 太阳之子 > 0007 line 14: 获得 +1 悖论 (Paradox) 和 +1 赫利俄斯祭司 (Priest of Helios) / 标记 H7"
+          ],
+          "H8": [
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0173 line 148: 在你们的身份被揭穿之前，该走了 / 获得 +1 进展指示物 (ProgressToken)，将一个法洛斯之梦 (Dream of Pharos) 事件添加到时间线 (Timeline) 上，从现在开始 1 天后触发，并标记 H8",
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0175 line 150: 如果船体 (Hull) 为 3 或更低，获得 +1 船体 (Hull)，否则获得 7 个战械 (War Machine) 资源 / 标记 H8"
+          ],
+          "H9": [
+                "C3 | 主线故事 - 冷酷太阳 > 0057 line 57: 暮光守望者：外交-2 / 标记 H9"
+          ],
+          "H10": [
+                "C1 | 冒险枢纽 02 - 人民的困境 > 0023 line 31: 他们在他们的阿尔戈英雄 (Argonaut) 表的苦痛 (Afflictions) 部分记下“被监视的 (Watched)”，并获得 +2 命运 (Fate) / 标记 H10"
+          ],
+          "H11": [
+                "C1 | 回忆突破 > 家族世仇 (Family Feud) > M028 line 34: 放下你们的世仇 / 标记 H11",
+                "C1 | 回忆突破 > 家族世仇 (Family Feud) > M028 line 34: 忘记你们的世仇，离开这里，去其他地方开始新的生活，与你们自己选择的家人在一起，建立一个属于你们自己的家 / 标记 H11"
+          ],
+          "H12": [
+                "C2 | 回忆突破 > M028 > M028 line 22: 离开阿尔戈号，寻找和平 / 标记 H12，获得 +1 人性和让你的阿尔戈英雄退役"
+          ],
+          "I1": [
+                "C1 | 冒险枢纽 03 - 隐匿于众目睽睽之下 > 0034 line 37: 在下一场战斗中，获得明智的远见 (Wise Providence) 恩惠 (Boon) / 标记 I1",
+                "C1 | 冒险枢纽 03 - 隐匿于众目睽睽之下 > 0048 line 49: 为下一场战斗添加恶意(Vicious) 特性 / 标记 I1"
+          ],
+          "I2": [
+                "C1 | 主线故事 - 迷宫真相 > 0085 line 82: 皮里托奥斯(Pirithous)和他的角誓者(Hornsworn)都死了 / 标记 I2",
+                "C1 | 主线故事 - 迷宫真相 > 0131 line 126: 参见 0141 / 2: 如果标记了 F1 或 I1，并且没有标记 I2：角誓者(Hornsworn)有一个领导者，他可能没有像传奇人物忒修斯(Theseus)那样受到人们的崇拜，但他也许更适合这个角色"
+          ],
+          "I3": [
+                "C1 | 主线故事 - 迷宫真相 > 0064 line 64: ” / 标记 I3"
+          ],
+          "I4": [
+                "C1 | 主线故事 - 迷宫真相 > 0043 line 43: 你已经做出了改变 / 标记 I4",
+                "C1 | 主线故事 - 迷宫真相 > 0130 line 125: 你希望在没有米诺斯(Minos)的阴影笼罩下，它能成为一种不同的统治 / 如果没有标记 I4，阿卡卡利斯公主(Acacallis)就无处可寻"
+          ],
+          "I5": [
+                "C3 | 冒险枢纽 02 - 太阳之子 > 0005 line 12: 获得 +1 灾祸指示物 (Doom Token) 和 +1 船员 (Crew) / 标记 I5",
+                "C3 | 冒险枢纽 02 - 太阳之子 > 0006 line 13: 获得 4 个塞壬壳 (Sirenshell) 资源 / 标记 I5"
+          ],
+          "I6": [
+                "C2 | 凝视蝼蚁 (Consider the Ant) v2.0 > 0003 line 10: 减少-1 阿尔戈号命运 (Argo Fate) / 标记 I6"
+          ],
+          "I7": [
+                "C2 | 凝视蝼蚁 (Consider the Ant) v2.0 > 0004 line 11: 失去-1 船员 (Crew) 和-1 人性 (Humanity) / 标记 I7"
+          ],
+          "I8": [
+                "C2 | 凝视蝼蚁 (Consider the Ant) v2.0 > 0005 line 12: 如果你没有足够的资源，获得+1 灾祸指示物 (Doom Token) / 标记 I8"
+          ],
+          "I9": [
+                "C2 | 凝视蝼蚁 (Consider the Ant) v2.0 > 0006 line 13: 获得+1 难民 (Refugee)，+2 阿尔戈号命运 (Argo Fate) 和 4 个岩雕 (Relief) 资源 / 标记 I9"
+          ],
+          "I10": [
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0191 line 166: 获得 +2 灾祸指示物 (DoomToken) / 标记 I10，请参阅 0190",
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0207 line 182: 将帕特罗克洛斯 (Patroclus) 添加到你们的潜在阿尔戈英雄 (Argonauts) 池中 / 如果你们在神盾 (Aegis) 小队中使用他，标记 I10"
+          ],
+          "I11": [
+                "C1 | 回忆突破 > 萦绕心头 (Haunted) > M029 line 38: 你们回到了你们的女儿身边，离开了阿尔戈号 (Argo) / 标记 I11"
+          ],
+          "J1": [
+                "C1 | 冒险枢纽 01 - 宿命的谜题 > 0017 line 23: 最不可能的阿尔戈英雄 (Argonaut) 获得迷宫印纹 (Mazetouched) 苦痛 (Affliction) 和闹鬼的回忆 (Haunted Mnemos) 卡 / 标记 J1"
+          ],
+          "J2": [
+                "C2 | 初始目标 (Intended Purpose) v2.0 > 0028 line 35: 强迫独眼巨人为自己而战 / 标记 J2"
+          ],
+          "J7": [
+                "C1 | 主线故事 - 迷宫真相 > 0021 line 21: 获得 +1 阿尔戈号命运(Argo Fate) / 标记 J7",
+                "C1 | 主线故事 - 迷宫真相 > 0040 line 40: 大地开始震动 / 标记 J7"
+          ],
+          "J8": [
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0187 line 162: 获得 +1 进展指示物 (ProgressToken) / 标记 J8",
+                "C2 | 当陆地与海洋相遇 (When the Land Meets the Sea) v2.0 > 0049 line 45: 获得 +1 (ProgressToken) / 标记 J8"
+          ],
+          "J10": [
+                "C1 | 主线故事 - 迷宫真相 > 0038 line 38: 大地开始震动 / 标记 J10"
+          ],
+          "J11": [
+                "C1 | 回忆突破 > 难忘之夜 (A Night to Remember) > M030 line 16: 你们放弃了暴力，离开了阿尔戈号 (Argo)，去追求和平 / 标记 J11"
+          ],
+          "J12": [
+                "C3 | 回忆突破 > 无心插柳的英雄 (Hero by Mistake) > M021 line 12: 迎接挑战，回到城邦坦白一切 / 标记 J12"
+          ],
+          "K1": [
+                "C2 | 初始目标 (Intended Purpose) v2.0 > 0019 line 26: 看来他在混乱中逃脱了 / 标记 K1"
+          ],
+          "K2": [
+                "C4 | 超越契约法则 (Beyond the Law of Bargains) > 0005 line 12: 几乎 / 标记 K2",
+                "C4 | 超越契约法则 (Beyond the Law of Bargains) > 0067 line 74: • 你拥有被盗云层信息 (Stolen Clouds Message) 卡 / • 标记 K2"
+          ],
+          "K4": [
+                "C1 | 主线故事 - 迷宫真相 > 0059 line 59: 你很快就在不被发现的情况下进入了船内 / 标记 K4",
+                "C1 | 冒险枢纽 02 - 人民的困境 > 0024 line 32: ” / 标记 K4"
+          ],
+          "K5": [
+                "C1 | 主线故事 - 迷宫真相 > 0137 line 132: 如果标记了 B11，让拥有“米诺斯血统(Minoan Heritage)”的阿尔戈英雄(Argonaut)退役（如果他还活着） / 标记 K5",
+                "C1 | 主线故事 - 迷宫真相 > 0148 line 142: 如果标记了 B11，让拥有“米诺斯血统(Minoan Heritage)”的阿尔戈英雄(Argonaut)退役（如果他还活着） / 标记 K5 和 O4"
+          ],
+          "K6": [
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0028 line 27: 失去 -1 船体 (Hull) / 标记 K6"
+          ],
+          "K7": [
+                "C3 | 冒险枢纽 02 - 太阳之子 > 0020 line 27: 神权政治正在关注这里发生的事情，你知道他们迟早会采取行动 / 标记 K7",
+                "C3 | 冒险枢纽 02 - 太阳之子 > 0021 line 28: 你毫不怀疑神权政治和暮光守望 (Twilight Watch) 都会密切关注这个地方 / 标记 K7"
+          ],
+          "K10": [
+                "C1 | 主线故事 - 迷宫真相 > 0030 line 30: 获得 +1 危险(Danger)和 +1 命运(Fate) / 标记 K10（仅在每个阿尔戈英雄(Argonaut)掷骰后）",
+                "C1 | 冒险枢纽 01 - 宿命的谜题 > 0028 line 33: 在内蕴奥德赛 (Inward Odyssey) 上放置 1 个进展指示物 (ProgressToken) / 无论结果如何，都获得 +1 进展指示物 (ProgressToken) 并标记 K10"
+          ],
+          "K11": [
+                "C1 | 回忆突破 > 死神追随 (Death Follows) > M037 line 30: 你决定离开阿尔戈号 (Argo)，放弃对死亡的追求：是时候学习如何生活了 / 标记 K11"
+          ],
+          "K12": [
+                "C3 | 回忆突破 > 充满遗憾的人生 (Life of Regret) > M028 line 16: 毕竟，你们都在一起面对这一切 / 标记 K12"
+          ],
+          "L1": [
+                "C1 | 主线故事 - 迷宫真相 > 0153 line 147: 获得 +1 泰坦(Titan) / 标记 L1"
+          ],
+          "L2": [
+                "C1 | 主线故事 - 迷宫真相 > 0018 line 18: 获得 6 个军备(Armament)和 8 个船材(Trireme)资源 / 米诺斯人(Minoans)：外交 -2，标记 L2"
+          ],
+          "L3": [
+                "C2 | 初始目标 (Intended Purpose) v2.0 > 0026 line 33: 而那件武器还在那里 / 标记 L3"
+          ],
+          "L4": [
+                "C3 | 主线故事 - 冷酷太阳 > 0038 line 38: 它们将帮助你确定伊卡洛斯在哪里误入歧途 / 标记 L4"
+          ],
+          "L5": [
+                "C1 | 主线故事 - 迷宫真相 > 0143 line 138: 如果标记了 B11，让拥有“米诺斯血统(Minoan Heritage)”的阿尔戈英雄(Argonaut)退役（如果他还活着） / 标记 L5"
+          ],
+          "L7": [
+                "C1 | 冒险枢纽 01 - 宿命的谜题 > 0023 line 28: 米诺斯人 (Minoans) 或角誓者 (Hornsworn)：外交 (Diplomacy) +2 / 标记 L7"
+          ],
+          "L8": [
+                "C3 | 冒险枢纽 02 - 太阳之子 > 0003 line 10: 获得 4 冻土合金 (Hyperborean Alloy) 资源 / 标记 L8",
+                "C3 | 冒险枢纽 02 - 太阳之子 > 0004 line 11: 获得 +1 悖论 (Paradox) 和 +1 赫利俄斯祭司 (Priest of Helios) / 标记 L8"
+          ],
+          "L9": [
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0240 line 215: 如果秘密俘虏 (Secret Captive) 是神盾 (Aegis) 小队的一员，划掉 O9 并标记 O10 / 如果第四人 (Fourth) 是神盾 (Aegis) 小队的一员，划掉 F4 并标记 L9"
+          ],
+          "L10": [
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0136 line 110: 将狄俄墨得斯 (Diomedes) 添加到你们的潜在阿尔戈英雄 (Argonauts) 池中 / 如果你们在神盾小队 (Aegis Team) 中使用他，标记 L10",
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0206 line 181: 将大埃阿斯 (Ajax the Greater) 添加到你们的潜在阿尔戈英雄 (Argonauts) 池中 / 如果你们在神盾 (Aegis) 小队中使用他，标记 L10",
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0208 line 183: 为神盾 (Aegis) 突击队添加 2 个希洛人 (Helot) 志愿者到你们的阿尔戈英雄 (Argonauts) 池中 / 如果你们选择使用他们中的任何一个，标记 L10",
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0210 line 185: 请记住，强制执行此程序会导致阿尔戈英雄寝园 (Mausoleum) 进入紧急封锁状态，并且该过程的压力可能会对被唤醒的人造成永久性伤害 / 每次强制唤醒都会失去 -1 人性 (Humanity)，并标记 L10"
+          ],
+          "L11": [
+                "C1 | 回忆突破 > 熟悉的诅咒 (A Familiar Curse) > M034 line 12: 你们接受了总有一天会死去的事实，并平静地享受剩下的人生，远离所有的战斗 / 标记 L11"
+          ],
+          "L12": [
+                "C3 | 回忆突破 > 时空交错的爱人 (Time-crossed Lovers) > M024 line 24: 离开阿尔戈号 (Argo)，将它的信息分享到希腊 (Hellas) 的各个角落 / 标记 L12"
+          ],
+          "M1": [
+                "C2 | 初始目标 (Intended Purpose) v2.0 > 0024 line 31: 告诉独眼巨人一个关于勒列格斯遭遇的虚假故事 / 标记 M1"
+          ],
+          "M2": [
+                "C1 | 主线故事 - 迷宫真相 > 0098 line 95: 队长获得一张宿命回忆(Fated Mnemos)卡，+1 怒气(Rage)，+2 危险(Danger)，和 +3 命运(Fate) / 标记 M2",
+                "C1 | 冒险枢纽 07 - 暴露的梦境 > 0058 line 54: 最不可能的阿尔戈英雄 (Argonaut) 获得一张破碎的承诺 (A Broken Promise) 回忆 (Mnemos) 卡 / 标记 M2"
+          ],
+          "M3": [
+                "C4 | 意外之财 (Windfall) > 0005 line 12: 正如约定的那样，你可以带走一些塔楼驱动器，以便在阿尔戈号 (Argo) 上拆除 / 标记 M3"
+          ],
+          "M4": [
+                "C4 | 意外之财 (Windfall) > 0007 line 14: 获得 +1 (阿尔戈号知识 (ArgoKnowledge)) / 标记 M4"
+          ],
+          "M5": [
+                "C1 | 主线故事 - 迷宫真相 > 0142 line 137: 如果标记了 B11，让拥有“米诺斯血统(Minoan Heritage)”的阿尔戈英雄(Argonaut)退役（如果他还活着） / 标记 M5"
+          ],
+          "M6": [
+                "C2 | 初始目标 (Intended Purpose) v2.0 > 0048 line 54: 面盗利姆一声不吭地死了，你只剩下两具尸体，没有与皮莱诺或他的家族结盟，内心深处充满了强烈的挫败感 / 标记 M6",
+                "C2 | 初始目标 (Intended Purpose) v2.0 > 0049 line 55: 你说服不了这个斯巴达人加入你的事业，但他对你救了他的命的感激之情确实延伸到了向你提供补给和维修 / 标记 M6",
+                "C2 | 初始目标 (Intended Purpose) v2.0 > 0050 line 56: 他手下的一个人将与你同行，作为当地向导，帮助你计划未来对抗帝国的行动 / 标记 M6",
+                "C2 | 初始目标 (Intended Purpose) v2.0 > 0051 line 57: 如果是这样的话，他们已经成功了，因为很多人，包括你们中的一些阿尔戈英雄，都想知道为什么面盗利姆 (Metonym) 杀死了其他受害者，却留下了斯巴达人活着 / 标记 M6"
+          ],
+          "M9": [
+                "C3 | 主线故事 - 冷酷太阳 > 0078 line 78: 两个阿尔戈英雄 (Argonauts) 每人获得 +2 (危险 (Danger) / 标记 M9",
+                "C3 | 特殊事件 > 太阳宇航员 (HELIONAUTS) > helionauts line 4: 可能需要几周时间才能从他那里得到一个完全连贯的事件描述…… / 标记 M9"
+          ],
+          "M11": [
+                "C1 | 回忆突破 > 神明的诅咒 (Curse of the Gods) > M035 line 26: 离开阿尔戈号 (Argo)，去寻找你的爱人 / 标记 M11"
+          ],
+          "M12": [
+                "C3 | 回忆突破 > 时间守护者的孩子 (Timekeeper’s Child) > M023 line 28: 离开你在阿尔戈号 (Argo) 上的工作，开始过一种充实而快乐的生活 / 标记 M12"
+          ],
+          "N1": [
+                "C2 | 初始目标 (Intended Purpose) v2.0 > 0034 line 41: 获得 +1 灾祸指示物 (DoomToken)，4 岩雕 (Relief) 资源 / 标记 N1"
+          ],
+          "N2": [
+                "C1 | 冒险枢纽 04 - 目标明确的人 > 0003 line 11: ” / 标记 N2"
+          ],
+          "N3": [
+                "C4 | 意外之财 (Windfall) > 0006 line 13: 在沙漠中开垦一片花园已经足够困难了，而园丁们还在为水而争吵 / 标记 N3"
+          ],
+          "N5": [
+                "C1 | 主线故事 - 迷宫真相 > 0135 line 130: 如果标记了 B11，让拥有“米诺斯血统(Minoan Heritage)”的阿尔戈英雄(Argonaut)退役（如果他还活着） / 标记 N5"
+          ],
+          "N8": [
+                "C3 | 主线故事 - 冷酷太阳 > 0037 line 37: 改变过去绝非易事，但为了看到终末灾厄被消除，值得一试 / 标记 N8"
+          ],
+          "N10": [
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0240 line 215: 他们被带进了阿尔戈英雄寝园 (Mausoleum)，并安葬在那里，这是阿尔戈英雄 (Argonauts) 的荣誉 / 如果伤痕累累的老兵 (Scarred Veteran) 是神盾 (Aegis) 小队的一员，划掉 P4 并标记 N10"
+          ],
+          "N11": [
+                "C3 | 回忆突破 > 伊甸园的坠落 (A Fall from Eden) > M027 line 4: 没有任何冒险可以取代它，你留在这里是愚蠢的 / 标记 N11"
+          ],
+          "N12": [
+                "C3 | 回忆突破 > 不劳而获的生活 (Unearned Life) > M022 line 32: 你觉得你在外面比在这里能做更多的好事，你的离开会给另一个人一个感恩生活的机会 / 标记 N12"
+          ],
+          "O1": [
+                "C3 | 主线故事 - 冷酷太阳 > 0102 line 102: 将“与死亡的邂逅”灾祸卡归档，然后阅读“神圣枷锁”灾祸卡的 3A 面 / 标记 O1，然后返回航行阶段"
+          ],
+          "O2": [
+                "C1 | 主线故事 - 迷宫真相 > 0089 line 86: 米诺斯人(Minoans)：外交 -2 / 标记 O2"
+          ],
+          "O3": [
+                "C3 | 主线故事 - 冷酷太阳 > 0056 line 56: 太阳后裔：外交-2 / 标记 O3"
+          ],
+          "O4": [
+                "C1 | 主线故事 - 迷宫真相 > 0148 line 142: 如果标记了 B11，让拥有“米诺斯血统(Minoan Heritage)”的阿尔戈英雄(Argonaut)退役（如果他还活着） / 标记 K5 和 O4"
+          ],
+          "O5": [
+                "C1 | 主线故事 - 迷宫真相 > 0138 line 133: 如果标记了 B11，让拥有“米诺斯血统(Minoan Heritage)”的阿尔戈英雄(Argonaut)退役（如果他还活着） / 标记 O5"
+          ],
+          "O6": [
+                "C1 | 主线故事 - 迷宫真相 > 0136 line 131: 如果标记了 B11，让拥有“米诺斯血统(Minoan Heritage)”的阿尔戈英雄(Argonaut)退役（如果他还活着） / 标记 O6"
+          ],
+          "O7": [
+                "C1 | 主线故事 - 迷宫真相 > 0134 line 129: 让拥有“米诺斯血统(Minoan Heritage)”的阿尔戈英雄(Argonaut)退役（如果他还活着） / 标记 O7"
+          ],
+          "O8": [
+                "C3 | 冒险枢纽 06 - 父辈们的罪孽 > 0038 line 45: 我不能……更……” / 标记 O8"
+          ],
+          "O9": [
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0189 line 164: 获得 +1 西西弗斯之泪 (Sisyphus Tear)、+1 回忆之回响 (Echo of Recollection)（有关详细信息，请参阅第三循环 (Cycle III) 故事书规则）和 +1 阿尔戈号知识 (ArgoKnowledge) / 标记 O9，并执行一次战术潜行行动 (Tactical Stealth Action)...",
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0240 line 215: 如果伤痕累累的老兵 (Scarred Veteran) 是神盾 (Aegis) 小队的一员，划掉 P4 并标记 N10 / 如果秘密俘虏 (Secret Captive) 是神盾 (Aegis) 小队的一员，划掉 O9 并标记 O10"
+          ],
+          "O10": [
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0240 line 215: 如果伤痕累累的老兵 (Scarred Veteran) 是神盾 (Aegis) 小队的一员，划掉 P4 并标记 N10 / 如果秘密俘虏 (Secret Captive) 是神盾 (Aegis) 小队的一员，划掉 O9 并标记 O10"
+          ],
+          "O11": [
+                "C3 | 回忆突破 > 耻辱的父母 (Disgraceful Parent) > M025 line 8: 问候你的孩子，请求他们的原谅 / 标记 O11"
+          ],
+          "O12": [
+                "C4 | 回忆突破 (Mnemos Breakthroughs) > 天堂之种 (Seed of Paradise) > M028 line 32: 离开阿尔戈号 (Argo)，传播关于如果人们为之努力，就会发生改变的信息 / 标记 O12"
+          ],
+          "P1": [
+                "C2 | 真相映照弱点 (Truth to Weakness) v2.0 > 0043 line 45: 将军信守了他的诺言 / 标记 P1"
+          ],
+          "P2": [
+                "C2 | 内蕴奥德赛 > 36 被遗忘的远古时代 > 36 line 16: 抹除 1 个誓言标记 / 独眼巨人：外交 +1，标记 P2"
+          ],
+          "P3": [
+                "C2 | 当陆地与海洋相遇 (When the Land Meets the Sea) v2.0 > 0014 line 18: ” / 标记 P3"
+          ],
+          "P4": [
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0240 line 215: 他们被带进了阿尔戈英雄寝园 (Mausoleum)，并安葬在那里，这是阿尔戈英雄 (Argonauts) 的荣誉 / 如果伤痕累累的老兵 (Scarred Veteran) 是神盾 (Aegis) 小队的一员，划掉 P4 并标记 N10",
+                "C2 | 尘归尘土归土 (From the Ashes) v2.0 > 0007 line 14: 接受伤痕累累的老兵 (Scarred Veteran) 加入你的议会 / 标记 P4",
+                "C2 | 初始目标 (Intended Purpose) v2.0 > 0051 line 57: 希洛人外交 (Helots: Diplomacy) -1 / 如果你愿意，你可以划掉 P4（伤痕累累的老兵）"
+          ],
+          "P5": [
+                "C1 | 主线故事 - 迷宫真相 > 0141 line 136: 如果标记了 B11，让拥有“米诺斯血统(Minoan Heritage)”的阿尔戈英雄(Argonaut)退役（如果他还活着） / 标记 P5",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8640 line 379: 允许忒修斯 (Theseus) 接管阿尔戈号 (Argo) 并撤离 / 圈出P5",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8640 line 379: 和忒修斯 (Theseus) 待在一起，这样你们可以一起完成这件事 / 圈出P5并在你们的阿尔戈英雄面板 (Argonaut Sheet) 上记下“与船同在” (With the Ship)"
+          ],
+          "P6": [
+                "C1 | 主线故事 - 迷宫真相 > 0140 line 135: 如果标记了 B11，让拥有“米诺斯血统(Minoan Heritage)”的阿尔戈英雄(Argonaut)退役（如果他还活着） / 标记 P6",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8638 line 377: 允许皮里托奥斯 (Pirithous) 留下来，这样你们可以一起完成这件事 / 圈出P6并在你们的阿尔戈英雄面板 (Argonaut Sheet) 上记下“与船同在” (With the Ship)"
+          ],
+          "P7": [
+                "C1 | 主线故事 - 迷宫真相 > 0149 line 143: 如果标记了 B11，让拥有“米诺斯血统(Minoan Heritage)”的阿尔戈英雄(Argonaut)退役（如果他还活着） / 标记 P7"
+          ],
+          "P8": [
+                "C1 | 主线故事 - 迷宫真相 > 0299 line 158: 你带着比答案更多的问题和一种下沉的感觉回到了阿尔戈号(Argo)，你感觉自己走进了你无法理解的东西 / 标记 P8"
+          ],
+          "P10": [
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0240 line 215: 如果第四人 (Fourth) 是神盾 (Aegis) 小队的一员，划掉 F4 并标记 L9 / 如果一个或多个希洛人 (Helot) 志愿者是神盾 (Aegis) 小队的一员，标记 P10"
+          ],
+          "P11": [
+                "C3 | 回忆突破 > 回归者 (The Returned) > M026 line 20: 离开阿尔戈号 (Argo)，寻找一种摆脱抗力植入物 (Antikratos implants) 的方法 / 标记 P11"
+          ],
+          "P12": [
+                "C3 | 主线故事 - 冷酷太阳 > 0173 line 162: ” / 标记 P12"
+          ],
+          "Q1": [
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0225 line 200: 当被压迫者的人群走向尼采超人 (Nietzschean) 时，你们第一次在他眼中看到了恐惧 / 标记 Q1"
+          ],
+          "Q2": [
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0226 line 201: 你们来决定，并将你们的选择记录在你们的阿尔戈号 (Argo) 面板上 / 然后，标记 Q2"
+          ],
+          "Q3": [
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0227 line 202: 在他被带走之前，你们最后看到的是他那双锐利的、冰冷的蓝眼睛，怒视着，但充满了绝望 / 标记 Q3"
+          ],
+          "Q4": [
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0228 line 203: 当你们命令关上身后的门时，你们听到了这位曾经骄傲的暴君痛苦的垂死挣扎声 / 标记 Q4"
+          ],
+          "Q5": [
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0230 line 205: 如果你们选择进行战斗（它很精彩，也很史诗），请返回 0211 / 否则，标记 Q5，并请参阅 0226"
+          ],
+          "Q6": [
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0232 line 207: 随着时间的推移，希洛人 (Helots) 融入了城邦联盟 (Symmachy) 社会，而巨人则回到了高地，照料他们的牛群 / 标记 Q6，请参阅 0239"
+          ],
+          "Q7": [
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0233 line 208: 争吵是家常便饭，也没有建立起中央集权的法律体系，导致了一种无政府主义的秩序，但随着时间的推移，和平得以维持 / 标记 Q7，请参阅 0239"
+          ],
+          "Q8": [
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0234 line 209: 由最后伟大的人民 (Last Great People) 重建的拉科尼亚 (Lakonia) 确实是一个值得一看的景象，几年后，即使是这片土地也开始恢复生机 / 标记 Q8，请参阅 0239"
+          ],
+          "Q9": [
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0235 line 210: 随着时间的推移，拉科尼亚 (Lakonia) 崛起成为一个强大的、统一的国家，这是阿尔戈号 (Argo) 和它的船员留下的遗产 / 标记 Q9，请参阅 0239"
+          ],
+          "Q10": [
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0237 line 212: 这将意味着什么，很难预测 / 标记 Q10，然后返回 0239"
+          ],
+          "Q11": [
+                "C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0236 line 211: 这将意味着什么，很难预测 / 标记 Q11，然后返回 0239"
+          ],
+          "Q12": [
+                "C3 | 主线故事 - 冷酷太阳 > 0174 line 163: 将节点添加到每个宿命回忆 (Fated Mnemos) 并继续解决它们 / 标记 Q12"
+          ],
+          "R2": [
+                "C3 | 冒险枢纽 02 - 太阳之子 > 0039 line 46: 队长获得 2 危险(Danger) / 标记 R2",
+                "C3 | 冒险枢纽 03 - 我们身后留下的 > 0015 line 22: 如果 R2 被标记，获得 +1 西西弗斯之泪 (Sisyphus Tear) / 如果没有，标记 R2",
+                "C3 | 冒险枢纽 03 - 我们身后留下的 > 0018 line 25: 如果 R2 被标记，获得 +1 西西弗斯之泪 (Sisyphus Tear) / 如果没有，标记 R2"
+          ],
+          "R3": [
+                "C3 | 冒险枢纽 02 - 太阳之子 > 0042 line 49: 如果 R2 被标记，还会获得 +2 悖论 (Paradox) / 标记 R3",
+                "C3 | 冒险枢纽 03 - 我们身后留下的 > 0014 line 21: 如果 R2 被标记，还会获得 +2 悖论 (Paradox) / 标记 R3"
+          ],
+          "R4": [
+                "C3 | 主线故事 - 冷酷太阳 > 0265 line 247: 在你们完成正常的后续 (Aftermath) 后查看它 / 如果你们不想介入，标记 R4 并参见 0268",
+                "C3 | 主线故事 - 冷酷太阳 > 0266 line 248: 在你们完成正常的后续 (Aftermath) 后查看它 / 如果你们不想介入，标记 R4 并参见 0270"
+          ],
+          "R5": [
+                "C3 | 主线故事 - 冷酷太阳 > 0267 line 249: 获得 +1 西西弗斯之泪 / 标记 R5"
+          ],
+          "R6": [
+                "C3 | 主线故事 - 冷酷太阳 > 0269 line 251: 获得 +1 西西弗斯之泪 / 标记 R6"
+          ],
+          "R7": [
+                "C3 | 内蕴奥德赛 > 60 永动机 (Perpetual Motion) > 60-perpetual-motion line 20: 将西西弗斯从引擎中释放出来 / 标记 R7",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8657 line 396: 解放西西弗斯 (Sisyphus) / 标记R7并圈出它"
+          ],
+          "R8": [
+                "C3 | 主线故事 - 冷酷太阳 > 0193 line 181: 如果你们选择战斗，参见 0189 / 否则，标记 R8 并参见 0197"
+          ],
+          "R9": [
+                "C3 | 冒险枢纽 07 - 步入成熟 > 0001 line 8: 这不是你想要发生的事情……但它奏效了，没有了执法者和水，大祭司们放弃了城邦，撤退到更深的山里，而剩下的太阳后裔们 (Sunheirs) 则更加……顺从 / 标记 R9"
+          ],
+          "R10": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8709 line 447: 你的追随者 (followers) 在等着你 / 圈出R10"
+          ],
+          "R11": [
+                "C3 | 回忆突破 > 回归者 (The Returned) > M026 line 20: 留在阿尔戈号 (Argo) 上 / 标记 R11"
+          ],
+          "R12": [
+                "C4 | 回忆突破 (Mnemos Breakthroughs) > 第三个愿望 (The Third Wish) > M023 line 4: 离开阿尔戈号 (Argo) 来解决这个问题，无论如何 / 标记 R12"
+          ],
+          "S3": [
+                "C3 | 主线故事 - 冷酷太阳 > 0145 line 144: 阿尔戈号落在后面，时间前线 (Timefront) 的墙壁迅速从四面八方逼近，冰雪将它的铁质侧翼覆盖上一层厚厚的霜，命运的绞索越来越紧地缠绕着它…… / 标记 S3"
+          ],
+          "S4": [
+                "C3 | 主线故事 - 冷酷太阳 > 0146 line 145: 阿尔戈号落在后面，时间前线 (Timefront) 的墙壁迅速从四面八方逼近，冰雪将它的铁质侧翼覆盖上一层厚厚的霜，命运的绞索越来越紧地缠绕着它…… / 标记 S4"
+          ],
+          "S5": [
+                "C3 | 主线故事 - 冷酷太阳 > 0209 line 196: 他们从过去的残酷中吸取了教训，现在，人们虽然仍然受到宗教教派的建议，但他们对自己的生活有了发言权，不再害怕神的惩罚 / 标记 S5"
+          ],
+          "S6": [
+                "C3 | 主线故事 - 冷酷太阳 > 0210 line 197: 但是，考虑到过去的方式的沉重代价，也许这是最好的结果 / 标记 S6"
+          ],
+          "S7": [
+                "C3 | 主线故事 - 冷酷太阳 > 0211 line 198: 凭借这种团结，这片土地终将繁荣昌盛 / 标记 S7"
+          ],
+          "S8": [
+                "C3 | 冒险枢纽 07 - 步入成熟 > 0022 line 29: 你叹了口气，一瘸一拐地走向出口 / 标记 S8"
+          ],
+          "S9": [
+                "C3 | 冒险枢纽 07 - 步入成熟 > 0002 line 9: 到了晚上，异议者们都得到了处理，不管以何种方式，你被允许进入城邦——以及神殿的内殿 (Inner Hallow) / 标记 S9"
+          ],
+          "S11": [
+                "C4 | 回忆突破 (Mnemos Breakthroughs) > 千年一梦 (The Thousandth Night) > M027 line 28: 回到你的家乡，这样你就可以开始纠正你父母选择造成的损害 / 标记 S11"
+          ],
+          "S12": [
+                "C4 | 回忆突破 (Mnemos Breakthroughs) > 乞丐与王子 (The Beggar and the Prince) > M022 line 8: 你会想念你在阿尔戈号 (Argo) 上结交的真正的伙伴，但现在是你离开的时候了，并尝试将这个系统改变成一个更好的系统 / 标记 S12"
+          ],
+          "T1": [
+                "C4 | 亚里士多德的承诺 (Aristotle’s Promise) > 0041 line 48: 或者还有其他原因 / 标记 T1"
+          ],
+          "T2": [
+                "C4 | 亚里士多德的承诺 (Aristotle’s Promise) > 0042 line 49: 你很想相信“巴比伦征服”已经遗失了，但你永远不会确定 / 标记 T2"
+          ],
+          "T3": [
+                "C4 | 亚里士多德的承诺 (Aristotle’s Promise) > 0065 line 72: 收割 (灾祸 (Doom)) / 如果记下了“蓄水池被摧毁 (Cistern Destroyed)”，则额外获得 +1 (灾祸指示物 (DoomToken))，做一个收割 (Reap) 标记，并标记 T3"
+          ],
+          "T4": [
+                "C4 | 亚里士多德的承诺 (Aristotle’s Promise) > 0002 line 9: 获得 +1 (船员 (Crew)) / 标记 T4",
+                "C4 | 公正惠众 (Equality for All) > 0036 line 43: 队伍领队获得一个宿命回忆 (Fated Mnemos) / 划掉 T4"
+          ],
+          "T5": [
+                "C4 | 亚里士多德的承诺 (Aristotle’s Promise) > 0001 line 8: 获得 4 个帝国卷轴 (Imperial Scroll) 资源 / 标记 T5",
+                "C4 | 超越契约法则 (Beyond the Law of Bargains) > α 巴比伦之围 (The Siege of Babylon) | 神祇 (Gods) > α line 1: 最小似然的阿尔戈英雄 (Argonaut) 获得大到不能倒 (Too Big to Fail) 回忆 (Mnemos) 卡 / 如果标记 T5，则参见 0001"
+          ],
+          "T6": [
+                "C1 | 特殊事件 > 教程总结——跳过教程 (TUTORIAL SUMMARY - SKIPPING THE TUTORIAL) > tutorial-summary-skipping-the-tutorial line 9: 注意，你们有 8 个梦行者 (Dreamwalker) 泰坦 (Titans) / 在时间线 (Timeline) 上标记 T0 到 T6 的方框",
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 0016 line 16: 获得 +2 (阿尔戈号命运 (ArgoFate)) / 标记 T6",
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 0017 line 17: 获得 +2 (阿尔戈号命运 (ArgoFate)) / 标记 T6",
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 0018 line 18: 获得 +2 (阿尔戈号命运 (ArgoFate)) / 标记 T6"
+          ],
+          "T7": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 0072 line 72: 获得 +1 (船员 (Crew)) / 标记 T7"
+          ],
+          "T8": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 0083 line 83: ” / 标记 T8"
+          ],
+          "T9": [
+                "C4 | 三重诅咒之地 (A Land Thrice-Cursed) > 0013 line 20: ” / 标记 T9"
+          ],
+          "T12": [
+                "C4 | 回忆突破 (Mnemos Breakthroughs) > 风起云涌 (Updraft) > M024 line 12: 离开阿尔戈号 (Argo)，重新与你的生活联系起来，建立新的联系 / 标记 T12"
+          ],
+          "U1": [
+                "C4 | 超越契约法则 (Beyond the Law of Bargains) > Ω 克罗伊索斯法典 (The Code of Kroisos) | 悲剧 (Tragedy) > Ω line 7: 她在整个过程中变得越来越忧心忡忡 / 如果标记 U1，则参见 0052",
+                "C4 | 超越契约法则 (Beyond the Law of Bargains) > 0004 line 11: ” / 标记 U1",
+                "C4 | 超越契约法则 (Beyond the Law of Bargains) > 0015 line 22: ” / 标记 U1"
+          ],
+          "U4": [
+                "C4 | 超越契约法则 (Beyond the Law of Bargains) > 0013 line 20: 做一个未赐予 (Unbestowed) 标记 / 标记 U4"
+          ],
+          "U7": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 0088 line 88: 丢弃谢赫拉莎德 (Scheherazade) 盟友卡牌 / 标记 U7",
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 0095 line 95: 扣除 -1 (巴比伦债务 (BabelianDebt)) / 标记 U7"
+          ],
+          "U8": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 0089 line 89: 只有时间才能证明一切…… / 标记 U8"
+          ],
+          "U9": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 0090 line 90: 你希望她不会让你后悔这个决定…… / 标记 U9"
+          ],
+          "U12": [
+                "C4 | R&R 冒险 (R&R Adventures) > 23 > 23 line 5: 获得 +1 (阿尔戈号知识 (ArgoKnowledge)) 或免除一半阿尔戈号 (Argo) 的 (巴比伦债务 (BabelianDebt)) / 标记 U12"
+          ],
+          "V1": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 3332 line 239: 获得 1 个回忆之回响 (Echo of Recollection) / 标记 V1"
+          ],
+          "V2": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 3338 line 245: 在永恒帝国 (Eternal Empire) 中，只剩下弯曲尖塔的杂草丛生的废墟和关于可鄙的巴布洛斯及其贪婪的故事 / 标记 V2"
+          ],
+          "V3": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 3339 line 246: 在永恒帝国 (Eternal Empire) 中，只剩下弯曲尖塔的杂草丛生的废墟和关于可鄙的巴布洛斯及其贪婪的故事 / 标记 V3"
+          ],
+          "V4": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 3340 line 247: 这才是帝国 (Empire) 永恒的真正秘密——颜色、面孔和地位将永远改变，但这个想法和支持它的系统将永远重新浮出水面，即使在波斯 (Persia) 原始森林的巨型树木中也是如此 / 标记 V4"
+          ],
+          "V5": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 3341 line 248: 在永恒帝国 (Eternal Empire) 中，只剩下弯曲尖塔的杂草丛生的废墟和关于可鄙的巴布洛斯及其贪婪的故事 / 标记 V5"
+          ],
+          "V6": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 3342 line 249: 在永恒帝国 (Eternal Empire) 中，只剩下弯曲尖塔的杂草丛生的废墟和关于可鄙的巴布洛斯及其贪婪的故事，尽管许多人渴望那些时代，那时至少有些人可以享受财富的奢侈 / 标记 V6"
+          ],
+          "V7": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 3345 line 252: 在永恒帝国 (Eternal Empire) 中，只剩下弯曲尖塔的杂草丛生的废墟和关于巴布洛斯及其贪婪的故事，尽管许多人渴望那些时代，那时至少有一些人可以享受财富的奢侈 / 标记 V7"
+          ],
+          "V12": [
+                "C4 | 回忆突破 (Mnemos Breakthroughs) > 大而不倒 (Too Big to Fail) > M021 line 20: 离开阿尔戈号 (Argo)，在这个世界上找到你真正的归宿，过上幸福的生活 / 标记 V12"
+          ],
+          "W1": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 3346 line 253: 在永恒帝国 (Eternal Empire) 中，只剩下弯曲尖塔的杂草丛生的废墟和关于英雄般的巴布洛斯的故事，许多人渴望那些时代，那时财富稀少而短暂，但至少还有希望 / 标记 W1"
+          ],
+          "W2": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 3348 line 255: 在永恒帝国 (Eternal Empire) 中，只剩下弯曲尖塔的杂草丛生的废墟和关于可鄙的巴布洛斯及其贪婪的故事 / 标记 W2"
+          ],
+          "W3": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 3350 line 257: ” / 标记 W3"
+          ],
+          "W4": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 3349 line 256: 在永恒帝国 (Eternal Empire) 中，只剩下弯曲尖塔的杂草丛生的废墟和关于可鄙的巴布洛斯及其贪婪的故事 / 标记 W4"
+          ],
+          "W5": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 3351 line 258: 在下一个循环开始时，获得 6 个液态以太 (Liquid Aether) 资源 / 标记 W5"
+          ],
+          "W6": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 3352 line 259: 在永恒帝国 (Eternal Empire) 中，只剩下弯曲尖塔的杂草丛生的废墟 / 标记 W6"
+          ],
+          "W7": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 3329 line 236: 在永恒帝国 (Eternal Empire) 中，只剩下弯曲尖塔的杂草丛生的废墟和关于可鄙的埃米尔和他们的贪婪的故事 / 标记 W7"
+          ],
+          "W8": [
+                "C4 | 盐路 (The Salt Road) > 0032 line 39: 但话说回来，谁能信任一种将他人的痛苦转化为你的快乐的东西呢 / 标记 W8"
+          ],
+          "W9": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 0051 line 48: 你们心有余悸，匆忙带着囚犯 (prisoner) 撤回阿尔戈号 / 标记 W9",
+                "C5 | 宁为玉碎，不为瓦全 (Death Before Dishonor) > 0073 line 80: 获得永恒的誓言 (Eternal Vow) [图标] 卡（秘密牌组 18，卡牌 280） / 若 AA11 标记为 L 且 W9 被标记，见 0076"
+          ],
+          "W12": [
+                "C4 | 回忆突破 (Mnemos Breakthroughs) > 负重之骡 (The Mule) > M026 line 24: 回到你果园所在的土地，帮助这片土地愈合 / 标记 W12"
+          ],
+          "X2": [
+                "C4 | 意外之财 (Windfall) > 0025 line 32: 不需要泰坦 (Titan)——或阿尔戈号 (Argo) 的一天 / 标记 X2"
+          ],
+          "X3": [
+                "C4 | 意外之财 (Windfall) > 0029 line 36: 你只能怪你自己，不是吗 / 标记 X3"
+          ],
+          "X4": [
+                "C4 | 公正惠众 (Equality for All) > 0033 line 40: 你希望见证者撒了谎——或者，如果他没有撒谎，那么亚里士多德远征军 (Aristotelians) 就足够强大，能够反抗为他们铺设的道路 / 标记 X4",
+                "C4 | 公正惠众 (Equality for All) > 0040 line 47: 你希望见证者撒了谎——或者，如果他没有撒谎，那么亚里士多德远征军 (Aristotelians) 就足够强大，能够反抗为他们铺设的道路 / 标记 X4"
+          ],
+          "X5": [
+                "C4 | 公正惠众 (Equality for All) > 0034 line 41: 复数 / 标记 X5",
+                "C4 | 公正惠众 (Equality for All) > 0041 line 48: 复数 / 标记 X5"
+          ],
+          "X6": [
+                "C4 | 公正惠众 (Equality for All) > 0039 line 46: 在内蕴奥德赛 (Inward Odyssey) 上放置 1 个 (进展指示物 (ProgressToken)) 指示物 / 标记 X6"
+          ],
+          "X7": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 3328 line 235: 如果 Y10 或 Y11 都未被标记，则参见 3344 / 如果你有失窃的云朵信息卡 (Stolen Clouds Message card)，则为其标记的每个矩阵代码 (Matrix Code) 标记 (X7,Y8) 做 1 个标记",
+                "C4 | 公正惠众 (Equality for All) > 0063 line 70: 在下一个时间线战斗 (Timeline Battle) 中，开始时在损伤堆叠 (Wound Stack) 中有 1 个通用的单次损伤 (Single Wound) / 标记 X7"
+          ],
+          "X8": [
+                "C5 | 你所不选之人 (The One You Don’t) > 0011 line 18: 欧多拉 (Eudora) 无助地环顾四周，然后退后，消失在人群中 / 将 X8 标记为 L",
+                "C5 | 你所不选之人 (The One You Don’t) > 0012 line 19: ” / 将 X8 标记为 T",
+                "C5 | 你所不选之人 (The One You Don’t) > 0016 line 23: ”说完，她收拾好自己的东西，很快便消失在山间小路上 / 将 X8 标记为 L",
+                "C5 | 你所不选之人 (The One You Don’t) > 0017 line 24: ” / 将 X8 标记为 T",
+                "C5 | 血肉之躯的软弱 (THE FLESH IS WEAK) > 0050 line 57: ” / 如果你有5个或更少的“必要性”标记且X8已标记，见0052",
+                "C5 | 血肉之躯的软弱 (THE FLESH IS WEAK) > 0054 line 61: 你……无法理解 / 划掉X8"
+          ],
+          "X9": [
+                "C4 | 公正惠众 (Equality for All) > 0068 line 75: 队伍领队获得一个宿命回忆 (Fated Mnemos) / 标记 X9"
+          ],
+          "X10": [
+                "C4 | 公正惠众 (Equality for All) > 0076 line 83: 在接下来的几周里，狄俄尼索斯 (Dionysians) 聚集了一群虔诚的追随者——但即使是那些反对他们的人也极少拒绝参加每月的盛宴 / 标记 X10",
+                "C5 | 大义 (The Greater Good) > 0001 line 8: 此外，获得+1祭司（狄俄尼索斯的）(Priest (of Dionysus)) / 将X10标记改为T"
+          ],
+          "X11": [
+                "C4 | 一万个日夜 (Ten Thousand Nights and Days) > Ω > Ω line 10: ” / 标记 X11"
+          ],
+          "X12": [
+                "C5 | 你所不选之人 (The One You Don’t) > 0025 line 32: 获得+1 名祭司 (Priest)（赫利俄斯 (of Helios)） / 标记 X12"
+          ],
+          "Y1": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 3355 line 262: “和飞船说话，”他带着虚弱的微笑补充道 / 标记 Y1",
+                "C4 | 内蕴奥德赛 (Inward Odyssey) > 80 回家路 (Nostos) > 80 line 20: ” / 标记 Y1"
+          ],
+          "Y2": [
+                "C4 | 三重诅咒之地 (A Land Thrice-Cursed) > 0011 line 18: ”总督纳斯塔兰·范 (Nastaran Van) 感谢你代表卡尔舍米什 (Carshemish) 所做的工作，特别是找到帕克提斯 (Pactyes)——尽管这位年老的浪费者 (Waster) 已经离开了 / 标记 Y2"
+          ],
+          "Y3": [
+                "C4 | 三重诅咒之地 (A Land Thrice-Cursed) > 0010 line 17: ” / 标记 Y3"
+          ],
+          "Y4": [
+                "C4 | 三重诅咒之地 (A Land Thrice-Cursed) > 0029 line 36: 如果谢赫拉莎德 (Scheherazade) 与你在一起，请参见 0032 / 标记 Y4"
+          ],
+          "Y5": [
+                "C4 | 三重诅咒之地 (A Land Thrice-Cursed) > 0030 line 37: 你不知道 / 标记 Y5"
+          ],
+          "Y6": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 1354 line 154: 老祭司 (Old Priest) 提供安慰的话语，不知何故地知道责任的重担是什么，但即使是他也害怕你在这里释放出来的东西 / 标记 Y6"
+          ],
+          "Y7": [
+                "C4 | 超越契约法则 (Beyond the Law of Bargains) > 0045 line 52: 收割 (巴比伦债务 (Babelian Debt)) / 如果你有 8 个以上的播种 (Sow) 标记，则标记 Y7"
+          ],
+          "Y8": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 3328 line 235: 如果 Y10 或 Y11 都未被标记，则参见 3344 / 如果你有失窃的云朵信息卡 (Stolen Clouds Message card)，则为其标记的每个矩阵代码 (Matrix Code) 标记 (X7,Y8) 做 1 个标记",
+                "C4 | 超越契约法则 (Beyond the Law of Bargains) > 0011 line 18: 在下一场潘多拉视界 (Pandora Horizon) 战斗开始时，在损伤堆叠 (Wound Stack) 中放置 1 个通用单次损伤 / 标记 Y8",
+                "C4 | 超越契约法则 (Beyond the Law of Bargains) > 0014 line 21: 获得 +1 (阿尔戈号知识 (ArgoKnowledge)) 和 7 个帝国卷轴 (Imperial Scroll) 资源 / 标记 Y8",
+                "C4 | 超越契约法则 (Beyond the Law of Bargains) > 0033 line 40: 参见 0035 / 3: （仅当你拥有未赐予的信息 (Unbestowed Message) 卡且未标记 Y8 时可用"
+          ],
+          "Y9": [
+                "C4 | 新月与满月 (The Crescent and the Full Moon) > 0012 line 19: 希望他们有足够的资源来忍受 / 标记 Y9",
+                "C4 | 新月与满月 (The Crescent and the Full Moon) > 0013 line 20: 收割 (灾祸 (Doom)) / 标记 Y9",
+                "C4 | 新月与满月 (The Crescent and the Full Moon) > 0014 line 21: 收割 (灾祸 (Doom)) / 标记 Y9"
+          ],
+          "Y10": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 1120 line 106: 你将他们推向崩溃的边缘 / 标记 Y10"
+          ],
+          "Y11": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 1126 line 112: 获得 +2 (阿尔戈号命运 (ArgoFate)) / 标记 Y11"
+          ],
+          "Y12": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 1127 line 113: 你把这座漂浮的富裕城市抛在身后，去寻找关于阿涅摩伊 (Anemoi) 坟墓的信息 / 标记 Y12"
+          ],
+          "Z1": [
+                "C4 | 盐路 (The Salt Road) > 0033 line 40: 让帝国的法律和后果见鬼去吧 / 标记 Z1",
+                "C4 | 盐路 (The Salt Road) > 0042 line 49: 你希望被剥夺者 (Deprived) 阿普萨拉也能接受它 / 标记 Z1"
+          ],
+          "Z2": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 3330 line 237: 获得 1 个皮格马利翁之石 (Pygmalion Stone) / 标记 Z2"
+          ],
+          "Z3": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 0036 line 36: 获得 +1 (阿尔戈号知识 (ArgoKnowledge))，并在时间线 (Timeline) 上 2 天后添加一个一万零一夜 (Ten Thousand Nights and Days) 冒险 / 标记 Z3",
+                "C4 | 盐路 (The Salt Road) > 0059 line 66: 在下一场战斗中添加一个随机诅咒特质 (Cursed Trait) / 标记 Z3"
+          ],
+          "Z4": [
+                "C4 | 盐路 (The Salt Road) > 0062 line 69: 浪费者 (Wasters)：外交 (Diplomacy) +1 / 标记 Z4"
+          ],
+          "Z5": [
+                "C4 | 盐路 (The Salt Road) > 0003 line 10: 亚里士多德远征军 (Aristotelians) 虽然无情，但在分配实践中却坚定不移地保持公平 / 标记 Z5",
+                "C4 | 盐路 (The Salt Road) > 0004 line 11: 与埃莱涅亚斯并肩而行，你走到高耸的大门前，将它们推开 / 标记 Z5",
+                "C4 | 盐路 (The Salt Road) > 0012 line 19: 剩下的那些人，就是这样…… / 标记 Z5"
+          ],
+          "Z6": [
+                "C4 | 超越契约法则 (Beyond the Law of Bargains) > 0071 line 78: 即使增长不是无限的，它似乎也是不可避免的…… / 标记 Z6"
+          ],
+          "Z7": [
+                "C4 | 新月与满月 (The Crescent and the Full Moon) > 0050 line 57: 失去遗憾 (Regret)（装备 (Gear)）卡 / 标记 Z7"
+          ],
+          "Z10": [
+                "C4 | 超越契约法则 (Beyond the Law of Bargains) > 0006 line 13: 播种 (阿尔戈号命运 (Argo Fate)) / 标记 Z10"
+          ],
+          "Z11": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 3303 line 210: 被收买：你允许自己被收买 / 标记 Z11"
+          ],
+          "Z12": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 1346 line 147: ” / 标记 Z12",
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 1356 line 155: ” / 标记 Z12"
+          ],
+          "AA1": [
+                "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 4154 line 266: 你将完成这项任务，这次奥德赛 (Odyssey)，不是因为某种程序或错位的义务感，而是出于你自己的凡人意志 / 标记 AA1",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 4154 line 249: 不是出于某种编程或一种错位的义务感，而是出于你们自己的凡人 (mortal) 意志 (volition) / 标记 AA1"
+          ],
+          "AA2": [
+                "C4 | 内蕴奥德赛 (Inward Odyssey) > 77 莱斯特律戈尼亚 (The Laestrygonian) > 77 line 17: 你希望在你打破波斯诅咒之后，有时间来处理下面的任何东西 / 标记 AA2"
+          ],
+          "AA3": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8695 line 433: 如果AA11被标记，见8697 / 如果AA3被圈出，见8698",
+                "C5 | 不惜一切代价 (Whatever the Cost) > 0010 line 17: 弃民先锋 (Vanguard)：外交 (Diplomacy) -1 / 将AA3标记为T",
+                "C5 | 不惜一切代价 (Whatever the Cost) > 0011 line 18: 弃民先锋 (Vanguard)：外交 (Diplomacy) +1 / 将AA3标记为L",
+                "C5 | 不惜一切代价 (Whatever the Cost) > 0012 line 19: 弃民先锋 (Vanguard)：外交 (Diplomacy) -1 / 将AA3标记为T",
+                "C5 | 不惜一切代价 (Whatever the Cost) > 0013 line 20: 弃民先锋 (Vanguard)：外交 (Diplomacy) +1 / 将AA3标记为L"
+          ],
+          "AA4": [
+                "C5 | 部分与整体 (Pieces and Wholes) > 0014 line 21: 在你的阿尔戈英雄面板 (Argonaut Sheet) 上记下她的名字和加成：“拉尼克：智慧 (Wisdom) +1” / 将 AA4 标记为 T",
+                "C5 | 部分与整体 (Pieces and Wholes) > 0016 line 23: ” / 将 AA4 标记为 L"
+          ],
+          "AA5": [
+                "C5 | 不惜一切代价 (Whatever the Cost) > 0015 line 22: 如果你这么做，克里提亚会与最小似然 (least likely) 的阿尔戈英雄 (Argonaut) 成为朋友 / 在你的阿尔戈英雄面板 (Argonaut Sheet) 上记下她的名字和加成：“骑士克里提亚：每场战斗 (Battle) 一次，获得2个绝望 (Despair) 指示物以获得精确 (Precise)”，并将AA5标记为L",
+                "C5 | 真理的半衰期 (Half-lives of Truths) > 0019 line 26: 如果AA3被标记为T，则圈起来 / 划掉AA5",
+                "C5 | 真理的半衰期 (Half-lives of Truths) > 0023 line 30: 如果AA3被标记为T，则圈起来 / 划掉AA5"
+          ],
+          "AA6": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 1245 line 155: 做一个消耗计数标记 / 如果 AA6 被圈出，再做一个",
+                "C5 | 部分与整体 (Pieces and Wholes) > 0055 line 62: 后来他传话来，要“不要相信任何人” / 将 AA6 标记为 L",
+                "C5 | 部分与整体 (Pieces and Wholes) > 0057 line 64: 他承诺会随时向你们更新情况，但他再也没有兑现他的诺言 / 将 AA6 标记为 T",
+                "C5 | 大义 (The Greater Good) > 0015 line 22: 获得1个记忆之回响 (Echo of Recollection) / 圈出AA6抉择矩阵 (Matrix) 代码"
+          ],
+          "AA7": [
+                "C5 | 你所不选之人 (The One You Don’t) > 0057 line 64: 混乱吞噬了广场 / 标记 AA7"
+          ],
+          "AA8": [
+                "C5 | 宁为玉碎，不为瓦全 (Death Before Dishonor) > 0018 line 25: ” / 标记 AA8"
+          ],
+          "AA9": [
+                "C5 | 宁为玉碎，不为瓦全 (Death Before Dishonor) > 0022 line 29: 做一个传承 (Passing) 标记 / 标记 AA9",
+                "C5 | 不惜一切代价 (Whatever the Cost) > 0020 line 27: 现在，即使在他死后，其他人也受职责所缚，要为他办好后事 / 圈出AA9抉择矩阵 (Matrix) 代码"
+          ],
+          "AA10": [
+                "C5 | 宁为玉碎，不为瓦全 (Death Before Dishonor) > 0027 line 34: 获得+2 [图标] 或失去-1 [图标] / 标记 AA10"
+          ],
+          "AA11": [
+                "C5 | 宁为玉碎，不为瓦全 (Death Before Dishonor) > 0071 line 78: 在内蕴奥德赛 (Inward Odyssey) 上放置 1 个 [图标] 指示物 / 将 AA11 标记为 L",
+                "C5 | 宁为玉碎，不为瓦全 (Death Before Dishonor) > 0072 line 79: 站在外面，你们亲眼目睹了真相 (truth) 是如何被制造出来的 / 将 AA11 标记为 T"
+          ],
+          "AA12": [
+                "C5 | 部分与整体 (Pieces and Wholes) > 0045 line 52: 记下 1x“线索 B” (Clue B) / 标记 AA12"
+          ],
+          "BB1": [
+                "C5 | 你所不选之人 (The One You Don’t) > 0065 line 72: 罗德保护国 (Protectorate)：外交 (Diplomacy) -1 / 标记 BB1"
+          ],
+          "BB2": [
+                "C5 | 你所不选之人 (The One You Don’t) > 0072 line 79: 队长 (party leader) 获得+1 [命运图标] / 标记 BB2"
+          ],
+          "BB3": [
+                "C5 | 大义 (The Greater Good) > 0020 line 27: 如果被指责的阵营 (Faction) 关系为：友善 (Friendly) 或更好，获得+1 [图标] / 将BB3标记为L",
+                "C5 | 大义 (The Greater Good) > 0021 line 28: 队长 (Party Leader) 获得一个宿命回忆 (Fated Mnemos) / 将BB3标记为T"
+          ],
+          "BB4": [
+                "C5 | 大义 (The Greater Good) > 0035 line 42: 你的最大 [图标] 上限现在降低1 / 移除1个“必要性”标记并标记BB4"
+          ],
+          "BB5": [
+                "C5 | 大义 (The Greater Good) > 0057 line 64: 你们让人们受苦 / 标记BB5"
+          ],
+          "BB6": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 1242 line 152: 做一个过客计数标记 / 标记 BB6",
+                "C5 | 不惜一切代价 (Whatever the Cost) > 0063 line 70: 现在，你站在墙壁永恒的光芒中，沉浸在这一刻 / 圈出抉择矩阵 (Matrix) 代码BB6"
+          ],
+          "BB7": [
+                "C5 | 不惜一切代价 (Whatever the Cost) > 0032 line 39: 与你同行的弃民先锋 (Vanguard) 船员 (crewmembers) 中，只有伊达斯和另外一个人回来了 / 将BB7标记为T",
+                "C5 | 不惜一切代价 (Whatever the Cost) > 0033 line 40: 与你们同行的弃民先锋 (Vanguard) 船员 (crewmembers) 中，只有伊达斯和他的兄弟回来了 / 将BB7标记为L"
+          ],
+          "BB8": [
+                "C5 | 不惜一切代价 (Whatever the Cost) > 0050 line 57: 如果克里提亚是你的盟友，见0053 / 然后，将BB8标记为L",
+                "C5 | 不惜一切代价 (Whatever the Cost) > 0060 line 67: 获得+1 [图标] / 将BB8标记为L",
+                "C5 | 不惜一切代价 (Whatever the Cost) > 0061 line 68: 记下3个“消耗”标记 / 将BB8标记为T",
+                "C5 | 不惜一切代价 (Whatever the Cost) > 0062 line 69: 现在，你们站在墙壁永恒的光芒中，沉浸在这一刻 / 将BB8标记为L",
+                "C5 | 不惜一切代价 (Whatever the Cost) > 0063 line 70: 圈出抉择矩阵 (Matrix) 代码BB6 / 将BB8标记为L"
+          ],
+          "BB9": [
+                "C5 | 血肉之躯的软弱 (THE FLESH IS WEAK) > 0010 line 17: 然后，如果 [图标] 5+，见0015 / 否则，将BB9标记为L",
+                "C5 | 血肉之躯的软弱 (THE FLESH IS WEAK) > 0012 line 19: 然后，如果 [图标] 5+，见0015 / 否则，将BB9标记为L",
+                "C5 | 血肉之躯的软弱 (THE FLESH IS WEAK) > 0013 line 20: 最小似然 (least likely) 的阿尔戈英雄 (Argonaut) 获得“以你之名”回忆 (In Your Image Mnemos) 卡 / 将BB9标记为T",
+                "C5 | 血肉之躯的软弱 (THE FLESH IS WEAK) > 0015 line 22: 你们不知道西狄佩还有其他孩子，也没有时间回到阿莫尔戈斯岛去核实这个新说法的真实性 / 将BB9标记为L，但圈起来"
+          ],
+          "BB10": [
+                "C5 | 血肉之躯的软弱 (THE FLESH IS WEAK) > 0032 line 39: 毕竟，他看起来头脑敏捷，口才了得…… / 如果你相信拉奈洛斯，将BB10标记为T"
+          ],
+          "BB11": [
+                "C5 | 血肉之躯的软弱 (THE FLESH IS WEAK) > 0044 line 51: ” / 将BB11标记为L"
+          ],
+          "BB12": [
+                "C5 | 血肉之躯的软弱 (THE FLESH IS WEAK) > 0047 line 54: 获得“自残” [图标] 卡（秘密牌组18，卡牌278） / 将BB12标记为T",
+                "C5 | 血肉之躯的软弱 (THE FLESH IS WEAK) > 0052 line 59: ” / 将BB12标记为L，并记下1个“消耗”标记"
+          ],
+          "CC1": [
+                "C5 | 血肉之躯的软弱 (THE FLESH IS WEAK) > 0053 line 60: 获得+1 [图标] / 将CC1标记为L"
+          ],
+          "CC2": [
+                "C5 | 血肉之躯的软弱 (THE FLESH IS WEAK) > 0022 line 29: 获得+2 [图标] / 如果你认为这是正确的选择，将CC2标记为T，在内蕴奥德赛 (Inward Odyssey) 上放置1个 [图标] 指示物",
+                "C5 | 血肉之躯的软弱 (THE FLESH IS WEAK) > 0023 line 30: 获得+1 [图标] / 如果你认为这是正确的选择，将CC2标记为T",
+                "C5 | 血肉之躯的软弱 (THE FLESH IS WEAK) > 0024 line 31: 获得9单位山铜块资源 / 如果你认为这是正确的选择，将CC2标记为L"
+          ],
+          "CC3": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 3902 line 243: 为什么老祭司 (the Old Priest) 没有告诉你们 / 标记 CC3",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 6121 line 324: 始徒 (Primordial) 彻底摧毁了船牢 (Shipgeol) 的码头及其上的每一个活物，然后开始撕裂涅墨西斯号 (Nemesis) / 如果尚未标记，标记CC3"
+          ],
+          "CC4": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 1244 line 154: 安提凡忒斯 (Antiphantes) 准备好继续前行了 / 如果他这样做，圈出 CC4 矩阵代码 (Matrix Code) 并获得 1 个西西弗斯之泪 (Sisyphus Tear)、皮格马利翁之石 (Pygmalion Stone) 或记忆之回响 (Echo of Recollection)，并将他从阿尔戈英雄面板 (Argo...",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 4205 line 253: “看着我……” 伊阿宋 (Jason) 低声说道，垂下了头 / 如果安提凡忒斯 (Antiphantes) 与你们同在或 CC4 被圈出，",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 4206 line 254: 如果他被记下，将安提凡忒斯 (Antiphantes) 从阿尔戈英雄面板 (Argonaut Sheet) 上移除 / 如果 CC4 未被圈出，圈出它并获得 1 个西西弗斯之泪 (Sisyphus Tear)、皮格马利翁之石 (Pygmalion Stone) 或记忆之回响 (Echo of Recollection)",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8708 line 446: 如果R10被标记为T，见8709 / 如果CC4被圈出，见8710"
+          ],
+          "CC5": [
+                "C5 | 不惜一切代价 (Whatever the Cost) > 0037 line 44: 队长 (Party Leader) 获得1个回忆节点 (Mnemos node) 或者你在记忆之回响 (Echo of Recollection) 轨道上标记1格 / 标记CC5"
+          ],
+          "CC6": [
+                "C5 | 真理的半衰期 (Half-lives of Truths) > 0015 line 22: ” / 将CC6标记为T",
+                "C5 | 真理的半衰期 (Half-lives of Truths) > 0022 line 29: 你们笑了 / 将CC6标记为L"
+          ],
+          "CC7": [
+                "C5 | 真理的半衰期 (Half-lives of Truths) > 0021 line 28: 如果AA3被标记为T，则圈起来 / 将CC7标记为L"
+          ],
+          "CC8": [
+                "C5 | 真理的半衰期 (Half-lives of Truths) > 0025 line 32: 万一—— / 将CC8标记为T",
+                "C5 | 真理的半衰期 (Half-lives of Truths) > 0026 line 33: 如果你拥有任何《永恒入侵：赫拉克勒斯的十二宗罪》的游戏盒，见0029 / 然后，将CC8标记为L"
+          ],
+          "CC9": [
+                "C5 | 真理的半衰期 (Half-lives of Truths) > 0053 line 60: ” / 将CC9标记为T",
+                "C5 | 真理的半衰期 (Half-lives of Truths) > 0054 line 61: ” / 将CC9标记为L",
+                "C5 | 真理的半衰期 (Half-lives of Truths) > 0055 line 62: ” / 标记CC9"
+          ],
+          "CC11": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 0013 line 12: 然后，失去-1 [图标] 或获得+2 [图标] / 将 CC11 标记为 L",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 0014 line 13: 派莫斯 (Paimos) 在一件事上说得没错：时间不多了 / 将 CC11 标记为 T"
+          ],
+          "CC12": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 0037 line 34: 做一个必需品计数标记 / 将 CC12 标记为 T",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 2403 line 194: 获得+1 [图标] / 将 CC12 标记为 L",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 2418 line 209: 获得+1 [图标] / 将 CC12 标记为 L",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8713 line 451: ” / 圈出CC12（即使未被标记）"
+          ],
+          "DD1": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 0022 line 19: ” / 标记 DD1"
+          ],
+          "DD2": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 0059 line 55: 失去-1 [图标] / 将 DD2 标记为 T",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 0059 line 55: 获得+1 [图标] / 将 DD2 标记为 L"
+          ],
+          "DD3": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 0490 line 105: 你们需要先找到阿诺斯托斯 (Anostos) / 将 DD3 标记为 T"
+          ],
+          "DD4": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 0101 line 59: 不要移除任何你已有的联络员计数标记 / 将 DD4 标记为 T，然后返回航行阶段 (Voyage Phase)"
+          ],
+          "DD5": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 0109 line 67: 最小似然 (Least likely) 的阿尔戈英雄 获得 1 个回忆 (Mnemos) 节点 / 将 DD5 标记为 T",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 0109 line 67: 一位阿尔戈英雄 获得 1 个宿命回忆 (Fated Mnemos) 节点 / 将 DD5 标记为 L",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 6127 line 330: 被选中的阿尔戈英雄 (Argonaut) 可获得1个回忆节点 (Mnemos node) / 圈出DD5抉择矩阵代码 (Matrix Code)"
+          ],
+          "DD6": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 0114 line 72: 移除 1 个联络员计数标记 / 如果你不这样做，将 DD6 标记为 T",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 0116 line 74: 移除 1 个联络员计数标记 / 如果你不这样做，将 DD6 标记为 T"
+          ],
+          "DD7": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 1099 line 146: 然后它会大笑 / 将 DD7 标记为 T",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 2803 line 217: 然后它会大笑 / 将 DD7 标记为 T"
+          ],
+          "DD8": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 2402 line 193: 如果你有 3+ [图标]，失去-1 [图标] / 将 DD8 标记为 T",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 2410 line 201: 获得 1 个记忆之回响 (Echo of Recollection)、1 个皮格马利翁之石 (Pygmalion Stone) 或 1 个西西弗斯之泪 (Sisyphus Tear) / 将 DD8 标记为 L",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 2419 line 210: 如果你有 3+ [图标]，失去-1 [图标] / 将 DD8 标记为 T",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 2421 line 212: ” 你们的一位船员 (crew) 喊道，不久之后，灭绝警报器尖锐地响起 / 将 DD8 标记为 T"
+          ],
+          "DD9": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 4204 line 252: 获得+1 [图标] / 标记 DD9",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 6124 line 327: 你们将把它和乌尔-弗里斯 (Ur-Fleece) 一同处理掉 / 圈出DD9",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8677 line 416: 每次最终（第四次）“众志成城”攻击 (All for All Attack) 获得+2 [图标] / 如果DD9被圈出，阿尔戈号 (Argo) 携带的那块黑石提醒着我们，波塞冬 (Poseidon) 的命运 (fate) 已经注定"
+          ],
+          "DD10": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 6114 line 317: 减去-2 [图标] / 标记DD10"
+          ],
+          "DD11": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 2417 line 208: 获得+1 [图标] / 将 DD11 标记为 L",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8711 line 449: 令人惊讶的是，这个故事在重述时几乎没有添油加醋，只有一个例外：阿尔戈号 (Argo) 始终是对抗 (Symmachy) 的一部分 / 圈出DD11"
+          ],
+          "DD12": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 5424 line 286: ” / 标记 DD12"
+          ],
+          "EE1": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 6115 line 318: 他不会再回到阿尔戈号 (Argo) 了 / 标记EE1"
+          ],
+          "EE2": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8666 line 405: 获得1个记忆之回响 (Echo of Recollection) / 如果你们决定带上这个男孩，将EE2标记为T",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8708 line 446: 如果P5被标记，见8714 / 如果你们有8个以上的孤儿 (Forlorn) 标记且EE2未被标记，见8715",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8715 line 453: ” / 将EE2标记为L"
+          ],
+          "EE3": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8661 line 400: 你们原先指定的第五人仍然是备用阿尔戈英雄 (Argonaut) / 将EE3标记为T",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8662 line 401: 你们没有任何备用阿尔戈英雄 (Argonauts) / 将EE3标记为L"
+          ],
+          "EE4": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 6666 line 338: 获得+1 [图标] / 标记EE4"
+          ],
+          "EE5": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 5425 line 287: 获得+1 [图标] / 标记 EE5"
+          ],
+          "FF1": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8690 line 428: 幸运的是，对抗 (Symmachy) 非常乐意支持他们…… / 将FF1标记为L",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8691 line 429: 而他们要求的回报，仅仅是让基克拉泽人 (Cycladeans) 在他们的高王面前屈膝 / 将FF1标记为T"
+          ],
+          "FF2": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8692 line 430: 一股打破正在形成的对抗 (Symmachy) 和罗德霸权 (Rhodian Hegemony) 两极体系的第三力量 / 将FF2标记为L",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8693 line 431: 还有一些则单打独斗，成为最后的自由海盗避风港，而有些则向……南方寻求救赎 / 将FF2标记为T"
+          ],
+          "FF3": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8696 line 434: 随着他们在涅墨西斯号 (Nemesis) 之战中的最后一次壮举，以及那次鲜为人知的无知之地 (Apognosis) 海沟 (trench) 下潜，先锋队 (Vanguard) 解散了，其骑士们得以在他们发誓要保护的人民中自由生活 / 将FF3标记为L"
+          ],
+          "FF4": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8697 line 435: 在接下来的几十年里，这个骑士团将慢慢地淡出历史舞台 / 标记FF4"
+          ],
+          "FF5": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8698 line 436: 但还有另一个群体得到了哈利罗提奥斯 (Halirrhothios) 的青睐——波塞冬信徒 (Poseidonites) 的残余势力…… / 标记FF5"
+          ],
+          "FF6": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8699 line 437: 总有一天，尼卡诺尔 (Nikanor)，或他的继任者，将会回来夺回亚特兰提斯 (Atlantis) 应有的遗产 / 标记FF6"
+          ],
+          "FF7": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8700 line 438: 在那里，一个崭新的、更开明的王国将慢慢繁荣起来，也许有一天，它将引领凡人 (mortal) 国家走向更美好的明天 / 标记FF7"
+          ],
+          "FF8": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8704 line 442: 就像其他燃烧得明亮但迅速消逝的运动一样，它最终将湮没无闻 / 将FF8标记为L",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8706 line 444: 他的信徒将追随他的脚步，赞美他世俗的神性，传播他阿瑞特 (Areté) 的光芒，不是通过暴力，而是通过善言、无条件的帮助和榜样 / 将FF8标记为T"
+          ],
+          "FF9": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8705 line 443: 追随者 (Followers) 的队伍或许再也无法达到其鼎盛时期的规模，但也不会减少 / 将FF9标记为L",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8707 line 445: 那时，也只有那时，世界才会体验到真正的凡人黎明 (Mortal Dawn) / 将FF9标记为T"
+          ],
+          "FF10": [
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8722 line 458: 骑士和圣骑士仍然在大海上及其下方的世界中漫游，保护人民免受末世 (Eschaton) 遗留下的怪物侵害 / 将FF10标记为L",
+                "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8723 line 459: 他们的复国之战永无止境 / 将FF10标记为T"
+          ]
+    };
+
     function renderMatrix() {
-      const rows = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").concat(["Aa", "Bb", "Cc", "Dd", "Ee", "Ff"]);
+      const rows = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").concat(["AA", "BB", "CC", "DD", "EE", "FF"]);
       elements.choiceMatrix.innerHTML = "";
       elements.choiceMatrix.className = `matrix ${matrixUnlocked ? "unlocked" : "locked"}`;
       elements.matrixHint.textContent = matrixUnlocked ? "已解锁：双击格子勾选或取消" : "锁定中：点击解锁后双击修改";
@@ -3927,11 +5057,14 @@
         for (let col = 1; col <= 12; col += 1) {
           const key = `${row}${col}`;
           const checked = Boolean(state.matrix[key]);
+          const notes = choiceMatrixNotes[key] || [];
           const button = document.createElement("button");
           button.type = "button";
-          button.className = checked ? "marked" : "";
+          button.className = [checked ? "marked" : "", notes.length ? "has-note" : ""].filter(Boolean).join(" ");
           button.textContent = `${row}${col}`;
-          button.title = matrixUnlocked ? "双击修改" : "矩阵已锁定";
+          const noteText = notes.length ? notes.join("\n") : "未在 C1-C5 故事书中找到“标记/圈出/划掉此格”的来源。";
+          button.title = `${key}\n${noteText}\n${matrixUnlocked ? "双击修改" : "矩阵已锁定"}`;
+          if (notes.length) button.setAttribute("aria-label", `${key}：${notes.join("；")}`);
           button.addEventListener("dblclick", () => {
             if (!matrixUnlocked) return;
             state.matrix[key] = !state.matrix[key];
