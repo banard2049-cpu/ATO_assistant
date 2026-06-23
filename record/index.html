@@ -1190,12 +1190,108 @@
       color: #fff;
     }
 
+    .matrix button.marked.crossed {
+      background: var(--red);
+      color: #fff;
+      text-decoration: line-through;
+    }
+
+    .matrix button.marked.circled {
+      background: var(--accent);
+      color: #fff;
+      outline: 3px solid var(--ink);
+      outline-offset: -5px;
+    }
+
+    .matrix button[data-mark] {
+      position: relative;
+    }
+
+    .matrix button[data-mark]::after {
+      content: attr(data-mark);
+      position: absolute;
+      top: 1px;
+      right: 2px;
+      font-size: 0.6em;
+      font-weight: bold;
+      line-height: 1;
+      opacity: 0.9;
+    }
+
+    .matrix-popup-menu {
+      background: var(--panel);
+      border: 1px solid var(--line-strong);
+      border-radius: 6px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+      padding: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 120px;
+    }
+
+    .matrix-popup-menu button {
+      background: none;
+      border: none;
+      padding: 6px 12px;
+      text-align: left;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border-radius: 4px;
+      color: var(--ink);
+    }
+
+    .matrix-popup-menu button:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .matrix-popup-menu button.active {
+      font-weight: bold;
+      background: var(--line);
+    }
+
+    .matrix-summary-popup {
+      position: fixed;
+      z-index: 10000;
+      max-width: 380px;
+      padding: 14px 16px;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.18);
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--ink);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .matrix-summary-popup .summary-title {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 12px;
+      font-weight: 900;
+      color: var(--accent);
+    }
+
+    .matrix-summary-popup .summary-link {
+      display: block;
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .matrix-summary-popup .summary-link:hover {
+      color: var(--accent);
+    }
     .matrix button.has-note {
-      box-shadow: inset 0 -3px 0 rgba(138, 91, 23, 0.55);
+      box-shadow: none;
     }
 
     .matrix button.marked.has-note {
-      box-shadow: inset 0 -3px 0 rgba(255, 255, 255, 0.55);
+      box-shadow: none;
     }
 
     .map-grid {
@@ -1582,6 +1678,7 @@
   </main>
 
   <script src="../page-focus-router.js?v=20260607a"></script>
+  <script src="./matrix-summaries.js"></script>
   <script>
     const storageKey = "ato-argo-record-sheet-v1";
     const serverStorageUrl = "../api/campaign-state.php";
@@ -2447,7 +2544,7 @@
       const normalized = {};
       Object.entries(matrix).forEach(([key, value]) => {
         const sharedKey = normalizeMatrixKey(key.replace(/^c\d-/, ""));
-        if (sharedKey) normalized[sharedKey] = Boolean(value);
+        if (sharedKey && value) normalized[sharedKey] = value === true ? true : value;
       });
       return normalized;
     }
@@ -3961,13 +4058,19 @@
                 "C1 | 主线故事 - 迷宫真相 > 0102 line 99: 角誓者(Hornsworn)：外交 +2 / 标记 A6"
           ],
           "A7": [
-                "C1 | 特殊事件 > 教程总结——跳过教程 (TUTORIAL SUMMARY - SKIPPING THE TUTORIAL) > tutorial-summary-skipping-the-tutorial line 9: 获得 1 个西西弗斯之泪 (Sisyphus Tear) 神圣资源 / 在选择矩阵 (Choice Matrix) 上标记 A7 或 A8（随机）"
+                "C1 | 特殊事件 > 教程总结——跳过教程 (TUTORIAL SUMMARY - SKIPPING THE TUTORIAL) > tutorial-summary-skipping-the-tutorial line 9: 获得 1 个西西弗斯之泪 (Sisyphus Tear) 神圣资源 / 在选择矩阵 (Choice Matrix) 上标记 A7 或 A8（随机）",
+                "C1 | 教程 > LTP上手指南: 在船骸水域中选择将阿尔戈号开入深处保护特遣队，失去-1船体 / 标记 A7"
           ],
           "A8": [
-                "C1 | 特殊事件 > 教程总结——跳过教程 (TUTORIAL SUMMARY - SKIPPING THE TUTORIAL) > tutorial-summary-skipping-the-tutorial line 9: 获得 1 个西西弗斯之泪 (Sisyphus Tear) 神圣资源 / 在选择矩阵 (Choice Matrix) 上标记 A7 或 A8（随机）"
+                "C1 | 特殊事件 > 教程总结——跳过教程 (TUTORIAL SUMMARY - SKIPPING THE TUTORIAL) > tutorial-summary-skipping-the-tutorial line 9: 获得 1 个西西弗斯之泪 (Sisyphus Tear) 神圣资源 / 在选择矩阵 (Choice Matrix) 上标记 A7 或 A8（随机）",
+                "C1 | 教程 > LTP上手指南: 在船骸水域中选择让船员冒险而保全阿尔戈号，失去-1船员 / 标记 A8"
           ],
           "A9": [
+                "C1 | 教程 > LTP上手指南: 放走商人并索取海岸地图，失去-1命运，米诺斯人：外交+1，角誓者：外交-1 / 标记 A9",
                 "C3 | 冒险枢纽 03 - 我们身后留下的 > 0009 line 16: 这对人民来说肯定是更好的结果吧 / 标记 A9"
+          ],
+          "A10": [
+                "C1 | 教程 > LTP上手指南: 强行没收商人物资以解决船员饥饿问题 / 标记 A10"
           ],
           "A11": [
                 "C1 | 回忆突破 > 塞壬幸存者 (Siren Survivor) > M023 line 52: 接受死亡 / 标记 A11"
@@ -3982,8 +4085,8 @@
                 "C1 | 休憩冒险 > 33 > 33 line 6: 很多很多的山羊 / 标记 B3"
           ],
           "B4": [
-                "疑似间接来源 C3 | 主线故事 - 冷酷太阳 > 0059 line 59: 致逝者 (To Those Long Dead); 0066 checks B4 -> 0070",
-                "疑似来源缺失/格式异常，后文检查于 C3 | 主线故事 - 冷酷太阳 > 0066 line 66: 如果标记了 F6，参见 0069 / 如果标记了 B4，参见 0070"
+                "后文检查于 C3 | 主线故事 - 冷酷太阳 > 0066 line 66: 如果标记了 F6，参见 0069 / 如果标记了 B4，参见 0070",
+                "疑似来源：\"致逝者\" (To Those Long Dead) 故事卡 2A 面标记（C3 | 主线故事 - 冷酷太阳 > 0059 line 59: 在选择矩阵中标记你从故事 2A 中获得的所有 3 个代码）"
           ],
           "B5": [
                 "C1 | 主线故事 - 迷宫真相 > 0103 line 100: 迷宫徒(Labyrinthians)：外交 +1，角誓者(Hornsworn)：外交 +1 / 标记 B5"
@@ -4047,7 +4150,7 @@
                 "C2 | 回忆突破 > M024 > M024 line 38: 这段旅程的一部分涉及找到你自己的生活，摆脱阿尔戈 / 标记 C12"
           ],
           "D1": [
-                "疑似来源缺失/格式异常，后文检查于 C1 | 主线故事 - 迷宫真相 > 0130 line 125: 参见 0134 / 3: 如果你不能选择选项 1-2，并且标记了 D1 或 F3，而且你还没有完成“米诺陶洛斯之泪(Tears of a Minotaur)”枢纽，你必须选择这个：邦联同盟(Symmachy)有一个王牌"
+                "C1 | 主线故事 - 迷宫真相 > 0024 line 24: 说实话，即使会让人伤心。做一个阿卡卡利斯(Acacallis)计数标记 / 标记 D1（原文OCR为DI）"
           ],
           "D2": [
                 "C1 | 冒险枢纽 05 - 不安的头颅 > 0048 line 44: 米诺斯人 (Minoans)：外交 (Diplomacy) -1 / 标记 D2"
@@ -4081,7 +4184,7 @@
                 "C2 | 回忆突破 > M025 > M025 line 14: 退出你的战斗生活，进行冥想并控制你的暴力冲动 / 标记D12"
           ],
           "E1": [
-                "疑似来源缺失/格式异常，后文检查于 C1 | 战斗 > 赫尔墨斯追踪者战斗 Pursuer Battle > 赫尔墨斯追踪者战斗-pursuer-battle line 46: 但事情还没有结束 / 黑血密码筒 (Black Blood Cryptex)：如果 E1 被标记，并且你们的阿尔戈号知识 (ArgoKnowledge) 为 15+，则前往内蕴奥德赛 (Inward Odyssey)（19）：黑血密码筒 (Black Blood Cryptex)"
+                "疑似来源：实体线索卡/特殊事件卡标记（后文检查于 C1 | 战斗 > 赫尔墨斯追踪者战斗 line 46: 如果 E1 被标记且阿尔戈号知识 15+，前往内蕴奥德赛19：黑血密码筒）"
           ],
           "E2": [
                 "C1 | 冒险枢纽 05 - 不安的头颅 > 0024 line 30: 角誓者 (Hornsworn)：外交 (Diplomacy) -1 / 标记 E2"
@@ -4118,7 +4221,7 @@
                 "C1 | 冒险枢纽 03 - 隐匿于众目睽睽之下 > 0001 line 9: 你们帮助了皮里托斯 (Pirithous) / 标记 F1"
           ],
           "F2": [
-                "疑似来源缺失/格式异常，后文检查于 C1 | 冒险枢纽 01 - 宿命的谜题 > 0020 line 25: 你们拿出火把，走了进去 / 如果 F2 被标记，那个灾难性夜晚的记忆仍然萦绕在你们的船员心中"
+                "疑似来源：实体事件卡/灾祸卡标记（后文检查于 C1 | 冒险枢纽 01 - 宿命的谜题 > 0020 line 25: 如果 F2 被标记，那个灾难性夜晚的记忆仍然萦绕在船员心中）"
           ],
           "F3": [
                 "C1 | 主线故事 - 迷宫真相 > 0024 line 24: 2: 撒谎，隐瞒邦联同盟(Symmachy)囚禁了刻希诺狄刻(Xenodice)的事实 / 标记 F3"
@@ -4131,8 +4234,8 @@
                 "C1 | 冒险枢纽 01 - 宿命的谜题 > 3—4 吞噬之渊的梦 | 梦境 (3—4 Dream of the Maw | Dream) > 3-4-3-4-dream-of-the-maw-dream line 3: 在你们的阿尔戈英雄 (Argonaut) 表上的恩惠 (Boons) 下方记下“不可能的逻辑 (Impossible Logic)” / 标记 F5"
           ],
           "F6": [
-                "疑似间接来源 C3 | 主线故事 - 冷酷太阳 > 0059 line 59: 致逝者 (To Those Long Dead); 0066 checks F6 -> 0069",
-                "疑似来源缺失/格式异常，后文检查于 C3 | 主线故事 - 冷酷太阳 > 0066 line 66: 如果标记了 N4，参见 0068 / 如果标记了 F6，参见 0069"
+                "后文检查于 C3 | 主线故事 - 冷酷太阳 > 0066 line 66: 如果标记了 N4，参见 0068 / 如果标记了 F6，参见 0069",
+                "疑似来源：\"致逝者\" (To Those Long Dead) 故事卡 2A 面标记（C3 | 主线故事 - 冷酷太阳 > 0059 line 59: 在选择矩阵中标记你从故事 2A 中获得的所有 3 个代码）"
           ],
           "F10": [
                 "C3 | 冒险枢纽 06 - 父辈们的罪孽 > 0002 line 9: ” / 标记 F10"
@@ -4148,7 +4251,7 @@
                 "C1 | 冒险枢纽 03 - 隐匿于众目睽睽之下 > 0030 line 33: 获得 +1 进展指示物 (ProgressToken) 和 +1 灾祸指示物 (DoomToken) / 标记 G1"
           ],
           "G2": [
-                "疑似来源缺失/格式异常，后文检查于 C1 | 主线故事 - 迷宫真相 > 0073 line 72: 无论结果如何，这些刺客都像他们出现时一样突然地撤退到阴影中 / 如果标记了 G2，在“内蕴奥德赛(Inward Odyssey)”上放置 1 个进展指示物(Progress Token)，因为他们的战斗风格让你想起了什么"
+                "疑似来源：实体遭遇卡/战斗结果卡标记（后文检查于 C1 | 主线故事 - 迷宫真相 > 0073 line 72: 如果标记了 G2，在内蕴奥德赛上放置 1 个进展指示物）"
           ],
           "G3": [
                 "C1 | 主线故事 - 迷宫真相 > 0109 line 105: ” / 标记 G3，并参见 0118",
@@ -4269,11 +4372,8 @@
                 "C1 | 回忆突破 > 萦绕心头 (Haunted) > M029 line 38: 你们回到了你们的女儿身边，离开了阿尔戈号 (Argo) / 标记 I11"
           ],
           "I12": [
-                "疑似来源缺失/格式异常，后文检查于 C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0140 line 114: 按顺序阅读以下所有适用内容，并记下你们的候选人： / 如果 A11 到 P11 和 A12 到 P12 中的任何一个被标记，请参阅 0205",
-                "疑似来源缺失/格式异常，后文检查于 C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0224 line 199: 如果人性 (Humanity) 为 -4 到 -14，请参阅 0227 / （如果 I12 被标记，这始终是一个选项）",
-                "疑似来源缺失/格式异常，后文检查于 C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0224 line 199: （如果 I12 被标记，这始终是一个选项） / 如果 I12 被标记，被抛弃者 (Castoff) 可以选择向复仇屈服",
-                "疑似来源缺失/格式异常，后文检查于 C2 | 深渊凝视者主线故事 (ABYSSWATCHERS MAIN STORY) v2.0 > 0239 line 214: 检查所有适用的选项（你们将被重定向到这里）： / 如果 I12 被标记，并且被抛弃者 (Castoff) 还活着，请参阅 0238",
-                "疑似来源缺失/格式异常，后文检查于 C3 | 主线故事 - 冷酷太阳 > 0219 line 206: 如果标记了 H12，参见 0241 / 如果标记了 I12，参见 0223"
+                "C2 | 回忆突破 > M029 > M040 line 5: 运用你在考验中吸取的教训，专注于帮助弱者和无权者 / 标记 I12（原文OCR为112）",
+                "C2 | 回忆突破 > M029 > M042 line 6: 从前线退下来。作为决心战胜力量的典范，留在阿尔戈号上 / 标记 I12（原文OCR为112）"
           ],
           "J1": [
                 "C1 | 冒险枢纽 01 - 宿命的谜题 > 0017 line 23: 最不可能的阿尔戈英雄 (Argonaut) 获得迷宫印纹 (Mazetouched) 苦痛 (Affliction) 和闹鬼的回忆 (Haunted Mnemos) 卡 / 标记 J1"
@@ -4282,8 +4382,8 @@
                 "C2 | 初始目标 (Intended Purpose) v2.0 > 0028 line 35: 强迫独眼巨人为自己而战 / 标记 J2"
           ],
           "J3": [
-                "疑似间接来源 C3 | 主线故事 - 冷酷太阳 > 0059 line 59: 致逝者 (To Those Long Dead); 0066 checks J3 -> 0067",
-                "疑似来源缺失/格式异常，后文检查于 C3 | 主线故事 - 冷酷太阳 > 0066 line 66: 按顺序阅读以下所有适用内容（别担心，你们会被重新引导到这里）： / 如果标记了 J3，参见 0067"
+                "后文检查于 C3 | 主线故事 - 冷酷太阳 > 0066 line 66: 按顺序阅读以下所有适用内容",
+                "疑似来源：\"致逝者\" (To Those Long Dead) 故事卡 2A 面标记（C3 | 主线故事 - 冷酷太阳 > 0059 line 59: 在选择矩阵中标记你从故事 2A 中获得的所有 3 个代码）"
           ],
           "J7": [
                 "C1 | 主线故事 - 迷宫真相 > 0021 line 21: 获得 +1 阿尔戈号命运(Argo Fate) / 标记 J7",
@@ -4294,8 +4394,8 @@
                 "C2 | 当陆地与海洋相遇 (When the Land Meets the Sea) v2.0 > 0049 line 45: 获得 +1 (ProgressToken) / 标记 J8"
           ],
           "J9": [
-                "疑似间接来源 C3 | 主线故事 - 冷酷太阳 > 0059 line 59: 致逝者 (To Those Long Dead); 0066 checks J9 -> 0072",
-                "疑似来源缺失/格式异常，后文检查于 C3 | 主线故事 - 冷酷太阳 > 0066 line 66: 如果标记了 M7，参见 0071 / 如果标记了 J9，参见 0072"
+                "后文检查于 C3 | 主线故事 - 冷酷太阳 > 0066 line 66: 如果标记了 M7，参见 0071 / 如果标记了 J9，参见 0072",
+                "疑似来源：\"致逝者\" (To Those Long Dead) 故事卡 2A 面标记（C3 | 主线故事 - 冷酷太阳 > 0059 line 59: 在选择矩阵中标记你从故事 2A 中获得的所有 3 个代码）"
           ],
           "J10": [
                 "C1 | 主线故事 - 迷宫真相 > 0038 line 38: 大地开始震动 / 标记 J10"
@@ -4314,7 +4414,7 @@
                 "C4 | 超越契约法则 (Beyond the Law of Bargains) > 0067 line 74: • 你拥有被盗云层信息 (Stolen Clouds Message) 卡 / • 标记 K2"
           ],
           "K3": [
-                "疑似来源缺失/格式异常，后文检查于 C2 | 初始目标 (Intended Purpose) v2.0 > 0004 line 11: 勒列格斯 (Leleges) / 如果标记了 K3，请参阅 0016"
+                "疑似来源：实体遭遇卡/C1事件标记（后文检查于 C2 | 初始目标 > 0004 line 11: 如果标记了 K3，请参阅 0016）"
           ],
           "K4": [
                 "C1 | 主线故事 - 迷宫真相 > 0059 line 59: 你很快就在不被发现的情况下进入了船内 / 标记 K4",
@@ -4401,8 +4501,8 @@
                 "C2 | 初始目标 (Intended Purpose) v2.0 > 0051 line 57: 如果是这样的话，他们已经成功了，因为很多人，包括你们中的一些阿尔戈英雄，都想知道为什么面盗利姆 (Metonym) 杀死了其他受害者，却留下了斯巴达人活着 / 标记 M6"
           ],
           "M7": [
-                "疑似间接来源 C3 | 主线故事 - 冷酷太阳 > 0059 line 59: 致逝者 (To Those Long Dead); 0066 checks M7 -> 0071",
-                "疑似来源缺失/格式异常，后文检查于 C3 | 主线故事 - 冷酷太阳 > 0066 line 66: 如果标记了 B4，参见 0070 / 如果标记了 M7，参见 0071"
+                "后文检查于 C3 | 主线故事 - 冷酷太阳 > 0066 line 66: 如果标记了 B4，参见 0070 / 如果标记了 M7，参见 0071",
+                "疑似来源：\"致逝者\" (To Those Long Dead) 故事卡 2A 面标记（C3 | 主线故事 - 冷酷太阳 > 0059 line 59: 在选择矩阵中标记你从故事 2A 中获得的所有 3 个代码）"
           ],
           "M9": [
                 "C3 | 主线故事 - 冷酷太阳 > 0078 line 78: 两个阿尔戈英雄 (Argonauts) 每人获得 +2 (危险 (Danger) / 标记 M9",
@@ -4424,8 +4524,8 @@
                 "C4 | 意外之财 (Windfall) > 0006 line 13: 在沙漠中开垦一片花园已经足够困难了，而园丁们还在为水而争吵 / 标记 N3"
           ],
           "N4": [
-                "疑似间接来源 C3 | 主线故事 - 冷酷太阳 > 0059 line 59: 致逝者 (To Those Long Dead); 0066 checks N4 -> 0068",
-                "疑似来源缺失/格式异常，后文检查于 C3 | 主线故事 - 冷酷太阳 > 0066 line 66: 如果标记了 J3，参见 0067 / 如果标记了 N4，参见 0068"
+                "后文检查于 C3 | 主线故事 - 冷酷太阳 > 0066 line 66: 如果标记了 J3，参见 0067 / 如果标记了 N4，参见 0068",
+                "疑似来源：\"致逝者\" (To Those Long Dead) 故事卡 2A 面标记（C3 | 主线故事 - 冷酷太阳 > 0059 line 59: 在选择矩阵中标记你从故事 2A 中获得的所有 3 个代码）"
           ],
           "N5": [
                 "C1 | 主线故事 - 迷宫真相 > 0135 line 130: 如果标记了 B11，让拥有“米诺斯血统(Minoan Heritage)”的阿尔戈英雄(Argonaut)退役（如果他还活着） / 标记 N5"
@@ -4554,7 +4654,8 @@
                 "C3 | 主线故事 - 冷酷太阳 > 0174 line 163: 将节点添加到每个宿命回忆 (Fated Mnemos) 并继续解决它们 / 标记 Q12"
           ],
           "R1": [
-                "疑似来源缺失/格式异常，后文检查于 C3 | 主线故事 - 冷酷太阳 > 0009 line 9: 如果 R1 被标记，立即返回航行阶段"
+                "C3 | 主线故事 - 冷酷太阳 > 0008 line 8: 将伊卡洛斯的恳求故事卡翻到 IB 面 / 标记 R1（原文OCR为RI）",
+                "C3 | 主线故事 - 冷酷太阳 > 0009 line 9: 一道耀眼的光芒闪过 / 标记 R1（原文OCR为RI）"
           ],
           "R2": [
                 "C3 | 冒险枢纽 02 - 太阳之子 > 0039 line 46: 队长获得 2 危险(Danger) / 标记 R2",
@@ -4616,7 +4717,7 @@
                 "C3 | 冒险枢纽 07 - 步入成熟 > 0002 line 9: 到了晚上，异议者们都得到了处理，不管以何种方式，你被允许进入城邦——以及神殿的内殿 (Inner Hallow) / 标记 S9"
           ],
           "S10": [
-                "疑似来源缺失/格式异常，后文检查于 C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8664 line 403: 按顺序，阅读所有适用的以下内容并记下你们的候选人： / 如果R10被标记为L，或者S10到W10，T11或U11中任意一项被标记，见8665"
+                "疑似来源：C4 回忆突破退役卡标记（后文检查于 C5 | 真相诉说者主线故事 > 8664 line 403: 如果S10到W10中任意一项被标记，见8665）"
           ],
           "S11": [
                 "C4 | 回忆突破 (Mnemos Breakthroughs) > 千年一梦 (The Thousandth Night) > M027 line 28: 回到你的家乡，这样你就可以开始纠正你父母选择造成的损害 / 标记 S11"
@@ -4657,10 +4758,10 @@
                 "C4 | 三重诅咒之地 (A Land Thrice-Cursed) > 0013 line 20: ” / 标记 T9"
           ],
           "T10": [
-                "疑似来源缺失/格式异常，后文检查于 C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8664 line 403: 按顺序，阅读所有适用的以下内容并记下你们的候选人： / 如果R10被标记为L，或者S10到W10，T11或U11中任意一项被标记，见8665"
+                "疑似来源：C4 回忆突破退役卡标记（后文检查于 C5 | 真相诉说者主线故事 > 8664 line 403: 如果S10到W10中任意一项被标记，见8665）"
           ],
           "T11": [
-                "疑似来源缺失/格式异常，后文检查于 C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8664 line 403: 按顺序，阅读所有适用的以下内容并记下你们的候选人： / 如果R10被标记为L，或者S10到W10，T11或U11中任意一项被标记，见8665"
+                "疑似来源：C4 回忆突破退役卡标记（后文检查于 C5 | 真相诉说者主线故事 > 8664 line 403: 如果T11或U11被标记，见8665）"
           ],
           "T12": [
                 "C4 | 回忆突破 (Mnemos Breakthroughs) > 风起云涌 (Updraft) > M024 line 12: 离开阿尔戈号 (Argo)，重新与你的生活联系起来，建立新的联系 / 标记 T12"
@@ -4674,7 +4775,7 @@
                 "C4 | 超越契约法则 (Beyond the Law of Bargains) > 0013 line 20: 做一个未赐予 (Unbestowed) 标记 / 标记 U4"
           ],
           "U5": [
-                "疑似来源缺失/格式异常，后文检查于 C5 | 真理的半衰期 (Half-lives of Truths) > 3-4 终结 (Closure) | 航程 > 3-4 line 3: 你可以获得+1 [图标] 来为结果+1 / 如果U5已标记，你记起了“无听者”的技巧，结果+2"
+                "疑似来源：实体冒险卡/线索卡标记（后文检查于 C5 | 真理的半衰期 > 3-4 line 3: 如果U5已标记，你记起了无听者的技巧，结果+2）"
           ],
           "U7": [
                 "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 0088 line 88: 丢弃谢赫拉莎德 (Scheherazade) 盟友卡牌 / 标记 U7",
@@ -4687,10 +4788,10 @@
                 "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 0090 line 90: 你希望她不会让你后悔这个决定…… / 标记 U9"
           ],
           "U10": [
-                "疑似来源缺失/格式异常，后文检查于 C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8664 line 403: 按顺序，阅读所有适用的以下内容并记下你们的候选人： / 如果R10被标记为L，或者S10到W10，T11或U11中任意一项被标记，见8665"
+                "疑似来源：C4 回忆突破退役卡标记（后文检查于 C5 | 真相诉说者主线故事 > 8664 line 403: 如果S10到W10中任意一项被标记，见8665）"
           ],
           "U11": [
-                "疑似来源缺失/格式异常，后文检查于 C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8664 line 403: 按顺序，阅读所有适用的以下内容并记下你们的候选人： / 如果R10被标记为L，或者S10到W10，T11或U11中任意一项被标记，见8665"
+                "疑似来源：C4 回忆突破退役卡标记（后文检查于 C5 | 真相诉说者主线故事 > 8664 line 403: 如果T11或U11被标记，见8665）"
           ],
           "U12": [
                 "C4 | R&R 冒险 (R&R Adventures) > 23 > 23 line 5: 获得 +1 (阿尔戈号知识 (ArgoKnowledge)) 或免除一半阿尔戈号 (Argo) 的 (巴比伦债务 (BabelianDebt)) / 标记 U12"
@@ -4717,7 +4818,7 @@
                 "C4 | 无限增长花园 主线故事 (Gardens Of Infinite Growth Main Story) > 3345 line 252: 在永恒帝国 (Eternal Empire) 中，只剩下弯曲尖塔的杂草丛生的废墟和关于巴布洛斯及其贪婪的故事，尽管许多人渴望那些时代，那时至少有一些人可以享受财富的奢侈 / 标记 V7"
           ],
           "V10": [
-                "疑似来源缺失/格式异常，后文检查于 C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8664 line 403: 按顺序，阅读所有适用的以下内容并记下你们的候选人： / 如果R10被标记为L，或者S10到W10，T11或U11中任意一项被标记，见8665"
+                "疑似来源：C4 回忆突破退役卡标记（后文检查于 C5 | 真相诉说者主线故事 > 8664 line 403: 如果S10到W10中任意一项被标记，见8665）"
           ],
           "V12": [
                 "C4 | 回忆突破 (Mnemos Breakthroughs) > 大而不倒 (Too Big to Fail) > M021 line 20: 离开阿尔戈号 (Argo)，在这个世界上找到你真正的归宿，过上幸福的生活 / 标记 V12"
@@ -4751,7 +4852,7 @@
                 "C5 | 宁为玉碎，不为瓦全 (Death Before Dishonor) > 0073 line 80: 获得永恒的誓言 (Eternal Vow) [图标] 卡（秘密牌组 18，卡牌 280） / 若 AA11 标记为 L 且 W9 被标记，见 0076"
           ],
           "W10": [
-                "疑似来源缺失/格式异常，后文检查于 C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8664 line 403: 按顺序，阅读所有适用的以下内容并记下你们的候选人： / 如果R10被标记为L，或者S10到W10，T11或U11中任意一项被标记，见8665"
+                "疑似来源：C4 回忆突破退役卡标记（后文检查于 C5 | 真相诉说者主线故事 > 8664 line 403: 如果S10到W10中任意一项被标记，见8665）"
           ],
           "W12": [
                 "C4 | 回忆突破 (Mnemos Breakthroughs) > 负重之骡 (The Mule) > M026 line 24: 回到你果园所在的土地，帮助这片土地愈合 / 标记 W12"
@@ -5009,8 +5110,7 @@
                 "C5 | 真理的半衰期 (Half-lives of Truths) > 0055 line 62: ” / 标记CC9"
           ],
           "CC10": [
-                "疑似来源缺失/格式异常，后文检查于 C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8099 line 365: 谢谢你成为我的佩涅罗佩 / 然后，难以置信地，如果CC10被标记，且仅当此时，见7776",
-                "疑似来源缺失/格式异常，后文检查于 C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 8651 line 390: +1生命点 (Life Point)，如果CC4被标记为L / +1生命点 (Life Point)，如果CC10被标记为L"
+                "疑似来源：实体卡牌/事件标记（后文检查于 C5 | 真相诉说者主线故事 > 8099 line 365: 如果CC10被标记，见7776）"
           ],
           "CC11": [
                 "C5 | 真相诉说者主线故事 (Truthsayer Main Story) > 0013 line 12: 然后，失去-1 [图标] 或获得+2 [图标] / 将 CC11 标记为 L",
@@ -5125,22 +5225,98 @@
     };
 
     let matrixClickTimer = 0;
+    let matrixSummaries = window.MATRIX_SUMMARIES || {};
 
     function matrixSourceTarget(notes) {
       const source = (notes || []).find((note) => /\bC[1-5]\s*\|/.test(note));
       if (!source) return null;
-      const match = source.match(/\bC([1-5])\s*\|.*>\s*(.+?)\s+line\s+\d+:/);
+      const match = source.match(/\bC([1-5])\s*\|\s*(.+?)\s*>\s*(.+?)\s+line\s+\d+:/);
       if (!match) return null;
       return {
         bookId: `c${match[1]}`,
-        entryId: match[2].trim(),
+        chapterHint: match[2].trim(),
+        entryId: match[3].trim(),
       };
     }
 
+    function allMatrixSourceTargets(notes) {
+      const regex = /\bC([1-5])\s*\|\s*(.+?)\s*>\s*(.+?)\s+line\s+\d+:/;
+      const results = [];
+      const seen = new Set();
+      for (const note of notes || []) {
+        const m = note.match(regex);
+        if (!m) continue;
+        const key = `c${m[1]}|${m[2]}|${m[3]}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        results.push({
+          bookId: `c${m[1]}`,
+          chapterHint: m[2].trim(),
+          entryId: m[3].trim(),
+          label: `C${m[1]} ${m[2].trim()} #${m[3].trim()}`,
+        });
+      }
+      return results;
+    }
+
+    function pickMatrixTarget(targets) {
+      const msg = targets.map((t, i) => `${i + 1}. ${t.label}`).join("\n");
+      const input = window.prompt(`此格有多个来源，输入序号跳转：\n${msg}`);
+      const idx = parseInt(input, 10) - 1;
+      if (idx >= 0 && idx < targets.length) return targets[idx];
+      return null;
+    }
+
+    function showMatrixSummary(key, button, notes) {
+      const existing = document.getElementById("matrix-summary");
+      if (existing) existing.remove();
+      const summary = matrixSummaries[key];
+      if (!summary) return;
+
+      const popup = document.createElement("div");
+      popup.id = "matrix-summary";
+      popup.className = "matrix-summary-popup";
+
+      const title = document.createElement("span");
+      title.className = "summary-title";
+      title.textContent = key + " 剧情总结";
+      popup.appendChild(title);
+
+      const body = document.createElement("span");
+      body.textContent = summary;
+      popup.appendChild(body);
+
+      if (notes.length) {
+        const link = document.createElement("span");
+        link.className = "summary-link";
+        link.textContent = "点击跳转故事书来源 →";
+        link.addEventListener("click", (e) => { e.stopPropagation(); popup.remove(); jumpToMatrixSource(notes); });
+        popup.appendChild(link);
+      }
+
+      document.body.appendChild(popup);
+      const rect = button.getBoundingClientRect();
+      const popupRect = popup.getBoundingClientRect();
+      let left = rect.left;
+      let top = rect.bottom + 6;
+      if (left + popupRect.width > window.innerWidth - 12) left = window.innerWidth - popupRect.width - 12;
+      if (top + popupRect.height > window.innerHeight - 12) top = rect.top - popupRect.height - 6;
+      if (left < 4) left = 4;
+      popup.style.left = left + "px";
+      popup.style.top = top + "px";
+
+      const dismiss = (e) => { if (!popup.contains(e.target)) { popup.remove(); document.removeEventListener("pointerdown", dismiss); } };
+      setTimeout(() => document.addEventListener("pointerdown", dismiss), 0);
+    }
+
     function jumpToMatrixSource(notes) {
-      const target = matrixSourceTarget(notes);
+      const targets = allMatrixSourceTargets(notes);
+      if (!targets.length) return;
+      const target = targets.length === 1
+        ? targets[0]
+        : pickMatrixTarget(targets);
       if (!target) return;
-      const params = new URLSearchParams({ book: target.bookId, entry: target.entryId });
+      const params = new URLSearchParams({ book: target.bookId, chapter: target.chapterHint, entry: target.entryId });
       const url = `../story/index.html?${params.toString()}`;
 
       if (window.parent && window.parent !== window) {
@@ -5157,6 +5333,91 @@
       window.location.href = url;
     }
 
+    // Cells that support special mark types beyond simple check
+    const matrixCellModes = {};
+    (function buildCellModes() {
+      for (const [code, notesList] of Object.entries(choiceMatrixNotes)) {
+        const modes = new Set();
+        for (const note of notesList) {
+          if (/标记为\s*T|标记为T/.test(note)) modes.add("T");
+          if (/标记为\s*L|标记为L/.test(note)) modes.add("L");
+          if (/圈出/.test(note)) modes.add("circle");
+          if (/划掉/.test(note)) modes.add("cross");
+        }
+        if (modes.has("T") || modes.has("L")) { modes.add("T"); modes.add("L"); }
+        if (modes.size) matrixCellModes[code] = [...modes];
+      }
+    })();
+
+    function matrixDisplayLabel(value) {
+      if (!value) return "";
+      if (value === true) return "";
+      switch (value) {
+        case "T": return "T";
+        case "L": return "L";
+        case "circle": return "";
+        case "circleT": return "T";
+        case "circleL": return "L";
+        case "cross": return "✕";
+        default: return "";
+      }
+    }
+
+    function matrixCellClass(value) {
+      if (!value) return "";
+      if (value === true) return "marked";
+      if (value === "cross") return "marked crossed";
+      if (typeof value === "string" && value.startsWith("circle")) return "marked circled";
+      return "marked";
+    }
+
+    function showMatrixMenu(key, button) {
+      const existing = document.getElementById("matrix-menu");
+      if (existing) existing.remove();
+      const modes = matrixCellModes[key] || [];
+      const currentVal = state.matrix[key];
+
+      const menu = document.createElement("div");
+      menu.id = "matrix-menu";
+      menu.className = "matrix-popup-menu";
+
+      const options = [{ label: "✓ 标记", value: true }];
+      if (modes.includes("T")) options.push({ label: "T 标记为T", value: "T" });
+      if (modes.includes("L")) options.push({ label: "L 标记为L", value: "L" });
+      if (modes.includes("circle")) {
+        options.push({ label: "◯ 圈出", value: "circle" });
+        if (modes.includes("T")) options.push({ label: "◯T 圈出+T", value: "circleT" });
+        if (modes.includes("L")) options.push({ label: "◯L 圈出+L", value: "circleL" });
+      }
+      if (modes.includes("cross")) options.push({ label: "✕ 划掉", value: "cross" });
+      options.push({ label: "⌀ 清除", value: false });
+
+      for (const opt of options) {
+        const item = document.createElement("button");
+        item.type = "button";
+        item.textContent = opt.label;
+        if (currentVal === opt.value || (!currentVal && opt.value === false)) item.className = "active";
+        item.addEventListener("click", () => {
+          menu.remove();
+          if (opt.value === false) { delete state.matrix[key]; }
+          else { state.matrix[key] = opt.value; }
+          renderMatrix();
+          queueSave();
+        });
+        menu.appendChild(item);
+      }
+
+      document.body.appendChild(menu);
+      const rect = button.getBoundingClientRect();
+      menu.style.position = "fixed";
+      menu.style.left = rect.left + "px";
+      menu.style.top = (rect.bottom + 4) + "px";
+      menu.style.zIndex = "9999";
+
+      const dismiss = (e) => { if (!menu.contains(e.target)) { menu.remove(); document.removeEventListener("pointerdown", dismiss); } };
+      setTimeout(() => document.addEventListener("pointerdown", dismiss), 0);
+    }
+
     function renderMatrix() {
       const rows = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").concat(["AA", "BB", "CC", "DD", "EE", "FF"]);
       elements.choiceMatrix.innerHTML = "";
@@ -5166,26 +5427,47 @@
       rows.forEach((row) => {
         for (let col = 1; col <= 12; col += 1) {
           const key = `${row}${col}`;
-          const checked = Boolean(state.matrix[key]);
+          const value = state.matrix[key];
+          const checked = Boolean(value);
           const notes = choiceMatrixNotes[key] || [];
+          const modes = matrixCellModes[key];
           const button = document.createElement("button");
           button.type = "button";
-          button.className = [checked ? "marked" : "", notes.length ? "has-note" : ""].filter(Boolean).join(" ");
+          button.className = [matrixCellClass(value), notes.length ? "has-note" : ""].filter(Boolean).join(" ");
           button.textContent = `${row}${col}`;
+          if (value) button.setAttribute("data-mark", matrixDisplayLabel(value));
           const noteText = notes.length ? notes.join("\n") : "未在 C1-C5 故事书中找到“标记/圈出/划掉此格”的来源。";
-          button.title = `${key}\n${noteText}\n${notes.length ? "单击跳转来源；" : ""}${matrixUnlocked ? "双击修改" : "矩阵已锁定"}`;
+          button.title = `${key}\n${noteText}\n${value ? "单击查看总结；长按跳转来源；" : ""}${matrixUnlocked ? "双击修改" : "矩阵已锁定"}`;
           if (notes.length) button.setAttribute("aria-label", `${key}：${notes.join("；")}`);
-          button.addEventListener("click", () => {
-            if (!notes.length) return;
-            window.clearTimeout(matrixClickTimer);
-            matrixClickTimer = window.setTimeout(() => jumpToMatrixSource(notes), 180);
-          });
+          (function(btn, k, v, n) {
+            let pressTimer = 0;
+            let didLongPress = false;
+            btn.addEventListener("pointerdown", () => {
+              if (!v) return;
+              didLongPress = false;
+              pressTimer = window.setTimeout(() => {
+                didLongPress = true;
+                if (n.length) jumpToMatrixSource(n);
+              }, 500);
+            });
+            btn.addEventListener("pointerup", () => { window.clearTimeout(pressTimer); });
+            btn.addEventListener("pointerleave", () => { window.clearTimeout(pressTimer); });
+            btn.addEventListener("click", () => {
+              window.clearTimeout(matrixClickTimer);
+              if (!v || didLongPress) return;
+              matrixClickTimer = window.setTimeout(() => showMatrixSummary(k, btn, n), 180);
+            });
+          })(button, key, value, notes);
           button.addEventListener("dblclick", () => {
             window.clearTimeout(matrixClickTimer);
             if (!matrixUnlocked) return;
-            state.matrix[key] = !state.matrix[key];
-            renderMatrix();
-            queueSave();
+            if (modes && modes.length) {
+              showMatrixMenu(key, button);
+            } else {
+              state.matrix[key] = state.matrix[key] ? false : true;
+              renderMatrix();
+              queueSave();
+            }
           });
           elements.choiceMatrix.appendChild(button);
         }
