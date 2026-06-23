@@ -168,6 +168,25 @@
       gap: 12px;
     }
 
+    .apostle-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .apostle-level-select {
+      min-height: 36px;
+      padding: 6px 10px;
+      border: 1px solid rgba(199, 173, 114, 0.42);
+      border-radius: 7px;
+      background: #151411;
+      color: var(--gold);
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
     .title-actions button {
       min-height: 36px;
       padding: 7px 12px;
@@ -1132,6 +1151,87 @@
       line-height: 1;
     }
 
+    .critical-mass-slot {
+      position: absolute;
+      left: 50.7%;
+      top: 51.2%;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      display: none;
+      width: clamp(42px, 7.2%, 72px);
+      aspect-ratio: 1 / 1;
+      place-items: center;
+      padding: 0;
+      border: 2px dashed rgba(51, 150, 225, 0.78);
+      border-radius: 999px;
+      background: rgba(18, 80, 126, 0.2);
+      color: #9bd7ff;
+      font-size: clamp(22px, 3vw, 36px);
+      font-weight: 900;
+      line-height: 1;
+      cursor: pointer;
+      box-shadow: 0 0 18px rgba(41, 147, 226, 0.36);
+    }
+
+    .critical-mass-slot.show {
+      display: grid;
+    }
+
+    .panel-token-item.critical-mass-token {
+      width: clamp(44px, 7.6%, 76px);
+      cursor: pointer;
+    }
+
+    .panel-token-item.critical-mass-token.must-resolve {
+      filter:
+        drop-shadow(0 0 8px rgba(255, 42, 42, 1))
+        drop-shadow(0 0 18px rgba(255, 42, 42, 0.9));
+      animation: chimera-critical-mass-pulse 780ms ease-in-out infinite alternate;
+    }
+
+    .panel-token-item.critical-mass-token.must-resolve::after {
+      content: "立即处理";
+      position: absolute;
+      left: 50%;
+      top: calc(100% + 7px);
+      transform: translateX(-50%);
+      min-width: max-content;
+      padding: 5px 9px;
+      border: 2px solid #ff5252;
+      border-radius: 7px;
+      background: rgba(92, 4, 4, 0.96);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 900;
+      line-height: 1;
+      box-shadow: 0 0 18px rgba(255, 42, 42, 0.78);
+      pointer-events: auto;
+      cursor: pointer;
+    }
+
+    @keyframes chimera-critical-mass-pulse {
+      from { transform: translate(-50%, -50%) scale(1); }
+      to { transform: translate(-50%, -50%) scale(1.12); }
+    }
+
+    .panel-token-item.auto-level-danger-per-hit::after {
+      content: "每命中";
+      position: absolute;
+      left: 50%;
+      top: calc(100% + 5px);
+      transform: translateX(-50%);
+      min-width: max-content;
+      padding: 3px 6px;
+      border: 1px solid rgba(199, 173, 114, 0.68);
+      border-radius: 5px;
+      background: rgba(18, 18, 16, 0.94);
+      color: #f4d98f;
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 1;
+      pointer-events: none;
+    }
+
 
     .image-zoom-overlay {
       position: fixed;
@@ -1171,13 +1271,23 @@
       gap: 6px;
     }
 
-    .image-zoom-content.has-side-notices > img {
+    .image-zoom-content.has-side-notices > .image-zoom-card-stage {
       grid-column: 2;
     }
 
-    .image-zoom-content > img {
+    .image-zoom-card-stage {
+      position: relative;
       grid-column: 1;
       grid-row: 1 / -1;
+      width: fit-content;
+      max-width: 100%;
+      max-height: 90vh;
+      display: grid;
+      place-items: center;
+    }
+
+    .image-zoom-card-stage > img {
+      display: block;
       width: auto;
       height: auto;
       max-width: 100%;
@@ -1187,6 +1297,86 @@
       background: #0b0b0a;
       box-shadow: 0 24px 86px rgba(0, 0, 0, 0.72);
       cursor: default;
+    }
+
+    .image-zoom-card-tokens {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: none;
+      pointer-events: none;
+    }
+
+    .image-zoom-card-tokens.show {
+      display: block;
+    }
+
+    .image-zoom-card-token-group {
+      position: absolute;
+      display: flex;
+      gap: 8px;
+    }
+
+    .image-zoom-card-token-group.token-at {
+      right: 3%;
+      top: 50%;
+      transform: translateY(-50%);
+      flex-direction: column;
+    }
+
+    .image-zoom-card-token-group.token-accuracy-evasion {
+      top: 2.5%;
+      right: 3%;
+      flex-wrap: wrap;
+      justify-content: end;
+      max-width: 55%;
+    }
+
+    .image-zoom-card-token-group.token-danger {
+      right: 3%;
+      bottom: 2.5%;
+      flex-wrap: wrap;
+      justify-content: end;
+      max-width: 40%;
+    }
+
+    .image-zoom-card-token {
+      position: relative;
+      width: clamp(58px, 7.5vw, 94px);
+      aspect-ratio: 1 / 1;
+      filter: drop-shadow(0 7px 10px rgba(0, 0, 0, 0.68));
+    }
+
+    .image-zoom-card-token img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 999px;
+      opacity: 0.62;
+    }
+
+    .image-zoom-card-token .panel-token-count {
+      right: -5px;
+      bottom: -5px;
+      opacity: 0.95;
+    }
+
+    .image-zoom-card-token.auto-level-danger-per-hit::after {
+      content: "每命中";
+      position: absolute;
+      left: 50%;
+      top: calc(100% + 5px);
+      transform: translateX(-50%);
+      min-width: max-content;
+      padding: 3px 6px;
+      border: 1px solid rgba(199, 173, 114, 0.68);
+      border-radius: 5px;
+      background: rgba(18, 18, 16, 0.94);
+      color: #f4d98f;
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 1;
+      pointer-events: none;
     }
 
     .image-zoom-notice {
@@ -1298,7 +1488,7 @@
         gap: 12px;
       }
 
-      .image-zoom-content.has-side-notices > img {
+      .image-zoom-content.has-side-notices > .image-zoom-card-stage {
         grid-column: 1 / -1;
       }
 
@@ -1320,11 +1510,28 @@
         grid-column: 2;
       }
 
-      .image-zoom-content > img {
+      .image-zoom-card-stage {
         grid-column: 1;
         grid-row: auto;
         max-width: 96vw;
         max-height: 72vh;
+      }
+
+      .image-zoom-card-stage > img {
+        max-width: 96vw;
+        max-height: 72vh;
+      }
+
+      .image-zoom-card-tokens {
+        inset: 0;
+      }
+
+      .image-zoom-card-token-group {
+        gap: 5px;
+      }
+
+      .image-zoom-card-token {
+        width: clamp(48px, 15vw, 72px);
       }
 
       .image-zoom-actions {
@@ -1397,7 +1604,17 @@
 
     <main>
       <div class="title-row">
-        <h2 id="title"></h2>
+        <div class="apostle-title">
+          <h2 id="title"></h2>
+          <select class="apostle-level-select" id="apostleLevelSelect" aria-label="使徒当前等级">
+            <option value="">跟随记录表</option>
+            <option value="1">等级 I</option>
+            <option value="2">等级 II</option>
+            <option value="3">等级 III</option>
+            <option value="4">等级 IV</option>
+            <option value="5">等级 V</option>
+          </select>
+        </div>
         <div class="title-actions">
           <div class="path" id="folderPath"></div>
           <button type="button" id="traitButton">Trait</button>
@@ -1514,8 +1731,8 @@
       </div>
       <div class="trait-dialog-grid" id="tokenDialogGrid"></div>
       <div class="trait-dialog-actions">
-        <button type="button" id="tokenClearButton">清空</button>
-        <button type="button" id="tokenSaveButton">保存</button>
+        <button type="button" id="tokenClearButton">清空新增</button>
+        <button type="button" id="tokenSaveButton">新增 Token 堆</button>
       </div>
     </form>
   </dialog>
@@ -1524,7 +1741,10 @@
   <div class="image-zoom-overlay" id="imageZoomOverlay" aria-hidden="true">
     <button type="button" class="image-zoom-close" id="imageZoomClose" aria-label="关闭放大图">×</button>
     <div class="image-zoom-content">
-      <img id="imageZoomImg" src="" alt="放大图片">
+      <div class="image-zoom-card-stage">
+        <img id="imageZoomImg" src="" alt="放大图片">
+        <div class="image-zoom-card-tokens" id="imageZoomCardTokens"></div>
+      </div>
       <div class="image-zoom-notice" id="imageZoomNotice"></div>
       <div class="image-zoom-actions" id="imageZoomBpActions" aria-label="BP 处置">
         <button type="button" data-bp-zoom-action="discard">弃置</button>
@@ -1567,7 +1787,6 @@
     const traitLevels = ["O", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
     const traitProbeMaxIndex = 99;
     const traitProbeExtensions = ["jpg", "png", "jpeg"];
-    const defaultTraitLevels = ["I", "X"];
     const defaultTraitProbeMaxIndex = 12;
     const tokenBasePath = "ps/other/token";
     // token 文件夹里的所有图片都从 token_manifest.js 读取。
@@ -1577,7 +1796,68 @@
     const aiExhaustedBonusTokens = ["DA+.png", "HT+.png", "ED+.png", "AT+.png"];
     const tokenProbeMaxIndex = 199;
     const tokenProbeExtensions = ["png", "jpg", "jpeg"];
+    let tokenStackSequence = 0;
+    const apostleLevelOverrideKey = "aibp-apostle-level-overrides-v1";
+    const recordStorageUrl = "../api/campaign-state.php";
+    const apostleRecordTracks = {
+      HEKATON: { cycle: "c1", key: "hekaton" },
+      LABYRINTHAUROS: { cycle: "c1", key: "labyrinthauros" },
+      HERMESIAN_PURSUER: { cycle: "c1", key: "pursuer" },
+      ALPHA_TEMENOS: { cycle: "c1", key: "temenos" },
+      CHIMERA_METASTASIOS: { cycle: "c2", key: "chimera" },
+      CYCLONUS: { cycle: "c2", key: "cyclonus" },
+      THE_BURDEN: [{ cycle: "c2", key: "adversary" }, { cycle: "c3", key: "adversary" }],
+      THE_NIETZSCJEAN: { cycle: "c2", key: "nietzschean" },
+      HYPERTIME_ORACLE: { cycle: "c3", key: "oracle" },
+      ICARIAN_HARPY: { cycle: "c3", key: "harpy" },
+      SUN_DESCENDANT: { cycle: "c3", key: "sunDescendant" }
+    };
+    const levelRoman = { 1: "I", 2: "II", 3: "III", 4: "IV", 5: "V" };
+    const fixedLevelOneApostles = new Set([
+      "HERMESIAN_PURSUER",
+      "THE_BURDEN",
+      "ALPHA_TEMENOS",
+      "THE_NIETZSCJEAN",
+      "SUN_DESCENDANT"
+    ]);
+    const apostleLevelBonusConfig = {
+      HEKATON: {
+        3: { promotions: 1, danger: 1, at: 0 },
+        4: { promotions: 2, danger: 1, at: 1 },
+        5: { promotions: 2, danger: 1, at: 2 }
+      },
+      LABYRINTHAUROS: {
+        3: { promotions: 1, danger: 1, at: 0 },
+        4: { promotions: 2, danger: 1, at: 1 },
+        5: { promotions: 2, danger: 1, at: 2 }
+      },
+      CHIMERA_METASTASIOS: {
+        3: { promotions: 1, danger: 1, at: 0 },
+        4: { promotions: 2, danger: 1, at: 1 },
+        5: { promotions: 2, danger: 1, at: 2 }
+      },
+      CYCLONUS: {
+        3: { promotions: 1, danger: 1, at: 0 },
+        4: { promotions: 2, danger: 1, at: 1 },
+        5: { promotions: 2, danger: 1, at: 2 }
+      },
+      ICARIAN_HARPY: {
+        3: { promotions: 1, danger: 1, at: 0 },
+        4: { promotions: 2, danger: 1, at: 1 },
+        5: { promotions: 2, danger: 1, at: 2 }
+      },
+      HYPERTIME_ORACLE: {
+        3: { promotions: 1, danger: 1, at: 0 },
+        4: { promotions: 2, danger: 1, at: 1 },
+        5: { promotions: 2, danger: 1, at: 2 }
+      }
+    };
+    let apostleLevelOverrides = loadApostleLevelOverrides();
+    let recordApostleLevels = {};
     const chimeraName = "CHIMERA_METASTASIOS";
+    const criticalMassApostles = new Set([chimeraName, "CYCLONUS"]);
+    const criticalMassTokenFile = "CM.jpg";
+    const criticalMassPosition = { x: 50.7, y: 51.2 };
     const labyrinthaurosName = "LABYRINTHAUROS";
     const hermesianName = "HERMESIAN_PURSUER";
     const flareCardCount = 4;
@@ -1621,6 +1901,7 @@
     const sidebarToggle = document.getElementById("sidebarToggle");
     const nav = document.getElementById("nav");
     const title = document.getElementById("title");
+    const apostleLevelSelect = document.getElementById("apostleLevelSelect");
     const folderPath = document.getElementById("folderPath");
     const nietzscheStateButton = document.getElementById("nietzscheStateButton");
     const panelWrap = document.getElementById("panelWrap");
@@ -1674,6 +1955,7 @@
     const bpDrawPreview = document.getElementById("bpDrawPreview");
     const imageZoomOverlay = document.getElementById("imageZoomOverlay");
     const imageZoomImg = document.getElementById("imageZoomImg");
+    const imageZoomCardTokens = document.getElementById("imageZoomCardTokens");
     const imageZoomNotice = document.getElementById("imageZoomNotice");
     const imageZoomClose = document.getElementById("imageZoomClose");
     const imageZoomBpActions = document.getElementById("imageZoomBpActions");
@@ -1873,6 +2155,7 @@
         chimeraPhase: "",
         traits: [],
         tokens: [],
+        levelBonusState: { promotions: 0 },
         aiExhaustedBonusIndex: 0
       };
     }
@@ -1918,6 +2201,9 @@
           piles[name].traits = [];
         }
         piles[name].traits = piles[name].traits.map((card) => {
+          if (name === "HYPERTIME_ORACLE" && card?.type === "TR" && !card.scope && card.level === "O" && card.index === 1) {
+            return { ...card, level: "IV" };
+          }
           if (card?.type === "TR" && !card.scope && card.level === "V" && card.index === 1) {
             return { ...card, level: "COMMON", scope: "common" };
           }
@@ -1944,6 +2230,18 @@
         if (!Array.isArray(piles[name].tokens)) {
           piles[name].tokens = [];
         }
+        piles[name].tokens = piles[name].tokens.map((item) => ({
+          ...item,
+          id: item.id || createTokenStackId(),
+          count: Math.max(1, clampTokenCount(item.count) || 1)
+        }));
+        if (!piles[name].levelBonusState || typeof piles[name].levelBonusState !== "object") {
+          piles[name].levelBonusState = { promotions: 0 };
+        }
+        piles[name].levelBonusState.promotions = Math.max(
+          0,
+          Math.floor(Number(piles[name].levelBonusState.promotions) || 0)
+        );
         if (!Number.isInteger(piles[name].aiExhaustedBonusIndex)) {
           piles[name].aiExhaustedBonusIndex = 0;
         }
@@ -1952,6 +2250,111 @@
 
     function isChimera() {
       return currentApostle === chimeraName;
+    }
+
+    function loadApostleLevelOverrides() {
+      try {
+        const value = JSON.parse(localStorage.getItem(apostleLevelOverrideKey) || "{}");
+        return value && typeof value === "object" ? value : {};
+      } catch {
+        return {};
+      }
+    }
+
+    function saveApostleLevelOverrides() {
+      localStorage.setItem(apostleLevelOverrideKey, JSON.stringify(apostleLevelOverrides));
+    }
+
+    function parseApostleLevel(value) {
+      const text = String(value || "").toUpperCase();
+      const arabic = text.match(/(?:^|[^0-9])([1-5])(?:[^0-9]|$)/);
+      if (arabic) return Number(arabic[1]);
+      const roman = text.match(/(?:^|[^IV])(III|II|IV|V|I)(?:[^IV]|$)/);
+      return roman ? ({ I: 1, II: 2, III: 3, IV: 4, V: 5 }[roman[1]] || 0) : 0;
+    }
+
+    function recordLevelForTrack(recordState, track) {
+      if (Array.isArray(track)) {
+        return track.reduce((max, item) => Math.max(max, recordLevelForTrack(recordState, item)), 0);
+      }
+      if (!recordState?.enemies || !track) return 0;
+      let level = parseApostleLevel(recordState.enemies[track.key]);
+      Object.entries(recordState.enemies).forEach(([key, active]) => {
+        if (!active || !key.startsWith(`${track.cycle}:`)) return;
+        const parts = key.split(":");
+        const isDirect = parts[1] === track.key;
+        const isShared = parts[1] === "shared" && (parts[2] || "").split("+").includes(track.key);
+        if (!isDirect && !isShared) return;
+        level = Math.max(level, parseApostleLevel(parts.at(-1)));
+      });
+      return level;
+    }
+
+    function recordStateFromCampaign(campaign) {
+      const dashboard = campaign?.sections?.dashboard;
+      const activeProfileId = dashboard?.activeProfileId || "default";
+      const recordSection = campaign?.sections?.record;
+      if (!recordSection) return null;
+      return recordSection?.users?.[activeProfileId]
+        || (recordSection?.users ? null : recordSection);
+    }
+
+    async function refreshRecordApostleLevels() {
+      try {
+        const response = await fetch(recordStorageUrl, { cache: "no-store" });
+        if (!response.ok) return;
+        const payload = await response.json();
+        const recordState = recordStateFromCampaign(payload?.campaign);
+        if (!recordState) return;
+        recordApostleLevels = Object.fromEntries(
+          Object.entries(apostleRecordTracks).map(([apostle, track]) => [
+            apostle,
+            recordLevelForTrack(recordState, track)
+          ])
+        );
+        renderApostleTitle();
+        applyCurrentApostleLevelBonuses();
+        renderCriticalMassSlot();
+        renderExtraCards();
+        renderAibpCards();
+        renderPanelTokens();
+      } catch {
+        // 离线或 file:// 打开时继续使用手动等级。
+      }
+    }
+
+    function apostleLevelFor(name) {
+      if (fixedLevelOneApostles.has(name)) return 1;
+      const override = Number(apostleLevelOverrides[name]);
+      if (override >= 1 && override <= 5) return override;
+      const recordLevel = Number(recordApostleLevels[name]);
+      if (recordLevel >= 1 && recordLevel <= 5) return recordLevel;
+      return 1;
+    }
+
+    function currentApostleLevel() {
+      return apostleLevelFor(currentApostle);
+    }
+
+    function renderApostleTitle() {
+      const level = currentApostleLevel();
+      title.textContent = `${currentApostle.replaceAll("_", " ")} · ${levelRoman[level] || level}`;
+      const fixedAtOne = fixedLevelOneApostles.has(currentApostle);
+      apostleLevelSelect.disabled = fixedAtOne;
+      apostleLevelSelect.value = !fixedAtOne && apostleLevelOverrides[currentApostle]
+        ? String(apostleLevelOverrides[currentApostle])
+        : "";
+      const recordLevel = Number(recordApostleLevels[currentApostle]) || 0;
+      apostleLevelSelect.options[0].textContent = fixedAtOne
+        ? "固定等级 I"
+        : recordLevel
+          ? `跟随记录表（${levelRoman[recordLevel] || recordLevel}）`
+          : "跟随记录表（未读取）";
+      document.querySelectorAll("#nav button[data-name]").forEach((button) => {
+        const name = button.dataset.name;
+        const navLevel = apostleLevelFor(name);
+        button.textContent = `${name.replaceAll("_", " ")} · ${levelRoman[navLevel] || navLevel}`;
+      });
     }
 
     function bpViewsForCurrentApostle() {
@@ -1991,7 +2394,98 @@
 
     function pushBpDamage(card) {
       ensurePiles(currentApostle);
-      piles[currentApostle].BP[currentBpDamageKey()].push(card);
+      const damageKey = currentBpDamageKey();
+      if (isChimera() && damageKey === "damage2") {
+        addChimeraSecondDamage(card);
+        return;
+      }
+      piles[currentApostle].BP[damageKey].push(card);
+      if (isCyclonus()) {
+        addCriticalMass(bpDamageValue(card));
+      }
+    }
+
+    function hasCriticalMassFeature() {
+      return criticalMassApostles.has(currentApostle);
+    }
+
+    function criticalMassToken() {
+      if (!hasCriticalMassFeature()) return null;
+      return piles[currentApostle].tokens.find((item) =>
+        item.criticalMass === true || item.chimeraCriticalMass === true
+      ) || null;
+    }
+
+    function criticalMassThreshold() {
+      return isCyclonus() ? 4 : 3;
+    }
+
+    function addCriticalMass(amount = 1) {
+      if (!hasCriticalMassFeature() || currentApostleLevel() < 2) return false;
+      const increment = Math.max(0, Math.floor(Number(amount) || 0));
+      if (increment <= 0) return false;
+
+      const existing = criticalMassToken();
+      if (existing) {
+        existing.criticalMass = true;
+        delete existing.chimeraCriticalMass;
+        existing.count = clampTokenCount((Number(existing.count) || 0) + increment);
+      } else {
+        piles[currentApostle].tokens.push({
+          id: createTokenStackId(),
+          file: criticalMassTokenFile,
+          count: clampTokenCount(increment),
+          x: criticalMassPosition.x,
+          y: criticalMassPosition.y,
+          criticalMass: true
+        });
+      }
+      renderPanelTokens();
+      return true;
+    }
+
+    function addChimeraSecondDamage(card) {
+      ensurePiles(currentApostle);
+      piles[currentApostle].BP.damage2.push(card);
+      addCriticalMass(1);
+    }
+
+    function addCriticalMassFromSlot() {
+      if (!hasCriticalMassFeature() || currentApostleLevel() < 2 || criticalMassToken()) return;
+      rememberUndo(currentApostle, "BP");
+      addCriticalMass(1);
+      savePiles();
+      renderAibpCards();
+    }
+
+    function resolveCriticalMass() {
+      if (!hasCriticalMassFeature()) return;
+      const token = criticalMassToken();
+      if (!token || (Number(token.count) || 0) < criticalMassThreshold()) return;
+      const ai = piles[currentApostle]?.AI;
+      if (!ai || ai.pending || (ai.deck.length === 0 && ai.discard.length === 0)) return;
+
+      rememberUndo(currentApostle, "AIBP");
+      piles[currentApostle].tokens = piles[currentApostle].tokens.filter((item) => item.id !== token.id);
+      savePiles();
+      renderPanelTokens();
+      drawAi(false);
+    }
+
+    function handleCriticalMassTokenClick() {
+      if (!hasCriticalMassFeature()) return;
+      const token = criticalMassToken();
+      if (!token) return;
+      if ((Number(token.count) || 0) >= criticalMassThreshold()) {
+        resolveCriticalMass();
+        return;
+      }
+
+      rememberUndo(currentApostle, "BP");
+      addCriticalMass(1);
+      savePiles();
+      renderAibpCards();
+      renderPanelTokens();
     }
 
     function chimeraPhaseForCard(card) {
@@ -2232,9 +2726,10 @@
 
     function tokenContextFromImage(img) {
       const tokenItem = img?.closest(".panel-token-item");
-      if (!tokenItem?.dataset?.file) return null;
+      if (!tokenItem?.dataset?.tokenId) return null;
       return {
         apostle: currentApostle,
+        tokenId: tokenItem.dataset.tokenId,
         file: tokenItem.dataset.file
       };
     }
@@ -2265,6 +2760,11 @@
       rememberUndo(currentApostle, context.type);
       const [card] = sourceCards.splice(sourceIndex, 1);
       placeCardInTarget(target, card);
+      if (isChimera() && target.location.owner === "BP" && target.location.key === "damage2") {
+        addCriticalMass(1);
+      } else if (isCyclonus() && target.location.owner === "BP" && target.location.key === "damage") {
+        addCriticalMass(bpDamageValue(card));
+      }
       savePiles();
       renderAibpCards();
     }
@@ -2416,13 +2916,8 @@
       if (!file || count <= 0) return;
 
       const tokens = piles[currentApostle].tokens;
-      const existing = tokens.find((item) => item.file === file);
-      if (existing) {
-        existing.count = clampTokenCount((Number(existing.count) || 0) + count);
-        return;
-      }
-
       tokens.push({
+        id: createTokenStackId(),
         file,
         count: clampTokenCount(count),
         x: 8 + (tokens.length % 5) * 8,
@@ -2610,7 +3105,7 @@
       ensurePiles(currentApostle);
       if (!isChimera()) return;
       rememberUndo(currentApostle, "BP");
-      piles[currentApostle].BP.damage2.push({ special: "SW" });
+      addChimeraSecondDamage({ special: "SW" });
       currentBpView = "第二损伤堆";
       savePiles();
       renderAibpCards();
@@ -2725,6 +3220,86 @@
       renderAibpCards();
     }
 
+    function performLinkedPromotion() {
+      ensurePiles(currentApostle);
+      const removed = removeLowestCardToRemoved("BP");
+      const removedCard = removed?.card;
+      if (!removedCard) return false;
+
+      promoteBpDeckForDefeatedLevel(removedCard.level);
+      if (removedCard.level === "I") {
+        promoteAiFromLevel("I", "II");
+      } else if (removedCard.level === "II") {
+        promoteAiFromLevel("II", "III");
+      } else if (removedCard.level === "III") {
+        promoteAiForBpIII();
+      }
+      return true;
+    }
+
+    function levelBonusFor(apostle, level) {
+      const config = apostleLevelBonusConfig[apostle];
+      if (!config) return { promotions: 0, danger: 0, at: 0 };
+      let result = { promotions: 0, danger: 0, at: 0 };
+      Object.entries(config).forEach(([minimumLevel, bonus]) => {
+        if (level >= Number(minimumLevel)) result = { ...result, ...bonus };
+      });
+      return result;
+    }
+
+    function syncAutomaticLevelBonusToken(kind, file, count) {
+      const tokens = piles[currentApostle].tokens;
+      const existing = tokens.find((item) => item.autoLevelBonus === kind);
+      const position = kind === "danger"
+        ? { x: 8, y: 8 }
+        : { x: 16, y: 8 };
+      if (count <= 0) {
+        piles[currentApostle].tokens = tokens.filter((item) => item.autoLevelBonus !== kind);
+        return;
+      }
+      if (existing) {
+        existing.file = file;
+        existing.count = count;
+        existing.x = position.x;
+        existing.y = position.y;
+        return;
+      }
+      tokens.push({
+        id: createTokenStackId(),
+        file,
+        count,
+        x: position.x,
+        y: position.y,
+        autoLevelBonus: kind
+      });
+    }
+
+    function applyCurrentApostleLevelBonuses() {
+      ensurePiles(currentApostle);
+      const target = levelBonusFor(currentApostle, currentApostleLevel());
+      const state = piles[currentApostle].levelBonusState;
+      let changed = false;
+
+      while (state.promotions < target.promotions) {
+        if (!performLinkedPromotion()) break;
+        state.promotions += 1;
+        changed = true;
+      }
+
+      const beforeTokens = JSON.stringify(
+        piles[currentApostle].tokens.filter((item) => item.autoLevelBonus)
+      );
+      syncAutomaticLevelBonusToken("danger", "DA+.png", target.danger);
+      syncAutomaticLevelBonusToken("at", "AT+.png", target.at);
+      const afterTokens = JSON.stringify(
+        piles[currentApostle].tokens.filter((item) => item.autoLevelBonus)
+      );
+      if (beforeTokens !== afterTokens) changed = true;
+
+      if (changed) savePiles();
+      return changed;
+    }
+
     function startNewCampaign() {
       if (!window.confirm("开启新战役会重置当前使徒的 AI/BP 牌堆、弃牌记录和战役标记。确定继续吗？")) return;
       ensurePiles(currentApostle);
@@ -2732,6 +3307,7 @@
       piles[currentApostle] = initialState();
       currentAiView = "弃牌";
       currentBpView = "弃牌";
+      applyCurrentApostleLevelBonuses();
       savePiles();
       updateNietzscheStateUi(panelWrap.querySelector(".panel-state-marker"));
       renderAibpCards();
@@ -2798,6 +3374,7 @@
       renderDrawPreview();
       renderFlareButton();
       updateUndoButtons();
+      renderCriticalMassSlot();
 
       document.querySelectorAll("#aiViewTabs button").forEach((button) => {
         button.classList.toggle("active", button.dataset.view === currentAiView);
@@ -2836,7 +3413,14 @@
     }
 
     function isLargeTraitCard(apostle, card) {
-      return card.level === "O" || (apostle === "ICARIAN_HARPY" && card.level === "X" && card.index === 2);
+      return card.level === "O"
+        || (apostle === "HYPERTIME_ORACLE" && card.level === "IV")
+        || (apostle === "ICARIAN_HARPY" && card.level === "X" && card.index === 2);
+    }
+
+    function automaticTraitLevels() {
+      const levels = ["I", "II", "III", "IV", "V"];
+      return [...levels.slice(0, currentApostleLevel()), "X"];
     }
 
     function selectedTraitKeySet() {
@@ -2969,6 +3553,48 @@
       });
     }
 
+    function reorderExtraGridForLargeCards() {
+      const children = Array.from(extraGrid.children).filter((el) => el.tagName === "IMG" || el.classList.contains("missing"));
+      if (children.length === 0) return;
+      const large = [];
+      const small = [];
+      children.forEach((el) => {
+        if (el.classList.contains("panel-image")) {
+          large.push(el);
+        } else {
+          small.push(el);
+        }
+      });
+      if (large.length === 0) return;
+      // 大卡占一整列（2行），小卡每2张占一列。
+      // 按顺序排列：大卡独占一列位，小卡两两成对填列。
+      const result = [];
+      let li = 0;
+      let si = 0;
+      // 保持原始相对顺序：遍历原始列表，遇到大卡就输出，遇到小卡攒够2张或到末尾再输出
+      const orig = children.slice();
+      const reordered = [];
+      let smallBuf = [];
+      for (const el of orig) {
+        if (el.classList.contains("panel-image")) {
+          // 如果缓冲区有奇数张小卡，先把偶数张输出，留1张到大卡后面
+          if (smallBuf.length % 2 === 1) {
+            const leftover = smallBuf.pop();
+            reordered.push(...smallBuf);
+            smallBuf = [leftover];
+          } else {
+            reordered.push(...smallBuf);
+            smallBuf = [];
+          }
+          reordered.push(el);
+        } else {
+          smallBuf.push(el);
+        }
+      }
+      reordered.push(...smallBuf);
+      extraGrid.replaceChildren(...reordered);
+    }
+
     function renderExtraCards() {
       ensurePiles(currentApostle);
       const base = `ps/${currentApostle}`;
@@ -2987,7 +3613,7 @@
         loaded += 1;
       });
 
-      defaultTraitLevels.forEach((level) => {
+      automaticTraitLevels().forEach((level) => {
         for (let index = 1; index <= defaultTraitProbeMaxIndex; index++) {
           traitProbeExtensions.forEach((ext) => {
             if (selectedTraitKeys.has(traitKey(level, index, ext, ""))) return;
@@ -3019,12 +3645,16 @@
         img.className = className;
         img.onload = () => {
           loaded += 1;
+          reorderExtraGridForLargeCards();
         };
         img.onerror = () => {
           img.remove();
+          reorderExtraGridForLargeCards();
         };
         extraGrid.appendChild(img);
       });
+
+      reorderExtraGridForLargeCards();
 
       window.setTimeout(() => {
         if (loaded === 0 && extraGrid.children.length === 0) {
@@ -3191,11 +3821,18 @@
       return `${tokenBasePath}/${file}`;
     }
 
-    function selectedTokenCountMap() {
+    function createTokenStackId() {
+      tokenStackSequence += 1;
+      return `token-${Date.now().toString(36)}-${tokenStackSequence.toString(36)}`;
+    }
+
+    function selectedTokenStacksMap() {
       ensurePiles(currentApostle);
       const map = new Map();
       piles[currentApostle].tokens.forEach((item) => {
-        map.set(item.file, Number(item.count) || 0);
+        const stacks = map.get(item.file) || [];
+        stacks.push(item);
+        map.set(item.file, stacks);
       });
       return map;
     }
@@ -3213,17 +3850,21 @@
       option.className = "trait-option token-option";
 
       img.alt = file;
-      img.title = "点击图片：数量 +1";
+      img.title = "点击图片：新堆数量 +1";
 
       const caption = document.createElement("span");
-      caption.textContent = file;
+      const existingStacks = selected.get(file) || [];
+      const existingTotal = existingStacks.reduce((sum, item) => sum + (Number(item.count) || 0), 0);
+      caption.textContent = existingStacks.length
+        ? `${file}（已有 ${existingStacks.length} 堆，共 ${existingTotal}）`
+        : file;
 
       const countWrap = document.createElement("div");
       countWrap.className = "token-option-count";
 
       const countLabel = document.createElement("div");
       countLabel.className = "token-option-count-label";
-      countLabel.textContent = "数量（点图片 +1）";
+      countLabel.textContent = "新增一堆的数量（点图片 +1）";
 
       const minusButton = document.createElement("button");
       minusButton.type = "button";
@@ -3236,7 +3877,7 @@
       countInput.min = "0";
       countInput.max = "99";
       countInput.step = "1";
-      countInput.value = String(selected.get(file) || 0);
+      countInput.value = "0";
       countInput.dataset.file = file;
 
       const plusButton = document.createElement("button");
@@ -3277,17 +3918,17 @@
 
     async function renderTokenCandidates() {
       ensurePiles(currentApostle);
-      const selected = selectedTokenCountMap();
+      const selected = selectedTokenStacksMap();
       const token = ++tokenLoadToken;
       let loaded = 0;
 
-      tokenDialogTitle.textContent = `${currentApostle.replaceAll("_", " ")} - Token 选择`;
+      tokenDialogTitle.textContent = `${currentApostle.replaceAll("_", " ")} - 新增 Token 堆`;
       tokenDialogGrid.replaceChildren();
       const loading = document.createElement("div");
       loading.className = "missing";
       loading.textContent = "正在从相对路径 ps/other/token/ 加载所有 Token PNG……";
       tokenDialogGrid.appendChild(loading);
-      tokenFolderHint.textContent = "Token 来源：ps/other/token/token_manifest.js 中列出的所有 .png；图片实际路径为 ps/other/token/文件名。";
+      tokenFolderHint.textContent = "每次保存会新增独立 Token 堆；已有堆请点击面板上的 Token 单独增减或清空。";
 
       const manifestNames = tokenFileNames.map(normalizeTokenFileName).filter(isTokenImageFileName);
       const directoryNames = manifestNames.length > 0 ? [] : await loadTokenFileNamesFromDirectoryIndex();
@@ -3326,22 +3967,14 @@
 
     function saveTokenSelection() {
       ensurePiles(currentApostle);
-      const oldByFile = new Map(piles[currentApostle].tokens.map((item) => [item.file, item]));
-      piles[currentApostle].tokens = Array.from(tokenDialogGrid.querySelectorAll("input[type='number']"))
+      const additions = Array.from(tokenDialogGrid.querySelectorAll("input[type='number']"))
         .map((input) => ({
           file: input.dataset.file,
           count: Math.max(0, Math.min(99, Math.floor(Number(input.value) || 0)))
         }))
-        .filter((item) => item.count > 0)
-        .map((item, index) => {
-          const old = oldByFile.get(item.file) || {};
-          return {
-            file: item.file,
-            count: item.count,
-            x: Number.isFinite(Number(old.x)) ? Number(old.x) : 8 + (index % 5) * 8,
-            y: Number.isFinite(Number(old.y)) ? Number(old.y) : 8 + Math.floor(index / 5) * 8
-          };
-        });
+        .filter((item) => item.count > 0);
+
+      additions.forEach((item) => addPanelToken(item.file, item.count));
       savePiles();
       renderPanelTokens();
       tokenDialog.close();
@@ -3399,7 +4032,7 @@
         return;
       }
 
-      const item = piles[context.apostle]?.tokens?.find((entry) => entry.file === context.file);
+      const item = piles[context.apostle]?.tokens?.find((entry) => entry.id === context.tokenId);
       const count = Number(item?.count) || 0;
       imageZoomTokenTitle.textContent = `${context.file} x${count}`;
       imageZoomTokenActions.querySelector("[data-token-zoom-action='minus']").disabled = count <= 0;
@@ -3411,7 +4044,7 @@
       if (!context) return;
       const tokenList = piles[context.apostle]?.tokens;
       if (!Array.isArray(tokenList)) return;
-      const index = tokenList.findIndex((entry) => entry.file === context.file);
+      const index = tokenList.findIndex((entry) => entry.id === context.tokenId);
       if (index < 0) return;
 
       const item = tokenList[index];
@@ -3454,6 +4087,61 @@
       imageZoomFlipButton.textContent = context.face === "back" ? "正面" : "反面";
     }
 
+    function currentPanelCardTokens(type) {
+      ensurePiles(currentApostle);
+      const allowedFiles = type === "BP"
+        ? new Set(["AT-.png", "AT+.png"])
+        : type === "AI"
+          ? new Set(["DA-.png", "DA+.png", "ps-.png", "ps+.png", "ED-.png", "ED+.png"])
+          : new Set();
+
+      return piles[currentApostle].tokens
+        .filter((item) => allowedFiles.has(item.file) && (Number(item.count) || 0) > 0)
+        .map((item) => ({
+          file: item.file,
+          count: Math.max(1, Math.floor(Number(item.count) || 1)),
+          autoLevelBonus: item.autoLevelBonus || ""
+        }));
+    }
+
+    function setImageZoomCardTokens(tokens = []) {
+      const items = Array.isArray(tokens) ? tokens : [];
+      const groups = [
+        { className: "token-at", matches: (file) => file.startsWith("AT") },
+        { className: "token-accuracy-evasion", matches: (file) => file.startsWith("ps") || file.startsWith("ED") },
+        { className: "token-danger", matches: (file) => file.startsWith("DA") }
+      ];
+
+      imageZoomCardTokens.replaceChildren(...groups.map((group) => {
+        const groupElement = document.createElement("div");
+        groupElement.className = `image-zoom-card-token-group ${group.className}`;
+
+        items.filter((item) => group.matches(item.file)).forEach((item) => {
+          const tokenItem = document.createElement("div");
+          tokenItem.className = "image-zoom-card-token";
+          if (item.autoLevelBonus === "danger" && currentApostleLevel() >= 5) {
+            tokenItem.classList.add("auto-level-danger-per-hit");
+          }
+          tokenItem.title = `${item.file} ×${item.count}`;
+
+          const img = document.createElement("img");
+          img.src = tokenSrc(item.file);
+          img.alt = item.file;
+          tokenItem.appendChild(img);
+
+          if (item.count > 1) {
+            const badge = document.createElement("div");
+            badge.className = "panel-token-count";
+            badge.textContent = `×${item.count}`;
+            tokenItem.appendChild(badge);
+          }
+          groupElement.appendChild(tokenItem);
+        });
+        return groupElement;
+      }).filter((groupElement) => groupElement.childElementCount > 0));
+      imageZoomCardTokens.classList.toggle("show", items.length > 0);
+    }
+
     function openImageZoom(src, alt = "放大图片", onClose = null, options = {}) {
       if (!src) return;
       zoomCloseAction = typeof onClose === "function" ? onClose : null;
@@ -3470,6 +4158,7 @@
       imageZoomNotice.classList.toggle("show", noticeImages.length > 0);
       imageZoomNotice.parentElement.classList.toggle("has-notice", noticeImages.length > 0);
       imageZoomNotice.parentElement.classList.toggle("has-side-notices", sideNotices);
+      setImageZoomCardTokens(options.cardTokens || []);
       setImageZoomBpActions(Boolean(options.bpActions));
       setImageZoomFlipActions(options.flipContext || null);
       setImageZoomMoveActions(options.moveContext || null);
@@ -3489,6 +4178,7 @@
       imageZoomNotice.classList.remove("show");
       imageZoomNotice.parentElement.classList.remove("has-notice");
       imageZoomNotice.parentElement.classList.remove("has-side-notices");
+      setImageZoomCardTokens([]);
       setImageZoomBpActions(false);
       setImageZoomFlipActions(null);
       setImageZoomMoveActions(null);
@@ -3510,10 +4200,16 @@
     function openZoomForImage(img) {
       if (!shouldZoomImage(img)) return;
       const isBpImage = Boolean(img.closest("#bpGrid, #bpDrawPreview"));
+      const drawType = img.closest("#aiDrawPreview")
+        ? "AI"
+        : img.closest("#bpDrawPreview")
+          ? "BP"
+          : "";
       openImageZoom(img.currentSrc || img.src, img.alt, null, {
         flipContext: flipContextFromImage(img),
         moveContext: moveContextFromImage(img),
         tokenContext: tokenContextFromImage(img),
+        cardTokens: drawType ? currentPanelCardTokens(drawType) : [],
         noticeImages: isBpImage ? currentChimeraStatusImages() : []
       });
     }
@@ -3538,10 +4234,27 @@
       piles[currentApostle].tokens.forEach((item) => {
         const tokenItem = document.createElement("div");
         tokenItem.className = "panel-token-item";
+        const isCriticalMass = item.criticalMass === true || item.chimeraCriticalMass === true;
+        const threshold = criticalMassThreshold();
+        if (isCriticalMass) {
+          item.criticalMass = true;
+          delete item.chimeraCriticalMass;
+          item.x = criticalMassPosition.x;
+          item.y = criticalMassPosition.y;
+          tokenItem.classList.add("critical-mass-token");
+          tokenItem.classList.toggle("must-resolve", (Number(item.count) || 0) >= threshold);
+        }
+        tokenItem.classList.toggle(
+          "auto-level-danger-per-hit",
+          item.autoLevelBonus === "danger" && currentApostleLevel() >= 5
+        );
         tokenItem.style.setProperty("--token-left", `${item.x}%`);
         tokenItem.style.setProperty("--token-top", `${item.y}%`);
+        tokenItem.dataset.tokenId = item.id;
         tokenItem.dataset.file = item.file;
-        tokenItem.title = `${item.file} ×${item.count}，拖动可调整位置`;
+        tokenItem.title = isCriticalMass
+          ? `临界质量通用标记 ×${item.count}${(Number(item.count) || 0) >= threshold ? "，立即处理" : ""}`
+          : `${item.file} ×${item.count}，拖动可调整位置`;
 
         const img = document.createElement("img");
         img.src = tokenSrc(item.file);
@@ -3555,9 +4268,29 @@
           tokenItem.appendChild(badge);
         }
 
-        makePanelTokenDraggable(tokenItem);
+        if (!isCriticalMass) {
+          makePanelTokenDraggable(tokenItem);
+        } else {
+          tokenItem.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            handleCriticalMassTokenClick();
+          });
+        }
         layer.appendChild(tokenItem);
       });
+      renderCriticalMassSlot();
+    }
+
+    function renderCriticalMassSlot() {
+      const slot = panelWrap.querySelector(".critical-mass-slot");
+      if (!slot) return;
+      const available = hasCriticalMassFeature() && currentApostleLevel() >= 2;
+      const token = criticalMassToken();
+      slot.classList.toggle("show", available && !token);
+      slot.title = available
+        ? "点击放置 1 个临界质量通用标记"
+        : "使徒达到 II 级后可使用";
     }
 
     function makePanelTokenDraggable(tokenItem) {
@@ -3588,7 +4321,7 @@
           tokenItem.removeEventListener("pointercancel", up);
           const left = parseFloat(tokenItem.style.getPropertyValue("--token-left"));
           const top = parseFloat(tokenItem.style.getPropertyValue("--token-top"));
-          const item = piles[currentApostle].tokens.find((entry) => entry.file === tokenItem.dataset.file);
+          const item = piles[currentApostle].tokens.find((entry) => entry.id === tokenItem.dataset.tokenId);
           if (item) {
             item.x = left;
             item.y = top;
@@ -3620,7 +4353,16 @@
         marker.type = "button";
         marker.className = "panel-state-marker";
         marker.addEventListener("click", cycleNietzscheState);
-        frame.append(img, tokenLayer, marker);
+        if (criticalMassApostles.has(name)) {
+          const criticalMassSlot = document.createElement("button");
+          criticalMassSlot.type = "button";
+          criticalMassSlot.className = "critical-mass-slot";
+          criticalMassSlot.textContent = "+";
+          criticalMassSlot.addEventListener("click", addCriticalMassFromSlot);
+          frame.append(img, tokenLayer, marker, criticalMassSlot);
+        } else {
+          frame.append(img, tokenLayer, marker);
+        }
         panelWrap.replaceChildren(frame);
         updateNietzscheStateUi(marker);
       } else {
@@ -3661,10 +4403,11 @@
     function renderApostle(name) {
       currentApostle = name;
       ensurePiles(name);
+      applyCurrentApostleLevelBonuses();
       updateAiViewTabs();
       updateBpViewTabs();
       const base = `ps/${name}`;
-      title.textContent = name.replaceAll("_", " ");
+      renderApostleTitle();
       folderPath.textContent = base;
       if (window.location.hash !== `#${name}`) {
         history.replaceState(null, "", `#${name}`);
@@ -3683,13 +4426,15 @@
       requestAnimationFrame(updateViewerScale);
     }
 
-    function drawAi() {
+    function drawAi(remember = true) {
       ensurePiles(currentApostle);
       const ai = piles[currentApostle].AI;
       if (ai.pending) return;
       if (ai.deck.length === 0 && ai.discard.length === 0) return;
 
-      rememberUndo(currentApostle, "AI");
+      if (remember) {
+        rememberUndo(currentApostle, "AI");
+      }
       if (ai.deck.length === 0 && ai.discard.length > 0) {
         ai.deck = shuffleCards(ai.discard);
         ai.discard = [];
@@ -3697,7 +4442,9 @@
       }
 
       if (ai.deck.length === 0) {
-        undoStacks[currentApostle].pop();
+        if (remember) {
+          undoStacks[currentApostle].pop();
+        }
         updateUndoButtons();
         return;
       }
@@ -3713,6 +4460,7 @@
         discardAiPending(false);
       }, {
         noticeLayout: "sides",
+        cardTokens: currentPanelCardTokens("AI"),
         noticeImages: drawnApostle === chimeraName
           ? [
               {
@@ -3751,6 +4499,7 @@
       renderAibpCards();
       openImageZoom(cardSrc(bp.pending), "抽取的 BP", null, {
         bpActions: true,
+        cardTokens: currentPanelCardTokens("BP"),
         noticeImages: currentChimeraStatusImages()
       });
     }
@@ -3793,7 +4542,7 @@
       } else if (mode === "vp-defeat") {
         setChimeraPhaseFromCard(card);
         resolveBpDefeat(card);
-        bp.damage2.push({ special: "SW" });
+        addChimeraSecondDamage({ special: "SW" });
       } else if (mode === "critical") {
         setChimeraPhaseFromCard(card);
         resolveBpCritical(card);
@@ -3943,6 +4692,22 @@
         renderAibpCards();
       }
     });
+    apostleLevelSelect.addEventListener("change", () => {
+      if (fixedLevelOneApostles.has(currentApostle)) return;
+      const level = Number(apostleLevelSelect.value);
+      if (level >= 1 && level <= 5) {
+        apostleLevelOverrides[currentApostle] = level;
+      } else {
+        delete apostleLevelOverrides[currentApostle];
+      }
+      saveApostleLevelOverrides();
+      renderApostleTitle();
+      applyCurrentApostleLevelBonuses();
+      renderCriticalMassSlot();
+      renderExtraCards();
+      renderAibpCards();
+      renderPanelTokens();
+    });
     sidebarToggle.addEventListener("click", () => {
       const collapsed = document.body.classList.toggle("sidebar-collapsed");
       sidebarToggle.textContent = collapsed ? "☰" : "×";
@@ -3984,8 +4749,13 @@
     promoteBpSingleButton.addEventListener("click", () => promoteSinglePile("BP"));
     promoteBpButton.addEventListener("click", promoteBpByRemovingLowest);
     window.addEventListener("resize", updateViewerScale);
+    window.addEventListener("focus", refreshRecordApostleLevels);
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) refreshRecordApostleLevels();
+    });
     loadSavedPiles();
     renderApostle(currentApostle);
+    refreshRecordApostleLevels();
   </script>
   <script src="ps/other/resouce/bp_resource_map.js"></script>
   <script src="ps/other/resouce/bp_resource_map_c1_c3.js"></script>
