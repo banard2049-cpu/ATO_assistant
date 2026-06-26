@@ -1,7 +1,7 @@
 window.ATO_MAP_TILE_TAGS = {
     "version": 1,
     "source": "map/map-data.js",
-    "updatedAt": "2026-06-07T10:10:48+00:00",
+    "updatedAt": "2026-06-26T14:50:33Z",
     "tagDefinitions": [
         {
             "id": "progress",
@@ -27,6 +27,11 @@ window.ATO_MAP_TILE_TAGS = {
             "id": "city",
             "label": "城市",
             "shortcut": "5"
+        },
+        {
+            "id": "adventure",
+            "label": "有冒险图标",
+            "shortcut": "6"
         }
     ],
     "tiles": {
@@ -38,7 +43,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:00:08.681Z"
+            "updatedAt": "2026-05-28T19:00:08.681Z",
+            "factions": [
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:39.973Z"
         },
         "c2:002": {
             "cycleId": "c2",
@@ -48,7 +57,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:00:12.441Z"
+            "updatedAt": "2026-05-28T19:00:12.441Z",
+            "factions": [
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:40.779Z"
         },
         "c2:003": {
             "cycleId": "c2",
@@ -58,7 +71,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "progress"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:00:16.840Z"
+            "updatedAt": "2026-05-28T19:00:16.840Z",
+            "factions": [
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:41.210Z"
         },
         "c2:004": {
             "cycleId": "c2",
@@ -69,7 +86,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "calamity"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:00:22.204Z"
+            "updatedAt": "2026-05-28T19:00:22.204Z",
+            "factions": [
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:41.593Z"
         },
         "c2:005": {
             "cycleId": "c2",
@@ -79,7 +100,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:00:28.110Z"
+            "updatedAt": "2026-05-28T19:00:28.110Z",
+            "factions": [
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:42.046Z"
         },
         "c2:006": {
             "cycleId": "c2",
@@ -89,7 +114,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:03:07.747Z"
+            "updatedAt": "2026-05-28T19:03:07.747Z",
+            "factions": [
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:42.461Z"
         },
         "c2:007": {
             "cycleId": "c2",
@@ -100,7 +129,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:03:12.247Z"
+            "updatedAt": "2026-05-28T19:03:12.247Z",
+            "factions": [
+                "symmachy"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:44.363Z"
         },
         "c2:008": {
             "cycleId": "c2",
@@ -111,7 +144,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:03:15.219Z"
+            "updatedAt": "2026-05-28T19:03:15.219Z",
+            "factions": [
+                "symmachy"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:44.835Z"
         },
         "c2:009": {
             "cycleId": "c2",
@@ -121,7 +158,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:03:20.182Z"
+            "updatedAt": "2026-05-28T19:03:20.182Z",
+            "factions": [
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:46.335Z"
         },
         "c2:010": {
             "cycleId": "c2",
@@ -132,7 +173,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "calamity"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:03:25.174Z"
+            "updatedAt": "2026-05-28T19:03:25.174Z",
+            "factions": [
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:46.787Z"
         },
         "c2:012": {
             "cycleId": "c2",
@@ -143,7 +188,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:03:36.448Z"
+            "updatedAt": "2026-05-28T19:03:36.448Z",
+            "factions": [
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:47.644Z"
         },
         "c2:014": {
             "cycleId": "c2",
@@ -153,7 +202,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:03:42.716Z"
+            "updatedAt": "2026-05-28T19:03:42.716Z",
+            "factions": [
+                "symmachy"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:53.240Z"
         },
         "c2:015": {
             "cycleId": "c2",
@@ -164,7 +217,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "calamity"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:03:44.100Z"
+            "updatedAt": "2026-05-28T19:03:44.100Z",
+            "factions": [
+                "symmachy"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:53.810Z"
         },
         "c2:016": {
             "cycleId": "c2",
@@ -174,7 +231,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "progress"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:03:45.770Z"
+            "updatedAt": "2026-05-28T19:03:45.770Z",
+            "factions": [
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:54.653Z"
         },
         "c2:017": {
             "cycleId": "c2",
@@ -185,17 +246,26 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:03:48.231Z"
+            "updatedAt": "2026-05-28T19:03:48.231Z",
+            "factions": [
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:55.176Z"
         },
         "c2:018": {
             "cycleId": "c2",
             "tileId": "018",
             "reviewed": true,
             "tags": [
-                "calamity"
+                "calamity",
+                "adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:03:50.333Z"
+            "updatedAt": "2026-06-26T05:30:51.810Z",
+            "factions": [
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:55.724Z"
         },
         "c2:019": {
             "cycleId": "c2",
@@ -205,7 +275,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:03:53.757Z"
+            "updatedAt": "2026-05-28T19:03:53.757Z",
+            "factions": [
+                "helots"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:41:55.116Z"
         },
         "c2:020": {
             "cycleId": "c2",
@@ -216,7 +290,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:03:58.130Z"
+            "updatedAt": "2026-05-28T19:03:58.130Z",
+            "factions": [
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:41:55.449Z"
         },
         "c2:021": {
             "cycleId": "c2",
@@ -226,7 +304,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:04:01.446Z"
+            "updatedAt": "2026-05-28T19:04:01.446Z",
+            "factions": [
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:41:56.122Z"
         },
         "c2:022": {
             "cycleId": "c2",
@@ -236,7 +318,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:04:09.950Z"
+            "updatedAt": "2026-05-28T19:04:09.950Z",
+            "factions": [
+                "helots"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:41:56.569Z"
         },
         "c2:023": {
             "cycleId": "c2",
@@ -246,7 +332,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:04:15.269Z"
+            "updatedAt": "2026-05-28T19:04:15.269Z",
+            "factions": [
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:24.135Z"
         },
         "c2:024": {
             "cycleId": "c2",
@@ -256,7 +346,12 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:04:17.708Z"
+            "updatedAt": "2026-05-28T19:04:17.708Z",
+            "factions": [
+                "helots",
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:42:29.110Z"
         },
         "c2:026": {
             "cycleId": "c2",
@@ -267,7 +362,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "calamity"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:04:20.800Z"
+            "updatedAt": "2026-05-28T19:04:20.800Z",
+            "factions": [
+                "helots"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:32.854Z"
         },
         "c2:027": {
             "cycleId": "c2",
@@ -277,7 +376,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:04:23.587Z"
+            "updatedAt": "2026-05-28T19:04:23.587Z",
+            "factions": [
+                "helots"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:33.476Z"
         },
         "c2:029": {
             "cycleId": "c2",
@@ -287,7 +390,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "progress"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:04:27.857Z"
+            "updatedAt": "2026-05-28T19:04:27.857Z",
+            "factions": [
+                "symmachy"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:35.164Z"
         },
         "c2:031": {
             "cycleId": "c2",
@@ -298,7 +405,12 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:04:34.366Z"
+            "updatedAt": "2026-05-28T19:04:34.366Z",
+            "factions": [
+                "helots",
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:42:39.747Z"
         },
         "c2:032": {
             "cycleId": "c2",
@@ -308,7 +420,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "progress"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:04:37.329Z"
+            "updatedAt": "2026-05-28T19:04:37.329Z",
+            "factions": [
+                "helots"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:39.220Z"
         },
         "c2:033": {
             "cycleId": "c2",
@@ -319,7 +435,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:04:43.530Z"
+            "updatedAt": "2026-05-28T19:04:43.530Z",
+            "factions": [
+                "helots"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:39.977Z"
         },
         "c2:034": {
             "cycleId": "c2",
@@ -329,7 +449,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:04:47.769Z"
+            "updatedAt": "2026-05-28T19:04:47.769Z",
+            "factions": [
+                "helots"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:40.431Z"
         },
         "c2:035": {
             "cycleId": "c2",
@@ -339,7 +463,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:04:49.818Z"
+            "updatedAt": "2026-05-28T19:04:49.818Z",
+            "factions": [
+                "symmachy"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:42.606Z"
         },
         "c2:036": {
             "cycleId": "c2",
@@ -349,7 +477,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:04:51.685Z"
+            "updatedAt": "2026-05-28T19:04:51.685Z",
+            "factions": [
+                "symmachy"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:43.279Z"
         },
         "c2:037": {
             "cycleId": "c2",
@@ -361,7 +493,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:04:55.464Z"
+            "updatedAt": "2026-05-28T19:04:55.464Z",
+            "factions": [
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:43.909Z"
         },
         "c2:038": {
             "cycleId": "c2",
@@ -371,7 +507,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:04:58.095Z"
+            "updatedAt": "2026-05-28T19:04:58.095Z",
+            "factions": [
+                "helots"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:44.664Z"
         },
         "c2:039": {
             "cycleId": "c2",
@@ -381,17 +521,27 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:05:00.280Z"
+            "updatedAt": "2026-05-28T19:05:00.280Z",
+            "factions": [
+                "helots"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:45.167Z"
         },
         "c2:040": {
             "cycleId": "c2",
             "tileId": "040",
             "reviewed": true,
             "tags": [
-                "progress"
+                "progress",
+                "adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:05:02.081Z"
+            "updatedAt": "2026-06-26T05:32:09.252Z",
+            "factions": [
+                "helots",
+                "symmachy"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:42:43.454Z"
         },
         "c2:041": {
             "cycleId": "c2",
@@ -401,7 +551,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "progress"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:05:04.934Z"
+            "updatedAt": "2026-05-28T19:05:04.934Z",
+            "factions": [
+                "symmachy"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:48.367Z"
         },
         "c2:042": {
             "cycleId": "c2",
@@ -411,7 +565,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:05:06.916Z"
+            "updatedAt": "2026-05-28T19:05:06.916Z",
+            "factions": [
+                "symmachy"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:48.933Z"
         },
         "c2:043": {
             "cycleId": "c2",
@@ -422,7 +580,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:05:08.586Z"
+            "updatedAt": "2026-05-28T19:05:08.586Z",
+            "factions": [
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:49.716Z"
         },
         "c2:044": {
             "cycleId": "c2",
@@ -432,7 +594,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:05:11.320Z"
+            "updatedAt": "2026-05-28T19:05:11.320Z",
+            "factions": [
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:50.209Z"
         },
         "c2:045": {
             "cycleId": "c2",
@@ -443,7 +609,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "calamity"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:05:13.889Z"
+            "updatedAt": "2026-05-28T19:05:13.889Z",
+            "factions": [
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:50.659Z"
         },
         "c2:046": {
             "cycleId": "c2",
@@ -453,7 +623,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:05:18.597Z"
+            "updatedAt": "2026-05-28T19:05:18.597Z",
+            "factions": [
+                "helots"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:51.428Z"
         },
         "c2:047": {
             "cycleId": "c2",
@@ -463,7 +637,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "progress"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:07:19.281Z"
+            "updatedAt": "2026-05-28T19:07:19.281Z",
+            "factions": [
+                "helots"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:52.006Z"
         },
         "c2:048": {
             "cycleId": "c2",
@@ -473,7 +651,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:07:22.650Z"
+            "updatedAt": "2026-05-28T19:07:22.650Z",
+            "factions": [
+                "helots"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:52.460Z"
         },
         "c2:051": {
             "cycleId": "c2",
@@ -484,7 +666,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:07:28.526Z"
+            "updatedAt": "2026-05-28T19:07:28.526Z",
+            "factions": [
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:54.521Z"
         },
         "c2:052": {
             "cycleId": "c2",
@@ -494,17 +680,26 @@ window.ATO_MAP_TILE_TAGS = {
                 "calamity"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:07:30.294Z"
+            "updatedAt": "2026-05-28T19:07:30.294Z",
+            "factions": [
+                "helots"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:55.297Z"
         },
         "c2:053": {
             "cycleId": "c2",
             "tileId": "053",
             "reviewed": true,
             "tags": [
-                "progress"
+                "progress",
+                "adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:07:36.902Z"
+            "updatedAt": "2026-06-26T05:31:55.177Z",
+            "factions": [
+                "helots"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:55.724Z"
         },
         "c2:054": {
             "cycleId": "c2",
@@ -515,7 +710,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:07:42.847Z"
+            "updatedAt": "2026-05-28T19:07:42.847Z",
+            "factions": [
+                "helots"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:56.116Z"
         },
         "c2:055": {
             "cycleId": "c2",
@@ -525,7 +724,12 @@ window.ATO_MAP_TILE_TAGS = {
                 "calamity"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:07:45.156Z"
+            "updatedAt": "2026-05-28T19:07:45.156Z",
+            "factions": [
+                "helots",
+                "symmachy"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:42:48.523Z"
         },
         "c2:056": {
             "cycleId": "c2",
@@ -535,7 +739,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:07:47.888Z"
+            "updatedAt": "2026-05-28T19:07:47.888Z",
+            "factions": [
+                "symmachy"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:58.165Z"
         },
         "c2:057": {
             "cycleId": "c2",
@@ -546,27 +754,41 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:07:51.075Z"
+            "updatedAt": "2026-05-28T19:07:51.075Z",
+            "factions": [
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:59.052Z"
         },
         "c2:058": {
             "cycleId": "c2",
             "tileId": "058",
             "reviewed": true,
             "tags": [
-                "progress"
+                "progress",
+                "adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:07:53.623Z"
+            "updatedAt": "2026-06-26T05:31:49.477Z",
+            "factions": [
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:59.526Z"
         },
         "c2:059": {
             "cycleId": "c2",
             "tileId": "059",
             "reviewed": true,
             "tags": [
-                "progress"
+                "progress",
+                "adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:07:56.547Z"
+            "updatedAt": "2026-06-26T05:31:46.951Z",
+            "factions": [
+                "helots"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:00.214Z"
         },
         "c2:060": {
             "cycleId": "c2",
@@ -576,7 +798,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:08:01.389Z"
+            "updatedAt": "2026-05-28T19:08:01.389Z",
+            "factions": [
+                "helots"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:00.742Z"
         },
         "c2:063": {
             "cycleId": "c2",
@@ -586,7 +812,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:08:11.211Z"
+            "updatedAt": "2026-05-28T19:08:11.211Z",
+            "factions": [
+                "symmachy"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:02.533Z"
         },
         "c2:065": {
             "cycleId": "c2",
@@ -597,7 +827,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:08:14.500Z"
+            "updatedAt": "2026-05-28T19:08:14.500Z",
+            "factions": [
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:03.708Z"
         },
         "c2:066": {
             "cycleId": "c2",
@@ -608,7 +842,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:08:16.921Z"
+            "updatedAt": "2026-05-28T19:08:16.921Z",
+            "factions": [
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:04.159Z"
         },
         "c2:067": {
             "cycleId": "c2",
@@ -619,17 +857,27 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:08:20.065Z"
+            "updatedAt": "2026-05-28T19:08:20.065Z",
+            "factions": [
+                "helots",
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:42:52.018Z"
         },
         "c2:068": {
             "cycleId": "c2",
             "tileId": "068",
             "reviewed": true,
             "tags": [
-                "calamity"
+                "calamity",
+                "adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:08:31.822Z"
+            "updatedAt": "2026-06-26T05:31:34.501Z",
+            "factions": [
+                "helots"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:06.145Z"
         },
         "c2:069": {
             "cycleId": "c2",
@@ -639,7 +887,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:08:34.627Z"
+            "updatedAt": "2026-05-28T19:08:34.627Z",
+            "factions": [
+                "symmachy"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:07.804Z"
         },
         "c2:070": {
             "cycleId": "c2",
@@ -649,7 +901,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "progress"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:08:36.033Z"
+            "updatedAt": "2026-05-28T19:08:36.033Z",
+            "factions": [
+                "symmachy"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:08.274Z"
         },
         "c2:071": {
             "cycleId": "c2",
@@ -659,7 +915,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:08:38.427Z"
+            "updatedAt": "2026-05-28T19:08:38.427Z",
+            "factions": [
+                "symmachy"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:08.786Z"
         },
         "c2:073": {
             "cycleId": "c2",
@@ -669,17 +929,26 @@ window.ATO_MAP_TILE_TAGS = {
                 "calamity"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:08:41.522Z"
+            "updatedAt": "2026-05-28T19:08:41.522Z",
+            "factions": [
+                "helots"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:10.251Z"
         },
         "c2:074": {
             "cycleId": "c2",
             "tileId": "074",
             "reviewed": true,
             "tags": [
-                "progress"
+                "progress",
+                "adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:08:43.396Z"
+            "updatedAt": "2026-06-26T05:31:27.464Z",
+            "factions": [
+                "helots"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:10.696Z"
         },
         "c2:075": {
             "cycleId": "c2",
@@ -689,7 +958,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:08:46.606Z"
+            "updatedAt": "2026-05-28T19:08:46.606Z",
+            "factions": [
+                "symmachy"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:11.465Z"
         },
         "c2:077": {
             "cycleId": "c2",
@@ -699,7 +972,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "calamity"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:08:51.707Z"
+            "updatedAt": "2026-05-28T19:08:51.707Z",
+            "factions": [
+                "symmachy"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:12.410Z"
         },
         "c2:079": {
             "cycleId": "c2",
@@ -709,7 +986,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:08:55.029Z"
+            "updatedAt": "2026-05-28T19:08:55.029Z",
+            "factions": [
+                "symmachy"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:13.282Z"
         },
         "c2:080": {
             "cycleId": "c2",
@@ -719,7 +1000,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "progress"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:08:56.319Z"
+            "updatedAt": "2026-05-28T19:08:56.319Z",
+            "factions": [
+                "symmachy"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:13.734Z"
         },
         "c2:081": {
             "cycleId": "c2",
@@ -729,7 +1014,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:08:59.529Z"
+            "updatedAt": "2026-05-28T19:08:59.529Z",
+            "factions": [
+                "helots"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:14.413Z"
         },
         "c2:082": {
             "cycleId": "c2",
@@ -740,7 +1029,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "calamity"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:09:01.390Z"
+            "updatedAt": "2026-05-28T19:09:01.390Z",
+            "factions": [
+                "symmachy"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:15.903Z"
         },
         "c2:083": {
             "cycleId": "c2",
@@ -750,7 +1043,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:09:04.721Z"
+            "updatedAt": "2026-05-28T19:09:04.721Z",
+            "factions": [
+                "symmachy"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:16.445Z"
         },
         "c2:084": {
             "cycleId": "c2",
@@ -760,7 +1057,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:09:09.147Z"
+            "updatedAt": "2026-05-28T19:09:09.147Z",
+            "factions": [
+                "symmachy"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:16.914Z"
         },
         "c1:001": {
             "cycleId": "c1",
@@ -770,15 +1071,25 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T10:10:48.103Z"
+            "updatedAt": "2026-06-07T10:10:48.103Z",
+            "factions": [
+                "hornsworn"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:03.267Z"
         },
         "c1:002": {
             "cycleId": "c1",
             "tileId": "002",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:18:11.290Z"
+            "updatedAt": "2026-06-26T05:27:27.326Z",
+            "factions": [
+                "hornsworn"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:04.760Z"
         },
         "c1:003": {
             "cycleId": "c1",
@@ -789,7 +1100,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:18:32.633Z"
+            "updatedAt": "2026-06-26T05:27:45.538Z",
+            "factions": [
+                "hornsworn"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:05.077Z"
         },
         "c1:004": {
             "cycleId": "c1",
@@ -799,7 +1114,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:18:39.172Z"
+            "updatedAt": "2026-06-07T09:18:39.172Z",
+            "factions": [
+                "hornsworn"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:05.301Z"
         },
         "c1:005": {
             "cycleId": "c1",
@@ -809,7 +1128,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:19:13.100Z"
+            "updatedAt": "2026-06-07T09:19:13.100Z",
+            "factions": [
+                "hornsworn"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:05.532Z"
         },
         "c1:041": {
             "cycleId": "c1",
@@ -820,7 +1143,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:19:17.760Z"
+            "updatedAt": "2026-06-07T09:19:17.760Z",
+            "factions": [
+                "hornsworn"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:05.756Z"
         },
         "c1:043": {
             "cycleId": "c1",
@@ -830,7 +1157,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:19:24.170Z"
+            "updatedAt": "2026-06-07T09:19:24.170Z",
+            "factions": [
+                "hornsworn"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:06.239Z"
         },
         "c1:044": {
             "cycleId": "c1",
@@ -840,7 +1171,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:19:28.017Z"
+            "updatedAt": "2026-06-07T09:19:28.017Z",
+            "factions": [
+                "hornsworn"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:06.445Z"
         },
         "c1:006": {
             "cycleId": "c1",
@@ -850,7 +1185,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "progress"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:19:43.214Z"
+            "updatedAt": "2026-06-07T09:19:43.214Z",
+            "factions": [
+                "hornsworn"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:06.838Z"
         },
         "c1:007": {
             "cycleId": "c1",
@@ -861,7 +1200,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:19:46.011Z"
+            "updatedAt": "2026-06-07T09:19:46.011Z",
+            "factions": [
+                "hornsworn"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:07.037Z"
         },
         "c1:008": {
             "cycleId": "c1",
@@ -871,7 +1214,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:19:48.159Z"
+            "updatedAt": "2026-06-07T09:19:48.159Z",
+            "factions": [
+                "minoians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:14.516Z"
         },
         "c1:T05": {
             "cycleId": "c1",
@@ -881,7 +1228,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:19:51.061Z"
+            "updatedAt": "2026-06-07T09:19:51.061Z",
+            "factions": [
+                "minoians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:16.267Z"
         },
         "c1:009": {
             "cycleId": "c1",
@@ -891,7 +1242,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "progress"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:19:52.686Z"
+            "updatedAt": "2026-06-07T09:19:52.686Z",
+            "factions": [
+                "labyrinthians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:21.638Z"
         },
         "c1:010": {
             "cycleId": "c1",
@@ -901,7 +1256,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:19:56.175Z"
+            "updatedAt": "2026-06-07T09:19:56.175Z",
+            "factions": [
+                "labyrinthians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:22.552Z"
         },
         "c1:046": {
             "cycleId": "c1",
@@ -911,7 +1270,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "progress"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:20:03.038Z"
+            "updatedAt": "2026-06-07T09:20:03.038Z",
+            "factions": [
+                "hornsworn"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:23.783Z"
         },
         "c1:047": {
             "cycleId": "c1",
@@ -921,7 +1284,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:20:05.163Z"
+            "updatedAt": "2026-06-07T09:20:05.163Z",
+            "factions": [
+                "hornsworn"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:24.441Z"
         },
         "c1:048": {
             "cycleId": "c1",
@@ -931,7 +1298,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:20:08.689Z"
+            "updatedAt": "2026-06-07T09:20:08.689Z",
+            "factions": [
+                "minoians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:25.233Z"
         },
         "c1:080": {
             "cycleId": "c1",
@@ -942,31 +1313,53 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:26:03.648Z"
+            "updatedAt": "2026-06-07T09:26:03.648Z",
+            "factions": [
+                "hornsworn"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:25.833Z"
         },
         "c1:078": {
             "cycleId": "c1",
             "tileId": "078",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:25:56.842Z"
+            "updatedAt": "2026-06-26T05:29:49.271Z",
+            "factions": [
+                "hornsworn"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:25.019Z"
         },
         "c1:042": {
             "cycleId": "c1",
             "tileId": "042",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:20:47.995Z"
+            "updatedAt": "2026-06-26T05:27:38.011Z",
+            "factions": [
+                "hornsworn"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:05.995Z"
         },
         "c1:045": {
             "cycleId": "c1",
             "tileId": "045",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:20:51.833Z"
+            "updatedAt": "2026-06-26T05:27:40.638Z",
+            "factions": [
+                "hornsworn"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:06.642Z"
         },
         "c1:049": {
             "cycleId": "c1",
@@ -976,7 +1369,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:20:56.475Z"
+            "updatedAt": "2026-06-07T09:20:56.475Z",
+            "factions": [
+                "minoians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:25.777Z"
         },
         "c1:050": {
             "cycleId": "c1",
@@ -986,7 +1383,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:21:00.815Z"
+            "updatedAt": "2026-06-07T09:21:00.815Z",
+            "factions": [
+                "hornsworn"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:26.729Z"
         },
         "c1:011": {
             "cycleId": "c1",
@@ -996,7 +1397,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:21:04.323Z"
+            "updatedAt": "2026-06-07T09:21:04.323Z",
+            "factions": [
+                "hornsworn"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:27.228Z"
         },
         "c1:012": {
             "cycleId": "c1",
@@ -1006,7 +1411,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:21:06.062Z"
+            "updatedAt": "2026-06-07T09:21:06.062Z",
+            "factions": [
+                "minoians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:28.217Z"
         },
         "c1:013": {
             "cycleId": "c1",
@@ -1017,7 +1426,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "calamity"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:21:08.622Z"
+            "updatedAt": "2026-06-07T09:21:08.622Z",
+            "factions": [
+                "minoians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:28.661Z"
         },
         "c1:015": {
             "cycleId": "c1",
@@ -1028,7 +1441,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:21:12.948Z"
+            "updatedAt": "2026-06-07T09:21:12.948Z",
+            "factions": [
+                "labyrinthians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:31.215Z"
         },
         "c1:051": {
             "cycleId": "c1",
@@ -1038,7 +1455,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:21:15.905Z"
+            "updatedAt": "2026-06-07T09:21:15.905Z",
+            "factions": [
+                "labyrinthians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:31.855Z"
         },
         "c1:052": {
             "cycleId": "c1",
@@ -1048,7 +1469,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "calamity"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:21:19.508Z"
+            "updatedAt": "2026-06-07T09:21:19.508Z",
+            "factions": [
+                "minoians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:32.610Z"
         },
         "c1:053": {
             "cycleId": "c1",
@@ -1058,7 +1483,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "progress"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:21:22.833Z"
+            "updatedAt": "2026-06-07T09:21:22.833Z",
+            "factions": [
+                "labyrinthians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:33.225Z"
         },
         "c1:054": {
             "cycleId": "c1",
@@ -1068,7 +1497,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:21:31.363Z"
+            "updatedAt": "2026-06-07T09:21:31.363Z",
+            "factions": [
+                "minoians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:33.835Z"
         },
         "c1:014": {
             "cycleId": "c1",
@@ -1076,7 +1509,11 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [],
             "notes": "",
-            "updatedAt": "2026-06-07T09:21:36.147Z"
+            "updatedAt": "2026-06-07T09:21:36.147Z",
+            "factions": [
+                "minoians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:29.087Z"
         },
         "c1:055": {
             "cycleId": "c1",
@@ -1086,15 +1523,25 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:21:40.983Z"
+            "updatedAt": "2026-06-07T09:21:40.983Z",
+            "factions": [
+                "hornsworn"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:34.644Z"
         },
         "c1:016": {
             "cycleId": "c1",
             "tileId": "016",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:21:45.866Z"
+            "updatedAt": "2026-06-26T05:29:13.515Z",
+            "factions": [
+                "minoians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:35.371Z"
         },
         "c1:017": {
             "cycleId": "c1",
@@ -1105,7 +1552,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:21:51.406Z"
+            "updatedAt": "2026-06-07T09:21:51.406Z",
+            "factions": [
+                "minoians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:36.051Z"
         },
         "c1:018": {
             "cycleId": "c1",
@@ -1115,7 +1566,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:21:54.600Z"
+            "updatedAt": "2026-06-07T09:21:54.600Z",
+            "factions": [
+                "minoians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:36.565Z"
         },
         "c1:020": {
             "cycleId": "c1",
@@ -1125,15 +1580,25 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:22:01.872Z"
+            "updatedAt": "2026-06-07T09:22:01.872Z",
+            "factions": [
+                "labyrinthians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:38.758Z"
         },
         "c1:019": {
             "cycleId": "c1",
             "tileId": "019",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:22:05.931Z"
+            "updatedAt": "2026-06-26T05:29:20.541Z",
+            "factions": [
+                "labyrinthians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:37.532Z"
         },
         "c1:056": {
             "cycleId": "c1",
@@ -1143,7 +1608,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "progress"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:22:16.339Z"
+            "updatedAt": "2026-06-07T09:22:16.339Z",
+            "factions": [
+                "labyrinthians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:39.320Z"
         },
         "c1:057": {
             "cycleId": "c1",
@@ -1155,7 +1624,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:22:19.791Z"
+            "updatedAt": "2026-06-07T09:22:19.791Z",
+            "factions": [
+                "labyrinthians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:39.882Z"
         },
         "c1:058": {
             "cycleId": "c1",
@@ -1165,7 +1638,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:22:21.452Z"
+            "updatedAt": "2026-06-07T09:22:21.452Z",
+            "factions": [
+                "labyrinthians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:40.350Z"
         },
         "c1:059": {
             "cycleId": "c1",
@@ -1175,7 +1652,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "calamity"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:22:23.344Z"
+            "updatedAt": "2026-06-07T09:22:23.344Z",
+            "factions": [
+                "labyrinthians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:41.032Z"
         },
         "c1:060": {
             "cycleId": "c1",
@@ -1186,7 +1667,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:22:26.486Z"
+            "updatedAt": "2026-06-07T09:22:26.486Z",
+            "factions": [
+                "minoians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:41.727Z"
         },
         "c1:T06": {
             "cycleId": "c1",
@@ -1196,7 +1681,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:22:32.303Z"
+            "updatedAt": "2026-06-07T09:22:32.303Z",
+            "factions": [
+                "minoians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:51.787Z"
         },
         "c1:T02": {
             "cycleId": "c1",
@@ -1206,7 +1695,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:22:35.296Z"
+            "updatedAt": "2026-06-07T09:22:35.296Z",
+            "factions": [
+                "none"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:58.581Z"
         },
         "c1:021": {
             "cycleId": "c1",
@@ -1216,7 +1709,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:22:40.062Z"
+            "updatedAt": "2026-06-07T09:22:40.062Z",
+            "factions": [
+                "minoians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:59.775Z"
         },
         "c1:T00": {
             "cycleId": "c1",
@@ -1224,7 +1721,11 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [],
             "notes": "",
-            "updatedAt": "2026-06-07T09:22:42.714Z"
+            "updatedAt": "2026-06-07T09:22:42.714Z",
+            "factions": [
+                "none"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:50.308Z"
         },
         "c1:T01": {
             "cycleId": "c1",
@@ -1234,7 +1735,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:22:46.722Z"
+            "updatedAt": "2026-06-07T09:22:46.722Z",
+            "factions": [
+                "none"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:33:56.492Z"
         },
         "c1:022": {
             "cycleId": "c1",
@@ -1244,7 +1749,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "progress"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:22:51.342Z"
+            "updatedAt": "2026-06-07T09:22:51.342Z",
+            "factions": [
+                "minoians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:01.027Z"
         },
         "c1:T04": {
             "cycleId": "c1",
@@ -1256,25 +1765,40 @@ window.ATO_MAP_TILE_TAGS = {
                 "calamity"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:22:57.019Z"
+            "updatedAt": "2026-06-07T09:22:57.019Z",
+            "factions": [
+                "none"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:01.861Z"
         },
         "c1:T03": {
             "cycleId": "c1",
             "tileId": "T03",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:22:59.185Z"
+            "updatedAt": "2026-06-26T05:29:34.511Z",
+            "factions": [
+                "none"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:00.433Z"
         },
         "c1:023": {
             "cycleId": "c1",
             "tileId": "023",
             "reviewed": true,
             "tags": [
-                "progress"
+                "progress",
+                "adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:23:02.873Z"
+            "updatedAt": "2026-06-26T05:30:15.880Z",
+            "factions": [
+                "labyrinthians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:03.225Z"
         },
         "c1:024": {
             "cycleId": "c1",
@@ -1285,7 +1809,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:23:11.488Z"
+            "updatedAt": "2026-06-07T09:23:11.488Z",
+            "factions": [
+                "labyrinthians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:03.727Z"
         },
         "c1:025": {
             "cycleId": "c1",
@@ -1295,7 +1823,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "calamity"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:23:13.707Z"
+            "updatedAt": "2026-06-07T09:23:13.707Z",
+            "factions": [
+                "labyrinthians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:04.135Z"
         },
         "c1:061": {
             "cycleId": "c1",
@@ -1306,7 +1838,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:23:16.024Z"
+            "updatedAt": "2026-06-07T09:23:16.024Z",
+            "factions": [
+                "labyrinthians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:04.552Z"
         },
         "c1:062": {
             "cycleId": "c1",
@@ -1316,7 +1852,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:23:18.001Z"
+            "updatedAt": "2026-06-07T09:23:18.001Z",
+            "factions": [
+                "labyrinthians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:04.960Z"
         },
         "c1:063": {
             "cycleId": "c1",
@@ -1326,7 +1866,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:23:21.066Z"
+            "updatedAt": "2026-06-07T09:23:21.066Z",
+            "factions": [
+                "labyrinthians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:05.434Z"
         },
         "c1:064": {
             "cycleId": "c1",
@@ -1338,7 +1882,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:23:25.671Z"
+            "updatedAt": "2026-06-07T09:23:25.671Z",
+            "factions": [
+                "labyrinthians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:06.150Z"
         },
         "c1:026": {
             "cycleId": "c1",
@@ -1348,7 +1896,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:23:35.910Z"
+            "updatedAt": "2026-06-07T09:23:35.910Z",
+            "factions": [
+                "minoians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:08.400Z"
         },
         "c1:027": {
             "cycleId": "c1",
@@ -1359,15 +1911,25 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:23:54.033Z"
+            "updatedAt": "2026-06-07T09:23:54.033Z",
+            "factions": [
+                "minoians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:08.934Z"
         },
         "c1:065": {
             "cycleId": "c1",
             "tileId": "065",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:24:32.614Z"
+            "updatedAt": "2026-06-26T05:30:12.897Z",
+            "factions": [
+                "minoians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:06.862Z"
         },
         "c1:028": {
             "cycleId": "c1",
@@ -1377,7 +1939,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "progress"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:24:35.785Z"
+            "updatedAt": "2026-06-07T09:24:35.785Z",
+            "factions": [
+                "minoians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:09.369Z"
         },
         "c1:029": {
             "cycleId": "c1",
@@ -1387,15 +1953,25 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:24:39.026Z"
+            "updatedAt": "2026-06-07T09:24:39.026Z",
+            "factions": [
+                "labyrinthians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:10.040Z"
         },
         "c1:030": {
             "cycleId": "c1",
             "tileId": "030",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:24:43.741Z"
+            "updatedAt": "2026-06-26T05:30:09.898Z",
+            "factions": [
+                "labyrinthians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:10.551Z"
         },
         "c1:066": {
             "cycleId": "c1",
@@ -1406,7 +1982,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:24:47.587Z"
+            "updatedAt": "2026-06-07T09:24:47.587Z",
+            "factions": [
+                "minoians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:11.231Z"
         },
         "c1:068": {
             "cycleId": "c1",
@@ -1416,25 +1996,40 @@ window.ATO_MAP_TILE_TAGS = {
                 "progress"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:24:50.744Z"
+            "updatedAt": "2026-06-07T09:24:50.744Z",
+            "factions": [
+                "labyrinthians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:12.795Z"
         },
         "c1:069": {
             "cycleId": "c1",
             "tileId": "069",
             "reviewed": true,
             "tags": [
-                "calamity"
+                "calamity",
+                "adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:24:53.399Z"
+            "updatedAt": "2026-06-26T05:30:02.962Z",
+            "factions": [
+                "labyrinthians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:13.408Z"
         },
         "c1:067": {
             "cycleId": "c1",
             "tileId": "067",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:24:56.733Z"
+            "updatedAt": "2026-06-26T05:30:07.645Z",
+            "factions": [
+                "labyrinthians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:12.225Z"
         },
         "c1:070": {
             "cycleId": "c1",
@@ -1445,7 +2040,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:25:10.744Z"
+            "updatedAt": "2026-06-07T09:25:10.744Z",
+            "factions": [
+                "hornsworn"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:14.894Z"
         },
         "c1:031": {
             "cycleId": "c1",
@@ -1455,7 +2054,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "progress"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:25:13.810Z"
+            "updatedAt": "2026-06-07T09:25:13.810Z",
+            "factions": [
+                "hornsworn"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:15.364Z"
         },
         "c1:033": {
             "cycleId": "c1",
@@ -1466,17 +2069,26 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:25:19.502Z"
+            "updatedAt": "2026-06-07T09:25:19.502Z",
+            "factions": [
+                "minoians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:16.685Z"
         },
         "c1:034": {
             "cycleId": "c1",
             "tileId": "034",
             "reviewed": true,
             "tags": [
-                "progress"
+                "progress",
+                "adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:25:21.881Z"
+            "updatedAt": "2026-06-26T05:29:59.995Z",
+            "factions": [
+                "minoians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:17.104Z"
         },
         "c1:035": {
             "cycleId": "c1",
@@ -1487,7 +2099,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:25:24.466Z"
+            "updatedAt": "2026-06-07T09:25:24.466Z",
+            "factions": [
+                "labyrinthians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:17.785Z"
         },
         "c1:071": {
             "cycleId": "c1",
@@ -1497,17 +2113,26 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:25:28.576Z"
+            "updatedAt": "2026-06-07T09:25:28.576Z",
+            "factions": [
+                "minoians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:18.774Z"
         },
         "c1:072": {
             "cycleId": "c1",
             "tileId": "072",
             "reviewed": true,
             "tags": [
-                "progress"
+                "progress",
+                "adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:25:32.145Z"
+            "updatedAt": "2026-06-26T05:29:57.974Z",
+            "factions": [
+                "minoians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:19.266Z"
         },
         "c1:073": {
             "cycleId": "c1",
@@ -1518,7 +2143,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "calamity"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:25:34.972Z"
+            "updatedAt": "2026-06-07T09:25:34.972Z",
+            "factions": [
+                "minoians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:19.684Z"
         },
         "c1:074": {
             "cycleId": "c1",
@@ -1528,7 +2157,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:25:37.014Z"
+            "updatedAt": "2026-06-07T09:25:37.014Z",
+            "factions": [
+                "minoians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:20.167Z"
         },
         "c1:075": {
             "cycleId": "c1",
@@ -1538,7 +2171,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:25:39.067Z"
+            "updatedAt": "2026-06-07T09:25:39.067Z",
+            "factions": [
+                "hornsworn"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:21.078Z"
         },
         "c1:036": {
             "cycleId": "c1",
@@ -1548,7 +2185,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:25:40.910Z"
+            "updatedAt": "2026-06-07T09:25:40.910Z",
+            "factions": [
+                "hornsworn"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:21.757Z"
         },
         "c1:037": {
             "cycleId": "c1",
@@ -1558,7 +2199,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:25:43.760Z"
+            "updatedAt": "2026-06-07T09:25:43.760Z",
+            "factions": [
+                "hornsworn"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:22.272Z"
         },
         "c1:038": {
             "cycleId": "c1",
@@ -1568,7 +2213,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:25:46.258Z"
+            "updatedAt": "2026-06-07T09:25:46.258Z",
+            "factions": [
+                "hornsworn"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:22.804Z"
         },
         "c1:039": {
             "cycleId": "c1",
@@ -1578,7 +2227,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:26:19.628Z"
+            "updatedAt": "2026-06-07T09:26:19.628Z",
+            "factions": [
+                "hornsworn"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:23.231Z"
         },
         "c1:040": {
             "cycleId": "c1",
@@ -1588,7 +2241,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "progress"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:25:49.231Z"
+            "updatedAt": "2026-06-07T09:25:49.231Z",
+            "factions": [
+                "hornsworn"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:23.675Z"
         },
         "c1:076": {
             "cycleId": "c1",
@@ -1598,7 +2255,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:25:52.484Z"
+            "updatedAt": "2026-06-07T09:25:52.484Z",
+            "factions": [
+                "hornsworn"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:24.137Z"
         },
         "c3:079": {
             "cycleId": "c3",
@@ -1608,7 +2269,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:32:40.115Z"
+            "updatedAt": "2026-06-07T09:32:40.115Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:44.683Z"
         },
         "c3:082": {
             "cycleId": "c3",
@@ -1618,7 +2283,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:28:04.585Z"
+            "updatedAt": "2026-06-07T09:28:04.585Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:45.207Z"
         },
         "c3:067": {
             "cycleId": "c3",
@@ -1628,17 +2297,26 @@ window.ATO_MAP_TILE_TAGS = {
                 "progress"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:28:05.796Z"
+            "updatedAt": "2026-06-07T09:28:05.796Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:45.649Z"
         },
         "c3:071": {
             "cycleId": "c3",
             "tileId": "071",
             "reviewed": true,
             "tags": [
-                "calamity"
+                "calamity",
+                "adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:28:07.834Z"
+            "updatedAt": "2026-06-26T05:32:40.677Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:46.070Z"
         },
         "c3:081": {
             "cycleId": "c3",
@@ -1649,7 +2327,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "calamity"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:28:09.759Z"
+            "updatedAt": "2026-06-07T09:28:09.759Z",
+            "factions": [
+                "sunheirs"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:47.656Z"
         },
         "c3:086": {
             "cycleId": "c3",
@@ -1659,7 +2341,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:28:12.473Z"
+            "updatedAt": "2026-06-07T09:28:12.473Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:49.048Z"
         },
         "c3:091": {
             "cycleId": "c3",
@@ -1669,7 +2355,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:28:17.636Z"
+            "updatedAt": "2026-06-07T09:28:17.636Z",
+            "factions": [
+                "sunheirs"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:49.661Z"
         },
         "c3:066": {
             "cycleId": "c3",
@@ -1679,7 +2369,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:28:22.424Z"
+            "updatedAt": "2026-06-07T09:28:22.424Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:50.252Z"
         },
         "c3:008": {
             "cycleId": "c3",
@@ -1689,7 +2383,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:28:28.231Z"
+            "updatedAt": "2026-06-07T09:28:28.231Z",
+            "factions": [
+                "delphians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:51.683Z"
         },
         "c3:073": {
             "cycleId": "c3",
@@ -1701,27 +2399,41 @@ window.ATO_MAP_TILE_TAGS = {
                 "calamity"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:28:32.334Z"
+            "updatedAt": "2026-06-07T09:28:32.334Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:55.345Z"
         },
         "c3:085": {
             "cycleId": "c3",
             "tileId": "085",
             "reviewed": true,
             "tags": [
-                "progress"
+                "progress",
+                "adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:28:34.189Z"
+            "updatedAt": "2026-06-26T05:32:45.746Z",
+            "factions": [
+                "sunheirs"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:55.974Z"
         },
         "c3:013": {
             "cycleId": "c3",
             "tileId": "013",
             "reviewed": true,
             "tags": [
-                "progress"
+                "progress",
+                "adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:28:37.028Z"
+            "updatedAt": "2026-06-26T05:32:48.364Z",
+            "factions": [
+                "sunheirs"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:56.451Z"
         },
         "c3:090": {
             "cycleId": "c3",
@@ -1731,7 +2443,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:28:40.635Z"
+            "updatedAt": "2026-06-07T09:28:40.635Z",
+            "factions": [
+                "sunheirs"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:56.863Z"
         },
         "c3:034": {
             "cycleId": "c3",
@@ -1741,7 +2457,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:28:46.250Z"
+            "updatedAt": "2026-06-07T09:28:46.250Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:57.952Z"
         },
         "c3:055": {
             "cycleId": "c3",
@@ -1751,7 +2471,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:28:48.715Z"
+            "updatedAt": "2026-06-07T09:28:48.715Z",
+            "factions": [
+                "sunheirs"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:58.580Z"
         },
         "c3:039": {
             "cycleId": "c3",
@@ -1762,17 +2486,26 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:28:51.590Z"
+            "updatedAt": "2026-06-07T09:28:51.590Z",
+            "factions": [
+                "sunheirs"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:59.004Z"
         },
         "c3:057": {
             "cycleId": "c3",
             "tileId": "057",
             "reviewed": true,
             "tags": [
-                "progress"
+                "progress",
+                "adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:28:54.212Z"
+            "updatedAt": "2026-06-26T05:32:56.919Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:59.590Z"
         },
         "c3:007": {
             "cycleId": "c3",
@@ -1782,7 +2515,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:28:56.916Z"
+            "updatedAt": "2026-06-07T09:28:56.916Z",
+            "factions": [
+                "delphians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:00.306Z"
         },
         "c3:042": {
             "cycleId": "c3",
@@ -1793,7 +2530,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "progress"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:29:02.232Z"
+            "updatedAt": "2026-06-07T09:29:02.232Z",
+            "factions": [
+                "sunheirs"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:02.227Z"
         },
         "c3:059": {
             "cycleId": "c3",
@@ -1803,7 +2544,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:29:05.461Z"
+            "updatedAt": "2026-06-07T09:29:05.461Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:02.810Z"
         },
         "c3:072": {
             "cycleId": "c3",
@@ -1813,7 +2558,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:29:08.155Z"
+            "updatedAt": "2026-06-07T09:29:08.155Z",
+            "factions": [
+                "delphians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:03.464Z"
         },
         "c3:047": {
             "cycleId": "c3",
@@ -1823,7 +2572,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:29:13.228Z"
+            "updatedAt": "2026-06-07T09:29:13.228Z",
+            "factions": [
+                "sunheirs"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:04.109Z"
         },
         "c3:027": {
             "cycleId": "c3",
@@ -1834,17 +2587,26 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:29:21.880Z"
+            "updatedAt": "2026-06-07T09:29:21.880Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:05.533Z"
         },
         "c3:033": {
             "cycleId": "c3",
             "tileId": "033",
             "reviewed": true,
             "tags": [
-                "progress"
+                "progress",
+                "adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:29:24.236Z"
+            "updatedAt": "2026-06-26T05:33:48.746Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:06.034Z"
         },
         "c3:054": {
             "cycleId": "c3",
@@ -1855,7 +2617,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "calamity"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:29:28.620Z"
+            "updatedAt": "2026-06-07T09:29:28.620Z",
+            "factions": [
+                "sunheirs"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:06.773Z"
         },
         "c3:006": {
             "cycleId": "c3",
@@ -1867,7 +2633,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:29:50.272Z"
+            "updatedAt": "2026-06-07T09:29:50.272Z",
+            "factions": [
+                "delphians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:08.753Z"
         },
         "c3:015": {
             "cycleId": "c3",
@@ -1878,7 +2648,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:29:52.471Z"
+            "updatedAt": "2026-06-07T09:29:52.471Z",
+            "factions": [
+                "sunheirs"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:09.490Z"
         },
         "c3:058": {
             "cycleId": "c3",
@@ -1889,7 +2663,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "calamity"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:29:54.752Z"
+            "updatedAt": "2026-06-26T05:36:21.286Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:10.198Z"
         },
         "c3:022": {
             "cycleId": "c3",
@@ -1899,7 +2677,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "progress"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:29:56.809Z"
+            "updatedAt": "2026-06-07T09:29:56.809Z",
+            "factions": [
+                "sunheirs"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:11.076Z"
         },
         "c3:024": {
             "cycleId": "c3",
@@ -1909,7 +2691,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "calamity"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:29:58.064Z"
+            "updatedAt": "2026-06-07T09:29:58.064Z",
+            "factions": [
+                "delphians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:11.761Z"
         },
         "c3:046": {
             "cycleId": "c3",
@@ -1919,7 +2705,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "progress"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:30:00.109Z"
+            "updatedAt": "2026-06-07T09:30:00.109Z",
+            "factions": [
+                "delphians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:12.269Z"
         },
         "c3:074": {
             "cycleId": "c3",
@@ -1929,15 +2719,25 @@ window.ATO_MAP_TILE_TAGS = {
                 "calamity"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:30:01.584Z"
+            "updatedAt": "2026-06-07T09:30:01.584Z",
+            "factions": [
+                "delphians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:12.692Z"
         },
         "c3:026": {
             "cycleId": "c3",
             "tileId": "026",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:30:04.074Z"
+            "updatedAt": "2026-06-26T05:34:13.966Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:13.398Z"
         },
         "c3:028": {
             "cycleId": "c3",
@@ -1947,7 +2747,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:30:06.452Z"
+            "updatedAt": "2026-06-07T09:30:06.452Z",
+            "factions": [
+                "sunheirs"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:14.036Z"
         },
         "c3:078": {
             "cycleId": "c3",
@@ -1957,7 +2761,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:30:10.220Z"
+            "updatedAt": "2026-06-07T09:30:10.220Z",
+            "factions": [
+                "delphians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:15.139Z"
         },
         "c3:031": {
             "cycleId": "c3",
@@ -1967,7 +2775,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:30:11.900Z"
+            "updatedAt": "2026-06-07T09:30:11.900Z",
+            "factions": [
+                "delphians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:15.572Z"
         },
         "c3:053": {
             "cycleId": "c3",
@@ -1977,7 +2789,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:30:13.857Z"
+            "updatedAt": "2026-06-07T09:30:13.857Z",
+            "factions": [
+                "sunheirs"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:19.340Z"
         },
         "c3:002": {
             "cycleId": "c3",
@@ -1987,7 +2803,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:30:16.990Z"
+            "updatedAt": "2026-06-07T09:30:16.990Z",
+            "factions": [
+                "sunheirs"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:19.783Z"
         },
         "c3:037": {
             "cycleId": "c3",
@@ -1998,27 +2818,41 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:30:19.045Z"
+            "updatedAt": "2026-06-07T09:30:19.045Z",
+            "factions": [
+                "sunheirs"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:20.250Z"
         },
         "c3:089": {
             "cycleId": "c3",
             "tileId": "089",
             "reviewed": true,
             "tags": [
-                "calamity"
+                "calamity",
+                "adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:30:20.171Z"
+            "updatedAt": "2026-06-26T05:34:23.375Z",
+            "factions": [
+                "sunheirs"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:20.686Z"
         },
         "c3:041": {
             "cycleId": "c3",
             "tileId": "041",
             "reviewed": true,
             "tags": [
-                "progress"
+                "progress",
+                "adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:30:25.778Z"
+            "updatedAt": "2026-06-26T05:34:29.009Z",
+            "factions": [
+                "sunheirs"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:22.595Z"
         },
         "c3:012": {
             "cycleId": "c3",
@@ -2028,17 +2862,26 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:30:28.289Z"
+            "updatedAt": "2026-06-07T09:30:28.289Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:23.498Z"
         },
         "c3:023": {
             "cycleId": "c3",
             "tileId": "023",
             "reviewed": true,
             "tags": [
-                "progress"
+                "progress",
+                "adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:30:34.112Z"
+            "updatedAt": "2026-06-26T05:34:35.824Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:24.602Z"
         },
         "c3:045": {
             "cycleId": "c3",
@@ -2048,7 +2891,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "calamity"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:30:36.593Z"
+            "updatedAt": "2026-06-07T09:30:36.593Z",
+            "factions": [
+                "delphians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:25.266Z"
         },
         "c3:025": {
             "cycleId": "c3",
@@ -2058,7 +2905,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:30:38.630Z"
+            "updatedAt": "2026-06-07T09:30:38.630Z",
+            "factions": [
+                "delphians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:26.018Z"
         },
         "c3:050": {
             "cycleId": "c3",
@@ -2068,7 +2919,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "progress"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:30:41.753Z"
+            "updatedAt": "2026-06-07T09:30:41.753Z",
+            "factions": [
+                "delphians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:26.489Z"
         },
         "c3:077": {
             "cycleId": "c3",
@@ -2078,7 +2933,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "calamity"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:30:43.130Z"
+            "updatedAt": "2026-06-07T09:30:43.130Z",
+            "factions": [
+                "delphians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:26.911Z"
         },
         "c3:030": {
             "cycleId": "c3",
@@ -2089,7 +2948,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:30:45.919Z"
+            "updatedAt": "2026-06-07T09:30:45.919Z",
+            "factions": [
+                "delphians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:27.283Z"
         },
         "c3:032": {
             "cycleId": "c3",
@@ -2099,17 +2962,26 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:30:48.079Z"
+            "updatedAt": "2026-06-26T05:34:49.099Z",
+            "factions": [
+                "delphians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:27.684Z"
         },
         "c3:065": {
             "cycleId": "c3",
             "tileId": "065",
             "reviewed": true,
             "tags": [
-                "progress"
+                "progress",
+                "adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:30:49.760Z"
+            "updatedAt": "2026-06-26T05:34:50.565Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:28.459Z"
         },
         "c3:001": {
             "cycleId": "c3",
@@ -2119,7 +2991,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:30:51.960Z"
+            "updatedAt": "2026-06-07T09:30:51.960Z",
+            "factions": [
+                "sunheirs"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:29.093Z"
         },
         "c3:036": {
             "cycleId": "c3",
@@ -2129,7 +3005,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:30:57.625Z"
+            "updatedAt": "2026-06-07T09:30:57.625Z",
+            "factions": [
+                "sunheirs"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:29.585Z"
         },
         "c3:069": {
             "cycleId": "c3",
@@ -2139,7 +3019,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "calamity"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:30:59.501Z"
+            "updatedAt": "2026-06-07T09:30:59.501Z",
+            "factions": [
+                "sunheirs"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:29.965Z"
         },
         "c3:088": {
             "cycleId": "c3",
@@ -2149,7 +3033,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:31:03.079Z"
+            "updatedAt": "2026-06-07T09:31:03.079Z",
+            "factions": [
+                "sunheirs"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:30.382Z"
         },
         "c3:004": {
             "cycleId": "c3",
@@ -2159,7 +3047,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:31:18.775Z"
+            "updatedAt": "2026-06-07T09:31:18.775Z",
+            "factions": [
+                "delphians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:33.297Z"
         },
         "c3:017": {
             "cycleId": "c3",
@@ -2169,7 +3061,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:31:23.209Z"
+            "updatedAt": "2026-06-07T09:31:23.209Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:34.752Z"
         },
         "c3:011": {
             "cycleId": "c3",
@@ -2180,7 +3076,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "calamity"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:31:25.726Z"
+            "updatedAt": "2026-06-07T09:31:25.726Z",
+            "factions": [
+                "delphians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:35.449Z"
         },
         "c3:020": {
             "cycleId": "c3",
@@ -2190,7 +3090,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:31:31.850Z"
+            "updatedAt": "2026-06-26T05:35:13.713Z",
+            "factions": [
+                "sunheirs"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:36.106Z"
         },
         "c3:049": {
             "cycleId": "c3",
@@ -2200,7 +3104,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:31:35.806Z"
+            "updatedAt": "2026-06-07T09:31:35.806Z",
+            "factions": [
+                "delphians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:37.142Z"
         },
         "c3:076": {
             "cycleId": "c3",
@@ -2210,17 +3118,26 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:31:37.439Z"
+            "updatedAt": "2026-06-07T09:31:37.439Z",
+            "factions": [
+                "delphians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:37.555Z"
         },
         "c3:084": {
             "cycleId": "c3",
             "tileId": "084",
             "reviewed": true,
             "tags": [
-                "progress"
+                "progress",
+                "adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:31:47.343Z"
+            "updatedAt": "2026-06-26T05:36:15.940Z",
+            "factions": [
+                "delphians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:39.152Z"
         },
         "c3:062": {
             "cycleId": "c3",
@@ -2228,10 +3145,15 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "progress",
-                "calamity"
+                "calamity",
+                "adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:31:49.471Z"
+            "updatedAt": "2026-06-26T05:36:08.034Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:39.833Z"
         },
         "c3:064": {
             "cycleId": "c3",
@@ -2242,7 +3164,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:31:54.515Z"
+            "updatedAt": "2026-06-07T09:31:54.515Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:40.291Z"
         },
         "c3:035": {
             "cycleId": "c3",
@@ -2252,7 +3178,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:31:55.415Z"
+            "updatedAt": "2026-06-07T09:31:55.415Z",
+            "factions": [
+                "delphians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:41.154Z"
         },
         "c3:087": {
             "cycleId": "c3",
@@ -2262,7 +3192,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:32:00.610Z"
+            "updatedAt": "2026-06-07T09:32:00.610Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:42.969Z"
         },
         "c3:040": {
             "cycleId": "c3",
@@ -2272,7 +3206,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:32:03.111Z"
+            "updatedAt": "2026-06-07T09:32:03.111Z",
+            "factions": [
+                "delphians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:43.548Z"
         },
         "c3:019": {
             "cycleId": "c3",
@@ -2283,7 +3221,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:32:07.759Z"
+            "updatedAt": "2026-06-07T09:32:07.759Z",
+            "factions": [
+                "delphians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:44.924Z"
         },
         "c3:043": {
             "cycleId": "c3",
@@ -2293,7 +3235,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "calamity"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:32:10.063Z"
+            "updatedAt": "2026-06-07T09:32:10.063Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:45.706Z"
         },
         "c3:048": {
             "cycleId": "c3",
@@ -2303,17 +3249,26 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:32:15.986Z"
+            "updatedAt": "2026-06-07T09:32:15.986Z",
+            "factions": [
+                "sunheirs"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:46.407Z"
         },
         "c3:052": {
             "cycleId": "c3",
             "tileId": "052",
             "reviewed": true,
             "tags": [
-                "progress"
+                "progress",
+                "adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:32:18.118Z"
+            "updatedAt": "2026-06-26T05:35:35.329Z",
+            "factions": [
+                "sunheirs"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:46.932Z"
         },
         "c3:056": {
             "cycleId": "c3",
@@ -2323,7 +3278,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:32:20.309Z"
+            "updatedAt": "2026-06-07T09:32:20.309Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:48.354Z"
         },
         "c3:060": {
             "cycleId": "c3",
@@ -2333,17 +3292,26 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:32:22.741Z"
+            "updatedAt": "2026-06-07T09:32:22.741Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:48.846Z"
         },
         "c3:083": {
             "cycleId": "c3",
             "tileId": "083",
             "reviewed": true,
             "tags": [
-                "progress"
+                "progress",
+                "adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:32:24.471Z"
+            "updatedAt": "2026-06-26T05:35:39.767Z",
+            "factions": [
+                "delphians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:49.552Z"
         },
         "c3:061": {
             "cycleId": "c3",
@@ -2353,7 +3321,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:32:27.340Z"
+            "updatedAt": "2026-06-07T09:32:27.340Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:51.668Z"
         },
         "c3:063": {
             "cycleId": "c3",
@@ -2363,7 +3335,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:32:30.049Z"
+            "updatedAt": "2026-06-07T09:32:30.049Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:52.090Z"
         },
         "c3:009": {
             "cycleId": "c3",
@@ -2373,7 +3349,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "progress"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:32:31.435Z"
+            "updatedAt": "2026-06-07T09:32:31.435Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:52.496Z"
         },
         "c3:014": {
             "cycleId": "c3",
@@ -2383,23 +3363,39 @@ window.ATO_MAP_TILE_TAGS = {
                 "calamity"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:32:32.984Z"
+            "updatedAt": "2026-06-07T09:32:32.984Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:54.077Z"
         },
         "c3:070": {
             "cycleId": "c3",
             "tileId": "070",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:32:55.122Z"
+            "updatedAt": "2026-06-26T05:32:43.481Z",
+            "factions": [
+                "sunheirs"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:50.851Z"
         },
         "c3:016": {
             "cycleId": "c3",
             "tileId": "016",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:32:57.934Z"
+            "updatedAt": "2026-06-26T05:32:51.009Z",
+            "factions": [
+                "sunheirs"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:57.261Z"
         },
         "c3:010": {
             "cycleId": "c3",
@@ -2407,39 +3403,67 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [],
             "notes": "",
-            "updatedAt": "2026-06-07T09:33:00.417Z"
+            "updatedAt": "2026-06-07T09:33:00.417Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:44.271Z"
         },
         "c3:068": {
             "cycleId": "c3",
             "tileId": "068",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:33:02.140Z"
+            "updatedAt": "2026-06-26T05:35:24.117Z",
+            "factions": [
+                "sunheirs"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:42.018Z"
         },
         "c3:080": {
             "cycleId": "c3",
             "tileId": "080",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:33:03.822Z"
+            "updatedAt": "2026-06-26T05:35:19.204Z",
+            "factions": [
+                "delphians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:38.694Z"
         },
         "c3:029": {
             "cycleId": "c3",
             "tileId": "029",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:33:06.582Z"
+            "updatedAt": "2026-06-26T05:35:18.112Z",
+            "factions": [
+                "sunheirs"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:38.182Z"
         },
         "c3:044": {
             "cycleId": "c3",
             "tileId": "044",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:33:08.623Z"
+            "updatedAt": "2026-06-26T05:35:15.142Z",
+            "factions": [
+                "delphians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:36.712Z"
         },
         "c3:333": {
             "cycleId": "c3",
@@ -2447,39 +3471,67 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [],
             "notes": "",
-            "updatedAt": "2026-06-07T09:33:10.650Z"
+            "updatedAt": "2026-06-07T09:33:10.650Z",
+            "factions": [
+                "none"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:32.376Z"
         },
         "c3:021": {
             "cycleId": "c3",
             "tileId": "021",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:33:12.783Z"
+            "updatedAt": "2026-06-26T05:34:32.276Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:24.065Z"
         },
         "c3:018": {
             "cycleId": "c3",
             "tileId": "018",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:33:15.034Z"
+            "updatedAt": "2026-06-26T05:34:26.307Z",
+            "factions": [
+                "delphians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:21.966Z"
         },
         "c3:005": {
             "cycleId": "c3",
             "tileId": "005",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:33:17.300Z"
+            "updatedAt": "2026-06-26T05:34:24.752Z",
+            "factions": [
+                "delphians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:21.433Z"
         },
         "c3:051": {
             "cycleId": "c3",
             "tileId": "051",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:33:19.610Z"
+            "updatedAt": "2026-06-26T05:34:18.641Z",
+            "factions": [
+                "delphians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:14.672Z"
         },
         "c3:038": {
             "cycleId": "c3",
@@ -2487,23 +3539,259 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [],
             "notes": "",
-            "updatedAt": "2026-06-07T09:33:22.138Z"
+            "updatedAt": "2026-06-07T09:33:22.138Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:08.119Z"
         },
         "c3:003": {
             "cycleId": "c3",
             "tileId": "003",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:33:24.805Z"
+            "updatedAt": "2026-06-26T05:33:54.009Z",
+            "factions": [
+                "twilightWatch"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:07.668Z"
         },
         "c3:075": {
             "cycleId": "c3",
             "tileId": "075",
             "reviewed": true,
+            "tags": [
+                "rr_adventure"
+            ],
+            "notes": "",
+            "updatedAt": "2026-06-26T05:33:40.202Z",
+            "factions": [
+                "delphians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:37:04.834Z"
+        },
+        "c1:079": {
+            "cycleId": "c1",
+            "tileId": "079",
+            "reviewed": true,
+            "tags": [
+                "adventure"
+            ],
+            "notes": "",
+            "updatedAt": "2026-06-26T05:29:41.762Z",
+            "factions": [
+                "hornsworn"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:25.449Z"
+        },
+        "c1:077": {
+            "cycleId": "c1",
+            "tileId": "077",
+            "reviewed": true,
+            "tags": [
+                "adventure"
+            ],
+            "notes": "",
+            "updatedAt": "2026-06-26T05:29:54.834Z",
+            "factions": [
+                "hornsworn"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:24.643Z"
+        },
+        "c2:011": {
+            "cycleId": "c2",
+            "tileId": "011",
+            "reviewed": true,
+            "tags": [
+                "adventure"
+            ],
+            "notes": "",
+            "updatedAt": "2026-06-26T05:30:41.858Z",
+            "factions": [
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:47.220Z"
+        },
+        "c2:013": {
+            "cycleId": "c2",
+            "tileId": "013",
+            "reviewed": true,
+            "tags": [
+                "adventure"
+            ],
+            "notes": "",
+            "updatedAt": "2026-06-26T05:30:47.487Z",
+            "factions": [
+                "helots"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:48.350Z"
+        },
+        "c2:025": {
+            "cycleId": "c2",
+            "tileId": "025",
+            "reviewed": true,
+            "tags": [
+                "adventure"
+            ],
+            "notes": "",
+            "updatedAt": "2026-06-26T05:30:54.664Z",
+            "factions": [
+                "helots"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:32.055Z"
+        },
+        "c2:028": {
+            "cycleId": "c2",
+            "tileId": "028",
+            "reviewed": true,
+            "tags": [
+                "adventure"
+            ],
+            "notes": "",
+            "updatedAt": "2026-06-26T05:30:57.546Z",
+            "factions": [
+                "symmachy"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:34.632Z"
+        },
+        "c2:030": {
+            "cycleId": "c2",
+            "tileId": "030",
+            "reviewed": true,
+            "tags": [
+                "adventure"
+            ],
+            "notes": "",
+            "updatedAt": "2026-06-26T05:31:00.419Z",
+            "factions": [
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:36.013Z"
+        },
+        "c2:049": {
+            "cycleId": "c2",
+            "tileId": "049",
+            "reviewed": true,
+            "tags": [
+                "adventure"
+            ],
+            "notes": "",
+            "updatedAt": "2026-06-26T05:31:14.478Z",
+            "factions": [
+                "symmachy"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:53.289Z"
+        },
+        "c2:076": {
+            "cycleId": "c2",
+            "tileId": "076",
+            "reviewed": true,
+            "tags": [
+                "adventure"
+            ],
+            "notes": "",
+            "updatedAt": "2026-06-26T05:31:24.421Z",
+            "factions": [
+                "symmachy"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:11.943Z"
+        },
+        "c2:072": {
+            "cycleId": "c2",
+            "tileId": "072",
+            "reviewed": true,
+            "tags": [
+                "adventure"
+            ],
+            "notes": "",
+            "updatedAt": "2026-06-26T05:31:30.673Z",
+            "factions": [
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:09.553Z"
+        },
+        "c2:064": {
+            "cycleId": "c2",
+            "tileId": "064",
+            "reviewed": true,
+            "tags": [
+                "adventure"
+            ],
+            "notes": "",
+            "updatedAt": "2026-06-26T05:31:37.080Z",
+            "factions": [
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:03.213Z"
+        },
+        "c2:062": {
+            "cycleId": "c2",
+            "tileId": "062",
+            "reviewed": true,
+            "tags": [
+                "adventure"
+            ],
+            "notes": "",
+            "updatedAt": "2026-06-26T05:31:41.285Z",
+            "factions": [
+                "symmachy"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:02.061Z"
+        },
+        "c2:061": {
+            "cycleId": "c2",
+            "tileId": "061",
+            "reviewed": true,
+            "tags": [
+                "adventure"
+            ],
+            "notes": "",
+            "updatedAt": "2026-06-26T05:31:43.740Z",
+            "factions": [
+                "helots"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:01.248Z"
+        },
+        "c2:050": {
+            "cycleId": "c2",
+            "tileId": "050",
+            "reviewed": true,
+            "tags": [
+                "adventure"
+            ],
+            "notes": "",
+            "updatedAt": "2026-06-26T05:32:00.148Z",
+            "factions": [
+                "cyclopes"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:35:54.027Z"
+        },
+        "c1:032": {
+            "cycleId": "c1",
+            "tileId": "032",
+            "reviewed": false,
             "tags": [],
             "notes": "",
-            "updatedAt": "2026-06-07T09:33:26.721Z"
+            "updatedAt": "2026-06-26T14:34:16.123Z",
+            "factions": [
+                "minoians"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:34:16.123Z"
+        },
+        "c2:078": {
+            "cycleId": "c2",
+            "tileId": "078",
+            "reviewed": false,
+            "tags": [],
+            "notes": "",
+            "updatedAt": "2026-06-26T14:36:12.847Z",
+            "factions": [
+                "symmachy"
+            ],
+            "factionUpdatedAt": "2026-06-26T14:36:12.847Z"
         }
     }
 };

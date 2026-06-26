@@ -698,6 +698,33 @@
       gap: 5px;
     }
 
+    .exploration-faction-status {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      color: #31504a;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .exploration-faction-chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 4px 8px;
+      border: 1px solid rgba(22, 103, 91, 0.24);
+      border-radius: 6px;
+      background: #ffffff;
+      color: var(--ink);
+      line-height: 1.2;
+    }
+
+    .exploration-faction-chip.muted {
+      color: #66756f;
+      font-weight: 700;
+    }
+
     .exploration-count {
       color: var(--ink);
       font-size: 14px;
@@ -728,6 +755,39 @@
       gap: 8px;
     }
 
+    .exploration-removed-pile {
+      display: grid;
+      gap: 8px;
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 9px;
+      background: #fff;
+    }
+
+    .exploration-removed-piles {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 9px;
+    }
+
+    .exploration-pile-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .exploration-removed-pile summary {
+      display: list-item;
+      cursor: pointer;
+      list-style-position: inside;
+    }
+
     .exploration-drawn-title {
       color: var(--ink);
       font-size: 13px;
@@ -739,6 +799,15 @@
       grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
       gap: 8px;
       align-items: start;
+    }
+
+    .exploration-active-grid {
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 12px;
+    }
+
+    .exploration-active-grid .exploration-drawn-meta {
+      font-size: 12px;
     }
 
     .exploration-drawn-card {
@@ -764,6 +833,17 @@
       font-weight: 800;
       line-height: 1.25;
       overflow-wrap: anywhere;
+    }
+
+    .exploration-card-tag {
+      display: inline-flex;
+      margin-top: 3px;
+      border-radius: 999px;
+      padding: 2px 6px;
+      background: #edf3f1;
+      color: #50645e;
+      font-size: 10px;
+      font-weight: 900;
     }
 
     .exploration-destruction {
@@ -853,27 +933,38 @@
     }
 
     .exploration-library {
-      max-height: 220px;
+      max-height: 620px;
       overflow: auto;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-      gap: 6px;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 10px;
+      align-items: start;
     }
 
     .exploration-library label {
-      min-height: 34px;
       display: grid;
-      grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-columns: auto minmax(0, 1fr);
       gap: 7px;
-      align-items: center;
+      align-items: start;
       border: 1px solid var(--line);
       border-radius: 6px;
-      padding: 6px 8px;
+      padding: 8px;
       background: #fbfcfa;
       color: var(--ink);
       font-size: 12px;
       font-weight: 800;
       line-height: 1.25;
+    }
+
+    .exploration-library-preview {
+      grid-column: 1 / -1;
+      width: 100%;
+      aspect-ratio: 470 / 740;
+      border: 1px solid rgba(30, 38, 35, 0.18);
+      border-radius: 6px;
+      background-color: #e9eeeb;
+      background-repeat: no-repeat;
+      box-shadow: 0 5px 12px rgba(28, 38, 34, 0.1);
     }
 
     .exploration-library input {
@@ -884,6 +975,7 @@
     }
 
     .exploration-library button {
+      grid-column: 1 / -1;
       min-height: 26px;
       padding: 0 8px;
       font-size: 11px;
@@ -1747,8 +1839,11 @@
     </div>
   </dialog>
 
-  <script src="./page-focus-router.js?v=20260607a"></script>
-  <script src="./story-doom-card-data.js"></script>
+  <script src="./assets/page-focus-router.js?v=20260607a"></script>
+  <script src="./assets/story-doom-card-data.js"></script>
+  <script src="./assets/exploration-card-tags.js"></script>
+  <script src="./assets/exploration-card-rules.js"></script>
+  <script src="./map/map-tile-tags.js"></script>
   <script>
     const legacyStorageKey = "ato-campaign-dashboard-v1";
     const storageKey = "ato-campaign-dashboard-profiles-v1";
@@ -2205,6 +2300,8 @@
       mapSnapshot: null,
       mapCurrentTileTags: [],
       mapCurrentTileTagLabels: [],
+      mapCurrentTileFactions: [],
+      mapCurrentTileFactionLabels: [],
       mapLatestRevealedTileTags: [],
       mapLatestRevealedTileTagLabels: [],
       mapCurrentTileHasLastCityMarker: false,
@@ -2299,6 +2396,8 @@
     const constantToolsOpen = {};
     let authMode = "login";
     let sessionUser = null;
+    let cachedArgoRecord = {};
+    let argoRecordRefreshInFlight = false;
 
     function isPlainObject(value) {
       return value && typeof value === "object" && !Array.isArray(value);
@@ -2485,6 +2584,7 @@
       campaignSavePending = false;
       campaignSaveQueuedBeforeReady = false;
       campaignStorageAvailable = false;
+      cachedArgoRecord = {};
       elements.appShell.hidden = true;
       elements.authGate.hidden = false;
       elements.authMessage.textContent = message;
@@ -2506,6 +2606,7 @@
       elements.authGate.hidden = true;
       elements.appShell.hidden = false;
       loadCampaignSection(campaignSessionEpoch);
+      refreshCachedArgoRecord();
     }
 
     async function requestAuth(action, username, password) {
@@ -2597,6 +2698,12 @@
         mapCurrentTileTagLabels: Array.isArray(value.mapCurrentTileTagLabels)
           ? value.mapCurrentTileTagLabels
           : (Array.isArray(value.mapSnapshot?.currentTileTagLabels) ? value.mapSnapshot.currentTileTagLabels : []),
+        mapCurrentTileFactions: Array.isArray(value.mapCurrentTileFactions)
+          ? value.mapCurrentTileFactions
+          : (Array.isArray(value.mapSnapshot?.currentTileFactions) ? value.mapSnapshot.currentTileFactions : []),
+        mapCurrentTileFactionLabels: Array.isArray(value.mapCurrentTileFactionLabels)
+          ? value.mapCurrentTileFactionLabels
+          : (Array.isArray(value.mapSnapshot?.currentTileFactionLabels) ? value.mapSnapshot.currentTileFactionLabels : []),
         mapLatestRevealedTileTags: Array.isArray(value.mapLatestRevealedTileTags)
           ? value.mapLatestRevealedTileTags
           : (Array.isArray(value.mapSnapshot?.latestRevealedTileTags) ? value.mapSnapshot.latestRevealedTileTags : []),
@@ -2634,6 +2741,7 @@
       return {
         selectedByCycle: isPlainObject(value?.selectedByCycle) ? value.selectedByCycle : {},
         drawStateByCycle: isPlainObject(value?.drawStateByCycle) ? value.drawStateByCycle : {},
+        cardTagsByCycle: isPlainObject(value?.cardTagsByCycle) ? value.cardTagsByCycle : {},
         destructionByCycle: isPlainObject(value?.destructionByCycle) ? value.destructionByCycle : {},
         destructionCardIdsByCycle: isPlainObject(value?.destructionCardIdsByCycle) ? value.destructionCardIdsByCycle : {},
         acclimationsByCycle: isPlainObject(value?.acclimationsByCycle) ? value.acclimationsByCycle : {},
@@ -2844,9 +2952,14 @@
       const drawState = ensureExplorationDrawState();
       state.exploration.selectedByCycle[cycleId] = replaceIds(selectedIds);
       drawState.drawPile = replaceIds(drawState.drawPile);
-      drawState.history = drawState.history.map((entry) => replaceExplorationEntry(entry, replacements));
-      drawState.discardPile = drawState.discardPile.map((entry) => replaceExplorationEntry(entry, replacements));
-      drawState.current = replaceExplorationEntry(drawState.current, replacements);
+      drawState.activePiles = drawState.activePiles.map((pile) =>
+        pile.map((entry) => replaceExplorationEntry(entry, replacements))
+      );
+      drawState.temporaryRemoved = drawState.temporaryRemoved.map((entry) => replaceExplorationEntry(entry, replacements));
+      drawState.permanentRemoved = drawState.permanentRemoved.map((entry) => replaceExplorationEntry(entry, replacements));
+      drawState.history = drawState.activePiles.flat();
+      drawState.discardPile = [];
+      drawState.current = drawState.history[drawState.history.length - 1] || null;
 
       const applied = isPlainObject(state.exploration.acclimationsByCycle[cycleId])
         ? state.exploration.acclimationsByCycle[cycleId]
@@ -2904,17 +3017,53 @@
     function createExplorationDrawState(cardIds) {
       return {
         drawPile: shuffleList(cardIds),
+        activePiles: [[], []],
+        temporaryRemoved: [],
         history: [],
         discardPile: [],
         current: null,
       };
     }
 
+    function getExplorationCardTag(cardId) {
+      const cycleId = currentCycleConfig().id;
+      state.exploration = normalizeExploration(state.exploration);
+      const entry = state.exploration.cardTagsByCycle?.[cycleId]?.[cardId]
+        || window.ATO_EXPLORATION_CARD_TAGS?.cards?.[`${cycleId}:${cardId}`]
+        || {};
+      return window.ATO_EXPLORATION_RULES.normalizeTag(entry);
+    }
+
+    function normalizeExplorationRecord(entry, pile = 0) {
+      if (!entry?.id) return null;
+      const card = getExplorationCard(entry.id);
+      if (!card) return null;
+      const tag = getExplorationCardTag(entry.id);
+      return {
+        ...entry,
+        id: card.id,
+        name: card.name,
+        day: Math.max(0, Number(entry.day || 0)),
+        removal: entry.removal === "permanent" || entry.removal === "remove" || entry.removal === "keep"
+          ? entry.removal
+          : tag.removal,
+        draw: entry.draw === "chain" || entry.draw === "single" ? entry.draw : tag.draw,
+        pile,
+      };
+    }
+
     function ensureExplorationDrawState() {
       state.exploration = normalizeExploration(state.exploration);
       const cycleId = currentCycleConfig().id;
-      const selectedIds = getSelectedExplorationIds();
       const existing = state.exploration.drawStateByCycle[cycleId];
+      const legacyPermanentIds = Array.isArray(existing?.permanentRemoved)
+        ? existing.permanentRemoved.map((entry) => typeof entry === "string" ? entry : entry?.id).filter(Boolean)
+        : [];
+      if (legacyPermanentIds.length) {
+        const legacyPermanentSet = new Set(legacyPermanentIds);
+        state.exploration.selectedByCycle[cycleId] = getSelectedExplorationIds().filter((id) => !legacyPermanentSet.has(id));
+      }
+      const selectedIds = getSelectedExplorationIds();
       if (!existing || !Array.isArray(existing.drawPile) || !Array.isArray(existing.history)) {
         state.exploration.drawStateByCycle[cycleId] = createExplorationDrawState(selectedIds);
         return state.exploration.drawStateByCycle[cycleId];
@@ -2922,22 +3071,41 @@
 
       const validIds = new Set(selectedIds);
       if (!Array.isArray(existing.discardPile)) existing.discardPile = [];
+      if (!Array.isArray(existing.temporaryRemoved)) existing.temporaryRemoved = [];
+      if (!Array.isArray(existing.activePiles)) {
+        const legacyHistory = Array.isArray(existing.history) ? existing.history : [];
+        existing.activePiles = [legacyHistory, []];
+      }
+      while (existing.activePiles.length < 2) existing.activePiles.push([]);
+      existing.activePiles = existing.activePiles.slice(0, 2).map((pile, pileIndex) =>
+        (Array.isArray(pile) ? pile : [])
+          .filter((entry) => entry && validIds.has(entry.id))
+          .map((entry) => normalizeExplorationRecord(entry, pileIndex))
+          .filter(Boolean)
+      );
+      existing.temporaryRemoved = existing.temporaryRemoved
+        .map((entry) => typeof entry === "string" ? { id: entry } : entry)
+        .filter((entry) => entry && validIds.has(entry.id))
+        .map((entry) => normalizeExplorationRecord(entry))
+        .filter(Boolean);
+      existing.permanentRemoved = [];
+
+      const legacyDiscardIds = existing.discardPile
+        .map((entry) => typeof entry === "string" ? entry : entry?.id)
+        .filter((id) => validIds.has(id));
       existing.drawPile = existing.drawPile.filter((id) => validIds.has(id));
-      existing.history = existing.history
-        .filter((entry) => entry && validIds.has(entry.id))
-        .map((entry) => ({ ...entry, day: Math.max(0, Number(entry.day || 0)) }));
-      existing.discardPile = existing.discardPile
-        .filter((entry) => entry && validIds.has(entry.id))
-        .map((entry) => ({ ...entry, day: Math.max(0, Number(entry.day || 0)) }));
-      existing.current = existing.current && validIds.has(existing.current.id) ? existing.current : null;
+      existing.drawPile.push(...legacyDiscardIds);
+      existing.discardPile = [];
+      existing.history = existing.activePiles.flat();
+      existing.current = existing.history[existing.history.length - 1] || null;
 
       const knownIds = new Set([
         ...existing.drawPile,
-        ...existing.history.map((entry) => entry.id),
-        ...existing.discardPile.map((entry) => entry.id),
+        ...existing.activePiles.flat().map((entry) => entry.id),
+        ...existing.temporaryRemoved.map((entry) => entry.id),
       ]);
-      if (existing.current) knownIds.add(existing.current.id);
       const missingIds = selectedIds.filter((id) => !knownIds.has(id));
+      existing.drawPile = [...new Set(existing.drawPile)];
       existing.drawPile.push(...shuffleList(missingIds));
       return existing;
     }
@@ -2948,7 +3116,8 @@
       const validIds = new Set(getExplorationLibrary().map((card) => card.id));
       const selectedIds = [...new Set(cardIds)].filter((id) => validIds.has(id));
       const drawState = ensureExplorationDrawState();
-      if ((drawState.history.length || drawState.discardPile.length || drawState.current) && !window.confirm("更新探索牌组会重洗并清空当前抽牌记录与弃牌堆。继续吗？")) return;
+      if ((drawState.activePiles.flat().length || drawState.temporaryRemoved.length)
+        && !window.confirm("更新探索牌组会重洗，并清空当前抽牌结果和暂时移出区。继续吗？")) return;
       state.exploration.selectedByCycle[cycleId] = selectedIds;
       const rule = getExplorationSpecialRule();
       if (rule?.destructionIds) {
@@ -2970,7 +3139,8 @@
       if (!defaultIds?.length) return;
 
       const drawState = ensureExplorationDrawState();
-      if ((drawState.history.length || drawState.discardPile.length || drawState.current) && !window.confirm("恢复初始探索牌组会重洗并清空当前抽牌记录与弃牌堆。继续吗？")) return;
+      if ((drawState.activePiles.flat().length || drawState.temporaryRemoved.length)
+        && !window.confirm("恢复初始探索牌组会重洗，并清空当前抽牌结果和暂时移出区。继续吗？")) return;
 
       const validIds = new Set(getExplorationLibrary().map((card) => card.id));
       const selectedIds = defaultIds.filter((id) => validIds.has(id));
@@ -3000,39 +3170,71 @@
       }
 
       const drawState = ensureExplorationDrawState();
+      if (drawState.activePiles.flat().length) {
+        window.alert("请先结算当前探索结果，再进行下一次探索抽卡。");
+        return;
+      }
       if (!drawState.drawPile.length) {
-        if (drawState.history.length && !drawState.discardPile.length) {
-          window.alert("探索牌堆已空。请先结束抽卡，将已抽卡放入弃牌堆后再重洗。");
-          return;
-        }
-        if (!drawState.discardPile.length || !window.confirm("探索牌堆已空。是否重洗弃牌堆并继续抽牌？")) return;
-        drawState.drawPile = shuffleList(drawState.discardPile.map((entry) => entry.id));
-        drawState.discardPile = [];
-        drawState.current = null;
+        window.alert("探索牌堆已空。请将暂时移出的牌放回，或重新配置探索牌组。");
+        return;
       }
 
-      const cardId = drawState.drawPile.shift();
-      const card = getExplorationCard(cardId);
-      if (!card) return;
-
-      const record = {
-        id: card.id,
-        name: card.name,
-        day: state.day,
-        drawnAt: new Date().toISOString(),
-      };
-      drawState.current = record;
-      drawState.history = [record, ...drawState.history].slice(0, 200);
+      const result = window.ATO_EXPLORATION_RULES.drawTwoPiles(
+        drawState.drawPile,
+        getExplorationCardTag,
+        (cardId, tag, pileIndex) => {
+          const card = getExplorationCard(cardId);
+          return {
+            id: card.id,
+            name: card.name,
+            day: state.day,
+            drawnAt: new Date().toISOString(),
+            removal: tag.removal,
+            draw: tag.draw,
+            pile: pileIndex,
+          };
+        }
+      );
+      drawState.drawPile = result.drawPile;
+      drawState.activePiles = result.piles;
+      drawState.history = result.piles.flat();
+      drawState.current = drawState.history[drawState.history.length - 1] || null;
       saveState();
       renderFlow();
+      if (result.incompletePiles) {
+        window.alert(`探索牌堆不足：有 ${result.incompletePiles} 堆未抽到“不连抽”卡。请结算后补充或放回卡牌。`);
+      }
     }
 
     function endExplorationDraw() {
       const drawState = ensureExplorationDrawState();
-      if (!drawState.history.length) return;
-      drawState.discardPile = [...drawState.history, ...drawState.discardPile].slice(0, 500);
+      const drawn = drawState.activePiles.flat();
+      if (!drawn.length) return;
+      const result = window.ATO_EXPLORATION_RULES.settlePiles(drawState.activePiles);
+      drawState.temporaryRemoved.push(...result.temporaryRemoved);
+      if (result.permanentIds.length) {
+        const permanentIds = new Set(result.permanentIds);
+        const cycleId = currentCycleConfig().id;
+        state.exploration.selectedByCycle[cycleId] = getSelectedExplorationIds()
+          .filter((id) => !permanentIds.has(id));
+      }
+      drawState.drawPile = shuffleList([...drawState.drawPile, ...result.returnIds]);
+      drawState.activePiles = [[], []];
       drawState.history = [];
+      drawState.discardPile = [];
       drawState.current = null;
+      saveState();
+      renderFlow();
+    }
+
+    function returnTemporaryExplorationCards() {
+      const drawState = ensureExplorationDrawState();
+      if (!drawState.temporaryRemoved.length) return;
+      drawState.drawPile = shuffleList([
+        ...drawState.drawPile,
+        ...drawState.temporaryRemoved.map((entry) => entry.id),
+      ]);
+      drawState.temporaryRemoved = [];
       saveState();
       renderFlow();
     }
@@ -3101,9 +3303,15 @@
     function resetExplorationDeck() {
       const selectedIds = getSelectedExplorationIds();
       if (!selectedIds.length) return;
-      if (!window.confirm("重洗并清空当前探索牌组的抽牌记录与弃牌堆吗？")) return;
+      if (!window.confirm("重洗探索牌堆并清空当前待结算抽牌吗？暂时移出和永久移出的牌不会自动放回。")) return;
       state.exploration = normalizeExploration(state.exploration);
-      state.exploration.drawStateByCycle[currentCycleConfig().id] = createExplorationDrawState(selectedIds);
+      const current = ensureExplorationDrawState();
+      const blockedIds = new Set([
+        ...current.temporaryRemoved.map((entry) => entry.id),
+      ]);
+      const next = createExplorationDrawState(selectedIds.filter((id) => !blockedIds.has(id)));
+      next.temporaryRemoved = current.temporaryRemoved;
+      state.exploration.drawStateByCycle[currentCycleConfig().id] = next;
       saveState();
       renderFlow();
     }
@@ -3244,6 +3452,7 @@
         if (flushQueuedSave) queueCampaignSave();
         // Load negotiation cards for explore reminders, then re-render flow.
         loadNegotiationCards().then(() => renderFlow());
+        refreshCachedArgoRecord();
       } catch (error) {
         if (sessionEpoch !== campaignSessionEpoch) return;
         campaignStorageAvailable = false;
@@ -3905,7 +4114,14 @@
     }
 
     function readLocalArgoRecord() {
-      return {};
+      try {
+        const saved = JSON.parse(localStorage.getItem(argoRecordStorageKey) || "{}");
+        const userId = archive.activeProfileId || "default";
+        const userRecord = saved?.users?.[userId] || (saved?.users ? null : saved);
+        return isPlainObject(userRecord) ? userRecord : {};
+      } catch {
+        return {};
+      }
     }
 
     async function readServerArgoRecord() {
@@ -3923,6 +4139,25 @@
         record: isPlainObject(profileRecord) ? profileRecord : null,
         revision: Math.max(0, Number(payload.revision || 0)),
       };
+    }
+
+    async function refreshCachedArgoRecord() {
+      if (argoRecordRefreshInFlight) return;
+      argoRecordRefreshInFlight = true;
+      try {
+        const localRecord = readLocalArgoRecord();
+        let serverRecord = null;
+        try {
+          const server = await readServerArgoRecord();
+          serverRecord = server.record;
+        } catch (error) {
+          console.warn(error);
+        }
+        cachedArgoRecord = mergeArgoRecords(serverRecord, localRecord);
+        renderFlow();
+      } finally {
+        argoRecordRefreshInFlight = false;
+      }
     }
 
     async function writeServerArgoRecord(record, expectedRevision) {
@@ -4479,65 +4714,83 @@
       status.innerHTML = `
         <div class="exploration-count">已选 ${selectedIds.length} / ${library.length} 张</div>
       `;
+      status.appendChild(createExplorationFactionStatus());
 
       const buttons = document.createElement("div");
       buttons.className = "exploration-buttons";
+      const hasActiveExplorationDraw = drawState.activePiles.flat().length > 0;
       const drawButton = document.createElement("button");
       drawButton.type = "button";
-      drawButton.textContent = "抽探索卡";
-      drawButton.disabled = selectedIds.length === 0;
-      drawButton.addEventListener("click", drawExplorationCard);
+      drawButton.textContent = hasActiveExplorationDraw ? "结算完毕" : "抽探索卡";
+      drawButton.disabled = selectedIds.length === 0 && !hasActiveExplorationDraw;
+      drawButton.addEventListener("click", () => {
+        if (hasActiveExplorationDraw) endExplorationDraw();
+        else drawExplorationCard();
+      });
 
-      const resetButton = document.createElement("button");
-      resetButton.type = "button";
-      resetButton.className = "secondary";
-      resetButton.textContent = "重洗牌堆";
-      resetButton.disabled = selectedIds.length === 0;
-      resetButton.addEventListener("click", resetExplorationDeck);
+      const returnButton = document.createElement("button");
+      returnButton.type = "button";
+      returnButton.className = "secondary";
+      returnButton.textContent = `放回暂时移出（${drawState.temporaryRemoved.length}）`;
+      returnButton.disabled = drawState.temporaryRemoved.length === 0;
+      returnButton.addEventListener("click", returnTemporaryExplorationCards);
 
-      const endButton = document.createElement("button");
-      endButton.type = "button";
-      endButton.className = "secondary";
-      endButton.textContent = "结束抽卡";
-      endButton.disabled = drawState.history.length === 0;
-      endButton.addEventListener("click", endExplorationDraw);
-
-      buttons.append(drawButton, endButton, resetButton);
+      buttons.append(drawButton, returnButton);
       toolbar.append(status, buttons);
 
       const summary = document.createElement("div");
       summary.className = "exploration-summary";
       summary.innerHTML = `
-        <div>剩余 ${drawState.drawPile.length} / ${selectedIds.length}，已抽 ${drawState.history.length}，弃牌 ${drawState.discardPile.length}${specialRule ? `，破坏卡组 ${destructionPileIds.length}` : ""}</div>
+        <div>牌堆 ${drawState.drawPile.length} / 当前牌组 ${selectedIds.length}，待结算 ${drawState.activePiles.flat().length}，暂时移出 ${drawState.temporaryRemoved.length}${specialRule ? `，破坏卡组 ${destructionPileIds.length}` : ""}</div>
       `;
+
+      const createDrawnCard = (entry) => {
+        const drawnCard = document.createElement("article");
+        drawnCard.className = "exploration-drawn-card";
+        const drawnFace = document.createElement("div");
+        drawnFace.className = "exploration-drawn-face";
+        drawnFace.setAttribute("aria-label", entry.name);
+        drawnFace.setAttribute("role", "img");
+        drawnFace.style.cssText = getExplorationCardImageStyle(entry.id);
+        const meta = document.createElement("div");
+        meta.className = "exploration-drawn-meta";
+        const cornerNumber = getExplorationCornerNumber(entry.id);
+        const removalLabel = entry.removal === "permanent" ? "永久移出" : (entry.removal === "remove" ? "暂时移出" : "洗回牌堆");
+        const drawLabel = entry.draw === "chain" ? "连抽" : "不连抽";
+        meta.innerHTML = `
+          <div>D${entry.day} · ${escapeHtml(entry.name)} #${entry.id}${cornerNumber ? ` · 黑底${cornerNumber}` : ""}</div>
+          <span class="exploration-card-tag">${removalLabel} · ${drawLabel}</span>
+        `;
+        drawnCard.append(drawnFace, meta);
+        return drawnCard;
+      };
 
       const drawnCards = document.createElement("section");
       drawnCards.className = "exploration-drawn";
-      if (drawState.history.length) {
+      const activeCards = drawState.activePiles.flat();
+      if (activeCards.length) {
         const drawnTitle = document.createElement("div");
         drawnTitle.className = "exploration-drawn-title";
-        drawnTitle.textContent = `已抽卡面（${drawState.history.length}）`;
+        drawnTitle.textContent = `本次探索结果（${activeCards.length} 张）`;
         const drawnGrid = document.createElement("div");
-        drawnGrid.className = "exploration-drawn-grid";
-        drawState.history.forEach((entry) => {
-          const drawnCard = document.createElement("article");
-          drawnCard.className = "exploration-drawn-card";
-
-          const drawnFace = document.createElement("div");
-          drawnFace.className = "exploration-drawn-face";
-          drawnFace.setAttribute("aria-label", entry.name);
-          drawnFace.setAttribute("role", "img");
-          drawnFace.style.cssText = getExplorationCardImageStyle(entry.id);
-
-          const meta = document.createElement("div");
-          meta.className = "exploration-drawn-meta";
-          const cornerNumber = getExplorationCornerNumber(entry.id);
-          meta.textContent = `D${entry.day} · ${entry.name} #${entry.id}${cornerNumber ? ` · 黑底${cornerNumber}` : ""}`;
-
-          drawnCard.append(drawnFace, meta);
-          drawnGrid.appendChild(drawnCard);
-        });
+        drawnGrid.className = "exploration-drawn-grid exploration-active-grid";
+        activeCards.forEach((entry) => drawnGrid.appendChild(createDrawnCard(entry)));
         drawnCards.append(drawnTitle, drawnGrid);
+      }
+
+      const removedPiles = document.createElement("section");
+      removedPiles.className = "exploration-removed-piles";
+      if (drawState.temporaryRemoved.length) {
+        const temporarySection = document.createElement("details");
+        temporarySection.className = "exploration-removed-pile";
+        const temporaryHead = document.createElement("summary");
+        temporaryHead.className = "exploration-pile-head";
+        temporaryHead.textContent = `暂时移出牌堆（${drawState.temporaryRemoved.length} 张）`;
+        const temporaryGrid = document.createElement("div");
+        temporaryGrid.className = "exploration-drawn-grid";
+        drawState.temporaryRemoved.forEach((entry) => temporaryGrid.appendChild(createDrawnCard(entry)));
+        temporarySection.append(temporaryHead, temporaryGrid);
+        removedPiles.appendChild(temporarySection);
       }
 
       const builder = document.createElement("details");
@@ -4578,6 +4831,11 @@
       const destructionSet = new Set(specialRule ? getDestructionCardIds() : []);
       library.forEach((card) => {
         const item = document.createElement("label");
+        const preview = document.createElement("div");
+        preview.className = "exploration-library-preview";
+        preview.setAttribute("role", "img");
+        preview.setAttribute("aria-label", card.name);
+        preview.style.cssText = getExplorationCardImageStyle(card.id);
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
         checkbox.value = card.id;
@@ -4585,8 +4843,11 @@
         checkbox.disabled = destructionSet.has(card.id);
         const text = document.createElement("span");
         const cornerNumber = getExplorationCornerNumber(card.id);
-        text.textContent = `${card.name} #${card.id}${cornerNumber ? ` · 黑底${cornerNumber}` : ""}${destructionSet.has(card.id) ? " · 破坏卡" : ""}`;
-        item.append(checkbox, text);
+        const tag = getExplorationCardTag(card.id);
+        const removalLabel = tag.removal === "permanent" ? "永久移出" : (tag.removal === "remove" ? "暂时移出" : "非移出");
+        const drawLabel = tag.draw === "chain" ? "连抽" : "不连抽";
+        text.textContent = `${card.name} #${card.id}${cornerNumber ? ` · 黑底${cornerNumber}` : ""} · ${removalLabel} · ${drawLabel}${destructionSet.has(card.id) ? " · 破坏卡" : ""}`;
+        item.append(preview, checkbox, text);
         if (specialRule && !destructionSet.has(card.id)) {
           const destructionButton = document.createElement("button");
           destructionButton.type = "button";
@@ -4620,7 +4881,8 @@
       builder.appendChild(builderBody);
 
       wrapper.append(toolbar, summary);
-      if (drawState.history.length) wrapper.appendChild(drawnCards);
+      if (drawState.activePiles.flat().length) wrapper.appendChild(drawnCards);
+      if (drawState.temporaryRemoved.length) wrapper.appendChild(removedPiles);
       const destructionTools = createExplorationDestructionTools(selectedIds, destructionPileIds);
       if (destructionTools) wrapper.appendChild(destructionTools);
       wrapper.appendChild(builder);
@@ -4830,6 +5092,124 @@
 
     function currentMapTileLabel() {
       return state.mapSnapshot?.currentTileLabel || state.location || "当前板块";
+    }
+
+    const mapFactionLabelsByCycle = {
+      c1: {
+        minoians: "米诺斯人",
+        labyrinthians: "迷宫徒",
+        hornsworn: "角誓者",
+        none: "无",
+      },
+      c2: {
+        helots: "希洛人",
+        cyclopes: "独眼巨人",
+        symmachy: "邦联同盟",
+        none: "无",
+      },
+      c3: {
+        sunheirs: "太阳后裔",
+        delphians: "德尔菲人",
+        twilightWatch: "暮光守望",
+        none: "无",
+      },
+    };
+
+    const diplomacyMarkersByCycle = {
+      c1: [
+        { value: -10, label: "开战", bonus: -3 },
+        { value: -5, label: "恶劣", bonus: -2 },
+        { value: -2, label: "交恶", bonus: -1 },
+        { value: 0, label: "中立", bonus: 0 },
+        { value: 4, label: "友善", bonus: 1 },
+        { value: 8, label: "结盟", bonus: 2 },
+      ],
+      c2: [
+        { value: 0, label: "隐藏", bonus: -1 },
+        { value: 3, label: "怀疑", bonus: 0 },
+        { value: 7, label: "友善", bonus: 1 },
+        { value: 12, label: "结盟", bonus: 2 },
+      ],
+      c3: [
+        { value: -10, label: "开战", bonus: -3 },
+        { value: -5, label: "恶劣", bonus: -2 },
+        { value: -2, label: "交恶", bonus: -1 },
+        { value: 0, label: "中立", bonus: 0 },
+        { value: 4, label: "友善", bonus: 1 },
+        { value: 8, label: "结盟", bonus: 2 },
+      ],
+    };
+
+    function formatSignedNumber(value) {
+      return value > 0 ? `+${value}` : String(value);
+    }
+
+    function currentMapFactions() {
+      let ids = Array.isArray(state.mapCurrentTileFactions)
+        ? state.mapCurrentTileFactions
+        : (Array.isArray(state.mapSnapshot?.currentTileFactions) ? state.mapSnapshot.currentTileFactions : []);
+      if (!ids.length) {
+        const cycleId = currentCycleConfig().id;
+        const tileId = state.mapSnapshot?.currentTileId || "";
+        const entry = window.ATO_MAP_TILE_TAGS?.tiles?.[`${cycleId}:${tileId}`];
+        ids = Array.isArray(entry?.factions) ? entry.factions : [];
+      }
+      return [...new Set(ids.map((id) => String(id || "").trim()).filter(Boolean))];
+    }
+
+    function mapFactionLabel(cycleId, factionId, index = -1) {
+      const syncedLabels = Array.isArray(state.mapCurrentTileFactionLabels) ? state.mapCurrentTileFactionLabels : [];
+      if (!syncedLabels[index] && state.mapSnapshot?.currentTileId) {
+        const entry = window.ATO_MAP_TILE_TAGS?.tiles?.[`${cycleId}:${state.mapSnapshot.currentTileId}`];
+        if (Array.isArray(entry?.factions) && entry.factions[index] === factionId) {
+          return mapFactionLabelsByCycle[cycleId]?.[factionId] || factionId;
+        }
+      }
+      return syncedLabels[index] || mapFactionLabelsByCycle[cycleId]?.[factionId] || factionId;
+    }
+
+    function diplomacyValue(cycleId, factionId) {
+      const diplomacy = isPlainObject(cachedArgoRecord?.diplomacy) ? cachedArgoRecord.diplomacy : {};
+      const raw = diplomacy[`${cycleId}-${factionId}`] ?? diplomacy[factionId];
+      if (raw === "" || raw === null || raw === undefined) return null;
+      const value = Number(raw);
+      return Number.isFinite(value) ? value : null;
+    }
+
+    function diplomacyStatus(cycleId, value) {
+      const markers = diplomacyMarkersByCycle[cycleId] || [];
+      let status = markers[0] || { label: "未分级", bonus: 0 };
+      markers.forEach((marker) => {
+        if (value >= marker.value) status = marker;
+      });
+      return status;
+    }
+
+    function currentMapFactionStatusItems() {
+      const cycleId = currentCycleConfig().id;
+      const factions = currentMapFactions();
+      if (!factions.length) return [{ text: "AG 当前格：未同步地图阵营", muted: true }];
+      if (factions.includes("none")) return [{ text: "AG 当前格：无阵营", muted: true }];
+
+      return factions.map((factionId, index) => {
+        const label = mapFactionLabel(cycleId, factionId, index);
+        const value = diplomacyValue(cycleId, factionId);
+        if (value === null) return { text: `${label}：未记录外交`, muted: true };
+        const status = diplomacyStatus(cycleId, value);
+        return { text: `${label}：${status.label} (${formatSignedNumber(status.bonus)})`, muted: false };
+      });
+    }
+
+    function createExplorationFactionStatus() {
+      const row = document.createElement("div");
+      row.className = "exploration-faction-status";
+      currentMapFactionStatusItems().forEach((item) => {
+        const chip = document.createElement("span");
+        chip.className = `exploration-faction-chip${item.muted ? " muted" : ""}`;
+        chip.textContent = item.text;
+        row.appendChild(chip);
+      });
+      return row;
     }
 
     let _negotiationCardsCache = null;
@@ -5420,10 +5800,13 @@
       setCardTrackProgress(input.dataset.cardProgressInput, input.value);
     });
     campaignSyncChannel?.addEventListener("message", () => void syncDashboardFromExternalUpdate());
+    recordSyncChannel?.addEventListener("message", () => void refreshCachedArgoRecord());
     window.setInterval(() => void syncDashboardFromExternalUpdate(), 4000);
     window.addEventListener("focus", () => void syncDashboardFromExternalUpdate());
+    window.addEventListener("focus", () => void refreshCachedArgoRecord());
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) void syncDashboardFromExternalUpdate();
+      if (!document.hidden) void refreshCachedArgoRecord();
     });
 
     setAuthMode("login");

@@ -1,0 +1,1631 @@
+{
+  "engine": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
+  "lang": "chi_sim+eng",
+  "cards": [
+    {
+      "file": "assets\\exploration-cards\\c1\\13400.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "AS  =\nSSGEE\nNike HD\no2 25\n=o &\nDC",
+        "body": "SOG\na       TsO q\n:         oo > Bia\nS      oot 后\n-     NA YO +H?\n一、     ono +\n出     AZEY\nES=o oW\ncb     g250 到\n，医    SESS ys\n=  .     ate = RK\nnd\nLL)  8)     oe 号地\nN\n本     二 Lie 4\n| Ky\n= Gee leo oe\ng EL os—ge0 +h eK\nCS wg he ee get a\nLe Oh) «a |",
+        "footer": "SS\n    如 近呈过三二症瑟      an\nSee SaeesUOrer    =\neS Orme ee TINO      二",
+        "full": "_. ©\nota\n2525\nBeas\n>\nMs      HTEeE0g\nER      gS\nR       Begs o +\nA) ox     ANnS tn ase\n”    N a 0  ¢  “a\n-L\\  Q    ACEo HH  th\n~~ OCs ian ea  Lo\nkK ‘=    ES=o 号\n=o    四是一石 +r  |\nLD    号全 o <  kX\n[|    epo™   a\nae     om OD. tke 2 |\no8Zrs  HIS\n~~ 人    Lae  Pe |<\nLL  =    2n 52 oS\nOe   B52 wb ay iw\nco      \"号 2\nee Sf GEReESSS KER\nfie EEO O-SS0 HAR\n> ESSE 5os | eee 2\nWag = SETR eS ss SSM\nwee fam. 2sa3 NZ\n5 Pees\nTe 2a fSCuEe E\n=  weEEsEteae 旺\nEODEERZS    =  \\\n[一  S BEESESHZ=E 中  —\nSoa Set im S OO om\nSereSaqA20rce iy  三\nSB Ore eee TIN   三"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6400.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "Bie eee UR eae ge eee ie\nDoc Days",
+        "body": "S38, KEIM,\n然后失去-3 全 。\n如果没有失去 ，\n获得+1例。\nGIB Gain +28.",
+        "footer": "移出上组直到下一次定时战半 8\nRemove until the next\nAB0075                Timeline Battle.",
+        "full": "坏日子\nDoc Days\n每有3 全，失去-1汉，\n如果没有失去兴，\nRS +1 &\nGIB Gain +2&.\n移出卡组直到下一次定时战斗 8\nRemove until the next\nAB0075            Timeline Battle."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6401.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "Ae SR AOR ，，:\nMINOAN FLEET",
+        "body": "根据你们与米诡斯人的外交\n Gain +1 €&.\nt Friendly ) Gain 4 Trireme resources.\n Each Argonaut gains +1 人\n Gain +1 9’.\n Lose -1 Titan.\n Lose -1 &.\n[pal i a 2   7 a a ee eee ee 2",
+        "footer": "29) 移出卡组直到下一次定时战半 @\nRemove until the next\nAB0076               Timeline Battle.",
+        "full": "米诺斯人舰队\nMINOAN FLEET\nARE EMSA eT A BS be\n Gain +1 €.\n Gain 4 Trireme resources.\n Each Argonaut gains +1 A.\n Gain +1 Y’.\n{ Denounced) ) Lose -1 Titan.\n Lose -1€.\nCID 随机一名阿尔戈英雄\n获得1枚绝望指示物。\n29) Bill RAH BF —REAES 4\nRemove until the next\nAB0076           Timeline Battle."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6402.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "  HE BAMBA   :\nHORNSWORN FLEET",
+        "body": "根据你们与角壮者的外区\n Gain +1.\n‘ Friendly Chosen Argonaut gains 1\nMnemos node.\n‘ Neutral } ) Chosen Argonaut gains +1 b\n Gain +1 'W7\n‘ Denounced} ) Gain +2 4%.\n Lose -1 XX.",
+        "footer": "办sraaa eee\nRemove until the next\nAB0077                 Timeline Battle.",
+        "full": "角碑者舰队\nHORNSWORN FLEET\nARES SSN be\n关系结算一项效果。\nAllied) ) Gain +1 %.\n‘ Friendly ) Chosen Argonaut gains 1\nMnemos node.\n‘Neutral ) ) Chosen Argonaut gains +1 A.\n{Denounced cn :2\nCR Lose -1X.\nOG 随机一名阿尔戈英雄\n获得1枚绝望指示物。\n办 移出 eanarr vans\nRemove until the next\nAB0077              Timeline Battle."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6403.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "é    迷宫徒轮船\nLABYRINTHIAN\nVESSEL",
+        "body": "ARH VR |S Ss EBS IP AR\n关系结算一项效果。\nAllied ) Gain +1 % and +14.\nET Gain 1 Calcified\nKnuckle Bone or Fleshy Mantle\nresource and +1 全\n(人YY Each Argonaut gains +1.\nCULE) Gain +1 YW’.\n‘Denounced ) At the start of the next\nTimeline Battle, Escalate 1.\nwei  ..",
+        "footer": "» DAIS ATA HO SEI IS TY\n31) 移出卡组直到下一次定肝战半\nRemove until the next\nAB0078              Timeline Battle.",
+        "full": "迷宙徒轮船\nLABYRINTHIAN\nVESSEL\n根据你们与迷宫徒的外交\n关系结算一项效果。\n(Allied) Gain +1 and +1.\nQari\" Gain 1 Calcified\nKnuckle Bone or Fleshy Mantle\nresource and +1 &.\n{ Neutral ] ) Each Argonaut gains +1.\n\\ Unfriendly Zerg a)\n{ Denounced} ) At the start of the next\nTimeline Battle, Escalate 1.\nREED Cain +1 A.\nCID 随机一名阿尔戈关雄\n获得1枚绝望指示物。\n31) 移出卡组直到下一次定时战斗\nRemove until the next\nAB0078             Timeline Battle."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6404.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "    贸易站\nTRADEPOST",
+        "body": "Gain 1 Trireme resource.\nGietiva» Gain 2 Trireme\nresources instead.",
+        "footer": "AB0079",
+        "full": "贸易站\nTRADE POST\nGain 1 Trireme resource.\nGIST Gain 2 Trireme\nresources instead.\nABO079"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6405.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "—  贸易站 ee\nTRADE POST |",
+        "body": "Gain 1 Trireme resource, -\nGIST Gain 2 Trireme\nresources instead.",
+        "footer": "AB0080",
+        "full": "贸易站\nTRADE POST\nGain 1 Trireme resource.\n Gain 2 Trireme\nresources instead.\nABO080"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6406.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "         渔码头\nFISHING PIER",
+        "body": "Gain 2 Trireme resources.\n Chosen\nArgonaut gains +1 A.",
+        "footer": "AB0081",
+        "full": "渔码头\nFISHING PIER\nGain 2 Trireme resources.\n Chosen\nArgonaut gains +1 A.\nAB0081"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6407.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "         PRAT\n~ TRIREME WRECK",
+        "body": "Gain 2 Trireme resources.\n(Etats ® Chosen\nArgonaut gains +1 A.",
+        "footer": "AB0082",
+        "full": "战船残骸\nTRIREME WRECK\nGain 2 Trireme resources.\n Chosen\nArgonaut gains +1 A.\n， 9) a\nABO0082          |"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6408.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "。        ALE BK        :\nTRIREME WRECK. .",
+        "body": "Gain 2 Trireme resources.\n‘Denounced- Chosen\nArgonaut gains +1 A.",
+        "footer": "AB0083",
+        "full": "AKAGI BX\nTRIREME WRECK\nGain 2 Trireme resources.\n Chosen\nArgonaut gains +1 A.\nAB0083"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6409.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "         OE        2\nSMITHY",
+        "body": "Gain 1 Armament\nresource.\nGitta Gain 2\nArmament resources\ninstead.",
+        "footer": "AB0084",
+        "full": "铁斤铺\nSMITHY\nGain 1 Armament\nresource.\nGET Gain 2\nArmament resources\ninstead.\nAB0084"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6410.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "SNMHHY",
+        "body": "Gain 1 Armament\nresource.\n\\Friendiy+ Gain 2\nArmament resources\ninstead. _",
+        "footer": "AB0085",
+        "full": "=       =\n$k LL $8\nSMITHY\nGain 1 Armament\nresource.\nGENT Gain 2\nArmament resources\ninstead. .\n° : (ee\nAB0085            炒"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6411.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "_VVEAPONS CACHE",
+        "body": "Gain 2 Armament\nresources.\nQe Gain |\nArmament resource\ninstead. |                   ,",
+        "footer": "AB0086",
+        "full": "BE SS\n车南库\nWEAPONS CACHE\nGain 2 Armament\nresources.\n{ Denounced-eziiam\nArmament resource\ninstead. .\n¥; eR zi  人\nAB0086"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6412.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "_.. ABANDONED\n= SHRINE",
+        "body": "Gain 1 Monument\nresource.\n Friendly+) Gain ?\nMonument resources\ninstead.",
+        "footer": "AB0087",
+        "full": "废弃神盒\n_ ABANDONED\nSHRINE\nGain 1 Monument\nresource.\nGED Gain 2\nMonument resources\ninstead.\nAB0087"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6413.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "dates   RAMS    t\nABANDONED\nan       ~ SHRINE          |",
+        "body": "Gain 1 Monument\nresource.\nGira» Gain 2\nMonument resources\ninstead.",
+        "footer": "AB0088",
+        "full": "RFS\nABANDONED\nSHRINE\nGain 1 Monument\nresource.\n Gain 2\nMonument resources\ninstead.\nABO088"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6414.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "RR RG a  二\nTEMPLE RUINS",
+        "body": "Gain 2 Monument\nresources.\nOCT》 Chosen\nArgonaut gains +1 W.\n人",
+        "footer": "AB0089",
+        "full": "Xx    WL  =\n48H FEY a Se\nTEMPLE RUINS\nGain 2 Monument\nresources.\n(YY Chosen\nArgonaut gains +1 .\n=  : @) pe\nAB0089             7"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6415.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "ak FIL as Jo  AGS.\nTEMPLE RUINS",
+        "body": "ain 2 Monument\nresources.\nGEMM Chosen\nArgonaut gains +1.",
+        "footer": "AB0090",
+        "full": "神殿废墟\nTEMPLE RUINS\nGain 2 Monument\nresources.\nite» Chosen\nArgonaut gains +1 W.\nABO090          ae"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6416.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "TITAN ee",
+        "body": "Gain +1 Titan.           Ga\n| (Friendly Chosen\n_ Argonaut gains +1 Q).",
+        "footer": "AB0091",
+        "full": "泰坦\nTITAN\nGain +1 Titan.\n:    (Friendly      ‘= Chosen\nArgonaut gains +1).\nABO091"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6417.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "，   废弃舰队   ，\nABANDONED FLEET",
+        "body": "Gain 3 Trireme resources, —\nCT Gain +1 VY.",
+        "footer": "AB0092",
+        "full": "废弃舰队\nABANDONED FLEET\nGain 3 Trireme resources.\nCT Gain +1'V\nAB0092                             |"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6418.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "  上日兵工厂 =\nOLD ARMORY",
+        "body": "Gain 3 Armament\nresources.\nCite) Gain 4 Armament\nresources instead.",
+        "footer": "AB0093",
+        "full": "IAAT\nOLD ARMORY\nGain 3 Armament\nresources.\nWit) Gain 4 Armament\nresources instead.\n”  ‘of . (&) 志和\nAB0093"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6419.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "   a IR\n_ HIDDEN TEMPLE",
+        "body": "Gain 3 Monument\nresources.\nTITTTYY Gain +1 A.",
+        "footer": "AB0094",
+        "full": "隐秘神殿\nHIDDEN TEMPLE\nGain 3 Monument\nresources.\n  ite» Gain +1A.\nAB0094"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6420.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "”废弃舰队\nABANDONED FLEET",
+        "body": "Gain 3 Trireme resources.\n Lose -1 Titan.",
+        "footer": "AB0095",
+        "full": "废弃舰队\nABANDONED FLEET\nGain 3 Trireme resources.\n人CR Lose -1 Titan.\nAB0095"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6421.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "     Fe HR    .\nDESECRATED\n:        TEMPLE          :",
+        "body": "Gain 2 Monument\nresources.\nGeter ® Gain +1 ht.",
+        "footer": "AB0096",
+        "full": "FE HR\nLD ESECRATED\nTEMPLE\nGain 2 Monument\nresources.\n Gain +1#.\nAB0096"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6422.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "，          造船三\nSHIPYARD",
+        "body": "Gain 4 Trireme resources.\nCT Chosen\nArgonaut gains +1 A.",
+        "footer": "AB0097",
+        "full": "N+\n造船三\nSHIPYARD »\nGain 4 Trireme resources.\nOfte Chosen\nArgonaut gains +1 A.\n。 ae =the :   \"te\nBRE bs ee\nAB0097              |"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6423.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "",
+        "body": "Gain 4 Trireme resources.\nCT》Chosen\n， Argonaut gains +1 人.",
+        "footer": "AB0098",
+        "full": "SHE\n造船厂\nSHIPYARD\nGain 4 Trireme resources. ©\nGEEZ Chosen\nArgonaut gains +1 A.\nAB0098"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6424.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "WEAPONS CACHE",
+        "body": "Gain 3 Armament\nresources.\nGites Chosen\nArgonaut gains +1 A.",
+        "footer": "AB0099",
+        "full": "WEAPONS CACHE\nGain 3 Armament\nresources.\nGetter Chosen\nArgonaut gains +1 A.\nABO0099"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6425.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "Pac i ye iu eee ee\n—_ DESEERATED",
+        "body": "Gain 3 Monument\nresources.\nCanter» Gain +1 &.",
+        "footer": "AB0100",
+        "full": "DESECRATED\nTEMPLE\nGain 3 Monument\nresources.\nCT Gain +1 &.\n、 eo aa   . cag\nAB0100             ."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6426.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "    隐秘神殿\n~FIIDDEN TEMPLE",
+        "body": "Gain 4 Monument\nresources.\nYou may gain +3 YW to\ngain +1 Priest.\no",
+        "footer": "AB0101",
+        "full": "隐秘神殿\nHIDDEN TEMPLE\nGain 4 Monument\nresources.\nYou may gain +3 W to\ngain +1 Priest.\nABO101         7"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6427.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "ae    poe oe\nGYPTIAN\nWAR FLEET",
+        "body": "Gain 5 Trireme resources.\nAllied Lose -1 Y’.",
+        "footer": "AB0102",
+        "full": "EOr tk\nGYPTIAN\nWAR FLEET\nGain 5 Trireme resources.\nQM) Lose -1 人\nAB0102"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6428.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "0 Se\nGYPTIAN\nWAR FLEET",
+        "body": "Gain 6 Trireme resources. -\nGME) Lose -1 VW.",
+        "footer": "AB0103",
+        "full": "BV OTN\nGYPTIAN\nWAR FLEET\nGain 6 Trireme resources.\nGED Lose -1 YW’.\nme om 加\nAB0103            )"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6429.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": " 有目兵IJ\n:  OLD ARMORY",
+        "body": "Gain 5 Monument      ee\nresources.\n Lose -1€.",
+        "footer": "25)\nAB0104",
+        "full": "IAAL)\nOLD ARMORY\nGain 5 Monnment\nresources.\n: Lose -1€.\nAB0104"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6430.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "Ce ee  :\nBRONZE PEOPLE\nARMORY",
+        "body": "Gain 5 Armament           :\nresources.\n《wy Gain +1b (once\nuntil the next Timeline\nBattle). , .",
+        "footer": "J ate   ares                      /，\n8\nAB0105",
+        "full": "青铜人兵工厂\nBRONZE PEOPLE\nARMORY\nGain 5 Armament\nresources.\nfie) Gain +1cb (once\nuntil the next Timeline\n“ Battle). , |\nAB0O105           )"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6431.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "RAR\n      GRAND\nTEMPLE RUINS",
+        "body": "Gain 5 Monument\n_resources.\n《Cr Gain +1 ¥.",
+        "footer": "AB0106",
+        "full": "大型神殿废起\nGRAND\nTEMPLE RUINS\nGain 5 Monument\n人\n Gain +1.\nAB0106"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6433.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "“未驯服的泰坦\nUNTAMED JITAN",
+        "body": "Gain +1 Titan.\n Chosen\nArgonaut gains +1Q.",
+        "footer": "AB0108",
+        "full": "未驯服的泰坦\nUNTAMED TITAN\nGain +1 Titan.\n Chosen\nArgonaut gains +1.\nAB0108"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6434.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "GT oes REE a\n|        门EKATRAP       、",
+        "body": "Atthe end of this Exploration\nstep, resolve an Ambush Battle\n(Cycle I Storybook, p. 112).\nCW/8+) At the start of this\nbattle, Escalate 1.",
+        "footer": "RABE    ¢\nRemove from the deck\nAB0109               permanently.",
+        "full": "BS bat\nHIEKATRAP\nAt the end of this Exploration\nStep, resolve an Ambush Battle\n(Cycle I Storybook, p. 112).\nGED At the start of this\nbattle, Escalate 1.\n永久移出天组           SN\nRemove from the deck\nAB0109                  permanently."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6435.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "-人人网络\nINFORMANT",
+        "body": " Gain +1. ee      :\nUE) Roll a d10. On 8+\ngain +1 ch.",
+        "footer": "移出卡组直到下一次定时战半\nRemove until the next\nAB0110                Timeline Battle.",
+        "full": "线人网络\n‘INFORMANT\nNETWORK\nGain +1 %.\n Roll a d10. On 8+\ngain +1cb.\n移出卡组直到下一次定肝战半 4\nRemove until the next\nAB0110               Timeline Battle."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6436.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "",
+        "body": "8 Resolve an additional C)\n* “oe pie   有  DS oat   at: ae ee. e\n| th        See\n人 二人这 . LAN 乞 he Loe 2 $",
+        "footer": "移出让组直到下一次定肝战斗  ¢\nRemove until the next                         |\nABO111                Timeline Battle.                                   :",
+        "full": "KR\nNAN Se\n Resolve an additional 他)\n移出大组直到下一次定肝战斗 d\nRemove until the next                        }\nABO111               Timeline Battle.                                 ,"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6437.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "_ MAZE PILGRIM",
+        "body": "Gain +1 ft (If ona & Map Tile:\ngain +2 # instead).\nIf you then have 3+ #, see 0014\nin the Fated Conundrum hub.\nCW/54) Gain 1 additional #.\n Random Argonaut\ngains ] Despair token.",
+        "footer": "移出卡组直到下一次定时战半 @\nRemove until the next\nAB0112                Timeline Battle.",
+        "full": "AB RES\nMAZE PILGRIM\nGain +1 & (fon a & Map Tile:\ngain +2 # instead).\nIf you then have 3+ #%, see 0014\nin the Fated Conundrum hub.\nCW/5+) Gain 1 additional #.\n Random Argonaut\ngains 1 Despair token.\nBAKABP FREAK 4\nRemove until the next\nAB0112               Timeline Battle."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6438.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "RSME       .\n~~ MAZE STORM",
+        "body": "Gain +1合\nQV Gain +2Ainstead.",
+        "footer": "移出大组直到下一次定肝战斗 @\nRemove until the next\nABO113              Timeline Battie.",
+        "full": "MAZE STORM\nGain +1 A.\n7B Gain +2 A instead.\n移出大组直到下一次定肝战斗\nRemove until the next\nAB0113            Timeline Battle."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6439.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "     拍聘只动 ee\nRECRUITMENT\nEe DRIVE",
+        "body": "Gain +1.               “\n(Allied Lose -1 Y.",
+        "footer": "了永久移出大组                  8\nRemove from the deck\nAB0114                 permanently.",
+        "full": "Aas aa\nRECRUITMENT\nDRIVE\nGain +1.\n《TRY Lose -1 Y’.\n永久移出大组                   ¢\nRemove from the deck\nAB0114              permanently."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c1\\6440.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "~ FIEART OF THE\nMAZE",
+        "body": "Youre ambushed by the\nTemenos itself! At the end of\nthis Exploration Step, resolve\na Temenos Battle (note Special\nAftermath 0006).\nGED At the start of this\nbattle, Escalate 1.",
+        "footer": "永久移出让组                  @\nRemove from the deck\nAB0116              permanently.",
+        "full": "aE IL\nHEART OF THE\nMAZE\nYou're ambushed by the\nTemenos itself! At the end of\nthis Exploration Step, resolve\na Temenos Battle (note Special\nAftermath 0006).\n At the start of this\nbattle, Escalate 1.\n永久移出大组           8\nRemove from the deck\nABO116          permanently."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13600.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "| ASA 8\nEMENOS FEAR\n-.» , AQUIFER",
+        "body": "Gain 2 Fear Essence        :\nresources.\n€JE Gain+2A asa\ngroup.",
+        "footer": " BB1212                 :",
+        "full": "ajaiasacuann\nEMENOS TEAR\nAQUIFER\nGain 2 Fear Essence\nresources.\n€7E Gain+2Aasa\ngroup."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13601.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "(AN\nRE-LSCHATON\n          ARMORY",
+        "body": "Gain 2 War Machine\nresources.\nGeri Gain 3 War\nMachine resources\n- instead. .\nine",
+        "footer": " BB1216",
+        "full": "At a GI\nPRE-ESCHATON\nARMORY\nGain 2 War Machine\nresources.\nMachine resources\ninstead. ."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13602.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "TEMPLE OF ARES",
+        "body": "Gain 2 Relief resources.\nGJIE Gain +1WVasa\ngroup.",
+        "footer": "  BB1219",
+        "full": "呵到斯神殿\nTEMPLE OF ARES\nGain 2 Relief resources.\n Gain +1 Wasa\ngroup. —"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13603.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "(Aa\nEMENOS\nMa",
+        "body": "Gain 1 Maze Fragment\nresource.\n€JE® Gain 2 Maze\nFragment resources\ninstead.",
+        "footer": "       BB1209",
+        "full": "a aarare\nEMENOS\nMINESHAFT\nGain 1 Maze Fragment\nresource.\n€J/® Gain 2 Maze\nFragment resources\n~ instead.\nei eee ee Ce”"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13604.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "和   Wee ie Pane ree\nree       EAPONS\nWORKSHOP       :",
+        "body": "Gain 1 WarMachine\nresource.\nGitte Gain 2 War\nMachine resources\nInstead. . ，\n| earshgra cays = a",
+        "footer": "  BB1215",
+        "full": "Weipor\n|             FAPONS\nWORKSHOP\nGain 1 War Machine\nresource.\n人ET Gain 2 War\nMachine resources\ninstead. .\n: ete es 机 -@."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13605.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "SHRINE TO ARES",
+        "body": "Gain 1 Relief resource.\nGET Gain 2 Relief\nresources instead.",
+        "footer": "  BB1217                          人",
+        "full": "[So] Sq Ht HH See\nSHRINE TO ARES\nGain 1 Relief resource.\nVFriendly+) Gain 2 Relief\nresources instead.\n  BB1217"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13606.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "SS 、，\nTEMENOS PIT ，  =",
+        "body": "Gain 2 Maze Fragment\nresources.\nJE Gain+ifasa\ngroup.",
+        "footer": " BB1211",
+        "full": "AMET ie\nTEMENOS PIT\nGain 2 Maze Fragment\nresources.\nGE Gain+iAasa\ngroup.\n  BB1211                                r"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13607.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "人\n        TEMENOS.\noo PAINESHAH",
+        "body": "Gain 1 Maze Fragment\nresource.\n Gain 2 Maze\nFragment resources\ninstead. .\n wore en lg",
+        "footer": "    BB1210",
+        "full": "erat asta\nFMENOS\nMINESHAFT\nGain 1 Maze Fragment\nresource.\n Gain 2 Maze\nFragment resources\ninstead. .\n  BB1210             )"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13608.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "ee\nTEMPLE OF ARES",
+        "body": "Gain 2 Relief resources.\nGIE Gain +1 asa\ngroup. |                     :",
+        "footer": "  BB1220",
+        "full": "呵瑞斯神殿\nTEMPLE OF ARES\nGain 2 Relief resources.\nGI Gain +1 asa\ngroup."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13609.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "(eee\nPARTAN\n        WRECKAGE ~",
+        "body": "Gain 4 War Trireme\nresources.\n€JED Gain+1 A asa\ngroup.",
+        "footer": " BB1229              人",
+        "full": "itaraa\nPARTAN\nWRECKAGE\nGain 4 War Trireme\nresources.\nGE Gain +1Aasa\ngroup.\noo.\nSe"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13610.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "(IRA\n:        AEDALUS\nLABORATORY",
+        "body": "Gain 3 War Machine\nresources.\n€ME) Gain 4 War Machine\nresources instead.",
+        "footer": "   BB1223",
+        "full": "AEDALUS\nLABORATORY\nGain 3 War Machine\nresources.\nvv Gain 4 War Machine\nresources instead.\n  BB1223                                   :"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13611.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "| MEA Tene\n(CYCLOPEAN TEMPLE\nOFTIYPERION",
+        "body": "Gain 3 Relief reSOurcesS.\n@G& 获得1个\nTHER EA Aa te A",
+        "footer": "   BB1225                                                  人",
+        "full": "a BORE EC CEE\nYCLOPEAN TEMPLE\nOF HYPERION\nGain 3 Relief resources.\nGi 获得1个\n独眼巨人牙齿稀有资源。\n  BB1225                          P"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13612.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "_ poe ee\nEMENOS TEAR\nAQUIFER",
+        "body": "Gain 2 Fear Essence\n_ resources，\n€JE Gain+2Aasa\ngroup.",
+        "footer": "  BB1214                            :",
+        "full": "FEMENOs Pen\nEMENOS FEAR\nAQUIFER\nGain 2 Fear Essence\nresources.\nJE Gain+2A asa\ngroup.\n  BB1214"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13613.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "PALIRROIA TRIREME",
+        "body": "Gain 3 War Trireme\nresources.\n€JED Lose -1 Titan.",
+        "footer": "  BB1226",
+        "full": "由里受亚战船\nPALIRROIA TRIREME\nGain 3 War Trireme\nresources.\n~ @EB Lose -1 Titan.\n'  BB1226"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13614.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "2222002代达罗斯实验室\noo Teen\nLABORATORY",
+        "body": "Gain 3 War Machine\nresources.\n«JED Gaint+ifvasa\neroup.                    :",
+        "footer": "  BB1233                               人",
+        "full": "Guy iea\nAEDALUS\nLABORATORY\nGain 3 War Machine\nresources.\nJED Gain+1Aasa\ngroup.\n了   的) 1 ae"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13615.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "ARE A a ree\nYCLOPEAN\nTEMPLE OF IAPETUS",
+        "body": "Gain 4 Relief resources.\nSAME Gain +1 ch (once\nuntil the next Timeline\nBattle).",
+        "footer": "|  BB1232",
+        "full": "独眼 A 的伊阿珀托斯神殿\nYCLOPEAN\nTEMPLE OF IAPETUS\nGain 4 Relief resources.\n名 Gain +1 (once\nuntil the next Timeline\nBattle).\n   BB1232            ni"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13616.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "es\nSPARTAN TRIREME",
+        "body": "Gain 5 War Trireme\nresources.\nCME) Lose -1 YW.",
+        "footer": "|   BB1238                                            4",
+        "full": "斯巴达战船\nSPARTAN TRIREME\nGain 5 War Trireme\nresources.\n Lose -1 YY’.\n|  BB1238"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13617.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "a SECA Ne ETE\nTEMPLE OF GAIA",
+        "body": "Gain 5 Relief resources.\nJB Lose -3 VW.",
+        "footer": " BB1235                      人",
+        "full": "TPR A BY ae A\nYCLOPEAN\nTEMPLE OF GAIA\nGain 5 Relief resources.\nGIB Lose -3 V."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13618.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "toa. 下:\nSHRINE TO ARES",
+        "body": "Gain 1 Relief resource.\n Gain 2 Relief\nresources instead.",
+        "footer": "  BB1218                             f",
+        "full": "So] Sn Sr HH SE\nSHRINE TO ARES\nGain 1 Relief resource.\n: Gain 2 Relief\nresources instead.\n  BB1218                             人"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13619.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "yy SAR\n~ CLASS TRIREME",
+        "body": "Gain 6 WarTrireme\nresources.               |\nGJ Gain+ifasa\ngroup.",
+        "footer": "   BB1234                                                           人",
+        "full": "马拉松级战船\nMARATHONIAN-\nCLASS TRIREME\nGain 6 War Trireme\nresources.\n@I® Gain+l1Aasa\ngroup.\n  BB1234                                    人"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13620.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "c220022省和铜大铸造请二二SN\nBRONZE PEOPLE\n_ FOUNDRY",
+        "body": "Gain 5 WarMachine\nresources.\nCE Gain 6 War Machine\nresources instead.\nSG\n roe ace pee",
+        "footer": " BB1237",
+        "full": "NCA BEA\nBRONZE PEOPLE\nFOUNDRY\nGain 5 War Machine\nresources.\n2) Gain 6 War Machine\nresources instead.\n人          . Ree  mt\na we     yee\n|  BB1237                  ‘"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13621.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "ER\nYCLOPEAN SHRINE\n         OF FIYPERION",
+        "body": "Gain 2 Relief resources.\n€JED Gain 3 Relief\nresources instead.",
+        "footer": "   BB1224",
+        "full": "‘ex 巨人 SU RANT IN\nYCLOPEAN SHRINE\nOF HYPERION\nGain 2 Relief resources.\nGJ Gain 3 Relief\nresources instead.\n  BB1224"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13622.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "CO Ss it BE RI SI\nTEMENOS FEAR\nSPRING",
+        "body": "Gain 1 Fear Essence\nresource.\n~>@E Gaint+tifasa\ngroup.",
+        "footer": "  BB1213",
+        "full": "Fri BAIR ZR\nTEMENOS FEAR\nSPRING\nGain 1 Fear Essence\nresource.\n@JE Gain+ifAAasa\ngroup."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13623.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "Aaa\nCCYCLOPEAN =\nTEMPLE OF GAIA ~",
+        "body": "Gain 5 Relief resources. _\nGME) Gain +1.",
+        "footer": "   BB1236                                            ‘",
+        "full": "a 蕊人的盖亚神殿\nYCLOPEAN\nTEMPLE OF GAIA |\nGain 5 Relief resources.\nCED Gain +1 ¥.\nELL Ue ame nen et"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13624.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "= eee\nYCLOPEAN\nSHRINE OF [APETUS",
+        "body": "Gain 3 Relief resources.\n€JIEB) Lose -1 Titan.\nef Teen gous sg te",
+        "footer": " BB1231",
+        "full": "sala GN SOA s\\n\nYCLOPEAN\nSHRINE OF IAPETUS\nGain 3 Relief resources.\n~ @E Lose -1 Titan.\n  BB1231           fe             |"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13625.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "PARTAN |\nARECKAGFE =",
+        "body": "Gain 4 War Trireme         |\nresources.\nJED Lose -1 Titan.",
+        "footer": "    BB1230                                                          人",
+        "full": "SPAR TAR\nPARTAN\nVVRECKAGE\nGain 4 War Trireme\nresources.\n@JE® Lose -1 Titan.\n  BB1230                                   人"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13626.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "WHITE TRIREME",
+        "body": "‘Gain 2 War Trireme\nresources.\n 后必 Gain 3 War Trireme\nresources instead.           :",
+        "footer": "、  BB1227                                             人",
+        "full": "白色战船\nWHITE TRIREME\nGain 2 War Trireme\nresources.\n~~ GIB Gain 3 War Trireme\n- resources instead."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13627.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "tee wae\nPALIRROIA TRIREME",
+        "body": "Gain 3 War Trireme         :\nresources.\nJE Gain 4 War Trireme\nresources instead.",
+        "footer": "、 BB1228                              人",
+        "full": "1G SW aA\nPALIRROIA TRIREME\nGain 3 War Trireme\nresources.\nJE Gain 4 War Trireme\nresources instead.\n、 BB1228            和"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13628.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "= AN =",
+        "body": "Gain +1 Titan.           uk\nGED Cain+1QOasa\ngroup. .",
+        "footer": "  BB1221",
+        "full": "泰坦\nTITAN             ,\nGain +1 Titan.\nGE Gain +1Qasa\ngroup.\nie CL a ane Cee"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13629.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "LNTAMED TITAN ~",
+        "body": "Gain +1lTitan，          0\n Gain+1Qasa\ngroup. .               :",
+        "footer": "   BB1222                                            人",
+        "full": "AR WAR AS ZS t8\nUNTAMED TITAN\nGain +1 Titan.\n«GEMM Gain +1Qasa\n- group.\nEa a ee nee"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13630.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "                  SO       ee\n~ ARGO ENGINES.\nhie ak Se",
+        "body": "If you howe or i, lose -1€. |\nIf this ability didn't trigger,\ngain +1{P.",
+        "footer": "(33)  CHED « CID\nMA\n多     T— Sat Be\n ep ose FA BSIT RE At ax}",
+        "full": "SABOTAGE:\nARGO ENGINES\n                  a) RS 5 |\nIf you have 2+, lose -1 &.\nIf this ability didn't trigger,\ngain +1].\n¥€lelSabotage kA\n33) ar\nBA\n移出卡组直到下一次定肝战斗\n\\BB1244                                       )"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13631.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "     SABOTAGE :   Se\n1 PROPYLON : -",
+        "body": "如果你们有 1+瘟 BEAL\n选择你们的一个阿尔式\nIZ AE(AA) EHX. ERAT!\n在时间表当前10天后记下\n它的名称，作为事件。\n在那一天的发展步骤，马\n亿修复可用。\nIf this ability didn't trigger,\noain pes    =",
+        "footer": "3.4)     CED «« CTD      8\n   移出卡组直到下一次定肝战半\n本 mein erates caren ee",
+        "full": "SABOTAGE:\nPROPYLON\n      山门\n如果你们有 1+, BEAL\n选择你们的一个阿尔蕊\nFLRE(AA) BHR. ERA!\n企时间表当前10天后记下\n它的名称，作为事件。\nfPS-KAWARDR, C\n被修复可用。\nIf this ability didn't trigger,\ngain +1iP.\n洗右Sabotage卡组\n改为\n移出上大组直到下一次定肝战斗\n BB1245"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13632.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "a  She  、 2\nRISKELION SYSTEM.\nees  三贝节系统",
+        "body": "If you have 1+{, lose -1 Titan.\nIf this ability didn't trigger,\ngain +1.",
+        "footer": "(35)     人 «JED      4\nBU ABS) PRES\nYa ae ieee On ee",
+        "full": "SABOTAGE:\nTRISKELION SYSTEM\n                      三幅节系统\nIf you have 1+{, lose -1 Titan.\n_ If this.ability didn't trigger,\ngain +1\\P.\n%# ElSabotage F 28\n35) or\nBA\n移出卡组直到下一次定肝战斗\n。 BB1246                                       人"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13633.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "          es  ce\nTITAN ARMORY\nauc ate be fo aes",
+        "body": "If you have 2+ i,                   :\npermanently lose a random ¢\ncard from the Argo Armory.\nIf this ability didn't trigger,\ngain +1).",
+        "footer": "©      CID»: (      6\n移出卡组直到下一次定肝战半\ni Ge ee ea",
+        "full": "SABOTAGE:\nTITAN ARMORY\n泰坦兵工厂\nIf you have 2+ iP,                  2\npermanently lose a random ¢\ncard from the Argo Armory.\nIf this ability didn't trigger,\ngain +1.\n洗回Sabotage卡组\n移出上组直到下一次定肝战斗\n, BB1247"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13634.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "    2555 SMROAGE be\n= nee On\ngarg AITEMPT a en",
+        "body": "如果你们有1+了向，随机选择\n一名阿尔戈英雄获得本卡。\n战斗期间: 每当你构出关键\n失手时，一名克里普提了暗杀\n者攻击了同步浸池。\n检定力量Fury(8+)。\nKM: (RANBIR LRAT.\n将本卡永久移出游戏并结算\nRude Awakening特殊事件。\nTAN    W/o Sil Oe      Bar eS",
+        "footer": "37) 移出卡组直到下一次定肝战半 8\nRemove until the next\n     BB1248             Timeline Battle.",
+        "full": "SABOTAGE:\nRRYPTA ASSASSINATION\n。， 克里普提和 “暗杀行动\n”如果你们有1+引，随机选择\n一名阿尔戈英雄获得本卡。\n战斗期间: 每当你掷出关键\n失手时，一名克里普提上暗杀\n者攻击了同步浸池。\n检定力量Fury(8+)。\nKM: (Rash RRR\n将本卡永久移出游戏并结算\nRude Awakening特殊事件。\nCHEB or GIBB tose -1 >\n@ 移出天绍直到 ere\nRemove until the next\n   BB1248         Timeline Battle."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13635.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "全\nAMBROSIA SPILL",
+        "body": "根据你们的不稳定神浆资源数\n0-15: #RAR EMME.\n16-25: 神浆团四处乱窜，杀\n死了几名你的船员! 失去-1从\n26+: 神浆团惯怒地攻击船体|\n失去-1多 并将你们的不稳定",
+        "footer": "移出卡组直到下一次定时战半 é\nRemove until the next\n. BB1251               Timeline Battle.",
+        "full": "神浆泄漏\nAMBROSIA SPILL\n根据你们的不稳定神浆资源数:\n0-15: #RAR SWE.\n16-25: 神浆团四处乱窜，杀\n死了几名你的船员! 失去-1X.\n26+: 神浆团惯怒地攻击船体!\n失去-1他 并将你们的不稳定\nGED or GI Gain +1 A.\nee |\nRemove until the next\n' BB1251    Timeline Battle."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13636.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "pbAcK>LUDGE",
+        "body": "随机确定一个方向。在你们\n当前地图板块的所选方向例\n边放置一枚人现指示物。\n所有从当前板块通往该方向\n的水路被封锁。\n下一次定时战斗后奔置此\nigri.\nW/74) or 人(全 Gain +1 心.",
+        "footer": "移出卡组直到下一次定肝战半 中\nRemove until the next\nBB1250               Timeline Battle.",
+        "full": "Ae ELIE\nBLACK SLUDGE\n”随机确定一个方向。在你们\n当前地图板块的所选方向侧\nUREN iar.\n所有从当前板块通往该方向\n的水路被封锁。\n下一次定时战斗后弃置此\nID or Gain +1 A.\n移出卡组直到 re\nRemove until the next\n'   BB1250         Timeline Battle."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13637.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "CACKLE",
+        "body": "CW /8+) Resolve an additional\n有  &, Y             *   1   .   .              » @  Pr\nwerk oy  Roath  REO\n人  Ai Secon >t aie ao ens Avo,\n。 i okie a tee RE aR Cae 。",
+        "footer": "移出卡组直到下一次定肝战半 8\nRemove until the next\n     BB1243              Timeline Battle.",
+        "full": "Ar\n人 IB\nGED Resolve an additional 的)\nTt is ae Ate ay ee\n人                        六\n移出 sa ww:间\nRemove until the next\n'   BB1243       Timeline Battle.                人"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13638.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "Co FSB :\n~ PRIVATE LESSON",
+        "body": "At the end of the current\nstep, go to the Cruel\nLesson Battle.\nHED At the start of this\nbattle, Escalate 1.",
+        "footer": "KABH EH    8\nRemove from the deck\n    BB1252             permanently.                          ’",
+        "full": "私人授课\nPRIVATE LESSON\nAtthe end of the current\nstep, go to the Cruel\n- Lesson Battle.\nQED At the start of this\nbattle, Escalate 1.\n永久移出卡组\nRemove from the deck\n'   BB1252        permanently."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13639.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "(Semler 、\nMORALEROSION",
+        "body": "Gain +1 A or lose -1       :\nHumanity.\n的 Gain +1 VW.\nCID Gain +1 Y.",
+        "footer": "移出卡组直到下一次定时战半 @\nRemove until the next\n. BB1249              Timeline Battle.",
+        "full": "道德侵蚀\nMORAL EROSION\nGain +1 A or lose -1\nHumanity.\n@JE Gain +1 V’.\n@/I® Gain +1 V.\n移出卡组直到 re 3\nRemove until the next\n   BB1249       Timeline Battle.               f"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13640.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "RS   rf\no   oS\n6.5 汉人",
+        "body": "QO =.=\n和二 局\nQe oy\nSee\ne2Eexz\n办      第一已区   EN\nNN    一、          色   as\nll    六      6208\n=      一 DED   也\nnd\n9    Bpaes\nSs oe Sats   IK\nOo @      a\nMme > 5 £2535 a\n=  SS  eS Ss   oo\n—   Sewmeoa Ss BGOM   NI\nx SS GLSiKV. |\n~   和AT Pei",
+        "footer": "a ee eS a a\nSEESESSSS 86 Of\n®  人     i)\nSsSssesOmss   nN",
+        "full": "iz,\ngS g\nR 疙\n局 与 =\nSO\nREX SD\nNed  =\n5Se9\negos\nZ2EB\npx    SEs\n2    w= E90   SS\nJ  o    On  Ae\nx  g    AS ro  42 5\nE    wise =  =\nLs    th\nf  =    Sad  tw &\nRGD   =\n°    So 二  RS\n2     aS fe)   4 =\n= o  EOES  | 二\nma (=) 2 335   E\npape eS  Cs\n以  oO 二 Fre a0  mS\nLL)  S 总 L2535  Ke\nSp2eTS5 200  i\nUO  Gs SOR  ms\noes l= ofS 、  se\nae ea5ee  Qs\n5 2ese ces  ve\n= Beets sa   :\nWD  = pb 5§sze\nwp EE ASSOnS\nbees VEE\nS SRGELROS\nBS=Scsouss   8\neRe oe  a>>   al\nmee SLO   =\noO\noa)"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13641.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "SPY NETWORK",
+        "body": "Gain+1%.°             :\n Roll a d10. On 8+\ngain +1 ch.",
+        "footer": "移出卡组直到 ene\nRemove until the next\n)     BB1242               Timeline Battle.",
+        "full": "[ea] Fe DZ\nSpy NETWORK\nGain +1.\n Roll a d10. On 8+\ngain +1 cb.\n移出卡组直到 errr\nRemove until the next\n|   BB1242       Timeline Battle.               f"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13500.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "，   深渊聆听\nABYSS LISTENS",
+        "body": "Gain 2 Skin of Malice\nresources.\nOfte» Gain +1A\\ as\na group.",
+        "footer": "CB1639",
+        "full": "深渊聆听\nABYSS LISTENS\nGain 2 Skin of Malice\nresources.\nCEM Gain +1 A as\na group.\nCB1639"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13501.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "ss  ALTE BY AN ie J   fi\ni   PRE-ESCHATON\na   FOUNDRY secre",
+        "body": "Gain 2 Daedalus Makina\nresources.\nGirma Gain 1 Daedalus\nMakina resource instead.",
+        "footer": "CB1643",
+        "full": "ARE BY A Hie J\nPREESCHATON\nFOUNDRY\nGain 2 Daedalus Makina\nresources.\nCites» Gain 1 Daedalus\nMakina resource instead.\nCB1643"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13502.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "ARTI\nTEMPLE OF HELIOS",
+        "body": "Gain 2 Sirenshell\nresources.\nCT Gain +1 Vas\na group.\n e.",
+        "footer": "CB1646",
+        "full": "ain Al) ET AH ES\nTEMPLE OF HELIOS\nGain 2 Sirenshell\nresources.\n Gain +1 as\na group."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13503.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "   深渊诉说\nABYSS SPEAKS",
+        "body": "Gain 2 Living Abyss\nresources.\nGIST Gain 3 Living\nAbyss resources instead.",
+        "footer": "CB1636",
+        "full": "深渊诉这\nABYSS SPEAKS\nGain 2 Living Abyss\nresources.\n      fm Gain 3 Living\nAbyss resources instead.\nCB1636"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13504.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "二      Litavays          :\n:          IDDEN\nWORKSHOP",
+        "body": "Gain 1 Daedalus Makina\nresource.\nGa Gain 2 Daedalus\nMakina resources instead.",
+        "footer": "CB1642",
+        "full": "的\n           IDDEN\nWORKSHOP\nGain 1 Daedalus Makina\nresource.\nCE Gain 2 Daedalus\nMakina resources instead.\nCB1642"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13505.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "。，、赫利俄斯神使\nSHRINE TO FIELIOS",
+        "body": "Gain 1 Sirenshell resource.\n Gain 2 Sirenshell\nresources instead.",
+        "footer": "CB1644",
+        "full": "ar Fl) RE AR SS\nSHRINE TO HELIOS\nGain 1 Sirenshell resource.\n Gain 2 Sirenshell\nresources instead.\nCB1644"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13506.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": ":   Res “”\nABYSS COMMANDS",
+        "body": "Gain 2 Living Abyss\nresources.\n Gain +1 QO as\na group. Gain as many A\nas a group as you have\ntotal O as a group.",
+        "footer": "CB1638",
+        "full": "ABYSS COMMANDS\nGain 2 Living Abyss\nresources.\n Gain +1 Qas\na group. Gain as manyA\nas a group as you have\ntotal Q as a group.\nCB1638"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13507.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "        深渊低语        ，\nABYSS WHISPERS",
+        "body": "Gain 1 Living Abyss\nresource.\nGis Gain 2 Living\nAbyss resources instead.",
+        "footer": "CB1637",
+        "full": "深渊低语\nABYSS WHISPERS\nGain 1 Living Abyss\nresource.\nGET Gain 2 Living\nAbyss resources instead.\nCB1637              :"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13508.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "RABI\nTEMPLE OF HELIOS",
+        "body": "Gain 2 Sirenshell\nresources.\nOP Gain +1 W as\na group.",
+        "footer": "CB1647",
+        "full": "RA RET RRR\nTEMPLE OF FIELIOS\nGain 2 Sirenshell\nresources.\n Gain +1 as\na group.\nre"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13509.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "eee eS a ae) Pee ee\nHIYPERBOREAN\nRUINS",
+        "body": "Gain 2 Hyperborean Alloy\nresources.\n Gain +1 A as\na group.",
+        "footer": "CB1666",
+        "full": "FRA RSG\nHYPERBOREAN\nRUINS\nGain 2 Hyperborean Alloy\nresources.\n Gain +1 A. as\na group.\nCB1666"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13510.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "i\nARCHARTIFICERY _",
+        "body": "Gain 3 Daedalus Makina\nresources.\n Gain +10 (once\nuntil the next Timeline\nBattle). .",
+        "footer": "CB1669",
+        "full": "代达罗斯考古工坊\nAXEDALUS\nARCHARTIFICERY\nGain 3 Daedalus Makina\nresources.\n Gain +1 (once\nuntil the next Timeline\nBattle). .\nCB1669           —"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13511.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "人\nveERoN =",
+        "body": "Gain 3 Sirenshell\nresources.\n| Gain 1 Antedeluvian\nSirenshell Rare resource.",
+        "footer": "CB1676",
+        "full": "32 -E AN EIA B35 aR\nSIREN TEM PLE OF\nHYPERION\nGain 3 Sirenshell\nresources.\n Gain 1 Antedeluvian\nSirenshell Rare resource.\nCB1676"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13512.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "和             gai           :\nABYSS ©\n~~ CONTEMPIATES",
+        "body": "Gain 1 Skin of Malice\nresource.\n Gain +1 Aas\na group.",
+        "footer": "CB1641",
+        "full": "BYSS\nCONTEMPLATES\nGain 1 Skin of Malice\nresource.\n Gain +1 A as\na group.\nCB1641"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13513.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "ANG TENT\nREPOSITORY",
+        "body": "Gain 3 Hyperborean Alloy\nresources.\n€Xiiz Lose -1 Titan.",
+        "footer": "CB1664",
+        "full": "远古仓库\nANCIENT\nREPOSITORY\nGain 3 Hyperborean Alloy\nresources.\nGE Lose -1 Titan.\nCB1664          7"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13514.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "eee eye     =\nANCIENT >\nREPOSITORY",
+        "body": "Gain 3 Hyperborean Alloy\nresources.\n Lose -1€.",
+        "footer": "CB1668",
+        "full": "远古仓库\nANCIENT\nREPOSITORY\nGain 3 Hyperborean Alloy\nresources.\n Lose -1 €.\n了"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13515.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "OF |APETUS e",
+        "body": "Gain 2 Sirenshell\nresources.\n Place 1 ¥ on Inward\nOdyssey (once until the\nnext Timeline Battle).",
+        "footer": "CB1675",
+        "full": "AR IR SASF Bo) SAFE Hee\nPORCOTIEN TEMPLE\nOF IAPETUS  -\nGain 2 Sirenshell\nresources.\n Place 1 ¥ on Inward\nOdyssey (once until the\nnext Timeline Battle).\nCB1675"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13516.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "人\nLIBRARY",
+        "body": "Gain 4 Hyperborean Alloy\nresources.\n Gain +1 A as\na group.",
+        "footer": "CB1663",
+        "full": "At XA 图记忆\nHYPERBOREAN\nLIBRARY\nGain 4 Hyperborean Alloy\nresources.\n Gain +1 A as\na group.\nCB1663"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13517.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "Satine |\nRAND THOLOS\nOF HELIOS —",
+        "body": "Gain 4 Sirenshell\nresources.\n(etmner® Gain +1 A.",
+        "footer": "CB1674",
+        "full": "Coe eee\nRAND IHOLOS\nOF HELIOS\nGain 4 Sirenshell\nresources.\n Gain +1 A.\nCB1674          |"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13518.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "RTS\nSHRINE TO HELIOS",
+        "body": "Gain 1 Sirenshell resource.\n Gain 2 Sirenshell\nresources instead.",
+        "footer": "CB1645",
+        "full": "‘bak Fl) RT A SE\nSHRINE TO HELIOS\nGain 1 Sirenshell resource.\n Gain 2 Sirenshell\nresources instead.\nCB1645"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13519.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "—HYDERBOREAN\nLIBRARY",
+        "body": "Gain 4 Hyperborean Alloy\nresources.\n: Lose -1 YW.",
+        "footer": "CB1662",
+        "full": "冻士人网书馆\nHYPERBOREAN\nLIBRARY\nGain 4 Hyperborean Alloy\nresources.\n Lose -1 YW.\nCB1662"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13520.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "2 代达罗斯考古工坊\n=      SRebALUS\nARCHARTIFICERY",
+        "body": "Gain 3 Daedalus Makina\nresources.\nGT) Gain +1 ¥.",
+        "footer": "本  . \"¢@           Lt . ‘   e\nCB1670",
+        "full": "Dey (aT eae\nAEDALUS\nARCHARTIFICERY\nGain 3 Daedalus Makina\nresources.\n Gain +1 ¥.\nCB1670            /"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13521.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "=  regatta ably  ;\nRAND TEMPLE\n~ OF FELIOS —",
+        "body": "Gain 3 Sirenshell\nresources.\nYou may gain +3 W to\ngain +1 Priest.\n对",
+        "footer": "CB1673",
+        "full": "City tee\nRAND TEMPLE\nOF HELIOS\nGain 3 Sirenshell\nresources.\nYou may gain +3 YW to\ngain +1 Priest.\nCB1673           wo"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13522.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "             are             :\nABYSS\nCONTEMPLATES",
+        "body": "Gain 1 Skin of Malice\nresource.\n Gain 2 Skin of\nMalice resources instead.",
+        "footer": "CB1640",
+        "full": "深渊思虑\nABYSS\nCONTEMPLATES\nGain 1 Skin of Malice\nresource.\n Gain 2 Skin of\nMalice resources instead.\nCB1640"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13523.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "汪汪 NE Grete     e\nRUINED FIYPERBOREAN\nMETROPOLIS",
+        "body": "Gain 5 Hyperborean Alloy\nresources.\n Lose -1 Y.",
+        "footer": "CB1661",
+        "full": "毁坏 和\nRUINED FIYYPERBOREAN\nMETROPOLIS\nGain 5 Hyperborean Alloy\nresources.\n Lose -1 %.\nCB1661"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13524.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "了 =e] A SLES           >\nBRONZE PEOPLE\nLABORATORY",
+        "body": "Gain 5 Daedalus Makina\nresources.\n(Erner® Gain +116.",
+        "footer": "CBi671",
+        "full": "青铀人军哈室\nBRONZE PEOPLE\nLABORATORY\nGain 5 Daedalus Makina\nresources.\nOST Gain +16.\nCB1671             )"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13525.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": " READS TRE\nFIYDERBOBEAN\nTEMPLE OF CRONUS",
+        "body": "Gain 5 Sirenshell\nresources.\nGarin Gain +116.",
+        "footer": "CB1672            )",
+        "full": "7 AME Be\nYPERBOREAN\nTEMPLE OF CRONUS\nGain 5 Sirenshell\nresources.\n Gain +116.\nCB1672           i"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13526.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "   Shes pete es\nSOARING CRADLE",
+        "body": "Gain 6 Hyperborean Alloy\nresources.\n Gain +1 V.",
+        "footer": "CB1665",
+        "full": "飞空摇篮\nSOARING CRADLE\nGain 6 Hyperborean Alloy\nresources.\n Gain +1 VW.\nCB1665"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13527.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "和\n |EMPLE OF CRONUS",
+        "body": "Gain 5 Sirenshell\nresources.\n Gain 1 Daedalus\nMakina resource.",
+        "footer": "CB1667",
+        "full": "冻本人的柯罗诸斯神殿\nFIVBERBOREAN\nTEMPLE OF CRONUS\nGain 5 Sirenshell\nresources.\nGrey Gain 1 Daedalus\nMakina resource."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13528.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "TITAN",
+        "body": "Gain +1 Titan.\n Gain+1Qasa\neroup.",
+        "footer": "CB1648",
+        "full": "#18\nTITAN\nGain +1 Titan.\n Gain +1 Qasa\ngroup."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13529.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "“未驯服的泰坦\nUNTAMED TITAN",
+        "body": "Gain +1 Titan.\n Gain +1Qasa\ngroup.",
+        "footer": "CB1649",
+        "full": "未驯服的泰坦\nUNTAMED TITAN\nGain +1 Titan.\n Gain +1Qasa\ngroup.\n(ss BLOG| gyccite sa RR"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13530.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "德尔菲人舰队\nDELPHIAN FLEET",
+        "body": "Resolve an effect based on your\nDiplomacy with Delphians.\n Gain +1 Y.\n Gain +1 Titan.\n Each Argonaut gains +1 A\n Gain +1 WY.\n‘ Denounced} Lose -1 Titan.\n Lose -1 €.",
+        "footer": "@ sutaanr—xeney @\nRemove until the next\nCB1658               Timeline Battle.",
+        "full": "4而 777\n德尔菲人舰队\nDELPHIAN FLEET\nResolve an effect based on your\nDiplomacy with Delphians.\nLD Gain +1 Y.\nGIETIND Gain +1 Titan.\n人uc多Each Argonaut gains +1 A.\nCONTEND Gain +1 YY.\nX Denounced J Lose -1 Titan.\n Lose -1€.\n7/74) Random Argonaut gains 1\nFated Mnemos card.\n(32) 移出上组直到下一次定肝战斗 8\nRemove until the next\nCB1658           Timeline Battle."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13531.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "人         Teen\nWILIGHT\nPATHFINDER",
+        "body": "Resolve an effect based on your\nDiplomacy with the Twilight Watch.\n Gain +1 次.\n Gain +1 Frozen Time.\n Gain +1 YW.\n Gain +1.\n Gain +2 (6.\n Lose -1 2.",
+        "footer": "@ v1 :2227-x2001§\nRemove until the next\nCB1659               Timeline Battle.",
+        "full": "Teaver\nWILIGHT\nPATHFINDER\nResolve an effect based on your\nDiplomacy with the Twilight Watch.\nCNT) Gain +1 %.\n Gain +1 Frozen Time.\nCEMED Gain +1’.\n’ Unfriendly Senna SS\n Gain +218.\n Lose -1X.\nW774) Random Argonaut gains 1\nFated Mnemos card.\nRemove until the next\nCB1659           Timeline Battle."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13532.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "a        dal RA ERY        4\nHELIAN HOLY\nADJUDICATORY",
+        "body": "Resolve an effect based on your\nDiplomacy. with the Sunheirs.\nCTE) Gain +1 and +118.\n‘ Friendly } Place 1 @ on\nInward Odyssey.\n Each Argonaut gains + 1 WY.\n Gain +1 YY.\n Lose -1 % or -1€.\n Gain +1.",
+        "footer": "@) surat —xenny ¢\nRemove until the next\nCB1660               Timeline Battle.",
+        "full": "HELIAN HOLY\nADJUDICATORY\nResolve an effect based on your\nDiplomacy. with the Sunheirs.\n《TRY Gain +1 and +1 1B.\n人 Friendly ) Place 1% on\nInward Odyssey.\n‘ Neutral Each Argonaut gains +1 出\n(CU Gain +1 YY.\nOres) Lose -1 XM or -1€.\nGZ Gain +14.\nCHEB Random Argonaut gains 1\nFated Mnemos card.\nRemove until the next\nCB1660           Timeline Battle."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13533.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "           咯咯笑\n      CACKLE",
+        "body": "8 Resolve an additional\nem  区  “  saat\nfs NTE                     NEP igen",
+        "footer": "移出卡组直到下一次定时战半 4\nRemove until the next\nCB1651               Timeline Battle.",
+        "full": "Ar\n人 es\nCHEB Resolve an additional @).\n。 o  ec.    oem    ae  Re\n”了 Md            *            BY tte 号  ,\n7   rf . = 。 Pos : eS is  ‘\n移出卡组直到下一次定时战半 4\nRemove until the next\nCB1651               Timeline Battle."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13534.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "SAMAR\n    CHEKHOV’S SUN",
+        "body": "3/34) Lose 1  Frozen Time and\neither -1 4 or -1 €. If this ability\ndidn't trigger, gain +1 IB.\nGB 有2张回忆卡\n且回忆节点总数最多的\n一名阿尔戈英雄将它的\n回忆卡节总数量互相交换。\n在之后的故事步骤中",
+        "footer": "it KA BF RE AAS  ¢\nRemove until the next\nCB1657                Timeline Battle.",
+        "full": "契订夫的太阳\nCHEKHOV'S SUN\n@E Lose -1.Frozen Time and\neither -1 ¥€ or -1 €. If this ability\ndidn't trigger, gain +1 iB.\n@&® 有2张回忆卡\n且回忆节点总数最多的\n一名阿尔戈英雄将它的\n回忆卡节点数量互相交换。\n在之后的故事步骤中\n结算因此导致的回忆突破。\nBiH KA BB R—KEA AAS ¢\nRemove until the next\nCB1657            Timeline Battle."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13535.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": " a\nEMBRACE =",
+        "body": "Each Argonaut gains as many\nW and/or A\\ as you have IB.\nThen lose -2 (6.\n人局 or EID Lose -1 €.",
+        "footer": "移出卡组直到下一次定肝战阅 @\nRemove until the next\nCB1656               Timeline Battle.",
+        "full": "he zt   损  、\nENTROBY's\nEMBRACE\nEach Argonaut gains as many\nW and/or A\\ as you have IB.\nThen lose -21B.\nCHED or EID Lose -1 €.\nBUKABE K—KEAT RA ¢\nRemove until the next\nCB1656           Timeline Battle."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13536.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "es   oo\nFAST-FORWARDED-",
+        "body": "@IED Lose -2 16 and gain\n+1 A.\n_ If this ability didn t trigger,\ngain + 1[b3.and remove this\ncard until the next Timeline\nBattle.",
+        "footer": "IKA #3 1 KZ\nas.en 和\nop eH 大组直到下一次害肝战斗",
+        "full": "[AST-FORWARDED\n@E Lose -218 and gain\n+14.\nIf this ability didn't trigger,\ngain +1 and remove this\ncard until the next Timeline\nBattle.\nKA BH KA\n= 个 为移出 不组直到下一次定时战斗"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13537.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "加   人",
+        "body": "<o        SS a\n2 =\n      ieee\nD    ee Sh oe\n©\nS48 Saos s\nD   c= J 三:ES GUN\n>   tp  ws <et6ne20\n Es Oe he\nSaez St 55\nyy  aes o2 8M a x\nESS note reed emet i) 1 igeg nh Arner\nLL)  S—-2@Sstsati veg\na  SCODERNZES\nWw  A  (S)\nGOO = Ss 5 SS\nYih heey 4 & he O\nRO Ae\n从  A A\nVE OMe CL eee",
+        "footer": "bp Bw noes os\nre Ae yeh pyc be\nSEES eess AS\noes se AO) Octoen- co  =\neB OD SR me IO  名",
+        "full": "恒\n同    S 所\nBS ®\na ee   = 2\nAN  必]\nSI =  Shs § =\nmaf, pfete S\n> = oO <s 全\n= S 号RS\nwae © 68 Segse &\nYo) 4 <x S88 5\niS <6v 2 g\na 22, e5e55 &\na S258 8a se :\nSSRESSL4GS 六\nmd O55 Be ess 和\nC) eSecauges :\nwes Farceey WU\nEES BLO 5\nASRS ROUND SAM l=  S\nDoo AO Fe S\n[一 CRO = OS 从一从\nSee as e 有\nZz  云云全SSS人法\nFest ESSE 从\n<I SSS 45 0085\nPM SS Sa ee ES\n> meeeee eee\nESSESESES\nSs aASBEGHS\nZz. eee oes\nSPE AAO Seg 5\n& AQOmrke S\nCO Sm est ees cae =\n=  =\nston CQ\nS)"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13538.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "   REWOUND",
+        "body": "@SIE® Lose -1 18 and return\nto the previous tile (treat this\ntile as.explored).\nIf this ability didn t trigger,\ngain +1[6 and remove this\ncard until the next Timeline\nBattle.",
+        "footer": "IK A #3 i ZA\n am §\nae X ApH 大组直到下一次害肝战斗",
+        "full": "‘Alas\nREWOUND\n@IE® Lose -118 and return\nto the previous tile (treat this\ntile as. explored).\nIf this ability didn't trigger,\ngain +1 [6 and remove this\ncard until the next Timeline\nBattle.\n永久移出上组\n7 AAG HH FEF K—-RE A ARAL"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13539.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": ":   间谍网络\nSPY NETWORK",
+        "body": "Gain +18.\n Roll a d10. On 8+,\ngain +1 cb.",
+        "footer": "移出卡组直到下一次定肝战半 é\nRemove until the next\nCB1650                Timeline Battle.",
+        "full": "间谍网络\nSPY NETWORK\nGain +1 ¥.\n《人mey Roll a d10. On 8+,\ngain +1 cb.\n移出卡组直到下一次定时战半 8\nRemove until the next\nCB1650               Timeline Battle."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13540.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "TIGHTENING THE",
+        "body": "@E® Lose -2(8 and lower\nyour Loop Length by 1.\nIf this ability didn't trigger,\ngain +1 [6s.and remove this\ncard until the next Timeline\nBattle.",
+        "footer": "IRA FF OR ZA\nGD.GD 和\nop nH 不组直到下一次害肝战斗",
+        "full": "ee [ol ig A\nTIGHTENING THE\nLOOP\n@JED Lose -218 and lower\nyour Loop Length by 1.\nIf this ability didn't trigger,\ngain + 1[63.and remove this\ncard until the next Timeline\nBattle.\n永久移出卡组\nop ee 不组直到下一次定时战斗"
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13541.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "£     明日边缘\n]OMORROWY'\nEDGE",
+        "body": "If on a 3 Map Tile: Gain +118\n@E See the Tomorrow's\nEdge special event.\nIf this ability didn't trigger,\ngain + 1 [68 and remove this\ncard until the next Timeline\nBattle.",
+        "footer": "AKA 12 HB 2H\nGD §\nfe FA BIT — REM\nCB1652",
+        "full": "明日双绿\nTOMORROW'S\n[EDGE\nIf on a $& Map Tile: Gain +1.\n@E See the Tomorrow's\nEdge special event.\nIf this ability didn't trigger,\ngain +1[$ and remove this\ncard until the next Timeline\nBattle.\nKABA\n移出卡组直到下一次定肝战斗\nCB1652"
+      }
+    }
+  ]
+}

@@ -1,0 +1,827 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Map Faction Labeler</title>
+  <script src="../../map/map-data.js"></script>
+  <style>
+    :root {
+      --bg: #f5f6f2;
+      --panel: #ffffff;
+      --text: #1f2a2e;
+      --muted: #65777f;
+      --line: #d7dedc;
+      --active: #1f6f5b;
+      --active-2: #e4f3ed;
+      --danger: #b23b3b;
+      --yellow: #f0c83c;
+      --red: #e55353;
+      font-family: Inter, "Microsoft YaHei", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) auto auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 14px;
+      background: rgba(245, 246, 242, .96);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(8px);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 760;
+      letter-spacing: 0;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(420px, 1fr) 360px;
+      gap: 14px;
+      padding: 14px;
+      max-width: 1480px;
+      margin: 0 auto;
+    }
+
+    button, select, input, textarea {
+      font: inherit;
+    }
+
+    button, .file-button {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 7px;
+      padding: 8px 10px;
+      min-height: 36px;
+      cursor: pointer;
+    }
+
+    button:hover, .file-button:hover { border-color: #9fb2ad; }
+    button.active {
+      background: var(--active-2);
+      border-color: var(--active);
+      color: #0f4e3e;
+      font-weight: 750;
+    }
+    button.danger.active {
+      background: #fae8e8;
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    .toolbar, .nav {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .toolbar select, .toolbar input {
+      min-height: 36px;
+      border-radius: 7px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      padding: 7px 10px;
+    }
+
+    .toolbar input {
+      width: 110px;
+    }
+
+    .status {
+      color: var(--muted);
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .viewer, .side {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .surface {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .card-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .card-title strong {
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+
+    .card-title span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .crops {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .crop-wrap {
+      min-width: 0;
+    }
+
+    .crop-label {
+      margin: 0 0 6px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .crop {
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      background: #dfe5e1;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+    }
+
+    .crop img {
+      display: block;
+      width: 100%;
+      height: auto;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .box {
+      position: absolute;
+      border: 4px solid;
+      pointer-events: none;
+    }
+
+    .box.inner { border-color: var(--yellow); }
+    .box.outer { border-color: var(--red); }
+    .box.back { border-color: #46a35f; }
+
+    .panel-title {
+      margin: 0 0 10px;
+      font-size: 15px;
+      color: var(--muted);
+      font-weight: 760;
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .faction-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .option-btn {
+      display: grid;
+      gap: 2px;
+      justify-items: center;
+      align-content: center;
+      min-height: 54px;
+      padding: 8px;
+      overflow-wrap: anywhere;
+    }
+
+    .option-btn small {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .option-btn.active small {
+      color: #0f4e3e;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 86px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 8px 10px;
+      color: var(--text);
+      background: var(--panel);
+    }
+
+    .list {
+      display: grid;
+      max-height: 310px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--panel);
+    }
+
+    .list button {
+      display: grid;
+      grid-template-columns: 72px 1fr auto;
+      gap: 8px;
+      align-items: center;
+      min-height: 34px;
+      border: 0;
+      border-bottom: 1px solid #edf0ef;
+      border-radius: 0;
+      text-align: left;
+      padding: 6px 8px;
+    }
+
+    .list button:last-child { border-bottom: 0; }
+    .list button.current {
+      background: var(--active-2);
+      color: #0f4e3e;
+      font-weight: 760;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 2px 7px;
+      min-width: 30px;
+      min-height: 22px;
+      background: #eef2f1;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 760;
+    }
+
+    .pill.done { background: #e4f3ed; color: #0f4e3e; }
+    .pill.none { background: #f0eeee; color: #5a5a5a; }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .hidden-file {
+      display: none;
+    }
+
+    .file-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    @media (max-width: 980px) {
+      header {
+        grid-template-columns: 1fr;
+      }
+      main {
+        grid-template-columns: 1fr;
+      }
+      .crops {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Map Faction Labeler</h1>
+    <div class="toolbar">
+      <select id="cycleFilter" aria-label="cycle"></select>
+      <select id="statusFilter" aria-label="status">
+        <option value="all">all</option>
+        <option value="todo">todo</option>
+        <option value="done">done</option>
+      </select>
+      <input id="searchBox" placeholder="id" aria-label="search">
+      <button id="clearFilters">clear</button>
+    </div>
+    <div class="nav">
+      <button id="prevBtn">Prev</button>
+      <button id="nextBtn">Next</button>
+      <span id="progressText" class="status"></span>
+    </div>
+  </header>
+
+  <main>
+    <section class="viewer">
+      <div class="surface">
+        <div class="card-title">
+          <strong id="tileTitle">-</strong>
+          <span id="tileMeta">-</span>
+        </div>
+        <div class="crops">
+          <div class="crop-wrap">
+            <p class="crop-label">back</p>
+            <div id="backCrop" class="crop">
+              <img id="backImg" alt="">
+            </div>
+          </div>
+          <div class="crop-wrap">
+            <p class="crop-label">front</p>
+            <div id="frontCrop" class="crop">
+              <img id="frontImg" alt="">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="surface">
+        <p class="panel-title">tiles</p>
+        <div id="tileList" class="list"></div>
+      </div>
+    </section>
+
+    <aside class="side">
+      <div class="surface">
+        <p class="panel-title">faction</p>
+        <div id="rightButtons" class="faction-row"></div>
+        <div style="height:8px"></div>
+        <div class="button-row single-action-row">
+          <button id="rightNone" class="option-btn danger">none<small>0</small></button>
+          <button id="clearRight" class="option-btn">clear<small>C</small></button>
+        </div>
+      </div>
+
+      <div class="surface">
+        <p class="panel-title">data</p>
+        <div class="actions">
+          <button id="exportCsv">export csv</button>
+          <button id="exportJson">export json</button>
+          <label class="file-button" for="importFile">import</label>
+          <button id="resetCurrent">reset tile</button>
+          <button id="clearAll" class="danger">clear all</button>
+        </div>
+        <input id="importFile" class="hidden-file" type="file" accept=".json,.csv">
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    const FACTIONS = {
+      c1: [
+        { id: "minoians", label: "Minoans", zh: "米诺斯" },
+        { id: "labyrinthians", label: "Labyrinthians", zh: "迷宫徒" },
+        { id: "hornsworn", label: "Hornsworn", zh: "角誓者" },
+      ],
+      c2: [
+        { id: "helots", label: "Helots", zh: "希洛" },
+        { id: "cyclopes", label: "Cyclopes", zh: "独眼" },
+        { id: "symmachy", label: "Symmachy", zh: "邦联" },
+      ],
+      c3: [
+        { id: "sunheirs", label: "Sunheirs", zh: "太阳" },
+        { id: "delphians", label: "Delphians", zh: "德尔菲" },
+        { id: "twilightWatch", label: "Twilight Watch", zh: "暮光" },
+      ],
+    };
+
+    const STORAGE_KEY = "ato.mapFactionLabeler.simple.v1";
+    const tiles = [];
+    const labels = loadLabels();
+    let filtered = [];
+    let currentIndex = 0;
+    let autoAdvance = true;
+
+    const el = {
+      cycleFilter: document.getElementById("cycleFilter"),
+      statusFilter: document.getElementById("statusFilter"),
+      searchBox: document.getElementById("searchBox"),
+      clearFilters: document.getElementById("clearFilters"),
+      prevBtn: document.getElementById("prevBtn"),
+      nextBtn: document.getElementById("nextBtn"),
+      progressText: document.getElementById("progressText"),
+      tileTitle: document.getElementById("tileTitle"),
+      tileMeta: document.getElementById("tileMeta"),
+      frontCrop: document.getElementById("frontCrop"),
+      frontImg: document.getElementById("frontImg"),
+      backCrop: document.getElementById("backCrop"),
+      backImg: document.getElementById("backImg"),
+      rightButtons: document.getElementById("rightButtons"),
+      rightNone: document.getElementById("rightNone"),
+      clearRight: document.getElementById("clearRight"),
+      tileList: document.getElementById("tileList"),
+      exportCsv: document.getElementById("exportCsv"),
+      exportJson: document.getElementById("exportJson"),
+      importFile: document.getElementById("importFile"),
+      resetCurrent: document.getElementById("resetCurrent"),
+      clearAll: document.getElementById("clearAll"),
+    };
+
+    init();
+
+    function init() {
+      if (!window.ATO_MAP_DATA) {
+        document.body.innerHTML = "<main style='padding:20px'>map-data.js not loaded</main>";
+        return;
+      }
+      for (const cycle of window.ATO_MAP_DATA.cycles) {
+        for (const tile of cycle.tiles) {
+          tiles.push({
+            cycle: cycle.id,
+            cycleLabel: cycle.label,
+            tile_id: tile.id,
+            label: tile.label || tile.id,
+            front: "../../map/" + tile.front.replace(/^\.\//, ""),
+            back: "../../map/" + tile.back.replace(/^\.\//, ""),
+          });
+        }
+      }
+
+      el.cycleFilter.innerHTML = [
+        `<option value="all">all cycles</option>`,
+        ...window.ATO_MAP_DATA.cycles.map(c => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.label)}</option>`),
+      ].join("");
+
+      bindEvents();
+      applyFilters();
+    }
+
+    function bindEvents() {
+      el.cycleFilter.addEventListener("change", applyFilters);
+      el.statusFilter.addEventListener("change", applyFilters);
+      el.searchBox.addEventListener("input", applyFilters);
+      el.clearFilters.addEventListener("click", () => {
+        el.cycleFilter.value = "all";
+        el.statusFilter.value = "all";
+        el.searchBox.value = "";
+        applyFilters();
+      });
+      el.prevBtn.addEventListener("click", previousTile);
+      el.nextBtn.addEventListener("click", nextTile);
+      el.rightNone.addEventListener("click", () => setRightFaction("none"));
+      el.clearRight.addEventListener("click", () => setRightFaction(""));
+      el.exportCsv.addEventListener("click", exportCsv);
+      el.exportJson.addEventListener("click", exportJson);
+      el.importFile.addEventListener("change", importFile);
+      el.resetCurrent.addEventListener("click", resetCurrent);
+      el.clearAll.addEventListener("click", clearAll);
+      window.addEventListener("resize", renderCrops);
+      document.addEventListener("keydown", handleKeys);
+    }
+
+    function keyFor(tile) {
+      return `${tile.cycle}:${tile.tile_id}`;
+    }
+
+    function defaultLabel(tile) {
+      return {
+        cycle: tile.cycle,
+        tile_id: tile.tile_id,
+        right_faction: "",
+        right_faction_2: "",
+        updated_at: "",
+      };
+    }
+
+    function getLabel(tile) {
+      const key = keyFor(tile);
+      if (!labels[key]) labels[key] = defaultLabel(tile);
+      return labels[key];
+    }
+
+    function loadLabels() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      } catch {
+        return {};
+      }
+    }
+
+    function saveLabels() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(labels));
+    }
+
+    function currentTile() {
+      return filtered[currentIndex] || null;
+    }
+
+    function applyFilters() {
+      const cycle = el.cycleFilter.value;
+      const status = el.statusFilter.value;
+      const query = el.searchBox.value.trim().toLowerCase();
+      filtered = tiles.filter(tile => {
+        if (cycle !== "all" && tile.cycle !== cycle) return false;
+        if (query && !tile.tile_id.toLowerCase().includes(query) && !tile.label.toLowerCase().includes(query)) return false;
+        const label = getLabel(tile);
+        const done = Boolean(label.right_faction);
+        if (status === "todo" && done) return false;
+        if (status === "done" && !done) return false;
+        return true;
+      });
+      currentIndex = Math.min(currentIndex, Math.max(filtered.length - 1, 0));
+      renderAll();
+    }
+
+    function renderAll() {
+      renderCurrent();
+      renderList();
+      renderProgress();
+    }
+
+    function renderCurrent() {
+      const tile = currentTile();
+      if (!tile) {
+        el.tileTitle.textContent = "-";
+        el.tileMeta.textContent = "0 / 0";
+        return;
+      }
+      const label = getLabel(tile);
+      el.tileTitle.textContent = `${tile.cycle}:${tile.tile_id}`;
+      el.tileMeta.textContent = tile.cycle === "c2" ? `${tile.cycleLabel} · dual allowed` : tile.cycleLabel;
+
+      el.frontImg.onload = renderCrops;
+      el.backImg.onload = renderCrops;
+      el.frontImg.src = tile.front;
+      el.backImg.src = tile.back;
+      renderFactionButtons();
+      renderCrops();
+      renderProgress();
+    }
+
+    function renderFactionButtons() {
+      const tile = currentTile();
+      if (!tile) return;
+      const label = getLabel(tile);
+      const factions = FACTIONS[tile.cycle];
+      el.rightButtons.innerHTML = factions.map((f, index) => {
+        const active = label.right_faction === f.id || label.right_faction_2 === f.id ? " active" : "";
+        return `<button class="option-btn right-faction${active}" data-faction="${escapeHtml(f.id)}">${escapeHtml(f.zh)}<small>${index + 1} ${escapeHtml(f.label)}</small></button>`;
+      }).join("");
+      el.rightButtons.querySelectorAll("button").forEach(button => {
+        button.addEventListener("click", () => setRightFaction(button.dataset.faction));
+      });
+      el.rightNone.classList.toggle("active", label.right_faction === "none");
+    }
+
+    function renderList() {
+      const html = filtered.map((tile, index) => {
+        const label = getLabel(tile);
+        const value = [label.right_faction, label.right_faction_2].filter(Boolean).join("+");
+        let pillClass = value ? "done" : "";
+        if (value === "none") pillClass = "none";
+        const current = index === currentIndex ? " current" : "";
+        const display = value || "todo";
+        return `<button class="${current}" data-index="${index}">
+          <span>${escapeHtml(tile.cycle)}:${escapeHtml(tile.tile_id)}</span>
+          <span></span>
+          <span class="pill ${pillClass}">${escapeHtml(display)}</span>
+        </button>`;
+      }).join("");
+      el.tileList.innerHTML = html;
+      el.tileList.querySelectorAll("button").forEach(button => {
+        button.addEventListener("click", () => {
+          currentIndex = Number(button.dataset.index);
+          renderAll();
+        });
+      });
+    }
+
+    function renderProgress() {
+      const done = tiles.filter(tile => Boolean(getLabel(tile).right_faction)).length;
+      el.progressText.textContent = `${filtered.length ? currentIndex + 1 : 0}/${filtered.length}  done ${done}/${tiles.length}`;
+    }
+
+    function renderCrops() {
+      const tile = currentTile();
+      if (!tile) return;
+      renderFullCard(el.frontCrop, el.frontImg);
+      renderFullCard(el.backCrop, el.backImg);
+    }
+
+    function renderFullCard(view, img) {
+      if (!img.naturalWidth || !img.naturalHeight) return;
+      view.style.aspectRatio = `${img.naturalWidth} / ${img.naturalHeight}`;
+    }
+
+    function updateCurrent(patch, shouldAdvance = false) {
+      const tile = currentTile();
+      if (!tile) return;
+      const label = getLabel(tile);
+      Object.assign(label, patch, { updated_at: new Date().toISOString() });
+      saveLabels();
+      renderFactionButtons();
+      renderList();
+      renderProgress();
+      if (shouldAdvance && autoAdvance) nextTile();
+    }
+
+    function setRightFaction(faction) {
+      const tile = currentTile();
+      if (!tile) return;
+      const label = getLabel(tile);
+      if (faction === "" || faction === "none" || tile.cycle !== "c2") {
+        updateCurrent({ right_faction: faction, right_faction_2: "" }, Boolean(faction));
+        return;
+      }
+      if (label.right_faction === faction) {
+        updateCurrent({ right_faction: label.right_faction_2 || "", right_faction_2: "" }, false);
+        return;
+      }
+      if (label.right_faction_2 === faction) {
+        updateCurrent({ right_faction_2: "" }, false);
+        return;
+      }
+      if (!label.right_faction || label.right_faction === "none") {
+        updateCurrent({ right_faction: faction, right_faction_2: "" }, false);
+        return;
+      }
+      updateCurrent({ right_faction_2: faction }, true);
+    }
+
+    function nextTile() {
+      if (!filtered.length) return;
+      currentIndex = Math.min(filtered.length - 1, currentIndex + 1);
+      renderAll();
+    }
+
+    function previousTile() {
+      if (!filtered.length) return;
+      currentIndex = Math.max(0, currentIndex - 1);
+      renderAll();
+    }
+
+    function resetCurrent() {
+      const tile = currentTile();
+      if (!tile) return;
+      labels[keyFor(tile)] = defaultLabel(tile);
+      saveLabels();
+      renderAll();
+    }
+
+    function clearAll() {
+      if (!confirm("Clear all local labels in this browser?")) return;
+      for (const key of Object.keys(labels)) delete labels[key];
+      saveLabels();
+      renderAll();
+    }
+
+    function handleKeys(event) {
+      const tag = event.target && event.target.tagName;
+      if (tag === "TEXTAREA" || tag === "INPUT" || tag === "SELECT") return;
+      const tile = currentTile();
+      if (!tile) return;
+      const factions = FACTIONS[tile.cycle];
+      const key = event.key.toLowerCase();
+      if (key === "1") setRightFaction(factions[0].id);
+      else if (key === "2") setRightFaction(factions[1].id);
+      else if (key === "3") setRightFaction(factions[2].id);
+      else if (key === "0") setRightFaction("none");
+      else if (key === "enter") nextTile();
+      else if (key === "backspace") previousTile();
+    }
+
+    function exportRows() {
+      return tiles.map(tile => {
+        const label = getLabel(tile);
+        return {
+          cycle: tile.cycle,
+          tile_id: tile.tile_id,
+          label: tile.label,
+          right_faction: label.right_faction || "",
+          right_faction_2: label.right_faction_2 || "",
+          updated_at: label.updated_at || "",
+        };
+      });
+    }
+
+    function exportCsv() {
+      const rows = exportRows();
+      const headers = Object.keys(rows[0] || {});
+      const csv = [
+        headers.join(","),
+        ...rows.map(row => headers.map(header => csvCell(row[header])).join(",")),
+      ].join("\r\n");
+      download("\ufeff" + csv, "map-faction-labels.csv", "text/csv;charset=utf-8");
+    }
+
+    function exportJson() {
+      download(JSON.stringify(exportRows(), null, 2), "map-faction-labels.json", "application/json");
+    }
+
+    function importFile(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const text = String(reader.result || "");
+        const rows = file.name.toLowerCase().endsWith(".json") ? JSON.parse(text) : parseCsv(text);
+        for (const row of rows) {
+          const cycle = row.cycle;
+          const tileId = row.tile_id || row.tileId || row.id;
+          if (!cycle || !tileId) continue;
+          const key = `${cycle}:${tileId}`;
+          labels[key] = {
+            cycle,
+            tile_id: tileId,
+            right_faction: row.right_faction || "",
+            right_faction_2: row.right_faction_2 || "",
+            updated_at: row.updated_at || new Date().toISOString(),
+          };
+        }
+        saveLabels();
+        applyFilters();
+        event.target.value = "";
+      };
+      reader.readAsText(file, "utf-8");
+    }
+
+    function parseCsv(text) {
+      const lines = text.replace(/^\ufeff/, "").split(/\r?\n/).filter(Boolean);
+      if (!lines.length) return [];
+      const headers = splitCsvLine(lines[0]);
+      return lines.slice(1).map(line => {
+        const cells = splitCsvLine(line);
+        const row = {};
+        headers.forEach((header, index) => row[header] = cells[index] || "");
+        return row;
+      });
+    }
+
+    function splitCsvLine(line) {
+      const cells = [];
+      let cell = "";
+      let quoted = false;
+      for (let index = 0; index < line.length; index += 1) {
+        const char = line[index];
+        if (char === '"' && line[index + 1] === '"') {
+          cell += '"';
+          index += 1;
+        } else if (char === '"') {
+          quoted = !quoted;
+        } else if (char === "," && !quoted) {
+          cells.push(cell);
+          cell = "";
+        } else {
+          cell += char;
+        }
+      }
+      cells.push(cell);
+      return cells;
+    }
+
+    function csvCell(value) {
+      const text = String(value ?? "");
+      if (/[",\r\n]/.test(text)) return `"${text.replace(/"/g, '""')}"`;
+      return text;
+    }
+
+    function download(content, name, type) {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = name;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      }[char]));
+    }
+  </script>
+</body>
+</html>

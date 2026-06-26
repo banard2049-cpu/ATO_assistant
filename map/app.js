@@ -30,6 +30,13 @@ const tokenAssets = [
   { id: "ENGIN", label: "ENGIN", path: "./tokens/ENGIN.jpg" },
   { id: "hs", label: "HS", path: "./tokens/hs.jpg", unique: true },
   { id: "last_city", label: "Last City", path: "./tokens/last_city.jpg" },
+  { id: "taitan", label: "Taitan", path: "./tokens/taitan.png", group: "odyssey" },
+  { id: "staff", label: "Staff", path: "./tokens/staff.png", group: "odyssey" },
+  { id: "body", label: "Body", path: "./tokens/body.png", group: "odyssey" },
+  { id: "knowledge", label: "Knowledge", path: "./tokens/knowledge.png", group: "odyssey" },
+  { id: "rr", label: "RR", path: "./tokens/rr.png", group: "odyssey" },
+  { id: "dof", label: "DOF", path: "./tokens/dof.png", group: "odyssey" },
+  { id: "end", label: "End", path: "./tokens/end.png", group: "odyssey" },
   {
     id: "token_1",
     label: "Token 1",
@@ -42,6 +49,24 @@ const tokenAssets = [
   },
 ];
 const tokenAssetById = Object.fromEntries(tokenAssets.map((token) => [token.id, token]));
+const tokenMenuGroups = [
+  { id: "odyssey", label: "Odyssey", shortLabel: "OO", actions: [{ id: "odyssey_supplies", label: "Auto" }] },
+];
+const odysseySupplyTokenIds = ["body", "staff", "taitan", "knowledge", "dof", "rr"];
+const odysseySupplyPool = [
+  ...Array(3).fill("body"),
+  ...Array(4).fill("staff"),
+  ...Array(6).fill("taitan"),
+  ...Array(2).fill("knowledge"),
+  "dof",
+  "rr",
+];
+const adventureTileTagIds = ["central_adventure", "rr_adventure", "adventure", "city"];
+const alwaysVisibleStartTileIds = {
+  c1: "T01",
+  c2: "078",
+  c3: "010",
+};
 const adversaryBattleByCycle = {
   c2: {
     book: "c2",
@@ -63,6 +88,7 @@ const elements = {
   mapZoomValue: document.querySelector("#mapZoomValue"),
   showBackToggle: document.querySelector("#showBackToggle"),
   onlyExploredToggle: document.querySelector("#onlyExploredToggle"),
+  hideUnknownToggle: document.querySelector("#hideUnknownToggle"),
   showAdjacencyToggle: document.querySelector("#showAdjacencyToggle"),
   cycleTitle: document.querySelector("#cycleTitle"),
   cycleMeta: document.querySelector("#cycleMeta"),
@@ -156,6 +182,7 @@ function createDefaultState() {
     activeCycleId,
     showBack: false,
     onlyExplored: false,
+    hideUnknown: true,
     showAdjacency: false,
     mapZoom: 100,
     selectedToken: "reveal",
@@ -201,6 +228,7 @@ function normalizeState(saved) {
     cycles,
     showBack: Boolean(saved.showBack),
     onlyExplored: Boolean(saved.onlyExplored),
+    hideUnknown: saved.hideUnknown == null ? defaults.hideUnknown : Boolean(saved.hideUnknown),
     showAdjacency: Boolean(saved.showAdjacency),
     mapZoom: normalizeMapZoom(saved.mapZoom),
     selectedToken: tokenAssetById[saved.selectedToken] ? saved.selectedToken : "reveal",
@@ -258,6 +286,37 @@ function tileTagIds(cycleId, tileId) {
 function tileTagLabels(cycleId, tileId) {
   const definitions = Object.fromEntries((mapTagData.tagDefinitions || []).map((tag) => [tag.id, tag.label || tag.id]));
   return tileTagIds(cycleId, tileId).map((tagId) => definitions[tagId] || tagId);
+}
+
+const factionLabelsByCycle = {
+  c1: {
+    minoians: "米诺斯人",
+    labyrinthians: "迷宫徒",
+    hornsworn: "角誓者",
+    none: "无",
+  },
+  c2: {
+    helots: "希洛人",
+    cyclopes: "独眼巨人",
+    symmachy: "邦联同盟",
+    none: "无",
+  },
+  c3: {
+    sunheirs: "太阳后裔",
+    delphians: "德尔菲人",
+    twilightWatch: "暮光守望",
+    none: "无",
+  },
+};
+
+function tileFactions(cycleId, tileId) {
+  const entry = tileTagEntry(cycleId, tileId);
+  return Array.isArray(entry?.factions) ? entry.factions : [];
+}
+
+function tileFactionLabels(cycleId, tileId) {
+  const labels = factionLabelsByCycle[cycleId] || {};
+  return tileFactions(cycleId, tileId).map((factionId) => labels[factionId] || factionId);
 }
 
 function tileHasTag(cycleId, tileId, tagId) {
@@ -465,7 +524,7 @@ function renderTokenPalette() {
   const fragment = document.createDocumentFragment();
   elements.tokenPalette.innerHTML = "";
 
-  tokenAssets.forEach((token) => {
+  const renderTokenButton = (token) => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = `token-tool${state.selectedToken === token.id ? " active" : ""}`;
@@ -479,7 +538,45 @@ function renderTokenPalette() {
       saveState();
       render();
     });
-    fragment.appendChild(button);
+    return button;
+  };
+
+  tokenAssets.filter((token) => !token.group).forEach((token) => {
+    fragment.appendChild(renderTokenButton(token));
+  });
+
+  tokenMenuGroups.forEach((group) => {
+    const groupTokens = tokenAssets.filter((token) => token.group === group.id);
+    if (!groupTokens.length) return;
+
+    const details = document.createElement("details");
+    details.className = "token-menu";
+    details.open = groupTokens.some((token) => token.id === state.selectedToken);
+
+    const summary = document.createElement("summary");
+    summary.className = `token-tool token-menu-trigger${details.open ? " active" : ""}`;
+    summary.title = group.label;
+    summary.innerHTML = `<span>${escapeHtml(group.shortLabel || group.label)}</span>`;
+    details.appendChild(summary);
+
+    const menu = document.createElement("div");
+    menu.className = "token-submenu";
+    (group.actions || []).forEach((action) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "token-tool token-action-tool";
+      button.title = "自动放置后日奥德赛补给";
+      button.innerHTML = `<span>${escapeHtml(action.label)}</span>`;
+      button.addEventListener("click", () => {
+        if (action.id === "odyssey_supplies") autoPlaceOdysseySupplies();
+      });
+      menu.appendChild(button);
+    });
+    groupTokens.forEach((token) => {
+      menu.appendChild(renderTokenButton(token));
+    });
+    details.appendChild(menu);
+    fragment.appendChild(details);
   });
 
   elements.tokenPalette.appendChild(fragment);
@@ -535,6 +632,7 @@ function renderControls() {
   elements.mapZoomValue.textContent = `${state.mapZoom}%`;
   elements.showBackToggle.checked = state.showBack;
   elements.onlyExploredToggle.checked = state.onlyExplored;
+  if (elements.hideUnknownToggle) elements.hideUnknownToggle.checked = state.hideUnknown;
   elements.showAdjacencyToggle.checked = state.showAdjacency;
   if (elements.markCurrentButton) elements.markCurrentButton.disabled = !cycleState.currentTile;
   renderScoutControls(cycleState);
@@ -576,6 +674,7 @@ function renderTiles() {
   elements.tileGrid.className = `tile-grid cycle-${cycle.id}`;
   elements.tileGrid.style.setProperty("--map-ratio", `${mapWidth} / ${mapHeight}`);
   elements.tileGrid.style.setProperty("--map-zoom", `${state.mapZoom}%`);
+  const visibleUnknownTileIds = state.hideUnknown ? visibleTileIdsForUnknownFilter(cycle, cycleState) : null;
 
   const tiles = cycle.tiles.filter((tile) => {
     const explored = Boolean(cycleState.explored[tile.id]);
@@ -584,7 +683,10 @@ function renderTiles() {
     const matchesQuery = !query || [tile.id, tile.label, tile.source].some((value) => {
       return String(value || "").toLowerCase().includes(query);
     });
-    return (matchesQuery || isSpawnCandidate || isArgoTile) && (!state.onlyExplored || explored || isSpawnCandidate || isArgoTile);
+    const matchesUnknownFilter = !visibleUnknownTileIds || visibleUnknownTileIds.has(tile.id) || isSpawnCandidate || isArgoTile;
+    return (matchesQuery || isSpawnCandidate || isArgoTile)
+      && matchesUnknownFilter
+      && (!state.onlyExplored || explored || isSpawnCandidate || isArgoTile);
   });
 
   elements.tileGrid.innerHTML = "";
@@ -1196,6 +1298,75 @@ function clearCycleExplored() {
   render();
 }
 
+function autoPlaceOdysseySupplies() {
+  clearPendingAdversarySpawn();
+  const cycle = activeCycle();
+  const cycleState = activeCycleState();
+  const argoId = argoTileId(cycleState);
+  const argoTile = cycle.tiles.find((tile) => tile.id === argoId);
+  if (!argoTile) {
+    window.alert("请先设置 AG/当前位置，再自动放置后日奥德赛补给。");
+    return;
+  }
+
+  const existingSupplyCount = Object.values(cycleState.tokens.markers || {}).reduce((count, markers) => {
+    return count + odysseySupplyTokenIds.filter((tokenId) => markers?.[tokenId]).length;
+  }, 0);
+  if (existingSupplyCount && !window.confirm(`当前地图已有 ${existingSupplyCount} 枚后日奥德赛补给。要清除并重新放置吗？`)) return;
+
+  const layout = displayLayout(cycle);
+  const argoPosition = layout.position(argoTile);
+  const candidates = cycle.tiles
+    .filter((tile) => cycleState.explored[tile.id]
+      && adventureTileTagIds.some((tagId) => tileHasTag(cycle.id, tile.id, tagId)))
+    .map((tile) => {
+      const position = layout.position(tile);
+      return {
+        tile,
+        distance: Math.abs(Number(position.x || 0) - Number(argoPosition.x || 0))
+          + Math.abs(Number(position.y || 0) - Number(argoPosition.y || 0)),
+      };
+    })
+    .sort((a, b) => a.distance - b.distance || a.tile.id.localeCompare(b.tile.id));
+
+  if (!candidates.length) {
+    window.alert("当前 Cycle 没有已翻开且已标记冒险图标的板块。");
+    return;
+  }
+
+  const pool = shuffled(odysseySupplyPool);
+  const placements = Math.min(pool.length, candidates.length);
+  if (placements < pool.length && !window.confirm(`只找到 ${placements} 个冒险图标，少于 ${pool.length} 枚补给。要继续放置可用数量吗？`)) return;
+
+  pushUndo();
+  removeOdysseySupplyMarkers(cycleState);
+  for (let index = 0; index < placements; index += 1) {
+    const tokenId = pool[index];
+    const tileId = candidates[index].tile.id;
+    cycleState.tokens.markers[tileId] ||= {};
+    cycleState.tokens.markers[tileId][tokenId] = true;
+  }
+  saveState();
+  render();
+}
+
+function removeOdysseySupplyMarkers(cycleState) {
+  Object.keys(cycleState.tokens.markers || {}).forEach((tileId) => {
+    const markers = cycleState.tokens.markers[tileId];
+    odysseySupplyTokenIds.forEach((tokenId) => delete markers[tokenId]);
+    if (!Object.keys(markers).length) delete cycleState.tokens.markers[tileId];
+  });
+}
+
+function shuffled(items) {
+  const copy = [...items];
+  for (let index = copy.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [copy[index], copy[swapIndex]] = [copy[swapIndex], copy[index]];
+  }
+  return copy;
+}
+
 function moveAdversary() {
   clearPendingAdversarySpawn();
   const cycleState = activeCycleState();
@@ -1323,6 +1494,8 @@ function currentMapSnapshot() {
   const scoutTile = cycle.tiles.find((tile) => tile.id === scoutTileId);
   const currentTileTags = tileTagIds(cycle.id, cycleState.currentTile);
   const currentTileTagLabels = tileTagLabels(cycle.id, cycleState.currentTile);
+  const currentTileFactions = tileFactions(cycle.id, cycleState.currentTile);
+  const currentTileFactionLabels = tileFactionLabels(cycle.id, cycleState.currentTile);
   const latestRevealedTileTags = tileTagIds(cycle.id, cycleState.latestRevealedTile);
   const latestRevealedTileTagLabels = tileTagLabels(cycle.id, cycleState.latestRevealedTile);
   const currentTileHasLastCityMarker = Boolean(
@@ -1365,6 +1538,8 @@ function currentMapSnapshot() {
     scoutTileLabel: scoutTile?.label || scoutTileId,
     currentTileTags,
     currentTileTagLabels,
+    currentTileFactions,
+    currentTileFactionLabels,
     latestRevealedTileTags,
     latestRevealedTileTagLabels,
     currentTileHasLastCityMarker,
@@ -1433,6 +1608,8 @@ async function saveAndReturnToDashboard() {
         mapSnapshot: snapshot,
         mapCurrentTileTags: snapshot.currentTileTags,
         mapCurrentTileTagLabels: snapshot.currentTileTagLabels,
+        mapCurrentTileFactions: snapshot.currentTileFactions,
+        mapCurrentTileFactionLabels: snapshot.currentTileFactionLabels,
         mapLatestRevealedTileTags: snapshot.latestRevealedTileTags,
         mapLatestRevealedTileTagLabels: snapshot.latestRevealedTileTagLabels,
         mapCurrentTileHasLastCityMarker: snapshot.currentTileHasLastCityMarker,
@@ -1557,6 +1734,34 @@ function tilesPhysicallyConnected(a, b) {
     + Math.abs(Number(aPosition.y) - Number(bPosition.y)) === 1;
 }
 
+function visibleTileIdsForUnknownFilter(cycle, cycleState) {
+  const visibleIds = new Set();
+  if (alwaysVisibleStartTileIds[cycle.id]) visibleIds.add(alwaysVisibleStartTileIds[cycle.id]);
+  const exploredIds = new Set();
+  cycle.tiles.forEach((tile) => {
+    if (cycleState.explored[tile.id]) {
+      visibleIds.add(tile.id);
+      exploredIds.add(tile.id);
+    }
+  });
+
+  if (!exploredIds.size) return visibleIds;
+
+  const allTiles = cycle.tiles.map((tile) => effectiveTile(tile, cycleState));
+  const tilesById = new Map(allTiles.map((tile) => [tile.id, tile]));
+  exploredIds.forEach((tileId) => {
+    const tile = tilesById.get(tileId);
+    if (!tile) return;
+    allTiles.forEach((candidate) => {
+      if (candidate.id === tileId) return;
+      if (tileConnectsTo(tile, candidate.id) || tileConnectsTo(candidate, tileId)) {
+        visibleIds.add(candidate.id);
+      }
+    });
+  });
+  return visibleIds;
+}
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -1595,6 +1800,13 @@ elements.onlyExploredToggle.addEventListener("change", () => {
   saveState();
   renderTiles();
 });
+if (elements.hideUnknownToggle) {
+  elements.hideUnknownToggle.addEventListener("change", () => {
+    state.hideUnknown = elements.hideUnknownToggle.checked;
+    saveState();
+    renderTiles();
+  });
+}
 elements.showAdjacencyToggle.addEventListener("change", () => {
   state.showAdjacency = elements.showAdjacencyToggle.checked;
   saveState();

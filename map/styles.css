@@ -224,7 +224,7 @@ h1 {
   flex-wrap: nowrap;
   gap: 5px;
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .map-actions {
@@ -297,6 +297,53 @@ h1 {
 .token-tool span {
   font-size: 12px;
   font-weight: 900;
+}
+
+.token-action-tool {
+  grid-column: span 2;
+  padding-inline: 6px;
+}
+
+.token-menu {
+  position: relative;
+  display: inline-flex;
+}
+
+.token-menu > summary {
+  list-style: none;
+}
+
+.token-menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.token-menu-trigger span::after {
+  content: "";
+  width: 0;
+  height: 0;
+  margin-left: 4px;
+  border-inline: 4px solid transparent;
+  border-top: 5px solid currentColor;
+}
+
+.token-menu-trigger span {
+  display: inline-flex;
+  align-items: center;
+}
+
+.token-submenu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  left: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 34px);
+  gap: 5px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
 }
 
 .control-panel label {
@@ -772,5 +819,10 @@ button.danger {
 
   .token-palette {
     flex-wrap: wrap;
+  }
+
+  .token-submenu {
+    left: auto;
+    right: 0;
   }
 }

@@ -5,6 +5,7 @@ const state = {
   selectedKey: "",
   search: "",
   onlyUnreviewed: false,
+  onlyNoAdventure: false,
   dirty: false,
   saveTimer: null,
   loading: true,
@@ -20,6 +21,7 @@ const elements = {
   cycleSelect: document.querySelector("#cycleSelect"),
   searchInput: document.querySelector("#searchInput"),
   onlyUnreviewedToggle: document.querySelector("#onlyUnreviewedToggle"),
+  onlyNoAdventureToggle: document.querySelector("#onlyNoAdventureToggle"),
   statusText: document.querySelector("#statusText"),
   statusMeta: document.querySelector("#statusMeta"),
   tileCount: document.querySelector("#tileCount"),
@@ -42,7 +44,9 @@ const tagDefinitionDefaults = [
   { id: "central_adventure", label: "中枢冒险", shortcut: "3" },
   { id: "rr_adventure", label: "RR冒险", shortcut: "4" },
   { id: "city", label: "城市", shortcut: "5" },
+  { id: "adventure", label: "有冒险图标", shortcut: "6" },
 ];
+const adventureTagIds = ["central_adventure", "rr_adventure", "adventure", "city"];
 
 function clone(value) {
   return value == null ? value : JSON.parse(JSON.stringify(value));
@@ -186,7 +190,9 @@ function currentTileList() {
     ].map((value) => String(value || "").toLowerCase());
     const matchesQuery = !query || haystack.some((value) => value.includes(query));
     const matchesUnreviewed = !state.onlyUnreviewed || !entry?.reviewed;
-    return matchesQuery && matchesUnreviewed;
+    const tags = entry?.tags || [];
+    const matchesNoAdventure = !state.onlyNoAdventure || !tags.some((tagId) => adventureTagIds.includes(tagId));
+    return matchesQuery && matchesUnreviewed && matchesNoAdventure;
   });
 }
 
@@ -397,6 +403,7 @@ function render() {
   renderCycleOptions();
   elements.searchInput.value = state.search;
   elements.onlyUnreviewedToggle.checked = state.onlyUnreviewed;
+  if (elements.onlyNoAdventureToggle) elements.onlyNoAdventureToggle.checked = state.onlyNoAdventure;
   elements.cycleSelect.value = state.activeCycleId;
   const cycle = getCurrentCycle();
   if (!state.selectedKey || entryKeyParts(state.selectedKey).cycleId !== cycle.id) {
@@ -447,6 +454,15 @@ function bindEvents() {
     if (firstVisible) state.selectedKey = tileKey(state.activeCycleId, firstVisible.id);
     render();
   });
+
+  if (elements.onlyNoAdventureToggle) {
+    elements.onlyNoAdventureToggle.addEventListener("change", () => {
+      state.onlyNoAdventure = elements.onlyNoAdventureToggle.checked;
+      const firstVisible = currentTileList()[0];
+      if (firstVisible) state.selectedKey = tileKey(state.activeCycleId, firstVisible.id);
+      render();
+    });
+  }
 
   elements.reviewedToggle.addEventListener("change", () => {
     updateEntryFromForm();

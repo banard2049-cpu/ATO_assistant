@@ -1,0 +1,45 @@
+{
+  "engine": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
+  "lang": "chi_sim+eng",
+  "cards": [
+    {
+      "file": "assets\\exploration-cards\\c1\\6400.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "Bie eee UR eae ge eee ie\nDoc Days",
+        "body": "S38, KEIM,\n然后失去-3 全 。\n如果没有失去 ，\n获得+1例。\nGIB Gain +28.",
+        "footer": "移出上组直到下一次定时战半 8\nRemove until the next\nAB0075                Timeline Battle.",
+        "full": "坏日子\nDoc Days\n每有3 全，失去-1汉，\n如果没有失去兴，\nRS +1 &\nGIB Gain +2&.\n移出卡组直到下一次定时战斗 8\nRemove until the next\nAB0075            Timeline Battle."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c2\\13600.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "| ASA 8\nEMENOS FEAR\n-.» , AQUIFER",
+        "body": "Gain 2 Fear Essence        :\nresources.\n€JE Gain+2A asa\ngroup.",
+        "footer": " BB1212                 :",
+        "full": "ajaiasacuann\nEMENOS TEAR\nAQUIFER\nGain 2 Fear Essence\nresources.\n€7E Gain+2Aasa\ngroup."
+      }
+    },
+    {
+      "file": "assets\\exploration-cards\\c3\\13500.png",
+      "size": [
+        470,
+        740
+      ],
+      "text": {
+        "title": "，   深渊聆听\nABYSS LISTENS",
+        "body": "Gain 2 Skin of Malice\nresources.\nOfte» Gain +1A\\ as\na group.",
+        "footer": "CB1639",
+        "full": "深渊聆听\nABYSS LISTENS\nGain 2 Skin of Malice\nresources.\nCEM Gain +1 A as\na group.\nCB1639"
+      }
+    }
+  ]
+}

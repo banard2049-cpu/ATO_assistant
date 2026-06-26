@@ -39,7 +39,11 @@
 /story/audio-packs/
 
 # Asset-heavy/reference-only working areas
-/assets/
+/assets/*
+!/assets/exploration-card-rules.js
+!/assets/exploration-card-tags.js
+!/assets/page-focus-router.js
+!/assets/story-doom-card-data.js
 /map/images/
 /map/tokens/
 /record/assets/
