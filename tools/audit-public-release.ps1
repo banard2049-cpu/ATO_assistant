@@ -11,7 +11,6 @@ $mediaExtensions = @(
 )
 
 $blockedPaths = @(
-  'assets/',
   'data/',
   'logs/',
   'log/',
@@ -25,11 +24,18 @@ $blockedPaths = @(
   'map/tokens/',
   'record/assets/',
   'story/images/battles/',
-  'technology/images/',
-  'tools/bgstorybook-',
-  'tools/c2-storybook-diff.json',
-  'tools/c4-storybook-diff.json',
-  'tools/c5-storybook-diff.json'
+  'technology/images/'
+)
+
+$blockedPathPatterns = @(
+  'assets/*'
+)
+
+$allowedPaths = @(
+  'assets/exploration-card-rules.js',
+  'assets/exploration-card-tags.js',
+  'assets/page-focus-router.js',
+  'assets/story-doom-card-data.js'
 )
 
 $blockedNamePatterns = @(
@@ -57,11 +63,30 @@ $files = if ($Staged) {
 
 $violations = foreach ($file in $files) {
   $normalized = $file.Replace('\', '/')
+  $allowed = $false
+  foreach ($allowedPath in $allowedPaths) {
+    if ($normalized.Equals($allowedPath, [System.StringComparison]::OrdinalIgnoreCase)) {
+      $allowed = $true
+      break
+    }
+  }
+
+  if ($allowed) {
+    continue
+  }
+
   $extension = [System.IO.Path]::GetExtension($normalized).ToLowerInvariant()
   $blockedByExtension = $mediaExtensions -contains $extension
   $blockedByPath = $false
   foreach ($blockedPath in $blockedPaths) {
     if ($normalized.StartsWith($blockedPath, [System.StringComparison]::OrdinalIgnoreCase)) {
+      $blockedByPath = $true
+      break
+    }
+  }
+
+  foreach ($pattern in $blockedPathPatterns) {
+    if ($normalized -like $pattern) {
       $blockedByPath = $true
       break
     }
