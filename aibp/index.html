@@ -359,6 +359,44 @@
         inset 0 0 8px rgba(255, 72, 66, 0.1);
     }
 
+    .nietzsche-break-lock {
+      position: absolute;
+      left: var(--lock-left, 50%);
+      top: var(--lock-top, 50%);
+      transform: translate(-50%, -50%);
+      width: 54px;
+      height: 54px;
+      border: 3px solid rgba(255, 88, 82, 0.94);
+      border-radius: 999px;
+      background: rgba(20, 8, 6, 0.2);
+      box-shadow:
+        0 0 0 1px rgba(20, 8, 6, 0.72),
+        0 0 14px rgba(255, 72, 66, 0.34);
+      pointer-events: none;
+      z-index: 4;
+    }
+
+    .nietzsche-break-lock::before,
+    .nietzsche-break-lock::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 38px;
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(255, 88, 82, 0.96);
+      box-shadow: 0 0 8px rgba(255, 72, 66, 0.32);
+    }
+
+    .nietzsche-break-lock::before {
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
+
+    .nietzsche-break-lock::after {
+      transform: translate(-50%, -50%) rotate(-45deg);
+    }
+
     .state-button.hidden {
       display: none;
     }
@@ -710,6 +748,10 @@
       width: 100%;
     }
 
+    .aibp-layout.ai-only {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
     .card-column {
       min-width: 0;
       padding: 10px;
@@ -792,6 +834,15 @@
     }
 
     .hermesian-only-action.show {
+      display: inline-grid;
+      align-items: center;
+    }
+
+    .titan-x-only-action {
+      display: none;
+    }
+
+    .titan-x-only-action.show {
       display: inline-grid;
       align-items: center;
     }
@@ -1457,6 +1508,39 @@
       grid-column: 1 / -1;
     }
 
+    .image-zoom-notice-text {
+      grid-column: 1 / -1;
+      width: min(42vw, 280px);
+      padding: 14px 16px;
+      border: 1px solid rgba(199, 173, 114, 0.48);
+      border-radius: 8px;
+      background: rgba(18, 18, 16, 0.94);
+      box-shadow: 0 18px 54px rgba(0, 0, 0, 0.42);
+      color: #f5ecd6;
+      text-align: left;
+    }
+
+    .image-zoom-notice-text-title {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0;
+      color: #c7ad72;
+    }
+
+    .image-zoom-notice-text-value {
+      margin-top: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0;
+      line-height: 1.55;
+      white-space: pre-line;
+    }
+
+    .chimera-term {
+      color: #f0c86a;
+      font-weight: 900;
+    }
+
     .image-zoom-actions {
       display: none;
       grid-column: 2;
@@ -1582,6 +1666,11 @@
         max-height: 62vh;
       }
 
+      .image-zoom-notice-text {
+        width: min(92vw, 360px);
+        justify-self: center;
+      }
+
       .image-zoom-action-title {
         grid-column: 1 / -1;
       }
@@ -1621,6 +1710,7 @@
 
 
   </style>
+  <link rel="stylesheet" href="c45_specials.css?v=20260730c">
 </head>
 <body class="sidebar-collapsed">
   <button type="button" class="sidebar-toggle" id="sidebarToggle" aria-label="展开左侧边栏" title="展开/折叠左侧边栏">☰</button>
@@ -1642,6 +1732,10 @@
             <option value="3">等级 III</option>
             <option value="4">等级 IV</option>
             <option value="5">等级 V</option>
+            <option value="6">等级 VI</option>
+            <option value="7">等级 VII</option>
+            <option value="8">等级 VIII</option>
+            <option value="9">等级 IX</option>
           </select>
         </div>
         <div class="title-actions">
@@ -1688,13 +1782,14 @@
                 <button type="button" id="confirmAiButton" disabled>弃置</button>
                 <button type="button" id="promoteAiSingleButton">AI 晋升</button>
                 <button type="button" id="drawFlareButton" class="hermesian-only-action">抽取闪粉</button>
+                <button type="button" id="drawFeintButton" class="titan-x-only-action">抽取变招</button>
                 <button type="button" id="nietzscheStateButton" class="state-button hidden">状态 1</button>
               </div>
               <div class="draw-preview" id="aiDrawPreview">未抽取 AI</div>
             </div>
             <div class="card-grid" id="aiGrid"></div>
           </div>
-          <div class="card-column">
+          <div class="card-column" id="bpColumn">
             <div class="card-column-head">
               <div class="card-title-with-back">
                 <div class="card-column-title">BP</div>
@@ -1728,6 +1823,7 @@
               </div>
               <div class="draw-preview" id="bpDrawPreview">未抽取 BP</div>
             </div>
+            <div class="babelian-bp-control" id="babelianFusionControl" hidden></div>
             <div class="card-grid" id="bpGrid"></div>
           </div>
         </div>
@@ -1779,6 +1875,7 @@
         <button type="button" data-bp-zoom-action="discard">弃置</button>
         <button type="button" data-bp-zoom-action="defeat">击败</button>
         <button type="button" data-bp-zoom-action="vp-defeat" hidden>VP击败</button>
+        <button type="button" data-bp-zoom-action="vp-critical" hidden>VP暴击</button>
         <button type="button" data-bp-zoom-action="critical">暴击</button>
       </div>
       <div class="image-zoom-actions" id="imageZoomFlipActions" aria-label="翻面">
@@ -1810,7 +1907,15 @@
       "THE_NIETZSCJEAN",
       "HYPERTIME_ORACLE",
       "ICARIAN_HARPY",
-      "SUN_DESCENDANT"
+      "SUN_DESCENDANT",
+      "MIDASCORE",
+      "DEMIDJINN",
+      "THE_BABELIAN_LUNACY",
+      "DAHAKA",
+      "DRAGON_OF_PHOBOS",
+      "MEDUKETOS",
+      "UR_FLEECE",
+      "TITAN_X"
     ];
     const aiViews = ["当前", "弃牌", "移除", "II", "III"];
     const bpViews = ["当前", "弃牌", "损伤", "移除", "II", "III"];
@@ -1824,6 +1929,7 @@
     // 内容格式：window.AIBP_TOKEN_FILES = ["xxx.png", "yyy.jpg"];
     const tokenFileNames = Array.isArray(window.AIBP_TOKEN_FILES) ? window.AIBP_TOKEN_FILES : [];
     const aiExhaustedBonusTokens = ["DA+.png", "HT+.png", "ED+.png", "AT+.png"];
+    const nonStackingTokenFiles = new Set(["CA.jpg", "CM.jpg", "GF.jpg"]);
     const tokenProbeMaxIndex = 199;
     const tokenProbeExtensions = ["png", "jpg", "jpeg"];
     let tokenStackSequence = 0;
@@ -1840,9 +1946,28 @@
       THE_NIETZSCJEAN: { cycle: "c2", key: "nietzschean" },
       HYPERTIME_ORACLE: { cycle: "c3", key: "oracle" },
       ICARIAN_HARPY: { cycle: "c3", key: "harpy" },
-      SUN_DESCENDANT: { cycle: "c3", key: "sunDescendant" }
+      SUN_DESCENDANT: { cycle: "c3", key: "sunDescendant" },
+      MIDASCORE: { cycle: "c4", key: "midascore" },
+      DEMIDJINN: { cycle: "c4", key: "demidjinn" },
+      THE_BABELIAN_LUNACY: { cycle: "c4", key: "babelianLunacy" },
+      DAHAKA: { cycle: "c4", key: "dahaka" },
+      DRAGON_OF_PHOBOS: { cycle: "c5", key: "dragonOfPhobos" },
+      MEDUKETOS: { cycle: "c5", key: "meduketos" },
+      UR_FLEECE: { cycle: "c5", key: "urFleece" },
+      TITAN_X: { cycle: "c5", key: "titanX" }
     };
-    const levelRoman = { 1: "I", 2: "II", 3: "III", 4: "IV", 5: "V" };
+    const maxApostleLevel = 9;
+    const levelRoman = {
+      1: "I",
+      2: "II",
+      3: "III",
+      4: "IV",
+      5: "V",
+      6: "VI",
+      7: "VII",
+      8: "VIII",
+      9: "IX"
+    };
     const fixedLevelOneApostles = new Set([
       "HERMESIAN_PURSUER",
       "THE_BURDEN",
@@ -1892,9 +2017,13 @@
     const criticalMassPosition = { x: 50.7, y: 51.2 };
     const hekatonCriticalMassPosition = { x: 51.1, y: 34 };
     const oracleCriticalMassPosition = { x: 48.8, y: 47.4 };
+    const c45PanelCounterPosition = { x: 96, y: 7.5 };
     const labyrinthaurosName = "LABYRINTHAUROS";
     const hermesianName = "HERMESIAN_PURSUER";
+    const burdenName = "THE_BURDEN";
+    const titanXName = "TITAN_X";
     const flareCardCount = 4;
+    const titanFeintCardCount = 10;
     const labyrinthaurosSpecialBp = {
       type: "TP",
       level: "X",
@@ -1903,9 +2032,30 @@
       specialBp: true
     };
     const chimeraPhaseStates = {
-      C: { label: "CORROSIVE", left: "87.4%", top: "4.6%", width: "12.6%", height: "6.1%" },
-      G: { label: "GELATINOUS", left: "79.5%", top: "28.8%", width: "14.2%", height: "6.1%" },
-      S: { label: "SUPERSOLID", left: "92.9%", top: "28.7%", width: "13.6%", height: "6.1%" }
+      C: {
+        label: "腐蚀液态",
+        effect: (level) => `在你对奇美拉结算完一次至少 1 个命中的攻击后，如果该攻击的启用武器材料特性不是 <span class="chimera-term">Stone</span>（石）、<span class="chimera-term">Relief</span>（岩雕）、<span class="chimera-term">Divine</span>（神圣）、<span class="chimera-term">Hephaestum</span>（赫淮斯托斯）、<span class="chimera-term">Cyclopean</span>（独眼巨人）、<span class="chimera-term">Mythic</span>（神话）或 <span class="chimera-term">Electrum</span>（琥珀金），将该武器横置，并获得 ${level} 危险。`,
+        left: "87.4%",
+        top: "4.6%",
+        width: "12.6%",
+        height: "6.1%"
+      },
+      G: {
+        label: "凝胶态",
+        effect: (level) => `当受到非 <span class="chimera-term">Club</span>（棍棒）、<span class="chimera-term">Cestus</span>（拳套）、<span class="chimera-term">Slabsword</span>（板剑）或 <span class="chimera-term">Shield</span>（盾）类武器攻击时，奇美拉视作 +${level >= 2 ? 2 : 1} AT。`,
+        left: "79.5%",
+        top: "28.8%",
+        width: "14.2%",
+        height: "6.1%"
+      },
+      S: {
+        label: "超固态",
+        effect: (level) => `当受到 <span class="chimera-term">Club</span>（棍棒）、<span class="chimera-term">Cestus</span>（拳套）、<span class="chimera-term">Slabsword</span>（板剑）或 <span class="chimera-term">Shield</span>（盾）类武器攻击时，奇美拉视作 +${level >= 4 ? 2 : 1} AT。`,
+        left: "92.9%",
+        top: "28.7%",
+        width: "13.6%",
+        height: "6.1%"
+      }
     };
     const nietzscheName = "THE_NIETZSCJEAN";
     const nietzscheStateKey = "aibp-nietzsche-state-v2";
@@ -1917,6 +2067,7 @@
     ];
     const normalBpViews = bpViews;
     const hermesianAiViews = [...aiViews, "闪粉牌组", "闪粉弃牌"];
+    const titanAiViews = [...aiViews, "变招牌组", "生效变招", "移除变招"];
     const cyclonusName = "CYCLONUS";
     const cyclonusStateKey = "aibp-cyclonus-state-v1";
     const cyclonusStates = [
@@ -1927,7 +2078,9 @@
     const chimeraBpViews = ["当前", "弃牌", "常规损伤堆", "第二损伤堆", "移除", "II", "III"];
     const cardCount = 6;
     const cardCountOverrides = {
-      HYPERTIME_ORACLE: { AI: { III: 7 } }
+      HYPERTIME_ORACLE: { AI: { III: 7 } },
+      DAHAKA: { BP: { I: 0, II: 0, III: 0 } },
+      TITAN_X: { BP: { I: 6, II: 6, III: 6 } }
     };
     const panelRatio = 2.2;
     const levelBack = { O: "0", I: "1", II: "2", III: "3", X: "X" };
@@ -1949,6 +2102,8 @@
     const bpGrid = document.getElementById("bpGrid");
     const aiBackInfo = document.getElementById("aiBackInfo");
     const bpBackInfo = document.getElementById("bpBackInfo");
+    const aibpLayout = document.querySelector(".aibp-layout");
+    const bpColumn = document.getElementById("bpColumn");
     const bpDamageSummary = document.getElementById("bpDamageSummary");
     const newCampaignButton = document.getElementById("newCampaignButton");
     const traitButton = document.getElementById("traitButton");
@@ -1971,6 +2126,7 @@
     const confirmAiButton = document.getElementById("confirmAiButton");
     const promoteAiSingleButton = document.getElementById("promoteAiSingleButton");
     const drawFlareButton = document.getElementById("drawFlareButton");
+    const drawFeintButton = document.getElementById("drawFeintButton");
     const aiDrawPreview = document.getElementById("aiDrawPreview");
     const drawBpButton = document.getElementById("drawBpButton");
     const undoBpButton = document.getElementById("undoBpButton");
@@ -2128,8 +2284,12 @@
       return left.type === right.type && left.level === right.level && left.index === right.index;
     }
 
-    function pileCardCount(type, level) {
-      return cardCountOverrides[currentApostle]?.[type]?.[level] || cardCount;
+    function pileCardCount(type, level, apostle = currentApostle) {
+      return cardCountOverrides[apostle]?.[type]?.[level] ?? cardCount;
+    }
+
+    function hasBpDeck(apostle = currentApostle) {
+      return ["I", "II", "III"].some((level) => pileCardCount("BP", level, apostle) > 0);
     }
 
     function defaultPile(type) {
@@ -2156,6 +2316,18 @@
           index: index + 1
         }))),
         discard: []
+      };
+    }
+
+    function initialTitanFeintPile() {
+      return {
+        deck: shuffleCards(Array.from({ length: titanFeintCardCount }, (_, index) => ({
+          type: "FEINT",
+          level: "X",
+          index: index + 1
+        }))),
+        active: [],
+        removed: []
       };
     }
 
@@ -2187,6 +2359,7 @@
           removed: []
         },
         flare: initialFlarePile(),
+        feint: initialTitanFeintPile(),
         chimeraPhase: "",
         traits: [],
         tokens: [],
@@ -2227,9 +2400,25 @@
         piles[name].BP.supply.II ||= [];
         piles[name].BP.supply.III ||= [];
         piles[name].BP.removed ||= [];
+        if (!hasBpDeck(name)) {
+          piles[name].BP = {
+            deck: [],
+            discard: [],
+            pending: null,
+            damage: [],
+            damage1: [],
+            damage2: [],
+            supply: { I: [], II: [], III: [] },
+            removed: []
+          };
+        }
         piles[name].flare ||= initialFlarePile();
         piles[name].flare.deck ||= [];
         piles[name].flare.discard ||= [];
+        piles[name].feint ||= initialTitanFeintPile();
+        piles[name].feint.deck ||= [];
+        piles[name].feint.active ||= [];
+        piles[name].feint.removed ||= [];
         if (typeof piles[name].chimeraPhase !== "string") {
           piles[name].chimeraPhase = "";
         }
@@ -2266,11 +2455,11 @@
         if (!Array.isArray(piles[name].tokens)) {
           piles[name].tokens = [];
         }
-        piles[name].tokens = piles[name].tokens.map((item) => ({
+        piles[name].tokens = normalizeTokenStacks(piles[name].tokens.map((item) => ({
           ...item,
           id: item.id || createTokenStackId(),
           count: Math.max(1, clampTokenCount(item.count) || 1)
-        }));
+        })));
         if (!piles[name].levelBonusState || typeof piles[name].levelBonusState !== "object") {
           piles[name].levelBonusState = { promotions: 0 };
         }
@@ -2318,10 +2507,12 @@
 
     function parseApostleLevel(value) {
       const text = String(value || "").toUpperCase();
-      const arabic = text.match(/(?:^|[^0-9])([1-5])(?:[^0-9]|$)/);
+      const arabic = text.match(/(?:^|[^0-9])([1-9])(?:[^0-9]|$)/);
       if (arabic) return Number(arabic[1]);
-      const roman = text.match(/(?:^|[^IV])(III|II|IV|V|I)(?:[^IV]|$)/);
-      return roman ? ({ I: 1, II: 2, III: 3, IV: 4, V: 5 }[roman[1]] || 0) : 0;
+      const roman = text.match(/(?:^|[^IVX])(VIII|VII|III|IX|VI|IV|II|V|I)(?:[^IVX]|$)/);
+      return roman
+        ? ({ I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7, VIII: 8, IX: 9 }[roman[1]] || 0)
+        : 0;
     }
 
     function recordLevelForTrack(recordState, track) {
@@ -2542,9 +2733,9 @@
     function apostleLevelFor(name) {
       if (fixedLevelOneApostles.has(name)) return 1;
       const override = Number(apostleLevelOverrides[name]);
-      if (override >= 1 && override <= 5) return override;
+      if (override >= 1 && override <= maxApostleLevel) return override;
       const recordLevel = Number(recordApostleLevels[name]);
-      if (recordLevel >= 1 && recordLevel <= 5) return recordLevel;
+      if (recordLevel >= 1 && recordLevel <= maxApostleLevel) return recordLevel;
       return 1;
     }
 
@@ -2594,6 +2785,10 @@
       return Math.max(1, Math.floor(Number(card.damageValue) || 1));
     }
 
+    function notifyBpWound(card) {
+      window.C45Specials?.recordBpWound?.(bpDamageValue(card));
+    }
+
     function bpDamageTotalForKey(key) {
       ensurePiles(currentApostle);
       const cards = piles[currentApostle].BP[key] || [];
@@ -2620,6 +2815,7 @@
       if (isCyclonus() || currentApostle === "HEKATON" || currentApostle === "HYPERTIME_ORACLE") {
         addCriticalMass(bpDamageValue(card));
       }
+      notifyBpWound(card);
     }
 
     function hasCriticalMassFeature() {
@@ -2631,6 +2827,35 @@
       return piles[currentApostle].tokens.find((item) =>
         item.criticalMass === true || item.chimeraCriticalMass === true
       ) || null;
+    }
+
+    function c45PanelCounterKind(name = currentApostle) {
+      if (name === "MIDASCORE") return "midascorePain";
+      if (name === "DRAGON_OF_PHOBOS") return "dragon";
+      if (name === "MEDUKETOS") return "meduketos";
+      return "";
+    }
+
+    function c45PanelCounterToken() {
+      const kind = c45PanelCounterKind();
+      if (!kind) return null;
+      return piles[currentApostle].tokens.find((item) =>
+        kind === "midascorePain"
+          ? item.midascorePain === true
+          : item.c45PanelCounter === kind
+      ) || null;
+    }
+
+    function c45PanelCounterThreshold() {
+      if (currentApostle === "MIDASCORE") return 5;
+      if (currentApostle === "DRAGON_OF_PHOBOS") {
+        return currentApostleLevel() >= 4 ? 3 : 4;
+      }
+      return 3;
+    }
+
+    function hasPanelCounterSlot(name = currentApostle) {
+      return criticalMassApostles.has(name) || Boolean(c45PanelCounterKind(name));
     }
 
     function currentCriticalMassPosition() {
@@ -2675,6 +2900,10 @@
     }
 
     function addCriticalMassFromSlot() {
+      if (c45PanelCounterKind()) {
+        window.C45Specials?.handlePanelCounterTokenClick?.();
+        return;
+      }
       if (!hasCriticalMassFeature() || currentApostleLevel() < 2 || criticalMassToken()) return;
       rememberUndo(currentApostle, "BP");
       addCriticalMass(1);
@@ -2696,7 +2925,9 @@
         if (signatureImg) {
           openImageZoom(
             signatureImg.dataset.frontSrc || signatureImg.currentSrc || signatureImg.src,
-            "HEKATON 标志行为"
+            "HEKATON 标志行为",
+            null,
+            { cardTokens: currentPanelCardTokens("AI") }
           );
         }
         return;
@@ -2780,7 +3011,10 @@
           tile.dataset.cardView = view;
           tile.dataset.cardIndex = String(index);
         }
-        tile.appendChild(imageOrMessage(cardSrc(card), cardAlt(card)));
+        const src = cardSrc(card);
+        const img = imageOrMessage(src, cardAlt(card));
+        img.addEventListener("load", () => enableOptionalCardBack(img, src), { once: true });
+        tile.appendChild(img);
         if (card.damageValue && card.damageValue > 1) {
           const badge = document.createElement("div");
           badge.className = "damage-badge";
@@ -2798,6 +3032,15 @@
       }
       if (type === "AI" && view === "闪粉弃牌") {
         return piles[currentApostle].flare.discard;
+      }
+      if (type === "AI" && view === "变招牌组") {
+        return piles[currentApostle].feint.deck;
+      }
+      if (type === "AI" && view === "生效变招") {
+        return piles[currentApostle].feint.active;
+      }
+      if (type === "AI" && view === "移除变招") {
+        return piles[currentApostle].feint.removed;
       }
       if (view === "当前") {
         return piles[currentApostle][type].deck;
@@ -2832,6 +3075,15 @@
       }
       if (type === "AI" && view === "闪粉弃牌") {
         return { type, owner: "flare", key: "discard", view, label: "闪粉弃牌" };
+      }
+      if (type === "AI" && view === "变招牌组") {
+        return { type, owner: "feint", key: "deck", view, label: "变招牌组" };
+      }
+      if (type === "AI" && view === "生效变招") {
+        return { type, owner: "feint", key: "active", view, label: "生效变招" };
+      }
+      if (type === "AI" && view === "移除变招") {
+        return { type, owner: "feint", key: "removed", view, label: "移除变招" };
       }
       if (view === "当前") {
         return { type, owner: type, key: "deck", view, label: "抽牌堆" };
@@ -2910,6 +3162,12 @@
       if (context.source.owner === "flare") {
         addMoveTarget(targets, context, pileLocationForView("AI", "闪粉牌组"), "到闪粉牌组");
         addMoveTarget(targets, context, pileLocationForView("AI", "闪粉弃牌"), "到闪粉弃牌");
+        return targets;
+      }
+      if (context.source.owner === "feint") {
+        addMoveTarget(targets, context, pileLocationForView("AI", "变招牌组"), "洗回变招牌组", "random");
+        addMoveTarget(targets, context, pileLocationForView("AI", "生效变招"), "留在场上");
+        addMoveTarget(targets, context, pileLocationForView("AI", "移除变招"), "从变招牌组移除");
         return targets;
       }
 
@@ -3006,6 +3264,9 @@
         && target.location.owner === "BP"
         && target.location.key === "damage") {
         addCriticalMass(bpDamageValue(card));
+      }
+      if (target.location.owner === "BP" && target.location.key === "damage") {
+        notifyBpWound(card);
       }
       savePiles();
       renderAibpCards();
@@ -3152,19 +3413,88 @@
       return null;
     }
 
-    function addPanelToken(file, amount = 1) {
+    function isPlainObject(value) {
+      return value && typeof value === "object" && !Array.isArray(value);
+    }
+
+    function isCriticalMassStack(item) {
+      return item?.criticalMass === true || item?.chimeraCriticalMass === true;
+    }
+
+    function isPerHitTokenStack(item) {
+      return item?.autoLevelBonus === "danger" || item?.perHit === true;
+    }
+
+    function tokenMergeKey(file, options = {}) {
+      const normalizedFile = String(file || "");
+      if (!normalizedFile || nonStackingTokenFiles.has(normalizedFile)) return "";
+      return `${normalizedFile}|${options.perHit ? "per-hit" : "normal"}`;
+    }
+
+    function tokenMergeKeyForItem(item) {
+      if (!item || isCriticalMassStack(item)) return "";
+      return tokenMergeKey(item.file, { perHit: isPerHitTokenStack(item) });
+    }
+
+    function findMergeableToken(tokens, file, options = {}) {
+      const key = tokenMergeKey(file, options);
+      if (!key) return null;
+      return tokens.find((item) => tokenMergeKeyForItem(item) === key) || null;
+    }
+
+    function normalizeTokenStacks(tokens) {
+      const result = [];
+      const byKey = new Map();
+      (Array.isArray(tokens) ? tokens : []).forEach((item) => {
+        const normalized = {
+          ...item,
+          id: item.id || createTokenStackId(),
+          count: Math.max(1, clampTokenCount(item.count) || 1)
+        };
+        const key = tokenMergeKeyForItem(normalized);
+        if (!key) {
+          result.push(normalized);
+          return;
+        }
+        const existing = byKey.get(key);
+        if (existing) {
+          existing.count = clampTokenCount((Number(existing.count) || 0) + (Number(normalized.count) || 0));
+          if (isPlainObject(normalized.autoLevelBonusContributions)) {
+            existing.autoLevelBonusContributions ||= {};
+            Object.entries(normalized.autoLevelBonusContributions).forEach(([kind, value]) => {
+              existing.autoLevelBonusContributions[kind] = (Number(existing.autoLevelBonusContributions[kind]) || 0) + (Number(value) || 0);
+            });
+          }
+        } else {
+          byKey.set(key, normalized);
+          result.push(normalized);
+        }
+      });
+      return result;
+    }
+
+    function addPanelToken(file, amount = 1, options = {}) {
       ensurePiles(currentApostle);
       const count = Math.max(0, Math.floor(Number(amount) || 0));
       if (!file || count <= 0) return;
 
       const tokens = piles[currentApostle].tokens;
-      tokens.push({
+      if (options.stackExisting !== false) {
+        const existing = findMergeableToken(tokens, file, { perHit: options.perHit === true });
+        if (existing) {
+          existing.count = clampTokenCount((Number(existing.count) || 0) + count);
+          return existing;
+        }
+      }
+      const item = {
         id: createTokenStackId(),
         file,
         count: clampTokenCount(count),
         x: 8 + (tokens.length % 5) * 8,
         y: 8 + Math.floor(tokens.length / 5) * 8
-      });
+      };
+      tokens.push(item);
+      return item;
     }
 
     function addAiExhaustedBonusTokens(damageCount = 1) {
@@ -3277,6 +3607,10 @@
       return currentApostle === hermesianName;
     }
 
+    function isTitanX() {
+      return currentApostle === titanXName;
+    }
+
     function renderFlareButton() {
       if (!drawFlareButton) return;
       drawFlareButton.classList.toggle("show", isHermesian());
@@ -3301,6 +3635,46 @@
       savePiles();
       renderAibpCards();
       openImageZoom(cardSrc(card), "抽取的闪粉卡");
+    }
+
+    function renderFeintButton() {
+      if (!drawFeintButton) return;
+      drawFeintButton.classList.toggle("show", isTitanX());
+      if (!isTitanX()) return;
+      const feint = piles[currentApostle].feint;
+      drawFeintButton.disabled = feint.deck.length === 0;
+      drawFeintButton.textContent = `抽取变招（${feint.deck.length}/${feint.active.length}/${feint.removed.length}）`;
+    }
+
+    function drawFeint() {
+      if (!isTitanX()) return;
+      ensurePiles(currentApostle);
+      const feint = piles[currentApostle].feint;
+      if (feint.deck.length === 0) return;
+
+      rememberUndo(currentApostle, "AI");
+      const card = feint.deck.shift();
+      feint.active.push(card);
+      currentAiView = "生效变招";
+      savePiles();
+      updateAiViewTabs();
+      renderAibpCards();
+      const frontSrc = cardSrc(card);
+      const source = pileLocationForView("AI", "生效变招");
+      openImageZoom(frontSrc, "抽取的变招卡", null, {
+        flipContext: {
+          frontSrc,
+          backSrc: frontSrc.replace(/(\.[^.]+)$/, "_BACK$1"),
+          face: "front"
+        },
+        moveContext: {
+          type: "AI",
+          view: "生效变招",
+          index: feint.active.length - 1,
+          source,
+          card: clonePileState(card)
+        }
+      });
     }
 
     function addLabyrinthaurosSpecialBp() {
@@ -3479,6 +3853,33 @@
       return true;
     }
 
+    function isUnstartedAibpState(state) {
+      return !state?.AI?.pending
+        && !state?.BP?.pending
+        && state.AI.discard.length === 0
+        && state.BP.discard.length === 0
+        && state.AI.removed.length === 0
+        && state.BP.removed.length === 0
+        && state.BP.damage.length === 0
+        && state.BP.damage1.length === 0
+        && state.BP.damage2.length === 0;
+    }
+
+    function applyBurdenInitialLinkedPromotion() {
+      ensurePiles(currentApostle);
+      if (currentApostle !== burdenName) return false;
+      const state = piles[currentApostle];
+      state.initialSetupApplied ||= {};
+      if (state.initialSetupApplied.burdenLinkedPromotion) return false;
+      if (!isUnstartedAibpState(state)) return false;
+
+      const changed = performLinkedPromotion();
+      if (!changed) return false;
+      state.initialSetupApplied.burdenLinkedPromotion = true;
+      savePiles();
+      return true;
+    }
+
     function levelBonusFor(apostle, level) {
       const config = apostleLevelBonusConfig[apostle];
       if (!config) return { promotions: 0, danger: 0, at: 0 };
@@ -3489,31 +3890,79 @@
       return result;
     }
 
+    function automaticTokenContribution(item, kind) {
+      if (isPlainObject(item?.autoLevelBonusContributions)) {
+        return Math.max(0, Math.floor(Number(item.autoLevelBonusContributions[kind]) || 0));
+      }
+      return item?.autoLevelBonus === kind ? Math.max(0, Math.floor(Number(item.count) || 0)) : 0;
+    }
+
+    function automaticTokenSnapshot() {
+      return JSON.stringify(
+        piles[currentApostle].tokens.filter((item) =>
+          item.autoLevelBonus || isPlainObject(item.autoLevelBonusContributions)
+        )
+      );
+    }
+
     function syncAutomaticLevelBonusToken(kind, file, count) {
       const tokens = piles[currentApostle].tokens;
-      const existing = tokens.find((item) => item.autoLevelBonus === kind);
       const position = kind === "danger"
         ? { x: 8, y: 8 }
         : { x: 16, y: 8 };
-      if (count <= 0) {
-        piles[currentApostle].tokens = tokens.filter((item) => item.autoLevelBonus !== kind);
+      const normalizedCount = Math.max(0, Math.floor(Number(count) || 0));
+      const perHit = kind === "danger" && currentApostleLevel() >= 5;
+      const existingAuto = tokens.find((item) => automaticTokenContribution(item, kind) > 0);
+      const previousContribution = automaticTokenContribution(existingAuto, kind);
+
+      if (existingAuto && previousContribution > 0) {
+        existingAuto.count = clampTokenCount((Number(existingAuto.count) || 0) - previousContribution);
+        if (isPlainObject(existingAuto.autoLevelBonusContributions)) {
+          delete existingAuto.autoLevelBonusContributions[kind];
+          if (!Object.keys(existingAuto.autoLevelBonusContributions).length) {
+            delete existingAuto.autoLevelBonusContributions;
+          }
+        }
+        if (existingAuto.autoLevelBonus === kind) {
+          delete existingAuto.autoLevelBonus;
+          delete existingAuto.perHit;
+        }
+        if ((Number(existingAuto.count) || 0) <= 0) {
+          const index = tokens.indexOf(existingAuto);
+          if (index >= 0) tokens.splice(index, 1);
+        }
+      }
+
+      if (normalizedCount <= 0) return;
+
+      if (perHit) {
+        let perHitToken = tokens.find((item) => item.autoLevelBonus === kind && item.perHit === true);
+        if (!perHitToken) {
+          perHitToken = addPanelToken(file, normalizedCount, { perHit: true });
+        } else {
+          perHitToken.count = normalizedCount;
+        }
+        perHitToken.file = file;
+        perHitToken.count = normalizedCount;
+        perHitToken.x = position.x;
+        perHitToken.y = position.y;
+        perHitToken.autoLevelBonus = kind;
+        perHitToken.perHit = true;
         return;
       }
-      if (existing) {
-        existing.file = file;
-        existing.count = count;
-        existing.x = position.x;
-        existing.y = position.y;
-        return;
+
+      const target = addPanelToken(file, normalizedCount);
+      if (!target) return;
+      target.autoLevelBonusContributions ||= {};
+      target.autoLevelBonusContributions[kind] = normalizedCount;
+      if (previousContribution <= 0 && target.count === normalizedCount) {
+        target.x = position.x;
+        target.y = position.y;
       }
-      tokens.push({
-        id: createTokenStackId(),
-        file,
-        count,
-        x: position.x,
-        y: position.y,
-        autoLevelBonus: kind
-      });
+    }
+
+    function levelDangerBonusTokenFile(apostle) {
+      return apostle === "HYPERTIME_ORACLE" ? "py+.png" : "DA+.png";
     }
 
     function applyCurrentApostleLevelBonuses() {
@@ -3528,14 +3977,10 @@
         changed = true;
       }
 
-      const beforeTokens = JSON.stringify(
-        piles[currentApostle].tokens.filter((item) => item.autoLevelBonus)
-      );
-      syncAutomaticLevelBonusToken("danger", "DA+.png", target.danger);
+      const beforeTokens = automaticTokenSnapshot();
+      syncAutomaticLevelBonusToken("danger", levelDangerBonusTokenFile(currentApostle), target.danger);
       syncAutomaticLevelBonusToken("at", "AT+.png", target.at);
-      const afterTokens = JSON.stringify(
-        piles[currentApostle].tokens.filter((item) => item.autoLevelBonus)
-      );
+      const afterTokens = automaticTokenSnapshot();
       if (beforeTokens !== afterTokens) changed = true;
 
       if (changed) savePiles();
@@ -3549,6 +3994,7 @@
       piles[currentApostle] = initialState();
       currentAiView = "弃牌";
       currentBpView = "弃牌";
+      applyBurdenInitialLinkedPromotion();
       applyCurrentApostleLevelBonuses();
       savePiles();
       updateNietzscheStateUi(panelWrap.querySelector(".panel-state-marker"));
@@ -3565,6 +4011,7 @@
       bpDamageSummary.textContent = isChimera()
         ? `损伤：${damageSummary.total}（${damageSummary.damage1}+${damageSummary.damage2}）`
         : `损伤：${damageSummary.total}`;
+      renderNietzscheBreakLocks(damageSummary.total);
     }
 
     function renderDrawPreview() {
@@ -3600,6 +4047,12 @@
           ? "闪粉牌组为空"
           : currentAiView === "闪粉弃牌"
             ? "闪粉弃牌堆为空"
+            : currentAiView === "变招牌组"
+              ? "变招牌组为空"
+              : currentAiView === "生效变招"
+                ? "没有生效中的变招"
+                : currentAiView === "移除变招"
+                  ? "没有移除的变招"
             : `当前没有 AI ${currentAiView} 卡`;
       const bpEmptyText = currentBpView === "损伤"
         ? "BP 损伤牌堆为空"
@@ -3615,6 +4068,7 @@
       renderDeckInfo();
       renderDrawPreview();
       renderFlareButton();
+      renderFeintButton();
       updateUndoButtons();
       renderCriticalMassSlot();
 
@@ -3661,7 +4115,7 @@
     }
 
     function automaticTraitLevels() {
-      const levels = ["I", "II", "III", "IV", "V"];
+      const levels = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"];
       return [...levels.slice(0, currentApostleLevel()), "X"];
     }
 
@@ -3837,6 +4291,20 @@
       extraGrid.replaceChildren(...reordered);
     }
 
+    function enableOptionalCardBack(img, frontSrc) {
+      const backSrc = frontSrc.replace(/(\.[^.]+)$/, "_BACK$1");
+      if (backSrc === frontSrc) return;
+      const probe = new Image();
+      probe.onload = () => {
+        img.dataset.frontSrc = frontSrc;
+        img.dataset.backSrc = backSrc;
+        img.dataset.face = "front";
+        img.title = "点击放大，放大后可翻面";
+      };
+      probe.onerror = () => {};
+      probe.src = backSrc;
+    }
+
     function renderExtraCards() {
       ensurePiles(currentApostle);
       const base = `ps/${currentApostle}`;
@@ -3850,7 +4318,9 @@
       piles[currentApostle].traits.forEach((card) => {
         const imageClass = isLargeTraitCard(currentApostle, card) ? "panel-image" : "";
         const alt = card.scope === "common" ? `通用特质 ${card.index}` : `TR ${card.level} ${card.index}`;
-        const img = imageOrMessage(traitCardSrc(currentApostle, card), alt, imageClass);
+        const src = traitCardSrc(currentApostle, card);
+        const img = imageOrMessage(src, alt, imageClass);
+        img.addEventListener("load", () => enableOptionalCardBack(img, src), { once: true });
         extraGrid.appendChild(img);
         loaded += 1;
       });
@@ -3887,6 +4357,7 @@
         img.className = className;
         img.onload = () => {
           loaded += 1;
+          enableOptionalCardBack(img, src);
           reorderExtraGridForLargeCards();
         };
         img.onerror = () => {
@@ -3913,7 +4384,9 @@
     }
 
     function aiViewsForCurrentApostle() {
-      return isHermesian() ? hermesianAiViews : aiViews;
+      if (isHermesian()) return hermesianAiViews;
+      if (isTitanX()) return titanAiViews;
+      return aiViews;
     }
 
     function updateAiViewTabs() {
@@ -3929,7 +4402,7 @@
         button.dataset.view = view;
         button.textContent = view;
         button.addEventListener("click", () => {
-          if ((view === "当前" || view === "闪粉牌组") && !confirmCurrentView()) return;
+          if ((view === "当前" || view === "闪粉牌组" || view === "变招牌组") && !confirmCurrentView()) return;
           currentAiView = view;
           renderAibpCards();
         });
@@ -4017,6 +4490,27 @@
         marker.title = `${state.label}，点击切换到下个状态`;
         marker.classList.toggle("show", hasPanelState());
       }
+    }
+
+    function appendNietzscheBreakLock(frame, state, label) {
+      if (!frame || !state) return;
+      const lock = document.createElement("div");
+      lock.className = "nietzsche-break-lock";
+      lock.style.setProperty("--lock-left", state.left);
+      lock.style.setProperty("--lock-top", state.top);
+      lock.title = `损伤已达到阈值：不能打破${label}`;
+      frame.appendChild(lock);
+    }
+
+    function renderNietzscheBreakLocks(damageTotal = null) {
+      const frame = panelWrap.querySelector(".panel-frame");
+      if (!frame) return;
+      frame.querySelectorAll(".nietzsche-break-lock").forEach((item) => item.remove());
+      if (!isNietzsche()) return;
+
+      const total = damageTotal == null ? currentBpDamageSummary().total : Number(damageTotal || 0);
+      if (total >= 6) appendNietzscheBreakLock(frame, nietzscheStates[2], "巨剑");
+      if (total >= 10) appendNietzscheBreakLock(frame, nietzscheStates[0], "火焰");
     }
 
 
@@ -4170,7 +4664,7 @@
       loading.className = "missing";
       loading.textContent = "正在从相对路径 ps/other/token/ 加载所有 Token PNG……";
       tokenDialogGrid.appendChild(loading);
-      tokenFolderHint.textContent = "每次保存会新增独立 Token 堆；已有堆请点击面板上的 Token 单独增减或清空。";
+      tokenFolderHint.textContent = "同类 Token 会自动合并；通用标记仍会新增独立堆。已有堆请点击面板上的 Token 单独增减或清空。";
 
       const manifestNames = tokenFileNames.map(normalizeTokenFileName).filter(isTokenImageFileName);
       const directoryNames = manifestNames.length > 0 ? [] : await loadTokenFileNamesFromDirectoryIndex();
@@ -4236,11 +4730,12 @@
       const pending = piles[currentApostle]?.BP?.pending;
       imageZoomBpActions.querySelectorAll("[data-bp-zoom-action]").forEach((button) => {
         const action = button.dataset.bpZoomAction;
-        const isVpDefeat = action === "vp-defeat";
-        button.hidden = isVpDefeat && !isChimera();
+        const isVpAction = action === "vp-defeat" || action === "vp-critical";
+        const isCriticalAction = action === "critical" || action === "vp-critical";
+        button.hidden = isVpAction && !isChimera();
         button.disabled = !pending
-          || (action === "critical" && pending.level !== "III" && !pending.specialBp)
-          || (isVpDefeat && !isChimera());
+          || (isCriticalAction && pending.level !== "III" && !pending.specialBp)
+          || (isVpAction && !isChimera());
       });
     }
 
@@ -4334,7 +4829,7 @@
       const allowedFiles = type === "BP"
         ? new Set(["AT-.png", "AT+.png"])
         : type === "AI"
-          ? new Set(["DA-.png", "DA+.png", "ps-.png", "ps+.png", "ED-.png", "ED+.png"])
+          ? new Set(["DA-.png", "DA+.png", "py+.png", "ps-.png", "ps+.png", "ED-.png", "ED+.png"])
           : new Set();
 
       return piles[currentApostle].tokens
@@ -4351,7 +4846,7 @@
       const groups = [
         { className: "token-at", matches: (file) => file.startsWith("AT") },
         { className: "token-accuracy-evasion", matches: (file) => file.startsWith("ps") || file.startsWith("ED") },
-        { className: "token-danger", matches: (file) => file.startsWith("DA") }
+        { className: "token-danger", matches: (file) => file.startsWith("DA") || file.startsWith("py") }
       ];
 
       imageZoomCardTokens.replaceChildren(...groups.map((group) => {
@@ -4389,16 +4884,32 @@
       zoomCloseAction = typeof onClose === "function" ? onClose : null;
       imageZoomImg.src = src;
       imageZoomImg.alt = alt || "放大图片";
-      const noticeImages = Array.isArray(options.noticeImages) ? options.noticeImages : [];
-      const sideNotices = options.noticeLayout === "sides" && noticeImages.length > 0;
-      imageZoomNotice.replaceChildren(...noticeImages.map((item) => {
-        const img = document.createElement("img");
-        img.src = item.src;
-        img.alt = item.alt || "";
-        return img;
+      const noticeItems = Array.isArray(options.noticeImages) ? options.noticeImages : [];
+      const sideNotices = options.noticeLayout === "sides" && noticeItems.length > 0;
+      imageZoomNotice.replaceChildren(...noticeItems.map((item) => {
+        if (item?.src) {
+          const img = document.createElement("img");
+          img.src = item.src;
+          img.alt = item.alt || "";
+          return img;
+        }
+        const box = document.createElement("div");
+        box.className = "image-zoom-notice-text";
+        const title = document.createElement("div");
+        title.className = "image-zoom-notice-text-title";
+        title.textContent = item?.title || "提示";
+        const value = document.createElement("div");
+        value.className = "image-zoom-notice-text-value";
+        if (item?.html) {
+          value.innerHTML = item.html;
+        } else {
+          value.textContent = item?.text || "";
+        }
+        box.append(title, value);
+        return box;
       }));
-      imageZoomNotice.classList.toggle("show", noticeImages.length > 0);
-      imageZoomNotice.parentElement.classList.toggle("has-notice", noticeImages.length > 0);
+      imageZoomNotice.classList.toggle("show", noticeItems.length > 0);
+      imageZoomNotice.parentElement.classList.toggle("has-notice", noticeItems.length > 0);
       imageZoomNotice.parentElement.classList.toggle("has-side-notices", sideNotices);
       setImageZoomCardTokens(options.cardTokens || []);
       setImageZoomBpActions(Boolean(options.bpActions));
@@ -4442,18 +4953,21 @@
     function openZoomForImage(img) {
       if (!shouldZoomImage(img)) return;
       const isBpImage = Boolean(img.closest("#bpGrid, #bpDrawPreview"));
-      const drawType = img.closest("#aiDrawPreview")
-        ? "AI"
-        : img.closest("#bpDrawPreview")
-          ? "BP"
-          : "";
+      const cardTokenType = zoomCardTokenTypeFromImage(img);
       openImageZoom(img.currentSrc || img.src, img.alt, null, {
         flipContext: flipContextFromImage(img),
         moveContext: moveContextFromImage(img),
         tokenContext: tokenContextFromImage(img),
-        cardTokens: drawType ? currentPanelCardTokens(drawType) : [],
+        cardTokens: cardTokenType ? currentPanelCardTokens(cardTokenType) : [],
         noticeImages: isBpImage ? currentBpNoticeImages() : []
       });
+    }
+
+    function zoomCardTokenTypeFromImage(img) {
+      if (img.closest("#bpGrid, #bpDrawPreview")) return "BP";
+      if (img.closest("#aiGrid, #aiDrawPreview, #routineWrap, #signatureWrap")) return "AI";
+      if (img.closest("#extraGrid") && img.classList.contains("panel-image")) return "AI";
+      return "";
     }
 
     function currentBpNoticeImages() {
@@ -4471,9 +4985,10 @@
       const phase = String(piles[currentApostle]?.chimeraPhase || "").toUpperCase();
       const state = chimeraPhaseStates[phase];
       if (!state) return [];
+      const level = currentApostleLevel();
       return [{
-        src: `ps/CHIMERA_METASTASIOS/${phase}.png`,
-        alt: `奇美拉当前状态：${state.label}`
+        title: state.label,
+        html: typeof state.effect === "function" ? state.effect(level) : (state.effect || state.label)
       }];
     }
 
@@ -4487,7 +5002,13 @@
         const tokenItem = document.createElement("div");
         tokenItem.className = "panel-token-item";
         const isCriticalMass = item.criticalMass === true || item.chimeraCriticalMass === true;
-        const threshold = criticalMassThreshold();
+        const panelCounterKind = c45PanelCounterKind();
+        const isC45PanelCounter = panelCounterKind === "midascorePain"
+          ? item.midascorePain === true
+          : item.c45PanelCounter === panelCounterKind;
+        const threshold = isC45PanelCounter
+          ? c45PanelCounterThreshold()
+          : criticalMassThreshold();
         if (isCriticalMass) {
           const position = currentCriticalMassPosition();
           item.criticalMass = true;
@@ -4495,6 +5016,11 @@
           item.x = position.x;
           item.y = position.y;
           tokenItem.classList.add("critical-mass-token");
+          tokenItem.classList.toggle("must-resolve", (Number(item.count) || 0) >= threshold);
+        } else if (isC45PanelCounter) {
+          item.x = c45PanelCounterPosition.x;
+          item.y = c45PanelCounterPosition.y;
+          tokenItem.classList.add("critical-mass-token", "c45-panel-counter-token");
           tokenItem.classList.toggle("must-resolve", (Number(item.count) || 0) >= threshold);
         }
         tokenItem.classList.toggle(
@@ -4505,9 +5031,16 @@
         tokenItem.style.setProperty("--token-top", `${item.y}%`);
         tokenItem.dataset.tokenId = item.id;
         tokenItem.dataset.file = item.file;
-        tokenItem.title = isCriticalMass
-          ? `临界质量通用标记 ×${item.count}${(Number(item.count) || 0) >= threshold ? "，立即处理" : ""}`
-          : `${item.file} ×${item.count}，拖动可调整位置`;
+        const panelCounterLabel = panelCounterKind === "midascorePain"
+          ? "疼痛增量"
+          : panelCounterKind === "dragon"
+            ? "累计指示物"
+            : "累计损伤";
+        tokenItem.title = isC45PanelCounter
+          ? `${panelCounterLabel}通用标记 ×${item.count}${(Number(item.count) || 0) >= threshold ? "，立即处理" : "，点击增加"}`
+          : isCriticalMass
+            ? `临界质量通用标记 ×${item.count}${(Number(item.count) || 0) >= threshold ? "，立即处理" : ""}`
+            : `${item.file} ×${item.count}，拖动可调整位置`;
 
         const img = document.createElement("img");
         img.src = tokenSrc(item.file);
@@ -4521,13 +5054,17 @@
           tokenItem.appendChild(badge);
         }
 
-        if (!isCriticalMass) {
+        if (!isCriticalMass && !isC45PanelCounter) {
           makePanelTokenDraggable(tokenItem);
         } else {
           tokenItem.addEventListener("click", (event) => {
             event.preventDefault();
             event.stopPropagation();
-            handleCriticalMassTokenClick();
+            if (isC45PanelCounter) {
+              window.C45Specials?.handlePanelCounterTokenClick?.();
+            } else {
+              handleCriticalMassTokenClick();
+            }
           });
         }
         layer.appendChild(tokenItem);
@@ -4538,6 +5075,19 @@
     function renderCriticalMassSlot() {
       const slot = panelWrap.querySelector(".critical-mass-slot");
       if (!slot) return;
+      if (c45PanelCounterKind()) {
+        const token = c45PanelCounterToken();
+        slot.style.setProperty("--critical-mass-left", `${c45PanelCounterPosition.x}%`);
+        slot.style.setProperty("--critical-mass-top", `${c45PanelCounterPosition.y}%`);
+        slot.classList.toggle("show", !token);
+        const label = currentApostle === "MIDASCORE"
+          ? "疼痛增量"
+          : currentApostle === "DRAGON_OF_PHOBOS"
+            ? "累计指示物"
+            : "累计损伤";
+        slot.title = `点击放置 1 个${label}通用标记`;
+        return;
+      }
       const available = hasCriticalMassFeature() && currentApostleLevel() >= 2;
       const token = criticalMassToken();
       const position = currentCriticalMassPosition();
@@ -4609,7 +5159,7 @@
         marker.type = "button";
         marker.className = "panel-state-marker";
         marker.addEventListener("click", cycleNietzscheState);
-        if (criticalMassApostles.has(name)) {
+        if (hasPanelCounterSlot(name)) {
           const criticalMassSlot = document.createElement("button");
           criticalMassSlot.type = "button";
           criticalMassSlot.className = "critical-mass-slot";
@@ -4622,7 +5172,7 @@
         panelWrap.replaceChildren(frame);
         updateNietzscheStateUi(marker);
       } else {
-        if (criticalMassApostles.has(name)) {
+        if (hasPanelCounterSlot(name)) {
           const criticalMassSlot = document.createElement("button");
           criticalMassSlot.type = "button";
           criticalMassSlot.className = "critical-mass-slot";
@@ -4637,6 +5187,7 @@
       }
 
       renderPanelTokens();
+      renderNietzscheBreakLocks();
     }
 
     function renderFlipCard(wrap, base, name, kind) {
@@ -4668,6 +5219,7 @@
     function renderApostle(name) {
       currentApostle = name;
       ensurePiles(name);
+      applyBurdenInitialLinkedPromotion();
       applyCurrentApostleLevelBonuses();
       updateAiViewTabs();
       updateBpViewTabs();
@@ -4681,6 +5233,9 @@
       renderPanelImage(base, name);
       renderFlipCard(routineWrap, base, name, "ROUTINE");
       renderFlipCard(signatureWrap, base, name, "SIGNATURE");
+      const bpAvailable = hasBpDeck(name);
+      aibpLayout.classList.toggle("ai-only", !bpAvailable);
+      bpColumn.hidden = !bpAvailable;
 
       document.querySelectorAll(".nav button").forEach((button) => {
         button.classList.toggle("active", button.dataset.name === name);
@@ -4807,6 +5362,10 @@
       } else if (mode === "vp-defeat") {
         setChimeraPhaseFromCard(card);
         resolveBpDefeat(card);
+        addChimeraSecondDamage({ special: "SW" });
+      } else if (mode === "vp-critical") {
+        setChimeraPhaseFromCard(card);
+        resolveBpCritical(card);
         addChimeraSecondDamage({ special: "SW" });
       } else if (mode === "critical") {
         setChimeraPhaseFromCard(card);
@@ -4960,7 +5519,7 @@
     apostleLevelSelect.addEventListener("change", () => {
       if (fixedLevelOneApostles.has(currentApostle)) return;
       const level = Number(apostleLevelSelect.value);
-      if (level >= 1 && level <= 5) {
+      if (level >= 1 && level <= maxApostleLevel) {
         apostleLevelOverrides[currentApostle] = level;
       } else {
         delete apostleLevelOverrides[currentApostle];
@@ -4997,6 +5556,7 @@
     confirmAiButton.addEventListener("click", confirmAiDiscard);
     promoteAiSingleButton.addEventListener("click", () => promoteSinglePile("AI"));
     drawFlareButton.addEventListener("click", drawFlare);
+    drawFeintButton.addEventListener("click", drawFeint);
     drawBpButton.addEventListener("click", drawBp);
     bpDrawPreview.addEventListener("click", () => {
       if (!piles[currentApostle]?.BP?.pending) drawBp();
@@ -5024,6 +5584,8 @@
   </script>
   <script src="ps/other/resouce/bp_resource_map.js"></script>
   <script src="ps/other/resouce/bp_resource_map_c1_c3.js"></script>
-  <script src="bp_loot_calculator_addon.js?v=20260608-shared-record-resources"></script>
+  <script src="ps/other/resouce/bp_resource_map_c4_c5.js?v=20260730e"></script>
+  <script src="c45_specials.js?v=20260730i"></script>
+  <script src="bp_loot_calculator_addon.js?v=20260730-c45-loot"></script>
 </body>
 </html>

@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>ATO 故事书跳转器</title>
-    <link rel="stylesheet" href="./assets/styles.css?v=20260614structure1" />
+    <link rel="stylesheet" href="./assets/styles.css?v=20260730pagezoom1" />
   </head>
   <body>
     <aside class="sidebar">
@@ -100,10 +100,10 @@
     </aside>
 
     <script src="../assets/page-focus-router.js?v=20260607a"></script>
-    <script src="./data/storybook-data.js?v=20260614structure1"></script>
+    <script src="./data/storybook-data.js?v=20260729c5full3"></script>
     <script src="./data/entity-index.js?v=20260614structure1"></script>
     <script src="./audio-packs/audio/manifest.js?v=20260614structure1"></script>
-    <script src="./assets/app.js?v=20260614structure1"></script>
+    <script src="./assets/app.js?v=20260730c45aibp2"></script>
     <script>
       document.querySelectorAll(".side-panel-tab").forEach(tab => {
         tab.addEventListener("click", () => {
@@ -118,6 +118,7 @@
       (function() {
         const handle = document.getElementById("sidePanelResize");
         const panels = document.getElementById("sidePanels");
+        if (!handle || !panels) return;
         let startX, startWidth;
 
         function beginDrag(x) {
@@ -141,22 +142,26 @@
           document.querySelectorAll("iframe").forEach(f => f.style.pointerEvents = "");
         }
 
-        handle.addEventListener("mousedown", (e) => {
-          e.preventDefault();
-          beginDrag(e.clientX);
-          const onMove = (ev) => doDrag(ev.clientX);
-          const onUp = () => { endDrag(); document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp); };
+        handle.addEventListener("mousedown", (event) => {
+          event.preventDefault();
+          beginDrag(event.clientX);
+          const onMove = (moveEvent) => doDrag(moveEvent.clientX);
+          const onUp = () => {
+            endDrag();
+            document.removeEventListener("mousemove", onMove);
+            document.removeEventListener("mouseup", onUp);
+          };
           document.addEventListener("mousemove", onMove);
           document.addEventListener("mouseup", onUp);
         });
 
-        handle.addEventListener("touchstart", (e) => {
-          e.preventDefault();
-          beginDrag(e.touches[0].clientX);
+        handle.addEventListener("touchstart", (event) => {
+          event.preventDefault();
+          beginDrag(event.touches[0].clientX);
         }, { passive: false });
-        handle.addEventListener("touchmove", (e) => {
-          e.preventDefault();
-          doDrag(e.touches[0].clientX);
+        handle.addEventListener("touchmove", (event) => {
+          event.preventDefault();
+          doDrag(event.touches[0].clientX);
         }, { passive: false });
         handle.addEventListener("touchend", () => endDrag());
         handle.addEventListener("touchcancel", () => endDrag());

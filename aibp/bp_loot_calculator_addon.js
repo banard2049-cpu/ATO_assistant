@@ -53,6 +53,32 @@ Add these script tags after the main viewer script:
     UA: "不稳定神浆",
     URM: "超固体块",
     WT: "扭动触手",
+    cursedDerelict: "诅咒船骸",
+    blackenedHalo: "黑化光环",
+    burnedOutGrace: "燃尽恩典",
+    cursedBloatsack: "诅咒胀囊",
+    livingGold: "活化黄金",
+    imperialScroll: "帝国卷轴",
+    wishEmbryo: "愿望胚胎",
+    oldIremFragment: "旧伊雷姆碎片",
+    blackTaintedStepfinger: "染黑阶梯指",
+    promisedFuturesCarcass: "未来承诺残骸",
+    babylonianContraption: "巴比伦装置",
+    onyxDust: "缟玛瑙粉尘",
+    ireEssence: "愤怒精华",
+    mutableAmbrosia: "易变神浆",
+    atlanteanTekne: "亚特兰蒂斯技艺",
+    orichalcumChunk: "山铜块",
+    liquidAether: "液态以太",
+    hydradynamicScales: "流体力学鳞片",
+    amygdalanExtract: "杏仁体萃取物",
+    photophobicFlesh: "畏光血肉",
+    microwaveCell: "微波细胞",
+    blackWoolStrand: "黑羊毛丝",
+    fadingLightConstruct: "消逝之光构造体",
+    orichalcumAlloy: "山铜合金",
+    slaveMetal: "奴隶金属",
+    oxidizedAmbrosia: "氧化神浆",
     core: "核心"
   };
   const APOSTLE_ZH_NAME = {
@@ -66,7 +92,15 @@ Add these script tags after the main viewer script:
     THE_NIETZSCJEAN: "尼采超人",
     HYPERTIME_ORACLE: "超时神谕",
     ICARIAN_HARPY: "伊卡洛斯鹰身女妖",
-    SUN_DESCENDANT: "太阳后裔"
+    SUN_DESCENDANT: "太阳后裔",
+    MIDASCORE: "迈达狮",
+    DEMIDJINN: "半神迪精",
+    THE_BABELIAN_LUNACY: "巴比伦疯塔",
+    DAHAKA: "达哈卡",
+    DRAGON_OF_PHOBOS: "深海惧龙",
+    MEDUKETOS: "须目塞特斯",
+    UR_FLEECE: "乌尔-弗里斯",
+    TITAN_X: "泰坦 X"
   };
   const RECORD_RESOURCE_KEY_MAP = {
     BC: "blackChain",
@@ -95,13 +129,30 @@ Add these script tags after the main viewer script:
     URM: "supersolidRelief",
     WT: "writhingTentacle"
   };
+  const DIRECT_RECORD_RESOURCE_KEYS = new Set([
+    "cursedDerelict", "blackenedHalo", "burnedOutGrace", "cursedBloatsack",
+    "livingGold", "imperialScroll", "wishEmbryo", "oldIremFragment",
+    "blackTaintedStepfinger", "promisedFuturesCarcass",
+    "babylonianContraption", "onyxDust", "ireEssence", "mutableAmbrosia",
+    "atlanteanTekne", "orichalcumChunk", "liquidAether",
+    "hydradynamicScales", "amygdalanExtract", "photophobicFlesh",
+    "microwaveCell", "blackWoolStrand", "fadingLightConstruct",
+    "orichalcumAlloy", "slaveMetal", "oxidizedAmbrosia"
+  ]);
+  const RESOURCE_ICON_KEYS = new Set([
+    ...Object.keys(RECORD_RESOURCE_KEY_MAP),
+    ...DIRECT_RECORD_RESOURCE_KEYS,
+    CORE_RESOURCE
+  ]);
   const RECORD_SHARED_RESOURCE_KEYS = new Set([
+    "blackTaintedStepfinger",
     "fearEssence",
     "grotesqueBeak",
     "livingAbyss",
     "mazeFragment",
     "powderedMatter",
     "priests",
+    "promisedFuturesCarcass",
     "pygmalionStones",
     "rare",
     "reliefshellFragment",
@@ -120,7 +171,15 @@ Add these script tags after the main viewer script:
     THE_NIETZSCJEAN: "core-nietzschean",
     HYPERTIME_ORACLE: "core-hypertime-oracle",
     ICARIAN_HARPY: "core-icarian-harpy",
-    SUN_DESCENDANT: "core-sun-descendant"
+    SUN_DESCENDANT: "core-sun-descendant",
+    MIDASCORE: "core-midascore",
+    DEMIDJINN: "core-demidjinn",
+    THE_BABELIAN_LUNACY: "core-babelianLunacy",
+    DAHAKA: "core-dahaka",
+    DRAGON_OF_PHOBOS: "core-dragonOfPhobos",
+    MEDUKETOS: "core-meduketos",
+    UR_FLEECE: "core-urFleece",
+    TITAN_X: "core-titanX"
   };
   const APOSTLE_RECORD_CYCLE = {
     HEKATON: "c1",
@@ -133,7 +192,15 @@ Add these script tags after the main viewer script:
     THE_NIETZSCJEAN: "c2",
     HYPERTIME_ORACLE: "c3",
     ICARIAN_HARPY: "c3",
-    SUN_DESCENDANT: "c3"
+    SUN_DESCENDANT: "c3",
+    MIDASCORE: "c4",
+    DEMIDJINN: "c4",
+    THE_BABELIAN_LUNACY: "c4",
+    DAHAKA: "c4",
+    DRAGON_OF_PHOBOS: "c5",
+    MEDUKETOS: "c5",
+    UR_FLEECE: "c5",
+    TITAN_X: "c5"
   };
   const APOSTLE_RECORD_ENEMY = {
     HEKATON: { cycle: "c1", key: "hekaton" },
@@ -146,7 +213,15 @@ Add these script tags after the main viewer script:
     THE_NIETZSCJEAN: { cycle: "c2", key: "nietzschean" },
     HYPERTIME_ORACLE: { cycle: "c3", key: "oracle" },
     ICARIAN_HARPY: { cycle: "c3", key: "harpy" },
-    SUN_DESCENDANT: { cycle: "c3", key: "sunDescendant" }
+    SUN_DESCENDANT: { cycle: "c3", key: "sunDescendant" },
+    MIDASCORE: { cycle: "c4", key: "midascore" },
+    DEMIDJINN: { cycle: "c4", key: "demidjinn" },
+    THE_BABELIAN_LUNACY: { cycle: "c4", key: "babelianLunacy" },
+    DAHAKA: { cycle: "c4", key: "dahaka" },
+    DRAGON_OF_PHOBOS: { cycle: "c5", key: "dragonOfPhobos" },
+    MEDUKETOS: { cycle: "c5", key: "meduketos" },
+    UR_FLEECE: { cycle: "c5", key: "urFleece" },
+    TITAN_X: { cycle: "c5", key: "titanX" }
   };
   const RECORD_STAGE_LEVELS = {
     hekaton: { "0": 0, "1a": 1, "1b": 1, "2a": 2, "2b": 2, "2c": 3, "3": 3, "4a": 4, "4b": 4, "4c": 4 },
@@ -171,16 +246,36 @@ Add these script tags after the main viewer script:
     IX: 9,
     X: 10
   };
-  const APOSTLE_LEVEL_UA_BONUS = {
-    CHIMERA_METASTASIOS: { 3: 3, 4: 12 },
-    CYCLONUS: { 3: 3, 4: 12 }
+  const APOSTLE_LEVEL_RESOURCE_BONUS = {
+    CHIMERA_METASTASIOS: { 3: { UA: 3 }, 4: { UA: 12 } },
+    CYCLONUS: { 3: { UA: 3 }, 4: { UA: 12 } },
+    MIDASCORE: {
+      3: { mutableAmbrosia: 3 },
+      4: { mutableAmbrosia: 12 }
+    },
+    DEMIDJINN: {
+      3: { mutableAmbrosia: 3 },
+      4: { mutableAmbrosia: 12 }
+    },
+    DRAGON_OF_PHOBOS: {
+      3: { oxidizedAmbrosia: 3 },
+      4: { oxidizedAmbrosia: 12 }
+    },
+    MEDUKETOS: {
+      3: { oxidizedAmbrosia: 3 },
+      4: { oxidizedAmbrosia: 12 }
+    }
   };
   const NO_LEVEL_RESOURCE_MULTIPLIER_APOSTLES = new Set([
     "HERMESIAN_PURSUER",
     "THE_BURDEN",
     "ALPHA_TEMENOS",
     "THE_NIETZSCJEAN",
-    "SUN_DESCENDANT"
+    "SUN_DESCENDANT",
+    "THE_BABELIAN_LUNACY",
+    "DAHAKA",
+    "UR_FLEECE",
+    "TITAN_X"
   ]);
   const BURDEN_SUMMIT_BONUS = {
     1: { RT: 4, EF: 2 },
@@ -272,7 +367,28 @@ Add these script tags after the main viewer script:
   }
 
   function resourceIconSrc(key) {
+    if (DIRECT_RECORD_RESOURCE_KEYS.has(key)) {
+      return `../record/assets/resource-icons/${encodePathFileName(key)}.png`;
+    }
     return `${RESOURCE_ICON_BASE}/${encodePathFileName(key)}.png`;
+  }
+
+  function resourceCode(key) {
+    return String(key || "")
+      .replace(/([a-z])([A-Z])/g, "$1 $2")
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((part) => part[0]?.toUpperCase() || "")
+      .join("")
+      .slice(0, 3);
+  }
+
+  function resourceIconMarkup(key, small = false) {
+    const classes = `loot-resource-icon${small ? " small" : ""}`;
+    if (RESOURCE_ICON_KEYS.has(key)) {
+      return `<img class="${classes}" src="${escapeAttr(resourceIconSrc(key))}" alt="${escapeAttr(resourceZhName(key))}" title="${escapeAttr(resourceZhName(key))}">`;
+    }
+    return `<span class="${classes} text" title="${escapeAttr(resourceZhName(key))}">${escapeHtml(resourceCode(key))}</span>`;
   }
 
   function resourceZhName(key) {
@@ -371,10 +487,26 @@ Add these script tags after the main viewer script:
     }, 0);
   }
 
-  function woundedBpIIIInStacks(...stacks) {
+  function isBpResourceCard(apostle, card) {
+    return Boolean(card)
+      && !card.special
+      && (
+        card.type === "BP"
+        || (
+          apostle === "DAHAKA"
+          && card.type === "AI"
+          && (card.combinedAibp || card.bpLevel)
+        )
+      );
+  }
+
+  function woundedBpIIIInStacks(apostle, ...stacks) {
     return stacks
       .flatMap((cards) => cloneCards(cards))
-      .filter((card) => card && !card.special && card.type === "BP" && card.level === "III")
+      .filter((card) =>
+        isBpResourceCard(apostle, card)
+        && (card.bpLevel || card.level) === "III"
+      )
       .length;
   }
 
@@ -490,11 +622,12 @@ Add these script tags after the main viewer script:
   }
 
   function inferApostleMultiplier(bp, damageCards) {
+    const apostle = safeGetCurrentApostle();
     const cards = []
       .concat(cloneCards(bp.deck))
       .concat(cloneCards(bp.discard))
       .concat(cloneCards(damageCards))
-      .filter((card) => card && !card.special && card.type === "BP");
+      .filter((card) => isBpResourceCard(apostle, card));
 
     let max = 1;
     cards.forEach((card) => {
@@ -552,9 +685,15 @@ Add these script tags after the main viewer script:
     return localLevel > 0 ? localLevel : 0;
   }
 
-  function getApostleLevelUaBonus(apostle, multiplier) {
+  function getApostleLevelResourceBonus(apostle, multiplier) {
     const level = Math.floor(Number(multiplier) || 0);
-    return Number(APOSTLE_LEVEL_UA_BONUS[apostle]?.[level] || 0);
+    const table = APOSTLE_LEVEL_RESOURCE_BONUS[apostle];
+    if (!table) return null;
+    const threshold = Object.keys(table)
+      .map(Number)
+      .filter((candidate) => Number.isFinite(candidate) && level >= candidate)
+      .sort((a, b) => b - a)[0];
+    return threshold === undefined ? null : { ...table[threshold] };
   }
 
   function resourceMultiplierForApostle(apostle, multiplier) {
@@ -747,19 +886,18 @@ Add these script tags after the main viewer script:
     const bonusDetails = [];
     const coreDetails = [];
     const warnings = [];
-    const levelUaBonus = getApostleLevelUaBonus(apostle, multiplier);
+    const levelResourceBonus = getApostleLevelResourceBonus(apostle, multiplier);
     const burdenBonusDetails = [];
     const nietzscheBonusDetails = [];
 
-    if (levelUaBonus > 0) {
-      if (!("UA" in totals)) totals.UA = 0;
-      totals.UA += levelUaBonus;
+    if (levelResourceBonus) {
+      addResourceTotals(totals, levelResourceBonus, 1);
     }
 
     const swCount = damageCards.filter((card) => card && card.special === "SW").length;
     const dwCount = damageCards.filter((card) => card && card.special === "DW").length;
     const normalDamageCards = damageCards.filter((card) => card && !card.special);
-    const woundedBpIIICount = woundedBpIIIInStacks(damageCards);
+    const woundedBpIIICount = woundedBpIIIInStacks(apostle, damageCards);
 
     addBpIIICoreBonus(totals, coreDetails, woundedBpIIICount, "暴击 BP III 核心奖励");
 
@@ -881,8 +1019,8 @@ Add these script tags after the main viewer script:
         burdenBonus: burdenBonusDetails,
         nietzscheBonus: nietzscheBonusDetails,
         coreBonus: coreDetails,
-        levelBonus: levelUaBonus > 0
-          ? [{ source: "使徒等级奖励", resource: { UA: levelUaBonus }, multiplier: 1 }]
+        levelBonus: levelResourceBonus
+          ? [{ source: "使徒等级奖励", resource: levelResourceBonus, multiplier: 1 }]
           : []
       },
       warnings
@@ -952,13 +1090,14 @@ Add these script tags after the main viewer script:
 
   function recordResourceKeyForLoot(apostle, key) {
     if (key === CORE_RESOURCE) return APOSTLE_RECORD_CORE_KEY[apostle] || "";
+    if (DIRECT_RECORD_RESOURCE_KEYS.has(key)) return key;
     return RECORD_RESOURCE_KEY_MAP[key] || "";
   }
 
   function recordCycleForLoot(apostle, record, activeCycleOverride = "") {
-    const activeCycle = activeCycleOverride === "c1" || activeCycleOverride === "c2" || activeCycleOverride === "c3"
+    const activeCycle = ["c1", "c2", "c3", "c4", "c5"].includes(activeCycleOverride)
       ? activeCycleOverride
-      : record?.cycle === "c1" || record?.cycle === "c2" || record?.cycle === "c3"
+      : ["c1", "c2", "c3", "c4", "c5"].includes(record?.cycle)
         ? record.cycle
         : "";
     if (apostle === BURDEN_APOSTLE && activeCycle === "c3") return "c3";
@@ -1056,13 +1195,36 @@ Add these script tags after the main viewer script:
     return { conflict: false, revision: Math.max(0, Number(payload.revision || 0)) };
   }
 
+  function normalizeRecordCrewCounters(record) {
+    if (!isPlainObject(record)) return record;
+    record.cycleStats = isPlainObject(record.cycleStats) ? record.cycleStats : {};
+    const c2 = record.cycleStats.c2 = isPlainObject(record.cycleStats.c2) ? record.cycleStats.c2 : {};
+    if (isPlainObject(c2.crewCounters)) return record;
+    const legacyBoxes = isPlainObject(record.crewBoxes) ? record.crewBoxes : {};
+    let refugees = 0;
+    let captives = 0;
+    Object.entries(legacyBoxes).forEach(([key, value]) => {
+      if (!key.startsWith("c2-crew-")) return;
+      const normalized = value === true ? "refugee" : value;
+      if (normalized === "refugee") refugees += 1;
+      if (normalized === "captive") captives += 1;
+    });
+    const legacyTotal = Math.max(0, Math.floor(Number(c2.crew ?? record.crew ?? 5) || 0));
+    c2.crewCounters = {
+      crew: Math.max(0, legacyTotal - refugees - captives),
+      refugees,
+      captives,
+    };
+    c2.crew = String(c2.crewCounters.crew);
+    return record;
+  }
+
   function mergeRecordStates(serverRecord, localRecord) {
-    if (!isPlainObject(serverRecord)) return isPlainObject(localRecord) ? { ...localRecord } : {};
-    if (!isPlainObject(localRecord)) return { ...serverRecord };
+    if (!isPlainObject(serverRecord)) return normalizeRecordCrewCounters(isPlainObject(localRecord) ? { ...localRecord } : {});
+    if (!isPlainObject(localRecord)) return normalizeRecordCrewCounters({ ...serverRecord });
 
     const merged = { ...localRecord, ...serverRecord };
     [
-      "crewBoxes",
       "enemies",
       "adventures",
       "diplomacy",
@@ -1078,6 +1240,9 @@ Add these script tags after the main viewer script:
         ...(isPlainObject(serverRecord[key]) ? serverRecord[key] : {}),
       };
     });
+    merged.crewBoxes = isPlainObject(serverRecord.crewBoxes)
+      ? { ...serverRecord.crewBoxes }
+      : (isPlainObject(localRecord.crewBoxes) ? { ...localRecord.crewBoxes } : {});
 
     ["godforms", "nymphCards", "godformUsedCards", "nymphUsedCards", "titans"].forEach((key) => {
       const serverList = Array.isArray(serverRecord[key]) ? serverRecord[key] : [];
@@ -1085,13 +1250,13 @@ Add these script tags after the main viewer script:
       merged[key] = serverList.length ? serverList : localList;
     });
 
-    return merged;
+    return normalizeRecordCrewCounters(merged);
   }
 
   function applyLootResultToRecord(record, result, activeCycleOverride = "") {
     if (!result) throw new Error("没有可添加的战利品结果。");
 
-    const updatedRecord = isPlainObject(record) ? { ...record } : {};
+    const updatedRecord = normalizeRecordCrewCounters(isPlainObject(record) ? { ...record } : {});
     updatedRecord.resources = isPlainObject(updatedRecord.resources) ? { ...updatedRecord.resources } : {};
 
     migrateSharedRecordResources(updatedRecord.resources);
@@ -1221,7 +1386,7 @@ Add these script tags after the main viewer script:
       .filter(([, value]) => Number(value || 0) !== 0)
       .map(([key, value]) => `
         <div class="loot-total-row">
-          <img class="loot-resource-icon" src="${escapeAttr(resourceIconSrc(key))}" alt="${escapeAttr(resourceZhName(key))}" title="${escapeAttr(resourceZhName(key))}">
+          ${resourceIconMarkup(key)}
           <span>${escapeHtml(resourceZhName(key))}</span>
           <strong>${escapeHtml(String(value))}</strong>
         </div>
@@ -1381,7 +1546,7 @@ Add these script tags after the main viewer script:
       const total = base * multiplier;
       return `
         <span class="loot-resource-pill" title="${escapeAttr(resourceZhName(key))}">
-          <img class="loot-resource-icon small" src="${escapeAttr(resourceIconSrc(key))}" alt="${escapeAttr(resourceZhName(key))}">
+          ${resourceIconMarkup(key, true)}
           <span class="loot-resource-key">${escapeHtml(resourceZhName(key))}</span>
           <strong>${escapeHtml(String(total))}</strong>
           ${multiplier !== 1 ? `<em>${escapeHtml(String(base))}×${escapeHtml(String(multiplier))}</em>` : ""}
@@ -1730,6 +1895,16 @@ Add these script tags after the main viewer script:
       .loot-resource-icon.small {
         width: 26px;
         height: 26px;
+      }
+
+      .loot-resource-icon.text {
+        display: inline-grid;
+        place-items: center;
+        color: #171613;
+        background: #eee7d3;
+        font-size: 10px;
+        font-weight: 900;
+        line-height: 1;
       }
 
       .loot-warning-box {

@@ -319,6 +319,51 @@
       -moz-appearance: textfield;
     }
 
+    .oxygen-value-pair {
+      display: grid;
+      grid-template-columns: 42px max-content 42px;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .oxygen-value-pair input {
+      width: 42px;
+      min-width: 0;
+      padding: 6px 4px;
+      text-align: center;
+      font-weight: 900;
+    }
+
+    .identity-mark-row {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(2, max-content);
+      gap: 16px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .identity-mark-field {
+      display: grid;
+      grid-template-columns: max-content 100px;
+      gap: 8px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .identity-mark-field > label {
+      display: grid;
+      grid-template-columns: max-content max-content;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .identity-mark-field .identity-mark-note {
+      width: 100px;
+      min-width: 0;
+      min-height: 34px;
+    }
+
     .titan-list-panel {
       grid-column: auto;
       display: grid;
@@ -691,6 +736,66 @@
       gap: 4px;
     }
 
+    .crew-counter-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(92px, 1fr));
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .crew-counter {
+      display: grid;
+      gap: 5px;
+      padding: 8px;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .crew-counter.refugee {
+      border-color: rgba(40, 95, 159, 0.38);
+      background: #f3f7ff;
+    }
+
+    .crew-counter.captive {
+      border-color: rgba(178, 55, 49, 0.38);
+      background: #fff6f4;
+    }
+
+    .crew-counter-label {
+      font-size: 12px;
+      font-weight: 900;
+      color: var(--muted);
+    }
+
+    .crew-counter-controls {
+      display: grid;
+      grid-template-columns: 30px minmax(26px, 1fr) 30px;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .crew-counter-controls button {
+      min-height: 30px;
+      border-radius: 6px;
+      padding: 0;
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .crew-counter-value {
+      text-align: center;
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .crew-counter-total {
+      grid-column: 1 / -1;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
     .chip {
       min-width: 34px;
       min-height: 30px;
@@ -871,6 +976,10 @@
       grid-template-columns: repeat(4, 32px);
       gap: 6px;
       align-items: center;
+    }
+
+    .check-card.wide-adventure {
+      grid-column: 1 / -1;
     }
 
     .adventure-box {
@@ -1420,6 +1529,14 @@
         grid-column: 1;
       }
 
+      .identity-mark-row {
+        grid-template-columns: 1fr;
+      }
+
+      .identity-mark-field {
+        grid-template-columns: max-content 120px;
+      }
+
       .summon-usage {
         grid-template-columns: minmax(68px, auto) auto;
         justify-content: start;
@@ -1454,7 +1571,7 @@
     <header class="topbar">
       <div>
         <h1>阿尔戈号记录表</h1>
-        <p class="subtitle">把循环 I-III 的纸质记录表整理成可保存、可导出、可打印的战役记录页。</p>
+        <p class="subtitle">把循环 I-V 的纸质记录表整理成可保存、可导出、可打印的战役记录页。</p>
       </div>
       <div class="topbar-tools">
         <div class="header-fields">
@@ -1487,15 +1604,15 @@
           </div>
           <div class="panel-body identity-grid" id="identityGridPanel">
             <span id="cycleTag" class="hidden"></span>
-            <label data-cycle-field="c1 c2 c3">
+            <label data-cycle-field="c1 c2 c3 c4 c5">
               阿尔戈号命运
               <input data-cycle-bind="fate" type="number" min="0" max="12">
             </label>
-            <label data-cycle-field="c1 c2 c3">
+            <label data-cycle-field="c1 c2 c3 c4 c5">
               AA 上限
               <input data-cycle-bind="aaLimit" type="number" min="0">
             </label>
-            <label data-cycle-field="c1 c3">
+            <label data-cycle-field="c1 c4">
               阿尔戈号知识
               <input data-cycle-bind="knowledge" type="number" min="0">
             </label>
@@ -1514,6 +1631,27 @@
             <label data-cycle-field="c3">轮回长度<input data-cycle-bind="loopLength" type="number" min="0"></label>
             <label data-cycle-field="c3">凝固时光<input data-cycle-bind="frozenTime" type="number" min="0"></label>
             <label data-cycle-field="c3">悖论<input data-cycle-bind="paradox" type="number" min="0" max="12"></label>
+            <label data-cycle-field="c4">巴比伦债务<input data-cycle-bind="babelianDebt" type="number" min="0"></label>
+            <label data-cycle-field="c5">
+              氧气
+              <span class="oxygen-value-pair">
+                <input data-cycle-bind="oxygenCurrent" type="number" min="0" aria-label="当前氧气">
+                <span aria-hidden="true">/</span>
+                <input data-cycle-bind="oxygenLimit" type="number" min="0" aria-label="氧气上限">
+              </span>
+            </label>
+            <label data-cycle-field="c5">偏执<input data-cycle-bind="paranoia" type="number" min="0"></label>
+            <label data-cycle-field="c5">补给<input data-cycle-bind="supply" type="number" min="0"></label>
+            <div class="identity-mark-row" data-cycle-field="c4">
+              <div class="identity-mark-field">
+                <label>收割计数标记<input data-cycle-bind="reapMark" type="number" min="0"></label>
+                <input class="identity-mark-note" data-cycle-bind="reapMarkNotes" type="text" aria-label="收割计数标记备注" placeholder="名称或说明">
+              </div>
+              <div class="identity-mark-field">
+                <label>播种计数标记<input data-cycle-bind="sowMark" type="number" min="0"></label>
+                <input class="identity-mark-note" data-cycle-bind="sowMarkNotes" type="text" aria-label="播种计数标记备注" placeholder="名称或说明">
+              </div>
+            </div>
           </div>
         </section>
 
@@ -1925,10 +2063,10 @@
           ["reliefshellFragment", "岩壳碎片", "Reliefshell Fragment"],
           ["frozenAmbrosia", "凝固神浆", "Frozen Ambrosia"],
           ["core", "核心", "Core"],
-          ["rare", "稀有资源", "Rare Resources"],
+          ["sisyphusTears", "西西弗斯之泪", "Sisyphus Tears"],
           ["priests", "祭司", "Priests"],
           ["echoes", "记忆之回响", "Echoes of Recollection"],
-          ["sisyphusTears", "西西弗斯之泪", "Sisyphus Tears"],
+          ["rare", "稀有资源", "Rare Resources"],
           ["pygmalionStones", "皮格马利翁之石", "Pygmalion Stones"],
         ],
         events: {
@@ -1939,6 +2077,194 @@
           55: "Acclimation 3",
         },
         maxDay: 90,
+      },
+      c4: {
+        label: "循环 IV",
+        subtitle: "无限增长花园 / Gardens of Infinite Growth",
+        fateWarning: "命运 >= 10 读 4141；巴比伦债务 >= 12 读“泡腾临界”特殊事件；船体或船员 <= 0 读 0080",
+        hull: [5, 4, 3, 2, 1, 0],
+        crew: [6, 5, 4, 3, 2, 1, 0],
+        enemies: [
+          {
+            key: "midascore",
+            zh: "迈达狮",
+            en: "Midascore",
+            stages: [
+              { id: "1a", label: "I" },
+              { id: "1b", label: "I", sharedWith: ["midascore", "demidjinn"] },
+              { id: "2a", label: "II" },
+              { id: "2b", label: "II", sharedWith: ["midascore", "demidjinn"] },
+              { id: "3a", label: "III", sharedWith: ["midascore", "demidjinn"] },
+              { id: "3b", label: "III" },
+              { id: "4a", label: "IV" },
+              { id: "4b", label: "IV" },
+              { id: "4c", label: "IV", sharedWith: ["midascore", "demidjinn"] },
+              { id: "5a", label: "V" },
+              { id: "5b", label: "V", sharedWith: ["midascore", "demidjinn"] },
+              { id: "5c", label: "V" },
+              { id: "5d", label: "V", sharedWith: ["midascore", "demidjinn"] },
+              { id: "6a", label: "VI", sharedWith: ["midascore", "demidjinn"] },
+              { id: "6b", label: "VI", sharedWith: ["midascore", "demidjinn"] },
+            ],
+          },
+          {
+            key: "demidjinn",
+            zh: "半神迪精",
+            en: "Demidjinn",
+            stages: [
+              { id: "1a", label: "I" },
+              { id: "1b", label: "I", sharedWith: ["midascore", "demidjinn"] },
+              { id: "2a", label: "II" },
+              { id: "2b", label: "II", sharedWith: ["midascore", "demidjinn"] },
+              { id: "3a", label: "III", sharedWith: ["midascore", "demidjinn"] },
+              { id: "3b", label: "III" },
+              { id: "4a", label: "IV" },
+              { id: "4b", label: "IV" },
+              { id: "4c", label: "IV", sharedWith: ["midascore", "demidjinn"] },
+              { id: "5a", label: "V" },
+              { id: "5b", label: "V", sharedWith: ["midascore", "demidjinn"] },
+              { id: "5c", label: "V" },
+              { id: "5d", label: "V", sharedWith: ["midascore", "demidjinn"] },
+              { id: "6a", label: "VI", sharedWith: ["midascore", "demidjinn"] },
+              { id: "6b", label: "VI", sharedWith: ["midascore", "demidjinn"] },
+            ],
+          },
+          { key: "babelianLunacy", zh: "巴比伦疯塔", en: "Babelian Lunacy", stages: ["1", "2", "3", "4", "5", "6"] },
+          { key: "dahaka", zh: "达哈卡", en: "Dahaka", stages: ["1", "2", "3", "4", "5", "6", "7", "8"], hasTriangle: true },
+        ],
+        adventures: [
+          ["盐路", "The Salt Road", "five"],
+          ["亚里士多德的承诺", "Aristotle’s Promise", "five"],
+          ["意外之财", "Windfall", "five"],
+          ["公正惠众", "Equality for All", "five"],
+          ["超越契约法则", "Beyond the Law of Bargains", "five"],
+          ["三重诅咒之地", "A Land Thrice-Cursed", "five"],
+          ["新月与满月", "The Crescent and the Full Moon"],
+          ["一万个日夜", "Ten Thousand Nights and Days", "ten-thousand"],
+        ],
+        diplomacy: [
+          ["wasters", "浪费者", "Wasters · 结盟读0006", -10, 10],
+          ["aristotelians", "亚里士多德远征军", "Aristotelians · 结盟读0007", -10, 10],
+          ["cloudThieves", "云贼", "Cloud Thieves · 结盟读0008", -10, 10],
+        ],
+        resources: [
+          ["cursedDerelict", "诅咒船骸", "Cursed Derelict"],
+          ["blackenedHalo", "黑化光环", "Blackened Halo"],
+          ["burnedOutGrace", "燃尽恩典", "Burned-out Grace"],
+          ["cursedBloatsack", "诅咒胀囊", "Cursed Bloatsack"],
+          ["livingGold", "活化黄金", "Living Gold"],
+          ["imperialScroll", "帝国卷轴", "Imperial Scroll"],
+          ["wishEmbryo", "愿望胚胎", "Wish Embryo"],
+          ["oldIremFragment", "旧伊雷姆碎片", "Old Irem Fragment"],
+          ["blackTaintedStepfinger", "染黑阶梯指", "Black-tainted Stepfinger"],
+          ["promisedFuturesCarcass", "未来承诺残骸", "Promised Future’s Carcass"],
+          ["babylonianContraption", "巴比伦装置", "Babylonian Contraption"],
+          ["onyxDust", "缟玛瑙粉尘", "Onyx Dust"],
+          ["ireEssence", "愤怒精华", "Ire Essence"],
+          ["mutableAmbrosia", "易变神浆", "Mutable Ambrosia"],
+          ["core", "核心", "Core"],
+          ["rare", "稀有资源", "Rare Resources"],
+          ["priests", "祭司", "Priests"],
+          ["echoes", "记忆之回响", "Echoes of Recollection"],
+          ["sisyphusTears", "西西弗斯之泪", "Sisyphus Tears"],
+          ["pygmalionStones", "皮格马利翁之石", "Pygmalion Stones"],
+        ],
+        events: {
+          6: "Broken Circle Special Event",
+          18: "Acclimation 1",
+          36: "Barren Aeons Special Event（仅故事卡 1；战役失败） · Acclimation 2",
+          45: "Second Bid Special Event",
+          54: "Acclimation 3",
+        },
+        maxDay: 96,
+      },
+      c5: {
+        label: "循环 V",
+        subtitle: "真相诉说者 / Truthsayer",
+        fateWarning: "命运 >= 10 或船体、船员 <= 0 读 4213；偏执 >= 12 结算“Like Moths to a Flame”特殊事件",
+        hull: [6, 5, 4, 3, 2, 1, 0],
+        crew: [6, 5, 4, 3, 2, 1, 0],
+        enemies: [
+          {
+            key: "dragonOfPhobos",
+            zh: "深海惧龙",
+            en: "Dragon of Phobos",
+            stages: [
+              { id: "1a", label: "I" },
+              { id: "1b", label: "I", sharedWith: ["dragonOfPhobos", "meduketos"] },
+              { id: "2a", label: "II" },
+              { id: "2b", label: "II", sharedWith: ["dragonOfPhobos", "meduketos"] },
+              { id: "3a", label: "III", sharedWith: ["dragonOfPhobos", "meduketos"] },
+              { id: "3b", label: "III" },
+              { id: "4a", label: "IV" },
+              { id: "4b", label: "IV" },
+              { id: "4c", label: "IV", sharedWith: ["dragonOfPhobos", "meduketos"] },
+            ],
+          },
+          {
+            key: "meduketos",
+            zh: "须目塞特斯",
+            en: "Meduketos",
+            stages: [
+              { id: "1a", label: "I" },
+              { id: "1b", label: "I", sharedWith: ["dragonOfPhobos", "meduketos"] },
+              { id: "2a", label: "II" },
+              { id: "2b", label: "II", sharedWith: ["dragonOfPhobos", "meduketos"] },
+              { id: "3a", label: "III", sharedWith: ["dragonOfPhobos", "meduketos"] },
+              { id: "3b", label: "III" },
+              { id: "4a", label: "IV" },
+              { id: "4b", label: "IV" },
+              { id: "4c", label: "IV", sharedWith: ["dragonOfPhobos", "meduketos"] },
+            ],
+          },
+          { key: "urFleece", zh: "乌尔-弗里斯", en: "Ur-Fleece", stages: ["1", "2", "3", "4", "5"] },
+          { key: "titanX", zh: "泰坦 X", en: "Titan X", stages: ["1", "2", "3", "4", "5", "6", "7", "8", "9"], hasTriangle: true },
+        ],
+        adventures: [
+          ["部分与整体", "Pieces and Wholes"],
+          ["宁为玉碎，不为瓦全", "Death Before Dishonor", "five"],
+          ["你所不选之人", "The One You Don’t", "five"],
+          ["大义", "The Greater Good", "five"],
+          ["不惜一切代价", "Whatever the Cost"],
+          ["肉体虚弱", "The Flesh Is Weak"],
+          ["真理的半衰期", "Half-lives of Truths"],
+          ["浅滩布道", "Sermons on the Shoals", "ten-thousand"],
+        ],
+        diplomacy: [
+          ["followersOfArete", "阿瑞特追随者", "Followers of Areté · 结盟读8382", -10, 10],
+          ["cycladeanProtectorate", "基克拉泽斯保护国", "Cycladean Protectorate · 结盟读8383", -10, 10],
+          ["outcastVanguard", "弃民先锋", "Outcast Vanguard · 结盟读8381", -10, 10],
+        ],
+        resources: [
+          ["atlanteanTekne", "亚特兰蒂斯技艺", "Atlantean Tekne"],
+          ["orichalcumChunk", "山铜块", "Orichalcum Chunk"],
+          ["liquidAether", "液态以太", "Liquid Aether"],
+          ["promisedFuturesCarcass", "未来承诺残骸", "Promised Future’s Carcass"],
+          ["blackTaintedStepfinger", "染黑阶梯指", "Black-tainted Stepfinger"],
+          ["hydradynamicScales", "流体力学鳞片", "Hydradynamic Scales"],
+          ["amygdalanExtract", "杏仁体萃取物", "Amygdalan Extract"],
+          ["photophobicFlesh", "畏光血肉", "Photophobic Flesh"],
+          ["microwaveCell", "微波细胞", "Microwave Cell"],
+          ["blackWoolStrand", "黑羊毛丝", "Black Wool Strand"],
+          ["fadingLightConstruct", "消逝之光构造体", "Fading Light Construct"],
+          ["orichalcumAlloy", "山铜合金", "Orichalcum Alloy"],
+          ["slaveMetal", "奴隶金属", "Slave Metal"],
+          ["oxidizedAmbrosia", "氧化神浆", "Oxidized Ambrosia"],
+          ["core", "核心", "Core"],
+          ["rare", "稀有资源", "Rare Resources"],
+          ["priests", "祭司", "Priests"],
+          ["echoes", "记忆之回响", "Echoes of Recollection"],
+          ["sisyphusTears", "西西弗斯之泪", "Sisyphus Tears"],
+          ["pygmalionStones", "皮格马利翁之石", "Pygmalion Stones"],
+        ],
+        events: {
+          0: "时间线步骤开始时若没有空白格可标记，读 3749",
+          6: "Painful Awakening Special Event",
+          18: "Acclimation 1",
+          36: "Acclimation 2",
+          54: "Acclimation 3",
+        },
+        maxDay: 80,
       },
     };
 
@@ -2148,6 +2474,15 @@
       aaLimit: "",
       humanity: "",
       renegade: "",
+      reapMark: "",
+      reapMarkNotes: "",
+      sowMark: "",
+      sowMarkNotes: "",
+      babelianDebt: "",
+      oxygenCurrent: "",
+      oxygenLimit: "",
+      paranoia: "",
+      supply: "",
       hull: "5",
       crew: "5",
       crewBoxes: {},
@@ -2445,13 +2780,67 @@
       [
         "storyCard", "doomCard", "mapTiles", "fate", "aaLimit", "knowledge",
         "humanity", "renegade", "strangers", "loopLength", "frozenTime", "paradox", "hull", "crew",
+        "reapMark", "reapMarkNotes", "sowMark", "sowMarkNotes", "babelianDebt", "oxygenCurrent", "oxygenLimit", "paranoia", "supply",
         "boons", "afflictions", "counters", "notes", "syncLog",
       ].forEach((key) => {
         if (stats[activeCycle][key] === undefined && value?.[key] !== undefined) {
           stats[activeCycle][key] = value[key];
         }
       });
+      if (stats.c3) delete stats.c3.knowledge;
+      if (stats.c5) {
+        delete stats.c5.knowledge;
+        const legacyOxygen = stats.c5.oxygenLimit;
+        if (typeof legacyOxygen === "string" && legacyOxygen.includes("/")) {
+          const [current, limit] = legacyOxygen.split("/", 2).map((part) => part.trim());
+          if (!stats.c5.oxygenCurrent) stats.c5.oxygenCurrent = current;
+          stats.c5.oxygenLimit = limit;
+        }
+      }
+      normalizeCrewCounters(stats, value);
       return stats;
+    }
+
+    function normalizeCrewCounters(stats, value) {
+      const c2 = stats.c2;
+      if (!isPlainObject(c2)) return;
+      const maxCrew = Math.max(...cycleData.c2.crew.map((item) => Number(item)).filter(Number.isFinite));
+      const existing = isPlainObject(c2.crewCounters) ? c2.crewCounters : null;
+      const legacyBoxes = isPlainObject(value?.crewBoxes) ? value.crewBoxes : {};
+      const legacy = { refugees: 0, captives: 0 };
+      Object.entries(legacyBoxes).forEach(([key, boxState]) => {
+        if (!key.startsWith("c2-crew-")) return;
+        const normalized = boxState === true ? "refugee" : boxState;
+        if (normalized === "refugee") legacy.refugees += 1;
+        if (normalized === "captive") legacy.captives += 1;
+      });
+
+      const legacyTotal = Math.max(0, Math.floor(Number(c2.crew ?? value?.crew ?? defaultState.crew) || 0));
+      const refugees = Math.max(0, Math.floor(Number(existing?.refugees ?? legacy.refugees) || 0));
+      const captives = Math.max(0, Math.floor(Number(existing?.captives ?? legacy.captives) || 0));
+      const counters = existing
+        ? {
+            crew: Math.max(0, Math.floor(Number(existing.crew) || 0)),
+            refugees,
+            captives,
+          }
+        : {
+            crew: Math.max(0, legacyTotal - refugees - captives),
+            refugees,
+            captives,
+          };
+      let total = counters.crew + counters.refugees + counters.captives;
+      if (total > maxCrew) {
+        ["captives", "refugees", "crew"].forEach((key) => {
+          const overflow = total - maxCrew;
+          if (overflow <= 0) return;
+          const reduction = Math.min(counters[key], overflow);
+          counters[key] -= reduction;
+          total -= reduction;
+        });
+      }
+      c2.crewCounters = counters;
+      c2.crew = String(counters.crew);
     }
 
     function normalizeResources(value) {
@@ -2795,6 +3184,11 @@
         loopLength: { min: 0, max: null },
         frozenTime: { min: 0, max: null },
         paradox: { min: 0, max: 12 },
+        reapMark: { min: 0, max: null },
+        sowMark: { min: 0, max: null },
+        babelianDebt: { min: 0, max: null },
+        paranoia: { min: 0, max: null },
+        supply: { min: 0, max: null },
       };
 
       Object.entries(config).forEach(([bindKey, limits]) => {
@@ -2875,6 +3269,7 @@
       const oldLabel = input.closest("label");
       const label = document.createElement("label");
       label.className = "summon-usage";
+      if (oldLabel?.dataset.cycleField) label.dataset.cycleField = oldLabel.dataset.cycleField;
 
       const text = document.createElement("span");
       text.textContent = "AA 上限";
@@ -3147,9 +3542,6 @@
         el.classList.add("hidden");
       });
 
-      document.querySelectorAll("[data-cycle-bind='knowledge']").forEach((field) => {
-        field.closest("label")?.classList.add("hidden");
-      });
     }
 
     function renderTimeline() {
@@ -3215,6 +3607,12 @@
       sunheirs: "SUNHEIRS",
       delphians: "DELPHIANS",
       twilightWatch: "TWILIGHTWATCH",
+      wasters: "WASTERS",
+      aristotelians: "ARISTOTELIANS",
+      cloudThieves: "CLOUDTHIEVES",
+      followersOfArete: "FOLLOWERSOFARETE",
+      cycladeanProtectorate: "CYCLADEANPROTECTORATE",
+      outcastVanguard: "OUTCASTVANGUARD",
     };
 
     function makeTrackTitle(zh, en, options = {}) {
@@ -3247,8 +3645,9 @@
       const unlockKey = `${state.cycle}-${key}`;
       const cycleScoped = key === "hull" || key === "crew";
       const selectedValue = cycleScoped ? getCycleStat(key) : state[key];
-      const isMaxLocked = (value) => Boolean(options.lockMax && (state.cycle === "c2" || state.cycle === "c3") && String(value) === String(values[0]) && !state.maxUnlocked[unlockKey]);
-      if (options.lockMax && (state.cycle === "c2" || state.cycle === "c3")) {
+      const supportsMaxLock = ["c2", "c3"].includes(state.cycle);
+      const isMaxLocked = (value) => Boolean(options.lockMax && supportsMaxLock && String(value) === String(values[0]) && !state.maxUnlocked[unlockKey]);
+      if (options.lockMax && supportsMaxLock) {
         const unlockButton = document.createElement("button");
         unlockButton.type = "button";
         unlockButton.className = "track-lock-button";
@@ -3277,7 +3676,7 @@
           locked ? "locked-max" : "",
         ].filter(Boolean).join(" ");
         button.textContent = value;
-        button.title = locked ? "循环 II 最大值需先解锁" : "";
+        button.title = locked ? "最大值需先解锁" : "";
         button.addEventListener("click", () => {
           if (locked) return;
           if (cycleScoped) setCycleStat(key, String(value));
@@ -3315,6 +3714,101 @@
         }
       });
       container.append(title, chips);
+    }
+
+    function c2CrewMax() {
+      const values = currentCycle().crew.map((value) => Number(value)).filter(Number.isFinite);
+      return Math.max(...values) + (state.maxUnlocked[`${state.cycle}-crew`] ? 1 : 0);
+    }
+
+    function c2CrewCounters() {
+      const stats = currentCycleStats();
+      stats.crewCounters = isPlainObject(stats.crewCounters)
+        ? stats.crewCounters
+        : { crew: Number(getCycleStat("crew") || defaultState.crew) || 0, refugees: 0, captives: 0 };
+      const counters = stats.crewCounters;
+      counters.crew = Math.max(0, Math.floor(Number(counters.crew) || 0));
+      counters.refugees = Math.max(0, Math.floor(Number(counters.refugees) || 0));
+      counters.captives = Math.max(0, Math.floor(Number(counters.captives) || 0));
+      return counters;
+    }
+
+    function c2CrewCounterTotal(counters = c2CrewCounters()) {
+      return counters.crew + counters.refugees + counters.captives;
+    }
+
+    function changeC2CrewCounter(kind, delta) {
+      const counters = c2CrewCounters();
+      const next = Math.max(0, counters[kind] + delta);
+      const totalWithoutKind = c2CrewCounterTotal(counters) - counters[kind];
+      counters[kind] = Math.min(next, Math.max(0, c2CrewMax() - totalWithoutKind));
+      setCycleStat("crew", String(counters.crew));
+      renderAll();
+      queueSave();
+    }
+
+    function renderCrewCounterCard(parent, kind, label, className = "") {
+      const counters = c2CrewCounters();
+      const total = c2CrewCounterTotal(counters);
+      const max = c2CrewMax();
+      const card = document.createElement("div");
+      card.className = ["crew-counter", className].filter(Boolean).join(" ");
+      const labelEl = document.createElement("div");
+      labelEl.className = "crew-counter-label";
+      labelEl.textContent = label;
+      const controls = document.createElement("div");
+      controls.className = "crew-counter-controls";
+      const minus = document.createElement("button");
+      minus.type = "button";
+      minus.textContent = "-";
+      minus.disabled = counters[kind] <= 0;
+      minus.addEventListener("click", () => changeC2CrewCounter(kind, -1));
+      const value = document.createElement("div");
+      value.className = "crew-counter-value";
+      value.textContent = String(counters[kind]);
+      const plus = document.createElement("button");
+      plus.type = "button";
+      plus.textContent = "+";
+      plus.disabled = total >= max;
+      plus.addEventListener("click", () => changeC2CrewCounter(kind, 1));
+      controls.append(minus, value, plus);
+      card.append(labelEl, controls);
+      parent.appendChild(card);
+    }
+
+    function renderC2CrewTrack(container) {
+      container.innerHTML = "";
+      const title = makeTrackTitle("船员", "Crew");
+      const unlockKey = `${state.cycle}-crew`;
+      const unlockButton = document.createElement("button");
+      unlockButton.type = "button";
+      unlockButton.className = "track-lock-button";
+      unlockButton.textContent = state.maxUnlocked[unlockKey] ? "锁回最大值" : "解锁最大值";
+      unlockButton.addEventListener("click", () => {
+        state.maxUnlocked[unlockKey] = !state.maxUnlocked[unlockKey];
+        const counters = c2CrewCounters();
+        while (c2CrewCounterTotal(counters) > c2CrewMax()) {
+          if (counters.captives > 0) counters.captives -= 1;
+          else if (counters.refugees > 0) counters.refugees -= 1;
+          else if (counters.crew > 0) counters.crew -= 1;
+          else break;
+        }
+        setCycleStat("crew", String(counters.crew));
+        renderAll();
+        queueSave();
+      });
+      title.appendChild(unlockButton);
+
+      const grid = document.createElement("div");
+      grid.className = "crew-counter-grid";
+      renderCrewCounterCard(grid, "crew", "船员");
+      renderCrewCounterCard(grid, "refugees", "难民", "refugee");
+      renderCrewCounterCard(grid, "captives", "俘虏", "captive");
+      const total = document.createElement("div");
+      total.className = "crew-counter-total";
+      total.textContent = `合计 ${c2CrewCounterTotal()} / ${c2CrewMax()}`;
+      grid.appendChild(total);
+      container.append(title, grid);
     }
 
     function getEvolutionStage(value, index) {
@@ -3425,11 +3919,11 @@
     function renderCoreTracks() {
       const cycle = currentCycle();
       renderTrack(elements.hullTrack, "船体", "Hull", cycle.hull, "hull", { className: "warning", lockMax: true });
-      const crewOptions = { className: "warning", lockMax: true };
       if (state.cycle === "c2") {
-        crewOptions.extraBoxesKey = "crewBoxes";
+        renderC2CrewTrack(elements.crewTrack);
+      } else {
+        renderTrack(elements.crewTrack, "船员", "Crew", cycle.crew, "crew", { className: "warning", lockMax: true });
       }
-      renderTrack(elements.crewTrack, "船员", "Crew", cycle.crew, "crew", crewOptions);
     }
 
     function renderEnemyTracks() {
@@ -3443,20 +3937,43 @@
       const cycle = currentCycle();
       elements.adventureMeta.textContent = `${cycle.adventures.length} 条`;
       elements.adventureList.innerHTML = "";
-      const slots = [
-        { id: "alpha", label: "α" },
-        { id: "mid1", label: "" },
-        { id: "mid2", label: "" },
-        { id: "omega", label: "Ω" },
-      ];
-      cycle.adventures.forEach(([zh, en], index) => {
+      const slotPresets = {
+        default: [
+          { id: "alpha", label: "α" },
+          { id: "mid1", label: "" },
+          { id: "mid2", label: "" },
+          { id: "omega", label: "Ω" },
+        ],
+        five: [
+          { id: "alpha", label: "α" },
+          { id: "mid1", label: "" },
+          { id: "mid2", label: "" },
+          { id: "mid3", label: "" },
+          { id: "omega", label: "Ω" },
+        ],
+        "ten-thousand": [
+          { id: "alpha", label: "α" },
+          { id: "beta", label: "β" },
+          { id: "gamma", label: "γ" },
+          { id: "delta", label: "δ" },
+          { id: "epsilon", label: "ε" },
+          { id: "lambda", label: "λ" },
+          { id: "omicron", label: "ο" },
+          { id: "sigma", label: "σ" },
+          { id: "psi", label: "ψ" },
+          { id: "omega", label: "Ω" },
+        ],
+      };
+      cycle.adventures.forEach(([zh, en, slotPreset = "default"], index) => {
+        const slots = slotPresets[slotPreset] || slotPresets.default;
         const legacyKey = `${state.cycle}-${index}`;
         const card = document.createElement("article");
-        card.className = "check-card";
+        card.className = `check-card${slots.length > 6 ? " wide-adventure" : ""}`;
         const text = document.createElement("span");
         text.innerHTML = `<strong>${escapeHtml(zh)}</strong><span>${escapeHtml(en)}</span>`;
         const boxes = document.createElement("div");
         boxes.className = "adventure-boxes";
+        boxes.style.gridTemplateColumns = `repeat(${slots.length}, 32px)`;
         slots.forEach((slot) => {
           const key = `${legacyKey}-${slot.id}`;
           const active = Boolean(state.adventures[key] || (slot.id === "omega" && state.adventures[legacyKey]));
@@ -3493,6 +4010,8 @@
       const diplomacyBonuses = {
         c1: { "开战": "-3", "恶劣": "-2", "交恶": "-1", "中立": "0", "友善": "+1", "结盟": "+2" },
         c3: { "开战": "-3", "恶劣": "-2", "交恶": "-1", "中立": "0", "友善": "+1", "结盟": "+2" },
+        c4: { "开战": "-3", "恶劣": "-2", "交恶": "-1", "中立": "0", "友善": "+1", "结盟": "+2" },
+        c5: { "开战": "-3", "恶劣": "-2", "交恶": "-1", "中立": "0", "友善": "+1", "结盟": "+2" },
         c2: { "隐藏": "-1", "怀疑": "0", "友善": "+1", "结盟": "+2" },
       };
       const bonuses = diplomacyBonuses[state.cycle] || {};
@@ -3814,11 +4333,19 @@
 
     const resourceImageMap = {
       armament: "./assets/resource-icons/armament.png",
+      atlanteanTekne: "./assets/resource-icons/atlanteanTekne.png",
+      amygdalanExtract: "./assets/resource-icons/amygdalanExtract.png",
+      babylonianContraption: "./assets/resource-icons/babylonianContraption.png",
       blackChain: "./assets/resource-icons/blackChain.png",
+      blackenedHalo: "./assets/resource-icons/blackenedHalo.png",
+      blackTaintedStepfinger: "./assets/resource-icons/blackTaintedStepfinger.png",
+      burnedOutGrace: "./assets/resource-icons/burnedOutGrace.png",
       calcifiedKnuckle: "./assets/resource-icons/calcifiedKnuckle.png",
       chimericTar: "./assets/resource-icons/chimericTar.png",
       clothflesh: "./assets/resource-icons/clothflesh.png",
       core: "./assets/resource-icons/core.png",
+      cursedBloatsack: "./assets/resource-icons/cursedBloatsack.png",
+      cursedDerelict: "./assets/resource-icons/cursedDerelict.png",
       cyclopeanMetal: "./assets/resource-icons/cyclopeanMetal.png",
       daedalusMakina: "./assets/resource-icons/daedalusMakina.png",
       echoes: "./assets/resource-icons/echoes.png",
@@ -3826,16 +4353,31 @@
       fearEssence: "./assets/resource-icons/fearEssence.png",
       fleshyMantle: "./assets/resource-icons/fleshyMantle.png",
       frozenAmbrosia: "./assets/resource-icons/frozenAmbrosia.png",
+      fadingLightConstruct: "./assets/resource-icons/fadingLightConstruct.png",
       grotesqueBeak: "./assets/resource-icons/grotesqueBeak.png",
       hyperboreanAlloy: "./assets/resource-icons/hyperboreanAlloy.png",
+      hydradynamicScales: "./assets/resource-icons/hydradynamicScales.png",
       icarianFeather: "./assets/resource-icons/icarianFeather.png",
       infusedMechanism: "./assets/resource-icons/infusedMechanism.png",
+      imperialScroll: "./assets/resource-icons/imperialScroll.png",
+      ireEssence: "./assets/resource-icons/ireEssence.png",
+      livingGold: "./assets/resource-icons/livingGold.png",
       livingAbyss: "./assets/resource-icons/livingAbyss.png",
+      liquidAether: "./assets/resource-icons/liquidAether.png",
       mazeFragment: "./assets/resource-icons/mazeFragment.png",
       monument: "./assets/resource-icons/monument.png",
       muscleCluster: "./assets/resource-icons/muscleCluster.png",
+      microwaveCell: "./assets/resource-icons/microwaveCell.png",
+      mutableAmbrosia: "./assets/resource-icons/mutableAmbrosia.png",
+      oldIremFragment: "./assets/resource-icons/oldIremFragment.png",
+      onyxDust: "./assets/resource-icons/onyxDust.png",
+      orichalcumAlloy: "./assets/resource-icons/orichalcumAlloy.png",
+      orichalcumChunk: "./assets/resource-icons/orichalcumChunk.png",
+      oxidizedAmbrosia: "./assets/resource-icons/oxidizedAmbrosia.png",
+      photophobicFlesh: "./assets/resource-icons/photophobicFlesh.png",
       powderedMatter: "./assets/resource-icons/powderedMatter.png",
       priests: "./assets/resource-icons/priests.png",
+      promisedFuturesCarcass: "./assets/resource-icons/promisedFuturesCarcass.png",
       pygmalionStones: "./assets/resource-icons/pygmalionStones.png",
       rare: "./assets/resource-icons/rare.png",
       rawAmbrosia: "./assets/resource-icons/rawAmbrosia.png",
@@ -3846,12 +4388,15 @@
       sirenshell: "./assets/resource-icons/sirenshell.png",
       sisyphusTears: "./assets/resource-icons/sisyphusTears.png",
       skinOfMalice: "./assets/resource-icons/skinOfMalice.png",
+      slaveMetal: "./assets/resource-icons/slaveMetal.png",
       sunburnedSkull: "./assets/resource-icons/sunburnedSkull.png",
       supersolidRelief: "./assets/resource-icons/supersolidRelief.png",
       trireme: "./assets/resource-icons/trireme.png",
+      blackWoolStrand: "./assets/resource-icons/blackWoolStrand.png",
       violentAmbrosia: "./assets/resource-icons/violentAmbrosia.png",
       warMachine: "./assets/resource-icons/warMachine.png",
       warTrireme: "./assets/resource-icons/warTrireme.png",
+      wishEmbryo: "./assets/resource-icons/wishEmbryo.png",
       writhingTentacle: "./assets/resource-icons/writhingTentacle.png",
     };
 
@@ -3885,9 +4430,10 @@
     }
 
     function currentResources() {
-      return currentCycle().resources.flatMap(([key, zh, en]) => {
+      const cycle = currentCycle();
+      return cycle.resources.flatMap(([key, zh, en]) => {
         if (key === "core") {
-          return currentCycle().enemies.map((enemy) => ({
+          return cycle.enemies.map((enemy) => ({
             key: `core-${enemy.key}`,
             zh: `${enemy.zh}核心`,
             en: `${enemy.en} Core`,
@@ -3970,7 +4516,7 @@
       return numberField;
     }
 
-    function makePygmalionResourceField(fullKey) {
+    function makeRepeatableResourceTrack(fullKey, label) {
       const group = document.createElement("div");
       group.className = "pygmalion-group";
       const cellCount = 3;
@@ -3982,12 +4528,12 @@
         const button = document.createElement("button");
         button.type = "button";
         button.className = `pygmalion-cell${active ? " active" : ""}`;
-        button.title = `Pygmalion Stone ${index + 1}`;
-        button.setAttribute("aria-label", `Pygmalion Stone ${index + 1}`);
+        button.title = `${label} ${index + 1}`;
+        button.setAttribute("aria-label", `${label} ${index + 1}`);
         button.addEventListener("click", () => {
           state.pygmalion[progressKey] = !active;
           const filled = progressKeys.every((key) => state.pygmalion[key]);
-          if (filled && window.confirm(`已点满 ${cellCount} 格，是否获得 1 个皮格马利翁之石？`)) {
+          if (filled && window.confirm(`已点满 ${cellCount} 格，是否获得 1 个${label}？`)) {
             progressKeys.forEach((key) => {
               state.pygmalion[key] = false;
             });
@@ -4028,7 +4574,10 @@
         card.appendChild(makeResourceHeading(resource));
         if (key === "pygmalionStones") {
           card.appendChild(makeNumberField(fullKey));
-          card.appendChild(makePygmalionResourceField(fullKey));
+          card.appendChild(makeRepeatableResourceTrack(fullKey, "皮格马利翁之石"));
+        } else if (key === "echoes" && ["c3", "c4", "c5"].includes(state.cycle)) {
+          card.appendChild(makeNumberField(fullKey));
+          card.appendChild(makeRepeatableResourceTrack(fullKey, "记忆之回响"));
         } else if (type === "text") {
           card.appendChild(makeResourceTextField(fullKey, "记录稀有资源名称"));
         } else {

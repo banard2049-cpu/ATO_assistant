@@ -43,6 +43,18 @@
   let storyAudioManifestPromise = null;
   let storyAudioManifestPack = "";
   let entityOverlay = null;
+  let pageViewer = null;
+  const pageViewerState = {
+    images: [],
+    index: 0,
+    scale: 1,
+    offsetX: 0,
+    offsetY: 0,
+    pointerId: null,
+    dragX: 0,
+    dragY: 0,
+    previousBodyOverflow: "",
+  };
   const entityLookup = new Map();
   let entityAliases = [];
   const externalAudioCache = new Map();
@@ -344,8 +356,21 @@
     return [];
   }
 
+  function hasEntryContent(entry) {
+    return !!String(entry?.text || "").trim() || (Array.isArray(entry?.links) && entry.links.length > 0);
+  }
+
+  function preferEntriesWithContent(entries) {
+    if (!entries.length) return entries;
+    return entries.slice().sort((a, b) => {
+      const aHasContent = hasEntryContent(a) ? 0 : 1;
+      const bHasContent = hasEntryContent(b) ? 0 : 1;
+      return aHasContent - bHasContent || a.order - b.order;
+    });
+  }
+
   function preferredEntry(book, id, options = {}) {
-    const matches = entriesById(book, id);
+    const matches = preferEntriesWithContent(entriesById(book, id));
     if (!matches.length) return null;
 
     if (options.bookId && options.bookId !== book.id) return null;
@@ -409,10 +434,10 @@
     if (!q) return scopedEntries.slice(0, 80);
 
     if (/^\d{1,4}$/.test(q)) {
-      const id = q.padStart(4, "0");
-      const exactInScope = scopedEntries.filter((entry) => entry.id === id);
-      if (exactInScope.length) return sortForCurrentContext(exactInScope);
-      return sortForCurrentContext(book.entries.filter((entry) => entry.id === id));
+      const ids = [...new Set([q, q.padStart(4, "0")])];
+      const exactInScope = scopedEntries.filter((entry) => ids.includes(entry.id));
+      if (exactInScope.length) return preferEntriesWithContent(sortForCurrentContext(exactInScope));
+      return preferEntriesWithContent(sortForCurrentContext(book.entries.filter((entry) => ids.includes(entry.id))));
     }
 
     if (/^M\d+$/i.test(q)) {
@@ -421,7 +446,7 @@
 
     return scopedEntries
       .filter((entry) => {
-        const haystack = `${entry.id} ${entry.title} ${entry.chapter} ${entry.encounter || ""} ${entry.section || ""} ${entry.text}`.toLowerCase();
+        const haystack = `${entry.id} ${entry.title} ${entry.englishTitle || ""} ${entry.chapter} ${entry.encounter || ""} ${entry.section || ""} ${entry.text} ${entry.originalText || ""}`.toLowerCase();
         return haystack.includes(q);
       })
       .slice(0, 100);
@@ -929,6 +954,33 @@
 
   const localBattleImages = [
     {
+      test: /midascore-battle/i,
+      images: [
+        "./images/battles/c4/midascore-battle-level-1.jpg",
+        "./images/battles/c4/midascore-battle-level-2-plus.jpg",
+      ],
+    },
+    {
+      test: /demidjinn-battle/i,
+      images: ["./images/battles/c4/demidjinn-battle.jpg"],
+    },
+    {
+      test: /pandora-horizon-battle/i,
+      images: ["./images/battles/c4/pandora-horizon-battle.jpg"],
+    },
+    {
+      test: /the-crash-battle/i,
+      images: ["./images/battles/c4/the-crash-battle.jpg"],
+    },
+    {
+      test: /reap-the-whirlwind-battle/i,
+      images: ["./images/battles/c4/reap-the-whirlwind-battle.jpg"],
+    },
+    {
+      test: /the-winnowing-battle/i,
+      images: ["./images/battles/c4/the-winnowing-battle.jpg"],
+    },
+    {
       test: /hypertime-oracle-battle/i,
       images: ["./images/battles/c3/超时光先知战斗1.jpg", "./images/battles/c3/超时光先知战斗2.jpg"],
     },
@@ -967,14 +1019,19 @@
       .trim();
   }
 
-  function renderBattleImages(entry) {
-    const aibpLink = battleAibpLink(entry);
+  function renderBattleImages(entry, options = {}) {
+    const aibpLink = options.includeAibpLink === false ? "" : battleAibpLink(entry);
     const imageList = Array.isArray(entry.imageList) && entry.imageList.length
       ? entry.imageList
       : localBattleImageList(entry);
     if (imageList.length) {
+      const isSourcePage = Boolean(entry.supplementSource || entry.originalText);
       const images = imageList.map((src, index) => {
-        return `<img class="battle-page" src="${escapeHtml(src)}" alt="${escapeHtml(entry.title)} ${index + 1}" onerror="this.remove()">`;
+        const viewerAttributes = isSourcePage
+          ? ` data-page-viewer tabindex="0" role="button" title="点击放大查看原书页"`
+          : "";
+        const viewerClass = isSourcePage ? " zoomable-page" : "";
+        return `<img class="battle-page${viewerClass}" src="${escapeHtml(src)}" alt="${escapeHtml(entry.title)} ${index + 1}"${viewerAttributes} onerror="this.remove()">`;
       }).join("");
       return `${images}${aibpLink}`;
     }
@@ -993,6 +1050,172 @@
     }).join("");
 
     return `${pages}${aibpLink}`;
+  }
+
+  function clampPageViewerScale(scale) {
+    return Math.min(5, Math.max(0.5, scale));
+  }
+
+  function updatePageViewerTransform() {
+    if (!pageViewer) return;
+    const image = pageViewer.querySelector(".page-viewer-image");
+    const zoomLabel = pageViewer.querySelector("[data-page-viewer-zoom]");
+    image.style.transform = `translate3d(${pageViewerState.offsetX}px, ${pageViewerState.offsetY}px, 0) scale(${pageViewerState.scale})`;
+    image.classList.toggle("is-pannable", pageViewerState.scale > 1);
+    zoomLabel.textContent = `${Math.round(pageViewerState.scale * 100)}%`;
+  }
+
+  function resetPageViewerTransform() {
+    pageViewerState.scale = 1;
+    pageViewerState.offsetX = 0;
+    pageViewerState.offsetY = 0;
+    updatePageViewerTransform();
+  }
+
+  function setPageViewerImage(index) {
+    if (!pageViewerState.images.length || !pageViewer) return;
+    pageViewerState.index = (index + pageViewerState.images.length) % pageViewerState.images.length;
+    const source = pageViewerState.images[pageViewerState.index];
+    const image = pageViewer.querySelector(".page-viewer-image");
+    const counter = pageViewer.querySelector("[data-page-viewer-counter]");
+    image.src = source.src;
+    image.alt = source.alt || "原书扫描页";
+    counter.textContent = `${pageViewerState.index + 1} / ${pageViewerState.images.length}`;
+    pageViewer.querySelectorAll("[data-page-viewer-nav]").forEach((button) => {
+      button.hidden = pageViewerState.images.length < 2;
+    });
+    resetPageViewerTransform();
+  }
+
+  function closePageViewer() {
+    if (!pageViewer || pageViewer.hidden) return;
+    pageViewer.hidden = true;
+    pageViewerState.pointerId = null;
+    document.body.style.overflow = pageViewerState.previousBodyOverflow;
+  }
+
+  function ensurePageViewer() {
+    if (pageViewer) return pageViewer;
+
+    pageViewer = document.createElement("div");
+    pageViewer.className = "page-viewer";
+    pageViewer.hidden = true;
+    pageViewer.innerHTML = `
+      <div class="page-viewer-dialog" role="dialog" aria-modal="true" aria-label="原书扫描页放大查看">
+        <div class="page-viewer-toolbar">
+          <div class="page-viewer-title">原书扫描页 <span data-page-viewer-counter></span></div>
+          <div class="page-viewer-controls">
+            <button type="button" data-page-viewer-nav="previous" title="上一页" aria-label="上一页">‹</button>
+            <button type="button" data-page-viewer-action="out" title="缩小" aria-label="缩小">−</button>
+            <button type="button" data-page-viewer-action="reset" title="恢复适合窗口大小" aria-label="恢复适合窗口大小">
+              <span data-page-viewer-zoom>100%</span>
+            </button>
+            <button type="button" data-page-viewer-action="in" title="放大" aria-label="放大">＋</button>
+            <button type="button" data-page-viewer-nav="next" title="下一页" aria-label="下一页">›</button>
+            <button class="page-viewer-close" type="button" data-page-viewer-action="close" title="关闭" aria-label="关闭">×</button>
+          </div>
+        </div>
+        <div class="page-viewer-stage">
+          <img class="page-viewer-image" alt="">
+        </div>
+        <div class="page-viewer-help">滚轮缩放 · 放大后拖动查看 · Esc 关闭</div>
+      </div>
+    `;
+    document.body.appendChild(pageViewer);
+
+    pageViewer.addEventListener("click", (event) => {
+      if (event.target === pageViewer) {
+        closePageViewer();
+        return;
+      }
+      const actionButton = event.target.closest("[data-page-viewer-action]");
+      if (actionButton) {
+        const action = actionButton.dataset.pageViewerAction;
+        if (action === "close") closePageViewer();
+        if (action === "reset") resetPageViewerTransform();
+        if (action === "in" || action === "out") {
+          const direction = action === "in" ? 0.25 : -0.25;
+          pageViewerState.scale = clampPageViewerScale(pageViewerState.scale + direction);
+          if (pageViewerState.scale <= 1) {
+            pageViewerState.offsetX = 0;
+            pageViewerState.offsetY = 0;
+          }
+          updatePageViewerTransform();
+        }
+        return;
+      }
+      const navButton = event.target.closest("[data-page-viewer-nav]");
+      if (navButton) {
+        const direction = navButton.dataset.pageViewerNav === "next" ? 1 : -1;
+        setPageViewerImage(pageViewerState.index + direction);
+      }
+    });
+
+    const stage = pageViewer.querySelector(".page-viewer-stage");
+    stage.addEventListener("wheel", (event) => {
+      event.preventDefault();
+      const direction = event.deltaY < 0 ? 0.2 : -0.2;
+      pageViewerState.scale = clampPageViewerScale(pageViewerState.scale + direction);
+      if (pageViewerState.scale <= 1) {
+        pageViewerState.offsetX = 0;
+        pageViewerState.offsetY = 0;
+      }
+      updatePageViewerTransform();
+    }, { passive: false });
+
+    stage.addEventListener("pointerdown", (event) => {
+      if (pageViewerState.scale <= 1) return;
+      pageViewerState.pointerId = event.pointerId;
+      pageViewerState.dragX = event.clientX - pageViewerState.offsetX;
+      pageViewerState.dragY = event.clientY - pageViewerState.offsetY;
+      stage.setPointerCapture(event.pointerId);
+      stage.classList.add("is-dragging");
+    });
+    stage.addEventListener("pointermove", (event) => {
+      if (pageViewerState.pointerId !== event.pointerId) return;
+      pageViewerState.offsetX = event.clientX - pageViewerState.dragX;
+      pageViewerState.offsetY = event.clientY - pageViewerState.dragY;
+      updatePageViewerTransform();
+    });
+    const endPageDrag = (event) => {
+      if (pageViewerState.pointerId !== event.pointerId) return;
+      pageViewerState.pointerId = null;
+      stage.classList.remove("is-dragging");
+    };
+    stage.addEventListener("pointerup", endPageDrag);
+    stage.addEventListener("pointercancel", endPageDrag);
+
+    document.addEventListener("keydown", (event) => {
+      if (!pageViewer || pageViewer.hidden) return;
+      if (event.key === "Escape") closePageViewer();
+      if (event.key === "ArrowLeft" && pageViewerState.images.length > 1) {
+        setPageViewerImage(pageViewerState.index - 1);
+      }
+      if (event.key === "ArrowRight" && pageViewerState.images.length > 1) {
+        setPageViewerImage(pageViewerState.index + 1);
+      }
+    });
+
+    return pageViewer;
+  }
+
+  function openPageViewer(target) {
+    const gallery = target.closest(".supplement-gallery");
+    const images = gallery
+      ? Array.from(gallery.querySelectorAll("[data-page-viewer]"))
+      : [target];
+    if (!images.length) return;
+
+    ensurePageViewer();
+    pageViewerState.images = images.map((image) => ({
+      src: image.currentSrc || image.src,
+      alt: image.alt,
+    }));
+    pageViewerState.previousBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    pageViewer.hidden = false;
+    setPageViewerImage(Math.max(0, images.indexOf(target)));
+    pageViewer.querySelector(".page-viewer-close").focus();
   }
 
   function normalizeTableCell(text) {
@@ -1282,7 +1505,14 @@
   }
 
   function battleAibpLink(entry) {
-    const haystack = `${entry.id || ""} ${entry.title || ""} ${entry.encounter || ""}`.toLowerCase();
+    const haystack = [
+      entry.id,
+      entry.key,
+      entry.title,
+      entry.encounterKey,
+      entry.encounter,
+      entry.section,
+    ].filter(Boolean).join(" ").toLowerCase();
     const targets = [
       {
         test: /ambush|伏击/,
@@ -1291,6 +1521,14 @@
           { apostle: "LABYRINTHAUROS", label: "迷宫机牛 AIBP" },
         ],
       },
+      { test: /midascore|迈达狮|米达斯核/, apostle: "MIDASCORE", label: "米达斯核 AIBP" },
+      { test: /demidjinn|半神迪精|半神灯/, apostle: "DEMIDJINN", label: "半神灯 AIBP" },
+      { test: /pandora-horizon|pandora horizon|潘多拉视界|the-crash|the crash|撞击之战|babelian|巴比伦疯塔|巴别疯癫/, apostle: "THE_BABELIAN_LUNACY", label: "巴别疯癫 AIBP" },
+      { test: /reap-the-whirlwind|reap the whirlwind|收割旋风|the-winnowing|the winnowing|扬谷之战|dahaka|达哈卡/, apostle: "DAHAKA", label: "达哈卡 AIBP" },
+      { test: /dragon-of-phobos|dragon of phobos|深海惧龙|恐惧之龙/, apostle: "DRAGON_OF_PHOBOS", label: "恐惧之龙 AIBP" },
+      { test: /meduketos|须目|梅杜克托斯/, apostle: "MEDUKETOS", label: "梅杜克托斯 AIBP" },
+      { test: /harsh-truth|harsh truth|严酷真相|white-lie|white lie|白色谎言|ur-fleece|ur fleece|乌尔-?弗里斯|乌尔羊毛/, apostle: "UR_FLEECE", label: "乌尔羊毛 AIBP" },
+      { test: /the-devil-himself|the devil himself|魔鬼本人|thicker-than-water|thicker than water|血浓于水|titan-x|titan x|泰坦 ?x/, apostle: "TITAN_X", label: "泰坦 X AIBP" },
       { test: /hekaton|百臂巨人/, apostle: "HEKATON", label: "百臂巨人 AIBP" },
       { test: /labyrinthauros|迷宫牛|迷宫机牛/, apostle: "LABYRINTHAUROS", label: "迷宫机牛 AIBP" },
       { test: /temenos|there-is-no-maze|没有迷宫|吞域兽/, apostle: "ALPHA_TEMENOS", label: "吞域兽 AIBP" },
@@ -1860,8 +2098,13 @@
   }
 
   function renderStory(entry) {
-    const imagesHtml = renderBattleImages(entry);
-    const html = entry.html
+    const isTranslatedSupplement = Boolean(entry.originalText);
+    const imagesHtml = renderBattleImages(entry, {
+      includeAibpLink: !isTranslatedSupplement,
+    });
+    const html = isTranslatedSupplement
+      ? renderAiTranslatedSupplement(entry, imagesHtml)
+      : entry.html
       ? renderHtmlStory(entry, imagesHtml)
       : entry.chapterKey === "battle"
       ? renderBattleSectionedStory(entry, imagesHtml)
@@ -1869,6 +2112,35 @@
         ? renderSectionedStory(entry, imagesHtml)
         : `${linkify(entry.text, currentBook())}${imagesHtml ? `<div class="battle-gallery">${imagesHtml}</div>` : ""}`;
     storyText.innerHTML = html;
+  }
+
+  function renderAiTranslatedSupplement(entry, imagesHtml) {
+    const notice = entry.translationNotice
+      || "AI 翻译（非官方），可能存在术语或 OCR 误差；请以英文原文和扫描页图为准。";
+    const sourcePages = Array.isArray(entry.sourcePages) && entry.sourcePages.length
+      ? `故事书第 ${entry.sourcePages.join("、")} 页`
+      : "故事书补充页";
+    const aibpLink = entry.chapterKey === "battle" ? battleAibpLink(entry) : "";
+    const translation = linkify(entry.text || "", currentBook());
+    const original = escapeHtml(entry.originalText || "");
+    const gallery = imagesHtml
+      ? `<div class="supplement-gallery-hint">点击扫描页可放大查看</div><div class="battle-gallery supplement-gallery">${imagesHtml}</div>`
+      : "";
+
+    return `
+      <section class="ai-translation" aria-label="AI 中文翻译">
+        <div class="ai-translation-label">AI 翻译</div>
+        <p class="ai-translation-notice">${escapeHtml(notice)}</p>
+        <div class="ai-translation-body">${translation}</div>
+      </section>
+      ${aibpLink}
+      <details class="source-original">
+        <summary>查看英文原文（OCR）与扫描页 · ${escapeHtml(sourcePages)}</summary>
+        <p class="source-page-note">英文文字来自 PDF 自带 OCR；识别不清的页面经过本地 OCR 校正。规则图标、表格和版式请以扫描页为准。</p>
+        <div class="source-original-text">${original}</div>
+        ${gallery}
+      </details>
+    `;
   }
 
   function entryBookId(entry) {
@@ -2557,6 +2829,12 @@
   });
 
   storyText.addEventListener("click", (event) => {
+    const pageTarget = event.target.closest("[data-page-viewer]");
+    if (pageTarget) {
+      openPageViewer(pageTarget);
+      return;
+    }
+
     const entityTarget = event.target.closest("[data-entity-id]");
     if (entityTarget) {
       openEntityBio(entityTarget.dataset.entityId);
@@ -2566,6 +2844,13 @@
     const target = event.target.closest("[data-id]");
     if (!target) return;
     jumpToId(target.dataset.id, { chapterHint: target.dataset.chapterHint });
+  });
+
+  storyText.addEventListener("keydown", (event) => {
+    const pageTarget = event.target.closest("[data-page-viewer]");
+    if (!pageTarget || (event.key !== "Enter" && event.key !== " ")) return;
+    event.preventDefault();
+    openPageViewer(pageTarget);
   });
 
   ["pointerenter", "pointerdown", "focusin"].forEach((eventName) => {
