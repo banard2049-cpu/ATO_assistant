@@ -22,6 +22,7 @@ record/       阿尔戈号记录表
 story/        故事模块前端
 technology/   科技与装备相关页面
 tools/        数据整理、审计和辅助脚本
+asset-studio/ 独立的素材拍摄、导入、分享与安装 WebUI
 ```
 
 `story/storybook-placeholder.js` 是可以随源码公开的占位故事书。它保留
@@ -83,6 +84,34 @@ python3 tools/build_storybook_placeholder.py <APK 文件> story/storybook-placeh
 ```
 
 这只是维护时的生成命令，普通用户运行页面不需要 APK。
+
+## ATO 素材库 WebUI
+
+仓库中的 `asset-studio/` 是一个独立工具，不会嵌入或改写 ATO_assistant
+业务页面。它内置根据 ATO Local 0.2.11 整理的 2470 项固定实体素材清单，
+普通用户不需要提供或解析 APK。
+
+素材库可以用电脑管理本地资料，也可以让同一局域网中的手机扫码后逐张拍照。
+拍摄提示会显示循环、模块、实体名称、原始编号以及当前要拍的正反面；通用标记、
+资源图标、地图标记、状态卡、英雄、盟友、神形和宁芙均使用可辨认的详细名称。
+使徒 BP 卡还会提示击破部位后可获得的资源。
+
+启动素材库：
+
+- macOS：双击 `asset-studio/start-macos.command`
+- Windows：双击 `asset-studio/start-windows.bat`
+
+拍摄完成后，在电脑端打开“分享与安装”：
+
+1. 在“原项目位置”中填写 ATO_assistant 根目录并保存。
+2. 点击“预览自动安装”检查新增、相同和冲突文件。
+3. 如需覆盖旧文件，勾选对应冲突项。
+4. 点击“安装新增与已选替换”。被替换的文件会先备份，未勾选的同名文件默认保留。
+
+也可以生成兼容 ZIP，或通过 `.atopack` 与朋友分享已拍卡图和校对后的故事。
+`.atopack`、本地资料库、预览图和用户素材均已排除在 Git 提交之外。
+
+完整使用说明见 [`asset-studio/README.md`](asset-studio/README.md)。
 
 
 ## 说明
