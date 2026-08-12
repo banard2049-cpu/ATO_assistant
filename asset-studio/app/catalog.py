@@ -10,6 +10,7 @@ from pathlib import PurePosixPath
 from typing import Any, Iterable
 
 from .db import Database
+from .fixed_resources import RESOURCE_LABELS
 
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
@@ -23,6 +24,211 @@ AIBP_CYCLES = {
     "DRAGON_OF_PHOBOS": "c5", "MEDUKETOS": "c5", "UR_FLEECE": "c5", "TITAN_X": "c5",
 }
 GEAR_CYCLES = {"A": "c1", "B": "c2", "C": "c3", "D": "c4", "E": "c5"}
+HERO_RECORD_ICONS = {
+    "skill_courage.png": ("技能图标：勇气", "技能图标"),
+    "skill_wisdom.png": ("技能图标：智慧", "技能图标"),
+    "skill_will.png": ("技能图标：意志", "技能图标"),
+    "skill_endurance.png": ("技能图标：耐力", "技能图标"),
+    "skill_cunning.png": ("技能图标：狡黠", "技能图标"),
+    "skill_fury.png": ("技能图标：力量", "技能图标"),
+    "tri_rage.png": ("三相图标：怒气", "三相图标"),
+    "tri_fate.png": ("三相图标：命运", "三相图标"),
+    "tri_danger.png": ("三相图标：危险", "三相图标"),
+    "reset_triskelion_F4F4F4.png": ("三相重置图标", "三相图标"),
+    "ico_most_likely.png": ("最大似然图标", "判定图标"),
+    "ico_least_likely.png": ("最小似然图标", "判定图标"),
+    "ico_tides.png": ("潮汐图标", "记录表界面图标"),
+    "ico_katharsis_bracket.png": ("净化值框图标", "记录表界面图标"),
+}
+
+AIBP_TOKEN_LABELS = {
+    "Ambrosia": "神浆实体标记（Ambrosia）",
+    "AT+": "AT 数值增加标记（AT+）",
+    "AT-": "AT 数值降低标记（AT-）",
+    "CA": "充能标记（CA，闪电图案）",
+    "CM": "临界质量标记（CM，星芒图案）",
+    "DA+": "危险值增加标记（DA+）",
+    "DA-": "危险值降低标记（DA-）",
+    "ED+": "闪避值增加标记（ED+，晶体图案）",
+    "ED-": "闪避值降低标记（ED-，晶体图案）",
+    "GF": "神形标记（GF，旋涡图案）",
+    "HT+": "命中值增加标记（HT+，拳头图案）",
+    "HT-": "命中值降低标记（HT-，拳头图案）",
+    "ps+": "精准值增加标记（PS+，眼睛图案）",
+    "ps-": "精准值降低标记（PS-，眼睛图案）",
+    "py+": "超时神谕危险值增加标记（PY+，希腊字母 Ψ 图案）",
+    "SP+": "速度值增加标记（SP+，靴子图案）",
+    "SP-": "速度值降低标记（SP-，靴子图案）",
+}
+
+MAP_TOKEN_LABELS = {
+    "AA": "循环 III 专用地图标记（AA）",
+    "AD": "使徒位置标记（AD，使徒头盔图案）",
+    "AG": "阿尔戈号位置标记（AG，船只图案）",
+    "body": "后日奥德赛·船体补给标记（Body）",
+    "c11": "循环 I 专用地图标记（C11）",
+    "c12": "循环 I 专用地图标记（C12）",
+    "c13": "循环 I 专用地图标记（C13）",
+    "dof": "后日奥德赛·DOF 补给标记",
+    "end": "后日奥德赛·终点标记（End）",
+    "ENGIN": "引擎侦察标记（ENGIN）",
+    "hs": "侦察船标记（HS）",
+    "knowledge": "后日奥德赛·知识补给标记（Knowledge）",
+    "last_city": "最后到访的城市标记（Last City）",
+    "last_oasis": "最后到访的绿洲标记（Last Oasis）",
+    "last_silver_ruin": "最后到访的白银遗迹标记（Last Silver Ruin）",
+    "rr": "后日奥德赛·RR 补给标记",
+    "staff": "后日奥德赛·人员补给标记（Staff）",
+    "taitan": "后日奥德赛·泰坦补给标记（Taitan）",
+    "token-1": "金色使徒头盔图案地图标记（token-1）",
+}
+
+STATUS_CARD_LABELS = {
+    "C45_STATUS_001": "强欲 / COVETOUS（C4/C5 状态卡 001）",
+    "C45_STATUS_002": "满足 / ENRICHED（C4/C5 状态卡 002）",
+    "C45_STATUS_003": "登临者 / LANDER（C4/C5 状态卡 003）",
+    "C45_STATUS_004": "恐怖 / TERROR（C4/C5 状态卡 004）",
+    "C45_STATUS_005": "贪婪 / GREED-CRAZED（C4/C5 状态卡 005）",
+    "C45_STATUS_006": "开悟 / ENLIGHTENED（C4/C5 状态卡 006）",
+    "C45_STATUS_007": "决意 / RESOLVE（C4/C5 状态卡 007）",
+    "C45_STATUS_008": "大恐怖 / HOLY TERROR（C4/C5 状态卡 008）",
+    "C45_STATUS_009": "愿望热情 / WISHKEEN（C4/C5 状态卡 009）",
+    "C45_STATUS_010": "浮空（上）/ FLOAT (UP)（C4/C5 状态卡 010）",
+    "C45_STATUS_011": "英勇 / BRAVERY（C4/C5 状态卡 011）",
+    "C45_STATUS_012": "愿望狂热 / WISHAGOG（C4/C5 状态卡 012）",
+    "C45_STATUS_013": "浮空（下）/ FLOAT (DOWN)（C4/C5 状态卡 013）",
+}
+
+RECORD_RESOURCE_LABELS = {
+    "amygdalanExtract": "杏仁体萃取物", "armament": "军备", "atlanteanTekne": "亚特兰蒂斯技艺",
+    "babylonianContraption": "巴比伦装置", "blackChain": "黑色锁链", "blackenedHalo": "黑化光环",
+    "blackTaintedStepfinger": "染黑阶梯指", "blackWoolStrand": "黑羊毛丝", "burnedOutGrace": "燃尽恩典",
+    "calcifiedKnuckle": "钙化指节骨", "chimericTar": "奇美拉焦油", "clothflesh": "肉布", "core": "核心",
+    "cursedBloatsack": "诅咒胀囊", "cursedDerelict": "诅咒船骸", "cyclopeanMetal": "独眼巨人甲胄",
+    "daedalusMakina": "代达罗斯器械", "echoes": "记忆之回响", "eyesCluster": "眼球簇",
+    "fadingLightConstruct": "消逝之光构造体", "fearEssence": "恐惧精华", "fleshyMantle": "血肉块",
+    "frozenAmbrosia": "凝固神浆", "grotesqueBeak": "怪异喙片", "hydradynamicScales": "流体力学鳞片",
+    "hyperboreanAlloy": "冻土合金", "icarianFeather": "伊卡洛斯之羽", "imperialScroll": "帝国卷轴",
+    "infusedMechanism": "浸液机件", "ireEssence": "愤怒精华", "liquidAether": "液态以太",
+    "livingAbyss": "活体深渊", "livingGold": "活化黄金", "mazeFragment": "迷宫碎片",
+    "microwaveCell": "微波细胞", "monument": "石筑", "muscleCluster": "肌肉簇",
+    "mutableAmbrosia": "易变神浆", "oldIremFragment": "旧伊雷姆碎片", "onyxDust": "缟玛瑙粉尘",
+    "orichalcumAlloy": "山铜合金", "orichalcumChunk": "山铜块", "oxidizedAmbrosia": "氧化神浆",
+    "photophobicFlesh": "畏光血肉", "powderedMatter": "粉化奇物", "priests": "祭司",
+    "promisedFuturesCarcass": "未来承诺残骸", "pygmalionStones": "皮格马利翁之石", "rare": "稀有资源",
+    "rawAmbrosia": "神浆原液", "razorclaw": "利爪", "relief": "岩雕", "reliefshellFragment": "岩壳碎片",
+    "retractableMechanism": "伸缩机构", "sirenshell": "塞壬壳", "sisyphusTears": "西西弗斯之泪",
+    "skinOfMalice": "怨恨之皮", "slaveMetal": "奴隶金属", "sunburnedSkull": "日灼头骨",
+    "supersolidRelief": "超固体块", "trireme": "船材", "violentAmbrosia": "不稳定神浆",
+    "warMachine": "战械", "warTrireme": "舰材", "wishEmbryo": "愿望胚胎", "writhingTentacle": "扭动触手",
+}
+
+HERO_PORTRAIT_LABELS = {
+    "argonaut_01_odys": "英雄头像 01：奥德修斯·零 / Odys Zero",
+    "argonaut_02_circe": "英雄头像 02：喀耳刻卫 / Circegard",
+    "argonaut_03_phenelope": "英雄头像 03：珀涅罗珀 / Phenelope",
+    "argonaut_04_telebac": "英雄头像 04：忒勒巴科斯 / Telebacchus",
+    "argonaut_05_herakleides": "英雄头像 05：赫拉克莱德斯 / Herakleides",
+    "argonaut_06_olympia": "英雄头像 06：奥林匹亚 / Olympia",
+    "argonaut_07_leocules": "英雄头像 07：莱奥库勒斯 / Leocules",
+    "argonaut_08_raz": "英雄头像 08：拉兹 / Raz",
+    "argonaut_09_fisher": "英雄头像 09：费舍尔 / Fisher",
+    "argonaut_10_blank": "空白英雄头像槽位 10",
+    "argonaut_11_blank": "空白英雄头像槽位 11",
+    "argonaut_12_blank": "空白英雄头像槽位 12",
+    "argonaut_13_blank": "空白英雄头像槽位 13",
+    "argonaut_14_blank": "空白英雄头像槽位 14",
+    "argonaut_15_blank": "空白英雄头像槽位 15",
+    "argonaut_16_blank": "空白英雄头像槽位 16",
+    "argonaut_17_hypatia": "英雄头像 17：希帕提亚 / Hypatia",
+    "argonaut_18_anakreon": "英雄头像 18：阿纳克里翁 / Anakreon",
+    "argonaut_19_anathea": "英雄头像 19：安纳忒亚 / Anathea",
+    "argonaut_20_orphan": "英雄头像 20：DMT 的孤儿 / Orphan",
+    "argonaut_21_aster": "英雄头像 21：阿斯特 / Aster",
+    "argonaut_22_dastan": "英雄头像 22：达斯坦 / Dastan",
+    "argonaut_23_aktisaeos": "英雄头像 23：阿克提赛俄斯 / Aktisaeos",
+    "argonaut_24_oleander": "英雄头像 24：欧利安德 / Oleander",
+    "argonaut_25_omorfos": "英雄头像 25：欧莫弗斯 / Omorfos",
+    "argonaut_empty": "通用空白英雄头像",
+}
+
+ALLY_LABELS = {
+    "ARISTOTELIANS": "盟友阵营：亚里士多德派 / Aristotelians",
+    "CLOUDTHIEVES": "盟友阵营：云盗 / Cloud Thieves",
+    "CYCLADEANPROTECTORATE": "盟友阵营：基克拉迪保护国 / Cycladean Protectorate",
+    "CYCLOPES": "盟友阵营：独眼巨人 / Cyclopes",
+    "DELPHIANS": "盟友阵营：德尔菲人 / Delphians",
+    "FOLLOWERSOFARETE": "盟友阵营：阿瑞忒追随者 / Followers of Areté",
+    "HELOTS": "盟友阵营：希洛人 / Helots",
+    "HORNSWORN": "盟友阵营：角誓者 / Hornsworn",
+    "LABYRINTHIANS": "盟友阵营：迷宫徒 / Labyrinthians",
+    "MINOANS": "盟友阵营：米诺斯人 / Minoans",
+    "OUTCASTVANGUARD": "盟友阵营：流放者先锋 / Outcast Vanguard",
+    "SUNHEIRS": "盟友阵营：太阳后裔 / Sunheirs",
+    "SYMMACHY": "盟友阵营：邦联同盟 / Symmachy",
+    "TWILIGHTWATCH": "盟友阵营：暮光守望 / Twilight Watch",
+    "WASTERS": "盟友阵营：荒原者 / Wasters",
+}
+
+SUMMON_CARD_LABELS = {
+    "001_Nymph_Engine_Nymph": "宁芙 001：引擎宁芙 / Engine Nymph",
+    "002_Nymph_Solitude_Nymph": "宁芙 002：孤独宁芙 / Solitude Nymph",
+    "003_Nymph_Amalthean_Nymph": "宁芙 003：阿玛尔忒娅宁芙 / Amalthean Nymph",
+    "004_Nymph_Labyrinth_Nymph": "宁芙 004：迷宫宁芙 / Labyrinth Nymph",
+    "005_Nymph_Depths_Nymph": "宁芙 005：深海宁芙 / Depths Nymph",
+    "006_Godform_Zeus": "神形 006：宙斯 / Zeus",
+    "006_Nymph_Curiosity_Nymph": "宁芙 006：好奇宁芙 / Curiosity Nymph",
+    "007_Godform_Poseidon": "神形 007：波塞冬 / Poseidon",
+    "007_Nymph_Night_Nymph": "宁芙 007：夜之宁芙 / Night Nymph",
+    "007_Nymph_Sweets_Nymph": "宁芙 007：甜食宁芙 / Sweets Nymph",
+    "008_Godform_Demeter": "神形 008：德墨忒尔 / Demeter",
+    "008_Nymph_Age_Nymph": "宁芙 008：年岁宁芙 / Age Nymph",
+    "008_Nymph_Nietzschean_Nymph": "宁芙 008：尼采宁芙 / Nietzschean Nymph",
+    "009_Nymph_Forge_Nymph": "宁芙 009：锻炉宁芙 / Forge Nymph",
+    "009_Nymph_Hope_Nymph": "宁芙 009：希望宁芙 / Hope Nymph",
+    "010_Nymph_Blade_Nymph": "宁芙 010：刀刃宁芙 / Blade Nymph",
+    "010_Nymph_Machina_Nymph": "宁芙 010：机械宁芙 / Machina Nymph",
+    "011_Godform_Artemis": "神形 011：阿尔忒弥斯 / Artemis",
+    "011_Nymph_Knowledge_Nymph": "宁芙 011：知识宁芙 / Knowledge Nymph",
+    "012_Godform_Athena": "神形 012：雅典娜 / Athena",
+    "012_Nymph_Mask_Nymph": "宁芙 012：面具宁芙 / Mask Nymph",
+    "013_Godform_Hades": "神形 013：哈迪斯 / Hades",
+    "013_Godform_Hephaestus": "神形 013：赫菲斯托斯 / Hephaestus",
+    "014_Godform_Hermes": "神形 014：赫尔墨斯 / Hermes",
+    "015_Godform_Ares": "神形 015：阿瑞斯 / Ares",
+    **{f"token_{index:02d}": f"宁芙实体指示物 {index:02d}" for index in range(1, 15)},
+}
+
+
+def component_display_name(path: str, stem: str | None = None) -> str:
+    """Return the user-facing name for fixed icons that otherwise only have file codes."""
+    raw_stem = (stem if stem is not None else PurePosixPath(path).stem).strip()
+    if path.startswith("aibp/ps/other/token/"):
+        return AIBP_TOKEN_LABELS.get(raw_stem, f"AIBP 标记（{raw_stem}）")
+    if path.startswith("aibp/ps/other/resouce/"):
+        label = RESOURCE_LABELS.get(raw_stem, "核心" if raw_stem == "core" else raw_stem)
+        return f"{label}资源图标（{raw_stem}）"
+    if path.startswith("record/assets/resource-icons/"):
+        label = RECORD_RESOURCE_LABELS.get(raw_stem, raw_stem)
+        return f"{label}资源图标（{raw_stem}）"
+    if path.startswith("map/tokens/"):
+        return MAP_TOKEN_LABELS.get(raw_stem, f"地图标记（{raw_stem}）")
+    if path.startswith("aibp/ps/other/status/"):
+        return STATUS_CARD_LABELS.get(raw_stem, f"C4/C5 状态卡（{raw_stem}）")
+    if path.startswith("hero/assets/argonaut_"):
+        return HERO_PORTRAIT_LABELS.get(raw_stem, f"英雄头像（{raw_stem}）")
+    if path.startswith("record/assets/ally/"):
+        return ALLY_LABELS.get(raw_stem, f"盟友阵营图标（{raw_stem}）")
+    if path.startswith("record/assets/godforms-nymphs/"):
+        return SUMMON_CARD_LABELS.get(raw_stem, f"神形或宁芙实体素材（{raw_stem}）")
+    return raw_stem.replace("_", " ")
+
+
+def simple_group_id_number(path: str, stem: str) -> str:
+    """Keep legacy minus-token IDs while giving plus tokens a distinct, stable ID."""
+    if path.startswith("aibp/ps/other/token/") and stem.strip().endswith("+"):
+        return f"{stem.strip()[:-1]}-plus"
+    return stem
 
 
 @dataclass(frozen=True)
@@ -234,21 +440,37 @@ class CatalogBuilder:
             ("aibp/ps/other/resouce/", "common", "资源标记", "AIBP 资源"),
             ("aibp/ps/other/status/", "c4+c5", "状态卡", "C4/C5 状态"),
             ("map/tokens/", "common", "通用标记", "地图标记"),
-            ("hero/assets/", "common", "英雄/盟友", "英雄"),
             ("record/assets/ally/", "common", "英雄/盟友", "盟友"),
             ("record/assets/godforms-nymphs/", "common", "英雄/盟友", "神形/宁芙"),
             ("record/assets/resource-icons/", "common", "资源标记", "记录表资源"),
         )
         result = []
         for order, path in enumerate(sorted(paths, key=natural_key)):
+            if path.startswith("hero/assets/"):
+                filename = PurePosixPath(path).name
+                stem = PurePosixPath(path).stem
+                if filename.startswith("argonaut_"):
+                    result.append(CatalogItem(
+                        make_id("common", "英雄/盟友", "英雄", stem, stem),
+                        "common", "英雄/盟友", "英雄", component_display_name(path, stem),
+                        stem, order, {"front": path},
+                    ))
+                elif filename in HERO_RECORD_ICONS:
+                    label, subgroup = HERO_RECORD_ICONS[filename]
+                    result.append(CatalogItem(
+                        make_id("common", "英雄记录表图标", subgroup, stem, stem),
+                        "common", "英雄记录表图标", subgroup, label, stem, order,
+                        {"front": path},
+                    ))
+                continue
             matched = next((rule for rule in rules if path.startswith(rule[0])), None)
             if not matched or "/nymph_tokens/" in path and matched[3] != "神形/宁芙":
                 continue
             _, cycle, module, subgroup = matched
             stem = PurePosixPath(path).stem
-            if module == "英雄/盟友" and path.startswith("hero/assets/") and not PurePosixPath(path).name.startswith("argonaut_"):
-                continue
-            result.append(CatalogItem(make_id(cycle, module, subgroup, stem, stem), cycle, module, subgroup, stem.replace("_", " "), stem, order, {"front": path}))
+            id_number = simple_group_id_number(path, stem)
+            name = component_display_name(path, stem)
+            result.append(CatalogItem(make_id(cycle, module, subgroup, id_number, name), cycle, module, subgroup, name, stem.strip(), order, {"front": path}))
         return result
 
 

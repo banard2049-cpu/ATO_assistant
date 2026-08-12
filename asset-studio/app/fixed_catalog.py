@@ -10,7 +10,15 @@ import gzip
 import json
 from typing import Any
 
-from .catalog import CatalogItem, apply_catalog
+from .catalog import (
+    AIBP_TOKEN_LABELS,
+    HERO_RECORD_ICONS,
+    CatalogItem,
+    apply_catalog,
+    component_display_name,
+    make_id,
+    simple_group_id_number,
+)
 from .db import Database
 
 
@@ -744,7 +752,91 @@ CATALOG_B85 = (
 
 def fixed_catalog_payload() -> dict[str, Any]:
     compressed = base64.b85decode(CATALOG_B85.encode("ascii"))
-    return json.loads(gzip.decompress(compressed).decode("utf-8"))
+    payload = json.loads(gzip.decompress(compressed).decode("utf-8"))
+    existing_ids = {item["id"] for item in payload["items"]}
+    for order, (filename, (label, subgroup)) in enumerate(HERO_RECORD_ICONS.items()):
+        stem = filename.rsplit(".", 1)[0]
+        item = CatalogItem(
+            id=make_id("common", "英雄记录表图标", subgroup, stem, stem),
+            cycle="common",
+            module="英雄记录表图标",
+            subgroup=subgroup,
+            name=label,
+            number=stem,
+            sort_order=order,
+            faces={"front": f"hero/assets/{filename}"},
+        )
+        if item.id not in existing_ids:
+            payload["items"].append({
+                "id": item.id,
+                "cycle": item.cycle,
+                "module": item.module,
+                "subgroup": item.subgroup,
+                "name": item.name,
+                "number": item.number,
+                "sort_order": item.sort_order,
+                "faces": item.faces,
+                "capture_required": item.capture_required,
+            })
+            existing_ids.add(item.id)
+
+    existing_paths = {
+        path
+        for item in payload["items"]
+        for path in item.get("faces", {}).values()
+    }
+    for order, stem in enumerate(AIBP_TOKEN_LABELS):
+        path = f"aibp/ps/other/token/{stem}.png"
+        if stem == "Ambrosia":
+            path = "aibp/ps/other/token/Ambrosia .png"
+        if stem in {"CA", "CM", "GF"}:
+            path = f"aibp/ps/other/token/{stem}.jpg"
+        if path in existing_paths:
+            continue
+        id_number = simple_group_id_number(path, stem)
+        item = CatalogItem(
+            id=make_id("common", "通用标记", "AIBP 标记", id_number, AIBP_TOKEN_LABELS[stem]),
+            cycle="common",
+            module="通用标记",
+            subgroup="AIBP 标记",
+            name=AIBP_TOKEN_LABELS[stem],
+            number=stem,
+            sort_order=order,
+            faces={"front": path},
+        )
+        if item.id not in existing_ids:
+            payload["items"].append({
+                "id": item.id,
+                "cycle": item.cycle,
+                "module": item.module,
+                "subgroup": item.subgroup,
+                "name": item.name,
+                "number": item.number,
+                "sort_order": item.sort_order,
+                "faces": item.faces,
+                "capture_required": item.capture_required,
+            })
+            existing_ids.add(item.id)
+
+    for item in payload["items"]:
+        path = next(iter(item.get("faces", {}).values()), "")
+        if path.startswith((
+            "aibp/ps/other/token/",
+            "aibp/ps/other/resouce/",
+            "aibp/ps/other/status/",
+            "map/tokens/",
+            "record/assets/resource-icons/",
+            "hero/assets/argonaut_",
+            "record/assets/ally/",
+            "record/assets/godforms-nymphs/",
+        )):
+            item["name"] = component_display_name(path, item.get("number"))
+        if path.startswith("aibp/ps/other/token/"):
+            marker = str(item.get("number") or "").strip()
+            item["sort_order"] = list(AIBP_TOKEN_LABELS).index(marker)
+    payload["source"]["catalog_items"] = len(payload["items"])
+    payload["source"]["catalog_version"] = "ATO-Local-0.2.11+detailed-component-names-4"
+    return payload
 
 
 def ensure_fixed_catalog(db: Database) -> dict[str, int]:

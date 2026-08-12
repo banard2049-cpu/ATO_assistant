@@ -8,7 +8,19 @@ from pathlib import Path
 
 from PIL import Image
 
-from app.catalog import CatalogBuilder, CatalogItem, apply_catalog, catalog_stats
+from app.catalog import (
+    AIBP_TOKEN_LABELS,
+    ALLY_LABELS,
+    HERO_PORTRAIT_LABELS,
+    MAP_TOKEN_LABELS,
+    RECORD_RESOURCE_LABELS,
+    STATUS_CARD_LABELS,
+    SUMMON_CARD_LABELS,
+    CatalogBuilder,
+    CatalogItem,
+    apply_catalog,
+    catalog_stats,
+)
 from app.db import Database
 from app.fixed_catalog import ensure_fixed_catalog, fixed_catalog_payload
 from app.fixed_resources import RESOURCE_MAP, card_resource_note, card_resources
@@ -57,7 +69,7 @@ class CoreTests(unittest.TestCase):
         empty = Database(self.root / "empty.sqlite3")
         result = ensure_fixed_catalog(empty)
         payload = fixed_catalog_payload()
-        self.assertEqual(2450, result["items"])
+        self.assertEqual(2470, result["items"])
         self.assertEqual(19, result["aibp_enemies"])
         self.assertEqual({"c1", "c1.5", "c2", "c2.5", "c3", "c4", "c5"}, {book["id"] for book in payload["source"]["stories"]})
         self.assertNotIn("apk", payload["source"])
@@ -66,6 +78,60 @@ class CoreTests(unittest.TestCase):
         self.assertEqual([], card_resources("HEKATON_AI_I_001"))
         self.assertEqual(342, len(RESOURCE_MAP))
         self.assertEqual("无直接资源（特殊 BP）", card_resource_note("TITAN_X_BP_I_001", "TITAN_X / BP"))
+        hero_icons = [item for item in payload["items"] if item["module"] == "英雄记录表图标"]
+        self.assertEqual(14, len(hero_icons))
+        self.assertEqual(
+            {
+                "hero/assets/ico_katharsis_bracket.png",
+                "hero/assets/ico_least_likely.png",
+                "hero/assets/ico_most_likely.png",
+                "hero/assets/ico_tides.png",
+                "hero/assets/reset_triskelion_F4F4F4.png",
+                "hero/assets/skill_courage.png",
+                "hero/assets/skill_cunning.png",
+                "hero/assets/skill_endurance.png",
+                "hero/assets/skill_fury.png",
+                "hero/assets/skill_will.png",
+                "hero/assets/skill_wisdom.png",
+                "hero/assets/tri_danger.png",
+                "hero/assets/tri_fate.png",
+                "hero/assets/tri_rage.png",
+            },
+            {item["faces"]["front"] for item in hero_icons},
+        )
+        aibp_tokens = [item for item in payload["items"] if item["subgroup"] == "AIBP 标记"]
+        self.assertEqual(17, len(aibp_tokens))
+        self.assertEqual(set(AIBP_TOKEN_LABELS.values()), {item["name"] for item in aibp_tokens})
+        self.assertEqual(17, len({item["id"] for item in aibp_tokens}))
+        self.assertTrue(any(item["number"] == "AT+" for item in aibp_tokens))
+        self.assertTrue(any(item["number"] == "AT-" for item in aibp_tokens))
+        map_tokens = [item for item in payload["items"] if item["subgroup"] == "地图标记"]
+        self.assertEqual(set(MAP_TOKEN_LABELS.values()), {item["name"] for item in map_tokens})
+        record_resources = [item for item in payload["items"] if item["subgroup"] == "记录表资源"]
+        self.assertEqual(66, len(record_resources))
+        self.assertEqual(
+            {f"{label}资源图标（{key}）" for key, label in RECORD_RESOURCE_LABELS.items()},
+            {item["name"] for item in record_resources},
+        )
+        status_cards = [item for item in payload["items"] if item["module"] == "状态卡"]
+        self.assertEqual(set(STATUS_CARD_LABELS.values()), {item["name"] for item in status_cards})
+        detailed_components = [
+            item for item in payload["items"]
+            if item["module"] in {"通用标记", "资源标记", "状态卡"}
+        ]
+        self.assertFalse(any(item["name"].strip() == item["number"].strip() for item in detailed_components))
+        self.assertEqual(
+            set(HERO_PORTRAIT_LABELS.values()),
+            {item["name"] for item in payload["items"] if item["subgroup"] == "英雄"},
+        )
+        self.assertEqual(
+            set(ALLY_LABELS.values()),
+            {item["name"] for item in payload["items"] if item["subgroup"] == "盟友"},
+        )
+        self.assertEqual(
+            set(SUMMON_CARD_LABELS.values()),
+            {item["name"] for item in payload["items"] if item["subgroup"] == "神形/宁芙"},
+        )
 
     def test_story_import_split_merge(self):
         source = self.root / "story.txt"
