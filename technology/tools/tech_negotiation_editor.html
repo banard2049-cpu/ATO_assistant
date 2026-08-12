@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>谈判科技标记工具</title>
+  <style>
+    :root { --ink:#263238; --muted:#6b7c86; --line:#d9e1e6; --accent:#0d6274; --good:#16794a; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); background: #f5f7f8; }
+    .topbar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 10px 14px; background: #fff; border-bottom: 1px solid var(--line); }
+    h1 { margin: 0 8px 0 0; font-size: 16px; }
+    input, select, button { font: inherit; }
+    .search { width: min(360px, 100%); padding: 7px 9px; border: 1px solid var(--line); border-radius: 5px; background: #fff; }
+    select, button { padding: 7px 9px; border: 1px solid var(--line); border-radius: 5px; background: #fff; color: var(--ink); font-weight: 750; }
+    button { cursor: pointer; }
+    button.primary { border-color: #9fc9d1; background: #e8f7fa; color: var(--accent); }
+    .status { margin-left: auto; color: var(--muted); font-size: 12px; font-weight: 750; }
+    .grid { padding: 14px; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; align-items: start; }
+    .card { border: 1px solid var(--line); border-radius: 8px; background: #fff; padding: 9px; min-width: 0; }
+    .card.marked { outline: 3px solid rgba(22,121,74,.25); border-color: #8fc9aa; }
+    .thumb { width: 100%; aspect-ratio: 63 / 88; border: 1px solid #e3e8eb; border-radius: 6px; background: #eef2f4; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    .thumb img { width: 100%; height: 100%; object-fit: contain; background: #fff; display: block; }
+    .name { margin-top: 8px; font-size: 12px; font-weight: 850; line-height: 1.3; overflow-wrap: anywhere; min-height: 32px; }
+    .meta { margin-top: 3px; color: var(--muted); font-size: 11px; font-weight: 700; }
+    .check { margin-top: 8px; display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 850; }
+    .check input { margin: 0; accent-color: var(--good); }
+    .empty { padding: 30px; color: var(--muted); text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <h1>谈判科技标记工具</h1>
+    <input id="search" class="search" placeholder="搜索结构科技" autocomplete="off">
+    <select id="cycle"><option value="">全部循环</option></select>
+    <select id="marked">
+      <option value="">全部标记</option>
+      <option value="yes">只看可谈判</option>
+      <option value="no">只看未标记</option>
+    </select>
+    <button id="save" class="primary" type="button">保存到科技字典</button>
+    <a href="../index.html"><button type="button">返回科技树</button></a>
+    <span id="status" class="status"></span>
+  </div>
+  <main id="grid" class="grid"></main>
+
+<script>
+const DICTIONARY_URL = '../tech_card_dictionary.min.json';
+const SAVE_URL = '../../api/tech-card-dictionary.php';
+let cards = [];
+let dirty = false;
+
+const $ = id => document.getElementById(id);
+const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch]));
+const techKey = value => String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
+const nameFor = card => card.names?.zh || card.names?.en || card.key || '';
+const imageFor = card => {
+  const image = card.image?.back || card.image?.face || '';
+  return image ? `../${image}` : '';
+};
+const isCoreCard = card => Boolean(card.core) || (card.nodes || []).some(node => node?.core) || (card.type?.tags || []).includes('CoreTechnology') || (card.type?.raw_tags || []).includes('CoreTechnology');
+const isProductionCard = card => card?.type?.battle_card_type === 'production';
+const nodeCategory = (card, node) => node?.category || card?.category || card?.type?.category || '';
+const isNegotiationCandidate = card => isCoreCard(card) || (!isProductionCard(card) && (card.nodes || []).some(node => nodeCategory(card, node) !== 'battle'));
+
+function currentItems() {
+  const q = $('search').value.trim().toLowerCase();
+  const cycle = $('cycle').value;
+  const marked = $('marked').value;
+  return cards.filter(card =>
+    (!q || card.search.includes(q)) &&
+    (!cycle || card.cycles.includes(cycle)) &&
+    (!marked || (marked === 'yes') === Boolean(card.type?.negotiation))
+  );
+}
+
+function render() {
+  const items = currentItems();
+  const markedCount = cards.filter(card => card.type?.negotiation).length;
+  $('status').textContent = `显示 ${items.length}/${cards.length} 项 · 可谈判 ${markedCount} 项${dirty ? ' · 尚未保存' : ''}`;
+  $('grid').innerHTML = items.length ? items.map(card => `
+    <article class="card ${card.type?.negotiation ? 'marked' : ''}">
+      <div class="thumb">${imageFor(card) ? `<img src="${esc(imageFor(card))}" alt="${esc(nameFor(card))}">` : esc(card.key)}</div>
+      <div class="name">${esc(nameFor(card))}</div>
+      <div class="meta">${esc(card.cycles.join(' / '))} · ${esc(card.key)}</div>
+      <label class="check">
+        <input type="checkbox" data-key="${esc(card.key)}" ${card.type?.negotiation ? 'checked' : ''}>
+        可谈判
+      </label>
+    </article>
+  `).join('') : '<div class="empty">没有符合条件的结构科技。</div>';
+  $('grid').querySelectorAll('[data-key]').forEach(input => {
+    input.addEventListener('change', () => {
+      const card = cards.find(item => item.key === input.dataset.key);
+      if (!card) return;
+      card.type ||= {};
+      if (input.checked) card.type.negotiation = true;
+      else delete card.type.negotiation;
+      dirty = true;
+      render();
+    });
+  });
+}
+
+async function save() {
+  $('save').disabled = true;
+  try {
+    const negotiationKeys = cards.filter(card => card.type?.negotiation).map(card => card.key).sort();
+    const response = await fetch(SAVE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ negotiationKeys }),
+    });
+    const payload = await response.json().catch(() => null);
+    if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+    dirty = false;
+    render();
+  } catch (error) {
+    alert(`保存失败：${error.message || error}`);
+  } finally {
+    $('save').disabled = false;
+  }
+}
+
+async function boot() {
+  try {
+    const data = await fetch(DICTIONARY_URL, { cache: 'no-cache' }).then(r => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.json();
+    });
+    cards = (data.cards || [])
+      .filter(card => card && isNegotiationCandidate(card))
+      .map(card => ({
+        ...card,
+        key: techKey(card.key || card.names?.en),
+        type: { ...(card.type || {}) },
+        cycles: [...new Set((card.nodes || []).map(node => node.page).filter(Boolean))],
+        search: `${card.key || ''} ${card.names?.en || ''} ${card.names?.zh || ''}`.toLowerCase(),
+      }))
+      .filter(card => card.key)
+      .sort((a, b) => (a.cycles[0] || '').localeCompare(b.cycles[0] || '') || nameFor(a).localeCompare(nameFor(b), 'zh-Hans-CN'));
+    [...new Set(cards.flatMap(card => card.cycles))].forEach(cycle => $('cycle').insertAdjacentHTML('beforeend', `<option value="${esc(cycle)}">${esc(cycle)}</option>`));
+    render();
+  } catch (error) {
+    $('grid').innerHTML = `<div class="empty">加载失败：${esc(error.message || error)}</div>`;
+  }
+}
+
+['search', 'cycle', 'marked'].forEach(id => $(id).addEventListener(id === 'search' ? 'input' : 'change', render));
+$('save').addEventListener('click', save);
+boot();
+</script>
+</body>
+</html>

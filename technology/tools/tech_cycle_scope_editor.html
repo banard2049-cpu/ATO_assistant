@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>C4 结构科技循环范围打标</title>
+  <style>
+    :root {
+      --ink: #263238;
+      --muted: #667780;
+      --line: #d8e0e4;
+      --accent: #0d6274;
+      --cycle: #9a4d24;
+      --persistent: #16794a;
+      --surface: #fff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: #f4f6f7;
+    }
+    button, input, select, a { font: inherit; }
+    button, select {
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: var(--surface);
+      color: var(--ink);
+    }
+    button { cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: .5; }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      display: grid;
+      grid-template-columns: auto minmax(180px, 340px) auto auto auto 1fr;
+      gap: 8px;
+      align-items: center;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,.98);
+    }
+    h1 { margin: 0 8px 0 0; font-size: 16px; }
+    .search, select, .command {
+      min-width: 0;
+      height: 36px;
+      padding: 7px 9px;
+    }
+    .command {
+      display: inline-grid;
+      place-items: center;
+      text-decoration: none;
+    }
+    .command.disabled {
+      cursor: not-allowed;
+      opacity: .5;
+      pointer-events: none;
+    }
+    .search {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: #fff;
+      color: var(--ink);
+    }
+    .primary {
+      border-color: #8fbfc8;
+      background: #e4f4f7;
+      color: var(--accent);
+      font-weight: 800;
+    }
+    .status {
+      min-width: 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+      text-align: right;
+    }
+    .progress {
+      position: sticky;
+      top: 57px;
+      z-index: 4;
+      height: 5px;
+      background: #e4e9eb;
+    }
+    .progress > span {
+      display: block;
+      width: 0;
+      height: 100%;
+      background: var(--accent);
+      transition: width .15s ease;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 12px;
+      align-items: start;
+      padding: 14px;
+    }
+    .card {
+      min-width: 0;
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--surface);
+    }
+    .card.pending { border-style: dashed; }
+    .card.cycle { border-color: #d3a082; }
+    .card.persistent { border-color: #88bda0; }
+    .thumb {
+      display: block;
+      width: 100%;
+      padding: 0;
+      overflow: hidden;
+      aspect-ratio: 63 / 88;
+      border-color: #e1e7ea;
+      background: #edf1f2;
+    }
+    .thumb img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #fff;
+    }
+    .missing {
+      display: grid;
+      place-items: center;
+      width: 100%;
+      height: 100%;
+      padding: 14px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+      text-align: center;
+    }
+    .name {
+      min-height: 38px;
+      margin-top: 8px;
+      font-size: 13px;
+      font-weight: 850;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+    .name span {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .meta {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+    .existing {
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 750;
+    }
+    .scope {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .scope label { min-width: 0; }
+    .scope input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .scope span {
+      display: grid;
+      place-items: center;
+      min-height: 38px;
+      padding: 6px;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: #fff;
+      font-size: 12px;
+      font-weight: 850;
+      text-align: center;
+      cursor: pointer;
+    }
+    .scope input[value="cycle"]:checked + span {
+      border-color: #c98560;
+      background: #faeee7;
+      color: var(--cycle);
+    }
+    .scope input[value="persistent"]:checked + span {
+      border-color: #72ad8c;
+      background: #e8f5ed;
+      color: var(--persistent);
+    }
+    .empty {
+      grid-column: 1 / -1;
+      padding: 36px;
+      color: var(--muted);
+      text-align: center;
+    }
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      place-items: center;
+      padding: 20px;
+      background: rgba(18,26,29,.72);
+    }
+    .modal.open { display: grid; }
+    .modal-panel {
+      width: min(920px, 100%);
+      max-height: calc(100vh - 40px);
+      overflow: auto;
+      padding: 12px;
+      border-radius: 7px;
+      background: #fff;
+    }
+    .modal-head {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .modal-title { font-size: 14px; font-weight: 850; }
+    .icon-button {
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      font-size: 22px;
+      line-height: 1;
+    }
+    .modal-images {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .modal-side { min-width: 0; }
+    .modal-side b {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 12px;
+    }
+    .modal-side img {
+      display: block;
+      width: 100%;
+      max-height: calc(100vh - 130px);
+      object-fit: contain;
+      background: #f3f5f6;
+    }
+    @media (max-width: 900px) {
+      .topbar { grid-template-columns: 1fr 1fr; }
+      h1, .search, .status { grid-column: 1 / -1; }
+      .status { text-align: left; }
+      .progress { top: 191px; }
+    }
+    @media (max-width: 620px) {
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 8px; }
+      .card { padding: 7px; }
+      .scope { grid-template-columns: 1fr; }
+      .modal-images { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <h1>C4 结构科技循环范围打标</h1>
+    <input id="search" class="search" placeholder="搜索科技卡" autocomplete="off">
+    <select id="filter" aria-label="标记筛选">
+      <option value="">全部</option>
+      <option value="pending">只看待标</option>
+      <option value="cycle">只看仅当前循环</option>
+      <option value="persistent">只看跨循环保留</option>
+    </select>
+    <button id="clear" class="command" type="button">清空本次标记</button>
+    <a id="export" class="command primary disabled" role="button" aria-disabled="true"
+       download="tech_card_dictionary.min.json">导出科技字典 JSON</a>
+    <span id="status" class="status"></span>
+  </header>
+  <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+  <main id="grid" class="grid"></main>
+
+  <div id="modal" class="modal" aria-hidden="true">
+    <div class="modal-panel">
+      <div class="modal-head">
+        <div id="modalTitle" class="modal-title"></div>
+        <button id="modalClose" class="icon-button" type="button" aria-label="关闭">×</button>
+      </div>
+      <div id="modalImages" class="modal-images"></div>
+    </div>
+  </div>
+
+<script>
+const TARGET_CYCLE = 'cycle4';
+const DICTIONARY_URL = '../tech_card_dictionary.min.json';
+const DRAFT_KEY = 'ato-c4-structure-cycle-scope-draft-v1';
+let cards = [];
+let dictionaryData = null;
+let dirty = false;
+let exported = false;
+let exportHref = '';
+let exportSignature = '';
+
+const $ = id => document.getElementById(id);
+const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch]));
+const techKey = value => String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
+const categoryFor = card => card.category || card.type?.category || '';
+const cyclesFor = card => [...new Set((card.nodes || []).map(node => node?.page).filter(Boolean))];
+const nameZh = card => card.names?.zh || '';
+const nameEn = card => card.names?.en || card.key || '';
+const imageUrl = path => path ? `../${path}` : '';
+const mainImageFor = card => imageUrl(card.image?.back || card.image?.face || '');
+const existingLabel = value => value === true ? '仅当前循环' : value === false ? '跨循环保留' : '未设置';
+
+function readDraft() {
+  try {
+    const value = JSON.parse(localStorage.getItem(DRAFT_KEY) || '{}');
+    return value && typeof value === 'object' ? value : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveDraft() {
+  const decisions = {};
+  cards.forEach(card => {
+    if (card.decision === true || card.decision === false) decisions[card.key] = card.decision;
+  });
+  localStorage.setItem(DRAFT_KEY, JSON.stringify(decisions));
+}
+
+function stateFor(card) {
+  if (card.decision === true) return 'cycle';
+  if (card.decision === false) return 'persistent';
+  return 'pending';
+}
+
+function currentItems() {
+  const query = $('search').value.trim().toLowerCase();
+  const filter = $('filter').value;
+  return cards.filter(card =>
+    (!query || card.search.includes(query))
+    && (!filter || stateFor(card) === filter)
+  );
+}
+
+function exportDataForDecisions() {
+  const decisions = new Map(cards.map(card => [card.key, card.decision]));
+  return {
+    ...dictionaryData,
+    cards: (dictionaryData.cards || []).map(card => {
+      const key = techKey(card?.key || card?.names?.en);
+      if (!decisions.has(key)) return card;
+      return {
+        ...card,
+        type: {
+          ...(card.type || {}),
+          loop_limited: decisions.get(key),
+        },
+      };
+    }),
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+function updateExportLink(reviewed) {
+  const link = $('export');
+  const complete = reviewed === cards.length && Boolean(dictionaryData);
+  link.classList.toggle('disabled', !complete);
+  link.setAttribute('aria-disabled', String(!complete));
+  if (!complete) {
+    link.removeAttribute('href');
+    return;
+  }
+
+  const signature = cards.map(card => `${card.key}:${card.decision}`).join('|');
+  if (signature === exportSignature && exportHref) {
+    link.href = exportHref;
+    return;
+  }
+  const json = `${JSON.stringify(exportDataForDecisions(), null, 2)}\n`;
+  exportHref = `data:application/json;charset=utf-8,${encodeURIComponent(json)}`;
+  exportSignature = signature;
+  link.href = exportHref;
+}
+
+function updateStatus() {
+  const reviewed = cards.filter(card => card.decision !== null).length;
+  const cycleOnly = cards.filter(card => card.decision === true).length;
+  const persistent = cards.filter(card => card.decision === false).length;
+  const visible = currentItems().length;
+  const exportStatus = dirty ? ' · 草稿未导出' : exported ? ' · 已导出' : '';
+  $('status').textContent = `显示 ${visible}/${cards.length} · 已标 ${reviewed}/${cards.length} · 仅当前循环 ${cycleOnly} · 跨循环保留 ${persistent}${exportStatus}`;
+  $('progressBar').style.width = `${cards.length ? reviewed / cards.length * 100 : 0}%`;
+  updateExportLink(reviewed);
+}
+
+function cardHtml(card) {
+  const state = stateFor(card);
+  const image = mainImageFor(card);
+  return `<article class="card ${state}" data-card-key="${esc(card.key)}">
+    <button type="button" class="thumb" data-preview-key="${esc(card.key)}" title="查看正反面">
+      ${image ? `<img src="${esc(image)}" alt="${esc(nameZh(card) || nameEn(card))}">` : '<span class="missing">无卡图</span>'}
+    </button>
+    <div class="name">${esc(nameZh(card) || nameEn(card))}${nameZh(card) && nameEn(card) ? `<span>${esc(nameEn(card))}</span>` : ''}</div>
+    <div class="meta">${esc(card.key)}</div>
+    <div class="existing">现有标签：${existingLabel(card.existingLoopLimited)}</div>
+    <div class="scope" role="radiogroup" aria-label="${esc(nameZh(card) || nameEn(card))}循环范围">
+      <label>
+        <input type="radio" name="scope-${esc(card.key)}" value="cycle" data-scope-key="${esc(card.key)}" ${card.decision === true ? 'checked' : ''}>
+        <span>仅当前循环</span>
+      </label>
+      <label>
+        <input type="radio" name="scope-${esc(card.key)}" value="persistent" data-scope-key="${esc(card.key)}" ${card.decision === false ? 'checked' : ''}>
+        <span>跨循环保留</span>
+      </label>
+    </div>
+  </article>`;
+}
+
+function bindCardEvents() {
+  $('grid').querySelectorAll('[data-scope-key]').forEach(input => {
+    input.addEventListener('change', () => {
+      const card = cards.find(item => item.key === input.dataset.scopeKey);
+      if (!card) return;
+      card.decision = input.value === 'cycle';
+      dirty = true;
+      exported = false;
+      saveDraft();
+      if ($('filter').value) render();
+      else {
+        const article = input.closest('.card');
+        article.classList.remove('pending', 'cycle', 'persistent');
+        article.classList.add(stateFor(card));
+        updateStatus();
+      }
+    });
+  });
+  $('grid').querySelectorAll('[data-preview-key]').forEach(button => {
+    button.addEventListener('click', () => openPreview(button.dataset.previewKey));
+  });
+}
+
+function render() {
+  const items = currentItems();
+  $('grid').innerHTML = items.length
+    ? items.map(cardHtml).join('')
+    : '<div class="empty">没有符合条件的 C4 结构科技。</div>';
+  bindCardEvents();
+  updateStatus();
+}
+
+function previewSide(label, path, alt) {
+  return `<div class="modal-side"><b>${label}</b>${path
+    ? `<img src="${esc(imageUrl(path))}" alt="${esc(alt)} ${label}">`
+    : '<div class="missing">无卡图</div>'}</div>`;
+}
+
+function openPreview(key) {
+  const card = cards.find(item => item.key === key);
+  if (!card) return;
+  const title = nameZh(card) || nameEn(card);
+  $('modalTitle').textContent = `${title}${nameZh(card) && nameEn(card) ? ` / ${nameEn(card)}` : ''}`;
+  $('modalImages').innerHTML = previewSide('正面', card.image?.face, title)
+    + previewSide('背面', card.image?.back, title);
+  $('modal').classList.add('open');
+  $('modal').setAttribute('aria-hidden', 'false');
+}
+
+function closePreview() {
+  $('modal').classList.remove('open');
+  $('modal').setAttribute('aria-hidden', 'true');
+}
+
+function exportDictionary(event) {
+  const pending = cards.filter(card => card.decision === null);
+  if (pending.length || !dictionaryData || !$('export').href) {
+    event.preventDefault();
+    return;
+  }
+  cards.forEach(card => {
+    card.existingLoopLimited = card.decision;
+  });
+  dirty = false;
+  exported = true;
+  render();
+}
+
+async function boot() {
+  try {
+    const data = await fetch(DICTIONARY_URL, { cache: 'no-cache' }).then(response => {
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return response.json();
+    });
+    dictionaryData = data;
+    const draft = readDraft();
+    cards = (data.cards || [])
+      .filter(card => card && cyclesFor(card).includes(TARGET_CYCLE) && categoryFor(card) !== 'battle')
+      .map(card => {
+        const key = techKey(card.key || card.names?.en);
+        const draftValue = draft[key];
+        return {
+          ...card,
+          key,
+          existingLoopLimited: card.type?.loop_limited,
+          decision: draftValue === true || draftValue === false ? draftValue : null,
+          search: `${card.key || ''} ${card.names?.en || ''} ${card.names?.zh || ''}`.toLowerCase(),
+        };
+      })
+      .filter(card => card.key)
+      .sort((a, b) => nameEn(a).localeCompare(nameEn(b), 'en'));
+    dirty = cards.some(card => card.decision !== null);
+    render();
+  } catch (error) {
+    $('grid').innerHTML = `<div class="empty">加载失败：${esc(error.message || error)}</div>`;
+  }
+}
+
+$('search').addEventListener('input', render);
+$('filter').addEventListener('change', render);
+$('clear').addEventListener('click', () => {
+  if (!cards.some(card => card.decision !== null)) return;
+  if (!confirm('清空本次全部标记？已导出的文件不受影响。')) return;
+  cards.forEach(card => { card.decision = null; });
+  localStorage.removeItem(DRAFT_KEY);
+  dirty = false;
+  exported = false;
+  render();
+});
+$('export').addEventListener('click', exportDictionary);
+$('modalClose').addEventListener('click', closePreview);
+$('modal').addEventListener('click', event => {
+  if (event.target === $('modal')) closePreview();
+});
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') closePreview();
+});
+window.addEventListener('beforeunload', event => {
+  if (!dirty) return;
+  event.preventDefault();
+  event.returnValue = '';
+});
+boot();
+</script>
+</body>
+</html>

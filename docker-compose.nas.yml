@@ -1,0 +1,10 @@
+services:
+  ato-tools:
+    image: nginx:1.27-alpine
+    container_name: ato-tools
+    ports:
+      - "11451:80"
+    volumes:
+      - ./tools:/usr/share/nginx/html/tools:ro
+      - ./index.html:/usr/share/nginx/html/index.html:ro
+    restart: unless-stopped

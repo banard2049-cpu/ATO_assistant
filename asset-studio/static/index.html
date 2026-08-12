@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#171814">
+  <title>ATO 素材库</title>
+  <meta name="description" content="逐张拍摄、整理、校对和分享 ATO 本地素材">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <a class="brand" href="#home" aria-label="返回首页"><span class="brand-mark">A</span><span>ATO 素材库<small>Asset Studio</small></span></a>
+      <nav aria-label="主要功能">
+        <a href="#home">总览</a><a href="#capture">逐张拍摄</a><a href="#batch">批量导入</a>
+        <a href="#stories">故事书</a><a href="#share">分享与安装</a>
+      </nav>
+    </header>
+
+    <main>
+      <section id="pairView" class="view center-card hidden">
+        <p class="eyebrow">手机连接</p><h1>输入电脑上显示的配对码</h1>
+        <p class="lede">素材只会上传到你的电脑，不经过云端。</p>
+        <form id="pairForm" class="stack narrow"><input id="pairCode" inputmode="numeric" maxlength="6" placeholder="6 位配对码" required><button class="primary">连接资料库</button></form>
+      </section>
+
+      <section id="setupView" class="view center-card hidden">
+        <p class="eyebrow">首次设置</p><h1>把资料放在你自己的电脑上</h1>
+        <p class="lede">请选择一个空间充足的资料库目录。ATO_assistant 目录可以稍后设置。</p>
+        <form id="setupForm" class="stack">
+          <label>资料库目录<input id="libraryPath" placeholder="例如 D:\ATO-Library 或 /Volumes/Game/ATO-Library" required></label>
+          <label>ATO_assistant 根目录（可选）<input id="atoPath" placeholder="包含 index.html、map、story 的目录"></label>
+          <button class="primary">创建资料库</button>
+        </form>
+      </section>
+
+      <div id="appView" class="hidden">
+        <section id="home" class="view hero-section">
+          <div class="hero-copy"><p class="eyebrow">本地优先 · 不上传云端</p><h1>把整盒素材，<br>一张张收进来。</h1><p class="lede">按循环和卡组整理图片与故事。拍摄时明确告诉你下一张是什么，完成后可分享给朋友或安装进原项目。</p><div class="hero-actions"><a class="button primary" href="#capture">继续拍摄</a><button id="refreshHome" class="button ghost">刷新进度</button></div></div>
+          <aside id="connectionCard" class="connection-card desktop-only"><div><span class="status-dot"></span>手机拍摄入口</div><img src="/api/qr" alt="手机访问二维码"><strong id="pairingCode">------</strong><small>同一 Wi‑Fi 扫码，再输入此配对码</small><div id="lanUrls" class="mono"></div></aside>
+        </section>
+
+        <section class="view overview-section">
+          <div class="section-heading"><div><p class="eyebrow">固定实体清单 · ATO Local 0.2.11</p><h2>按模块继续</h2></div></div>
+          <div id="summaryStrip" class="summary-strip"></div>
+          <div id="groupGrid" class="group-grid"><div class="empty">尚未生成清单</div></div>
+        </section>
+
+        <section id="capture" class="view capture-section">
+          <div class="section-heading"><div><p class="eyebrow">逐张模式</p><h2>现在该拍哪张？</h2></div><div class="filters"><select id="captureCycle" aria-label="循环筛选"><option value="">全部循环</option></select><select id="captureModule" aria-label="模块筛选"><option value="">全部模块</option></select></div></div>
+          <div id="captureEmpty" class="empty">固定实体清单正在初始化。</div>
+          <article id="captureCard" class="capture-card hidden">
+            <div class="capture-progress"><span id="captureBreadcrumb"></span><span id="captureCount"></span></div>
+            <div class="capture-body">
+              <div class="card-placeholder"><span id="faceBadge">正面</span><div id="previewWrap"><div class="camera-lines"></div><img id="capturePreview" class="hidden" alt="当前拍摄预览"></div></div>
+              <div class="capture-copy"><p id="captureModuleLabel" class="eyebrow"></p><h3 id="captureName"></h3><p id="captureNumber" class="card-number"></p><div id="resourceHint" class="resource-hint hidden"><small id="resourceNote">击破此部位可获得</small><div id="resourceList"></div></div><div class="instruction"><span>01</span><p id="captureInstruction">请拿出这张卡，将正面平放在光线均匀的位置。</p></div><div class="instruction"><span>02</span><p>画面尽量只保留卡面，避免反光和手指遮挡。</p></div>
+                <div id="cropControls" class="crop-controls hidden"><label>上裁切 <input id="cropTop" type="range" min="0" max="25" value="0"></label><label>右裁切 <input id="cropRight" type="range" min="0" max="25" value="0"></label><label>下裁切 <input id="cropBottom" type="range" min="0" max="25" value="0"></label><label>左裁切 <input id="cropLeft" type="range" min="0" max="25" value="0"></label></div>
+                <div id="uploadProgress" class="upload-progress hidden"><div></div><span>正在上传 0%</span></div>
+                <div class="capture-actions"><label class="button primary camera-button">拍摄/选择照片<input id="cameraInput" type="file" accept="image/*" capture="environment"></label><button id="confirmUpload" class="button primary hidden">确认保存</button><button id="rotateButton" class="button ghost hidden">旋转 90°</button><button id="retakeButton" class="button ghost hidden">重新选择</button><button id="skipButton" class="button text-button">暂时跳过</button></div>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section id="batch" class="view tools-section">
+          <div class="section-heading"><div><p class="eyebrow">批量导入</p><h2>已有照片也能快速归位</h2></div></div>
+          <div class="tool-grid"><article class="tool-card"><span class="step">A</span><h3>选择照片、文件夹或 ZIP</h3><p>按文件名、目标路径和卡号自动匹配；无法确定的留在分配队列。</p><div class="capture-actions"><label class="button primary">选择文件<input id="batchInput" type="file" accept="image/*,.zip" multiple></label><label class="button ghost">选择文件夹<input id="batchFolderInput" type="file" accept="image/*" webkitdirectory multiple></label></div></article><article class="tool-card"><span class="step">B</span><h3>检查匹配结果</h3><p id="batchSummary">还没有待处理文件。</p><button id="loadPending" class="button ghost">打开分配队列</button></article></div>
+          <div id="pendingPanel" class="pending-panel hidden"><div class="section-heading"><h3>待分配图片</h3><button id="assignSequence" class="button primary">按当前清单顺序分配</button></div><div id="pendingList"></div></div>
+        </section>
+
+        <section id="stories" class="view tools-section">
+          <div class="section-heading"><div><p class="eyebrow">故事书</p><h2>导入文字版 PDF、DOCX 或 TXT</h2></div></div>
+          <div class="story-layout"><form id="storyForm" class="tool-card stack"><label>文件<input id="storyFile" type="file" accept=".pdf,.docx,.txt" required></label><div class="two-col"><label>故事书 ID<input id="storyBookId" placeholder="c1" required></label><label>故事书标题<input id="storyTitle" placeholder="Cycle I 故事书" required></label></div><div class="two-col"><label>章节标识<input id="chapterKey" value="main"></label><label>章节标题<input id="chapterTitle" value="正文"></label></div><div class="two-col"><label>起始页（可选）<input id="pageStart" type="number" min="1"></label><label>结束页（可选）<input id="pageEnd" type="number" min="1"></label></div><button class="primary">解析并进入校对</button><small>扫描版 PDF 不支持 OCR；检测不到文字层时不会生成空故事。</small></form><div class="tool-card"><h3>已导入故事</h3><div id="storyBooks" class="story-books"><p class="muted">暂无故事</p></div></div></div>
+          <div id="storyEditor" class="story-editor hidden"><div class="section-heading"><div><p class="eyebrow">段落校对</p><h3 id="storyEditorTitle"></h3></div><button id="closeStoryEditor" class="button ghost">收起</button></div><div id="segmentList"></div></div>
+        </section>
+
+        <section id="share" class="view tools-section">
+          <div class="section-heading"><div><p class="eyebrow">分享与安装</p><h2>把成果交给朋友，或放回原项目</h2></div></div>
+          <div class="tool-grid three"><article class="tool-card"><span class="step">01</span><h3>导出朋友资料包</h3><p>包含原始卡图、清单映射、结构化故事和哈希，不包含原文档。</p><button id="exportPack" class="button primary">生成 .atopack</button></article><article class="tool-card"><span class="step">02</span><h3>导入朋友资料包</h3><p>先检查新增、重复和冲突，再选择是否替换已有图片。</p><label class="button ghost">选择 .atopack<input id="packageInput" type="file" accept=".atopack"></label><div id="packagePreview" class="mini-result"></div></article><article class="tool-card"><span class="step">03</span><h3>原项目兼容</h3><p>导出兼容 ZIP，或在电脑端预览差异后安全安装并自动备份。</p><button id="exportCompat" class="button ghost">生成兼容 ZIP</button><button id="previewInstall" class="button ghost desktop-only">预览自动安装</button></article></div>
+          <div class="install-panel desktop-only"><div class="section-heading"><h3>原项目位置</h3><button id="saveAtoPath" class="button ghost">保存路径</button></div><label>ATO_assistant 根目录<input id="settingsAtoPath" placeholder="包含 index.html、map、story 的目录"></label></div>
+          <div id="installPanel" class="install-panel hidden"><div class="section-heading"><h3>安装差异</h3><button id="applyInstall" class="button primary">安装新增与已选替换</button></div><p id="installSummary"></p><div id="installList"></div></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>

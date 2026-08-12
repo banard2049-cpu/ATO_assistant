@@ -1,0 +1,9 @@
+.venv/
+.local/
+__pycache__/
+.pytest_cache/
+*.pyc
+*.atopack
+*.atopack.partial
+*.atoback
+*.atoback.partial

@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>C4-C5 BP 资源打标</title>
+  <link rel="stylesheet" href="styles.css?v=20260730c">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <h1>C4-C5 BP 资源打标</h1>
+        <div class="brand-meta" id="saveState">本地标注已同步</div>
+      </div>
+
+      <div class="filters">
+        <select id="cycleFilter" aria-label="周期">
+          <option value="">全部周期</option>
+          <option value="C4">C4</option>
+          <option value="C5">C5</option>
+        </select>
+        <select id="apostleFilter" aria-label="使徒"></select>
+        <select id="statusFilter" aria-label="标注状态">
+          <option value="">全部状态</option>
+          <option value="pending">未标注</option>
+          <option value="reviewed">已确认</option>
+        </select>
+        <input id="searchInput" type="search" placeholder="搜索使徒或卡号" aria-label="搜索使徒或卡号">
+      </div>
+
+      <div class="top-actions">
+        <button type="button" id="saveServerButton" class="primary" title="保存到项目资源映射">
+          保存
+        </button>
+        <button type="button" id="exportJsButton" title="导出兼容 AIBP 的 JS">
+          导出 JS
+        </button>
+        <button type="button" id="exportJsonButton" title="导出可再次导入的 JSON">
+          导出 JSON
+        </button>
+        <label class="file-button" title="导入 JS 或 JSON 标注">
+          导入
+          <input id="importInput" type="file" accept=".js,.json,application/json,text/javascript">
+        </label>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <aside class="sidebar">
+        <div class="progress">
+          <div class="progress-row">
+            <span>标注进度</span>
+            <strong id="progressText">0 / 0</strong>
+          </div>
+          <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        </div>
+        <div class="card-list" id="cardList"></div>
+      </aside>
+
+      <section class="preview-pane">
+        <div class="current-head">
+          <div class="current-name">
+            <h2 id="cardTitle">未选择卡牌</h2>
+            <p id="cardMeta"></p>
+          </div>
+          <div class="nav-actions">
+            <button type="button" class="icon-button" id="previousButton" title="上一张" aria-label="上一张">
+              ←
+            </button>
+            <button type="button" class="icon-button" id="nextButton" title="下一张" aria-label="下一张">
+              →
+            </button>
+          </div>
+        </div>
+
+        <div class="images">
+          <figure class="full-card">
+            <img id="cardImage" alt="">
+            <figcaption>卡牌正面</figcaption>
+          </figure>
+          <figure class="resource-crop">
+            <div class="resource-crop-window" id="cropWindow">
+              <img id="cropImage" alt="">
+            </div>
+            <figcaption>右上资源区域</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="editor-pane">
+        <div class="editor-head">
+          <h2>资源标签</h2>
+          <label class="review-toggle">
+            <input id="reviewedInput" type="checkbox">
+            已确认
+          </label>
+        </div>
+
+        <div class="resource-grid" id="resourceGrid"></div>
+
+        <div class="editor-footer">
+          <div class="summary" id="resourceSummary">尚未标注资源</div>
+          <div class="footer-actions">
+            <button type="button" id="clearButton" class="danger">清空</button>
+            <button type="button" id="confirmNextButton" class="primary">确认并下一张</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="../../aibp/ps/other/resouce/bp_resource_map.js"></script>
+  <script src="../../aibp/ps/other/resouce/bp_resource_map_c1_c3.js"></script>
+  <script src="../../aibp/ps/other/resouce/bp_resource_map_c4_c5.js?v=20260730e"></script>
+  <script src="card-manifest.js?v=20260730c"></script>
+  <script src="app.js?v=20260730g"></script>
+</body>
+</html>

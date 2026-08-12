@@ -1,0 +1,5591 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AIBP Apostle Viewer</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #10100f;
+      --panel: #181816;
+      --panel-2: #22211e;
+      --line: #3a3832;
+      --text: #f0ede4;
+      --muted: #aaa396;
+      --accent: #b4342c;
+      --gold: #c7ad72;
+      --gap: 16px;
+      --header-height: 42px;
+      --pad: 10px;
+      --side-card-image-height: 255px;
+      --panel-image-height: calc(var(--side-card-image-height) * 2.2);
+      --card-min: 126px;
+      --card-max-width: calc(var(--side-card-image-height) * 63 / 89);
+      --aibp-column-width: 424px;
+      --draw-card-height: var(--side-card-image-height);
+      --draw-card-width: calc(var(--draw-card-height) * 63 / 89);
+      --radius: 14px;
+      --shadow: 0 16px 42px rgba(0, 0, 0, 0.32);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 18% 0%, rgba(180, 52, 44, 0.18), transparent 34%),
+        radial-gradient(circle at 82% 12%, rgba(199, 173, 114, 0.12), transparent 28%),
+        linear-gradient(180deg, #12110f 0%, var(--bg) 52%, #080808 100%);
+      color: var(--text);
+      font-family: "Microsoft YaHei UI", "Segoe UI", Arial, sans-serif;
+      letter-spacing: 0;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+      border-right: 1px solid rgba(199, 173, 114, 0.18);
+      background:
+        linear-gradient(180deg, rgba(34, 33, 30, 0.94), rgba(13, 13, 12, 0.98));
+      padding: 18px 14px;
+      box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.03);
+    }
+
+    .sidebar-toggle {
+      position: fixed;
+      z-index: 30;
+      top: 14px;
+      left: 14px;
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      border: 1px solid rgba(199, 173, 114, 0.42);
+      background: rgba(24, 24, 22, 0.94);
+      color: var(--gold);
+      font-size: 22px;
+      line-height: 1;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.34);
+    }
+
+    .sidebar-toggle:hover {
+      border-color: var(--gold);
+      background: #261a18;
+    }
+
+    body:not(.sidebar-collapsed) .sidebar-toggle {
+      left: 274px;
+    }
+
+    body.sidebar-collapsed .app {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    body.sidebar-collapsed aside {
+      display: none;
+    }
+
+    body.sidebar-collapsed main {
+      padding-left: 62px;
+    }
+
+    body.sidebar-collapsed .viewer {
+      width: calc(100% + 40px);
+      margin-left: -40px;
+    }
+
+    h1 {
+      margin: 0 0 14px;
+      color: var(--gold);
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .nav {
+      display: grid;
+      gap: 8px;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      cursor: pointer;
+      font: inherit;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+    }
+
+    .nav button {
+      width: 100%;
+      min-height: 42px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      text-align: left;
+    }
+
+    .nav button:hover,
+    .nav button.active,
+    .segmented button.active {
+      border-color: rgba(199, 173, 114, 0.55);
+      background: linear-gradient(180deg, #2a1c19, #201716);
+      box-shadow: inset 3px 0 0 var(--accent);
+    }
+
+    main {
+      min-width: 0;
+      padding: 22px;
+      overflow: auto;
+    }
+
+    .title-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .title-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .apostle-title {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .map-faction-status {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .map-faction-chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 4px 8px;
+      border: 1px solid rgba(199, 173, 114, 0.34);
+      border-radius: 6px;
+      background: rgba(24, 24, 22, 0.78);
+      color: var(--gold);
+      line-height: 1.2;
+    }
+
+    .map-faction-chip.muted {
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .apostle-level-select {
+      min-height: 36px;
+      padding: 6px 10px;
+      border: 1px solid rgba(199, 173, 114, 0.42);
+      border-radius: 7px;
+      background: #151411;
+      color: var(--gold);
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .title-actions button {
+      min-height: 36px;
+      padding: 7px 12px;
+      border-radius: 6px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 26px;
+      line-height: 1.1;
+    }
+
+    .path {
+      color: var(--muted);
+      font-size: 13px;
+      overflow-wrap: anywhere;
+    }
+
+    .viewer {
+      display: flex;
+      justify-content: safe center;
+      align-items: flex-start;
+      gap: var(--gap);
+      margin-bottom: 18px;
+      overflow: auto;
+    }
+
+    .section {
+      flex: 0 0 auto;
+      overflow: hidden;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .section.extra-section {
+      flex: 0 1 min(34vw, calc(var(--side-card-image-height) * 2.4));
+      min-width: min(320px, 34vw);
+      max-width: min(34vw, calc(var(--side-card-image-height) * 2.4));
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      height: var(--header-height);
+      padding: 8px 11px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(42, 40, 36, 0.98), rgba(28, 27, 24, 0.98));
+      color: var(--gold);
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .section-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-header button {
+      min-height: 28px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      border-color: rgba(199, 173, 114, 0.35);
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .section-header button:hover {
+      border-color: rgba(199, 173, 114, 0.7);
+      background: #261a18;
+    }
+
+    .image-wrap {
+      display: grid;
+      place-items: center;
+      padding: 0;
+      background: transparent;
+    }
+
+    img {
+      display: block;
+      width: auto;
+      max-width: none;
+      border-radius: 4px;
+    }
+
+    .panel-image {
+      height: var(--panel-image-height);
+    }
+
+    .panel-frame {
+      position: relative;
+      display: inline-block;
+      line-height: 0;
+    }
+
+    .panel-state-marker {
+      position: absolute;
+      left: var(--marker-left, 50%);
+      top: var(--marker-top, 50%);
+      transform: translate(-50%, -50%);
+      width: 64px;
+      height: 64px;
+      display: none;
+      place-items: center;
+      padding: 0;
+      border: 3px solid rgba(255, 88, 82, 0.88);
+      border-radius: 999px;
+      background: rgba(255, 88, 82, 0.04);
+      color: transparent;
+      font-size: 0;
+      font-weight: 0;
+      line-height: 1;
+      letter-spacing: 0;
+      text-shadow: none;
+      box-shadow:
+        0 0 0 1px rgba(20, 8, 6, 0.62),
+        0 0 10px rgba(255, 72, 66, 0.22),
+        inset 0 0 8px rgba(255, 72, 66, 0.12);
+      cursor: pointer;
+      user-select: none;
+      z-index: 3;
+    }
+
+    .panel-state-marker.show {
+      display: grid;
+    }
+
+    .panel-state-marker.chimera-state-marker {
+      width: var(--marker-width, 14%);
+      height: var(--marker-height, 5%);
+      border-width: 3px;
+      border-radius: 8px !important;
+      box-shadow:
+        0 0 0 1px rgba(20, 8, 6, 0.62),
+        0 0 12px rgba(255, 72, 66, 0.2),
+        inset 0 0 8px rgba(255, 72, 66, 0.1);
+    }
+
+    .nietzsche-break-lock {
+      position: absolute;
+      left: var(--lock-left, 50%);
+      top: var(--lock-top, 50%);
+      transform: translate(-50%, -50%);
+      width: 54px;
+      height: 54px;
+      border: 3px solid rgba(255, 88, 82, 0.94);
+      border-radius: 999px;
+      background: rgba(20, 8, 6, 0.2);
+      box-shadow:
+        0 0 0 1px rgba(20, 8, 6, 0.72),
+        0 0 14px rgba(255, 72, 66, 0.34);
+      pointer-events: none;
+      z-index: 4;
+    }
+
+    .nietzsche-break-lock::before,
+    .nietzsche-break-lock::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 38px;
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(255, 88, 82, 0.96);
+      box-shadow: 0 0 8px rgba(255, 72, 66, 0.32);
+    }
+
+    .nietzsche-break-lock::before {
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
+
+    .nietzsche-break-lock::after {
+      transform: translate(-50%, -50%) rotate(-45deg);
+    }
+
+    .state-button.hidden {
+      display: none;
+    }
+
+    .state-button {
+      border-color: rgba(199, 173, 114, 0.46);
+      color: var(--gold);
+      font-weight: 800;
+    }
+
+    .side-card-image {
+      height: var(--side-card-image-height);
+    }
+
+    .side-stack {
+      display: grid;
+      grid-template-rows: repeat(2, max-content);
+      gap: 10px;
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+    }
+
+    .extra-grid {
+      display: grid;
+      grid-auto-flow: column;
+      grid-template-rows: repeat(2, max-content);
+      grid-auto-columns: max-content;
+      grid-auto-rows: max-content;
+      gap: 10px;
+      align-content: start;
+      justify-content: start;
+      width: 100%;
+      max-width: 100%;
+      max-height: calc(var(--side-card-image-height) * 2 + 10px);
+      overflow: auto;
+    }
+
+    .extra-grid img {
+      width: auto;
+      height: var(--side-card-image-height);
+      max-width: none;
+      border: 1px solid var(--line);
+      background: transparent;
+    }
+
+    .extra-grid img.panel-image {
+      grid-row: span 2;
+      height: calc(var(--side-card-image-height) * 2 + 10px);
+    }
+
+    .trait-dialog {
+      width: min(980px, calc(100vw - 28px));
+      max-height: min(760px, calc(100vh - 28px));
+      padding: 0;
+      border: 1px solid rgba(199, 173, 114, 0.28);
+      border-radius: var(--radius);
+      background: #141311;
+      color: var(--text);
+      box-shadow: 0 22px 70px rgba(0, 0, 0, 0.55);
+    }
+
+    .trait-dialog::backdrop {
+      background: rgba(0, 0, 0, 0.7);
+    }
+
+    .trait-dialog form {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      max-height: inherit;
+    }
+
+    .trait-dialog-head,
+    .trait-dialog-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(42, 40, 36, 0.98), rgba(28, 27, 24, 0.98));
+    }
+
+    .trait-dialog-actions {
+      justify-content: flex-end;
+      border-top: 1px solid var(--line);
+      border-bottom: 0;
+    }
+
+    .trait-dialog-title {
+      color: var(--gold);
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .trait-dialog-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(138px, 1fr));
+      gap: 12px;
+      padding: 14px;
+      overflow: auto;
+      background: #0b0b0a;
+    }
+
+    .trait-option {
+      position: relative;
+      display: grid;
+      gap: 7px;
+      min-width: 0;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      cursor: pointer;
+    }
+
+    .trait-option:hover,
+    .trait-option:has(input:checked) {
+      border-color: rgba(199, 173, 114, 0.72);
+      background: #211916;
+    }
+
+    .trait-option input {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+    }
+
+    .trait-option img {
+      width: 100%;
+      height: auto;
+      max-height: 214px;
+      object-fit: contain;
+      border: 1px solid rgba(199, 173, 114, 0.18);
+      background: #0b0b0a;
+    }
+
+    .trait-option span {
+      min-width: 0;
+      color: var(--muted);
+      font-size: 11px;
+      text-align: center;
+      overflow-wrap: anywhere;
+    }
+
+    .trait-dialog-actions button {
+      min-height: 34px;
+      padding: 6px 12px;
+      border-radius: 7px;
+    }
+
+    .cards-panel {
+      width: 85%;
+      max-width: 85%;
+      margin: 0 auto;
+      border: 1px solid rgba(199, 173, 114, 0.18);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(31, 30, 27, 0.96), rgba(18, 18, 16, 0.98));
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .cards-toolbar {
+      display: flex;
+      align-items: center;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel-2);
+    }
+
+    .cards-toolbar h3 {
+      margin: 0;
+      color: var(--gold);
+      font-size: 14px;
+      line-height: 1.1;
+    }
+
+    .deck-info {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 6px;
+      color: var(--muted);
+      font-family: Consolas, "Microsoft YaHei UI", monospace;
+      font-size: 16px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .deck-info span {
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+    }
+
+    .card-title-with-back {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      min-width: max-content;
+    }
+
+    .draw-panel {
+      display: contents;
+    }
+
+    .draw-box {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      align-items: start;
+      justify-content: stretch;
+      margin-bottom: 8px;
+      padding: 6px;
+      width: 100%;
+      max-width: 100%;
+      border: 1px solid rgba(199, 173, 114, 0.18);
+      border-radius: 12px;
+      background:
+        radial-gradient(circle at 100% 0%, rgba(199, 173, 114, 0.08), transparent 34%),
+        #141412;
+    }
+
+    .draw-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-content: start;
+      align-items: center;
+      width: 100%;
+    }
+
+    .draw-actions button,
+    .draw-panel button {
+      flex: 0 0 auto;
+      min-width: 58px;
+      min-height: 24px;
+      padding: 3px 6px;
+      border-radius: 7px;
+      font-size: 11px;
+      line-height: 1.05;
+      white-space: nowrap;
+      transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+    }
+
+
+
+    .draw-actions .damage-target {
+      flex: 1 1 100%;
+      min-height: 24px;
+      padding: 3px 5px;
+      border-radius: 7px;
+      font-size: 12px;
+    }
+
+    .draw-actions .damage-target select {
+      min-height: 24px;
+      padding: 1px 5px;
+      font-size: 12px;
+    }
+
+    .draw-actions button:not(:disabled):hover,
+    .draw-panel button:not(:disabled):hover,
+    .title-actions button:hover {
+      transform: translateY(-1px);
+      border-color: rgba(199, 173, 114, 0.58);
+      background: #241916;
+    }
+
+    #drawAiButton,
+    #drawBpButton {
+      min-width: 104px;
+      min-height: 54px;
+      padding: 12px 16px;
+      border-color: rgba(199, 173, 114, 0.58);
+      border-radius: 8px;
+      background: linear-gradient(180deg, #2a1c19, #1a1513);
+      color: var(--gold);
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1.1;
+      box-shadow: inset 3px 0 0 var(--accent), 0 8px 18px rgba(0, 0, 0, 0.24);
+    }
+
+    .draw-preview {
+      width: calc(var(--draw-card-width) + 8px);
+      height: calc(var(--draw-card-height) + 8px);
+      max-width: 100%;
+      display: grid;
+      place-items: center;
+      justify-self: center;
+      align-self: start;
+      padding: 4px;
+      border: 1px solid rgba(199, 173, 114, 0.18);
+      border-radius: 8px;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.03), transparent 36%),
+        #0b0b0a;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+      aspect-ratio: 63 / 89;
+      cursor: pointer;
+      transition: border-color 140ms ease, background 140ms ease;
+    }
+
+    .draw-preview.has-card {
+      cursor: zoom-in;
+    }
+
+    .draw-preview:not(.has-card):hover {
+      border-color: rgba(199, 173, 114, 0.58);
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.04), transparent 36%),
+        #181511;
+    }
+
+    .draw-preview img {
+      width: auto;
+      max-width: var(--draw-card-width);
+      height: auto;
+      max-height: var(--draw-card-height);
+      object-fit: contain;
+      border-radius: 7px;
+    }
+
+    .segmented {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 6px;
+    }
+
+    .segmented button {
+      min-width: 48px;
+      min-height: 26px;
+      padding: 3px 6px;
+      border-radius: 6px;
+    }
+
+    .aibp-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 0;
+      padding: 0;
+      width: 100%;
+    }
+
+    .aibp-layout.ai-only {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .card-column {
+      min-width: 0;
+      padding: 10px;
+      width: 100%;
+    }
+
+    .card-column + .card-column {
+      border-left: 1px solid rgba(199, 173, 114, 0.14);
+    }
+
+    .card-column-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .card-column-title {
+      margin: 0;
+      color: var(--gold);
+      font-size: 15px;
+      font-weight: 700;
+      text-align: left;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(var(--card-min), var(--card-max-width)));
+      justify-content: start;
+      gap: 14px;
+    }
+
+    .card-grid img {
+      width: 100%;
+      height: auto;
+      max-width: var(--card-max-width);
+      max-height: var(--side-card-image-height);
+      justify-self: center;
+      object-fit: contain;
+      background: #0b0b0a;
+      border: 1px solid rgba(199, 173, 114, 0.18);
+      border-radius: 10px;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.28);
+    }
+
+    .damage-target {
+      display: none;
+      gap: 5px;
+      align-items: start;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .damage-target.show {
+      display: grid;
+    }
+
+    .chimera-only-action {
+      display: none;
+    }
+
+    .chimera-only-action.show {
+      display: inline-grid;
+      align-items: center;
+    }
+
+    .labyrinthauros-only-action {
+      display: none;
+    }
+
+    .labyrinthauros-only-action.show {
+      display: inline-grid;
+      align-items: center;
+    }
+
+    .hermesian-only-action {
+      display: none;
+    }
+
+    .hermesian-only-action.show {
+      display: inline-grid;
+      align-items: center;
+    }
+
+    .titan-x-only-action {
+      display: none;
+    }
+
+    .titan-x-only-action.show {
+      display: inline-grid;
+      align-items: center;
+    }
+
+    .damage-target select {
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #151411;
+      color: var(--text);
+      padding: 5px 8px;
+      font: inherit;
+    }
+
+    .card-tile {
+      position: relative;
+      min-width: 0;
+    }
+
+    .damage-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      min-width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      background: rgba(180, 52, 44, 0.92);
+      color: #fff;
+      font-weight: 800;
+      font-size: 15px;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.38);
+    }
+
+    .bp-damage-summary {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      width: fit-content;
+      padding: 4px 10px;
+      border: 1px solid rgba(180, 52, 44, 0.45);
+      border-radius: 999px;
+      background: rgba(180, 52, 44, 0.16);
+      color: #ffd6d2;
+      font-size: 13px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .missing {
+      display: grid;
+      place-items: center;
+      min-height: 120px;
+      padding: 18px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    @media (max-width: 1180px) {
+      .draw-box {
+        grid-template-columns: 128px auto;
+      }
+    }
+
+    @media (max-width: 980px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        position: static;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .nav {
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      }
+
+      .viewer {
+        justify-content: flex-start;
+      }
+
+      .cards-panel {
+        width: 100%;
+        max-width: 100%;
+      }
+
+      .cards-toolbar,
+      .aibp-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .draw-box {
+        grid-template-columns: 128px auto;
+      }
+
+      .card-column + .card-column {
+        border-left: 0;
+        border-top: 1px solid var(--line);
+      }
+    }
+
+    @media (max-width: 1180px) {
+      .draw-box {
+        grid-template-columns: 128px auto;
+      }
+    }
+
+    @media (max-width: 980px) {
+      .extra-grid {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .extra-card-grid {
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      }
+    }
+  
+
+    /* 本次调整：操作按钮在左，当前抽牌在右；两块共同铺满各自 AI/BP 区域 */
+    .draw-box {
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr) calc(var(--draw-card-width) + 8px) !important;
+      gap: 10px !important;
+      align-items: stretch !important;
+      justify-content: stretch !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      margin-bottom: 10px !important;
+      padding: 8px !important;
+    }
+
+    .draw-actions {
+      display: grid !important;
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 8px !important;
+      align-content: start !important;
+      align-items: stretch !important;
+      width: 100% !important;
+      min-width: 0 !important;
+    }
+
+    .draw-actions button,
+    .draw-panel button {
+      width: 100% !important;
+      min-width: 0 !important;
+      min-height: 32px !important;
+      padding: 5px 8px !important;
+      border-radius: 8px !important;
+      font-size: 14px !important;
+      line-height: 1.15 !important;
+      text-align: center !important;
+      white-space: nowrap !important;
+    }
+
+    #drawAiButton,
+    #drawBpButton {
+      grid-column: 1 / -1 !important;
+      min-height: 62px !important;
+      padding: 14px 16px !important;
+      font-size: 16px !important;
+      font-weight: 900 !important;
+    }
+
+    .draw-actions .damage-target {
+      grid-column: 1 / -1 !important;
+      width: 100% !important;
+      min-height: 32px !important;
+      padding: 5px 8px !important;
+      font-size: 13px !important;
+      align-items: center !important;
+    }
+
+    .draw-actions .damage-target select {
+      min-height: 28px !important;
+      font-size: 13px !important;
+    }
+
+    .draw-preview {
+      justify-self: end !important;
+      align-self: stretch !important;
+      width: calc(var(--draw-card-width) + 8px) !important;
+      height: calc(var(--draw-card-height) + 8px) !important;
+      max-width: none !important;
+      margin: 0 !important;
+      padding: 4px !important;
+      font-size: 13px !important;
+    }
+
+    .draw-preview img {
+      max-width: var(--draw-card-width) !important;
+      max-height: var(--draw-card-height) !important;
+    }
+
+    @media (max-width: 1180px) {
+      .draw-box {
+        grid-template-columns: minmax(0, 1fr) calc(var(--draw-card-width) + 8px) !important;
+      }
+    }
+
+    @media (max-width: 980px) {
+      .draw-box {
+        grid-template-columns: minmax(0, 1fr) calc(var(--draw-card-width) + 8px) !important;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .draw-box {
+        grid-template-columns: 1fr !important;
+      }
+      .draw-preview {
+        justify-self: center !important;
+      }
+    }
+
+
+    @media (max-width: 980px) {
+      body:not(.sidebar-collapsed) .sidebar-toggle {
+        left: 14px;
+      }
+
+      body.sidebar-collapsed main {
+        padding-left: 54px;
+      }
+
+      body.sidebar-collapsed .viewer {
+        width: calc(100% + 32px);
+        margin-left: -32px;
+      }
+    }
+
+
+    .trait-option.token-option {
+      cursor: default;
+    }
+
+    .trait-option.token-option img {
+      cursor: pointer;
+      transition: transform 120ms ease, border-color 120ms ease;
+    }
+
+    .trait-option.token-option img:hover {
+      transform: translateY(-1px);
+      border-color: rgba(199, 173, 114, 0.72);
+    }
+
+    .token-option-count {
+      display: grid;
+      grid-template-columns: 28px minmax(44px, 1fr) 28px;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .token-option-count-label {
+      grid-column: 1 / -1;
+      text-align: center;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.1;
+    }
+
+    .token-option-count input {
+      position: static !important;
+      top: auto !important;
+      right: auto !important;
+      width: 100% !important;
+      height: auto !important;
+      min-height: 30px;
+      margin: 0 !important;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #151411;
+      color: var(--text);
+      padding: 3px 6px;
+      font: inherit;
+      text-align: center;
+      accent-color: auto;
+    }
+
+    .token-count-step {
+      width: 28px;
+      min-width: 28px;
+      height: 30px;
+      min-height: 30px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border-radius: 7px;
+      border-color: rgba(199, 173, 114, 0.35);
+      color: var(--gold);
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .token-count-step:hover {
+      border-color: rgba(199, 173, 114, 0.72);
+      background: #261a18;
+    }
+
+
+
+    .token-folder-tools {
+      display: grid;
+      gap: 8px;
+      padding: 14px;
+      border-bottom: 1px solid var(--line);
+      background: #0b0b0a;
+    }
+
+    .token-folder-tools button {
+      min-height: 34px;
+      padding: 6px 12px;
+      border-radius: 7px;
+      border-color: rgba(199, 173, 114, 0.46);
+      color: var(--gold);
+      font-weight: 800;
+      justify-self: start;
+    }
+
+    .token-folder-hint {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .panel-token-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 4;
+    }
+
+    .panel-token-item {
+      position: absolute;
+      left: var(--token-left, 6%);
+      top: var(--token-top, 6%);
+      transform: translate(-50%, -50%);
+      width: clamp(34px, 7.2%, 68px);
+      min-width: 34px;
+      aspect-ratio: 1 / 1;
+      display: grid;
+      place-items: center;
+      pointer-events: auto;
+      cursor: grab;
+      user-select: none;
+      touch-action: none;
+      filter: drop-shadow(0 8px 13px rgba(0, 0, 0, 0.62));
+    }
+
+    .panel-token-item:active {
+      cursor: grabbing;
+    }
+
+    .panel-token-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 999px;
+    }
+
+    .panel-token-count {
+      position: absolute;
+      right: -8px;
+      bottom: -7px;
+      min-width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      padding: 0 5px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 999px;
+      background: rgba(180, 52, 44, 0.94);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .critical-mass-slot {
+      position: absolute;
+      left: var(--critical-mass-left, 50.7%);
+      top: var(--critical-mass-top, 51.2%);
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      display: none;
+      width: clamp(42px, 7.2%, 72px);
+      aspect-ratio: 1 / 1;
+      place-items: center;
+      padding: 0;
+      border: 2px dashed rgba(51, 150, 225, 0.78);
+      border-radius: 999px;
+      background: rgba(18, 80, 126, 0.2);
+      color: #9bd7ff;
+      font-size: clamp(22px, 3vw, 36px);
+      font-weight: 900;
+      line-height: 1;
+      cursor: pointer;
+      box-shadow: 0 0 18px rgba(41, 147, 226, 0.36);
+    }
+
+    .critical-mass-slot.show {
+      display: grid;
+    }
+
+    .panel-token-item.critical-mass-token {
+      width: clamp(44px, 7.6%, 76px);
+      cursor: pointer;
+    }
+
+    .panel-token-item.critical-mass-token.must-resolve {
+      filter:
+        drop-shadow(0 0 8px rgba(255, 42, 42, 1))
+        drop-shadow(0 0 18px rgba(255, 42, 42, 0.9));
+      animation: chimera-critical-mass-pulse 780ms ease-in-out infinite alternate;
+    }
+
+    .panel-token-item.critical-mass-token.must-resolve::after {
+      content: "立即处理";
+      position: absolute;
+      left: 50%;
+      top: calc(100% + 7px);
+      transform: translateX(-50%);
+      min-width: max-content;
+      padding: 5px 9px;
+      border: 2px solid #ff5252;
+      border-radius: 7px;
+      background: rgba(92, 4, 4, 0.96);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 900;
+      line-height: 1;
+      box-shadow: 0 0 18px rgba(255, 42, 42, 0.78);
+      pointer-events: auto;
+      cursor: pointer;
+    }
+
+    @keyframes chimera-critical-mass-pulse {
+      from { transform: translate(-50%, -50%) scale(1); }
+      to { transform: translate(-50%, -50%) scale(1.12); }
+    }
+
+    .panel-token-item.auto-level-danger-per-hit::after {
+      content: "每命中";
+      position: absolute;
+      left: 50%;
+      top: calc(100% + 5px);
+      transform: translateX(-50%);
+      min-width: max-content;
+      padding: 3px 6px;
+      border: 1px solid rgba(199, 173, 114, 0.68);
+      border-radius: 5px;
+      background: rgba(18, 18, 16, 0.94);
+      color: #f4d98f;
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 1;
+      pointer-events: none;
+    }
+
+
+    .image-zoom-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: none;
+      place-items: center;
+      padding: 26px;
+      background: rgba(0, 0, 0, 0.82);
+      cursor: zoom-out;
+    }
+
+    .image-zoom-overlay.show {
+      display: grid;
+    }
+
+    .image-zoom-content {
+      position: relative;
+      width: min(96vw, 1180px);
+      max-width: min(96vw, 1180px);
+      max-height: 94vh;
+      display: grid;
+      grid-template-columns: auto auto;
+      grid-template-rows: 1fr auto 1fr;
+      gap: 14px;
+      justify-content: center;
+      place-items: center;
+    }
+
+    .image-zoom-content.has-notice {
+      grid-template-columns: minmax(0, 1fr) minmax(360px, 600px);
+    }
+
+    .image-zoom-content.has-side-notices {
+      width: fit-content;
+      max-width: min(96vw, 1880px);
+      grid-template-columns: minmax(260px, 400px) minmax(0, calc(90vh * 63 / 89)) minmax(260px, 400px);
+      gap: 6px;
+    }
+
+    .image-zoom-content.has-side-notices > .image-zoom-card-stage {
+      grid-column: 2;
+    }
+
+    .image-zoom-card-stage {
+      position: relative;
+      grid-column: 1;
+      grid-row: 1 / -1;
+      width: fit-content;
+      max-width: 100%;
+      max-height: 90vh;
+      display: grid;
+      place-items: center;
+    }
+
+    .image-zoom-card-stage > img {
+      display: block;
+      width: auto;
+      height: auto;
+      max-width: 100%;
+      max-height: 90vh;
+      object-fit: contain;
+      border-radius: 10px;
+      background: #0b0b0a;
+      box-shadow: 0 24px 86px rgba(0, 0, 0, 0.72);
+      cursor: default;
+    }
+
+    .image-zoom-card-tokens {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: none;
+      pointer-events: none;
+    }
+
+    .image-zoom-card-tokens.show {
+      display: block;
+    }
+
+    .image-zoom-card-token-group {
+      position: absolute;
+      display: flex;
+      gap: 8px;
+    }
+
+    .image-zoom-card-token-group.token-at {
+      right: 3%;
+      top: 50%;
+      transform: translateY(-50%);
+      flex-direction: column;
+    }
+
+    .image-zoom-card-token-group.token-accuracy-evasion {
+      top: 2.5%;
+      right: 3%;
+      flex-wrap: wrap;
+      justify-content: end;
+      max-width: 55%;
+    }
+
+    .image-zoom-card-token-group.token-danger {
+      right: 3%;
+      bottom: 2.5%;
+      flex-wrap: wrap;
+      justify-content: end;
+      max-width: 40%;
+    }
+
+    .image-zoom-card-token {
+      position: relative;
+      width: clamp(58px, 7.5vw, 94px);
+      aspect-ratio: 1 / 1;
+      filter: drop-shadow(0 7px 10px rgba(0, 0, 0, 0.68));
+    }
+
+    .image-zoom-card-token img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 999px;
+      opacity: 0.62;
+    }
+
+    .image-zoom-card-token .panel-token-count {
+      right: -5px;
+      bottom: -5px;
+      opacity: 0.95;
+    }
+
+    .image-zoom-card-token.auto-level-danger-per-hit::after {
+      content: "每命中";
+      position: absolute;
+      left: 50%;
+      top: calc(100% + 5px);
+      transform: translateX(-50%);
+      min-width: max-content;
+      padding: 3px 6px;
+      border: 1px solid rgba(199, 173, 114, 0.68);
+      border-radius: 5px;
+      background: rgba(18, 18, 16, 0.94);
+      color: #f4d98f;
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    .image-zoom-notice {
+      display: none;
+      grid-column: 2;
+      grid-row: 1;
+      align-self: start;
+      width: min(42vw, 600px);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      cursor: default;
+    }
+
+    .image-zoom-notice.show {
+      display: grid;
+    }
+
+    .image-zoom-content.has-side-notices .image-zoom-notice {
+      display: contents;
+    }
+
+    .image-zoom-content.has-side-notices .image-zoom-notice img {
+      align-self: center;
+      max-height: 86vh;
+    }
+
+    .image-zoom-content.has-side-notices .image-zoom-notice img:nth-child(1) {
+      grid-column: 1;
+      grid-row: 1 / -1;
+      justify-self: end;
+    }
+
+    .image-zoom-content.has-side-notices .image-zoom-notice img:nth-child(2) {
+      grid-column: 3;
+      grid-row: 1 / -1;
+      justify-self: start;
+    }
+
+    .image-zoom-notice img {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 86vh;
+      object-fit: contain;
+      border-radius: 10px;
+      box-shadow: 0 18px 54px rgba(0, 0, 0, 0.48);
+    }
+
+    .image-zoom-notice img:only-child {
+      grid-column: 1 / -1;
+    }
+
+    .image-zoom-notice-text {
+      grid-column: 1 / -1;
+      width: min(42vw, 280px);
+      padding: 14px 16px;
+      border: 1px solid rgba(199, 173, 114, 0.48);
+      border-radius: 8px;
+      background: rgba(18, 18, 16, 0.94);
+      box-shadow: 0 18px 54px rgba(0, 0, 0, 0.42);
+      color: #f5ecd6;
+      text-align: left;
+    }
+
+    .image-zoom-notice-text-title {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0;
+      color: #c7ad72;
+    }
+
+    .image-zoom-notice-text-value {
+      margin-top: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0;
+      line-height: 1.55;
+      white-space: pre-line;
+    }
+
+    .chimera-term {
+      color: #f0c86a;
+      font-weight: 900;
+    }
+
+    .image-zoom-actions {
+      display: none;
+      grid-column: 2;
+      grid-row: 2;
+      width: 128px;
+      gap: 8px;
+      align-self: center;
+      justify-self: start;
+      cursor: default;
+    }
+
+    .image-zoom-actions.show {
+      display: grid;
+    }
+
+    .image-zoom-actions button {
+      min-height: 42px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border-color: rgba(199, 173, 114, 0.42);
+      background: rgba(24, 24, 22, 0.96);
+      color: var(--gold);
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .image-zoom-actions button:not(:disabled):hover {
+      border-color: var(--gold);
+      background: #261a18;
+    }
+
+    .image-zoom-actions button:disabled {
+      opacity: 0.42;
+    }
+
+    .image-zoom-action-title {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    @media (max-width: 760px) {
+      .image-zoom-content {
+        width: auto;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto;
+      }
+
+      .image-zoom-content.has-notice {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .image-zoom-content.has-side-notices {
+        width: auto;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .image-zoom-content.has-side-notices > .image-zoom-card-stage {
+        grid-column: 1 / -1;
+      }
+
+      .image-zoom-content.has-side-notices .image-zoom-notice {
+        display: contents;
+      }
+
+      .image-zoom-content.has-side-notices .image-zoom-notice img:nth-child(1),
+      .image-zoom-content.has-side-notices .image-zoom-notice img:nth-child(2) {
+        grid-row: auto;
+        max-height: 52vh;
+      }
+
+      .image-zoom-content.has-side-notices .image-zoom-notice img:nth-child(1) {
+        grid-column: 1;
+      }
+
+      .image-zoom-content.has-side-notices .image-zoom-notice img:nth-child(2) {
+        grid-column: 2;
+      }
+
+      .image-zoom-card-stage {
+        grid-column: 1;
+        grid-row: auto;
+        max-width: 96vw;
+        max-height: 72vh;
+      }
+
+      .image-zoom-card-stage > img {
+        max-width: 96vw;
+        max-height: 72vh;
+      }
+
+      .image-zoom-card-tokens {
+        inset: 0;
+      }
+
+      .image-zoom-card-token-group {
+        gap: 5px;
+      }
+
+      .image-zoom-card-token {
+        width: clamp(48px, 15vw, 72px);
+      }
+
+      .image-zoom-actions {
+        grid-column: 1;
+        grid-row: auto;
+        width: min(96vw, 360px);
+        grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+        justify-self: center;
+      }
+
+      .image-zoom-notice {
+        grid-column: 1;
+        grid-row: auto;
+        align-self: center;
+        width: min(92vw, 520px);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .image-zoom-notice img {
+        max-height: 62vh;
+      }
+
+      .image-zoom-notice-text {
+        width: min(92vw, 360px);
+        justify-self: center;
+      }
+
+      .image-zoom-action-title {
+        grid-column: 1 / -1;
+      }
+    }
+
+    .image-zoom-close {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      z-index: 1001;
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      border: 1px solid rgba(199, 173, 114, 0.52);
+      background: rgba(24, 24, 22, 0.96);
+      color: var(--gold);
+      font-size: 26px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .image-zoom-close:hover {
+      border-color: var(--gold);
+      background: #261a18;
+    }
+
+    .card-grid img,
+    .extra-grid img,
+    .draw-preview img,
+    .side-card-image,
+    .panel-image,
+    .panel-token-item img {
+      cursor: zoom-in;
+    }
+
+
+  </style>
+  <link rel="stylesheet" href="c45_specials.css?v=20260730c">
+</head>
+<body class="sidebar-collapsed">
+  <button type="button" class="sidebar-toggle" id="sidebarToggle" aria-label="展开左侧边栏" title="展开/折叠左侧边栏">☰</button>
+  <div class="app">
+    <aside>
+      <h1>使徒</h1>
+      <div class="nav" id="nav"></div>
+    </aside>
+
+    <main>
+      <div class="title-row">
+        <div class="apostle-title">
+          <h2 id="title"></h2>
+          <div class="map-faction-status" id="mapFactionStatus"></div>
+          <select class="apostle-level-select" id="apostleLevelSelect" aria-label="使徒当前等级">
+            <option value="">跟随记录表</option>
+            <option value="1">等级 I</option>
+            <option value="2">等级 II</option>
+            <option value="3">等级 III</option>
+            <option value="4">等级 IV</option>
+            <option value="5">等级 V</option>
+            <option value="6">等级 VI</option>
+            <option value="7">等级 VII</option>
+            <option value="8">等级 VIII</option>
+            <option value="9">等级 IX</option>
+          </select>
+        </div>
+        <div class="title-actions">
+          <div class="path" id="folderPath"></div>
+          <button type="button" id="traitButton">Trait</button>
+          <button type="button" id="tokenButton">Token</button>
+          <button type="button" id="newCampaignButton">开启新战役</button>
+        </div>
+      </div>
+
+      <div class="viewer" id="viewer">
+        <section class="section">
+          <div class="image-wrap" id="panelWrap"></div>
+        </section>
+
+        <section class="section">
+          <div class="side-stack">
+            <div class="image-wrap" id="routineWrap"></div>
+            <div class="image-wrap" id="signatureWrap"></div>
+          </div>
+        </section>
+
+        <section class="section extra-section">
+          <div class="image-wrap">
+            <div class="extra-grid" id="extraGrid"></div>
+          </div>
+        </section>
+      </div>
+
+      <section class="cards-panel">
+        <div class="aibp-layout">
+          <div class="card-column">
+            <div class="card-column-head">
+              <div class="card-title-with-back">
+                <div class="card-column-title">AI</div>
+                <div class="deck-info">卡背：<span id="aiBackInfo"></span></div>
+              </div>
+              <div class="segmented" id="aiViewTabs"></div>
+            </div>
+            <div class="draw-box">
+              <div class="draw-actions">
+                <button type="button" id="drawAiButton">抽取 AI</button>
+                <button type="button" id="undoAiButton" disabled>撤销 AI</button>
+                <button type="button" id="confirmAiButton" disabled>弃置</button>
+                <button type="button" id="promoteAiSingleButton">AI 晋升</button>
+                <button type="button" id="drawFlareButton" class="hermesian-only-action">抽取闪粉</button>
+                <button type="button" id="drawFeintButton" class="titan-x-only-action">抽取变招</button>
+                <button type="button" id="nietzscheStateButton" class="state-button hidden">状态 1</button>
+              </div>
+              <div class="draw-preview" id="aiDrawPreview">未抽取 AI</div>
+            </div>
+            <div class="card-grid" id="aiGrid"></div>
+          </div>
+          <div class="card-column" id="bpColumn">
+            <div class="card-column-head">
+              <div class="card-title-with-back">
+                <div class="card-column-title">BP</div>
+                <div class="deck-info">卡背：<span id="bpBackInfo"></span></div>
+                <div class="bp-damage-summary" id="bpDamageSummary">损伤：0</div>
+              </div>
+              <div class="segmented" id="bpViewTabs"></div>
+            </div>
+            <div class="draw-box">
+              <div class="draw-actions">
+                <button type="button" id="drawBpButton">抽取 BP</button>
+                <button type="button" id="undoBpButton" disabled>撤销 BP</button>
+                <button type="button" id="discardBpButton" disabled>弃置</button>
+                <button type="button" id="defeatBpButton" disabled>击败</button>
+                <button type="button" id="criticalBpButton" disabled>暴击</button>
+                <label class="damage-target" id="chimeraDamageTarget">
+                  <span>奇美拉损伤进入</span>
+                  <select id="bpDamageTargetSelect">
+                    <option value="damage1">常规损伤堆</option>
+                    <option value="damage2">第二损伤堆</option>
+                  </select>
+                </label>
+                <button type="button" id="addSwButton">添加 SW</button>
+                <button type="button" id="addDwButton">添加 DW</button>
+                <button type="button" id="addSwDamage2Button" class="chimera-only-action">第二损伤 +SW</button>
+                <button type="button" id="removeSwDamage2Button" class="chimera-only-action">第二损伤 -SW</button>
+                <button type="button" id="addLabyrinthaurosSpecialBpButton" class="labyrinthauros-only-action">加入特殊 BP</button>
+                <button type="button" id="removeLabyrinthaurosSpecialBpButton" class="labyrinthauros-only-action">移出特殊 BP</button>
+                <button type="button" id="promoteBpSingleButton">BP 晋升</button>
+                <button type="button" id="promoteBpButton">联动晋升</button>
+              </div>
+              <div class="draw-preview" id="bpDrawPreview">未抽取 BP</div>
+            </div>
+            <div class="babelian-bp-control" id="babelianFusionControl" hidden></div>
+            <div class="card-grid" id="bpGrid"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog class="trait-dialog" id="traitDialog">
+    <form method="dialog">
+      <div class="trait-dialog-head">
+        <div class="trait-dialog-title" id="traitDialogTitle">Trait 选择</div>
+        <button type="button" id="traitCloseButton">关闭</button>
+      </div>
+      <div class="trait-dialog-grid" id="traitDialogGrid"></div>
+      <div class="trait-dialog-actions">
+        <button type="button" id="traitClearButton">清空</button>
+        <button type="button" id="traitSaveButton">保存</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="trait-dialog" id="tokenDialog">
+    <form method="dialog">
+      <div class="trait-dialog-head">
+        <div class="trait-dialog-title" id="tokenDialogTitle">Token 选择</div>
+        <button type="button" id="tokenCloseButton">关闭</button>
+      </div>
+      <div class="token-folder-tools">
+        <div class="token-folder-hint" id="tokenFolderHint">Token 使用相对路径 ps/other/token/，加载方式和其他卡图一致。</div>
+      </div>
+      <div class="trait-dialog-grid" id="tokenDialogGrid"></div>
+      <div class="trait-dialog-actions">
+        <button type="button" id="tokenClearButton">清空新增</button>
+        <button type="button" id="tokenSaveButton">新增 Token 堆</button>
+      </div>
+    </form>
+  </dialog>
+
+
+  <div class="image-zoom-overlay" id="imageZoomOverlay" aria-hidden="true">
+    <button type="button" class="image-zoom-close" id="imageZoomClose" aria-label="关闭放大图">×</button>
+    <div class="image-zoom-content">
+      <div class="image-zoom-card-stage">
+        <img id="imageZoomImg" src="" alt="放大图片">
+        <div class="image-zoom-card-tokens" id="imageZoomCardTokens"></div>
+      </div>
+      <div class="image-zoom-notice" id="imageZoomNotice"></div>
+      <div class="image-zoom-actions" id="imageZoomBpActions" aria-label="BP 处置">
+        <button type="button" data-bp-zoom-action="discard">弃置</button>
+        <button type="button" data-bp-zoom-action="defeat">击败</button>
+        <button type="button" data-bp-zoom-action="vp-defeat" hidden>VP击败</button>
+        <button type="button" data-bp-zoom-action="vp-critical" hidden>VP暴击</button>
+        <button type="button" data-bp-zoom-action="critical">暴击</button>
+      </div>
+      <div class="image-zoom-actions" id="imageZoomFlipActions" aria-label="翻面">
+        <button type="button" id="imageZoomFlipButton">反面</button>
+      </div>
+      <div class="image-zoom-actions" id="imageZoomMoveActions" aria-label="移动卡牌"></div>
+      <div class="image-zoom-actions" id="imageZoomTokenActions" aria-label="Token 数量">
+        <div class="image-zoom-action-title" id="imageZoomTokenTitle">Token</div>
+        <button type="button" data-token-zoom-action="plus">+1</button>
+        <button type="button" data-token-zoom-action="minus">-1</button>
+        <button type="button" data-token-zoom-action="clear">清空</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/page-focus-router.js?v=20260607a"></script>
+  <script src="../map/map-tile-tags.js"></script>
+  <script src="ps/CHIMERA_METASTASIOS/bp_status_map.js"></script>
+  <script src="ps/other/token/token_manifest.js"></script>
+  <script>
+    const apostles = [
+      "HEKATON",
+      "LABYRINTHAUROS",
+      "HERMESIAN_PURSUER",
+      "ALPHA_TEMENOS",
+      "CHIMERA_METASTASIOS",
+      "CYCLONUS",
+      "THE_BURDEN",
+      "THE_NIETZSCJEAN",
+      "HYPERTIME_ORACLE",
+      "ICARIAN_HARPY",
+      "SUN_DESCENDANT",
+      "MIDASCORE",
+      "DEMIDJINN",
+      "THE_BABELIAN_LUNACY",
+      "DAHAKA",
+      "DRAGON_OF_PHOBOS",
+      "MEDUKETOS",
+      "UR_FLEECE",
+      "TITAN_X"
+    ];
+    const aiViews = ["当前", "弃牌", "移除", "II", "III"];
+    const bpViews = ["当前", "弃牌", "损伤", "移除", "II", "III"];
+    const traitLevels = ["O", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
+    const traitProbeMaxIndex = 99;
+    const traitProbeExtensions = ["jpg", "png", "jpeg"];
+    const defaultTraitProbeMaxIndex = 12;
+    const tokenBasePath = "ps/other/token";
+    // token 文件夹里的所有图片都从 token_manifest.js 读取。
+    // 生成文件位置：ps/other/token/token_manifest.js
+    // 内容格式：window.AIBP_TOKEN_FILES = ["xxx.png", "yyy.jpg"];
+    const tokenFileNames = Array.isArray(window.AIBP_TOKEN_FILES) ? window.AIBP_TOKEN_FILES : [];
+    const aiExhaustedBonusTokens = ["DA+.png", "HT+.png", "ED+.png", "AT+.png"];
+    const nonStackingTokenFiles = new Set(["CA.jpg", "CM.jpg", "GF.jpg"]);
+    const tokenProbeMaxIndex = 199;
+    const tokenProbeExtensions = ["png", "jpg", "jpeg"];
+    let tokenStackSequence = 0;
+    const apostleLevelOverrideKey = "aibp-apostle-level-overrides-v1";
+    const recordStorageUrl = "../api/campaign-state.php";
+    const apostleRecordTracks = {
+      HEKATON: { cycle: "c1", key: "hekaton" },
+      LABYRINTHAUROS: { cycle: "c1", key: "labyrinthauros" },
+      HERMESIAN_PURSUER: { cycle: "c1", key: "pursuer" },
+      ALPHA_TEMENOS: { cycle: "c1", key: "temenos" },
+      CHIMERA_METASTASIOS: { cycle: "c2", key: "chimera" },
+      CYCLONUS: { cycle: "c2", key: "cyclonus" },
+      THE_BURDEN: [{ cycle: "c2", key: "adversary" }, { cycle: "c3", key: "adversary" }],
+      THE_NIETZSCJEAN: { cycle: "c2", key: "nietzschean" },
+      HYPERTIME_ORACLE: { cycle: "c3", key: "oracle" },
+      ICARIAN_HARPY: { cycle: "c3", key: "harpy" },
+      SUN_DESCENDANT: { cycle: "c3", key: "sunDescendant" },
+      MIDASCORE: { cycle: "c4", key: "midascore" },
+      DEMIDJINN: { cycle: "c4", key: "demidjinn" },
+      THE_BABELIAN_LUNACY: { cycle: "c4", key: "babelianLunacy" },
+      DAHAKA: { cycle: "c4", key: "dahaka" },
+      DRAGON_OF_PHOBOS: { cycle: "c5", key: "dragonOfPhobos" },
+      MEDUKETOS: { cycle: "c5", key: "meduketos" },
+      UR_FLEECE: { cycle: "c5", key: "urFleece" },
+      TITAN_X: { cycle: "c5", key: "titanX" }
+    };
+    const maxApostleLevel = 9;
+    const levelRoman = {
+      1: "I",
+      2: "II",
+      3: "III",
+      4: "IV",
+      5: "V",
+      6: "VI",
+      7: "VII",
+      8: "VIII",
+      9: "IX"
+    };
+    const fixedLevelOneApostles = new Set([
+      "HERMESIAN_PURSUER",
+      "THE_BURDEN",
+      "ALPHA_TEMENOS",
+      "THE_NIETZSCJEAN",
+      "SUN_DESCENDANT"
+    ]);
+    const apostleLevelBonusConfig = {
+      HEKATON: {
+        3: { promotions: 1, danger: 1, at: 0 },
+        4: { promotions: 2, danger: 1, at: 1 },
+        5: { promotions: 2, danger: 1, at: 2 }
+      },
+      LABYRINTHAUROS: {
+        3: { promotions: 1, danger: 1, at: 0 },
+        4: { promotions: 2, danger: 1, at: 1 },
+        5: { promotions: 2, danger: 1, at: 2 }
+      },
+      CHIMERA_METASTASIOS: {
+        3: { promotions: 1, danger: 1, at: 0 },
+        4: { promotions: 2, danger: 1, at: 1 },
+        5: { promotions: 2, danger: 1, at: 2 }
+      },
+      CYCLONUS: {
+        3: { promotions: 1, danger: 1, at: 0 },
+        4: { promotions: 2, danger: 1, at: 1 },
+        5: { promotions: 2, danger: 1, at: 2 }
+      },
+      ICARIAN_HARPY: {
+        3: { promotions: 1, danger: 1, at: 0 },
+        4: { promotions: 2, danger: 1, at: 1 },
+        5: { promotions: 2, danger: 1, at: 2 }
+      },
+      HYPERTIME_ORACLE: {
+        3: { promotions: 1, danger: 1, at: 0 },
+        4: { promotions: 2, danger: 1, at: 1 },
+        5: { promotions: 2, danger: 1, at: 2 }
+      }
+    };
+    let apostleLevelOverrides = loadApostleLevelOverrides();
+    let recordApostleLevels = {};
+    let campaignMapFactionState = { cycleId: "", tileId: "", factions: [], record: null };
+    let campaignMapFactionRefreshInFlight = false;
+    const chimeraName = "CHIMERA_METASTASIOS";
+    const criticalMassApostles = new Set([chimeraName, "CYCLONUS", "HEKATON", "HYPERTIME_ORACLE"]);
+    const criticalMassTokenFile = "CM.jpg";
+    const criticalMassPosition = { x: 50.7, y: 51.2 };
+    const hekatonCriticalMassPosition = { x: 51.1, y: 34 };
+    const oracleCriticalMassPosition = { x: 48.8, y: 47.4 };
+    const c45PanelCounterPosition = { x: 96, y: 7.5 };
+    const labyrinthaurosName = "LABYRINTHAUROS";
+    const hermesianName = "HERMESIAN_PURSUER";
+    const burdenName = "THE_BURDEN";
+    const titanXName = "TITAN_X";
+    const flareCardCount = 4;
+    const titanFeintCardCount = 10;
+    const labyrinthaurosSpecialBp = {
+      type: "TP",
+      level: "X",
+      index: 1,
+      fileName: "LABYRINTHAUROS_TP_X_001.jpg",
+      specialBp: true
+    };
+    const chimeraPhaseStates = {
+      C: {
+        label: "腐蚀液态",
+        effect: (level) => `在你对奇美拉结算完一次至少 1 个命中的攻击后，如果该攻击的启用武器材料特性不是 <span class="chimera-term">Stone</span>（石）、<span class="chimera-term">Relief</span>（岩雕）、<span class="chimera-term">Divine</span>（神圣）、<span class="chimera-term">Hephaestum</span>（赫淮斯托斯）、<span class="chimera-term">Cyclopean</span>（独眼巨人）、<span class="chimera-term">Mythic</span>（神话）或 <span class="chimera-term">Electrum</span>（琥珀金），将该武器横置，并获得 ${level} 危险。`,
+        left: "87.4%",
+        top: "4.6%",
+        width: "12.6%",
+        height: "6.1%"
+      },
+      G: {
+        label: "凝胶态",
+        effect: (level) => `当受到非 <span class="chimera-term">Club</span>（棍棒）、<span class="chimera-term">Cestus</span>（拳套）、<span class="chimera-term">Slabsword</span>（板剑）或 <span class="chimera-term">Shield</span>（盾）类武器攻击时，奇美拉视作 +${level >= 2 ? 2 : 1} AT。`,
+        left: "79.5%",
+        top: "28.8%",
+        width: "14.2%",
+        height: "6.1%"
+      },
+      S: {
+        label: "超固态",
+        effect: (level) => `当受到 <span class="chimera-term">Club</span>（棍棒）、<span class="chimera-term">Cestus</span>（拳套）、<span class="chimera-term">Slabsword</span>（板剑）或 <span class="chimera-term">Shield</span>（盾）类武器攻击时，奇美拉视作 +${level >= 4 ? 2 : 1} AT。`,
+        left: "92.9%",
+        top: "28.7%",
+        width: "13.6%",
+        height: "6.1%"
+      }
+    };
+    const nietzscheName = "THE_NIETZSCJEAN";
+    const nietzscheStateKey = "aibp-nietzsche-state-v2";
+    const nietzscheDefaultStateIndex = 2;
+    const nietzscheStates = [
+      { label: "火焰", short: "火", left: "54.3%", top: "54.2%" },
+      { label: "神浆", short: "浆", left: "58.8%", top: "68.1%" },
+      { label: "巨剑", short: "剑", left: "49.4%", top: "67.6%" }
+    ];
+    const normalBpViews = bpViews;
+    const hermesianAiViews = [...aiViews, "闪粉牌组", "闪粉弃牌"];
+    const titanAiViews = [...aiViews, "变招牌组", "生效变招", "移除变招"];
+    const cyclonusName = "CYCLONUS";
+    const cyclonusStateKey = "aibp-cyclonus-state-v1";
+    const cyclonusStates = [
+      { label: "Mauls", short: "M", left: "86.4%", top: "8.7%" },
+      { label: "Chain", short: "C", left: "81.7%", top: "21.6%" },
+      { label: "Body", short: "B", left: "90.6%", top: "22.0%" }
+    ];
+    const chimeraBpViews = ["当前", "弃牌", "常规损伤堆", "第二损伤堆", "移除", "II", "III"];
+    const cardCount = 6;
+    const cardCountOverrides = {
+      HYPERTIME_ORACLE: { AI: { III: 7 } },
+      DAHAKA: { BP: { I: 0, II: 0, III: 0 } },
+      TITAN_X: { BP: { I: 6, II: 6, III: 6 } }
+    };
+    const panelRatio = 2.2;
+    const levelBack = { O: "0", I: "1", II: "2", III: "3", X: "X" };
+
+    const sidebarToggle = document.getElementById("sidebarToggle");
+    const nav = document.getElementById("nav");
+    const title = document.getElementById("title");
+    const mapFactionStatus = document.getElementById("mapFactionStatus");
+    const apostleLevelSelect = document.getElementById("apostleLevelSelect");
+    const folderPath = document.getElementById("folderPath");
+    const nietzscheStateButton = document.getElementById("nietzscheStateButton");
+    const panelWrap = document.getElementById("panelWrap");
+    const routineWrap = document.getElementById("routineWrap");
+    const signatureWrap = document.getElementById("signatureWrap");
+    const extraGrid = document.getElementById("extraGrid");
+    const aiViewTabs = document.getElementById("aiViewTabs");
+    const bpViewTabs = document.getElementById("bpViewTabs");
+    const aiGrid = document.getElementById("aiGrid");
+    const bpGrid = document.getElementById("bpGrid");
+    const aiBackInfo = document.getElementById("aiBackInfo");
+    const bpBackInfo = document.getElementById("bpBackInfo");
+    const aibpLayout = document.querySelector(".aibp-layout");
+    const bpColumn = document.getElementById("bpColumn");
+    const bpDamageSummary = document.getElementById("bpDamageSummary");
+    const newCampaignButton = document.getElementById("newCampaignButton");
+    const traitButton = document.getElementById("traitButton");
+    const tokenButton = document.getElementById("tokenButton");
+    const traitDialog = document.getElementById("traitDialog");
+    const traitDialogTitle = document.getElementById("traitDialogTitle");
+    const traitDialogGrid = document.getElementById("traitDialogGrid");
+    const traitCloseButton = document.getElementById("traitCloseButton");
+    const traitClearButton = document.getElementById("traitClearButton");
+    const traitSaveButton = document.getElementById("traitSaveButton");
+    const tokenDialog = document.getElementById("tokenDialog");
+    const tokenDialogTitle = document.getElementById("tokenDialogTitle");
+    const tokenDialogGrid = document.getElementById("tokenDialogGrid");
+    const tokenFolderHint = document.getElementById("tokenFolderHint");
+    const tokenCloseButton = document.getElementById("tokenCloseButton");
+    const tokenClearButton = document.getElementById("tokenClearButton");
+    const tokenSaveButton = document.getElementById("tokenSaveButton");
+    const drawAiButton = document.getElementById("drawAiButton");
+    const undoAiButton = document.getElementById("undoAiButton");
+    const confirmAiButton = document.getElementById("confirmAiButton");
+    const promoteAiSingleButton = document.getElementById("promoteAiSingleButton");
+    const drawFlareButton = document.getElementById("drawFlareButton");
+    const drawFeintButton = document.getElementById("drawFeintButton");
+    const aiDrawPreview = document.getElementById("aiDrawPreview");
+    const drawBpButton = document.getElementById("drawBpButton");
+    const undoBpButton = document.getElementById("undoBpButton");
+    const discardBpButton = document.getElementById("discardBpButton");
+    const defeatBpButton = document.getElementById("defeatBpButton");
+    const criticalBpButton = document.getElementById("criticalBpButton");
+    const addSwButton = document.getElementById("addSwButton");
+    const addDwButton = document.getElementById("addDwButton");
+    const addSwDamage2Button = document.getElementById("addSwDamage2Button");
+    const removeSwDamage2Button = document.getElementById("removeSwDamage2Button");
+    const addLabyrinthaurosSpecialBpButton = document.getElementById("addLabyrinthaurosSpecialBpButton");
+    const removeLabyrinthaurosSpecialBpButton = document.getElementById("removeLabyrinthaurosSpecialBpButton");
+    const chimeraDamageTarget = document.getElementById("chimeraDamageTarget");
+    const bpDamageTargetSelect = document.getElementById("bpDamageTargetSelect");
+    const promoteBpSingleButton = document.getElementById("promoteBpSingleButton");
+    const promoteBpButton = document.getElementById("promoteBpButton");
+    const bpDrawPreview = document.getElementById("bpDrawPreview");
+    const imageZoomOverlay = document.getElementById("imageZoomOverlay");
+    const imageZoomImg = document.getElementById("imageZoomImg");
+    const imageZoomCardTokens = document.getElementById("imageZoomCardTokens");
+    const imageZoomNotice = document.getElementById("imageZoomNotice");
+    const imageZoomClose = document.getElementById("imageZoomClose");
+    const imageZoomBpActions = document.getElementById("imageZoomBpActions");
+    const imageZoomFlipActions = document.getElementById("imageZoomFlipActions");
+    const imageZoomFlipButton = document.getElementById("imageZoomFlipButton");
+    const imageZoomMoveActions = document.getElementById("imageZoomMoveActions");
+    const imageZoomTokenActions = document.getElementById("imageZoomTokenActions");
+    const imageZoomTokenTitle = document.getElementById("imageZoomTokenTitle");
+
+    function normalizeApostleName(value) {
+      return String(value || "").trim().toUpperCase().replace(/[\s-]+/g, "_");
+    }
+
+    function initialApostle() {
+      const params = new URLSearchParams(window.location.search);
+      const requested = normalizeApostleName(params.get("apostle") || decodeURIComponent(window.location.hash.replace(/^#/, "")));
+      return apostles.find((name) => name === requested) || apostles[0];
+    }
+
+    let currentApostle = initialApostle();
+    let currentAiView = "弃牌";
+    let currentBpView = "弃牌";
+    let nietzscheStateIndex = Number(localStorage.getItem(nietzscheStateKey) || String(nietzscheDefaultStateIndex));
+    if (!Number.isInteger(nietzscheStateIndex) || nietzscheStateIndex < 0 || nietzscheStateIndex >= nietzscheStates.length) {
+      nietzscheStateIndex = nietzscheDefaultStateIndex;
+    }
+    let cyclonusStateIndex = Number(localStorage.getItem(cyclonusStateKey) || "0");
+    if (!Number.isInteger(cyclonusStateIndex) || cyclonusStateIndex < 0 || cyclonusStateIndex >= cyclonusStates.length) {
+      cyclonusStateIndex = 0;
+    }
+    const piles = {};
+    const storageKey = "aibp-apostle-viewer-piles-v3";
+    const undoStacks = {};
+    const maxUndoSteps = 30;
+    let zoomCloseAction = null;
+    let activeMoveContext = null;
+    let activeTokenContext = null;
+    let traitLoadToken = 0;
+    let tokenLoadToken = 0;
+
+    function loadSavedPiles() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(storageKey) || "{}");
+        Object.assign(piles, saved);
+      } catch {
+        localStorage.removeItem(storageKey);
+      }
+    }
+
+    function savePiles() {
+      localStorage.setItem(storageKey, JSON.stringify(piles));
+    }
+
+    function clonePileState(state) {
+      if (typeof structuredClone === "function") {
+        return structuredClone(state);
+      }
+      return JSON.parse(JSON.stringify(state));
+    }
+
+    function rememberUndo(name, scope = "AIBP") {
+      ensurePiles(name);
+      undoStacks[name] ||= [];
+      undoStacks[name].push({
+        scope,
+        state: clonePileState(piles[name]),
+        aiView: currentAiView,
+        bpView: currentBpView
+      });
+      if (undoStacks[name].length > maxUndoSteps) {
+        undoStacks[name].shift();
+      }
+      updateUndoButtons();
+    }
+
+    function canUndo(name, type = "") {
+      const stack = undoStacks[name] || [];
+      const entry = stack[stack.length - 1];
+      if (!entry) return false;
+      if (!type) return true;
+      return entry.scope === type || entry.scope === "AIBP";
+    }
+
+    function undoLastAibp(type = "") {
+      ensurePiles(currentApostle);
+      const stack = undoStacks[currentApostle] || [];
+      const entry = stack[stack.length - 1];
+      if (!entry || (type && entry.scope !== type && entry.scope !== "AIBP")) return;
+      stack.pop();
+      piles[currentApostle] = clonePileState(entry.state);
+      currentAiView = entry.aiView;
+      currentBpView = entry.bpView;
+      savePiles();
+      updateAiViewTabs();
+      updateBpViewTabs();
+      updateNietzscheStateUi(panelWrap.querySelector(".panel-state-marker"));
+      renderAibpCards();
+      renderExtraCards();
+      renderPanelTokens();
+      updateUndoButtons();
+    }
+
+    function updateUndoButtons() {
+      if (undoAiButton) undoAiButton.disabled = !canUndo(currentApostle, "AI");
+      if (undoBpButton) undoBpButton.disabled = !canUndo(currentApostle, "BP");
+    }
+
+    function imageOrMessage(src, alt, className = "") {
+      const img = document.createElement("img");
+      img.src = src;
+      img.alt = alt;
+      img.className = className;
+      img.onerror = () => {
+        const fallback = document.createElement("div");
+        fallback.className = "missing";
+        fallback.textContent = `未找到图片：${src}`;
+        img.replaceWith(fallback);
+      };
+      return img;
+    }
+
+    function numberedName(name, type, level, index) {
+      return `${name}_${type}_${level}_${String(index).padStart(3, "0")}.jpg`;
+    }
+
+    function cardFileName(card, name = currentApostle) {
+      if (!card || card.special) return "";
+      if (card.fileName) return card.fileName;
+      return numberedName(name, card.type, card.level, card.index);
+    }
+
+    function sameCard(left, right) {
+      if (!left || !right) return false;
+      if (left.fileName || right.fileName) return left.fileName === right.fileName;
+      return left.type === right.type && left.level === right.level && left.index === right.index;
+    }
+
+    function pileCardCount(type, level, apostle = currentApostle) {
+      return cardCountOverrides[apostle]?.[type]?.[level] ?? cardCount;
+    }
+
+    function hasBpDeck(apostle = currentApostle) {
+      return ["I", "II", "III"].some((level) => pileCardCount("BP", level, apostle) > 0);
+    }
+
+    function defaultPile(type) {
+      return Array.from({ length: pileCardCount(type, "I") }, (_, index) => ({
+        type,
+        level: "I",
+        index: index + 1
+      }));
+    }
+
+    function supplyPile(type, level) {
+      return shuffleCards(Array.from({ length: pileCardCount(type, level) }, (_, index) => ({
+        type,
+        level,
+        index: index + 1
+      })));
+    }
+
+    function initialFlarePile() {
+      return {
+        deck: shuffleCards(Array.from({ length: flareCardCount }, (_, index) => ({
+          type: "FL",
+          level: "X",
+          index: index + 1
+        }))),
+        discard: []
+      };
+    }
+
+    function initialTitanFeintPile() {
+      return {
+        deck: shuffleCards(Array.from({ length: titanFeintCardCount }, (_, index) => ({
+          type: "FEINT",
+          level: "X",
+          index: index + 1
+        }))),
+        active: [],
+        removed: []
+      };
+    }
+
+    function initialState() {
+      return {
+        AI: {
+          deck: shuffleCards(defaultPile("AI")),
+          discard: [],
+          pending: null,
+          supply: {
+            I: [],
+            II: supplyPile("AI", "II"),
+            III: supplyPile("AI", "III")
+          },
+          removed: []
+        },
+        BP: {
+          deck: shuffleCards(defaultPile("BP")),
+          discard: [],
+          damage: [],
+          damage1: [],
+          damage2: [],
+          pending: null,
+          supply: {
+            I: [],
+            II: supplyPile("BP", "II"),
+            III: supplyPile("BP", "III")
+          },
+          removed: []
+        },
+        flare: initialFlarePile(),
+        feint: initialTitanFeintPile(),
+        chimeraPhase: "",
+        traits: [],
+        tokens: [],
+        levelBonusState: { promotions: 0 },
+        initialSetupApplied: {},
+        aiExhaustedBonusIndex: 0
+      };
+    }
+
+    function ensurePiles(name) {
+      if (!piles[name]) {
+        piles[name] = initialState();
+        savePiles();
+      } else {
+        piles[name].AI ||= initialState().AI;
+        piles[name].BP ||= initialState().BP;
+        piles[name].AI.deck ||= [];
+        piles[name].AI.discard ||= [];
+        piles[name].AI.pending ||= null;
+        piles[name].AI.supply ||= { I: [], II: supplyPile("AI", "II"), III: supplyPile("AI", "III") };
+        piles[name].AI.supply.I ||= [];
+        piles[name].AI.supply.II ||= [];
+        piles[name].AI.supply.III ||= [];
+        piles[name].AI.removed ||= [];
+        piles[name].BP.deck ||= [];
+        piles[name].BP.discard ||= [];
+        piles[name].BP.damage ||= [];
+        piles[name].BP.damage1 ||= [];
+        piles[name].BP.damage2 ||= [];
+        if (name === chimeraName && piles[name].BP.damage.length > 0 && !piles[name].BP.chimeraDamageMigrated) {
+          piles[name].BP.damage1 = piles[name].BP.damage1.concat(piles[name].BP.damage);
+          piles[name].BP.damage = [];
+          piles[name].BP.chimeraDamageMigrated = true;
+        }
+        piles[name].BP.pending ||= null;
+        piles[name].BP.supply ||= { I: [], II: supplyPile("BP", "II"), III: supplyPile("BP", "III") };
+        piles[name].BP.supply.I ||= [];
+        piles[name].BP.supply.II ||= [];
+        piles[name].BP.supply.III ||= [];
+        piles[name].BP.removed ||= [];
+        if (!hasBpDeck(name)) {
+          piles[name].BP = {
+            deck: [],
+            discard: [],
+            pending: null,
+            damage: [],
+            damage1: [],
+            damage2: [],
+            supply: { I: [], II: [], III: [] },
+            removed: []
+          };
+        }
+        piles[name].flare ||= initialFlarePile();
+        piles[name].flare.deck ||= [];
+        piles[name].flare.discard ||= [];
+        piles[name].feint ||= initialTitanFeintPile();
+        piles[name].feint.deck ||= [];
+        piles[name].feint.active ||= [];
+        piles[name].feint.removed ||= [];
+        if (typeof piles[name].chimeraPhase !== "string") {
+          piles[name].chimeraPhase = "";
+        }
+        if (!Array.isArray(piles[name].traits)) {
+          piles[name].traits = [];
+        }
+        piles[name].traits = piles[name].traits.map((card) => {
+          if (name === "HYPERTIME_ORACLE" && card?.type === "TR" && !card.scope && card.level === "O" && card.index === 1) {
+            return { ...card, level: "IV" };
+          }
+          if (card?.type === "TR" && !card.scope && card.level === "V" && card.index === 1) {
+            return { ...card, level: "COMMON", scope: "common" };
+          }
+          return card;
+        });
+        if (name === nietzscheName) {
+          const migratedTraits = [];
+          const migratedKeys = new Set();
+          piles[name].traits.forEach((card) => {
+            const migrated = card?.type === "TR" && (card.level === "I" || card.level === "X") && (card.index === 1 || card.index === 2)
+              ? { ...card, level: "II" }
+              : card;
+            const key = `${migrated?.type || "TR"}-${migrated?.level}-${migrated?.index}-${migrated?.ext || "jpg"}`;
+            if (!migratedKeys.has(key)) {
+              migratedKeys.add(key);
+              migratedTraits.push(migrated);
+            }
+          });
+          if (JSON.stringify(migratedTraits) !== JSON.stringify(piles[name].traits)) {
+            piles[name].traits = migratedTraits;
+            savePiles();
+          }
+        }
+        if (!Array.isArray(piles[name].tokens)) {
+          piles[name].tokens = [];
+        }
+        piles[name].tokens = normalizeTokenStacks(piles[name].tokens.map((item) => ({
+          ...item,
+          id: item.id || createTokenStackId(),
+          count: Math.max(1, clampTokenCount(item.count) || 1)
+        })));
+        if (!piles[name].levelBonusState || typeof piles[name].levelBonusState !== "object") {
+          piles[name].levelBonusState = { promotions: 0 };
+        }
+        piles[name].levelBonusState.promotions = Math.max(
+          0,
+          Math.floor(Number(piles[name].levelBonusState.promotions) || 0)
+        );
+        if (!piles[name].initialSetupApplied || typeof piles[name].initialSetupApplied !== "object") {
+          piles[name].initialSetupApplied = {};
+        }
+        if (name === nietzscheName && !piles[name].initialSetupApplied.nietzscheDangerMinus) {
+          piles[name].tokens.push({
+            id: createTokenStackId(),
+            file: "DA-.png",
+            count: 1,
+            x: 8,
+            y: 8,
+            initialSetup: "nietzscheDangerMinus"
+          });
+          piles[name].initialSetupApplied.nietzscheDangerMinus = true;
+          savePiles();
+        }
+        if (!Number.isInteger(piles[name].aiExhaustedBonusIndex)) {
+          piles[name].aiExhaustedBonusIndex = 0;
+        }
+      }
+    }
+
+    function isChimera() {
+      return currentApostle === chimeraName;
+    }
+
+    function loadApostleLevelOverrides() {
+      try {
+        const value = JSON.parse(localStorage.getItem(apostleLevelOverrideKey) || "{}");
+        return value && typeof value === "object" ? value : {};
+      } catch {
+        return {};
+      }
+    }
+
+    function saveApostleLevelOverrides() {
+      localStorage.setItem(apostleLevelOverrideKey, JSON.stringify(apostleLevelOverrides));
+    }
+
+    function parseApostleLevel(value) {
+      const text = String(value || "").toUpperCase();
+      const arabic = text.match(/(?:^|[^0-9])([1-9])(?:[^0-9]|$)/);
+      if (arabic) return Number(arabic[1]);
+      const roman = text.match(/(?:^|[^IVX])(VIII|VII|III|IX|VI|IV|II|V|I)(?:[^IVX]|$)/);
+      return roman
+        ? ({ I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7, VIII: 8, IX: 9 }[roman[1]] || 0)
+        : 0;
+    }
+
+    function recordLevelForTrack(recordState, track) {
+      if (Array.isArray(track)) {
+        return track.reduce((max, item) => Math.max(max, recordLevelForTrack(recordState, item)), 0);
+      }
+      if (!recordState?.enemies || !track) return 0;
+      let level = parseApostleLevel(recordState.enemies[track.key]);
+      Object.entries(recordState.enemies).forEach(([key, active]) => {
+        if (!active || !key.startsWith(`${track.cycle}:`)) return;
+        const parts = key.split(":");
+        const isDirect = parts[1] === track.key;
+        const isShared = parts[1] === "shared" && (parts[2] || "").split("+").includes(track.key);
+        if (!isDirect && !isShared) return;
+        level = Math.max(level, parseApostleLevel(parts.at(-1)));
+      });
+      return level;
+    }
+
+    function recordStateFromCampaign(campaign) {
+      const dashboard = campaign?.sections?.dashboard;
+      const activeProfileId = dashboard?.activeProfileId || "default";
+      const recordSection = campaign?.sections?.record;
+      if (!recordSection) return null;
+      return recordSection?.users?.[activeProfileId]
+        || (recordSection?.users ? null : recordSection);
+    }
+
+    function activeDashboardCycleFromCampaign(campaign) {
+      const dashboard = campaign?.sections?.dashboard;
+      if (!dashboard?.profiles) return null;
+      const profile = dashboard.profiles[dashboard.activeProfileId] || Object.values(dashboard.profiles)[0];
+      if (!profile) return null;
+      const cycleId = profile.activeCycleId || "c2";
+      return {
+        cycleId,
+        state: profile.cycles?.[cycleId]?.state || profile.state || {}
+      };
+    }
+
+    const mapFactionLabelsByCycle = {
+      c1: {
+        minoians: "米诺斯人",
+        labyrinthians: "迷宫徒",
+        hornsworn: "角誓者",
+        none: "无",
+      },
+      c2: {
+        helots: "希洛人",
+        cyclopes: "独眼巨人",
+        symmachy: "邦联同盟",
+        none: "无",
+      },
+      c3: {
+        sunheirs: "太阳后裔",
+        delphians: "德尔菲人",
+        twilightWatch: "暮光守望",
+        none: "无",
+      },
+    };
+
+    const diplomacyMarkersByCycle = {
+      c1: [
+        { value: -10, label: "开战", bonus: -3 },
+        { value: -5, label: "恶劣", bonus: -2 },
+        { value: -2, label: "交恶", bonus: -1 },
+        { value: 0, label: "中立", bonus: 0 },
+        { value: 4, label: "友善", bonus: 1 },
+        { value: 8, label: "结盟", bonus: 2 },
+      ],
+      c2: [
+        { value: 0, label: "隐藏", bonus: -1 },
+        { value: 3, label: "怀疑", bonus: 0 },
+        { value: 7, label: "友善", bonus: 1 },
+        { value: 12, label: "结盟", bonus: 2 },
+      ],
+      c3: [
+        { value: -10, label: "开战", bonus: -3 },
+        { value: -5, label: "恶劣", bonus: -2 },
+        { value: -2, label: "交恶", bonus: -1 },
+        { value: 0, label: "中立", bonus: 0 },
+        { value: 4, label: "友善", bonus: 1 },
+        { value: 8, label: "结盟", bonus: 2 },
+      ],
+    };
+
+    function formatSignedNumber(value) {
+      return value > 0 ? `+${value}` : String(value);
+    }
+
+    function allCycleFactionIds(cycleId) {
+      return Object.keys(mapFactionLabelsByCycle[cycleId] || {}).filter((id) => id !== "none");
+    }
+
+    function factionLabel(cycleId, factionId) {
+      return mapFactionLabelsByCycle[cycleId]?.[factionId] || factionId;
+    }
+
+    function diplomacyValue(recordState, cycleId, factionId) {
+      const diplomacy = recordState?.diplomacy && typeof recordState.diplomacy === "object" ? recordState.diplomacy : {};
+      const raw = diplomacy[`${cycleId}-${factionId}`] ?? diplomacy[factionId];
+      if (raw === "" || raw === null || raw === undefined) return null;
+      const value = Number(raw);
+      return Number.isFinite(value) ? value : null;
+    }
+
+    function diplomacyStatus(cycleId, value) {
+      const markers = diplomacyMarkersByCycle[cycleId] || [];
+      let status = markers[0] || { label: "未分级", bonus: 0 };
+      markers.forEach((marker) => {
+        if (value >= marker.value) status = marker;
+      });
+      return status;
+    }
+
+    function factionStatusText(recordState, cycleId, factionId) {
+      const value = diplomacyValue(recordState, cycleId, factionId);
+      if (value === null) return `${factionLabel(cycleId, factionId)}：未记录`;
+      const status = diplomacyStatus(cycleId, value);
+      return `${factionLabel(cycleId, factionId)}：${status.label} ${formatSignedNumber(status.bonus)}`;
+    }
+
+    function dashboardMapFactions(dashboardCycle) {
+      const cycleId = dashboardCycle?.cycleId || "";
+      const state = dashboardCycle?.state || {};
+      let factions = Array.isArray(state.mapCurrentTileFactions)
+        ? state.mapCurrentTileFactions
+        : (Array.isArray(state.mapSnapshot?.currentTileFactions) ? state.mapSnapshot.currentTileFactions : []);
+      const tileId = state.mapSnapshot?.currentTileId || "";
+      if (!factions.length && cycleId && tileId) {
+        const entry = window.ATO_MAP_TILE_TAGS?.tiles?.[`${cycleId}:${tileId}`];
+        factions = Array.isArray(entry?.factions) ? entry.factions : [];
+      }
+      return {
+        cycleId,
+        tileId,
+        factions: [...new Set(factions.map((id) => String(id || "").trim()).filter(Boolean))]
+      };
+    }
+
+    function renderMapFactionStatus() {
+      if (!mapFactionStatus) return;
+      mapFactionStatus.innerHTML = "";
+      const { cycleId, factions, record } = campaignMapFactionState;
+      const chip = document.createElement("span");
+      chip.className = "map-faction-chip";
+
+      if (!cycleId || !factions.length) {
+        chip.classList.add("muted");
+        chip.textContent = "AG：未同步地图阵营";
+        mapFactionStatus.appendChild(chip);
+        return;
+      }
+      if (factions.includes("none")) {
+        chip.classList.add("muted");
+        chip.textContent = "AG：无阵营";
+        mapFactionStatus.appendChild(chip);
+        return;
+      }
+
+      const hereText = factions.map((id) => factionStatusText(record, cycleId, id)).join(" / ");
+      const otherFactionIds = allCycleFactionIds(cycleId).filter((id) => !factions.includes(id));
+      const otherText = otherFactionIds.map((id) => factionStatusText(record, cycleId, id)).join("；");
+      chip.textContent = otherText ? `${hereText}（其他：${otherText}）` : hereText;
+      mapFactionStatus.appendChild(chip);
+    }
+
+    function applyCampaignMapFactionState(campaign) {
+      const dashboardCycle = activeDashboardCycleFromCampaign(campaign);
+      const mapState = dashboardMapFactions(dashboardCycle);
+      campaignMapFactionState = {
+        ...mapState,
+        record: recordStateFromCampaign(campaign)
+      };
+      renderMapFactionStatus();
+    }
+
+    async function refreshCampaignMapFactionState() {
+      if (campaignMapFactionRefreshInFlight) return;
+      campaignMapFactionRefreshInFlight = true;
+      try {
+        const response = await fetch(recordStorageUrl, { cache: "no-store" });
+        if (!response.ok) return;
+        const payload = await response.json();
+        applyCampaignMapFactionState(payload?.campaign);
+      } catch {
+        renderMapFactionStatus();
+      } finally {
+        campaignMapFactionRefreshInFlight = false;
+      }
+    }
+
+    async function refreshRecordApostleLevels() {
+      try {
+        const response = await fetch(recordStorageUrl, { cache: "no-store" });
+        if (!response.ok) return;
+        const payload = await response.json();
+        applyCampaignMapFactionState(payload?.campaign);
+        const recordState = recordStateFromCampaign(payload?.campaign);
+        if (!recordState) return;
+        recordApostleLevels = Object.fromEntries(
+          Object.entries(apostleRecordTracks).map(([apostle, track]) => [
+            apostle,
+            recordLevelForTrack(recordState, track)
+          ])
+        );
+        renderApostleTitle();
+        applyCurrentApostleLevelBonuses();
+        renderCriticalMassSlot();
+        renderExtraCards();
+        renderAibpCards();
+        renderPanelTokens();
+      } catch {
+        // 离线或 file:// 打开时继续使用手动等级。
+      }
+    }
+
+    function apostleLevelFor(name) {
+      if (fixedLevelOneApostles.has(name)) return 1;
+      const override = Number(apostleLevelOverrides[name]);
+      if (override >= 1 && override <= maxApostleLevel) return override;
+      const recordLevel = Number(recordApostleLevels[name]);
+      if (recordLevel >= 1 && recordLevel <= maxApostleLevel) return recordLevel;
+      return 1;
+    }
+
+    function currentApostleLevel() {
+      return apostleLevelFor(currentApostle);
+    }
+
+    function renderApostleTitle() {
+      const level = currentApostleLevel();
+      title.textContent = `${currentApostle.replaceAll("_", " ")} · ${levelRoman[level] || level}`;
+      renderMapFactionStatus();
+      const fixedAtOne = fixedLevelOneApostles.has(currentApostle);
+      apostleLevelSelect.disabled = fixedAtOne;
+      apostleLevelSelect.value = !fixedAtOne && apostleLevelOverrides[currentApostle]
+        ? String(apostleLevelOverrides[currentApostle])
+        : "";
+      const recordLevel = Number(recordApostleLevels[currentApostle]) || 0;
+      apostleLevelSelect.options[0].textContent = fixedAtOne
+        ? "固定等级 I"
+        : recordLevel
+          ? `跟随记录表（${levelRoman[recordLevel] || recordLevel}）`
+          : "跟随记录表（未读取）";
+      document.querySelectorAll("#nav button[data-name]").forEach((button) => {
+        const name = button.dataset.name;
+        const navLevel = apostleLevelFor(name);
+        button.textContent = `${name.replaceAll("_", " ")} · ${levelRoman[navLevel] || navLevel}`;
+      });
+    }
+
+    function bpViewsForCurrentApostle() {
+      return isChimera() ? chimeraBpViews : normalBpViews;
+    }
+
+    function currentBpDamageKey() {
+      if (!isChimera()) return "damage";
+      return bpDamageTargetSelect.value === "damage2" ? "damage2" : "damage1";
+    }
+
+    function currentBpDamageView() {
+      if (!isChimera()) return "损伤";
+      return currentBpDamageKey() === "damage2" ? "第二损伤堆" : "常规损伤堆";
+    }
+
+    function bpDamageValue(card) {
+      if (!card) return 0;
+      if (card.special === "DW" || card.level === "III") return 2;
+      return Math.max(1, Math.floor(Number(card.damageValue) || 1));
+    }
+
+    function notifyBpWound(card) {
+      window.C45Specials?.recordBpWound?.(bpDamageValue(card));
+    }
+
+    function bpDamageTotalForKey(key) {
+      ensurePiles(currentApostle);
+      const cards = piles[currentApostle].BP[key] || [];
+      return cards.reduce((sum, card) => sum + bpDamageValue(card), 0);
+    }
+
+    function currentBpDamageSummary() {
+      if (!isChimera()) {
+        return { total: bpDamageTotalForKey("damage") };
+      }
+      const damage1 = bpDamageTotalForKey("damage1");
+      const damage2 = bpDamageTotalForKey("damage2");
+      return { total: damage1 + damage2, damage1, damage2 };
+    }
+
+    function pushBpDamage(card) {
+      ensurePiles(currentApostle);
+      const damageKey = currentBpDamageKey();
+      if (isChimera() && damageKey === "damage2") {
+        addChimeraSecondDamage(card);
+        return;
+      }
+      piles[currentApostle].BP[damageKey].push(card);
+      if (isCyclonus() || currentApostle === "HEKATON" || currentApostle === "HYPERTIME_ORACLE") {
+        addCriticalMass(bpDamageValue(card));
+      }
+      notifyBpWound(card);
+    }
+
+    function hasCriticalMassFeature() {
+      return criticalMassApostles.has(currentApostle);
+    }
+
+    function criticalMassToken() {
+      if (!hasCriticalMassFeature()) return null;
+      return piles[currentApostle].tokens.find((item) =>
+        item.criticalMass === true || item.chimeraCriticalMass === true
+      ) || null;
+    }
+
+    function c45PanelCounterKind(name = currentApostle) {
+      if (name === "MIDASCORE") return "midascorePain";
+      if (name === "DRAGON_OF_PHOBOS") return "dragon";
+      if (name === "MEDUKETOS") return "meduketos";
+      return "";
+    }
+
+    function c45PanelCounterToken() {
+      const kind = c45PanelCounterKind();
+      if (!kind) return null;
+      return piles[currentApostle].tokens.find((item) =>
+        kind === "midascorePain"
+          ? item.midascorePain === true
+          : item.c45PanelCounter === kind
+      ) || null;
+    }
+
+    function c45PanelCounterThreshold() {
+      if (currentApostle === "MIDASCORE") return 5;
+      if (currentApostle === "DRAGON_OF_PHOBOS") {
+        return currentApostleLevel() >= 4 ? 3 : 4;
+      }
+      return 3;
+    }
+
+    function hasPanelCounterSlot(name = currentApostle) {
+      return criticalMassApostles.has(name) || Boolean(c45PanelCounterKind(name));
+    }
+
+    function currentCriticalMassPosition() {
+      if (currentApostle === "HEKATON") return hekatonCriticalMassPosition;
+      if (currentApostle === "HYPERTIME_ORACLE") return oracleCriticalMassPosition;
+      return criticalMassPosition;
+    }
+
+    function criticalMassThreshold() {
+      return isCyclonus() || currentApostle === "HYPERTIME_ORACLE" ? 4 : 3;
+    }
+
+    function addCriticalMass(amount = 1) {
+      if (!hasCriticalMassFeature() || currentApostleLevel() < 2) return false;
+      const increment = Math.max(0, Math.floor(Number(amount) || 0));
+      if (increment <= 0) return false;
+
+      const existing = criticalMassToken();
+      if (existing) {
+        existing.criticalMass = true;
+        delete existing.chimeraCriticalMass;
+        existing.count = clampTokenCount((Number(existing.count) || 0) + increment);
+      } else {
+        const position = currentCriticalMassPosition();
+        piles[currentApostle].tokens.push({
+          id: createTokenStackId(),
+          file: criticalMassTokenFile,
+          count: clampTokenCount(increment),
+          x: position.x,
+          y: position.y,
+          criticalMass: true
+        });
+      }
+      renderPanelTokens();
+      return true;
+    }
+
+    function addChimeraSecondDamage(card) {
+      ensurePiles(currentApostle);
+      piles[currentApostle].BP.damage2.push(card);
+      addCriticalMass(1);
+    }
+
+    function addCriticalMassFromSlot() {
+      if (c45PanelCounterKind()) {
+        window.C45Specials?.handlePanelCounterTokenClick?.();
+        return;
+      }
+      if (!hasCriticalMassFeature() || currentApostleLevel() < 2 || criticalMassToken()) return;
+      rememberUndo(currentApostle, "BP");
+      addCriticalMass(1);
+      savePiles();
+      renderAibpCards();
+    }
+
+    function resolveCriticalMass() {
+      if (!hasCriticalMassFeature()) return;
+      const token = criticalMassToken();
+      if (!token || (Number(token.count) || 0) < criticalMassThreshold()) return;
+
+      if (currentApostle === "HEKATON") {
+        rememberUndo(currentApostle, "AIBP");
+        piles[currentApostle].tokens = piles[currentApostle].tokens.filter((item) => item.id !== token.id);
+        savePiles();
+        renderPanelTokens();
+        const signatureImg = document.getElementById("signatureCardImage");
+        if (signatureImg) {
+          openImageZoom(
+            signatureImg.dataset.frontSrc || signatureImg.currentSrc || signatureImg.src,
+            "HEKATON 标志行为",
+            null,
+            { cardTokens: currentPanelCardTokens("AI") }
+          );
+        }
+        return;
+      }
+
+      const ai = piles[currentApostle]?.AI;
+      if (!ai || ai.pending || (ai.deck.length === 0 && ai.discard.length === 0)) return;
+
+      rememberUndo(currentApostle, "AIBP");
+      piles[currentApostle].tokens = piles[currentApostle].tokens.filter((item) => item.id !== token.id);
+      savePiles();
+      renderPanelTokens();
+      drawAi(false);
+    }
+
+    function handleCriticalMassTokenClick() {
+      if (!hasCriticalMassFeature()) return;
+      const token = criticalMassToken();
+      if (!token) return;
+      if ((Number(token.count) || 0) >= criticalMassThreshold()) {
+        resolveCriticalMass();
+        return;
+      }
+
+      rememberUndo(currentApostle, "BP");
+      addCriticalMass(1);
+      savePiles();
+      renderAibpCards();
+      renderPanelTokens();
+    }
+
+    function chimeraPhaseForCard(card) {
+      const fileName = cardFileName(card, chimeraName);
+      const map = window.CHIMERA_BP_STATUS_MAP || {};
+      const phase = String(map[fileName] || "").toUpperCase();
+      return chimeraPhaseStates[phase] ? phase : "";
+    }
+
+    function setChimeraPhaseFromCard(card) {
+      if (!isChimera()) return;
+      const phase = chimeraPhaseForCard(card);
+      if (!phase) return;
+      piles[currentApostle].chimeraPhase = phase;
+      const marker = panelWrap.querySelector(".panel-state-marker");
+      updateNietzscheStateUi(marker);
+    }
+
+    function cardSrc(card) {
+      if (card.special) {
+        return `ps/other/${card.special}.jpg`;
+      }
+      return `ps/${currentApostle}/${cardFileName(card)}`;
+    }
+
+    function cardAlt(card) {
+      if (card.special) {
+        return `${card.special} 特殊损伤`;
+      }
+      if (card.damageValue && card.damageValue > 1) {
+        return `${card.type} ${card.level} ${card.index}，视作 ${card.damageValue} 个损伤`;
+      }
+      return `${card.type} ${card.level} ${card.index}`;
+    }
+
+    function renderCardsIntoGrid(grid, cards, emptyText, type = "", view = "") {
+      grid.replaceChildren();
+
+      if (cards.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "missing";
+        empty.textContent = emptyText;
+        grid.appendChild(empty);
+        return;
+      }
+
+      cards.forEach((card, index) => {
+        const tile = document.createElement("div");
+        tile.className = "card-tile";
+        if (type && view) {
+          tile.dataset.cardType = type;
+          tile.dataset.cardView = view;
+          tile.dataset.cardIndex = String(index);
+        }
+        const src = cardSrc(card);
+        const img = imageOrMessage(src, cardAlt(card));
+        img.addEventListener("load", () => enableOptionalCardBack(img, src), { once: true });
+        tile.appendChild(img);
+        if (card.damageValue && card.damageValue > 1) {
+          const badge = document.createElement("div");
+          badge.className = "damage-badge";
+          badge.textContent = `×${card.damageValue}`;
+          tile.appendChild(badge);
+        }
+        grid.appendChild(tile);
+      });
+    }
+
+    function cardsForView(type, view) {
+      ensurePiles(currentApostle);
+      if (type === "AI" && view === "闪粉牌组") {
+        return piles[currentApostle].flare.deck;
+      }
+      if (type === "AI" && view === "闪粉弃牌") {
+        return piles[currentApostle].flare.discard;
+      }
+      if (type === "AI" && view === "变招牌组") {
+        return piles[currentApostle].feint.deck;
+      }
+      if (type === "AI" && view === "生效变招") {
+        return piles[currentApostle].feint.active;
+      }
+      if (type === "AI" && view === "移除变招") {
+        return piles[currentApostle].feint.removed;
+      }
+      if (view === "当前") {
+        return piles[currentApostle][type].deck;
+      }
+      if (view === "弃牌") {
+        return piles[currentApostle][type].discard;
+      }
+      if (type === "AI" && view === "移除") {
+        return piles[currentApostle].AI.removed;
+      }
+      if (type === "BP" && view === "损伤") {
+        return piles[currentApostle].BP.damage;
+      }
+      if (type === "BP" && (view === "损伤1" || view === "常规损伤堆")) {
+        return piles[currentApostle].BP.damage1;
+      }
+      if (type === "BP" && (view === "损伤2" || view === "第二损伤堆")) {
+        return piles[currentApostle].BP.damage2;
+      }
+      if (type === "BP" && view === "移除") {
+        return piles[currentApostle].BP.removed;
+      }
+      if (["I", "II", "III"].includes(view)) {
+        return piles[currentApostle][type].supply[view] || [];
+      }
+      return [];
+    }
+
+    function pileLocationForView(type, view) {
+      if (type === "AI" && view === "闪粉牌组") {
+        return { type, owner: "flare", key: "deck", view, label: "闪粉牌组" };
+      }
+      if (type === "AI" && view === "闪粉弃牌") {
+        return { type, owner: "flare", key: "discard", view, label: "闪粉弃牌" };
+      }
+      if (type === "AI" && view === "变招牌组") {
+        return { type, owner: "feint", key: "deck", view, label: "变招牌组" };
+      }
+      if (type === "AI" && view === "生效变招") {
+        return { type, owner: "feint", key: "active", view, label: "生效变招" };
+      }
+      if (type === "AI" && view === "移除变招") {
+        return { type, owner: "feint", key: "removed", view, label: "移除变招" };
+      }
+      if (view === "当前") {
+        return { type, owner: type, key: "deck", view, label: "抽牌堆" };
+      }
+      if (view === "弃牌") {
+        return { type, owner: type, key: "discard", view, label: "弃牌堆" };
+      }
+      if (type === "AI" && view === "移除") {
+        return { type, owner: "AI", key: "removed", view, label: "移出游戏" };
+      }
+      if (type === "BP" && view === "损伤") {
+        return { type, owner: "BP", key: "damage", view, label: "损伤堆" };
+      }
+      if (type === "BP" && (view === "损伤1" || view === "常规损伤堆")) {
+        return { type, owner: "BP", key: "damage1", view, label: "常规损伤堆" };
+      }
+      if (type === "BP" && (view === "损伤2" || view === "第二损伤堆")) {
+        return { type, owner: "BP", key: "damage2", view, label: "第二损伤堆" };
+      }
+      if (type === "BP" && view === "移除") {
+        return { type, owner: "BP", key: "removed", view, label: "移出游戏" };
+      }
+      if (["I", "II", "III"].includes(view)) {
+        return { type, owner: type, key: "supply", level: view, view, label: `${view} 备用牌堆` };
+      }
+      return null;
+    }
+
+    function pileArrayForLocation(location, create = false) {
+      if (!location) return null;
+      ensurePiles(currentApostle);
+      if (location.owner === "flare") {
+        piles[currentApostle].flare[location.key] ||= [];
+        return piles[currentApostle].flare[location.key];
+      }
+
+      const pile = piles[currentApostle][location.owner];
+      if (!pile) return null;
+      if (location.key === "supply") {
+        if (create) pile.supply[location.level] ||= [];
+        return pile.supply[location.level] || null;
+      }
+      if (create) pile[location.key] ||= [];
+      return pile[location.key] || null;
+    }
+
+    function samePileLocation(left, right) {
+      return Boolean(left && right)
+        && left.owner === right.owner
+        && left.key === right.key
+        && (left.level || "") === (right.level || "");
+    }
+
+    function sameMoveCard(left, right) {
+      if (!left || !right) return false;
+      if (left.special || right.special) {
+        return left.special === right.special && (left.damageValue || 1) === (right.damageValue || 1);
+      }
+      return sameCard(left, right)
+        && (left.damageValue || 1) === (right.damageValue || 1)
+        && Boolean(left.specialBp) === Boolean(right.specialBp);
+    }
+
+    function addMoveTarget(targets, context, location, label, placement = "end") {
+      if (!location) return;
+      if (samePileLocation(context.source, location)) {
+        if (placement !== "top" || location.key !== "deck" || context.index <= 0) return;
+      }
+      targets.push({ location, label, placement });
+    }
+
+    function moveTargetsForContext(context) {
+      const targets = [];
+      if (!context) return targets;
+
+      if (context.source.owner === "flare") {
+        addMoveTarget(targets, context, pileLocationForView("AI", "闪粉牌组"), "到闪粉牌组");
+        addMoveTarget(targets, context, pileLocationForView("AI", "闪粉弃牌"), "到闪粉弃牌");
+        return targets;
+      }
+      if (context.source.owner === "feint") {
+        addMoveTarget(targets, context, pileLocationForView("AI", "变招牌组"), "洗回变招牌组", "random");
+        addMoveTarget(targets, context, pileLocationForView("AI", "生效变招"), "留在场上");
+        addMoveTarget(targets, context, pileLocationForView("AI", "移除变招"), "从变招牌组移除");
+        return targets;
+      }
+
+      addMoveTarget(targets, context, pileLocationForView(context.type, "当前"), "到抽牌堆", "random");
+      addMoveTarget(targets, context, pileLocationForView(context.type, "当前"), "到抽牌堆顶", "top");
+      addMoveTarget(targets, context, pileLocationForView(context.type, "弃牌"), "到弃牌堆");
+
+      if (context.type === "BP") {
+        if (isChimera()) {
+          addMoveTarget(targets, context, pileLocationForView("BP", "常规损伤堆"), "到常规损伤堆");
+          addMoveTarget(targets, context, pileLocationForView("BP", "第二损伤堆"), "到第二损伤堆");
+        } else {
+          addMoveTarget(targets, context, pileLocationForView("BP", "损伤"), "到损伤堆");
+        }
+      }
+
+      addMoveTarget(targets, context, pileLocationForView(context.type, "移除"), "移出游戏");
+      addMoveTarget(targets, context, pileLocationForView(context.type, "II"), "到 II 备用");
+      addMoveTarget(targets, context, pileLocationForView(context.type, "III"), "到 III 备用");
+      return targets;
+    }
+
+    function moveContextFromImage(img) {
+      const tile = img?.closest(".card-tile");
+      if (!tile || (!tile.closest("#aiGrid") && !tile.closest("#bpGrid"))) return null;
+      const type = tile.dataset.cardType;
+      const view = tile.dataset.cardView;
+      const index = Number(tile.dataset.cardIndex);
+      if (!["AI", "BP"].includes(type) || !Number.isInteger(index)) return null;
+
+      const source = pileLocationForView(type, view);
+      const sourceCards = pileArrayForLocation(source);
+      const card = sourceCards?.[index];
+      if (!card) return null;
+
+      return {
+        type,
+        view,
+        index,
+        source,
+        card: clonePileState(card)
+      };
+    }
+
+    function flipContextFromImage(img) {
+      if (!img?.dataset?.frontSrc || !img?.dataset?.backSrc) return null;
+      return {
+        frontSrc: img.dataset.frontSrc,
+        backSrc: img.dataset.backSrc,
+        sourceId: img.id || "",
+        face: img.dataset.face || "front"
+      };
+    }
+
+    function tokenContextFromImage(img) {
+      const tokenItem = img?.closest(".panel-token-item");
+      if (!tokenItem?.dataset?.tokenId) return null;
+      return {
+        apostle: currentApostle,
+        tokenId: tokenItem.dataset.tokenId,
+        file: tokenItem.dataset.file
+      };
+    }
+
+    function placeCardInTarget(target, card) {
+      const targetCards = pileArrayForLocation(target.location, true);
+      if (!targetCards) return false;
+      if (target.placement === "top") {
+        targetCards.unshift(card);
+      } else if (target.placement === "random") {
+        insertRandom(targetCards, card);
+      } else {
+        targetCards.push(card);
+      }
+      return true;
+    }
+
+    function moveVisibleCard(context, target) {
+      const sourceCards = pileArrayForLocation(context?.source);
+      if (!sourceCards || !target?.location) return;
+
+      let sourceIndex = context.index;
+      if (!sameMoveCard(sourceCards[sourceIndex], context.card)) {
+        sourceIndex = sourceCards.findIndex((card) => sameMoveCard(card, context.card));
+      }
+      if (sourceIndex < 0) return;
+
+      rememberUndo(currentApostle, context.type);
+      const [card] = sourceCards.splice(sourceIndex, 1);
+      placeCardInTarget(target, card);
+      if (isChimera() && target.location.owner === "BP" && target.location.key === "damage2") {
+        addCriticalMass(1);
+      } else if ((isCyclonus() || currentApostle === "HEKATON" || currentApostle === "HYPERTIME_ORACLE")
+        && target.location.owner === "BP"
+        && target.location.key === "damage") {
+        addCriticalMass(bpDamageValue(card));
+      }
+      if (target.location.owner === "BP" && target.location.key === "damage") {
+        notifyBpWound(card);
+      }
+      savePiles();
+      renderAibpCards();
+    }
+
+    function deckBackText(cards) {
+      if (cards.length === 0) return "空";
+      return cards.map((card) => levelBack[card.level] || card.level).join("-");
+    }
+
+    function shuffleCards(cards) {
+      const shuffled = cards.slice();
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }
+
+    function insertRandom(deck, card) {
+      if (!card) return;
+      const position = Math.floor(Math.random() * (deck.length + 1));
+      deck.splice(position, 0, card);
+    }
+
+    function drawFromSupply(type, level) {
+      const pile = piles[currentApostle][type].supply[level];
+      if (!pile || pile.length === 0) return null;
+      return pile.pop();
+    }
+
+    function insertPromotedCard(type, level) {
+      const pile = piles[currentApostle][type];
+      const card = drawFromSupply(type, level);
+      if (!card) return false;
+
+      insertRandom(pile.deck, card);
+      if (pile.deck.length === 1 && pile.discard.length > 0) {
+        pile.deck = shuffleCards(pile.deck.concat(pile.discard));
+        pile.discard = [];
+      }
+      return true;
+    }
+
+    function hasSupply(type, level) {
+      const pile = piles[currentApostle][type].supply[level];
+      return Array.isArray(pile) && pile.length > 0;
+    }
+
+    function reshuffleDiscardIfDeckEmpty(type) {
+      const pile = piles[currentApostle][type];
+      if (pile.deck.length === 0 && pile.discard.length > 0) {
+        pile.deck = shuffleCards(pile.discard);
+        pile.discard = [];
+      }
+    }
+
+    function removeFirstMatching(type, predicate) {
+      const pile = piles[currentApostle][type];
+      reshuffleDiscardIfDeckEmpty(type);
+      let index = pile.deck.findIndex(predicate);
+      if (index >= 0) {
+        const card = pile.deck.splice(index, 1)[0];
+        pile.removed.push(card);
+        reshuffleDiscardIfDeckEmpty(type);
+        return { card, from: "deck" };
+      }
+
+      index = pile.discard.findIndex(predicate);
+      if (index >= 0) {
+        const card = pile.discard.splice(index, 1)[0];
+        pile.removed.push(card);
+        pile.deck = shuffleCards(pile.deck.concat(pile.discard));
+        pile.discard = [];
+        return { card, from: "discard" };
+      }
+
+      return null;
+    }
+
+    function putIntoRemovedPile(type, card) {
+      if (!card || card.special) return;
+      piles[currentApostle][type].removed.push(card);
+    }
+
+    function removeFirstMatchingToRemoved(type, predicate) {
+      const pile = piles[currentApostle][type];
+      reshuffleDiscardIfDeckEmpty(type);
+      let index = pile.deck.findIndex(predicate);
+      if (index >= 0) {
+        const card = pile.deck.splice(index, 1)[0];
+        putIntoRemovedPile(type, card);
+        reshuffleDiscardIfDeckEmpty(type);
+        return { card, from: "deck" };
+      }
+
+      index = pile.discard.findIndex(predicate);
+      if (index >= 0) {
+        const card = pile.discard.splice(index, 1)[0];
+        putIntoRemovedPile(type, card);
+        pile.deck = shuffleCards(pile.deck.concat(pile.discard));
+        pile.discard = [];
+        return { card, from: "discard" };
+      }
+
+      return null;
+    }
+
+    function lowestLevelCard(type) {
+      const order = ["I", "II", "III"];
+      const pile = piles[currentApostle][type];
+      for (const level of order) {
+        const deckCard = pile.deck.find((card) => card.level === level);
+        if (deckCard) return deckCard;
+        const discardCard = pile.discard.find((card) => card.level === level);
+        if (discardCard) return discardCard;
+      }
+      return null;
+    }
+
+    function removeLowestCard(type) {
+      const lowest = lowestLevelCard(type);
+      if (!lowest) return null;
+      return removeFirstMatching(type, (card) => card.level === lowest.level && card.index === lowest.index);
+    }
+
+    function removeLowestCardToRemoved(type) {
+      const lowest = lowestLevelCard(type);
+      if (!lowest) return null;
+      return removeFirstMatchingToRemoved(type, (card) => card.level === lowest.level && card.index === lowest.index);
+    }
+
+    function removeLowestCardFromDeckOnly(type) {
+      const order = ["I", "II", "III"];
+      const pile = piles[currentApostle][type];
+      for (const level of order) {
+        const index = pile.deck.findIndex((card) => card.level === level);
+        if (index >= 0) {
+          const card = pile.deck.splice(index, 1)[0];
+          pile.removed.push(card);
+          return card;
+        }
+      }
+      return null;
+    }
+
+    function isPlainObject(value) {
+      return value && typeof value === "object" && !Array.isArray(value);
+    }
+
+    function isCriticalMassStack(item) {
+      return item?.criticalMass === true || item?.chimeraCriticalMass === true;
+    }
+
+    function isPerHitTokenStack(item) {
+      return item?.autoLevelBonus === "danger" || item?.perHit === true;
+    }
+
+    function tokenMergeKey(file, options = {}) {
+      const normalizedFile = String(file || "");
+      if (!normalizedFile || nonStackingTokenFiles.has(normalizedFile)) return "";
+      return `${normalizedFile}|${options.perHit ? "per-hit" : "normal"}`;
+    }
+
+    function tokenMergeKeyForItem(item) {
+      if (!item || isCriticalMassStack(item)) return "";
+      return tokenMergeKey(item.file, { perHit: isPerHitTokenStack(item) });
+    }
+
+    function findMergeableToken(tokens, file, options = {}) {
+      const key = tokenMergeKey(file, options);
+      if (!key) return null;
+      return tokens.find((item) => tokenMergeKeyForItem(item) === key) || null;
+    }
+
+    function normalizeTokenStacks(tokens) {
+      const result = [];
+      const byKey = new Map();
+      (Array.isArray(tokens) ? tokens : []).forEach((item) => {
+        const normalized = {
+          ...item,
+          id: item.id || createTokenStackId(),
+          count: Math.max(1, clampTokenCount(item.count) || 1)
+        };
+        const key = tokenMergeKeyForItem(normalized);
+        if (!key) {
+          result.push(normalized);
+          return;
+        }
+        const existing = byKey.get(key);
+        if (existing) {
+          existing.count = clampTokenCount((Number(existing.count) || 0) + (Number(normalized.count) || 0));
+          if (isPlainObject(normalized.autoLevelBonusContributions)) {
+            existing.autoLevelBonusContributions ||= {};
+            Object.entries(normalized.autoLevelBonusContributions).forEach(([kind, value]) => {
+              existing.autoLevelBonusContributions[kind] = (Number(existing.autoLevelBonusContributions[kind]) || 0) + (Number(value) || 0);
+            });
+          }
+        } else {
+          byKey.set(key, normalized);
+          result.push(normalized);
+        }
+      });
+      return result;
+    }
+
+    function addPanelToken(file, amount = 1, options = {}) {
+      ensurePiles(currentApostle);
+      const count = Math.max(0, Math.floor(Number(amount) || 0));
+      if (!file || count <= 0) return;
+
+      const tokens = piles[currentApostle].tokens;
+      if (options.stackExisting !== false) {
+        const existing = findMergeableToken(tokens, file, { perHit: options.perHit === true });
+        if (existing) {
+          existing.count = clampTokenCount((Number(existing.count) || 0) + count);
+          return existing;
+        }
+      }
+      const item = {
+        id: createTokenStackId(),
+        file,
+        count: clampTokenCount(count),
+        x: 8 + (tokens.length % 5) * 8,
+        y: 8 + Math.floor(tokens.length / 5) * 8
+      };
+      tokens.push(item);
+      return item;
+    }
+
+    function addAiExhaustedBonusTokens(damageCount = 1) {
+      ensurePiles(currentApostle);
+      const count = Math.max(0, Math.floor(Number(damageCount) || 0));
+      if (count <= 0) return;
+
+      let index = piles[currentApostle].aiExhaustedBonusIndex % aiExhaustedBonusTokens.length;
+      if (index < 0) index = 0;
+
+      for (let i = 0; i < count; i++) {
+        addPanelToken(aiExhaustedBonusTokens[index], 1);
+        index = (index + 1) % aiExhaustedBonusTokens.length;
+      }
+
+      piles[currentApostle].aiExhaustedBonusIndex = index;
+      renderPanelTokens();
+    }
+
+    function promoteAiFromLevel(fromLevel, toLevel, damageCount = 1) {
+      reshuffleDiscardIfDeckEmpty("AI");
+      if (toLevel === "III" && !hasSupply("AI", "III")) {
+        addAiExhaustedBonusTokens(damageCount);
+        return;
+      }
+      removeFirstMatchingToRemoved("AI", (card) => card.level === fromLevel);
+      insertPromotedCard("AI", toLevel);
+    }
+
+    function promoteAiForBpIII(damageCount = 2) {
+      reshuffleDiscardIfDeckEmpty("AI");
+      if (!hasSupply("AI", "III")) {
+        addAiExhaustedBonusTokens(damageCount);
+        return;
+      }
+      removeLowestCardToRemoved("AI");
+      insertPromotedCard("AI", "III");
+    }
+
+    function resolveBpDefeat(card) {
+      const bp = piles[currentApostle].BP;
+
+      if (card.level === "I") {
+        pushBpDamage(card);
+        insertPromotedCard("BP", "II");
+        promoteAiFromLevel("I", "II");
+        return;
+      }
+
+      if (card.level === "II") {
+        pushBpDamage(card);
+        insertPromotedCard("BP", "III");
+        promoteAiFromLevel("II", "III");
+        return;
+      }
+
+      // BP III：按规则不把这张 BP3 当作普通损伤显示；它被放在一旁，损伤堆加入通用双重损伤 DW。
+      bp.removed.push(card);
+      pushBpDamage({ special: "DW" });
+
+      if (hasSupply("BP", "III")) {
+        removeLowestCard("BP");
+        insertPromotedCard("BP", "III");
+        bp.deck.push(card);
+      } else {
+        bp.deck = shuffleCards(bp.deck.concat(bp.discard));
+        bp.discard = [];
+        bp.deck.push(card);
+      }
+
+      promoteAiForBpIII();
+    }
+
+    function resolveBpCritical(card) {
+      const bp = piles[currentApostle].BP;
+
+      if (card.level !== "III") {
+        // 规则图中“关键一击”只列在 BP III；非 BP III 时按普通击败处理。
+        resolveBpDefeat(card);
+        return;
+      }
+
+      // BP III 关键一击：击伤的 BP3 本体进入损伤堆，视作 2 个损伤。
+      pushBpDamage({ ...card, damageValue: 2 });
+
+      if (hasSupply("BP", "III")) {
+        removeLowestCard("BP");
+        insertPromotedCard("BP", "III");
+        insertPromotedCard("BP", "III");
+      } else {
+        bp.deck = shuffleCards(bp.deck.concat(bp.discard));
+        bp.discard = [];
+      }
+    }
+
+    function addBpSpecialDamage(special) {
+      ensurePiles(currentApostle);
+      rememberUndo(currentApostle, "BP");
+      pushBpDamage({ special });
+      currentBpView = currentBpDamageView();
+      savePiles();
+      renderAibpCards();
+    }
+
+    function isLabyrinthauros() {
+      return currentApostle === labyrinthaurosName;
+    }
+
+    function isHermesian() {
+      return currentApostle === hermesianName;
+    }
+
+    function isTitanX() {
+      return currentApostle === titanXName;
+    }
+
+    function renderFlareButton() {
+      if (!drawFlareButton) return;
+      drawFlareButton.classList.toggle("show", isHermesian());
+      if (!isHermesian()) return;
+      const flare = piles[currentApostle].flare;
+      drawFlareButton.textContent = `抽取闪粉（${flare.deck.length}/${flare.discard.length}）`;
+    }
+
+    function drawFlare() {
+      if (!isHermesian()) return;
+      ensurePiles(currentApostle);
+      const flare = piles[currentApostle].flare;
+      if (flare.deck.length === 0 && flare.discard.length > 0) {
+        flare.deck = shuffleCards(flare.discard);
+        flare.discard = [];
+      }
+      if (flare.deck.length === 0) return;
+
+      rememberUndo(currentApostle, "AI");
+      const card = flare.deck.shift();
+      flare.discard.push(card);
+      savePiles();
+      renderAibpCards();
+      openImageZoom(cardSrc(card), "抽取的闪粉卡");
+    }
+
+    function renderFeintButton() {
+      if (!drawFeintButton) return;
+      drawFeintButton.classList.toggle("show", isTitanX());
+      if (!isTitanX()) return;
+      const feint = piles[currentApostle].feint;
+      drawFeintButton.disabled = feint.deck.length === 0;
+      drawFeintButton.textContent = `抽取变招（${feint.deck.length}/${feint.active.length}/${feint.removed.length}）`;
+    }
+
+    function drawFeint() {
+      if (!isTitanX()) return;
+      ensurePiles(currentApostle);
+      const feint = piles[currentApostle].feint;
+      if (feint.deck.length === 0) return;
+
+      rememberUndo(currentApostle, "AI");
+      const card = feint.deck.shift();
+      feint.active.push(card);
+      currentAiView = "生效变招";
+      savePiles();
+      updateAiViewTabs();
+      renderAibpCards();
+      const frontSrc = cardSrc(card);
+      const source = pileLocationForView("AI", "生效变招");
+      openImageZoom(frontSrc, "抽取的变招卡", null, {
+        flipContext: {
+          frontSrc,
+          backSrc: frontSrc.replace(/(\.[^.]+)$/, "_BACK$1"),
+          face: "front"
+        },
+        moveContext: {
+          type: "AI",
+          view: "生效变招",
+          index: feint.active.length - 1,
+          source,
+          card: clonePileState(card)
+        }
+      });
+    }
+
+    function addLabyrinthaurosSpecialBp() {
+      if (!isLabyrinthauros()) return;
+      ensurePiles(currentApostle);
+      const bp = piles[currentApostle].BP;
+      const locations = ["deck", "discard", "damage", "damage1", "damage2"];
+      const alreadyInPlay = locations.some((key) =>
+        (bp[key] || []).some((card) => sameCard(card, labyrinthaurosSpecialBp))
+      ) || sameCard(bp.pending, labyrinthaurosSpecialBp);
+      if (alreadyInPlay) return;
+
+      rememberUndo(currentApostle, "BP");
+      bp.removed = (bp.removed || []).filter((card) => !sameCard(card, labyrinthaurosSpecialBp));
+      insertRandom(bp.deck, { ...labyrinthaurosSpecialBp });
+      savePiles();
+      renderAibpCards();
+    }
+
+    function removeLabyrinthaurosSpecialBp() {
+      if (!isLabyrinthauros()) return;
+      ensurePiles(currentApostle);
+      const bp = piles[currentApostle].BP;
+      const locations = ["deck", "discard", "damage", "damage1", "damage2"];
+      const exists = locations.some((key) =>
+        (bp[key] || []).some((card) => sameCard(card, labyrinthaurosSpecialBp))
+      ) || sameCard(bp.pending, labyrinthaurosSpecialBp);
+      if (!exists) return;
+
+      rememberUndo(currentApostle, "BP");
+      locations.forEach((key) => {
+        bp[key] = (bp[key] || []).filter((card) => !sameCard(card, labyrinthaurosSpecialBp));
+      });
+      if (sameCard(bp.pending, labyrinthaurosSpecialBp)) bp.pending = null;
+      if (!(bp.removed || []).some((card) => sameCard(card, labyrinthaurosSpecialBp))) {
+        bp.removed.push({ ...labyrinthaurosSpecialBp });
+      }
+      currentBpView = "移除";
+      savePiles();
+      renderAibpCards();
+    }
+
+    function addChimeraDamage2Sw() {
+      ensurePiles(currentApostle);
+      if (!isChimera()) return;
+      rememberUndo(currentApostle, "BP");
+      addChimeraSecondDamage({ special: "SW" });
+      currentBpView = "第二损伤堆";
+      savePiles();
+      renderAibpCards();
+    }
+
+    function removeChimeraDamage2Sw() {
+      ensurePiles(currentApostle);
+      if (!isChimera()) return;
+      const damage2 = piles[currentApostle].BP.damage2;
+      const index = damage2.findLastIndex
+        ? damage2.findLastIndex((card) => card && card.special === "SW")
+        : (() => {
+            for (let i = damage2.length - 1; i >= 0; i--) {
+              if (damage2[i] && damage2[i].special === "SW") return i;
+            }
+            return -1;
+          })();
+      if (index < 0) return;
+      rememberUndo(currentApostle, "BP");
+      damage2.splice(index, 1);
+      currentBpView = "第二损伤堆";
+      savePiles();
+      renderAibpCards();
+    }
+
+    function promoteBpDeckForDefeatedLevel(level) {
+      const bp = piles[currentApostle].BP;
+      reshuffleDiscardIfDeckEmpty("BP");
+
+      if (level === "I") {
+        insertPromotedCard("BP", "II");
+        return;
+      }
+
+      if (level === "II") {
+        insertPromotedCard("BP", "III");
+        return;
+      }
+
+      if (level === "III") {
+        if (hasSupply("BP", "III")) {
+          removeLowestCardToRemoved("BP");
+          insertPromotedCard("BP", "III");
+        } else {
+          bp.deck = shuffleCards(bp.deck.concat(bp.discard));
+          bp.discard = [];
+        }
+      }
+    }
+
+
+    function lowestDeckCardWithIndex(type) {
+      const order = ["I", "II", "III"];
+      const deck = piles[currentApostle][type].deck;
+      for (const level of order) {
+        const index = deck.findIndex((card) => card.level === level);
+        if (index >= 0) {
+          return { card: deck[index], index };
+        }
+      }
+      return null;
+    }
+
+    function higherLevel(level) {
+      if (level === "I") return "II";
+      if (level === "II") return "III";
+      return null;
+    }
+
+    function promoteSinglePile(type) {
+      ensurePiles(currentApostle);
+      const target = lowestLevelCard(type);
+      if (!target) return;
+
+      const toLevel = higherLevel(target.level);
+      if (!toLevel) {
+        window.alert(`${type} 当前牌堆中最低等级已经是 III，没有更高等级可晋升。`);
+        return;
+      }
+
+      rememberUndo(currentApostle, type);
+      removeFirstMatchingToRemoved(type, (card) => card.level === target.level && card.index === target.index);
+      insertPromotedCard(type, toLevel);
+
+      // 不再自动跳转到“当前”；保留用户当前正在查看的牌堆。
+      savePiles();
+      renderAibpCards();
+    }
+
+    function promoteBpByRemovingLowest() {
+      ensurePiles(currentApostle);
+      if (!lowestLevelCard("BP")) return;
+      rememberUndo(currentApostle, "AIBP");
+      const removed = removeLowestCardToRemoved("BP");
+      const removedCard = removed?.card;
+      if (!removedCard) return;
+
+      // 这张 BP 不进入损伤牌堆，而是进入 BP 的移除牌堆；
+      // 但仍按“这张 BP 被击败/造成损伤”完整结算 BP 卡组补新卡和 AI 卡组升级。
+      promoteBpDeckForDefeatedLevel(removedCard.level);
+
+      if (removedCard.level === "I") {
+        promoteAiFromLevel("I", "II");
+      } else if (removedCard.level === "II") {
+        promoteAiFromLevel("II", "III");
+      } else if (removedCard.level === "III") {
+        promoteAiForBpIII();
+      }
+
+      currentBpView = "移除";
+      savePiles();
+      renderAibpCards();
+    }
+
+    function performLinkedPromotion() {
+      ensurePiles(currentApostle);
+      const removed = removeLowestCardToRemoved("BP");
+      const removedCard = removed?.card;
+      if (!removedCard) return false;
+
+      promoteBpDeckForDefeatedLevel(removedCard.level);
+      if (removedCard.level === "I") {
+        promoteAiFromLevel("I", "II");
+      } else if (removedCard.level === "II") {
+        promoteAiFromLevel("II", "III");
+      } else if (removedCard.level === "III") {
+        promoteAiForBpIII();
+      }
+      return true;
+    }
+
+    function isUnstartedAibpState(state) {
+      return !state?.AI?.pending
+        && !state?.BP?.pending
+        && state.AI.discard.length === 0
+        && state.BP.discard.length === 0
+        && state.AI.removed.length === 0
+        && state.BP.removed.length === 0
+        && state.BP.damage.length === 0
+        && state.BP.damage1.length === 0
+        && state.BP.damage2.length === 0;
+    }
+
+    function applyBurdenInitialLinkedPromotion() {
+      ensurePiles(currentApostle);
+      if (currentApostle !== burdenName) return false;
+      const state = piles[currentApostle];
+      state.initialSetupApplied ||= {};
+      if (state.initialSetupApplied.burdenLinkedPromotion) return false;
+      if (!isUnstartedAibpState(state)) return false;
+
+      const changed = performLinkedPromotion();
+      if (!changed) return false;
+      state.initialSetupApplied.burdenLinkedPromotion = true;
+      savePiles();
+      return true;
+    }
+
+    function levelBonusFor(apostle, level) {
+      const config = apostleLevelBonusConfig[apostle];
+      if (!config) return { promotions: 0, danger: 0, at: 0 };
+      let result = { promotions: 0, danger: 0, at: 0 };
+      Object.entries(config).forEach(([minimumLevel, bonus]) => {
+        if (level >= Number(minimumLevel)) result = { ...result, ...bonus };
+      });
+      return result;
+    }
+
+    function automaticTokenContribution(item, kind) {
+      if (isPlainObject(item?.autoLevelBonusContributions)) {
+        return Math.max(0, Math.floor(Number(item.autoLevelBonusContributions[kind]) || 0));
+      }
+      return item?.autoLevelBonus === kind ? Math.max(0, Math.floor(Number(item.count) || 0)) : 0;
+    }
+
+    function automaticTokenSnapshot() {
+      return JSON.stringify(
+        piles[currentApostle].tokens.filter((item) =>
+          item.autoLevelBonus || isPlainObject(item.autoLevelBonusContributions)
+        )
+      );
+    }
+
+    function syncAutomaticLevelBonusToken(kind, file, count) {
+      const tokens = piles[currentApostle].tokens;
+      const position = kind === "danger"
+        ? { x: 8, y: 8 }
+        : { x: 16, y: 8 };
+      const normalizedCount = Math.max(0, Math.floor(Number(count) || 0));
+      const perHit = kind === "danger" && currentApostleLevel() >= 5;
+      const existingAuto = tokens.find((item) => automaticTokenContribution(item, kind) > 0);
+      const previousContribution = automaticTokenContribution(existingAuto, kind);
+
+      if (existingAuto && previousContribution > 0) {
+        existingAuto.count = clampTokenCount((Number(existingAuto.count) || 0) - previousContribution);
+        if (isPlainObject(existingAuto.autoLevelBonusContributions)) {
+          delete existingAuto.autoLevelBonusContributions[kind];
+          if (!Object.keys(existingAuto.autoLevelBonusContributions).length) {
+            delete existingAuto.autoLevelBonusContributions;
+          }
+        }
+        if (existingAuto.autoLevelBonus === kind) {
+          delete existingAuto.autoLevelBonus;
+          delete existingAuto.perHit;
+        }
+        if ((Number(existingAuto.count) || 0) <= 0) {
+          const index = tokens.indexOf(existingAuto);
+          if (index >= 0) tokens.splice(index, 1);
+        }
+      }
+
+      if (normalizedCount <= 0) return;
+
+      if (perHit) {
+        let perHitToken = tokens.find((item) => item.autoLevelBonus === kind && item.perHit === true);
+        if (!perHitToken) {
+          perHitToken = addPanelToken(file, normalizedCount, { perHit: true });
+        } else {
+          perHitToken.count = normalizedCount;
+        }
+        perHitToken.file = file;
+        perHitToken.count = normalizedCount;
+        perHitToken.x = position.x;
+        perHitToken.y = position.y;
+        perHitToken.autoLevelBonus = kind;
+        perHitToken.perHit = true;
+        return;
+      }
+
+      const target = addPanelToken(file, normalizedCount);
+      if (!target) return;
+      target.autoLevelBonusContributions ||= {};
+      target.autoLevelBonusContributions[kind] = normalizedCount;
+      if (previousContribution <= 0 && target.count === normalizedCount) {
+        target.x = position.x;
+        target.y = position.y;
+      }
+    }
+
+    function levelDangerBonusTokenFile(apostle) {
+      return apostle === "HYPERTIME_ORACLE" ? "py+.png" : "DA+.png";
+    }
+
+    function applyCurrentApostleLevelBonuses() {
+      ensurePiles(currentApostle);
+      const target = levelBonusFor(currentApostle, currentApostleLevel());
+      const state = piles[currentApostle].levelBonusState;
+      let changed = false;
+
+      while (state.promotions < target.promotions) {
+        if (!performLinkedPromotion()) break;
+        state.promotions += 1;
+        changed = true;
+      }
+
+      const beforeTokens = automaticTokenSnapshot();
+      syncAutomaticLevelBonusToken("danger", levelDangerBonusTokenFile(currentApostle), target.danger);
+      syncAutomaticLevelBonusToken("at", "AT+.png", target.at);
+      const afterTokens = automaticTokenSnapshot();
+      if (beforeTokens !== afterTokens) changed = true;
+
+      if (changed) savePiles();
+      return changed;
+    }
+
+    function startNewCampaign() {
+      if (!window.confirm("开启新战役会重置当前使徒的 AI/BP 牌堆、弃牌记录和战役标记。确定继续吗？")) return;
+      ensurePiles(currentApostle);
+      undoStacks[currentApostle] = [];
+      piles[currentApostle] = initialState();
+      currentAiView = "弃牌";
+      currentBpView = "弃牌";
+      applyBurdenInitialLinkedPromotion();
+      applyCurrentApostleLevelBonuses();
+      savePiles();
+      updateNietzscheStateUi(panelWrap.querySelector(".panel-state-marker"));
+      renderAibpCards();
+      renderExtraCards();
+      renderPanelTokens();
+    }
+
+    function renderDeckInfo() {
+      ensurePiles(currentApostle);
+      aiBackInfo.textContent = deckBackText(piles[currentApostle].AI.deck);
+      bpBackInfo.textContent = deckBackText(piles[currentApostle].BP.deck);
+      const damageSummary = currentBpDamageSummary();
+      bpDamageSummary.textContent = isChimera()
+        ? `损伤：${damageSummary.total}（${damageSummary.damage1}+${damageSummary.damage2}）`
+        : `损伤：${damageSummary.total}`;
+      renderNietzscheBreakLocks(damageSummary.total);
+    }
+
+    function renderDrawPreview() {
+      ensurePiles(currentApostle);
+      const aiPending = piles[currentApostle].AI.pending;
+      const bpPending = piles[currentApostle].BP.pending;
+      confirmAiButton.disabled = !aiPending;
+      discardBpButton.disabled = !bpPending;
+      defeatBpButton.disabled = !bpPending;
+      criticalBpButton.disabled = !bpPending || (bpPending.level !== "III" && !bpPending.specialBp);
+
+      if (!aiPending) {
+        aiDrawPreview.classList.remove("has-card");
+        aiDrawPreview.textContent = "未抽取 AI";
+      } else {
+        aiDrawPreview.classList.add("has-card");
+        aiDrawPreview.replaceChildren(imageOrMessage(cardSrc(aiPending), "抽取的 AI"));
+      }
+
+      if (!bpPending) {
+        bpDrawPreview.classList.remove("has-card");
+        bpDrawPreview.textContent = "未抽取 BP";
+      } else {
+        bpDrawPreview.classList.add("has-card");
+        bpDrawPreview.replaceChildren(imageOrMessage(cardSrc(bpPending), "抽取的 BP"));
+      }
+    }
+
+    function renderAibpCards() {
+      const aiEmptyText = currentAiView === "移除"
+        ? "AI 移除牌堆为空"
+        : currentAiView === "闪粉牌组"
+          ? "闪粉牌组为空"
+          : currentAiView === "闪粉弃牌"
+            ? "闪粉弃牌堆为空"
+            : currentAiView === "变招牌组"
+              ? "变招牌组为空"
+              : currentAiView === "生效变招"
+                ? "没有生效中的变招"
+                : currentAiView === "移除变招"
+                  ? "没有移除的变招"
+            : `当前没有 AI ${currentAiView} 卡`;
+      const bpEmptyText = currentBpView === "损伤"
+        ? "BP 损伤牌堆为空"
+        : currentBpView === "损伤1" || currentBpView === "常规损伤堆"
+          ? "奇美拉 BP 常规损伤堆为空"
+          : currentBpView === "损伤2" || currentBpView === "第二损伤堆"
+            ? "奇美拉 BP 第二损伤堆为空"
+            : currentBpView === "移除"
+              ? "BP 移除牌堆为空"
+              : `当前没有 BP ${currentBpView} 卡`;
+      renderCardsIntoGrid(aiGrid, cardsForView("AI", currentAiView), aiEmptyText, "AI", currentAiView);
+      renderCardsIntoGrid(bpGrid, cardsForView("BP", currentBpView), bpEmptyText, "BP", currentBpView);
+      renderDeckInfo();
+      renderDrawPreview();
+      renderFlareButton();
+      renderFeintButton();
+      updateUndoButtons();
+      renderCriticalMassSlot();
+
+      document.querySelectorAll("#aiViewTabs button").forEach((button) => {
+        button.classList.toggle("active", button.dataset.view === currentAiView);
+      });
+      document.querySelectorAll("#bpViewTabs button").forEach((button) => {
+        button.classList.toggle("active", button.dataset.view === currentBpView);
+      });
+    }
+
+    function traitFileName(name, level, index, ext = "jpg") {
+      const safeExt = String(ext || "jpg").replace(/^\./, "").toLowerCase();
+      return `${name}_TR_${level}_${String(index).padStart(3, "0")}.${safeExt}`;
+    }
+
+    function traitSrc(name, level, index, ext = "jpg") {
+      return `ps/${name}/${traitFileName(name, level, index, ext)}`;
+    }
+
+    function commonTraitFileName(index, ext = "jpg") {
+      const safeExt = String(ext || "jpg").replace(/^\./, "").toLowerCase();
+      return `COMMON_TR_${String(index).padStart(3, "0")}.${safeExt}`;
+    }
+
+    function commonTraitSrc(index, ext = "jpg") {
+      return `ps/other/trait/${commonTraitFileName(index, ext)}`;
+    }
+
+    function traitCardSrc(name, card) {
+      return card.scope === "common"
+        ? commonTraitSrc(card.index, card.ext)
+        : traitSrc(name, card.level, card.index, card.ext);
+    }
+
+    function traitKey(level, index, ext = "jpg", scope = "") {
+      return `${scope || "apostle"}-${level}-${index}-${String(ext || "jpg").replace(/^\./, "").toLowerCase()}`;
+    }
+
+    function isLargeTraitCard(apostle, card) {
+      return card.level === "O"
+        || (apostle === "HYPERTIME_ORACLE" && card.level === "IV")
+        || (apostle === "ICARIAN_HARPY" && card.level === "X" && card.index === 2);
+    }
+
+    function automaticTraitLevels() {
+      const levels = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"];
+      return [...levels.slice(0, currentApostleLevel()), "X"];
+    }
+
+    function selectedTraitKeySet() {
+      ensurePiles(currentApostle);
+      return new Set(piles[currentApostle].traits.map((card) => traitKey(card.level, card.index, card.ext, card.scope)));
+    }
+
+    function renderTraitCandidates() {
+      ensurePiles(currentApostle);
+      const name = currentApostle;
+      const selected = selectedTraitKeySet();
+      const token = ++traitLoadToken;
+      let loaded = 0;
+
+      traitDialogTitle.textContent = `${name.replaceAll("_", " ")} - Trait 选择`;
+      traitDialogGrid.replaceChildren();
+      const loading = document.createElement("div");
+      loading.className = "missing";
+      loading.textContent = "正在试探加载 TR 图片……";
+      traitDialogGrid.appendChild(loading);
+
+      traitLevels.forEach((level) => {
+        for (let index = 1; index <= traitProbeMaxIndex; index++) {
+          traitProbeExtensions.forEach((ext) => {
+            const src = traitSrc(name, level, index, ext);
+            const img = new Image();
+            img.onload = () => {
+              if (token !== traitLoadToken) return;
+              if (loading.isConnected) loading.remove();
+              loaded += 1;
+
+              const option = document.createElement("label");
+              option.className = "trait-option";
+
+              const checkbox = document.createElement("input");
+              checkbox.type = "checkbox";
+              checkbox.dataset.level = level;
+              checkbox.dataset.index = String(index);
+              checkbox.dataset.ext = ext;
+              checkbox.dataset.scope = "";
+              checkbox.checked = selected.has(traitKey(level, index, ext, ""));
+
+              img.alt = `TR ${level} ${String(index).padStart(3, "0")}`;
+
+              const caption = document.createElement("span");
+              caption.textContent = `TR ${level} ${String(index).padStart(3, "0")}`;
+
+              option.append(checkbox, img, caption);
+              traitDialogGrid.appendChild(option);
+            };
+            img.onerror = () => {};
+            img.src = src;
+          });
+        }
+      });
+
+      for (let index = 1; index <= traitProbeMaxIndex; index++) {
+        traitProbeExtensions.forEach((ext) => {
+          const src = commonTraitSrc(index, ext);
+          const img = new Image();
+          img.onload = () => {
+            if (token !== traitLoadToken) return;
+            if (loading.isConnected) loading.remove();
+            loaded += 1;
+
+            const option = document.createElement("label");
+            option.className = "trait-option";
+
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.dataset.level = "COMMON";
+            checkbox.dataset.index = String(index);
+            checkbox.dataset.ext = ext;
+            checkbox.dataset.scope = "common";
+            checkbox.checked = selected.has(traitKey("COMMON", index, ext, "common"));
+
+            img.alt = `通用特质 ${String(index).padStart(3, "0")}`;
+
+            const caption = document.createElement("span");
+            caption.textContent = `通用特质 ${String(index).padStart(3, "0")}`;
+
+            option.append(checkbox, img, caption);
+            traitDialogGrid.appendChild(option);
+          };
+          img.onerror = () => {};
+          img.src = src;
+        });
+      }
+
+      window.setTimeout(() => {
+        if (token !== traitLoadToken) return;
+        if (loaded === 0 && traitDialogGrid.children.length === 1 && loading.isConnected) {
+          loading.textContent = `未找到 ${name}_TR_<O/I/II/III/IV/V/VI/VII/VIII/IX/X>_<编号>.(jpg/png/jpeg)`;
+        }
+      }, 700);
+    }
+
+    function openTraitDialog() {
+      renderTraitCandidates();
+      if (typeof traitDialog.showModal === "function") {
+        traitDialog.showModal();
+      } else {
+        window.alert("当前浏览器不支持 dialog 弹窗。请使用新版 Chrome / Edge。 ");
+      }
+    }
+
+    function saveTraitSelection() {
+      ensurePiles(currentApostle);
+      piles[currentApostle].traits = Array.from(traitDialogGrid.querySelectorAll("input[type='checkbox']:checked"))
+        .map((input) => ({
+          type: "TR",
+          level: input.dataset.level,
+          index: Number(input.dataset.index),
+          ext: input.dataset.ext || "jpg",
+          scope: input.dataset.scope || ""
+        }))
+        .sort((a, b) => {
+          const scopeOrder = String(a.scope || "").localeCompare(String(b.scope || ""));
+          if (scopeOrder) return scopeOrder;
+          return traitLevels.indexOf(a.level) - traitLevels.indexOf(b.level) || a.index - b.index || String(a.ext).localeCompare(String(b.ext));
+        });
+      savePiles();
+      renderExtraCards();
+      traitDialog.close();
+    }
+
+    function clearTraitSelection() {
+      traitDialogGrid.querySelectorAll("input[type='checkbox']").forEach((input) => {
+        input.checked = false;
+      });
+    }
+
+    function reorderExtraGridForLargeCards() {
+      const children = Array.from(extraGrid.children).filter((el) => el.tagName === "IMG" || el.classList.contains("missing"));
+      if (children.length === 0) return;
+      const large = [];
+      const small = [];
+      children.forEach((el) => {
+        if (el.classList.contains("panel-image")) {
+          large.push(el);
+        } else {
+          small.push(el);
+        }
+      });
+      if (large.length === 0) return;
+      // 大卡占一整列（2行），小卡每2张占一列。
+      // 按顺序排列：大卡独占一列位，小卡两两成对填列。
+      const result = [];
+      let li = 0;
+      let si = 0;
+      // 保持原始相对顺序：遍历原始列表，遇到大卡就输出，遇到小卡攒够2张或到末尾再输出
+      const orig = children.slice();
+      const reordered = [];
+      let smallBuf = [];
+      for (const el of orig) {
+        if (el.classList.contains("panel-image")) {
+          // 如果缓冲区有奇数张小卡，先把偶数张输出，留1张到大卡后面
+          if (smallBuf.length % 2 === 1) {
+            const leftover = smallBuf.pop();
+            reordered.push(...smallBuf);
+            smallBuf = [leftover];
+          } else {
+            reordered.push(...smallBuf);
+            smallBuf = [];
+          }
+          reordered.push(el);
+        } else {
+          smallBuf.push(el);
+        }
+      }
+      reordered.push(...smallBuf);
+      extraGrid.replaceChildren(...reordered);
+    }
+
+    function enableOptionalCardBack(img, frontSrc) {
+      const backSrc = frontSrc.replace(/(\.[^.]+)$/, "_BACK$1");
+      if (backSrc === frontSrc) return;
+      const probe = new Image();
+      probe.onload = () => {
+        img.dataset.frontSrc = frontSrc;
+        img.dataset.backSrc = backSrc;
+        img.dataset.face = "front";
+        img.title = "点击放大，放大后可翻面";
+      };
+      probe.onerror = () => {};
+      probe.src = backSrc;
+    }
+
+    function renderExtraCards() {
+      ensurePiles(currentApostle);
+      const base = `ps/${currentApostle}`;
+      const candidates = [];
+      let loaded = 0;
+
+      extraGrid.replaceChildren();
+
+      const selectedTraitKeys = selectedTraitKeySet();
+
+      piles[currentApostle].traits.forEach((card) => {
+        const imageClass = isLargeTraitCard(currentApostle, card) ? "panel-image" : "";
+        const alt = card.scope === "common" ? `通用特质 ${card.index}` : `TR ${card.level} ${card.index}`;
+        const src = traitCardSrc(currentApostle, card);
+        const img = imageOrMessage(src, alt, imageClass);
+        img.addEventListener("load", () => enableOptionalCardBack(img, src), { once: true });
+        extraGrid.appendChild(img);
+        loaded += 1;
+      });
+
+      automaticTraitLevels().forEach((level) => {
+        for (let index = 1; index <= defaultTraitProbeMaxIndex; index++) {
+          traitProbeExtensions.forEach((ext) => {
+            if (selectedTraitKeys.has(traitKey(level, index, ext, ""))) return;
+            const card = { level, index, ext };
+            candidates.push({
+              src: traitSrc(currentApostle, level, index, ext),
+              alt: `TR ${level} ${String(index).padStart(3, "0")}`,
+              className: isLargeTraitCard(currentApostle, card) ? "panel-image" : ""
+            });
+          });
+        }
+      });
+
+      ["AI", "BP"].forEach((type) => {
+        ["O", "X"].forEach((level) => {
+          for (let i = 1; i <= 12; i++) {
+            candidates.push({
+              src: `${base}/${numberedName(currentApostle, type, level, i)}`,
+              alt: numberedName(currentApostle, type, level, i)
+            });
+          }
+        });
+      });
+
+      candidates.forEach(({ src, alt, className = "" }) => {
+        const img = document.createElement("img");
+        img.src = src;
+        img.alt = alt || src.split("/").pop();
+        img.className = className;
+        img.onload = () => {
+          loaded += 1;
+          enableOptionalCardBack(img, src);
+          reorderExtraGridForLargeCards();
+        };
+        img.onerror = () => {
+          img.remove();
+          reorderExtraGridForLargeCards();
+        };
+        extraGrid.appendChild(img);
+      });
+
+      reorderExtraGridForLargeCards();
+
+      window.setTimeout(() => {
+        if (loaded === 0 && extraGrid.children.length === 0) {
+          const empty = document.createElement("div");
+          empty.className = "missing";
+          empty.textContent = "暂无其他卡牌";
+          extraGrid.appendChild(empty);
+        }
+      }, 300);
+    }
+
+    function confirmCurrentView() {
+      return window.confirm("你不应该查看此部分，要继续吗");
+    }
+
+    function aiViewsForCurrentApostle() {
+      if (isHermesian()) return hermesianAiViews;
+      if (isTitanX()) return titanAiViews;
+      return aiViews;
+    }
+
+    function updateAiViewTabs() {
+      const allowedViews = aiViewsForCurrentApostle();
+      if (!allowedViews.includes(currentAiView)) {
+        currentAiView = allowedViews.includes("弃牌") ? "弃牌" : allowedViews[0];
+      }
+
+      aiViewTabs.replaceChildren();
+      allowedViews.forEach((view) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.dataset.view = view;
+        button.textContent = view;
+        button.addEventListener("click", () => {
+          if ((view === "当前" || view === "闪粉牌组" || view === "变招牌组") && !confirmCurrentView()) return;
+          currentAiView = view;
+          renderAibpCards();
+        });
+        aiViewTabs.appendChild(button);
+      });
+    }
+
+    function updateBpViewTabs() {
+      const allowedViews = bpViewsForCurrentApostle();
+      if (isChimera() && currentBpView === "损伤1") currentBpView = "常规损伤堆";
+      if (isChimera() && currentBpView === "损伤2") currentBpView = "第二损伤堆";
+      if (!allowedViews.includes(currentBpView)) {
+        currentBpView = allowedViews.includes("弃牌") ? "弃牌" : allowedViews[0];
+      }
+
+      bpViewTabs.replaceChildren();
+      allowedViews.forEach((view) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.dataset.view = view;
+        button.textContent = view;
+        button.addEventListener("click", () => {
+          if (view === "当前" && !confirmCurrentView()) return;
+          currentBpView = view;
+          renderAibpCards();
+        });
+        bpViewTabs.appendChild(button);
+      });
+
+      chimeraDamageTarget.classList.toggle("show", isChimera());
+      addSwDamage2Button.classList.toggle("show", isChimera());
+      removeSwDamage2Button.classList.toggle("show", isChimera());
+      addLabyrinthaurosSpecialBpButton.classList.toggle("show", isLabyrinthauros());
+      removeLabyrinthaurosSpecialBpButton.classList.toggle("show", isLabyrinthauros());
+    }
+
+    function isNietzsche() {
+      return currentApostle === nietzscheName;
+    }
+
+    function isCyclonus() {
+      return currentApostle === cyclonusName;
+    }
+
+    function hasPanelState() {
+      return Boolean(currentPanelState());
+    }
+
+    function hasManualPanelState() {
+      return isNietzsche() || isCyclonus();
+    }
+
+    function currentPanelState() {
+      if (isChimera()) {
+        return chimeraPhaseStates[piles[currentApostle]?.chimeraPhase] || null;
+      }
+      if (isCyclonus()) {
+        return cyclonusStates[cyclonusStateIndex];
+      }
+      if (isNietzsche()) {
+        return nietzscheStates[nietzscheStateIndex];
+      }
+      return null;
+    }
+
+    function updateNietzscheStateUi(marker = null) {
+      const state = currentPanelState();
+      nietzscheStateButton.classList.toggle("hidden", !hasManualPanelState());
+      if (state) {
+        nietzscheStateButton.textContent = `切换状态：${state.label}`;
+      }
+
+      if (marker) {
+        marker.classList.toggle("chimera-state-marker", isChimera());
+        if (!state) {
+          marker.classList.remove("show");
+          return;
+        }
+        marker.style.setProperty("--marker-left", state.left);
+        marker.style.setProperty("--marker-top", state.top);
+        marker.style.setProperty("--marker-width", state.width || "64px");
+        marker.style.setProperty("--marker-height", state.height || "64px");
+        marker.textContent = "";
+        marker.dataset.label = state.label;
+        marker.title = `${state.label}，点击切换到下个状态`;
+        marker.classList.toggle("show", hasPanelState());
+      }
+    }
+
+    function appendNietzscheBreakLock(frame, state, label) {
+      if (!frame || !state) return;
+      const lock = document.createElement("div");
+      lock.className = "nietzsche-break-lock";
+      lock.style.setProperty("--lock-left", state.left);
+      lock.style.setProperty("--lock-top", state.top);
+      lock.title = `损伤已达到阈值：不能打破${label}`;
+      frame.appendChild(lock);
+    }
+
+    function renderNietzscheBreakLocks(damageTotal = null) {
+      const frame = panelWrap.querySelector(".panel-frame");
+      if (!frame) return;
+      frame.querySelectorAll(".nietzsche-break-lock").forEach((item) => item.remove());
+      if (!isNietzsche()) return;
+
+      const total = damageTotal == null ? currentBpDamageSummary().total : Number(damageTotal || 0);
+      if (total >= 6) appendNietzscheBreakLock(frame, nietzscheStates[2], "巨剑");
+      if (total >= 10) appendNietzscheBreakLock(frame, nietzscheStates[0], "火焰");
+    }
+
+
+    function isTokenImageFileName(fileName) {
+      return /\.(png|jpe?g)$/i.test(fileName || "");
+    }
+
+    function naturalCompareTokenFile(a, b) {
+      return String(a).localeCompare(String(b), "zh-Hans-CN", { numeric: true, sensitivity: "base" });
+    }
+
+    function normalizeTokenFileName(file) {
+      return String(file || "").replace(/\\/g, "/").split("/").pop();
+    }
+
+    function tokenProbeFileNames() {
+      // 主要从 token_manifest.js 获取 token 文件夹中所有图片。
+      // 如果清单不存在，则只兜底试探常见图片命名。
+      const names = new Set(tokenFileNames.map(normalizeTokenFileName).filter(isTokenImageFileName));
+      for (let index = 1; index <= tokenProbeMaxIndex; index++) {
+        const padded3 = String(index).padStart(3, "0");
+        const padded2 = String(index).padStart(2, "0");
+        const loose = String(index);
+        tokenProbeExtensions.forEach((ext) => {
+          names.add(`${padded3}.${ext}`);
+          names.add(`${padded2}.${ext}`);
+          names.add(`${loose}.${ext}`);
+          names.add(`TOKEN_${padded3}.${ext}`);
+          names.add(`TOKEN_${padded2}.${ext}`);
+          names.add(`TOKEN${padded3}.${ext}`);
+          names.add(`TOKEN${loose}.${ext}`);
+          names.add(`token_${padded3}.${ext}`);
+          names.add(`token_${padded2}.${ext}`);
+          names.add(`token${padded3}.${ext}`);
+          names.add(`token${loose}.${ext}`);
+          names.add(`Token_${padded3}.${ext}`);
+          names.add(`Token${loose}.${ext}`);
+        });
+      }
+      return Array.from(names).sort(naturalCompareTokenFile);
+    }
+
+    function tokenSrc(file) {
+      return `${tokenBasePath}/${file}`;
+    }
+
+    function createTokenStackId() {
+      tokenStackSequence += 1;
+      return `token-${Date.now().toString(36)}-${tokenStackSequence.toString(36)}`;
+    }
+
+    function selectedTokenStacksMap() {
+      ensurePiles(currentApostle);
+      const map = new Map();
+      piles[currentApostle].tokens.forEach((item) => {
+        const stacks = map.get(item.file) || [];
+        stacks.push(item);
+        map.set(item.file, stacks);
+      });
+      return map;
+    }
+
+    function clampTokenCount(value) {
+      return Math.max(0, Math.min(99, Math.floor(Number(value) || 0)));
+    }
+
+    function changeTokenCount(input, delta) {
+      input.value = String(clampTokenCount((Number(input.value) || 0) + delta));
+    }
+
+    function appendTokenOption(file, img, selected) {
+      const option = document.createElement("div");
+      option.className = "trait-option token-option";
+
+      img.alt = file;
+      img.title = "点击图片：新堆数量 +1";
+
+      const caption = document.createElement("span");
+      const existingStacks = selected.get(file) || [];
+      const existingTotal = existingStacks.reduce((sum, item) => sum + (Number(item.count) || 0), 0);
+      caption.textContent = existingStacks.length
+        ? `${file}（已有 ${existingStacks.length} 堆，共 ${existingTotal}）`
+        : file;
+
+      const countWrap = document.createElement("div");
+      countWrap.className = "token-option-count";
+
+      const countLabel = document.createElement("div");
+      countLabel.className = "token-option-count-label";
+      countLabel.textContent = "新增一堆的数量（点图片 +1）";
+
+      const minusButton = document.createElement("button");
+      minusButton.type = "button";
+      minusButton.className = "token-count-step";
+      minusButton.textContent = "−";
+      minusButton.title = "数量 -1";
+
+      const countInput = document.createElement("input");
+      countInput.type = "number";
+      countInput.min = "0";
+      countInput.max = "99";
+      countInput.step = "1";
+      countInput.value = "0";
+      countInput.dataset.file = file;
+
+      const plusButton = document.createElement("button");
+      plusButton.type = "button";
+      plusButton.className = "token-count-step";
+      plusButton.textContent = "+";
+      plusButton.title = "数量 +1";
+
+      img.addEventListener("click", () => changeTokenCount(countInput, 1));
+      minusButton.addEventListener("click", () => changeTokenCount(countInput, -1));
+      plusButton.addEventListener("click", () => changeTokenCount(countInput, 1));
+      countInput.addEventListener("change", () => {
+        countInput.value = String(clampTokenCount(countInput.value));
+      });
+
+      countWrap.append(countLabel, minusButton, countInput, plusButton);
+      option.append(img, caption, countWrap);
+      tokenDialogGrid.appendChild(option);
+    }
+
+    async function loadTokenFileNamesFromDirectoryIndex() {
+      // 只有当你用本地服务器打开，并且 ps/other/token/ 开启目录列表时才会成功。
+      // file:// 或普通静态服务器通常不允许 JS 直接枚举目录。
+      try {
+        const response = await fetch(`${tokenBasePath}/`, { cache: "no-store" });
+        if (!response.ok) return [];
+        const html = await response.text();
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        return Array.from(doc.querySelectorAll("a"))
+          .map((a) => decodeURIComponent(a.getAttribute("href") || ""))
+          .map((href) => normalizeTokenFileName(href))
+          .filter(isTokenImageFileName)
+          .sort(naturalCompareTokenFile);
+      } catch {
+        return [];
+      }
+    }
+
+    async function renderTokenCandidates() {
+      ensurePiles(currentApostle);
+      const selected = selectedTokenStacksMap();
+      const token = ++tokenLoadToken;
+      let loaded = 0;
+
+      tokenDialogTitle.textContent = `${currentApostle.replaceAll("_", " ")} - 新增 Token 堆`;
+      tokenDialogGrid.replaceChildren();
+      const loading = document.createElement("div");
+      loading.className = "missing";
+      loading.textContent = "正在从相对路径 ps/other/token/ 加载所有 Token PNG……";
+      tokenDialogGrid.appendChild(loading);
+      tokenFolderHint.textContent = "同类 Token 会自动合并；通用标记仍会新增独立堆。已有堆请点击面板上的 Token 单独增减或清空。";
+
+      const manifestNames = tokenFileNames.map(normalizeTokenFileName).filter(isTokenImageFileName);
+      const directoryNames = manifestNames.length > 0 ? [] : await loadTokenFileNamesFromDirectoryIndex();
+      const candidates = Array.from(new Set((manifestNames.length > 0 ? manifestNames : directoryNames).concat(tokenProbeFileNames())))
+        .filter(isTokenImageFileName)
+        .sort(naturalCompareTokenFile);
+
+      candidates.forEach((file) => {
+        const img = new Image();
+        img.onload = () => {
+          if (token !== tokenLoadToken) return;
+          if (loading.isConnected) loading.remove();
+          loaded += 1;
+          appendTokenOption(file, img, selected);
+        };
+        img.onerror = () => {};
+        img.src = tokenSrc(file);
+      });
+
+      window.setTimeout(() => {
+        if (token !== tokenLoadToken) return;
+        if (loaded === 0 && tokenDialogGrid.children.length === 1 && loading.isConnected) {
+          loading.textContent = "没有加载到 token。请先在 ps/other/token/ 里生成 token_manifest.js；静态 HTML 不能直接扫描文件夹。";
+        }
+      }, 900);
+    }
+
+    function openTokenDialog() {
+      renderTokenCandidates();
+      if (typeof tokenDialog.showModal === "function") {
+        tokenDialog.showModal();
+      } else {
+        window.alert("当前浏览器不支持 dialog 弹窗。请使用新版 Chrome / Edge。 ");
+      }
+    }
+
+    function saveTokenSelection() {
+      ensurePiles(currentApostle);
+      const additions = Array.from(tokenDialogGrid.querySelectorAll("input[type='number']"))
+        .map((input) => ({
+          file: input.dataset.file,
+          count: Math.max(0, Math.min(99, Math.floor(Number(input.value) || 0)))
+        }))
+        .filter((item) => item.count > 0);
+
+      additions.forEach((item) => addPanelToken(item.file, item.count));
+      savePiles();
+      renderPanelTokens();
+      tokenDialog.close();
+    }
+
+    function clearTokenSelection() {
+      tokenDialogGrid.querySelectorAll("input[type='number']").forEach((input) => {
+        input.value = "0";
+      });
+    }
+
+
+    function setImageZoomBpActions(show = false) {
+      imageZoomBpActions.classList.toggle("show", Boolean(show));
+      if (!show) return;
+
+      const pending = piles[currentApostle]?.BP?.pending;
+      imageZoomBpActions.querySelectorAll("[data-bp-zoom-action]").forEach((button) => {
+        const action = button.dataset.bpZoomAction;
+        const isVpAction = action === "vp-defeat" || action === "vp-critical";
+        const isCriticalAction = action === "critical" || action === "vp-critical";
+        button.hidden = isVpAction && !isChimera();
+        button.disabled = !pending
+          || (isCriticalAction && pending.level !== "III" && !pending.specialBp)
+          || (isVpAction && !isChimera());
+      });
+    }
+
+    function setImageZoomMoveActions(context = null) {
+      activeMoveContext = context;
+      imageZoomMoveActions.replaceChildren();
+      const targets = moveTargetsForContext(context);
+      if (context) context.targets = targets;
+      imageZoomMoveActions.classList.toggle("show", targets.length > 0);
+      if (!targets.length) return;
+
+      const title = document.createElement("div");
+      title.className = "image-zoom-action-title";
+      title.textContent = `从${context.source.label}移动到`;
+      imageZoomMoveActions.appendChild(title);
+
+      targets.forEach((target, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.dataset.moveTargetIndex = String(index);
+        button.textContent = target.label;
+        imageZoomMoveActions.appendChild(button);
+      });
+    }
+
+    function setImageZoomTokenActions(context = null) {
+      activeTokenContext = context;
+      imageZoomTokenActions.classList.toggle("show", Boolean(context));
+      if (!context) {
+        imageZoomTokenTitle.textContent = "Token";
+        return;
+      }
+
+      const item = piles[context.apostle]?.tokens?.find((entry) => entry.id === context.tokenId);
+      const count = Number(item?.count) || 0;
+      imageZoomTokenTitle.textContent = `${context.file} x${count}`;
+      imageZoomTokenActions.querySelector("[data-token-zoom-action='minus']").disabled = count <= 0;
+      imageZoomTokenActions.querySelector("[data-token-zoom-action='clear']").disabled = count <= 0;
+    }
+
+    function changeZoomTokenCount(action) {
+      const context = activeTokenContext;
+      if (!context) return;
+      const tokenList = piles[context.apostle]?.tokens;
+      if (!Array.isArray(tokenList)) return;
+      const index = tokenList.findIndex((entry) => entry.id === context.tokenId);
+      if (index < 0) return;
+
+      const item = tokenList[index];
+      if (action === "plus") {
+        item.count = clampTokenCount((Number(item.count) || 0) + 1);
+      } else if (action === "minus") {
+        item.count = clampTokenCount((Number(item.count) || 0) - 1);
+      } else if (action === "clear") {
+        item.count = 0;
+      }
+
+      if ((Number(item.count) || 0) <= 0) {
+        tokenList.splice(index, 1);
+        savePiles();
+        renderPanelTokens();
+        closeImageZoom();
+      } else {
+        savePiles();
+        renderPanelTokens();
+        setImageZoomTokenActions(context);
+      }
+    }
+
+    function setImageZoomFlipActions(context = null) {
+      imageZoomFlipActions.classList.toggle("show", Boolean(context));
+      imageZoomFlipButton.disabled = !context;
+      if (!context) {
+        imageZoomFlipButton.dataset.frontSrc = "";
+        imageZoomFlipButton.dataset.backSrc = "";
+        imageZoomFlipButton.dataset.sourceId = "";
+        imageZoomFlipButton.dataset.face = "front";
+        imageZoomFlipButton.textContent = "反面";
+        return;
+      }
+
+      imageZoomFlipButton.dataset.frontSrc = context.frontSrc;
+      imageZoomFlipButton.dataset.backSrc = context.backSrc;
+      imageZoomFlipButton.dataset.sourceId = context.sourceId || "";
+      imageZoomFlipButton.dataset.face = context.face || "front";
+      imageZoomFlipButton.textContent = context.face === "back" ? "正面" : "反面";
+    }
+
+    function currentPanelCardTokens(type) {
+      ensurePiles(currentApostle);
+      const allowedFiles = type === "BP"
+        ? new Set(["AT-.png", "AT+.png"])
+        : type === "AI"
+          ? new Set(["DA-.png", "DA+.png", "py+.png", "ps-.png", "ps+.png", "ED-.png", "ED+.png"])
+          : new Set();
+
+      return piles[currentApostle].tokens
+        .filter((item) => allowedFiles.has(item.file) && (Number(item.count) || 0) > 0)
+        .map((item) => ({
+          file: item.file,
+          count: Math.max(1, Math.floor(Number(item.count) || 1)),
+          autoLevelBonus: item.autoLevelBonus || ""
+        }));
+    }
+
+    function setImageZoomCardTokens(tokens = []) {
+      const items = Array.isArray(tokens) ? tokens : [];
+      const groups = [
+        { className: "token-at", matches: (file) => file.startsWith("AT") },
+        { className: "token-accuracy-evasion", matches: (file) => file.startsWith("ps") || file.startsWith("ED") },
+        { className: "token-danger", matches: (file) => file.startsWith("DA") || file.startsWith("py") }
+      ];
+
+      imageZoomCardTokens.replaceChildren(...groups.map((group) => {
+        const groupElement = document.createElement("div");
+        groupElement.className = `image-zoom-card-token-group ${group.className}`;
+
+        items.filter((item) => group.matches(item.file)).forEach((item) => {
+          const tokenItem = document.createElement("div");
+          tokenItem.className = "image-zoom-card-token";
+          if (item.autoLevelBonus === "danger" && currentApostleLevel() >= 5) {
+            tokenItem.classList.add("auto-level-danger-per-hit");
+          }
+          tokenItem.title = `${item.file} ×${item.count}`;
+
+          const img = document.createElement("img");
+          img.src = tokenSrc(item.file);
+          img.alt = item.file;
+          tokenItem.appendChild(img);
+
+          if (item.count > 1) {
+            const badge = document.createElement("div");
+            badge.className = "panel-token-count";
+            badge.textContent = `×${item.count}`;
+            tokenItem.appendChild(badge);
+          }
+          groupElement.appendChild(tokenItem);
+        });
+        return groupElement;
+      }).filter((groupElement) => groupElement.childElementCount > 0));
+      imageZoomCardTokens.classList.toggle("show", items.length > 0);
+    }
+
+    function openImageZoom(src, alt = "放大图片", onClose = null, options = {}) {
+      if (!src) return;
+      zoomCloseAction = typeof onClose === "function" ? onClose : null;
+      imageZoomImg.src = src;
+      imageZoomImg.alt = alt || "放大图片";
+      const noticeItems = Array.isArray(options.noticeImages) ? options.noticeImages : [];
+      const sideNotices = options.noticeLayout === "sides" && noticeItems.length > 0;
+      imageZoomNotice.replaceChildren(...noticeItems.map((item) => {
+        if (item?.src) {
+          const img = document.createElement("img");
+          img.src = item.src;
+          img.alt = item.alt || "";
+          return img;
+        }
+        const box = document.createElement("div");
+        box.className = "image-zoom-notice-text";
+        const title = document.createElement("div");
+        title.className = "image-zoom-notice-text-title";
+        title.textContent = item?.title || "提示";
+        const value = document.createElement("div");
+        value.className = "image-zoom-notice-text-value";
+        if (item?.html) {
+          value.innerHTML = item.html;
+        } else {
+          value.textContent = item?.text || "";
+        }
+        box.append(title, value);
+        return box;
+      }));
+      imageZoomNotice.classList.toggle("show", noticeItems.length > 0);
+      imageZoomNotice.parentElement.classList.toggle("has-notice", noticeItems.length > 0);
+      imageZoomNotice.parentElement.classList.toggle("has-side-notices", sideNotices);
+      setImageZoomCardTokens(options.cardTokens || []);
+      setImageZoomBpActions(Boolean(options.bpActions));
+      setImageZoomFlipActions(options.flipContext || null);
+      setImageZoomMoveActions(options.moveContext || null);
+      setImageZoomTokenActions(options.tokenContext || null);
+      imageZoomOverlay.classList.add("show");
+      imageZoomOverlay.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeImageZoom() {
+      const closeAction = zoomCloseAction;
+      zoomCloseAction = null;
+      imageZoomOverlay.classList.remove("show");
+      imageZoomOverlay.setAttribute("aria-hidden", "true");
+      imageZoomImg.removeAttribute("src");
+      imageZoomNotice.replaceChildren();
+      imageZoomNotice.classList.remove("show");
+      imageZoomNotice.parentElement.classList.remove("has-notice");
+      imageZoomNotice.parentElement.classList.remove("has-side-notices");
+      setImageZoomCardTokens([]);
+      setImageZoomBpActions(false);
+      setImageZoomFlipActions(null);
+      setImageZoomMoveActions(null);
+      setImageZoomTokenActions(null);
+      document.body.style.overflow = "";
+      if (closeAction) {
+        closeAction();
+      }
+    }
+
+    function shouldZoomImage(img) {
+      if (!img || !img.src) return false;
+      if (img.closest("dialog")) return false;
+      if (img.closest(".image-zoom-overlay")) return false;
+      if (img.closest("button, .segmented, .draw-actions, .title-actions")) return false;
+      return Boolean(img.closest("#panelWrap, #routineWrap, #signatureWrap, #extraGrid, #aiGrid, #bpGrid, #aiDrawPreview, #bpDrawPreview"));
+    }
+
+    function openZoomForImage(img) {
+      if (!shouldZoomImage(img)) return;
+      const isBpImage = Boolean(img.closest("#bpGrid, #bpDrawPreview"));
+      const cardTokenType = zoomCardTokenTypeFromImage(img);
+      openImageZoom(img.currentSrc || img.src, img.alt, null, {
+        flipContext: flipContextFromImage(img),
+        moveContext: moveContextFromImage(img),
+        tokenContext: tokenContextFromImage(img),
+        cardTokens: cardTokenType ? currentPanelCardTokens(cardTokenType) : [],
+        noticeImages: isBpImage ? currentBpNoticeImages() : []
+      });
+    }
+
+    function zoomCardTokenTypeFromImage(img) {
+      if (img.closest("#bpGrid, #bpDrawPreview")) return "BP";
+      if (img.closest("#aiGrid, #aiDrawPreview, #routineWrap, #signatureWrap")) return "AI";
+      if (img.closest("#extraGrid") && img.classList.contains("panel-image")) return "AI";
+      return "";
+    }
+
+    function currentBpNoticeImages() {
+      if (isLabyrinthauros() && currentApostleLevel() >= 4) {
+        return [{
+          src: "ps/LABYRINTHAUROS/MR.png",
+          alt: "迷宫反应装甲"
+        }];
+      }
+      return currentChimeraStatusImages();
+    }
+
+    function currentChimeraStatusImages() {
+      if (!isChimera()) return [];
+      const phase = String(piles[currentApostle]?.chimeraPhase || "").toUpperCase();
+      const state = chimeraPhaseStates[phase];
+      if (!state) return [];
+      const level = currentApostleLevel();
+      return [{
+        title: state.label,
+        html: typeof state.effect === "function" ? state.effect(level) : (state.effect || state.label)
+      }];
+    }
+
+    function renderPanelTokens() {
+      ensurePiles(currentApostle);
+      const layer = panelWrap.querySelector(".panel-token-layer");
+      if (!layer) return;
+      layer.replaceChildren();
+
+      piles[currentApostle].tokens.forEach((item) => {
+        const tokenItem = document.createElement("div");
+        tokenItem.className = "panel-token-item";
+        const isCriticalMass = item.criticalMass === true || item.chimeraCriticalMass === true;
+        const panelCounterKind = c45PanelCounterKind();
+        const isC45PanelCounter = panelCounterKind === "midascorePain"
+          ? item.midascorePain === true
+          : item.c45PanelCounter === panelCounterKind;
+        const threshold = isC45PanelCounter
+          ? c45PanelCounterThreshold()
+          : criticalMassThreshold();
+        if (isCriticalMass) {
+          const position = currentCriticalMassPosition();
+          item.criticalMass = true;
+          delete item.chimeraCriticalMass;
+          item.x = position.x;
+          item.y = position.y;
+          tokenItem.classList.add("critical-mass-token");
+          tokenItem.classList.toggle("must-resolve", (Number(item.count) || 0) >= threshold);
+        } else if (isC45PanelCounter) {
+          item.x = c45PanelCounterPosition.x;
+          item.y = c45PanelCounterPosition.y;
+          tokenItem.classList.add("critical-mass-token", "c45-panel-counter-token");
+          tokenItem.classList.toggle("must-resolve", (Number(item.count) || 0) >= threshold);
+        }
+        tokenItem.classList.toggle(
+          "auto-level-danger-per-hit",
+          item.autoLevelBonus === "danger" && currentApostleLevel() >= 5
+        );
+        tokenItem.style.setProperty("--token-left", `${item.x}%`);
+        tokenItem.style.setProperty("--token-top", `${item.y}%`);
+        tokenItem.dataset.tokenId = item.id;
+        tokenItem.dataset.file = item.file;
+        const panelCounterLabel = panelCounterKind === "midascorePain"
+          ? "疼痛增量"
+          : panelCounterKind === "dragon"
+            ? "累计指示物"
+            : "累计损伤";
+        tokenItem.title = isC45PanelCounter
+          ? `${panelCounterLabel}通用标记 ×${item.count}${(Number(item.count) || 0) >= threshold ? "，立即处理" : "，点击增加"}`
+          : isCriticalMass
+            ? `临界质量通用标记 ×${item.count}${(Number(item.count) || 0) >= threshold ? "，立即处理" : ""}`
+            : `${item.file} ×${item.count}，拖动可调整位置`;
+
+        const img = document.createElement("img");
+        img.src = tokenSrc(item.file);
+        img.alt = item.file;
+
+        tokenItem.appendChild(img);
+        if ((Number(item.count) || 0) > 1) {
+          const badge = document.createElement("div");
+          badge.className = "panel-token-count";
+          badge.textContent = `×${item.count}`;
+          tokenItem.appendChild(badge);
+        }
+
+        if (!isCriticalMass && !isC45PanelCounter) {
+          makePanelTokenDraggable(tokenItem);
+        } else {
+          tokenItem.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            if (isC45PanelCounter) {
+              window.C45Specials?.handlePanelCounterTokenClick?.();
+            } else {
+              handleCriticalMassTokenClick();
+            }
+          });
+        }
+        layer.appendChild(tokenItem);
+      });
+      renderCriticalMassSlot();
+    }
+
+    function renderCriticalMassSlot() {
+      const slot = panelWrap.querySelector(".critical-mass-slot");
+      if (!slot) return;
+      if (c45PanelCounterKind()) {
+        const token = c45PanelCounterToken();
+        slot.style.setProperty("--critical-mass-left", `${c45PanelCounterPosition.x}%`);
+        slot.style.setProperty("--critical-mass-top", `${c45PanelCounterPosition.y}%`);
+        slot.classList.toggle("show", !token);
+        const label = currentApostle === "MIDASCORE"
+          ? "疼痛增量"
+          : currentApostle === "DRAGON_OF_PHOBOS"
+            ? "累计指示物"
+            : "累计损伤";
+        slot.title = `点击放置 1 个${label}通用标记`;
+        return;
+      }
+      const available = hasCriticalMassFeature() && currentApostleLevel() >= 2;
+      const token = criticalMassToken();
+      const position = currentCriticalMassPosition();
+      slot.style.setProperty("--critical-mass-left", `${position.x}%`);
+      slot.style.setProperty("--critical-mass-top", `${position.y}%`);
+      slot.classList.toggle("show", available && !token);
+      slot.title = available
+        ? "点击放置 1 个临界质量通用标记"
+        : "使徒达到 II 级后可使用";
+    }
+
+    function makePanelTokenDraggable(tokenItem) {
+      tokenItem.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        const frame = panelWrap.querySelector(".panel-frame");
+        if (!frame) return;
+        tokenItem.setPointerCapture(event.pointerId);
+        const startX = event.clientX;
+        const startY = event.clientY;
+        tokenItem.dataset.dragged = "false";
+
+        const move = (moveEvent) => {
+          if (Math.hypot(moveEvent.clientX - startX, moveEvent.clientY - startY) > 4) {
+            tokenItem.dataset.dragged = "true";
+          }
+          const rect = frame.getBoundingClientRect();
+          const x = Math.max(0, Math.min(100, ((moveEvent.clientX - rect.left) / rect.width) * 100));
+          const y = Math.max(0, Math.min(100, ((moveEvent.clientY - rect.top) / rect.height) * 100));
+          tokenItem.style.setProperty("--token-left", `${x}%`);
+          tokenItem.style.setProperty("--token-top", `${y}%`);
+        };
+
+        const up = (upEvent) => {
+          tokenItem.releasePointerCapture(upEvent.pointerId);
+          tokenItem.removeEventListener("pointermove", move);
+          tokenItem.removeEventListener("pointerup", up);
+          tokenItem.removeEventListener("pointercancel", up);
+          const left = parseFloat(tokenItem.style.getPropertyValue("--token-left"));
+          const top = parseFloat(tokenItem.style.getPropertyValue("--token-top"));
+          const item = piles[currentApostle].tokens.find((entry) => entry.id === tokenItem.dataset.tokenId);
+          if (item) {
+            item.x = left;
+            item.y = top;
+            savePiles();
+          }
+          if (tokenItem.dataset.dragged !== "true") {
+            const img = tokenItem.querySelector("img");
+            tokenItem.dataset.zoomHandled = "true";
+            openZoomForImage(img);
+          }
+        };
+
+        tokenItem.addEventListener("pointermove", move);
+        tokenItem.addEventListener("pointerup", up);
+        tokenItem.addEventListener("pointercancel", up);
+      });
+    }
+
+    function renderPanelImage(base, name) {
+      const img = imageOrMessage(`${base}/${name}.jpg`, `${name} panel`, "panel-image");
+      const frame = document.createElement("div");
+      frame.className = "panel-frame";
+
+      const tokenLayer = document.createElement("div");
+      tokenLayer.className = "panel-token-layer";
+
+      if (name === nietzscheName || name === cyclonusName || name === chimeraName) {
+        const marker = document.createElement("button");
+        marker.type = "button";
+        marker.className = "panel-state-marker";
+        marker.addEventListener("click", cycleNietzscheState);
+        if (hasPanelCounterSlot(name)) {
+          const criticalMassSlot = document.createElement("button");
+          criticalMassSlot.type = "button";
+          criticalMassSlot.className = "critical-mass-slot";
+          criticalMassSlot.textContent = "+";
+          criticalMassSlot.addEventListener("click", addCriticalMassFromSlot);
+          frame.append(img, tokenLayer, marker, criticalMassSlot);
+        } else {
+          frame.append(img, tokenLayer, marker);
+        }
+        panelWrap.replaceChildren(frame);
+        updateNietzscheStateUi(marker);
+      } else {
+        if (hasPanelCounterSlot(name)) {
+          const criticalMassSlot = document.createElement("button");
+          criticalMassSlot.type = "button";
+          criticalMassSlot.className = "critical-mass-slot";
+          criticalMassSlot.textContent = "+";
+          criticalMassSlot.addEventListener("click", addCriticalMassFromSlot);
+          frame.append(img, tokenLayer, criticalMassSlot);
+        } else {
+          frame.append(img, tokenLayer);
+        }
+        panelWrap.replaceChildren(frame);
+        updateNietzscheStateUi();
+      }
+
+      renderPanelTokens();
+      renderNietzscheBreakLocks();
+    }
+
+    function renderFlipCard(wrap, base, name, kind) {
+      const frontSrc = `${base}/${name}_${kind}_X_001.jpg`;
+      const backSrc = `${base}/${name}_${kind}_X_001_BACK.jpg`;
+      const label = kind.toLowerCase();
+      const img = imageOrMessage(frontSrc, `${name} ${label}`, "side-card-image");
+      img.id = `${kind.toLowerCase()}CardImage`;
+      img.dataset.frontSrc = frontSrc;
+      img.dataset.backSrc = backSrc;
+      img.dataset.face = "front";
+      img.title = "点击放大，放大后可翻面";
+      wrap.replaceChildren(img);
+    }
+
+    function cycleNietzscheState() {
+      if (!hasManualPanelState()) return;
+      if (isCyclonus()) {
+        cyclonusStateIndex = (cyclonusStateIndex + cyclonusStates.length - 1) % cyclonusStates.length;
+        localStorage.setItem(cyclonusStateKey, String(cyclonusStateIndex));
+      } else {
+        nietzscheStateIndex = (nietzscheStateIndex + 1) % nietzscheStates.length;
+        localStorage.setItem(nietzscheStateKey, String(nietzscheStateIndex));
+      }
+      const marker = panelWrap.querySelector(".panel-state-marker");
+      updateNietzscheStateUi(marker);
+    }
+
+    function renderApostle(name) {
+      currentApostle = name;
+      ensurePiles(name);
+      applyBurdenInitialLinkedPromotion();
+      applyCurrentApostleLevelBonuses();
+      updateAiViewTabs();
+      updateBpViewTabs();
+      const base = `ps/${name}`;
+      renderApostleTitle();
+      folderPath.textContent = base;
+      if (window.location.hash !== `#${name}`) {
+        history.replaceState(null, "", `#${name}`);
+      }
+
+      renderPanelImage(base, name);
+      renderFlipCard(routineWrap, base, name, "ROUTINE");
+      renderFlipCard(signatureWrap, base, name, "SIGNATURE");
+      const bpAvailable = hasBpDeck(name);
+      aibpLayout.classList.toggle("ai-only", !bpAvailable);
+      bpColumn.hidden = !bpAvailable;
+
+      document.querySelectorAll(".nav button").forEach((button) => {
+        button.classList.toggle("active", button.dataset.name === name);
+      });
+
+      renderAibpCards();
+      renderExtraCards();
+      requestAnimationFrame(updateViewerScale);
+    }
+
+    function drawAi(remember = true) {
+      ensurePiles(currentApostle);
+      const ai = piles[currentApostle].AI;
+      if (ai.pending) return;
+      if (ai.deck.length === 0 && ai.discard.length === 0) return;
+
+      if (remember) {
+        rememberUndo(currentApostle, "AI");
+      }
+      if (ai.deck.length === 0 && ai.discard.length > 0) {
+        ai.deck = shuffleCards(ai.discard);
+        ai.discard = [];
+        savePiles();
+      }
+
+      if (ai.deck.length === 0) {
+        if (remember) {
+          undoStacks[currentApostle].pop();
+        }
+        updateUndoButtons();
+        return;
+      }
+      ai.pending = ai.deck[0];
+      savePiles();
+      renderAibpCards();
+      const drawnCard = ai.pending;
+      const drawnApostle = currentApostle;
+      openImageZoom(cardSrc(drawnCard), "抽取的 AI", () => {
+        if (currentApostle !== drawnApostle) return;
+        const pending = piles[currentApostle]?.AI?.pending;
+        if (!pending || pending.level !== drawnCard.level || pending.index !== drawnCard.index) return;
+        discardAiPending(false);
+      }, {
+        noticeLayout: "sides",
+        cardTokens: currentPanelCardTokens("AI"),
+        noticeImages: drawnApostle === chimeraName
+          ? [
+              {
+                src: "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_I_002.jpg",
+                alt: "来势汹汹特性卡"
+              },
+              {
+                src: "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_I_001.jpg",
+                alt: "黏糊留痕特性卡"
+              }
+            ]
+          : []
+      });
+    }
+
+    function drawBp() {
+      ensurePiles(currentApostle);
+      const bp = piles[currentApostle].BP;
+      if (bp.pending) return;
+      if (bp.deck.length === 0 && bp.discard.length === 0) return;
+
+      rememberUndo(currentApostle, "BP");
+      if (bp.deck.length === 0 && bp.discard.length > 0) {
+        bp.deck = shuffleCards(bp.discard);
+        bp.discard = [];
+        savePiles();
+      }
+
+      if (bp.deck.length === 0) {
+        undoStacks[currentApostle].pop();
+        updateUndoButtons();
+        return;
+      }
+      bp.pending = bp.deck[0];
+      savePiles();
+      renderAibpCards();
+      openImageZoom(cardSrc(bp.pending), "抽取的 BP", null, {
+        bpActions: true,
+        cardTokens: currentPanelCardTokens("BP"),
+        noticeImages: currentBpNoticeImages()
+      });
+    }
+
+    function removePendingFromDeck(type) {
+      const pile = piles[currentApostle][type];
+      const pending = pile.pending;
+      if (!pending) return null;
+
+      const first = pile.deck[0];
+      if (sameCard(first, pending)) {
+        return pile.deck.shift();
+      }
+
+      const index = pile.deck.findIndex((card) => sameCard(card, pending));
+      if (index >= 0) {
+        return pile.deck.splice(index, 1)[0];
+      }
+
+      return pending;
+    }
+
+    function resolveBp(mode) {
+      ensurePiles(currentApostle);
+      const bp = piles[currentApostle].BP;
+      if (!bp.pending) return;
+
+      rememberUndo(currentApostle, "BP");
+      const card = removePendingFromDeck("BP");
+      bp.pending = null;
+
+      if (card?.specialBp) {
+        bp.removed.push(card);
+        currentBpView = "移除";
+      } else if (mode === "discard") {
+        bp.discard.push(card);
+      } else if (mode === "defeat") {
+        setChimeraPhaseFromCard(card);
+        resolveBpDefeat(card);
+      } else if (mode === "vp-defeat") {
+        setChimeraPhaseFromCard(card);
+        resolveBpDefeat(card);
+        addChimeraSecondDamage({ special: "SW" });
+      } else if (mode === "vp-critical") {
+        setChimeraPhaseFromCard(card);
+        resolveBpCritical(card);
+        addChimeraSecondDamage({ special: "SW" });
+      } else if (mode === "critical") {
+        setChimeraPhaseFromCard(card);
+        resolveBpCritical(card);
+      }
+
+      savePiles();
+      renderAibpCards();
+    }
+
+    function discardAiPending(remember = true) {
+      ensurePiles(currentApostle);
+      const ai = piles[currentApostle].AI;
+      if (!ai.pending) return;
+
+      if (remember) {
+        rememberUndo(currentApostle, "AI");
+      }
+      const first = ai.deck[0];
+      if (first && first.level === ai.pending.level && first.index === ai.pending.index) {
+        ai.discard.push(ai.deck.shift());
+      } else {
+        ai.discard.push(ai.pending);
+        ai.deck = ai.deck.filter((card) => card !== ai.pending);
+      }
+      ai.pending = null;
+      savePiles();
+      renderAibpCards();
+    }
+
+    function confirmAiDiscard() {
+      discardAiPending(true);
+    }
+
+    function updateViewerScale() {
+      const main = document.querySelector("main");
+      const titleRow = document.querySelector(".title-row");
+      const availableWidth = Math.max(360, main.clientWidth - 36);
+      const availableHeight = Math.max(420, window.innerHeight - titleRow.offsetHeight - 70);
+
+      const sideByHeight = (availableHeight - 2 * 38 - 4 * 8 - 14) / panelRatio;
+      const sideByWidth = availableWidth / 5.55;
+      const baseSideHeight = Math.max(165, Math.min(sideByHeight, sideByWidth, 380));
+      const sideHeight = baseSideHeight * 1.1;
+      const panelHeight = baseSideHeight * panelRatio * 1.018;
+
+      // 只放大惯常、标志、其他卡牌、AI/BP 卡牌；面板保持原尺寸。
+      document.documentElement.style.setProperty("--side-card-image-height", `${sideHeight}px`);
+      document.documentElement.style.setProperty("--panel-image-height", `${panelHeight}px`);
+    }
+
+    apostles.forEach((name) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.dataset.name = name;
+      button.textContent = name.replaceAll("_", " ");
+      button.addEventListener("click", () => renderApostle(name));
+      nav.appendChild(button);
+    });
+
+    aiViews.forEach((view) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.dataset.view = view;
+      button.textContent = view;
+      button.addEventListener("click", () => {
+        if (view === "当前" && !confirmCurrentView()) return;
+        currentAiView = view;
+        renderAibpCards();
+      });
+      aiViewTabs.appendChild(button);
+    });
+
+    document.addEventListener("click", (event) => {
+      const img = event.target.closest("img");
+      if (!shouldZoomImage(img)) return;
+      const tokenItem = img.closest(".panel-token-item");
+      if (tokenItem && tokenItem.dataset.dragged === "true") {
+        tokenItem.dataset.dragged = "false";
+        return;
+      }
+      if (tokenItem && tokenItem.dataset.zoomHandled === "true") {
+        tokenItem.dataset.zoomHandled = "false";
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      openZoomForImage(img);
+    });
+
+    imageZoomOverlay.addEventListener("click", closeImageZoom);
+    imageZoomClose.addEventListener("click", (event) => {
+      event.stopPropagation();
+      closeImageZoom();
+    });
+    imageZoomImg.addEventListener("click", (event) => event.stopPropagation());
+    imageZoomNotice.addEventListener("click", (event) => event.stopPropagation());
+    imageZoomFlipActions.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const button = event.target.closest("#imageZoomFlipButton");
+      if (!button || button.disabled) return;
+      const showingBack = button.dataset.face === "back";
+      const nextFace = showingBack ? "front" : "back";
+      const nextSrc = showingBack ? button.dataset.frontSrc : button.dataset.backSrc;
+      imageZoomImg.src = nextSrc;
+      button.dataset.face = nextFace;
+      button.textContent = showingBack ? "反面" : "正面";
+
+      const sourceImg = document.getElementById(button.dataset.sourceId || "");
+      if (sourceImg) {
+        sourceImg.src = nextSrc;
+        sourceImg.dataset.face = nextFace;
+        sourceImg.alt = sourceImg.alt.replace(/\s+(front|back)$/, "") + ` ${nextFace}`;
+      }
+    });
+    imageZoomBpActions.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const button = event.target.closest("[data-bp-zoom-action]");
+      if (!button || button.disabled) return;
+      const action = button.dataset.bpZoomAction;
+      resolveBp(action);
+      closeImageZoom();
+    });
+    imageZoomMoveActions.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const button = event.target.closest("[data-move-target-index]");
+      if (!button || !activeMoveContext) return;
+      const target = activeMoveContext.targets?.[Number(button.dataset.moveTargetIndex)];
+      if (!target) return;
+      moveVisibleCard(activeMoveContext, target);
+      closeImageZoom();
+    });
+    imageZoomTokenActions.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const button = event.target.closest("[data-token-zoom-action]");
+      if (!button || button.disabled) return;
+      changeZoomTokenCount(button.dataset.tokenZoomAction);
+    });
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && imageZoomOverlay.classList.contains("show")) {
+        closeImageZoom();
+      }
+    });
+
+    bpDamageTargetSelect.addEventListener("change", () => {
+      if (isChimera()) {
+        currentBpView = currentBpDamageView();
+        renderAibpCards();
+      }
+    });
+    apostleLevelSelect.addEventListener("change", () => {
+      if (fixedLevelOneApostles.has(currentApostle)) return;
+      const level = Number(apostleLevelSelect.value);
+      if (level >= 1 && level <= maxApostleLevel) {
+        apostleLevelOverrides[currentApostle] = level;
+      } else {
+        delete apostleLevelOverrides[currentApostle];
+      }
+      saveApostleLevelOverrides();
+      renderApostleTitle();
+      applyCurrentApostleLevelBonuses();
+      renderCriticalMassSlot();
+      renderExtraCards();
+      renderAibpCards();
+      renderPanelTokens();
+    });
+    sidebarToggle.addEventListener("click", () => {
+      const collapsed = document.body.classList.toggle("sidebar-collapsed");
+      sidebarToggle.textContent = collapsed ? "☰" : "×";
+      sidebarToggle.setAttribute("aria-label", collapsed ? "展开左侧边栏" : "折叠左侧边栏");
+      window.setTimeout(updateViewerScale, 80);
+    });
+    nietzscheStateButton.addEventListener("click", cycleNietzscheState);
+    traitButton.addEventListener("click", openTraitDialog);
+    tokenButton.addEventListener("click", openTokenDialog);
+    traitCloseButton.addEventListener("click", () => traitDialog.close());
+    traitClearButton.addEventListener("click", clearTraitSelection);
+    traitSaveButton.addEventListener("click", saveTraitSelection);
+    tokenCloseButton.addEventListener("click", () => tokenDialog.close());
+    tokenClearButton.addEventListener("click", clearTokenSelection);
+    tokenSaveButton.addEventListener("click", saveTokenSelection);
+    newCampaignButton.addEventListener("click", startNewCampaign);
+    drawAiButton.addEventListener("click", drawAi);
+    aiDrawPreview.addEventListener("click", () => {
+      if (!piles[currentApostle]?.AI?.pending) drawAi();
+    });
+    undoAiButton.addEventListener("click", () => undoLastAibp("AI"));
+    confirmAiButton.addEventListener("click", confirmAiDiscard);
+    promoteAiSingleButton.addEventListener("click", () => promoteSinglePile("AI"));
+    drawFlareButton.addEventListener("click", drawFlare);
+    drawFeintButton.addEventListener("click", drawFeint);
+    drawBpButton.addEventListener("click", drawBp);
+    bpDrawPreview.addEventListener("click", () => {
+      if (!piles[currentApostle]?.BP?.pending) drawBp();
+    });
+    undoBpButton.addEventListener("click", () => undoLastAibp("BP"));
+    discardBpButton.addEventListener("click", () => resolveBp("discard"));
+    defeatBpButton.addEventListener("click", () => resolveBp("defeat"));
+    criticalBpButton.addEventListener("click", () => resolveBp("critical"));
+    addSwButton.addEventListener("click", () => addBpSpecialDamage("SW"));
+    addDwButton.addEventListener("click", () => addBpSpecialDamage("DW"));
+    addSwDamage2Button.addEventListener("click", addChimeraDamage2Sw);
+    removeSwDamage2Button.addEventListener("click", removeChimeraDamage2Sw);
+    addLabyrinthaurosSpecialBpButton.addEventListener("click", addLabyrinthaurosSpecialBp);
+    removeLabyrinthaurosSpecialBpButton.addEventListener("click", removeLabyrinthaurosSpecialBp);
+    promoteBpSingleButton.addEventListener("click", () => promoteSinglePile("BP"));
+    promoteBpButton.addEventListener("click", promoteBpByRemovingLowest);
+    window.addEventListener("resize", updateViewerScale);
+    window.addEventListener("focus", refreshRecordApostleLevels);
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) refreshRecordApostleLevels();
+    });
+    loadSavedPiles();
+    renderApostle(currentApostle);
+    refreshRecordApostleLevels();
+  </script>
+  <script src="ps/other/resouce/bp_resource_map.js"></script>
+  <script src="ps/other/resouce/bp_resource_map_c1_c3.js"></script>
+  <script src="ps/other/resouce/bp_resource_map_c4_c5.js?v=20260730e"></script>
+  <script src="c45_specials.js?v=20260730i"></script>
+  <script src="bp_loot_calculator_addon.js?v=20260730-c45-loot"></script>
+</body>
+</html>

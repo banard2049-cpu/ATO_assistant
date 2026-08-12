@@ -1,0 +1,14 @@
+name: Public release audit
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  audit:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reject copyrighted or private resources
+        shell: powershell
+        run: ./tools/audit-public-release.ps1

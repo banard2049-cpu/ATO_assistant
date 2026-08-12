@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>装备分类标注</title>
+<style>
+:root{
+  --ink:#1d292d;
+  --muted:#68787d;
+  --line:#d8e0e2;
+  --accent:#18758a;
+  --accent-2:#2b8d69;
+  --bg:#f3f6f6;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;
+}
+button,input,select{font:inherit}
+.app{min-height:100vh}
+.top{
+  position:sticky;
+  top:0;
+  z-index:5;
+  background:#fff;
+  border-bottom:1px solid var(--line);
+  padding:12px 18px;
+}
+.top-row,.filters,.bulk{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.top-row{margin-bottom:10px}
+.title{font-size:19px;font-weight:850;margin-right:auto}
+.status{font-size:12px;color:var(--muted)}
+.filters input{
+  width:min(320px,100%);
+  padding:8px 10px;
+  border:1px solid var(--line);
+  border-radius:5px;
+}
+.filters select,.bulk select{
+  padding:8px;
+  border:1px solid var(--line);
+  border-radius:5px;
+  background:#fff;
+}
+label.check{
+  display:flex;
+  gap:6px;
+  align-items:center;
+  font-size:13px;
+  font-weight:700;
+}
+.btn{
+  border:1px solid var(--line);
+  background:#fff;
+  border-radius:5px;
+  padding:8px 12px;
+  font-weight:750;
+  cursor:pointer;
+}
+.btn.primary{
+  background:var(--accent);
+  border-color:var(--accent);
+  color:#fff;
+}
+.btn:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
+.bulk{
+  margin-top:10px;
+  padding-top:10px;
+  border-top:1px solid #edf0f1;
+}
+.grid{
+  padding:18px;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  gap:14px;
+}
+.card{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:7px;
+  padding:9px;
+  min-width:0;
+  outline:none;
+}
+.card.selected{
+  border-color:var(--accent);
+  box-shadow:0 0 0 2px rgba(24,117,138,.15);
+}
+.card.saved{border-color:#69aa86}
+.card img,.empty-img{
+  display:block;
+  width:100%;
+  aspect-ratio:63 / 88;
+  object-fit:contain;
+  background:#f7f9f9;
+  border:1px solid #edf0f1;
+  border-radius:5px;
+}
+.empty-img{
+  display:grid;
+  place-items:center;
+  color:var(--muted);
+  font-size:12px;
+  text-align:center;
+  padding:8px;
+}
+.name{
+  font-size:13px;
+  font-weight:800;
+  line-height:1.25;
+  margin:8px 0 3px;
+}
+.meta{
+  font-size:11px;
+  color:var(--muted);
+  margin-bottom:7px;
+}
+.part-select{
+  width:100%;
+  padding:7px;
+  border:1px solid var(--line);
+  border-radius:5px;
+  background:#fff;
+}
+.empty{
+  grid-column:1/-1;
+  text-align:center;
+  color:var(--muted);
+  padding:60px;
+}
+@media(max-width:600px){
+  .top{padding:10px}
+  .grid{
+    padding:10px;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+  }
+  .filters>*{flex:1 1 140px}
+  .card{padding:7px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="top-row">
+      <div class="title">装备分类标注</div>
+      <div id="status" class="status">加载中...</div>
+      <button id="save" class="btn primary">保存标注</button>
+    </div>
+    <div class="filters">
+      <input id="search" placeholder="搜索装备名称或编号">
+      <select id="cycle"><option value="">全部循环</option></select>
+      <select id="partFilter"><option value="">全部部位</option></select>
+      <label class="check"><input id="unlabeled" type="checkbox">只看未标注</label>
+    </div>
+    <div class="bulk">
+      <span class="status">批量标注当前筛选结果</span>
+      <select id="bulkPart"></select>
+      <button id="bulkApply" class="btn">应用</button>
+      <button id="clearVisible" class="btn">清除当前标注</button>
+    </div>
+  </header>
+  <main id="grid" class="grid"></main>
+</div>
+<script>
+const PARTS = [
+  ['attachment', '附件'],
+  ['armor', '防具'],
+  ['arm', '手臂'],
+  ['aid', '助具'],
+  ['titan', '泰坦'],
+];
+const API = '../api/gear-parts.php';
+let items = [];
+let labels = {};
+let images = {};
+let dirty = false;
+let selectedId = '';
+let lastPart = '';
+let seededFromEmpty = false;
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+
+function gearName(data, id) {
+  const full = data.gearCards?.[id] || id;
+  const zh = full.replace(/^[^\u3400-\u9fff]*/, '').trim();
+  return zh || full;
+}
+
+function imageSrc(id) {
+  if (String(id).startsWith('T:tt_')) return `images/titans/${String(id).slice(2)}.png`;
+  const raw = images[id];
+  if (!raw) return '';
+  return String(raw).replace(/^technology\//, '');
+}
+
+function classifyGear(pd, gearId) {
+  if (String(gearId).startsWith('T:tt_')) return 'titan';
+  const traits = String(pd?.gearTraits?.[gearId] || '').split(' - ')[0].toLowerCase();
+  const name = gearName(pd, gearId).toLowerCase();
+  const text = `${traits} ${name}`;
+  const has = words => words.some(word => text.includes(word));
+  if (has([
+    'helm', 'helmet', 'headgear', 'mask', 'visor', 'cowl', 'head ', 'sandals', 'kothornos',
+    'breakers', 'stilts', 'boots', 'greaves', 'feet', 'armor', 'linothorax', 'breastplate',
+    'thorax', 'vestment', 'garb', 'carapace', 'spolas', 'shield', 'aspis', 'buckler',
+    'guard', 'aegis', 'umbrella', 'suit',
+  ])) return 'armor';
+  if (has([
+    'weapon', 'sword', 'xiphos', 'kopis', 'khopesh', 'blade', 'knife', 'spear', 'javelin',
+    'axe', 'mace', 'hammer', 'club', 'cestus', 'fist', 'bow', 'gun', 'ballista', 'whip',
+    'discus', 'chakram', 'bident', 'lance', 'flail', 'thrower', 'ramaxe', 'pillarmace',
+    'harpoon', 'kusarigama',
+  ])) return 'arm';
+  if (has([
+    'attachment', 'augment', 'module', 'belt', 'cloak', 'camo', 'sheath', 'talisman',
+    'necklace', 'amulet', 'badge', 'wreath', 'implant',
+  ])) return 'attachment';
+  return 'aid';
+}
+
+function options(selected, blank = '未标注') {
+  return `<option value="">${blank}</option>` + PARTS.map(([v, n]) => `<option value="${v}" ${v === selected ? 'selected' : ''}>${n}</option>`).join('');
+}
+
+function currentItems() {
+  const q = $('search').value.trim().toLowerCase();
+  const cycle = $('cycle').value;
+  const part = $('partFilter').value;
+  return items.filter(x =>
+    (!q || x.search.includes(q)) &&
+    (!cycle || x.cycle === cycle) &&
+    (!part || labels[x.id] === part) &&
+    (!$('unlabeled').checked || !labels[x.id])
+  );
+}
+
+function ensureSelection() {
+  const visible = currentItems();
+  if (!visible.length) {
+    selectedId = '';
+    return visible;
+  }
+  if (!visible.some(x => x.id === selectedId)) selectedId = visible[0].id;
+  return visible;
+}
+
+function selectVisibleCard(delta) {
+  const visible = ensureSelection();
+  if (!visible.length) return;
+  const index = Math.max(0, visible.findIndex(x => x.id === selectedId));
+  const next = visible[(index + delta + visible.length) % visible.length] || visible[0];
+  selectedId = next.id;
+  render();
+  document.querySelector(`.card[data-id="${CSS.escape(selectedId)}"]`)?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+}
+
+function labelSelected(part, advance = true) {
+  const visible = ensureSelection();
+  if (!visible.length) return;
+  const target = visible.find(x => x.id === selectedId) || visible[0];
+  selectedId = target.id;
+  if (part) {
+    labels[target.id] = part;
+    dirty = true;
+    lastPart = part;
+  } else {
+    delete labels[target.id];
+    dirty = true;
+  }
+  render();
+  if (advance) selectVisibleCard(1);
+}
+
+function render() {
+  const visible = ensureSelection();
+  $('status').textContent = `显示 ${visible.length}/${items.length} 件 · 已标注 ${Object.keys(labels).length} 件${dirty ? ' · 尚未保存' : ''}`;
+  $('grid').innerHTML = visible.length
+    ? visible.map(x => `
+      <article class="card ${labels[x.id] ? 'saved' : ''} ${x.id === selectedId ? 'selected' : ''}" data-id="${esc(x.id)}" tabindex="0">
+        ${imageSrc(x.id) ? `<img src="${esc(imageSrc(x.id))}" alt="${esc(x.name)}" loading="lazy">` : `<div class="empty-img">${esc(x.id)}</div>`}
+        <div class="name">${esc(x.name)}</div>
+        <div class="meta">${esc(x.id)} · ${esc(x.cycle)}</div>
+        <select class="part-select" data-id="${esc(x.id)}">${options(labels[x.id])}</select>
+      </article>
+    `).join('')
+    : '<div class="empty">没有符合条件的装备</div>';
+
+  document.querySelectorAll('.part-select').forEach(el => {
+    el.addEventListener('change', () => {
+      const part = el.value;
+      const id = el.dataset.id;
+      if (part) labels[id] = part;
+      else delete labels[id];
+      selectedId = id;
+      lastPart = part;
+      dirty = true;
+      render();
+    });
+  });
+
+  document.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('click', () => {
+      selectedId = card.dataset.id;
+      render();
+    });
+  });
+}
+
+async function save() {
+  const btn = $('save');
+  btn.disabled = true;
+  try {
+    const response = await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ labels }),
+    });
+    const payload = await response.json();
+    if (!response.ok || !payload.ok) throw new Error(payload.error || `HTTP ${response.status}`);
+    labels = payload.data.labels || {};
+    dirty = false;
+    render();
+  } catch (e) {
+    alert(`保存失败：${e.message}`);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function boot() {
+  try {
+    const [pd, id, ld] = await Promise.all([
+      fetch('ato_gear_production.json').then(r => r.json()),
+      fetch('gear_card_images.json').then(r => r.json()),
+      fetch(API).then(async r => {
+        const p = await r.json();
+        if (!r.ok) throw new Error(p.error || `HTTP ${r.status}`);
+        return p.data;
+      }),
+    ]);
+    images = id.images || {};
+    labels = ld.labels || {};
+    const seen = new Set();
+    for (const e of pd.techProduction || []) {
+      for (const g of e.produces || []) {
+        if (seen.has(g.gearId)) continue;
+        seen.add(g.gearId);
+        const name = gearName(pd, g.gearId);
+        items.push({
+          id: g.gearId,
+          name,
+          cycle: e.cycle,
+          search: `${g.gearId} ${name} ${pd.gearCards?.[g.gearId] || ''}`.toLowerCase(),
+        });
+      }
+    }
+    items.sort((a, b) => a.cycle.localeCompare(b.cycle) || a.id.localeCompare(b.id));
+    if (!Object.keys(labels).length) {
+      labels = {};
+      for (const item of items) labels[item.id] = classifyGear(pd, item.id);
+      dirty = true;
+      seededFromEmpty = true;
+    }
+    [...new Set(items.map(x => x.cycle))].forEach(c => $('cycle').insertAdjacentHTML('beforeend', `<option>${esc(c)}</option>`));
+    $('partFilter').innerHTML = options('', '全部部位');
+    $('bulkPart').innerHTML = options('', '选择部位');
+    selectedId = items[0]?.id || '';
+    render();
+    if (seededFromEmpty) {
+      await save();
+      seededFromEmpty = false;
+    }
+  } catch (e) {
+    $('grid').innerHTML = `<div class="empty">加载失败：${esc(e.message)}</div>`;
+    $('status').textContent = '加载失败';
+  }
+}
+
+['search', 'cycle', 'partFilter', 'unlabeled'].forEach(id => $(id).addEventListener(id === 'search' ? 'input' : 'change', render));
+$('save').addEventListener('click', save);
+$('bulkApply').addEventListener('click', () => {
+  const part = $('bulkPart').value;
+  const visible = currentItems();
+  if (!part || !visible.length) return;
+  if (!confirm(`将当前 ${visible.length} 件装备标注为“${PARTS.find(x => x[0] === part)?.[1]}”，继续吗？`)) return;
+  visible.forEach(x => labels[x.id] = part);
+  dirty = true;
+  lastPart = part;
+  selectedId = visible[0]?.id || selectedId;
+  render();
+});
+$('clearVisible').addEventListener('click', () => {
+  const visible = currentItems();
+  if (!visible.length) return;
+  if (!confirm(`将清除当前 ${visible.length} 件装备的部位标注，继续吗？`)) return;
+  visible.forEach(x => delete labels[x.id]);
+  dirty = true;
+  render();
+});
+
+document.addEventListener('keydown', event => {
+  if (['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target?.tagName)) return;
+  const map = { '1': 'attachment', '2': 'armor', '3': 'arm', '4': 'aid', '5': 'titan' };
+  if (map[event.key]) {
+    event.preventDefault();
+    labelSelected(map[event.key], true);
+    return;
+  }
+  if (event.key === 'ArrowRight' || event.key === 'j' || event.key === 'J') {
+    event.preventDefault();
+    selectVisibleCard(1);
+    return;
+  }
+  if (event.key === 'ArrowLeft' || event.key === 'k' || event.key === 'K') {
+    event.preventDefault();
+    selectVisibleCard(-1);
+    return;
+  }
+  if (event.key === 'Enter' && lastPart) {
+    event.preventDefault();
+    labelSelected(lastPart, true);
+  }
+});
+
+window.addEventListener('beforeunload', e => {
+  if (dirty) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
+
+boot();
+</script>
+</body>
+</html>
