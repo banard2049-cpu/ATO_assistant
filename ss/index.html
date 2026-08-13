@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ATO 第二屏幕</title>
-  <link rel="stylesheet" href="./styles.css?v=20260814-pending-overlap1">
+  <link rel="stylesheet" href="./styles.css?v=20260814-swap-panels1">
 </head>
 <body>
   <main class="screen-shell">
@@ -21,26 +21,28 @@
     </section>
     <section id="battleView" class="battle-view" aria-label="决战版图" hidden>
       <aside class="battle-sidebar">
-        <div class="boss-summary">
-          <figure class="boss-panel card-slot tall"><img id="bossPanel" alt="Boss 大卡"><div id="bossTokens" class="boss-token-layer"></div></figure>
-        </div>
-        <div class="support-cards" aria-label="Boss 惯常、标志与当前 Trait">
-          <figure class="card-slot boss-small-card"><img id="bossRoutine" alt="Boss 惯常"></figure>
-          <figure class="card-slot boss-small-card"><img id="bossSignature" alt="Boss 标志"></figure>
-          <div id="traitCards" class="trait-cards"></div>
-        </div>
-        <div class="resolution-panel">
-          <section class="aibp-slot" aria-label="AIBP 状态">
-            <div class="battle-facts">
-              <div><b>AI 卡背</b><span id="aiBacks">—</span></div>
-              <div><b>BP 卡背</b><span id="bpBacks">—</span></div>
-              <div><b>弃牌</b><span id="discardCounts">—</span></div>
-              <div><b>当前损伤</b><span id="damageSummary">0</span></div>
+        <div class="battle-sidebar-content">
+          <div class="boss-summary">
+            <figure class="boss-panel card-slot tall"><img id="bossPanel" alt="Boss 大卡"><div id="bossTokens" class="boss-token-layer"></div></figure>
+          </div>
+          <div class="support-cards" aria-label="Boss 惯常、标志与当前 Trait">
+            <figure class="card-slot boss-small-card"><img id="bossRoutine" alt="Boss 惯常"></figure>
+            <figure class="card-slot boss-small-card"><img id="bossSignature" alt="Boss 标志"></figure>
+            <div id="traitCards" class="trait-cards"></div>
+          </div>
+          <div class="resolution-panel">
+            <section class="aibp-slot" aria-label="AIBP 状态">
+              <div class="battle-facts">
+                <div><b>AI 卡背</b><span id="aiBacks">—</span></div>
+                <div><b>BP 卡背</b><span id="bpBacks">—</span></div>
+                <div><b>弃牌</b><span id="discardCounts">—</span></div>
+                <div><b>当前损伤</b><span id="damageSummary">0</span></div>
+              </div>
+              <div id="damageCards" class="damage-cards" aria-label="当前损伤牌" hidden></div>
+            </section>
+            <div class="pending-cards single-pending" aria-label="正在结算">
+              <article class="pending-card"><span id="currentPendingLabel">正在结算</span><div id="currentPending" class="current-card empty-card">未抽取</div></article>
             </div>
-            <div id="damageCards" class="damage-cards" aria-label="当前损伤牌"></div>
-          </section>
-          <div class="pending-cards single-pending" aria-label="正在结算">
-            <article class="pending-card"><span id="currentPendingLabel">正在结算</span><div id="currentPending" class="current-card empty-card">未抽取</div></article>
           </div>
         </div>
       </aside>
@@ -52,6 +54,6 @@
     </section>
   </main>
 
-  <script src="./app.js?v=20260814-pending-overlap1"></script>
+  <script src="./app.js?v=20260814-swap-panels1"></script>
 </body>
 </html>

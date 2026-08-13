@@ -190,6 +190,9 @@ function public_second_screen_payload(array $campaign, array $screenEntry = []):
     'map' => max(60, min(200, (int) ($savedScales['map'] ?? $legacyScale))),
     'battleBoard' => max(60, min(200, (int) ($savedScales['battleBoard'] ?? 100))),
   ];
+  $battleRotation = (int) ($screenEntry['battleRotation'] ?? 0);
+  if (!in_array($battleRotation, [0, 90, 180, 270], true)) $battleRotation = 0;
+  $battleSwapped = !empty($screenEntry['battleSwapped']);
 
   return [
     'profileName' => (string) ($profile['name'] ?? '阿尔戈号'),
@@ -203,6 +206,8 @@ function public_second_screen_payload(array $campaign, array $screenEntry = []):
     'dashboardRevision' => (int) ($campaign['sectionRevisions']['dashboard'] ?? 0),
     'updatedAt' => $campaign['updatedAt'] ?? null,
     'displayScales' => $displayScales,
+    'battleRotation' => $battleRotation,
+    'battleSwapped' => $battleSwapped,
   ];
 }
 
@@ -384,6 +389,8 @@ if ($action === 'second-screen-status') {
   $store = read_second_screens($secondScreensFile);
   $userToken = '';
   $displayScales = ['map' => 100, 'battleBoard' => 100];
+  $battleRotation = 0;
+  $battleSwapped = false;
   foreach ($store['screens'] as $token => $entry) {
     if (($entry['userId'] ?? null) === $user['id']) {
       $userToken = (string) $token;
@@ -393,6 +400,9 @@ if ($action === 'second-screen-status') {
         'map' => max(60, min(200, (int) ($savedScales['map'] ?? $legacyScale))),
         'battleBoard' => max(60, min(200, (int) ($savedScales['battleBoard'] ?? 100))),
       ];
+      $battleRotation = (int) ($entry['battleRotation'] ?? 0);
+      if (!in_array($battleRotation, [0, 90, 180, 270], true)) $battleRotation = 0;
+      $battleSwapped = !empty($entry['battleSwapped']);
       break;
     }
   }
@@ -414,6 +424,15 @@ if ($action === 'second-screen-status') {
     } elseif (array_key_exists('displayScale', $payload)) {
       $displayScales['map'] = max(60, min(200, (int) $payload['displayScale']));
     }
+    if (array_key_exists('battleRotation', $payload)) {
+      $requestedRotation = (int) $payload['battleRotation'];
+      if (in_array($requestedRotation, [0, 90, 180, 270], true)) {
+        $battleRotation = $requestedRotation;
+      }
+    }
+    if (array_key_exists('battleSwapped', $payload)) {
+      $battleSwapped = (bool) $payload['battleSwapped'];
+    }
     if ($enabled) {
       foreach ($store['screens'] as $token => $entry) {
         if (($entry['userId'] ?? null) !== $user['id']) unset($store['screens'][$token]);
@@ -431,9 +450,13 @@ if ($action === 'second-screen-status') {
         'enabledAt' => gmdate('c'),
         'displayMode' => 'map',
         'displayScales' => $displayScales,
+        'battleRotation' => $battleRotation,
+        'battleSwapped' => $battleSwapped,
       ];
     } elseif ($enabled && $userToken !== '') {
       $store['screens'][$userToken]['displayScales'] = $displayScales;
+      $store['screens'][$userToken]['battleRotation'] = $battleRotation;
+      $store['screens'][$userToken]['battleSwapped'] = $battleSwapped;
       unset($store['screens'][$userToken]['displayScale']);
     }
     write_json_file($secondScreensFile, $store);
@@ -444,6 +467,8 @@ if ($action === 'second-screen-status') {
     'ok' => true,
     'enabled' => $userToken !== '',
     'displayScales' => $displayScales,
+    'battleRotation' => $battleRotation,
+    'battleSwapped' => $battleSwapped,
     'urls' => $userToken !== '' ? second_screen_urls() : [],
   ]);
 }

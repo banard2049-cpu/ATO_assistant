@@ -1703,6 +1703,18 @@
       text-align: right;
     }
 
+    .second-screen-scale.with-rotation {
+      grid-template-columns: auto minmax(120px, 1fr) 54px 38px 38px;
+    }
+
+    .second-screen-scale .second-screen-icon-button {
+      width: 38px;
+      min-height: 34px;
+      padding: 0;
+      font-size: 20px;
+      line-height: 1;
+    }
+
     .second-screen-hint {
       color: var(--muted);
       font-size: 12px;
@@ -2015,11 +2027,13 @@
                 <input id="secondScreenScale" type="range" min="60" max="200" step="10" value="100">
                 <output id="secondScreenScaleValue">100%</output>
               </label>
-              <label id="secondScreenBattleScaleRow" class="second-screen-scale" hidden>
-                决战版图显示大小
-                <input id="secondScreenBattleScale" type="range" min="60" max="200" step="10" value="100">
+              <div id="secondScreenBattleScaleRow" class="second-screen-scale with-rotation" hidden>
+                <span>决战版图显示大小</span>
+                <input id="secondScreenBattleScale" type="range" min="60" max="200" step="10" value="100" aria-label="决战版图显示大小">
                 <output id="secondScreenBattleScaleValue">100%</output>
-              </label>
+                <button id="secondScreenRotateButton" type="button" class="secondary second-screen-icon-button" aria-label="逆时针旋转第二屏幕左侧区域，当前 0 度" title="当前 0°，点击逆时针旋转 90°">↺</button>
+                <button id="secondScreenSwapButton" type="button" class="secondary second-screen-icon-button" aria-label="交换第二屏幕左右区域" title="交换 Boss/AIBP 与决战版图的位置">⇄</button>
+              </div>
               <p id="secondScreenHint" class="second-screen-hint">打开后，同一局域网设备可通过专用网址查看地图或决战版图。</p>
             </div>
             <div class="archive-actions">
@@ -2953,6 +2967,8 @@
       secondScreenBattleScaleRow: document.querySelector("#secondScreenBattleScaleRow"),
       secondScreenBattleScale: document.querySelector("#secondScreenBattleScale"),
       secondScreenBattleScaleValue: document.querySelector("#secondScreenBattleScaleValue"),
+      secondScreenRotateButton: document.querySelector("#secondScreenRotateButton"),
+      secondScreenSwapButton: document.querySelector("#secondScreenSwapButton"),
     };
 
     let archive = loadArchive();
@@ -3216,6 +3232,14 @@
       elements.secondScreenBattleScaleRow.hidden = !enabled;
       elements.secondScreenBattleScale.value = String(battleScale);
       elements.secondScreenBattleScaleValue.textContent = `${battleScale}%`;
+      const battleRotation = [0, 90, 180, 270].includes(Number(payload.battleRotation)) ? Number(payload.battleRotation) : 0;
+      elements.secondScreenRotateButton.dataset.rotation = String(battleRotation);
+      elements.secondScreenRotateButton.title = `当前 ${battleRotation}°，点击逆时针旋转 90°`;
+      elements.secondScreenRotateButton.setAttribute("aria-label", `逆时针旋转第二屏幕左侧区域，当前 ${battleRotation} 度`);
+      const battleSwapped = Boolean(payload.battleSwapped);
+      elements.secondScreenSwapButton.dataset.swapped = String(battleSwapped);
+      elements.secondScreenSwapButton.title = battleSwapped ? "当前已交换，点击恢复左右位置" : "交换 Boss/AIBP 与决战版图的位置";
+      elements.secondScreenSwapButton.setAttribute("aria-label", battleSwapped ? "恢复第二屏幕左右区域位置" : "交换第二屏幕左右区域位置");
       elements.secondScreenUrl.value = preferred;
       elements.openSecondScreenLink.href = preferred || "./ss/";
       elements.secondScreenHint.textContent = enabled
@@ -3273,6 +3297,47 @@
       } catch (error) {
         const moduleLabel = moduleId === "map" ? "地图" : moduleId === "battleBoard" ? "决战版图" : moduleId;
         elements.secondScreenHint.textContent = `${moduleLabel}显示大小保存失败：${String(error.message || error)}`;
+      }
+    }
+
+    async function rotateSecondScreenBattle() {
+      if (!secondScreenEnabled || secondScreenBusy) return;
+      const currentRotation = Number(elements.secondScreenRotateButton.dataset.rotation || 0);
+      const battleRotation = (currentRotation + 90) % 360;
+      elements.secondScreenRotateButton.disabled = true;
+      try {
+        const response = await fetch(`${authUrl}?action=second-screen-status`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ enabled: true, battleRotation }),
+        });
+        const payload = await response.json().catch(() => null);
+        if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+        renderSecondScreenStatus(payload);
+      } catch (error) {
+        elements.secondScreenHint.textContent = `左侧区域方向保存失败：${String(error.message || error)}`;
+      } finally {
+        elements.secondScreenRotateButton.disabled = false;
+      }
+    }
+
+    async function swapSecondScreenBattle() {
+      if (!secondScreenEnabled || secondScreenBusy) return;
+      const battleSwapped = elements.secondScreenSwapButton.dataset.swapped !== "true";
+      elements.secondScreenSwapButton.disabled = true;
+      try {
+        const response = await fetch(`${authUrl}?action=second-screen-status`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ enabled: true, battleSwapped }),
+        });
+        const payload = await response.json().catch(() => null);
+        if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+        renderSecondScreenStatus(payload);
+      } catch (error) {
+        elements.secondScreenHint.textContent = `左右区域位置保存失败：${String(error.message || error)}`;
+      } finally {
+        elements.secondScreenSwapButton.disabled = false;
       }
     }
 
@@ -7052,6 +7117,8 @@
       elements.secondScreenBattleScaleValue.textContent = `${elements.secondScreenBattleScale.value}%`;
     });
     elements.secondScreenBattleScale.addEventListener("change", () => setSecondScreenModuleScale("battleBoard", elements.secondScreenBattleScale.value));
+    elements.secondScreenRotateButton.addEventListener("click", rotateSecondScreenBattle);
+    elements.secondScreenSwapButton.addEventListener("click", swapSecondScreenBattle);
     elements.copySecondScreenButton.addEventListener("click", async () => {
       if (!elements.secondScreenUrl.value) return;
       try {

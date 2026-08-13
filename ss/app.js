@@ -3,6 +3,7 @@ const elements = {
   mapFrame: document.querySelector("#mapFrame"),
   mapStage: document.querySelector(".map-stage"),
   battleView: document.querySelector("#battleView"),
+  battleSidebarContent: document.querySelector(".battle-sidebar-content"),
   battleBoardFrame: document.querySelector("#battleBoardFrame"),
   bossPanel: document.querySelector("#bossPanel"),
   bossTokens: document.querySelector("#bossTokens"),
@@ -25,10 +26,19 @@ let retryTimer = null;
 let battleRenderKey = "";
 let activeMode = "map";
 let latestBattleScale = 1;
+let latestBattleRotation = 0;
 const aibpBaseUrl = new URL("../aibp/", document.baseURI);
 
-function layoutSupportCards(availableWidth, smallWidth, smallHeight) {
+function layoutSupportCards(availableWidth, smallWidth, smallHeight, oneRow = false) {
   const cards = Array.from(elements.supportCards.querySelectorAll(":scope > .boss-small-card, .trait-cards > img"));
+  if (oneRow) {
+    elements.supportCards.style.gridTemplateColumns = Array.from({ length: Math.max(1, cards.length) }, () => `${smallWidth}px`).join(" ");
+    cards.forEach((card, index) => {
+      card.style.gridColumn = String(index + 1);
+      card.style.gridRow = "1";
+    });
+    return 1;
+  }
   const secondRowCount = cards.length > 5 ? Math.min(2, cards.length - 5) : 0;
   const firstRowCount = cards.length - secondRowCount;
   const columns = Math.max(1, firstRowCount);
@@ -43,38 +53,54 @@ function layoutSupportCards(availableWidth, smallWidth, smallHeight) {
   return secondRowCount > 0 ? 2 : 1;
 }
 
-function applyBattleLayout(scale = latestBattleScale) {
+function applyBattleLayout(scale = latestBattleScale, rotation = latestBattleRotation) {
   latestBattleScale = Math.max(0.6, Math.min(2, Number(scale) || 1));
+  latestBattleRotation = [0, 90, 180, 270].includes(Number(rotation)) ? Number(rotation) : 0;
   const viewportWidth = Math.max(1, window.innerWidth || document.documentElement.clientWidth || 1);
   const viewportHeight = Math.max(1, window.innerHeight || document.documentElement.clientHeight || 1);
   const safeWidth = Math.min(viewportWidth, viewportHeight * 16 / 9);
   const safeHeight = Math.min(viewportHeight, viewportWidth * 9 / 16);
   const boardPadding = Math.max(12, Math.min(24, Math.round(Math.min(safeWidth, safeHeight) * 0.022)));
   const boardColumn = Math.max(220, Math.min(safeWidth * 0.72, (safeHeight - boardPadding) * 1.25 * latestBattleScale));
-  const sidebarWidth = Math.max(230, safeWidth - boardColumn);
+  const sidebarWidth = Math.max(260, safeWidth - Math.max(260, boardColumn));
+  const quarterTurn = latestBattleRotation === 90 || latestBattleRotation === 270;
+  const logicalWidth = quarterTurn ? safeHeight : sidebarWidth;
+  const logicalHeight = quarterTurn ? sidebarWidth : safeHeight;
   const sidebarPadding = 20;
   const sectionGap = 10;
-  const availableSidebarWidth = Math.max(120, sidebarWidth - sidebarPadding);
-  const availableSidebarHeight = Math.max(160, safeHeight - sidebarPadding);
-  const bossPanelWidth = availableSidebarWidth;
-  const bossPanelHeight = bossPanelWidth * 1650 / 2407;
+  const availableSidebarWidth = Math.max(120, logicalWidth - sidebarPadding);
+  const availableSidebarHeight = Math.max(160, logicalHeight - sidebarPadding);
+  const bossHeightRatio = 1650 / 2407;
+  const smallHeightRatio = (1 / 5) * (1050 / 750);
+  const minimumQuarterTurnAibpWidth = Math.max(180, availableSidebarWidth * 0.28);
+  const bossPanelWidth = quarterTurn
+    ? Math.max(180, Math.min(
+        availableSidebarWidth - minimumQuarterTurnAibpWidth - sectionGap,
+        (availableSidebarHeight - sectionGap - 3) / (bossHeightRatio + smallHeightRatio)
+      ))
+    : availableSidebarWidth;
+  const bossPanelHeight = bossPanelWidth * bossHeightRatio;
   const minimumResolutionHeight = 110;
   const smallWidth = bossPanelWidth / 5;
   const smallHeight = smallWidth * 1050 / 750;
-  layoutSupportCards(availableSidebarWidth, smallWidth, smallHeight);
-  const traitAreaHeight = smallHeight * 2 + 10;
+  layoutSupportCards(availableSidebarWidth, smallWidth, smallHeight, quarterTurn);
+  const traitAreaHeight = quarterTurn ? smallHeight + 3 : smallHeight * 2 + 10;
   const resolutionHeight = Math.max(minimumResolutionHeight, availableSidebarHeight - bossPanelHeight - traitAreaHeight - sectionGap * 2);
 
   elements.battleView.style.setProperty("--battle-scale", String(latestBattleScale));
   elements.battleView.style.setProperty("--battle-safe-width", `${safeWidth}px`);
   elements.battleView.style.setProperty("--battle-safe-height", `${safeHeight}px`);
   elements.battleView.style.setProperty("--battle-board-column", `${boardColumn}px`);
+  elements.battleView.style.setProperty("--battle-rotation", `${-latestBattleRotation}deg`);
+  elements.battleView.style.setProperty("--sidebar-content-width", `${logicalWidth}px`);
+  elements.battleView.style.setProperty("--sidebar-content-height", `${logicalHeight}px`);
   elements.battleView.style.setProperty("--boss-small-card-width", `${smallWidth}px`);
   elements.battleView.style.setProperty("--boss-small-card-height", `${smallHeight}px`);
   elements.battleView.style.setProperty("--boss-panel-width", `${bossPanelWidth}px`);
   elements.battleView.style.setProperty("--boss-panel-height", `${bossPanelHeight}px`);
   elements.battleView.style.setProperty("--trait-area-height", `${traitAreaHeight}px`);
   elements.battleView.style.setProperty("--resolution-area-height", `${resolutionHeight}px`);
+  elements.battleSidebarContent.classList.toggle("quarter-turn", quarterTurn);
 }
 
 function showUnavailable(message = "") {
@@ -164,9 +190,12 @@ function openBattle(screen) {
   elements.mapStage.hidden = true;
   elements.battleView.hidden = false;
   const scale = Math.max(60, Math.min(200, Number(screen.displayScales?.battleBoard || 100)));
-  applyBattleLayout(scale / 100);
+  const rotation = [0, 90, 180, 270].includes(Number(screen.battleRotation)) ? Number(screen.battleRotation) : 0;
+  const swapped = Boolean(screen.battleSwapped);
+  elements.battleView.classList.toggle("swapped", swapped);
+  applyBattleLayout(scale / 100, rotation);
 
-  const renderKey = JSON.stringify([screen.aibpRevision, state.updatedAt, scale]);
+  const renderKey = JSON.stringify([screen.aibpRevision, state.updatedAt, scale, rotation, swapped]);
   if (renderKey === battleRenderKey) return;
   battleRenderKey = renderKey;
 
@@ -180,7 +209,7 @@ function openBattle(screen) {
     if (src) image.src = aibpImageUrl(src);
   });
   renderImageList(elements.traitCards, state.extraCards?.length ? state.extraCards : (state.traits || []), "暂无 Trait / 特殊卡");
-  applyBattleLayout(scale / 100);
+  applyBattleLayout(scale / 100, rotation);
   renderBossTokens(state.tokens || []);
   const pendingType = state.pendingType === "AI" || state.pendingType === "BP"
     ? state.pendingType

@@ -164,6 +164,9 @@ h1 {
   --boss-panel-height: 264px;
   --trait-area-height: 139px;
   --resolution-area-height: 220px;
+  --battle-rotation: 0deg;
+  --sidebar-content-width: 50vw;
+  --sidebar-content-height: 100vh;
   position: fixed;
   left: 50%;
   top: 50%;
@@ -176,16 +179,83 @@ h1 {
   background: #080b0a;
 }
 
+.battle-view.swapped {
+  grid-template-columns: minmax(260px, var(--battle-board-column)) minmax(260px, 1fr);
+}
+
+.battle-view.swapped .battle-sidebar {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.battle-view.swapped .battle-board-stage {
+  grid-column: 1;
+  grid-row: 1;
+}
+
 .battle-sidebar {
+  position: relative;
   min-width: 0;
   height: 100%;
+  overflow: hidden;
+  border-right: 1px solid rgba(228, 181, 92, .28);
+  background: linear-gradient(180deg, #181916, #0c100f);
+}
+
+.battle-sidebar-content {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--sidebar-content-width);
+  height: var(--sidebar-content-height);
+  transform: translate(-50%, -50%) rotate(var(--battle-rotation));
+  transform-origin: center;
   display: grid;
   grid-template-rows: var(--boss-panel-height) var(--trait-area-height) minmax(0, 1fr);
   gap: 10px;
   padding: 10px;
   overflow: hidden;
-  border-right: 1px solid rgba(228, 181, 92, .28);
   background: linear-gradient(180deg, #181916, #0c100f);
+}
+
+.battle-sidebar-content.quarter-turn {
+  grid-template-columns: var(--boss-panel-width) minmax(0, 1fr);
+  grid-template-rows: var(--boss-panel-height) var(--trait-area-height);
+}
+
+.battle-sidebar-content.quarter-turn .boss-summary {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.battle-sidebar-content.quarter-turn .support-cards {
+  position: relative;
+  grid-column: 1 / span 2;
+  grid-row: 2;
+  grid-template-rows: var(--boss-small-card-height);
+  overflow: auto hidden;
+}
+
+.battle-sidebar-content.quarter-turn .trait-cards img {
+  position: relative;
+  z-index: 4;
+}
+
+.battle-sidebar-content.quarter-turn .resolution-panel {
+  position: relative;
+  z-index: 3;
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  margin-left: 10px;
+  padding-top: 0;
+  padding-left: 10px;
+  border-top: 0;
+  border-left: 1px solid rgba(228, 181, 92, .22);
+  background: #090b0a;
+}
+
+.battle-sidebar-content.quarter-turn .pending-cards {
+  margin-top: 0;
 }
 
 .boss-summary {
