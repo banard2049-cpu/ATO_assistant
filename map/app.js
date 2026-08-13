@@ -4,6 +4,7 @@ const campaignStorageUrl = "../api/campaign-state.php";
 const campaignDashboardUrl = `${campaignStorageUrl}?section=dashboard`;
 const mapData = window.ATO_MAP_DATA || { cycles: [] };
 const mapTagData = window.ATO_MAP_TILE_TAGS || { tagDefinitions: [], tiles: {} };
+const secondScreenMode = new URLSearchParams(window.location.search).get("second") === "1";
 const cycleIds = mapData.cycles.map((cycle) => cycle.id);
 const c1AlternateTileAssets = Object.fromEntries(
   ["009", "013", "014", "018", "022", "023", "035"].map((id) => [id, {
@@ -460,6 +461,7 @@ function syncDepartedLandmarkMarkers(cycleState, nextTileId) {
 }
 
 function saveState() {
+  if (secondScreenMode) return;
   queueCampaignSave();
 }
 
@@ -468,6 +470,11 @@ function delay(ms) {
 }
 
 async function loadCampaignMapSection() {
+  if (secondScreenMode) {
+    await loadSecondScreenMapState();
+    window.setInterval(loadSecondScreenMapState, 1500);
+    return;
+  }
   try {
     const response = await fetch(campaignStorageUrl, { cache: "no-store" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -591,6 +598,46 @@ function tokenAvailableInCycle(token, cycleId = state.activeCycleId) {
     || token.cycles.length === 0
     || token.cycles.includes(cycleId)
   );
+}
+
+let secondScreenFingerprint = "";
+let secondScreenLoadInFlight = false;
+
+async function loadSecondScreenMapState() {
+  if (secondScreenLoadInFlight) return;
+  secondScreenLoadInFlight = true;
+  try {
+    const response = await fetch(`${campaignStorageUrl}?action=second-screen`, { cache: "no-store" });
+    const payload = await response.json().catch(() => null);
+    if (!response.ok || !payload?.ok) {
+      window.parent.postMessage({ type: "ato-second-screen-auth-required" }, window.location.origin);
+      return;
+    }
+    const screen = payload.screen || {};
+    const mapDisplayScale = screen.displayScales?.map || screen.displayScale || 100;
+    const fingerprint = JSON.stringify([screen.cycleId, screen.mapRevision, screen.dashboardRevision, mapDisplayScale, screen.map]);
+    if (fingerprint === secondScreenFingerprint) return;
+    secondScreenFingerprint = fingerprint;
+    state = normalizeState({
+      activeCycleId: screen.cycleId,
+      hideUnknown: true,
+      mapZoom: mapDisplayScale,
+      cycles: { [screen.cycleId]: screen.map || {} },
+    });
+    focusArgoAfterNextRender(6);
+    render();
+    window.parent.postMessage({
+      type: "ato-second-screen-updated",
+      profileName: screen.profileName || "阿尔戈号",
+      cycleId: screen.cycleId,
+      day: screen.day,
+      updatedAt: screen.updatedAt,
+    }, window.location.origin);
+  } catch (error) {
+    console.warn(error);
+  } finally {
+    secondScreenLoadInFlight = false;
+  }
 }
 
 function renderTokenPalette() {
@@ -1232,9 +1279,20 @@ function centerMapViewportOnArgo(tile = null) {
     || [...elements.tileGrid.querySelectorAll(".tile-card[data-id]")].find((item) => item.dataset.id === targetTileId);
   if (!currentTile) return;
 
+  const viewportRect = viewport.getBoundingClientRect();
+  const tileRect = currentTile.getBoundingClientRect();
+  const targetLeft = viewport.scrollLeft
+    + tileRect.left - viewportRect.left
+    + (tileRect.width / 2)
+    - (viewport.clientWidth / 2);
+  const targetTop = viewport.scrollTop
+    + tileRect.top - viewportRect.top
+    + (tileRect.height / 2)
+    - (viewport.clientHeight / 2);
+
   viewport.scrollTo({
-    left: Math.max(0, currentTile.offsetLeft + (currentTile.offsetWidth / 2) - (viewport.clientWidth / 2)),
-    top: Math.max(0, currentTile.offsetTop + (currentTile.offsetHeight / 2) - (viewport.clientHeight / 2)),
+    left: Math.max(0, targetLeft),
+    top: Math.max(0, targetTop),
     behavior: "auto",
   });
 }
@@ -2035,6 +2093,11 @@ window.addEventListener("load", () => {
 });
 window.addEventListener("pageshow", () => {
   focusArgoAfterNextRender(12);
+  scheduleArgoFocus();
+});
+window.addEventListener("resize", () => {
+  if (!secondScreenMode) return;
+  focusArgoAfterNextRender(6);
   scheduleArgoFocus();
 });
 

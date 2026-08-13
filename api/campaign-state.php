@@ -15,9 +15,10 @@ session_start();
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 
-$allowedSections = ['dashboard', 'map', 'record', 'technology', 'heroes'];
+$allowedSections = ['dashboard', 'map', 'record', 'technology', 'heroes', 'aibp'];
 $dataDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'data';
 $usersFile = $dataDir . DIRECTORY_SEPARATOR . 'ato-users.json';
+$secondScreensFile = $dataDir . DIRECTORY_SEPARATOR . 'ato-second-screens.json';
 $maxBytes = 1024 * 1024 * 8;
 $backupCount = 5;
 
@@ -37,6 +38,7 @@ function default_campaign(): array {
       'record' => null,
       'technology' => null,
       'heroes' => null,
+      'aibp' => null,
     ],
     'sectionRevisions' => [
       'dashboard' => 0,
@@ -44,6 +46,7 @@ function default_campaign(): array {
       'record' => 0,
       'technology' => 0,
       'heroes' => 0,
+      'aibp' => 0,
     ],
   ];
 }
@@ -100,6 +103,107 @@ function read_users(string $usersFile): array {
 
 function user_campaign_file(string $dataDir, string $userId): string {
   return $dataDir . DIRECTORY_SEPARATOR . 'ato-campaign-' . $userId . '.json';
+}
+
+function read_second_screens(string $file): array {
+  $store = read_json_file($file, ['version' => 1, 'screens' => []]);
+  $store['screens'] = is_array($store['screens'] ?? null) ? $store['screens'] : [];
+  return $store;
+}
+
+function application_base_path(): string {
+  $scriptName = str_replace('\\', '/', (string) ($_SERVER['SCRIPT_NAME'] ?? '/api/campaign-state.php'));
+  $base = rtrim(dirname(dirname($scriptName)), '/.');
+  $forwardedPrefix = trim(explode(',', (string) ($_SERVER['HTTP_X_FORWARDED_PREFIX'] ?? ''))[0]);
+  if ($forwardedPrefix !== '') {
+    $prefix = '/' . trim($forwardedPrefix, '/');
+    if ($base === '' || !str_starts_with($base . '/', $prefix . '/')) $base = $prefix . $base;
+  }
+  return ($base === '' ? '' : $base) . '/';
+}
+
+function second_screen_path(): string {
+  return application_base_path() . 'ss/';
+}
+
+function request_is_https(): bool {
+  $forwardedProto = strtolower(trim(explode(',', (string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ''))[0]));
+  return $forwardedProto === 'https' || (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+}
+
+function second_screen_urls(): array {
+  $scheme = request_is_https() ? 'https' : 'http';
+  $forwardedHost = trim(explode(',', (string) ($_SERVER['HTTP_X_FORWARDED_HOST'] ?? ''))[0]);
+  $hostHeader = $forwardedHost !== '' ? $forwardedHost : (string) ($_SERVER['HTTP_HOST'] ?? '127.0.0.1:8793');
+  $port = parse_url($scheme . '://' . $hostHeader, PHP_URL_PORT);
+  $portSuffix = $port ? ':' . $port : '';
+  $hosts = [];
+  $headerHost = (string) (parse_url($scheme . '://' . $hostHeader, PHP_URL_HOST) ?: '');
+  if ($headerHost !== '') $hosts[] = $headerHost;
+  $hostname = gethostname();
+  $addresses = $hostname ? gethostbynamel($hostname) : false;
+  foreach (is_array($addresses) ? $addresses : [] as $address) {
+    if (filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) && !str_starts_with($address, '127.')) {
+      $hosts[] = $address;
+    }
+  }
+  if ($hostname) $hosts[] = $hostname . '.local';
+  $hosts = array_values(array_unique($hosts));
+  $path = second_screen_path();
+  return array_map(static function (string $host) use ($scheme, $portSuffix, $path): string {
+    return $scheme . '://' . $host . $portSuffix . $path;
+  }, $hosts);
+}
+
+function public_second_screen_payload(array $campaign, array $screenEntry = []): array {
+  $dashboard = is_array($campaign['sections']['dashboard'] ?? null) ? $campaign['sections']['dashboard'] : [];
+  $profiles = is_array($dashboard['profiles'] ?? null) ? $dashboard['profiles'] : [];
+  $profileId = (string) ($dashboard['activeProfileId'] ?? '');
+  $profile = is_array($profiles[$profileId] ?? null) ? $profiles[$profileId] : [];
+  if (!$profile && $profiles) {
+    $profileId = (string) array_key_first($profiles);
+    $profile = is_array($profiles[$profileId] ?? null) ? $profiles[$profileId] : [];
+  }
+  $cycleId = (string) ($profile['activeCycleId'] ?? 'c2');
+  $dashboardCycle = is_array($profile['cycles'][$cycleId]['state'] ?? null) ? $profile['cycles'][$cycleId]['state'] : [];
+
+  $mapSection = $campaign['sections']['map'] ?? null;
+  if (is_array($mapSection['users'] ?? null)) {
+    $mapState = $mapSection['users'][$profileId] ?? null;
+  } else {
+    $mapState = $mapSection;
+  }
+  $mapState = is_array($mapState) ? $mapState : [];
+  $mapCycle = is_array($mapState['cycles'][$cycleId] ?? null) ? $mapState['cycles'][$cycleId] : [];
+
+  $aibpSection = $campaign['sections']['aibp'] ?? null;
+  if (is_array($aibpSection['users'] ?? null)) {
+    $aibpState = $aibpSection['users'][$profileId] ?? null;
+  } else {
+    $aibpState = $aibpSection;
+  }
+  $aibpState = is_array($aibpState) ? $aibpState : [];
+
+  $legacyScale = max(60, min(200, (int) ($screenEntry['displayScale'] ?? 100)));
+  $savedScales = is_array($screenEntry['displayScales'] ?? null) ? $screenEntry['displayScales'] : [];
+  $displayScales = [
+    'map' => max(60, min(200, (int) ($savedScales['map'] ?? $legacyScale))),
+    'battleBoard' => max(60, min(200, (int) ($savedScales['battleBoard'] ?? 100))),
+  ];
+
+  return [
+    'profileName' => (string) ($profile['name'] ?? '阿尔戈号'),
+    'cycleId' => $cycleId,
+    'day' => $dashboardCycle['day'] ?? 0,
+    'map' => $mapCycle,
+    'aibp' => $aibpState,
+    'displayMode' => (string) ($screenEntry['displayMode'] ?? 'map'),
+    'mapRevision' => (int) ($campaign['sectionRevisions']['map'] ?? 0),
+    'aibpRevision' => (int) ($campaign['sectionRevisions']['aibp'] ?? 0),
+    'dashboardRevision' => (int) ($campaign['sectionRevisions']['dashboard'] ?? 0),
+    'updatedAt' => $campaign['updatedAt'] ?? null,
+    'displayScales' => $displayScales,
+  ];
 }
 
 function current_user(array $users): ?array {
@@ -250,9 +354,128 @@ if ($action === 'login' || $action === 'register') {
   respond(200, ['ok' => true, 'user' => public_user($users[$userId])]);
 }
 
+if ($action === 'second-screen' && $method === 'GET') {
+  $screens = read_second_screens($secondScreensFile)['screens'];
+  $entries = array_filter($screens, static fn($entry): bool => is_array($entry) && !empty($entry['userId']));
+  uasort($entries, static fn(array $left, array $right): int => strcmp((string) ($right['enabledAt'] ?? ''), (string) ($left['enabledAt'] ?? '')));
+  $entry = $entries ? reset($entries) : null;
+  $userId = (string) ($entry['userId'] ?? '');
+  if (!$entry || $userId === '') {
+    respond(404, ['ok' => false, 'code' => 'SCREEN_NOT_FOUND', 'error' => 'Second screen is unavailable.']);
+  }
+  $campaign = read_campaign(user_campaign_file($dataDir, $userId));
+  respond(200, ['ok' => true, 'screen' => public_second_screen_payload($campaign, $entry)]);
+}
+
 $user = current_user($users);
 if (!$user) {
   respond(401, ['ok' => false, 'code' => 'AUTH_REQUIRED', 'error' => 'Please log in first.']);
+}
+
+if ($action === 'second-screen-status') {
+  if ($method !== 'GET' && $method !== 'POST') {
+    respond(405, ['ok' => false, 'error' => 'Unsupported method.']);
+  }
+  $lockHandle = fopen($secondScreensFile . '.lock', 'c');
+  if (!$lockHandle || !flock($lockHandle, LOCK_EX)) {
+    if ($lockHandle) fclose($lockHandle);
+    respond(500, ['ok' => false, 'error' => 'Could not lock second-screen settings.']);
+  }
+  $store = read_second_screens($secondScreensFile);
+  $userToken = '';
+  $displayScales = ['map' => 100, 'battleBoard' => 100];
+  foreach ($store['screens'] as $token => $entry) {
+    if (($entry['userId'] ?? null) === $user['id']) {
+      $userToken = (string) $token;
+      $legacyScale = max(60, min(200, (int) ($entry['displayScale'] ?? 100)));
+      $savedScales = is_array($entry['displayScales'] ?? null) ? $entry['displayScales'] : [];
+      $displayScales = [
+        'map' => max(60, min(200, (int) ($savedScales['map'] ?? $legacyScale))),
+        'battleBoard' => max(60, min(200, (int) ($savedScales['battleBoard'] ?? 100))),
+      ];
+      break;
+    }
+  }
+  if ($method === 'POST') {
+    $raw = file_get_contents('php://input');
+    $payload = json_decode((string) $raw, true);
+    if (!is_array($payload)) {
+      flock($lockHandle, LOCK_UN);
+      fclose($lockHandle);
+      respond(400, ['ok' => false, 'error' => 'Request body must be JSON.']);
+    }
+    $enabled = !empty($payload['enabled']);
+    if (is_array($payload['displayScales'] ?? null)) {
+      foreach (['map', 'battleBoard'] as $moduleId) {
+        if (array_key_exists($moduleId, $payload['displayScales'])) {
+          $displayScales[$moduleId] = max(60, min(200, (int) $payload['displayScales'][$moduleId]));
+        }
+      }
+    } elseif (array_key_exists('displayScale', $payload)) {
+      $displayScales['map'] = max(60, min(200, (int) $payload['displayScale']));
+    }
+    if ($enabled) {
+      foreach ($store['screens'] as $token => $entry) {
+        if (($entry['userId'] ?? null) !== $user['id']) unset($store['screens'][$token]);
+      }
+    }
+    if (!$enabled && $userToken !== '') {
+      unset($store['screens'][$userToken]);
+      $userToken = '';
+    } elseif ($enabled && $userToken === '') {
+      do {
+        $userToken = bin2hex(random_bytes(24));
+      } while (isset($store['screens'][$userToken]));
+      $store['screens'][$userToken] = [
+        'userId' => $user['id'],
+        'enabledAt' => gmdate('c'),
+        'displayMode' => 'map',
+        'displayScales' => $displayScales,
+      ];
+    } elseif ($enabled && $userToken !== '') {
+      $store['screens'][$userToken]['displayScales'] = $displayScales;
+      unset($store['screens'][$userToken]['displayScale']);
+    }
+    write_json_file($secondScreensFile, $store);
+  }
+  flock($lockHandle, LOCK_UN);
+  fclose($lockHandle);
+  respond(200, [
+    'ok' => true,
+    'enabled' => $userToken !== '',
+    'displayScales' => $displayScales,
+    'urls' => $userToken !== '' ? second_screen_urls() : [],
+  ]);
+}
+
+if ($action === 'second-screen-mode') {
+  if ($method !== 'POST') respond(405, ['ok' => false, 'error' => 'This action requires POST.']);
+  $raw = file_get_contents('php://input');
+  $payload = json_decode((string) $raw, true);
+  if (!is_array($payload)) respond(400, ['ok' => false, 'error' => 'Request body must be JSON.']);
+  $mode = strtolower(trim((string) ($payload['mode'] ?? '')));
+  $mode = $mode === 'aibp' ? 'aibp' : 'map';
+
+  $lockHandle = fopen($secondScreensFile . '.lock', 'c');
+  if (!$lockHandle || !flock($lockHandle, LOCK_EX)) {
+    if ($lockHandle) fclose($lockHandle);
+    respond(500, ['ok' => false, 'error' => 'Could not lock second-screen settings.']);
+  }
+  $store = read_second_screens($secondScreensFile);
+  $changed = false;
+  foreach ($store['screens'] as $token => $entry) {
+    if (($entry['userId'] ?? null) !== $user['id']) continue;
+    if (($entry['displayMode'] ?? 'map') !== $mode) {
+      $store['screens'][$token]['displayMode'] = $mode;
+      $store['screens'][$token]['modeChangedAt'] = gmdate('c');
+      unset($store['screens'][$token]['focusedModule'], $store['screens'][$token]['focusedAt']);
+      $changed = true;
+    }
+  }
+  if ($changed) write_json_file($secondScreensFile, $store);
+  flock($lockHandle, LOCK_UN);
+  fclose($lockHandle);
+  respond(200, ['ok' => true, 'displayMode' => $mode]);
 }
 
 $section = $_GET['section'] ?? null;

@@ -1,10 +1,10 @@
 services:
   ato-tools:
-    image: nginx:1.27-alpine
+    image: php:8.3-apache
     container_name: ato-tools
     ports:
       - "11451:80"
     volumes:
-      - ./tools:/usr/share/nginx/html/tools:ro
-      - ./index.html:/usr/share/nginx/html/index.html:ro
+      - ./:/var/www/html
+    entrypoint: /bin/sh -c "mkdir -p /var/www/html/data && chown -R 33:33 /var/www/html/data && apache2-foreground"
     restart: unless-stopped

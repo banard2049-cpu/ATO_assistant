@@ -1892,7 +1892,7 @@
     </div>
   </div>
 
-  <script src="../assets/page-focus-router.js?v=20260813iframe1"></script>
+  <script src="../assets/page-focus-router.js?v=20260813-no-screen-focus1"></script>
   <script src="../map/map-tile-tags.js"></script>
   <script src="ps/CHIMERA_METASTASIOS/bp_status_map.js"></script>
   <script src="ps/other/token/token_manifest.js"></script>
@@ -2057,6 +2057,7 @@
     const hekatonCriticalMassPosition = { x: 51.1, y: 34 };
     const oracleCriticalMassPosition = { x: 48.8, y: 47.4 };
     const c45PanelCounterPosition = { x: 96, y: 7.5 };
+    const dragonPanelCounterPosition = { x: 93, y: 7.5 };
     const labyrinthaurosName = "LABYRINTHAUROS";
     const hermesianName = "HERMESIAN_PURSUER";
     const burdenName = "THE_BURDEN";
@@ -2218,6 +2219,9 @@
     }
     const piles = {};
     const storageKey = "aibp-apostle-viewer-piles-v3";
+    const secondScreenSnapshotUrl = "../api/campaign-state.php?section=aibp";
+    const secondScreenModeUrl = "../api/campaign-state.php?action=second-screen-mode";
+    let secondScreenSnapshotTimer = null;
     const undoStacks = {};
     const maxUndoSteps = 30;
     let zoomCloseAction = null;
@@ -2237,6 +2241,116 @@
 
     function savePiles() {
       localStorage.setItem(storageKey, JSON.stringify(piles));
+      scheduleSecondScreenSnapshot();
+    }
+
+    async function setSecondScreenMode(mode) {
+      try {
+        const response = await fetch(secondScreenModeUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mode: mode === "aibp" ? "aibp" : "map" }),
+        });
+        return response.ok;
+      } catch {
+        return false;
+      }
+    }
+    window.AIBP_setSecondScreenMode = setSecondScreenMode;
+
+    function publicCardSnapshot(card) {
+      if (!card) return null;
+      const src = card.special
+        ? `ps/other/${card.special}.jpg`
+        : `ps/${currentApostle}/${cardFileName(card)}`;
+      return {
+        src,
+        label: card.special
+          ? `${card.special} 特殊损伤`
+          : `${card.type || "卡牌"} ${card.level || ""} ${String(card.index || "").padStart(3, "0")}`.trim(),
+        damageValue: bpDamageValue(card),
+      };
+    }
+
+    function buildSecondScreenSnapshot() {
+      ensurePiles(currentApostle);
+      const state = piles[currentApostle];
+      const damage = isChimera()
+        ? [...(state.BP.damage1 || []), ...(state.BP.damage2 || [])]
+        : (state.BP.damage || []);
+      const damageSummary = currentBpDamageSummary();
+      const renderedExtraCards = Array.from(extraGrid.querySelectorAll("img"))
+        .filter((image) => image.complete && image.naturalWidth > 0)
+        .map((image) => ({
+          src: image.getAttribute("src") || "",
+          label: image.alt || "Trait / 特殊卡",
+          large: image.classList.contains("panel-image"),
+        }));
+      return {
+        version: 1,
+        apostle: currentApostle,
+        title: currentApostle.replaceAll("_", " "),
+        level: levelRoman[currentApostleLevel()] || String(currentApostleLevel()),
+        panelSrc: `ps/${currentApostle}/${currentApostle}.jpg`,
+        routineSrc: `ps/${currentApostle}/${currentApostle}_ROUTINE_X_001.jpg`,
+        signatureSrc: `ps/${currentApostle}/${currentApostle}_SIGNATURE_X_001.jpg`,
+        traits: (state.traits || []).map((card) => ({
+          src: traitCardSrc(currentApostle, card),
+          label: card.scope === "common" ? `通用特质 ${card.index}` : `TR ${card.level} ${card.index}`,
+          large: isLargeTraitCard(currentApostle, card),
+        })),
+        extraCards: renderedExtraCards,
+        aiPending: publicCardSnapshot(state.AI.pending),
+        bpPending: publicCardSnapshot(state.BP.pending),
+        pendingType: state.lastPendingType || (state.BP.pending ? "BP" : state.AI.pending ? "AI" : ""),
+        pendingCard: publicCardSnapshot(
+          state.lastPendingType === "AI"
+            ? state.AI.pending
+            : state.lastPendingType === "BP"
+              ? state.BP.pending
+              : (state.BP.pending || state.AI.pending)
+        ),
+        aiBacks: deckBackText(state.AI.deck || []),
+        bpBacks: deckBackText(state.BP.deck || []),
+        aiDeckCount: (state.AI.deck || []).length,
+        bpDeckCount: (state.BP.deck || []).length,
+        aiDiscardCount: (state.AI.discard || []).length,
+        bpDiscardCount: (state.BP.discard || []).length,
+        damage: damage.map(publicCardSnapshot).filter(Boolean),
+        damageSummary,
+        tokens: (state.tokens || []).map((token) => {
+          const isCriticalMass = token.criticalMass === true || token.chimeraCriticalMass === true;
+          const panelCounterKind = c45PanelCounterKind();
+          const isPanelCounter = panelCounterKind === "midascorePain"
+            ? token.midascorePain === true
+            : token.c45PanelCounter === panelCounterKind;
+          const position = isCriticalMass
+            ? currentCriticalMassPosition()
+            : isPanelCounter
+              ? currentC45PanelCounterPosition()
+              : token;
+          return {
+            file: token.file,
+            count: token.count || 1,
+            x: Number(position.x ?? 50),
+            y: Number(position.y ?? 50),
+          };
+        }),
+        updatedAt: new Date().toISOString(),
+      };
+    }
+
+    function scheduleSecondScreenSnapshot() {
+      window.clearTimeout(secondScreenSnapshotTimer);
+      secondScreenSnapshotTimer = window.setTimeout(async () => {
+        try {
+          await fetch(secondScreenSnapshotUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ section: "aibp", state: buildSecondScreenSnapshot() }),
+          });
+        } catch {}
+      }, 180);
     }
 
     function clonePileState(state) {
@@ -2404,6 +2518,7 @@
         tokens: [],
         levelBonusState: { promotions: 0 },
         initialSetupApplied: {},
+        lastPendingType: "",
         aiExhaustedBonusIndex: 0
       };
     }
@@ -2415,6 +2530,7 @@
       } else {
         piles[name].AI ||= initialState().AI;
         piles[name].BP ||= initialState().BP;
+        piles[name].lastPendingType ||= "";
         piles[name].AI.deck ||= [];
         piles[name].AI.discard ||= [];
         piles[name].AI.pending ||= null;
@@ -2923,6 +3039,12 @@
         return currentApostleLevel() >= 4 ? 3 : 4;
       }
       return 3;
+    }
+
+    function currentC45PanelCounterPosition() {
+      return currentApostle === "DRAGON_OF_PHOBOS"
+        ? dragonPanelCounterPosition
+        : c45PanelCounterPosition;
     }
 
     function hasPanelCounterSlot(name = currentApostle) {
@@ -4075,6 +4197,7 @@
       renderAibpCards();
       renderExtraCards();
       renderPanelTokens();
+      void setSecondScreenMode("aibp");
     }
 
     function renderDeckInfo() {
@@ -4424,7 +4547,10 @@
         const alt = card.scope === "common" ? `通用特质 ${card.index}` : `TR ${card.level} ${card.index}`;
         const src = traitCardSrc(currentApostle, card);
         const img = imageOrMessage(src, alt, imageClass);
-        img.addEventListener("load", () => enableOptionalCardBack(img, src), { once: true });
+        img.addEventListener("load", () => {
+          enableOptionalCardBack(img, src);
+          scheduleSecondScreenSnapshot();
+        }, { once: true });
         extraGrid.appendChild(img);
         loaded += 1;
       });
@@ -4463,6 +4589,7 @@
           loaded += 1;
           enableOptionalCardBack(img, src);
           reorderExtraGridForLargeCards();
+          scheduleSecondScreenSnapshot();
         };
         img.onerror = () => {
           img.remove();
@@ -5122,8 +5249,9 @@
           tokenItem.classList.add("critical-mass-token");
           tokenItem.classList.toggle("must-resolve", (Number(item.count) || 0) >= threshold);
         } else if (isC45PanelCounter) {
-          item.x = c45PanelCounterPosition.x;
-          item.y = c45PanelCounterPosition.y;
+          const position = currentC45PanelCounterPosition();
+          item.x = position.x;
+          item.y = position.y;
           tokenItem.classList.add("critical-mass-token", "c45-panel-counter-token");
           tokenItem.classList.toggle("must-resolve", (Number(item.count) || 0) >= threshold);
         }
@@ -5181,8 +5309,9 @@
       if (!slot) return;
       if (c45PanelCounterKind()) {
         const token = c45PanelCounterToken();
-        slot.style.setProperty("--critical-mass-left", `${c45PanelCounterPosition.x}%`);
-        slot.style.setProperty("--critical-mass-top", `${c45PanelCounterPosition.y}%`);
+        const position = currentC45PanelCounterPosition();
+        slot.style.setProperty("--critical-mass-left", `${position.x}%`);
+        slot.style.setProperty("--critical-mass-top", `${position.y}%`);
         slot.classList.toggle("show", !token);
         const label = currentApostle === "MIDASCORE"
           ? "疼痛增量"
@@ -5347,6 +5476,7 @@
 
       renderAibpCards();
       renderExtraCards();
+      scheduleSecondScreenSnapshot();
       requestAnimationFrame(updateViewerScale);
     }
 
@@ -5373,6 +5503,7 @@
         return;
       }
       ai.pending = ai.deck[0];
+      piles[currentApostle].lastPendingType = "AI";
       savePiles();
       renderAibpCards();
       const drawnCard = ai.pending;
@@ -5419,6 +5550,7 @@
         return;
       }
       bp.pending = bp.deck[0];
+      piles[currentApostle].lastPendingType = "BP";
       savePiles();
       renderAibpCards();
       openImageZoom(cardSrc(bp.pending), "抽取的 BP", null, {
@@ -5690,7 +5822,7 @@
   <script src="ps/other/resouce/bp_resource_map.js"></script>
   <script src="ps/other/resouce/bp_resource_map_c1_c3.js"></script>
   <script src="ps/other/resouce/bp_resource_map_c4_c5.js?v=20260730e"></script>
-  <script src="c45_specials.js?v=20260730i"></script>
-  <script src="bp_loot_calculator_addon.js?v=20260730-c45-loot"></script>
+  <script src="c45_specials.js?v=20260814-token-position1"></script>
+  <script src="bp_loot_calculator_addon.js?v=20260813-screen-mode1"></script>
 </body>
 </html>

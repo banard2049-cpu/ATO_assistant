@@ -24,7 +24,7 @@
     dragon: {
       id: "c45-dragon-truth",
       file: "CM.jpg",
-      x: 96,
+      x: 93,
       y: 7.5
     },
     meduketos: {

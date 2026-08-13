@@ -86,7 +86,7 @@ for /f "delims=" %%V in ('"%PHP_BIN%" -r "echo PHP_VERSION;"') do set "PHP_VERSI
 echo 使用 PHP：%PHP_BIN%（%PHP_VERSION%）
 echo 关闭此窗口或按 Ctrl-C 即可停止。
 start "" "%ATO_URL%"
-"%PHP_BIN%" -S 127.0.0.1:8793 -t "%CD%"
+"%PHP_BIN%" -S 0.0.0.0:8793 -t "%CD%"
 if errorlevel 1 pause
 exit /b 0
 

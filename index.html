@@ -1645,6 +1645,125 @@
       gap: 8px;
     }
 
+    .second-screen-card {
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f8faf7;
+    }
+
+    .second-screen-toggle {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--ink);
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .second-screen-toggle input {
+      width: 19px;
+      height: 19px;
+      padding: 0;
+      accent-color: var(--done);
+    }
+
+    .second-screen-address {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 7px;
+    }
+
+    .second-screen-address input {
+      min-width: 0;
+      font-size: 12px;
+    }
+
+    .second-screen-scale {
+      display: grid;
+      grid-template-columns: auto minmax(120px, 1fr) 54px;
+      align-items: center;
+      gap: 9px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .second-screen-scale input {
+      min-height: 24px;
+      padding: 0;
+      accent-color: var(--accent);
+    }
+
+    .second-screen-scale output {
+      color: var(--accent-strong);
+      font-weight: 950;
+      text-align: right;
+    }
+
+    .second-screen-hint {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .map-step-tools {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 4px;
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+    }
+
+    .map-step-group {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .map-step-label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .map-step-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .map-step-buttons button {
+      min-height: 32px;
+      padding: 0 11px;
+      font-size: 12px;
+    }
+
+    .argo-direction-pad {
+      display: flex;
+      align-items: center;
+      flex-wrap: nowrap;
+      gap: 4px;
+      width: max-content;
+    }
+
+    .map-command-status {
+      min-height: 18px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .map-command-status.error { color: var(--danger); }
+
     .danger {
       background: var(--danger);
     }
@@ -1739,6 +1858,10 @@
 
       .day-actions {
         grid-template-columns: 1fr 1fr;
+      }
+
+      .second-screen-address {
+        grid-template-columns: 1fr;
       }
 
       .date-track-list {
@@ -1877,6 +2000,28 @@
               </label>
               <button id="logoutButton" type="button" class="secondary">登出</button>
             </div>
+            <div class="second-screen-card">
+              <label class="second-screen-toggle">
+                <input id="secondScreenToggle" type="checkbox">
+                开启第二屏幕
+              </label>
+              <div id="secondScreenAddress" class="second-screen-address" hidden>
+                <input id="secondScreenUrl" type="text" readonly aria-label="第二屏幕网址">
+                <button id="copySecondScreenButton" type="button" class="secondary">复制网址</button>
+                <a id="openSecondScreenLink" class="record-card-link" href="./ss/" target="_blank" rel="noopener">打开</a>
+              </div>
+              <label id="secondScreenScaleRow" class="second-screen-scale" hidden>
+                地图显示大小
+                <input id="secondScreenScale" type="range" min="60" max="200" step="10" value="100">
+                <output id="secondScreenScaleValue">100%</output>
+              </label>
+              <label id="secondScreenBattleScaleRow" class="second-screen-scale" hidden>
+                决战版图显示大小
+                <input id="secondScreenBattleScale" type="range" min="60" max="200" step="10" value="100">
+                <output id="secondScreenBattleScaleValue">100%</output>
+              </label>
+              <p id="secondScreenHint" class="second-screen-hint">打开后，同一局域网设备可通过专用网址查看地图或决战版图。</p>
+            </div>
             <div class="archive-actions">
               <button id="exportButton" type="button" class="secondary">导出状态</button>
               <button id="importButton" type="button" class="secondary">导入状态</button>
@@ -1899,11 +2044,12 @@
     </div>
   </dialog>
 
-  <script src="./assets/page-focus-router.js?v=20260813iframe1"></script>
+  <script src="./assets/page-focus-router.js?v=20260813-no-screen-focus1"></script>
   <script src="./assets/story-doom-card-data.js"></script>
   <script src="./assets/exploration-card-tags.js"></script>
   <script src="./assets/exploration-card-rules.js"></script>
   <script src="./map/map-tile-tags.js?v=20260730-c4-oasis-tag"></script>
+  <script src="./map/map-data.js?v=20260730-cycle-labels"></script>
   <script>
     const legacyStorageKey = "ato-campaign-dashboard-v1";
     const storageKey = "ato-campaign-dashboard-profiles-v1";
@@ -2795,6 +2941,18 @@
       importInput: document.querySelector("#importInput"),
       dateTrackMeta: document.querySelector("#dateTrackMeta"),
       dateTrackList: document.querySelector("#dateTrackList"),
+      secondScreenToggle: document.querySelector("#secondScreenToggle"),
+      secondScreenAddress: document.querySelector("#secondScreenAddress"),
+      secondScreenUrl: document.querySelector("#secondScreenUrl"),
+      copySecondScreenButton: document.querySelector("#copySecondScreenButton"),
+      openSecondScreenLink: document.querySelector("#openSecondScreenLink"),
+      secondScreenHint: document.querySelector("#secondScreenHint"),
+      secondScreenScaleRow: document.querySelector("#secondScreenScaleRow"),
+      secondScreenScale: document.querySelector("#secondScreenScale"),
+      secondScreenScaleValue: document.querySelector("#secondScreenScaleValue"),
+      secondScreenBattleScaleRow: document.querySelector("#secondScreenBattleScaleRow"),
+      secondScreenBattleScale: document.querySelector("#secondScreenBattleScale"),
+      secondScreenBattleScaleValue: document.querySelector("#secondScreenBattleScaleValue"),
     };
 
     let archive = loadArchive();
@@ -2817,6 +2975,9 @@
     let sessionUser = null;
     let cachedArgoRecord = {};
     let argoRecordRefreshInFlight = false;
+    let secondScreenBusy = false;
+    let secondScreenEnabled = false;
+    let mapCommandBusy = false;
 
     function isPlainObject(value) {
       return value && typeof value === "object" && !Array.isArray(value);
@@ -3030,6 +3191,89 @@
       elements.appShell.hidden = false;
       loadCampaignSection(campaignSessionEpoch);
       refreshCachedArgoRecord();
+      loadSecondScreenStatus();
+    }
+
+    function renderSecondScreenStatus(payload = {}) {
+      const enabled = Boolean(payload.enabled);
+      const urls = Array.isArray(payload.urls) ? payload.urls : [];
+      const currentShortUrl = new URL("./ss/", window.location.href).href;
+      const currentHostIsLoopback = /^(?:127(?:\.\d+){3}|localhost|\[?::1\]?)$/i.test(window.location.hostname);
+      const preferred = currentHostIsLoopback
+        ? (urls.find((url) => !/\/\/(?:127(?:\.\d+){3}|localhost|\[?::1\]?)(?::|\/)/i.test(url)) || currentShortUrl)
+        : currentShortUrl;
+      elements.secondScreenToggle.checked = enabled;
+      if (secondScreenEnabled !== enabled) {
+        secondScreenEnabled = enabled;
+        renderFlow();
+      }
+      elements.secondScreenAddress.hidden = !enabled;
+      const displayScale = Math.max(60, Math.min(200, Number(payload.displayScales?.map || payload.displayScale || 100)));
+      elements.secondScreenScaleRow.hidden = !enabled;
+      elements.secondScreenScale.value = String(displayScale);
+      elements.secondScreenScaleValue.textContent = `${displayScale}%`;
+      const battleScale = Math.max(60, Math.min(200, Number(payload.displayScales?.battleBoard || 100)));
+      elements.secondScreenBattleScaleRow.hidden = !enabled;
+      elements.secondScreenBattleScale.value = String(battleScale);
+      elements.secondScreenBattleScaleValue.textContent = `${battleScale}%`;
+      elements.secondScreenUrl.value = preferred;
+      elements.openSecondScreenLink.href = preferred || "./ss/";
+      elements.secondScreenHint.textContent = enabled
+        ? "第二屏幕已开启。AIBP 开启新战役时显示决战版图，战利品写入记录表后恢复地图。"
+        : "打开后，同一局域网设备可通过专用网址查看地图或决战版图。";
+    }
+
+    async function loadSecondScreenStatus() {
+      try {
+        const response = await fetch(`${authUrl}?action=second-screen-status`, { cache: "no-store" });
+        const payload = await response.json().catch(() => null);
+        if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+        renderSecondScreenStatus(payload);
+      } catch (error) {
+        elements.secondScreenHint.textContent = `无法读取第二屏幕状态：${String(error.message || error)}`;
+      }
+    }
+
+    async function setSecondScreenEnabled(enabled) {
+      if (secondScreenBusy) return;
+      secondScreenBusy = true;
+      elements.secondScreenToggle.disabled = true;
+      elements.secondScreenHint.textContent = enabled ? "正在生成局域网访问网址…" : "正在关闭第二屏幕…";
+      try {
+        const response = await fetch(`${authUrl}?action=second-screen-status`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ enabled }),
+        });
+        const payload = await response.json().catch(() => null);
+        if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+        renderSecondScreenStatus(payload);
+      } catch (error) {
+        elements.secondScreenToggle.checked = !enabled;
+        elements.secondScreenHint.textContent = `第二屏幕设置失败：${String(error.message || error)}`;
+      } finally {
+        secondScreenBusy = false;
+        elements.secondScreenToggle.disabled = false;
+      }
+    }
+
+    async function setSecondScreenModuleScale(moduleId, value) {
+      if (!secondScreenEnabled) return;
+      const displayScale = Math.max(60, Math.min(200, Number(value || 100)));
+      if (moduleId === "map") elements.secondScreenScaleValue.textContent = `${displayScale}%`;
+      if (moduleId === "battleBoard") elements.secondScreenBattleScaleValue.textContent = `${displayScale}%`;
+      try {
+        const response = await fetch(`${authUrl}?action=second-screen-status`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ enabled: true, displayScales: { [moduleId]: displayScale } }),
+        });
+        const payload = await response.json().catch(() => null);
+        if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+      } catch (error) {
+        const moduleLabel = moduleId === "map" ? "地图" : moduleId === "battleBoard" ? "决战版图" : moduleId;
+        elements.secondScreenHint.textContent = `${moduleLabel}显示大小保存失败：${String(error.message || error)}`;
+      }
     }
 
     async function requestAuth(action, username, password) {
@@ -3870,6 +4114,253 @@
     function saveState() {
       currentCycle().state = state;
       queueCampaignSave();
+    }
+
+    function mapCycleDefinition(cycleId = currentCycleConfig().id) {
+      return (window.ATO_MAP_DATA?.cycles || []).find((cycle) => cycle.id === cycleId) || null;
+    }
+
+    function normalizeMapCommandState(value, cycleId) {
+      const mapData = window.ATO_MAP_DATA || { cycles: [] };
+      const cycles = {};
+      mapData.cycles.forEach((cycle) => {
+        const saved = value?.cycles?.[cycle.id] || {};
+        const tokens = saved.tokens || {};
+        cycles[cycle.id] = {
+          currentTile: saved.currentTile || tokens.AG || "",
+          explored: isPlainObject(saved.explored) ? saved.explored : {},
+          previewRevealed: isPlainObject(saved.previewRevealed) ? saved.previewRevealed : {},
+          latestRevealedTile: saved.latestRevealedTile || "",
+          tileNotes: isPlainObject(saved.tileNotes) ? saved.tileNotes : {},
+          tileVariants: isPlainObject(saved.tileVariants) ? saved.tileVariants : {},
+          tokens: {
+            AG: tokens.AG || saved.currentTile || "",
+            AD: tokens.AD || "",
+            hsCount: Math.max(0, Math.floor(Number(tokens.hsCount || saved.hsCount || 0))),
+            markers: isPlainObject(tokens.markers) ? tokens.markers : {},
+          },
+        };
+      });
+      return {
+        ...(isPlainObject(value) ? value : {}),
+        activeCycleId: cycleId,
+        showBack: Boolean(value?.showBack),
+        onlyExplored: Boolean(value?.onlyExplored),
+        hideUnknown: value?.hideUnknown == null ? true : Boolean(value.hideUnknown),
+        showAdjacency: Boolean(value?.showAdjacency),
+        mapZoom: Number(value?.mapZoom || 100),
+        selectedToken: value?.selectedToken || "AG",
+        query: value?.query || "",
+        cycles,
+      };
+    }
+
+    async function loadMapCommandState() {
+      const response = await fetch(`${authUrl}?section=map`, { cache: "no-store" });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+      const profileId = archive.activeProfileId;
+      const section = payload.state;
+      const userState = section?.users ? section.users[profileId] : section;
+      return {
+        state: normalizeMapCommandState(userState, currentCycleConfig().id),
+        revision: Math.max(0, Number(payload.revision || 0)),
+        profileId,
+      };
+    }
+
+    async function saveMapCommandState(commandState) {
+      const response = await fetch(`${authUrl}?section=map`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ section: "map", userId: commandState.profileId, state: commandState.state }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+    }
+
+    function currentMapCommandCycle(commandState) {
+      const cycleId = currentCycleConfig().id;
+      const cycle = mapCycleDefinition(cycleId);
+      const cycleState = commandState.state.cycles[cycleId];
+      if (!cycle || !cycleState) throw new Error("当前 Cycle 没有地图数据。");
+      return { cycleId, cycle, cycleState };
+    }
+
+    function syncDashboardMapSnapshot(cycleId, cycle, cycleState) {
+      const current = cycle.tiles.find((tile) => tile.id === cycleState.currentTile);
+      const adversary = cycle.tiles.find((tile) => tile.id === cycleState.tokens.AD);
+      const exploredIds = cycle.tiles.filter((tile) => cycleState.explored[tile.id]).map((tile) => tile.id);
+      state.location = current?.label || cycleState.currentTile || "";
+      state.mapSnapshot = {
+        ...(isPlainObject(state.mapSnapshot) ? state.mapSnapshot : {}),
+        savedAt: new Date().toISOString(),
+        cycleId,
+        cycleLabel: cycle.label,
+        currentTileId: cycleState.currentTile || "",
+        currentTileLabel: current?.label || cycleState.currentTile || "",
+        adversaryTileId: cycleState.tokens.AD || "",
+        adversaryTileLabel: adversary?.label || cycleState.tokens.AD || "",
+        exploredIds,
+        exploredCount: exploredIds.length,
+        totalTiles: cycle.tiles.length,
+      };
+      saveState();
+    }
+
+    function mapDirectionalTarget(cycle, cycleState, direction) {
+      const current = cycle.tiles.find((tile) => tile.id === cycleState.currentTile);
+      if (!current) throw new Error("请先在地图中设置阿尔戈号当前位置。");
+      const targetId = current.neighbors?.[direction] || "";
+      if (!targetId) throw new Error(`当前位置没有可向${({ up: "上", right: "右", down: "下", left: "左" })[direction]}移动的板块。`);
+      const target = cycle.tiles.find((tile) => tile.id === targetId);
+      if (!target) throw new Error("地图数据中找不到目标板块。");
+      return targetId;
+    }
+
+    function currentC3SpecialTargets(cycle, cycleState) {
+      if (cycle.id !== "c3") return [];
+      const current = cycle.tiles.find((tile) => tile.id === cycleState.currentTile);
+      if (!current) return [];
+      return [...new Set(Object.entries(current.exits || {})
+        .filter(([exit, targetId]) => String(exit).startsWith("SPECIAL_CYCLE_3") && targetId)
+        .map(([, targetId]) => String(targetId))
+        .filter((targetId) => cycle.tiles.some((tile) => tile.id === targetId)))];
+    }
+
+    function mapAdjacentIds(cycle, cycleState, tileId) {
+      const tile = cycle.tiles.find((item) => item.id === tileId);
+      if (!tile) return [];
+      const revealed = (id) => Boolean(cycleState.explored[id] || cycleState.previewRevealed[id] || id === cycleState.tokens.AD);
+      return [...new Set([
+        ...Object.values(tile.neighbors || {}),
+        ...Object.values(tile.exits || {}),
+        ...cycle.tiles.filter((candidate) => (
+          Object.values(candidate.neighbors || {}).includes(tileId)
+          || Object.values(candidate.exits || {}).includes(tileId)
+        )).map((candidate) => candidate.id),
+      ].filter((id) => id && revealed(id)))];
+    }
+
+    function shortestMapPath(cycle, cycleState, startId, targetId) {
+      if (startId === targetId) return [startId];
+      const previous = new Map([[startId, ""]]);
+      const queue = [startId];
+      while (queue.length) {
+        const current = queue.shift();
+        for (const neighborId of mapAdjacentIds(cycle, cycleState, current)) {
+          if (previous.has(neighborId)) continue;
+          previous.set(neighborId, current);
+          if (neighborId === targetId) {
+            const path = [targetId];
+            while (previous.get(path[0])) path.unshift(previous.get(path[0]));
+            return path;
+          }
+          queue.push(neighborId);
+        }
+      }
+      return [];
+    }
+
+    function setMapCommandStatus(message, error = false) {
+      document.querySelectorAll(".map-command-status").forEach((target) => {
+        target.textContent = message;
+        target.classList.toggle("error", error);
+      });
+    }
+
+    async function runMapCommand(command, value = "") {
+      if (mapCommandBusy) return;
+      mapCommandBusy = true;
+      document.querySelectorAll("[data-map-command], [data-map-direction]").forEach((button) => { button.disabled = true; });
+      setMapCommandStatus("正在同步地图…");
+      try {
+        const commandState = await loadMapCommandState();
+        const { cycleId, cycle, cycleState } = currentMapCommandCycle(commandState);
+        let message = "地图已更新。";
+
+        if (command === "move-argo") {
+          const targetId = mapDirectionalTarget(cycle, cycleState, value);
+          const newlyExplored = !cycleState.explored[targetId];
+          cycleState.currentTile = targetId;
+          cycleState.tokens.AG = targetId;
+          cycleState.explored[targetId] = true;
+          if (cycleState.previewRevealed) delete cycleState.previewRevealed[targetId];
+          if (newlyExplored) cycleState.latestRevealedTile = targetId;
+          if (cycleState.tokens.AD === targetId) {
+            cycleState.tokens.AD = "";
+            message = `阿尔戈号已移动至 ${targetId}，与宿敌相遇：已移除宿敌，请结算宿敌战斗。`;
+          } else {
+            message = newlyExplored
+              ? `目标板块 ${targetId} 已自动标记为已探索，阿尔戈号已移动过去。`
+              : `阿尔戈号已移动至 ${targetId}。`;
+          }
+        } else if (command === "move-special") {
+          const targets = currentC3SpecialTargets(cycle, cycleState);
+          if (!targets.includes(value)) throw new Error("当前板块没有通向该板块的特殊连接。");
+          const newlyExplored = !cycleState.explored[value];
+          cycleState.currentTile = value;
+          cycleState.tokens.AG = value;
+          cycleState.explored[value] = true;
+          if (cycleState.previewRevealed) delete cycleState.previewRevealed[value];
+          if (newlyExplored) cycleState.latestRevealedTile = value;
+          if (cycleState.tokens.AD === value) {
+            cycleState.tokens.AD = "";
+            message = `阿尔戈号经特殊连接移动至 ${value}，与宿敌相遇：请结算宿敌战斗。`;
+          } else {
+            message = newlyExplored
+              ? `目标板块 ${value} 已自动标记为已探索，阿尔戈号已通过特殊连接移动过去。`
+              : `阿尔戈号已通过特殊连接移动至 ${value}。`;
+          }
+        } else if (command === "flip-c5-tile") {
+          if (cycleId !== "c5") throw new Error("只有 Cycle 5 地图支持翻面。");
+          const tileId = cycleState.currentTile;
+          const tile = cycle.tiles.find((item) => item.id === tileId);
+          if (!tileId || !tile?.back) throw new Error("当前板块没有可切换的背面。");
+          cycleState.tileVariants ||= {};
+          if (cycleState.tileVariants[tileId] === "alternate") {
+            delete cycleState.tileVariants[tileId];
+            message = `地图板块 ${tileId} 已翻回 A 面。`;
+          } else {
+            cycleState.tileVariants[tileId] = "alternate";
+            message = `地图板块 ${tileId} 已翻至 B 面。`;
+          }
+        } else if (command === "spawn-nemesis") {
+          const targetId = cycleState.currentTile;
+          if (!targetId) throw new Error("请先设置阿尔戈号当前位置。");
+          const candidates = cycle.tiles.map((tile) => ({
+            tile,
+            path: shortestMapPath(cycle, cycleState, targetId, tile.id),
+          })).filter(({ tile, path }) => tile.id !== targetId && cycleState.explored[tile.id] && path.length === 5);
+          if (!candidates.length) throw new Error("没有距离阿尔戈号正好 4 格的已揭示板块。");
+          const chosen = candidates[Math.floor(Math.random() * candidates.length)].tile;
+          cycleState.tokens.AD = chosen.id;
+          message = `宿敌已生成在 ${chosen.label || chosen.id}${candidates.length > 1 ? `（从 ${candidates.length} 个候选板块随机选择）` : ""}。`;
+        } else if (command === "chase-nemesis") {
+          const startId = cycleState.tokens.AD;
+          const targetId = cycleState.currentTile;
+          if (!startId) throw new Error("地图上还没有宿敌，请先生成。");
+          if (!targetId) throw new Error("请先设置阿尔戈号当前位置。");
+          const path = shortestMapPath(cycle, cycleState, startId, targetId);
+          if (path.length < 2) throw new Error("宿敌与阿尔戈号之间没有已揭示路线。");
+          cycleState.tokens.AD = path[1];
+          if (cycleState.tokens.AD === targetId) {
+            cycleState.tokens.AD = "";
+            message = "宿敌追上阿尔戈号：已移除宿敌，请结算宿敌战斗。";
+          } else {
+            message = `宿敌已追击 1 格，移动至 ${path[1]}。`;
+          }
+        }
+
+        await saveMapCommandState(commandState);
+        syncDashboardMapSnapshot(cycleId, cycle, cycleState);
+        setMapCommandStatus(message);
+      } catch (error) {
+        setMapCommandStatus(String(error.message || error), true);
+      } finally {
+        mapCommandBusy = false;
+        document.querySelectorAll("[data-map-command], [data-map-direction]").forEach((button) => { button.disabled = false; });
+      }
     }
 
     async function loadCampaignSection(sessionEpoch = campaignSessionEpoch) {
@@ -5197,6 +5688,99 @@
       return escapeHtml(desc).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
     }
 
+    function createMapStepTools(stepId) {
+      if (!secondScreenEnabled || !currentCycleConfig().map || (stepId !== "move" && stepId !== "explore")) return null;
+      const wrapper = document.createElement("div");
+      wrapper.className = "map-step-tools";
+
+      if (stepId === "move") {
+        const group = document.createElement("div");
+        group.className = "map-step-group";
+        group.innerHTML = `
+          <span class="map-step-label">移动阿尔戈号</span>
+          <div class="argo-direction-pad" aria-label="阿尔戈号方向移动">
+            <button type="button" class="secondary" data-map-direction="up" aria-label="向上移动">↑</button>
+            <button type="button" class="secondary" data-map-direction="down" aria-label="向下移动">↓</button>
+            <button type="button" class="secondary" data-map-direction="left" aria-label="向左移动">←</button>
+            <button type="button" class="secondary" data-map-direction="right" aria-label="向右移动">→</button>
+          </div>
+        `;
+        wrapper.appendChild(group);
+
+        if (currentCycleConfig().id === "c5") {
+          const flipGroup = document.createElement("div");
+          flipGroup.className = "map-step-group";
+          flipGroup.innerHTML = `
+            <span class="map-step-label">C5 地图</span>
+            <div class="map-step-buttons">
+              <button type="button" class="secondary" data-map-command="flip-c5-tile">当前板块翻面</button>
+            </div>
+          `;
+          wrapper.appendChild(flipGroup);
+        }
+
+        if (currentCycleConfig().id === "c3") {
+          const specialGroup = document.createElement("div");
+          specialGroup.className = "map-step-group c3-special-group";
+          specialGroup.innerHTML = `
+            <span class="map-step-label">C3 特殊连接</span>
+            <div class="map-step-buttons" data-c3-special-buttons>
+              <span class="map-command-status">正在读取连接…</span>
+            </div>
+          `;
+          wrapper.appendChild(specialGroup);
+          window.setTimeout(() => renderC3SpecialButtons(specialGroup.querySelector("[data-c3-special-buttons]")), 0);
+        }
+      } else {
+        const group = document.createElement("div");
+        group.className = "map-step-group";
+        group.innerHTML = `
+          <span class="map-step-label">宿敌</span>
+          <div class="map-step-buttons">
+            <button type="button" data-map-command="spawn-nemesis">生成宿敌</button>
+            <button type="button" class="secondary" data-map-command="chase-nemesis">追击 1 格</button>
+          </div>
+        `;
+        wrapper.appendChild(group);
+      }
+
+      const status = document.createElement("div");
+      status.className = "map-command-status";
+      status.textContent = stepId === "move"
+        ? "移动到未揭示目标时，会自动标记为已探索。"
+        : "生成在距离阿尔戈号 4 格处；追击沿已揭示路线前进 1 格。";
+      wrapper.appendChild(status);
+      return wrapper;
+    }
+
+    async function renderC3SpecialButtons(container) {
+      if (!container || mapCommandBusy) return;
+      try {
+        const commandState = await loadMapCommandState();
+        const { cycle, cycleState } = currentMapCommandCycle(commandState);
+        const targets = currentC3SpecialTargets(cycle, cycleState);
+        container.innerHTML = "";
+        if (!targets.length) {
+          const note = document.createElement("span");
+          note.className = "map-command-status";
+          note.textContent = "当前位置没有特殊连接";
+          container.appendChild(note);
+          return;
+        }
+        targets.forEach((targetId) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "secondary";
+          button.dataset.mapCommand = "move-special";
+          button.dataset.mapTarget = targetId;
+          button.textContent = `特殊 → ${targetId}`;
+          container.appendChild(button);
+        });
+      } catch (error) {
+        setMapCommandStatus(String(error.message || error), true);
+      }
+    }
+
     function renderFlow() {
       elements.flowList.innerHTML = "";
       const fragment = document.createDocumentFragment();
@@ -5244,6 +5828,8 @@
           actions.appendChild(anchor);
         });
         if (actions.children.length) text.querySelector(".step-title")?.appendChild(actions);
+        const mapTools = createMapStepTools(step.id);
+        if (mapTools) text.appendChild(mapTools);
         if (step.id === "explore") {
           text.appendChild(createExplorationTools());
         }
@@ -5597,7 +6183,7 @@
     }
 
     function updateRecordLinks() {
-      document.querySelectorAll('a[href^="./record/index.html"], .record-card-link:not(.hero-card-link)').forEach((anchor) => {
+      document.querySelectorAll('a[href^="./record/index.html"]').forEach((anchor) => {
         anchor.href = getRecordHref();
       });
       document.querySelectorAll('a[href^="./hero/index.html"], .hero-card-link').forEach((anchor) => {
@@ -6384,6 +6970,16 @@
       renderDateTrack();
     });
     elements.flowList.addEventListener("click", (event) => {
+      const directionButton = event.target.closest("[data-map-direction]");
+      if (directionButton) {
+        runMapCommand("move-argo", directionButton.dataset.mapDirection);
+        return;
+      }
+      const mapButton = event.target.closest("[data-map-command]");
+      if (mapButton) {
+        runMapCommand(mapButton.dataset.mapCommand, mapButton.dataset.mapTarget || "");
+        return;
+      }
       const button = event.target.closest("[data-card-track-open]");
       if (!button) return;
       openCardTrackDialog(button.dataset.cardTrackOpen);
@@ -6446,6 +7042,26 @@
         counterButton.dataset.cardCounterField,
         Number(counterButton.dataset.delta || 0)
       );
+    });
+    elements.secondScreenToggle.addEventListener("change", () => setSecondScreenEnabled(elements.secondScreenToggle.checked));
+    elements.secondScreenScale.addEventListener("input", () => {
+      elements.secondScreenScaleValue.textContent = `${elements.secondScreenScale.value}%`;
+    });
+    elements.secondScreenScale.addEventListener("change", () => setSecondScreenModuleScale("map", elements.secondScreenScale.value));
+    elements.secondScreenBattleScale.addEventListener("input", () => {
+      elements.secondScreenBattleScaleValue.textContent = `${elements.secondScreenBattleScale.value}%`;
+    });
+    elements.secondScreenBattleScale.addEventListener("change", () => setSecondScreenModuleScale("battleBoard", elements.secondScreenBattleScale.value));
+    elements.copySecondScreenButton.addEventListener("click", async () => {
+      if (!elements.secondScreenUrl.value) return;
+      try {
+        await navigator.clipboard.writeText(elements.secondScreenUrl.value);
+        elements.copySecondScreenButton.textContent = "已复制";
+        window.setTimeout(() => { elements.copySecondScreenButton.textContent = "复制网址"; }, 1200);
+      } catch {
+        elements.secondScreenUrl.select();
+        document.execCommand("copy");
+      }
     });
     elements.cardTrackBody.addEventListener("change", (event) => {
       const input = event.target.closest("[data-card-progress-input]");

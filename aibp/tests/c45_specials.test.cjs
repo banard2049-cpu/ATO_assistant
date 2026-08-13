@@ -684,7 +684,7 @@ test("Dragon and Meduketos panel counters resolve at their thresholds", () => {
     {
       id: "c45-dragon-truth",
       file: "CM.jpg",
-      x: 96,
+      x: 93,
       y: 7.5,
       count: 3,
       c45PanelCounter: "dragon"

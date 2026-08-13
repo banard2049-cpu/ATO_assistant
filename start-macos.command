@@ -64,7 +64,7 @@ if [[ -n "$PHP_BIN" ]]; then
   echo "使用 PHP：$PHP_BIN（$($PHP_BIN -r 'echo PHP_VERSION;')）"
   echo "关闭此窗口或按 Control-C 即可停止。"
   open_later
-  exec "$PHP_BIN" -S "127.0.0.1:${PORT}" -t "$SCRIPT_DIR"
+  exec "$PHP_BIN" -S "0.0.0.0:${PORT}" -t "$SCRIPT_DIR"
 fi
 
 DOCKER_BIN="$(command -v docker 2>/dev/null || true)"

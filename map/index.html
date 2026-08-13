@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="./styles.css?v=20260730-cycle-toggle-top-visible">
 </head>
 <body>
+  <script>if (new URLSearchParams(location.search).get("second") === "1") document.body.classList.add("second-screen-map");</script>
   <main class="app">
     <header class="topbar">
       <div>
@@ -111,9 +112,9 @@
     </dialog>
   </main>
 
-  <script src="../assets/page-focus-router.js?v=20260813iframe1"></script>
+  <script src="../assets/page-focus-router.js?v=20260813-no-screen-focus1"></script>
   <script src="./map-data.js?v=20260730-cycle-labels"></script>
   <script src="./map-tile-tags.js?v=20260730-c5-silver-ruin"></script>
-  <script src="./app.js?v=20260802-c4-c5-start-tiles"></script>
+  <script src="./app.js?v=20260813-second-screen-map"></script>
 </body>
 </html>

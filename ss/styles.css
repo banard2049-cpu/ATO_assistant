@@ -1,0 +1,426 @@
+:root {
+  color-scheme: dark;
+  --bg: #070d0c;
+  --panel: #101917;
+  --ink: #eef7f2;
+  --muted: #92a59d;
+  --accent: #46c9b2;
+  --gold: #e4b55c;
+  --danger: #ef7269;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% -20%, #1b3933 0, var(--bg) 42%);
+  color: var(--ink);
+  font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+}
+
+[hidden] { display: none !important; }
+
+.pair-view {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: radial-gradient(circle at 50% 0, #1b3933 0, var(--bg) 55%);
+}
+
+.pair-card {
+  width: min(430px, 100%);
+  display: grid;
+  gap: 17px;
+  padding: 26px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  background: var(--panel);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.38);
+}
+
+.pair-card p { margin: 0; color: var(--muted); }
+
+.pair-card form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.pair-card input,
+.pair-card button {
+  min-height: 46px;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 6px;
+  font: inherit;
+}
+
+.pair-card input {
+  min-width: 0;
+  padding: 0 13px;
+  background: #07100e;
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: .15em;
+}
+
+.pair-card button {
+  padding: 0 18px;
+  background: var(--accent);
+  color: #06110e;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.pair-message { min-height: 20px; color: var(--danger); font-size: 13px; }
+
+.screen-shell {
+  width: 100vw;
+  height: 100vh;
+  padding: 0;
+}
+
+.screen-head,
+.screen-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.eyebrow {
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+}
+
+h1 {
+  margin: 3px 0 0;
+  font-size: clamp(24px, 4vw, 44px);
+  line-height: 1;
+}
+
+.screen-meta,
+.screen-footer {
+  color: var(--muted);
+  font-size: clamp(12px, 1.4vw, 16px);
+}
+
+.screen-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px 16px;
+}
+
+.screen-meta strong { color: var(--gold); }
+
+.connection-status {
+  padding: 5px 9px;
+  border-radius: 99px;
+  background: rgba(70, 201, 178, 0.14);
+  color: var(--accent);
+  font-weight: 900;
+}
+
+.connection-status.error {
+  background: rgba(239, 114, 105, 0.14);
+  color: var(--danger);
+}
+
+.map-stage {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: #060908;
+  box-shadow: none;
+}
+
+.map-frame {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: 0;
+  background: #151816;
+}
+
+.battle-view {
+  --battle-scale: 1;
+  --battle-safe-height: 100vh;
+  --battle-safe-width: 100vw;
+  --battle-board-column: 50vw;
+  --boss-small-card-width: 96px;
+  --boss-small-card-height: 132px;
+  --boss-panel-width: 280px;
+  --boss-panel-height: 264px;
+  --trait-area-height: 139px;
+  --resolution-area-height: 220px;
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: var(--battle-safe-width);
+  height: var(--battle-safe-height);
+  transform: translate(-50%, -50%);
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(260px, var(--battle-board-column));
+  overflow: hidden;
+  background: #080b0a;
+}
+
+.battle-sidebar {
+  min-width: 0;
+  height: 100%;
+  display: grid;
+  grid-template-rows: var(--boss-panel-height) var(--trait-area-height) minmax(0, 1fr);
+  gap: 10px;
+  padding: 10px;
+  overflow: hidden;
+  border-right: 1px solid rgba(228, 181, 92, .28);
+  background: linear-gradient(180deg, #181916, #0c100f);
+}
+
+.boss-summary {
+  min-height: 0;
+  display: block;
+}
+
+.boss-panel {
+  width: var(--boss-panel-width);
+  height: var(--boss-panel-height);
+}
+
+.boss-small-card {
+  width: var(--boss-small-card-width);
+  height: var(--boss-small-card-height);
+}
+
+.card-slot {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #0b0e0d;
+}
+
+.boss-token-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.boss-token {
+  position: absolute;
+  width: clamp(34px, calc(var(--boss-panel-width) * .072), 68px);
+  min-width: 34px;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 8px 13px rgba(0, 0, 0, .62));
+}
+
+.boss-token img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 999px;
+  opacity: 0.62;
+}
+
+.boss-token b {
+  position: absolute;
+  right: -16.667%;
+  bottom: -14.583%;
+  min-width: 50%;
+  height: 50%;
+  display: grid;
+  place-items: center;
+  padding: 0 10.417%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  background: rgba(180, 52, 44, 0.94);
+  color: #fff;
+  font-size: 27.083%;
+  font-weight: 900;
+  line-height: 1;
+  opacity: 0.95;
+}
+
+.card-slot img,
+.current-card img,
+.trait-cards img,
+.damage-cards img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+
+.support-cards {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: repeat(2, var(--boss-small-card-height));
+  align-content: start;
+  justify-content: start;
+  column-gap: 0;
+  row-gap: 7px;
+  overflow: auto hidden;
+  padding-top: 2px;
+  border-top: 1px solid rgba(228, 181, 92, .22);
+}
+
+.trait-cards {
+  display: contents;
+}
+
+.support-cards > .boss-small-card,
+.trait-cards img {
+  width: var(--boss-small-card-width);
+  height: var(--boss-small-card-height);
+}
+
+.resolution-panel {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(228, 181, 92, .22);
+}
+
+.aibp-slot {
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 8px;
+  overflow: hidden;
+}
+
+.pending-cards {
+  position: relative;
+  z-index: 2;
+  min-width: 0;
+  min-height: 0;
+  margin-top: calc((var(--boss-small-card-height) + 23px) * -1);
+  display: grid;
+  background: #090b0a;
+}
+
+.pending-card {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 5px;
+}
+
+.pending-card > span {
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.current-card {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #090b0a;
+}
+
+.empty-card,
+.empty-list {
+  color: #777e79;
+  font-size: 12px;
+  text-align: center;
+}
+
+.battle-facts {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  font-size: clamp(10px, .9vw, 13px);
+}
+
+.battle-facts div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, .07);
+}
+
+.battle-facts b { color: var(--gold); }
+.battle-facts span { min-width: 0; overflow-wrap: anywhere; }
+
+.damage-cards {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
+  grid-auto-rows: minmax(58px, 1fr);
+  gap: 5px;
+  overflow: hidden auto;
+}
+
+.battle-board-stage {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  padding: clamp(6px, 1.1vmin, 12px);
+  background: radial-gradient(circle at 50% 45%, #19221f, #050706 68%);
+}
+
+.battle-board-frame {
+  flex: none;
+  position: relative;
+  width: min(100%, calc((var(--battle-safe-height) - clamp(12px, 2.2vmin, 24px)) * 1.25 * var(--battle-scale)));
+  aspect-ratio: 100 / 80;
+  filter: drop-shadow(0 22px 38px rgba(0, 0, 0, .5));
+}
+
+.battle-board-frame img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+
+@media (max-aspect-ratio: 4 / 3) {
+  .battle-view {
+    grid-template-columns: minmax(230px, 1fr) minmax(220px, var(--battle-board-column));
+  }
+}
+
+.screen-footer {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.screen-footer span:last-child { margin-left: auto; }
+
+@media (max-width: 640px) {
+  .screen-head { align-items: flex-start; }
+  .screen-meta { display: grid; justify-items: end; }
+  .screen-footer span:last-child { width: 100%; margin-left: 0; }
+}

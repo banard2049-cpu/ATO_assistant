@@ -19,5 +19,5 @@ if not exist data\sessions mkdir data\sessions
 echo ATO Portable is starting: %ATO_URL%
 echo Close this window or press Ctrl-C to stop it.
 start "" "%ATO_URL%"
-"%PHP_BIN%" -d "session.save_path=%CD%\data\sessions" -S 127.0.0.1:%ATO_PORT% -t "%CD%"
+"%PHP_BIN%" -d "session.save_path=%CD%\data\sessions" -S 0.0.0.0:%ATO_PORT% -t "%CD%"
 if errorlevel 1 pause

@@ -567,6 +567,35 @@ h1 {
   display: block;
 }
 
+body.second-screen-map {
+  overflow: hidden;
+  background: #151816;
+}
+
+body.second-screen-map .app {
+  width: 100%;
+  height: 100vh;
+  padding: 0;
+}
+
+body.second-screen-map .topbar,
+body.second-screen-map .sticky-actions,
+body.second-screen-map .note-dialog {
+  display: none !important;
+}
+
+body.second-screen-map .tile-grid-viewport {
+  width: 100%;
+  height: 100vh;
+  max-height: none;
+  border-radius: 0;
+  pointer-events: none;
+}
+
+body.second-screen-map .tile-grid {
+  margin: 50vh 50vw;
+}
+
 .tile-blue-cover {
   display: flex;
   align-items: center;
