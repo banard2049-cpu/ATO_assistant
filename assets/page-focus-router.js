@@ -16,6 +16,7 @@
   const openModuleTtl = 15000;
   const heartbeatInterval = 4000;
   const focusAckTimeout = 300;
+  const isTopLevelPage = window.top === window;
   let pageActive = true;
 
   function moduleFromUrl(value = window.location.href) {
@@ -73,14 +74,14 @@
   }
 
   function markModuleOpen() {
-    if (!currentModule) return;
+    if (!currentModule || !isTopLevelPage) return;
     const modules = readOpenModules();
     modules[currentModule] = { pageId, href: window.location.href, updatedAt: Date.now() };
     writeOpenModules(modules);
   }
 
   function markModuleClosed() {
-    if (!currentModule) return;
+    if (!currentModule || !isTopLevelPage) return;
     const modules = readOpenModules();
     if (modules[currentModule]?.pageId === pageId) {
       delete modules[currentModule];
@@ -115,7 +116,7 @@
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) markModuleOpen();
   });
-  if (currentModule) {
+  if (currentModule && isTopLevelPage) {
     markModuleOpen();
     window.setInterval(markModuleOpen, heartbeatInterval);
   }
@@ -131,7 +132,7 @@
       pending.delete(message.requestId);
       return;
     }
-    if (message.type !== "focus-request" || message.sourceId === pageId || message.module !== currentModule) return;
+    if (!isTopLevelPage || message.type !== "focus-request" || message.sourceId === pageId || message.module !== currentModule) return;
 
     channel.postMessage({ type: "focus-ack", requestId: message.requestId, sourceId: pageId });
     try {

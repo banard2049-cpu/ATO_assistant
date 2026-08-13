@@ -64,6 +64,7 @@
     resolveBp,
     promoteSinglePile,
     promoteBpByRemovingLowest,
+    performLinkedPromotion,
     promoteAiFromLevel,
     promoteAiForBpIII,
     setImageZoomBpActions,
@@ -732,19 +733,19 @@
     return false;
   }
 
-  function promoteDahaka() {
+  function promoteDahaka(options = {}) {
     ensurePiles("DAHAKA");
     const pile = piles.DAHAKA.aibp;
     if (pile.pending) return false;
     const lowest = lowestDahakaCard(pile);
     if (!lowest || lowest.bpLevel === "III") return false;
-    rememberUndo("DAHAKA", "AIBP");
+    if (options.remember !== false) rememberUndo("DAHAKA", "AIBP");
     const nextLevel = lowest.bpLevel === "I" ? "II" : "III";
     moveDahakaCardToRemoved(pile, lowest);
     const promoted = pile.supply[nextLevel].pop();
     if (promoted) insertRandom(pile.deck, promoted);
-    savePiles();
-    renderAibpCards();
+    if (options.persist !== false) savePiles();
+    if (options.render !== false) renderAibpCards();
     return true;
   }
 
@@ -1313,10 +1314,16 @@
 
   promoteBpByRemovingLowest = function () {
     if (currentApostle === "DAHAKA") {
-      promoteDahaka();
-      return;
+      return promoteDahaka();
     }
-    base.promoteBpByRemovingLowest();
+    return base.promoteBpByRemovingLowest();
+  };
+
+  performLinkedPromotion = function () {
+    if (currentApostle === "DAHAKA") {
+      return promoteDahaka({ remember: false, persist: false, render: false });
+    }
+    return base.performLinkedPromotion();
   };
 
   promoteAiFromLevel = function (fromLevel, toLevel, damageCount = 1) {
@@ -1423,7 +1430,9 @@
 
   mountSpecials();
   interceptDirectListeners();
+  window.C45SpecialsReady = true;
   ensurePiles(currentApostle);
+  applyCurrentApostleLevelBonuses();
   savePiles();
   renderAibpCards();
   renderExtraCards();

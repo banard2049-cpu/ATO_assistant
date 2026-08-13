@@ -218,12 +218,21 @@ def storybook_payload(
             if segment["chapter_key"] not in seen:
                 chapters.append({"key": segment["chapter_key"], "title": segment["chapter_title"]})
                 seen.add(segment["chapter_key"])
-            entries.append({
-                "key": f"{book['id']}-{segment['chapter_key']}-{segment['id']}",
+            try:
+                metadata = json.loads(segment.get("metadata_json") or "{}")
+            except (TypeError, json.JSONDecodeError):
+                metadata = {}
+            if not isinstance(metadata, dict):
+                metadata = {}
+            entry = {
+                **metadata,
+                "key": metadata.get("key") or f"{book['id']}-{segment['chapter_key']}-{segment['id']}",
                 "id": segment["entry_number"], "title": segment["title"],
                 "chapterKey": segment["chapter_key"], "chapter": segment["chapter_title"],
-                "text": segment["body"], "section": segment["chapter_title"],
-            })
+                "text": segment["body"],
+            }
+            entry.setdefault("section", entry.get("encounter") or segment["chapter_title"])
+            entries.append(entry)
         books.append({"id": book["id"], "title": book["title"], "entryCount": len(entries), "chapters": chapters, "entries": entries})
     return {"generatedAt": "ATO Asset Studio", "books": books}
 

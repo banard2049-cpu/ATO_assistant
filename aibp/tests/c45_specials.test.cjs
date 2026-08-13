@@ -300,6 +300,9 @@ function makeHarness(startApostle = "MIDASCORE", options = {}) {
     },
     promoteSinglePile() {},
     promoteBpByRemovingLowest() {},
+    performLinkedPromotion() {
+      return context.promoteBpByRemovingLowest();
+    },
     promoteAiFromLevel() {},
     promoteAiForBpIII() {},
     setImageZoomBpActions() {},
@@ -348,7 +351,8 @@ function makeHarness(startApostle = "MIDASCORE", options = {}) {
     },
     currentApostleLevel() {
       return context.levels[context.currentApostle] || 1;
-    }
+    },
+    applyCurrentApostleLevelBonuses() {}
   };
   context.window = context;
   vm.createContext(context);
@@ -422,6 +426,20 @@ test("Dahaka uses one visible shared AI/BP pile and BP-only promotion", () => {
     state.aibp.removed.some((card) => card.fileName === pendingFile),
     false
   );
+});
+
+test("Dahaka linked promotion upgrades the shared pile only once", () => {
+  const app = makeHarness("DAHAKA");
+  const pile = app.piles.DAHAKA.aibp;
+
+  const levelOneBefore = pile.deck.filter((card) => card.bpLevel === "I").length;
+  const levelTwoSupplyBefore = pile.supply.II.length;
+
+  assert.equal(app.performLinkedPromotion(), true);
+  assert.equal(pile.deck.filter((card) => card.bpLevel === "I").length, levelOneBefore - 1);
+  assert.equal(pile.deck.filter((card) => card.bpLevel === "II").length, 1);
+  assert.equal(pile.supply.II.length, levelTwoSupplyBefore - 1);
+  assert.equal(pile.removed.length, 1);
 });
 
 test("Dahaka migrates a legacy AI save without clearing other progress", () => {

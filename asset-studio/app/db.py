@@ -76,6 +76,7 @@ CREATE TABLE IF NOT EXISTS story_segments (
   entry_number TEXT NOT NULL,
   title TEXT NOT NULL DEFAULT '',
   body TEXT NOT NULL,
+  metadata_json TEXT NOT NULL DEFAULT '{}',
   sort_order INTEGER NOT NULL,
   reviewed INTEGER NOT NULL DEFAULT 0
 );
@@ -127,6 +128,13 @@ class Database:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self.connect() as conn:
             conn.executescript(SCHEMA)
+            story_columns = {
+                row["name"] for row in conn.execute("PRAGMA table_info(story_segments)")
+            }
+            if "metadata_json" not in story_columns:
+                conn.execute(
+                    "ALTER TABLE story_segments ADD COLUMN metadata_json TEXT NOT NULL DEFAULT '{}'"
+                )
 
     @contextmanager
     def connect(self) -> Iterator[sqlite3.Connection]:

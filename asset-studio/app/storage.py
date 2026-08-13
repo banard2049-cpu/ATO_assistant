@@ -4,6 +4,7 @@ import hashlib
 import json
 import mimetypes
 import os
+import re
 import shutil
 import uuid
 from pathlib import Path
@@ -98,6 +99,8 @@ def store_image(
     mime_type: str,
     source: str = "upload",
     transform: dict | None = None,
+    expected_sha256: str | None = None,
+    defer_preview: bool = False,
 ) -> dict:
     item = db.one("SELECT id,faces_json FROM catalog_items WHERE id=?", (item_id,))
     if not item:
@@ -105,7 +108,9 @@ def store_image(
     faces = json.loads(item["faces_json"])
     if face not in faces:
         raise ValueError("这个条目不需要该面")
-    digest = sha256_file(temp_file)
+    if expected_sha256 is not None and not re.fullmatch(r"[a-f0-9]{64}", expected_sha256):
+        raise ValueError("图片哈希格式无效")
+    digest = expected_sha256 or sha256_file(temp_file)
     ext = safe_extension(original_name, mime_type)
     original_rel = Path("objects") / digest[:2] / f"{digest}{ext}"
     preview_rel = Path("previews") / digest[:2] / f"{digest}.webp"
@@ -117,12 +122,14 @@ def store_image(
     elif temp_file.exists():
         temp_file.unlink()
     transform = transform or {}
-    width, height = image_preview(
-        original,
-        preview,
-        int(transform.get("rotation", 0)),
-        transform.get("crop"),
-    )
+    width = height = None
+    if not defer_preview:
+        width, height = image_preview(
+            original,
+            preview,
+            int(transform.get("rotation", 0)),
+            transform.get("crop"),
+        )
     with db.connect() as conn:
         existing = conn.execute(
             "SELECT id FROM asset_revisions WHERE item_id=? AND face=? AND sha256=?",
@@ -149,6 +156,31 @@ def store_image(
         "height": height,
         "preview": f"/media/{preview_rel.as_posix()}",
     }
+
+
+def ensure_preview(db: Database, library: Path, relative: str) -> Path | None:
+    """Create a deferred preview on first access and persist its dimensions."""
+    revision = db.one(
+        "SELECT id,original_path,preview_path FROM asset_revisions WHERE preview_path=? AND is_current=1 LIMIT 1",
+        (relative,),
+    )
+    if not revision:
+        return None
+    preview = library / revision["preview_path"]
+    if preview.is_file():
+        return preview
+    original = library / revision["original_path"]
+    if not original.is_file():
+        return None
+    temporary = preview.with_name(f".{preview.stem}-{uuid.uuid4().hex}.tmp.webp")
+    try:
+        width, height = image_preview(original, temporary)
+        preview.parent.mkdir(parents=True, exist_ok=True)
+        os.replace(temporary, preview)
+    finally:
+        temporary.unlink(missing_ok=True)
+    db.execute("UPDATE asset_revisions SET width=?,height=? WHERE id=?", (width, height, revision["id"]))
+    return preview
 
 
 def new_temp_file(library: Path, suffix: str = ".upload") -> Path:

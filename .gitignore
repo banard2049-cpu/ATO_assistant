@@ -46,6 +46,7 @@
 /tools/fsadf.txt
 /tools/exploration-effect-automation-report.csv
 /tools/exploration-effect-automation-report.md
+/tools/.packaging-cache/
 
 # Asset-heavy/reference-only working areas
 /assets/*
@@ -66,6 +67,7 @@
 /data/
 /logs/
 /log/
+/export/
 php_errors.log
 error_log
 *.backup

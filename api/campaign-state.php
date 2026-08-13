@@ -19,6 +19,7 @@ $allowedSections = ['dashboard', 'map', 'record', 'technology', 'heroes'];
 $dataDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'data';
 $usersFile = $dataDir . DIRECTORY_SEPARATOR . 'ato-users.json';
 $maxBytes = 1024 * 1024 * 8;
+$backupCount = 5;
 
 function respond(int $status, array $payload): void {
   http_response_code($status);
@@ -121,6 +122,18 @@ function write_campaign(string $saveFile, array $campaign): void {
   $campaign['version'] = 1;
   $campaign['updatedAt'] = gmdate('c');
   write_json_file($saveFile, $campaign);
+}
+
+function rotate_campaign_backups(string $saveFile, int $backupCount): void {
+  if (!is_file($saveFile)) return;
+
+  for ($index = $backupCount; $index >= 2; $index -= 1) {
+    $previous = $saveFile . '.backup.' . ($index - 1);
+    $next = $saveFile . '.backup.' . $index;
+    if (is_file($previous)) @rename($previous, $next);
+  }
+
+  @copy($saveFile, $saveFile . '.backup.1');
 }
 
 function payload_user_id(array $payload): ?string {
@@ -248,7 +261,6 @@ if ($section !== null && !in_array($section, $allowedSections, true)) {
 }
 
 $saveFile = user_campaign_file($dataDir, $user['id']);
-$backupFile = $saveFile . '.backup';
 
 if ($method === 'GET') {
   $campaign = read_campaign($saveFile);
@@ -306,7 +318,7 @@ if ($method === 'POST') {
   }
   $campaign = update_campaign_section($campaign, $payloadSection, $payload['state'], payload_user_id($payload));
   $campaign['sectionRevisions'][$payloadSection] = $currentRevision + 1;
-  if (is_file($saveFile)) @copy($saveFile, $backupFile);
+  rotate_campaign_backups($saveFile, $backupCount);
   write_campaign($saveFile, $campaign);
   flock($lockHandle, LOCK_UN);
   fclose($lockHandle);

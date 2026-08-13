@@ -1,0 +1,8 @@
+services:
+  ato:
+    build: .
+    ports:
+      - "8793:8793"
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped

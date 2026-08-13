@@ -8,6 +8,7 @@ import re
 import shutil
 import socket
 import tempfile
+import urllib.request
 import uuid
 import webbrowser
 import zipfile
@@ -27,7 +28,7 @@ from .fixed_catalog import ensure_fixed_catalog
 from .installer import apply_install, install_plan, validate_target
 from .packages import export_compat, export_package, import_package, inspect_package
 from .security import make_token, valid_token
-from .storage import image_preview, new_temp_file, store_image, write_upload
+from .storage import ensure_preview, image_preview, new_temp_file, store_image, write_upload
 from .stories import import_story, merge_next_segment, split_segment, story_books, story_segments, update_segment
 
 
@@ -178,7 +179,7 @@ def run_export_job(db_path: Path, library: Path, destination: Path, payload: dic
 
 def run_import_job(db_path: Path, library: Path, package: Path, replace: bool, job_id: str) -> None:
     db = Database(db_path)
-    job_update(db, job_id, status="running", progress=1, message="正在校验资料包")
+    job_update(db, job_id, status="running", progress=1, message="正在恢复原图（预览稍后按需生成）")
     callback = lambda done, total, message: job_update(
         db, job_id, progress=min(95, max(1, int(done / max(total, 1) * 95))), message=message
     )
@@ -374,9 +375,13 @@ def transform_asset(payload: TransformPayload) -> dict:
 
 @app.get("/media/{relative:path}", dependencies=[Depends(require_auth)])
 def media(relative: str) -> FileResponse:
-    library, _ = library_and_db()
+    library, db = library_and_db()
     target = (library / relative).resolve()
-    if library not in target.parents or not target.is_file() or not relative.startswith(("previews/", "objects/")):
+    if library not in target.parents or not relative.startswith(("previews/", "objects/")):
+        raise HTTPException(status_code=404)
+    if not target.is_file() and relative.startswith("previews/"):
+        target = ensure_preview(db, library, relative) or target
+    if not target.is_file():
         raise HTTPException(status_code=404)
     return FileResponse(target)
 
@@ -617,15 +622,55 @@ def lan_urls(port: int) -> list[str]:
     return [f"http://{address}:{port}" for address in sorted(addresses)]
 
 
+def existing_studio_status(port: int) -> dict[str, Any] | None:
+    """Return status when this port already belongs to an ATO Asset Studio."""
+    try:
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        with opener.open(f"http://127.0.0.1:{port}/api/status", timeout=1) as response:
+            if response.status != 200:
+                return None
+            payload = json.loads(response.read().decode("utf-8"))
+    except (OSError, ValueError, json.JSONDecodeError):
+        return None
+    required = {"ready", "authenticated", "local", "pairing_required", "lan_urls"}
+    return payload if isinstance(payload, dict) and required.issubset(payload) and payload.get("local") else None
+
+
+def port_is_available(host: str, port: int) -> bool:
+    probe = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        probe.bind((host, port))
+    except OSError:
+        return False
+    finally:
+        probe.close()
+    return True
+
+
 def run() -> None:
     import uvicorn
+    local_url = f"http://127.0.0.1:{config.port}"
+    existing = existing_studio_status(config.port)
+    if existing:
+        print(f"ATO 素材库已经在运行：{local_url}")
+        if existing.get("pairing_code"):
+            print(f"本次手机配对码：{existing['pairing_code']}")
+        for url in existing.get("lan_urls") or []:
+            print(f"手机访问：{url}")
+        if os.environ.get("ATO_STUDIO_NO_BROWSER") != "1":
+            webbrowser.open(local_url)
+        return
+    if not port_is_available(config.host, config.port):
+        print(f"端口 {config.port} 已被其他程序占用，ATO 素材库无法启动。")
+        print("请关闭占用该端口的程序，或修改 .local/config.json 中的 port 后重试。")
+        raise SystemExit(1)
     print(f"ATO 素材库已启动：http://127.0.0.1:{config.port}")
     print(f"本次手机配对码：{PAIRING_CODE}")
     for url in lan_urls(config.port):
         print(f"手机访问：{url}")
     if os.environ.get("ATO_STUDIO_NO_BROWSER") != "1":
         import threading
-        threading.Timer(1.0, lambda: webbrowser.open(f"http://127.0.0.1:{config.port}")).start()
+        threading.Timer(1.0, lambda: webbrowser.open(local_url)).start()
     uvicorn.run(app, host=config.host, port=config.port, log_level="info")
 
 

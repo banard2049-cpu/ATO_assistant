@@ -87,87 +87,12 @@
       </footer>
     </main>
 
-    <aside class="side-panels" id="sidePanels">
-      <div class="side-panel-resize" id="sidePanelResize"></div>
-      <div class="side-panel-tabs">
-        <button class="side-panel-tab active" data-panel="record">记录表</button>
-        <button class="side-panel-tab" data-panel="hero">英雄</button>
-        <button class="side-panel-tab" data-panel="dashboard">主控台</button>
-      </div>
-      <iframe id="sidePanelRecord" class="side-panel-frame active" src="../record/index.html"></iframe>
-      <iframe id="sidePanelHero" class="side-panel-frame" src="../hero/index.html"></iframe>
-      <iframe id="sidePanelDashboard" class="side-panel-frame" src="../index.html"></iframe>
-    </aside>
-
-    <script src="../assets/page-focus-router.js?v=20260607a"></script>
+    <script src="../assets/page-focus-router.js?v=20260813iframe1"></script>
     <!-- 公共仓库使用占位数据；本地完整数据存在时由后一项覆盖。 -->
     <script src="./storybook-placeholder.js?v=20260813"></script>
     <script src="./data/storybook-data.js?v=20260729c5full3"></script>
     <script src="./data/entity-index.js?v=20260614structure1"></script>
     <script src="./audio-packs/audio/manifest.js?v=20260614structure1"></script>
     <script src="./assets/app.js?v=20260730c45aibp2"></script>
-    <script>
-      document.querySelectorAll(".side-panel-tab").forEach(tab => {
-        tab.addEventListener("click", () => {
-          document.querySelectorAll(".side-panel-tab").forEach(t => t.classList.remove("active"));
-          document.querySelectorAll(".side-panel-frame").forEach(f => f.classList.remove("active"));
-          tab.classList.add("active");
-          const panelMap = { record: "sidePanelRecord", hero: "sidePanelHero", dashboard: "sidePanelDashboard" };
-          document.getElementById(panelMap[tab.dataset.panel])?.classList.add("active");
-        });
-      });
-
-      (function() {
-        const handle = document.getElementById("sidePanelResize");
-        const panels = document.getElementById("sidePanels");
-        if (!handle || !panels) return;
-        let startX, startWidth;
-
-        function beginDrag(x) {
-          startX = x;
-          startWidth = panels.offsetWidth;
-          handle.classList.add("active");
-          document.body.style.cursor = "col-resize";
-          document.body.style.userSelect = "none";
-          document.querySelectorAll("iframe").forEach(f => f.style.pointerEvents = "none");
-        }
-        function doDrag(x) {
-          const delta = startX - x;
-          const newWidth = Math.max(200, Math.min(startWidth + delta, window.innerWidth * 0.6));
-          document.body.style.gridTemplateColumns =
-            `minmax(280px, 360px) minmax(480px, 1fr) ${newWidth}px`;
-        }
-        function endDrag() {
-          handle.classList.remove("active");
-          document.body.style.cursor = "";
-          document.body.style.userSelect = "";
-          document.querySelectorAll("iframe").forEach(f => f.style.pointerEvents = "");
-        }
-
-        handle.addEventListener("mousedown", (event) => {
-          event.preventDefault();
-          beginDrag(event.clientX);
-          const onMove = (moveEvent) => doDrag(moveEvent.clientX);
-          const onUp = () => {
-            endDrag();
-            document.removeEventListener("mousemove", onMove);
-            document.removeEventListener("mouseup", onUp);
-          };
-          document.addEventListener("mousemove", onMove);
-          document.addEventListener("mouseup", onUp);
-        });
-
-        handle.addEventListener("touchstart", (event) => {
-          event.preventDefault();
-          beginDrag(event.touches[0].clientX);
-        }, { passive: false });
-        handle.addEventListener("touchmove", (event) => {
-          event.preventDefault();
-          doDrag(event.touches[0].clientX);
-        }, { passive: false });
-        handle.addEventListener("touchend", () => endDrag());
-        handle.addEventListener("touchcancel", () => endDrag());
-      })();
-    </script>
   </body>
 </html>

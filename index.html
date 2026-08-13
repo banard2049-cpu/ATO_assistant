@@ -742,6 +742,30 @@
       min-height: 36px;
     }
 
+    .exploration-return-preview {
+      position: absolute;
+      z-index: 4;
+      width: min(520px, calc(100vw - 36px));
+      max-height: min(520px, 60vh);
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    .exploration-return-preview[hidden] {
+      display: none;
+    }
+
+    .exploration-return-preview-title {
+      margin-bottom: 8px;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
     .exploration-summary {
       display: grid;
       gap: 5px;
@@ -1392,14 +1416,35 @@
       gap: 8px;
     }
 
+    .card-track-counter-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      align-items: center;
+    }
+
     .card-track-progress {
       display: grid;
-      grid-template-columns: 34px minmax(60px, 1fr) 34px;
+      grid-template-columns: auto 34px minmax(44px, 1fr) 34px;
       gap: 6px;
       align-items: center;
     }
 
+    .card-track-counter {
+      display: grid;
+      grid-template-columns: auto 34px minmax(60px, 1fr) 34px;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .card-track-counter-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
     .card-track-progress button,
+    .card-track-counter button,
     .card-track-advance,
     .card-track-retreat {
       min-height: 34px;
@@ -1652,6 +1697,13 @@
       }
     }
 
+    .card-track-counter input {
+      height: 34px;
+      padding: 6px 8px;
+      text-align: center;
+      font-weight: 900;
+    }
+
     @media (max-width: 620px) {
       .title-row {
         flex-direction: column;
@@ -1847,7 +1899,7 @@
     </div>
   </dialog>
 
-  <script src="./assets/page-focus-router.js?v=20260607a"></script>
+  <script src="./assets/page-focus-router.js?v=20260813iframe1"></script>
   <script src="./assets/story-doom-card-data.js"></script>
   <script src="./assets/exploration-card-tags.js"></script>
   <script src="./assets/exploration-card-rules.js"></script>
@@ -2691,7 +2743,7 @@
       exploration: null,
       cardTracks: {
         story: { position: 0, progress: 0 },
-        doom: { position: 0, progress: 0 },
+        doom: { position: 0, progress: 0, doom: 0 },
         inwardOdyssey: { position: 0, progress: 0 },
       },
       cardTracksVersion: 2,
@@ -3027,6 +3079,7 @@
       return {
         position: physicalCardToStep && position > 0 ? (position - 1) * 2 + 1 : position,
         progress: normalizeCounterValue(value.progress),
+        doom: normalizeCounterValue(value.doom),
       };
     }
 
@@ -3984,8 +4037,9 @@
       if (!track.position) return deck[0]
         ? `未开始；当前预览 ${deck[0].label} ${deck[0].name}。点击推进后正式进入 ${deck[0].label}。`
         : `mod 中找到 ${deck.length} 个 A/B 步骤。点击推进进入 1A。`;
-      if (!card) return `第 ${track.position} 步无对应卡面；已放进展 ${track.progress}`;
-      return `${card.label} ${card.name}；已放进展 ${track.progress}`;
+      const counters = `已放进展 ${track.progress}${def.key === "doom" ? `；已放灾祸 ${track.doom}` : ""}`;
+      if (!card) return `第 ${track.position} 步无对应卡面；${counters}`;
+      return `${card.label} ${card.name}；${counters}`;
     }
 
     function setCardTrackProgress(key, value) {
@@ -4000,6 +4054,20 @@
       const tracks = ensureCardTracks();
       if (!tracks[key]) return;
       setCardTrackProgress(key, Number(tracks[key].progress || 0) + delta);
+    }
+
+    function setCardTrackCounter(key, field, value) {
+      const tracks = ensureCardTracks();
+      if (!tracks[key] || field !== "doom") return;
+      tracks[key][field] = normalizeCounterValue(value);
+      saveState();
+      renderCardTrackDialog();
+    }
+
+    function stepCardTrackCounter(key, field, delta) {
+      const tracks = ensureCardTracks();
+      if (!tracks[key] || field !== "doom") return;
+      setCardTrackCounter(key, field, Number(tracks[key][field] || 0) + delta);
     }
 
     function advanceCardTrack(key) {
@@ -4029,7 +4097,7 @@
       elements.cardTrackTitle.textContent = group.title;
       elements.cardTrackDialog.dataset.group = groupId;
       elements.cardTrackBody.innerHTML = group.tracks.map((def) => {
-        const track = tracks[def.key] || { position: 0, progress: 0 };
+        const track = tracks[def.key] || { position: 0, progress: 0, doom: 0 };
         const card = cardTrackCard(def, track, cycleData);
         const previewCard = cardTrackPreviewCard(def, track, cycleData);
         const displayedCard = card || previewCard;
@@ -4037,7 +4105,7 @@
         const face = def.fixed
           ? `<div class="card-track-knowledge"><div class="card-track-knowledge-value">${track.position}</div><div class="card-track-knowledge-label">当前阿尔戈号知识</div></div>`
           : (displayedCard?.image
-            ? `<div class="card-track-face"><img src="${escapeHtml(displayedCard.image)}" alt="${escapeHtml(`${displayedCard.label} ${displayedCard.name}`)}"><span class="card-track-side-badge">${escapeHtml(displayedCard.label)}</span><span class="card-track-progress-badge">进展 ${track.progress}</span>${previewBadge}</div>`
+            ? `<div class="card-track-face"><img src="${escapeHtml(displayedCard.image)}" alt="${escapeHtml(`${displayedCard.label} ${displayedCard.name}`)}"><span class="card-track-side-badge">${escapeHtml(displayedCard.label)}</span><span class="card-track-progress-badge">进展 ${track.progress}${def.key === "doom" ? ` · 灾祸 ${track.doom}` : ""}</span>${previewBadge}</div>`
             : '<div class="card-track-empty">无对应卡面</div>');
         return `
           <article class="card-track-item">
@@ -4047,10 +4115,21 @@
             </div>
             ${face}
             <div class="card-track-controls">
-              <div class="card-track-progress">
-                <button type="button" data-card-progress="${escapeHtml(def.key)}" data-delta="-1" aria-label="${escapeHtml(def.label)}进展减一">-</button>
-                <input type="number" min="0" step="1" value="${track.progress}" data-card-progress-input="${escapeHtml(def.key)}" aria-label="${escapeHtml(def.label)}进展">
-                <button type="button" data-card-progress="${escapeHtml(def.key)}" data-delta="1" aria-label="${escapeHtml(def.label)}进展加一">+</button>
+              <div class="${def.key === "doom" ? "card-track-counter-row" : ""}">
+              ${def.key === "doom" ? `
+                <div class="card-track-counter">
+                  <span class="card-track-counter-label">灾祸</span>
+                  <button type="button" data-card-counter="${escapeHtml(def.key)}" data-card-counter-field="doom" data-delta="-1" aria-label="灾祸减一">-</button>
+                  <input type="number" min="0" step="1" value="${track.doom}" data-card-counter-input="${escapeHtml(def.key)}" data-card-counter-field="doom" aria-label="灾祸">
+                  <button type="button" data-card-counter="${escapeHtml(def.key)}" data-card-counter-field="doom" data-delta="1" aria-label="灾祸加一">+</button>
+                </div>
+              ` : ""}
+                <div class="card-track-progress">
+                  <span class="card-track-counter-label">进展</span>
+                  <button type="button" data-card-progress="${escapeHtml(def.key)}" data-delta="-1" aria-label="${escapeHtml(def.label)}进展减一">-</button>
+                  <input type="number" min="0" step="1" value="${track.progress}" data-card-progress-input="${escapeHtml(def.key)}" aria-label="${escapeHtml(def.label)}进展">
+                  <button type="button" data-card-progress="${escapeHtml(def.key)}" data-delta="1" aria-label="${escapeHtml(def.label)}进展加一">+</button>
+                </div>
               </div>
               <div class="card-track-step-actions">
                 <button type="button" class="card-track-retreat" data-card-retreat="${escapeHtml(def.key)}">回退</button>
@@ -5268,6 +5347,56 @@
         return drawnCard;
       };
 
+      if (drawState.temporaryRemoved.length) {
+        const preview = document.createElement("div");
+        preview.className = "exploration-return-preview";
+        preview.hidden = true;
+        preview.setAttribute("role", "region");
+        preview.setAttribute("aria-label", "暂时移出牌堆预览");
+        const title = document.createElement("div");
+        title.className = "exploration-return-preview-title";
+        title.textContent = `暂时移出牌堆（${drawState.temporaryRemoved.length} 张）`;
+        const grid = document.createElement("div");
+        grid.className = "exploration-drawn-grid";
+        drawState.temporaryRemoved.forEach((entry) => grid.appendChild(createDrawnCard(entry)));
+        preview.append(title, grid);
+
+        const showPreview = () => {
+          const rect = returnButton.getBoundingClientRect();
+          preview.style.left = `${Math.max(12, Math.min(rect.left, window.innerWidth - Math.min(520, window.innerWidth - 36) - 12))}px`;
+          preview.style.top = `${Math.min(window.innerHeight - 80, rect.bottom + 8)}px`;
+          preview.hidden = false;
+          returnButton.setAttribute("aria-expanded", "true");
+        };
+        const hidePreview = () => {
+          preview.hidden = true;
+          returnButton.setAttribute("aria-expanded", "false");
+        };
+        returnButton.setAttribute("aria-haspopup", "true");
+        returnButton.setAttribute("aria-expanded", "false");
+        returnButton.addEventListener("pointerenter", (event) => {
+          if (event.pointerType === "mouse") showPreview();
+        });
+        returnButton.addEventListener("pointerleave", (event) => {
+          if (event.pointerType === "mouse") window.setTimeout(() => {
+            if (!preview.matches(":hover")) hidePreview();
+          }, 80);
+        });
+        preview.addEventListener("pointerleave", hidePreview);
+        returnButton.addEventListener("focus", showPreview);
+        returnButton.addEventListener("blur", () => window.setTimeout(() => {
+          if (!preview.contains(document.activeElement)) hidePreview();
+        }, 0));
+        returnButton.addEventListener("pointerdown", (event) => {
+          if (event.pointerType !== "touch") return;
+          if (preview.hidden) {
+            event.preventDefault();
+            showPreview();
+          }
+        });
+        wrapper.appendChild(preview);
+      }
+
       const drawnCards = document.createElement("section");
       drawnCards.className = "exploration-drawn";
       const activeCards = drawState.activePiles.flat();
@@ -6006,7 +6135,7 @@
       renderDateTrack();
     }
 
-    function renderDateTrack() {
+    function renderDateTrack({ focusCurrentDay = false } = {}) {
       const config = currentCycleConfig();
       const track = dateTrackData[config.id];
       elements.dateTrackList.innerHTML = "";
@@ -6069,7 +6198,7 @@
       });
       elements.dateTrackList.appendChild(fragment);
       renderCurrentDateNote();
-      keepCurrentDateVisible();
+      if (focusCurrentDay) keepCurrentDateVisible();
     }
 
     function resetToday() {
@@ -6092,7 +6221,7 @@
       syncInputs();
       saveState();
       renderFlow();
-      renderDateTrack();
+      renderDateTrack({ focusCurrentDay: true });
     }
 
     async function loadFullCampaign() {
@@ -6306,13 +6435,27 @@
         return;
       }
       const progressButton = event.target.closest("[data-card-progress]");
-      if (!progressButton) return;
-      stepCardTrackProgress(progressButton.dataset.cardProgress, Number(progressButton.dataset.delta || 0));
+      if (progressButton) {
+        stepCardTrackProgress(progressButton.dataset.cardProgress, Number(progressButton.dataset.delta || 0));
+        return;
+      }
+      const counterButton = event.target.closest("[data-card-counter]");
+      if (!counterButton) return;
+      stepCardTrackCounter(
+        counterButton.dataset.cardCounter,
+        counterButton.dataset.cardCounterField,
+        Number(counterButton.dataset.delta || 0)
+      );
     });
     elements.cardTrackBody.addEventListener("change", (event) => {
       const input = event.target.closest("[data-card-progress-input]");
-      if (!input) return;
-      setCardTrackProgress(input.dataset.cardProgressInput, input.value);
+      if (input) {
+        setCardTrackProgress(input.dataset.cardProgressInput, input.value);
+        return;
+      }
+      const counterInput = event.target.closest("[data-card-counter-input]");
+      if (!counterInput) return;
+      setCardTrackCounter(counterInput.dataset.cardCounterInput, counterInput.dataset.cardCounterField, counterInput.value);
     });
     campaignSyncChannel?.addEventListener("message", () => void syncDashboardFromExternalUpdate());
     recordSyncChannel?.addEventListener("message", () => void refreshCachedArgoRecord());

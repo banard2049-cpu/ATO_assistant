@@ -31,7 +31,20 @@ def parse_story(raw: bytes) -> dict:
     return json.loads(match.group(1))
 
 
-def build(apk_path: Path, destination: Path) -> dict:
+def normalized_member_lookup(archive: zipfile.ZipFile) -> dict[str, str]:
+    """Map intended UTF-8 paths to their actual APK ZIP member names."""
+    result: dict[str, str] = {}
+    for actual in archive.namelist():
+        result.setdefault(actual, actual)
+        try:
+            decoded = actual.encode("cp437").decode("utf-8")
+        except (UnicodeEncodeError, UnicodeDecodeError):
+            continue
+        result.setdefault(decoded, actual)
+    return result
+
+
+def build(apk_path: Path, destination: Path, overlay_root: Path | None = None) -> dict:
     fixed = fixed_catalog_payload()
     items = fixed["items"]
     faces = [
@@ -47,18 +60,32 @@ def build(apk_path: Path, destination: Path) -> dict:
         with zipfile.ZipFile(apk_path) as source_zip, zipfile.ZipFile(
             partial, "w", compression=zipfile.ZIP_STORED, allowZip64=True
         ) as output_zip:
-            source_names = set(source_zip.namelist())
-            required = {f"assets/web/{target}" for _, _, target in faces}
-            missing = sorted(required - source_names)
+            source_members = normalized_member_lookup(source_zip)
+            overlay_files = {
+                target: overlay_root / Path(*PurePosixPath(target).parts)
+                for _, _, target in faces
+                if overlay_root is not None
+            }
+            required = {
+                f"assets/web/{target}"
+                for _, _, target in faces
+                if not overlay_files.get(target, Path()).is_file()
+            }
+            missing = sorted(required - source_members.keys())
             if missing:
                 raise ValueError(f"APK 缺少 {len(missing)} 个固定清单文件，首个为：{missing[0]}")
 
             for index, (item, face, target) in enumerate(faces, 1):
-                source_name = f"assets/web/{target}"
+                overlay_file = overlay_files.get(target)
                 suffix = PurePosixPath(target).suffix.lower()
                 member = f"assets/full/{index:05d}{suffix}"
                 digest = hashlib.sha256()
-                with source_zip.open(source_name) as source, output_zip.open(
+                source = (
+                    overlay_file.open("rb")
+                    if overlay_file is not None and overlay_file.is_file()
+                    else source_zip.open(source_members[f"assets/web/{target}"])
+                )
+                with source, output_zip.open(
                     member, "w", force_zip64=True
                 ) as output:
                     while chunk := source.read(CHUNK):
@@ -99,9 +126,13 @@ def build(apk_path: Path, destination: Path) -> dict:
                 "assets": assets,
                 "stories": stories,
                 "progress": {"skippedFaces": [], "storyReview": story_review},
+                "retiredItems": [
+                    "c3:aibp:hypertime-oracle-ai:hypertime-oracle-ai-iii-007"
+                ],
                 "build": {
                     "kind": "full-resource-pack",
                     "sourceApk": apk_path.name,
+                    "correctedProjectOverlay": bool(overlay_root),
                     "audioIncluded": False,
                 },
             }
@@ -127,8 +158,17 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("apk", type=Path)
     parser.add_argument("destination", type=Path)
+    parser.add_argument(
+        "--overlay-root",
+        type=Path,
+        help="优先读取修正版 ATO_assistant 根目录中的同路径素材",
+    )
     args = parser.parse_args()
-    result = build(args.apk.expanduser().resolve(), args.destination.expanduser().resolve())
+    result = build(
+        args.apk.expanduser().resolve(),
+        args.destination.expanduser().resolve(),
+        args.overlay_root.expanduser().resolve() if args.overlay_root else None,
+    )
     print(json.dumps(result, ensure_ascii=False, indent=2), flush=True)
 
 

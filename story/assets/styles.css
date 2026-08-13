@@ -20,19 +20,10 @@ body {
   margin: 0;
   min-height: 100vh;
   display: grid;
-  /* Disabled side-panel embeds old layout:
-  grid-template-columns: minmax(280px, 360px) minmax(480px, 1fr) minmax(400px, 1fr);
-  */
   grid-template-columns: minmax(280px, 24vw) minmax(480px, 1fr);
   background: var(--bg);
   color: var(--ink);
   font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", system-ui, sans-serif;
-}
-
-body > .side-panels,
-body > .side-panel-frame,
-body > iframe.side-panel-frame {
-  display: none !important;
 }
 
 .sidebar {
@@ -1252,68 +1243,6 @@ h2 {
   padding: 14px 2px;
   font-size: 14px;
 }
-
-/* Disabled side-panel embeds: keeping old styles for reference.
-.side-panels {
-  display: grid;
-  grid-template-rows: auto 1fr;
-  min-height: 100vh;
-  border-left: 1px solid var(--line);
-  background: var(--bg);
-  position: relative;
-}
-
-.side-panel-resize {
-  position: absolute;
-  top: 0;
-  left: -8px;
-  width: 16px;
-  height: 100%;
-  cursor: col-resize;
-  z-index: 10;
-  touch-action: none;
-}
-.side-panel-resize:hover,
-.side-panel-resize.active {
-  background: rgba(15, 107, 95, 0.18);
-}
-.side-panel-tabs {
-  display: flex;
-  gap: 0;
-  border-bottom: 1px solid var(--line);
-  background: #f8faf8;
-}
-.side-panel-tab {
-  flex: 1;
-  min-height: 36px;
-  border: none;
-  border-bottom: 2px solid transparent;
-  background: transparent;
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 800;
-  cursor: pointer;
-}
-.side-panel-tab.active {
-  color: var(--ink);
-  border-bottom-color: var(--accent);
-}
-.side-panel-frame {
-  width: 100%;
-  height: 100%;
-  border: none;
-  display: none;
-}
-.side-panel-frame.active {
-  display: block;
-}
-
-@media (max-width: 1200px) {
-  .side-panels {
-    display: none;
-  }
-}
-*/
 
 @media (max-width: 1200px) {
   body {

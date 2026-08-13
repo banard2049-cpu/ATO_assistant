@@ -14,6 +14,16 @@ from .stories import storybook_payload
 
 
 STORY_PREFIX = "window.STORYBOOK_DATA = "
+DIRECT_IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".webp"}
+
+
+def package_original_can_install_directly(row: dict, relative: str) -> bool:
+    if row.get("source") != "package":
+        return False
+    source_suffix = Path(row.get("original_name") or row["original_path"]).suffix.lower()
+    target_suffix = PurePosixPath(relative).suffix.lower()
+    normalize = lambda suffix: ".jpg" if suffix == ".jpeg" else suffix
+    return source_suffix in DIRECT_IMAGE_SUFFIXES and target_suffix in DIRECT_IMAGE_SUFFIXES
 
 
 def merged_storybook_javascript(db: Database, target: Path | None = None) -> bytes:
@@ -73,16 +83,21 @@ def install_plan(db: Database, library: Path, root: Path) -> dict:
         if not relative:
             continue
         destination = safe_target(root, relative)
-        source = library / row["preview_path"]
+        direct_copy = package_original_can_install_directly(row, relative)
+        source_rel = row["original_path"] if row["source"] == "package" else row["preview_path"]
+        source = library / source_rel
         if destination.exists():
-            with tempfile.TemporaryDirectory() as temp_dir:
-                rendered = Path(temp_dir) / destination.name
-                write_compatible_image(source, rendered)
-                status = "same" if sha256_file(destination) == sha256_file(rendered) else "replace"
+            if direct_copy:
+                status = "same" if sha256_file(destination) == row["sha256"] else "replace"
+            else:
+                with tempfile.TemporaryDirectory() as temp_dir:
+                    rendered = Path(temp_dir) / destination.name
+                    write_compatible_image(source, rendered)
+                    status = "same" if sha256_file(destination) == sha256_file(rendered) else "replace"
         else:
             status = "add"
         summary[status] += 1
-        files.append({"item_id": row["item_id"], "name": row["name"], "face": row["face"], "source": row["preview_path"], "target": relative, "status": status})
+        files.append({"item_id": row["item_id"], "name": row["name"], "face": row["face"], "source": source_rel, "target": relative, "status": status, "direct_copy": direct_copy})
     story_count = db.one("SELECT COUNT(*) AS n FROM story_segments WHERE reviewed=1")["n"]
     if story_count:
         relative = "story/data/storybook-data.js"
@@ -120,6 +135,8 @@ def apply_install(db: Database, library: Path, root: Path, replacements: list[st
             temporary = target.with_name(f".{target.stem}.ato-studio.tmp{target.suffix}")
             if entry["source"] == "generated":
                 temporary.write_bytes(merged_storybook_javascript(db, target))
+            elif entry.get("direct_copy"):
+                shutil.copy2(library / entry["source"], temporary)
             else:
                 write_compatible_image(library / entry["source"], temporary)
             os.replace(temporary, target)

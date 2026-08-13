@@ -1,0 +1,5 @@
+# Store Windows launchers with literal CRLF so GitHub source ZIP downloads work too.
+*.bat -text whitespace=cr-at-eol
+*.cmd -text whitespace=cr-at-eol
+*.command text eol=lf
+*.sh text eol=lf

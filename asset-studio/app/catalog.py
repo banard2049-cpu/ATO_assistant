@@ -23,6 +23,27 @@ AIBP_CYCLES = {
     "MIDASCORE": "c4", "DEMIDJINN": "c4", "THE_BABELIAN_LUNACY": "c4", "DAHAKA": "c4",
     "DRAGON_OF_PHOBOS": "c5", "MEDUKETOS": "c5", "UR_FLEECE": "c5", "TITAN_X": "c5",
 }
+AIBP_NAMES = {
+    "HEKATON": "百臂巨人 / Hekaton",
+    "LABYRINTHAUROS": "迷宫机牛 / Labyrinthauros",
+    "HERMESIAN_PURSUER": "赫尔墨斯追踪者 / Hermesian Pursuer",
+    "ALPHA_TEMENOS": "阿尔法圣域 / Alpha Temenos",
+    "CHIMERA_METASTASIOS": "蠕变奇美拉 / Chimera Metastasios",
+    "CYCLONUS": "独眼巨人 / Cyclonus",
+    "THE_BURDEN": "重担 / The Burden",
+    "THE_NIETZSCJEAN": "尼采超人 / The Nietzschean",
+    "HYPERTIME_ORACLE": "超时神谕 / Hypertime Oracle",
+    "ICARIAN_HARPY": "伊卡洛斯鹰身女妖 / Icarian Harpy",
+    "SUN_DESCENDANT": "太阳后裔 / Sun Descendant",
+    "MIDASCORE": "迈达狮 / Midascore",
+    "DEMIDJINN": "半神迪精 / Demidjinn",
+    "THE_BABELIAN_LUNACY": "巴比伦疯塔 / The Babelian Lunacy",
+    "DAHAKA": "达哈卡 / Dahaka",
+    "DRAGON_OF_PHOBOS": "深海惧龙 / Dragon of Phobos",
+    "MEDUKETOS": "须目塞特斯 / Meduketos",
+    "UR_FLEECE": "乌尔-弗里斯 / Ur-Fleece",
+    "TITAN_X": "泰坦 X / Titan X",
+}
 GEAR_CYCLES = {"A": "c1", "B": "c2", "C": "c3", "D": "c4", "E": "c5"}
 HERO_RECORD_ICONS = {
     "skill_courage.png": ("技能图标：勇气", "技能图标"),
@@ -39,6 +60,26 @@ HERO_RECORD_ICONS = {
     "ico_least_likely.png": ("最小似然图标", "判定图标"),
     "ico_tides.png": ("潮汐图标", "记录表界面图标"),
     "ico_katharsis_bracket.png": ("净化值框图标", "记录表界面图标"),
+}
+
+TITAN_IMAGE_LABELS = {
+    "tt_ascender": ("c3", "晋升者 / Ascender"),
+    "tt_cloudsoarer": ("c4", "翔云者 / Cloudsoarer"),
+    "tt_earthshaker": ("c1", "撼地者 / Earthshaker"),
+    "tt_executioner": ("c5", "行刑者 / Executioner"),
+    "tt_feareater": ("c5", "无惧者 / Feareater"),
+    "tt_firestarter": ("c2", "燃火者 / Firestarter"),
+    "tt_helldiver": ("c5", "潜渊者 / Helldiver"),
+    "tt_mazerunner": ("c1", "迷宫疾行者 / Mazerunner"),
+    "tt_pabysswatcher": ("c2", "深渊凝望者 / Primordial Abysswatcher"),
+    "tt_pdawnburner": ("c3", "曙光点燃者 / Primordial Dawnburner"),
+    "tt_plogicbreaker": ("c1", "破逻辑者 / Primordial Logicbreaker"),
+    "tt_plunarlander": ("c4", "登月者 / Primordial Lunarlander"),
+    "tt_returner": ("c3", "回归者 / Returner"),
+    "tt_shadowdancer": ("c4", "影舞者 / Shadowdancer"),
+    "tt_trespasser": ("c5", "越界者 / Trespasser"),
+    "tt_warkeeper": ("c2", "历战者 / Warkeeper"),
+    "tt_wishender": ("c4", "终愿者 / Wishender"),
 }
 
 AIBP_TOKEN_LABELS = {

@@ -11,9 +11,12 @@ import json
 from typing import Any
 
 from .catalog import (
+    AIBP_CYCLES,
+    AIBP_NAMES,
     AIBP_TOKEN_LABELS,
     HERO_RECORD_ICONS,
     CatalogItem,
+    TITAN_IMAGE_LABELS,
     apply_catalog,
     component_display_name,
     make_id,
@@ -753,6 +756,19 @@ CATALOG_B85 = (
 def fixed_catalog_payload() -> dict[str, Any]:
     compressed = base64.b85decode(CATALOG_B85.encode("ascii"))
     payload = json.loads(gzip.decompress(compressed).decode("utf-8"))
+
+    # The corrected Hypertime Oracle deck uses AI III 001–006. The original
+    # 0.2.11 APK manifest had the front of 001 missing and still listed the
+    # obsolete 007 pair, so keep the scan index aligned with the corrected
+    # project files instead of that stale APK range.
+    corrected_oracle_items = []
+    for item in payload["items"]:
+        if item.get("number") == "HYPERTIME_ORACLE_AI_III_007":
+            continue
+        if item.get("number") == "HYPERTIME_ORACLE_AI_III_001":
+            item["faces"]["front"] = "aibp/ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_AI_III_001.jpg"
+        corrected_oracle_items.append(item)
+    payload["items"] = corrected_oracle_items
     existing_ids = {item["id"] for item in payload["items"]}
     for order, (filename, (label, subgroup)) in enumerate(HERO_RECORD_ICONS.items()):
         stem = filename.rsplit(".", 1)[0]
@@ -818,6 +834,191 @@ def fixed_catalog_payload() -> dict[str, Any]:
             })
             existing_ids.add(item.id)
 
+    additions: list[CatalogItem] = []
+
+    # AIBP overview sheets and the three shared physical cards are useful
+    # capture/install targets, not the audit/contact-sheet derivatives that the
+    # original APK catalog builder intentionally skipped.
+    for order, enemy in enumerate(AIBP_NAMES):
+        additions.append(CatalogItem(
+            id=make_id(AIBP_CYCLES[enemy], "AIBP", f"{enemy} / 使徒面板", enemy, enemy),
+            cycle=AIBP_CYCLES[enemy],
+            module="AIBP",
+            subgroup=f"{enemy} / 使徒面板",
+            name=f"{AIBP_NAMES[enemy]}使徒完整面板",
+            number=enemy,
+            sort_order=50_000 + order,
+            faces={"front": f"aibp/ps/{enemy}/{enemy}.jpg"},
+        ))
+    additions.extend((
+        CatalogItem(
+            id=make_id("common", "AIBP", "特殊卡", "SW", "单重损伤"),
+            cycle="common", module="AIBP", subgroup="特殊卡",
+            name="单重损伤 / Single Wound", number="SW", sort_order=50_100,
+            faces={"front": "aibp/ps/other/SW.jpg"},
+        ),
+        CatalogItem(
+            id=make_id("common", "AIBP", "特殊卡", "DW", "双重损伤"),
+            cycle="common", module="AIBP", subgroup="特殊卡",
+            name="双重损伤 / Double Wound", number="DW", sort_order=50_101,
+            faces={"front": "aibp/ps/other/DW.jpg"},
+        ),
+        CatalogItem(
+            id=make_id("common", "AIBP", "通用 Trait", "COMMON_TR_001", "Vicious"),
+            cycle="common", module="AIBP", subgroup="通用 Trait",
+            name="恶毒 / Vicious（通用 Trait）", number="COMMON_TR_001", sort_order=50_102,
+            faces={"front": "aibp/ps/other/trait/COMMON_TR_001.jpg"},
+        ),
+    ))
+
+    additions.extend((
+        CatalogItem(
+            id=make_id("c1.5", "故事书配图", "章节配图", "DY1P5", "破碎的图纹"),
+            cycle="c1.5", module="故事书配图", subgroup="章节配图",
+            name="后日奥德赛：破碎的图纹章节配图", number="DY1P5", sort_order=51_000,
+            faces={"front": "story/images/OO/DY1P5.png"},
+        ),
+        CatalogItem(
+            id=make_id("c2.5", "故事书配图", "章节配图", "DY2P5", "破碎的锁链"),
+            cycle="c2.5", module="故事书配图", subgroup="章节配图",
+            name="后日奥德赛：破碎的锁链章节配图", number="DY2P5", sort_order=51_001,
+            faces={"front": "story/images/OO/DY2P5.png"},
+        ),
+    ))
+    story_battle_labels = {
+        "c1": {
+            "ambush-battle-2": "伏击战",
+            "temenos-battle-2": "吞域兽之战",
+            "there-is-no-maze-battle-2": "没有迷宫之战",
+            "hekaton-battle-2": "百臂巨人之战（二）",
+            "hekaton-battle-3": "百臂巨人之战（三）",
+            "pursuer-battle-2": "赫尔墨斯追踪者之战",
+            "labyrinthauros-battle-2": "迷宫机牛之战",
+            "pursuit-s-end-battle-2": "追踪的终结之战",
+        },
+        "c2": {
+            **{f"cruel-sermon-battle-{n}": f"残酷说教之战（{n}）" for n in range(1, 6)},
+            **{f"cyclonus-battle-{n}": f"独眼巨人之战（{n}）" for n in range(1, 4)},
+            **{f"chimera-metastasios-battle-{n}": f"蠕变奇美拉之战（{n}）" for n in range(1, 7)},
+            **{f"what-is-this-battle-{n}": f"这是什么？之战（{n}）" for n in range(1, 4)},
+            **{f"the-burden-battle-{n}": f"重担之战（{n}）" for n in range(1, 7)},
+        },
+        "c3": {
+            "race-the-sun-battle": "与日竞赛战斗",
+            "icarian-harpy-battle": "伊卡洛斯鹰身女妖战斗",
+            "endure-the-sun-battle": "忍受烈日战斗",
+            "burden-hardest-to-bear-battle": "最难承受的重担战斗",
+            "hypertime-oracle-battle-1": "超时神谕战斗（一）",
+            "hypertime-oracle-battle-2": "超时神谕战斗（二）",
+        },
+        "c4": {
+            "demidjinn-battle": "半神迪精之战",
+            "midascore-battle-level-1": "迈达狮之战（等级 1）",
+            "midascore-battle-level-2-plus": "迈达狮之战（等级 2+）",
+            "pandora-horizon-battle": "潘多拉地平线之战",
+            "reap-the-whirlwind-battle": "收割旋风之战",
+            "the-crash-battle": "坠毁之战",
+            "the-winnowing-battle": "扬谷之战",
+        },
+    }
+    story_battle_paths = {
+        "c1": [
+            ("ambush-battle-2", "伏击战-ambush-battle-2.jpg"),
+            ("temenos-battle-2", "吞域兽之战-temenos-battle-2.jpg"),
+            ("there-is-no-maze-battle-2", "没有迷宫之战-there-is-no-maze-battle-2.jpg"),
+            ("hekaton-battle-2", "百臂巨人之战-hekaton-battle-2.jpg"),
+            ("hekaton-battle-3", "百臂巨人之战-hekaton-battle-3.jpg"),
+            ("pursuer-battle-2", "赫尔墨斯追踪者战斗-pursuer-battle-2.jpg"),
+            ("labyrinthauros-battle-2", "迷宫牛之战-labyrinthauros-battle-2.jpg"),
+            ("pursuit-s-end-battle-2", "追踪的终结之战-pursuit-s-end-battle-2.jpg"),
+        ],
+        "c2": [
+            *[(f"cruel-sermon-battle-{n}", f"残酷说教之战-{n}.png") for n in range(1, 6)],
+            *[(f"cyclonus-battle-{n}", f"独眼巨人之战-{n}.png") for n in range(1, 4)],
+            *[(f"chimera-metastasios-battle-{n}", f"蠕变奇美拉之战-{n}.png") for n in range(1, 7)],
+            *[(f"what-is-this-battle-{n}", f"这是什么？之战-{n}.png") for n in range(1, 4)],
+            *[(f"the-burden-battle-{n}", f"重担之战-{n}.png") for n in range(1, 7)],
+        ],
+        "c3": [
+            ("race-the-sun-battle", "与日竞赛战斗.jpg"),
+            ("icarian-harpy-battle", "伊卡洛斯哈尔皮战斗.jpg"),
+            ("endure-the-sun-battle", "忍受烈日战斗.jpg"),
+            ("burden-hardest-to-bear-battle", "最难承受的重担战斗.jpg"),
+            ("hypertime-oracle-battle-1", "超时光先知战斗1.jpg"),
+            ("hypertime-oracle-battle-2", "超时光先知战斗2.jpg"),
+        ],
+        "c4": [(stem, f"{stem}.jpg") for stem in story_battle_labels["c4"]],
+    }
+    for cycle, entries in story_battle_paths.items():
+        for order, (stem, filename) in enumerate(entries):
+            additions.append(CatalogItem(
+                id=make_id(cycle, "故事书配图", "战斗配图", stem, story_battle_labels[cycle][stem]),
+                cycle=cycle, module="故事书配图", subgroup="战斗配图",
+                name=story_battle_labels[cycle][stem], number=stem, sort_order=52_000 + order,
+                faces={"front": f"story/images/battles/{cycle}/{filename}"},
+            ))
+    for page in range(153, 186):
+        additions.append(CatalogItem(
+            id=make_id("c5", "故事书补充页", "C5 补充页", str(page), f"第 {page} 页"),
+            cycle="c5", module="故事书补充页", subgroup="C5 补充页",
+            name=f"C5 故事书补充页：第 {page} 页", number=str(page), sort_order=53_000 + page,
+            faces={"front": f"story/images/c5/supplement-pages/page-{page}.jpg"},
+        ))
+
+    additions.extend((
+        CatalogItem(
+            id=make_id("c5", "地图模块图标", "地图状态图标", "surface", "水上"),
+            cycle="c5", module="地图模块图标", subgroup="地图状态图标",
+            name="C5 水上地图状态 Logo", number="水上", sort_order=54_000,
+            faces={"front": "map/images/c5-face-a.png"},
+        ),
+        CatalogItem(
+            id=make_id("c5", "地图模块图标", "地图状态图标", "diving", "潜水"),
+            cycle="c5", module="地图模块图标", subgroup="地图状态图标",
+            name="C5 潜水地图状态 Logo", number="潜水", sort_order=54_001,
+            faces={"front": "map/images/c5-face-b.png"},
+        ),
+    ))
+
+    for cycle_number in range(1, 6):
+        additions.append(CatalogItem(
+            id=make_id(f"c{cycle_number}", "科技树总览", "科技树页面", str(cycle_number), "科技树"),
+            cycle=f"c{cycle_number}", module="科技树总览", subgroup="科技树页面",
+            name=f"循环 {cycle_number} 科技树总览", number=f"C{cycle_number}", sort_order=55_000 + cycle_number,
+            faces={"front": f"technology/images/tech_tree_pages/cycle{cycle_number}_tree_v24.png"},
+        ))
+    for order, (stem, (cycle, label)) in enumerate(TITAN_IMAGE_LABELS.items()):
+        additions.append(CatalogItem(
+            id=make_id(cycle, "泰坦职业配图", "泰坦职业", stem, label),
+            cycle=cycle, module="泰坦职业配图", subgroup="泰坦职业",
+            name=f"泰坦职业配图：{label}", number=stem, sort_order=56_000 + order,
+            faces={"front": f"technology/images/titans/{stem}.png"},
+        ))
+
+    additions.append(CatalogItem(
+        id=make_id("c3", "装备卡", "装备卡", "CJ1475", "倒刺锯"),
+        cycle="c3", module="装备卡", subgroup="装备卡",
+        name="倒刺锯 / Barbed Saw（中文版）", number="CJ1475", sort_order=57_000,
+        faces={"front": "technology/images/gear_cards/cj1475.jpg"},
+    ))
+
+    for item in additions:
+        if item.id in existing_ids or any(path in existing_paths for path in item.faces.values()):
+            continue
+        payload["items"].append({
+            "id": item.id,
+            "cycle": item.cycle,
+            "module": item.module,
+            "subgroup": item.subgroup,
+            "name": item.name,
+            "number": item.number,
+            "sort_order": item.sort_order,
+            "faces": item.faces,
+            "capture_required": item.capture_required,
+        })
+        existing_ids.add(item.id)
+        existing_paths.update(item.faces.values())
+
     for item in payload["items"]:
         path = next(iter(item.get("faces", {}).values()), "")
         if path.startswith((
@@ -835,7 +1036,7 @@ def fixed_catalog_payload() -> dict[str, Any]:
             marker = str(item.get("number") or "").strip()
             item["sort_order"] = list(AIBP_TOKEN_LABELS).index(marker)
     payload["source"]["catalog_items"] = len(payload["items"])
-    payload["source"]["catalog_version"] = "ATO-Local-0.2.11+detailed-component-names-4"
+    payload["source"]["catalog_version"] = "ATO-Local-0.2.11+complete-import-assets-6"
     return payload
 
 

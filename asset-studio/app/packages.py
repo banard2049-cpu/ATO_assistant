@@ -11,7 +11,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Callable
 
 from .db import Database
-from .storage import sha256_file, store_image, write_compatible_image
+from .storage import store_image, write_compatible_image
 from .stories import storybook_javascript, storybook_payload
 
 
@@ -147,6 +147,13 @@ def import_package(
                 (item["id"], item["cycle"], item["module"], item.get("subgroup", ""), item["name"], item.get("number", ""),
                  int(item.get("sort_order", 0)), json.dumps(faces, ensure_ascii=False, sort_keys=True), int(item.get("capture_required", 1)), item.get("source_version", "package")),
             )
+        retired_ids = [str(item_id) for item_id in manifest.get("retiredItems", []) if item_id]
+        if retired_ids:
+            placeholders = ",".join("?" for _ in retired_ids)
+            conn.execute(
+                f"UPDATE catalog_items SET capture_required=0 WHERE id IN ({placeholders})",
+                tuple(retired_ids),
+            )
     imported = skipped = 0
     with zipfile.ZipFile(package) as archive:
         total = max(len(inspection["assets"]), 1)
@@ -161,10 +168,11 @@ def import_package(
             temp = library / "tmp" / f"package-{os.urandom(8).hex()}{suffix}"
             with archive.open(str(member)) as source, temp.open("wb") as output:
                 shutil.copyfileobj(source, output, length=1024 * 1024)
-            if sha256_file(temp) != asset["sha256"]:
-                temp.unlink(missing_ok=True)
-                raise ValueError(f"资料包文件校验失败：{asset['member']}")
-            store_image(db, library, temp, asset["itemId"], asset["face"], asset.get("originalName", member.name), asset.get("mimeType", "image/jpeg"), "package")
+            store_image(
+                db, library, temp, asset["itemId"], asset["face"],
+                asset.get("originalName", member.name), asset.get("mimeType", "image/jpeg"),
+                "package", expected_sha256=asset["sha256"], defer_preview=True,
+            )
             imported += 1
             if progress:
                 progress(index, total, f"正在恢复第 {index}/{len(inspection['assets'])} 个图片")
@@ -195,6 +203,8 @@ def _import_stories(db: Database, payload: dict, replace: bool) -> set[str]:
                 continue
             exists = conn.execute("SELECT 1 FROM story_books WHERE id=?", (book_id,)).fetchone()
             if exists and not replace:
+                if _backfill_story_metadata(conn, book_id, book.get("entries", [])):
+                    imported.add(book_id)
                 continue
             conn.execute(
                 "INSERT INTO story_books(id,title,source_name,source_path,status) VALUES(?,?,?,'','review') ON CONFLICT(id) DO UPDATE SET title=excluded.title",
@@ -203,12 +213,63 @@ def _import_stories(db: Database, payload: dict, replace: bool) -> set[str]:
             conn.execute("DELETE FROM story_segments WHERE book_id=?", (book_id,))
             for order, entry in enumerate(book.get("entries", [])):
                 conn.execute(
-                    """INSERT INTO story_segments(book_id,chapter_key,chapter_title,entry_number,title,body,sort_order,reviewed)
-                    VALUES(?,?,?,?,?,?,?,1)""",
-                    (book_id, entry.get("chapterKey", "main"), entry.get("chapter", "正文"), str(entry.get("id", "")), entry.get("title", ""), entry.get("text", ""), order),
+                    """INSERT INTO story_segments(
+                    book_id,chapter_key,chapter_title,entry_number,title,body,metadata_json,sort_order,reviewed
+                    ) VALUES(?,?,?,?,?,?,?,?,1)""",
+                    (
+                        book_id, entry.get("chapterKey", "main"), entry.get("chapter", "正文"),
+                        str(entry.get("id", "")), entry.get("title", ""), entry.get("text", ""),
+                        json.dumps(entry, ensure_ascii=False, separators=(",", ":")), order,
+                    ),
                 )
             imported.add(book_id)
     return imported
+
+
+def _backfill_story_metadata(conn, book_id: str, entries: list[dict]) -> bool:
+    """Restore missing package metadata without replacing edited story content."""
+    rows_by_identity: dict[tuple[str, str], list[dict]] = {}
+    for row in conn.execute(
+        """SELECT id,chapter_key,entry_number,metadata_json FROM story_segments
+        WHERE book_id=? ORDER BY chapter_key,sort_order,id""",
+        (book_id,),
+    ).fetchall():
+        item = dict(row)
+        rows_by_identity.setdefault(
+            (item["chapter_key"], item["entry_number"]), []
+        ).append(item)
+
+    used: dict[tuple[str, str], int] = {}
+    changed = False
+    for entry in entries:
+        identity = (
+            str(entry.get("chapterKey") or "main"),
+            str(entry.get("id") or ""),
+        )
+        index = used.get(identity, 0)
+        candidates = rows_by_identity.get(identity, [])
+        if index >= len(candidates):
+            continue
+        used[identity] = index + 1
+        row = candidates[index]
+        try:
+            metadata = json.loads(row.get("metadata_json") or "{}")
+        except (TypeError, json.JSONDecodeError):
+            metadata = {}
+        if not isinstance(metadata, dict):
+            metadata = {}
+        merged = dict(metadata)
+        for key, value in entry.items():
+            if key not in merged or merged[key] in (None, "", [], {}):
+                merged[key] = value
+        if merged == metadata:
+            continue
+        conn.execute(
+            "UPDATE story_segments SET metadata_json=? WHERE id=?",
+            (json.dumps(merged, ensure_ascii=False, separators=(",", ":")), row["id"]),
+        )
+        changed = True
+    return changed
 
 
 def export_compat(
@@ -243,7 +304,8 @@ def export_compat(
             safe_member(target)
             with tempfile.TemporaryDirectory() as temp_dir:
                 rendered = Path(temp_dir) / PurePosixPath(target).name
-                write_compatible_image(library / row["preview_path"], rendered)
+                source_path = row["original_path"] if row["source"] == "package" else row["preview_path"]
+                write_compatible_image(library / source_path, rendered)
                 archive.write(rendered, target)
             written += 1
             if progress:

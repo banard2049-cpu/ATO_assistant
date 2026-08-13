@@ -85,10 +85,75 @@ python3 tools/build_storybook_placeholder.py <APK 文件> story/storybook-placeh
 
 这只是维护时的生成命令，普通用户运行页面不需要 APK。
 
+## 本地导出工具
+
+仓库不会自动创建或上传 Release。所有成品统一写入根目录的 `export/`；该目录已被 Git 完整忽略，不会提交 APK、ZIP 或中间文件。目录不存在时，工具会自动创建。
+
+### 环境要求
+
+- 本机需要 Python 3.9 或更高版本。
+- 第一次构建需要联网；下载的构建组件会缓存在 `tools/.packaging-cache/`，后续构建会复用。
+- Android 工具会优先使用本机已有的 Java 17+、Gradle 和 Android SDK，缺少时自动下载。
+- Portable 工具不依赖本机 PHP，会自动下载并封装目标平台对应的自包含 PHP。
+- Docker ZIP 的构建不要求本机安装 Docker，但运行该成品需要 Docker Desktop 或 Docker Engine + Compose。
+
+### 生成 Android APK
+
+```text
+python3 tools/export_android.py --version 1.0.0
+```
+
+输出：`export/ATO-Assistant-1.0.0.apk`。
+
+APK 内置站点页面，通过 Android WebView 独立运行，不需要 PHP 或网络服务器。战役存档写入应用私有空间，每次写入前自动轮转，最多保留最近 5 份备份。APK 使用本地调试签名，适合直接安装；Android 若阻止安装，需要在系统设置中允许当前文件管理器或浏览器安装未知来源应用。
+
+首次运行可能自动下载 JDK 17、Gradle、Android SDK 命令行工具及构建组件。运行该工具即表示接受这些组件各自的许可条款。
+
+### 生成全部 Portable 包
+
+```text
+python3 tools/export_portable.py --version 1.0.0
+```
+
+默认生成：
+
+- `ATO-Assistant-Portable-1.0.0-windows-x64.zip`
+- `ATO-Assistant-Portable-1.0.0-macos-arm64.zip`（Apple Silicon）
+- `ATO-Assistant-Portable-1.0.0-macos-x64.zip`（Intel）
+- `ATO-Assistant-Docker-1.0.0.zip`
+
+如只需部分目标，可重复指定 `--target`：
+
+```text
+python3 tools/export_portable.py --version 1.0.0 --target windows-x64
+python3 tools/export_portable.py --version 1.0.0 --target macos-arm64
+python3 tools/export_portable.py --version 1.0.0 --target macos-x64
+python3 tools/export_portable.py --version 1.0.0 --target docker
+python3 tools/export_portable.py --version 1.0.0 --target windows-x64 --target docker
+```
+
+### 运行导出成品
+
+- Windows：完整解压 ZIP，双击 `start-ato-portable.bat`。
+- macOS：完整解压 ZIP，双击 `start-ato-portable.command`。若系统阻止未签名脚本，可在 Finder 中右键选择“打开”。
+- Docker：完整解压 ZIP，在目录中运行 `docker compose up -d --build`。
+
+Windows 和 macOS 包已封装 PHP 及其运行依赖，不要求用户安装 PHP、Node.js、Python 或仓库中的开发工具。启动后浏览器会打开 `http://127.0.0.1:8793/`。
+
+### 导出内容规则
+
+所有目标在打包前后都会执行内容审计：
+
+- 不包含任意层级的 `tools` 目录、Git 元数据、开发配置或旧导出文件。
+- 不复制任意层级现有的 `data` 内容，包括私人战役存档和本地完整故事数据。
+- Windows、macOS 和 Docker 成品从空的 `data` 目录开始；之后产生的存档保留在成品目录内。
+- Android 不包含 `data` 目录，存档保存在 Android 应用私有空间。
+- 完成后的 APK/ZIP 位于本地 `export/`，不会自动上传、发布或被 Git 追踪。
+
 ## ATO 素材库 WebUI
 
 仓库中的 `asset-studio/` 是一个独立工具，不会嵌入或改写 ATO_assistant
-业务页面。它内置根据 ATO Local 0.2.11 整理的 2470 项固定实体素材清单，
+业务页面。它内置根据 ATO Local 0.2.11 及修正版超时神谕 AI 卡整理的 2595 项固定实体素材清单，
 普通用户不需要提供或解析 APK。
 
 素材库可以用电脑管理本地资料，也可以让同一局域网中的手机扫码后逐张拍照。
@@ -109,7 +174,7 @@ python3 tools/build_storybook_placeholder.py <APK 文件> story/storybook-placeh
 4. 点击“安装新增与已选替换”。被替换的文件会先备份，未勾选的同名文件默认保留。
 
 也可以生成兼容 ZIP，或通过 `.atopack` 与朋友分享已拍卡图和校对后的故事。
-`.atopack`、本地资料库、预览图和用户素材均已排除在 Git 提交之外。
+`.atopack`、本地资料库、预览图和用户素材均已排除在 Git 提交之外。资料包恢复时不会批量生成数千张预览图；预览会在首次查看对应图片时按需生成。
 
 完整使用说明见 [`asset-studio/README.md`](asset-studio/README.md)。
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import sqlite3
 import tempfile
 import unittest
 import zipfile
@@ -26,7 +27,7 @@ from app.fixed_catalog import ensure_fixed_catalog, fixed_catalog_payload
 from app.fixed_resources import RESOURCE_MAP, card_resource_note, card_resources
 from app.installer import apply_install, install_plan
 from app.packages import export_compat, export_package, import_package, inspect_package
-from app.storage import store_image
+from app.storage import ensure_preview, store_image
 from app.stories import import_story, merge_next_segment, split_segment, story_segments, storybook_payload
 from app.stories import extract_text
 
@@ -69,7 +70,7 @@ class CoreTests(unittest.TestCase):
         empty = Database(self.root / "empty.sqlite3")
         result = ensure_fixed_catalog(empty)
         payload = fixed_catalog_payload()
-        self.assertEqual(2470, result["items"])
+        self.assertEqual(2595, result["items"])
         self.assertEqual(19, result["aibp_enemies"])
         self.assertEqual({"c1", "c1.5", "c2", "c2.5", "c3", "c4", "c5"}, {book["id"] for book in payload["source"]["stories"]})
         self.assertNotIn("apk", payload["source"])
@@ -99,6 +100,28 @@ class CoreTests(unittest.TestCase):
             },
             {item["faces"]["front"] for item in hero_icons},
         )
+        self.assertEqual(46, len([item for item in payload["items"] if item["module"] == "故事书配图"]))
+        self.assertEqual(33, len([item for item in payload["items"] if item["module"] == "故事书补充页"]))
+        self.assertEqual(5, len([item for item in payload["items"] if item["module"] == "科技树总览"]))
+        self.assertEqual(17, len([item for item in payload["items"] if item["module"] == "泰坦职业配图"]))
+        self.assertEqual(2, len([item for item in payload["items"] if item["module"] == "地图模块图标"]))
+        self.assertTrue(any(item["number"] == "CJ1475" for item in payload["items"]))
+        fixed_paths = {path for item in payload["items"] for path in item["faces"].values()}
+        self.assertEqual(4111, len(fixed_paths))
+        self.assertIn("map/images/c5-face-a.png", fixed_paths)
+        self.assertIn("map/images/c5-face-b.png", fixed_paths)
+        self.assertIn("aibp/ps/other/SW.jpg", fixed_paths)
+        self.assertIn("aibp/ps/other/DW.jpg", fixed_paths)
+        self.assertIn("aibp/ps/other/trait/COMMON_TR_001.jpg", fixed_paths)
+        oracle_ai_iii = [
+            item for item in payload["items"]
+            if item["number"].startswith("HYPERTIME_ORACLE_AI_III_")
+        ]
+        self.assertEqual(
+            [f"HYPERTIME_ORACLE_AI_III_{number:03d}" for number in range(1, 7)],
+            [item["number"] for item in oracle_ai_iii],
+        )
+        self.assertTrue(all(set(item["faces"]) == {"front", "back"} for item in oracle_ai_iii))
         aibp_tokens = [item for item in payload["items"] if item["subgroup"] == "AIBP 标记"]
         self.assertEqual(17, len(aibp_tokens))
         self.assertEqual(set(AIBP_TOKEN_LABELS.values()), {item["name"] for item in aibp_tokens})
@@ -149,6 +172,24 @@ class CoreTests(unittest.TestCase):
         shared = storybook_payload(self.db, reviewed_only=True, omit_empty=True)
         self.assertEqual(1, len(shared["books"][0]["entries"]))
 
+    def test_database_migrates_legacy_story_metadata_column(self):
+        legacy_path = self.root / "legacy.sqlite3"
+        with sqlite3.connect(legacy_path) as conn:
+            conn.execute("""CREATE TABLE story_segments (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                book_id TEXT NOT NULL,
+                chapter_key TEXT NOT NULL DEFAULT 'main',
+                chapter_title TEXT NOT NULL DEFAULT '正文',
+                entry_number TEXT NOT NULL,
+                title TEXT NOT NULL DEFAULT '',
+                body TEXT NOT NULL,
+                sort_order INTEGER NOT NULL,
+                reviewed INTEGER NOT NULL DEFAULT 0
+            )""")
+        migrated = Database(legacy_path)
+        columns = migrated.all("PRAGMA table_info(story_segments)")
+        self.assertIn("metadata_json", {column["name"] for column in columns})
+
     def test_scanned_pdf_is_rejected(self):
         from pypdf import PdfWriter
         source = self.root / "scan.pdf"
@@ -175,11 +216,130 @@ class CoreTests(unittest.TestCase):
         imported = import_package(friend, target_library, pack)
         self.assertEqual(1, imported["imported"])
         self.assertEqual(1, friend.one("SELECT COUNT(*) n FROM skipped_faces")["n"])
+        restored = friend.one("SELECT * FROM asset_revisions WHERE is_current=1")
+        deferred_preview = target_library / restored["preview_path"]
+        self.assertFalse(deferred_preview.exists())
+        self.assertIsNone(restored["width"])
+        self.assertEqual(deferred_preview, ensure_preview(friend, target_library, restored["preview_path"]))
+        self.assertTrue(deferred_preview.is_file())
+        plan_root = self.root / "friend-ato"
+        for child in ("aibp", "map", "story", "technology"):
+            (plan_root / child).mkdir(parents=True)
+        (plan_root / "index.html").write_text("ATO", encoding="utf-8")
+        restored_plan = install_plan(friend, target_library, plan_root)
+        self.assertTrue(restored_plan["files"][0]["source"].startswith("objects/"))
+        self.assertTrue(restored_plan["files"][0]["direct_copy"])
+        restored_apply = apply_install(friend, target_library, plan_root, [])
+        self.assertEqual(1, restored_apply["installed"])
+        self.assertEqual(1, install_plan(friend, target_library, plan_root)["summary"]["same"])
         compat = self.library / "exports" / "compat.zip"
         export_compat(self.db, self.library, compat)
         with zipfile.ZipFile(compat) as archive:
             self.assertIn("assets/test/001-front.jpg", archive.namelist())
             self.assertEqual(b"\xff\xd8", archive.read("assets/test/001-front.jpg")[:2])
+
+    def test_package_story_roundtrip_preserves_subchapter_metadata(self):
+        pack = self.library / "tmp" / "stories.atopack"
+        story_entry = {
+            "key": "c4-mnemos-M001",
+            "id": "M001",
+            "title": "M001",
+            "entryType": "number",
+            "chapterKey": "mnemos-breakthroughs",
+            "chapter": "回忆突破",
+            "encounterKey": "第三个愿望-the-third-wish",
+            "encounter": "第三个愿望 (The Third Wish)",
+            "section": "第三个愿望 (The Third Wish)",
+            "order": 123,
+            "line": 42,
+            "links": ["0123"],
+            "text": "测试正文",
+        }
+        with zipfile.ZipFile(pack, "w", allowZip64=True) as archive:
+            archive.writestr("manifest.json", json.dumps({
+                "format": "ato-asset-pack", "version": 1, "items": [], "assets": [],
+                "stories": {
+                    "generatedAt": "fixture",
+                    "books": [{
+                        "id": "c4", "title": "测试 C4", "entryCount": 1,
+                        "chapters": [{"key": "mnemos-breakthroughs", "title": "回忆突破"}],
+                        "entries": [story_entry],
+                    }],
+                },
+            }, ensure_ascii=False))
+
+        imported = import_package(self.db, self.library, pack)
+        self.assertEqual(1, imported["stories_imported"])
+        restored = storybook_payload(self.db, reviewed_only=True)["books"][0]["entries"][0]
+        self.assertEqual(story_entry, restored)
+
+        ato = self.root / "story-ato"
+        for child in ("aibp", "map", "story", "technology"):
+            (ato / child).mkdir(parents=True)
+        (ato / "index.html").write_text("ATO", encoding="utf-8")
+        apply_install(self.db, self.library, ato, [])
+        installed = (ato / "story/data/storybook-data.js").read_text(encoding="utf-8")
+        self.assertIn('"encounterKey":"第三个愿望-the-third-wish"', installed)
+        self.assertIn('"links":["0123"]', installed)
+
+        exported = self.library / "exports" / "stories-roundtrip.atopack"
+        export_package(self.db, self.library, exported)
+        with zipfile.ZipFile(exported) as archive:
+            manifest = json.loads(archive.read("manifest.json"))
+        exported_entry = manifest["stories"]["books"][0]["entries"][0]
+        self.assertEqual(story_entry, exported_entry)
+
+    def test_package_backfills_story_metadata_without_replacing_body(self):
+        self.db.execute(
+            "INSERT INTO story_books(id,title,source_name,source_path,status) VALUES(?,?,?,?,?)",
+            ("c4", "本地 C4", "旧资料包", "", "review"),
+        )
+        self.db.execute(
+            """INSERT INTO story_segments(
+            book_id,chapter_key,chapter_title,entry_number,title,body,sort_order,reviewed
+            ) VALUES(?,?,?,?,?,?,?,?)""",
+            ("c4", "mnemos-breakthroughs", "回忆突破", "M001", "M001", "本地校对正文", 0, 1),
+        )
+        pack = self.library / "tmp" / "backfill.atopack"
+        with zipfile.ZipFile(pack, "w", allowZip64=True) as archive:
+            archive.writestr("manifest.json", json.dumps({
+                "format": "ato-asset-pack", "version": 1, "items": [], "assets": [],
+                "stories": {"books": [{
+                    "id": "c4", "title": "包内 C4", "entries": [{
+                        "key": "c4-mnemos-M001", "id": "M001", "title": "M001",
+                        "chapterKey": "mnemos-breakthroughs", "chapter": "回忆突破",
+                        "encounterKey": "第三个愿望-the-third-wish",
+                        "encounter": "第三个愿望 (The Third Wish)",
+                        "links": ["0123"], "text": "包内正文",
+                    }],
+                }]},
+            }, ensure_ascii=False))
+
+        imported = import_package(self.db, self.library, pack, replace=False)
+        self.assertEqual(1, imported["stories_imported"])
+        restored = storybook_payload(self.db, reviewed_only=True)["books"][0]["entries"][0]
+        self.assertEqual("本地校对正文", restored["text"])
+        self.assertEqual("第三个愿望-the-third-wish", restored["encounterKey"])
+        self.assertEqual(["0123"], restored["links"])
+
+    def test_import_package_retires_obsolete_scan_item_without_deleting_assets(self):
+        obsolete = CatalogItem(
+            id="c3:aibp:hypertime-oracle-ai:hypertime-oracle-ai-iii-007",
+            cycle="c3", module="AIBP", subgroup="HYPERTIME_ORACLE / AI",
+            name="旧 AI III 007", number="HYPERTIME_ORACLE_AI_III_007", sort_order=7,
+            faces={"front": "aibp/ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_AI_III_007.jpg"},
+        )
+        apply_catalog(self.db, [self.item, obsolete], {"apk": "test.apk", "stories": [], "aibp_enemies": 1})
+        store_image(self.db, self.library, self.image(), obsolete.id, "front", "old.png", "image/png")
+        pack = self.library / "tmp" / "retire.atopack"
+        with zipfile.ZipFile(pack, "w", allowZip64=True) as archive:
+            archive.writestr("manifest.json", json.dumps({
+                "format": "ato-asset-pack", "version": 1, "items": [], "assets": [],
+                "stories": {"books": []}, "retiredItems": [obsolete.id],
+            }))
+        import_package(self.db, self.library, pack)
+        self.assertEqual(0, self.db.one("SELECT capture_required FROM catalog_items WHERE id=?", (obsolete.id,))["capture_required"])
+        self.assertEqual(1, self.db.one("SELECT COUNT(*) n FROM asset_revisions WHERE item_id=?", (obsolete.id,))["n"])
 
     def test_install_preview_apply_and_backup(self):
         store_image(self.db, self.library, self.image(), self.item.id, "front", "photo.png", "image/png")
@@ -198,6 +358,18 @@ class CoreTests(unittest.TestCase):
         result = apply_install(self.db, self.library, ato, ["assets/test/001-front.jpg"])
         self.assertTrue(result["backup"])
         self.assertTrue(any((self.library / "backups").rglob("001-front.jpg")))
+
+    def test_web_ui_has_safe_one_click_install_actions(self):
+        static = Path(__file__).resolve().parents[1] / "static"
+        html = (static / "index.html").read_text(encoding="utf-8")
+        script = (static / "app.js").read_text(encoding="utf-8")
+        styles = (static / "styles.css").read_text(encoding="utf-8")
+        self.assertIn('id="captureInstall"', html)
+        self.assertIn('id="previewInstall" class="button install-cta', html)
+        self.assertIn("一键导入并添加到原项目", script)
+        self.assertIn("一键添加到原项目", script)
+        self.assertIn("replacements:[]", script)
+        self.assertIn(".install-cta", styles)
 
 
 @unittest.skipUnless(APK.is_file(), "APK fixture not available")

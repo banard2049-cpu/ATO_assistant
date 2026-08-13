@@ -1781,6 +1781,7 @@
                 <button type="button" id="undoAiButton" disabled>撤销 AI</button>
                 <button type="button" id="confirmAiButton" disabled>弃置</button>
                 <button type="button" id="promoteAiSingleButton">AI 晋升</button>
+                <button type="button" id="addOracleAiXButton" class="hidden">添加 AI X 02</button>
                 <button type="button" id="drawFlareButton" class="hermesian-only-action">抽取闪粉</button>
                 <button type="button" id="drawFeintButton" class="titan-x-only-action">抽取变招</button>
                 <button type="button" id="nietzscheStateButton" class="state-button hidden">状态 1</button>
@@ -1891,7 +1892,7 @@
     </div>
   </div>
 
-  <script src="../assets/page-focus-router.js?v=20260607a"></script>
+  <script src="../assets/page-focus-router.js?v=20260813iframe1"></script>
   <script src="../map/map-tile-tags.js"></script>
   <script src="ps/CHIMERA_METASTASIOS/bp_status_map.js"></script>
   <script src="ps/other/token/token_manifest.js"></script>
@@ -2005,8 +2006,46 @@
         3: { promotions: 1, danger: 1, at: 0 },
         4: { promotions: 2, danger: 1, at: 1 },
         5: { promotions: 2, danger: 1, at: 2 }
+      },
+      MIDASCORE: {
+        3: { promotions: 1, danger: 1, at: 0 },
+        4: { promotions: 2, danger: 1, at: 1 }
+      },
+      DEMIDJINN: {
+        3: { promotions: 1, danger: 1, at: 0 },
+        4: { promotions: 2, danger: 1, at: 1 }
+      },
+      THE_BABELIAN_LUNACY: {
+        1: { promotions: 1, danger: 0, at: 0 }
+      },
+      DAHAKA: {
+        1: { promotions: 1, danger: 0, at: 0 }
+      },
+      DRAGON_OF_PHOBOS: {
+        2: { promotions: 1, danger: 0, at: 0 },
+        3: { promotions: 1, danger: 1, at: 0 },
+        4: { promotions: 2, danger: 1, at: 1 }
+      },
+      MEDUKETOS: {
+        2: { promotions: 1, danger: 0, at: 0 },
+        3: { promotions: 1, danger: 1, at: 0 },
+        4: { promotions: 2, danger: 1, at: 1 }
+      },
+      UR_FLEECE: {},
+      TITAN_X: {
+        1: { promotions: 1, danger: 0, at: 0 }
       }
     };
+    const c45LevelBonusApostles = new Set([
+      "MIDASCORE",
+      "DEMIDJINN",
+      "THE_BABELIAN_LUNACY",
+      "DAHAKA",
+      "DRAGON_OF_PHOBOS",
+      "MEDUKETOS",
+      "UR_FLEECE",
+      "TITAN_X"
+    ]);
     let apostleLevelOverrides = loadApostleLevelOverrides();
     let recordApostleLevels = {};
     let campaignMapFactionState = { cycleId: "", tileId: "", factions: [], record: null };
@@ -2078,7 +2117,6 @@
     const chimeraBpViews = ["当前", "弃牌", "常规损伤堆", "第二损伤堆", "移除", "II", "III"];
     const cardCount = 6;
     const cardCountOverrides = {
-      HYPERTIME_ORACLE: { AI: { III: 7 } },
       DAHAKA: { BP: { I: 0, II: 0, III: 0 } },
       TITAN_X: { BP: { I: 6, II: 6, III: 6 } }
     };
@@ -2125,6 +2163,7 @@
     const undoAiButton = document.getElementById("undoAiButton");
     const confirmAiButton = document.getElementById("confirmAiButton");
     const promoteAiSingleButton = document.getElementById("promoteAiSingleButton");
+    const addOracleAiXButton = document.getElementById("addOracleAiXButton");
     const drawFlareButton = document.getElementById("drawFlareButton");
     const drawFeintButton = document.getElementById("drawFeintButton");
     const aiDrawPreview = document.getElementById("aiDrawPreview");
@@ -2384,6 +2423,38 @@
         piles[name].AI.supply.II ||= [];
         piles[name].AI.supply.III ||= [];
         piles[name].AI.removed ||= [];
+        if (name === "HYPERTIME_ORACLE" && !piles[name].oracleAiIIIReindexed) {
+          const oracleAiCollections = [
+            piles[name].AI.deck,
+            piles[name].AI.discard,
+            piles[name].AI.removed,
+            piles[name].AI.supply.III
+          ];
+          const hasLegacyOracleAiIII = piles[name].AI.pending?.type === "AI"
+            && piles[name].AI.pending.level === "III"
+            && piles[name].AI.pending.index === 7
+            || oracleAiCollections.some((cards) => cards.some((card) =>
+              card?.type === "AI" && card.level === "III" && card.index === 7
+            ));
+          const migrateOracleAiIII = (cards) => (cards || [])
+            .filter((card) => !(card?.type === "AI" && card.level === "III" && card.index === 1))
+            .map((card) => card?.type === "AI" && card.level === "III" && card.index >= 2 && card.index <= 7
+              ? { ...card, index: card.index - 1 }
+              : card);
+          if (hasLegacyOracleAiIII) {
+            piles[name].AI.deck = migrateOracleAiIII(piles[name].AI.deck);
+            piles[name].AI.discard = migrateOracleAiIII(piles[name].AI.discard);
+            piles[name].AI.removed = migrateOracleAiIII(piles[name].AI.removed);
+            piles[name].AI.supply.III = migrateOracleAiIII(piles[name].AI.supply.III);
+            if (piles[name].AI.pending?.type === "AI" && piles[name].AI.pending.level === "III") {
+              piles[name].AI.pending = piles[name].AI.pending.index === 1
+                ? null
+                : { ...piles[name].AI.pending, index: piles[name].AI.pending.index - 1 };
+            }
+          }
+          piles[name].oracleAiIIIReindexed = true;
+          savePiles();
+        }
         piles[name].BP.deck ||= [];
         piles[name].BP.discard ||= [];
         piles[name].BP.damage ||= [];
@@ -3966,6 +4037,9 @@
     }
 
     function applyCurrentApostleLevelBonuses() {
+      if (c45LevelBonusApostles.has(currentApostle) && window.C45SpecialsReady !== true) {
+        return false;
+      }
       ensurePiles(currentApostle);
       const target = levelBonusFor(currentApostle, currentApostleLevel());
       const state = piles[currentApostle].levelBonusState;
@@ -4069,6 +4143,7 @@
       renderDrawPreview();
       renderFlareButton();
       renderFeintButton();
+      renderOracleAiXButton();
       updateUndoButtons();
       renderCriticalMassSlot();
 
@@ -4078,6 +4153,35 @@
       document.querySelectorAll("#bpViewTabs button").forEach((button) => {
         button.classList.toggle("active", button.dataset.view === currentBpView);
       });
+    }
+
+    function oracleAiXCard() {
+      return { type: "AI", level: "X", index: 2 };
+    }
+
+    function hasOracleAiXCard() {
+      if (currentApostle !== "HYPERTIME_ORACLE") return false;
+      const ai = piles[currentApostle]?.AI;
+      if (!ai) return false;
+      const matches = (card) => card?.type === "AI" && card.level === "X" && card.index === 2;
+      return matches(ai.pending) || [ai.deck, ai.discard, ai.removed].some((cards) => (cards || []).some(matches));
+    }
+
+    function renderOracleAiXButton() {
+      const visible = currentApostle === "HYPERTIME_ORACLE";
+      addOracleAiXButton.classList.toggle("hidden", !visible);
+      const added = visible && hasOracleAiXCard();
+      addOracleAiXButton.disabled = !visible || added;
+      addOracleAiXButton.textContent = added ? "AI X 02 已添加" : "添加 AI X 02";
+    }
+
+    function addOracleAiX() {
+      if (currentApostle !== "HYPERTIME_ORACLE" || hasOracleAiXCard()) return;
+      ensurePiles(currentApostle);
+      rememberUndo(currentApostle, "AI");
+      insertRandom(piles[currentApostle].AI.deck, oracleAiXCard());
+      savePiles();
+      renderAibpCards();
     }
 
     function traitFileName(name, level, index, ext = "jpg") {
@@ -5555,6 +5659,7 @@
     undoAiButton.addEventListener("click", () => undoLastAibp("AI"));
     confirmAiButton.addEventListener("click", confirmAiDiscard);
     promoteAiSingleButton.addEventListener("click", () => promoteSinglePile("AI"));
+    addOracleAiXButton.addEventListener("click", addOracleAiX);
     drawFlareButton.addEventListener("click", drawFlare);
     drawFeintButton.addEventListener("click", drawFeint);
     drawBpButton.addEventListener("click", drawBp);
