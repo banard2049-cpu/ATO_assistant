@@ -2,7 +2,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const pageHtml = fs.readFileSync(path.join(__dirname, "index.html"), "utf8");
+const pageHtml = fs.readFileSync(path.join(__dirname, "..", "aibp", "index.html"), "utf8");
 assert.match(pageHtml, /<div class="battle-map-side" role="region" aria-label="地形工具">/);
 assert.doesNotMatch(pageHtml, /<aside class="battle-map-side"/);
 assert.match(pageHtml, /data-battle-map-setup-select/);
@@ -94,7 +94,7 @@ board.getBoundingClientRect = () => ({ left: 0, top: 0, width: 1000, height: 700
 
 global.document = { createElement: (tagName) => new FakeElement(tagName) };
 global.window = { BattleTerrain: require("../ss/terrain-data.js") };
-require(path.join(__dirname, "battle_map_control.js"));
+require(path.join(__dirname, "..", "aibp", "battle_map_control.js"));
 
 let map = null;
 let activeApostle = "HEKATON";

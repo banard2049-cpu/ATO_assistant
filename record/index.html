@@ -1032,63 +1032,6 @@
       color: #fff;
     }
 
-    .rooting-tools {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
-      gap: 8px;
-      align-items: end;
-    }
-
-    .rooting-list,
-    .rooting-deck {
-      display: grid;
-      gap: 6px;
-    }
-
-    .rooting-list {
-      margin-top: 12px;
-    }
-
-    .rooting-row {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 8px;
-      align-items: center;
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      padding: 7px;
-      background: #fff;
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .rooting-row span,
-    .rooting-deck span {
-      min-width: 0;
-    }
-
-    .rooting-row button {
-      min-height: 30px;
-      padding: 0 9px;
-    }
-
-    .rooting-deck {
-      max-height: 190px;
-      overflow: auto;
-      margin-top: 12px;
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      padding: 8px;
-      background: #fff;
-    }
-
-    .rooting-deck span {
-      display: block;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.35;
-    }
-
     .number-field {
       display: grid;
       grid-template-columns: 20px 20px 44px 20px 20px;
@@ -1403,62 +1346,6 @@
       box-shadow: none;
     }
 
-    .map-grid {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 8px;
-    }
-
-    .map-slot {
-      display: grid;
-      gap: 6px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fff;
-      padding: 8px;
-    }
-
-    .map-slot span {
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 900;
-    }
-
-    .timeline {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
-      gap: 6px;
-    }
-
-    .timeline-day {
-      display: grid;
-      gap: 3px;
-      min-height: 52px;
-      border: 1px solid var(--line);
-      background: #fff;
-      color: var(--ink);
-      padding: 7px;
-      text-align: left;
-    }
-
-    .timeline-day.active {
-      border-color: var(--accent);
-      background: var(--accent);
-      color: #fff;
-    }
-
-    .timeline-day.event {
-      box-shadow: inset 0 -3px 0 var(--accent-2);
-    }
-
-    .timeline-day small {
-      color: inherit;
-      font-size: 10px;
-      font-weight: 700;
-      line-height: 1.2;
-      opacity: 0.82;
-    }
-
     .status-line {
       color: var(--muted);
       font-size: 12px;
@@ -1503,9 +1390,6 @@
         align-self: stretch;
       }
 
-      .rooting-tools {
-        grid-template-columns: 1fr;
-      }
     }
 
     @media (max-width: 640px) {
@@ -1611,10 +1495,6 @@
             <label data-cycle-field="c1 c2 c3 c4 c5">
               AA 上限
               <input data-cycle-bind="aaLimit" type="number" min="0">
-            </label>
-            <label data-cycle-field="c1 c4">
-              阿尔戈号知识
-              <input data-cycle-bind="knowledge" type="number" min="0">
             </label>
             <label data-cycle-field="c1">
               陌生人
@@ -1750,16 +1630,6 @@
         </section>
 
         <details class="panel">
-          <summary class="matrix-head"><h2>航行时间表</h2><span id="timelineMeta" class="status-line"></span></summary>
-          <div id="timeline" class="panel-body timeline"></div>
-        </details>
-
-        <details class="panel">
-          <summary class="matrix-head"><h2>扎根 / Acclimation</h2><span id="rootingMeta" class="status-line"></span></summary>
-          <div id="rootingPanel" class="panel-body"></div>
-        </details>
-
-        <details class="panel">
           <summary class="matrix-head">
             <h2>抉择矩阵</h2>
           </summary>
@@ -1777,11 +1647,6 @@
       </div>
 
       <aside class="stack">
-        <section class="panel">
-          <div class="panel-heading"><h2>地图记录</h2></div>
-          <div id="mapGrid" class="panel-body map-grid"></div>
-        </section>
-
         <section class="panel">
           <div id="resourceGrid" class="panel-body resource-grid"></div>
         </section>
@@ -2315,144 +2180,6 @@
       ],
     };
 
-    const rootingData = {
-      c1: {
-        acclimations: [
-          { id: "a1", label: "Acclimation 1", day: 18, from: ["4", "5", "6", "8", "19"], to: ["10", "11", "12", "14", "22"] },
-          { id: "a2", label: "Acclimation 2", day: 36, from: ["3", "7", "9", "13", "23"], to: ["15", "16", "17", "18", "27"] },
-          { id: "a3", label: "Acclimation 3", day: 54, from: ["1", "2", "12", "14", "22"], to: ["20", "21", "24", "25", "26"] },
-        ],
-        cornerNumbers: {
-          6401: "29", 6402: "30", 6403: "31", 6404: "4", 6405: "8", 6406: "1",
-          6407: "7", 6408: "13", 6409: "23", 6410: "5", 6411: "2", 6412: "6",
-          6413: "19", 6414: "3", 6415: "9", 6416: "28", 6417: "10", 6418: "11",
-          6419: "12", 6420: "14", 6421: "22", 6422: "17", 6423: "27", 6424: "15",
-          6425: "18", 6426: "16", 6427: "24", 6428: "20", 6429: "25", 6430: "21",
-          6431: "26",
-        },
-        cards: [
-          { id: "6400", name: "Dog Days" },
-          { id: "6401", name: "Minoan Fleet" },
-          { id: "6402", name: "Hornsworn Fleet" },
-          { id: "6403", name: "Labyrinthian Vessel" },
-          { id: "6404", name: "Trade Post" },
-          { id: "6405", name: "Trade Post" },
-          { id: "6406", name: "Fishing Pier" },
-          { id: "6407", name: "Trireme Wreck" },
-          { id: "6408", name: "Trireme Wreck" },
-          { id: "6409", name: "Smithy" },
-          { id: "6410", name: "Smithy" },
-          { id: "6411", name: "Weapons Cache" },
-          { id: "6412", name: "Abandoned Shrine" },
-          { id: "6413", name: "Abandoned Shrine" },
-          { id: "6414", name: "Temple Ruins" },
-          { id: "6415", name: "Temple Ruins" },
-          { id: "6416", name: "Titan" },
-          { id: "6417", name: "Abandoned Fleet" },
-          { id: "6418", name: "Old Armory" },
-          { id: "6419", name: "Hidden Temple" },
-          { id: "6420", name: "Abandoned Fleet" },
-          { id: "6421", name: "Desecrated Temple" },
-          { id: "6422", name: "Shipyard" },
-          { id: "6423", name: "Shipyard" },
-          { id: "6424", name: "Weapons Cache" },
-          { id: "6425", name: "Desecrated Temple" },
-          { id: "6426", name: "Hidden Temple" },
-          { id: "6427", name: "Egyptian War Fleet" },
-          { id: "6428", name: "Egyptian War Fleet" },
-          { id: "6429", name: "Old Armory" },
-          { id: "6430", name: "Bronze People Armory" },
-          { id: "6431", name: "Grand Temple Ruins" },
-          { id: "6433", name: "Untamed Titan" },
-          { id: "6434", name: "Hekatrap" },
-          { id: "6435", name: "Informant Network" },
-          { id: "6436", name: "Cackle" },
-          { id: "6437", name: "Maze Pilgrim" },
-          { id: "6438", name: "Maze Storm" },
-          { id: "6439", name: "Recruitment Drive" },
-          { id: "6440", name: "Heart of the Maze" },
-          { id: "13400", name: "Theban Trader" },
-        ],
-      },
-      c2: {
-        acclimations: [
-          { id: "a1", label: "Acclimation 1", day: 18, from: ["7", "4", "8", "23", "6", "19"], to: ["14", "29", "30", "11", "12", "22"] },
-          { id: "a2", label: "Acclimation 2", day: 36, from: ["13", "1", "3", "9", "5"], to: ["28", "10", "16", "27", "15"] },
-          { id: "a3", label: "Acclimation 3", day: 54, from: ["14", "29", "12", "22", "2"], to: ["20", "17", "18", "26", "21"] },
-        ],
-        cornerNumbers: {
-          13600: "1", 13601: "2", 13602: "3", 13603: "4", 13604: "5", 13605: "6",
-          13606: "7", 13607: "8", 13608: "9", 13609: "10", 13610: "11", 13611: "12",
-          13612: "13", 13613: "14", 13614: "15", 13615: "16", 13616: "17", 13617: "18",
-          13618: "19", 13619: "20", 13620: "21", 13621: "22", 13622: "23", 13623: "26",
-          13624: "27", 13625: "28", 13626: "29", 13627: "30", 13628: "31", 13629: "32",
-          13630: "33", 13631: "34", 13632: "35", 13633: "36", 13634: "37",
-        },
-        cards: [
-          { id: "13600", name: "Temenos Fear Aquifer" },
-          { id: "13601", name: "Pre-Eschaton Armory" },
-          { id: "13602", name: "Temple of Ares" },
-          { id: "13603", name: "Temenos Mineshaft" },
-          { id: "13604", name: "Weapons Workshop" },
-          { id: "13605", name: "Shrine To Ares" },
-          { id: "13606", name: "Temenos Pit" },
-          { id: "13607", name: "Temenos Mineshaft" },
-          { id: "13608", name: "Temple of Ares" },
-          { id: "13609", name: "Spartan Wreckage" },
-          { id: "13610", name: "Daedalus Laboratory" },
-          { id: "13611", name: "Cyclopean Temple of Hyperion" },
-          { id: "13612", name: "Temenos Fear Aquifer" },
-          { id: "13613", name: "Palirroia Trireme" },
-          { id: "13614", name: "Daedalus Laboratory" },
-          { id: "13615", name: "Cyclopean Temple of Iapetus" },
-          { id: "13616", name: "Spartan Trireme" },
-          { id: "13617", name: "Cyclopean Temple of Gaia" },
-          { id: "13618", name: "Shrine to Ares" },
-          { id: "13619", name: "Marathonian-Class Trireme" },
-          { id: "13620", name: "Bronze People Foundry" },
-          { id: "13621", name: "Cyclopean Shrine of Hyperion" },
-          { id: "13622", name: "Temenos Fear Spring" },
-          { id: "13623", name: "Cyclopean Temple of Gaia" },
-          { id: "13624", name: "Cyclopean Shrine of Iapetus" },
-          { id: "13625", name: "Spartan Wreckage" },
-          { id: "13626", name: "White Trireme" },
-          { id: "13627", name: "Palirroia Trireme" },
-          { id: "13628", name: "Titan" },
-          { id: "13629", name: "Untamed Titan" },
-          { id: "13630", name: "Argo Engines" },
-          { id: "13631", name: "Propylon" },
-          { id: "13632", name: "Triskelion System" },
-          { id: "13633", name: "Titan Armory" },
-          { id: "13634", name: "Krypteia Assassination Attempt" },
-          { id: "13635", name: "Ambrosia Spill" },
-          { id: "13636", name: "Black Sludge" },
-          { id: "13637", name: "Cackle" },
-          { id: "13638", name: "Private Lesson" },
-          { id: "13639", name: "Moral Erosion" },
-          { id: "13640", name: "Smugglers" },
-          { id: "13641", name: "Spy Network" },
-        ],
-      },
-      c3: {
-        acclimations: [
-          { id: "a1", label: "Acclimation 1", day: 19, from: ["1", "23", "13", "8", "19", "6"], to: ["14", "10", "15", "11", "12", "16"] },
-          { id: "a2", label: "Acclimation 2", day: 37, from: ["7", "4", "9", "3", "5"], to: ["20", "17", "18", "22", "21"] },
-          { id: "a3", label: "Acclimation 3", day: 55, from: ["14", "10", "12", "16", "2"], to: ["24", "27", "26", "28", "25"] },
-        ],
-        cornerNumbers: {
-          13500: "1", 13501: "2", 13502: "3", 13503: "4", 13504: "5", 13505: "6",
-          13506: "7", 13507: "8", 13508: "9", 13509: "10", 13510: "11", 13511: "12",
-          13512: "13", 13513: "14", 13514: "15", 13515: "16", 13516: "17", 13517: "18",
-          13518: "19", 13519: "20", 13520: "21", 13521: "22", 13522: "23", 13523: "24",
-          13524: "25", 13525: "26", 13526: "27", 13527: "28", 13528: "29", 13529: "30",
-          13530: "32", 13531: "33", 13532: "34",
-        },
-        cards: Array.from({ length: 42 }, (_, index) => {
-          const id = String(13500 + index);
-          return { id, name: `Cycle III 探索卡 ${id}` };
-        }),
-      },
-    };
 
     const defaultState = {
       profileName: "阿尔戈号记录",
@@ -2463,7 +2190,6 @@
       doomCard: "",
       mapTiles: "",
       fate: "",
-      knowledge: "",
       nymph: "",
       summonLimit: "",
       godformLimit: "",
@@ -2499,11 +2225,9 @@
       adventures: {},
       diplomacy: {},
       resources: {},
-      map: {},
       matrix: {},
       maxUnlocked: {},
       pygmalion: {},
-      rooting: {},
       godforms: [],
       nymphCards: [],
       godformUsedCards: [],
@@ -2525,11 +2249,6 @@
       choiceMatrix: document.querySelector("#choiceMatrix"),
       cycleTitle: document.querySelector("#cycleTitle"),
       cycleWarning: document.querySelector("#cycleWarning"),
-      timeline: document.querySelector("#timeline"),
-      timelineMeta: document.querySelector("#timelineMeta"),
-      rootingPanel: document.querySelector("#rootingPanel"),
-      rootingMeta: document.querySelector("#rootingMeta"),
-      mapGrid: document.querySelector("#mapGrid"),
       matrixHint: document.querySelector("#matrixHint"),
       matrixLockButton: document.querySelector("#matrixLockButton"),
       importInput: document.querySelector("#importInput"),
@@ -2761,7 +2480,13 @@
       const legacySummonLimit = value?.summonLimit ?? "";
       const titans = normalizeTitanList(value?.titans, value?.titan);
       const hasTitanLimit = value && Object.prototype.hasOwnProperty.call(value, "titanLimit");
-      const { apotheosis: _removedApotheosis, ...storedState } = isPlainObject(value) ? value : {};
+      const {
+        apotheosis: _removedApotheosis,
+        knowledge: _removedKnowledge,
+        map: _removedMap,
+        rooting: _removedRooting,
+        ...storedState
+      } = isPlainObject(value) ? value : {};
       return {
         ...defaultState,
         ...storedState,
@@ -2782,11 +2507,9 @@
         adventures: isPlainObject(value?.adventures) ? value.adventures : {},
         diplomacy: isPlainObject(value?.diplomacy) ? value.diplomacy : {},
         resources: normalizeResources(value?.resources),
-        map: isPlainObject(value?.map) ? value.map : {},
         matrix: normalizeMatrix(value?.matrix),
         maxUnlocked: isPlainObject(value?.maxUnlocked) ? value.maxUnlocked : {},
         pygmalion: isPlainObject(value?.pygmalion) ? value.pygmalion : {},
-        rooting: normalizeRooting(value?.rooting),
         godforms: normalizeSummonSelection(value?.godforms, summonCards.godforms),
         nymphCards: normalizeSummonSelection(value?.nymphCards, summonCards.nymphs),
         godformUsedCards: normalizeSummonSelection(value?.godformUsedCards, summonCards.godforms),
@@ -2802,7 +2525,7 @@
       const activeCycle = cycleData[value?.cycle] ? value.cycle : defaultState.cycle;
       stats[activeCycle] ||= {};
       [
-        "storyCard", "doomCard", "mapTiles", "fate", "aaLimit", "knowledge",
+        "storyCard", "doomCard", "mapTiles", "fate", "aaLimit",
         "humanity", "renegade", "strangers", "loopLength", "frozenTime", "paradox", "hull", "crew",
         "reapMark", "reapMarkNotes", "sowMark", "sowMarkNotes", "babelianDebt", "oxygenCurrent", "oxygenLimit", "paranoia", "supply",
         "boons", "afflictions", "counters", "notes", "syncLog",
@@ -2811,9 +2534,10 @@
           stats[activeCycle][key] = value[key];
         }
       });
-      if (stats.c3) delete stats.c3.knowledge;
+      Object.values(stats).forEach((cycleStats) => {
+        if (isPlainObject(cycleStats)) delete cycleStats.knowledge;
+      });
       if (stats.c5) {
-        delete stats.c5.knowledge;
         const legacyOxygen = stats.c5.oxygenLimit;
         if (typeof legacyOxygen === "string" && legacyOxygen.includes("/")) {
           const [current, limit] = legacyOxygen.split("/", 2).map((part) => part.trim());
@@ -2893,19 +2617,6 @@
       Object.keys(cycleData).forEach((cycleId) => {
         delete resources[`${cycleId}-${key}`];
       });
-    }
-
-    function normalizeRooting(value) {
-      const normalized = {};
-      if (!isPlainObject(value)) return normalized;
-      Object.entries(value).forEach(([cycleId, rows]) => {
-        normalized[cycleId] = Array.isArray(rows)
-          ? rows
-            .filter((row) => isPlainObject(row) && row.from && row.to)
-            .map((row) => ({ from: String(row.from), to: String(row.to) }))
-          : [];
-      });
-      return normalized;
     }
 
     function normalizeCount(value) {
@@ -3533,9 +3244,6 @@
       renderSummons();
       renderTitans();
       renderResources();
-      renderTimeline();
-      renderRooting();
-      renderMap();
       renderMatrix();
     }
 
@@ -3552,59 +3260,6 @@
         state[input.dataset.cycleBind] = value;
       });
       state.day = String(state.cycleDays?.[state.cycle] ?? defaultDayForCycle(state.cycle));
-    }
-
-    function renderTimeline() {
-      const cycle = currentCycle();
-      const prefixDays = cycle.prefixDays || [];
-      const firstNumericDay = prefixDays.length ? 1 : 0;
-      const days = [
-        ...prefixDays,
-        ...Array.from({ length: cycle.maxDay - firstNumericDay + 1 }, (_, index) => String(index + firstNumericDay).padStart(2, "0")),
-      ];
-      const currentDay = String(state.cycleDays?.[state.cycle] ?? state.day ?? defaultDayForCycle(state.cycle));
-      elements.timelineMeta.textContent = `当前 ${currentDay} · 共 ${days.length} 格`;
-      elements.timeline.innerHTML = "";
-      days.forEach((label) => {
-        const numericDay = /^\d+$/.test(label) ? Number(label) : null;
-        const eventText = numericDay === null ? "" : cycle.events?.[numericDay] || "";
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = `timeline-day${currentDay === label || (numericDay !== null && Number(currentDay) === numericDay) ? " active" : ""}${eventText ? " event" : ""}`;
-        button.append(document.createTextNode(label));
-        if (eventText) {
-          const small = document.createElement("small");
-          small.textContent = eventText;
-          button.appendChild(small);
-        }
-        button.addEventListener("click", () => {
-          state.cycleDays[state.cycle] = label;
-          state.day = label;
-          renderTimeline();
-          queueSave();
-        });
-        elements.timeline.appendChild(button);
-      });
-    }
-
-    function renderMap() {
-      elements.mapGrid.innerHTML = "";
-      for (let index = 1; index <= 10; index += 1) {
-        const key = `${state.cycle}-${index}`;
-        const label = document.createElement("label");
-        label.className = "map-slot";
-        const text = document.createElement("span");
-        text.textContent = `地图 ${index}`;
-        const input = document.createElement("input");
-        input.value = state.map[key] ?? "";
-        input.placeholder = "板块 / 标记";
-        input.addEventListener("input", () => {
-          state.map[key] = input.value;
-          queueSave();
-        });
-        label.append(text, input);
-        elements.mapGrid.appendChild(label);
-      }
     }
 
     const diplomacyFactionIcons = {
@@ -4083,119 +3738,6 @@
         row.append(makeTrackTitle(zh, diplomacyTitle.title, { icon: diplomacyFactionIcon(key) }), scale);
         elements.diplomacyTracks.appendChild(row);
       });
-    }
-
-    function getRootingRows() {
-      if (!Array.isArray(state.rooting[state.cycle])) state.rooting[state.cycle] = [];
-      return state.rooting[state.cycle];
-    }
-
-    function getRootingCard(cycleId, cardId) {
-      return rootingData[cycleId]?.cards.find((card) => card.id === String(cardId)) || null;
-    }
-
-    function getRootingCardByCorner(cycleId, cornerNumber) {
-      const data = rootingData[cycleId];
-      if (!data) return null;
-      const id = Object.entries(data.cornerNumbers || {})
-        .find(([, number]) => String(number) === String(cornerNumber))?.[0];
-      return id ? getRootingCard(cycleId, id) : null;
-    }
-
-    function getRootingCardLabel(cycleId, cardId) {
-      const card = getRootingCard(cycleId, cardId);
-      const corner = rootingData[cycleId]?.cornerNumbers?.[cardId];
-      return card ? `${card.name} #${corner || card.id}` : `探索卡 #${cardId}`;
-    }
-
-    function applyAcclimation(acclimation) {
-      const rows = getRootingRows();
-      acclimation.from.forEach((fromCorner, index) => {
-        const toCorner = acclimation.to[index];
-        const fromCard = getRootingCardByCorner(state.cycle, fromCorner);
-        const toCard = getRootingCardByCorner(state.cycle, toCorner);
-        if (!fromCard || !toCard) return;
-        const existing = rows.find((row) => row.from === fromCard.id);
-        if (existing) {
-          existing.to = toCard.id;
-          existing.acclimation = acclimation.id;
-        } else {
-          rows.push({ from: fromCard.id, to: toCard.id, acclimation: acclimation.id });
-        }
-      });
-      renderRooting();
-      queueSave();
-    }
-
-    function renderRooting() {
-      const data = rootingData[state.cycle];
-      elements.rootingPanel.innerHTML = "";
-      elements.rootingMeta.textContent = data ? "按 Acclimation 自动替换探索卡" : "本循环暂无适应替换";
-      if (!data) {
-        const empty = document.createElement("p");
-        empty.className = "status-line";
-        empty.textContent = "当前循环没有 Acclimation 替换记录。";
-        elements.rootingPanel.appendChild(empty);
-        return;
-      }
-
-      const rows = getRootingRows();
-      const tools = document.createElement("div");
-      tools.className = "rooting-tools";
-      data.acclimations.forEach((acclimation) => {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.textContent = `${acclimation.label} D${acclimation.day}`;
-        button.title = `${acclimation.from.join(", ")} -> ${acclimation.to.join(", ")}`;
-        button.addEventListener("click", () => applyAcclimation(acclimation));
-        tools.appendChild(button);
-      });
-      elements.rootingPanel.appendChild(tools);
-
-      const list = document.createElement("div");
-      list.className = "rooting-list";
-      if (!rows.length) {
-        const empty = document.createElement("p");
-        empty.className = "status-line";
-        empty.textContent = "还没有应用 Acclimation 替换。";
-        list.appendChild(empty);
-      } else {
-        rows.forEach((row, index) => {
-          const item = document.createElement("div");
-          item.className = "rooting-row";
-          const text = document.createElement("span");
-          text.textContent = `${getRootingCardLabel(state.cycle, row.from)} -> ${getRootingCardLabel(state.cycle, row.to)}`;
-          const remove = document.createElement("button");
-          remove.type = "button";
-          remove.className = "secondary";
-          remove.textContent = "删除";
-          remove.addEventListener("click", () => {
-            rows.splice(index, 1);
-            renderRooting();
-            queueSave();
-          });
-          item.append(text, remove);
-          list.appendChild(item);
-        });
-      }
-      elements.rootingPanel.appendChild(list);
-
-      const deck = document.createElement("div");
-      deck.className = "rooting-deck";
-      const replacementMap = new Map(rows.map((row) => [row.from, row.to]));
-      data.cards
-        .filter((card) => data.cornerNumbers?.[card.id])
-        .sort((a, b) => Number(data.cornerNumbers[a.id]) - Number(data.cornerNumbers[b.id]))
-        .forEach((card) => {
-          const line = document.createElement("span");
-          const replacement = replacementMap.get(card.id);
-          const corner = data.cornerNumbers[card.id];
-          line.textContent = replacement
-            ? `${card.name} #${corner} -> ${getRootingCardLabel(state.cycle, replacement)}`
-            : `${card.name} #${corner}`;
-          deck.appendChild(line);
-        });
-      elements.rootingPanel.appendChild(deck);
     }
 
     function renderSummonOptions() {

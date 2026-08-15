@@ -3,12 +3,12 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 
-ROOT = Path(__file__).resolve().parent
-PS_ROOT = ROOT / "ps"
+ROOT = Path(__file__).resolve().parent.parent
+PS_ROOT = ROOT / "aibp" / "ps"
 ICON_ROOT = PS_ROOT / "other" / "resouce"
-OUTPUT_ROOT = ROOT / "_bp_resource_contact_sheets"
-RECORD_ICON_ROOT = ROOT.parent / "record" / "assets" / "resource-icons"
-C45_OUTPUT_ROOT = ROOT / "_bp_resource_contact_sheets_c45"
+OUTPUT_ROOT = ROOT / "aibp" / "_bp_resource_contact_sheets"
+RECORD_ICON_ROOT = ROOT / "record" / "assets" / "resource-icons"
+C45_OUTPUT_ROOT = ROOT / "aibp" / "_bp_resource_contact_sheets_c45"
 
 APOSTLES = [
     "HEKATON",

@@ -81,6 +81,8 @@ error_log
 *.lock
 
 # Local/editor/runtime files
+__pycache__/
+*.py[cod]
 /.claude/
 /.vscode/
 /.idea/

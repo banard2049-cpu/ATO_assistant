@@ -357,7 +357,7 @@ function makeHarness(startApostle = "MIDASCORE", options = {}) {
   context.window = context;
   vm.createContext(context);
   const source = fs.readFileSync(
-    path.join(__dirname, "..", "c45_specials.js"),
+    path.join(__dirname, "..", "aibp", "c45_specials.js"),
     "utf8"
   );
   vm.runInContext(source, context, { filename: "c45_specials.js" });

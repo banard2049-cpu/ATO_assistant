@@ -1,7 +1,7 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
-const terrain = require("./terrain-data.js");
+const terrain = require("../ss/terrain-data.js");
 
 assert.equal(terrain.levelNumber("IV"), 4);
 assert.equal(terrain.levelNumber("5"), 5);
@@ -60,9 +60,9 @@ assert.equal(hasPlacement("UR_FLEECE", 1, "Track Tile 4 1x5", 1, 4), true);
 ].forEach((name) => assert.ok(terrain.catalog[name], name));
 
 Object.values(terrain.catalog).forEach((definition) => {
-  assert.equal(fs.existsSync(path.join(__dirname, "terrain", definition.file)), true, definition.file);
+  assert.equal(fs.existsSync(path.join(__dirname, "..", "ss", "terrain", definition.file)), true, definition.file);
   if (definition.backFile) {
-    assert.equal(fs.existsSync(path.join(__dirname, "terrain", definition.backFile)), true, definition.backFile);
+    assert.equal(fs.existsSync(path.join(__dirname, "..", "ss", "terrain", definition.backFile)), true, definition.backFile);
   }
 });
 
