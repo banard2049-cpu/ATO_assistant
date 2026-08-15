@@ -1182,7 +1182,28 @@
       try { localStorage.setItem(storageKey, JSON.stringify(state)); } catch {}
     }
 
+    // Merge two hero states without losing data from either side:
+    // - same hero id: keep the local (currently-edited) version
+    // - hero only on server: adopt it
+    // - graveyard: union
+    function mergeHeroStates(localState, serverState) {
+      const localHeroes = Array.isArray(localState.heroes) ? localState.heroes : [];
+      const serverHeroes = Array.isArray(serverState.heroes) ? serverState.heroes : [];
+      const byId = new Map();
+      localHeroes.forEach((h) => { if (h && h.id) byId.set(h.id, h); });
+      serverHeroes.forEach((h) => { if (h && h.id && !byId.has(h.id)) byId.set(h.id, h); });
+      const grave = new Set();
+      (Array.isArray(localState.graveyard) ? localState.graveyard : []).forEach((id) => grave.add(id));
+      (Array.isArray(serverState.graveyard) ? serverState.graveyard : []).forEach((id) => grave.add(id));
+      return {
+        heroes: Array.from(byId.values()),
+        activeHeroId: localState.activeHeroId || serverState.activeHeroId || "",
+        graveyard: Array.from(grave),
+      };
+    }
+
     function queueSave() {
+      state._dirty = true;
       persistLocal();
       clearTimeout(saveTimer);
       saveTimer = setTimeout(() => {
@@ -1206,11 +1227,28 @@
           serverStorageAvailable = true;
           serverSectionRevision = payload.revision || serverSectionRevision;
           state._lastSyncRevision = serverSectionRevision;
+          state._dirty = false;
           persistLocal();
           setSaveStatus("已同步 " + new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }));
         } else if (response.status === 409 && payload?.revision) {
-          // Conflict — retry with correct revision (force overwrite with local)
+          // Conflict — fetch the latest server state, merge (keep local edits,
+          // adopt server-only heroes), then retry with the corrected revision.
           serverSectionRevision = payload.revision;
+          try {
+            const latestRes = await fetch(serverStorageUrl + "?section=" + serverStorageSection, { cache: "no-store" });
+            if (latestRes.ok) {
+              const latestPayload = await latestRes.json();
+              if (latestPayload.ok && latestPayload.state) {
+                const merged = mergeHeroStates(state, latestPayload.state);
+                merged._userId = state._userId;
+                merged._lastSyncRevision = serverSectionRevision;
+                merged._dirty = true;
+                state = merged;
+                normalizeState();
+                persistLocal();
+              }
+            }
+          } catch {}
           const retry = await fetch(serverStorageUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -1225,6 +1263,7 @@
             serverStorageAvailable = true;
             serverSectionRevision = retryPayload.revision || serverSectionRevision;
             state._lastSyncRevision = serverSectionRevision;
+            state._dirty = false;
             persistLocal();
             setSaveStatus("已同步 " + new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }));
           } else {
@@ -1267,14 +1306,28 @@
           renderAll();
           setSaveStatus(serverHasData ? "已从 NAS 读取" : "NAS 已连接");
         } else if (serverHasData && serverRevision > localRevision) {
-          // Server is newer (another device pushed) — pull
-          state = serverState;
-          state._userId = serverUser;
-          state._lastSyncRevision = serverRevision;
-          normalizeState();
-          persistLocal();
-          renderAll();
-          setSaveStatus("已从 NAS 读取");
+          // Server is newer (another device pushed) — pull, but never silently
+          // discard local unsynced edits: merge them back.
+          if (state._dirty) {
+            const merged = mergeHeroStates(state, serverState);
+            merged._userId = serverUser;
+            merged._lastSyncRevision = serverRevision;
+            merged._dirty = true;
+            state = merged;
+            normalizeState();
+            persistLocal();
+            renderAll();
+            setSaveStatus("已合并本地与 NAS 数据");
+            saveToServer();
+          } else {
+            state = serverState;
+            state._userId = serverUser;
+            state._lastSyncRevision = serverRevision;
+            normalizeState();
+            persistLocal();
+            renderAll();
+            setSaveStatus("已从 NAS 读取");
+          }
         } else if (localHasData) {
           // Local is current or newer — push to server
           state._userId = serverUser;

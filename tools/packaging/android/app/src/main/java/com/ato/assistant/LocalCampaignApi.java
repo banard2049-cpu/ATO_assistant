@@ -6,10 +6,11 @@ import android.net.Uri;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.Iterator;
+import java.util.UUID;
 
 final class LocalCampaignApi {
   private static final String[] SECTIONS = {"dashboard", "map", "record", "technology", "heroes"};
-  private static final int BACKUP_COUNT = 5;
+  private static final int BACKUP_COUNT = 10;
   private final SharedPreferences store;
   private final Object lock = new Object();
   private String currentUser;
@@ -169,15 +170,80 @@ final class LocalCampaignApi {
 
   private void saveCampaign(JSONObject campaign) {
     String key = campaignKey();
+    String currentRaw = store.getString(key, "");
+    String currentDay = gameDayKey(currentRaw);
+    String nextDay = gameDayKey(campaign);
+    String markerKey = key + "::backup-current-day";
+    String archiveMarkerKey = key + "::backup-current-archive";
+    boolean markerMatches = currentDay.equals(store.getString(markerKey, ""));
+    String archiveId = markerMatches
+      ? store.getString(archiveMarkerKey, "")
+      : "";
     SharedPreferences.Editor editor = store.edit();
-    for (int index = BACKUP_COUNT; index >= 2; index--) {
-      String previous = key + "::backup::" + (index - 1);
-      String next = key + "::backup::" + index;
-      if (store.contains(previous)) editor.putString(next, store.getString(previous, ""));
-      else editor.remove(next);
+
+    if (!currentRaw.isEmpty()) {
+      if (!markerMatches) clearRecentBackups(editor, key);
+      if (!"unknown".equals(currentDay)) {
+        if (archiveId.isEmpty()) archiveId = System.currentTimeMillis() + "-" + UUID.randomUUID().toString();
+        editor.putString(key + "::daily::" + currentDay + "::" + archiveId, currentRaw);
+      }
+
+      if (currentDay.equals(nextDay)) {
+        if (markerMatches) {
+          for (int index = BACKUP_COUNT; index >= 2; index--) {
+            String previous = key + "::backup::" + (index - 1);
+            String next = key + "::backup::" + index;
+            if (store.contains(previous)) editor.putString(next, store.getString(previous, ""));
+            else editor.remove(next);
+          }
+        }
+        editor.putString(key + "::backup::1", currentRaw);
+      } else {
+        clearRecentBackups(editor, key);
+      }
     }
-    if (store.contains(key)) editor.putString(key + "::backup::1", store.getString(key, ""));
+    editor.putString(markerKey, nextDay);
+    if (currentDay.equals(nextDay) && !archiveId.isEmpty()) editor.putString(archiveMarkerKey, archiveId);
+    else editor.remove(archiveMarkerKey);
     editor.putString(key, campaign.toString()).apply();
+  }
+
+  private void clearRecentBackups(SharedPreferences.Editor editor, String key) {
+    for (int index = 1; index <= BACKUP_COUNT; index++) {
+      editor.remove(key + "::backup::" + index);
+    }
+  }
+
+  private String gameDayKey(String raw) {
+    if (raw.isEmpty()) return "unknown";
+    try {
+      return gameDayKey(new JSONObject(raw));
+    } catch (JSONException ignored) {
+      return "unknown";
+    }
+  }
+
+  private String gameDayKey(JSONObject campaign) {
+    JSONObject sections = campaign.optJSONObject("sections");
+    JSONObject dashboard = sections == null ? null : sections.optJSONObject("dashboard");
+    JSONObject profiles = dashboard == null ? null : dashboard.optJSONObject("profiles");
+    String profileId = dashboard == null ? "default" : dashboard.optString("activeProfileId", "default");
+    JSONObject profile = profiles == null ? null : profiles.optJSONObject(profileId);
+    if (profile == null && profiles != null) {
+      Iterator<String> profileIds = profiles.keys();
+      if (profileIds.hasNext()) {
+        profileId = profileIds.next();
+        profile = profiles.optJSONObject(profileId);
+      }
+    }
+    String cycleId = profile == null ? "unknown" : profile.optString("activeCycleId", "unknown");
+    JSONObject cycles = profile == null ? null : profile.optJSONObject("cycles");
+    JSONObject cycle = cycles == null ? null : cycles.optJSONObject(cycleId);
+    JSONObject state = cycle == null ? null : cycle.optJSONObject("state");
+    Object dayValue = state == null ? null : state.opt("day");
+    if (profile == null || cycle == null || dayValue == null || dayValue == JSONObject.NULL) return "unknown";
+    String day = String.valueOf(dayValue);
+    return Uri.encode(profileId) + "::" + Uri.encode(cycleId) + "::" + Uri.encode(day);
   }
 
   private JSONObject normalizeCampaign(JSONObject campaign) throws JSONException {

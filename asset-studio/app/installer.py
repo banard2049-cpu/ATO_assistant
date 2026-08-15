@@ -10,6 +10,12 @@ from pathlib import Path, PurePosixPath
 
 from .db import Database
 from .storage import sha256_file, write_compatible_image
+from .story_extras import (
+    ENTITY_INDEX_JSON_TARGET,
+    ENTITY_INDEX_JS_TARGET,
+    entity_index_javascript,
+    find_entity_index,
+)
 from .stories import storybook_payload
 
 
@@ -106,6 +112,24 @@ def install_plan(db: Database, library: Path, root: Path) -> dict:
         status = "add" if not destination.exists() else ("same" if destination.read_bytes() == payload else "replace")
         summary[status] += 1
         files.append({"item_id": "stories", "name": "故事索引", "face": "data", "source": "generated", "target": relative, "status": status})
+    entity_index = find_entity_index(library)
+    if entity_index:
+        entity_files = (
+            (ENTITY_INDEX_JSON_TARGET, "entity-index-json", entity_index.json_bytes),
+            (ENTITY_INDEX_JS_TARGET, "entity-index-js", entity_index_javascript(entity_index)),
+        )
+        for relative, source, payload in entity_files:
+            destination = safe_target(root, relative)
+            status = "add" if not destination.exists() else ("same" if destination.read_bytes() == payload else "replace")
+            summary[status] += 1
+            files.append({
+                "item_id": "entity-index",
+                "name": "人物小传索引",
+                "face": "data",
+                "source": source,
+                "target": relative,
+                "status": status,
+            })
     return {"root": str(root), "summary": summary, "files": files}
 
 
@@ -115,6 +139,7 @@ def apply_install(db: Database, library: Path, root: Path, replacements: list[st
     allowed_replace = set(replacements)
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     backup_root = library / "backups" / stamp
+    entity_index = find_entity_index(library)
     installed = skipped = 0
     completed: list[tuple[Path, Path | None]] = []
     try:
@@ -135,6 +160,14 @@ def apply_install(db: Database, library: Path, root: Path, replacements: list[st
             temporary = target.with_name(f".{target.stem}.ato-studio.tmp{target.suffix}")
             if entry["source"] == "generated":
                 temporary.write_bytes(merged_storybook_javascript(db, target))
+            elif entry["source"] == "entity-index-json":
+                if entity_index is None:
+                    raise ValueError("素材库中的人物小传索引已丢失")
+                temporary.write_bytes(entity_index.json_bytes)
+            elif entry["source"] == "entity-index-js":
+                if entity_index is None:
+                    raise ValueError("素材库中的人物小传索引已丢失")
+                temporary.write_bytes(entity_index_javascript(entity_index))
             elif entry.get("direct_copy"):
                 shutil.copy2(library / entry["source"], temporary)
             else:

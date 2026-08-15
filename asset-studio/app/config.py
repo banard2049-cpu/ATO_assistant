@@ -61,5 +61,7 @@ def ensure_library(config: AppConfig) -> Path:
 
 
 STARTUP_SECRET = secrets.token_urlsafe(32)
-PAIRING_CODE = f"{secrets.randbelow(1_000_000):06d}"
+# 10-digit pairing code (~33 bits of entropy) plus failure throttling in
+# /api/pair; the old 6-digit code was brute-forceable on a LAN.
+PAIRING_CODE = f"{secrets.randbelow(10_000_000_000):010d}"
 

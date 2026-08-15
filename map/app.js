@@ -89,6 +89,7 @@ if ("scrollRestoration" in window.history) {
 const elements = {
   cycleTabs: document.querySelector("#cycleTabs"),
   currentTileSelect: document.querySelector("#currentTileSelect"),
+  campaignSaveStatus: document.querySelector("#campaignSaveStatus"),
   searchInput: document.querySelector("#searchInput"),
   mapZoomInput: document.querySelector("#mapZoomInput"),
   mapZoomValue: document.querySelector("#mapZoomValue"),
@@ -129,6 +130,11 @@ let campaignSaveTimer = null;
 let campaignSaveInFlight = false;
 let campaignSavePending = false;
 let campaignSaveQueuedBeforeReady = false;
+let campaignReconnectTimer = null;
+let campaignReconnectInFlight = false;
+let campaignReconnectDelay = 2000;
+let mapSectionRevision = 0;
+let dashboardSectionRevision = 0;
 let pendingAdversarySpawnCandidates = new Set();
 let editingNoteTileId = "";
 let tileClickTimer = 0;
@@ -469,6 +475,12 @@ function delay(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
+function setCampaignSaveStatus(message, status = "saved") {
+  if (!elements.campaignSaveStatus) return;
+  elements.campaignSaveStatus.textContent = message;
+  elements.campaignSaveStatus.dataset.state = status;
+}
+
 async function loadCampaignMapSection() {
   if (secondScreenMode) {
     await loadSecondScreenMapState();
@@ -481,11 +493,14 @@ async function loadCampaignMapSection() {
     const payload = await response.json();
     if (!payload.ok) throw new Error(payload.error || "读取失败");
     campaignStorageAvailable = true;
+    campaignReconnectDelay = 2000;
     const flushQueuedSave = campaignSaveQueuedBeforeReady;
     campaignSaveQueuedBeforeReady = false;
     const campaign = payload.campaign || {};
     const dashboard = campaign.sections?.dashboard;
     campaignUserId = dashboard?.activeProfileId || "default";
+    mapSectionRevision = campaign.sectionRevisions?.map || 0;
+    dashboardSectionRevision = campaign.sectionRevisions?.dashboard || 0;
     const mapSection = campaign.sections?.map;
     const userState = mapSection?.users?.[campaignUserId] || (mapSection?.users ? null : mapSection);
     if (userState) {
@@ -494,42 +509,137 @@ async function loadCampaignMapSection() {
       render();
     }
     if (flushQueuedSave) queueCampaignSave();
+    else setCampaignSaveStatus("已同步", "saved");
   } catch (error) {
     campaignStorageAvailable = false;
+    setCampaignSaveStatus("存档离线，等待重连", "offline");
     console.warn(error);
+    scheduleReconnectAttempt();
   }
+}
+
+function scheduleReconnectAttempt() {
+  if (campaignReconnectTimer || campaignReconnectInFlight || campaignStorageAvailable) return;
+  const wait = campaignReconnectDelay;
+  campaignReconnectDelay = Math.min(30000, campaignReconnectDelay * 2);
+  campaignReconnectTimer = setTimeout(() => {
+    campaignReconnectTimer = null;
+    void probeCampaignReconnect();
+  }, wait);
+}
+
+// Reconnect without replacing in-memory edits. If nothing changed while the
+// server was unavailable, the latest server state can safely be loaded.
+async function probeCampaignReconnect() {
+  if (campaignStorageAvailable || campaignReconnectInFlight) return;
+  campaignReconnectInFlight = true;
+  try {
+    const response = await fetch(campaignStorageUrl, { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    if (!payload.ok) throw new Error(payload.error || "读取失败");
+    const campaign = payload.campaign || {};
+    const dashboard = campaign.sections?.dashboard;
+    if (dashboard?.activeProfileId) campaignUserId = dashboard.activeProfileId;
+    mapSectionRevision = campaign.sectionRevisions?.map || 0;
+    dashboardSectionRevision = campaign.sectionRevisions?.dashboard || 0;
+    const hadQueued = campaignSaveQueuedBeforeReady;
+    if (!hadQueued) {
+      const mapSection = campaign.sections?.map;
+      const userState = mapSection?.users?.[campaignUserId] || (mapSection?.users ? null : mapSection);
+      if (userState) {
+        state = normalizeState(userState);
+        focusArgoAfterNextRender();
+        render();
+      }
+    }
+    campaignStorageAvailable = true;
+    campaignReconnectDelay = 2000;
+    campaignSaveQueuedBeforeReady = false;
+    if (hadQueued) queueCampaignSave();
+    else setCampaignSaveStatus("已重新连接", "saved");
+  } catch (error) {
+    console.warn(error);
+    setCampaignSaveStatus("存档离线，等待重连", "offline");
+  } finally {
+    campaignReconnectInFlight = false;
+    if (!campaignStorageAvailable) scheduleReconnectAttempt();
+  }
+}
+
+function reconnectCampaignNow() {
+  if (campaignStorageAvailable || campaignReconnectInFlight) return;
+  clearTimeout(campaignReconnectTimer);
+  campaignReconnectTimer = null;
+  campaignReconnectDelay = 2000;
+  void probeCampaignReconnect();
 }
 
 function queueCampaignSave() {
   if (!campaignStorageAvailable) {
     campaignSaveQueuedBeforeReady = true;
+    setCampaignSaveStatus("有修改待同步", "offline");
+    scheduleReconnectAttempt();
     return;
   }
   clearTimeout(campaignSaveTimer);
-  campaignSaveTimer = setTimeout(saveCampaignMapSection, 260);
+  setCampaignSaveStatus("等待保存", "saving");
+  campaignSaveTimer = setTimeout(() => void saveCampaignMapSection(), 260);
 }
 
 async function saveCampaignMapSection() {
-  if (!campaignStorageAvailable) return;
+  if (!campaignStorageAvailable) {
+    campaignSaveQueuedBeforeReady = true;
+    setCampaignSaveStatus("有修改待同步", "offline");
+    scheduleReconnectAttempt();
+    return false;
+  }
   if (campaignSaveInFlight) {
     campaignSavePending = true;
-    return;
+    return false;
   }
   campaignSaveInFlight = true;
+  let conflictRetries = 0;
   try {
     do {
       campaignSavePending = false;
+      setCampaignSaveStatus("正在保存", "saving");
       const stateBeingSaved = cloneValue(state);
       const response = await fetch(campaignStorageUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ section: "map", userId: campaignUserId, state: stateBeingSaved }),
+        body: JSON.stringify({
+          section: "map",
+          userId: campaignUserId,
+          state: stateBeingSaved,
+          expectedRevision: mapSectionRevision,
+        }),
       });
       const payload = await response.json().catch(() => null);
+      if (response.status === 409 && payload?.revision != null) {
+        // Another page (e.g. the dashboard map commands) saved the map section
+        // meanwhile. Adopt the latest revision and explicitly retry.
+        mapSectionRevision = payload.revision;
+        conflictRetries += 1;
+        if (conflictRetries >= 5) throw new Error("地图存档持续冲突，请稍后重试。");
+        campaignSavePending = true;
+        continue;
+      }
       if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+      mapSectionRevision = payload.revision || mapSectionRevision;
+      conflictRetries = 0;
     } while (campaignSavePending);
+    campaignSaveQueuedBeforeReady = false;
+    campaignReconnectDelay = 2000;
+    setCampaignSaveStatus("已保存", "saved");
+    return true;
   } catch (error) {
+    campaignStorageAvailable = false;
+    campaignSaveQueuedBeforeReady = true;
+    setCampaignSaveStatus("保存失败，等待重试", "offline");
     console.warn(error);
+    scheduleReconnectAttempt();
+    return false;
   } finally {
     campaignSaveInFlight = false;
   }
@@ -538,16 +648,18 @@ async function saveCampaignMapSection() {
 async function flushCampaignMapSave() {
   if (!campaignStorageAvailable) {
     campaignSaveQueuedBeforeReady = true;
-    return;
+    setCampaignSaveStatus("有修改待同步", "offline");
+    scheduleReconnectAttempt();
+    return false;
   }
   clearTimeout(campaignSaveTimer);
   campaignSaveTimer = null;
   if (campaignSaveInFlight) {
     campaignSavePending = true;
     while (campaignSaveInFlight) await delay(40);
-    return;
+    return campaignStorageAvailable && !campaignSaveQueuedBeforeReady;
   }
-  await saveCampaignMapSection();
+  return saveCampaignMapSection();
 }
 
 async function loadCampaignDashboardArchive() {
@@ -566,10 +678,64 @@ async function saveCampaignDashboardArchive(archive) {
   const response = await fetch(campaignDashboardUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ section: "dashboard", state: archive }),
+    body: JSON.stringify({
+      section: "dashboard",
+      state: archive,
+      expectedRevision: dashboardSectionRevision,
+    }),
   });
   const payload = await response.json().catch(() => null);
+  if (response.status === 409 && payload?.revision) {
+    const conflict = new Error(payload?.error || "SAVE_CONFLICT");
+    conflict.code = "SAVE_CONFLICT";
+    conflict.revision = payload.revision;
+    throw conflict;
+  }
   if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+  dashboardSectionRevision = payload.revision || dashboardSectionRevision;
+}
+
+async function buildDashboardArchive(snapshot) {
+  let archive = await loadCampaignDashboardArchive();
+  if (!isPlainObject(archive) || !isPlainObject(archive.profiles)) {
+    archive = {
+      activeProfileId: "default",
+      profiles: {
+        default: {
+          id: "default",
+          name: "默认用户",
+          activeCycleId: snapshot.cycleId,
+          cycles: {},
+        },
+      },
+    };
+  }
+  const profile = archive.profiles?.[archive.activeProfileId] || Object.values(archive.profiles || {})[0];
+  if (profile) {
+    archive.activeProfileId ||= profile.id;
+    profile.activeCycleId = snapshot.cycleId;
+    if (!isPlainObject(profile.cycles)) profile.cycles = {};
+    profile.cycles[snapshot.cycleId] ||= { id: snapshot.cycleId, state: {} };
+    const dashboardState = isPlainObject(profile.cycles[snapshot.cycleId].state) ? profile.cycles[snapshot.cycleId].state : {};
+    const note = mapSnapshotNote(snapshot);
+    profile.cycles[snapshot.cycleId].state = {
+      ...dashboardState,
+      location: snapshot.currentTileLabel || dashboardState.location || "",
+      mapSnapshot: snapshot,
+      mapCurrentTileTags: snapshot.currentTileTags,
+      mapCurrentTileTagLabels: snapshot.currentTileTagLabels,
+      mapCurrentTileFactions: snapshot.currentTileFactions,
+      mapCurrentTileFactionLabels: snapshot.currentTileFactionLabels,
+      mapLatestRevealedTileTags: snapshot.latestRevealedTileTags,
+      mapLatestRevealedTileTagLabels: snapshot.latestRevealedTileTagLabels,
+      mapCurrentTileHasLastCityMarker: snapshot.currentTileHasLastCityMarker,
+      mapCurrentTileHasLastOasisMarker: snapshot.currentTileHasLastOasisMarker,
+      mapCurrentTileHasLastSilverRuinMarker: snapshot.currentTileHasLastSilverRuinMarker,
+      mapCurrentTileIsLatestRevealed: snapshot.currentTileIsLatestRevealed,
+      notes: dashboardState.notes ? `${dashboardState.notes}\n${note}` : note,
+    };
+  }
+  return archive;
 }
 
 function activeCycle() {
@@ -1626,11 +1792,17 @@ function clearPendingAdversarySpawn() {
   }
 }
 
-function triggerAdversaryBattle(recordUndo = false) {
+async function triggerAdversaryBattle(recordUndo = false) {
   const cycleState = activeCycleState();
   if (recordUndo) pushUndo();
   cycleState.tokens.AD = "";
   saveState();
+  // Flush the queued save before leaving the page so the adversary removal
+  // and current position are persisted (no debounce window loss).
+  if (!await flushCampaignMapSave()) {
+    window.alert("地图尚未保存，已保留当前修改并等待服务恢复。");
+    return;
+  }
 
   const battleUrl = adversaryBattleUrl();
   if (battleUrl) {
@@ -1783,50 +1955,25 @@ async function saveAndReturnToDashboard() {
   const dashboardWindow = window.ATO_PAGE_ROUTER?.isModuleRecentlyOpen?.(dashboardModule)
     ? window.ATO_PAGE_ROUTER.focusNamedModule?.(dashboardUrl, dashboardModule)
     : null;
-  await flushCampaignMapSave();
+  if (!await flushCampaignMapSave()) {
+    window.alert("地图尚未保存，已保留当前修改并等待服务恢复。");
+    return;
+  }
 
   const snapshot = currentMapSnapshot();
   try {
-    let archive = await loadCampaignDashboardArchive();
-    if (!isPlainObject(archive) || !isPlainObject(archive.profiles)) {
-      archive = {
-        activeProfileId: "default",
-        profiles: {
-          default: {
-            id: "default",
-            name: "默认用户",
-            activeCycleId: snapshot.cycleId,
-            cycles: {},
-          },
-        },
-      };
+    let saved = false;
+    for (let attempt = 0; attempt < 2 && !saved; attempt += 1) {
+      const archive = await buildDashboardArchive(snapshot);
+      try {
+        await saveCampaignDashboardArchive(archive);
+        saved = true;
+      } catch (error) {
+        if (error?.code !== "SAVE_CONFLICT") throw error;
+        dashboardSectionRevision = error.revision;
+      }
     }
-    const profile = archive.profiles?.[archive.activeProfileId] || Object.values(archive.profiles || {})[0];
-    if (profile) {
-      archive.activeProfileId ||= profile.id;
-      profile.activeCycleId = snapshot.cycleId;
-      if (!isPlainObject(profile.cycles)) profile.cycles = {};
-      profile.cycles[snapshot.cycleId] ||= { id: snapshot.cycleId, state: {} };
-      const dashboardState = isPlainObject(profile.cycles[snapshot.cycleId].state) ? profile.cycles[snapshot.cycleId].state : {};
-      const note = mapSnapshotNote(snapshot);
-      profile.cycles[snapshot.cycleId].state = {
-        ...dashboardState,
-        location: snapshot.currentTileLabel || dashboardState.location || "",
-        mapSnapshot: snapshot,
-        mapCurrentTileTags: snapshot.currentTileTags,
-        mapCurrentTileTagLabels: snapshot.currentTileTagLabels,
-        mapCurrentTileFactions: snapshot.currentTileFactions,
-        mapCurrentTileFactionLabels: snapshot.currentTileFactionLabels,
-        mapLatestRevealedTileTags: snapshot.latestRevealedTileTags,
-        mapLatestRevealedTileTagLabels: snapshot.latestRevealedTileTagLabels,
-        mapCurrentTileHasLastCityMarker: snapshot.currentTileHasLastCityMarker,
-        mapCurrentTileHasLastOasisMarker: snapshot.currentTileHasLastOasisMarker,
-        mapCurrentTileHasLastSilverRuinMarker: snapshot.currentTileHasLastSilverRuinMarker,
-        mapCurrentTileIsLatestRevealed: snapshot.currentTileIsLatestRevealed,
-        notes: dashboardState.notes ? `${dashboardState.notes}\n${note}` : note,
-      };
-      await saveCampaignDashboardArchive(archive);
-    }
+    if (!saved) throw new Error("冲突重试后仍未写入成功。");
   } catch (error) {
     window.alert(`地图已保存，但写入主控台记录失败：${String(error.message || error)}`);
     return;
@@ -2039,7 +2186,12 @@ if (elements.revealTileInput) {
 elements.undoButton.addEventListener("click", undoLastChange);
 elements.saveReturnButton.addEventListener("click", saveAndReturnToDashboard);
   if (elements.openTagEditorButton) {
-    elements.openTagEditorButton.addEventListener("click", () => {
+    elements.openTagEditorButton.addEventListener("click", async () => {
+      saveState();
+      if (!await flushCampaignMapSave()) {
+        window.alert("地图尚未保存，已保留当前修改并等待服务恢复。");
+        return;
+      }
       window.location.href = `../tools/tag-editor.html?cycle=${encodeURIComponent(state.activeCycleId)}`;
     });
   }
@@ -2100,6 +2252,8 @@ window.addEventListener("resize", () => {
   focusArgoAfterNextRender(6);
   scheduleArgoFocus();
 });
+window.addEventListener("online", reconnectCampaignNow);
+window.addEventListener("focus", reconnectCampaignNow);
 
 render();
 loadCampaignMapSection();

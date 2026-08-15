@@ -28,7 +28,11 @@ def sha256_file(path: Path) -> str:
 
 def safe_extension(filename: str, mime_type: str = "") -> str:
     ext = Path(filename).suffix.lower()
-    allowed = {".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif"}
+    # .heic/.heif are intentionally absent: the default runtime has no
+    # pillow-heif, so those files cannot be decoded. store_image validates the
+    # upload and rejects them with a clear error. To support iPhone uploads,
+    # add pillow-heif to requirements.txt and re-allow these extensions.
+    allowed = {".jpg", ".jpeg", ".png", ".webp"}
     if ext in allowed:
         return ".jpg" if ext == ".jpeg" else ext
     guessed = mimetypes.guess_extension(mime_type or "") or ".bin"
@@ -116,6 +120,17 @@ def store_image(
     preview_rel = Path("previews") / digest[:2] / f"{digest}.webp"
     original = library / original_rel
     preview = library / preview_rel
+
+    # Validate the upload is a decodable image BEFORE committing it into the
+    # library, so failed uploads leave no orphan files and do not poison
+    # chunked upload sessions (whose temp file would otherwise be consumed).
+    try:
+        with Image.open(temp_file) as probe:
+            probe.verify()
+    except Exception as exc:
+        temp_file.unlink(missing_ok=True)
+        raise ValueError(f"上传的文件不是可识别的图片：{exc}") from exc
+
     original.parent.mkdir(parents=True, exist_ok=True)
     if not original.exists():
         os.replace(temp_file, original)

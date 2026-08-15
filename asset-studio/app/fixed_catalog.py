@@ -8,6 +8,7 @@ from __future__ import annotations
 import base64
 import gzip
 import json
+from pathlib import Path
 from typing import Any
 
 from .catalog import (
@@ -23,6 +24,98 @@ from .catalog import (
     simple_group_id_number,
 )
 from .db import Database
+
+
+BATTLE_TERRAIN_PIECES = (
+    ("Abandoned Temple", "abandoned-temple.jpg", None),
+    ("Ambrosia Pool", "ambrosia-pool.jpg", None),
+    ("Ambrosia Trail", "ambrosia-trail.jpg", None),
+    ("Ambrosia Elephant", "ambrosia-elephant.jpg", None),
+    ("Ambrosia Cloud", "ambrosia-cloud.jpg", None),
+    ("Argo Hull 1x4", "argo-hull-1x4.jpg", None),
+    ("Argo Hull 1x5", "argo-hull-1x5.jpg", "argo-hull-1x5-back.jpg"),
+    ("Black Glacier 1x5", "black-glacier-1x5.jpg", None),
+    ("Black Glacier L", "black-glacier-l.png", None),
+    ("Black Glacier Z", "black-glacier-z.png", None),
+    ("Black Iceberg", "black-iceberg.jpg", None),
+    ("Black Lake", "black-lake.jpg", None),
+    ("Black Abyss", "black-abyss.jpg", None),
+    ("Arcology", "arcology.jpg", "arcology-back.jpg"),
+    ("City", "city.jpg", "ruined-city.jpg"),
+    ("Cliff I", "cliff-i.jpg", None),
+    ("Cliff L", "cliff-l.png", None),
+    ("Cliff O", "cliff-o.jpg", None),
+    ("Cliff Z", "cliff-z.png", None),
+    ("Column", "column.jpg", None),
+    ("Cyclops Trap", "cyclops-trap.jpg", None),
+    ("Endless Staircase Track 1 1x5", "endless-staircase-track-1-1x5.jpg", None),
+    ("Endless Staircase Track 2 1x4", "endless-staircase-track-2-1x4.jpg", None),
+    ("Endless Staircase Track 3 1x4", "endless-staircase-track-3-1x4.jpg", None),
+    ("Endless Staircase Track 4 1x5", "endless-staircase-track-4-1x5.jpg", None),
+    ("Floating Rocks", "floating-rocks.jpg", None),
+    ("Fortified City", "fortified-city.jpg", "termophylaed-city.jpg"),
+    ("Giant Shell", "giant-shell.jpg", None),
+    ("Giant Black Iceberg", "giant-black-iceberg.jpg", None),
+    ("Graveyard Of The Frail", "graveyard-of-the-frail.jpg", None),
+    ("Hyperborean Ruins", "hyperborean-ruins.jpg", None),
+    ("Inkblot", "inkblot.jpg", None),
+    ("Irem City", "irem-city.jpg", None),
+    ("Irem Tower", "irem-tower.jpg", None),
+    ("Krypteia Outpost", "krypteia-outpost.jpg", "damaged-krypteia-outpost.jpg"),
+    ("Labyrinth I", "labyrinth-i.jpg", None),
+    ("Labyrinth L", "labyrinth-l.png", None),
+    ("Labyrinth O", "labyrinth-o.jpg", None),
+    ("Labyrinth Z", "labyrinth-z.png", None),
+    ("Lightwall 1x1", "lightwall-1x1.jpg", None),
+    ("Lightwall 1x4", "lightwall-1x4.jpg", None),
+    ("Lightwall 1x5", "lightwall-1x5.jpg", None),
+    ("Maze Fissure I", "maze-fissure-i.jpg", None),
+    ("Maze Fissure L", "maze-fissure-l.png", None),
+    ("Maze Fissure O", "maze-fissure-o.jpg", None),
+    ("Maze Fissure Z", "maze-fissure-z.png", None),
+    ("Maze Outcrop", "maze-outcrop.jpg", None),
+    ("Minos Manos Unit", "minos-manos-unit.jpg", None),
+    ("Petrified Vent", "petrified-vent.jpg", None),
+    ("School Of Creatures", "school-of-creatures.jpg", None),
+    ("Spartan River Works Z", "spartan-river-works-z.png", None),
+    ("Spartan River Works 1x1 Corner", "spartan-river-works-corner.jpg", None),
+    ("Spartan River Works 1x1 End", "spartan-river-works-end.jpg", None),
+    ("Spartan River Works 1x4", "spartan-river-works-1x4.jpg", None),
+    ("Spartan River Works 1x5", "spartan-river-works-1x5.jpg", None),
+    ("Spot of Nothingness", "spot-of-nothingness.jpg", None),
+    ("Staircase Entrance", "staircase-entrance.jpg", None),
+    ("Time-Frozen City", "time-frozen-city.jpg", None),
+    ("Timefront 1x4", "timefront-1x4.jpg", "timefront-1x4-back.jpg"),
+    ("Timefront 1x5", "timefront-1x5.jpg", None),
+    ("Track Tile 1x1", "track-tile-1x1.jpg", None),
+    ("Track Tile 1x2", "track-tile-1x2.jpg", None),
+    ("Track Tile 1x5", "track-tile-1x5.jpg", None),
+    ("Track Tile 1 1x5", "track-tile-1-1x5.jpg", None),
+    ("Track Tile 2 1x4", "track-tile-2-1x4.jpg", None),
+    ("Track Tile 3 1x4", "track-tile-3-1x4.jpg", None),
+    ("Track Tile 4 1x5", "track-tile-4-1x5.jpg", None),
+    ("Trench Left 1x1", "trench-left-1x1.jpg", None),
+    ("Trench Right 1x1", "trench-right-1x1.jpg", None),
+    ("Trench 1x4", "trench-1x4.jpg", None),
+    ("Trench 1x5", "trench-1x5.jpg", None),
+    ("Trireme Graveyard", "trireme-graveyard.jpg", None),
+    ("Windblighted Fleet", "windblighted-fleet.jpg", None),
+    ("Wishstorm", "wishstorm.jpg", None),
+)
+
+TERRAIN_CARD_STEMS = (
+    "abandoned-temple", "ambrosia-cloud", "ambrosia-elephant", "ambrosia-pool",
+    "ambrosia-trail", "arcology", "argo-hull", "black-abyss", "black-glacier",
+    "black-iceberg", "black-lake", "city", "cliff", "column", "cyclops-trap",
+    "damaged-krypteia-outpost", "floating-rocks", "fortified-city",
+    "giant-black-iceberg", "giant-shell", "graveyard-of-the-frail",
+    "hyperborean-ruins", "inkblot", "irem-city", "irem-tower", "krypteia-outpost",
+    "labyrinth", "lightwall", "maze-fissure", "maze-outcrop", "minos-manos-unit",
+    "petrified-vent", "ruined-arcology", "ruined-city", "school-of-creatures",
+    "spartan-river-works", "spot-of-nothingness", "staircase-entrance",
+    "termophylaed-city", "time-frozen-city", "timefront", "trench",
+    "trireme-graveyard", "windblighted-fleet", "wishstorm",
+)
 
 
 CATALOG_B85 = (
@@ -965,6 +1058,32 @@ def fixed_catalog_payload() -> dict[str, Any]:
             faces={"front": f"story/images/c5/supplement-pages/page-{page}.jpg"},
         ))
 
+    additions.append(CatalogItem(
+        id=make_id("common", "决战版图", "战斗版图", "battle-board", "决战版图"),
+        cycle="common", module="决战版图", subgroup="战斗版图",
+        name="决战版图（仅实际战斗区域）", number="battle-board", sort_order=54_000,
+        faces={"front": "ss/battle-board.jpg"},
+    ))
+    for order, (name, front, back) in enumerate(BATTLE_TERRAIN_PIECES):
+        faces = {"front": f"ss/terrain/{front}"}
+        if back:
+            faces["back"] = f"ss/terrain/{back}"
+        additions.append(CatalogItem(
+            id=make_id("common", "决战版图", "地形板块", Path(front).stem, name),
+            cycle="common", module="决战版图", subgroup="地形板块",
+            name=f"地形板块：{name}{'（双面）' if back else ''}",
+            number=Path(front).stem, sort_order=54_100 + order,
+            faces=faces,
+        ))
+    for order, stem in enumerate(TERRAIN_CARD_STEMS):
+        label = " ".join(part.capitalize() for part in stem.split("-"))
+        additions.append(CatalogItem(
+            id=make_id("common", "决战版图", "地形卡", stem, label),
+            cycle="common", module="决战版图", subgroup="地形卡",
+            name=f"地形卡：{label}", number=stem, sort_order=54_300 + order,
+            faces={"front": f"ss/terrain-cards/{stem}.jpg"},
+        ))
+
     additions.extend((
         CatalogItem(
             id=make_id("c5", "地图模块图标", "地图状态图标", "surface", "水上"),
@@ -1036,7 +1155,7 @@ def fixed_catalog_payload() -> dict[str, Any]:
             marker = str(item.get("number") or "").strip()
             item["sort_order"] = list(AIBP_TOKEN_LABELS).index(marker)
     payload["source"]["catalog_items"] = len(payload["items"])
-    payload["source"]["catalog_version"] = "ATO-Local-0.2.11+complete-import-assets-6"
+    payload["source"]["catalog_version"] = "ATO-Local-0.2.11+complete-import-assets-7"
     return payload
 
 

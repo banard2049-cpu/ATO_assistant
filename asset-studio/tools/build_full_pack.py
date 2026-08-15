@@ -17,6 +17,14 @@ PROJECT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT))
 
 from app.fixed_catalog import fixed_catalog_payload  # noqa: E402
+from app.packages import PACKAGE_VERSION  # noqa: E402
+from app.story_extras import (  # noqa: E402
+    ENTITY_INDEX_JSON_TARGET,
+    ENTITY_INDEX_JS_TARGET,
+    ENTITY_INDEX_MEMBER,
+    entity_index_manifest_entry,
+    parse_entity_index,
+)
 
 
 CHUNK = 4 * 1024 * 1024
@@ -42,6 +50,21 @@ def normalized_member_lookup(archive: zipfile.ZipFile) -> dict[str, str]:
             continue
         result.setdefault(decoded, actual)
     return result
+
+
+def load_entity_index(
+    archive: zipfile.ZipFile,
+    source_members: dict[str, str],
+    overlay_root: Path | None,
+):
+    for target in (ENTITY_INDEX_JSON_TARGET, ENTITY_INDEX_JS_TARGET):
+        overlay = overlay_root / Path(*PurePosixPath(target).parts) if overlay_root else None
+        if overlay is not None and overlay.is_file():
+            return parse_entity_index(overlay.read_bytes(), overlay)
+        member = f"assets/web/{target}"
+        if member in source_members:
+            return parse_entity_index(archive.read(source_members[member]), Path(target))
+    raise ValueError("完整资料包缺少人物小传索引")
 
 
 def build(apk_path: Path, destination: Path, overlay_root: Path | None = None) -> dict:
@@ -103,6 +126,7 @@ def build(apk_path: Path, destination: Path, overlay_root: Path | None = None) -
                     print(f"图片 {index}/{len(faces)}", flush=True)
 
             stories = parse_story(source_zip.read(STORY_MEMBER))
+            entity_index = load_entity_index(source_zip, source_members, overlay_root)
             story_review = [
                 {
                     "book_id": str(book.get("id") or ""),
@@ -119,12 +143,13 @@ def build(apk_path: Path, destination: Path, overlay_root: Path | None = None) -
             ]
             manifest = {
                 "format": "ato-asset-pack",
-                "version": 1,
+                "version": PACKAGE_VERSION,
                 "createdAt": datetime.now(timezone.utc).isoformat(),
                 "catalogSource": fixed["source"],
                 "items": manifest_items,
                 "assets": assets,
                 "stories": stories,
+                "storyFiles": [entity_index_manifest_entry(entity_index)],
                 "progress": {"skippedFaces": [], "storyReview": story_review},
                 "retiredItems": [
                     "c3:aibp:hypertime-oracle-ai:hypertime-oracle-ai-iii-007"
@@ -136,6 +161,7 @@ def build(apk_path: Path, destination: Path, overlay_root: Path | None = None) -
                     "audioIncluded": False,
                 },
             }
+            output_zip.writestr(ENTITY_INDEX_MEMBER, entity_index.json_bytes)
             output_zip.writestr(
                 "manifest.json",
                 json.dumps(manifest, ensure_ascii=False, separators=(",", ":")),
@@ -150,6 +176,7 @@ def build(apk_path: Path, destination: Path, overlay_root: Path | None = None) -
         "assets": len(assets),
         "books": len(stories.get("books", [])),
         "stories": sum(len(book.get("entries", [])) for book in stories.get("books", [])),
+        "entities": entity_index.entity_count,
         "bytes": destination.stat().st_size,
     }
 

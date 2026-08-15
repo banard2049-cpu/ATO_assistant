@@ -1,0 +1,336 @@
+.battle-map-panel {
+  width: 100%;
+  margin-top: 18px;
+  padding: 18px 10px 28px;
+  border-top: 1px solid rgba(199, 173, 114, 0.24);
+}
+
+.battle-map-head {
+  max-width: 1180px;
+  margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.battle-map-head h3 {
+  margin: 0;
+  color: var(--gold);
+  font-size: 17px;
+}
+
+.battle-map-head-actions,
+.battle-map-toolbar,
+.battle-map-add {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.battle-map-head-actions label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.battle-map-head-actions input {
+  width: 17px;
+  height: 17px;
+  margin: 0;
+  accent-color: var(--gold);
+}
+
+.battle-map-setup-control[hidden] { display: none; }
+
+.battle-map-setup-control select {
+  min-height: 36px;
+  max-width: 220px;
+  padding: 0 9px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #11110f;
+  color: var(--text);
+}
+
+.battle-map-workspace {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 230px;
+  gap: 14px;
+  align-items: start;
+}
+
+.battle-map-board {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 10 / 7;
+  overflow: hidden;
+  border: 1px solid rgba(199, 173, 114, 0.34);
+  background: #080b0a;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  cursor: crosshair;
+}
+
+.battle-map-board-image,
+.battle-map-terrain-layer,
+.battle-map-start-layer,
+.battle-map-grid {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.battle-map-board-image {
+  display: block;
+  object-fit: contain;
+}
+
+.battle-map-grid {
+  z-index: 3;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.12) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+  background-size: 5% 100%, 100% calc(100% / 14);
+}
+
+.battle-map-terrain-layer { z-index: 2; }
+.battle-map-start-layer { z-index: 4; pointer-events: none; }
+
+.battle-map-terrain {
+  position: absolute;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  transform-origin: center;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.48));
+}
+
+.battle-map-terrain:hover {
+  border-color: rgba(255, 255, 255, 0.62);
+}
+
+.battle-map-terrain.selected {
+  z-index: 2;
+  border-color: #f0c15d;
+  box-shadow: 0 0 0 2px rgba(10, 10, 8, 0.8), 0 0 0 4px rgba(240, 193, 93, 0.85);
+}
+
+.battle-map-terrain img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.battle-map-start {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  transform: translate(-50%, -50%);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  color: #fff;
+  font-weight: 950;
+  line-height: 1;
+  text-shadow: 0 1px 3px #000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.58);
+}
+
+.battle-map-start.apostle {
+  z-index: 2;
+  border-color: #f36f62;
+  background: rgba(146, 31, 25, 0.78);
+  font-size: clamp(12px, 1.7vw, 25px);
+}
+
+.battle-map-facing {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  color: #ffd166;
+  font-size: 0.72em;
+  line-height: 1;
+  text-shadow: 0 1px 3px #000;
+  transform-origin: center;
+}
+
+.battle-map-start.titan {
+  border-radius: 999px;
+  border-color: #73d2c1;
+  background: rgba(18, 94, 82, 0.82);
+  font-size: clamp(8px, 0.9vw, 13px);
+}
+
+.battle-map-side {
+  position: static;
+  top: auto;
+  min-width: 0;
+  height: auto;
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  overflow: visible;
+  border-right: 0;
+  border-left: 1px solid rgba(199, 173, 114, 0.2);
+  background: transparent;
+  box-shadow: none;
+}
+
+.battle-map-toolbar button,
+.battle-map-add button,
+.battle-map-head-actions button {
+  min-width: 38px;
+  min-height: 36px;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.battle-map-toolbar button {
+  flex: 1 1 calc(50% - 7px);
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.battle-map-toolbar button.danger {
+  color: #ff8d82;
+}
+
+.battle-map-add select {
+  width: 100%;
+  min-width: 0;
+  min-height: 38px;
+  padding: 0 9px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #11110f;
+  color: var(--text);
+}
+
+.battle-map-add button {
+  width: 100%;
+  color: var(--gold);
+  font-weight: 800;
+}
+
+.battle-map-selection {
+  min-height: 42px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(199, 173, 114, 0.15);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.battle-map-selection strong {
+  display: block;
+  color: var(--text);
+}
+
+.battle-map-cards {
+  max-width: 1180px;
+  margin: 18px auto 0;
+  padding-top: 14px;
+  border-top: 1px solid rgba(199, 173, 114, 0.2);
+}
+
+.battle-map-cards-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.battle-map-cards-head h4 {
+  margin: 0;
+  color: var(--gold);
+  font-size: 14px;
+}
+
+.battle-map-cards-head span,
+.battle-map-card-empty {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.battle-map-card-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+}
+
+.battle-map-card {
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid rgba(199, 173, 114, 0.28);
+  border-radius: 4px;
+  background: #0c0d0c;
+  color: var(--text);
+  cursor: zoom-in;
+  text-align: left;
+}
+
+.battle-map-card:hover,
+.battle-map-card:focus-visible {
+  border-color: var(--gold);
+}
+
+.battle-map-card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 5 / 7;
+  object-fit: cover;
+}
+
+.battle-map-card span {
+  display: block;
+  min-height: 36px;
+  padding: 7px 8px;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.battle-map-card-empty {
+  margin: 0;
+  padding: 14px 0;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .battle-map-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .battle-map-side {
+    grid-template-columns: auto minmax(180px, 1fr) minmax(150px, 1fr);
+    align-items: start;
+    border-left: 0;
+    border-top: 1px solid rgba(199, 173, 114, 0.2);
+  }
+
+  .battle-map-add button { width: auto; }
+}
+
+@media (max-width: 620px) {
+  .battle-map-panel { padding-inline: 4px; }
+  .battle-map-side { grid-template-columns: 1fr; }
+  .battle-map-toolbar { justify-content: center; }
+  .battle-map-card-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

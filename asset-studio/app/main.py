@@ -8,6 +8,7 @@ import re
 import shutil
 import socket
 import tempfile
+import time
 import urllib.request
 import uuid
 import webbrowser
@@ -161,15 +162,22 @@ def job_update(db: Database, job_id: str, *, status: str | None = None, progress
     db.execute(f"UPDATE jobs SET {','.join(fields)} WHERE id=?", tuple(params))
 
 
-def run_export_job(db_path: Path, library: Path, destination: Path, payload: dict, job_id: str) -> None:
+def run_export_job(
+    db_path: Path, library: Path, destination: Path, payload: dict, job_id: str,
+    ato_path: str = "",
+) -> None:
     db = Database(db_path)
     job_update(db, job_id, status="running", progress=1, message="正在准备文件")
     callback = lambda done, total, message: job_update(
         db, job_id, progress=min(95, max(1, int(done / max(total, 1) * 95))), message=message
     )
     try:
-        result = (export_compat(db, library, destination, payload, callback) if payload["kind"] == "compat"
-                  else export_package(db, library, destination, payload, callback))
+        ato_root = Path(ato_path) if ato_path else None
+        result = (
+            export_compat(db, library, destination, payload, callback, ato_root)
+            if payload["kind"] == "compat"
+            else export_package(db, library, destination, payload, callback, ato_root)
+        )
         result["filename"] = destination.name
         job_update(db, job_id, status="complete", progress=100, message="生成完成", result=result)
     except Exception as exc:
@@ -246,10 +254,28 @@ def setup(payload: SetupPayload, request: Request) -> dict:
     return {"ok": True, "library_path": config.library_path, "ato_path": config.ato_path}
 
 
+# In-memory pairing throttle (single-process uvicorn is fine): after several
+# consecutive failures the endpoint is locked for a short window, so a LAN
+# attacker cannot brute-force the pairing code.
+_pair_failures = 0
+_pair_lock_until = 0.0
+_MAX_PAIR_FAILURES = 5
+_PAIR_LOCK_SECONDS = 30
+
+
 @app.post("/api/pair")
 def pair(payload: PairPayload, response: Response) -> dict:
+    global _pair_failures, _pair_lock_until
+    now = time.monotonic()
+    if now < _pair_lock_until:
+        raise HTTPException(status_code=429, detail="配对尝试过于频繁，请稍后再试")
     if payload.code.strip() != PAIRING_CODE:
+        _pair_failures += 1
+        if _pair_failures >= _MAX_PAIR_FAILURES:
+            _pair_lock_until = now + _PAIR_LOCK_SECONDS
+            _pair_failures = 0
         raise HTTPException(status_code=401, detail="配对码不正确")
+    _pair_failures = 0
     response.set_cookie("ato_session", make_token(), httponly=True, samesite="strict", max_age=60 * 60 * 24 * 30)
     return {"ok": True}
 
@@ -513,7 +539,9 @@ def packages_export(payload: ExportPayload, background_tasks: BackgroundTasks) -
     suffix = "-compat.zip" if payload.kind == "compat" else ".atopack"
     destination = library / "exports" / f"{stem}{suffix}"
     job_id = new_job(db, f"export-{payload.kind}")
-    background_tasks.add_task(run_export_job, db.path, library, destination, payload.model_dump(), job_id)
+    background_tasks.add_task(
+        run_export_job, db.path, library, destination, payload.model_dump(), job_id, config.ato_path
+    )
     return {"job_id": job_id}
 
 

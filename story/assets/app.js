@@ -20,6 +20,7 @@
   const entryBadge = document.querySelector("#entryBadge");
   const storyText = document.querySelector("#storyText");
   const linkPanel = document.querySelector("#linkPanel");
+  const entityBioToggle = document.querySelector("#entityBioToggle");
   const ttsButton = document.querySelector("#ttsButton");
   const ttsSpeed = document.querySelector("#ttsSpeed");
   const ttsVoice = document.querySelector("#ttsVoice");
@@ -57,6 +58,7 @@
   };
   const entityLookup = new Map();
   let entityAliases = [];
+  let entityBiosEnabled = false;
   const externalAudioCache = new Map();
   const externalAudioCacheMax = 90;
   const ttsStorageKey = "ato-story-tts-config-v1";
@@ -186,7 +188,7 @@
   }
 
   function annotateEntitiesInEscapedHtml(html) {
-    if (!entityAliases.length || !html) return html;
+    if (!entityBiosEnabled || !entityAliases.length || !html) return html;
     const pattern = new RegExp(entityAliases.map((item) => escapeRegExp(escapeHtml(item.alias))).join("|"), "gi");
     return html.replace(pattern, (match, offset, source) => {
       const before = source.slice(Math.max(0, offset - 80), offset);
@@ -201,6 +203,79 @@
       if (!entity) return match;
       return `<button class="character-link entity-link" type="button" data-entity-id="${escapeAttribute(entity.id)}">${match}</button>`;
     });
+  }
+
+  function annotateEntityTextNodes(root) {
+    if (!entityBiosEnabled || !entityAliases.length || !root) return;
+    const pattern = new RegExp(entityAliases.map((item) => escapeRegExp(item.alias)).join("|"), "gi");
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        const parent = node.parentElement;
+        pattern.lastIndex = 0;
+        if (!parent || !node.nodeValue || !pattern.test(node.nodeValue)) return NodeFilter.FILTER_REJECT;
+        pattern.lastIndex = 0;
+        if (parent.closest("button, a, script, style, textarea, select, [data-entity-id], [data-id], [data-page-viewer]")) {
+          return NodeFilter.FILTER_REJECT;
+        }
+        return NodeFilter.FILTER_ACCEPT;
+      },
+    });
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+
+    nodes.forEach((node) => {
+      const text = node.nodeValue || "";
+      const fragment = document.createDocumentFragment();
+      let lastIndex = 0;
+      let match;
+      pattern.lastIndex = 0;
+      while ((match = pattern.exec(text)) !== null) {
+        const label = match[0];
+        const prevChar = text[match.index - 1] || "";
+        const nextChar = text[match.index + label.length] || "";
+        const entity = entityLookup.get(label.toLowerCase());
+        if (!entity
+          || (/^[A-Za-z]/.test(label) && (/[A-Za-z]/.test(prevChar) || /[A-Za-z]/.test(nextChar)))
+          || (/[\u3400-\u9fff]/.test(label) && /[们的]/.test(nextChar))) {
+          continue;
+        }
+        if (match.index > lastIndex) fragment.append(document.createTextNode(text.slice(lastIndex, match.index)));
+        const button = document.createElement("button");
+        button.className = "character-link entity-link";
+        button.type = "button";
+        button.dataset.entityId = entity.id;
+        button.textContent = label;
+        fragment.append(button);
+        lastIndex = match.index + label.length;
+      }
+      if (lastIndex === 0) return;
+      if (lastIndex < text.length) fragment.append(document.createTextNode(text.slice(lastIndex)));
+      node.replaceWith(fragment);
+    });
+  }
+
+  function updateEntityBioToggle() {
+    if (!entityBioToggle) return;
+    entityBioToggle.textContent = `人物小传：${entityBiosEnabled ? "开" : "关"}`;
+    entityBioToggle.setAttribute("aria-pressed", entityBiosEnabled ? "true" : "false");
+    entityBioToggle.classList.toggle("active", entityBiosEnabled);
+  }
+
+  function toggleEntityBios() {
+    if (!entityBioToggle) return;
+    if (!entityBiosEnabled) {
+      const accepted = window.confirm(
+        "人物小传为 AI 生成，仅用于提醒人物大致是谁，不保证正确；同时非剧透部分也可能包含剧透。\n\n请在明白上述风险后再打开人物小传。"
+      );
+      if (!accepted) {
+        updateEntityBioToggle();
+        return;
+      }
+    }
+    entityBiosEnabled = !entityBiosEnabled;
+    if (!entityBiosEnabled) closeEntityBio();
+    updateEntityBioToggle();
+    if (activeEntry) renderStory(activeEntry);
   }
 
   function normalizeQuery(value) {
@@ -1445,6 +1520,7 @@
   }
 
   function openEntityBio(entityId) {
+    if (!entityBiosEnabled) return;
     const entity = (entityData.entities || []).find((item) => item.id === entityId);
     if (!entity) return;
     const overlay = ensureEntityOverlay();
@@ -2112,6 +2188,7 @@
         ? renderSectionedStory(entry, imagesHtml)
         : `${linkify(entry.text, currentBook())}${imagesHtml ? `<div class="battle-gallery">${imagesHtml}</div>` : ""}`;
     storyText.innerHTML = html;
+    annotateEntityTextNodes(storyText);
   }
 
   function renderAiTranslatedSupplement(entry, imagesHtml) {
@@ -2221,7 +2298,7 @@
     if (bookId) bookSelect.value = bookId;
     activeBook = currentBook();
 
-    const chapterKey = resolveChapterKey(activeBook, target.chapterKey || target.chapter || "");
+    const chapterKey = resolveChapterKey(activeBook, target.chapterKey || target.chapter || target.chapterHint || "");
     populateChapters(activeBook, chapterKey || undefined);
     const encounterKey = resolveEncounterKey(activeBook, target.encounterKey || target.encounter || "");
     if (encounterKey) populateEncounters(activeBook, encounterKey);
@@ -2669,6 +2746,7 @@
 
     loadMemories();
     initEntities();
+    updateEntityBioToggle();
     renderMemories();
     loadVoices();
     updateTtsControls();
@@ -2827,6 +2905,10 @@
       toggleSpeech();
     }
   });
+
+  if (entityBioToggle) {
+    entityBioToggle.addEventListener("click", toggleEntityBios);
+  }
 
   storyText.addEventListener("click", (event) => {
     const pageTarget = event.target.closest("[data-page-viewer]");

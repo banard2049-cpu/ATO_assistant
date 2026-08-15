@@ -208,6 +208,18 @@
       font-size: 15px;
     }
 
+    .campaign-save-status {
+      display: inline-flex;
+      margin-left: 8px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .campaign-save-status[data-state="saving"] { color: var(--accent); }
+    .campaign-save-status[data-state="offline"] { color: var(--danger); }
+    .campaign-save-status[data-state="saved"] { color: #16794a; }
+
     .record-card-link {
       display: inline-flex;
       align-items: center;
@@ -1670,6 +1682,13 @@
       accent-color: var(--done);
     }
 
+    .second-screen-subtoggle {
+      padding-top: 9px;
+      border-top: 1px solid var(--line);
+      font-size: 13px;
+      font-weight: 850;
+    }
+
     .second-screen-address {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto auto;
@@ -1945,7 +1964,7 @@
             <select id="cycleSelect"></select>
           </label>
         </div>
-        <p class="subtitle">按每日流程推进战役，把故事书、AIBP 和科技工具接到同一张桌面上。</p>
+        <p class="subtitle">按每日流程推进战役，把故事书、AIBP 和科技工具接到同一张桌面上。<span id="campaignSaveStatus" class="campaign-save-status" data-state="saving" aria-live="polite">正在连接存档...</span></p>
       </div>
       <section class="day-card" aria-label="当前天数">
         <label>
@@ -2022,6 +2041,10 @@
                 <button id="copySecondScreenButton" type="button" class="secondary">复制网址</button>
                 <a id="openSecondScreenLink" class="record-card-link" href="./ss/" target="_blank" rel="noopener">打开</a>
               </div>
+              <label id="secondScreenBattleBoardToggleRow" class="second-screen-toggle second-screen-subtoggle" hidden>
+                <input id="secondScreenBattleBoardToggle" type="checkbox" checked>
+                显示决战版图
+              </label>
               <label id="secondScreenScaleRow" class="second-screen-scale" hidden>
                 地图显示大小
                 <input id="secondScreenScale" type="range" min="60" max="200" step="10" value="100">
@@ -2919,8 +2942,8 @@
         default: {
           id: "default",
           name: "默认用户",
-          activeCycleId: "c2",
-          cycles: createDefaultCycles("c2"),
+          activeCycleId: "c1",
+          cycles: createDefaultCycles("c1"),
         },
       },
     };
@@ -2936,6 +2959,7 @@
       loginModeButton: document.querySelector("#loginModeButton"),
       registerModeButton: document.querySelector("#registerModeButton"),
       sessionAccountName: document.querySelector("#sessionAccountName"),
+      campaignSaveStatus: document.querySelector("#campaignSaveStatus"),
       logoutButton: document.querySelector("#logoutButton"),
       dayInput: document.querySelector("#dayInput"),
       cycleSelect: document.querySelector("#cycleSelect"),
@@ -2964,6 +2988,8 @@
       secondScreenScaleRow: document.querySelector("#secondScreenScaleRow"),
       secondScreenScale: document.querySelector("#secondScreenScale"),
       secondScreenScaleValue: document.querySelector("#secondScreenScaleValue"),
+      secondScreenBattleBoardToggleRow: document.querySelector("#secondScreenBattleBoardToggleRow"),
+      secondScreenBattleBoardToggle: document.querySelector("#secondScreenBattleBoardToggle"),
       secondScreenBattleScaleRow: document.querySelector("#secondScreenBattleScaleRow"),
       secondScreenBattleScale: document.querySelector("#secondScreenBattleScale"),
       secondScreenBattleScaleValue: document.querySelector("#secondScreenBattleScaleValue"),
@@ -2983,6 +3009,9 @@
     let campaignSectionBaseline = null;
     let campaignExternalSyncInFlight = false;
     let campaignSessionEpoch = 0;
+    let campaignReconnectTimer = null;
+    let campaignReconnectInFlight = false;
+    let campaignReconnectDelay = 2000;
     const campaignSyncChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-dashboard-sync-v1") : null;
     const recordSyncChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-record-sync-v1") : null;
     const heroMnemosSyncChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-hero-mnemos-sync-v1") : null;
@@ -3053,6 +3082,18 @@
       };
     }
 
+    function setCampaignSaveStatus(message, status = "saved") {
+      if (!elements.campaignSaveStatus) return;
+      elements.campaignSaveStatus.textContent = message;
+      elements.campaignSaveStatus.dataset.state = status;
+    }
+
+    function clearCampaignReconnect() {
+      clearTimeout(campaignReconnectTimer);
+      campaignReconnectTimer = null;
+      campaignReconnectDelay = 2000;
+    }
+
     function renderDashboardArchive(nextArchive) {
       archive = normalizeArchive(nextArchive);
       const requestedCycleId = new URLSearchParams(window.location.search).get("cycle");
@@ -3069,13 +3110,78 @@
 
     async function readLatestDashboardSection() {
       const response = await fetch(campaignStorageUrl, { cache: "no-store" });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      if (!response.ok) {
+        const error = new Error(`HTTP ${response.status}`);
+        error.status = response.status;
+        throw error;
+      }
       const payload = await response.json();
       if (!payload.ok) throw new Error(payload.error || "读取失败");
       return {
         archive: normalizeArchive(payload.state || defaultArchive),
         revision: Math.max(0, Number(payload.revision || 0)),
+        exists: Boolean(payload.exists),
       };
+    }
+
+    function scheduleCampaignReconnect(sessionEpoch = campaignSessionEpoch) {
+      if (campaignReconnectTimer || campaignReconnectInFlight || campaignStorageAvailable || !sessionUser) return;
+      const wait = campaignReconnectDelay;
+      campaignReconnectDelay = Math.min(30000, campaignReconnectDelay * 2);
+      campaignReconnectTimer = setTimeout(() => {
+        campaignReconnectTimer = null;
+        void probeCampaignReconnect(sessionEpoch);
+      }, wait);
+    }
+
+    async function probeCampaignReconnect(sessionEpoch = campaignSessionEpoch) {
+      if (campaignStorageAvailable || campaignReconnectInFlight || sessionEpoch !== campaignSessionEpoch) return;
+      campaignReconnectInFlight = true;
+      try {
+        const latest = await readLatestDashboardSection();
+        if (sessionEpoch !== campaignSessionEpoch) return;
+        const hadQueuedSave = campaignSaveQueuedBeforeReady;
+        const localArchive = cloneJson(archive);
+        const localBaseline = cloneJson(campaignSectionBaseline || defaultArchive);
+        campaignStorageAvailable = true;
+        campaignSectionRevision = latest.revision;
+        campaignSectionBaseline = cloneJson(latest.archive);
+        campaignSaveQueuedBeforeReady = false;
+        campaignReconnectDelay = 2000;
+
+        if (hadQueuedSave) {
+          const merged = mergeDashboardChanges(localBaseline, localArchive, latest.archive);
+          renderDashboardArchive(merged.value);
+          setCampaignSaveStatus("已重连，正在同步", "saving");
+          queueCampaignSave();
+        } else {
+          renderDashboardArchive(latest.archive);
+          campaignSectionBaseline = cloneJson(archive);
+          if (latest.exists) setCampaignSaveStatus("已重新连接", "saved");
+          else queueCampaignSave();
+        }
+      } catch (error) {
+        if (sessionEpoch !== campaignSessionEpoch) return;
+        if (error?.status === 401) {
+          showAuth("登录已过期，请重新登录。");
+          return;
+        }
+        console.warn(error);
+        setCampaignSaveStatus("存档离线，等待重连", "offline");
+      } finally {
+        campaignReconnectInFlight = false;
+        if (sessionEpoch === campaignSessionEpoch && !campaignStorageAvailable) {
+          scheduleCampaignReconnect(sessionEpoch);
+        }
+      }
+    }
+
+    function reconnectCampaignNow() {
+      if (campaignStorageAvailable || campaignReconnectInFlight || !sessionUser) return;
+      clearTimeout(campaignReconnectTimer);
+      campaignReconnectTimer = null;
+      campaignReconnectDelay = 2000;
+      void probeCampaignReconnect(campaignSessionEpoch);
     }
 
     async function syncDashboardFromExternalUpdate() {
@@ -3106,13 +3212,21 @@
         renderDashboardArchive(merged.value);
         queueCampaignSave();
       } catch (error) {
-        console.warn(error);
+        if (error?.status === 401) {
+          showAuth("登录已过期，请重新登录。");
+        } else {
+          if (!jsonEqual(archive, campaignSectionBaseline || archive)) campaignSaveQueuedBeforeReady = true;
+          campaignStorageAvailable = false;
+          setCampaignSaveStatus("存档离线，等待重连", "offline");
+          console.warn(error);
+          scheduleCampaignReconnect();
+        }
       } finally {
         campaignExternalSyncInFlight = false;
       }
     }
 
-    function createDefaultCycles(activeCycleId = "c2", seedState = null) {
+    function createDefaultCycles(activeCycleId = "c1", seedState = null) {
       return Object.fromEntries(cycleConfigs.map((cycle) => [
         cycle.id,
         {
@@ -3137,8 +3251,8 @@
         profiles.default = {
           id: "default",
           name: "默认用户",
-          activeCycleId: "c2",
-          cycles: createDefaultCycles("c2"),
+          activeCycleId: "c1",
+          cycles: createDefaultCycles("c1"),
         };
       }
 
@@ -3149,7 +3263,7 @@
     function normalizeProfile(profile) {
       const activeCycleId = cycleConfigs.some((cycle) => cycle.id === profile.activeCycleId)
         ? profile.activeCycleId
-        : "c2";
+        : "c1";
       const sourceCycles = isPlainObject(profile.cycles) ? profile.cycles : null;
       const cycles = {};
 
@@ -3179,6 +3293,7 @@
 
     function showAuth(message = "") {
       campaignSessionEpoch += 1;
+      clearCampaignReconnect();
       clearTimeout(campaignSaveTimer);
       campaignSaveTimer = null;
       campaignSavePending = false;
@@ -3193,6 +3308,7 @@
 
     function startAuthenticatedApp(user) {
       campaignSessionEpoch += 1;
+      clearCampaignReconnect();
       clearTimeout(campaignSaveTimer);
       campaignSaveTimer = null;
       campaignSavePending = false;
@@ -3205,6 +3321,7 @@
       elements.sessionAccountName.textContent = user?.username || "当前账号";
       elements.authGate.hidden = true;
       elements.appShell.hidden = false;
+      setCampaignSaveStatus("正在连接存档", "saving");
       loadCampaignSection(campaignSessionEpoch);
       refreshCachedArgoRecord();
       loadSecondScreenStatus();
@@ -3228,8 +3345,11 @@
       elements.secondScreenScaleRow.hidden = !enabled;
       elements.secondScreenScale.value = String(displayScale);
       elements.secondScreenScaleValue.textContent = `${displayScale}%`;
+      const battleBoardVisible = payload.battleBoardVisible !== false;
+      elements.secondScreenBattleBoardToggleRow.hidden = !enabled;
+      elements.secondScreenBattleBoardToggle.checked = battleBoardVisible;
       const battleScale = Math.max(60, Math.min(200, Number(payload.displayScales?.battleBoard || 100)));
-      elements.secondScreenBattleScaleRow.hidden = !enabled;
+      elements.secondScreenBattleScaleRow.hidden = !enabled || !battleBoardVisible;
       elements.secondScreenBattleScale.value = String(battleScale);
       elements.secondScreenBattleScaleValue.textContent = `${battleScale}%`;
       const battleRotation = [0, 90, 180, 270].includes(Number(payload.battleRotation)) ? Number(payload.battleRotation) : 0;
@@ -3243,7 +3363,9 @@
       elements.secondScreenUrl.value = preferred;
       elements.openSecondScreenLink.href = preferred || "./ss/";
       elements.secondScreenHint.textContent = enabled
-        ? "第二屏幕已开启。AIBP 开启新战役时显示决战版图，战利品写入记录表后恢复地图。"
+        ? battleBoardVisible
+          ? "第二屏幕已开启。AIBP 开启新战役时显示决战版图，战利品写入记录表后恢复地图。"
+          : "第二屏幕已开启。战斗期间显示 AIBP 镜像和当前地形卡，决战版图状态仍会保留。"
         : "打开后，同一局域网设备可通过专用网址查看地图或决战版图。";
     }
 
@@ -3297,6 +3419,28 @@
       } catch (error) {
         const moduleLabel = moduleId === "map" ? "地图" : moduleId === "battleBoard" ? "决战版图" : moduleId;
         elements.secondScreenHint.textContent = `${moduleLabel}显示大小保存失败：${String(error.message || error)}`;
+      }
+    }
+
+    async function setSecondScreenBattleBoardVisible(battleBoardVisible) {
+      if (!secondScreenEnabled || secondScreenBusy) return;
+      secondScreenBusy = true;
+      elements.secondScreenBattleBoardToggle.disabled = true;
+      try {
+        const response = await fetch(`${authUrl}?action=second-screen-status`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ enabled: true, battleBoardVisible }),
+        });
+        const payload = await response.json().catch(() => null);
+        if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+        renderSecondScreenStatus(payload);
+      } catch (error) {
+        elements.secondScreenBattleBoardToggle.checked = !battleBoardVisible;
+        elements.secondScreenHint.textContent = `决战版图显示设置失败：${String(error.message || error)}`;
+      } finally {
+        secondScreenBusy = false;
+        elements.secondScreenBattleBoardToggle.disabled = false;
       }
     }
 
@@ -3425,7 +3569,7 @@
         ...defaultState,
         ...value,
         day,
-        dateNotes: isPlainObject(value.dateNotes) ? value.dateNotes : {},
+        dateNotes: isPlainObject(value.dateNotes) ? cloneJson(value.dateNotes) : {},
         mapCurrentTileTags: Array.isArray(value.mapCurrentTileTags)
           ? value.mapCurrentTileTags
           : (Array.isArray(value.mapSnapshot?.currentTileTags) ? value.mapSnapshot.currentTileTags : []),
@@ -3463,15 +3607,15 @@
         specialEventConstants: isPlainObject(value.specialEventConstants) ? value.specialEventConstants : null,
         specialEventConstantsDay,
         specialEventConstantsActive: value.specialEventConstants?.[value.specialEventConstantsActive] ? String(value.specialEventConstantsActive) : null,
-        constantToolsOpen: isPlainObject(value.constantToolsOpen) ? value.constantToolsOpen : {},
+        constantToolsOpen: isPlainObject(value.constantToolsOpen) ? cloneJson(value.constantToolsOpen) : {},
         exploration: normalizeExploration(value.exploration),
         cardTracks: normalizeCardTracks(value.cardTracks, value.cardCounters, value.cardTracks && value.cardTracksVersion !== 2, cycleId),
         cardTracksVersion: 2,
         cardCounters: undefined,
         unlockedTech: isPlainObject(value.unlockedTech) ? value.unlockedTech : null,
-        events: Array.isArray(value.events) ? value.events : [],
+        events: Array.isArray(value.events) ? cloneJson(value.events) : [],
         nextBattleTerrain: normalizeNextBattleTerrain(value.nextBattleTerrain),
-        completed: isPlainObject(value.completed) ? value.completed : {},
+        completed: isPlainObject(value.completed) ? cloneJson(value.completed) : {},
       };
     }
 
@@ -4166,14 +4310,14 @@
     function currentCycle() {
       const profile = currentProfile();
       if (!profile.cycles?.[profile.activeCycleId]) {
-        profile.activeCycleId = "c2";
-        profile.cycles = createDefaultCycles("c2");
+        profile.activeCycleId = "c1";
+        profile.cycles = createDefaultCycles("c1");
       }
       return profile.cycles[profile.activeCycleId];
     }
 
     function currentCycleConfig() {
-      return cycleConfigs.find((cycle) => cycle.id === currentProfile().activeCycleId) || cycleConfigs[1];
+      return cycleConfigs.find((cycle) => cycle.id === currentProfile().activeCycleId) || cycleConfigs[0];
     }
 
     function saveState() {
@@ -4235,13 +4379,29 @@
     }
 
     async function saveMapCommandState(commandState) {
-      const response = await fetch(`${authUrl}?section=map`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ section: "map", userId: commandState.profileId, state: commandState.state }),
-      });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        const response = await fetch(`${authUrl}?section=map`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            section: "map",
+            userId: commandState.profileId,
+            state: commandState.state,
+            expectedRevision: commandState.revision,
+          }),
+        });
+        const payload = await response.json().catch(() => null);
+        if (response.status === 409 && payload?.revision) {
+          // The map page saved the section meanwhile; adopt the latest
+          // revision and re-save the command state once.
+          commandState.revision = payload.revision;
+          continue;
+        }
+        if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+        commandState.revision = payload.revision || commandState.revision;
+        return;
+      }
+      throw new Error("地图状态在保存时被其他页面更新，请重试。");
     }
 
     function currentMapCommandCycle(commandState) {
@@ -4441,8 +4601,10 @@
         if (sessionEpoch !== campaignSessionEpoch) return;
         if (!payload.ok) throw new Error(payload.error || "读取失败");
         campaignStorageAvailable = true;
+        clearCampaignReconnect();
         campaignSectionRevision = Math.max(0, Number(payload.revision || 0));
         const flushQueuedSave = campaignSaveQueuedBeforeReady;
+        const initializeEmptySection = !payload.exists || !payload.state;
         campaignSaveQueuedBeforeReady = false;
         if (payload.exists && payload.state) {
           renderDashboardArchive(payload.state);
@@ -4450,30 +4612,40 @@
         } else {
           renderDashboardArchive(defaultArchive);
           campaignSectionBaseline = cloneJson(archive);
-          queueCampaignSave();
         }
-        if (flushQueuedSave) queueCampaignSave();
+        if (flushQueuedSave || initializeEmptySection) queueCampaignSave();
+        else setCampaignSaveStatus("已同步", "saved");
         // Load negotiation cards for explore reminders, then re-render flow.
         loadNegotiationCards().then(() => renderFlow());
         refreshCachedArgoRecord();
       } catch (error) {
         if (sessionEpoch !== campaignSessionEpoch) return;
         campaignStorageAvailable = false;
+        setCampaignSaveStatus("存档离线，等待重连", "offline");
         console.warn(error);
+        scheduleCampaignReconnect(sessionEpoch);
       }
     }
 
     function queueCampaignSave() {
       if (!campaignStorageAvailable) {
         campaignSaveQueuedBeforeReady = true;
+        setCampaignSaveStatus("有修改待同步", "offline");
+        scheduleCampaignReconnect();
         return;
       }
       clearTimeout(campaignSaveTimer);
-      campaignSaveTimer = setTimeout(saveCampaignSection, 260);
+      setCampaignSaveStatus("等待保存", "saving");
+      campaignSaveTimer = setTimeout(() => void saveCampaignSection(), 260);
     }
 
     async function saveCampaignSection() {
-      if (!campaignStorageAvailable) return;
+      if (!campaignStorageAvailable) {
+        campaignSaveQueuedBeforeReady = true;
+        setCampaignSaveStatus("有修改待同步", "offline");
+        scheduleCampaignReconnect();
+        return;
+      }
       if (campaignSaveInFlight) {
         campaignSavePending = true;
         return;
@@ -4481,6 +4653,7 @@
       const sessionEpoch = campaignSessionEpoch;
       campaignSaveInFlight = true;
       campaignSavePending = false;
+      setCampaignSaveStatus("正在保存", "saving");
       const archiveBeingSaved = cloneJson(archive);
       try {
         const response = await fetch(campaignStorageUrl, {
@@ -4499,6 +4672,7 @@
         }
         const payload = await response.json().catch(() => null);
         if (response.status === 409 && payload?.code === "SAVE_CONFLICT") {
+          setCampaignSaveStatus("正在合并其他页面的修改", "saving");
           campaignSavePending = false;
           if (!campaignConflictReloading) {
             campaignConflictReloading = true;
@@ -4516,6 +4690,7 @@
               if (!keepLocal) {
                 renderDashboardArchive(latest.archive);
                 campaignConflictReloading = false;
+                setCampaignSaveStatus("已加载服务器版本", "saved");
                 return;
               }
             }
@@ -4529,10 +4704,17 @@
         if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
         campaignSectionRevision = Math.max(0, Number(payload.revision || campaignSectionRevision));
         campaignSectionBaseline = archiveBeingSaved;
+        campaignSaveQueuedBeforeReady = false;
+        campaignReconnectDelay = 2000;
+        setCampaignSaveStatus("已保存", "saved");
         campaignSyncChannel?.postMessage({ revision: campaignSectionRevision });
       } catch (error) {
         campaignConflictReloading = false;
+        campaignStorageAvailable = false;
+        campaignSaveQueuedBeforeReady = true;
+        setCampaignSaveStatus("保存失败，等待重试", "offline");
         console.warn(error);
+        scheduleCampaignReconnect(sessionEpoch);
       } finally {
         campaignSaveInFlight = false;
         if (campaignSavePending) saveCampaignSection();
@@ -4794,6 +4976,41 @@
       return readLocalHeroState();
     }
 
+    function applyHeroProgressChanges(baseState, changes, fallbackState = null) {
+      const next = cloneJson(isPlainObject(baseState) ? baseState : { heroes: [], activeHeroId: "", graveyard: [] });
+      if (!Array.isArray(next.heroes)) next.heroes = [];
+      const fallbackHeroes = new Map(
+        (Array.isArray(fallbackState?.heroes) ? fallbackState.heroes : [])
+          .filter((hero) => hero?.id)
+          .map((hero) => [hero.id, hero])
+      );
+
+      changes.forEach((change) => {
+        let hero = next.heroes.find((candidate) => candidate?.id === change.heroId);
+        if (!hero && fallbackHeroes.has(change.heroId)) {
+          hero = cloneJson(fallbackHeroes.get(change.heroId));
+          next.heroes.push(hero);
+        }
+        if (!hero) return;
+        const field = change.type === "fated" ? "fatedProgress" : "mnemosProgress";
+        if (!isPlainObject(hero[field])) hero[field] = {};
+        const current = Math.max(0, Number(hero[field][change.cardId] || 0));
+        hero[field][change.cardId] = Math.min(change.max, current + 1);
+      });
+      return next;
+    }
+
+    async function readServerHeroStateForUpdate() {
+      const response = await fetch("./api/campaign-state.php?section=heroes", { cache: "no-store" });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+      return {
+        state: isPlainObject(payload.state) ? payload.state : null,
+        revision: Math.max(0, Number(payload.revision || 0)),
+        userId: payload.user?.id || "",
+      };
+    }
+
     async function applyMnemosTagToHeroes(tagId, hubTitle, boxLabel) {
       const heroState = await readLatestHeroState();
       if (!heroState || !Array.isArray(heroState.heroes) || !heroState.heroes.length) return;
@@ -4863,54 +5080,52 @@
       const confirmMsg = `定数框标签【${tagZh}】\n来源：${hubTitle} · ${boxLabel}\n\n以下英雄将获得回忆节点：\n${lines.join("\n")}\n\n确认增加？`;
       if (!confirm(confirmMsg)) return;
 
-      // Apply changes
-      proposals.forEach(p => {
-        if (p.type === "mnemos") {
-          p.hero.mnemosProgress[p.cardId] = p.current + 1;
-        } else {
-          p.hero.fatedProgress[p.cardId] = p.current + 1;
-        }
-      });
+      const progressChanges = proposals.map((proposal) => ({
+        heroId: proposal.hero.id,
+        type: proposal.type,
+        cardId: proposal.cardId,
+        max: proposal.type === "mnemos" ? 10 : 3,
+      }));
+      const localHeroState = applyHeroProgressChanges(readLocalHeroState() || heroState, progressChanges, heroState);
 
       // Save back to localStorage
-      try { localStorage.setItem(HERO_STORAGE_KEY, JSON.stringify(heroState)); } catch {}
+      try { localStorage.setItem(HERO_STORAGE_KEY, JSON.stringify(localHeroState)); } catch {}
       // Also save to NAS
-      void saveHeroMnemosToServer(heroState);
+      void saveHeroMnemosToServer(heroState, progressChanges);
       // Notify hero page if open
       heroMnemosSyncChannel?.postMessage({ type: "hero-state-updated" });
     }
 
-    async function saveHeroMnemosToServer(heroState) {
+    async function saveHeroMnemosToServer(baseHeroState, progressChanges) {
       try {
-        const response = await fetch("./api/campaign-state.php?section=heroes", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            section: "heroes",
-            state: heroState,
-            expectedRevision: heroState._lastSyncRevision,
-          }),
-        });
-        const payload = await response.json().catch(() => null);
-        if (response.status === 409 && payload?.revision) {
-          heroState._lastSyncRevision = Math.max(0, Number(payload.revision || 0));
-          await fetch("./api/campaign-state.php?section=heroes", {
+        for (let attempt = 0; attempt < 5; attempt += 1) {
+          const latest = await readServerHeroStateForUpdate();
+          const next = applyHeroProgressChanges(latest.state || baseHeroState, progressChanges, baseHeroState);
+          const response = await fetch("./api/campaign-state.php?section=heroes", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               section: "heroes",
-              state: heroState,
-              expectedRevision: heroState._lastSyncRevision,
+              state: next,
+              expectedRevision: latest.revision,
             }),
           });
-          return;
+          const payload = await response.json().catch(() => null);
+          if (response.status === 409 && payload?.code === "SAVE_CONFLICT") continue;
+          if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+
+          const currentLocal = readLocalHeroState() || next;
+          currentLocal._lastSyncRevision = Math.max(0, Number(payload.revision || latest.revision + 1));
+          currentLocal._userId = payload.user?.id || latest.userId || currentLocal._userId || "";
+          try { localStorage.setItem(HERO_STORAGE_KEY, JSON.stringify(currentLocal)); } catch {}
+          heroMnemosSyncChannel?.postMessage({ type: "hero-state-updated" });
+          return true;
         }
-        if (response.ok && payload?.ok) {
-          heroState._lastSyncRevision = Math.max(0, Number(payload.revision || heroState._lastSyncRevision || 0));
-          heroState._userId = payload.user?.id || heroState._userId || "";
-          try { localStorage.setItem(HERO_STORAGE_KEY, JSON.stringify(heroState)); } catch {}
-        }
-      } catch {}
+        throw new Error("英雄记录持续冲突，请稍后重试。");
+      } catch (error) {
+        console.warn(error);
+        return false;
+      }
     }
 
     function surveyStoryEntryId(boxId) {
@@ -7109,6 +7324,9 @@
       );
     });
     elements.secondScreenToggle.addEventListener("change", () => setSecondScreenEnabled(elements.secondScreenToggle.checked));
+    elements.secondScreenBattleBoardToggle.addEventListener("change", () => {
+      setSecondScreenBattleBoardVisible(elements.secondScreenBattleBoardToggle.checked);
+    });
     elements.secondScreenScale.addEventListener("input", () => {
       elements.secondScreenScaleValue.textContent = `${elements.secondScreenScale.value}%`;
     });
@@ -7144,6 +7362,8 @@
     recordSyncChannel?.addEventListener("message", () => void refreshCachedArgoRecord());
     window.setInterval(() => void syncDashboardFromExternalUpdate(), 4000);
     window.addEventListener("focus", () => void syncDashboardFromExternalUpdate());
+    window.addEventListener("focus", reconnectCampaignNow);
+    window.addEventListener("online", reconnectCampaignNow);
     window.addEventListener("focus", () => void refreshCachedArgoRecord());
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) void syncDashboardFromExternalUpdate();

@@ -1711,6 +1711,7 @@
 
   </style>
   <link rel="stylesheet" href="c45_specials.css?v=20260730c">
+  <link rel="stylesheet" href="battle_map_control.css?v=20260815-terrain-cards1">
 </head>
 <body class="sidebar-collapsed">
   <button type="button" class="sidebar-toggle" id="sidebarToggle" aria-label="展开左侧边栏" title="展开/折叠左侧边栏">☰</button>
@@ -1829,6 +1830,49 @@
           </div>
         </div>
       </section>
+
+      <section class="battle-map-panel" id="battleMapControl" aria-label="决战版图控制">
+        <header class="battle-map-head">
+          <h3>决战版图</h3>
+          <div class="battle-map-head-actions">
+            <label class="battle-map-setup-control" data-battle-map-setup-control hidden>
+              战斗布局
+              <select data-battle-map-setup-select aria-label="战斗布局"></select>
+            </label>
+            <label><input type="checkbox" data-battle-map-starts-toggle checked>初始位置</label>
+            <button type="button" data-battle-map-reset>重置版图</button>
+          </div>
+        </header>
+        <div class="battle-map-workspace">
+          <div class="battle-map-board" data-battle-map-board>
+            <img class="battle-map-board-image" src="../ss/battle-board.jpg" alt="决战版图">
+            <div class="battle-map-terrain-layer" data-battle-map-terrain-layer></div>
+            <div class="battle-map-grid"></div>
+            <div class="battle-map-start-layer" data-battle-map-start-layer></div>
+          </div>
+          <div class="battle-map-side" role="region" aria-label="地形工具">
+            <div class="battle-map-toolbar">
+              <button type="button" data-battle-map-rotate-left disabled aria-label="逆时针旋转" title="逆时针旋转">↶ 左转</button>
+              <button type="button" data-battle-map-rotate-right disabled aria-label="顺时针旋转" title="顺时针旋转">↷ 右转</button>
+              <button type="button" data-battle-map-flip disabled aria-label="地形翻面" title="地形翻面">⇅ 翻面</button>
+              <button type="button" class="danger" data-battle-map-delete disabled aria-label="删除地形" title="删除地形">× 删除</button>
+            </div>
+            <div class="battle-map-add">
+              <select data-battle-map-add-select aria-label="新增地形"></select>
+              <button type="button" data-battle-map-add>+ 新增地形</button>
+            </div>
+            <div class="battle-map-selection" data-battle-map-selection>未选择地形</div>
+          </div>
+        </div>
+        <section class="battle-map-cards" aria-label="当前地形卡">
+          <div class="battle-map-cards-head">
+            <h4>当前地形卡</h4>
+            <span data-battle-map-card-count>0 张</span>
+          </div>
+          <div class="battle-map-card-list" data-battle-map-card-list></div>
+          <p class="battle-map-card-empty" data-battle-map-card-empty hidden>当前版图没有对应的地形卡</p>
+        </section>
+      </section>
     </main>
   </div>
 
@@ -1896,6 +1940,8 @@
   <script src="../map/map-tile-tags.js"></script>
   <script src="ps/CHIMERA_METASTASIOS/bp_status_map.js"></script>
   <script src="ps/other/token/token_manifest.js"></script>
+  <script src="../ss/terrain-data.js?v=20260815-level-layout2"></script>
+  <script src="battle_map_control.js?v=20260815-level-layout2"></script>
   <script>
     const apostles = [
       "HEKATON",
@@ -2222,6 +2268,7 @@
     const secondScreenSnapshotUrl = "../api/campaign-state.php?section=aibp";
     const secondScreenModeUrl = "../api/campaign-state.php?action=second-screen-mode";
     let secondScreenSnapshotTimer = null;
+    let battleMapControl = null;
     const undoStacks = {};
     const maxUndoSteps = 30;
     let zoomCloseAction = null;
@@ -2336,6 +2383,11 @@
             y: Number(position.y ?? 50),
           };
         }),
+        battleMap: window.BattleTerrain.normalizeBattleMap(
+          state.battleMap,
+          currentApostle,
+          currentApostleLevel()
+        ),
         updatedAt: new Date().toISOString(),
       };
     }
@@ -2516,6 +2568,7 @@
         chimeraPhase: "",
         traits: [],
         tokens: [],
+        battleMap: null,
         levelBonusState: { promotions: 0 },
         initialSetupApplied: {},
         lastPendingType: "",
@@ -4197,6 +4250,7 @@
       renderAibpCards();
       renderExtraCards();
       renderPanelTokens();
+      battleMapControl?.reset();
       void setSecondScreenMode("aibp");
     }
 
@@ -5476,6 +5530,7 @@
 
       renderAibpCards();
       renderExtraCards();
+      battleMapControl?.render();
       scheduleSecondScreenSnapshot();
       requestAnimationFrame(updateViewerScale);
     }
@@ -5767,7 +5822,23 @@
       renderExtraCards();
       renderAibpCards();
       renderPanelTokens();
+      battleMapControl?.render();
     });
+    battleMapControl = window.BattleMapControl.create({
+      root: document.getElementById("battleMapControl"),
+      assetBase: "../ss/terrain",
+      cardAssetBase: "../ss/terrain-cards",
+      openImageZoom,
+      getApostle: () => currentApostle,
+      getLevel: () => currentApostleLevel(),
+      getMap: () => piles[currentApostle]?.battleMap || null,
+      setMap: (battleMap) => {
+        ensurePiles(currentApostle);
+        piles[currentApostle].battleMap = battleMap;
+        savePiles();
+      },
+    });
+
     sidebarToggle.addEventListener("click", () => {
       const collapsed = document.body.classList.toggle("sidebar-collapsed");
       sidebarToggle.textContent = collapsed ? "☰" : "×";

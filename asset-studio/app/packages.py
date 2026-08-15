@@ -12,10 +12,21 @@ from typing import Any, Callable
 
 from .db import Database
 from .storage import store_image, write_compatible_image
+from .story_extras import (
+    ENTITY_INDEX_KIND,
+    ENTITY_INDEX_MAX_BYTES,
+    ENTITY_INDEX_MEMBER,
+    ENTITY_INDEX_JSON_TARGET,
+    ENTITY_INDEX_JS_TARGET,
+    entity_index_javascript,
+    entity_index_manifest_entry,
+    find_entity_index,
+    store_entity_index,
+)
 from .stories import storybook_javascript, storybook_payload
 
 
-PACKAGE_VERSION = 1
+PACKAGE_VERSION = 2
 
 
 def safe_member(name: str) -> PurePosixPath:
@@ -30,7 +41,7 @@ Progress = Callable[[int, int, str], None]
 
 def export_package(
     db: Database, library: Path, destination: Path, filters: dict | None = None,
-    progress: Progress | None = None,
+    progress: Progress | None = None, ato_root: Path | None = None,
 ) -> dict:
     filters = filters or {}
     cycles = set(filters.get("cycles") or [])
@@ -58,6 +69,12 @@ def export_package(
     rows = [row for row in rows if row["item_id"] in selected_ids]
     skipped_faces = [row for row in db.all("SELECT item_id,face,updated_at FROM skipped_faces") if row["item_id"] in selected_ids]
     story_review = db.all("SELECT book_id,entry_number,chapter_key,reviewed FROM story_segments")
+    stories = storybook_payload(
+        db, reviewed_only=True, book_ids=cycles or None, omit_empty=True
+    ) if filters.get("include_stories", True) else {"generatedAt": "ATO Asset Studio", "books": []}
+    entity_index = find_entity_index(library, ato_root) if stories.get("books") else None
+    if stories.get("books") and entity_index is None:
+        raise ValueError("人物小传索引缺失；请先设置包含 story/data/entity-index.json 的 ATO_assistant 目录")
     manifest = {
         "format": "ato-asset-pack", "version": PACKAGE_VERSION,
         "createdAt": datetime.now(timezone.utc).isoformat(),
@@ -66,9 +83,9 @@ def export_package(
             {**{key: value for key, value in item.items() if key != "faces_json"}, "faces": json.loads(item["faces_json"])}
             for item in items
         ],
-        "assets": [], "stories": storybook_payload(
-            db, reviewed_only=True, book_ids=cycles or None, omit_empty=True
-        ) if filters.get("include_stories", True) else {"generatedAt": "ATO Asset Studio", "books": []},
+        "assets": [],
+        "stories": stories,
+        "storyFiles": [entity_index_manifest_entry(entity_index)] if entity_index else [],
         "progress": {"skippedFaces": skipped_faces, "storyReview": story_review},
     }
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -88,8 +105,15 @@ def export_package(
             })
             if progress:
                 progress(index, total, f"正在写入第 {index}/{len(rows)} 个图片")
+        if entity_index:
+            archive.writestr(ENTITY_INDEX_MEMBER, entity_index.json_bytes)
         archive.writestr("manifest.json", json.dumps(manifest, ensure_ascii=False, indent=2))
-    return {"path": str(destination), "assets": len(rows), "bytes": destination.stat().st_size}
+    return {
+        "path": str(destination),
+        "assets": len(rows),
+        "entity_index": bool(entity_index),
+        "bytes": destination.stat().st_size,
+    }
 
 
 def inspect_package(
@@ -127,7 +151,39 @@ def inspect_package(
         local_books = {row["id"] for row in db.all("SELECT id FROM story_books")}
         incoming_books = {str(book.get("id")) for book in manifest.get("stories", {}).get("books", []) if book.get("id")}
         story_summary = {"add": len(incoming_books - local_books), "replace": len(incoming_books & local_books)}
-    return {"summary": summary, "assets": assets, "stories": story_summary, "manifest": manifest}
+        entity_summary = _inspect_story_files(archive, manifest, names, verify_hashes)
+        if int(manifest.get("version", 0)) >= 2 and incoming_books and not entity_summary["included"]:
+            raise ValueError("新版资料包含有故事，但没有人物小传索引")
+    return {
+        "summary": summary,
+        "assets": assets,
+        "stories": story_summary,
+        "entity_index": entity_summary,
+        "manifest": manifest,
+    }
+
+
+def _inspect_story_files(
+    archive: zipfile.ZipFile, manifest: dict, names: set[str], verify_hashes: bool,
+) -> dict:
+    included = False
+    entity_count = 0
+    for story_file in manifest.get("storyFiles", []):
+        if story_file.get("kind") != ENTITY_INDEX_KIND:
+            raise ValueError(f"不支持的故事附加文件：{story_file.get('kind')}")
+        member = str(safe_member(str(story_file.get("member") or "")))
+        if member != ENTITY_INDEX_MEMBER or member not in names:
+            raise ValueError("资料包声明的人物小传索引缺失")
+        info = archive.getinfo(member)
+        if info.file_size > ENTITY_INDEX_MAX_BYTES:
+            raise ValueError("资料包中的人物小传索引超过 128MB")
+        if verify_hashes:
+            digest = hashlib.sha256(archive.read(member)).hexdigest()
+            if digest != story_file.get("sha256"):
+                raise ValueError("人物小传索引校验失败")
+        included = True
+        entity_count = int(story_file.get("entityCount") or 0)
+    return {"included": included, "entity_count": entity_count}
 
 
 def import_package(
@@ -176,6 +232,16 @@ def import_package(
             imported += 1
             if progress:
                 progress(index, total, f"正在恢复第 {index}/{len(inspection['assets'])} 个图片")
+        entity_index_imported = False
+        for story_file in manifest.get("storyFiles", []):
+            if story_file.get("kind") != ENTITY_INDEX_KIND:
+                continue
+            member = str(safe_member(str(story_file.get("member") or "")))
+            raw = archive.read(member)
+            if hashlib.sha256(raw).hexdigest() != story_file.get("sha256"):
+                raise ValueError("人物小传索引校验失败")
+            store_entity_index(library, raw)
+            entity_index_imported = True
     imported_books = _import_stories(db, manifest.get("stories") or {}, replace)
     progress = manifest.get("progress") or {}
     with db.connect() as conn:
@@ -191,7 +257,12 @@ def import_package(
                 "UPDATE story_segments SET reviewed=? WHERE book_id=? AND entry_number=? AND chapter_key=?",
                 (int(bool(review.get("reviewed"))), review.get("book_id"), review.get("entry_number"), review.get("chapter_key")),
             )
-    return {"imported": imported, "skipped": skipped, "stories_imported": len(imported_books)}
+    return {
+        "imported": imported,
+        "skipped": skipped,
+        "stories_imported": len(imported_books),
+        "entity_index_imported": entity_index_imported,
+    }
 
 
 def _import_stories(db: Database, payload: dict, replace: bool) -> set[str]:
@@ -274,7 +345,7 @@ def _backfill_story_metadata(conn, book_id: str, entries: list[dict]) -> bool:
 
 def export_compat(
     db: Database, library: Path, destination: Path, filters: dict | None = None,
-    progress: Progress | None = None,
+    progress: Progress | None = None, ato_root: Path | None = None,
 ) -> dict:
     filters = filters or {}
     cycles = set(filters.get("cycles") or [])
@@ -313,5 +384,15 @@ def export_compat(
         reviewed = db.one("SELECT COUNT(*) AS n FROM story_segments WHERE reviewed=1")["n"]
         include_stories = bool(filters.get("include_stories", True) and reviewed)
         if include_stories:
+            entity_index = find_entity_index(library, ato_root)
+            if entity_index is None:
+                raise ValueError("人物小传索引缺失；无法生成完整的故事兼容包")
             archive.writestr("story/data/storybook-data.js", storybook_javascript(db, book_ids=cycles or None))
-    return {"path": str(destination), "files": written + int(include_stories), "bytes": destination.stat().st_size}
+            archive.writestr(ENTITY_INDEX_JSON_TARGET, entity_index.json_bytes)
+            archive.writestr(ENTITY_INDEX_JS_TARGET, entity_index_javascript(entity_index))
+    return {
+        "path": str(destination),
+        "files": written + (3 if include_stories else 0),
+        "entity_index": bool(include_stories),
+        "bytes": destination.stat().st_size,
+    }

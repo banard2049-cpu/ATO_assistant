@@ -5,6 +5,11 @@ const elements = {
   battleView: document.querySelector("#battleView"),
   battleSidebarContent: document.querySelector(".battle-sidebar-content"),
   battleBoardFrame: document.querySelector("#battleBoardFrame"),
+  battleTerrainLayer: document.querySelector("#battleTerrainLayer"),
+  battleStartLayer: document.querySelector("#battleStartLayer"),
+  battleTerrainCards: document.querySelector("#battleTerrainCards"),
+  battleTerrainCardList: document.querySelector("#battleTerrainCardList"),
+  battleTerrainCardCount: document.querySelector("#battleTerrainCardCount"),
   bossPanel: document.querySelector("#bossPanel"),
   bossTokens: document.querySelector("#bossTokens"),
   bossRoutine: document.querySelector("#bossRoutine"),
@@ -27,7 +32,9 @@ let battleRenderKey = "";
 let activeMode = "map";
 let latestBattleScale = 1;
 let latestBattleRotation = 0;
+let latestBattleBoardVisible = true;
 const aibpBaseUrl = new URL("../aibp/", document.baseURI);
+const battleBoardAspectRatio = 20 / 14;
 
 function layoutSupportCards(availableWidth, smallWidth, smallHeight, oneRow = false) {
   const cards = Array.from(elements.supportCards.querySelectorAll(":scope > .boss-small-card, .trait-cards > img"));
@@ -53,17 +60,33 @@ function layoutSupportCards(availableWidth, smallWidth, smallHeight, oneRow = fa
   return secondRowCount > 0 ? 2 : 1;
 }
 
-function applyBattleLayout(scale = latestBattleScale, rotation = latestBattleRotation) {
+function applyBattleLayout(
+  scale = latestBattleScale,
+  rotation = latestBattleRotation,
+  boardVisible = latestBattleBoardVisible
+) {
   latestBattleScale = Math.max(0.6, Math.min(2, Number(scale) || 1));
   latestBattleRotation = [0, 90, 180, 270].includes(Number(rotation)) ? Number(rotation) : 0;
+  latestBattleBoardVisible = boardVisible !== false;
+  const effectiveRotation = latestBattleBoardVisible ? latestBattleRotation : 0;
   const viewportWidth = Math.max(1, window.innerWidth || document.documentElement.clientWidth || 1);
   const viewportHeight = Math.max(1, window.innerHeight || document.documentElement.clientHeight || 1);
   const safeWidth = Math.min(viewportWidth, viewportHeight * 16 / 9);
   const safeHeight = Math.min(viewportHeight, viewportWidth * 9 / 16);
   const boardPadding = Math.max(12, Math.min(24, Math.round(Math.min(safeWidth, safeHeight) * 0.022)));
-  const boardColumn = Math.max(220, Math.min(safeWidth * 0.72, (safeHeight - boardPadding) * 1.25 * latestBattleScale));
-  const sidebarWidth = Math.max(260, safeWidth - Math.max(260, boardColumn));
-  const quarterTurn = latestBattleRotation === 90 || latestBattleRotation === 270;
+  const minimumSidebarWidth = 260;
+  const minimumBoardWidth = 260;
+  const desiredBoardWidth = (safeHeight - boardPadding) * battleBoardAspectRatio * latestBattleScale;
+  const availableBoardWidth = Math.max(minimumBoardWidth, safeWidth - minimumSidebarWidth);
+  const boardColumn = latestBattleBoardVisible
+    ? Math.max(minimumBoardWidth, Math.min(availableBoardWidth, desiredBoardWidth))
+    : 0;
+  const sidebarWidth = latestBattleBoardVisible
+    ? Math.max(minimumSidebarWidth, safeWidth - boardColumn)
+    : safeWidth;
+  const quarterTurn = effectiveRotation === 90 || effectiveRotation === 270;
+  const aibpMirror = !latestBattleBoardVisible;
+  const hasTerrainCards = aibpMirror && elements.battleSidebarContent.classList.contains("has-terrain-cards");
   const logicalWidth = quarterTurn ? safeHeight : sidebarWidth;
   const logicalHeight = quarterTurn ? sidebarWidth : safeHeight;
   const sidebarPadding = 20;
@@ -72,26 +95,45 @@ function applyBattleLayout(scale = latestBattleScale, rotation = latestBattleRot
   const availableSidebarHeight = Math.max(160, logicalHeight - sidebarPadding);
   const bossHeightRatio = 1650 / 2407;
   const smallHeightRatio = (1 / 5) * (1050 / 750);
-  const minimumQuarterTurnAibpWidth = Math.max(180, availableSidebarWidth * 0.28);
-  const bossPanelWidth = quarterTurn
-    ? Math.max(180, Math.min(
-        availableSidebarWidth - minimumQuarterTurnAibpWidth - sectionGap,
-        (availableSidebarHeight - sectionGap - 3) / (bossHeightRatio + smallHeightRatio)
-      ))
+  const minimumSplitAibpWidth = aibpMirror
+    ? Math.max(160, availableSidebarWidth * 0.3)
+    : Math.max(180, availableSidebarWidth * 0.28);
+  const splitPanelWidth = Math.max(96, availableSidebarWidth - minimumSplitAibpWidth - sectionGap);
+  const terrainCardAreaHeight = hasTerrainCards
+    ? Math.max(145, Math.min(280, availableSidebarHeight * 0.28))
+    : 0;
+  const heightLimitedPanelWidth = Math.max(
+    96,
+    (
+      availableSidebarHeight
+      - terrainCardAreaHeight
+      - sectionGap * (hasTerrainCards ? 2 : 1)
+      - 3
+    ) / (bossHeightRatio + smallHeightRatio)
+  );
+  const bossPanelWidth = quarterTurn || aibpMirror
+    ? Math.min(splitPanelWidth, heightLimitedPanelWidth)
     : availableSidebarWidth;
   const bossPanelHeight = bossPanelWidth * bossHeightRatio;
   const minimumResolutionHeight = 110;
   const smallWidth = bossPanelWidth / 5;
   const smallHeight = smallWidth * 1050 / 750;
-  layoutSupportCards(availableSidebarWidth, smallWidth, smallHeight, quarterTurn);
-  const traitAreaHeight = quarterTurn ? smallHeight + 3 : smallHeight * 2 + 10;
-  const resolutionHeight = Math.max(minimumResolutionHeight, availableSidebarHeight - bossPanelHeight - traitAreaHeight - sectionGap * 2);
+  layoutSupportCards(availableSidebarWidth, smallWidth, smallHeight, quarterTurn || aibpMirror);
+  const traitAreaHeight = quarterTurn || aibpMirror ? smallHeight + 3 : smallHeight * 2 + 10;
+  const resolutionHeight = Math.max(
+    minimumResolutionHeight,
+    availableSidebarHeight
+      - bossPanelHeight
+      - traitAreaHeight
+      - terrainCardAreaHeight
+      - sectionGap * (hasTerrainCards ? 3 : 2)
+  );
 
   elements.battleView.style.setProperty("--battle-scale", String(latestBattleScale));
   elements.battleView.style.setProperty("--battle-safe-width", `${safeWidth}px`);
   elements.battleView.style.setProperty("--battle-safe-height", `${safeHeight}px`);
   elements.battleView.style.setProperty("--battle-board-column", `${boardColumn}px`);
-  elements.battleView.style.setProperty("--battle-rotation", `${-latestBattleRotation}deg`);
+  elements.battleView.style.setProperty("--battle-rotation", `${-effectiveRotation}deg`);
   elements.battleView.style.setProperty("--sidebar-content-width", `${logicalWidth}px`);
   elements.battleView.style.setProperty("--sidebar-content-height", `${logicalHeight}px`);
   elements.battleView.style.setProperty("--boss-small-card-width", `${smallWidth}px`);
@@ -100,7 +142,9 @@ function applyBattleLayout(scale = latestBattleScale, rotation = latestBattleRot
   elements.battleView.style.setProperty("--boss-panel-height", `${bossPanelHeight}px`);
   elements.battleView.style.setProperty("--trait-area-height", `${traitAreaHeight}px`);
   elements.battleView.style.setProperty("--resolution-area-height", `${resolutionHeight}px`);
+  elements.battleView.style.setProperty("--terrain-card-area-height", `${terrainCardAreaHeight}px`);
   elements.battleSidebarContent.classList.toggle("quarter-turn", quarterTurn);
+  elements.battleSidebarContent.classList.toggle("aibp-mirror", aibpMirror);
 }
 
 function showUnavailable(message = "") {
@@ -183,6 +227,94 @@ function renderBossTokens(tokens) {
   });
 }
 
+function renderBattleTerrainCards(map, visible) {
+  const cards = visible
+    ? window.BattleTerrain.getTerrainCards(map, "./terrain-cards")
+    : [];
+  elements.battleTerrainCardList.replaceChildren();
+  elements.battleTerrainCards.hidden = cards.length === 0;
+  elements.battleSidebarContent.classList.toggle("has-terrain-cards", cards.length > 0);
+  elements.battleTerrainCardCount.textContent = `${cards.length} 张`;
+  cards.forEach((card) => {
+    const item = document.createElement("figure");
+    const image = document.createElement("img");
+    const label = document.createElement("figcaption");
+    item.className = "battle-terrain-card";
+    image.src = card.src;
+    image.alt = card.label;
+    label.textContent = card.label;
+    item.append(image, label);
+    elements.battleTerrainCardList.appendChild(item);
+  });
+}
+
+function renderBattleStarts(apostle, map) {
+  elements.battleStartLayer.replaceChildren();
+  elements.battleStartLayer.hidden = map.showStarts === false;
+  if (map.showStarts === false) return;
+  const starts = window.BattleTerrain.getInitialPositions(apostle, map.startLevel, map.setupId);
+  if (starts.apostle) {
+    const marker = document.createElement("div");
+    const arrow = document.createElement("span");
+    const style = window.BattleTerrain.getTileStyle(starts.apostle);
+    const facing = window.BattleTerrain.getInitialFacing(
+      apostle,
+      map.apostleFacing,
+      map.setupId,
+      map.startLevel
+    );
+    marker.className = "battle-start-marker apostle";
+    marker.textContent = "A";
+    marker.title = `${apostle.replaceAll("_", " ")} (${window.BattleTerrain.getFacingLabel(facing)})`;
+    marker.style.left = style.left;
+    marker.style.top = style.top;
+    marker.style.width = style.width;
+    marker.style.height = style.height;
+    arrow.className = "battle-start-facing";
+    arrow.textContent = "\u25b2";
+    arrow.style.transform = `translate(-50%, -50%) rotate(${facing}deg) translateY(-1.05em)`;
+    marker.appendChild(arrow);
+    elements.battleStartLayer.appendChild(marker);
+  }
+  starts.titans.forEach((titan) => {
+    const marker = document.createElement("div");
+    marker.className = "battle-start-marker titan";
+    marker.textContent = titan.label;
+    marker.style.left = `${(titan.column - 0.5) / 20 * 100}%`;
+    marker.style.top = `${(14 - titan.row + 0.5) / 14 * 100}%`;
+    marker.style.width = "5%";
+    marker.style.height = `${100 / 14}%`;
+    elements.battleStartLayer.appendChild(marker);
+  });
+}
+
+function renderBattleTerrain(apostle, level, battleMap) {
+  elements.battleTerrainLayer.replaceChildren();
+  const map = window.BattleTerrain.normalizeBattleMap(battleMap, apostle, level);
+  const tiles = window.BattleTerrain.getMapTiles(map);
+  tiles.forEach((placement) => {
+    const image = document.createElement("img");
+    const sources = window.BattleTerrain.getAssetSources(placement, "./terrain");
+    const style = window.BattleTerrain.getTileStyle(placement);
+    image.className = "battle-terrain-tile";
+    image.src = sources[0];
+    if (sources[1]) {
+      image.addEventListener("error", () => {
+        if (image.src !== sources[1]) image.src = sources[1];
+      });
+    }
+    image.alt = "";
+    image.title = placement.name;
+    image.style.left = style.left;
+    image.style.top = style.top;
+    image.style.width = style.width;
+    image.style.height = style.height;
+    image.style.transform = `translate(-50%, -50%) rotate(${style.rotation}) ${window.BattleTerrain.getTileFlipTransform(placement)}`;
+    elements.battleTerrainLayer.appendChild(image);
+  });
+  renderBattleStarts(apostle, map);
+}
+
 function openBattle(screen) {
   activeMode = "aibp";
   const state = screen.aibp || {};
@@ -191,15 +323,22 @@ function openBattle(screen) {
   elements.battleView.hidden = false;
   const scale = Math.max(60, Math.min(200, Number(screen.displayScales?.battleBoard || 100)));
   const rotation = [0, 90, 180, 270].includes(Number(screen.battleRotation)) ? Number(screen.battleRotation) : 0;
+  const boardVisible = screen.battleBoardVisible !== false;
   const swapped = Boolean(screen.battleSwapped);
-  elements.battleView.classList.toggle("swapped", swapped);
-  applyBattleLayout(scale / 100, rotation);
+  const map = window.BattleTerrain.normalizeBattleMap(state.battleMap, state.apostle, state.level);
+  elements.battleView.classList.toggle("board-hidden", !boardVisible);
+  elements.battleView.classList.toggle("swapped", boardVisible && swapped);
 
-  const renderKey = JSON.stringify([screen.aibpRevision, state.updatedAt, scale, rotation, swapped]);
-  if (renderKey === battleRenderKey) return;
+  const renderKey = JSON.stringify([screen.aibpRevision, state.updatedAt, scale, rotation, swapped, boardVisible]);
+  if (renderKey === battleRenderKey) {
+    applyBattleLayout(scale / 100, rotation, boardVisible);
+    return;
+  }
   battleRenderKey = renderKey;
 
   elements.battleView.dataset.apostle = state.apostle || "";
+  if (boardVisible) renderBattleTerrain(state.apostle, state.level, map);
+  renderBattleTerrainCards(map, !boardVisible);
   [
     [elements.bossPanel, state.panelSrc],
     [elements.bossRoutine, state.routineSrc],
@@ -209,7 +348,7 @@ function openBattle(screen) {
     if (src) image.src = aibpImageUrl(src);
   });
   renderImageList(elements.traitCards, state.extraCards?.length ? state.extraCards : (state.traits || []), "暂无 Trait / 特殊卡");
-  applyBattleLayout(scale / 100, rotation);
+  applyBattleLayout(scale / 100, rotation, boardVisible);
   renderBossTokens(state.tokens || []);
   const pendingType = state.pendingType === "AI" || state.pendingType === "BP"
     ? state.pendingType

@@ -164,6 +164,7 @@ h1 {
   --boss-panel-height: 264px;
   --trait-area-height: 139px;
   --resolution-area-height: 220px;
+  --terrain-card-area-height: 0px;
   --battle-rotation: 0deg;
   --sidebar-content-width: 50vw;
   --sidebar-content-height: 100vh;
@@ -193,6 +194,20 @@ h1 {
   grid-row: 1;
 }
 
+.battle-view.board-hidden {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.battle-view.board-hidden .battle-sidebar {
+  grid-column: 1;
+  grid-row: 1;
+  border-right: 0;
+}
+
+.battle-view.board-hidden .battle-board-stage {
+  display: none;
+}
+
 .battle-sidebar {
   position: relative;
   min-width: 0;
@@ -218,17 +233,28 @@ h1 {
   background: linear-gradient(180deg, #181916, #0c100f);
 }
 
-.battle-sidebar-content.quarter-turn {
+.battle-sidebar-content.quarter-turn,
+.battle-sidebar-content.aibp-mirror {
   grid-template-columns: var(--boss-panel-width) minmax(0, 1fr);
+}
+
+.battle-sidebar-content.quarter-turn,
+.battle-sidebar-content.aibp-mirror:not(.has-terrain-cards) {
   grid-template-rows: var(--boss-panel-height) var(--trait-area-height);
 }
 
-.battle-sidebar-content.quarter-turn .boss-summary {
+.battle-sidebar-content.aibp-mirror.has-terrain-cards {
+  grid-template-rows: var(--boss-panel-height) var(--trait-area-height) var(--terrain-card-area-height);
+}
+
+.battle-sidebar-content.quarter-turn .boss-summary,
+.battle-sidebar-content.aibp-mirror .boss-summary {
   grid-column: 1;
   grid-row: 1;
 }
 
-.battle-sidebar-content.quarter-turn .support-cards {
+.battle-sidebar-content.quarter-turn .support-cards,
+.battle-sidebar-content.aibp-mirror .support-cards {
   position: relative;
   grid-column: 1 / span 2;
   grid-row: 2;
@@ -236,12 +262,14 @@ h1 {
   overflow: auto hidden;
 }
 
-.battle-sidebar-content.quarter-turn .trait-cards img {
+.battle-sidebar-content.quarter-turn .trait-cards img,
+.battle-sidebar-content.aibp-mirror .trait-cards img {
   position: relative;
   z-index: 4;
 }
 
-.battle-sidebar-content.quarter-turn .resolution-panel {
+.battle-sidebar-content.quarter-turn .resolution-panel,
+.battle-sidebar-content.aibp-mirror .resolution-panel {
   position: relative;
   z-index: 3;
   grid-column: 2;
@@ -254,8 +282,81 @@ h1 {
   background: #090b0a;
 }
 
-.battle-sidebar-content.quarter-turn .pending-cards {
+.battle-sidebar-content.quarter-turn .pending-cards,
+.battle-sidebar-content.aibp-mirror .pending-cards {
   margin-top: 0;
+}
+
+.battle-terrain-cards {
+  display: none;
+}
+
+.battle-sidebar-content.aibp-mirror.has-terrain-cards .battle-terrain-cards {
+  min-width: 0;
+  min-height: 0;
+  grid-column: 1 / span 2;
+  grid-row: 3;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 6px;
+  padding-top: 8px;
+  overflow: hidden;
+  border-top: 1px solid rgba(228, 181, 92, .22);
+}
+
+.battle-terrain-cards-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--gold);
+}
+
+.battle-terrain-cards-head h2 {
+  margin: 0;
+  font-size: 13px;
+}
+
+.battle-terrain-cards-head span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.battle-terrain-card-list {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(92px, calc(var(--terrain-card-area-height) * .62));
+  justify-content: start;
+  gap: 8px;
+  overflow: auto hidden;
+}
+
+.battle-terrain-card {
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 3px;
+}
+
+.battle-terrain-card img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+
+.battle-terrain-card figcaption {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 10px;
+  line-height: 1.2;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .boss-summary {
@@ -462,18 +563,79 @@ h1 {
 .battle-board-frame {
   flex: none;
   position: relative;
-  width: min(100%, calc((var(--battle-safe-height) - clamp(12px, 2.2vmin, 24px)) * 1.25 * var(--battle-scale)));
-  aspect-ratio: 100 / 80;
+  width: min(100%, calc((var(--battle-safe-height) - clamp(12px, 2.2vmin, 24px)) * 1.4285714286 * var(--battle-scale)));
+  aspect-ratio: 10 / 7;
   filter: drop-shadow(0 22px 38px rgba(0, 0, 0, .5));
 }
 
-.battle-board-frame img {
+.battle-board-image {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   display: block;
   object-fit: contain;
+}
+
+.battle-terrain-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.battle-start-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.battle-terrain-tile {
+  position: absolute;
+  display: block;
+  object-fit: contain;
+  transform-origin: center;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .28));
+}
+
+.battle-start-marker {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  transform: translate(-50%, -50%);
+  border: 2px solid rgba(255, 255, 255, .92);
+  color: #fff;
+  font-weight: 950;
+  line-height: 1;
+  text-shadow: 0 1px 3px #000;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, .58);
+}
+
+.battle-start-marker.apostle {
+  border-color: #f36f62;
+  background: rgba(146, 31, 25, .78);
+  font-size: clamp(12px, 1.7vw, 25px);
+}
+
+.battle-start-facing {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  color: #ffd166;
+  font-size: .72em;
+  line-height: 1;
+  text-shadow: 0 1px 3px #000;
+  transform-origin: center;
+}
+
+.battle-start-marker.titan {
+  border-radius: 999px;
+  border-color: #73d2c1;
+  background: rgba(18, 94, 82, .82);
+  font-size: clamp(8px, .9vw, 13px);
 }
 
 @media (max-aspect-ratio: 4 / 3) {

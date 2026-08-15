@@ -6,5 +6,5 @@ services:
       - "11451:80"
     volumes:
       - ./:/var/www/html
-    entrypoint: /bin/sh -c "chown -R 33:33 /var/www/html/data && apache2-foreground"
+    entrypoint: /bin/sh -c "mkdir -p /var/www/html/data && chown -R 33:33 /var/www/html/data && apache2-foreground"
     restart: unless-stopped

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ATO 第二屏幕</title>
-  <link rel="stylesheet" href="./styles.css?v=20260814-swap-panels1">
+  <link rel="stylesheet" href="./styles.css?v=20260815-terrain-cards4">
 </head>
 <body>
   <main class="screen-shell">
@@ -44,16 +44,26 @@
               <article class="pending-card"><span id="currentPendingLabel">正在结算</span><div id="currentPending" class="current-card empty-card">未抽取</div></article>
             </div>
           </div>
+          <section id="battleTerrainCards" class="battle-terrain-cards" aria-label="当前地形卡" hidden>
+            <header class="battle-terrain-cards-head">
+              <h2>当前地形卡</h2>
+              <span id="battleTerrainCardCount"></span>
+            </header>
+            <div id="battleTerrainCardList" class="battle-terrain-card-list"></div>
+          </section>
         </div>
       </aside>
       <div class="battle-board-stage">
         <div id="battleBoardFrame" class="battle-board-frame">
-          <img src="./battle-board-placeholder.svg" alt="决战版图占位图">
+          <img class="battle-board-image" src="./battle-board.jpg" alt="决战版图">
+          <div id="battleTerrainLayer" class="battle-terrain-layer" aria-hidden="true"></div>
+          <div id="battleStartLayer" class="battle-start-layer" aria-hidden="true"></div>
         </div>
       </div>
     </section>
   </main>
 
-  <script src="./app.js?v=20260814-swap-panels1"></script>
+  <script src="./terrain-data.js?v=20260815-level-layout2"></script>
+  <script src="./app.js?v=20260815-terrain-cards4"></script>
 </body>
 </html>

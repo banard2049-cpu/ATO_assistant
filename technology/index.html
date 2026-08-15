@@ -61,6 +61,17 @@ body {
   background: var(--accent-2);
 }
 .tools { display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: 13px; }
+.campaign-save-status {
+  min-width: 72px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-align: right;
+  white-space: nowrap;
+}
+.campaign-save-status[data-state="saving"] { color: var(--accent-2); }
+.campaign-save-status[data-state="offline"] { color: var(--accent); }
+.campaign-save-status[data-state="saved"] { color: #16794a; }
 .tool-btn {
   border: 1px solid var(--line);
   background: #fff;
@@ -971,6 +982,7 @@ button.gear-group-name:hover {
     align-self: center;
     text-align: right;
   }
+  .campaign-save-status { grid-column: span 2; }
   .search {
     grid-column: 1 / -1;
     width: 100%;
@@ -1007,6 +1019,7 @@ button.gear-group-name:hover {
         <span class="badge" id="cycleBadge">Cycle I</span>
         <input id="search" class="search" placeholder="搜索科技" autocomplete="off">
         <button class="tool-btn" id="clearUnlocked" type="button">重置进度</button>
+        <span id="campaignSaveStatus" class="campaign-save-status" data-state="saving" aria-live="polite">正在连接...</span>
         <span id="count"></span>
       </div>
     </div>
@@ -1561,7 +1574,11 @@ function getUnlockedProductions() {
   return gearProductionData.techProduction.filter(entry => {
     const nodeKeyStr = getGearTechNodeKey(entry.techId);
     if (!nodeKeyStr) return false;
-    return unlocked.has(nodeKeyStr) || unlocked.has(nodeKeyStr.replace(/ /g, ' '));
+    // The tech name may be disambiguated across pages (stored as name@@pageKey).
+    // Match the plain key or any disambiguated variant so same-name production
+    // techs are recognised as unlocked.
+    return unlocked.has(nodeKeyStr)
+      || [...unlocked].some((key) => key.startsWith(nodeKeyStr + "@@"));
   });
 }
 function currentProductionCycle() {
@@ -2314,6 +2331,7 @@ const cycleSelect = document.getElementById('cycleSelect');
 const languageToggle = document.getElementById('languageToggle');
 const cycleBadge = document.getElementById('cycleBadge');
 const clearUnlocked = document.getElementById('clearUnlocked');
+const campaignSaveStatus = document.getElementById('campaignSaveStatus');
 const unlockedModal = document.getElementById('unlockedModal');
 const unlockedModalImage = document.getElementById('unlockedModalImage');
 const unlockedModalTitle = document.getElementById('unlockedModalTitle');
@@ -2332,6 +2350,9 @@ let campaignSaveTimer = null;
 let campaignSaveInFlight = false;
 let campaignSavePending = false;
 let campaignSaveQueuedBeforeReady = false;
+let campaignReconnectTimer = null;
+let campaignReconnectInFlight = false;
+let campaignReconnectDelay = 2000;
 let campaignTechRevision = 0;
 let gearRecordState = null;
 let gearRecordRevision = 0;
@@ -2349,6 +2370,50 @@ function isPlainObject(value) {
 }
 function delay(ms) {
   return new Promise(resolve => window.setTimeout(resolve, ms));
+}
+function setCampaignSaveStatus(message, status = 'saved') {
+  campaignSaveStatus.textContent = message;
+  campaignSaveStatus.dataset.state = status;
+}
+function scheduleCampaignReconnect() {
+  if (campaignReconnectTimer || campaignReconnectInFlight || campaignStorageAvailable) return;
+  const wait = campaignReconnectDelay;
+  campaignReconnectDelay = Math.min(30000, campaignReconnectDelay * 2);
+  campaignReconnectTimer = window.setTimeout(() => {
+    campaignReconnectTimer = null;
+    void probeCampaignReconnect();
+  }, wait);
+}
+async function probeCampaignReconnect() {
+  if (campaignStorageAvailable || campaignReconnectInFlight) return;
+  campaignReconnectInFlight = true;
+  try {
+    const response = await fetch(CAMPAIGN_STORAGE_URL, { cache: 'no-store' });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    if (!payload.ok) throw new Error(payload.error || '读取失败');
+    const hadQueuedSave = campaignSaveQueuedBeforeReady;
+    campaignStorageAvailable = true;
+    campaignTechRevision = Math.max(0, Number(payload.campaign?.sectionRevisions?.technology || 0));
+    campaignSaveQueuedBeforeReady = false;
+    campaignReconnectDelay = 2000;
+    if (!hadQueuedSave && payload.exists && payload.campaign) applyCampaignUsersToTechnology(payload.campaign);
+    if (hadQueuedSave) queueCampaignTechnologySave();
+    else setCampaignSaveStatus('已重新连接', 'saved');
+  } catch (error) {
+    console.warn(error);
+    setCampaignSaveStatus('等待重连', 'offline');
+  } finally {
+    campaignReconnectInFlight = false;
+    if (!campaignStorageAvailable) scheduleCampaignReconnect();
+  }
+}
+function reconnectCampaignNow() {
+  if (campaignStorageAvailable || campaignReconnectInFlight) return;
+  window.clearTimeout(campaignReconnectTimer);
+  campaignReconnectTimer = null;
+  campaignReconnectDelay = 2000;
+  void probeCampaignReconnect();
 }
 
 function esc(s) {
@@ -2598,6 +2663,7 @@ function applyCampaignUsersToTechnology(campaign) {
   return true;
 }
 async function loadCampaignTechnologySection() {
+  setCampaignSaveStatus('正在连接', 'saving');
   try {
     const response = await fetch(CAMPAIGN_STORAGE_URL, { cache: 'no-store' });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -2606,34 +2672,50 @@ async function loadCampaignTechnologySection() {
     campaignStorageAvailable = true;
     const flushQueuedSave = campaignSaveQueuedBeforeReady;
     campaignSaveQueuedBeforeReady = false;
+    campaignReconnectDelay = 2000;
+    window.clearTimeout(campaignReconnectTimer);
+    campaignReconnectTimer = null;
     campaignTechRevision = Math.max(0, Number(payload.campaign?.sectionRevisions?.technology || 0));
-    if (payload.exists && payload.campaign) applyCampaignUsersToTechnology(payload.campaign);
+    if (!flushQueuedSave && payload.exists && payload.campaign) applyCampaignUsersToTechnology(payload.campaign);
     if (flushQueuedSave) queueCampaignTechnologySave();
+    else setCampaignSaveStatus('已同步', 'saved');
     // Auto-sync snapshot to main dashboard so negotiation tags stay current.
     try { await writeSnapshotToMainArchive(unlockedTechSnapshot()); } catch (e) { console.warn('Auto-sync snapshot:', e); }
   } catch (error) {
     campaignStorageAvailable = false;
+    setCampaignSaveStatus('存档离线，等待重连', 'offline');
     console.warn(error);
+    scheduleCampaignReconnect();
   }
 }
 function queueCampaignTechnologySave() {
   if (!campaignStorageAvailable) {
     campaignSaveQueuedBeforeReady = true;
+    setCampaignSaveStatus('有修改待同步', 'offline');
+    scheduleCampaignReconnect();
     return;
   }
   clearTimeout(campaignSaveTimer);
-  campaignSaveTimer = setTimeout(saveCampaignTechnologySection, 260);
+  setCampaignSaveStatus('等待保存', 'saving');
+  campaignSaveTimer = setTimeout(() => void saveCampaignTechnologySection(), 260);
 }
 async function saveCampaignTechnologySection() {
-  if (!campaignStorageAvailable) return;
+  if (!campaignStorageAvailable) {
+    campaignSaveQueuedBeforeReady = true;
+    setCampaignSaveStatus('有修改待同步', 'offline');
+    scheduleCampaignReconnect();
+    return false;
+  }
   if (campaignSaveInFlight) {
     campaignSavePending = true;
-    return;
+    return false;
   }
   campaignSaveInFlight = true;
+  let conflictRetries = 0;
   try {
     do {
       campaignSavePending = false;
+      setCampaignSaveStatus('正在保存', 'saving');
       const userId = activeAccountId;
       const sectionState = JSON.parse(JSON.stringify(technologySectionState()));
       const response = await fetch(CAMPAIGN_TECH_URL, {
@@ -2647,14 +2729,26 @@ async function saveCampaignTechnologySection() {
         // resend our value: the technology section is bucketed per profile and
         // only this page writes it, so retrying with the local state is safe.
         campaignTechRevision = Math.max(0, Number(payload.revision || 0));
+        conflictRetries += 1;
+        if (conflictRetries >= 5) throw new Error('科技存档持续冲突，请稍后重试。');
         campaignSavePending = true;
         continue;
       }
       if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
       campaignTechRevision = Math.max(0, Number(payload.revision || campaignTechRevision));
+      conflictRetries = 0;
     } while (campaignSavePending);
+    campaignSaveQueuedBeforeReady = false;
+    campaignReconnectDelay = 2000;
+    setCampaignSaveStatus('已保存', 'saved');
+    return true;
   } catch (error) {
+    campaignStorageAvailable = false;
+    campaignSaveQueuedBeforeReady = true;
+    setCampaignSaveStatus('保存失败，等待重试', 'offline');
     console.warn(error);
+    scheduleCampaignReconnect();
+    return false;
   } finally {
     campaignSaveInFlight = false;
   }
@@ -2662,16 +2756,18 @@ async function saveCampaignTechnologySection() {
 async function flushCampaignTechnologySave() {
   if (!campaignStorageAvailable) {
     campaignSaveQueuedBeforeReady = true;
-    return;
+    setCampaignSaveStatus('有修改待同步', 'offline');
+    scheduleCampaignReconnect();
+    return false;
   }
   clearTimeout(campaignSaveTimer);
   campaignSaveTimer = null;
   if (campaignSaveInFlight) {
     campaignSavePending = true;
     while (campaignSaveInFlight) await delay(40);
-    return;
+    return campaignStorageAvailable && !campaignSaveQueuedBeforeReady;
   }
-  await saveCampaignTechnologySection();
+  return saveCampaignTechnologySection();
 }
 async function readCampaignDashboardArchive() {
   const response = await fetch(CAMPAIGN_DASHBOARD_URL, { cache: 'no-store' });
@@ -2780,7 +2876,7 @@ async function saveAndReturnMain() {
   returnMain.disabled = true;
   try {
     const snapshot = unlockedTechSnapshot();
-    await flushCampaignTechnologySave();
+    if (!await flushCampaignTechnologySave()) throw new Error('科技进度尚未写入服务器，已保留当前修改并等待重连。');
     await writeSnapshotToMainArchive(snapshot);
     returnMain.textContent = '已保存';
     // Navigate this tab to dashboard. The save is already written to server;
@@ -3298,6 +3394,8 @@ clearUnlocked.addEventListener('click', () => {
   refreshUnlockState();
 });
 returnMain.addEventListener('click', saveAndReturnMain);
+window.addEventListener('online', reconnectCampaignNow);
+window.addEventListener('focus', reconnectCampaignNow);
 function boot(appData) {
   data = appData;
   PAGE_INDEX = new Map(data.pages.map((page, index) => [page.key, index]));

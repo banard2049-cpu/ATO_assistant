@@ -2608,11 +2608,29 @@
     }
 
     // These UI groups must stay internally consistent; per-key merging can revive stale crew boxes/locks.
+    // Note: cycleStats is intentionally NOT atomic here — its numeric fields merge per-key (equal sides
+    // follow the changed side, keeping crew numbers consistent with crewBoxes), and its log-like fields
+    // (notes/syncLog) merge by appending both sides so no page's log entries are dropped.
     const atomicMergePaths = new Set([
-      "cycleStats",
       "crewBoxes",
       "maxUnlocked",
     ]);
+
+    function mergeLogText(local, remote) {
+      const localText = typeof local === "string" ? local : "";
+      const remoteText = typeof remote === "string" ? remote : "";
+      const localLines = localText.split("\n").filter(Boolean);
+      const remoteLines = remoteText.split("\n").filter(Boolean);
+      const seen = new Set(localLines);
+      const merged = localLines.slice();
+      remoteLines.forEach((line) => {
+        if (!seen.has(line)) {
+          seen.add(line);
+          merged.push(line);
+        }
+      });
+      return merged.join("\n").slice(0, 6000);
+    }
 
     function mergeRecordChanges(base, local, remote, path = "") {
       if (jsonEqual(local, remote)) return { value: cloneJson(local), conflicts: [] };
@@ -2624,6 +2642,12 @@
           value: cloneJson(local),
           conflicts: [path],
         };
+      }
+
+      // Log-like text fields (inside cycleStats or top-level) merge both sides
+      // instead of dropping one page's entries.
+      if (path === "notes" || path === "syncLog" || path.endsWith(".notes") || path.endsWith(".syncLog")) {
+        return { value: mergeLogText(local, remote), conflicts: [] };
       }
 
       if (isPlainObject(base) || isPlainObject(local) || isPlainObject(remote)) {
@@ -3513,7 +3537,6 @@
       renderRooting();
       renderMap();
       renderMatrix();
-      toggleCycleVisibility();
     }
 
     function renderCycleFields() {
@@ -3529,19 +3552,6 @@
         state[input.dataset.cycleBind] = value;
       });
       state.day = String(state.cycleDays?.[state.cycle] ?? defaultDayForCycle(state.cycle));
-    }
-
-    function toggleCycleVisibility() {
-      const cyclePanels = [
-        elements.mapGrid?.closest(".panel"),
-        elements.timeline?.closest(".panel"),
-        elements.rootingPanel?.closest(".panel"),
-      ].filter(Boolean);
-
-      cyclePanels.forEach((el) => {
-        el.classList.add("hidden");
-      });
-
     }
 
     function renderTimeline() {

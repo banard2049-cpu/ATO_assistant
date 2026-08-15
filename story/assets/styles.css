@@ -753,6 +753,29 @@ h2 {
   gap: 12px;
 }
 
+.entity-bio-toggle {
+  min-height: 34px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 0.85em;
+  white-space: nowrap;
+}
+
+.entity-bio-toggle:hover {
+  border-color: var(--accent);
+  background: #eef6f3;
+  color: var(--accent-strong);
+}
+
+.entity-bio-toggle.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
 .tts-btn {
   background: var(--accent);
   color: #fff;

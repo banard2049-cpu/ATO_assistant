@@ -203,6 +203,19 @@ h1 {
   white-space: nowrap;
 }
 
+.map-status .campaign-save-status[data-state="saving"] {
+  color: var(--accent);
+}
+
+.map-status .campaign-save-status[data-state="offline"] {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.map-status .campaign-save-status[data-state="saved"] {
+  color: #16794a;
+}
+
 .tool-cluster {
   grid-area: tokens;
   display: flex;

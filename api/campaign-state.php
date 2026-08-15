@@ -20,7 +20,7 @@ $dataDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'data';
 $usersFile = $dataDir . DIRECTORY_SEPARATOR . 'ato-users.json';
 $secondScreensFile = $dataDir . DIRECTORY_SEPARATOR . 'ato-second-screens.json';
 $maxBytes = 1024 * 1024 * 8;
-$backupCount = 5;
+$backupCount = 10;
 
 function respond(int $status, array $payload): void {
   http_response_code($status);
@@ -193,6 +193,7 @@ function public_second_screen_payload(array $campaign, array $screenEntry = []):
   $battleRotation = (int) ($screenEntry['battleRotation'] ?? 0);
   if (!in_array($battleRotation, [0, 90, 180, 270], true)) $battleRotation = 0;
   $battleSwapped = !empty($screenEntry['battleSwapped']);
+  $battleBoardVisible = !array_key_exists('battleBoardVisible', $screenEntry) || !empty($screenEntry['battleBoardVisible']);
 
   return [
     'profileName' => (string) ($profile['name'] ?? '阿尔戈号'),
@@ -208,6 +209,7 @@ function public_second_screen_payload(array $campaign, array $screenEntry = []):
     'displayScales' => $displayScales,
     'battleRotation' => $battleRotation,
     'battleSwapped' => $battleSwapped,
+    'battleBoardVisible' => $battleBoardVisible,
   ];
 }
 
@@ -233,16 +235,219 @@ function write_campaign(string $saveFile, array $campaign): void {
   write_json_file($saveFile, $campaign);
 }
 
-function rotate_campaign_backups(string $saveFile, int $backupCount): void {
-  if (!is_file($saveFile)) return;
-
-  for ($index = $backupCount; $index >= 2; $index -= 1) {
-    $previous = $saveFile . '.backup.' . ($index - 1);
-    $next = $saveFile . '.backup.' . $index;
-    if (is_file($previous)) @rename($previous, $next);
+function campaign_game_day(array $campaign): array {
+  $dashboard = is_array($campaign['sections']['dashboard'] ?? null)
+    ? $campaign['sections']['dashboard']
+    : [];
+  $profiles = is_array($dashboard['profiles'] ?? null) ? $dashboard['profiles'] : [];
+  $profileId = (string) ($dashboard['activeProfileId'] ?? 'default');
+  $profile = is_array($profiles[$profileId] ?? null) ? $profiles[$profileId] : [];
+  if (!$profile && $profiles) {
+    $profileId = (string) array_key_first($profiles);
+    $profile = is_array($profiles[$profileId] ?? null) ? $profiles[$profileId] : [];
   }
 
-  @copy($saveFile, $saveFile . '.backup.1');
+  $cycleId = (string) ($profile['activeCycleId'] ?? 'unknown');
+  $cycle = is_array($profile['cycles'][$cycleId] ?? null) ? $profile['cycles'][$cycleId] : [];
+  $state = is_array($cycle['state'] ?? null) ? $cycle['state'] : [];
+  $hasDay = array_key_exists('day', $state) && is_scalar($state['day']);
+  $day = $hasDay ? (string) $state['day'] : 'unknown';
+  $parts = [
+    $profileId !== '' ? $profileId : 'default',
+    $cycleId !== '' ? $cycleId : 'unknown',
+    $day !== '' ? $day : 'unknown',
+  ];
+
+  return [
+    'identity' => (string) json_encode($parts, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+    'parts' => $parts,
+    'valid' => (bool) $profile && (bool) $cycle && $hasDay,
+  ];
+}
+
+function campaign_backup_component(string $value): string {
+  $component = trim((string) preg_replace('/[^A-Za-z0-9_-]+/', '-', $value), '-');
+  if ($component === '') $component = 'value';
+  $needsHash = $component !== $value || strlen($component) > 80;
+  if (strlen($component) > 70) $component = substr($component, 0, 70);
+  if ($needsHash) $component .= '-' . substr(hash('sha256', $value), 0, 8);
+  return $component;
+}
+
+function campaign_backup_root(string $saveFile): string {
+  $baseName = basename($saveFile);
+  $userId = preg_replace('/^ato-campaign-|\.json$/i', '', $baseName) ?? $baseName;
+  return dirname($saveFile)
+    . DIRECTORY_SEPARATOR . 'backups'
+    . DIRECTORY_SEPARATOR . campaign_backup_component($userId);
+}
+
+function ensure_campaign_backup_dir(string $dir): void {
+  if (!is_dir($dir) && !mkdir($dir, 0775, true)) {
+    respond(500, ['ok' => false, 'error' => 'Could not create a campaign backup directory.']);
+  }
+}
+
+function campaign_day_backup_dir(string $saveFile, array $gameDay, string $kind): string {
+  [$profileId, $cycleId, $day] = $gameDay['parts'];
+  return campaign_backup_root($saveFile)
+    . DIRECTORY_SEPARATOR . $kind
+    . DIRECTORY_SEPARATOR . campaign_backup_component($profileId)
+    . DIRECTORY_SEPARATOR . campaign_backup_component($cycleId)
+    . DIRECTORY_SEPARATOR . 'day-' . campaign_backup_component($day);
+}
+
+function campaign_daily_backup_file(string $saveFile, array $gameDay, string $archiveId): string {
+  return campaign_day_backup_dir($saveFile, $gameDay, 'daily')
+    . DIRECTORY_SEPARATOR . campaign_backup_component($archiveId) . '.json';
+}
+
+function campaign_recent_backup_file(string $saveFile, array $gameDay, int $index): string {
+  return campaign_day_backup_dir($saveFile, $gameDay, 'recent')
+    . DIRECTORY_SEPARATOR . 'backup-' . str_pad((string) $index, 2, '0', STR_PAD_LEFT) . '.json';
+}
+
+function migrate_legacy_campaign_backups(string $saveFile, int $backupCount): void {
+  $dir = dirname($saveFile);
+  $baseName = basename((string) (preg_replace('/\.json$/i', '', $saveFile) ?? $saveFile));
+  $legacyFiles = glob($dir . DIRECTORY_SEPARATOR . $baseName . '.daily.*.json') ?: [];
+  foreach ($legacyFiles as $legacyFile) {
+    $fileName = basename($legacyFile);
+    $prefix = $baseName . '.daily.';
+    if (!str_starts_with($fileName, $prefix) || !str_ends_with($fileName, '.json')) continue;
+    $body = substr($fileName, strlen($prefix), -5);
+    $parts = explode('.', $body);
+    if (count($parts) !== 4 || !str_starts_with($parts[2], 'day-')) continue;
+    $gameDay = [
+      'parts' => [$parts[0], $parts[1], substr($parts[2], 4)],
+    ];
+    $destination = campaign_daily_backup_file($saveFile, $gameDay, $parts[3]);
+    ensure_campaign_backup_dir(dirname($destination));
+    if (is_file($destination)) continue;
+    if (!rename($legacyFile, $destination)) {
+      respond(500, ['ok' => false, 'error' => 'Could not move a legacy campaign backup.']);
+    }
+  }
+
+  $legacyMarker = $saveFile . '.backup-current-day.json';
+  $markerFile = campaign_backup_root($saveFile) . DIRECTORY_SEPARATOR . 'backup-current-day.json';
+  $legacyMarkerPayload = read_campaign_backup_marker($legacyMarker);
+  $legacyIdentityParts = is_string($legacyMarkerPayload['identity'])
+    ? json_decode($legacyMarkerPayload['identity'], true)
+    : null;
+  if (is_array($legacyIdentityParts) && count($legacyIdentityParts) === 3) {
+    $gameDay = ['parts' => array_map('strval', $legacyIdentityParts)];
+    for ($index = 1; $index <= $backupCount; $index += 1) {
+      $legacyBackup = $saveFile . '.backup.' . $index;
+      if (!is_file($legacyBackup)) continue;
+      $destination = campaign_recent_backup_file($saveFile, $gameDay, $index);
+      ensure_campaign_backup_dir(dirname($destination));
+      if (is_file($destination)) continue;
+      if (!rename($legacyBackup, $destination)) {
+        respond(500, ['ok' => false, 'error' => 'Could not move a legacy campaign backup.']);
+      }
+    }
+  }
+  if (is_file($legacyMarker) && !is_file($markerFile)) {
+    ensure_campaign_backup_dir(dirname($markerFile));
+    if (!rename($legacyMarker, $markerFile)) {
+      respond(500, ['ok' => false, 'error' => 'Could not move a legacy campaign backup marker.']);
+    }
+  }
+}
+
+function new_campaign_archive_id(): string {
+  return gmdate('Ymd\THis\Z') . '-' . bin2hex(random_bytes(4));
+}
+
+function read_campaign_backup_marker(string $markerFile): array {
+  if (!is_file($markerFile)) return ['identity' => null, 'archiveId' => null];
+  $marker = json_decode((string) file_get_contents($markerFile), true);
+  if (!is_array($marker)) return ['identity' => null, 'archiveId' => null];
+  return [
+    'identity' => is_string($marker['identity'] ?? null) ? $marker['identity'] : null,
+    'archiveId' => is_string($marker['archiveId'] ?? null) ? $marker['archiveId'] : null,
+  ];
+}
+
+function clear_campaign_recent_backups(string $saveFile, int $backupCount): void {
+  for ($index = 1; $index <= $backupCount; $index += 1) {
+    $backupFile = $saveFile . '.backup.' . $index;
+    if (is_file($backupFile) && !unlink($backupFile)) {
+      respond(500, ['ok' => false, 'error' => 'Could not clear an old campaign backup.']);
+    }
+  }
+  clear_campaign_backup_tree(campaign_backup_root($saveFile) . DIRECTORY_SEPARATOR . 'recent');
+}
+
+function clear_campaign_backup_tree(string $dir): void {
+  if (!is_dir($dir)) return;
+  $iterator = new RecursiveIteratorIterator(
+    new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS),
+    RecursiveIteratorIterator::CHILD_FIRST
+  );
+  foreach ($iterator as $item) {
+    $path = $item->getPathname();
+    if ($item->isDir()) {
+      if (!rmdir($path)) respond(500, ['ok' => false, 'error' => 'Could not clear a campaign backup directory.']);
+    } elseif (!unlink($path)) {
+      respond(500, ['ok' => false, 'error' => 'Could not clear a campaign backup.']);
+    }
+  }
+  if (!rmdir($dir)) respond(500, ['ok' => false, 'error' => 'Could not clear a campaign backup directory.']);
+}
+
+function copy_campaign_backup(string $source, string $destination): void {
+  ensure_campaign_backup_dir(dirname($destination));
+  if (!copy($source, $destination)) {
+    respond(500, ['ok' => false, 'error' => 'Could not create a campaign backup.']);
+  }
+}
+
+function prepare_campaign_backups(
+  string $saveFile,
+  array $currentCampaign,
+  array $nextCampaign,
+  int $backupCount
+): void {
+  if (!is_file($saveFile)) return;
+
+  migrate_legacy_campaign_backups($saveFile, $backupCount);
+
+  $currentDay = campaign_game_day($currentCampaign);
+  $nextDay = campaign_game_day($nextCampaign);
+  $markerFile = campaign_backup_root($saveFile) . DIRECTORY_SEPARATOR . 'backup-current-day.json';
+  $marker = read_campaign_backup_marker($markerFile);
+  if ($marker['identity'] !== $currentDay['identity']) {
+    clear_campaign_recent_backups($saveFile, $backupCount);
+  }
+
+  $archiveId = $marker['identity'] === $currentDay['identity'] ? $marker['archiveId'] : null;
+  if ($currentDay['valid']) {
+    if ($archiveId === null || $archiveId === '') $archiveId = new_campaign_archive_id();
+    copy_campaign_backup($saveFile, campaign_daily_backup_file($saveFile, $currentDay, $archiveId));
+  }
+
+  if ($currentDay['identity'] === $nextDay['identity']) {
+    for ($index = $backupCount; $index >= 2; $index -= 1) {
+      $previous = campaign_recent_backup_file($saveFile, $currentDay, $index - 1);
+      $next = campaign_recent_backup_file($saveFile, $currentDay, $index);
+      if (is_file($previous)) {
+        copy_campaign_backup($previous, $next);
+      } elseif (is_file($next) && !unlink($next)) {
+        respond(500, ['ok' => false, 'error' => 'Could not rotate campaign backups.']);
+      }
+    }
+    copy_campaign_backup($saveFile, campaign_recent_backup_file($saveFile, $currentDay, 1));
+  } else {
+    clear_campaign_recent_backups($saveFile, $backupCount);
+  }
+
+  ensure_campaign_backup_dir(dirname($markerFile));
+  write_json_file($markerFile, [
+    'identity' => $nextDay['identity'],
+    'archiveId' => $currentDay['identity'] === $nextDay['identity'] ? $archiveId : null,
+  ]);
 }
 
 function payload_user_id(array $payload): ?string {
@@ -391,6 +596,7 @@ if ($action === 'second-screen-status') {
   $displayScales = ['map' => 100, 'battleBoard' => 100];
   $battleRotation = 0;
   $battleSwapped = false;
+  $battleBoardVisible = true;
   foreach ($store['screens'] as $token => $entry) {
     if (($entry['userId'] ?? null) === $user['id']) {
       $userToken = (string) $token;
@@ -403,6 +609,7 @@ if ($action === 'second-screen-status') {
       $battleRotation = (int) ($entry['battleRotation'] ?? 0);
       if (!in_array($battleRotation, [0, 90, 180, 270], true)) $battleRotation = 0;
       $battleSwapped = !empty($entry['battleSwapped']);
+      $battleBoardVisible = !array_key_exists('battleBoardVisible', $entry) || !empty($entry['battleBoardVisible']);
       break;
     }
   }
@@ -433,6 +640,9 @@ if ($action === 'second-screen-status') {
     if (array_key_exists('battleSwapped', $payload)) {
       $battleSwapped = (bool) $payload['battleSwapped'];
     }
+    if (array_key_exists('battleBoardVisible', $payload)) {
+      $battleBoardVisible = (bool) $payload['battleBoardVisible'];
+    }
     if ($enabled) {
       foreach ($store['screens'] as $token => $entry) {
         if (($entry['userId'] ?? null) !== $user['id']) unset($store['screens'][$token]);
@@ -452,11 +662,13 @@ if ($action === 'second-screen-status') {
         'displayScales' => $displayScales,
         'battleRotation' => $battleRotation,
         'battleSwapped' => $battleSwapped,
+        'battleBoardVisible' => $battleBoardVisible,
       ];
     } elseif ($enabled && $userToken !== '') {
       $store['screens'][$userToken]['displayScales'] = $displayScales;
       $store['screens'][$userToken]['battleRotation'] = $battleRotation;
       $store['screens'][$userToken]['battleSwapped'] = $battleSwapped;
+      $store['screens'][$userToken]['battleBoardVisible'] = $battleBoardVisible;
       unset($store['screens'][$userToken]['displayScale']);
     }
     write_json_file($secondScreensFile, $store);
@@ -469,6 +681,7 @@ if ($action === 'second-screen-status') {
     'displayScales' => $displayScales,
     'battleRotation' => $battleRotation,
     'battleSwapped' => $battleSwapped,
+    'battleBoardVisible' => $battleBoardVisible,
     'urls' => $userToken !== '' ? second_screen_urls() : [],
   ]);
 }
@@ -564,9 +777,10 @@ if ($method === 'POST') {
       'updatedAt' => $campaign['updatedAt'],
     ]);
   }
+  $currentCampaign = $campaign;
   $campaign = update_campaign_section($campaign, $payloadSection, $payload['state'], payload_user_id($payload));
   $campaign['sectionRevisions'][$payloadSection] = $currentRevision + 1;
-  rotate_campaign_backups($saveFile, $backupCount);
+  prepare_campaign_backups($saveFile, $currentCampaign, $campaign, $backupCount);
   write_campaign($saveFile, $campaign);
   flock($lockHandle, LOCK_UN);
   fclose($lockHandle);

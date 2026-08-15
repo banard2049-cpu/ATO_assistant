@@ -5,7 +5,9 @@ import sqlite3
 import tempfile
 import unittest
 import zipfile
+from contextlib import closing
 from pathlib import Path
+from unittest.mock import patch
 
 from PIL import Image
 
@@ -28,8 +30,10 @@ from app.fixed_resources import RESOURCE_MAP, card_resource_note, card_resources
 from app.installer import apply_install, install_plan
 from app.packages import export_compat, export_package, import_package, inspect_package
 from app.storage import ensure_preview, store_image
+from app.story_extras import find_entity_index
 from app.stories import import_story, merge_next_segment, split_segment, story_segments, storybook_payload
 from app.stories import extract_text
+from tools.build_full_pack import build as build_full_pack
 
 
 APK = Path("/Users/wawafish/Downloads/ATO-Local-0.2.11-images-no-audio.apk")
@@ -70,7 +74,7 @@ class CoreTests(unittest.TestCase):
         empty = Database(self.root / "empty.sqlite3")
         result = ensure_fixed_catalog(empty)
         payload = fixed_catalog_payload()
-        self.assertEqual(2595, result["items"])
+        self.assertEqual(2715, result["items"])
         self.assertEqual(19, result["aibp_enemies"])
         self.assertEqual({"c1", "c1.5", "c2", "c2.5", "c3", "c4", "c5"}, {book["id"] for book in payload["source"]["stories"]})
         self.assertNotIn("apk", payload["source"])
@@ -105,14 +109,24 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(5, len([item for item in payload["items"] if item["module"] == "科技树总览"]))
         self.assertEqual(17, len([item for item in payload["items"] if item["module"] == "泰坦职业配图"]))
         self.assertEqual(2, len([item for item in payload["items"] if item["module"] == "地图模块图标"]))
+        battle_board_items = [item for item in payload["items"] if item["module"] == "决战版图"]
+        terrain_items = [item for item in battle_board_items if item["subgroup"] == "地形板块"]
+        terrain_cards = [item for item in battle_board_items if item["subgroup"] == "地形卡"]
+        self.assertEqual(120, len(battle_board_items))
+        self.assertEqual(74, len(terrain_items))
+        self.assertEqual(80, sum(len(item["faces"]) for item in terrain_items))
+        self.assertEqual(45, len(terrain_cards))
         self.assertTrue(any(item["number"] == "CJ1475" for item in payload["items"]))
         fixed_paths = {path for item in payload["items"] for path in item["faces"].values()}
-        self.assertEqual(4111, len(fixed_paths))
+        self.assertEqual(4237, len(fixed_paths))
         self.assertIn("map/images/c5-face-a.png", fixed_paths)
         self.assertIn("map/images/c5-face-b.png", fixed_paths)
         self.assertIn("aibp/ps/other/SW.jpg", fixed_paths)
         self.assertIn("aibp/ps/other/DW.jpg", fixed_paths)
         self.assertIn("aibp/ps/other/trait/COMMON_TR_001.jpg", fixed_paths)
+        self.assertIn("ss/battle-board.jpg", fixed_paths)
+        self.assertIn("ss/terrain/arcology-back.jpg", fixed_paths)
+        self.assertIn("ss/terrain-cards/arcology.jpg", fixed_paths)
         oracle_ai_iii = [
             item for item in payload["items"]
             if item["number"].startswith("HYPERTIME_ORACLE_AI_III_")
@@ -156,6 +170,48 @@ class CoreTests(unittest.TestCase):
             {item["name"] for item in payload["items"] if item["subgroup"] == "神形/宁芙"},
         )
 
+    def test_full_pack_uses_current_format_and_project_overlay(self):
+        apk = self.root / "source.apk"
+        overlay = self.root / "overlay"
+        destination = self.root / "current.atopack"
+        board = overlay / "ss" / "battle-board.jpg"
+        board.parent.mkdir(parents=True)
+        board.write_bytes(b"current battle board")
+        stories = {"books": [{"id": "c1", "entries": [{"id": "1", "chapterKey": "main"}]}]}
+        entities = {"entities": [{"id": "apostle-1", "name": "Test Apostle"}]}
+        with zipfile.ZipFile(apk, "w") as archive:
+            archive.writestr(
+                "assets/web/story/data/storybook-data.js",
+                f"window.STORYBOOK_DATA = {json.dumps(stories)};",
+            )
+            archive.writestr(
+                "assets/web/story/data/entity-index.json",
+                json.dumps(entities),
+            )
+        catalog = {
+            "source": {"catalog_version": "test-current"},
+            "items": [{
+                "id": "common:battle-board",
+                "cycle": "common",
+                "module": "决战版图",
+                "subgroup": "战斗版图",
+                "name": "决战版图",
+                "number": "battle-board",
+                "sort_order": 1,
+                "faces": {"front": "ss/battle-board.jpg"},
+                "capture_required": True,
+            }],
+        }
+        with patch("tools.build_full_pack.fixed_catalog_payload", return_value=catalog):
+            result = build_full_pack(apk, destination, overlay)
+        self.assertEqual(1, result["assets"])
+        self.assertEqual(1, result["entities"])
+        with zipfile.ZipFile(destination) as archive:
+            manifest = json.loads(archive.read("manifest.json"))
+            self.assertEqual(2, manifest["version"])
+            self.assertEqual("story/entity-index.json", manifest["storyFiles"][0]["member"])
+            self.assertEqual(b"current battle board", archive.read(manifest["assets"][0]["member"]))
+
     def test_story_import_split_merge(self):
         source = self.root / "story.txt"
         source.write_text("001：开始\n第一段正文。\n\n002：继续\n第二段正文。", encoding="utf-8")
@@ -174,7 +230,7 @@ class CoreTests(unittest.TestCase):
 
     def test_database_migrates_legacy_story_metadata_column(self):
         legacy_path = self.root / "legacy.sqlite3"
-        with sqlite3.connect(legacy_path) as conn:
+        with closing(sqlite3.connect(legacy_path)) as conn:
             conn.execute("""CREATE TABLE story_segments (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 book_id TEXT NOT NULL,
@@ -238,6 +294,99 @@ class CoreTests(unittest.TestCase):
             self.assertIn("assets/test/001-front.jpg", archive.namelist())
             self.assertEqual(b"\xff\xd8", archive.read("assets/test/001-front.jpg")[:2])
 
+    def test_package_roundtrip_includes_entity_biographies(self):
+        self.db.execute(
+            "INSERT INTO story_books(id,title,source_name,source_path,status) VALUES(?,?,?,?,?)",
+            ("c1", "Test Story", "test", "", "review"),
+        )
+        self.db.execute(
+            """INSERT INTO story_segments(
+            book_id,chapter_key,chapter_title,entry_number,title,body,sort_order,reviewed
+            ) VALUES(?,?,?,?,?,?,?,?)""",
+            ("c1", "main", "Story", "0001", "Start", "Hero enters.", 0, 1),
+        )
+        ato_source = self.root / "source-ato"
+        (ato_source / "story/data").mkdir(parents=True)
+        entity_payload = {
+            "generatedAt": "test",
+            "entityCount": 1,
+            "entities": [{
+                "id": "hero",
+                "name": "Hero",
+                "matchAliases": ["Hero"],
+                "intro": "The test hero.",
+            }],
+        }
+        (ato_source / "story/data/entity-index.json").write_text(
+            json.dumps(entity_payload, ensure_ascii=False),
+            encoding="utf-8",
+        )
+
+        pack = self.library / "exports" / "entities.atopack"
+        exported = export_package(self.db, self.library, pack, ato_root=ato_source)
+        self.assertTrue(exported["entity_index"])
+        inspected = inspect_package(self.db, pack, verify_hashes=True)
+        self.assertEqual({"included": True, "entity_count": 1}, inspected["entity_index"])
+        with zipfile.ZipFile(pack) as archive:
+            self.assertIn("story/entity-index.json", archive.namelist())
+            manifest = json.loads(archive.read("manifest.json"))
+            self.assertEqual(2, manifest["version"])
+
+        friend_library = self.root / "entity-friend"
+        for child in ("objects", "previews", "sources", "tmp", "exports", "backups"):
+            (friend_library / child).mkdir(parents=True, exist_ok=True)
+        friend = Database(friend_library / "library.sqlite3")
+        imported = import_package(friend, friend_library, pack)
+        self.assertTrue(imported["entity_index_imported"])
+        self.assertTrue((friend_library / "sources/story/entity-index.json").is_file())
+
+        install_root = self.root / "entity-ato"
+        for child in ("aibp", "map", "story", "technology"):
+            (install_root / child).mkdir(parents=True)
+        (install_root / "index.html").write_text("ATO", encoding="utf-8")
+        plan = install_plan(friend, friend_library, install_root)
+        targets = {entry["target"] for entry in plan["files"]}
+        self.assertIn("story/data/entity-index.json", targets)
+        self.assertIn("story/data/entity-index.js", targets)
+        apply_install(friend, friend_library, install_root, [])
+        installed_js = (install_root / "story/data/entity-index.js").read_text(encoding="utf-8")
+        self.assertIn("window.STORY_ENTITY_INDEX", installed_js)
+        self.assertIn('"id": "hero"', installed_js)
+
+        compat = friend_library / "exports" / "entities-compat.zip"
+        compat_result = export_compat(friend, friend_library, compat)
+        self.assertTrue(compat_result["entity_index"])
+        with zipfile.ZipFile(compat) as archive:
+            self.assertIn("story/data/storybook-data.js", archive.namelist())
+            self.assertIn("story/data/entity-index.json", archive.namelist())
+            self.assertIn("story/data/entity-index.js", archive.namelist())
+
+    def test_v2_story_package_requires_entity_biographies(self):
+        pack = self.library / "tmp" / "missing-entities.atopack"
+        with zipfile.ZipFile(pack, "w", allowZip64=True) as archive:
+            archive.writestr("manifest.json", json.dumps({
+                "format": "ato-asset-pack",
+                "version": 2,
+                "items": [],
+                "assets": [],
+                "stories": {"books": [{"id": "c1", "title": "Story", "entries": []}]},
+                "storyFiles": [],
+            }))
+        with self.assertRaisesRegex(ValueError, "没有人物小传索引"):
+            inspect_package(self.db, pack)
+
+    def test_entity_index_can_be_loaded_from_runtime_javascript(self):
+        ato = self.root / "js-only-ato"
+        target = ato / "story/data/entity-index.js"
+        target.parent.mkdir(parents=True)
+        target.write_text(
+            '(function () {\n  window.STORY_ENTITY_INDEX = {"entities":[{"id":"hero","name":"Hero"}]};\n})();\n',
+            encoding="utf-8",
+        )
+        entity_index = find_entity_index(self.library, ato)
+        self.assertIsNotNone(entity_index)
+        self.assertEqual(1, entity_index.entity_count)
+
     def test_package_story_roundtrip_preserves_subchapter_metadata(self):
         pack = self.library / "tmp" / "stories.atopack"
         story_entry = {
@@ -282,6 +431,15 @@ class CoreTests(unittest.TestCase):
         self.assertIn('"encounterKey":"第三个愿望-the-third-wish"', installed)
         self.assertIn('"links":["0123"]', installed)
 
+        entity_index = self.library / "sources/story/entity-index.json"
+        entity_index.parent.mkdir(parents=True, exist_ok=True)
+        entity_index.write_text(
+            json.dumps({
+                "entityCount": 1,
+                "entities": [{"id": "test", "name": "Test", "intro": "Test biography"}],
+            }),
+            encoding="utf-8",
+        )
         exported = self.library / "exports" / "stories-roundtrip.atopack"
         export_package(self.db, self.library, exported)
         with zipfile.ZipFile(exported) as archive:
