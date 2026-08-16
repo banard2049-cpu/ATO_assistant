@@ -39,6 +39,7 @@ class FakeElement {
     this.textContent = "";
     this.listeners = {};
     this.parentNode = null;
+    this.children = [];
   }
 
   addEventListener(type, listener, options) {
@@ -81,6 +82,19 @@ class FakeElement {
   replaceChildren() {
     this.innerHTML = "";
     this.textContent = "";
+    this.children = [];
+  }
+
+  appendChild(element) {
+    this.children.push(element);
+    element.parentNode = this;
+    return element;
+  }
+
+  prepend(element) {
+    this.children.unshift(element);
+    element.parentNode = this;
+    return element;
   }
 
   setAttribute(name, value) {
@@ -207,6 +221,7 @@ function makeHarness(startApostle = "MIDASCORE", options = {}) {
     levels: {},
     lastZoom: null,
     shuffleCount: 0,
+    standardBpIIIUpgrades: 0,
     panelTokenRenders: 0,
     timers: [],
     document: {
@@ -259,7 +274,9 @@ function makeHarness(startApostle = "MIDASCORE", options = {}) {
       context.defeatBpButton.disabled = !state.BP.pending;
       context.criticalBpButton.disabled = !state.BP.pending;
     },
-    renderExtraCards() {},
+    renderExtraCards() {
+      context.extraGrid.replaceChildren();
+    },
     renderPanelTokens() {
       context.panelTokenRenders += 1;
     },
@@ -298,13 +315,37 @@ function makeHarness(startApostle = "MIDASCORE", options = {}) {
         context.C45Specials?.recordBpWound?.(card.level === "III" ? 2 : 1);
       }
     },
-    promoteSinglePile() {},
+    promoteSinglePile(type) {
+      const pile = context.piles[context.currentApostle][type];
+      const source = ["I", "II"].map((level) => ({
+        level,
+        index: pile.deck.findIndex((card) => card.level === level && !card.specialAi)
+      })).find((candidate) => candidate.index >= 0);
+      if (!source) return;
+      pile.removed.push(pile.deck.splice(source.index, 1)[0]);
+      const toLevel = source.level === "I" ? "II" : "III";
+      const promoted = pile.supply[toLevel]?.pop();
+      if (promoted) context.insertRandom(pile.deck, promoted);
+    },
     promoteBpByRemovingLowest() {},
     performLinkedPromotion() {
       return context.promoteBpByRemovingLowest();
     },
-    promoteAiFromLevel() {},
-    promoteAiForBpIII() {},
+    promoteAiFromLevel(fromLevel, toLevel) {
+      const ai = context.piles[context.currentApostle].AI;
+      const source = ["deck", "discard"].map((collection) => ({
+        collection,
+        index: ai[collection].findIndex((card) => card.level === fromLevel && !card.specialAi)
+      })).find((candidate) => candidate.index >= 0);
+      if (source) {
+        ai.removed.push(ai[source.collection].splice(source.index, 1)[0]);
+      }
+      const promoted = ai.supply[toLevel]?.pop();
+      if (promoted) context.insertRandom(ai.deck, promoted);
+    },
+    promoteAiForBpIII() {
+      context.standardBpIIIUpgrades += 1;
+    },
     setImageZoomBpActions() {},
     undoLastAibp(type = "") {
       const stack = context.undoStacks[context.currentApostle] || [];
@@ -355,6 +396,7 @@ function makeHarness(startApostle = "MIDASCORE", options = {}) {
     applyCurrentApostleLevelBonuses() {}
   };
   context.window = context;
+  if (options.preRender) context.renderApostle(startApostle);
   vm.createContext(context);
   const source = fs.readFileSync(
     path.join(__dirname, "..", "aibp", "c45_specials.js"),
@@ -428,6 +470,13 @@ test("Dahaka uses one visible shared AI/BP pile and BP-only promotion", () => {
   );
 });
 
+test("Dahaka restores its BP column after hash cold start", () => {
+  const app = makeHarness("DAHAKA", { preRender: true });
+
+  assert.equal(app.aibpLayout.classList.contains("ai-only"), false);
+  assert.equal(app.bpColumn.hidden, false);
+});
+
 test("Dahaka linked promotion upgrades the shared pile only once", () => {
   const app = makeHarness("DAHAKA");
   const pile = app.piles.DAHAKA.aibp;
@@ -456,7 +505,7 @@ test("Dahaka migrates a legacy AI save without clearing other progress", () => {
   assert.equal(app.piles.DAHAKA.tokens[0].id, "keep");
 });
 
-test("Demidjinn keeps AI O at the bottom and rotates four wishes", () => {
+test("Demidjinn keeps AI IV aside and AI O at the bottom at level IV", () => {
   const app = makeHarness();
   app.levels.DEMIDJINN = 4;
   app.renderApostle("DEMIDJINN");
@@ -464,8 +513,18 @@ test("Demidjinn keeps AI O at the bottom and rotates four wishes", () => {
   const aiO = state.AI.deck.at(-1);
 
   assert.equal(aiO.specialAi, "demidjinn-o");
+  assert.equal(
+    [state.AI.deck, state.AI.discard, state.AI.removed]
+      .flat()
+      .some((card) => card.specialAi === "demidjinn-iv"),
+    false
+  );
   assert.equal(state.special.demidjinn.globalWish.deck.length, 4);
   assert.equal(state.special.demidjinn.globalWish.active, null);
+  assert.match(app.specialRoot.innerHTML, /抽取全场愿望/);
+  assert.doesNotMatch(app.specialRoot.innerHTML, /终极愿望/);
+  assert.doesNotMatch(app.specialRoot.innerHTML, /愿望热情|狂热持有者/);
+  assert.doesNotMatch(app.specialRoot.innerHTML, /战斗状态/);
 
   state.AI.deck.pop();
   state.AI.removed.push(aiO);
@@ -473,10 +532,291 @@ test("Demidjinn keeps AI O at the bottom and rotates four wishes", () => {
   assert.equal(state.AI.removed.some((card) => card.specialAi === "demidjinn-o"), false);
   assert.equal(state.AI.deck.at(-1).specialAi, "demidjinn-o");
 
+  const drawsBeforeAiO = state.AI.deck.filter((card) => card.specialAi !== "demidjinn-o").length;
+  for (let index = 0; index < drawsBeforeAiO; index += 1) {
+    app.drawAi();
+    assert.notEqual(state.AI.pending.specialAi, "demidjinn-o");
+    app.discardAiPending();
+  }
+  const discardedBeforeAiO = state.AI.discard.length;
+  const shufflesBeforeAiO = app.shuffleCount;
+  app.drawAi();
+  assert.equal(state.AI.pending, null);
+  assert.equal(app.shuffleCount, shufflesBeforeAiO + 1);
+  assert.equal(state.AI.discard.length, 0);
+  assert.equal(state.AI.deck.length, discardedBeforeAiO + 1);
+  assert.equal(state.AI.deck.at(-1).specialAi, "demidjinn-o");
+  assert.equal(
+    state.AI.deck.slice(0, -1).some((card) => card.specialAi === "demidjinn-o"),
+    false
+  );
+  app.drawAi();
+  assert.ok(state.AI.pending);
+  assert.notEqual(state.AI.pending.specialAi, "demidjinn-o");
+  app.discardAiPending();
+
   app.specialRoot.dispatch("click", makeActionTarget("next-global-wish"));
   assert.equal(state.special.demidjinn.globalWish.round, 2);
   assert.ok(state.special.demidjinn.globalWish.active);
   assert.equal(state.special.demidjinn.globalWish.deck.length, 3);
+  assert.match(app.specialRoot.innerHTML, /Sand to Sea/);
+  assert.match(
+    app.specialRoot.innerHTML,
+    /Normal \(not Terrain\) Battle Board spaces are considered Terrain tiles/
+  );
+  assert.match(app.specialRoot.innerHTML, /普通（非地形）战斗版图格视为具有“裂隙（Chasm）”关键词/);
+  assert.doesNotMatch(app.specialRoot.innerHTML, /<img/);
+  const activeWishTrait = app.extraGrid.children.find(
+    (element) => element.dataset.demidjinnGlobalWish === "active"
+  );
+  assert.ok(activeWishTrait);
+  assert.equal(activeWishTrait.alt, "Sand to Sea");
+  assert.match(activeWishTrait.src, /DEMIDJINN_WISH_I_001\.jpg$/);
+});
+
+test("Demidjinn replaces only the first BP III AI promotion with The Last Wish", () => {
+  const app = makeHarness();
+  app.levels.DEMIDJINN = 4;
+  app.renderApostle("DEMIDJINN");
+  const state = app.piles.DEMIDJINN;
+  state.AI.discard.push({ type: "AI", level: "III", index: 4 });
+  const levelThreeBefore = [state.AI.deck, state.AI.discard]
+    .flat()
+    .filter((card) => card.level === "III" && !card.specialAi)
+    .length;
+
+  app.promoteAiForBpIII();
+
+  assert.equal(app.standardBpIIIUpgrades, 0);
+  assert.equal(state.special.demidjinn.lastWishAiIvAdded, true);
+  assert.equal(
+    [state.AI.deck, state.AI.discard]
+      .flat()
+      .filter((card) => card.level === "III" && !card.specialAi)
+      .length,
+    levelThreeBefore - 1
+  );
+  assert.equal(
+    state.AI.removed.some((card) => card.level === "III" && !card.specialAi),
+    true
+  );
+  assert.equal(
+    state.AI.deck.filter((card) => card.specialAi === "demidjinn-iv").length,
+    1
+  );
+  assert.equal(state.AI.deck.at(-1).specialAi, "demidjinn-o");
+
+  app.promoteAiForBpIII();
+  assert.equal(app.standardBpIIIUpgrades, 1);
+  assert.equal(
+    [state.AI.deck, state.AI.discard, state.AI.removed]
+      .flat()
+      .filter((card) => card.specialAi === "demidjinn-iv").length,
+    1
+  );
+});
+
+test("Demidjinn BP III damage hook handles critical and manual damage paths", () => {
+  const app = makeHarness();
+  app.levels.DEMIDJINN = 2;
+  app.renderApostle("DEMIDJINN");
+  const state = app.piles.DEMIDJINN;
+  state.AI.deck.unshift({ type: "AI", level: "III", index: 2 });
+
+  assert.equal(
+    app.C45Specials.recordBpCardDamage({ type: "BP", level: "III", index: 1 }),
+    true
+  );
+  assert.equal(state.special.demidjinn.lastWishAiIvAdded, true);
+  assert.equal(state.AI.removed.some((card) => card.level === "III"), true);
+  assert.equal(state.AI.deck.some((card) => card.specialAi === "demidjinn-iv"), true);
+  assert.equal(state.AI.deck.some((card) => card.specialAi === "demidjinn-o"), false);
+  assert.equal(
+    app.C45Specials.recordBpCardDamage({ type: "BP", level: "III", index: 2 }),
+    false
+  );
+});
+
+test("base BP damage notifications pass the damaged card to C4-C5 specials", () => {
+  const source = fs.readFileSync(
+    path.join(__dirname, "..", "aibp", "index.html"),
+    "utf8"
+  );
+
+  assert.match(
+    source,
+    /function notifyBpWound\(card\)\s*{\s*window\.C45Specials\?\.recordBpCardDamage\?\.\(card\);/
+  );
+});
+
+test("Demidjinn low levels do not create AI O while drawing", () => {
+  const app = makeHarness();
+  app.levels.DEMIDJINN = 3;
+  app.renderApostle("DEMIDJINN");
+  const state = app.piles.DEMIDJINN;
+
+  app.drawAi();
+
+  assert.equal(
+    [state.AI.deck, state.AI.discard, state.AI.removed, [state.AI.pending]]
+      .flat()
+      .some((card) => card?.specialAi === "demidjinn-o"),
+    false
+  );
+});
+
+test("Demidjinn clears legacy AI O pending states and restores the draw cycle", () => {
+  const app = makeHarness();
+  const legacy = initialState();
+  const aiO = {
+    type: "AI",
+    level: "O",
+    index: 1,
+    specialAi: "demidjinn-o",
+    fileName: "DEMIDJINN_TR_O_001.jpg"
+  };
+  legacy.AI.deck = [aiO];
+  legacy.AI.discard = [
+    { type: "AI", level: "I", index: 1 },
+    { type: "AI", level: "II", index: 1 }
+  ];
+  legacy.AI.pending = aiO;
+  app.piles.DEMIDJINN = legacy;
+  app.levels.DEMIDJINN = 4;
+
+  app.renderApostle("DEMIDJINN");
+
+  assert.equal(legacy.AI.pending, null);
+  assert.equal(legacy.AI.discard.length, 0);
+  assert.equal(legacy.AI.deck.length, 3);
+  assert.equal(legacy.AI.deck.at(-1).specialAi, "demidjinn-o");
+  app.drawAi();
+  assert.ok(legacy.AI.pending);
+  assert.notEqual(legacy.AI.pending.specialAi, "demidjinn-o");
+});
+
+test("Demidjinn level IV promotions discard exactly one unprotected top AI", () => {
+  const lowLevelApp = makeHarness();
+  lowLevelApp.levels.DEMIDJINN = 3;
+  lowLevelApp.renderApostle("DEMIDJINN");
+  lowLevelApp.promoteAiFromLevel("I", "II");
+  assert.equal(lowLevelApp.piles.DEMIDJINN.AI.discard.length, 0);
+
+  const levelFourApp = makeHarness();
+  levelFourApp.levels.DEMIDJINN = 4;
+  levelFourApp.renderApostle("DEMIDJINN");
+  const state = levelFourApp.piles.DEMIDJINN;
+
+  levelFourApp.promoteAiFromLevel("I", "II");
+  assert.equal(state.AI.discard.length, 1);
+  levelFourApp.promoteAiFromLevel("I", "II");
+  assert.equal(state.AI.discard.length, 2);
+  levelFourApp.promoteSinglePile("BP");
+  assert.equal(state.AI.discard.length, 3);
+  assert.equal(state.AI.deck.at(-1).specialAi, "demidjinn-o");
+});
+
+test("Demidjinn promotion does not discard top AI IV or AI O", () => {
+  const aiIvApp = makeHarness();
+  aiIvApp.levels.DEMIDJINN = 4;
+  aiIvApp.renderApostle("DEMIDJINN");
+  const aiIvState = aiIvApp.piles.DEMIDJINN;
+  aiIvState.special.demidjinn.lastWishAiIvAdded = true;
+  aiIvState.AI.deck.unshift({
+    type: "AI",
+    level: "IV",
+    index: 1,
+    specialAi: "demidjinn-iv",
+    fileName: "DEMIDJINN_TR_IV_001.jpg"
+  });
+
+  aiIvApp.promoteAiFromLevel("I", "II");
+  assert.equal(aiIvState.AI.discard.length, 0);
+  assert.equal(aiIvState.AI.deck[0].specialAi, "demidjinn-iv");
+
+  const aiOApp = makeHarness();
+  aiOApp.levels.DEMIDJINN = 4;
+  aiOApp.renderApostle("DEMIDJINN");
+  const aiOState = aiOApp.piles.DEMIDJINN;
+  const aiO = aiOState.AI.deck.find((card) => card.specialAi === "demidjinn-o");
+  aiOState.AI.deck = [{ type: "AI", level: "I", index: 1 }, aiO];
+  aiOState.AI.supply.II = [];
+
+  aiOApp.promoteAiFromLevel("I", "II");
+  assert.equal(aiOState.AI.discard.length, 0);
+  assert.equal(aiOState.AI.deck[0].specialAi, "demidjinn-o");
+});
+
+test("Demidjinn migrates prematurely added legacy AI IV back aside", () => {
+  const app = makeHarness();
+  const legacy = initialState();
+  legacy.AI.deck.push({
+    type: "AI",
+    level: "IV",
+    index: 1,
+    specialAi: "demidjinn-iv",
+    fileName: "DEMIDJINN_TR_IV_001.jpg"
+  });
+  app.piles.DEMIDJINN = legacy;
+  app.levels.DEMIDJINN = 4;
+
+  app.renderApostle("DEMIDJINN");
+
+  assert.equal(
+    [legacy.AI.deck, legacy.AI.discard, legacy.AI.removed]
+      .flat()
+      .some((card) => card.specialAi === "demidjinn-iv"),
+    false
+  );
+  assert.equal(legacy.special.demidjinn.lastWishAiIvAdded, false);
+});
+
+test("Demidjinn Wish for a Wish uses a general-token stack and resolves Signature", () => {
+  const app = makeHarness();
+  app.renderApostle("DEMIDJINN");
+  const state = app.piles.DEMIDJINN;
+
+  assert.doesNotMatch(app.specialRoot.innerHTML, /Wish for a Wish/);
+  assert.equal(state.tokens.some((item) => item.c45PanelCounter === "demidjinn"), false);
+
+  app.C45Specials.handlePanelCounterTokenClick();
+  assert.equal(state.special.demidjinn.wishForWish, 1);
+  app.C45Specials.recordBpWound(2);
+  assert.deepEqual(
+    structuredClone(state.tokens.find((item) => item.c45PanelCounter === "demidjinn")),
+    {
+      id: "c45-demidjinn-wish-for-wish",
+      file: "CM.jpg",
+      x: 92,
+      y: 10.5,
+      count: 3,
+      c45PanelCounter: "demidjinn"
+    }
+  );
+
+  app.C45Specials.handlePanelCounterTokenClick();
+  assert.equal(state.special.demidjinn.wishForWish, 0);
+  assert.equal(state.tokens.some((item) => item.c45PanelCounter === "demidjinn"), false);
+  assert.equal(app.timers.length, 0);
+  assert.equal(state.AI.pending, null);
+  assert.match(app.lastZoom.src, /DEMIDJINN_SIGNATURE_X_001\.jpg$/);
+  assert.equal(app.lastZoom.title, "半神帝晶标志行为");
+});
+
+test("Demidjinn migrates legacy Wish for a Wish counts into its panel token", () => {
+  const app = makeHarness();
+  const legacy = initialState();
+  legacy.special = {
+    version: 7,
+    demidjinn: { wishForWish: 4 }
+  };
+  app.piles.DEMIDJINN = legacy;
+
+  app.renderApostle("DEMIDJINN");
+
+  const token = legacy.tokens.find((item) => item.c45PanelCounter === "demidjinn");
+  assert.equal(token.file, "CM.jpg");
+  assert.equal(token.count, 4);
 });
 
 test("Babelian BP module records and clears its bonus without VP overwrites", () => {

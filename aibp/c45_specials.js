@@ -21,6 +21,12 @@
     y: 7.5
   };
   const TRIGGERED_COUNTER_TOKENS = {
+    demidjinn: {
+      id: "c45-demidjinn-wish-for-wish",
+      file: "CM.jpg",
+      x: 92,
+      y: 10.5
+    },
     dragon: {
       id: "c45-dragon-truth",
       file: "CM.jpg",
@@ -32,6 +38,30 @@
       file: "CM.jpg",
       x: 96,
       y: 7.5
+    }
+  };
+  const GLOBAL_WISH_NAMES = {
+    I: "Sand to Sea",
+    II: "Stones to Sticks",
+    III: "Pillars to Pyres",
+    IV: "Sand to Silica"
+  };
+  const GLOBAL_WISH_TEXT = {
+    I: {
+      original: "Normal (not Terrain) Battle Board spaces are considered Terrain tiles with the Chasm keyword.",
+      translated: "普通（非地形）战斗版图格视为具有“裂隙（Chasm）”关键词的地形板块。"
+    },
+    II: {
+      original: "Irem Tower Terrain tiles gain the Destructible keyword. If you move off an Irem Tower, it is destroyed. If you end your turn on an Irem Tower, it is destroyed, then you suffer Crash.",
+      translated: "伊瑞姆塔地形板块获得“可破坏（Destructible）”关键词。如果你离开一座伊瑞姆塔，该塔被摧毁。如果你在一座伊瑞姆塔上结束回合，该塔被摧毁，然后你遭受撞击（Crash）。"
+    },
+    III: {
+      original: "When this card is placed on the Active Global Wish space, all Irem Tower Terrain tiles become 'pyres'. [!] All Titans on pyres die. When you end your voluntary movement or end your turn on a pyre, you die. When you end your involuntary movement on a pyre, [!] you die.",
+      translated: "当本卡被放到激活的全场愿望位置时，所有伊瑞姆塔地形板块都变为“火葬堆（pyres）”。[!] 火葬堆上的所有泰坦死亡。当你在火葬堆上结束自愿移动或结束回合时，你死亡。当你在火葬堆上结束非自愿移动时，[!] 你死亡。"
+    },
+    IV: {
+      original: "When you attack, you gain -X Precision, where X is the number of Fire tokens in the Kratos Pool.",
+      translated: "当你攻击时，获得 -X 精准；X 等于克拉托斯池中的火焰指示物数量。"
     }
   };
   const FEINT_META = {
@@ -185,7 +215,7 @@
 
   function defaultSpecialState() {
     return {
-      version: 6
+      version: 8
     };
   }
 
@@ -438,18 +468,16 @@
     } else if (name === "DEMIDJINN") {
       special.demidjinn = {
         wishForWish: 0,
-        wishConditionCount: 0,
         globalWish: null,
+        lastWishAiIvAdded: false,
         ...(special.demidjinn || {})
       };
+      delete special.demidjinn.wishConditionCount;
+      special.demidjinn.lastWishAiIvAdded = special.demidjinn.lastWishAiIvAdded === true;
       special.demidjinn.wishForWish = clamp(special.demidjinn.wishForWish, 0, 99);
-      special.demidjinn.wishConditionCount = clamp(
-        special.demidjinn.wishConditionCount,
-        0,
-        99
-      );
       ensureGlobalWishState(state);
       ensureDemidjinnLastWish(state);
+      syncTriggeredCounterToken(state, "demidjinn", special.demidjinn.wishForWish);
     } else if (name === "THE_BABELIAN_LUNACY") {
       special.babelian = {
         fusionBonus: 0,
@@ -490,7 +518,7 @@
     if (!state.special || typeof state.special !== "object") {
       state.special = defaultSpecialState();
     }
-    state.special.version = 6;
+    state.special.version = 8;
     delete state.special.commonStatuses;
     delete state.special.roster;
     normalizeApostleSpecial(name, state);
@@ -499,8 +527,24 @@
   function wishCard(level) {
     return makeCard("WISH", level, 1, {
       fileName: `DEMIDJINN_WISH_${level}_001.jpg`,
-      globalWish: true
+      globalWish: true,
+      wishName: GLOBAL_WISH_NAMES[level]
     });
+  }
+
+  function globalWishName(card) {
+    if (!card) return "";
+    if (card.wishName) return card.wishName;
+    const level = String(card.fileName || "").match(/_WISH_(I|II|III|IV)_/)?.[1]
+      || card.level;
+    return GLOBAL_WISH_NAMES[level] || "Global Wish";
+  }
+
+  function globalWishText(card) {
+    if (!card) return null;
+    const level = String(card.fileName || "").match(/_WISH_(I|II|III|IV)_/)?.[1]
+      || card.level;
+    return GLOBAL_WISH_TEXT[level] || null;
   }
 
   function newGlobalWishState() {
@@ -559,18 +603,27 @@
     return allPileCards(pile).find((card) => card.specialAi === key);
   }
 
+  function removeSpecialAi(pile, key) {
+    if (!pile) return;
+    ["deck", "discard", "removed"].forEach((collection) => {
+      pile[collection] ||= [];
+      pile[collection] = pile[collection].filter((card) => card.specialAi !== key);
+    });
+    if (pile.pending?.specialAi === key) pile.pending = null;
+  }
+
   function ensureDemidjinnLastWish(state) {
-    if (currentApostle !== "DEMIDJINN" || currentApostleLevel() < 4) return;
+    if (currentApostle !== "DEMIDJINN") return;
     const ai = state.AI;
-    const aiIv = specialAiCard("DEMIDJINN_TR_IV_001.jpg", "IV", "demidjinn-iv");
-    const aiO = specialAiCard("DEMIDJINN_TR_O_001.jpg", "O", "demidjinn-o");
-    if (!findSpecialAi(ai, aiIv.specialAi)) insertRandom(ai.deck, aiIv);
-    if (!findSpecialAi(ai, aiO.specialAi)) ai.deck.push(aiO);
+    if (!state.special.demidjinn.lastWishAiIvAdded) {
+      removeSpecialAi(ai, "demidjinn-iv");
+    }
     normalizeDemidjinnAi(ai);
   }
 
   function normalizeDemidjinnAi(ai) {
     if (!ai) return;
+    const enabled = currentApostle === "DEMIDJINN" && currentApostleLevel() >= 4;
     let lastWish = null;
     ["deck", "discard", "removed"].forEach((key) => {
       ai[key] ||= [];
@@ -580,16 +633,57 @@
         return false;
       });
     });
-    if (!lastWish && ai.pending?.specialAi !== "demidjinn-o") {
+    if (!enabled) {
+      if (ai.pending?.specialAi === "demidjinn-o") ai.pending = null;
+      return;
+    }
+    if (ai.pending?.specialAi === "demidjinn-o") {
+      const pendingAiO = ai.pending;
+      ai.pending = null;
+      reshuffleDemidjinnAfterAiO(ai, pendingAiO);
+      return;
+    }
+    if (!lastWish) {
       lastWish = specialAiCard("DEMIDJINN_TR_O_001.jpg", "O", "demidjinn-o");
     }
-    if (lastWish && ai.pending?.specialAi !== "demidjinn-o") {
-      ai.deck.push(lastWish);
+    ai.deck.push(lastWish);
+  }
+
+  function reshuffleDemidjinnAfterAiO(ai, aiO) {
+    ai.deck = ai.deck.filter((card) => card.specialAi !== "demidjinn-o");
+    ai.discard = ai.discard.filter((card) => card.specialAi !== "demidjinn-o");
+    ai.deck = shuffleCards(ai.deck.concat(ai.discard));
+    ai.discard = [];
+    ai.deck.push(aiO);
+  }
+
+  function activateDemidjinnLastWish() {
+    if (currentApostle !== "DEMIDJINN") return false;
+    ensureC45State("DEMIDJINN");
+    const state = piles.DEMIDJINN;
+    const data = state.special.demidjinn;
+    if (data.lastWishAiIvAdded) return false;
+
+    const ai = state.AI;
+    for (const collection of ["deck", "discard"]) {
+      const index = ai[collection].findIndex((card) => (
+        card?.type === "AI" && card.level === "III" && !card.specialAi
+      ));
+      if (index >= 0) {
+        ai.removed.push(ai[collection].splice(index, 1)[0]);
+        break;
+      }
     }
+
+    const aiIv = specialAiCard("DEMIDJINN_TR_IV_001.jpg", "IV", "demidjinn-iv");
+    ai.deck = shuffleCards(ai.deck.concat(aiIv));
+    data.lastWishAiIvAdded = true;
+    normalizeDemidjinnAi(ai);
+    return true;
   }
 
   function discardDemidjinnPromotionTop() {
-    if (currentApostle !== "DEMIDJINN") return;
+    if (currentApostle !== "DEMIDJINN" || currentApostleLevel() < 4) return;
     const ai = piles[currentApostle].AI;
     normalizeDemidjinnAi(ai);
     const top = ai.deck[0];
@@ -754,16 +848,6 @@
     if (ai.pending) return;
     if (options.demidjinn) {
       normalizeDemidjinnAi(ai);
-      const normalDeck = ai.deck.filter((card) => card.specialAi !== "demidjinn-o");
-      if (normalDeck.length === 0) {
-        const lastWish = ai.deck.find((card) => card.specialAi === "demidjinn-o");
-        const normalDiscard = ai.discard.filter((card) => card.specialAi !== "demidjinn-o");
-        if (normalDiscard.length > 0) {
-          ai.deck = shuffleCards(normalDiscard);
-          ai.discard = [];
-          if (lastWish) ai.deck.push(lastWish);
-        }
-      }
     }
     if (ai.deck.length === 0 && ai.discard.length === 0) return;
     rememberUndo(currentApostle, "AI");
@@ -773,11 +857,15 @@
     }
     const drawIndex = options.fromBottom ? ai.deck.length - 1 : 0;
     ai.pending = ai.deck[drawIndex] || null;
+    const drawn = ai.pending;
+    const locked = drawn?.specialAi === "demidjinn-o";
+    if (locked) {
+      reshuffleDemidjinnAfterAiO(ai, drawn);
+      ai.pending = null;
+    }
     savePiles();
     renderAibpCards();
-    if (!ai.pending) return;
-    const drawn = ai.pending;
-    const locked = drawn.specialAi === "demidjinn-o";
+    if (!drawn) return;
     openImageZoom(cardSrc(drawn), "抽取的 AI", locked ? null : () => {
       if (piles[currentApostle]?.AI?.pending
         && cardIdentity(piles[currentApostle].AI.pending) === cardIdentity(drawn)) {
@@ -873,6 +961,7 @@
     wish.round += 1;
     savePiles();
     renderSpecials();
+    renderExtraCards();
   }
 
   function getPath(object, path) {
@@ -944,38 +1033,38 @@
   }
 
   function renderDemidjinn(state) {
-    const data = state.special.demidjinn;
-    const wish = data.globalWish;
+    const wish = state.special.demidjinn.globalWish;
     const active = wish.active;
+    const activeText = globalWishText(active);
     return `
-      <div class="c45-control span-2">
-        <div class="c45-control-head">
-          <div>
+      <div class="c45-control c45-wish-control wide">
+        <div class="c45-wish-layout">
+          <div class="c45-control-head c45-wish-head">
             <div class="c45-control-title">全场愿望</div>
             <div class="c45-control-note">第 ${wish.round} 个泰坦轮 · 牌堆 ${wish.deck.length} · 弃牌 ${wish.discard.length}</div>
           </div>
-        </div>
-        <div class="c45-wish-layout">
           <div class="c45-wish-view">
             ${active
-              ? `<img src="${cardSrc(active)}" alt="当前全场愿望" data-zoom-src="${cardSrc(active)}">`
+              ? `<div class="c45-wish-name">${escapeHtml(globalWishName(active))}</div>`
               : `<div class="c45-wish-empty">首个泰坦轮不启用全场愿望</div>`}
           </div>
-          <div>
-            <div class="c45-action-row">
-              <button type="button" data-action="next-global-wish">下一泰坦轮</button>
-              <button type="button" data-action="reset-global-wish">重置愿望牌堆</button>
-            </div>
-            ${stepper("Wish for a Wish", "demidjinn.wishForWish", data.wishForWish, 0, 99)}
-            ${stepper("愿望热情/狂热持有者", "demidjinn.wishConditionCount", data.wishConditionCount, 0, 99)}
-            <div class="c45-derived">Curse Carapace：当前额外 AT +${clamp(data.wishConditionCount, 0, 99)}</div>
+          <div class="c45-action-row c45-wish-actions">
+            <button type="button" data-action="next-global-wish">抽取全场愿望</button>
+            <button type="button" data-action="reset-global-wish">重置愿望牌堆</button>
           </div>
+          ${activeText ? `
+            <div class="c45-wish-copy">
+              <div class="c45-wish-copy-column" lang="en">
+                <div class="c45-wish-copy-label">原文</div>
+                <div>${escapeHtml(activeText.original)}</div>
+              </div>
+              <div class="c45-wish-copy-column" lang="zh-CN">
+                <div class="c45-wish-copy-label">中文</div>
+                <div>${escapeHtml(activeText.translated)}</div>
+              </div>
+            </div>
+          ` : ""}
         </div>
-      </div>
-      <div class="c45-control">
-        <div class="c45-control-title">终极愿望</div>
-        <div class="c45-control-note">等级 IV+：AI IV 加入牌堆；AI O 永驻牌底，不参与洗牌且不可弃置。</div>
-        <div class="c45-derived">${currentApostleLevel() >= 4 ? "规则已启用" : "等级 IV 时启用"}</div>
       </div>
     `;
   }
@@ -1010,12 +1099,7 @@
       specialRoot.replaceChildren();
       return;
     }
-    specialRoot.innerHTML = `
-      <div class="c45-specials-head">
-        <h3 class="c45-specials-title">战斗状态</h3>
-      </div>
-      <div class="c45-specials-grid">${controls}</div>
-    `;
+    specialRoot.innerHTML = `<div class="c45-specials-grid">${controls}</div>`;
   }
 
   function renderBabelianBpControl() {
@@ -1091,7 +1175,9 @@
   function resolveTriggeredAi(kind) {
     const state = piles[currentApostle];
     if (state.AI.pending) return;
-    if (kind === "dragon") {
+    if (kind === "demidjinn") {
+      if (state.special.demidjinn.wishForWish < 3) return;
+    } else if (kind === "dragon") {
       const data = state.special.dragon;
       const threshold = currentApostleLevel() >= 4 ? 3 : 4;
       if (data.truthTokens < threshold) return;
@@ -1100,7 +1186,10 @@
       if (data.slowBoiling < 3) return;
     }
     rememberUndo(currentApostle, "AIBP");
-    if (kind === "dragon") {
+    if (kind === "demidjinn") {
+      state.special.demidjinn.wishForWish = 0;
+      syncTriggeredCounterToken(state, kind, 0);
+    } else if (kind === "dragon") {
       const data = state.special.dragon;
       data.truthTokens = 0;
       syncTriggeredCounterToken(state, kind, data.truthTokens);
@@ -1110,16 +1199,31 @@
       syncTriggeredCounterToken(state, kind, data.slowBoiling);
     }
     saveAndRender();
+    if (kind === "demidjinn") {
+      openImageZoom(
+        "ps/DEMIDJINN/DEMIDJINN_SIGNATURE_X_001.jpg",
+        "半神帝晶标志行为"
+      );
+      return;
+    }
     window.setTimeout(() => drawAi(), 0);
   }
 
   function handleTriggeredCounterTokenClick(kind) {
-    const apostle = kind === "dragon" ? "DRAGON_OF_PHOBOS" : "MEDUKETOS";
+    const apostle = kind === "demidjinn"
+      ? "DEMIDJINN"
+      : kind === "dragon"
+        ? "DRAGON_OF_PHOBOS"
+        : "MEDUKETOS";
     if (currentApostle !== apostle) return false;
     ensureC45State(currentApostle);
     const state = piles[currentApostle];
-    const data = state.special[kind];
-    const field = kind === "dragon" ? "truthTokens" : "slowBoiling";
+    const data = kind === "demidjinn" ? state.special.demidjinn : state.special[kind];
+    const field = kind === "demidjinn"
+      ? "wishForWish"
+      : kind === "dragon"
+        ? "truthTokens"
+        : "slowBoiling";
     const threshold = kind === "dragon" && currentApostleLevel() < 4 ? 4 : 3;
     if (data[field] >= threshold) {
       resolveTriggeredAi(kind);
@@ -1127,7 +1231,9 @@
     }
     rememberUndo(currentApostle, "AIBP");
     const currentState = piles[currentApostle];
-    const currentData = currentState.special[kind];
+    const currentData = kind === "demidjinn"
+      ? currentState.special.demidjinn
+      : currentState.special[kind];
     currentData[field] = clamp(currentData[field] + 1, 0, threshold);
     syncTriggeredCounterToken(currentState, kind, currentData[field]);
     saveAndRender();
@@ -1136,6 +1242,9 @@
 
   function handlePanelCounterTokenClick() {
     if (currentApostle === "MIDASCORE") return handleMidascorePainTokenClick();
+    if (currentApostle === "DEMIDJINN") {
+      return handleTriggeredCounterTokenClick("demidjinn");
+    }
     if (currentApostle === "DRAGON_OF_PHOBOS") {
       return handleTriggeredCounterTokenClick("dragon");
     }
@@ -1178,6 +1287,7 @@
     } else if (action === "reset-global-wish") {
       rememberUndo("DEMIDJINN", "AIBP");
       special.demidjinn.globalWish = newGlobalWishState();
+      renderExtraCards();
     } else if (action === "clear-fusion-bonus") {
       if (!special.babelian.fusionBonus) return;
       rememberUndo(currentApostle, "AIBP");
@@ -1199,13 +1309,16 @@
     return src;
   };
 
+  function syncDahakaLayout(name = currentApostle) {
+    if (name !== "DAHAKA") return;
+    aibpLayout.classList.remove("ai-only");
+    bpColumn.hidden = false;
+  }
+
   renderApostle = function (name) {
     base.renderApostle(name);
     ensureC45State(name);
-    if (name === "DAHAKA") {
-      aibpLayout.classList.remove("ai-only");
-      bpColumn.hidden = false;
-    }
+    syncDahakaLayout(name);
     renderSpecials();
     renderBabelianBpControl();
     updateSpecialDrawUi();
@@ -1224,6 +1337,17 @@
   renderExtraCards = function () {
     base.renderExtraCards();
     cleanMisclassifiedExtras();
+    if (currentApostle === "DEMIDJINN") {
+      const activeWish = piles.DEMIDJINN?.special?.demidjinn?.globalWish?.active;
+      if (activeWish) {
+        const image = document.createElement("img");
+        image.src = cardSrc(activeWish);
+        image.alt = globalWishName(activeWish);
+        image.className = "c45-active-global-wish-trait";
+        image.dataset.demidjinnGlobalWish = "active";
+        extraGrid.prepend(image);
+      }
+    }
     window.setTimeout(cleanMisclassifiedExtras, 400);
   };
 
@@ -1305,7 +1429,6 @@
     const before = promotionFingerprint(type);
     base.promoteSinglePile(type);
     if (currentApostle === "DEMIDJINN"
-      && type === "AI"
       && promotionFingerprint(type) !== before) {
       discardDemidjinnPromotionTop();
       saveAndRender();
@@ -1336,6 +1459,7 @@
   };
 
   promoteAiForBpIII = function (damageCount = 2) {
+    if (activateDemidjinnLastWish()) return;
     const before = promotionFingerprint("AI");
     base.promoteAiForBpIII(damageCount);
     if (currentApostle === "DEMIDJINN"
@@ -1361,6 +1485,7 @@
     base.undoLastAibp(type);
     ensureC45State(currentApostle);
     renderSpecials();
+    renderExtraCards();
     renderBabelianBpControl();
     renderPanelTokens();
   };
@@ -1421,7 +1546,7 @@
     specialRoot = document.createElement("section");
     specialRoot.id = "c45Specials";
     specialRoot.className = "c45-specials";
-    specialRoot.setAttribute("aria-label", "C4-C5 特殊战斗状态");
+    specialRoot.setAttribute("aria-label", "C4-C5 特殊规则");
     const cardsPanel = document.querySelector(".cards-panel");
     cardsPanel.parentNode.insertBefore(specialRoot, cardsPanel);
     specialRoot.addEventListener("click", handleSpecialClick);
@@ -1432,6 +1557,7 @@
   interceptDirectListeners();
   window.C45SpecialsReady = true;
   ensurePiles(currentApostle);
+  syncDahakaLayout();
   applyCurrentApostleLevelBonuses();
   savePiles();
   renderAibpCards();
@@ -1449,8 +1575,22 @@
       return clonePileState(activeRoster());
     },
     recordBpWound(amount) {
-      if (currentApostle !== "MIDASCORE") return false;
-      return addMidascorePain(amount);
+      if (currentApostle === "MIDASCORE") return addMidascorePain(amount);
+      if (currentApostle !== "DEMIDJINN") return false;
+      ensureC45State("DEMIDJINN");
+      const increment = Math.max(0, Math.floor(Number(amount) || 0));
+      if (increment <= 0) return false;
+      const state = piles.DEMIDJINN;
+      const data = state.special.demidjinn;
+      const next = clamp(data.wishForWish + increment, 0, 99);
+      if (next === data.wishForWish) return false;
+      data.wishForWish = next;
+      syncTriggeredCounterToken(state, "demidjinn", next);
+      return true;
+    },
+    recordBpCardDamage(card) {
+      if (currentApostle !== "DEMIDJINN" || card?.level !== "III") return false;
+      return activateDemidjinnLastWish();
     },
     handleMidascorePainTokenClick,
     handlePanelCounterTokenClick,

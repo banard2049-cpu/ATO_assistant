@@ -384,7 +384,11 @@ Add these script tags after the main viewer script:
   }
 
   function resourceIconMarkup(key, small = false) {
-    const classes = `loot-resource-icon${small ? " small" : ""}`;
+    const classes = [
+      "loot-resource-icon",
+      small ? "small" : "",
+      DIRECT_RECORD_RESOURCE_KEYS.has(key) ? "record-resource-icon" : ""
+    ].filter(Boolean).join(" ");
     if (RESOURCE_ICON_KEYS.has(key)) {
       return `<img class="${classes}" src="${escapeAttr(resourceIconSrc(key))}" alt="${escapeAttr(resourceZhName(key))}" title="${escapeAttr(resourceZhName(key))}">`;
     }
@@ -1896,6 +1900,12 @@ Add these script tags after the main viewer script:
       .loot-resource-icon.small {
         width: 26px;
         height: 26px;
+      }
+
+      .loot-resource-icon.record-resource-icon {
+        padding: 2px;
+        background: #eee7d3;
+        box-shadow: inset 0 0 0 1px rgba(23, 22, 19, 0.16);
       }
 
       .loot-resource-icon.text {

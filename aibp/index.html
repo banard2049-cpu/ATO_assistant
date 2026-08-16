@@ -838,6 +838,15 @@
       align-items: center;
     }
 
+    .oracle-only-action {
+      display: none;
+    }
+
+    .oracle-only-action.show {
+      display: inline-grid;
+      align-items: center;
+    }
+
     .titan-x-only-action {
       display: none;
     }
@@ -1710,7 +1719,7 @@
 
 
   </style>
-  <link rel="stylesheet" href="c45_specials.css?v=20260730c">
+  <link rel="stylesheet" href="c45_specials.css?v=20260816-demidjinn-wish-top">
   <link rel="stylesheet" href="battle_map_control.css?v=20260815-terrain-cards1">
 </head>
 <body class="sidebar-collapsed">
@@ -1782,7 +1791,7 @@
                 <button type="button" id="undoAiButton" disabled>撤销 AI</button>
                 <button type="button" id="confirmAiButton" disabled>弃置</button>
                 <button type="button" id="promoteAiSingleButton">AI 晋升</button>
-                <button type="button" id="addOracleAiXButton" class="hidden">添加 AI X 02</button>
+                <button type="button" id="addOracleAiXButton" class="oracle-only-action">添加AI X</button>
                 <button type="button" id="drawFlareButton" class="hermesian-only-action">抽取闪粉</button>
                 <button type="button" id="drawFeintButton" class="titan-x-only-action">抽取变招</button>
                 <button type="button" id="nietzscheStateButton" class="state-button hidden">状态 1</button>
@@ -2103,6 +2112,7 @@
     const hekatonCriticalMassPosition = { x: 51.1, y: 34 };
     const oracleCriticalMassPosition = { x: 48.8, y: 47.4 };
     const c45PanelCounterPosition = { x: 96, y: 7.5 };
+    const demidjinnPanelCounterPosition = { x: 92, y: 10.5 };
     const dragonPanelCounterPosition = { x: 93, y: 7.5 };
     const labyrinthaurosName = "LABYRINTHAUROS";
     const hermesianName = "HERMESIAN_PURSUER";
@@ -3026,6 +3036,7 @@
     }
 
     function notifyBpWound(card) {
+      window.C45Specials?.recordBpCardDamage?.(card);
       window.C45Specials?.recordBpWound?.(bpDamageValue(card));
     }
 
@@ -3071,6 +3082,7 @@
 
     function c45PanelCounterKind(name = currentApostle) {
       if (name === "MIDASCORE") return "midascorePain";
+      if (name === "DEMIDJINN") return "demidjinn";
       if (name === "DRAGON_OF_PHOBOS") return "dragon";
       if (name === "MEDUKETOS") return "meduketos";
       return "";
@@ -3095,6 +3107,7 @@
     }
 
     function currentC45PanelCounterPosition() {
+      if (currentApostle === "DEMIDJINN") return demidjinnPanelCounterPosition;
       return currentApostle === "DRAGON_OF_PHOBOS"
         ? dragonPanelCounterPosition
         : c45PanelCounterPosition;
@@ -4346,10 +4359,10 @@
 
     function renderOracleAiXButton() {
       const visible = currentApostle === "HYPERTIME_ORACLE";
-      addOracleAiXButton.classList.toggle("hidden", !visible);
+      addOracleAiXButton.classList.toggle("show", visible);
       const added = visible && hasOracleAiXCard();
       addOracleAiXButton.disabled = !visible || added;
-      addOracleAiXButton.textContent = added ? "AI X 02 已添加" : "添加 AI X 02";
+      addOracleAiXButton.textContent = added ? "AI X 已添加" : "添加AI X";
     }
 
     function addOracleAiX() {
@@ -5319,9 +5332,11 @@
         tokenItem.dataset.file = item.file;
         const panelCounterLabel = panelCounterKind === "midascorePain"
           ? "疼痛增量"
-          : panelCounterKind === "dragon"
-            ? "累计指示物"
-            : "累计损伤";
+          : panelCounterKind === "demidjinn"
+            ? "以怨还怨"
+            : panelCounterKind === "dragon"
+              ? "累计指示物"
+              : "累计损伤";
         tokenItem.title = isC45PanelCounter
           ? `${panelCounterLabel}通用标记 ×${item.count}${(Number(item.count) || 0) >= threshold ? "，立即处理" : "，点击增加"}`
           : isCriticalMass
@@ -5369,9 +5384,11 @@
         slot.classList.toggle("show", !token);
         const label = currentApostle === "MIDASCORE"
           ? "疼痛增量"
-          : currentApostle === "DRAGON_OF_PHOBOS"
-            ? "累计指示物"
-            : "累计损伤";
+          : currentApostle === "DEMIDJINN"
+            ? "以怨还怨"
+            : currentApostle === "DRAGON_OF_PHOBOS"
+              ? "累计指示物"
+              : "累计损伤";
         slot.title = `点击放置 1 个${label}通用标记`;
         return;
       }
@@ -5893,7 +5910,7 @@
   <script src="ps/other/resouce/bp_resource_map.js"></script>
   <script src="ps/other/resouce/bp_resource_map_c1_c3.js"></script>
   <script src="ps/other/resouce/bp_resource_map_c4_c5.js?v=20260730e"></script>
-  <script src="c45_specials.js?v=20260814-token-position1"></script>
-  <script src="bp_loot_calculator_addon.js?v=20260813-screen-mode1"></script>
+  <script src="c45_specials.js?v=20260816-demidjinn-wish-signature"></script>
+  <script src="bp_loot_calculator_addon.js?v=20260816-c45-loot-icons"></script>
 </body>
 </html>
