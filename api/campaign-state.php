@@ -113,7 +113,7 @@ function read_second_screens(string $file): array {
 
 function application_base_path(): string {
   $scriptName = str_replace('\\', '/', (string) ($_SERVER['SCRIPT_NAME'] ?? '/api/campaign-state.php'));
-  $base = rtrim(dirname(dirname($scriptName)), '/.');
+  $base = rtrim(str_replace('\\', '/', dirname(dirname($scriptName))), '/.');
   $forwardedPrefix = trim(explode(',', (string) ($_SERVER['HTTP_X_FORWARDED_PREFIX'] ?? ''))[0]);
   if ($forwardedPrefix !== '') {
     $prefix = '/' . trim($forwardedPrefix, '/');

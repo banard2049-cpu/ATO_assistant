@@ -210,7 +210,7 @@
 
     .campaign-save-status {
       display: inline-flex;
-      margin-left: 8px;
+      margin-left: 0;
       font-size: 12px;
       font-weight: 800;
       white-space: nowrap;
@@ -220,6 +220,13 @@
     .campaign-save-status[data-state="offline"] { color: var(--danger); }
     .campaign-save-status[data-state="saved"] { color: #16794a; }
     .campaign-save-status[data-state="readonly"] { color: #8a5a00; }
+
+    .app-credit {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: right;
+    }
 
     .dashboard-writer-notice {
       display: flex;
@@ -1885,6 +1892,10 @@
     }
 
     @media (max-width: 620px) {
+      .app-credit {
+        text-align: center;
+      }
+
       .dashboard-writer-notice {
         align-items: stretch;
         flex-direction: column;
@@ -2003,7 +2014,7 @@
             <select id="cycleSelect"></select>
           </label>
         </div>
-        <p class="subtitle">按每日流程推进战役，把故事书、AIBP 和科技工具接到同一张桌面上。<span id="campaignSaveStatus" class="campaign-save-status" data-state="saving" aria-live="polite">正在连接存档...</span></p>
+        <p class="subtitle"><span id="campaignSaveStatus" class="campaign-save-status" data-state="saving" aria-live="polite">正在连接存档...</span></p>
       </div>
       <section class="day-card" aria-label="当前天数">
         <label>
@@ -2113,6 +2124,7 @@
 
       </div>
     </div>
+    <footer class="app-credit">ATO民间辅助程序，制作：Banard</footer>
   </main>
 
   <dialog id="cardTrackDialog" class="card-track-dialog">
@@ -2163,11 +2175,11 @@
     };
 
     const cycleConfigs = [
-      { id: "c1", label: "Cycle 1", storyBook: "c1", aibp: true, map: true },
-      { id: "c2", label: "Cycle 2", storyBook: "c2", aibp: true, map: true },
-      { id: "c3", label: "Cycle 3", storyBook: "c3", aibp: true, map: true },
-      { id: "c4", label: "Cycle 4 · Gardens of Infinite Growth", storyBook: "c4", aibp: false, map: true },
-      { id: "c5", label: "Cycle 5 · Truthsayer", storyBook: "c5", aibp: false, map: true },
+      { id: "c1", label: "Cycle 1: Truth of the Labyrinth", storyBook: "c1", aibp: true, map: true },
+      { id: "c2", label: "Cycle 2: Abysswatchers", storyBook: "c2", aibp: true, map: true },
+      { id: "c3", label: "Cycle 3: Pitiless of the Sun", storyBook: "c3", aibp: true, map: true },
+      { id: "c4", label: "Cycle 4: Gardens of Infinite Growth", storyBook: "c4", aibp: true, map: true },
+      { id: "c5", label: "Cycle 5: Truthsayer", storyBook: "c5", aibp: true, map: true },
     ];
     const inwardOdysseyStoryRanges = {
       c2: { min: 21, max: 40 },
@@ -5202,12 +5214,7 @@
       cycleConfigs.forEach((cycle) => {
         const option = document.createElement("option");
         option.value = cycle.id;
-        const parts = [cycle.label];
-        if (cycle.map) parts.push("Map");
-        if (cycle.storyBook) parts.push("Story");
-        if (cycle.aibp) parts.push("AIBP");
-        if (!cycle.map && !cycle.storyBook && !cycle.aibp) parts.push("待补资源");
-        option.textContent = parts.join(" · ");
+        option.textContent = cycle.label;
         elements.cycleSelect.appendChild(option);
       });
       elements.cycleSelect.value = currentProfile().activeCycleId;
