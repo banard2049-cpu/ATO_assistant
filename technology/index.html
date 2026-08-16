@@ -2873,21 +2873,27 @@ async function writeSnapshotToMainArchive(snapshot) {
 async function saveAndReturnMain() {
   const previousText = returnMain.textContent;
   const dashboardUrl = new URL('../index.html', window.location.href).href;
+  const dashboardModule = window.ATO_PAGE_ROUTER?.moduleFromUrl?.(dashboardUrl) || 'dashboard';
+  const dashboardWindow = window.ATO_PAGE_ROUTER?.openModuleTab?.(dashboardUrl, dashboardModule)
+    || window.open(dashboardUrl, `ato-module-${dashboardModule}`);
   returnMain.disabled = true;
   try {
     const snapshot = unlockedTechSnapshot();
     if (!await flushCampaignTechnologySave()) throw new Error('科技进度尚未写入服务器，已保留当前修改并等待重连。');
     await writeSnapshotToMainArchive(snapshot);
     returnMain.textContent = '已保存';
-    // Navigate this tab to dashboard. The save is already written to server;
-    // if a dashboard tab is open elsewhere it will pick up the change via its
-    // own 4-second polling / BroadcastChannel sync.
-    window.location.href = dashboardUrl;
+    if (dashboardWindow) {
+      dashboardWindow.location.href = dashboardUrl;
+      dashboardWindow.focus?.();
+    } else {
+      alert('科技进度已保存，但浏览器阻止了打开主控制台。请允许此站点打开弹出窗口后重试。');
+    }
   } catch (error) {
     console.error(error);
+    alert(`保存科技列表失败：${String(error.message || error)}`);
+  } finally {
     returnMain.textContent = previousText;
     returnMain.disabled = false;
-    alert(`保存科技列表失败：${String(error.message || error)}`);
   }
 }
 function renderAccountSelect() {
@@ -2953,7 +2959,6 @@ function unlockAutomaticCyclesThrough(pageKey) {
       if (isCoreNode(node)) unlocked.add(nodeKey(currentPage.key, node));
     }
   }
-  saveAccounts();
 }
 function unlockedVisibleCount() {
   const known = allNodeKeys();

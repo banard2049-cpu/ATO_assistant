@@ -219,6 +219,36 @@
     .campaign-save-status[data-state="saving"] { color: var(--accent); }
     .campaign-save-status[data-state="offline"] { color: var(--danger); }
     .campaign-save-status[data-state="saved"] { color: #16794a; }
+    .campaign-save-status[data-state="readonly"] { color: #8a5a00; }
+
+    .dashboard-writer-notice {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 12px 16px;
+      border: 1px solid #d6a645;
+      border-radius: 6px;
+      background: #fff5d6;
+      color: #5f4300;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .dashboard-writer-notice[hidden] { display: none; }
+
+    .dashboard-writer-notice button {
+      flex: 0 0 auto;
+      background: #815a00;
+      border-color: #815a00;
+    }
+
+    body.dashboard-readonly #appShell :is(button, input:not([readonly]), select, textarea, [role="button"]):not([data-dashboard-readonly-allowed]),
+    body.dashboard-readonly #cardTrackDialog :is(button, input, select, textarea):not([data-dashboard-readonly-allowed]) {
+      pointer-events: none;
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
 
     .record-card-link {
       display: inline-flex;
@@ -1855,6 +1885,15 @@
     }
 
     @media (max-width: 620px) {
+      .dashboard-writer-notice {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .dashboard-writer-notice button {
+        width: 100%;
+      }
+
       .title-row {
         flex-direction: column;
         align-items: stretch;
@@ -1982,6 +2021,11 @@
       </section>
     </header>
 
+    <section id="dashboardWriterNotice" class="dashboard-writer-notice" role="status" aria-live="polite" hidden>
+      <span id="dashboardWriterMessage">另一个主控制台正在编辑。本页只读，不会保存修改。</span>
+      <button id="dashboardTakeoverButton" type="button" data-dashboard-readonly-allowed>接管编辑</button>
+    </section>
+
     <div class="grid">
       <section class="panel">
         <div class="panel-head">
@@ -2029,7 +2073,7 @@
                 当前账号
                 <span id="sessionAccountName" class="session-account"></span>
               </label>
-              <button id="logoutButton" type="button" class="secondary">登出</button>
+              <button id="logoutButton" type="button" class="secondary" data-dashboard-readonly-allowed>登出</button>
             </div>
             <div class="second-screen-card">
               <label class="second-screen-toggle">
@@ -2038,7 +2082,7 @@
               </label>
               <div id="secondScreenAddress" class="second-screen-address" hidden>
                 <input id="secondScreenUrl" type="text" readonly aria-label="第二屏幕网址">
-                <button id="copySecondScreenButton" type="button" class="secondary">复制网址</button>
+                <button id="copySecondScreenButton" type="button" class="secondary" data-dashboard-readonly-allowed>复制网址</button>
                 <a id="openSecondScreenLink" class="record-card-link" href="./ss/" target="_blank" rel="noopener">打开</a>
               </div>
               <label id="secondScreenBattleBoardToggleRow" class="second-screen-toggle second-screen-subtoggle" hidden>
@@ -2060,7 +2104,7 @@
               <p id="secondScreenHint" class="second-screen-hint">打开后，同一局域网设备可通过专用网址查看地图或决战版图。</p>
             </div>
             <div class="archive-actions">
-              <button id="exportButton" type="button" class="secondary">导出状态</button>
+              <button id="exportButton" type="button" class="secondary" data-dashboard-readonly-allowed>导出状态</button>
               <button id="importButton" type="button" class="secondary">导入状态</button>
               <input id="importInput" type="file" accept="application/json,.json" hidden>
             </div>
@@ -2075,7 +2119,7 @@
     <div class="card-track-shell">
       <div class="card-track-head">
         <h2 id="cardTrackTitle">故事</h2>
-        <button id="cardTrackClose" class="card-track-close" type="button" aria-label="关闭">×</button>
+        <button id="cardTrackClose" class="card-track-close" type="button" aria-label="关闭" data-dashboard-readonly-allowed>×</button>
       </div>
       <div id="cardTrackBody" class="card-track-body"></div>
     </div>
@@ -2098,6 +2142,9 @@
     const authUrl = "./api/campaign-state.php";
     const campaignStorageUrl = "./api/campaign-state.php?section=dashboard";
     const campaignStorageSection = "dashboard";
+    const dashboardWriterLeaseKey = "ato-dashboard-writer-lease-v1";
+    const dashboardWriterLeaseTtl = 12000;
+    const dashboardWriterHeartbeatInterval = 3000;
     const storyDoomData = window.ATO_STORY_DOOM_DATA || { cycles: {} };
     const cardTrackGroups = {
       story: {
@@ -2960,6 +3007,9 @@
       registerModeButton: document.querySelector("#registerModeButton"),
       sessionAccountName: document.querySelector("#sessionAccountName"),
       campaignSaveStatus: document.querySelector("#campaignSaveStatus"),
+      dashboardWriterNotice: document.querySelector("#dashboardWriterNotice"),
+      dashboardWriterMessage: document.querySelector("#dashboardWriterMessage"),
+      dashboardTakeoverButton: document.querySelector("#dashboardTakeoverButton"),
       logoutButton: document.querySelector("#logoutButton"),
       dayInput: document.querySelector("#dayInput"),
       cycleSelect: document.querySelector("#cycleSelect"),
@@ -3005,6 +3055,7 @@
     let campaignSavePending = false;
     let campaignSaveQueuedBeforeReady = false;
     let campaignSectionRevision = 0;
+    let campaignSectionExists = false;
     let campaignConflictReloading = false;
     let campaignSectionBaseline = null;
     let campaignExternalSyncInFlight = false;
@@ -3012,7 +3063,11 @@
     let campaignReconnectTimer = null;
     let campaignReconnectInFlight = false;
     let campaignReconnectDelay = 2000;
+    let dashboardHasWriteLease = false;
+    let dashboardWriterLeaseTimer = null;
+    const dashboardPageId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
     const campaignSyncChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-dashboard-sync-v1") : null;
+    const dashboardWriterChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-dashboard-writer-v1") : null;
     const recordSyncChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-record-sync-v1") : null;
     const heroMnemosSyncChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-hero-mnemos-sync-v1") : null;
     const constantToolsOpen = {};
@@ -3050,6 +3105,175 @@
       return false;
     }
 
+    function dashboardLeaseUserId() {
+      return String(sessionUser?.id || sessionUser?.username || "");
+    }
+
+    function readDashboardWriterLease() {
+      try {
+        const lease = JSON.parse(localStorage.getItem(dashboardWriterLeaseKey) || "null");
+        if (!isPlainObject(lease) || !lease.pageId || Number(lease.expiresAt || 0) <= Date.now()) return null;
+        if (lease.userId !== dashboardLeaseUserId()) return null;
+        return lease;
+      } catch {
+        return null;
+      }
+    }
+
+    function ownsDashboardWriteLease() {
+      const lease = readDashboardWriterLease();
+      return Boolean(dashboardHasWriteLease && lease?.pageId === dashboardPageId);
+    }
+
+    function updateDashboardWriteAccessUi() {
+      const writable = ownsDashboardWriteLease();
+      document.body.classList.toggle("dashboard-readonly", Boolean(sessionUser && !writable));
+      if (elements.dashboardWriterNotice) elements.dashboardWriterNotice.hidden = !sessionUser || writable;
+      if (elements.dashboardWriterMessage && sessionUser && !writable) {
+        const message = "另一个主控制台正在编辑。本页只读，不会保存修改。";
+        if (elements.dashboardWriterMessage.textContent !== message) {
+          elements.dashboardWriterMessage.textContent = message;
+        }
+      }
+      document.querySelectorAll(
+        "#appShell button, #appShell input:not([readonly]), #appShell select, #appShell textarea, #appShell [role=button], #cardTrackDialog button, #cardTrackDialog input, #cardTrackDialog select, #cardTrackDialog textarea"
+      ).forEach((control) => {
+        if (control.hasAttribute("data-dashboard-readonly-allowed")) return;
+        if (writable) control.removeAttribute("aria-disabled");
+        else control.setAttribute("aria-disabled", "true");
+      });
+    }
+
+    function setDashboardWriteLeaseState(hasLease) {
+      const changed = dashboardHasWriteLease !== hasLease;
+      dashboardHasWriteLease = hasLease;
+      if (!hasLease) {
+        clearTimeout(campaignSaveTimer);
+        campaignSaveTimer = null;
+        campaignSavePending = false;
+        campaignSaveQueuedBeforeReady = false;
+      }
+      updateDashboardWriteAccessUi();
+      if (sessionUser && !hasLease) setCampaignSaveStatus("只读：其他主控制台正在编辑", "readonly");
+      return changed;
+    }
+
+    function acquireDashboardWriteLease(force = false) {
+      if (!sessionUser) return false;
+      const current = readDashboardWriterLease();
+      if (!force && current && current.pageId !== dashboardPageId) {
+        setDashboardWriteLeaseState(false);
+        return false;
+      }
+
+      const lease = {
+        pageId: dashboardPageId,
+        userId: dashboardLeaseUserId(),
+        expiresAt: Date.now() + dashboardWriterLeaseTtl,
+      };
+      try {
+        localStorage.setItem(dashboardWriterLeaseKey, JSON.stringify(lease));
+      } catch {
+        setDashboardWriteLeaseState(false);
+        if (elements.dashboardWriterMessage) {
+          elements.dashboardWriterMessage.textContent = "无法建立主控制台写入锁。本页只读，请检查浏览器存储权限。";
+        }
+        return false;
+      }
+
+      const acquired = readDashboardWriterLease()?.pageId === dashboardPageId;
+      setDashboardWriteLeaseState(acquired);
+      if (acquired) dashboardWriterChannel?.postMessage({ type: "lease-updated", pageId: dashboardPageId });
+      return acquired;
+    }
+
+    function releaseDashboardWriteLease() {
+      clearInterval(dashboardWriterLeaseTimer);
+      dashboardWriterLeaseTimer = null;
+      try {
+        if (readDashboardWriterLease()?.pageId === dashboardPageId) {
+          localStorage.removeItem(dashboardWriterLeaseKey);
+          dashboardWriterChannel?.postMessage({ type: "lease-released", pageId: dashboardPageId });
+        }
+      } catch {}
+      setDashboardWriteLeaseState(false);
+    }
+
+    function clearLocalStorageAfterLogout() {
+      try {
+        localStorage.clear();
+      } catch (error) {
+        console.warn("无法清空本地存储：", error);
+      }
+    }
+
+    async function reloadDashboardAfterLeaseAcquired() {
+      if (!campaignStorageAvailable || !ownsDashboardWriteLease()) return;
+      try {
+        const latest = await readLatestDashboardSection();
+        if (!ownsDashboardWriteLease()) return;
+        campaignSectionRevision = latest.revision;
+        campaignSectionExists = latest.exists;
+        campaignSectionBaseline = cloneJson(latest.archive);
+        renderDashboardArchive(latest.archive);
+        setCampaignSaveStatus("已取得编辑权限", "saved");
+      } catch (error) {
+        console.warn(error);
+        setCampaignSaveStatus("已接管编辑，存档暂时离线", "offline");
+      }
+    }
+
+    function maintainDashboardWriteLease() {
+      if (!sessionUser) return;
+      const current = readDashboardWriterLease();
+      if (current?.pageId === dashboardPageId) {
+        acquireDashboardWriteLease(true);
+        return;
+      }
+      if (current) {
+        const lostLease = setDashboardWriteLeaseState(false);
+        if (lostLease) void syncDashboardFromExternalUpdate();
+        return;
+      }
+      const becameWriter = acquireDashboardWriteLease(false);
+      if (becameWriter) void reloadDashboardAfterLeaseAcquired();
+    }
+
+    function beginDashboardWriteLease() {
+      clearInterval(dashboardWriterLeaseTimer);
+      acquireDashboardWriteLease(false);
+      dashboardWriterLeaseTimer = window.setInterval(maintainDashboardWriteLease, dashboardWriterHeartbeatInterval);
+    }
+
+    async function takeoverDashboardWriting() {
+      if (!window.confirm("接管后，其他主控制台会立即变为只读。确定接管编辑吗？")) return;
+      elements.dashboardTakeoverButton.disabled = true;
+      try {
+        if (!acquireDashboardWriteLease(true)) {
+          window.alert("无法取得主控制台写入权限，请检查浏览器存储权限。");
+          return;
+        }
+        await reloadDashboardAfterLeaseAcquired();
+      } finally {
+        elements.dashboardTakeoverButton.disabled = false;
+      }
+    }
+
+    function isBlockedDashboardControl(target) {
+      if (!(target instanceof Element) || ownsDashboardWriteLease()) return false;
+      const control = target.closest("button, input, select, textarea, [role=button]");
+      if (!control || control.hasAttribute("data-dashboard-readonly-allowed")) return false;
+      return Boolean(control.closest("#appShell, #cardTrackDialog"));
+    }
+
+    function blockReadOnlyDashboardEvent(event) {
+      if (!isBlockedDashboardControl(event.target)) return;
+      if (event.type === "keydown" && (event.key === "Tab" || event.key === "Escape")) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      setCampaignSaveStatus("本页只读；需要修改请先接管编辑", "readonly");
+    }
+
     function mergeDashboardChanges(base, local, remote, path = "") {
       if (jsonEqual(local, remote)) return { value: cloneJson(local), conflicts: [] };
       if (jsonEqual(local, base)) return { value: cloneJson(remote), conflicts: [] };
@@ -3084,6 +3308,10 @@
 
     function setCampaignSaveStatus(message, status = "saved") {
       if (!elements.campaignSaveStatus) return;
+      if (sessionUser && !ownsDashboardWriteLease()) {
+        message = "只读：其他主控制台正在编辑";
+        status = "readonly";
+      }
       elements.campaignSaveStatus.textContent = message;
       elements.campaignSaveStatus.dataset.state = status;
     }
@@ -3145,6 +3373,7 @@
         const localBaseline = cloneJson(campaignSectionBaseline || defaultArchive);
         campaignStorageAvailable = true;
         campaignSectionRevision = latest.revision;
+        campaignSectionExists = latest.exists;
         campaignSectionBaseline = cloneJson(latest.archive);
         campaignSaveQueuedBeforeReady = false;
         campaignReconnectDelay = 2000;
@@ -3189,10 +3418,19 @@
       campaignExternalSyncInFlight = true;
       try {
         const latest = await readLatestDashboardSection();
+        if (!ownsDashboardWriteLease()) {
+          campaignSectionRevision = latest.revision;
+          campaignSectionExists = latest.exists;
+          campaignSectionBaseline = cloneJson(latest.archive);
+          if (!jsonEqual(cloneJson(archive), campaignSectionBaseline)) renderDashboardArchive(latest.archive);
+          setCampaignSaveStatus("只读：已同步编辑页的最新存档", "readonly");
+          return;
+        }
         if (latest.revision <= campaignSectionRevision) return;
-        const localChanged = !jsonEqual(archive, campaignSectionBaseline || archive);
+        const localChanged = !jsonEqual(cloneJson(archive), campaignSectionBaseline || cloneJson(archive));
         if (!localChanged) {
           campaignSectionRevision = latest.revision;
+          campaignSectionExists = latest.exists;
           campaignSectionBaseline = cloneJson(latest.archive);
           renderDashboardArchive(latest.archive);
           return;
@@ -3200,6 +3438,7 @@
 
         const merged = mergeDashboardChanges(campaignSectionBaseline || defaultArchive, archive, latest.archive);
         campaignSectionRevision = latest.revision;
+        campaignSectionExists = latest.exists;
         campaignSectionBaseline = cloneJson(latest.archive);
         if (merged.conflicts.length) {
           const shown = merged.conflicts.slice(0, 8).join("\n");
@@ -3215,7 +3454,9 @@
         if (error?.status === 401) {
           showAuth("登录已过期，请重新登录。");
         } else {
-          if (!jsonEqual(archive, campaignSectionBaseline || archive)) campaignSaveQueuedBeforeReady = true;
+          if (ownsDashboardWriteLease() && !jsonEqual(cloneJson(archive), campaignSectionBaseline || cloneJson(archive))) {
+            campaignSaveQueuedBeforeReady = true;
+          }
           campaignStorageAvailable = false;
           setCampaignSaveStatus("存档离线，等待重连", "offline");
           console.warn(error);
@@ -3292,12 +3533,16 @@
     }
 
     function showAuth(message = "") {
+      releaseDashboardWriteLease();
+      sessionUser = null;
+      updateDashboardWriteAccessUi();
       campaignSessionEpoch += 1;
       clearCampaignReconnect();
       clearTimeout(campaignSaveTimer);
       campaignSaveTimer = null;
       campaignSavePending = false;
       campaignSaveQueuedBeforeReady = false;
+      campaignSectionExists = false;
       campaignStorageAvailable = false;
       cachedArgoRecord = {};
       elements.appShell.hidden = true;
@@ -3314,10 +3559,12 @@
       campaignSavePending = false;
       campaignSaveQueuedBeforeReady = false;
       campaignSectionRevision = 0;
+      campaignSectionExists = false;
       campaignSectionBaseline = null;
       campaignStorageAvailable = false;
-      renderDashboardArchive(defaultArchive);
       sessionUser = user;
+      beginDashboardWriteLease();
+      renderDashboardArchive(defaultArchive);
       elements.sessionAccountName.textContent = user?.username || "当前账号";
       elements.authGate.hidden = true;
       elements.appShell.hidden = false;
@@ -3557,6 +3804,7 @@
     }
 
     function normalizeState(value = {}, cycleId = "c2") {
+      const { cardCounters: legacyCardCounters, ...normalizedValue } = value;
       const day = normalizeCampaignDay(value === defaultState ? undefined : value.day, cycleId);
       const surveyConstantsDay = typeof value.surveyConstantsDay === "string" ? value.surveyConstantsDay : null;
       const surveyConstantsTouchedDay = typeof value.surveyConstantsTouchedDay === "string" ? value.surveyConstantsTouchedDay : null;
@@ -3567,7 +3815,7 @@
       const specialEventConstantsDay = typeof value.specialEventConstantsDay === "string" ? value.specialEventConstantsDay : null;
       return {
         ...defaultState,
-        ...value,
+        ...normalizedValue,
         day,
         dateNotes: isPlainObject(value.dateNotes) ? cloneJson(value.dateNotes) : {},
         mapCurrentTileTags: Array.isArray(value.mapCurrentTileTags)
@@ -3609,9 +3857,8 @@
         specialEventConstantsActive: value.specialEventConstants?.[value.specialEventConstantsActive] ? String(value.specialEventConstantsActive) : null,
         constantToolsOpen: isPlainObject(value.constantToolsOpen) ? cloneJson(value.constantToolsOpen) : {},
         exploration: normalizeExploration(value.exploration),
-        cardTracks: normalizeCardTracks(value.cardTracks, value.cardCounters, value.cardTracks && value.cardTracksVersion !== 2, cycleId),
+        cardTracks: normalizeCardTracks(value.cardTracks, legacyCardCounters, value.cardTracks && value.cardTracksVersion !== 2, cycleId),
         cardTracksVersion: 2,
-        cardCounters: undefined,
         unlockedTech: isPlainObject(value.unlockedTech) ? value.unlockedTech : null,
         events: Array.isArray(value.events) ? cloneJson(value.events) : [],
         nextBattleTerrain: normalizeNextBattleTerrain(value.nextBattleTerrain),
@@ -4603,6 +4850,7 @@
         campaignStorageAvailable = true;
         clearCampaignReconnect();
         campaignSectionRevision = Math.max(0, Number(payload.revision || 0));
+        campaignSectionExists = Boolean(payload.exists);
         const flushQueuedSave = campaignSaveQueuedBeforeReady;
         const initializeEmptySection = !payload.exists || !payload.state;
         campaignSaveQueuedBeforeReady = false;
@@ -4613,7 +4861,7 @@
           renderDashboardArchive(defaultArchive);
           campaignSectionBaseline = cloneJson(archive);
         }
-        if (flushQueuedSave || initializeEmptySection) queueCampaignSave();
+        if ((flushQueuedSave || initializeEmptySection) && ownsDashboardWriteLease()) queueCampaignSave();
         else setCampaignSaveStatus("已同步", "saved");
         // Load negotiation cards for explore reminders, then re-render flow.
         loadNegotiationCards().then(() => renderFlow());
@@ -4627,7 +4875,27 @@
       }
     }
 
+    function campaignArchiveSnapshot() {
+      return cloneJson(archive);
+    }
+
+    function campaignHasUnsavedChanges(snapshot = campaignArchiveSnapshot()) {
+      return !campaignSectionExists || !campaignSectionBaseline || !jsonEqual(snapshot, campaignSectionBaseline);
+    }
+
     function queueCampaignSave() {
+      if (!ownsDashboardWriteLease()) {
+        setDashboardWriteLeaseState(false);
+        setCampaignSaveStatus("本页只读，已停止保存", "readonly");
+        return;
+      }
+      if (!campaignHasUnsavedChanges()) {
+        clearTimeout(campaignSaveTimer);
+        campaignSaveTimer = null;
+        campaignSavePending = false;
+        setCampaignSaveStatus("已同步", "saved");
+        return;
+      }
       if (!campaignStorageAvailable) {
         campaignSaveQueuedBeforeReady = true;
         setCampaignSaveStatus("有修改待同步", "offline");
@@ -4640,6 +4908,12 @@
     }
 
     async function saveCampaignSection() {
+      if (!ownsDashboardWriteLease()) {
+        campaignSavePending = false;
+        setDashboardWriteLeaseState(false);
+        setCampaignSaveStatus("本页只读，已停止保存", "readonly");
+        return false;
+      }
       if (!campaignStorageAvailable) {
         campaignSaveQueuedBeforeReady = true;
         setCampaignSaveStatus("有修改待同步", "offline");
@@ -4648,14 +4922,23 @@
       }
       if (campaignSaveInFlight) {
         campaignSavePending = true;
-        return;
+        return false;
+      }
+      const archiveBeingSaved = campaignArchiveSnapshot();
+      if (!campaignHasUnsavedChanges(archiveBeingSaved)) {
+        campaignSavePending = false;
+        setCampaignSaveStatus("已同步", "saved");
+        return true;
       }
       const sessionEpoch = campaignSessionEpoch;
       campaignSaveInFlight = true;
       campaignSavePending = false;
       setCampaignSaveStatus("正在保存", "saving");
-      const archiveBeingSaved = cloneJson(archive);
       try {
+        if (!ownsDashboardWriteLease()) {
+          setDashboardWriteLeaseState(false);
+          return false;
+        }
         const response = await fetch(campaignStorageUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -4677,8 +4960,17 @@
           if (!campaignConflictReloading) {
             campaignConflictReloading = true;
             const latest = await readLatestDashboardSection();
+            if (!ownsDashboardWriteLease()) {
+              campaignSectionRevision = latest.revision;
+              campaignSectionExists = latest.exists;
+              campaignSectionBaseline = cloneJson(latest.archive);
+              renderDashboardArchive(latest.archive);
+              campaignConflictReloading = false;
+              return false;
+            }
             const merged = mergeDashboardChanges(campaignSectionBaseline || defaultArchive, archive, latest.archive);
             campaignSectionRevision = latest.revision;
+            campaignSectionExists = latest.exists;
             campaignSectionBaseline = cloneJson(latest.archive);
 
             if (merged.conflicts.length) {
@@ -4703,6 +4995,7 @@
         }
         if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
         campaignSectionRevision = Math.max(0, Number(payload.revision || campaignSectionRevision));
+        campaignSectionExists = true;
         campaignSectionBaseline = archiveBeingSaved;
         campaignSaveQueuedBeforeReady = false;
         campaignReconnectDelay = 2000;
@@ -4710,6 +5003,10 @@
         campaignSyncChannel?.postMessage({ revision: campaignSectionRevision });
       } catch (error) {
         campaignConflictReloading = false;
+        if (!ownsDashboardWriteLease()) {
+          setDashboardWriteLeaseState(false);
+          return false;
+        }
         campaignStorageAvailable = false;
         campaignSaveQueuedBeforeReady = true;
         setCampaignSaveStatus("保存失败，等待重试", "offline");
@@ -4717,7 +5014,7 @@
         scheduleCampaignReconnect(sessionEpoch);
       } finally {
         campaignSaveInFlight = false;
-        if (campaignSavePending) saveCampaignSection();
+        if (campaignSavePending && ownsDashboardWriteLease()) saveCampaignSection();
       }
     }
 
@@ -5415,7 +5712,9 @@
     function latestSurveyAdventureRecordAction() {
       const data = getCurrentSurveyConstantData();
       const action = state.latestSurveyAdventureAction;
-      if (!data || !action || action.day !== Math.max(0, Number(state.day || 0)) || action.cycle !== currentCycleConfig().id) return null;
+      const cycleId = currentCycleConfig().id;
+      const currentDay = normalizeCampaignDay(state.day, cycleId);
+      if (!data || !action || action.day !== currentDay || action.cycle !== cycleId) return null;
       const hub = findSurveyHub(data, action.itemId);
       if (!hub || !findSurveyHubBox(hub, action.boxId)) return null;
       return {
@@ -5619,27 +5918,28 @@
     }
 
     function markRecordAdventure(record, action) {
-      const adventures = {
-        c1: ["Fated Conundrum", "Plight of the People", "Hidden in Plain Sight", "Man of Purpose", "Uneasy Rests the Head", "Tears of a Minotaur", "Dreams Laid Bare", "Tutorial"],
-        c2: ["Consider the Ant", "The Other Thermopylae", "From the Ashes", "Intended Purpose", "Misery Industry", "Parable of the Butterfly", "Truth to Weakness", "When the Land Meets the Sea"],
-        c3: ["Road Less Traveled", "Children of the Sun", "What We Left Behind", "Of Wax And Promises", "Can't Go Back", "Sin of the Fathers", "Coming of Age"],
-      };
-      const index = (adventures[action.cycle] || []).findIndex((title) => normalizeAdventureTitle(title) === normalizeAdventureTitle(action.adventure));
+      const adventures = surveyConstantData[action.cycle]?.hubs || [];
+      const index = adventures.findIndex((hub) => normalizeAdventureTitle(hub.title) === normalizeAdventureTitle(action.adventure));
       if (index < 0) return "";
       record.adventures ||= {};
       const prefix = `${action.cycle}-${index}`;
       let slot = "";
       if (action.box === "alpha" || action.box === "omega") {
         slot = action.box;
-      } else if (!record.adventures[`${prefix}-mid1`]) {
-        slot = "mid1";
-      } else if (!record.adventures[`${prefix}-mid2`]) {
-        slot = "mid2";
+      } else {
+        const middleSlots = recordAdventureMiddleSlots(action.cycle, index);
+        slot = middleSlots.find((candidate) => !record.adventures[`${prefix}-${candidate}`]) || "";
       }
       if (!slot) return "";
       delete record.adventures[prefix];
       record.adventures[`${prefix}-${slot}`] = true;
       return slot;
+    }
+
+    function recordAdventureMiddleSlots(cycleId, adventureIndex) {
+      const usesFiveSlots = (cycleId === "c4" && adventureIndex < 6)
+        || (cycleId === "c5" && adventureIndex >= 1 && adventureIndex <= 3);
+      return usesFiveSlots ? ["mid1", "mid2", "mid3"] : ["mid1", "mid2"];
     }
 
     function createSurveyHubSummary(data) {
@@ -5714,7 +6014,7 @@
           state.surveyConstants.activeHub = { itemId, boxId };
           state.latestSurveyAdventureAction = {
             cycle: currentCycleConfig().id,
-            day: Math.max(0, Number(state.day || 0)),
+            day: normalizeCampaignDay(state.day, currentCycleConfig().id),
             itemId,
             boxId,
           };
@@ -7206,6 +7506,7 @@
             sections?.heroes ? saveImportedCampaignSection("heroes", sections.heroes) : Promise.resolve(),
           ]);
           campaignSectionRevision = Math.max(0, Number(dashboardSave?.revision || campaignSectionRevision));
+          campaignSectionExists = Boolean(dashboardSave?.ok || campaignSectionExists);
           campaignSectionBaseline = cloneJson(archive);
           campaignSyncChannel?.postMessage({ revision: campaignSectionRevision });
           syncInputs();
@@ -7288,8 +7589,9 @@
     });
     elements.logoutButton.addEventListener("click", async () => {
       await fetch(`${authUrl}?action=logout`, { method: "POST" }).catch(() => null);
-      sessionUser = null;
+      dashboardWriterChannel?.postMessage({ type: "session-logout", pageId: dashboardPageId });
       showAuth();
+      clearLocalStorageAfterLogout();
     });
     elements.cycleSelect.addEventListener("change", () => switchCycle(elements.cycleSelect.value));
     elements.exportButton.addEventListener("click", exportState);
@@ -7358,12 +7660,44 @@
       if (!counterInput) return;
       setCardTrackCounter(counterInput.dataset.cardCounterInput, counterInput.dataset.cardCounterField, counterInput.value);
     });
+    elements.dashboardTakeoverButton.addEventListener("click", () => void takeoverDashboardWriting());
+    ["click", "beforeinput", "input", "change", "submit"].forEach((eventName) => {
+      document.addEventListener(eventName, blockReadOnlyDashboardEvent, true);
+    });
+    document.addEventListener("keydown", blockReadOnlyDashboardEvent, true);
+    const dashboardControlObserver = new MutationObserver((mutations) => {
+      const addedInteractiveContent = mutations.some((mutation) =>
+        Array.from(mutation.addedNodes).some((node) =>
+          node.nodeType === Node.ELEMENT_NODE || node.nodeType === Node.DOCUMENT_FRAGMENT_NODE
+        )
+      );
+      if (addedInteractiveContent) updateDashboardWriteAccessUi();
+    });
+    dashboardControlObserver.observe(elements.appShell, { childList: true, subtree: true });
+    dashboardControlObserver.observe(elements.cardTrackDialog, { childList: true, subtree: true });
     campaignSyncChannel?.addEventListener("message", () => void syncDashboardFromExternalUpdate());
+    dashboardWriterChannel?.addEventListener("message", (event) => {
+      const message = event.data || {};
+      if (message.pageId === dashboardPageId) return;
+      if (message.type === "session-logout") {
+        showAuth("已在另一个主控制台登出。");
+        clearLocalStorageAfterLogout();
+        return;
+      }
+      maintainDashboardWriteLease();
+    });
     recordSyncChannel?.addEventListener("message", () => void refreshCachedArgoRecord());
+    window.addEventListener("storage", (event) => {
+      if (event.key === dashboardWriterLeaseKey) maintainDashboardWriteLease();
+    });
     window.setInterval(() => void syncDashboardFromExternalUpdate(), 4000);
     window.addEventListener("focus", () => void syncDashboardFromExternalUpdate());
     window.addEventListener("focus", reconnectCampaignNow);
     window.addEventListener("online", reconnectCampaignNow);
+    window.addEventListener("pagehide", releaseDashboardWriteLease);
+    window.addEventListener("pageshow", () => {
+      if (sessionUser) beginDashboardWriteLease();
+    });
     window.addEventListener("focus", () => void refreshCachedArgoRecord());
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) void syncDashboardFromExternalUpdate();

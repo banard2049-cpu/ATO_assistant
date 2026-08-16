@@ -2836,10 +2836,10 @@
       let slot = "";
       if (boxId === "alpha" || boxId === "omega") {
         slot = boxId;
-      } else if (!state.adventures[`${prefix}-mid1`]) {
-        slot = "mid1";
-      } else if (!state.adventures[`${prefix}-mid2`]) {
-        slot = "mid2";
+      } else {
+        const slotPreset = cycleData[cycleId].adventures[index][2] || "default";
+        const middleSlots = slotPreset === "five" ? ["mid1", "mid2", "mid3"] : ["mid1", "mid2"];
+        slot = middleSlots.find((candidate) => !state.adventures[`${prefix}-${candidate}`]) || "";
       }
 
       if (!slot) return false;
