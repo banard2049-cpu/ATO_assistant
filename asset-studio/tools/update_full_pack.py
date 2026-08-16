@@ -23,7 +23,7 @@ from app.packages import PACKAGE_VERSION  # noqa: E402
 CHUNK = 4 * 1024 * 1024
 
 
-def copy_stream(source, destination, digest: hashlib._Hash) -> None:
+def copy_stream(source, destination, digest) -> None:
     while chunk := source.read(CHUNK):
         digest.update(chunk)
         destination.write(chunk)

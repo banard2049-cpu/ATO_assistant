@@ -943,7 +943,7 @@ def fixed_catalog_payload() -> dict[str, Any]:
 
     additions: list[CatalogItem] = []
 
-    # AIBP overview sheets and the three shared physical cards are useful
+    # AIBP overview sheets, shared physical cards, and cycle traits are useful
     # capture/install targets, not the audit/contact-sheet derivatives that the
     # original APK catalog builder intentionally skipped.
     for order, enemy in enumerate(AIBP_NAMES):
