@@ -21,6 +21,13 @@ const c1AlternateTileConnections = {
   "023": { up: "", right: "024", down: "", left: "022" },
   "035": { up: "030", right: "071", down: "040", left: "034" },
 };
+const edgeDirections = ["up", "right", "down", "left"];
+const edgeDirectionLabels = {
+  up: "上",
+  right: "右",
+  down: "下",
+  left: "左",
+};
 const tokenAssets = [
   { id: "AG", label: "AG进入", path: "./tokens/AG.jpg", unique: true },
   { id: "AD", label: "AD", path: "./tokens/AD.jpg", unique: true },
@@ -31,6 +38,13 @@ const tokenAssets = [
   { id: "hs", label: "HS", path: "./tokens/hs.jpg", unique: true },
   { id: "last_city", label: "Last City", path: "./tokens/last_city.jpg" },
   { id: "last_oasis", label: "最后到访的绿洲", path: "./tokens/last_oasis.png", cycles: ["c4"] },
+  {
+    id: "sandstorm",
+    label: "沙尘暴",
+    path: "./tokens/sandstorm.jpg",
+    cycles: ["c4"],
+    edge: true,
+  },
   {
     id: "last_silver_ruin",
     label: "最后到访的白银遗迹",
@@ -102,6 +116,8 @@ const elements = {
   markCurrentButton: document.querySelector("#markCurrentButton"),
   clearCycleButton: document.querySelector("#clearCycleButton"),
   tokenPalette: document.querySelector("#tokenPalette"),
+  edgeDirectionControl: document.querySelector("#edgeDirectionControl"),
+  edgeDirectionButtons: [...document.querySelectorAll("[data-edge-direction]")],
   scoutCount: document.querySelector("#scoutCount"),
   hsProduceButton: document.querySelector("#hsProduceButton"),
   hsRecallButton: document.querySelector("#hsRecallButton"),
@@ -186,6 +202,7 @@ function defaultCycleState() {
       AD: "",
       hsCount: 0,
       markers: {},
+      edgeMarkers: {},
     },
   };
 }
@@ -201,6 +218,7 @@ function createDefaultState() {
     showAdjacency: false,
     mapZoom: 100,
     selectedToken: "AG",
+    selectedEdgeDirection: "up",
     query: "",
     cycles: Object.fromEntries(cycleIds.map((id) => [id, defaultCycleState()])),
   };
@@ -250,6 +268,9 @@ function normalizeState(saved) {
     showAdjacency: Boolean(saved.showAdjacency),
     mapZoom: normalizeMapZoom(saved.mapZoom),
     selectedToken: tokenAssetById[saved.selectedToken] ? saved.selectedToken : "AG",
+    selectedEdgeDirection: edgeDirections.includes(saved.selectedEdgeDirection)
+      ? saved.selectedEdgeDirection
+      : "up",
     query: saved.query || "",
   };
 }
@@ -257,6 +278,7 @@ function normalizeState(saved) {
 function normalizeTokens(cycleState = {}) {
   const tokens = cycleState.tokens || {};
   const markers = normalizeMarkers(tokens.markers);
+  const edgeMarkers = normalizeEdgeMarkers(tokens.edgeMarkers);
   const scoutPlaced = Object.values(markers).some((tileMarkers) => tileMarkers?.hs);
   const hsCount = Math.max(0, Math.floor(Number(tokens.hsCount ?? cycleState.hsCount ?? (scoutPlaced ? 1 : 0))));
   return {
@@ -264,7 +286,28 @@ function normalizeTokens(cycleState = {}) {
     AD: tokens.AD || "",
     hsCount: Math.max(hsCount, scoutPlaced ? 1 : 0),
     markers,
+    edgeMarkers,
   };
+}
+
+function normalizeEdgeMarkers(edgeMarkers = {}) {
+  if (!isPlainObject(edgeMarkers)) return {};
+  const normalized = {};
+  Object.entries(edgeMarkers).forEach(([tileId, tileMarkers]) => {
+    if (!isPlainObject(tileMarkers)) return;
+    Object.entries(tileMarkers).forEach(([tokenId, savedDirections]) => {
+      const token = tokenAssetById[tokenId];
+      if (!token?.edge) return;
+      const directions = [...new Set(
+        (Array.isArray(savedDirections) ? savedDirections : [savedDirections])
+          .filter((direction) => edgeDirections.includes(direction)),
+      )];
+      if (!directions.length) return;
+      normalized[tileId] ||= {};
+      normalized[tileId][tokenId] = directions;
+    });
+  });
+  return normalized;
 }
 
 function normalizeMarkers(markers = {}) {
@@ -382,6 +425,17 @@ function moveMarkerToTile(cycleState, tokenId, tileId) {
   removeMarkerEverywhere(cycleState, tokenId);
   cycleState.tokens.markers[tileId] ||= {};
   cycleState.tokens.markers[tileId][tokenId] = true;
+}
+
+function edgeMarkerPlacements(cycleState, tokenId) {
+  const placements = [];
+  for (const [tileId, tileMarkers] of Object.entries(cycleState.tokens.edgeMarkers || {})) {
+    const directions = Array.isArray(tileMarkers?.[tokenId]) ? tileMarkers[tokenId] : [tileMarkers?.[tokenId]];
+    directions.forEach((direction) => {
+      if (edgeDirections.includes(direction)) placements.push({ tileId, direction });
+    });
+  }
+  return placements;
 }
 
 function scoutPlacedTileId(cycleState = activeCycleState()) {
@@ -869,6 +923,15 @@ function renderTokenPalette() {
   });
 
   elements.tokenPalette.appendChild(fragment);
+
+  const selectedToken = tokenAssetById[state.selectedToken];
+  const showEdgeDirections = state.activeCycleId === "c4" && Boolean(selectedToken?.edge);
+  elements.edgeDirectionControl.hidden = !showEdgeDirections;
+  elements.edgeDirectionButtons.forEach((button) => {
+    const active = button.dataset.edgeDirection === state.selectedEdgeDirection;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
 }
 
 function renderCycleTabs() {
@@ -939,6 +1002,7 @@ function renderSummary(filteredCount) {
   const cycleState = activeCycleState();
   const exploredCount = cycle.tiles.filter((tile) => cycleState.explored[tile.id]).length;
   const current = cycle.tiles.find((tile) => tile.id === cycleState.currentTile);
+  const sandstorms = edgeMarkerPlacements(cycleState, "sandstorm");
 
   elements.cycleTitle.textContent = cycle.label;
   elements.cycleMeta.textContent = [
@@ -947,6 +1011,9 @@ function renderSummary(filteredCount) {
     current ? `当前位置 ${current.label}` : "未设置当前位置",
     cycleState.tokens.AD ? `仇敌 ${cycleState.tokens.AD}` : "仇敌未在地图上",
     `侦察船 ${cycleState.tokens.hsCount}${scoutPlacedTileId(cycleState) ? " / 已派出" : ""}`,
+    sandstorms.length
+      ? `沙尘暴 ${sandstorms.map(({ tileId, direction }) => `${tileId} ${edgeDirectionLabels[direction]}`).join("、")}`
+      : "",
     filteredCount !== cycle.tiles.length ? `当前显示 ${filteredCount}` : "",
   ].filter(Boolean).join(" / ");
 }
@@ -994,6 +1061,7 @@ function renderTiles() {
     const previewRevealLabels = tilePreviewRevealLabels(tile.id, cycleState);
     const current = effectiveArgoTileId === tile.id;
     const tileTokens = getTileTokens(tile.id, cycleState);
+    const tileEdgeTokens = getTileEdgeTokens(tile.id, cycleState);
     const isSpawnCandidate = pendingAdversarySpawnCandidates.has(tile.id);
     const hasNote = Boolean((cycleState.tileNotes?.[tile.id] || "").trim());
     const article = document.createElement("article");
@@ -1019,6 +1087,7 @@ function renderTiles() {
       ${renderVariantToggle(tile, cycleState, !c5Covered)}
       ${renderTileNoteMarker(hasNote)}
       ${renderTileTokens(tileTokens)}
+      ${renderTileEdgeTokens(tileEdgeTokens)}
       ${renderAdjacencyLabels(tile)}
     `;
     fragment.appendChild(article);
@@ -1379,6 +1448,28 @@ function renderTileTokens(tokenIds) {
   return `<div class="tile-tokens">${icons}</div>`;
 }
 
+function getTileEdgeTokens(tileId, cycleState) {
+  const markers = cycleState.tokens?.edgeMarkers?.[tileId] || {};
+  return Object.entries(markers).flatMap(([tokenId, savedDirections]) => {
+    if (!tokenAssetById[tokenId]?.edge) return [];
+    const directions = Array.isArray(savedDirections) ? savedDirections : [savedDirections];
+    return directions
+      .filter((direction) => edgeDirections.includes(direction))
+      .map((direction) => ({ tokenId, direction }));
+  });
+}
+
+function renderTileEdgeTokens(edgeTokens) {
+  if (!edgeTokens.length) return "";
+  const icons = edgeTokens.map(({ tokenId, direction }) => {
+    const token = tokenAssetById[tokenId];
+    if (!token?.path) return "";
+    const label = `${token.label}（${edgeDirectionLabels[direction]}）`;
+    return `<img class="map-edge-token edge-${escapeHtml(direction)}" src="${escapeHtml(token.path)}" alt="${escapeHtml(label)}" title="${escapeHtml(label)}">`;
+  }).join("");
+  return `<div class="tile-edge-tokens">${icons}</div>`;
+}
+
 function render() {
   renderCycleTabs();
   renderTokenPalette();
@@ -1515,6 +1606,24 @@ function placeToken(tileId) {
       removeMarkerEverywhere(cycleState, "hs");
     } else {
       moveMarkerToTile(cycleState, "hs", tileId);
+    }
+  } else if (tokenAssetById[tokenId]?.edge) {
+    const direction = edgeDirections.includes(state.selectedEdgeDirection)
+      ? state.selectedEdgeDirection
+      : "up";
+    pushUndo();
+    cycleState.tokens.edgeMarkers[tileId] ||= {};
+    const directions = cycleState.tokens.edgeMarkers[tileId][tokenId] || [];
+    if (directions.includes(direction)) {
+      cycleState.tokens.edgeMarkers[tileId][tokenId] = directions.filter((item) => item !== direction);
+      if (!cycleState.tokens.edgeMarkers[tileId][tokenId].length) {
+        delete cycleState.tokens.edgeMarkers[tileId][tokenId];
+      }
+      if (!Object.keys(cycleState.tokens.edgeMarkers[tileId]).length) {
+        delete cycleState.tokens.edgeMarkers[tileId];
+      }
+    } else {
+      cycleState.tokens.edgeMarkers[tileId][tokenId] = [...directions, direction];
     }
   } else {
     pushUndo();
@@ -1889,6 +1998,10 @@ function currentMapSnapshot() {
       const activeMarkers = Object.keys(markers).filter((tokenId) => markers[tokenId]);
       return `${tileId}:${activeMarkers.join(",")}`;
     });
+  const edgeMarkerEntries = Object.entries(cycleState.tokens.edgeMarkers || {})
+    .flatMap(([tileId, markers]) => Object.entries(markers || {}).flatMap(([tokenId, directions]) => {
+      return directions.map((direction) => `${tileId}:${tokenId}(${edgeDirectionLabels[direction] || direction})`);
+    }));
 
   return {
     savedAt: new Date().toISOString(),
@@ -1925,7 +2038,7 @@ function currentMapSnapshot() {
     totalTiles: cycle.tiles.length,
     exploredIds,
     tileNotes,
-    markers: markerEntries,
+    markers: [...markerEntries, ...edgeMarkerEntries],
   };
 }
 
@@ -2167,6 +2280,15 @@ elements.showAdjacencyToggle.addEventListener("change", () => {
   state.showAdjacency = elements.showAdjacencyToggle.checked;
   saveState();
   renderTiles();
+});
+elements.edgeDirectionButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const direction = button.dataset.edgeDirection;
+    if (!edgeDirections.includes(direction)) return;
+    state.selectedEdgeDirection = direction;
+    saveState();
+    renderTokenPalette();
+  });
 });
 if (elements.markCurrentButton) elements.markCurrentButton.addEventListener("click", markCurrentExplored);
 elements.clearCycleButton.addEventListener("click", clearCycleExplored);

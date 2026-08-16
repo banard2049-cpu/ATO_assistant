@@ -2287,6 +2287,7 @@
     const summonUsageKeys = new Set(["godformUsed", "nymphLimit", "nymphCharges"]);
     const cycleScopedBindKeys = new Set(["boons", "afflictions", "counters", "notes", "syncLog"]);
     const requestedCycleFromUrl = getRequestedCycleFromUrl();
+    const requestedDashboardSurveyNote = getDashboardSurveyNoteFromUrl();
 
     function getRequestedCycleFromUrl() {
       const params = new URLSearchParams(window.location.search || "");
@@ -2298,6 +2299,24 @@
       if (!requestedCycleFromUrl) return false;
       state.cycle = requestedCycleFromUrl;
       return true;
+    }
+
+    function getDashboardSurveyNoteFromUrl() {
+      const params = new URLSearchParams(window.location.search || "");
+      if (params.get("surveyAction") !== "adventure") return null;
+      return {
+        cycle: params.get("cycle") || "",
+        day: params.get("day"),
+        adventure: params.get("adventure") || "",
+        box: params.get("box") || "",
+      };
+    }
+
+    function clearDashboardSurveyNoteFromUrl() {
+      try {
+        window.history?.replaceState?.(null, "", window.location.pathname || "index.html");
+      } catch {
+      }
     }
 
     function isPlainObject(value) {
@@ -2709,15 +2728,20 @@
         if (payload.campaign?.sections?.record) {
           state = latest.state;
           applyRequestedCycleFromUrl();
+          const importedDashboardSurveyNote = consumeDashboardSurveyNote();
           renderAll();
           setSaveStatus(`已从 NAS 读取 ${new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })}`);
+          if (importedDashboardSurveyNote) queueServerSave();
         } else {
+          clearDashboardSurveyNoteFromUrl();
           setSaveStatus("NAS 存档已启用，当前账号首次修改时会创建记录表存档");
+          if (requestedDashboardSurveyNote) queueServerSave();
         }
         if (flushQueuedSave) queueServerSave();
       } catch (error) {
         serverStorageAvailable = false;
         console.warn(error);
+        clearDashboardSurveyNoteFromUrl();
         setSaveStatus("NAS 存档接口不可用，当前仅保存到本机浏览器");
       }
     }
@@ -2808,8 +2832,11 @@
     }
 
     function adventureSlotLabel(slot) {
-      if (slot === "alpha") return "Alpha";
-      if (slot === "omega") return "Omega";
+      const namedSlots = {
+        alpha: "α", beta: "β", gamma: "γ", delta: "δ", epsilon: "ε",
+        lambda: "λ", omicron: "ο", sigma: "σ", psi: "ψ", omega: "Ω",
+      };
+      if (namedSlots[slot]) return namedSlots[slot];
       if (slot === "mid1") return "左侧空白格";
       if (slot === "mid2") return "右侧空白格";
       return slot || "";
@@ -2834,10 +2861,16 @@
 
       const prefix = `${cycleId}-${index}`;
       let slot = "";
-      if (boxId === "alpha" || boxId === "omega") {
+      const slotPreset = cycleData[cycleId].adventures[index][2] || "default";
+      const presetSlots = slotPreset === "ten-thousand"
+        ? ["alpha", "beta", "gamma", "delta", "epsilon", "lambda", "omicron", "sigma", "psi", "omega"]
+        : [];
+      if (
+        presetSlots.includes(boxId)
+        || (slotPreset !== "ten-thousand" && (boxId === "alpha" || boxId === "omega"))
+      ) {
         slot = boxId;
       } else {
-        const slotPreset = cycleData[cycleId].adventures[index][2] || "default";
         const middleSlots = slotPreset === "five" ? ["mid1", "mid2", "mid3"] : ["mid1", "mid2"];
         slot = middleSlots.find((candidate) => !state.adventures[`${prefix}-${candidate}`]) || "";
       }
@@ -2848,28 +2881,24 @@
       return slot;
     }
 
-    function consumeDashboardSurveyNote() {
-      const params = new URLSearchParams(window.location.search || "");
-      if (params.get("surveyAction") !== "adventure") return false;
+    function consumeDashboardSurveyNote(options = {}) {
+      if (!requestedDashboardSurveyNote) return false;
 
-      const cycle = params.get("cycle");
+      const cycle = requestedDashboardSurveyNote.cycle;
       if (cycleData[cycle]) state.cycle = cycle;
-      const day = params.get("day");
+      const day = requestedDashboardSurveyNote.day;
       if (day != null && day !== "") {
         const normalizedDay = normalizeCycleDay(day, state.cycle);
         state.day = normalizedDay;
         state.cycleDays[state.cycle] = normalizedDay;
       }
-      const adventure = params.get("adventure") || "";
-      const slot = markAdventureFromSurvey(state.cycle, adventure, params.get("box") || "");
+      const adventure = requestedDashboardSurveyNote.adventure;
+      const slot = markAdventureFromSurvey(state.cycle, adventure, requestedDashboardSurveyNote.box);
       if (slot) {
         appendSyncLog(`Day ${state.day} 定数写入：${adventure} -> ${adventureSlotLabel(slot)}`);
       }
 
-      try {
-        window.history?.replaceState?.(null, "", window.location.pathname || "index.html");
-      } catch {
-      }
+      if (options.clearUrl !== false) clearDashboardSurveyNoteFromUrl();
       return true;
     }
 
@@ -5692,7 +5721,7 @@
     });
 
     applyRequestedCycleFromUrl();
-    const importedDashboardSurveyNote = consumeDashboardSurveyNote();
+    consumeDashboardSurveyNote({ clearUrl: false });
     bindInputs();
     renderAll();
     loadServerState();

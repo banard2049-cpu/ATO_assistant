@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ATO 地图模块</title>
-  <link rel="stylesheet" href="./styles.css?v=20260730-cycle-toggle-top-visible">
+  <link rel="stylesheet" href="./styles.css?v=20260816-c4-sandstorm-edge">
 </head>
 <body>
   <script>if (new URLSearchParams(location.search).get("second") === "1") document.body.classList.add("second-screen-map");</script>
@@ -64,6 +64,12 @@
       <div class="tool-cluster token-cluster">
         <span class="toolbar-label">图标</span>
         <div class="token-palette" id="tokenPalette"></div>
+        <div id="edgeDirectionControl" class="edge-direction-control" role="group" aria-label="沙尘暴方向" hidden>
+          <button type="button" data-edge-direction="up" title="上" aria-label="上" aria-pressed="true">↑</button>
+          <button type="button" data-edge-direction="right" title="右" aria-label="右" aria-pressed="false">→</button>
+          <button type="button" data-edge-direction="down" title="下" aria-label="下" aria-pressed="false">↓</button>
+          <button type="button" data-edge-direction="left" title="左" aria-label="左" aria-pressed="false">←</button>
+        </div>
       </div>
       <div class="map-actions" aria-label="地图操作">
         <div class="action-group">
@@ -116,6 +122,6 @@
   <script src="../assets/page-focus-router.js?v=20260813-no-screen-focus1"></script>
   <script src="./map-data.js?v=20260730-cycle-labels"></script>
   <script src="./map-tile-tags.js?v=20260730-c5-silver-ruin"></script>
-  <script src="./app.js?v=20260813-second-screen-map"></script>
+  <script src="./app.js?v=20260816-c4-sandstorm-edge"></script>
 </body>
 </html>

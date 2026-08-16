@@ -16,6 +16,7 @@ from .catalog import (
     AIBP_NAMES,
     AIBP_TOKEN_LABELS,
     HERO_RECORD_ICONS,
+    MAP_TOKEN_LABELS,
     CatalogItem,
     TITAN_IMAGE_LABELS,
     apply_catalog,
@@ -101,6 +102,19 @@ BATTLE_TERRAIN_PIECES = (
     ("Trireme Graveyard", "trireme-graveyard.jpg", None),
     ("Windblighted Fleet", "windblighted-fleet.jpg", None),
     ("Wishstorm", "wishstorm.jpg", None),
+)
+
+CYCLE_TRAIT_CARDS = (
+    ("c4", "C4 Cursed Trait", "C4_CURSED_TR_001", "Bleak Outlook"),
+    ("c4", "C4 Cursed Trait", "C4_CURSED_TR_002", "Abundance Has Impoverished You"),
+    ("c4", "C4 Cursed Trait", "C4_CURSED_TR_003", "You Will Never Win"),
+    ("c4", "C4 Cursed Trait", "C4_CURSED_TR_004", "Reap the Ashes"),
+    ("c4", "C4 Cursed Trait", "C4_CURSED_TR_005", "Inverted Battle"),
+    ("c4", "C4 Cursed Trait", "C4_CURSED_TR_006", "Years to Rust"),
+    ("c5", "C5 Trait", "C5_TR_001", "Quantum Eye"),
+    ("c5", "C5 Trait", "C5_TR_002", "Oxygen and Aether"),
+    ("c4+c5", "C4/C5 通用 Trait", "C45_COMMON_TR_001", "Smother"),
+    ("c4+c5", "C4/C5 通用 Trait", "C45_COMMON_TR_002", "Amongst the Bleached Bones"),
 )
 
 TERRAIN_CARD_STEMS = (
@@ -964,6 +978,29 @@ def fixed_catalog_payload() -> dict[str, Any]:
         ),
     ))
 
+    for order, (cycle, subgroup, number, title) in enumerate(CYCLE_TRAIT_CARDS):
+        additions.append(CatalogItem(
+            id=make_id(cycle, "AIBP", subgroup, number, title),
+            cycle=cycle,
+            module="AIBP",
+            subgroup=subgroup,
+            name=f"{title}（{subgroup}）",
+            number=number,
+            sort_order=50_103 + order,
+            faces={"front": f"aibp/ps/other/trait/{number}.jpg"},
+        ))
+
+    additions.append(CatalogItem(
+        id=make_id("c4", "通用标记", "地图标记", "sandstorm", MAP_TOKEN_LABELS["sandstorm"]),
+        cycle="c4",
+        module="通用标记",
+        subgroup="地图标记",
+        name=MAP_TOKEN_LABELS["sandstorm"],
+        number="sandstorm",
+        sort_order=58_000,
+        faces={"front": "map/tokens/sandstorm.jpg"},
+    ))
+
     additions.extend((
         CatalogItem(
             id=make_id("c1.5", "故事书配图", "章节配图", "DY1P5", "破碎的图纹"),
@@ -1155,7 +1192,7 @@ def fixed_catalog_payload() -> dict[str, Any]:
             marker = str(item.get("number") or "").strip()
             item["sort_order"] = list(AIBP_TOKEN_LABELS).index(marker)
     payload["source"]["catalog_items"] = len(payload["items"])
-    payload["source"]["catalog_version"] = "ATO-Local-0.2.11+complete-import-assets-7"
+    payload["source"]["catalog_version"] = "ATO-Local-0.2.11+complete-import-assets-8"
     return payload
 
 

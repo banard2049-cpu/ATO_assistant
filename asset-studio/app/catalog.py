@@ -119,6 +119,7 @@ MAP_TOKEN_LABELS = {
     "last_oasis": "最后到访的绿洲标记（Last Oasis）",
     "last_silver_ruin": "最后到访的白银遗迹标记（Last Silver Ruin）",
     "rr": "后日奥德赛·RR 补给标记",
+    "sandstorm": "循环 IV 沙尘暴地图标记（Sandstorm）",
     "staff": "后日奥德赛·人员补给标记（Staff）",
     "taitan": "后日奥德赛·泰坦补给标记（Taitan）",
     "token-1": "金色使徒头盔图案地图标记（token-1）",

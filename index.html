@@ -280,9 +280,30 @@
 
     .record-links {
       display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 6px;
       align-self: stretch;
       align-content: stretch;
+    }
+
+    .record-links .record-card-link {
+      min-width: 0;
+      padding-inline: 8px;
+    }
+
+    .record-links .hero-card-link {
+      grid-column: 1;
+      grid-row: 2;
+    }
+
+    .record-links .aibp-card-link {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .record-links .technology-card-link {
+      grid-column: 2;
+      grid-row: 2;
     }
 
     .day-card {
@@ -2024,6 +2045,8 @@
         <div class="record-links">
           <a class="record-card-link" href="./record/index.html">阿尔戈号记录表</a>
           <a class="record-card-link hero-card-link" href="./hero/index.html">英雄记录表</a>
+          <a class="record-card-link aibp-card-link" href="./aibp/index.html">AIBP</a>
+          <a class="record-card-link technology-card-link" href="./technology/index.html">科技</a>
         </div>
         <div class="day-actions">
           <button id="nextDayButton" type="button">进入下一天</button>
@@ -2830,6 +2853,44 @@
           ["10", "10", "卷轴"],
         ],
       },
+      c4: {
+        title: "一百万日夜",
+        subtitle: "Ten Thousand Nights and Days",
+        module: "ten-thousand-nights-and-days",
+        adventure: "Ten Thousand Nights and Days",
+        recordAdventureIndex: 7,
+        boxes: [
+          ["alpha", "α", "条目", { entry: "α", recordSlot: "alpha" }],
+          ["beta", "β", "条目", { entry: "β", recordSlot: "beta" }],
+          ["gamma", "γ", "条目", { entry: "γ", recordSlot: "gamma" }],
+          ["delta", "δ", "条目", { entry: "δ", recordSlot: "delta" }],
+          ["epsilon", "ε", "条目", { entry: "ε", recordSlot: "epsilon" }],
+          ["lambda", "λ", "条目", { entry: "λ", recordSlot: "lambda" }],
+          ["omicron", "ο", "条目", { entry: "ο", recordSlot: "omicron" }],
+          ["sigma", "σ", "条目", { entry: "σ", recordSlot: "sigma" }],
+          ["psi", "ψ", "条目", { entry: "ψ", recordSlot: "psi" }],
+          ["omega", "Ω", "条目", { entry: "Ω", recordSlot: "omega" }],
+        ],
+      },
+      c5: {
+        title: "浅滩布道",
+        subtitle: "Sermons on the Shoals",
+        module: "sermons-on-the-shoals",
+        adventure: "Sermons on the Shoals",
+        recordAdventureIndex: 7,
+        boxes: [
+          ["alpha", "α", "浅滩寓言", { entry: "浅滩寓言-parable-of-the-shallows", recordSlot: "alpha" }],
+          ["beta", "β", "采珠人寓言", { entry: "采珠人寓言-parable-of-the-pearl-diver", recordSlot: "beta" }],
+          ["gamma", "γ", "挣扎寓言", { entry: "挣扎寓言-parable-of-the-struggle", recordSlot: "gamma" }],
+          ["delta", "δ", "思想化物", { entry: "思想化物-thoughts-into-things", recordSlot: "delta" }],
+          ["epsilon", "ε", "生命的真相", { entry: "生命的真相-truth-of-life", recordSlot: "epsilon" }],
+          ["lambda", "λ", "恐惧是什么？", { entry: "恐惧是什么-what-is-fear", recordSlot: "lambda" }],
+          ["omicron", "ο", "为什么会恐惧？", { entry: "为什么会恐惧-why-is-fear", recordSlot: "omicron" }],
+          ["sigma", "σ", "为什么会痛苦？", { entry: "为什么会痛苦-why-is-pain", recordSlot: "sigma" }],
+          ["psi", "ψ", "痛苦是什么？", { entry: "痛苦是什么-what-is-pain", recordSlot: "psi" }],
+          ["omega", "Ω", "希望是什么？", { entry: "希望是什么-what-is-hope", recordSlot: "omega" }],
+        ],
+      },
     };
 
     const mainStoryConstants = {
@@ -2969,6 +3030,7 @@
       surveyConstantsDay: null,
       surveyConstantsTouchedDay: null,
       latestSurveyAdventureAction: null,
+      latestSimpleAdventureAction: null,
       pharosDreams: null,
       pharosDreamsDay: null,
       pharosDreamsActive: null,
@@ -3855,6 +3917,7 @@
         surveyConstantsDay,
         surveyConstantsTouchedDay,
         latestSurveyAdventureAction: isPlainObject(value.latestSurveyAdventureAction) ? value.latestSurveyAdventureAction : null,
+        latestSimpleAdventureAction: isPlainObject(value.latestSimpleAdventureAction) ? value.latestSimpleAdventureAction : null,
         pharosDreams: isPlainObject(value.pharosDreams) ? value.pharosDreams : null,
         pharosDreamsDay,
         pharosDreamsActive: value.pharosDreams?.[value.pharosDreamsActive] ? String(value.pharosDreamsActive) : null,
@@ -5530,14 +5593,18 @@
     function getPharosDreamStoryLink() {
       const data = currentPharosDreamConstants();
       const target = getActivePharosDreamTarget();
-      if (!data || !target) return {
+      if (!data) return {
         label: "法洛斯之梦",
-        href: getStoryHref({ module: "dreams-of-pharos" }),
+        href: getStoryHref({ chapter: "dreams-of-pharos" }),
+      };
+      if (!target) return {
+        label: data.title,
+        href: getStoryHref({ chapter: data.module }),
       };
 
       const row = findSimpleConstantRow(data, target);
       return {
-        label: "法洛斯之梦",
+        label: data.title,
         title: row ? `${row[1]} · ${row[2]}` : "",
         href: getStoryHref({
           chapter: data.module,
@@ -5729,7 +5796,33 @@
         day: action.day,
         adventure: hub.title,
         box: action.boxId,
+        setAt: Math.max(0, Number(action.setAt || 0)),
       };
+    }
+
+    function latestSimpleAdventureRecordAction() {
+      const data = currentPharosDreamConstants();
+      const action = state.latestSimpleAdventureAction;
+      const cycleId = currentCycleConfig().id;
+      const currentDay = normalizeCampaignDay(state.day, cycleId);
+      if (!data?.adventure || !action || action.day !== currentDay || action.cycle !== cycleId) return null;
+      const row = findSimpleConstantRow(data, action.boxId);
+      const recordSlot = row?.[3]?.recordSlot || "";
+      if (!row || !recordSlot || !state.pharosDreams?.[action.boxId]) return null;
+      return {
+        cycle: action.cycle,
+        day: action.day,
+        adventure: data.adventure,
+        box: recordSlot,
+        recordSlot,
+        setAt: Math.max(0, Number(action.setAt || 0)),
+      };
+    }
+
+    function latestAdventureRecordAction() {
+      return [latestSurveyAdventureRecordAction(), latestSimpleAdventureRecordAction()]
+        .filter(Boolean)
+        .sort((left, right) => right.setAt - left.setAt)[0] || null;
     }
 
     function readLocalArgoRecord() {
@@ -5854,8 +5947,7 @@
       return normalizeRecordCrewCounters(merged);
     }
 
-    async function syncSurveyAdventureToArgoRecord() {
-      const action = latestSurveyAdventureRecordAction();
+    async function syncAdventureActionToArgoRecord(action) {
       if (!action) return;
 
       const localRecord = readLocalArgoRecord();
@@ -5901,13 +5993,20 @@
       }
     }
 
+    function syncSurveyAdventureToArgoRecord() {
+      return syncAdventureActionToArgoRecord(latestSurveyAdventureRecordAction());
+    }
+
     function normalizeAdventureTitle(value) {
       return String(value || "").toLowerCase().replace(/travelled/g, "traveled").replace(/[^a-z0-9]+/g, "");
     }
 
     function adventureSlotLabel(slot) {
-      if (slot === "alpha") return "Alpha";
-      if (slot === "omega") return "Omega";
+      const namedSlots = {
+        alpha: "α", beta: "β", gamma: "γ", delta: "δ", epsilon: "ε",
+        lambda: "λ", omicron: "ο", sigma: "σ", psi: "ψ", omega: "Ω",
+      };
+      if (namedSlots[slot]) return namedSlots[slot];
       if (slot === "mid1") return "左侧空白格";
       if (slot === "mid2") return "右侧空白格";
       return slot || "";
@@ -5924,14 +6023,28 @@
       record.syncLog = [line, record.syncLog].filter(Boolean).join("\n").slice(0, 6000);
     }
 
+    function recordAdventureIndex(cycleId, adventure) {
+      const adventures = surveyConstantData[cycleId]?.hubs || [];
+      const normalizedAdventure = normalizeAdventureTitle(adventure);
+      const hubIndex = adventures.findIndex((hub) => normalizeAdventureTitle(hub.title) === normalizedAdventure);
+      if (hubIndex >= 0) return hubIndex;
+      const simple = pharosDreamConstants[cycleId];
+      if (simple?.adventure && normalizeAdventureTitle(simple.adventure) === normalizedAdventure) {
+        return Math.max(0, Number(simple.recordAdventureIndex ?? adventures.length));
+      }
+      return -1;
+    }
+
     function markRecordAdventure(record, action) {
-      const adventures = surveyConstantData[action.cycle]?.hubs || [];
-      const index = adventures.findIndex((hub) => normalizeAdventureTitle(hub.title) === normalizeAdventureTitle(action.adventure));
+      const index = recordAdventureIndex(action.cycle, action.adventure);
       if (index < 0) return "";
       record.adventures ||= {};
       const prefix = `${action.cycle}-${index}`;
       let slot = "";
-      if (action.box === "alpha" || action.box === "omega") {
+      const explicitSlots = new Set(["alpha", "beta", "gamma", "delta", "epsilon", "lambda", "omicron", "sigma", "psi", "omega"]);
+      if (action.recordSlot && explicitSlots.has(action.recordSlot)) {
+        slot = action.recordSlot;
+      } else if (action.box === "alpha" || action.box === "omega") {
         slot = action.box;
       } else {
         const middleSlots = recordAdventureMiddleSlots(action.cycle, index);
@@ -6024,6 +6137,7 @@
             day: normalizeCampaignDay(state.day, currentCycleConfig().id),
             itemId,
             boxId,
+            setAt: Date.now(),
           };
           setNextBattleTerrainFromHub(itemId, boxId);
         } else {
@@ -6146,7 +6260,26 @@
     }
 
     function setPharosDreamConstant(boxId, checked) {
+      const data = currentPharosDreamConstants();
+      const row = findSimpleConstantRow(data, boxId);
+      const recordSlot = row?.[3]?.recordSlot || "";
+      if (checked && data?.adventure && recordSlot) {
+        state.latestSimpleAdventureAction = {
+          cycle: currentCycleConfig().id,
+          day: normalizeCampaignDay(state.day, currentCycleConfig().id),
+          boxId,
+          recordSlot,
+          setAt: Date.now(),
+        };
+      } else if (!checked && state.latestSimpleAdventureAction?.boxId === boxId) {
+        state.latestSimpleAdventureAction = null;
+      }
       setSimpleConstant("pharosDreams", "pharosDreamsActive", ensureTodayPharosDreams, boxId, checked);
+      if (checked && data?.adventure && recordSlot) {
+        const action = latestSimpleAdventureRecordAction();
+        recordSyncChannel?.postMessage({ source: "dashboard-constant-pending" });
+        void syncAdventureActionToArgoRecord(action);
+      }
     }
 
     function setMainStoryConstant(boxId, checked) {
@@ -6240,9 +6373,10 @@
     }
 
     function createPharosDreamConstantTools() {
-      return createSimpleConstantTools(currentPharosDreamConstants(), {
-        summary: "法洛斯之梦定数框",
-        subtitle: "Dreams of Pharos",
+      const data = currentPharosDreamConstants();
+      return createSimpleConstantTools(data, {
+        summary: `${data?.title || "法洛斯之梦"}定数框`,
+        subtitle: data?.subtitle || "Dreams of Pharos",
         openKey: "pharosDreams",
         ensure: ensureTodayPharosDreams,
         set: setPharosDreamConstant,
@@ -6750,7 +6884,7 @@
 
     function getRecordHref() {
       const config = currentCycleConfig();
-      const action = latestSurveyAdventureRecordAction();
+      const action = latestAdventureRecordAction();
       const params = new URLSearchParams();
       params.set("cycle", action?.cycle || config.id);
       if (action) {
@@ -6775,6 +6909,9 @@
       });
       document.querySelectorAll('a[href^="./hero/index.html"], .hero-card-link').forEach((anchor) => {
         anchor.href = getHeroHref();
+      });
+      document.querySelectorAll('a[href^="./technology/index.html"], .technology-card-link').forEach((anchor) => {
+        anchor.href = getTechnologyHref();
       });
     }
 
@@ -7391,6 +7528,7 @@
       state.completed = {};
       state.events = state.events.filter((item) => !item.done);
       state.latestSurveyAdventureAction = null;
+      state.latestSimpleAdventureAction = null;
       syncInputs();
       saveState();
       renderFlow();
@@ -7553,6 +7691,7 @@
     elements.dayInput.addEventListener("input", () => {
       state.day = normalizeCampaignDay(elements.dayInput.value, currentCycleConfig().id);
       state.latestSurveyAdventureAction = null;
+      state.latestSimpleAdventureAction = null;
       saveState();
       renderFlow();
       renderDateTrack();

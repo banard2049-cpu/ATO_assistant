@@ -156,6 +156,7 @@
 
     .title-row {
       display: flex;
+      flex-wrap: wrap;
       align-items: baseline;
       justify-content: space-between;
       gap: 8px;
@@ -164,7 +165,9 @@
 
     .title-actions {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
+      justify-content: flex-end;
       gap: 12px;
     }
 
@@ -214,10 +217,28 @@
       cursor: pointer;
     }
 
-    .title-actions button {
+    .title-actions button,
+    .title-actions .return-main-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       min-height: 36px;
       padding: 7px 12px;
       border-radius: 6px;
+    }
+
+    .title-actions .return-main-link {
+      border: 1px solid rgba(199, 173, 114, 0.42);
+      background: var(--panel);
+      color: var(--gold);
+      font-weight: 800;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .title-actions .return-main-link:hover {
+      border-color: var(--gold);
+      background: #261a18;
     }
 
     h2 {
@@ -227,6 +248,7 @@
     }
 
     .path {
+      min-width: 0;
       color: var(--muted);
       font-size: 13px;
       overflow-wrap: anywhere;
@@ -1749,6 +1771,7 @@
           </select>
         </div>
         <div class="title-actions">
+          <a class="return-main-link" href="../index.html">返回主控制台</a>
           <div class="path" id="folderPath"></div>
           <button type="button" id="traitButton">Trait</button>
           <button type="button" id="tokenButton">Token</button>
@@ -1979,6 +2002,42 @@
     const traitProbeMaxIndex = 99;
     const traitProbeExtensions = ["jpg", "png", "jpeg"];
     const defaultTraitProbeMaxIndex = 12;
+    const cycleTraitCards = [
+      ...[
+        "Bleak Outlook",
+        "Abundance Has Impoverished You",
+        "You Will Never Win",
+        "Reap the Ashes",
+        "Inverted Battle",
+        "Years to Rust"
+      ].map((title, offset) => ({
+        scope: "c4-cursed",
+        cycle: "c4",
+        index: offset + 1,
+        title,
+        fileName: `C4_CURSED_TR_${String(offset + 1).padStart(3, "0")}.jpg`
+      })),
+      ...[
+        "Quantum Eye",
+        "Oxygen and Aether"
+      ].map((title, offset) => ({
+        scope: "c5-exclusive",
+        cycle: "c5",
+        index: offset + 1,
+        title,
+        fileName: `C5_TR_${String(offset + 1).padStart(3, "0")}.jpg`
+      })),
+      ...[
+        "Smother",
+        "Amongst the Bleached Bones"
+      ].map((title, offset) => ({
+        scope: "c45-common",
+        cycles: ["c4", "c5"],
+        index: offset + 1,
+        title,
+        fileName: `C45_COMMON_TR_${String(offset + 1).padStart(3, "0")}.jpg`
+      }))
+    ];
     const tokenBasePath = "ps/other/token";
     // token 文件夹里的所有图片都从 token_manifest.js 读取。
     // 生成文件位置：ps/other/token/token_manifest.js
@@ -2353,7 +2412,7 @@
         signatureSrc: `ps/${currentApostle}/${currentApostle}_SIGNATURE_X_001.jpg`,
         traits: (state.traits || []).map((card) => ({
           src: traitCardSrc(currentApostle, card),
-          label: card.scope === "common" ? `通用特质 ${card.index}` : `TR ${card.level} ${card.index}`,
+          label: traitCardLabel(card),
           large: isLargeTraitCard(currentApostle, card),
         })),
         extraCards: renderedExtraCards,
@@ -4392,10 +4451,37 @@
       return `ps/other/trait/${commonTraitFileName(index, ext)}`;
     }
 
+    function cycleTraitDefinition(card) {
+      return cycleTraitCards.find((candidate) => candidate.scope === card?.scope && candidate.index === card?.index);
+    }
+
+    function availableCycleTraitCards(name = currentApostle) {
+      const cycle = apostleRecordTracks[name]?.cycle || "";
+      return cycleTraitCards.filter((card) => card.cycle === cycle || card.cycles?.includes(cycle));
+    }
+
+    function cycleTraitSrc(card) {
+      const definition = cycleTraitDefinition(card);
+      return definition ? `ps/other/trait/${definition.fileName}` : "";
+    }
+
+    function traitCardLabel(card) {
+      const definition = cycleTraitDefinition(card);
+      if (definition) {
+        const group = card.scope === "c4-cursed"
+          ? "C4 Cursed Trait"
+          : card.scope === "c5-exclusive"
+            ? "C5 Trait"
+            : "C4/C5 通用 Trait";
+        return `${group} · ${definition.title}`;
+      }
+      return card.scope === "common" ? `通用特质 ${card.index}` : `TR ${card.level} ${card.index}`;
+    }
+
     function traitCardSrc(name, card) {
-      return card.scope === "common"
-        ? commonTraitSrc(card.index, card.ext)
-        : traitSrc(name, card.level, card.index, card.ext);
+      if (card.scope === "common") return commonTraitSrc(card.index, card.ext);
+      if (cycleTraitDefinition(card)) return cycleTraitSrc(card);
+      return traitSrc(name, card.level, card.index, card.ext);
     }
 
     function traitKey(level, index, ext = "jpg", scope = "") {
@@ -4465,6 +4551,31 @@
             img.src = src;
           });
         }
+      });
+
+      availableCycleTraitCards(name).forEach((card) => {
+        const img = new Image();
+        const option = document.createElement("label");
+        option.className = "trait-option";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.dataset.level = "COMMON";
+        checkbox.dataset.index = String(card.index);
+        checkbox.dataset.ext = "jpg";
+        checkbox.dataset.scope = card.scope;
+        checkbox.checked = selected.has(traitKey("COMMON", card.index, "jpg", card.scope));
+
+        const label = traitCardLabel({ ...card, level: "COMMON", ext: "jpg" });
+        img.alt = label;
+        img.onerror = () => option.remove();
+
+        const caption = document.createElement("span");
+        caption.textContent = label;
+
+        option.append(checkbox, img, caption);
+        traitDialogGrid.appendChild(option);
+        img.src = cycleTraitSrc(card);
       });
 
       for (let index = 1; index <= traitProbeMaxIndex; index++) {
@@ -4611,7 +4722,7 @@
 
       piles[currentApostle].traits.forEach((card) => {
         const imageClass = isLargeTraitCard(currentApostle, card) ? "panel-image" : "";
-        const alt = card.scope === "common" ? `通用特质 ${card.index}` : `TR ${card.level} ${card.index}`;
+        const alt = traitCardLabel(card);
         const src = traitCardSrc(currentApostle, card);
         const img = imageOrMessage(src, alt, imageClass);
         img.addEventListener("load", () => {

@@ -240,6 +240,61 @@ h1 {
   overflow: visible;
 }
 
+.token-cluster {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    "token-label token-palette"
+    ". edge-directions";
+  align-content: center;
+  row-gap: 4px;
+}
+
+.token-cluster > .toolbar-label {
+  grid-area: token-label;
+}
+
+.token-cluster > .token-palette {
+  grid-area: token-palette;
+}
+
+.edge-direction-control {
+  grid-area: edge-directions;
+  justify-self: start;
+  display: inline-grid;
+  grid-template-columns: repeat(4, 30px);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.edge-direction-control[hidden] {
+  display: none;
+}
+
+.edge-direction-control button {
+  width: 30px;
+  min-height: 32px;
+  padding: 0;
+  border: 0;
+  border-right: 1px solid var(--line);
+  border-radius: 0;
+  background: #fff;
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.edge-direction-control button:last-child {
+  border-right: 0;
+}
+
+.edge-direction-control button.active {
+  background: var(--accent);
+  color: #fff;
+}
+
 .map-actions {
   grid-area: actions;
   display: flex;
@@ -563,6 +618,49 @@ h1 {
 
 .map-token.token-ad {
   background: rgba(255, 238, 235, 0.9);
+}
+
+.tile-edge-tokens {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.map-edge-token {
+  position: absolute;
+  width: 24%;
+  max-width: 38px;
+  min-width: 20px;
+  aspect-ratio: 1 / 1;
+  border-radius: 4px;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.48);
+}
+
+.map-edge-token.edge-up {
+  top: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.map-edge-token.edge-right {
+  top: 50%;
+  right: 3px;
+  transform: translateY(-50%);
+}
+
+.map-edge-token.edge-down {
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.map-edge-token.edge-left {
+  top: 50%;
+  left: 3px;
+  transform: translateY(-50%);
 }
 
 .tile-image {
