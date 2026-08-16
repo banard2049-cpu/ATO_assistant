@@ -2204,6 +2204,38 @@
       { id: "c4", label: "Cycle 4: Gardens of Infinite Growth", storyBook: "c4", aibp: true, map: true },
       { id: "c5", label: "Cycle 5: Truthsayer", storyBook: "c5", aibp: true, map: true },
     ];
+    const adversaryBattleByCycle = {
+      c1: {
+        book: "c1",
+        chapter: "battle",
+        encounter: "赫尔墨斯追踪者战斗-pursuer-battle",
+        entry: "赫尔墨斯追踪者战斗-pursuer-battle",
+      },
+      c2: {
+        book: "c2",
+        chapter: "battle",
+        encounter: "重担之战-burden-battle",
+        entry: "重担之战-burden-battle",
+      },
+      c3: {
+        book: "c2",
+        chapter: "battle",
+        encounter: "重担之战-burden-battle",
+        entry: "重担之战-burden-battle",
+      },
+      c4: {
+        book: "c4",
+        chapter: "battle",
+        encounter: "收割旋风之战-reap-the-whirlwind-battle",
+        entry: "收割旋风之战-reap-the-whirlwind-battle",
+      },
+      c5: {
+        book: "c5",
+        chapter: "battle",
+        encounter: "the-devil-himself-battle-the-devil-himself-battle",
+        entry: "the-devil-himself-battle",
+      },
+    };
     const inwardOdysseyStoryRanges = {
       c2: { min: 21, max: 40 },
       c4: { min: 61, max: 80 },
@@ -4734,6 +4766,13 @@
       return { cycleId, cycle, cycleState };
     }
 
+    function adversaryBattleHref(cycleId) {
+      const target = adversaryBattleByCycle[cycleId];
+      if (!target) return "";
+      const params = new URLSearchParams(target);
+      return `./story/index.html?${params.toString()}`;
+    }
+
     function syncDashboardMapSnapshot(cycleId, cycle, cycleState) {
       const current = cycle.tiles.find((tile) => tile.id === cycleState.currentTile);
       const adversary = cycle.tiles.find((tile) => tile.id === cycleState.tokens.AD);
@@ -4825,6 +4864,7 @@
         const commandState = await loadMapCommandState();
         const { cycleId, cycle, cycleState } = currentMapCommandCycle(commandState);
         let message = "地图已更新。";
+        let battleHref = "";
 
         if (command === "move-argo") {
           const targetId = mapDirectionalTarget(cycle, cycleState, value);
@@ -4836,7 +4876,10 @@
           if (newlyExplored) cycleState.latestRevealedTile = targetId;
           if (cycleState.tokens.AD === targetId) {
             cycleState.tokens.AD = "";
-            message = `阿尔戈号已移动至 ${targetId}，与宿敌相遇：已移除宿敌，请结算宿敌战斗。`;
+            battleHref = adversaryBattleHref(cycleId);
+            message = battleHref
+              ? `阿尔戈号已移动至 ${targetId}，与宿敌相遇：已移除宿敌，正在打开宿敌战斗。`
+              : `阿尔戈号已移动至 ${targetId}，与宿敌相遇：已移除宿敌，请结算宿敌战斗。`;
           } else {
             message = newlyExplored
               ? `目标板块 ${targetId} 已自动标记为已探索，阿尔戈号已移动过去。`
@@ -4853,7 +4896,10 @@
           if (newlyExplored) cycleState.latestRevealedTile = value;
           if (cycleState.tokens.AD === value) {
             cycleState.tokens.AD = "";
-            message = `阿尔戈号经特殊连接移动至 ${value}，与宿敌相遇：请结算宿敌战斗。`;
+            battleHref = adversaryBattleHref(cycleId);
+            message = battleHref
+              ? `阿尔戈号经特殊连接移动至 ${value}，与宿敌相遇：已移除宿敌，正在打开宿敌战斗。`
+              : `阿尔戈号经特殊连接移动至 ${value}，与宿敌相遇：已移除宿敌，请结算宿敌战斗。`;
           } else {
             message = newlyExplored
               ? `目标板块 ${value} 已自动标记为已探索，阿尔戈号已通过特殊连接移动过去。`
@@ -4888,20 +4934,32 @@
           const targetId = cycleState.currentTile;
           if (!startId) throw new Error("地图上还没有宿敌，请先生成。");
           if (!targetId) throw new Error("请先设置阿尔戈号当前位置。");
-          const path = shortestMapPath(cycle, cycleState, startId, targetId);
-          if (path.length < 2) throw new Error("宿敌与阿尔戈号之间没有已揭示路线。");
-          cycleState.tokens.AD = path[1];
+          if (startId !== targetId) {
+            const path = shortestMapPath(cycle, cycleState, startId, targetId);
+            if (path.length < 2) throw new Error("宿敌与阿尔戈号之间没有已揭示路线。");
+            cycleState.tokens.AD = path[1];
+          }
           if (cycleState.tokens.AD === targetId) {
             cycleState.tokens.AD = "";
-            message = "宿敌追上阿尔戈号：已移除宿敌，请结算宿敌战斗。";
+            battleHref = adversaryBattleHref(cycleId);
+            message = battleHref
+              ? "宿敌追上阿尔戈号：已移除宿敌，正在打开宿敌战斗。"
+              : "宿敌追上阿尔戈号：已移除宿敌，请结算宿敌战斗。";
           } else {
-            message = `宿敌已追击 1 格，移动至 ${path[1]}。`;
+            message = `宿敌已追击 1 格，移动至 ${cycleState.tokens.AD}。`;
           }
         }
 
         await saveMapCommandState(commandState);
         syncDashboardMapSnapshot(cycleId, cycle, cycleState);
         setMapCommandStatus(message);
+        if (battleHref) {
+          if (window.ATO_PAGE_ROUTER?.focusOrNavigate) {
+            await window.ATO_PAGE_ROUTER.focusOrNavigate(battleHref);
+          } else {
+            window.location.href = battleHref;
+          }
+        }
       } catch (error) {
         setMapCommandStatus(String(error.message || error), true);
       } finally {

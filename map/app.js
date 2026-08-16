@@ -88,11 +88,35 @@ const alwaysVisibleStartTileIds = {
   c5: ["047"],
 };
 const adversaryBattleByCycle = {
+  c1: {
+    book: "c1",
+    chapter: "battle",
+    encounter: "赫尔墨斯追踪者战斗-pursuer-battle",
+    entry: "赫尔墨斯追踪者战斗-pursuer-battle",
+  },
   c2: {
     book: "c2",
     chapter: "battle",
     encounter: "重担之战-burden-battle",
     entry: "重担之战-burden-battle",
+  },
+  c3: {
+    book: "c2",
+    chapter: "battle",
+    encounter: "重担之战-burden-battle",
+    entry: "重担之战-burden-battle",
+  },
+  c4: {
+    book: "c4",
+    chapter: "battle",
+    encounter: "收割旋风之战-reap-the-whirlwind-battle",
+    entry: "收割旋风之战-reap-the-whirlwind-battle",
+  },
+  c5: {
+    book: "c5",
+    chapter: "battle",
+    encounter: "the-devil-himself-battle-the-devil-himself-battle",
+    entry: "the-devil-himself-battle",
   },
 };
 

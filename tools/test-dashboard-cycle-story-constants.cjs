@@ -2,6 +2,7 @@ const fs = require("fs");
 const vm = require("vm");
 
 const dashboardSource = fs.readFileSync("index.html", "utf8");
+const mapSource = fs.readFileSync("map/app.js", "utf8");
 const recordSource = fs.readFileSync("record/index.html", "utf8");
 
 function assertInlineScriptCompiles(source, filename) {
@@ -87,6 +88,35 @@ assert(constants.c5.module === "sermons-on-the-shoals", "C5 story chapter is inc
 assert(constants.c5.adventure === "Sermons on the Shoals", "C5 record adventure title is incorrect.");
 assert(constants.c5.boxes.map((row) => row[0]).join() === expectedSlots.join(), "C5 constant slots are incorrect.");
 assert(constants.c5.boxes.map((row) => row[3].entry).join() === expectedC5Entries.join(), "C5 story entries are incorrect.");
+
+const adversaryBattles = extractObject(dashboardSource, "adversaryBattleByCycle");
+const mapAdversaryBattles = extractObject(mapSource, "adversaryBattleByCycle");
+const adversaryBattleHarness = new Function("adversaryBattleByCycle", `
+  ${extractFunction(dashboardSource, "adversaryBattleHref")}
+  return adversaryBattleHref;
+`)(adversaryBattles);
+const expectedAdversaryBattles = {
+  c1: { book: "c1", encounter: "赫尔墨斯追踪者战斗-pursuer-battle", entry: "赫尔墨斯追踪者战斗-pursuer-battle" },
+  c2: { book: "c2", encounter: "重担之战-burden-battle", entry: "重担之战-burden-battle" },
+  c3: { book: "c2", encounter: "重担之战-burden-battle", entry: "重担之战-burden-battle" },
+  c4: { book: "c4", encounter: "收割旋风之战-reap-the-whirlwind-battle", entry: "收割旋风之战-reap-the-whirlwind-battle" },
+  c5: { book: "c5", encounter: "the-devil-himself-battle-the-devil-himself-battle", entry: "the-devil-himself-battle" },
+};
+assert(JSON.stringify(mapAdversaryBattles) === JSON.stringify(adversaryBattles),
+  "Dashboard and standalone map adversary battle mappings differ.");
+Object.entries(expectedAdversaryBattles).forEach(([cycleId, expected]) => {
+  const link = new URL(adversaryBattleHarness(cycleId), "https://example.test/");
+  assert(link.searchParams.get("book") === expected.book, `${cycleId} adversary battle opens the wrong story book.`);
+  assert(link.searchParams.get("chapter") === "battle", `${cycleId} adversary battle opens the wrong chapter.`);
+  assert(link.searchParams.get("encounter") === expected.encounter, `${cycleId} adversary battle opens the wrong encounter.`);
+  assert(link.searchParams.get("entry") === expected.entry, `${cycleId} adversary battle opens the wrong entry.`);
+});
+
+const runMapCommandSource = extractFunction(dashboardSource, "runMapCommand");
+assert((runMapCommandSource.match(/battleHref = adversaryBattleHref\(cycleId\)/g) || []).length === 3,
+  "Not every dashboard adversary collision path opens the configured battle.");
+assert(/await saveMapCommandState\(commandState\);[\s\S]*if \(battleHref\)/.test(runMapCommandSource),
+  "Dashboard adversary battle navigation runs before the map state is saved.");
 
 const dashboardFunctions = [
   "simpleConstantSlotIds",
