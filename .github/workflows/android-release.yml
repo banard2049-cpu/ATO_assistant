@@ -1,0 +1,117 @@
+name: Android release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version, for example 1.2.0"
+        required: true
+        type: string
+      prerelease:
+        description: "Mark as a prerelease"
+        required: false
+        default: false
+        type: boolean
+      draft:
+        description: "Create as a draft release"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - name: Check out release sources
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Resolve release version
+        id: release
+        shell: pwsh
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          if ($env:EVENT_NAME -eq 'push') {
+            $version = $env:REF_NAME -replace '^v', ''
+          } else {
+            $version = $env:INPUT_VERSION -replace '^v', ''
+          }
+          if ($version -notmatch '^[0-9]+\.[0-9]+\.[0-9]+(?:[-.][0-9A-Za-z.-]+)?$') {
+            throw "Invalid release version: $version"
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Install Android release signing key
+        shell: pwsh
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_RELEASE_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_RELEASE_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}
+        run: |
+          $values = @($env:KEYSTORE_BASE64, $env:KEYSTORE_PASSWORD, $env:KEY_ALIAS, $env:KEY_PASSWORD)
+          if ($values.Where({ [string]::IsNullOrWhiteSpace($_) }).Count -gt 0) {
+            throw 'Configure all four ANDROID_RELEASE_* repository secrets before publishing.'
+          }
+          $keystore = Join-Path $env:RUNNER_TEMP 'ato-release.jks'
+          [IO.File]::WriteAllBytes($keystore, [Convert]::FromBase64String($env:KEYSTORE_BASE64))
+          "ATO_ANDROID_KEYSTORE_PATH=$keystore" >> $env:GITHUB_ENV
+          "ATO_ANDROID_KEYSTORE_PASSWORD=$env:KEYSTORE_PASSWORD" >> $env:GITHUB_ENV
+          "ATO_ANDROID_KEY_ALIAS=$env:KEY_ALIAS" >> $env:GITHUB_ENV
+          "ATO_ANDROID_KEY_PASSWORD=$env:KEY_PASSWORD" >> $env:GITHUB_ENV
+
+      - name: Build and publish GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+          INPUT_PRERELEASE: ${{ inputs.prerelease }}
+          INPUT_DRAFT: ${{ inputs.draft }}
+        run: |
+          $arguments = @{
+            Version = $env:RELEASE_VERSION
+            Publish = $true
+          }
+          if ($env:EVENT_NAME -eq 'workflow_dispatch') {
+            if ($env:INPUT_PRERELEASE -eq 'true') { $arguments.Prerelease = $true }
+            if ($env:INPUT_DRAFT -eq 'true') { $arguments.Draft = $true }
+          } elseif ($env:RELEASE_VERSION -match '-') {
+            $arguments.Prerelease = $true
+          }
+          ./tools/release_android.ps1 @arguments
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ATO-Assistant-Android-${{ steps.release.outputs.version }}
+          path: |
+            export/ATO-Assistant-${{ steps.release.outputs.version }}.apk
+            export/ATO-Assistant-${{ steps.release.outputs.version }}.apk.sha256
+          if-no-files-found: error

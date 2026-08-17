@@ -2874,15 +2874,20 @@ async function saveAndReturnMain() {
   const previousText = returnMain.textContent;
   const dashboardUrl = new URL('../index.html', window.location.href).href;
   const dashboardModule = window.ATO_PAGE_ROUTER?.moduleFromUrl?.(dashboardUrl) || 'dashboard';
-  const dashboardWindow = window.ATO_PAGE_ROUTER?.openModuleTab?.(dashboardUrl, dashboardModule)
-    || window.open(dashboardUrl, `ato-module-${dashboardModule}`);
+  const singleWindow = Boolean(window.ATO_ANDROID_SINGLE_WINDOW || window.ATOAndroid);
+  const dashboardWindow = singleWindow
+    ? null
+    : window.ATO_PAGE_ROUTER?.openModuleTab?.(dashboardUrl, dashboardModule)
+      || window.open(dashboardUrl, `ato-module-${dashboardModule}`);
   returnMain.disabled = true;
   try {
     const snapshot = unlockedTechSnapshot();
     if (!await flushCampaignTechnologySave()) throw new Error('科技进度尚未写入服务器，已保留当前修改并等待重连。');
     await writeSnapshotToMainArchive(snapshot);
     returnMain.textContent = '已保存';
-    if (dashboardWindow) {
+    if (singleWindow) {
+      window.location.href = dashboardUrl;
+    } else if (dashboardWindow) {
       dashboardWindow.location.href = dashboardUrl;
       dashboardWindow.focus?.();
     } else {

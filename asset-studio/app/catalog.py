@@ -238,6 +238,18 @@ SUMMON_CARD_LABELS = {
     "013_Godform_Hephaestus": "神形 013：赫菲斯托斯 / Hephaestus",
     "014_Godform_Hermes": "神形 014：赫尔墨斯 / Hermes",
     "015_Godform_Ares": "神形 015：阿瑞斯 / Ares",
+    "246_Godform_Dionysus": "神形秘密卡 246：狄俄尼索斯 / Dionysus",
+    "247_Godform_Aphrodite": "神形秘密卡 247：阿佛洛狄忒 / Aphrodite",
+    "248_Godform_Helios_Apollonis_Exalted": "神形秘密卡 248：赫利俄斯·阿波罗尼斯（至高） / Helios Apollonis Exalted",
+    "249_Nymph_Silica_Nymph": "宁芙秘密卡 249：硅石宁芙 / Silica Nymph",
+    "250_Nymph_Midas_Nymph": "宁芙秘密卡 250：迈达斯宁芙 / Midas Nymph",
+    "251_Nymph_Natron_Nymph": "宁芙秘密卡 251：泡碱宁芙 / Natron Nymph",
+    "255_Godform_Hera": "神形秘密卡 255：赫拉 / Hera",
+    "256_Godform_Poseidon_Exalted": "神形秘密卡 256：波塞冬（至高） / Poseidon Exalted",
+    "257_Godform_Zeus_Exalted": "神形秘密卡 257：宙斯（至高） / Zeus Exalted",
+    "258_Nymph_Ambrosia_Nymph": "宁芙秘密卡 258：神浆宁芙 / Ambrosia Nymph",
+    "259_Nymph_Aether_Nymph": "宁芙秘密卡 259：以太宁芙 / Aether Nymph",
+    "305_Godform_Hermes_Exalted": "泰坦 X 神形秘密卡 305：赫尔墨斯（至高） / Hermes Exalted",
     **{f"token_{index:02d}": f"宁芙实体指示物 {index:02d}" for index in range(1, 15)},
 }
 

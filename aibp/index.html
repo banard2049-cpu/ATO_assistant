@@ -156,36 +156,44 @@
 
     .title-row {
       display: flex;
-      flex-wrap: wrap;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 8px;
+      flex-wrap: nowrap;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 10px;
       margin-bottom: 14px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: thin;
     }
 
     .title-actions {
       display: flex;
-      flex-wrap: wrap;
+      flex: 0 0 auto;
+      flex-wrap: nowrap;
       align-items: center;
       justify-content: flex-end;
-      gap: 12px;
+      gap: 8px;
+      white-space: nowrap;
     }
 
     .apostle-title {
       display: flex;
-      flex-wrap: wrap;
+      flex: 0 0 auto;
+      flex-wrap: nowrap;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       min-width: 0;
+      white-space: nowrap;
     }
 
     .map-faction-status {
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       gap: 6px;
       align-items: center;
       font-size: 12px;
       font-weight: 800;
+      white-space: nowrap;
     }
 
     .map-faction-chip {
@@ -220,11 +228,13 @@
     .title-actions button,
     .title-actions .return-main-link {
       display: inline-flex;
+      flex: 0 0 auto;
       align-items: center;
       justify-content: center;
       min-height: 36px;
       padding: 7px 12px;
       border-radius: 6px;
+      white-space: nowrap;
     }
 
     .title-actions .return-main-link {
@@ -248,10 +258,12 @@
     }
 
     .path {
+      flex: 0 0 auto;
       min-width: 0;
       color: var(--muted);
       font-size: 13px;
-      overflow-wrap: anywhere;
+      overflow-wrap: normal;
+      white-space: nowrap;
     }
 
     .viewer {

@@ -3,21 +3,28 @@ package com.ato.assistant;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 
 final class LocalCampaignApi {
-  private static final String[] SECTIONS = {"dashboard", "map", "record", "technology", "heroes"};
+  private static final String[] SECTIONS = {"dashboard", "map", "record", "technology", "heroes", "aibp"};
   private static final int BACKUP_COUNT = 10;
   private final SharedPreferences store;
   private final Object lock = new Object();
   private String currentUser;
+  private LocalSecondScreenServer secondScreenServer;
 
   LocalCampaignApi(Context context) {
     store = context.getSharedPreferences("ato-local-store", Context.MODE_PRIVATE);
     currentUser = store.getString("currentUser", "");
+  }
+
+  void attachSecondScreenServer(LocalSecondScreenServer server) {
+    secondScreenServer = server;
   }
 
   String handleForJavascript(Uri uri, String method, String requestBody) {
@@ -47,8 +54,10 @@ final class LocalCampaignApi {
     if (!path.endsWith("/api/campaign-state.php")) throw new ApiException(404, error("Unknown local endpoint."));
 
     String action = uri.getQueryParameter("action");
+    if ("second-screen".equals(action) && "GET".equalsIgnoreCase(method)) return secondScreen();
     if ("me".equals(action)) return me();
     if ("logout".equals(action)) {
+      if (secondScreenServer != null) secondScreenServer.stop();
       currentUser = "";
       store.edit().remove("currentUser").apply();
       return ok();
@@ -56,6 +65,9 @@ final class LocalCampaignApi {
     if ("login".equals(action) || "register".equals(action)) return authenticate(requestBody);
 
     if (currentUser.isEmpty()) throw new ApiException(401, authRequired());
+
+    if ("second-screen-status".equals(action)) return secondScreenStatus(method, requestBody);
+    if ("second-screen-mode".equals(action)) return secondScreenMode(method, requestBody);
 
     String section = uri.getQueryParameter("section");
     if ("GET".equalsIgnoreCase(method)) return read(section);
@@ -79,6 +91,159 @@ final class LocalCampaignApi {
     put(response, "authenticated", !currentUser.isEmpty());
     put(response, "user", currentUser.isEmpty() ? JSONObject.NULL : user());
     return response;
+  }
+
+  private JSONObject secondScreenStatus(String method, String requestBody) throws Exception {
+    if (!"GET".equalsIgnoreCase(method) && !"POST".equalsIgnoreCase(method)) {
+      throw new ApiException(405, error("Unsupported method."));
+    }
+    JSONObject settings = loadSecondScreenSettings();
+    if ("POST".equalsIgnoreCase(method)) {
+      JSONObject payload = requestBody.isEmpty() ? new JSONObject() : new JSONObject(requestBody);
+      settings.put("enabled", payload.optBoolean("enabled", false));
+      JSONObject scales = settings.getJSONObject("displayScales");
+      JSONObject requestedScales = payload.optJSONObject("displayScales");
+      if (requestedScales != null) {
+        if (requestedScales.has("map")) scales.put("map", clampScale(requestedScales.optInt("map", 100)));
+        if (requestedScales.has("battleBoard")) scales.put("battleBoard", clampScale(requestedScales.optInt("battleBoard", 100)));
+      } else if (payload.has("displayScale")) {
+        scales.put("map", clampScale(payload.optInt("displayScale", 100)));
+      }
+      if (payload.has("battleRotation")) {
+        int rotation = payload.optInt("battleRotation", 0);
+        if (validRotation(rotation)) settings.put("battleRotation", rotation);
+      }
+      if (payload.has("battleSwapped")) settings.put("battleSwapped", payload.optBoolean("battleSwapped"));
+      if (payload.has("battleBoardVisible")) settings.put("battleBoardVisible", payload.optBoolean("battleBoardVisible", true));
+    }
+
+    boolean enabled = settings.optBoolean("enabled");
+    List<String> urls;
+    if (enabled) {
+      if (secondScreenServer == null) throw new ApiException(500, error("Android second-screen server is unavailable."));
+      urls = secondScreenServer.start();
+    } else {
+      if (secondScreenServer != null) secondScreenServer.stop();
+      urls = java.util.Collections.emptyList();
+    }
+    saveSecondScreenSettings(settings);
+
+    JSONObject response = ok();
+    put(response, "enabled", enabled);
+    put(response, "displayScales", settings.getJSONObject("displayScales"));
+    put(response, "battleRotation", settings.optInt("battleRotation", 0));
+    put(response, "battleSwapped", settings.optBoolean("battleSwapped"));
+    put(response, "battleBoardVisible", settings.optBoolean("battleBoardVisible", true));
+    put(response, "urls", new JSONArray(urls));
+    return response;
+  }
+
+  private JSONObject secondScreenMode(String method, String requestBody) throws Exception {
+    if (!"POST".equalsIgnoreCase(method)) throw new ApiException(405, error("This action requires POST."));
+    JSONObject payload = requestBody.isEmpty() ? new JSONObject() : new JSONObject(requestBody);
+    String mode = "aibp".equalsIgnoreCase(payload.optString("mode")) ? "aibp" : "map";
+    JSONObject settings = loadSecondScreenSettings();
+    settings.put("displayMode", mode);
+    saveSecondScreenSettings(settings);
+    JSONObject response = ok();
+    put(response, "displayMode", mode);
+    return response;
+  }
+
+  private JSONObject secondScreen() throws Exception {
+    if (currentUser.isEmpty()) throw new ApiException(404, screenUnavailable());
+    JSONObject settings = loadSecondScreenSettings();
+    if (!settings.optBoolean("enabled")) throw new ApiException(404, screenUnavailable());
+    JSONObject campaign = loadCampaign();
+    JSONObject sections = campaign.getJSONObject("sections");
+    JSONObject dashboard = sections.optJSONObject("dashboard");
+    if (dashboard == null) dashboard = new JSONObject();
+    JSONObject profiles = dashboard.optJSONObject("profiles");
+    String profileId = dashboard.optString("activeProfileId", "");
+    JSONObject profile = profiles == null ? null : profiles.optJSONObject(profileId);
+    if (profile == null && profiles != null) {
+      Iterator<String> profileIds = profiles.keys();
+      if (profileIds.hasNext()) {
+        profileId = profileIds.next();
+        profile = profiles.optJSONObject(profileId);
+      }
+    }
+    if (profile == null) profile = new JSONObject();
+    String cycleId = profile.optString("activeCycleId", "c2");
+    JSONObject cycles = profile.optJSONObject("cycles");
+    JSONObject cycle = cycles == null ? null : cycles.optJSONObject(cycleId);
+    JSONObject dashboardState = cycle == null ? null : cycle.optJSONObject("state");
+    if (dashboardState == null) dashboardState = new JSONObject();
+
+    JSONObject mapState = userSectionState(sections.opt("map"), profileId);
+    JSONObject mapCycles = mapState.optJSONObject("cycles");
+    JSONObject mapCycle = mapCycles == null ? null : mapCycles.optJSONObject(cycleId);
+    if (mapCycle == null) mapCycle = new JSONObject();
+    JSONObject aibpState = userSectionState(sections.opt("aibp"), profileId);
+    JSONObject revisions = campaign.getJSONObject("sectionRevisions");
+
+    JSONObject screen = new JSONObject();
+    screen.put("profileName", profile.optString("name", "阿尔戈号"));
+    screen.put("cycleId", cycleId);
+    screen.put("day", dashboardState.has("day") ? dashboardState.opt("day") : 0);
+    screen.put("map", mapCycle);
+    screen.put("aibp", aibpState);
+    screen.put("displayMode", settings.optString("displayMode", "map"));
+    screen.put("mapRevision", revisions.optInt("map", 0));
+    screen.put("aibpRevision", revisions.optInt("aibp", 0));
+    screen.put("dashboardRevision", revisions.optInt("dashboard", 0));
+    screen.put("updatedAt", campaign.opt("updatedAt"));
+    screen.put("displayScales", settings.getJSONObject("displayScales"));
+    screen.put("battleRotation", settings.optInt("battleRotation", 0));
+    screen.put("battleSwapped", settings.optBoolean("battleSwapped"));
+    screen.put("battleBoardVisible", settings.optBoolean("battleBoardVisible", true));
+
+    JSONObject response = ok();
+    response.put("screen", screen);
+    return response;
+  }
+
+  private JSONObject userSectionState(Object section, String userId) {
+    if (!(section instanceof JSONObject)) return new JSONObject();
+    JSONObject value = (JSONObject) section;
+    JSONObject users = value.optJSONObject("users");
+    if (users == null) return value;
+    JSONObject userState = users.optJSONObject(userId);
+    return userState == null ? new JSONObject() : userState;
+  }
+
+  private JSONObject loadSecondScreenSettings() throws JSONException {
+    String raw = store.getString(secondScreenKey(), "");
+    JSONObject settings = raw.isEmpty() ? new JSONObject() : new JSONObject(raw);
+    settings.put("enabled", settings.optBoolean("enabled"));
+    JSONObject scales = settings.optJSONObject("displayScales");
+    if (scales == null) scales = new JSONObject();
+    scales.put("map", clampScale(scales.optInt("map", settings.optInt("displayScale", 100))));
+    scales.put("battleBoard", clampScale(scales.optInt("battleBoard", 100)));
+    settings.put("displayScales", scales);
+    int rotation = settings.optInt("battleRotation", 0);
+    settings.put("battleRotation", validRotation(rotation) ? rotation : 0);
+    settings.put("battleSwapped", settings.optBoolean("battleSwapped"));
+    settings.put("battleBoardVisible", !settings.has("battleBoardVisible") || settings.optBoolean("battleBoardVisible"));
+    settings.put("displayMode", "aibp".equals(settings.optString("displayMode")) ? "aibp" : "map");
+    settings.remove("displayScale");
+    return settings;
+  }
+
+  private void saveSecondScreenSettings(JSONObject settings) {
+    store.edit().putString(secondScreenKey(), settings.toString()).apply();
+  }
+
+  private String secondScreenKey() {
+    return "second-screen::" + currentUser;
+  }
+
+  private static int clampScale(int value) {
+    return Math.max(60, Math.min(200, value));
+  }
+
+  private static boolean validRotation(int value) {
+    return value == 0 || value == 90 || value == 180 || value == 270;
   }
 
   private JSONObject read(String section) throws Exception {
@@ -291,6 +456,12 @@ final class LocalCampaignApi {
   private static JSONObject authRequired() {
     JSONObject body = error("Please log in first.");
     put(body, "code", "AUTH_REQUIRED");
+    return body;
+  }
+
+  private static JSONObject screenUnavailable() {
+    JSONObject body = error("Second screen is unavailable.");
+    put(body, "code", "SCREEN_NOT_FOUND");
     return body;
   }
 

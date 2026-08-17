@@ -42,7 +42,8 @@ $allowedPaths = @(
   'assets/exploration-card-rules.js',
   'assets/exploration-card-tags.js',
   'assets/page-focus-router.js',
-  'assets/story-doom-card-data.js'
+  'assets/story-doom-card-data.js',
+  'tools/packaging/android/app/src/main/res/drawable-nodpi/app_icon.jpg'
 )
 
 $blockedNamePatterns = @(

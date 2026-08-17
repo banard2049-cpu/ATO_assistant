@@ -7,6 +7,7 @@
 # Images, documents, audio, video, archives, and font files
 *.png
 *.jpg
+!/tools/packaging/android/app/src/main/res/drawable-nodpi/app_icon.jpg
 *.jpeg
 *.webp
 *.gif

@@ -2142,6 +2142,11 @@
               <button id="importButton" type="button" class="secondary">导入状态</button>
               <input id="importInput" type="file" accept="application/json,.json" hidden>
             </div>
+            <div id="resourcePackCard" class="second-screen-card" hidden>
+              <label>Android 资源包</label>
+              <button id="resourcePackButton" type="button" class="secondary">从 .atopack 导入资源</button>
+              <p id="resourcePackStatus" class="second-screen-hint">尚未导入资源包。</p>
+            </div>
           </div>
         </section>
 
@@ -3133,6 +3138,9 @@
       exportButton: document.querySelector("#exportButton"),
       importButton: document.querySelector("#importButton"),
       importInput: document.querySelector("#importInput"),
+      resourcePackCard: document.querySelector("#resourcePackCard"),
+      resourcePackButton: document.querySelector("#resourcePackButton"),
+      resourcePackStatus: document.querySelector("#resourcePackStatus"),
       dateTrackMeta: document.querySelector("#dateTrackMeta"),
       dateTrackList: document.querySelector("#dateTrackList"),
       secondScreenToggle: document.querySelector("#secondScreenToggle"),
@@ -3685,9 +3693,12 @@
       const urls = Array.isArray(payload.urls) ? payload.urls : [];
       const currentShortUrl = new URL("./ss/", window.location.href).href;
       const currentHostIsLoopback = /^(?:127(?:\.\d+){3}|localhost|\[?::1\]?)$/i.test(window.location.hostname);
-      const preferred = currentHostIsLoopback
-        ? (urls.find((url) => !/\/\/(?:127(?:\.\d+){3}|localhost|\[?::1\]?)(?::|\/)/i.test(url)) || currentShortUrl)
-        : currentShortUrl;
+      const lanUrl = urls.find((url) => !/\/\/(?:127(?:\.\d+){3}|localhost|\[?::1\]?)(?::|\/)/i.test(url)) || "";
+      const preferred = window.ATOAndroid
+        ? lanUrl
+        : currentHostIsLoopback
+          ? (lanUrl || currentShortUrl)
+          : currentShortUrl;
       elements.secondScreenToggle.checked = enabled;
       if (secondScreenEnabled !== enabled) {
         secondScreenEnabled = enabled;
@@ -3714,8 +3725,13 @@
       elements.secondScreenSwapButton.title = battleSwapped ? "当前已交换，点击恢复左右位置" : "交换 Boss/AIBP 与决战版图的位置";
       elements.secondScreenSwapButton.setAttribute("aria-label", battleSwapped ? "恢复第二屏幕左右区域位置" : "交换第二屏幕左右区域位置");
       elements.secondScreenUrl.value = preferred;
-      elements.openSecondScreenLink.href = preferred || "./ss/";
-      elements.secondScreenHint.textContent = enabled
+      elements.secondScreenUrl.placeholder = enabled && !preferred ? "未检测到局域网 IPv4 地址" : "";
+      elements.copySecondScreenButton.hidden = enabled && !preferred;
+      elements.openSecondScreenLink.hidden = enabled && !preferred;
+      elements.openSecondScreenLink.href = preferred || "#";
+      elements.secondScreenHint.textContent = enabled && !preferred
+        ? "第二屏幕服务已开启，但未检测到 Wi-Fi 或有线局域网地址。请先连接局域网后刷新状态。"
+        : enabled
         ? battleBoardVisible
           ? "第二屏幕已开启。AIBP 开启新战役时显示决战版图，战利品写入记录表后恢复地图。"
           : "第二屏幕已开启。战斗期间显示 AIBP 镜像和当前地形卡，决战版图状态仍会保留。"
@@ -7801,6 +7817,32 @@
     elements.exportButton.addEventListener("click", exportState);
     elements.importButton.addEventListener("click", () => elements.importInput.click());
     elements.importInput.addEventListener("change", () => importStateFile(elements.importInput.files[0]));
+    if (window.ATOAndroid && typeof window.ATOAndroid.importAtopack === "function") {
+      elements.resourcePackCard.hidden = false;
+      try {
+        const packStatus = JSON.parse(window.ATOAndroid.resourcePackStatus());
+        if (packStatus.installed) elements.resourcePackStatus.textContent = `已安装 ${packStatus.resources} 项资源。`;
+      } catch (_) {
+        elements.resourcePackStatus.textContent = "无法读取已安装资源状态。";
+      }
+      elements.resourcePackButton.addEventListener("click", () => {
+        elements.resourcePackButton.disabled = true;
+        elements.resourcePackButton.textContent = "正在选择资料包…";
+        elements.resourcePackStatus.textContent = "选择 .atopack 后将校验并安装，请勿关闭应用。";
+        window.ATOAndroid.importAtopack();
+      });
+      window.ATOAtopackImportResult = (result) => {
+        elements.resourcePackButton.disabled = false;
+        elements.resourcePackButton.textContent = "从 .atopack 导入资源";
+        if (!result?.ok) {
+          elements.resourcePackStatus.textContent = `导入失败：${result?.error || "未知错误"}`;
+          return;
+        }
+        elements.resourcePackStatus.textContent = `本次导入 ${result.assets} 张图片、${result.books} 本故事册；共安装 ${result.totalResources} 项资源。`;
+        window.alert("资源导入完成，应用将重新载入以启用新资源。");
+        window.location.reload();
+      };
+    }
     elements.cardTrackClose.addEventListener("click", () => elements.cardTrackDialog.close());
     elements.cardTrackDialog.addEventListener("click", (event) => {
       if (event.target === elements.cardTrackDialog) elements.cardTrackDialog.close();

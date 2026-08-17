@@ -2,15 +2,18 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import re
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 from packaging.package_common import (
     CACHE_ROOT,
     EXPORT_ROOT,
+    PROJECT_ROOT,
     TOOLS_ROOT,
     audit_export_tree,
     copy_export_tree,
@@ -27,6 +30,31 @@ from packaging.package_common import (
 GRADLE_VERSION = "8.10.2"
 ANDROID_TOOLS_REVISION = "15859902"
 ANDROID_API = "35"
+ANDROID_RESOURCE_SUFFIXES = (
+    ".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".tif", ".tiff", ".svg",
+    ".pdf", ".mp3", ".wav", ".ogg", ".m4a", ".flac", ".mp4", ".webm", ".mov",
+    ".zip", ".tar", ".tar.gz", ".7z", ".rar", ".ttf", ".otf", ".woff", ".woff2",
+)
+
+
+def asset_studio_catalog() -> dict:
+    studio_root = PROJECT_ROOT / "asset-studio"
+    sys.path.insert(0, str(studio_root))
+    try:
+        from app.fixed_catalog import fixed_catalog_payload
+
+        payload = fixed_catalog_payload()
+    finally:
+        sys.path.remove(str(studio_root))
+    return {
+        "format": "ato-android-resource-catalog",
+        "version": 1,
+        "source": payload.get("source", {}),
+        "items": [
+            {"id": item["id"], "faces": item.get("faces", {})}
+            for item in payload.get("items", [])
+        ],
+    }
 
 
 def ensure_java() -> Path:
@@ -82,7 +110,15 @@ def ensure_gradle() -> Path:
     root = CACHE_ROOT / "android" / f"gradle-{GRADLE_VERSION}"
     executable = root / "bin" / ("gradle.bat" if os.name == "nt" else "gradle")
     if not executable.exists():
-        extract_archive(archive, CACHE_ROOT / "android")
+        temporary = CACHE_ROOT / "android" / "gradle-extract"
+        extract_archive(archive, temporary)
+        extracted = temporary / f"gradle-{GRADLE_VERSION}"
+        if not extracted.is_dir():
+            raise RuntimeError("Gradle 压缩包目录结构无效。")
+        if root.exists():
+            shutil.rmtree(root)
+        shutil.move(str(extracted), str(root))
+        shutil.rmtree(temporary, ignore_errors=True)
     if not executable.exists():
         raise RuntimeError("自动下载的 Gradle 中没有启动程序。")
     if os.name != "nt":
@@ -141,8 +177,22 @@ def prepare_android_project() -> tuple[Path, Path]:
     if stage.exists():
         shutil.rmtree(stage)
     shutil.copytree(TOOLS_ROOT / "packaging/android", stage)
+    catalog = asset_studio_catalog()
+    catalog_paths = {
+        str(path).replace("\\", "/")
+        for item in catalog["items"]
+        for path in item["faces"].values()
+    }
     web_root = stage / "app" / "src" / "main" / "assets" / "web"
-    copy_export_tree(web_root, create_data=False)
+    copy_export_tree(
+        web_root,
+        create_data=False,
+        excluded_suffixes=ANDROID_RESOURCE_SUFFIXES,
+        excluded_paths=catalog_paths,
+    )
+    catalog_file = stage / "app" / "src" / "main" / "assets" / "atopack-catalog.json"
+    catalog_file.parent.mkdir(parents=True, exist_ok=True)
+    catalog_file.write_text(json.dumps(catalog, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     bridge = web_root / "assets" / "ato-android-fetch-bridge.js"
     bridge.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(TOOLS_ROOT / "packaging/android/fetch-bridge.js", bridge)
@@ -155,6 +205,16 @@ def prepare_android_project() -> tuple[Path, Path]:
         source = re.sub(r"(<head[^>]*>)", rf'\1\n  <script src="{relative}"></script>', source, count=1, flags=re.I)
         html.write_text(source, encoding="utf-8")
     audit_export_tree(web_root)
+    bundled_resources = [
+        path.relative_to(web_root)
+        for path in web_root.rglob("*")
+        if path.is_file() and any(path.name.lower().endswith(suffix) for suffix in ANDROID_RESOURCE_SUFFIXES)
+    ]
+    if bundled_resources:
+        raise RuntimeError(f"Android 无素材包仍包含资源文件：{bundled_resources[0]}")
+    bundled_catalog_paths = [path for path in catalog_paths if (web_root / Path(path)).is_file()]
+    if bundled_catalog_paths:
+        raise RuntimeError(f"Android 无素材包仍包含素材库资源：{bundled_catalog_paths[0]}")
     return stage, web_root
 
 
@@ -186,6 +246,7 @@ def main() -> int:
     built = stage / "app" / "build" / "outputs" / "apk" / "release" / "app-release.apk"
     if not built.exists():
         raise RuntimeError("Gradle 未生成 app-release.apk。")
+    EXPORT_ROOT.mkdir(exist_ok=True)
     output = EXPORT_ROOT / f"ATO-Assistant-{version}.apk"
     shutil.copy2(built, output)
     shutil.rmtree(stage)

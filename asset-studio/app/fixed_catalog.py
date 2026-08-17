@@ -131,6 +131,21 @@ TERRAIN_CARD_STEMS = (
     "trireme-graveyard", "windblighted-fleet", "wishstorm",
 )
 
+NEW_SUMMON_CARD_FILES = (
+    "246_Godform_Dionysus.jpg",
+    "247_Godform_Aphrodite.jpg",
+    "248_Godform_Helios_Apollonis_Exalted.jpg",
+    "249_Nymph_Silica_Nymph.jpg",
+    "250_Nymph_Midas_Nymph.jpg",
+    "251_Nymph_Natron_Nymph.jpg",
+    "255_Godform_Hera.jpg",
+    "256_Godform_Poseidon_Exalted.jpg",
+    "257_Godform_Zeus_Exalted.jpg",
+    "258_Nymph_Ambrosia_Nymph.jpg",
+    "259_Nymph_Aether_Nymph.jpg",
+    "305_Godform_Hermes_Exalted.jpg",
+)
+
 
 CATALOG_B85 = (
     "ABzY8$(Vd<0{`s2ZIc^Cy0H0ID)_Ju#Eyo__bPvS42J=q0ZiDQVP-c@IO-*<TL-n&E2%M_6DI;@#$e3*@Mf^V1H=0awi!HNY{36zqowZt^!$a*lDgZf%950o"
@@ -1001,6 +1016,21 @@ def fixed_catalog_payload() -> dict[str, Any]:
         faces={"front": "map/tokens/sandstorm.jpg"},
     ))
 
+    for order, filename in enumerate(NEW_SUMMON_CARD_FILES):
+        path = f"record/assets/godforms-nymphs/{filename}"
+        stem = Path(filename).stem
+        name = component_display_name(path, stem)
+        additions.append(CatalogItem(
+            id=make_id("common", "英雄/盟友", "神形/宁芙", stem, name),
+            cycle="common",
+            module="英雄/盟友",
+            subgroup="神形/宁芙",
+            name=name,
+            number=stem,
+            sort_order=59_000 + order,
+            faces={"front": path},
+        ))
+
     additions.extend((
         CatalogItem(
             id=make_id("c1.5", "故事书配图", "章节配图", "DY1P5", "破碎的图纹"),
@@ -1192,7 +1222,7 @@ def fixed_catalog_payload() -> dict[str, Any]:
             marker = str(item.get("number") or "").strip()
             item["sort_order"] = list(AIBP_TOKEN_LABELS).index(marker)
     payload["source"]["catalog_items"] = len(payload["items"])
-    payload["source"]["catalog_version"] = "ATO-Local-0.2.11+complete-import-assets-8"
+    payload["source"]["catalog_version"] = "ATO-Local-0.2.11+complete-import-assets-10"
     return payload
 
 

@@ -18,6 +18,22 @@ backups, and every existing `data` directory. Portable launchers create `data` o
 creates it through its volume/container startup; Android uses app-private storage.
 
 Finished files are written to the repository's untracked `export` directory.
-The directory is created on demand and ignored in its entirety by Git. Nothing
-is uploaded, tagged, or published automatically. See the root `README.md` for
-commands, target names, runtime instructions, and output filenames.
+The directory is created on demand and ignored in its entirety by Git.
+
+`../release_android.ps1 -Version 1.2.0` audits and builds a local APK plus its
+SHA-256 file. Add `-Publish` to create or update `v1.2.0` with GitHub CLI. A
+published build requires the four `ATO_ANDROID_*` signing environment variables.
+
+`.github/workflows/android-release.yml` runs the same release script for `v*`
+tags and manual dispatches. Configure these repository secrets before running it:
+
+- `ANDROID_RELEASE_KEYSTORE_BASE64`
+- `ANDROID_RELEASE_STORE_PASSWORD`
+- `ANDROID_RELEASE_KEY_ALIAS`
+- `ANDROID_RELEASE_KEY_PASSWORD`
+
+The signing key must remain stable across releases or Android will reject APK
+updates. From a clean worktree, `../push_android_release.ps1 -Version 1.2.0`
+creates and pushes the release tag. Add `-CommitAll` to explicitly stage and
+commit all current changes before pushing. See the root `README.md` for target
+names and runtime instructions.

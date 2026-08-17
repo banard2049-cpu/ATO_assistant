@@ -60,7 +60,12 @@ def excluded(relative: Path) -> bool:
     return False
 
 
-def copy_export_tree(destination: Path, *, create_data: bool = True) -> None:
+def copy_export_tree(
+    destination: Path, *, create_data: bool = True,
+    excluded_suffixes: tuple[str, ...] = (),
+    excluded_paths: set[str] | None = None,
+) -> None:
+    excluded_paths = excluded_paths or set()
     if destination.exists():
         shutil.rmtree(destination)
     destination.mkdir(parents=True)
@@ -74,7 +79,11 @@ def copy_export_tree(destination: Path, *, create_data: bool = True) -> None:
         for filename in filenames:
             source = current_path / filename
             relative = source.relative_to(PROJECT_ROOT)
-            if excluded(relative):
+            if (
+                excluded(relative)
+                or relative.as_posix() in excluded_paths
+                or any(filename.lower().endswith(suffix) for suffix in excluded_suffixes)
+            ):
                 continue
             target = destination / relative
             target.parent.mkdir(parents=True, exist_ok=True)
