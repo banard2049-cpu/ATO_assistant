@@ -76,7 +76,16 @@ try {
 
   $python = Find-Python
   Write-Host "Building Android release $versionText..."
-  Invoke-Checked $python (Join-Path $projectRoot 'tools\export_android.py') '--version' $versionText
+  $previousPythonUtf8 = [Environment]::GetEnvironmentVariable('PYTHONUTF8', 'Process')
+  $previousPythonIoEncoding = [Environment]::GetEnvironmentVariable('PYTHONIOENCODING', 'Process')
+  try {
+    [Environment]::SetEnvironmentVariable('PYTHONUTF8', '1', 'Process')
+    [Environment]::SetEnvironmentVariable('PYTHONIOENCODING', 'utf-8', 'Process')
+    Invoke-Checked $python (Join-Path $projectRoot 'tools\export_android.py') '--version' $versionText
+  } finally {
+    [Environment]::SetEnvironmentVariable('PYTHONUTF8', $previousPythonUtf8, 'Process')
+    [Environment]::SetEnvironmentVariable('PYTHONIOENCODING', $previousPythonIoEncoding, 'Process')
+  }
 
   $apk = Join-Path $projectRoot "export\ATO-Assistant-$versionText.apk"
   if (-not (Test-Path -LiteralPath $apk -PathType Leaf)) {
