@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ATO 第二屏幕</title>
-  <link rel="stylesheet" href="./styles.css?v=20260815-terrain-cards4">
+  <link rel="stylesheet" href="./styles.css?v=20260818-coordinates2">
 </head>
 <body>
   <main class="screen-shell">
@@ -56,14 +56,16 @@
       <div class="battle-board-stage">
         <div id="battleBoardFrame" class="battle-board-frame">
           <img class="battle-board-image" src="./battle-board.jpg" alt="决战版图">
+          <div id="battleGrid" class="battle-board-grid" aria-hidden="true"></div>
           <div id="battleTerrainLayer" class="battle-terrain-layer" aria-hidden="true"></div>
           <div id="battleStartLayer" class="battle-start-layer" aria-hidden="true"></div>
+          <div id="battleCoordinateLayer" class="battle-coordinate-layer" aria-hidden="true"></div>
         </div>
       </div>
     </section>
   </main>
 
-  <script src="./terrain-data.js?v=20260815-level-layout2"></script>
-  <script src="./app.js?v=20260815-terrain-cards4"></script>
+  <script src="./terrain-data.js?v=20260818-coordinates2"></script>
+  <script src="./app.js?v=20260818-coordinates2"></script>
 </body>
 </html>

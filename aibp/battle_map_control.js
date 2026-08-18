@@ -46,6 +46,7 @@
     const board = root.querySelector("[data-battle-map-board]");
     const terrainLayer = root.querySelector("[data-battle-map-terrain-layer]");
     const startLayer = root.querySelector("[data-battle-map-start-layer]");
+    const coordinateLayer = root.querySelector("[data-battle-map-coordinate-layer]");
     const terrainSelect = root.querySelector("[data-battle-map-add-select]");
     const addButton = root.querySelector("[data-battle-map-add]");
     const rotateLeftButton = root.querySelector("[data-battle-map-rotate-left]");
@@ -54,6 +55,7 @@
     const deleteButton = root.querySelector("[data-battle-map-delete]");
     const resetButton = root.querySelector("[data-battle-map-reset]");
     const startsToggle = root.querySelector("[data-battle-map-starts-toggle]");
+    const coordinatesToggle = root.querySelector("[data-battle-map-coordinates-toggle]");
     const setupControl = root.querySelector("[data-battle-map-setup-control]");
     const setupSelect = root.querySelector("[data-battle-map-setup-select]");
     const selectionText = root.querySelector("[data-battle-map-selection]");
@@ -61,6 +63,10 @@
     const terrainCardCount = root.querySelector("[data-battle-map-card-count]");
     const terrainCardEmpty = root.querySelector("[data-battle-map-card-empty]");
     let selectedId = "";
+
+    function coordinateLabel(row, column) {
+      return `${String.fromCharCode(64 + Number(row))}${Number(column)}`;
+    }
 
     function currentMap() {
       return window.BattleTerrain.normalizeBattleMap(
@@ -173,6 +179,23 @@
       });
     }
 
+    function renderCoordinates(map) {
+      if (!coordinateLayer) return;
+      coordinateLayer.replaceChildren();
+      coordinateLayer.hidden = map.showCoordinates !== true;
+      if (coordinateLayer.hidden) return;
+      for (let row = 14; row >= 1; row -= 1) {
+        for (let column = 1; column <= 20; column += 1) {
+          const cell = document.createElement("span");
+          cell.className = "battle-map-coordinate";
+          cell.textContent = coordinateLabel(row, column);
+          cell.dataset.row = String(row);
+          cell.dataset.column = String(column);
+          coordinateLayer.appendChild(cell);
+        }
+      }
+    }
+
     function renderSelection(map) {
       const selected = selectedPlacement(map);
       const disabled = !selected;
@@ -222,6 +245,7 @@
       renderSetupOptions(map);
       renderTerrainOptions(map);
       terrainLayer.replaceChildren();
+      board.classList?.toggle("coordinates-visible", map.showCoordinates === true);
       window.BattleTerrain.getMapTiles(map).forEach((placement) => {
         const button = document.createElement("button");
         const image = document.createElement("img");
@@ -251,7 +275,13 @@
         terrainLayer.appendChild(button);
       });
       startsToggle.checked = map.showStarts !== false;
+      if (coordinatesToggle) {
+        const showCoordinates = map.showCoordinates === true;
+        coordinatesToggle.setAttribute("aria-pressed", showCoordinates ? "true" : "false");
+        coordinatesToggle.textContent = showCoordinates ? "隐藏坐标" : "显示坐标";
+      }
       renderStarts(map);
+      renderCoordinates(map);
       renderSelection(map);
       renderTerrainCards(map);
     }
@@ -317,6 +347,12 @@
     startsToggle.addEventListener("change", () => {
       const map = ensureMap();
       map.showStarts = startsToggle.checked;
+      commit(map);
+    });
+
+    coordinatesToggle?.addEventListener("click", () => {
+      const map = ensureMap();
+      map.showCoordinates = map.showCoordinates !== true;
       commit(map);
     });
 

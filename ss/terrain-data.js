@@ -640,6 +640,7 @@ const BattleTerrain = (() => {
       startLevel,
       ...(apostleFacing === null ? {} : { apostleFacing }),
       showStarts: true,
+      showCoordinates: false,
       terrain: getTiles(apostle, level, setup?.id).map((placement, index) => ({
         id: `initial-${index + 1}`,
         name: placement.name,
@@ -678,6 +679,7 @@ const BattleTerrain = (() => {
       startLevel,
       ...(apostleFacing === null ? {} : { apostleFacing }),
       showStarts: value.showStarts !== false,
+      showCoordinates: value.showCoordinates === true,
       terrain,
     };
   }

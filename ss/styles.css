@@ -568,6 +568,22 @@ h1 {
   filter: drop-shadow(0 22px 38px rgba(0, 0, 0, .5));
 }
 
+.battle-board-grid {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: none;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgba(239, 68, 58, .78) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(239, 68, 58, .78) 1px, transparent 1px);
+  background-size: 5% 100%, 100% calc(100% / 14);
+}
+
+.battle-board-frame.coordinates-visible .battle-board-grid {
+  display: block;
+}
+
 .battle-board-image {
   position: absolute;
   inset: 0;
@@ -580,7 +596,7 @@ h1 {
 .battle-terrain-layer {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: 2;
   overflow: hidden;
   pointer-events: none;
 }
@@ -588,9 +604,34 @@ h1 {
 .battle-start-layer {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: 3;
   overflow: hidden;
   pointer-events: none;
+}
+
+.battle-coordinate-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  grid-template-columns: repeat(20, minmax(0, 1fr));
+  grid-template-rows: repeat(14, minmax(0, 1fr));
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.battle-coordinate {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  color: rgba(255, 255, 255, .9);
+  font-size: clamp(7px, .72vw, 12px);
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+  text-shadow: 0 1px 2px #000, 0 -1px 2px #000;
+  white-space: nowrap;
 }
 
 .battle-terrain-tile {

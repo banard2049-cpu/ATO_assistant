@@ -1754,7 +1754,7 @@
 
   </style>
   <link rel="stylesheet" href="c45_specials.css?v=20260816-demidjinn-wish-top">
-  <link rel="stylesheet" href="battle_map_control.css?v=20260815-terrain-cards1">
+  <link rel="stylesheet" href="battle_map_control.css?v=20260818-coordinates2">
 </head>
 <body class="sidebar-collapsed">
   <button type="button" class="sidebar-toggle" id="sidebarToggle" aria-label="展开左侧边栏" title="展开/折叠左侧边栏">☰</button>
@@ -1884,6 +1884,7 @@
               <select data-battle-map-setup-select aria-label="战斗布局"></select>
             </label>
             <label><input type="checkbox" data-battle-map-starts-toggle checked>初始位置</label>
+            <button type="button" data-battle-map-coordinates-toggle aria-pressed="false">显示坐标</button>
             <button type="button" data-battle-map-reset>重置版图</button>
           </div>
         </header>
@@ -1893,6 +1894,7 @@
             <div class="battle-map-terrain-layer" data-battle-map-terrain-layer></div>
             <div class="battle-map-grid"></div>
             <div class="battle-map-start-layer" data-battle-map-start-layer></div>
+            <div class="battle-map-coordinate-layer" data-battle-map-coordinate-layer aria-hidden="true"></div>
           </div>
           <div class="battle-map-side" role="region" aria-label="地形工具">
             <div class="battle-map-toolbar">
@@ -1984,8 +1986,8 @@
   <script src="../map/map-tile-tags.js"></script>
   <script src="ps/CHIMERA_METASTASIOS/bp_status_map.js"></script>
   <script src="ps/other/token/token_manifest.js"></script>
-  <script src="../ss/terrain-data.js?v=20260815-level-layout2"></script>
-  <script src="battle_map_control.js?v=20260815-level-layout2"></script>
+  <script src="../ss/terrain-data.js?v=20260818-coordinates2"></script>
+  <script src="battle_map_control.js?v=20260818-coordinates2"></script>
   <script>
     const apostles = [
       "HEKATON",

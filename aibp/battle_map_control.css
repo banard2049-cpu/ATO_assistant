@@ -81,7 +81,8 @@
 .battle-map-board-image,
 .battle-map-terrain-layer,
 .battle-map-start-layer,
-.battle-map-grid {
+.battle-map-grid,
+.battle-map-coordinate-layer {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -102,8 +103,36 @@
   background-size: 5% 100%, 100% calc(100% / 14);
 }
 
+.battle-map-board.coordinates-visible .battle-map-grid {
+  background-image:
+    linear-gradient(to right, rgba(239, 68, 58, 0.78) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(239, 68, 58, 0.78) 1px, transparent 1px);
+}
+
 .battle-map-terrain-layer { z-index: 2; }
 .battle-map-start-layer { z-index: 4; pointer-events: none; }
+
+.battle-map-coordinate-layer {
+  z-index: 5;
+  display: grid;
+  grid-template-columns: repeat(20, minmax(0, 1fr));
+  grid-template-rows: repeat(14, minmax(0, 1fr));
+  pointer-events: none;
+}
+
+.battle-map-coordinate {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: clamp(7px, 0.72vw, 12px);
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+  text-shadow: 0 1px 2px #000, 0 -1px 2px #000;
+  white-space: nowrap;
+}
 
 .battle-map-terrain {
   position: absolute;

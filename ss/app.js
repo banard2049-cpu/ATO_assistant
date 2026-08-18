@@ -7,6 +7,7 @@ const elements = {
   battleBoardFrame: document.querySelector("#battleBoardFrame"),
   battleTerrainLayer: document.querySelector("#battleTerrainLayer"),
   battleStartLayer: document.querySelector("#battleStartLayer"),
+  battleCoordinateLayer: document.querySelector("#battleCoordinateLayer"),
   battleTerrainCards: document.querySelector("#battleTerrainCards"),
   battleTerrainCardList: document.querySelector("#battleTerrainCardList"),
   battleTerrainCardCount: document.querySelector("#battleTerrainCardCount"),
@@ -35,6 +36,10 @@ let latestBattleRotation = 0;
 let latestBattleBoardVisible = true;
 const aibpBaseUrl = new URL("../aibp/", document.baseURI);
 const battleBoardAspectRatio = 20 / 14;
+
+function coordinateLabel(row, column) {
+  return `${String.fromCharCode(64 + Number(row))}${Number(column)}`;
+}
 
 function layoutSupportCards(availableWidth, smallWidth, smallHeight, oneRow = false) {
   const cards = Array.from(elements.supportCards.querySelectorAll(":scope > .boss-small-card, .trait-cards > img"));
@@ -288,9 +293,26 @@ function renderBattleStarts(apostle, map) {
   });
 }
 
+function renderBattleCoordinates(map) {
+  elements.battleCoordinateLayer.replaceChildren();
+  elements.battleCoordinateLayer.hidden = map.showCoordinates !== true;
+  if (elements.battleCoordinateLayer.hidden) return;
+  for (let row = 14; row >= 1; row -= 1) {
+    for (let column = 1; column <= 20; column += 1) {
+      const cell = document.createElement("span");
+      cell.className = "battle-coordinate";
+      cell.textContent = coordinateLabel(row, column);
+      cell.dataset.row = String(row);
+      cell.dataset.column = String(column);
+      elements.battleCoordinateLayer.appendChild(cell);
+    }
+  }
+}
+
 function renderBattleTerrain(apostle, level, battleMap) {
   elements.battleTerrainLayer.replaceChildren();
   const map = window.BattleTerrain.normalizeBattleMap(battleMap, apostle, level);
+  elements.battleBoardFrame.classList.toggle("coordinates-visible", map.showCoordinates === true);
   const tiles = window.BattleTerrain.getMapTiles(map);
   tiles.forEach((placement) => {
     const image = document.createElement("img");
@@ -313,6 +335,7 @@ function renderBattleTerrain(apostle, level, battleMap) {
     elements.battleTerrainLayer.appendChild(image);
   });
   renderBattleStarts(apostle, map);
+  renderBattleCoordinates(map);
 }
 
 function openBattle(screen) {
@@ -329,7 +352,15 @@ function openBattle(screen) {
   elements.battleView.classList.toggle("board-hidden", !boardVisible);
   elements.battleView.classList.toggle("swapped", boardVisible && swapped);
 
-  const renderKey = JSON.stringify([screen.aibpRevision, state.updatedAt, scale, rotation, swapped, boardVisible]);
+  const renderKey = JSON.stringify([
+    screen.aibpRevision,
+    state.updatedAt,
+    map.showCoordinates === true,
+    scale,
+    rotation,
+    swapped,
+    boardVisible,
+  ]);
   if (renderKey === battleRenderKey) {
     applyBattleLayout(scale / 100, rotation, boardVisible);
     return;
