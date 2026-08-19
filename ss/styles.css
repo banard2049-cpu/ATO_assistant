@@ -795,6 +795,15 @@ h1 {
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .28));
 }
 
+.battle-terrain-light-range {
+  position: absolute;
+  box-sizing: border-box;
+  pointer-events: none;
+  background: rgba(255, 231, 131, .24);
+  box-shadow: inset 0 0 0 1px rgba(255, 244, 190, .86), 0 0 10px rgba(255, 210, 86, .68);
+  mix-blend-mode: screen;
+}
+
 .battle-terrain-special {
   position: absolute;
   display: grid;

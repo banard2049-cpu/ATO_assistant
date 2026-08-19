@@ -587,6 +587,20 @@
       });
     }
 
+    function renderLightCoverage(map) {
+      const coverage = window.BattleTerrain.getLightCoverage(map);
+      coverage.cells.forEach(({ c, r, sources }) => {
+        const light = document.createElement("div");
+        light.className = "battle-map-light-range";
+        light.title = `光照 1：${sources.join("、")}`;
+        light.style.left = `${(c - 1) / 20 * 100}%`;
+        light.style.top = `${(14 - r) / 14 * 100}%`;
+        light.style.width = `${100 / 20}%`;
+        light.style.height = `${100 / 14}%`;
+        terrainLayer.appendChild(light);
+      });
+    }
+
     function renderMap(map = ensureMap()) {
       renderSetupOptions(map);
       renderTerrainOptions(map);
@@ -623,8 +637,16 @@
             renderMap(map);
           }
         });
+        button.addEventListener("dblclick", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          if (!selectedId) return;
+          selectedId = "";
+          renderMap(map);
+        });
         terrainLayer.appendChild(button);
       });
+      renderLightCoverage(map);
       startsToggle.checked = map.showStarts !== false;
       if (coordinatesToggle) {
         const showCoordinates = map.showCoordinates === true;

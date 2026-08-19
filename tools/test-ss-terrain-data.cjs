@@ -174,6 +174,23 @@ const arcologySources = terrain.getAssetSources({ name: "Arcology", flipped: tru
 assert.equal(arcologySources.length, 1);
 assert.match(arcologySources[0], /^\.\/terrain\/arcology-back\.jpg\?v=/);
 
+const lightCoverage = terrain.getLightCoverage({ terrain: [
+  { id: "wall", name: "Lightwall 1x4", row: 7, column: 10.5, rotation: 180 },
+  { id: "arcology", name: "Arcology", row: 2, column: 2, rotation: 180, flipped: true },
+  { id: "trench", name: "Trench Left 1x1", row: 8, column: 9, rotation: 180 },
+] });
+assert.deepEqual(lightCoverage.sources.map(({ id, name, range }) => ({ id, name, range })), [
+  { id: "wall", name: "Lightwall 1x4", range: 1 },
+  { id: "arcology", name: "Arcology", range: 1 },
+]);
+assert.deepEqual(
+  lightCoverage.cells
+    .filter(({ c, r }) => r >= 6)
+    .map(({ c, r }) => [c, r]),
+  [[10, 8], [11, 8], [12, 8], [8, 7], [13, 7], [9, 6], [10, 6], [11, 6], [12, 6]]
+);
+assert.equal(lightCoverage.cells.some(({ c, r }) => c === 9 && r === 8), false);
+
 const rotated = terrain.getTileStyle({ row: 5, column: 7.5, width: 4, height: 1, rotation: 270 });
 assert.equal(rotated.left, `${7 / 20 * 100}%`);
 assert.equal(rotated.top, `${9.5 / 14 * 100}%`);

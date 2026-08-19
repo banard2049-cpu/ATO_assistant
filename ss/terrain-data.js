@@ -239,6 +239,21 @@ const BattleTerrain = (() => {
     },
   };
 
+  // C5 terrain cards: Arcology and all Lightwall shapes have Light 1 with
+  // Omnilight, so each outer edge emits one orthogonal cell of light.
+  const terrainLightProfiles = {
+    "Arcology": { range: 1 },
+    "Lightwall 1x1": { range: 1 },
+    "Lightwall 1x4": { range: 1 },
+    "Lightwall 1x5": { range: 1 },
+  };
+  const lightVoidTerrain = new Set([
+    "Trench Left 1x1",
+    "Trench Right 1x1",
+    "Trench 1x4",
+    "Trench 1x5",
+  ]);
+
   // ---------------------------------------------------------------------------
   // Line-of-sight (视线 / LoS) occlusion data. See P38 of the rulebook.
   // Only two things block LoS: "Obscuring" (遮蔽) terrain tiles, and the red
@@ -610,6 +625,7 @@ const BattleTerrain = (() => {
     HYPERTIME_ORACLE: [
       { levels: [1, 2], terrains: [
         terrain("Black Iceberg", [tile(12, 8), tile(11, 10), tile(10, 6), tile(10, 14), tile(8, 9), tile(4, 11), tile(2, 13)]),
+        terrain("City", [tile(13, 16), tile(2, 18)]),
         terrain("Time-Frozen City", [tile(13, 16), tile(2, 18)]),
         terrain("Timefront 1x4", [tile(12.5, 1, 90)]),
         terrain("Timefront 1x5", [tile(8, 1, 90), tile(3, 1, 90)]),
@@ -618,6 +634,7 @@ const BattleTerrain = (() => {
       { levels: [3, 4, 5], terrains: [
         terrain("Black Iceberg", [tile(12, 8), tile(11, 10), tile(11, 16), tile(10, 14), tile(9, 17), tile(8, 9), tile(7, 18), tile(6, 12), tile(4, 11), tile(2, 13)]),
         terrain("Giant Black Iceberg", [tile(4.5, 16.5)]),
+        terrain("City", [tile(13, 19), tile(2, 18)]),
         terrain("Time-Frozen City", [tile(13, 19), tile(2, 18)]),
         terrain("Timefront 1x4", [tile(12.5, 1, 90)]),
         terrain("Timefront 1x5", [tile(8, 1, 90), tile(3, 1, 90)]),
@@ -628,6 +645,7 @@ const BattleTerrain = (() => {
       { levels: [1, 2, 3, 4, 5], terrains: [
         terrain("Black Iceberg", [tile(13, 12), tile(12, 4), tile(12, 17), tile(10, 6), tile(9, 15), tile(8, 3), tile(6, 6), tile(3, 17), tile(2, 9), tile(2, 12)]),
         terrain("Giant Black Iceberg", [tile(8.5, 13.5), tile(7.5, 18.5), tile(4.5, 6.5)]),
+        terrain("City", [tile(12, 6), tile(5, 4)]),
         terrain("Time-Frozen City", [tile(12, 6), tile(5, 4)]),
         terrain("Black Lake", [tile(7, 10), tile(5, 16)]),
         terrain("Black Glacier 1x5", [tile(10, 12, 270), tile(7, 6, 0), tile(5, 12, 0)]),
@@ -921,11 +939,59 @@ const BattleTerrain = (() => {
     return choices[Math.floor(Math.random() * choices.length)]?.id || choices[0].id;
   }
 
+  // Time-Frozen City is an overlay: keep a City tile directly underneath it.
+  // Normalize saved maps as well as fresh setup data so older campaign state is upgraded.
+  function ensureTimeFrozenCityBases(terrain) {
+    const positionKey = (placement) => [
+      Number(placement.row),
+      Number(placement.column),
+      ((Math.round(Number(placement.rotation) / 90) * 90) % 360 + 360) % 360,
+    ].join("|");
+    const frozenKeys = new Set(
+      terrain.filter((placement) => placement.name === "Time-Frozen City").map(positionKey)
+    );
+    const cityByKey = new Map();
+    terrain.forEach((placement) => {
+      const key = positionKey(placement);
+      if (placement.name === "City" && frozenKeys.has(key) && !cityByKey.has(key)) {
+        cityByKey.set(key, placement);
+      }
+    });
+
+    const result = [];
+    const inserted = new Set();
+    terrain.forEach((placement) => {
+      const key = positionKey(placement);
+      if (placement.name === "City" && frozenKeys.has(key)) return;
+      if (placement.name === "Time-Frozen City" && !inserted.has(key)) {
+        result.push(cityByKey.get(key) || {
+          id: `${placement.id}-city-base`,
+          name: "City",
+          row: placement.row,
+          column: placement.column,
+          rotation: placement.rotation,
+          flipped: false,
+        });
+        inserted.add(key);
+      }
+      result.push(placement);
+    });
+    return result;
+  }
+
   function createBattleMap(apostle, level, setupId) {
     const setup = getSetup(apostle, level, setupId);
     const startLevel = levelNumber(level);
     const startPositionId = randomStartPositionId(apostle, startLevel, setup?.id);
     const apostleFacing = getInitialFacing(apostle, undefined, setup?.id, startLevel, startPositionId);
+    const terrain = getTiles(apostle, level, setup?.id).map((placement, index) => ({
+      id: `initial-${index + 1}`,
+      name: placement.name,
+      row: placement.row,
+      column: placement.column,
+      rotation: placement.rotation,
+      flipped: placement.flipped === true,
+    }));
     return {
       version: 1,
       setupKey: getSetupKey(apostle, level, setup?.id),
@@ -935,14 +1001,7 @@ const BattleTerrain = (() => {
       ...(apostleFacing === null ? {} : { apostleFacing }),
       showStarts: true,
       showCoordinates: false,
-      terrain: getTiles(apostle, level, setup?.id).map((placement, index) => ({
-        id: `initial-${index + 1}`,
-        name: placement.name,
-        row: placement.row,
-        column: placement.column,
-        rotation: placement.rotation,
-        flipped: placement.flipped === true,
-      })),
+      terrain: ensureTimeFrozenCityBases(terrain),
     };
   }
 
@@ -976,7 +1035,7 @@ const BattleTerrain = (() => {
       ...(apostleFacing === null ? {} : { apostleFacing }),
       showStarts: value.showStarts !== false,
       showCoordinates: value.showCoordinates === true,
-      terrain,
+      terrain: ensureTimeFrozenCityBases(terrain),
     };
   }
 
@@ -1131,6 +1190,79 @@ const BattleTerrain = (() => {
     };
   }
 
+  function getPlacementCells(placement) {
+    const size = footprint(placement);
+    const cells = [];
+    const firstColumn = Number(placement.column) - (size.width - 1) / 2;
+    const firstRow = Number(placement.row) - (size.height - 1) / 2;
+    for (let columnOffset = 0; columnOffset < size.width; columnOffset += 1) {
+      for (let rowOffset = 0; rowOffset < size.height; rowOffset += 1) {
+        cells.push({
+          c: Math.round(firstColumn + columnOffset),
+          r: Math.round(firstRow + rowOffset),
+        });
+      }
+    }
+    return cells;
+  }
+
+  function getLightCoverage(map) {
+    const coverageByCell = new Map();
+    const sources = [];
+    const placements = map?.terrain || [];
+    const lightVoidCells = new Set(placements
+      .filter((placement) => lightVoidTerrain.has(placement?.name))
+      .flatMap((placement) => getPlacementCells(placement))
+      .map(({ c, r }) => `${c},${r}`));
+    placements.forEach((placement, index) => {
+      const profile = terrainLightProfiles[placement?.name];
+      if (!profile) return;
+
+      const sourceCells = getPlacementCells(placement);
+      if (!sourceCells.length) return;
+      const sourceColumns = sourceCells.map((cell) => cell.c);
+      const sourceRows = sourceCells.map((cell) => cell.r);
+      const minColumn = Math.min(...sourceColumns);
+      const maxColumn = Math.max(...sourceColumns);
+      const minRow = Math.min(...sourceRows);
+      const maxRow = Math.max(...sourceRows);
+      const source = {
+        id: placement.id || `light-source-${index + 1}`,
+        name: placement.name,
+        range: profile.range,
+        cells: sourceCells,
+      };
+      sources.push(source);
+
+      const edges = [
+        { dc: 0, dr: 1, cells: sourceCells.filter((cell) => cell.r === maxRow) },
+        { dc: 1, dr: 0, cells: sourceCells.filter((cell) => cell.c === maxColumn) },
+        { dc: 0, dr: -1, cells: sourceCells.filter((cell) => cell.r === minRow) },
+        { dc: -1, dr: 0, cells: sourceCells.filter((cell) => cell.c === minColumn) },
+      ];
+      edges.forEach(({ dc, dr, cells }) => {
+        cells.forEach((cell) => {
+          for (let distance = 1; distance <= profile.range; distance += 1) {
+            const c = cell.c + dc * distance;
+            const r = cell.r + dr * distance;
+            if (c < 1 || c > columns || r < 1 || r > rows) continue;
+            const key = `${c},${r}`;
+            if (lightVoidCells.has(key)) continue;
+            const current = coverageByCell.get(key) || { c, r, sources: new Set() };
+            current.sources.add(source.name);
+            coverageByCell.set(key, current);
+          }
+        });
+      });
+    });
+    return {
+      sources,
+      cells: [...coverageByCell.values()]
+        .map((cell) => ({ ...cell, sources: [...cell.sources].sort() }))
+        .sort((left, right) => right.r - left.r || left.c - right.c),
+    };
+  }
+
   function isTileObscuring(placement) {
     const definition = catalog[placement?.name];
     const los = definition && definition.los;
@@ -1196,6 +1328,7 @@ const BattleTerrain = (() => {
     getFacingLabel,
     getInitialFacing,
     getInitialPositions,
+    getLightCoverage,
     getMapTiles,
     getSetupKey,
     getSetupOptions,

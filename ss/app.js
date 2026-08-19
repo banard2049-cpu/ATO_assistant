@@ -349,6 +349,20 @@ function renderBattleSpecialTerrain(placement) {
   elements.battleTerrainLayer.appendChild(tile);
 }
 
+function renderBattleLightCoverage(map) {
+  const coverage = window.BattleTerrain.getLightCoverage(map);
+  coverage.cells.forEach(({ c, r, sources }) => {
+    const light = document.createElement("div");
+    light.className = "battle-terrain-light-range";
+    light.title = `光照 1：${sources.join("、")}`;
+    light.style.left = `${(c - 1) / 20 * 100}%`;
+    light.style.top = `${(14 - r) / 14 * 100}%`;
+    light.style.width = `${100 / 20}%`;
+    light.style.height = `${100 / 14}%`;
+    elements.battleTerrainLayer.appendChild(light);
+  });
+}
+
 function renderBattleTerrain(apostle, level, battleMap, los) {
   elements.battleTerrainLayer.replaceChildren();
   const map = window.BattleTerrain.normalizeBattleMap(battleMap, apostle, level);
@@ -379,6 +393,7 @@ function renderBattleTerrain(apostle, level, battleMap, los) {
     image.style.transform = `translate(-50%, -50%) rotate(${style.rotation}) ${window.BattleTerrain.getTileFlipTransform(placement)}`;
     elements.battleTerrainLayer.appendChild(image);
   });
+  renderBattleLightCoverage(map);
   renderBattleStarts(apostle, map);
   renderBattleCoordinates(map);
   renderBattleLos(apostle, map, los);
