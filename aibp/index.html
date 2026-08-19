@@ -4552,8 +4552,15 @@
       return `${scope || "apostle"}-${level}-${index}-${String(ext || "jpg").replace(/^\./, "").toLowerCase()}`;
     }
 
+    function isDahakaFearfulHospitality(apostle, card) {
+      return apostle === "DAHAKA"
+        && card.scope !== "common"
+        && card.level === "O"
+        && Number(card.index) === 1;
+    }
+
     function isLargeTraitCard(apostle, card) {
-      return card.level === "O"
+      return (card.level === "O" && !isDahakaFearfulHospitality(apostle, card))
         || (apostle === "HYPERTIME_ORACLE" && card.level === "IV")
         || (apostle === "ICARIAN_HARPY" && card.level === "X" && card.index === 2);
     }
