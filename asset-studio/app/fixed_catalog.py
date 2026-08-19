@@ -33,6 +33,10 @@ BATTLE_TERRAIN_PIECES = (
     ("Ambrosia Trail", "ambrosia-trail.jpg", None),
     ("Ambrosia Elephant", "ambrosia-elephant.jpg", None),
     ("Ambrosia Cloud", "ambrosia-cloud.jpg", None),
+    ("Blue Anchor", "anchor-blue.jpg", None),
+    ("Green Anchor", "anchor-green.jpg", None),
+    ("Red Anchor", "anchor-red.jpg", None),
+    ("Yellow Anchor", "anchor-yellow.png", None),
     ("Argo Hull 1x4", "argo-hull-1x4.jpg", None),
     ("Argo Hull 1x5", "argo-hull-1x5.jpg", "argo-hull-1x5-back.jpg"),
     ("Black Glacier 1x5", "black-glacier-1x5.jpg", None),
@@ -1222,7 +1226,7 @@ def fixed_catalog_payload() -> dict[str, Any]:
             marker = str(item.get("number") or "").strip()
             item["sort_order"] = list(AIBP_TOKEN_LABELS).index(marker)
     payload["source"]["catalog_items"] = len(payload["items"])
-    payload["source"]["catalog_version"] = "ATO-Local-0.2.11+complete-import-assets-10"
+    payload["source"]["catalog_version"] = "ATO-Local-0.2.11+complete-import-assets-11-c3-anchors"
     return payload
 
 

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>大迷宫墙"向外延伸一格"示意图</title>
+<style>
+  :root { color-scheme: light; }
+  body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+         background:#faf9f7; color:#1c1c1c; margin:0; padding:28px; }
+  h1 { font-size:20px; margin:0 0 4px; }
+  .sub { color:#666; font-size:13px; margin:0 0 22px; }
+  .panels { display:flex; gap:32px; flex-wrap:wrap; }
+  .panel { background:#fff; border:1px solid #e5e2dc; border-radius:10px;
+           padding:16px 18px 20px; box-shadow:0 1px 3px rgba(0,0,0,.05); }
+  .panel h2 { font-size:15px; margin:0 0 10px; }
+  .cap { font-size:12.5px; color:#555; margin:12px 4px 0; max-width:400px; line-height:1.55; }
+  .legend { display:flex; gap:20px; flex-wrap:wrap; font-size:12.5px; color:#444;
+            margin:24px 2px 0; align-items:center; }
+  .legend span { display:inline-flex; align-items:center; gap:7px; }
+  .sw { width:26px; height:0; border-top-width:4px; border-top-style:solid; display:inline-block; }
+  .note { margin-top:26px; padding:14px 16px; background:#fff7e6; border:1px solid #f0d9a8;
+          border-radius:8px; font-size:13px; line-height:1.6; max-width:860px; }
+</style>
+</head>
+<body>
+  <h1>大迷宫墙「向外延伸一格」— 双向视线示意</h1>
+  <p class="sub">平面俯视图。红=大迷宫红墙（挡视线），● = 墙头（悬空自由端），A/B = 两个单位。演示同一对格子在延伸前后视线通断的变化。</p>
+
+  <div class="panels">
+    <div class="panel">
+      <h2>① 现状：物理墙止于墙头</h2>
+      <svg width="420" height="360" viewBox="0 0 420 360">
+        <defs>
+          <pattern id="g1" width="60" height="60" patternUnits="userSpaceOnUse">
+            <path d="M60 0H0V60" fill="none" stroke="#eceae5" stroke-width="1"/>
+          </pattern>
+        </defs>
+        <rect x="30" y="30" width="360" height="300" fill="url(#g1)"/>
+        <rect x="30" y="30" width="360" height="300" fill="none" stroke="#dcd8d0" stroke-width="1"/>
+        <!-- vertical red wall x=210, rows 1..3 -->
+        <line x1="210" y1="90" x2="210" y2="210" stroke="#d33" stroke-width="5"/>
+        <circle cx="210" cy="210" r="5.5" fill="#fff" stroke="#d33" stroke-width="2.5"/>
+        <!-- sightline A->B grazes below the free end -> VISIBLE -->
+        <line x1="120" y1="180" x2="300" y2="300" stroke="#2a9d3f" stroke-width="2.5"/>
+        <circle cx="120" cy="180" r="14" fill="#e8f2ff" stroke="#2b6cb0" stroke-width="2"/>
+        <text x="120" y="185" text-anchor="middle" font-size="14" fill="#2b6cb0" font-weight="700">A</text>
+        <circle cx="300" cy="300" r="14" fill="#ffeaea" stroke="#c0392b" stroke-width="2"/>
+        <text x="300" y="305" text-anchor="middle" font-size="14" fill="#c0392b" font-weight="700">B</text>
+        <text x="230" y="250" font-size="12.5" fill="#2a9d3f" font-weight="600">可见（擦墙头下方绕过）</text>
+      </svg>
+      <p class="cap">视线 A↔B 从墙头 ● 下方掠过。按 P38「仅擦墙头端点不算遮挡」，此时判为<strong>有视线</strong>。</p>
+    </div>
+
+    <div class="panel">
+      <h2>② 延伸后：墙头向外补一格（LOS 判定用）</h2>
+      <svg width="420" height="360" viewBox="0 0 420 360">
+        <defs>
+          <pattern id="g2" width="60" height="60" patternUnits="userSpaceOnUse">
+            <path d="M60 0H0V60" fill="none" stroke="#eceae5" stroke-width="1"/>
+          </pattern>
+        </defs>
+        <rect x="30" y="30" width="360" height="300" fill="url(#g2)"/>
+        <rect x="30" y="30" width="360" height="300" fill="none" stroke="#dcd8d0" stroke-width="1"/>
+        <!-- physical wall -->
+        <line x1="210" y1="90" x2="210" y2="210" stroke="#d33" stroke-width="5"/>
+        <!-- extension one cell outward (dashed) -->
+        <line x1="210" y1="210" x2="210" y2="270" stroke="#d33" stroke-width="5" stroke-dasharray="7 5" opacity="0.85"/>
+        <circle cx="210" cy="270" r="5.5" fill="#fff" stroke="#d33" stroke-width="2.5"/>
+        <!-- sightline now crosses the extended wall -> BLOCKED -->
+        <line x1="120" y1="180" x2="210" y2="240" stroke="#c0392b" stroke-width="2.5" stroke-dasharray="6 4"/>
+        <line x1="210" y1="240" x2="300" y2="300" stroke="#bbb" stroke-width="2.5" stroke-dasharray="6 4"/>
+        <text x="198" y="236" font-size="20" fill="#c0392b" font-weight="700">✕</text>
+        <circle cx="120" cy="180" r="14" fill="#e8f2ff" stroke="#2b6cb0" stroke-width="2"/>
+        <text x="120" y="185" text-anchor="middle" font-size="14" fill="#2b6cb0" font-weight="700">A</text>
+        <circle cx="300" cy="300" r="14" fill="#ffeaea" stroke="#c0392b" stroke-width="2"/>
+        <text x="300" y="305" text-anchor="middle" font-size="14" fill="#c0392b" font-weight="700">B</text>
+        <text x="228" y="300" font-size="12.5" fill="#c0392b" font-weight="600">被挡（撞上延伸段）</text>
+      </svg>
+      <p class="cap">墙头沿墙体方向<strong>向外补出一格</strong>（虚线），新墙头移到 ●。原来掠过的那条线现在撞在延伸段上，A↔B <strong>被遮挡</strong>。因判定作用在墙上、与谁看谁无关，A→B 与 B→A 结果一致（双向对称）。</p>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><i class="sw" style="border-top-color:#d33"></i>实线红墙 = 物理红墙</span>
+    <span><i class="sw" style="border-top-color:#d33;border-top-style:dashed"></i>虚线红墙 = 向外延伸的一格</span>
+    <span><i class="sw" style="border-top-color:#2a9d3f"></i>有视线</span>
+    <span><i class="sw" style="border-top-color:#c0392b;border-top-style:dashed"></i>被遮挡</span>
+  </div>
+
+  <div class="note">
+    <strong>我对规则的读法（请确认）：</strong>「向外延伸一格」= 把每个悬空<strong>墙头沿墙体自身方向、越过端点再补一格</strong>，使原本能从墙头旁擦过的斜线被封死；因为改的是墙本身，双向计算天然对称。<br><br>
+    <strong>另一种可能的读法：</strong>「向外」若指<strong>垂直于墙、朝迷宫外侧</strong>偏移/加厚一格（而非顺着墙体延长）。这两种几何效果不同。请告诉我哪种是你要的，我再据此改引擎（目前尚未改动任何代码）。
+  </div>
+</body>
+</html>

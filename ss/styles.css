@@ -609,6 +609,159 @@ h1 {
   pointer-events: none;
 }
 
+/* 视线 / 射程 / 距离标注层 —— 与 aibp/battle_map_control.css 保持同一套类名和配色，
+   因为两端都由 battle_los.js 的 renderLosOverlay 绘制，样式必须对得上。
+   层级放在地形(2)之上、起始位(3)之下：标注盖住地形，但不遮挡 A / T 起始标记。 */
+.battle-map-los-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+}
+.battle-map-los-layer > div { position: absolute; }
+.battle-map-los-visible {
+  background: rgba(74, 222, 128, .30);
+  box-shadow: inset 0 0 0 1px rgba(74, 222, 128, .55);
+}
+.battle-map-los-blocked { background: transparent; }
+.battle-map-los-layer.dim-blocked .battle-map-los-blocked {
+  background: rgba(4, 6, 6, .62);
+}
+.battle-map-los-source {
+  z-index: 5;
+  border-radius: 999px;
+  background: rgba(56, 132, 255, .95);
+  box-shadow: 0 0 0 2px rgba(190, 220, 255, .95), 0 0 12px rgba(56, 132, 255, .72);
+  transform: translate(-50%, -50%) scale(.48);
+}
+.battle-map-los-obscuring {
+  box-shadow: inset 0 0 0 2px rgba(250, 204, 21, .85);
+  background: rgba(250, 204, 21, .12);
+}
+.battle-map-los-cloud {
+  box-shadow: inset 0 0 0 2px rgba(96, 180, 240, .95);
+  background: rgba(96, 180, 240, .18);
+}
+.battle-map-los-in-range {
+  box-shadow: inset 0 0 0 2px rgba(180, 132, 255, .75);
+}
+.battle-map-los-in-range.has-los {
+  box-shadow: inset 0 0 0 2px rgba(200, 160, 255, .98);
+  background: rgba(180, 132, 255, .16);
+}
+.battle-map-los-move-target {
+  box-sizing: border-box;
+  z-index: 6;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .96);
+  box-shadow: 0 0 0 2px rgba(20, 20, 20, .88), 0 0 12px rgba(255, 255, 255, .58);
+  transform: translate(-50%, -50%) scale(.48);
+}
+.battle-map-los-move-step {
+  box-sizing: border-box;
+  z-index: 4;
+  pointer-events: none;
+}
+.battle-map-los-move-a {
+  background: rgba(239, 68, 58, .28);
+  box-shadow: inset 0 0 0 2px rgba(239, 68, 58, .88);
+}
+.battle-map-los-move-b {
+  background: rgba(250, 204, 21, .30);
+  box-shadow: inset 0 0 0 2px rgba(250, 204, 21, .94);
+}
+.battle-map-los-move-overlap {
+  background: rgba(251, 146, 60, .34);
+  box-shadow: inset 0 0 0 2px rgba(251, 146, 60, .96);
+}
+.battle-map-los-move-final {
+  box-sizing: border-box;
+  z-index: 6;
+  border-radius: 999px;
+  transform: translate(-50%, -50%) scale(.48);
+}
+.battle-map-los-move-final.battle-map-los-move-a {
+  background: rgba(239, 68, 58, .96);
+  box-shadow: 0 0 0 2px rgba(255, 235, 235, .92), 0 0 12px rgba(239, 68, 58, .76);
+}
+.battle-map-los-move-final.battle-map-los-move-b {
+  background: rgba(250, 204, 21, .96);
+  box-shadow: 0 0 0 2px rgba(255, 250, 205, .92), 0 0 12px rgba(250, 204, 21, .76);
+}
+.battle-map-los-move-final.battle-map-los-move-overlap {
+  background: rgba(251, 146, 60, .96);
+  box-shadow: 0 0 0 2px rgba(255, 238, 214, .92), 0 0 12px rgba(251, 146, 60, .76);
+}
+.battle-map-los-move-facing {
+  position: absolute;
+  z-index: 6;
+  font-size: clamp(11px, 1.05vw, 22px);
+  line-height: 1;
+  text-shadow: 0 0 3px #000, 0 1px 3px #000;
+  transform-origin: center;
+  pointer-events: none;
+}
+.battle-map-los-move-facing-a { color: #ef4444; }
+.battle-map-los-move-facing-b { color: #facc15; }
+.battle-map-los-move-facing-overlap { color: #fb923c; }
+/* 距离数字贴右下角，避开居中的坐标标签，两组字不会重叠。 */
+.battle-map-los-distance {
+  display: grid;
+  place-items: end;
+  padding: 0 2px 1px 0;
+  color: rgba(255, 255, 255, .82);
+  font-size: clamp(7px, .66vw, 13px);
+  font-weight: 700;
+  line-height: 1;
+  text-shadow: 0 1px 2px #000, 0 -1px 2px #000, 1px 0 2px #000, -1px 0 2px #000;
+  white-space: nowrap;
+}
+.battle-map-los-distance.in-range { color: rgba(224, 205, 255, .98); }
+.battle-map-los-distance.is-source { color: rgba(190, 220, 255, .95); }
+/* 朝向箭头：painter 用内联 left/top/transform 定位，这里只管样式。 */
+.battle-map-los-facing {
+  position: absolute;
+  color: #ffd166;
+  font-size: clamp(11px, 1.05vw, 22px);
+  line-height: 1;
+  text-shadow: 0 0 3px #000, 0 1px 3px #000;
+  transform-origin: center;
+  pointer-events: none;
+  z-index: 3;
+}
+.battle-map-los-blindspot {
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .6);
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(12, 14, 18, .78) 0 5px,
+    rgba(190, 190, 200, .5) 5px 10px
+  );
+}
+.battle-map-los-wall {
+  background: rgba(239, 68, 58, .95);
+  box-shadow: 0 0 4px rgba(239, 68, 58, .9);
+}
+.battle-map-los-wall.horizontal { height: 3px; transform: translateY(-1.5px); }
+.battle-map-los-wall.vertical { width: 3px; transform: translateX(-1.5px); }
+.battle-map-los-wall-ignored {
+  background: none;
+  box-shadow: none;
+  opacity: .75;
+}
+.battle-map-los-wall-ignored.horizontal {
+  background-image: linear-gradient(
+    to right, rgba(239, 68, 58, .9) 0 6px, transparent 6px 12px);
+  background-size: 12px 3px;
+}
+.battle-map-los-wall-ignored.vertical {
+  background-image: linear-gradient(
+    to bottom, rgba(239, 68, 58, .9) 0 6px, transparent 6px 12px);
+  background-size: 3px 12px;
+}
+
 .battle-coordinate-layer {
   position: absolute;
   inset: 0;
@@ -640,6 +793,38 @@ h1 {
   object-fit: contain;
   transform-origin: center;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .28));
+}
+
+.battle-terrain-special {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  transform-origin: center;
+  border: 2px solid color-mix(in srgb, var(--battle-special-color, #f0c15d) 72%, #fff 28%);
+  border-radius: 3px;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255, 255, 255, .34), transparent 30%),
+    linear-gradient(180deg, color-mix(in srgb, var(--battle-special-color, #f0c15d) 82%, #fff 18%), var(--battle-special-color, #f0c15d));
+  box-shadow:
+    inset 0 0 0 2px rgba(0, 0, 0, .44),
+    0 0 0 1px rgba(255, 255, 255, .28),
+    0 0 14px var(--battle-special-glow, rgba(240, 193, 93, .5));
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .28));
+}
+
+.battle-terrain-special-label {
+  display: grid;
+  place-items: center;
+  width: 70%;
+  height: 70%;
+  border: 2px solid rgba(255, 255, 255, .86);
+  border-radius: 999px;
+  color: #fff;
+  font-size: clamp(10px, 1.2vw, 18px);
+  font-weight: 950;
+  line-height: 1;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .86);
+  background: rgba(0, 0, 0, .22);
 }
 
 .battle-start-marker {

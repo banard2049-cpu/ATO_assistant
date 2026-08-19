@@ -1,0 +1,4585 @@
+{
+ "hekatonBattle_1_3_levels": [
+  {
+   "name": "Column",
+   "row": 13,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 13,
+   "column": 12,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 12,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 12,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 10,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 9,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 8,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 8,
+   "column": 18,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 7,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 7,
+   "column": 18,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 6,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 5,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 3,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 3,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 2,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 2,
+   "column": 12,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "City",
+   "row": 10,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "City",
+   "row": 5,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  }
+ ],
+ "hekatonBattle_4_level": [
+  {
+   "name": "Column",
+   "row": 13,
+   "column": 12,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 12,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 12,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 10,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 9,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 8,
+   "column": 18,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 6,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 5,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 3,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 3,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 2,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "City",
+   "row": 10,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "City",
+   "row": 5,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Maze Fissure O",
+   "row": 12.5,
+   "column": 8.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Maze Fissure I",
+   "row": 6.5,
+   "column": 3,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Maze Fissure I",
+   "row": 7,
+   "column": 16.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Maze Fissure L",
+   "row": 8,
+   "column": 9.5,
+   "rotation": 270,
+   "flipped": false
+  },
+  {
+   "name": "Maze Fissure L",
+   "row": 2.5,
+   "column": 13,
+   "rotation": 180,
+   "flipped": false
+  }
+ ],
+ "labyrinthaurosBattle": [
+  {
+   "name": "City",
+   "row": 11,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "City",
+   "row": 4,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Labyrinth O",
+   "row": 9.5,
+   "column": 7.5,
+   "rotation": 0,
+   "flipped": false
+  },
+  {
+   "name": "Labyrinth I",
+   "row": 5,
+   "column": 7.5,
+   "rotation": 0,
+   "flipped": false
+  },
+  {
+   "name": "Labyrinth L",
+   "row": 9.5,
+   "column": 12,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Labyrinth Z",
+   "row": 5,
+   "column": 12.5,
+   "rotation": 90,
+   "flipped": true
+  }
+ ],
+ "ambushBattle": [
+  {
+   "name": "Column",
+   "row": 13,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 12,
+   "column": 12,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 11,
+   "column": 13,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 10,
+   "column": 11,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 9,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 7,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 6,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 6,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "City",
+   "row": 11,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "City",
+   "row": 4,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Labyrinth I",
+   "row": 4.5,
+   "column": 12,
+   "rotation": 270,
+   "flipped": false
+  },
+  {
+   "name": "Labyrinth L",
+   "row": 9,
+   "column": 7.5,
+   "rotation": 270,
+   "flipped": true
+  }
+ ],
+ "temenosBattle": [
+  {
+   "name": "Column",
+   "row": 11,
+   "column": 7,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 11,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 10,
+   "column": 5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 10,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 4,
+   "column": 5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 4,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 3,
+   "column": 7,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 3,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "City",
+   "row": 12,
+   "column": 5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "City",
+   "row": 2,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Labyrinth O",
+   "row": 12.5,
+   "column": 12.5,
+   "rotation": 0,
+   "flipped": false
+  },
+  {
+   "name": "Labyrinth I",
+   "row": 7,
+   "column": 7.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Labyrinth L",
+   "row": 7.5,
+   "column": 14,
+   "rotation": 0,
+   "flipped": true
+  },
+  {
+   "name": "Labyrinth Z",
+   "row": 2.5,
+   "column": 10,
+   "rotation": 0,
+   "flipped": true
+  }
+ ],
+ "pursuerBattle": [
+  {
+   "name": "Column",
+   "row": 13,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 13,
+   "column": 12,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 12,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 12,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 10,
+   "column": 18,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 9,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 9,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 9,
+   "column": 18,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 6,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 6,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 6,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 5,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 4,
+   "column": 5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 3,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 2,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 2,
+   "column": 12,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Ambrosia Pool",
+   "row": 10.5,
+   "column": 10.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Ambrosia Pool",
+   "row": 7.5,
+   "column": 5.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Ambrosia Pool",
+   "row": 7.5,
+   "column": 14.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Ambrosia Pool",
+   "row": 2.5,
+   "column": 10.5,
+   "rotation": 180,
+   "flipped": false
+  }
+ ],
+ "pursuerEndBattle": [
+  {
+   "name": "Column",
+   "row": 13,
+   "column": 12,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 12,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 12,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 10,
+   "column": 18,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 9,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 9,
+   "column": 18,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 6,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 6,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 5,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 4,
+   "column": 5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 3,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 2,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Ambrosia Pool",
+   "row": 10.5,
+   "column": 10.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Ambrosia Pool",
+   "row": 7.5,
+   "column": 8.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Ambrosia Pool",
+   "row": 7.5,
+   "column": 12.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Ambrosia Pool",
+   "row": 2.5,
+   "column": 10.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Ambrosia Trail",
+   "row": 13,
+   "column": 7,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Ambrosia Trail",
+   "row": 8,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Ambrosia Trail",
+   "row": 4,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  }
+ ],
+ "cyclonusBattle": [
+  {
+   "name": "Fortified City",
+   "row": 13,
+   "column": 14,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Fortified City",
+   "row": 4,
+   "column": 7,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x1 End",
+   "row": 2,
+   "column": 10,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x1 End",
+   "row": 1,
+   "column": 10,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x1 Corner",
+   "row": 9,
+   "column": 5,
+   "rotation": 270,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x1 Corner",
+   "row": 10,
+   "column": 20,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x1 Corner",
+   "row": 9,
+   "column": 20,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x4",
+   "row": 12.5,
+   "column": 16,
+   "rotation": 270,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x4",
+   "row": 9,
+   "column": 2.5,
+   "rotation": 0,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x4",
+   "row": 2.5,
+   "column": 16,
+   "rotation": 270,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x4",
+   "row": 6.5,
+   "column": 16,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x5",
+   "row": 12,
+   "column": 10,
+   "rotation": 270,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x5",
+   "row": 3,
+   "column": 5,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x5",
+   "row": 5,
+   "column": 10,
+   "rotation": 270,
+   "flipped": false
+  }
+ ],
+ "chimeraMetastasiosBattle_1_2_level": [
+  {
+   "name": "Column",
+   "row": 12,
+   "column": 16,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 7,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 5,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 2,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Ambrosia Pool",
+   "row": 11.5,
+   "column": 2.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Ambrosia Pool",
+   "row": 2.5,
+   "column": 17.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Fortified City",
+   "row": 9,
+   "column": 16,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Fortified City",
+   "row": 4,
+   "column": 5,
+   "rotation": 180,
+   "flipped": false
+  }
+ ],
+ "chimeraMetastasiosBattle_3_level": [
+  {
+   "name": "Column",
+   "row": 12,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 12,
+   "column": 16,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 10,
+   "column": 18,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 8,
+   "column": 1,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 7,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 5,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 2,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Ambrosia Pool",
+   "row": 11.5,
+   "column": 2.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Ambrosia Pool",
+   "row": 10.5,
+   "column": 8.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Ambrosia Pool",
+   "row": 7.5,
+   "column": 2.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Ambrosia Pool",
+   "row": 3.5,
+   "column": 13.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Ambrosia Pool",
+   "row": 2.5,
+   "column": 17.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Fortified City",
+   "row": 9,
+   "column": 16,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Fortified City",
+   "row": 4,
+   "column": 5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x4",
+   "row": 12.5,
+   "column": 15,
+   "rotation": 270,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x4",
+   "row": 2.5,
+   "column": 16,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x5",
+   "row": 12,
+   "column": 5,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x5",
+   "row": 3,
+   "column": 7,
+   "rotation": 270,
+   "flipped": false
+  }
+ ],
+ "burdenBattle": [
+  {
+   "name": "Column",
+   "row": 14,
+   "column": 7,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 11,
+   "column": 8,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 11,
+   "column": 12,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 10,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 9,
+   "column": 1,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 6,
+   "column": 11,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 5,
+   "column": 16,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 4,
+   "column": 10,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 1,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Cliff L",
+   "row": 13.5,
+   "column": 9,
+   "rotation": 0,
+   "flipped": false
+  },
+  {
+   "name": "Cliff L",
+   "row": 4,
+   "column": 1.5,
+   "rotation": 270,
+   "flipped": true
+  },
+  {
+   "name": "Cliff L",
+   "row": 1.5,
+   "column": 9,
+   "rotation": 180,
+   "flipped": true
+  },
+  {
+   "name": "Cliff Z",
+   "row": 12.5,
+   "column": 12,
+   "rotation": 180,
+   "flipped": true
+  },
+  {
+   "name": "Cliff Z",
+   "row": 11.5,
+   "column": 19,
+   "rotation": 180,
+   "flipped": true
+  },
+  {
+   "name": "Cliff Z",
+   "row": 11,
+   "column": 3.5,
+   "rotation": 270,
+   "flipped": false
+  },
+  {
+   "name": "Cliff Z",
+   "row": 2.5,
+   "column": 12,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Cliff Z",
+   "row": 3.5,
+   "column": 19,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Cliff I",
+   "row": 12,
+   "column": 15.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Cliff I",
+   "row": 3,
+   "column": 15.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Cliff I",
+   "row": 6.5,
+   "column": 5,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Cliff I",
+   "row": 2.5,
+   "column": 7,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Cliff O",
+   "row": 8.5,
+   "column": 8.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Cliff O",
+   "row": 8.5,
+   "column": 14.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Cliff O",
+   "row": 7.5,
+   "column": 17.5,
+   "rotation": 180,
+   "flipped": false
+  }
+ ],
+ "theCruelLessonBattle": [
+  {
+   "name": "Fortified City",
+   "row": 13,
+   "column": 18,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Fortified City",
+   "row": 3,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Argo Hull 1x4",
+   "row": 12.5,
+   "column": 1,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Argo Hull 1x5",
+   "row": 8,
+   "column": 1,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Argo Hull 1x5",
+   "row": 3,
+   "column": 1,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x1 End",
+   "row": 1,
+   "column": 10,
+   "rotation": 0,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x1 Corner",
+   "row": 1,
+   "column": 16,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x4",
+   "row": 12.5,
+   "column": 16,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x4",
+   "row": 3.5,
+   "column": 16,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x5",
+   "row": 8,
+   "column": 16,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x5",
+   "row": 1,
+   "column": 7,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x5",
+   "row": 1,
+   "column": 13,
+   "rotation": 180,
+   "flipped": false
+  }
+ ],
+ "whatAreYouBattle": [
+  {
+   "name": "Fortified City",
+   "row": 12,
+   "column": 11,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Fortified City",
+   "row": 7,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Fortified City",
+   "row": 3,
+   "column": 13,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Argo Hull 1x4",
+   "row": 12.5,
+   "column": 1,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Argo Hull 1x5",
+   "row": 8,
+   "column": 1,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Argo Hull 1x5",
+   "row": 3,
+   "column": 1,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x1 End",
+   "row": 14,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x1 End",
+   "row": 1,
+   "column": 15,
+   "rotation": 0,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x1 Corner",
+   "row": 14,
+   "column": 16,
+   "rotation": 270,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x1 Corner",
+   "row": 1,
+   "column": 16,
+   "rotation": 0,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x4",
+   "row": 14,
+   "column": 7.5,
+   "rotation": 0,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x4",
+   "row": 3.5,
+   "column": 16,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x4",
+   "row": 1,
+   "column": 3.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x4",
+   "row": 1,
+   "column": 12.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x4",
+   "row": 14,
+   "column": 3.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x5",
+   "row": 14,
+   "column": 12,
+   "rotation": 0,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x5",
+   "row": 11,
+   "column": 16,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x5",
+   "row": 1,
+   "column": 8,
+   "rotation": 180,
+   "flipped": false
+  }
+ ],
+ "hypertimeOracleBattle_1_2_level": [
+  {
+   "name": "Black Iceberg",
+   "row": 12,
+   "column": 8,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 11,
+   "column": 10,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 10,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 10,
+   "column": 14,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 8,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 4,
+   "column": 11,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 2,
+   "column": 13,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Time-Frozen City",
+   "row": 13,
+   "column": 16,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Time-Frozen City",
+   "row": 2,
+   "column": 18,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Timefront 1x4",
+   "row": 12.5,
+   "column": 1,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Timefront 1x5",
+   "row": 8,
+   "column": 1,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Timefront 1x5",
+   "row": 3,
+   "column": 1,
+   "rotation": 90,
+   "flipped": false
+  }
+ ],
+ "hypertimeOracleBattle_3_level": [
+  {
+   "name": "Black Iceberg",
+   "row": 12,
+   "column": 8,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 11,
+   "column": 10,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 11,
+   "column": 16,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 10,
+   "column": 14,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 9,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 8,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 7,
+   "column": 18,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 6,
+   "column": 12,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 4,
+   "column": 11,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 2,
+   "column": 13,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Giant Black Iceberg",
+   "row": 4.5,
+   "column": 16.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Time-Frozen City",
+   "row": 13,
+   "column": 19,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Time-Frozen City",
+   "row": 2,
+   "column": 18,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Timefront 1x4",
+   "row": 12.5,
+   "column": 1,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Timefront 1x5",
+   "row": 8,
+   "column": 1,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Timefront 1x5",
+   "row": 3,
+   "column": 1,
+   "rotation": 90,
+   "flipped": false
+  }
+ ],
+ "icarianHarpyBattle": [
+  {
+   "name": "Black Iceberg",
+   "row": 13,
+   "column": 12,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 12,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 12,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 10,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 9,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 8,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 6,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 3,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 2,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 2,
+   "column": 12,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Giant Black Iceberg",
+   "row": 8.5,
+   "column": 13.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Giant Black Iceberg",
+   "row": 7.5,
+   "column": 18.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Giant Black Iceberg",
+   "row": 4.5,
+   "column": 6.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Time-Frozen City",
+   "row": 12,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Time-Frozen City",
+   "row": 5,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Lake",
+   "row": 7,
+   "column": 10,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Lake",
+   "row": 5,
+   "column": 16,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Glacier 1x5",
+   "row": 10,
+   "column": 12,
+   "rotation": 270,
+   "flipped": false
+  },
+  {
+   "name": "Black Glacier 1x5",
+   "row": 7,
+   "column": 6,
+   "rotation": 0,
+   "flipped": false
+  },
+  {
+   "name": "Black Glacier 1x5",
+   "row": 5,
+   "column": 12,
+   "rotation": 0,
+   "flipped": false
+  }
+ ],
+ "burdenHardestToBearBattle": [
+  {
+   "name": "Column",
+   "row": 11,
+   "column": 7,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 11,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 10,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 10,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 8,
+   "column": 2,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 8,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 7,
+   "column": 19,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 6,
+   "column": 2,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 6,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 6,
+   "column": 19,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 5,
+   "column": 2,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 4,
+   "column": 7,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 4,
+   "column": 10,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 4,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 4,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 3,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 2,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 2,
+   "column": 5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Cliff L",
+   "row": 13.5,
+   "column": 5,
+   "rotation": 180,
+   "flipped": true
+  },
+  {
+   "name": "Cliff L",
+   "row": 1.5,
+   "column": 7,
+   "rotation": 0,
+   "flipped": false
+  },
+  {
+   "name": "Cliff Z",
+   "row": 12.5,
+   "column": 2,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Cliff Z",
+   "row": 2.5,
+   "column": 19,
+   "rotation": 0,
+   "flipped": false
+  },
+  {
+   "name": "Cliff Z",
+   "row": 12.5,
+   "column": 19,
+   "rotation": 180,
+   "flipped": true
+  },
+  {
+   "name": "Cliff Z",
+   "row": 2.5,
+   "column": 2,
+   "rotation": 180,
+   "flipped": true
+  },
+  {
+   "name": "Cliff I",
+   "row": 14,
+   "column": 16.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Cliff I",
+   "row": 1,
+   "column": 16.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Cliff I",
+   "row": 11.5,
+   "column": 9,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Cliff I",
+   "row": 3.5,
+   "column": 12,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Cliff O",
+   "row": 12.5,
+   "column": 11.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Cliff O",
+   "row": 7.5,
+   "column": 17.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Cliff O",
+   "row": 4.5,
+   "column": 4.5,
+   "rotation": 180,
+   "flipped": false
+  }
+ ],
+ "sunDescendantBattle": [
+  {
+   "name": "Black Iceberg",
+   "row": 11,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 11,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 11,
+   "column": 13,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 9,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 9,
+   "column": 14,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 6,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 6,
+   "column": 12,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 5,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 4,
+   "column": 8,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 4,
+   "column": 13,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Floating Rocks",
+   "row": 12.5,
+   "column": 8.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Floating Rocks",
+   "row": 1.5,
+   "column": 12.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Glacier 1x5",
+   "row": 8,
+   "column": 6,
+   "rotation": 0,
+   "flipped": false
+  },
+  {
+   "name": "Black Glacier 1x5",
+   "row": 7,
+   "column": 14,
+   "rotation": 0,
+   "flipped": false
+  },
+  {
+   "name": "Black Glacier 1x5",
+   "row": 4,
+   "column": 7,
+   "rotation": 270,
+   "flipped": false
+  }
+ ],
+ "midascore_level_1": [
+  {
+   "name": "Irem Tower",
+   "row": 13,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 13,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 12,
+   "column": 16,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 11,
+   "column": 11,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 10,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 10,
+   "column": 13,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 9,
+   "column": 20,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 8,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 8,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 7,
+   "column": 19,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 6,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 5,
+   "column": 2,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 5,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 5,
+   "column": 11,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 3,
+   "column": 13,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 2,
+   "column": 2,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 2,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 2,
+   "column": 20,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 1,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 1,
+   "column": 14,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem City",
+   "row": 10,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem City",
+   "row": 5,
+   "column": 16,
+   "rotation": 180,
+   "flipped": false
+  }
+ ],
+ "midascore_level_2": [
+  {
+   "name": "Irem Tower",
+   "row": 13,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 13,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 12,
+   "column": 16,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 11,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 11,
+   "column": 13,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 10,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 9,
+   "column": 20,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 8,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 8,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 7,
+   "column": 19,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 6,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 5,
+   "column": 2,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 5,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 5,
+   "column": 11,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 3,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 3,
+   "column": 13,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 3,
+   "column": 20,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 2,
+   "column": 2,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 1,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 1,
+   "column": 14,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem City",
+   "row": 10,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem City",
+   "row": 5,
+   "column": 16,
+   "rotation": 180,
+   "flipped": false
+  }
+ ],
+ "demidjinnBattle": [
+  {
+   "name": "Irem Tower",
+   "row": 13,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 13,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 12,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 11,
+   "column": 11,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 10,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 10,
+   "column": 13,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 9,
+   "column": 20,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 8,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 8,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 7,
+   "column": 19,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 6,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 5,
+   "column": 2,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 5,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 5,
+   "column": 11,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 3,
+   "column": 13,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 2,
+   "column": 2,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 2,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 1,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 1,
+   "column": 14,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem City",
+   "row": 10,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem City",
+   "row": 5,
+   "column": 16,
+   "rotation": 180,
+   "flipped": false
+  }
+ ],
+ "babelianLunacyBattle": [
+  {
+   "name": "Irem Tower",
+   "row": 14,
+   "column": 11,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 13,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 13,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 12,
+   "column": 10,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 12,
+   "column": 16,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 11,
+   "column": 12,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 10,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 9,
+   "column": 20,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 8,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 8,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 7,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 7,
+   "column": 19,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 6,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 5,
+   "column": 2,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 5,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 5,
+   "column": 10,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 3,
+   "column": 11,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 3,
+   "column": 20,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 2,
+   "column": 2,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 1,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem City",
+   "row": 10,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem City",
+   "row": 5,
+   "column": 16,
+   "rotation": 180,
+   "flipped": false
+  }
+ ],
+ "reapTheWhirlwindBattle": [
+  {
+   "name": "Argo Hull 1x4",
+   "row": 12.5,
+   "column": 1,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Argo Hull 1x5",
+   "row": 8,
+   "column": 1,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Argo Hull 1x5",
+   "row": 3,
+   "column": 1,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 13,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 12,
+   "column": 16,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 11,
+   "column": 11,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 10,
+   "column": 7,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 10,
+   "column": 13,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 10,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 9,
+   "column": 20,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 8,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 8,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 7,
+   "column": 19,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 6,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 5,
+   "column": 2,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 5,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 5,
+   "column": 11,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 4,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 3,
+   "column": 13,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 2,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 2,
+   "column": 20,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 1,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 1,
+   "column": 14,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Ambrosia Cloud",
+   "row": 12,
+   "column": 14,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Ambrosia Cloud",
+   "row": 10,
+   "column": 5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Ambrosia Cloud",
+   "row": 4,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Ambrosia Cloud",
+   "row": 2,
+   "column": 5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Abandoned Temple",
+   "row": 13.5,
+   "column": 19.5,
+   "rotation": 180,
+   "flipped": false
+  }
+ ],
+ "theWinnowingBattle": [
+  {
+   "name": "Irem Tower",
+   "row": 13,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 13,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 11,
+   "column": 11,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 10,
+   "column": 1,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 10,
+   "column": 7,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 10,
+   "column": 13,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 10,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 9,
+   "column": 20,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 8,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 8,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 7,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 7,
+   "column": 19,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 5,
+   "column": 2,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 5,
+   "column": 11,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 5,
+   "column": 16,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 3,
+   "column": 13,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 2,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 2,
+   "column": 20,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 1,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 1,
+   "column": 14,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem City",
+   "row": 12,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem City",
+   "row": 5,
+   "column": 7,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Ambrosia Cloud",
+   "row": 13,
+   "column": 10,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Ambrosia Cloud",
+   "row": 10,
+   "column": 5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Ambrosia Cloud",
+   "row": 7,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Ambrosia Cloud",
+   "row": 2,
+   "column": 5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Abandoned Temple",
+   "row": 3.5,
+   "column": 1.5,
+   "rotation": 180,
+   "flipped": false
+  }
+ ],
+ "dragonOfPhobos_1_2_levels_positions": [
+  {
+   "name": "Petrified Vent",
+   "row": 13,
+   "column": 19,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 12,
+   "column": 16,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 12,
+   "column": 18,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 11,
+   "column": 11,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 10,
+   "column": 7,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 10,
+   "column": 13,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 10,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 9,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 9,
+   "column": 20,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 8,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 7,
+   "column": 19,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 5,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 5,
+   "column": 8,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 3,
+   "column": 8,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 3,
+   "column": 11,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 3,
+   "column": 14,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 2,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 2,
+   "column": 16,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 1,
+   "column": 14,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Arcology",
+   "row": 13,
+   "column": 14,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Arcology",
+   "row": 3,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Abyss",
+   "row": 4,
+   "column": 19,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Lightwall 1x4",
+   "row": 5,
+   "column": 2.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Lightwall 1x5",
+   "row": 1,
+   "column": 11,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Trench 1x4",
+   "row": 14,
+   "column": 4.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Trench 1x5",
+   "row": 10,
+   "column": 1,
+   "rotation": 180,
+   "flipped": false
+  }
+ ],
+ "dragonOfPhobos_3_level_positions": [
+  {
+   "name": "Petrified Vent",
+   "row": 13,
+   "column": 19,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 12,
+   "column": 10,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 11,
+   "column": 5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 10,
+   "column": 13,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 10,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 9,
+   "column": 20,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 7,
+   "column": 5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 7,
+   "column": 16,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 5,
+   "column": 8,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 5,
+   "column": 19,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 4,
+   "column": 12,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 3,
+   "column": 16,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 2,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 1,
+   "column": 14,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Arcology",
+   "row": 13,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Arcology",
+   "row": 3,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Trench 1x4",
+   "row": 14,
+   "column": 4.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Trench 1x5",
+   "row": 10,
+   "column": 1,
+   "rotation": 180,
+   "flipped": false
+  }
+ ],
+ "meduketosBattle": [
+  {
+   "name": "Petrified Vent",
+   "row": 13,
+   "column": 2,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 13,
+   "column": 5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 13,
+   "column": 10,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 13,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 12,
+   "column": 8,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 12,
+   "column": 19,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 11,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 10,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 10,
+   "column": 18,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 9,
+   "column": 5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 7,
+   "column": 18,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 6,
+   "column": 2,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 6,
+   "column": 14,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 5,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 5,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 4,
+   "column": 12,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 3,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 2,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 2,
+   "column": 11,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Petrified Vent",
+   "row": 2,
+   "column": 19,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Arcology",
+   "row": 10,
+   "column": 12,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Arcology",
+   "row": 6,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Lightwall 1x5",
+   "row": 10,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Trench 1x4",
+   "row": 3,
+   "column": 5.5,
+   "rotation": 180,
+   "flipped": false
+  }
+ ],
+ "urFleeceBattle": [
+  {
+   "name": "Black Abyss",
+   "row": 12,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Abyss",
+   "row": 9,
+   "column": 11,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Abyss",
+   "row": 6,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Abyss",
+   "row": 3,
+   "column": 7,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Trench Left 1x1",
+   "row": 14,
+   "column": 1,
+   "rotation": 0,
+   "flipped": false
+  },
+  {
+   "name": "Trench Right 1x1",
+   "row": 14,
+   "column": 20,
+   "rotation": 0,
+   "flipped": false
+  },
+  {
+   "name": "Trench 1x4",
+   "row": 14,
+   "column": 8.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Trench 1x4",
+   "row": 14,
+   "column": 17.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Trench 1x5",
+   "row": 14,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Trench 1x5",
+   "row": 14,
+   "column": 13,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Track Tile 1x1",
+   "row": 1,
+   "column": 1,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Track Tile 1x1",
+   "row": 1,
+   "column": 20,
+   "rotation": 0,
+   "flipped": false
+  },
+  {
+   "name": "Track Tile 2 1x4",
+   "row": 1,
+   "column": 12.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Track Tile 2 1x4",
+   "row": 1,
+   "column": 8.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Track Tile 1 1x5",
+   "row": 1,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Track Tile 1 1x5",
+   "row": 1,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  }
+ ],
+ "pitilessBattle": [
+  {
+   "name": "Fortified City",
+   "row": 10,
+   "column": 11,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Fortified City",
+   "row": 2,
+   "column": 2,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Fortified City",
+   "row": 2,
+   "column": 14,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Labyrinth O",
+   "row": 12.5,
+   "column": 2.5,
+   "rotation": 0,
+   "flipped": false
+  },
+  {
+   "name": "Labyrinth I",
+   "row": 7.5,
+   "column": 2,
+   "rotation": 270,
+   "flipped": false
+  },
+  {
+   "name": "Labyrinth Z",
+   "row": 5.5,
+   "column": 5,
+   "rotation": 0,
+   "flipped": false
+  },
+  {
+   "name": "Labyrinth L",
+   "row": 2.5,
+   "column": 8,
+   "rotation": 0,
+   "flipped": true
+  },
+  {
+   "name": "Ambrosia Pool",
+   "row": 12.5,
+   "column": 7.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Ambrosia Trail",
+   "row": 5,
+   "column": 8,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x4",
+   "row": 10,
+   "column": 6.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x4",
+   "row": 2.5,
+   "column": 10,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x5",
+   "row": 12,
+   "column": 13,
+   "rotation": 0,
+   "flipped": false
+  },
+  {
+   "name": "Black Glacier 1x5",
+   "row": 12,
+   "column": 18,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Black Glacier 1x5",
+   "row": 6,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 13,
+   "column": 14,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 9,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 4,
+   "column": 14,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 2,
+   "column": 12,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Iceberg",
+   "row": 2,
+   "column": 18,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Giant Black Iceberg",
+   "row": 7.5,
+   "column": 17.5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Timefront 1x4",
+   "row": 12.5,
+   "column": 20,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Timefront 1x5",
+   "row": 8,
+   "column": 20,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Timefront 1x5",
+   "row": 3,
+   "column": 20,
+   "rotation": 90,
+   "flipped": false
+  }
+ ],
+ "oldHauntBattle": [
+  {
+   "name": "Irem Tower",
+   "row": 13,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 13,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 12,
+   "column": 16,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 11,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 11,
+   "column": 12,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 10,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 9,
+   "column": 20,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 8,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 8,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 7,
+   "column": 19,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 6,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 5,
+   "column": 2,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 5,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 5,
+   "column": 11,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 4,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 4,
+   "column": 12,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 2,
+   "column": 2,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 2,
+   "column": 20,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 1,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem Tower",
+   "row": 1,
+   "column": 14,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem City",
+   "row": 10,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Irem City",
+   "row": 5,
+   "column": 16,
+   "rotation": 180,
+   "flipped": false
+  }
+ ],
+ "tutorialBattle": [
+  {
+   "name": "Column",
+   "row": 13,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 13,
+   "column": 12,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 12,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 12,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 9,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 9,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 8,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 8,
+   "column": 18,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 7,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 7,
+   "column": 18,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 6,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 6,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 3,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 3,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 2,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 2,
+   "column": 12,
+   "rotation": 180,
+   "flipped": false
+  }
+ ],
+ "hekaton_level_8_battle": [
+  {
+   "name": "Column",
+   "row": 13,
+   "column": 12,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 12,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 12,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 10,
+   "column": 5,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 9,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 8,
+   "column": 18,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 5,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 3,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 3,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 2,
+   "column": 9,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "City",
+   "row": 10,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "City",
+   "row": 5,
+   "column": 17,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Labyrinth I",
+   "row": 6.5,
+   "column": 2,
+   "rotation": 270,
+   "flipped": false
+  },
+  {
+   "name": "Labyrinth I",
+   "row": 7,
+   "column": 16.5,
+   "rotation": 0,
+   "flipped": false
+  },
+  {
+   "name": "Labyrinth L",
+   "row": 8,
+   "column": 9.5,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Labyrinth L",
+   "row": 2.5,
+   "column": 13,
+   "rotation": 0,
+   "flipped": true
+  },
+  {
+   "name": "Labyrinth O",
+   "row": 12.5,
+   "column": 7.5,
+   "rotation": 0,
+   "flipped": false
+  },
+  {
+   "name": "Labyrinth Z",
+   "row": 11.5,
+   "column": 14,
+   "rotation": 0,
+   "flipped": false
+  },
+  {
+   "name": "Labyrinth Z",
+   "row": 3.5,
+   "column": 7,
+   "rotation": 0,
+   "flipped": false
+  }
+ ],
+ "cyclonus_8_level_Battle": [
+  {
+   "name": "Fortified City",
+   "row": 13,
+   "column": 14,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Fortified City",
+   "row": 4,
+   "column": 7,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x1 End",
+   "row": 1,
+   "column": 10,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x1 End",
+   "row": 1,
+   "column": 16,
+   "rotation": 270,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x1 Corner",
+   "row": 10,
+   "column": 20,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x1 Corner",
+   "row": 9,
+   "column": 5,
+   "rotation": 270,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x1 Corner",
+   "row": 9,
+   "column": 20,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works Z",
+   "row": 2,
+   "column": 5.5,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x4",
+   "row": 12.5,
+   "column": 16,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x4",
+   "row": 3.5,
+   "column": 16,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x4",
+   "row": 9,
+   "column": 2.5,
+   "rotation": 0,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x4",
+   "row": 7.5,
+   "column": 10,
+   "rotation": 270,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x4",
+   "row": 3.5,
+   "column": 10,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x5",
+   "row": 12,
+   "column": 10,
+   "rotation": 270,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x5",
+   "row": 6,
+   "column": 5,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Spartan River Works 1x5",
+   "row": 8,
+   "column": 16,
+   "rotation": 90,
+   "flipped": false
+  }
+ ],
+ "burden_5_level_Battle": [
+  {
+   "name": "Column",
+   "row": 14,
+   "column": 7,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 11,
+   "column": 8,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 10,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 9,
+   "column": 1,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 6,
+   "column": 11,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 5,
+   "column": 16,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 4,
+   "column": 10,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Column",
+   "row": 1,
+   "column": 4,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Glacier 1x5",
+   "row": 11,
+   "column": 15,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Glacier 1x5",
+   "row": 5,
+   "column": 8,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Glacier 1x5",
+   "row": 4,
+   "column": 13,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Lake",
+   "row": 10,
+   "column": 6,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Black Lake",
+   "row": 8,
+   "column": 3,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Cliff L",
+   "row": 13.5,
+   "column": 9,
+   "rotation": 0,
+   "flipped": false
+  },
+  {
+   "name": "Cliff L",
+   "row": 4,
+   "column": 1.5,
+   "rotation": 270,
+   "flipped": true
+  },
+  {
+   "name": "Cliff L",
+   "row": 1.5,
+   "column": 9,
+   "rotation": 180,
+   "flipped": true
+  },
+  {
+   "name": "Cliff Z",
+   "row": 12.5,
+   "column": 12,
+   "rotation": 180,
+   "flipped": true
+  },
+  {
+   "name": "Cliff Z",
+   "row": 11.5,
+   "column": 19,
+   "rotation": 180,
+   "flipped": true
+  },
+  {
+   "name": "Cliff Z",
+   "row": 11,
+   "column": 3.5,
+   "rotation": 270,
+   "flipped": false
+  },
+  {
+   "name": "Cliff Z",
+   "row": 2.5,
+   "column": 12,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Cliff Z",
+   "row": 3.5,
+   "column": 19,
+   "rotation": 180,
+   "flipped": false
+  },
+  {
+   "name": "Cliff I",
+   "row": 12,
+   "column": 15.5,
+   "rotation": 0,
+   "flipped": false
+  },
+  {
+   "name": "Cliff I",
+   "row": 3,
+   "column": 15.5,
+   "rotation": 0,
+   "flipped": false
+  },
+  {
+   "name": "Cliff I",
+   "row": 6.5,
+   "column": 5,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Cliff I",
+   "row": 2.5,
+   "column": 7,
+   "rotation": 90,
+   "flipped": false
+  },
+  {
+   "name": "Cliff O",
+   "row": 8.5,
+   "column": 8.5,
+   "rotation": 0,
+   "flipped": false
+  },
+  {
+   "name": "Cliff O",
+   "row": 8.5,
+   "column": 14.5,
+   "rotation": 0,
+   "flipped": false
+  },
+  {
+   "name": "Cliff O",
+   "row": 7.5,
+   "column": 17.5,
+   "rotation": 0,
+   "flipped": false
+  }
+ ]
+}

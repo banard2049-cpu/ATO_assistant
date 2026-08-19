@@ -1754,7 +1754,7 @@
 
   </style>
   <link rel="stylesheet" href="c45_specials.css?v=20260816-demidjinn-wish-top">
-  <link rel="stylesheet" href="battle_map_control.css?v=20260818-coordinates2">
+  <link rel="stylesheet" href="battle_map_control.css?v=20260819-terrain-cards-left">
 </head>
 <body class="sidebar-collapsed">
   <button type="button" class="sidebar-toggle" id="sidebarToggle" aria-label="展开左侧边栏" title="展开/折叠左侧边栏">☰</button>
@@ -1889,12 +1889,23 @@
           </div>
         </header>
         <div class="battle-map-workspace">
-          <div class="battle-map-board" data-battle-map-board>
-            <img class="battle-map-board-image" src="../ss/battle-board.jpg" alt="决战版图">
-            <div class="battle-map-terrain-layer" data-battle-map-terrain-layer></div>
-            <div class="battle-map-grid"></div>
-            <div class="battle-map-start-layer" data-battle-map-start-layer></div>
-            <div class="battle-map-coordinate-layer" data-battle-map-coordinate-layer aria-hidden="true"></div>
+          <div class="battle-map-main">
+            <div class="battle-map-board" data-battle-map-board>
+              <img class="battle-map-board-image" src="../ss/battle-board.jpg" alt="决战版图">
+              <div class="battle-map-terrain-layer" data-battle-map-terrain-layer></div>
+              <div class="battle-map-grid"></div>
+              <div class="battle-map-los-layer" data-battle-map-los-layer aria-hidden="true"></div>
+              <div class="battle-map-start-layer" data-battle-map-start-layer></div>
+              <div class="battle-map-coordinate-layer" data-battle-map-coordinate-layer aria-hidden="true"></div>
+            </div>
+            <section class="battle-map-cards" aria-label="当前地形卡">
+              <div class="battle-map-cards-head">
+                <h4>当前地形卡</h4>
+                <span data-battle-map-card-count>0 张</span>
+              </div>
+              <div class="battle-map-card-list" data-battle-map-card-list></div>
+              <p class="battle-map-card-empty" data-battle-map-card-empty hidden>当前版图没有对应的地形卡</p>
+            </section>
           </div>
           <div class="battle-map-side" role="region" aria-label="地形工具">
             <div class="battle-map-toolbar">
@@ -1908,16 +1919,48 @@
               <button type="button" data-battle-map-add>+ 新增地形</button>
             </div>
             <div class="battle-map-selection" data-battle-map-selection>未选择地形</div>
+            <div class="battle-map-los" data-battle-map-los-control>
+              <div class="battle-map-los-head">
+                <span>视线判断</span>
+                <button type="button" data-battle-map-los-toggle aria-pressed="false">开启</button>
+              </div>
+              <div class="battle-map-los-body" data-battle-map-los-body hidden>
+                <label class="battle-map-los-field">
+                  视线来源
+                  <select data-battle-map-los-source aria-label="视线来源单位">
+                    <option value="apostle" selected>使徒</option>
+                    <option value="titan">泰坦（1 格）</option>
+                  </select>
+                </label>
+                <p class="battle-map-los-stats" data-battle-map-los-stats hidden></p>
+                <label class="battle-map-los-field" data-battle-map-los-reach-field hidden>
+                  攻击距离（射程 = 移速 + 攻击距离）
+                  <input type="number" min="0" max="20" step="1" value="1" data-battle-map-los-reach aria-label="攻击距离">
+                </label>
+                <label class="battle-map-los-field" data-battle-map-los-facing-field hidden>
+                  朝向（黄色箭头，盲区在其反向）
+                  <select data-battle-map-los-facing aria-label="朝向">
+                    <option value="auto">跟随初始朝向</option>
+                    <option value="0">朝上</option>
+                    <option value="90">朝右</option>
+                    <option value="180">朝下</option>
+                    <option value="270">朝左</option>
+                  </select>
+                </label>
+                <div class="battle-map-los-path-tools" data-battle-map-los-path-tools hidden>
+                  <button type="button" data-battle-map-los-path-source aria-pressed="true">设置使徒</button>
+                  <button type="button" data-battle-map-los-path-target aria-pressed="false" disabled>设置目标</button>
+                  <button type="button" data-battle-map-los-path-clear disabled>清除目标</button>
+                </div>
+                <p class="battle-map-los-path-summary" data-battle-map-los-path-summary hidden></p>
+                <p class="battle-map-los-hint" data-battle-map-los-hint>点击版图选择来源位置，绿色为有视线，红色为被遮挡。</p>
+                <label class="battle-map-los-opt"><input type="checkbox" data-battle-map-los-dim checked>暗化被遮挡格</label>
+                <label class="battle-map-los-opt"><input type="checkbox" data-battle-map-los-range checked>显示射程与距离（紫框=移动后可攻击到，格内数字=到来源的格数）</label>
+                <label class="battle-map-los-opt"><input type="checkbox" data-battle-map-los-elevated>高地（循环Ⅳ+，无视遮蔽与红线；泰坦踩上高地板块自动勾选、移下自动取消，也可手动调整）</label>
+              </div>
+            </div>
           </div>
         </div>
-        <section class="battle-map-cards" aria-label="当前地形卡">
-          <div class="battle-map-cards-head">
-            <h4>当前地形卡</h4>
-            <span data-battle-map-card-count>0 张</span>
-          </div>
-          <div class="battle-map-card-list" data-battle-map-card-list></div>
-          <p class="battle-map-card-empty" data-battle-map-card-empty hidden>当前版图没有对应的地形卡</p>
-        </section>
       </section>
     </main>
   </div>
@@ -1986,8 +2029,9 @@
   <script src="../map/map-tile-tags.js"></script>
   <script src="ps/CHIMERA_METASTASIOS/bp_status_map.js"></script>
   <script src="ps/other/token/token_manifest.js"></script>
-  <script src="../ss/terrain-data.js?v=20260818-coordinates2"></script>
-  <script src="battle_map_control.js?v=20260818-coordinates2"></script>
+  <script src="../ss/terrain-data.js?v=20260819-burden-hardest-cache2"></script>
+  <script src="battle_los.js?v=20260819-hekaton4-labyrinthauros-start1"></script>
+  <script src="battle_map_control.js?v=20260819-hekaton4-labyrinthauros-start1"></script>
   <script>
     const apostles = [
       "HEKATON",
@@ -2102,7 +2146,11 @@
       "THE_BURDEN",
       "ALPHA_TEMENOS",
       "THE_NIETZSCJEAN",
-      "SUN_DESCENDANT"
+      "SUN_DESCENDANT",
+      "THE_BABELIAN_LUNACY",
+      "DAHAKA",
+      "UR_FLEECE",
+      "TITAN_X"
     ]);
     const apostleLevelBonusConfig = {
       HEKATON: {
@@ -2471,6 +2519,8 @@
           currentApostle,
           currentApostleLevel()
         ),
+        // 视线/射程/距离标注：只传参数，第二屏用同一个引擎重算，两屏逐格一致。
+        los: battleMapControl?.getLosSnapshot() || { active: false },
         updatedAt: new Date().toISOString(),
       };
     }
@@ -3054,9 +3104,9 @@
     }
 
     function apostleLevelFor(name) {
-      if (fixedLevelOneApostles.has(name)) return 1;
       const override = Number(apostleLevelOverrides[name]);
       if (override >= 1 && override <= maxApostleLevel) return override;
+      if (fixedLevelOneApostles.has(name)) return 1;
       const recordLevel = Number(recordApostleLevels[name]);
       if (recordLevel >= 1 && recordLevel <= maxApostleLevel) return recordLevel;
       return 1;
@@ -3071,8 +3121,8 @@
       title.textContent = `${currentApostle.replaceAll("_", " ")} · ${levelRoman[level] || level}`;
       renderMapFactionStatus();
       const fixedAtOne = fixedLevelOneApostles.has(currentApostle);
-      apostleLevelSelect.disabled = fixedAtOne;
-      apostleLevelSelect.value = !fixedAtOne && apostleLevelOverrides[currentApostle]
+      apostleLevelSelect.disabled = false;
+      apostleLevelSelect.value = apostleLevelOverrides[currentApostle]
         ? String(apostleLevelOverrides[currentApostle])
         : "";
       const recordLevel = Number(recordApostleLevels[currentApostle]) || 0;
@@ -5950,7 +6000,6 @@
       }
     });
     apostleLevelSelect.addEventListener("change", () => {
-      if (fixedLevelOneApostles.has(currentApostle)) return;
       const level = Number(apostleLevelSelect.value);
       if (level >= 1 && level <= maxApostleLevel) {
         apostleLevelOverrides[currentApostle] = level;
@@ -5979,6 +6028,8 @@
         piles[currentApostle].battleMap = battleMap;
         savePiles();
       },
+      // 视线参数不进存档（不属于 battleMap），但要立刻推给第二屏。
+      onLosChange: () => scheduleSecondScreenSnapshot(),
     });
 
     sidebarToggle.addEventListener("click", () => {

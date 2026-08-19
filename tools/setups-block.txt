@@ -1,0 +1,256 @@
+  const setups = {
+    HEKATON: [
+      { id: "hekaton-battle", label: "Hekaton Battle", levels: [1, 2, 3], terrains: [
+        terrain("Column", [tile(13, 9), tile(13, 12), tile(12, 4), tile(12, 17), tile(10, 6), tile(9, 15), tile(8, 3), tile(8, 18), tile(7, 3), tile(7, 18), tile(6, 6), tile(5, 15), tile(3, 4), tile(3, 17), tile(2, 9), tile(2, 12)]),
+        terrain("City", [tile(10, 4), tile(5, 17)]),
+      ] },
+      { id: "hekaton-battle", label: "Hekaton Battle", levels: [4, 5, 6, 7], terrains: [
+        terrain("Column", [tile(13, 12), tile(12, 4), tile(12, 17), tile(10, 6), tile(9, 15), tile(8, 18), tile(6, 6), tile(5, 15), tile(3, 4), tile(3, 17), tile(2, 9)]),
+        terrain("City", [tile(10, 4), tile(5, 17)]),
+        terrain("Maze Fissure O", [tile(12.5, 8.5)]),
+        terrain("Maze Fissure I", [tile(6.5, 3, 90), tile(7, 16.5)]),
+        terrain("Maze Fissure L", [tile(8, 9.5, 270), tile(2.5, 13)]),
+      ] },
+      { id: "hekaton-battle", label: "Hekaton Battle", levels: [8], terrains: [
+        terrain("Column", [tile(13, 12), tile(12, 3), tile(12, 17), tile(10, 5), tile(9, 15), tile(8, 18), tile(5, 15), tile(3, 4), tile(3, 17), tile(2, 9)]),
+        terrain("City", [tile(10, 3), tile(5, 17)]),
+        terrain("Labyrinth I", [tile(6.5, 2, 270), tile(7, 16.5, 0)]),
+        terrain("Labyrinth L", [tile(8, 9.5, 90), tile(2.5, 13, 0, true)]),
+        terrain("Labyrinth O", [tile(12.5, 7.5, 0)]),
+        terrain("Labyrinth Z", [tile(11.5, 14, 0), tile(3.5, 7, 0)]),
+      ] },
+      { id: "ambush", label: "Ambush", levels: [1], terrains: [
+        terrain("Column", [tile(13, 9), tile(12, 12), tile(11, 13), tile(10, 11), tile(9, 15), tile(7, 6), tile(6, 4), tile(6, 15)]),
+        terrain("City", [tile(11, 4), tile(4, 4)]),
+        terrain("Labyrinth I", [tile(4.5, 12, 270)]),
+        terrain("Labyrinth L", [tile(9, 7.5, 270, true)]),
+      ] },
+    ],
+    LABYRINTHAUROS: [
+      { id: "labyrinthauros-battle", label: "Labyrinthauros Battle", levels: [1, 2, 3, 4], terrains: [
+        terrain("City", [tile(11, 15), tile(4, 3)]),
+        terrain("Labyrinth O", [tile(9.5, 7.5, 0)]),
+        terrain("Labyrinth I", [tile(5, 7.5, 0)]),
+        terrain("Labyrinth L", [tile(9.5, 12)]),
+        terrain("Labyrinth Z", [tile(5, 12.5, 90, true)]),
+      ] },
+      { id: "ambush", label: "Ambush", levels: [1], terrains: [
+        terrain("Column", [tile(13, 9), tile(12, 12), tile(11, 13), tile(10, 11), tile(9, 15), tile(7, 6), tile(6, 4), tile(6, 15)]),
+        terrain("City", [tile(11, 4), tile(4, 4)]),
+        terrain("Labyrinth I", [tile(4.5, 12, 270)]),
+        terrain("Labyrinth L", [tile(9, 7.5, 270, true)]),
+      ] },
+    ],
+    HERMESIAN_PURSUER: [
+      { id: "pursuer", label: "Pursuer", levels: [1], terrains: [
+        terrain("Column", [tile(13, 9), tile(13, 12), tile(12, 4), tile(12, 15), tile(10, 18), tile(9, 6), tile(9, 15), tile(9, 18), tile(6, 3), tile(6, 6), tile(6, 15), tile(5, 3), tile(4, 5), tile(3, 17), tile(2, 9), tile(2, 12)]),
+        terrain("Ambrosia Pool", [tile(10.5, 10.5), tile(7.5, 5.5), tile(7.5, 14.5), tile(2.5, 10.5)]),
+      ] },
+      { id: "pursuits-end", label: "Pursuit's End", levels: [1], terrains: [
+        terrain("Column", [tile(13, 12), tile(12, 4), tile(12, 15), tile(10, 18), tile(9, 6), tile(9, 18), tile(6, 6), tile(6, 15), tile(5, 3), tile(4, 5), tile(3, 17), tile(2, 9)]),
+        terrain("Ambrosia Pool", [tile(10.5, 10.5), tile(7.5, 8.5), tile(7.5, 12.5), tile(2.5, 10.5)]),
+        terrain("Ambrosia Trail", [tile(13, 7), tile(8, 4), tile(4, 15)]),
+      ] },
+    ],
+    ALPHA_TEMENOS: [
+      { levels: [1], terrains: [
+        terrain("Column", [tile(11, 7), tile(11, 15), tile(10, 5), tile(10, 17), tile(4, 5), tile(4, 17), tile(3, 7), tile(3, 15)]),
+        terrain("City", [tile(12, 5), tile(2, 17)]),
+        terrain("Labyrinth O", [tile(12.5, 12.5, 0)]),
+        terrain("Labyrinth I", [tile(7, 7.5)]),
+        terrain("Labyrinth L", [tile(7.5, 14, 0, true)]),
+        terrain("Labyrinth Z", [tile(2.5, 10, 0, true)]),
+      ] },
+    ],
+    CHIMERA_METASTASIOS: [
+      { levels: [1, 2], terrains: [
+        terrain("Column", [tile(12, 16), tile(7, 17), tile(5, 9), tile(2, 6)]),
+        terrain("Ambrosia Pool", [tile(11.5, 2.5), tile(2.5, 17.5)]),
+        terrain("Fortified City", [tile(9, 16), tile(4, 5)]),
+      ] },
+      { levels: [3, 4], terrains: [
+        terrain("Column", [tile(12, 4), tile(12, 16), tile(10, 18), tile(8, 1), tile(7, 17), tile(5, 9), tile(2, 6)]),
+        terrain("Ambrosia Pool", [tile(11.5, 2.5), tile(10.5, 8.5), tile(7.5, 2.5), tile(3.5, 13.5), tile(2.5, 17.5)]),
+        terrain("Fortified City", [tile(9, 16), tile(4, 5)]),
+        terrain("Spartan River Works 1x4", [tile(12.5, 15, 270), tile(2.5, 16, 90)]),
+        terrain("Spartan River Works 1x5", [tile(12, 5, 90), tile(3, 7, 270)]),
+      ] },
+    ],
+    CYCLONUS: [
+      { levels: [1, 2, 3, 4, 5, 6, 7], terrains: [
+        terrain("Fortified City", [tile(13, 14), tile(4, 7)]),
+        terrain("Spartan River Works 1x1 End", [tile(2, 10, 90), tile(1, 10, 90)]),
+        terrain("Spartan River Works 1x1 Corner", [tile(9, 5, 270), tile(10, 20), tile(9, 20, 90)]),
+        terrain("Spartan River Works 1x4", [tile(12.5, 16, 270), tile(9, 2.5, 0), tile(2.5, 16, 270), tile(6.5, 16, 90)]),
+        terrain("Spartan River Works 1x5", [tile(12, 10, 270), tile(3, 5, 90), tile(5, 10, 270)]),
+      ] },
+      { levels: [8], terrains: [
+        terrain("Fortified City", [tile(13, 14), tile(4, 7)]),
+        terrain("Spartan River Works 1x1 End", [tile(1, 10, 90), tile(1, 16, 270)]),
+        terrain("Spartan River Works 1x1 Corner", [tile(10, 20), tile(9, 5, 270), tile(9, 20, 90)]),
+        terrain("Spartan River Works Z", [tile(2, 5.5, 90)]),
+        terrain("Spartan River Works 1x4", [tile(12.5, 16, 90), tile(3.5, 16, 90), tile(9, 2.5, 0), tile(7.5, 10, 270), tile(3.5, 10, 90)]),
+        terrain("Spartan River Works 1x5", [tile(12, 10, 270), tile(6, 5, 90), tile(8, 16, 90)]),
+      ] },
+    ],
+    THE_BURDEN: [
+      { id: "burden-battle", label: "Burden Battle", levels: [1, 2, 3, 4], terrains: [
+        terrain("Column", [tile(14, 7), tile(11, 8), tile(11, 12), tile(10, 15), tile(9, 1), tile(6, 11), tile(5, 16), tile(4, 10), tile(1, 4)]),
+        terrain("Cliff L", [tile(13.5, 9, 0), tile(4, 1.5, 270, true), tile(1.5, 9, 180, true)]),
+        terrain("Cliff Z", [tile(12.5, 12, 180, true), tile(11.5, 19, 180, true), tile(11, 3.5, 270), tile(2.5, 12), tile(3.5, 19)]),
+        terrain("Cliff I", [tile(12, 15.5), tile(3, 15.5), tile(6.5, 5, 90), tile(2.5, 7, 90)]),
+        terrain("Cliff O", [tile(8.5, 8.5), tile(8.5, 14.5), tile(7.5, 17.5)]),
+      ] },
+      { id: "burden-battle", label: "Burden Battle", levels: [5], terrains: [
+        terrain("Column", [tile(14, 7), tile(11, 8), tile(10, 15), tile(9, 1), tile(6, 11), tile(5, 16), tile(4, 10), tile(1, 4)]),
+        terrain("Black Glacier 1x5", [tile(11, 15), tile(5, 8), tile(4, 13)]),
+        terrain("Black Lake", [tile(10, 6), tile(8, 3)]),
+        terrain("Cliff L", [tile(13.5, 9, 0), tile(4, 1.5, 270, true), tile(1.5, 9, 180, true)]),
+        terrain("Cliff Z", [tile(12.5, 12, 180, true), tile(11.5, 19, 180, true), tile(11, 3.5, 270), tile(2.5, 12), tile(3.5, 19)]),
+        terrain("Cliff I", [tile(12, 15.5, 0), tile(3, 15.5, 0), tile(6.5, 5, 90), tile(2.5, 7, 90)]),
+        terrain("Cliff O", [tile(8.5, 8.5, 0), tile(8.5, 14.5, 0), tile(7.5, 17.5, 0)]),
+      ] },
+      { id: "hardest-to-bear", label: "Hardest to Bear", levels: [1], terrains: [
+        terrain("Column", [tile(11, 7), tile(11, 17), tile(10, 3), tile(10, 15), tile(8, 2), tile(8, 3), tile(7, 19), tile(6, 2), tile(6, 9), tile(6, 19), tile(5, 2), tile(4, 7), tile(4, 10), tile(4, 15), tile(4, 17), tile(3, 15)]),
+        terrain("Black Iceberg", [tile(2, 4), tile(2, 5)]),
+        terrain("Cliff L", [tile(13.5, 5, 180, true), tile(1.5, 7, 0)]),
+        terrain("Cliff Z", [tile(12.5, 2), tile(2.5, 19, 0), tile(12.5, 19, 180, true), tile(2.5, 2, 180, true)]),
+        terrain("Cliff I", [tile(14, 16.5), tile(1, 16.5), tile(11.5, 9, 90), tile(3.5, 12, 90)]),
+        terrain("Cliff O", [tile(12.5, 11.5), tile(7.5, 17.5), tile(4.5, 4.5)]),
+      ] },
+    ],
+    THE_NIETZSCJEAN: [
+      { id: "the-cruel-lesson", label: "The Cruel Lesson", levels: [1], terrains: [
+        terrain("Fortified City", [tile(13, 18), tile(3, 6)]),
+        terrain("Argo Hull 1x4", [tile(12.5, 1, 90)]),
+        terrain("Argo Hull 1x5", [tile(8, 1, 90), tile(3, 1, 90)]),
+        terrain("Spartan River Works 1x1 End", [tile(1, 10, 0)]),
+        terrain("Spartan River Works 1x1 Corner", [tile(1, 16)]),
+        terrain("Spartan River Works 1x4", [tile(12.5, 16), tile(3.5, 16)]),
+        terrain("Spartan River Works 1x5", [tile(8, 16, 90), tile(1, 7), tile(1, 13)]),
+      ] },
+      { id: "what-are-you", label: "What Are You?", levels: [1], terrains: [
+        terrain("Fortified City", [tile(12, 11), tile(7, 17), tile(3, 13)]),
+        terrain("Argo Hull 1x4", [tile(12.5, 1, 90)]),
+        terrain("Argo Hull 1x5", [tile(8, 1, 90), tile(3, 1, 90)]),
+        terrain("Spartan River Works 1x1 End", [tile(14, 15), tile(1, 15, 0)]),
+        terrain("Spartan River Works 1x1 Corner", [tile(14, 16, 270), tile(1, 16, 0)]),
+        terrain("Spartan River Works 1x4", [tile(14, 7.5, 0), tile(3.5, 16, 90), tile(1, 3.5), tile(1, 12.5), tile(14, 3.5)]),
+        terrain("Spartan River Works 1x5", [tile(14, 12, 0), tile(11, 16, 90), tile(1, 8)]),
+      ] },
+    ],
+    HYPERTIME_ORACLE: [
+      { levels: [1, 2], terrains: [
+        terrain("Black Iceberg", [tile(12, 8), tile(11, 10), tile(10, 6), tile(10, 14), tile(8, 9), tile(4, 11), tile(2, 13)]),
+        terrain("Time-Frozen City", [tile(13, 16), tile(2, 18)]),
+        terrain("Timefront 1x4", [tile(12.5, 1, 90)]),
+        terrain("Timefront 1x5", [tile(8, 1, 90), tile(3, 1, 90)]),
+      ] },
+      { levels: [3, 4, 5], terrains: [
+        terrain("Black Iceberg", [tile(12, 8), tile(11, 10), tile(11, 16), tile(10, 14), tile(9, 17), tile(8, 9), tile(7, 18), tile(6, 12), tile(4, 11), tile(2, 13)]),
+        terrain("Giant Black Iceberg", [tile(4.5, 16.5)]),
+        terrain("Time-Frozen City", [tile(13, 19), tile(2, 18)]),
+        terrain("Timefront 1x4", [tile(12.5, 1, 90)]),
+        terrain("Timefront 1x5", [tile(8, 1, 90), tile(3, 1, 90)]),
+      ] },
+    ],
+    ICARIAN_HARPY: [
+      { levels: [1, 2, 3, 4, 5], terrains: [
+        terrain("Black Iceberg", [tile(13, 12), tile(12, 4), tile(12, 17), tile(10, 6), tile(9, 15), tile(8, 3), tile(6, 6), tile(3, 17), tile(2, 9), tile(2, 12)]),
+        terrain("Giant Black Iceberg", [tile(8.5, 13.5), tile(7.5, 18.5), tile(4.5, 6.5)]),
+        terrain("Time-Frozen City", [tile(12, 6), tile(5, 4)]),
+        terrain("Black Lake", [tile(7, 10), tile(5, 16)]),
+        terrain("Black Glacier 1x5", [tile(10, 12, 270), tile(7, 6, 0), tile(5, 12, 0)]),
+      ] },
+    ],
+    MIDASCORE: [
+      { levels: [1], terrains: [
+        terrain("Irem Tower", [tile(13, 4), tile(13, 15), tile(12, 16), tile(11, 11), tile(10, 6), tile(10, 13), tile(9, 20), tile(8, 3), tile(8, 15), tile(7, 19), tile(6, 9), tile(5, 2), tile(5, 6), tile(5, 11), tile(3, 13), tile(2, 2), tile(2, 9), tile(2, 20), tile(1, 3), tile(1, 14)]),
+        terrain("Irem City", [tile(10, 4), tile(5, 16)]),
+      ] },
+      { levels: [2, 3, 4], terrains: [
+        terrain("Irem Tower", [tile(13, 4), tile(13, 15), tile(12, 16), tile(11, 9), tile(11, 13), tile(10, 6), tile(9, 20), tile(8, 3), tile(8, 15), tile(7, 19), tile(6, 9), tile(5, 2), tile(5, 6), tile(5, 11), tile(3, 9), tile(3, 13), tile(3, 20), tile(2, 2), tile(1, 3), tile(1, 14)]),
+        terrain("Irem City", [tile(10, 4), tile(5, 16)]),
+      ] },
+    ],
+    DEMIDJINN: [
+      { levels: [1, 2, 3, 4], terrains: [
+        terrain("Irem Tower", [tile(13, 4), tile(13, 15), tile(12, 17), tile(11, 11), tile(10, 6), tile(10, 13), tile(9, 20), tile(8, 3), tile(8, 15), tile(7, 19), tile(6, 9), tile(5, 2), tile(5, 6), tile(5, 11), tile(3, 13), tile(2, 2), tile(2, 9), tile(1, 3), tile(1, 14)]),
+        terrain("Irem City", [tile(10, 4), tile(5, 16)]),
+      ] },
+    ],
+    THE_BABELIAN_LUNACY: [
+      { levels: [1], terrains: [
+        terrain("Irem Tower", [tile(14, 11), tile(13, 4), tile(13, 15), tile(12, 10), tile(12, 16), tile(11, 12), tile(10, 6), tile(9, 20), tile(8, 3), tile(8, 15), tile(7, 6), tile(7, 19), tile(6, 9), tile(5, 2), tile(5, 6), tile(5, 10), tile(3, 11), tile(3, 20), tile(2, 2), tile(1, 3)]),
+        terrain("Irem City", [tile(10, 4), tile(5, 16)]),
+      ] },
+    ],
+    DAHAKA: [
+      { id: "reap-the-whirlwind", label: "Reap the Whirlwind", levels: [1], terrains: [
+        terrain("Argo Hull 1x4", [tile(12.5, 1, 90)]),
+        terrain("Argo Hull 1x5", [tile(8, 1, 90), tile(3, 1, 90)]),
+        terrain("Irem Tower", [tile(13, 4), tile(12, 16), tile(11, 11), tile(10, 7), tile(10, 13), tile(10, 17), tile(9, 20), tile(8, 3), tile(8, 15), tile(7, 19), tile(6, 9), tile(5, 2), tile(5, 6), tile(5, 11), tile(4, 6), tile(3, 13), tile(2, 9), tile(2, 20), tile(1, 3), tile(1, 14)]),
+        terrain("Ambrosia Cloud", [tile(12, 14), tile(10, 5), tile(4, 15), tile(2, 5)]),
+        terrain("Abandoned Temple", [tile(13.5, 19.5)]),
+      ] },
+      { id: "the-winnowing", label: "The Winnowing", levels: [1], terrains: [
+        terrain("Irem Tower", [tile(13, 4), tile(13, 17), tile(11, 11), tile(10, 1), tile(10, 7), tile(10, 13), tile(10, 17), tile(9, 20), tile(8, 3), tile(8, 15), tile(7, 3), tile(7, 19), tile(5, 2), tile(5, 11), tile(5, 16), tile(3, 13), tile(2, 9), tile(2, 20), tile(1, 3), tile(1, 14)]),
+        terrain("Irem City", [tile(12, 15), tile(5, 7)]),
+        terrain("Ambrosia Cloud", [tile(13, 10), tile(10, 5), tile(7, 17), tile(2, 5)]),
+        terrain("Abandoned Temple", [tile(3.5, 1.5)]),
+      ] },
+    ],
+    DRAGON_OF_PHOBOS: [
+      { levels: [1, 2], terrains: [
+        terrain("Petrified Vent", [tile(13, 19), tile(12, 16), tile(12, 18), tile(11, 11), tile(10, 7), tile(10, 13), tile(10, 17), tile(9, 15), tile(9, 20), tile(8, 17), tile(7, 19), tile(5, 6), tile(5, 8), tile(3, 8), tile(3, 11), tile(3, 14), tile(2, 9), tile(2, 16), tile(1, 14)]),
+        terrain("Arcology", [tile(13, 14), tile(3, 3)]),
+        terrain("Black Abyss", [tile(4, 19)]),
+        terrain("Lightwall 1x4", [tile(5, 2.5)]),
+        terrain("Lightwall 1x5", [tile(1, 11)]),
+        terrain("Trench 1x4", [tile(14, 4.5)]),
+        terrain("Trench 1x5", [tile(10, 1, 90)]),
+      ] },
+      { levels: [3, 4], terrains: [
+        terrain("Petrified Vent", [tile(13, 19), tile(12, 10), tile(11, 5), tile(10, 13), tile(10, 17), tile(9, 20), tile(7, 5), tile(7, 16), tile(5, 8), tile(5, 19), tile(4, 12), tile(3, 16), tile(2, 9), tile(1, 14)]),
+        terrain("Arcology", [tile(13, 15), tile(3, 3)]),
+        terrain("Trench 1x4", [tile(14, 4.5)]),
+        terrain("Trench 1x5", [tile(10, 1, 90)]),
+      ] },
+    ],
+    MEDUKETOS: [
+      { levels: [1, 2, 3, 4], terrains: [
+        terrain("Petrified Vent", [tile(13, 2), tile(13, 5), tile(13, 10), tile(13, 17), tile(12, 8), tile(12, 19), tile(11, 6), tile(10, 3), tile(10, 18), tile(9, 5), tile(7, 18), tile(6, 2), tile(6, 14), tile(5, 9), tile(5, 17), tile(4, 12), tile(3, 15), tile(2, 3), tile(2, 11), tile(2, 19)]),
+        terrain("Arcology", [tile(10, 12), tile(6, 6)]),
+        terrain("Lightwall 1x5", [tile(10, 15)]),
+        terrain("Trench 1x4", [tile(3, 5.5)]),
+      ] },
+    ],
+    UR_FLEECE: [
+      { levels: [1], terrains: [
+        terrain("Black Abyss", [tile(12, 3), tile(9, 11), tile(6, 15), tile(3, 7)]),
+        terrain("Trench Left 1x1", [tile(14, 1, 0)]),
+        terrain("Trench Right 1x1", [tile(14, 20, 0)]),
+        terrain("Trench 1x4", [tile(14, 8.5), tile(14, 17.5)]),
+        terrain("Trench 1x5", [tile(14, 4), tile(14, 13)]),
+        terrain("Track Tile 1x1", [tile(1, 1), tile(1, 20, 0)]),
+        terrain("Track Tile 2 1x4", [tile(1, 12.5)]),
+        terrain("Track Tile 3 1x4", [tile(1, 8.5)]),
+        terrain("Track Tile 1 1x5", [tile(1, 17)]),
+        terrain("Track Tile 4 1x5", [tile(1, 4)]),
+      ] },
+    ],
+    TITAN_X: [
+      { id: "the-devil-himself", label: "The Devil Himself", levels: [1, 2, 3, 4], terrains: [] },
+      { id: "the-devil-himself", label: "The Devil Himself", levels: [5, 6, 7], terrains: [] },
+      { id: "the-devil-himself", label: "The Devil Himself", levels: [8], terrains: [] },
+      { id: "thicker-than-water", label: "Thicker Than Water", levels: [1], terrains: [] },
+    ],
+    SUN_DESCENDANT: [
+      { levels: [1, 2], terrains: [
+        terrain("Black Iceberg", [tile(11, 4), tile(11, 6), tile(11, 13), tile(9, 9), tile(9, 14), tile(6, 6), tile(6, 12), tile(5, 15), tile(4, 8), tile(4, 13)]),
+        terrain("Floating Rocks", [tile(12.5, 8.5), tile(1.5, 12.5)]),
+        terrain("Black Glacier 1x5", [tile(8, 6, 0), tile(7, 14, 0), tile(4, 7, 270)]),
+      ] },
+    ],
+  };
+  setups.THE_NIETZSCHEAN = setups.THE_NIETZSCJEAN;

@@ -74,7 +74,7 @@ class CoreTests(unittest.TestCase):
         empty = Database(self.root / "empty.sqlite3")
         result = ensure_fixed_catalog(empty)
         payload = fixed_catalog_payload()
-        self.assertEqual(2738, result["items"])
+        self.assertEqual(2742, result["items"])
         self.assertEqual(19, result["aibp_enemies"])
         self.assertEqual({"c1", "c1.5", "c2", "c2.5", "c3", "c4", "c5"}, {book["id"] for book in payload["source"]["stories"]})
         self.assertNotIn("apk", payload["source"])
@@ -112,13 +112,13 @@ class CoreTests(unittest.TestCase):
         battle_board_items = [item for item in payload["items"] if item["module"] == "决战版图"]
         terrain_items = [item for item in battle_board_items if item["subgroup"] == "地形板块"]
         terrain_cards = [item for item in battle_board_items if item["subgroup"] == "地形卡"]
-        self.assertEqual(120, len(battle_board_items))
-        self.assertEqual(74, len(terrain_items))
-        self.assertEqual(80, sum(len(item["faces"]) for item in terrain_items))
+        self.assertEqual(124, len(battle_board_items))
+        self.assertEqual(78, len(terrain_items))
+        self.assertEqual(84, sum(len(item["faces"]) for item in terrain_items))
         self.assertEqual(45, len(terrain_cards))
         self.assertTrue(any(item["number"] == "CJ1475" for item in payload["items"]))
         fixed_paths = {path for item in payload["items"] for path in item["faces"].values()}
-        self.assertEqual(4260, len(fixed_paths))
+        self.assertEqual(4264, len(fixed_paths))
         self.assertIn("map/images/c5-face-a.png", fixed_paths)
         self.assertIn("map/images/c5-face-b.png", fixed_paths)
         self.assertIn("aibp/ps/other/SW.jpg", fixed_paths)
@@ -129,6 +129,10 @@ class CoreTests(unittest.TestCase):
         self.assertIn("aibp/ps/other/trait/C45_COMMON_TR_001.jpg", fixed_paths)
         self.assertIn("map/tokens/sandstorm.jpg", fixed_paths)
         self.assertIn("ss/battle-board.jpg", fixed_paths)
+        self.assertIn("ss/terrain/anchor-blue.jpg", fixed_paths)
+        self.assertIn("ss/terrain/anchor-green.jpg", fixed_paths)
+        self.assertIn("ss/terrain/anchor-red.jpg", fixed_paths)
+        self.assertIn("ss/terrain/anchor-yellow.png", fixed_paths)
         self.assertIn("ss/terrain/arcology-back.jpg", fixed_paths)
         self.assertIn("ss/terrain-cards/arcology.jpg", fixed_paths)
         oracle_ai_iii = [

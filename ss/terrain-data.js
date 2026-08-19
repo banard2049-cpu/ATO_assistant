@@ -1,7 +1,7 @@
 const BattleTerrain = (() => {
   const columns = 20;
   const rows = 14;
-  const assetVersion = "20260815-tone1";
+  const assetVersion = "20260819-crop1";
   const terrainCardVersion = "20260815-zh-pdf1";
 
   // Names, sizes, and placements are transcribed from the TTS Content module.
@@ -22,6 +22,15 @@ const BattleTerrain = (() => {
     "Black Glacier Z": { file: "black-glacier-z.png", width: 3, height: 2 },
     "Black Iceberg": { file: "black-iceberg.jpg", width: 1, height: 1 },
     "Black Lake": { file: "black-lake.jpg", width: 3, height: 3 },
+    "Blue Anchor": {
+      file: "anchor-blue.jpg",
+      width: 1,
+      height: 1,
+      special: "anchor",
+      label: "B",
+      color: "#3b82f6",
+      glow: "rgba(59, 130, 246, 0.62)",
+    },
     "Black Abyss": {
       file: "black-abyss.jpg",
       width: 3,
@@ -65,6 +74,15 @@ const BattleTerrain = (() => {
     "Giant Shell": { file: "giant-shell.jpg", width: 3, height: 3 },
     "Giant Black Iceberg": { file: "giant-black-iceberg.jpg", width: 2, height: 2 },
     "Graveyard Of The Frail": { file: "graveyard-of-the-frail.jpg", width: 2, height: 2 },
+    "Green Anchor": {
+      file: "anchor-green.jpg",
+      width: 1,
+      height: 1,
+      special: "anchor",
+      label: "G",
+      color: "#22c55e",
+      glow: "rgba(34, 197, 94, 0.58)",
+    },
     "Hyperborean Ruins": { file: "hyperborean-ruins.jpg", width: 3, height: 3 },
     "Inkblot": {
       file: "inkblot.jpg",
@@ -111,6 +129,15 @@ const BattleTerrain = (() => {
       file: "petrified-vent.jpg",
       width: 1,
       height: 1,
+    },
+    "Red Anchor": {
+      file: "anchor-red.jpg",
+      width: 1,
+      height: 1,
+      special: "anchor",
+      label: "R",
+      color: "#ef4444",
+      glow: "rgba(239, 68, 68, 0.62)",
     },
     "School Of Creatures": {
       file: "school-of-creatures.jpg",
@@ -201,7 +228,148 @@ const BattleTerrain = (() => {
       width: 2,
       height: 2,
     },
+    "Yellow Anchor": {
+      file: "anchor-yellow.png",
+      width: 1,
+      height: 1,
+      special: "anchor",
+      label: "Y",
+      color: "#facc15",
+      glow: "rgba(250, 204, 21, 0.58)",
+    },
   };
+
+  // ---------------------------------------------------------------------------
+  // Line-of-sight (视线 / LoS) occlusion data. See P38 of the rulebook.
+  // Only two things block LoS: "Obscuring" (遮蔽) terrain tiles, and the red
+  // walls that appear exclusively on the Labyrinth (大迷宫) tiles. Obstacle /
+  // Chasm / Cover terrain does NOT block LoS.
+  //
+  // `redLines` are expressed in LOCAL, unrotated, unflipped tile coordinates:
+  //   origin at the bottom-left corner of the tile's (catalog width × height)
+  //   footprint, x increasing to the right (0..width), y increasing upward
+  //   (0..height). Each entry is a unit-length axis-aligned edge on the integer
+  //   lattice: [x0, y0, x1, y1]. battle_los.js applies the placement's rotation
+  //   and flip when projecting these onto the board.
+  // ---------------------------------------------------------------------------
+  const obscuringTerrain = new Set([
+    "Abandoned Temple", "Ambrosia Cloud", "Ambrosia Elephant", "Arcology",
+    "Black Abyss", "Black Iceberg", "Giant Black Iceberg",
+    "Cliff I", "Cliff L", "Cliff O", "Cliff Z", "Column",
+    "Krypteia Outpost", "Floating Rocks", "Fortified City", "Giant Shell",
+    "Graveyard Of The Frail", "Hyperborean Ruins", "Inkblot", "Irem City",
+    "Irem Tower", "Maze Outcrop", "Petrified Vent", "School Of Creatures",
+    "Spot of Nothingness", "Staircase Entrance", "Time-Frozen City",
+    "Windblighted Fleet", "Wishstorm",
+  ]);
+
+  // Elevated 高地 (循环Ⅳ+): read off the terrain description cards' keyword lines.
+  // A unit standing on an Elevated tile ignores every other tile's Obscuring /
+  // Obstacle keywords (循环Ⅳ 特别规则). Note Trireme Graveyard is Elevated but not
+  // Obscuring — it grants high ground without blocking LoS itself.
+  const elevatedTerrain = new Set([
+    "Floating Rocks",       // 障碍. 遮蔽. 不可摧毁. 高地.
+    "Irem City",            // 不可摧毁. 遮蔽. 高地. 掩体.
+    "Irem Tower",           // 变位. 遮蔽. 障碍. 高地.
+    "Staircase Entrance",   // 遮蔽. 障碍. 高地. 不可摧毁.
+    "Trireme Graveyard",    // 可摧毁. 障碍. 高地.
+    "Windblighted Fleet",   // 变位. 遮蔽. 高地. 有人居住. 云层.
+    "Wishstorm",            // 遮蔽. 云层. 陷阱. 宝藏. 高地.
+  ]);
+
+  // Cloud 云层: "此地形板块不受其他高地地形板块影响（即此地形板块不会失去其遮蔽或
+  // 障碍关键词）" — a Cloud tile sits at the same altitude as high ground, so an
+  // Elevated source still cannot see through it. Ambrosia Cloud / Inkblot print
+  // Cloud as a bold rules ability rather than in the keyword line.
+  const cloudTerrain = new Set([
+    "Ambrosia Cloud",       // 神浆. 遮蔽. + Cloud 云层
+    "Inkblot",              // 神浆. 遮蔽. + Cloud 云层
+    "Windblighted Fleet",   // 云层 in keyword line
+    "Wishstorm",            // 云层 in keyword line
+  ]);
+
+  // Red-wall edge lists per Labyrinth tile (local coordinates, see note above).
+  const labyrinthRedLines = {
+    // I (4×1): walls along the full top (y=1) and bottom (y=0); ends open.
+    "Labyrinth I": [
+      [0, 0, 1, 0], [1, 0, 2, 0], [2, 0, 3, 0], [3, 0, 4, 0],
+      [0, 1, 1, 1], [1, 1, 2, 1], [2, 1, 3, 1], [3, 1, 4, 1],
+    ],
+    // O (2×2): spiral. Outer wall on top + left; the bottom-right cell (1,0) is
+    // fully boxed in. Green openings (no wall): bottom-left [0,0-1,0] and the
+    // upper-right edge [2,1-2,2].
+    "Labyrinth O": [
+      [0, 2, 1, 2], [1, 2, 2, 2],          // top edge
+      [0, 0, 0, 1], [0, 1, 0, 2],          // left edge
+      [1, 0, 2, 0],                        // bottom of enclosed BR cell (1,0)
+      [2, 0, 2, 1],                        // right of BR cell, lower half
+      [1, 0, 1, 1],                        // inner wall (left of BR cell)
+      [1, 1, 2, 1],                        // inner wall (top of BR cell)
+    ],
+    // L (3×2): perimeter of cells (0,0)(1,0)(2,0)(2,1), per-edge red/green.
+    // Green openings (no wall): left of (0,0) [0,0-0,1] and top of (2,1) [2,2-3,2].
+    "Labyrinth L": [
+      [0, 0, 1, 0], [1, 0, 2, 0], [2, 0, 3, 0],   // bottom
+      [0, 1, 1, 1], [1, 1, 2, 1],                  // top over row 0
+      [3, 0, 3, 1],                                // right of (2,0)
+      [2, 1, 2, 2], [3, 1, 3, 2],                  // left + right of (2,1)
+    ],
+    // Z (3×2): perimeter of cells (0,0)(1,0)(1,1)(2,1), per-edge red/green.
+    // Green openings (no wall): left of (0,0) [0,0-0,1] and right of (2,1) [3,1-3,2].
+    "Labyrinth Z": [
+      [0, 0, 1, 0], [1, 0, 2, 0],                  // bottom of row 0
+      [0, 1, 1, 1],                                // top of (0,0)
+      [2, 0, 2, 1],                                // right of (1,0)
+      [1, 1, 1, 2], [1, 2, 2, 2],                  // left + top of (1,1)
+      [2, 1, 3, 1],                                // bottom of (2,1)
+      [2, 2, 3, 2],                                // top of (2,1)
+    ],
+  };
+
+  // 大迷宫的**实际占格**（局部坐标，原点=footprint 左下，(x,y)=格的左下角）。I/O
+  // 填满各自的矩形包围盒，L/Z 是 3×2 盒子里只占 4 格的不规则形。两端都在迷宫外时
+  // 整块当遮蔽地形（用户 2026-08-19），必须按真实形状而非包围盒，否则 L/Z 会多挡两格。
+  // 板块**实际占格**（局部坐标，原点=footprint 左下，(x,y)=格的左下角）。矩形块
+  // (I/O) 填满包围盒；L/Z 是 3×2 盒子里只占 4 格的不规则四联骨牌。凡是有此形状的
+  // 遮蔽/高地板块，脚印都必须按真实形状取，否则 L/Z 会多挡包围盒里的两个空格。
+  // 形状全部由板块美术 PNG 的 alpha 通道逐格核出（2026-08-19）。
+  const shapeCells = {
+    "Labyrinth I": [[0, 0], [1, 0], [2, 0], [3, 0]],
+    "Labyrinth O": [[0, 0], [1, 0], [0, 1], [1, 1]],
+    "Labyrinth L": [[0, 0], [1, 0], [2, 0], [2, 1]],
+    "Labyrinth Z": [[0, 0], [1, 0], [1, 1], [2, 1]],
+    "Cliff L": [[0, 0], [1, 0], [2, 0], [2, 1]],
+    "Cliff Z": [[0, 0], [1, 0], [1, 1], [2, 1]],
+    "Maze Fissure L": [[0, 0], [1, 0], [2, 0], [2, 1]],
+    "Maze Fissure Z": [[1, 0], [2, 0], [0, 1], [1, 1]],
+    "Black Glacier L": [[0, 0], [1, 0], [2, 0], [0, 1]],
+    "Black Glacier Z": [[0, 0], [1, 0], [1, 1], [2, 1]],
+    "Spartan River Works Z": [[0, 0], [1, 0], [1, 1], [2, 1]],
+  };
+
+  Object.keys(catalog).forEach((name) => {
+    const entry = catalog[name];
+    const los = {};
+    if (name === "City") {
+      // Front face (city) is Obscuring; back face (ruined-city) is not.
+      los.obscuring = { front: true, back: false };
+    } else {
+      los.obscuring = obscuringTerrain.has(name);
+    }
+    // 任何有真实形状的板块（L/Z 四联骨牌等）都按脚印取，不当矩形。遮蔽路径、
+    // 高地路径、大迷宫路径共用这份形状。用户 2026-08-19：其他 z/l 形板块同此修改。
+    if (shapeCells[name]) los.cells = shapeCells[name];
+    if (labyrinthRedLines[name]) {
+      los.redLines = labyrinthRedLines[name];
+      // 大迷宫板块本体。MAZESENSE 迷宫感应（迷宫机牛 / ALPHA_TEMENOS）无视整块大迷宫，
+      // 所以引擎需要能把这些板块单独挑出来。注意「迷宫岩层 Maze Outcrop」「迷宫裂隙
+      // Maze Fissure」名字里也有迷宫，但不是大迷宫板块，不在此列。
+      los.labyrinth = true;
+    }
+    if (elevatedTerrain.has(name)) los.elevated = true;
+    if (cloudTerrain.has(name)) los.cloud = true;
+    entry.los = los;
+  });
 
   const terrainCardCatalog = Object.fromEntries([
     "abandoned-temple", "ambrosia-cloud", "ambrosia-elephant", "ambrosia-pool",
@@ -278,251 +446,286 @@ const BattleTerrain = (() => {
   const tile = (row, column, rotation = 180, flipped = false) => ({ row, column, rotation, flipped });
   const terrain = (name, tiles) => ({ name, tiles });
   const points = (values) => values.map(([row, column]) => tile(row, column));
+  const c3Anchors = ({ red, blue, green, yellow }) => [
+    terrain("Red Anchor", [tile(...red)]),
+    terrain("Blue Anchor", [tile(...blue)]),
+    terrain("Green Anchor", [tile(...green)]),
+    terrain("Yellow Anchor", [tile(...yellow)]),
+  ];
+  const cloneTerrainGroup = (group) => terrain(group.name, group.tiles.map((placement) => ({ ...placement })));
 
   const setups = {
     HEKATON: [
       { id: "hekaton-battle", label: "Hekaton Battle", levels: [1, 2, 3], terrains: [
-        terrain("Column", points([[2, 9], [2, 12], [3, 4], [3, 17], [5, 6], [6, 15], [7, 3], [7, 18], [8, 3], [8, 18], [9, 6], [10, 15], [12, 4], [12, 17], [13, 9], [13, 12]])),
-        terrain("City", [tile(5, 4), tile(10, 17)]),
+        terrain("Column", [tile(13, 9), tile(13, 12), tile(12, 4), tile(12, 17), tile(10, 6), tile(9, 15), tile(8, 3), tile(8, 18), tile(7, 3), tile(7, 18), tile(6, 6), tile(5, 15), tile(3, 4), tile(3, 17), tile(2, 9), tile(2, 12)]),
+        terrain("City", [tile(10, 4), tile(5, 17)]),
       ] },
       { id: "hekaton-battle", label: "Hekaton Battle", levels: [4, 5, 6, 7], terrains: [
-        terrain("Column", points([[2, 12], [3, 4], [3, 17], [5, 6], [6, 15], [7, 18], [9, 6], [10, 15], [12, 4], [12, 17], [13, 9]])),
-        terrain("City", [tile(5, 4), tile(10, 17)]),
-        terrain("Maze Fissure O", [tile(2.5, 8.5)]),
-        terrain("Maze Fissure I", [tile(8.5, 3, 90), tile(8, 16.5)]),
-        terrain("Maze Fissure L", [tile(7, 9.5, 270), tile(12.5, 13)]),
+        terrain("Column", [tile(13, 12), tile(12, 4), tile(12, 17), tile(10, 6), tile(9, 15), tile(8, 18), tile(6, 6), tile(5, 15), tile(3, 4), tile(3, 17), tile(2, 9)]),
+        terrain("City", [tile(10, 4), tile(5, 17)]),
+        terrain("Maze Fissure O", [tile(12.5, 8.5)]),
+        terrain("Maze Fissure I", [tile(6.5, 3, 90), tile(7, 16.5)]),
+        // 用户 2026-08-19 在 TTS 版图手动修正：该 Maze Fissure L 需翻面。
+        terrain("Maze Fissure L", [tile(8, 9.5, 270, true), tile(2.5, 13)]),
       ] },
       { id: "hekaton-battle", label: "Hekaton Battle", levels: [8], terrains: [
-        terrain("Column", points([[2, 12], [3, 3], [3, 17], [5, 5], [6, 15], [7, 18], [10, 15], [12, 4], [12, 17], [13, 9]])),
-        terrain("City", [tile(5, 3), tile(10, 17)]),
-        terrain("Labyrinth I", [tile(8.5, 2, 270), tile(8, 16.5, 0)]),
-        terrain("Labyrinth L", [tile(7, 9.5, 90), tile(12.5, 13, 0, true)]),
-        terrain("Labyrinth O", [tile(2.5, 7.5, 0)]),
-        terrain("Labyrinth Z", [tile(3.5, 14, 0), tile(11.5, 7, 0)]),
+        terrain("Column", [tile(13, 12), tile(12, 3), tile(12, 17), tile(10, 5), tile(9, 15), tile(8, 18), tile(5, 15), tile(3, 4), tile(3, 17), tile(2, 9)]),
+        terrain("City", [tile(10, 3), tile(5, 17)]),
+        terrain("Labyrinth I", [tile(6.5, 2, 270), tile(7, 16.5, 0)]),
+        terrain("Labyrinth L", [tile(8, 9.5, 90), tile(2.5, 13, 0, true)]),
+        terrain("Labyrinth O", [tile(12.5, 7.5, 0)]),
+        terrain("Labyrinth Z", [tile(11.5, 14, 0), tile(3.5, 7, 0)]),
       ] },
       { id: "ambush", label: "Ambush", levels: [1], terrains: [
-        terrain("Column", points([[2, 9], [3, 12], [4, 13], [5, 11], [6, 15], [8, 6], [9, 4], [9, 15]])),
-        terrain("City", [tile(4, 4), tile(11, 4)]),
-        terrain("Labyrinth I", [tile(10.5, 12, 270)]),
-        terrain("Labyrinth L", [tile(6, 7.5, 270, true)]),
+        terrain("Column", [tile(13, 9), tile(12, 12), tile(11, 13), tile(10, 11), tile(9, 15), tile(7, 6), tile(6, 4), tile(6, 15)]),
+        terrain("City", [tile(11, 4), tile(4, 4)]),
+        terrain("Labyrinth I", [tile(4.5, 12, 270)]),
+        // 用户 2026-08-19 在当前快照手动修正：百臂巨人伏击战的 Labyrinth L 需转 90° 且不翻面。
+        terrain("Labyrinth L", [tile(9, 7.5, 90)]),
+      ] },
+      { id: "ambush", label: "Ambush", levels: [4, 5, 6, 7], terrains: [
+        terrain("Column", [tile(13, 9), tile(12, 12), tile(11, 13), tile(10, 11), tile(9, 15), tile(7, 6), tile(6, 4), tile(6, 15)]),
+        terrain("City", [tile(11, 4), tile(4, 4)]),
+        // 用户 2026-08-19 修正：4级百臂巨人伏击战用迷宫裂隙替换大迷宫板块。
+        terrain("Maze Fissure I", [tile(4.5, 12, 270)]),
+        terrain("Maze Fissure L", [tile(9, 7.5, 90)]),
       ] },
     ],
     LABYRINTHAUROS: [
       { id: "labyrinthauros-battle", label: "Labyrinthauros Battle", levels: [1, 2, 3, 4], terrains: [
-        terrain("Labyrinth I", [tile(10, 7.5, 0)]),
-        terrain("Labyrinth Z", [tile(10, 12.5, 90, true)]),
-        terrain("Labyrinth O", [tile(5.5, 7.5, 0)]),
-        terrain("Labyrinth L", [tile(5.5, 12)]),
-        terrain("City", [tile(4, 15), tile(11, 3)]),
+        terrain("City", [tile(11, 15), tile(4, 3)]),
+        // 用户 2026-08-19 在 TTS 版图手动修正：Labyrinth O 转 180°；Labyrinth L 转 0° 并翻面。
+        terrain("Labyrinth O", [tile(9.5, 7.5)]),
+        terrain("Labyrinth I", [tile(5, 7.5, 0)]),
+        terrain("Labyrinth L", [tile(9.5, 12, 0, true)]),
+        terrain("Labyrinth Z", [tile(5, 12.5, 90, true)]),
       ] },
       { id: "ambush", label: "Ambush", levels: [1], terrains: [
-        terrain("Column", points([[2, 9], [3, 12], [4, 13], [5, 11], [6, 15], [8, 6], [9, 4], [9, 15]])),
-        terrain("City", [tile(4, 4), tile(11, 4)]),
-        terrain("Labyrinth I", [tile(10.5, 12, 270)]),
-        terrain("Labyrinth L", [tile(6, 7.5, 270, true)]),
+        terrain("Column", [tile(13, 9), tile(12, 12), tile(11, 13), tile(10, 11), tile(9, 15), tile(7, 6), tile(6, 4), tile(6, 15)]),
+        terrain("City", [tile(11, 4), tile(4, 4)]),
+        terrain("Labyrinth I", [tile(4.5, 12, 270)]),
+        // 用户 2026-08-19 在当前快照手动修正：机牛伏击战同百臂巨人伏击战，Labyrinth L 转 90° 且不翻面。
+        terrain("Labyrinth L", [tile(9, 7.5, 90)]),
       ] },
     ],
     HERMESIAN_PURSUER: [
       { id: "pursuer", label: "Pursuer", levels: [1], terrains: [
-        terrain("Ambrosia Pool", [tile(4.5, 10.5), tile(7.5, 5.5), tile(7.5, 14.5), tile(12.5, 10.5)]),
-        terrain("Column", points([[2, 9], [2, 12], [3, 4], [3, 15], [5, 18], [6, 6], [6, 15], [6, 18], [9, 3], [9, 6], [9, 15], [10, 3], [11, 5], [12, 17], [13, 9], [13, 12]])),
+        terrain("Column", [tile(13, 9), tile(13, 12), tile(12, 4), tile(12, 15), tile(10, 18), tile(9, 6), tile(9, 15), tile(9, 18), tile(6, 3), tile(6, 6), tile(6, 15), tile(5, 3), tile(4, 5), tile(3, 17), tile(2, 9), tile(2, 12)]),
+        terrain("Ambrosia Pool", [tile(10.5, 10.5), tile(7.5, 5.5), tile(7.5, 14.5), tile(2.5, 10.5)]),
       ] },
       { id: "pursuits-end", label: "Pursuit's End", levels: [1], terrains: [
-        terrain("Ambrosia Pool", [tile(4.5, 10.5), tile(7.5, 8.5), tile(7.5, 12.5), tile(12.5, 10.5)]),
-        terrain("Ambrosia Trail", [tile(2, 7), tile(7, 4), tile(11, 15)]),
-        terrain("Column", points([[2, 12], [3, 4], [3, 15], [5, 18], [6, 6], [6, 18], [9, 6], [9, 15], [10, 3], [11, 5], [12, 17], [13, 9]])),
+        terrain("Column", [tile(13, 12), tile(12, 4), tile(12, 15), tile(10, 18), tile(9, 6), tile(9, 18), tile(6, 6), tile(6, 15), tile(5, 3), tile(4, 5), tile(3, 17), tile(2, 9)]),
+        terrain("Ambrosia Pool", [tile(10.5, 10.5), tile(7.5, 8.5), tile(7.5, 12.5), tile(2.5, 10.5)]),
+        terrain("Ambrosia Trail", [tile(13, 7), tile(8, 4), tile(4, 15)]),
       ] },
     ],
-    ALPHA_TEMENOS: [{ levels: [1], terrains: [
-      terrain("Labyrinth I", [tile(8, 7.5)]),
-      terrain("Labyrinth Z", [tile(12.5, 10, 0, true)]),
-      terrain("Labyrinth O", [tile(2.5, 12.5, 0)]),
-      terrain("Labyrinth L", [tile(7.5, 14)]),
-      terrain("Column", points([[4, 7], [4, 15], [5, 5], [5, 17], [11, 5], [11, 17], [12, 7], [12, 15]])),
-      terrain("City", [tile(3, 5), tile(13, 17)]),
-    ] }],
+    ALPHA_TEMENOS: [
+      { levels: [1], terrains: [
+        terrain("Column", [tile(11, 7), tile(11, 15), tile(10, 5), tile(10, 17), tile(4, 5), tile(4, 17), tile(3, 7), tile(3, 15)]),
+        terrain("City", [tile(12, 5), tile(2, 17)]),
+        // 用户 2026-08-19 在当前快照手动修正：吞域兽起始大迷宫朝向。
+        terrain("Labyrinth O", [tile(12.5, 12.5, 180)]),
+        terrain("Labyrinth I", [tile(7, 7.5)]),
+        terrain("Labyrinth L", [tile(7.5, 14, 180)]),
+        terrain("Labyrinth Z", [tile(2.5, 10, 0, true)]),
+      ] },
+    ],
     CHIMERA_METASTASIOS: [
       { levels: [1, 2], terrains: [
-        terrain("Fortified City", [tile(4, 5), tile(9, 16)]),
-        terrain("Column", points([[2, 6], [5, 9], [7, 17], [12, 16]])),
-        terrain("Ambrosia Pool", [tile(2.5, 17.5), tile(11.5, 2.5)]),
+        terrain("Column", [tile(12, 16), tile(7, 17), tile(5, 9), tile(2, 6)]),
+        terrain("Ambrosia Pool", [tile(11.5, 2.5), tile(2.5, 17.5)]),
+        terrain("Fortified City", [tile(9, 16), tile(4, 5)]),
       ] },
       { levels: [3, 4], terrains: [
-        terrain("Fortified City", [tile(4, 5), tile(9, 16)]),
-        terrain("Column", points([[2, 6], [5, 9], [7, 17], [8, 1], [10, 18], [12, 4], [12, 16]])),
-        terrain("Ambrosia Pool", [tile(2.5, 17.5), tile(3.5, 13.5), tile(7.5, 2.5), tile(10.5, 8.5), tile(11.5, 2.5)]),
-        terrain("Spartan River Works 1x4", [tile(2.5, 16, 270), tile(12.5, 15, 90)]),
-        terrain("Spartan River Works 1x5", [tile(3, 7, 90), tile(12, 5, 270)]),
+        terrain("Column", [tile(12, 4), tile(12, 16), tile(10, 18), tile(8, 1), tile(7, 17), tile(5, 9), tile(2, 6)]),
+        terrain("Ambrosia Pool", [tile(11.5, 2.5), tile(10.5, 8.5), tile(7.5, 2.5), tile(3.5, 13.5), tile(2.5, 17.5)]),
+        terrain("Fortified City", [tile(9, 16), tile(4, 5)]),
+        terrain("Spartan River Works 1x4", [tile(12.5, 15, 270), tile(2.5, 16, 90)]),
+        terrain("Spartan River Works 1x5", [tile(12, 5, 90), tile(3, 7, 270)]),
       ] },
     ],
     CYCLONUS: [
       { levels: [1, 2, 3, 4, 5, 6, 7], terrains: [
-        terrain("Fortified City", [tile(2, 14), tile(11, 7)]),
-        terrain("Spartan River Works 1x1 Corner", [tile(6, 5, 270), tile(5, 20), tile(6, 20, 90)]),
-        terrain("Spartan River Works 1x1 End", [tile(13, 10, 90), tile(14, 10, 90)]),
-        terrain("Spartan River Works 1x4", [tile(2.5, 16, 270), tile(6, 2.5, 0), tile(12.5, 16, 270), tile(8.5, 16, 90)]),
-        terrain("Spartan River Works 1x5", [tile(3, 10, 270), tile(12, 5, 90), tile(10, 10, 270)]),
+        terrain("Fortified City", [tile(13, 14), tile(4, 7)]),
+        terrain("Spartan River Works 1x1 End", [tile(2, 10, 90), tile(1, 10, 90)]),
+        terrain("Spartan River Works 1x1 Corner", [tile(9, 5, 270), tile(10, 20), tile(9, 20, 90)]),
+        terrain("Spartan River Works 1x4", [tile(12.5, 16, 270), tile(9, 2.5, 0), tile(2.5, 16, 270), tile(6.5, 16, 90)]),
+        terrain("Spartan River Works 1x5", [tile(12, 10, 270), tile(3, 5, 90), tile(5, 10, 270)]),
       ] },
       { levels: [8], terrains: [
-        terrain("Fortified City", [tile(2, 14), tile(11, 7)]),
-        terrain("Spartan River Works 1x1 End", [tile(14, 10, 90), tile(14, 16, 270)]),
-        terrain("Spartan River Works 1x1 Corner", [tile(5, 20), tile(6, 5, 270), tile(6, 20, 90)]),
-        terrain("Spartan River Works 1x4", [tile(2.5, 16, 90), tile(11.5, 16, 90), tile(6, 2.5, 0), tile(7.5, 10, 270), tile(11.5, 10, 90)]),
-        terrain("Spartan River Works 1x5", [tile(3, 10, 270), tile(9, 5, 90), tile(7, 16, 90)]),
-        terrain("Spartan River Works Z", [tile(13, 5.5, 90)]),
+        terrain("Fortified City", [tile(13, 14), tile(4, 7)]),
+        terrain("Spartan River Works 1x1 End", [tile(1, 10, 90), tile(1, 16, 270)]),
+        terrain("Spartan River Works 1x1 Corner", [tile(10, 20), tile(9, 5, 270), tile(9, 20, 90)]),
+        terrain("Spartan River Works Z", [tile(2, 5.5, 90)]),
+        terrain("Spartan River Works 1x4", [tile(12.5, 16, 90), tile(3.5, 16, 90), tile(9, 2.5, 0), tile(7.5, 10, 270), tile(3.5, 10, 90)]),
+        terrain("Spartan River Works 1x5", [tile(12, 10, 270), tile(6, 5, 90), tile(8, 16, 90)]),
       ] },
     ],
     THE_BURDEN: [
       { id: "burden-battle", label: "Burden Battle", levels: [1, 2, 3, 4], terrains: [
-        terrain("Column", points([[1, 7], [4, 8], [4, 12], [5, 15], [6, 1], [9, 11], [10, 16], [11, 10], [14, 4]])),
-        terrain("Cliff I", [tile(3, 15.5), tile(12, 15.5), tile(8.5, 5, 90), tile(12.5, 7, 90)]),
-        terrain("Cliff L", [tile(1.5, 9, 0), tile(11, 1.5, 270, true), tile(13.5, 9, 180, true)]),
-        terrain("Cliff O", [tile(6.5, 8.5, 0), tile(6.5, 14.5, 0), tile(7.5, 17.5, 0)]),
-        terrain("Cliff Z", [tile(2.5, 12, 180, true), tile(3.5, 19, 180, true), tile(4, 3.5, 270), tile(12.5, 12), tile(11.5, 19)]),
+        terrain("Column", [tile(14, 7), tile(11, 8), tile(11, 12), tile(10, 15), tile(9, 1), tile(6, 11), tile(5, 16), tile(4, 10), tile(1, 4)]),
+        terrain("Cliff L", [tile(13.5, 9, 0, true), tile(4, 1.5, 270, true), tile(1.5, 10, 180)]),
+        terrain("Cliff Z", [tile(12.5, 12, 180, true), tile(11.5, 19, 180, true), tile(11, 3.5, 270), tile(2.5, 12), tile(3.5, 19)]),
+        terrain("Cliff I", [tile(12, 15.5), tile(3, 15.5), tile(6.5, 5, 90), tile(2.5, 7, 90)]),
+        terrain("Cliff O", [tile(8.5, 8.5), tile(8.5, 14.5), tile(7.5, 17.5)]),
       ] },
       { id: "burden-battle", label: "Burden Battle", levels: [5], terrains: [
-        terrain("Column", points([[1, 7], [4, 8], [5, 15], [6, 1], [9, 11], [10, 16], [11, 10], [14, 4]])),
-        terrain("Black Glacier 1x5", [tile(4, 15), tile(10, 8), tile(11, 13)]),
-        terrain("Black Lake", [tile(5, 6), tile(7, 3)]),
-        terrain("Cliff I", [tile(3, 15.5, 0), tile(12, 15.5, 0), tile(8.5, 5, 90), tile(12.5, 7, 90)]),
-        terrain("Cliff L", [tile(1.5, 9, 0), tile(11, 1.5, 270, true), tile(13.5, 9, 180, true)]),
-        terrain("Cliff O", [tile(6.5, 8.5, 0), tile(6.5, 14.5, 0), tile(7.5, 17.5, 0)]),
-        terrain("Cliff Z", [tile(2.5, 12, 180, true), tile(3.5, 19, 180, true), tile(4, 3.5, 270), tile(12.5, 12), tile(11.5, 19)]),
+        terrain("Column", [tile(14, 7), tile(11, 8), tile(10, 15), tile(9, 1), tile(6, 11), tile(5, 16), tile(4, 10), tile(1, 4)]),
+        terrain("Black Glacier 1x5", [tile(11, 15), tile(5, 8), tile(4, 13)]),
+        terrain("Black Lake", [tile(10, 6), tile(8, 3)]),
+        terrain("Cliff L", [tile(13.5, 9, 0), tile(4, 1.5, 270, true), tile(1.5, 9, 180, true)]),
+        terrain("Cliff Z", [tile(12.5, 12, 180, true), tile(11.5, 19, 180, true), tile(11, 3.5, 270), tile(2.5, 12), tile(3.5, 19)]),
+        terrain("Cliff I", [tile(12, 15.5, 0), tile(3, 15.5, 0), tile(6.5, 5, 90), tile(2.5, 7, 90)]),
+        terrain("Cliff O", [tile(8.5, 8.5, 0), tile(8.5, 14.5, 0), tile(7.5, 17.5, 0)]),
       ] },
       { id: "hardest-to-bear", label: "Hardest to Bear", levels: [1], terrains: [
-        terrain("Column", points([[4, 7], [4, 17], [5, 3], [5, 15], [7, 2], [7, 3], [8, 19], [9, 2], [9, 9], [9, 19], [10, 2], [11, 7], [11, 10], [11, 15], [11, 17], [12, 15]])),
-        terrain("Black Iceberg", points([[13, 4], [13, 5]])),
-        terrain("Cliff I", [tile(1, 16.5), tile(14, 16.5), tile(3.5, 9, 90), tile(11.5, 12, 90)]),
-        terrain("Cliff L", [tile(1.5, 5, 180, true), tile(13.5, 7, 0)]),
-        terrain("Cliff O", [tile(2.5, 11.5, 0), tile(7.5, 17.5, 0), tile(10.5, 4.5, 0)]),
-        terrain("Cliff Z", [tile(2.5, 2), tile(12.5, 19, 0), tile(2.5, 19, 180, true), tile(12.5, 2, 180, true)]),
+        terrain("Column", [tile(11, 7), tile(11, 17), tile(10, 3), tile(10, 15), tile(8, 2), tile(8, 3), tile(7, 19), tile(6, 2), tile(6, 9), tile(6, 19), tile(5, 2), tile(4, 7), tile(4, 10), tile(4, 15), tile(4, 17), tile(3, 15)]),
+        terrain("Black Iceberg", [tile(2, 4), tile(2, 5)]),
+        terrain("Cliff L", [tile(13.5, 5, 180), tile(1.5, 7, 0, true)]),
+        terrain("Cliff Z", [tile(12.5, 2), tile(2.5, 19, 0), tile(12.5, 19, 180, true), tile(2.5, 2, 180, true)]),
+        terrain("Cliff I", [tile(14, 16.5), tile(1, 16.5), tile(11.5, 9, 90), tile(3.5, 12, 90)]),
+        terrain("Cliff O", [tile(12.5, 11.5), tile(7.5, 17.5), tile(4.5, 4.5)]),
       ] },
     ],
     THE_NIETZSCJEAN: [
       { id: "the-cruel-lesson", label: "The Cruel Lesson", levels: [1], terrains: [
-        terrain("Fortified City", [tile(2, 18), tile(12, 6)]),
-        terrain("Spartan River Works 1x4", [tile(2.5, 16, 90), tile(11.5, 16, 90)]),
-        terrain("Spartan River Works 1x5", [tile(7, 16, 90), tile(14, 7), tile(14, 13)]),
-        terrain("Spartan River Works 1x1 Corner", [tile(14, 16, 0)]),
-        terrain("Spartan River Works 1x1 End", [tile(14, 10, 0)]),
-        terrain("Argo Hull 1x5", [tile(7, 1, 90), tile(12, 1, 90)]),
-        terrain("Argo Hull 1x4", [tile(2.5, 1, 90)]),
+        terrain("Fortified City", [tile(13, 18), tile(3, 6)]),
+        terrain("Argo Hull 1x4", [tile(12.5, 1, 90)]),
+        terrain("Argo Hull 1x5", [tile(8, 1, 90), tile(3, 1, 90)]),
+        terrain("Spartan River Works 1x1 End", [tile(1, 10, 0)]),
+        terrain("Spartan River Works 1x1 Corner", [tile(1, 16, 90)]),
+        terrain("Spartan River Works 1x4", [tile(12.5, 16, 270), tile(3.5, 16, 90)]),
+        terrain("Spartan River Works 1x5", [tile(8, 16, 90), tile(1, 7), tile(1, 13)]),
       ] },
       { id: "what-are-you", label: "What Are You?", levels: [1], terrains: [
-        terrain("Fortified City", [tile(3, 11), tile(8, 17), tile(12, 13)]),
-        terrain("Spartan River Works 1x4", [tile(1, 7.5, 0), tile(11.5, 16, 90), tile(14, 3.5), tile(14, 12.5), tile(1, 3.5)]),
-        terrain("Spartan River Works 1x5", [tile(1, 12, 0), tile(4, 16, 90), tile(14, 8)]),
-        terrain("Spartan River Works 1x1 Corner", [tile(1, 16, 270), tile(14, 16, 0)]),
-        terrain("Spartan River Works 1x1 End", [tile(1, 15), tile(14, 15, 0)]),
-        terrain("Argo Hull 1x5", [tile(7, 1, 90), tile(12, 1, 90)]),
-        terrain("Argo Hull 1x4", [tile(2.5, 1, 90)]),
+        terrain("Fortified City", [tile(12, 11), tile(7, 17), tile(3, 13)]),
+        terrain("Argo Hull 1x4", [tile(12.5, 1, 90)]),
+        terrain("Argo Hull 1x5", [tile(8, 1, 90), tile(3, 1, 90)]),
+        terrain("Spartan River Works 1x1 End", [tile(14, 15), tile(1, 15, 0)]),
+        terrain("Spartan River Works 1x1 Corner", [tile(14, 16, 270), tile(1, 16, 0)]),
+        terrain("Spartan River Works 1x4", [tile(14, 7.5, 0), tile(3.5, 16, 90), tile(1, 3.5), tile(1, 12.5), tile(14, 3.5)]),
+        terrain("Spartan River Works 1x5", [tile(14, 12, 0), tile(11, 16, 90), tile(1, 8)]),
       ] },
     ],
     HYPERTIME_ORACLE: [
       { levels: [1, 2], terrains: [
-        terrain("Timefront 1x4", [tile(7.5, 1, -90)]),
-        terrain("Timefront 1x5", [tile(3, 1, -90), tile(12, 1, -90)]),
-        terrain("Time-Frozen City", [tile(2, 18), tile(13, 16)]),
-        terrain("Black Iceberg", points([[2, 13], [4, 11], [8, 9], [10, 6], [10, 14], [11, 10], [12, 8]])),
+        terrain("Black Iceberg", [tile(12, 8), tile(11, 10), tile(10, 6), tile(10, 14), tile(8, 9), tile(4, 11), tile(2, 13)]),
+        terrain("Time-Frozen City", [tile(13, 16), tile(2, 18)]),
+        terrain("Timefront 1x4", [tile(12.5, 1, 90)]),
+        terrain("Timefront 1x5", [tile(8, 1, 90), tile(3, 1, 90)]),
+        ...c3Anchors({ red: [12, 7], blue: [3, 11], green: [12, 10], yellow: [10, 5] }),
       ] },
       { levels: [3, 4, 5], terrains: [
-        terrain("Timefront 1x4", [tile(7.5, 1, -90)]),
-        terrain("Timefront 1x5", [tile(3, 1, -90), tile(12, 1, -90)]),
-        terrain("Time-Frozen City", [tile(2, 18), tile(13, 19)]),
-        terrain("Black Iceberg", points([[2, 13], [4, 11], [6, 12], [7, 18], [8, 9], [9, 17], [10, 14], [11, 10], [11, 16], [12, 8]])),
+        terrain("Black Iceberg", [tile(12, 8), tile(11, 10), tile(11, 16), tile(10, 14), tile(9, 17), tile(8, 9), tile(7, 18), tile(6, 12), tile(4, 11), tile(2, 13)]),
         terrain("Giant Black Iceberg", [tile(4.5, 16.5)]),
+        terrain("Time-Frozen City", [tile(13, 19), tile(2, 18)]),
+        terrain("Timefront 1x4", [tile(12.5, 1, 90)]),
+        terrain("Timefront 1x5", [tile(8, 1, 90), tile(3, 1, 90)]),
+        ...c3Anchors({ red: [12, 7], blue: [3, 11], green: [12, 10], yellow: [11, 14] }),
       ] },
     ],
-    ICARIAN_HARPY: [{ levels: [1, 2, 3, 4, 5], terrains: [
-      terrain("Time-Frozen City", [tile(5, 4), tile(12, 6)]),
-      terrain("Black Lake", [tile(5, 16), tile(7, 10)]),
-      terrain("Giant Black Iceberg", [tile(4.5, 6.5), tile(7.5, 18.5), tile(8.5, 13.5)]),
-      terrain("Black Glacier 1x5", [tile(5, 12), tile(7, 6, 0), tile(10, 12, -90)]),
-      terrain("Black Iceberg", points([[2, 9], [2, 12], [3, 17], [6, 6], [8, 3], [9, 15], [10, 6], [12, 4], [12, 17], [13, 12]])),
-    ] }],
-    // Cycle IV-V rows are transcribed from the storybook diagrams (A at the bottom, N at the top).
+    ICARIAN_HARPY: [
+      { levels: [1, 2, 3, 4, 5], terrains: [
+        terrain("Black Iceberg", [tile(13, 12), tile(12, 4), tile(12, 17), tile(10, 6), tile(9, 15), tile(8, 3), tile(6, 6), tile(3, 17), tile(2, 9), tile(2, 12)]),
+        terrain("Giant Black Iceberg", [tile(8.5, 13.5), tile(7.5, 18.5), tile(4.5, 6.5)]),
+        terrain("Time-Frozen City", [tile(12, 6), tile(5, 4)]),
+        terrain("Black Lake", [tile(7, 10), tile(5, 16)]),
+        terrain("Black Glacier 1x5", [tile(10, 12, 270), tile(7, 6, 0), tile(5, 12, 0)]),
+        ...c3Anchors({ red: [11, 8], blue: [4, 13], green: [8, 7], yellow: [7, 14] }),
+      ] },
+    ],
     MIDASCORE: [
       { levels: [1], terrains: [
-        terrain("Irem Tower", points([[13, 4], [13, 15], [12, 16], [11, 11], [10, 6], [10, 13], [9, 20], [8, 3], [8, 15], [7, 19], [6, 9], [5, 2], [5, 6], [5, 11], [3, 13], [2, 2], [2, 9], [2, 20], [1, 3], [1, 14]])),
+        terrain("Irem Tower", [tile(13, 4), tile(13, 15), tile(12, 16), tile(11, 11), tile(10, 6), tile(10, 13), tile(9, 20), tile(8, 3), tile(8, 15), tile(7, 19), tile(6, 9), tile(5, 2), tile(5, 6), tile(5, 11), tile(3, 13), tile(2, 2), tile(2, 9), tile(2, 20), tile(1, 3), tile(1, 14)]),
         terrain("Irem City", [tile(10, 4), tile(5, 16)]),
       ] },
       { levels: [2, 3, 4], terrains: [
-        terrain("Irem Tower", points([[13, 4], [13, 15], [12, 16], [11, 9], [11, 13], [10, 6], [9, 20], [8, 3], [8, 15], [7, 19], [6, 9], [5, 2], [5, 6], [5, 11], [3, 9], [3, 13], [3, 20], [2, 2], [1, 3], [1, 14]])),
+        terrain("Irem Tower", [tile(13, 4), tile(13, 15), tile(12, 16), tile(11, 9), tile(11, 13), tile(10, 6), tile(9, 20), tile(8, 3), tile(8, 15), tile(7, 19), tile(6, 9), tile(5, 2), tile(5, 6), tile(5, 11), tile(3, 9), tile(3, 13), tile(3, 20), tile(2, 2), tile(1, 3), tile(1, 14)]),
         terrain("Irem City", [tile(10, 4), tile(5, 16)]),
       ] },
     ],
-    DEMIDJINN: [{ levels: [1, 2, 3, 4], terrains: [
-      terrain("Irem Tower", points([[13, 4], [13, 15], [12, 17], [11, 11], [10, 6], [10, 13], [9, 20], [8, 3], [8, 15], [7, 19], [6, 9], [5, 2], [5, 6], [5, 11], [3, 13], [2, 2], [2, 9], [1, 3], [1, 14]])),
-      terrain("Irem City", [tile(10, 4), tile(5, 16)]),
-    ] }],
-    THE_BABELIAN_LUNACY: [{ levels: [1], terrains: [
-      terrain("Irem Tower", points([[14, 11], [13, 4], [13, 15], [12, 10], [12, 16], [11, 12], [10, 6], [9, 20], [8, 3], [8, 15], [7, 6], [7, 19], [6, 9], [5, 2], [5, 6], [5, 10], [3, 11], [3, 20], [2, 2], [1, 3]])),
-      terrain("Irem City", [tile(10, 4), tile(5, 16)]),
-    ] }],
+    DEMIDJINN: [
+      { levels: [1, 2, 3, 4], terrains: [
+        terrain("Irem Tower", [tile(13, 4), tile(13, 15), tile(12, 17), tile(11, 11), tile(10, 6), tile(10, 13), tile(9, 20), tile(8, 3), tile(8, 15), tile(7, 19), tile(6, 9), tile(5, 2), tile(5, 6), tile(5, 11), tile(3, 13), tile(2, 2), tile(2, 9), tile(1, 3), tile(1, 14)]),
+        terrain("Irem City", [tile(10, 4), tile(5, 16)]),
+      ] },
+    ],
+    THE_BABELIAN_LUNACY: [
+      { levels: [1], terrains: [
+        terrain("Irem Tower", [tile(14, 11), tile(13, 4), tile(13, 15), tile(12, 10), tile(12, 16), tile(11, 12), tile(10, 6), tile(9, 20), tile(8, 3), tile(8, 15), tile(7, 6), tile(7, 19), tile(6, 9), tile(5, 2), tile(5, 6), tile(5, 10), tile(3, 11), tile(3, 20), tile(2, 2), tile(1, 3)]),
+        terrain("Irem City", [tile(10, 4), tile(5, 16)]),
+      ] },
+    ],
     DAHAKA: [
       { id: "reap-the-whirlwind", label: "Reap the Whirlwind", levels: [1], terrains: [
         terrain("Argo Hull 1x4", [tile(12.5, 1, 90)]),
         terrain("Argo Hull 1x5", [tile(8, 1, 90), tile(3, 1, 90)]),
+        terrain("Irem Tower", [tile(13, 4), tile(12, 16), tile(11, 11), tile(10, 7), tile(10, 13), tile(10, 17), tile(9, 20), tile(8, 3), tile(8, 15), tile(7, 19), tile(6, 9), tile(5, 2), tile(5, 6), tile(5, 11), tile(4, 6), tile(3, 13), tile(2, 9), tile(2, 20), tile(1, 3), tile(1, 14)]),
         terrain("Ambrosia Cloud", [tile(12, 14), tile(10, 5), tile(4, 15), tile(2, 5)]),
         terrain("Abandoned Temple", [tile(13.5, 19.5)]),
-        terrain("Irem Tower", points([[13, 4], [12, 16], [11, 11], [10, 7], [10, 13], [10, 17], [9, 20], [8, 3], [8, 15], [7, 19], [6, 9], [5, 2], [5, 6], [5, 11], [4, 6], [3, 13], [2, 9], [2, 20], [1, 3], [1, 14]])),
       ] },
       { id: "the-winnowing", label: "The Winnowing", levels: [1], terrains: [
+        terrain("Irem Tower", [tile(13, 4), tile(13, 17), tile(11, 11), tile(10, 1), tile(10, 7), tile(10, 13), tile(10, 17), tile(9, 20), tile(8, 3), tile(8, 15), tile(7, 3), tile(7, 19), tile(5, 2), tile(5, 11), tile(5, 16), tile(3, 13), tile(2, 9), tile(2, 20), tile(1, 3), tile(1, 14)]),
+        terrain("Irem City", [tile(12, 15), tile(5, 7)]),
         terrain("Ambrosia Cloud", [tile(13, 10), tile(10, 5), tile(7, 17), tile(2, 5)]),
         terrain("Abandoned Temple", [tile(3.5, 1.5)]),
-        terrain("Irem City", [tile(12, 15), tile(5, 7)]),
-        terrain("Irem Tower", points([[13, 4], [13, 17], [11, 11], [10, 1], [10, 7], [10, 13], [10, 17], [9, 20], [8, 3], [8, 15], [7, 3], [7, 19], [5, 2], [5, 11], [5, 16], [3, 13], [2, 9], [2, 20], [1, 3], [1, 14]])),
       ] },
     ],
     DRAGON_OF_PHOBOS: [
       { levels: [1, 2], terrains: [
-        terrain("Petrified Vent", points([[13, 19], [12, 16], [12, 18], [11, 11], [10, 7], [10, 13], [10, 17], [9, 15], [9, 20], [8, 17], [7, 19], [5, 6], [5, 8], [3, 8], [3, 11], [3, 14], [2, 9], [2, 16], [1, 14]])),
+        terrain("Petrified Vent", [tile(13, 19), tile(12, 16), tile(12, 18), tile(11, 11), tile(10, 7), tile(10, 13), tile(10, 17), tile(9, 15), tile(9, 20), tile(8, 17), tile(7, 19), tile(5, 6), tile(5, 8), tile(3, 8), tile(3, 11), tile(3, 14), tile(2, 9), tile(2, 16), tile(1, 14)]),
         terrain("Arcology", [tile(13, 14), tile(3, 3)]),
         terrain("Black Abyss", [tile(4, 19)]),
         terrain("Lightwall 1x4", [tile(5, 2.5)]),
-        terrain("Lightwall 1x5", [tile(1, 11, 180, true)]),
+        terrain("Lightwall 1x5", [tile(1, 11)]),
         terrain("Trench 1x4", [tile(14, 4.5)]),
         terrain("Trench 1x5", [tile(10, 1, 90)]),
       ] },
       { levels: [3, 4], terrains: [
-        terrain("Petrified Vent", points([[13, 19], [12, 10], [11, 5], [10, 13], [10, 17], [9, 20], [7, 5], [7, 16], [5, 8], [5, 19], [4, 12], [3, 16], [2, 9], [1, 14]])),
+        terrain("Petrified Vent", [tile(13, 19), tile(12, 10), tile(11, 5), tile(10, 13), tile(10, 17), tile(9, 20), tile(7, 5), tile(7, 16), tile(5, 8), tile(5, 19), tile(4, 12), tile(3, 16), tile(2, 9), tile(1, 14)]),
         terrain("Arcology", [tile(13, 15), tile(3, 3)]),
         terrain("Trench 1x4", [tile(14, 4.5)]),
         terrain("Trench 1x5", [tile(10, 1, 90)]),
       ] },
     ],
-    MEDUKETOS: [{ levels: [1, 2, 3, 4], terrains: [
-      terrain("Petrified Vent", points([[13, 2], [13, 5], [13, 10], [13, 17], [12, 8], [12, 19], [11, 6], [10, 3], [10, 18], [9, 5], [7, 18], [6, 2], [6, 14], [5, 9], [5, 17], [4, 12], [3, 15], [2, 3], [2, 11], [2, 19]])),
-      terrain("Arcology", [tile(10, 12), tile(6, 6)]),
-      terrain("Lightwall 1x5", [tile(10, 15, 270, true)]),
-      terrain("Trench 1x4", [tile(3, 5.5)]),
-    ] }],
-    UR_FLEECE: [{ levels: [1], terrains: [
-      terrain("Black Abyss", [tile(12, 3), tile(9, 11), tile(6, 15), tile(3, 7)]),
-      terrain("Trench Left 1x1", [tile(14, 1, 0)]),
-      terrain("Trench Right 1x1", [tile(14, 20, 0)]),
-      terrain("Trench 1x4", [tile(14, 8.5), tile(14, 17.5)]),
-      terrain("Trench 1x5", [tile(14, 4), tile(14, 13)]),
-      terrain("Track Tile 1x1", [tile(1, 1), tile(1, 20, 0)]),
-      terrain("Track Tile 2 1x4", [tile(1, 12.5, 0)]),
-      terrain("Track Tile 3 1x4", [tile(1, 8.5, 0)]),
-      terrain("Track Tile 1 1x5", [tile(1, 17, 0)]),
-      terrain("Track Tile 4 1x5", [tile(1, 4, 0)]),
-    ] }],
+    MEDUKETOS: [
+      { levels: [1, 2, 3, 4], terrains: [
+        terrain("Petrified Vent", [tile(13, 2), tile(13, 5), tile(13, 10), tile(13, 17), tile(12, 8), tile(12, 19), tile(11, 6), tile(10, 3), tile(10, 18), tile(9, 5), tile(7, 18), tile(6, 2), tile(6, 14), tile(5, 9), tile(5, 17), tile(4, 12), tile(3, 15), tile(2, 3), tile(2, 11), tile(2, 19)]),
+        terrain("Arcology", [tile(10, 12), tile(6, 6)]),
+        terrain("Lightwall 1x5", [tile(10, 15)]),
+        terrain("Trench 1x4", [tile(3, 5.5)]),
+      ] },
+    ],
+    UR_FLEECE: [
+      { levels: [1], terrains: [
+        terrain("Black Abyss", [tile(12, 3), tile(9, 11), tile(6, 15), tile(3, 7)]),
+        terrain("Trench Left 1x1", [tile(14, 1, 0)]),
+        terrain("Trench Right 1x1", [tile(14, 20, 0)]),
+        terrain("Trench 1x4", [tile(14, 8.5), tile(14, 17.5)]),
+        terrain("Trench 1x5", [tile(14, 4), tile(14, 13)]),
+        terrain("Track Tile 1x1", [tile(1, 1), tile(1, 20, 0)]),
+        terrain("Track Tile 2 1x4", [tile(1, 12.5)]),
+        terrain("Track Tile 3 1x4", [tile(1, 8.5)]),
+        terrain("Track Tile 1 1x5", [tile(1, 17)]),
+        terrain("Track Tile 4 1x5", [tile(1, 4)]),
+      ] },
+    ],
     TITAN_X: [
       { id: "the-devil-himself", label: "The Devil Himself", levels: [1, 2, 3, 4], terrains: [] },
       { id: "the-devil-himself", label: "The Devil Himself", levels: [5, 6, 7], terrains: [] },
       { id: "the-devil-himself", label: "The Devil Himself", levels: [8], terrains: [] },
       { id: "thicker-than-water", label: "Thicker Than Water", levels: [1], terrains: [] },
     ],
-    SUN_DESCENDANT: [{ levels: [1, 2], terrains: [
-      terrain("Black Glacier 1x5", [tile(4, 7, 270), tile(7, 14), tile(8, 6, 0)]),
-      terrain("Floating Rocks", [tile(1.5, 12.5), tile(12.5, 8.5)]),
-      terrain("Black Iceberg", points([[4, 8], [4, 13], [5, 15], [6, 6], [6, 12], [9, 9], [9, 14], [11, 4], [11, 6], [11, 13]])),
-    ] }],
+    SUN_DESCENDANT: [
+      { levels: [1, 2], terrains: [
+        terrain("Black Iceberg", [tile(11, 4), tile(11, 6), tile(11, 13), tile(9, 9), tile(9, 14), tile(6, 6), tile(6, 12), tile(5, 15), tile(4, 8), tile(4, 13)]),
+        terrain("Floating Rocks", [tile(12.5, 8.5), tile(1.5, 12.5)]),
+        terrain("Black Glacier 1x5", [tile(8, 6, 0), tile(7, 14, 0), tile(4, 7, 270)]),
+        ...c3Anchors({ red: [10, 6], blue: [5, 13], green: [5, 8], yellow: [10, 13] }),
+      ] },
+    ],
   };
   setups.THE_NIETZSCHEAN = setups.THE_NIETZSCJEAN;
-
   const initialPositions = {
     HEKATON: { apostle: { row: 7.5, column: 10.5, width: 2, height: 2, rotation: 0, facing: "random" }, titans: [[5, 13], [6, 14], [9, 7], [10, 8]] },
     LABYRINTHAUROS: { apostle: { row: 7.5, column: 3.5, width: 2, height: 2, rotation: 90 }, titans: [[6, 9], [6, 12], [9, 9], [9, 12]] },
@@ -530,13 +733,14 @@ const BattleTerrain = (() => {
     ALPHA_TEMENOS: { apostle: { row: 7, column: 11, width: 3, height: 3, rotation: 0, facing: "random" }, titans: [[4, 8], [4, 14], [10, 8], [10, 14]] },
     CHIMERA_METASTASIOS: { apostle: { row: 7, column: 11, width: 3, height: 3, rotation: 0, facing: "random" }, titans: [[4, 12], [5, 13], [9, 9], [10, 10]] },
     CYCLONUS: { apostle: { row: 8.5, column: 10.5, width: 2, height: 2, rotation: 0, facing: "random" }, titans: [[6, 8], [6, 13], [11, 8], [11, 13]] },
-    THE_BURDEN: { apostle: { row: 7.5, column: 10.5, width: 2, height: 2, rotation: 270 }, titans: [[6, 3], [7, 3], [8, 3], [9, 3]] },
-    THE_NIETZSCJEAN: { apostle: { row: 7.5, column: 14.5, width: 2, height: 2, rotation: 270 }, titans: [[6, 10], [7, 10], [8, 10], [9, 10]] },
+    THE_BURDEN: { apostle: { row: 7.5, column: 10.5, width: 2, height: 2, rotation: 270, facing: 270 }, titans: [[6, 3], [7, 3], [8, 3], [9, 3]] },
+    THE_NIETZSCJEAN: { apostle: { row: 7.5, column: 14.5, width: 2, height: 2, rotation: 270, facing: 270 }, titans: [[6, 10], [7, 10], [8, 10], [9, 10]] },
     HYPERTIME_ORACLE: { apostle: { row: 7.5, column: 13.5, width: 2, height: 2, rotation: 270 }, titans: [[5, 9], [6, 9], [9, 9], [10, 9]] },
     ICARIAN_HARPY: { apostle: { row: 7.5, column: 10.5, width: 2, height: 2, rotation: 0, facing: "random" }, titans: [[5, 13], [6, 14], [9, 7], [10, 8]] },
-    SUN_DESCENDANT: { apostle: { row: 8, column: 2, width: 3, height: 3, rotation: 90 }, titans: [[7, 10], [7, 11], [8, 10], [8, 11]] },
+    SUN_DESCENDANT: { apostle: { row: 8, column: 2, width: 3, height: 3, rotation: 90, facing: 90 }, titans: [[7, 10], [7, 11], [8, 10], [8, 11]] },
     // Cycle IV-V positions are read from the storybook diagrams (A at the bottom, N at the top).
-    MIDASCORE: { apostle: { row: 7.5, column: 10.5, width: 2, height: 2, rotation: 0, facing: "random" }, titans: [[11, 9], [11, 13], [3, 9], [3, 13]] },
+    // 迈达狮面板图示是 3x3（后方 3 个 R 格），此前误记为 2x2。
+    MIDASCORE: { apostle: { row: 7, column: 11, width: 3, height: 3, rotation: 0, facing: "random" }, titans: [[11, 9], [11, 13], [3, 9], [3, 13]] },
     DEMIDJINN: { apostle: { row: 7.5, column: 10.5, width: 2, height: 2, rotation: 0, facing: "random" }, titans: [[11, 9], [11, 12], [4, 9], [4, 12]] },
     THE_BABELIAN_LUNACY: { apostle: { row: 7.5, column: 10.5, width: 2, height: 2, rotation: 0, facing: "random" }, titans: [[12, 10], [8, 15], [7, 6], [3, 11]] },
     DAHAKA: { apostle: { row: 7.5, column: 10.5, width: 2, height: 2, rotation: 0, facing: "random" }, titans: [[11, 9], [11, 12], [4, 9], [4, 12]] },
@@ -547,7 +751,33 @@ const BattleTerrain = (() => {
   };
   initialPositions.THE_NIETZSCHEAN = initialPositions.THE_NIETZSCJEAN;
 
+  const labyrinthaurosBattleInitialPositions = {
+    startOptions: [
+      {
+        id: "A",
+        apostle: { row: 7.5, column: 3.5, width: 2, height: 2, rotation: 90, facing: 90 },
+      },
+      {
+        id: "B",
+        apostle: { row: 7.5, column: 17.5, width: 2, height: 2, rotation: 270, facing: 270 },
+      },
+    ],
+    titans: [[6, 9], [6, 12], [9, 9], [9, 12]],
+  };
+
+  const ambushInitialPositions = {
+    apostle: { row: 7.5, column: 15.5, width: 2, height: 2, rotation: 0 },
+    titans: [[8, 10], [8, 11], [7, 9], [7, 11]],
+  };
+
   const setupPositionOverrides = {
+    HEKATON: {
+      ambush: [{ levels: [1], ...ambushInitialPositions }],
+    },
+    LABYRINTHAUROS: {
+      "labyrinthauros-battle": [{ levels: [1, 2, 3, 4], ...labyrinthaurosBattleInitialPositions }],
+      ambush: [{ levels: [1], ...ambushInitialPositions }],
+    },
     DAHAKA: {
       "reap-the-whirlwind": [{ levels: [1], ...initialPositions.DAHAKA }],
       "the-winnowing": [{
@@ -572,6 +802,13 @@ const BattleTerrain = (() => {
       ],
       "thicker-than-water": [{ levels: [1], ...initialPositions.TITAN_X }],
     },
+    THE_BURDEN: {
+      "hardest-to-bear": [{
+        levels: [1],
+        apostle: { ...initialPositions.THE_BURDEN.apostle },
+        titans: [[9, 8], [9, 13], [6, 8], [6, 13]],
+      }],
+    },
   };
 
   const setupFacingOverrides = {
@@ -579,6 +816,43 @@ const BattleTerrain = (() => {
     LABYRINTHAUROS: { ambush: 270 },
     THE_BURDEN: { "hardest-to-bear": "random" },
   };
+
+  // 使徒基本数据 —— 逐张读自使徒面板 aibp/ps/<APOSTLE>/<APOSTLE>.jpg。
+  //   size      始徒图示的脚印边长（1/2/3），与图示后方 R 格的个数一致。
+  //   speed     按等级的移速（等级框中间那格，靴子图标）。Infinity = ∞；
+  //             0 = 面板留空，即不可移动（巴比伦疯塔）。
+  //   blindspot 面板基本特质列里有"盲点"划眼图标时为 true。盲区就是图示中同时带
+  //             R 与划眼图标的那排格子 —— 正后方紧贴脚印、宽度等于脚印宽度。
+  //             P39：盲点与攀爬点永远都不视作在始徒的视线内。
+  //   alwaysLos 特质写明"忽略视线遮挡规则（即总是有视线）"。
+  //   mazesense 迷宫感应：大迷宫板块不会遮挡该始徒对泰坦的视线。
+  const apostleProfiles = {
+    LABYRINTHAUROS: { size: 2, speed: { 1: 6, 2: 6, 3: 7, 4: 7 }, blindspot: false, mazesense: true },
+    ALPHA_TEMENOS: { size: 3, speed: { 1: 6 }, blindspot: false, mazesense: true },
+    CHIMERA_METASTASIOS: { size: 3, speed: { 1: 5, 2: 5, 3: 5, 4: 5 }, blindspot: false },
+    CYCLONUS: { size: 2, speed: { 1: 7, 2: 7, 3: 7, 4: 8 }, blindspot: true },
+    HEKATON: { size: 2, speed: { 0: 6, 1: 6, 2: 6, 3: 6, 4: 7 }, blindspot: false },
+    // 面板印 6*，展翅的末日 WINGED DOOM: 移速为无穷大。
+    HERMESIAN_PURSUER: { size: 2, speed: { 1: Infinity }, blindspot: true },
+    HYPERTIME_ORACLE: { size: 2, speed: { 1: Infinity, 2: Infinity, 3: Infinity }, blindspot: false },
+    ICARIAN_HARPY: { size: 2, speed: { 1: Infinity, 2: Infinity, 3: Infinity, 4: Infinity, 5: Infinity }, blindspot: true },
+    SUN_DESCENDANT: { size: 3, speed: { 1: Infinity, 2: Infinity, 3: Infinity }, blindspot: false },
+    THE_BURDEN: { size: 2, speed: { 1: 9 }, blindspot: false },
+    THE_NIETZSCJEAN: { size: 2, speed: { 1: 8 }, blindspot: true },
+    // 高空黑影 SHADOW IN THE SKIES: 忽略视线遮挡规则。面板图示为 3x3（后方 3 个 R 格）。
+    MIDASCORE: { size: 3, speed: { 1: Infinity, 2: Infinity, 3: Infinity, 4: Infinity }, blindspot: true, alwaysLos: true },
+    // 活体龙卷风 LIVING TORNADO: 移速无穷大，且忽略视线遮挡规则。
+    DEMIDJINN: { size: 2, speed: { 1: Infinity, 2: Infinity, 3: Infinity, 4: Infinity }, blindspot: true, alwaysLos: true },
+    THE_BABELIAN_LUNACY: { size: 2, speed: { 1: 0 }, blindspot: false },
+    // 大漠的飘渺烟雾 DRIFTER OF WASTES: 忽略视线遮挡规则。
+    DAHAKA: { size: 2, speed: { 1: Infinity }, blindspot: true, alwaysLos: true },
+    DRAGON_OF_PHOBOS: { size: 2, speed: { 1: Infinity, 2: Infinity, 3: Infinity, 4: Infinity }, blindspot: true },
+    MEDUKETOS: { size: 3, speed: { 1: Infinity, 2: Infinity, 3: Infinity, 4: Infinity }, blindspot: false },
+    UR_FLEECE: { size: 3, speed: { 1: Infinity }, blindspot: true },
+    // 无视阻碍 NO OBSTACLES: 忽略视线遮挡规则。
+    TITAN_X: { size: 1, speed: { 1: Infinity }, blindspot: true, alwaysLos: true },
+  };
+  apostleProfiles.THE_NIETZSCHEAN = apostleProfiles.THE_NIETZSCJEAN;
 
   function levelNumber(value) {
     const numeric = Number(value);
@@ -629,15 +903,35 @@ const BattleTerrain = (() => {
     });
   }
 
+  function getInitialPositionChoices(apostle, level, setupId) {
+    const positions = getInitialPositionDefinition(apostle, level, setupId);
+    return Array.isArray(positions?.startOptions) ? positions.startOptions : [];
+  }
+
+  function normalizeStartPositionId(apostle, level, setupId, startPositionId) {
+    const choices = getInitialPositionChoices(apostle, level, setupId);
+    if (!choices.length) return null;
+    const requested = String(startPositionId || "");
+    return choices.some((choice) => choice.id === requested) ? requested : choices[0].id;
+  }
+
+  function randomStartPositionId(apostle, level, setupId) {
+    const choices = getInitialPositionChoices(apostle, level, setupId);
+    if (!choices.length) return null;
+    return choices[Math.floor(Math.random() * choices.length)]?.id || choices[0].id;
+  }
+
   function createBattleMap(apostle, level, setupId) {
     const setup = getSetup(apostle, level, setupId);
     const startLevel = levelNumber(level);
-    const apostleFacing = getInitialFacing(apostle, undefined, setup?.id, startLevel);
+    const startPositionId = randomStartPositionId(apostle, startLevel, setup?.id);
+    const apostleFacing = getInitialFacing(apostle, undefined, setup?.id, startLevel, startPositionId);
     return {
       version: 1,
       setupKey: getSetupKey(apostle, level, setup?.id),
       ...(setup?.id ? { setupId: setup.id } : {}),
       startLevel,
+      ...(startPositionId ? { startPositionId } : {}),
       ...(apostleFacing === null ? {} : { apostleFacing }),
       showStarts: true,
       showCoordinates: false,
@@ -671,12 +965,14 @@ const BattleTerrain = (() => {
       }];
     });
     const startLevel = levelNumber(value.startLevel ?? level);
-    const apostleFacing = getInitialFacing(apostle, value.apostleFacing, setup?.id, startLevel);
+    const startPositionId = normalizeStartPositionId(apostle, startLevel, setup?.id, value.startPositionId);
+    const apostleFacing = getInitialFacing(apostle, value.apostleFacing, setup?.id, startLevel, startPositionId);
     return {
       version: 1,
       setupKey: expectedKey,
       ...(setup?.id ? { setupId: setup.id } : {}),
       startLevel,
+      ...(startPositionId ? { startPositionId } : {}),
       ...(apostleFacing === null ? {} : { apostleFacing }),
       showStarts: value.showStarts !== false,
       showCoordinates: value.showCoordinates === true,
@@ -718,6 +1014,7 @@ const BattleTerrain = (() => {
     const definition = catalog[placement?.name] || placement || {};
     const useBack = placement?.flipped === true && Boolean(definition.backFile);
     const file = useBack ? definition.backFile : definition.file;
+    if (!file) return [];
     const base = String(assetBase || "").replace(/\/$/, "");
     const local = /^https?:\/\//i.test(file || "") ? file : `${base}/${file}?v=${assetVersion}`;
     return [local];
@@ -737,11 +1034,15 @@ const BattleTerrain = (() => {
       || base;
   }
 
-  function getInitialPositions(apostle, level, setupId) {
+  function getInitialPositions(apostle, level, setupId, startPositionId) {
     const positions = getInitialPositionDefinition(apostle, level, setupId);
     if (!positions) return { apostle: null, titans: [] };
+    const startOptions = Array.isArray(positions.startOptions) ? positions.startOptions : [];
+    const selectedStart = startOptions.length
+      ? startOptions.find((choice) => choice.id === startPositionId) || startOptions[0]
+      : positions;
     return {
-      apostle: positions.apostle ? { ...positions.apostle } : null,
+      apostle: selectedStart.apostle ? { ...selectedStart.apostle } : null,
       titans: positions.titans.map(([row, column], index) => ({ id: `titan-${index + 1}`, label: `T${index + 1}`, row, column })),
     };
   }
@@ -753,12 +1054,20 @@ const BattleTerrain = (() => {
     return normalized % 90 === 0 ? normalized : null;
   }
 
-  function getInitialFacing(apostle, savedFacing, setupId, level) {
+  function screenRotationFromTts(value) {
+    const facing = cardinalFacing(value);
+    return facing === null ? null : cardinalFacing(facing - 180);
+  }
+
+  function getInitialFacing(apostle, savedFacing, setupId, level, startPositionId) {
     const normalizedApostle = String(apostle || "").toUpperCase();
-    const position = getInitialPositionDefinition(normalizedApostle, level, setupId)?.apostle;
+    const position = getInitialPositions(normalizedApostle, level, setupId, startPositionId)?.apostle;
     if (!position) return null;
     const setupFacing = setupFacingOverrides[normalizedApostle]?.[setupId];
-    const facing = setupFacing ?? position.facing ?? position.rotation;
+    const facing = setupFacing ?? position.facing;
+    if (facing === undefined || facing === null) {
+      return screenRotationFromTts(position.rotation) ?? 0;
+    }
     if (facing !== "random") return cardinalFacing(facing) ?? 0;
     const saved = cardinalFacing(savedFacing);
     if (saved !== null) return saved;
@@ -769,12 +1078,80 @@ const BattleTerrain = (() => {
     return ({ 0: "up", 90: "right", 180: "down", 270: "left" })[cardinalFacing(value)] || "up";
   }
 
+  // 取某等级的使徒数据。speed 取该等级；等级缺失时取不超过它的最高等级
+  // （例如 5 级的 UR_FLEECE 只印了 I 级，就一直用 I 级）。
+  function getApostleProfile(apostle, level) {
+    const profile = apostleProfiles[String(apostle || "").toUpperCase()];
+    if (!profile) return null;
+    const wanted = levelNumber(level);
+    const levels = Object.keys(profile.speed).map(Number).sort((a, b) => a - b);
+    const match = levels.filter((value) => value <= wanted).pop();
+    const key = match !== undefined ? match : levels[0];
+    return {
+      size: profile.size,
+      speed: profile.speed[key],
+      speedLevel: key,
+      blindspot: !!profile.blindspot,
+      alwaysLos: !!profile.alwaysLos,
+      mazesense: !!profile.mazesense,
+    };
+  }
+
+  // 盲区格子：正后方紧贴脚印的一排，宽度等于脚印宽度（见始徒图示中带 R 与划眼
+  // 图标的格子）。facing 0/90/180/270 = 上/右/下/左，后方即其反向。
+  // placement 只需 {row, column}；使徒脚印都是正方形，所以旋转不改变形状。
+  function getBlindspotCells(apostle, level, placement, facing) {
+    const profile = getApostleProfile(apostle, level);
+    if (!profile || !profile.blindspot || !placement) return [];
+    const size = profile.size;
+    const half = (size - 1) / 2;
+    const column0 = Math.round(Number(placement.column) - half);
+    const row0 = Math.round(Number(placement.row) - half);
+    const back = { 0: [0, -1], 90: [-1, 0], 180: [0, 1], 270: [1, 0] }[cardinalFacing(facing) ?? 0];
+    const [stepColumn, stepRow] = back;
+    const cells = [];
+    for (let index = 0; index < size; index += 1) {
+      const column = stepColumn === 0
+        ? column0 + index
+        : column0 + (stepColumn > 0 ? size : -1);
+      const row = stepRow === 0
+        ? row0 + index
+        : row0 + (stepRow > 0 ? size : -1);
+      if (column >= 1 && column <= columns && row >= 1 && row <= rows) cells.push({ row, column });
+    }
+    return cells;
+  }
+
   function footprint(placement) {
     const definition = catalog[placement.name] || placement;
     const quarterTurn = Math.abs(Number(placement.rotation || 0)) % 180 === 90;
     return {
       width: quarterTurn ? definition.height : definition.width,
       height: quarterTurn ? definition.width : definition.height,
+    };
+  }
+
+  function isTileObscuring(placement) {
+    const definition = catalog[placement?.name];
+    const los = definition && definition.los;
+    if (!los) return false;
+    const obscuring = los.obscuring;
+    if (typeof obscuring === "object" && obscuring !== null) {
+      return placement && placement.flipped ? !!obscuring.back : !!obscuring.front;
+    }
+    return !!obscuring;
+  }
+
+  function getTileLosData(placement) {
+    const definition = catalog[placement?.name];
+    const los = (definition && definition.los) || {};
+    return {
+      obscuring: isTileObscuring(placement),
+      redLines: los.redLines || null,
+      cells: los.cells || null,
+      elevated: !!los.elevated,
+      cloud: !!los.cloud,
+      labyrinth: !!los.labyrinth,
     };
   }
 
@@ -799,7 +1176,7 @@ const BattleTerrain = (() => {
       top: `${(rows - placement.row + 0.5) / rows * 100}%`,
       width: `${placement.width / columns * 100}%`,
       height: `${placement.height / rows * 100}%`,
-      rotation: `${Number(placement.rotation || 0) - 180}deg`,
+      rotation: `${screenRotationFromTts(placement.rotation) ?? 0}deg`,
     };
   }
 
@@ -810,9 +1187,12 @@ const BattleTerrain = (() => {
   return {
     catalog,
     setups,
+    apostleProfiles,
     createBattleMap,
     footprint,
+    getApostleProfile,
     getAssetSources,
+    getBlindspotCells,
     getFacingLabel,
     getInitialFacing,
     getInitialPositions,
@@ -822,7 +1202,9 @@ const BattleTerrain = (() => {
     getTerrainCards,
     getTiles,
     getTileFlipTransform,
+    getTileLosData,
     getTileStyle,
+    isTileObscuring,
     levelNumber,
     normalizeBattleMap,
     snapPlacement,

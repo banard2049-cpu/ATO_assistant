@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>大迷宫外扩一格示意图（按手绘）</title>
+<style>
+  :root { color-scheme: light; }
+  body { font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;
+         background:#faf9f7; color:#1c1c1c; margin:0; padding:28px; }
+  h1 { font-size:20px; margin:0 0 4px; }
+  .sub { color:#666; font-size:13px; margin:0 0 20px; max-width:840px; line-height:1.55; }
+  .panel { background:#fff; border:1px solid #e5e2dc; border-radius:10px;
+           padding:16px 18px 20px; box-shadow:0 1px 3px rgba(0,0,0,.05); display:inline-block; }
+  .legend { display:flex; gap:22px; flex-wrap:wrap; font-size:12.5px; color:#444;
+            margin:20px 2px 0; align-items:center; }
+  .box { width:20px; height:14px; display:inline-block; border-radius:2px; }
+  .legend span { display:inline-flex; align-items:center; gap:8px; }
+  .note { margin-top:22px; padding:14px 16px; background:#eef6ee; border:1px solid #bcd9bc;
+          border-radius:8px; font-size:13px; line-height:1.65; max-width:860px; }
+</style>
+</head>
+<body>
+  <h1>大迷宫「footprint 整圈外扩一格」— 按你手绘的读法</h1>
+  <p class="sub">仍以左上横向 Labyrinth I(4×1)为例。棕色=板块 4 格走廊；红线=实体红墙；绿线=开口。红斜线格=把 footprint 的每一格朝四周(上下左右+四角)各膨胀一格得到的<strong>外扩墙区</strong>——<strong>开口正前方那两格也一并算进去,不挖空</strong>。整片红斜线区在判定时都当遮挡。此规则只在视线一端站在迷宫走廊格里(往里/往外看)时启用。</p>
+
+  <div class="panel">
+    <svg width="620" height="360" viewBox="0 0 620 360">
+      <defs>
+        <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+          <path d="M60 0H0V60" fill="none" stroke="#eceae5" stroke-width="1"/>
+        </pattern>
+        <pattern id="hatch" width="9" height="9" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+          <rect width="9" height="9" fill="#fdeaea"/>
+          <line x1="0" y1="0" x2="0" y2="9" stroke="#d33" stroke-width="2.4"/>
+        </pattern>
+      </defs>
+
+      <!-- grid 9x5 from (40,40), cell 60 -> 540x300 -->
+      <rect x="40" y="40" width="540" height="300" fill="url(#grid)"/>
+
+      <!-- footprint I: cols2..5 row2. origin col0=x40 row0=y40 -->
+      <!-- footprint x160..400 y160..220 -->
+      <!-- expansion = whole 6x3 block cols1..6 rows1..3 = x100..460 y100..280, MINUS footprint -->
+      <!-- Row1 full: x100..460 y100..160 -->
+      <rect x="100" y="100" width="360" height="60" fill="url(#hatch)"/>
+      <!-- Row3 full: x100..460 y220..280 -->
+      <rect x="100" y="220" width="360" height="60" fill="url(#hatch)"/>
+      <!-- Row2 left+right cells (these are the opening-front cells, now INCLUDED) -->
+      <rect x="100" y="160" width="60" height="60" fill="url(#hatch)"/>
+      <rect x="400" y="160" width="60" height="60" fill="url(#hatch)"/>
+
+      <!-- footprint -->
+      <rect x="160" y="160" width="240" height="60" fill="#c9a978" opacity="0.55"/>
+
+      <rect x="40" y="40" width="540" height="300" fill="none" stroke="#dcd8d0" stroke-width="1"/>
+
+      <!-- real red walls top/bottom -->
+      <line x1="160" y1="160" x2="400" y2="160" stroke="#d33" stroke-width="6"/>
+      <line x1="160" y1="220" x2="400" y2="220" stroke="#d33" stroke-width="6"/>
+      <!-- green openings left/right -->
+      <line x1="160" y1="160" x2="160" y2="220" stroke="#2a9d3f" stroke-width="6"/>
+      <line x1="400" y1="160" x2="400" y2="220" stroke="#2a9d3f" stroke-width="6"/>
+
+      <text x="280" y="196" text-anchor="middle" font-size="13" fill="#5a4326" font-weight="600">走廊(板块本体)</text>
+      <!-- highlight the two opening-front cells now included -->
+      <text x="130" y="196" text-anchor="middle" font-size="12" fill="#a33" font-weight="700">开口前</text>
+      <text x="430" y="196" text-anchor="middle" font-size="12" fill="#a33" font-weight="700">开口前</text>
+      <text x="280" y="132" text-anchor="middle" font-size="12" fill="#a33">外扩墙区(整圈,含四角)</text>
+    </svg>
+  </div>
+
+  <div class="legend">
+    <span><i class="box" style="background:#c9a978"></i>板块走廊格</span>
+    <span><i class="box" style="background:#d33"></i>实体红墙</span>
+    <span><i class="box" style="background:#2a9d3f"></i>绿开口</span>
+    <span><i class="box" style="background:url(#hatch);border:1px solid #e7bcbc"></i>外扩一格(整圈,含开口前)</span>
+  </div>
+
+  <div class="note">
+    <strong>这版改了什么：</strong>不再对开口正前方那两格做「挖空」——它们也算进外扩墙区,和你手绘的一圈完全一致。外扩得到的这整片红斜线区,在「视线一端位于迷宫走廊格」时统一当遮挡参与判定。其它三块(L/Z 等异形)同理:沿它们各自 footprint 的真实轮廓逐格外扩一圈,不按外接矩形。<br><br>
+    如果这就是你要的几何,回一句确认,我就去改 battle_los.js 并补测试。
+  </div>
+</body>
+</html>

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>大迷宫外扩 · 手绘网格编辑器</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;
+         background:#f7f6f3; color:#1d1d1d; margin:0; padding:22px; }
+  h1 { font-size:19px; margin:0 0 2px; }
+  .sub { color:#666; font-size:12.5px; margin:0 0 16px; }
+  .toolbar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:14px; }
+  .brush { border:1.5px solid #d5d1c8; background:#fff; border-radius:8px; padding:6px 11px;
+           font-size:13px; cursor:pointer; display:inline-flex; align-items:center; gap:7px; }
+  .brush.active { border-color:#1d1d1d; box-shadow:0 0 0 2px rgba(0,0,0,.08); }
+  .sw { width:15px; height:15px; border-radius:3px; border:1px solid rgba(0,0,0,.15); }
+  .ctrl { border:1px solid #d5d1c8; background:#fff; border-radius:8px; padding:6px 11px;
+          font-size:13px; cursor:pointer; }
+  .ctrl:hover { background:#f0eee9; }
+  .sep { width:1px; height:26px; background:#e0ddd5; margin:0 4px; }
+  label.num { font-size:12.5px; color:#555; display:inline-flex; align-items:center; gap:5px; }
+  label.num input { width:52px; padding:4px 6px; border:1px solid #d5d1c8; border-radius:6px; font-size:13px; }
+  #wrap { overflow:auto; border:1px solid #e0ddd5; border-radius:10px; background:#fff;
+          padding:14px; display:inline-block; max-width:100%; }
+  svg { display:block; touch-action:none; }
+  .cellrect { cursor:crosshair; }
+  #out { width:100%; max-width:900px; height:150px; margin-top:14px; font-family:ui-monospace,Menlo,Consolas,monospace;
+         font-size:12px; border:1px solid #d5d1c8; border-radius:8px; padding:10px; resize:vertical; }
+  .hint { font-size:12px; color:#777; margin:10px 2px 0; line-height:1.6; max-width:900px; }
+  .hint b { color:#444; }
+</style>
+</head>
+<body>
+  <h1>大迷宫外扩 · 手绘网格编辑器</h1>
+  <p class="sub">左键涂 / 拖拽连续涂，右键擦除。选「红墙(边)」时点格子的靠近某条边即可加/去墙。</p>
+
+  <div class="toolbar" id="toolbar"></div>
+  <div class="toolbar" id="toolbar2"></div>
+
+  <div id="wrap"><svg id="board"></svg></div>
+
+  <p class="hint" id="hint"></p>
+  <textarea id="out" readonly placeholder="点「导出坐标」后，格子/墙的坐标会出现在这里"></textarea>
+
+<script>
+const SVGNS = "http://www.w3.org/2000/svg";
+let COLS = 20, ROWS = 14, CELL = 34;
+
+// cell paint types
+const TYPES = {
+  empty:     { label:"空",         color:"#ffffff" },
+  corridor:  { label:"走廊(板块)", color:"#c9a978" },
+  expand:    { label:"外扩一格",   color:"#f5b7b7" },
+  opening:   { label:"开口(格)",   color:"#a9d6a9" },
+  unitA:     { label:"单位A",      color:"#9ec5f0" },
+  unitB:     { label:"单位B",      color:"#f0a9a9" },
+};
+const TYPE_ORDER = ["corridor","expand","opening","unitA","unitB","empty"];
+
+// ==== 预填：LABYRINTHAUROS 默认战斗图的四块大迷宫（由 battle_los 引擎导出，已按屏幕朝向翻转） ====
+// 坐标 1 起：列从左、行从上（行1在最上，与屏幕一致）。
+const PREFILL = {
+  corridor: [[7,5],[8,5],[11,5],[12,5],[13,5],[7,6],[8,6],[13,6],[12,9],[6,10],[7,10],[8,10],[9,10],[12,10],[13,10],[13,11]],
+  // 墙用内部 0 起 key："H,c,r"=格(c,r)下边；"V,c,r"=格(c,r)左边
+  walls: ["H,10,3","H,10,4","H,11,3","H,11,4","H,11,9","H,12,3","H,12,8","H,5,8","H,5,9","H,6,3","H,6,4","H,6,5","H,6,8","H,6,9","H,7,3","H,7,8","H,7,9","H,8,8","H,8,9","V,11,8","V,11,9","V,12,10","V,12,5","V,12,8","V,13,10","V,13,4","V,13,5","V,13,9","V,6,5","V,7,5","V,8,4","V,8,5"]
+};
+function loadPrefill(){
+  cells = {}; walls = {};
+  PREFILL.corridor.forEach(([c,r])=>{ cells[key(c-1,r-1)] = "corridor"; });
+  PREFILL.walls.forEach(w=>{ walls[w] = true; });
+  render();
+}
+
+let brush = "expand";         // current paint type, or "wall"
+let cells = {};               // "c,r" -> type
+let walls = {};               // edge key -> true  (edge = "H,c,r" bottom of cell / "V,c,r" left of cell)
+let painting = false, eraseMode = false;
+
+const board = document.getElementById("board");
+const out = document.getElementById("out");
+
+function key(c,r){ return c+","+r; }
+
+/* ---------- toolbar ---------- */
+function buildToolbar(){
+  const tb = document.getElementById("toolbar");
+  tb.innerHTML = "";
+  TYPE_ORDER.forEach(t=>{
+    const b = document.createElement("div");
+    b.className = "brush" + (brush===t?" active":"");
+    b.innerHTML = `<span class="sw" style="background:${TYPES[t].color}"></span>${TYPES[t].label}`;
+    b.onclick = ()=>{ brush=t; buildToolbar(); };
+    tb.appendChild(b);
+  });
+  const w = document.createElement("div");
+  w.className = "brush" + (brush==="wall"?" active":"");
+  w.innerHTML = `<span class="sw" style="background:#d33"></span>红墙(边)`;
+  w.onclick = ()=>{ brush="wall"; buildToolbar(); };
+  tb.appendChild(w);
+
+  const tb2 = document.getElementById("toolbar2");
+  tb2.innerHTML = "";
+  const mk = (txt,fn)=>{ const e=document.createElement("div"); e.className="ctrl"; e.textContent=txt; e.onclick=fn; return e; };
+  const colL = document.createElement("label"); colL.className="num";
+  colL.innerHTML = `列 <input type="number" id="inCols" min="2" max="60" value="${COLS}">`;
+  const rowL = document.createElement("label"); rowL.className="num";
+  rowL.innerHTML = `行 <input type="number" id="inRows" min="2" max="60" value="${ROWS}">`;
+  tb2.appendChild(colL); tb2.appendChild(rowL);
+  tb2.appendChild(mk("重设网格", ()=>{
+    COLS = Math.max(2,Math.min(60, +document.getElementById("inCols").value||20));
+    ROWS = Math.max(2,Math.min(60, +document.getElementById("inRows").value||14));
+    render();
+  }));
+  const sep = document.createElement("div"); sep.className="sep"; tb2.appendChild(sep);
+  tb2.appendChild(mk("载入默认大迷宫", loadPrefill));
+  tb2.appendChild(mk("清空全部", ()=>{ cells={}; walls={}; render(); }));
+  tb2.appendChild(mk("导出坐标", exportData));
+}
+
+/* ---------- render ---------- */
+function render(){
+  const W = COLS*CELL, H = ROWS*CELL, PAD = 22;
+  board.setAttribute("width", W+PAD);
+  board.setAttribute("height", H+PAD);
+  board.innerHTML = "";
+
+  // cell fills + rects
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      const t = cells[key(c,r)] || "empty";
+      const rect = document.createElementNS(SVGNS,"rect");
+      rect.setAttribute("class","cellrect");
+      rect.setAttribute("x", PAD + c*CELL);
+      rect.setAttribute("y", PAD + r*CELL);
+      rect.setAttribute("width", CELL);
+      rect.setAttribute("height", CELL);
+      rect.setAttribute("fill", TYPES[t].color);
+      rect.setAttribute("stroke", "#e3e0d9");
+      rect.setAttribute("stroke-width","1");
+      rect.dataset.c=c; rect.dataset.r=r;
+      board.appendChild(rect);
+      if(t==="unitA"||t==="unitB"){
+        const tx=document.createElementNS(SVGNS,"text");
+        tx.setAttribute("x",PAD+c*CELL+CELL/2); tx.setAttribute("y",PAD+r*CELL+CELL/2+5);
+        tx.setAttribute("text-anchor","middle"); tx.setAttribute("font-size","15");
+        tx.setAttribute("font-weight","700"); tx.setAttribute("fill", t==="unitA"?"#1a4e8a":"#a12727");
+        tx.setAttribute("pointer-events","none");
+        tx.textContent = t==="unitA"?"A":"B";
+        board.appendChild(tx);
+      }
+    }
+  }
+  // coordinate labels (top cols, left rows) 1-based
+  for(let c=0;c<COLS;c++){
+    const t=document.createElementNS(SVGNS,"text");
+    t.setAttribute("x",PAD+c*CELL+CELL/2); t.setAttribute("y",14);
+    t.setAttribute("text-anchor","middle"); t.setAttribute("font-size","10"); t.setAttribute("fill","#aaa");
+    t.textContent=c+1; board.appendChild(t);
+  }
+  for(let r=0;r<ROWS;r++){
+    const t=document.createElementNS(SVGNS,"text");
+    t.setAttribute("x",10); t.setAttribute("y",PAD+r*CELL+CELL/2+4);
+    t.setAttribute("text-anchor","middle"); t.setAttribute("font-size","10"); t.setAttribute("fill","#aaa");
+    t.textContent=r+1; board.appendChild(t);
+  }
+  // walls on top
+  for(const wk in walls){
+    const [ax,cc,rr]=wk.split(","); const c=+cc,r=+rr;
+    const ln=document.createElementNS(SVGNS,"line");
+    if(ax==="H"){ // bottom edge of (c,r)
+      ln.setAttribute("x1",PAD+c*CELL); ln.setAttribute("y1",PAD+(r+1)*CELL);
+      ln.setAttribute("x2",PAD+(c+1)*CELL); ln.setAttribute("y2",PAD+(r+1)*CELL);
+    } else { // left edge of (c,r)
+      ln.setAttribute("x1",PAD+c*CELL); ln.setAttribute("y1",PAD+r*CELL);
+      ln.setAttribute("x2",PAD+c*CELL); ln.setAttribute("y2",PAD+(r+1)*CELL);
+    }
+    ln.setAttribute("stroke","#d33"); ln.setAttribute("stroke-width","5");
+    ln.setAttribute("stroke-linecap","round"); ln.setAttribute("pointer-events","none");
+    board.appendChild(ln);
+  }
+  document.getElementById("hint").innerHTML =
+    `网格 <b>${COLS}×${ROWS}</b>（列从左、行从上，均 1 起）。当前笔刷：<b>${brush==="wall"?"红墙(边)":TYPES[brush].label}</b>。` +
+    `涂格：左键点/拖，右键擦。<b>红墙</b>：点格内靠近的那条边来加/去（左键加、右键去）。`;
+}
+
+/* ---------- interaction ---------- */
+function cellFromEvent(e){
+  const rect = board.getBoundingClientRect();
+  const PAD=22;
+  const x = e.clientX-rect.left-PAD, y = e.clientY-rect.top-PAD;
+  const c = Math.floor(x/CELL), r = Math.floor(y/CELL);
+  if(c<0||r<0||c>=COLS||r>=ROWS) return null;
+  return {c,r,fx:x-c*CELL,fy:y-r*CELL};
+}
+function paintCell(c,r,erase){
+  if(brush==="wall") return;
+  cells[key(c,r)] = erase ? "empty" : brush;
+}
+function toggleWall(pos,erase){
+  // nearest edge within the cell
+  const {c,r,fx,fy}=pos;
+  const dTop=fy, dBottom=CELL-fy, dLeft=fx, dRight=CELL-fx;
+  const m=Math.min(dTop,dBottom,dLeft,dRight);
+  let wk;
+  if(m===dTop)      wk = r>0 ? `H,${c},${r-1}` : `H,${c},${r-1}`; // top edge = bottom of (c,r-1)
+  else if(m===dBottom) wk = `H,${c},${r}`;
+  else if(m===dLeft)   wk = `V,${c},${r}`;
+  else                 wk = `V,${c+1},${r}`; // right edge = left of (c+1,r)
+  if(erase) delete walls[wk]; else walls[wk]=true;
+}
+function handle(e,erase){
+  const pos=cellFromEvent(e); if(!pos) return;
+  if(brush==="wall") toggleWall(pos,erase); else paintCell(pos.c,pos.r,erase);
+  render();
+}
+board.addEventListener("contextmenu", e=>e.preventDefault());
+board.addEventListener("pointerdown", e=>{
+  painting=true; eraseMode = (e.button===2);
+  board.setPointerCapture(e.pointerId);
+  handle(e, eraseMode);
+});
+board.addEventListener("pointermove", e=>{ if(painting) handle(e, eraseMode); });
+board.addEventListener("pointerup", ()=>{ painting=false; });
+board.addEventListener("pointerleave", ()=>{ painting=false; });
+
+/* ---------- export ---------- */
+function exportData(){
+  const group={};
+  for(const k in cells){ const t=cells[k]; if(t==="empty")continue; (group[t]=group[t]||[]).push(k.split(",").map(n=>+n+1)); }
+  const wallList=[];
+  for(const wk in walls){ const [ax,c,r]=wk.split(","); wallList.push({axis:ax, c:+c+1, r:+r+1}); }
+  const data = {
+    grid:{cols:COLS, rows:ROWS, note:"坐标 1 起：列从左、行从上"},
+    corridor: group.corridor||[],
+    expand:   group.expand||[],
+    opening:  group.opening||[],
+    unitA:   (group.unitA||[])[0]||null,
+    unitB:   (group.unitB||[])[0]||null,
+    walls: wallList
+  };
+  out.value = JSON.stringify(data, null, 2);
+  out.focus(); out.select();
+}
+
+buildToolbar();
+loadPrefill();
+</script>
+</body>
+</html>

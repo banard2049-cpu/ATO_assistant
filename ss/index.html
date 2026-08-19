@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ATO 第二屏幕</title>
-  <link rel="stylesheet" href="./styles.css?v=20260818-coordinates2">
+  <link rel="stylesheet" href="./styles.css?v=20260818-los10">
 </head>
 <body>
   <main class="screen-shell">
@@ -58,6 +58,7 @@
           <img class="battle-board-image" src="./battle-board.jpg" alt="决战版图">
           <div id="battleGrid" class="battle-board-grid" aria-hidden="true"></div>
           <div id="battleTerrainLayer" class="battle-terrain-layer" aria-hidden="true"></div>
+          <div id="battleLosLayer" class="battle-map-los-layer" aria-hidden="true" hidden></div>
           <div id="battleStartLayer" class="battle-start-layer" aria-hidden="true"></div>
           <div id="battleCoordinateLayer" class="battle-coordinate-layer" aria-hidden="true"></div>
         </div>
@@ -65,7 +66,8 @@
     </section>
   </main>
 
-  <script src="./terrain-data.js?v=20260818-coordinates2"></script>
-  <script src="./app.js?v=20260818-coordinates2"></script>
+  <script src="./terrain-data.js?v=20260819-burden-hardest-cache2"></script>
+  <script src="../aibp/battle_los.js?v=20260819-hekaton4-labyrinthauros-start1"></script>
+  <script src="./app.js?v=20260819-hekaton4-labyrinthauros-start1"></script>
 </body>
 </html>

@@ -1,0 +1,6 @@
+=== Battle Setup Cycle I: Name=Custom_Tile Transform=(41.09771,3.35890818,62.43758)
+    0 contained objects
+=== Battle Setup Cycle II: Name=Custom_Tile Transform=(37.8401,1.97036719,35.6911278)
+    0 contained objects
+=== Battle Setup Cycle III: Name=Custom_Tile Transform=(39.25386,1.97036707,23.4331932)
+    0 contained objects

@@ -206,6 +206,10 @@ elements["[data-battle-map-setup-select]"].value = "what-are-you";
 elements["[data-battle-map-setup-select]"].dispatch("change");
 assert.equal(map.setupId, "what-are-you");
 assert.equal(map.terrain.length, 18);
+assert.deepEqual(
+  elements["[data-battle-map-add-select]"].children.slice(0, 4).map((option) => option.value),
+  ["Red Anchor", "Blue Anchor", "Green Anchor", "Yellow Anchor"]
+);
 
 activeApostle = "THE_BURDEN";
 map = null;

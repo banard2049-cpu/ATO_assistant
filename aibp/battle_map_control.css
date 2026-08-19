@@ -67,6 +67,12 @@
   align-items: start;
 }
 
+.battle-map-main {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+
 .battle-map-board {
   position: relative;
   width: 100%;
@@ -111,6 +117,230 @@
 
 .battle-map-terrain-layer { z-index: 2; }
 .battle-map-start-layer { z-index: 4; pointer-events: none; }
+
+.battle-map-los-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  pointer-events: none;
+}
+.battle-map-los-layer > div { position: absolute; }
+.battle-map-los-visible {
+  background: rgba(74, 222, 128, 0.30);
+  box-shadow: inset 0 0 0 1px rgba(74, 222, 128, 0.55);
+}
+.battle-map-los-blocked { background: transparent; }
+.battle-map-los-layer.dim-blocked .battle-map-los-blocked {
+  background: rgba(4, 6, 6, 0.62);
+}
+.battle-map-los-source {
+  z-index: 5;
+  border-radius: 999px;
+  background: rgba(56, 132, 255, 0.95);
+  box-shadow: 0 0 0 2px rgba(190, 220, 255, 0.95), 0 0 12px rgba(56, 132, 255, 0.72);
+  transform: translate(-50%, -50%) scale(0.48);
+}
+/* 朝向标注：画在来源脚印正面边的中点，箭头指向朝向；盲区在其反向。 */
+.battle-map-los-facing {
+  position: absolute;
+  color: #ffd166;
+  font-size: 1.15em;
+  line-height: 1;
+  text-shadow: 0 0 3px #000, 0 1px 3px #000;
+  transform-origin: center;
+  pointer-events: none;
+  z-index: 3;
+}
+.battle-map-los-obscuring {
+  box-shadow: inset 0 0 0 2px rgba(250, 204, 21, 0.85);
+  background: rgba(250, 204, 21, 0.12);
+}
+/* Cloud 云层: still blocks an Elevated source, so mark it apart from the rest. */
+.battle-map-los-cloud {
+  box-shadow: inset 0 0 0 2px rgba(96, 180, 240, 0.95);
+  background: rgba(96, 180, 240, 0.18);
+}
+/* 射程层：移速 + 攻击距离内的格子，叠在视线结果之上。 */
+.battle-map-los-in-range {
+  box-shadow: inset 0 0 0 2px rgba(180, 132, 255, 0.75);
+}
+.battle-map-los-in-range.has-los {
+  box-shadow: inset 0 0 0 2px rgba(200, 160, 255, 0.98);
+  background: rgba(180, 132, 255, 0.16);
+}
+.battle-map-los-move-target {
+  box-sizing: border-box;
+  z-index: 6;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 0 0 2px rgba(20, 20, 20, 0.88), 0 0 12px rgba(255, 255, 255, 0.58);
+  transform: translate(-50%, -50%) scale(0.48);
+}
+.battle-map-los-move-step {
+  box-sizing: border-box;
+  z-index: 4;
+  pointer-events: none;
+}
+.battle-map-los-move-a {
+  background: rgba(239, 68, 58, 0.28);
+  box-shadow: inset 0 0 0 2px rgba(239, 68, 58, 0.88);
+}
+.battle-map-los-move-b {
+  background: rgba(250, 204, 21, 0.30);
+  box-shadow: inset 0 0 0 2px rgba(250, 204, 21, 0.94);
+}
+.battle-map-los-move-overlap {
+  background: rgba(251, 146, 60, 0.34);
+  box-shadow: inset 0 0 0 2px rgba(251, 146, 60, 0.96);
+}
+.battle-map-los-move-final {
+  box-sizing: border-box;
+  z-index: 6;
+  border-radius: 999px;
+  transform: translate(-50%, -50%) scale(0.48);
+}
+.battle-map-los-move-final.battle-map-los-move-a {
+  background: rgba(239, 68, 58, 0.96);
+  box-shadow: 0 0 0 2px rgba(255, 235, 235, 0.92), 0 0 12px rgba(239, 68, 58, 0.76);
+}
+.battle-map-los-move-final.battle-map-los-move-b {
+  background: rgba(250, 204, 21, 0.96);
+  box-shadow: 0 0 0 2px rgba(255, 250, 205, 0.92), 0 0 12px rgba(250, 204, 21, 0.76);
+}
+.battle-map-los-move-final.battle-map-los-move-overlap {
+  background: rgba(251, 146, 60, 0.96);
+  box-shadow: 0 0 0 2px rgba(255, 238, 214, 0.92), 0 0 12px rgba(251, 146, 60, 0.76);
+}
+.battle-map-los-move-facing {
+  position: absolute;
+  z-index: 6;
+  font-size: 1.12em;
+  line-height: 1;
+  text-shadow: 0 0 3px #000, 0 1px 3px #000;
+  transform-origin: center;
+  pointer-events: none;
+}
+.battle-map-los-move-facing-a { color: #ef4444; }
+.battle-map-los-move-facing-b { color: #facc15; }
+.battle-map-los-move-facing-overlap { color: #fb923c; }
+/* 每格到来源的正交距离。贴右下角，避开居中的坐标标签。 */
+.battle-map-los-distance {
+  /* 显式 border-box：padding 必须留在格子内，否则第 20 列会被顶出版图 1px。
+     ss/styles.css 有全局 * { box-sizing: border-box }，这里不依赖它。 */
+  box-sizing: border-box;
+  display: grid;
+  place-items: end;
+  padding: 0 2px 1px 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: clamp(6px, 0.6vw, 11px);
+  font-weight: 700;
+  line-height: 1;
+  text-shadow: 0 1px 2px #000, 0 -1px 2px #000, 1px 0 2px #000, -1px 0 2px #000;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.battle-map-los-distance.in-range { color: rgba(224, 205, 255, 0.98); }
+.battle-map-los-distance.is-source { color: rgba(190, 220, 255, 0.95); }
+/* 盲区：P39 永远不视作在视线内。 */
+.battle-map-los-blindspot {
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.6);
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(12, 14, 18, 0.78) 0 5px,
+    rgba(190, 190, 200, 0.5) 5px 10px
+  );
+}
+.battle-map-los-wall {
+  background: rgba(239, 68, 58, 0.95);
+  box-shadow: 0 0 4px rgba(239, 68, 58, 0.9);
+}
+.battle-map-los-wall.horizontal { height: 3px; transform: translateY(-1.5px); }
+.battle-map-los-wall.vertical { width: 3px; transform: translateX(-1.5px); }
+/* 迷宫感应生效时红线不再遮挡，画成虚线以示"看得见但不挡"。 */
+.battle-map-los-wall-ignored {
+  background: none;
+  box-shadow: none;
+  opacity: 0.75;
+}
+.battle-map-los-wall-ignored.horizontal {
+  background-image: linear-gradient(
+    to right, rgba(239, 68, 58, 0.9) 0 6px, transparent 6px 12px);
+  background-size: 12px 3px;
+}
+.battle-map-los-wall-ignored.vertical {
+  background-image: linear-gradient(
+    to bottom, rgba(239, 68, 58, 0.9) 0 6px, transparent 6px 12px);
+  background-size: 3px 12px;
+}
+
+.battle-map-los {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid rgba(199, 173, 114, 0.28);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+}
+.battle-map-los-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+  gap: 8px;
+}
+.battle-map-los-head button {
+  padding: 3px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.battle-map-los-head button[aria-pressed="true"] {
+  background: rgba(74, 222, 128, 0.22);
+  border-color: rgba(74, 222, 128, 0.6);
+}
+.battle-map-los-body { margin-top: 8px; display: grid; gap: 8px; }
+.battle-map-los-field { display: grid; gap: 4px; font-size: 0.9em; }
+.battle-map-los-field select,
+.battle-map-los-field input { width: 100%; }
+.battle-map-los-hint { margin: 0; font-size: 0.8em; opacity: 0.8; }
+.battle-map-los-path-tools {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+.battle-map-los-path-tools[hidden] { display: none; }
+.battle-map-los-path-tools button {
+  min-height: 30px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.battle-map-los-path-tools button[aria-pressed="true"] {
+  background: rgba(45, 212, 191, 0.18);
+  border-color: rgba(45, 212, 191, 0.58);
+}
+.battle-map-los-path-summary {
+  margin: 0;
+  padding: 6px 7px;
+  border-radius: 6px;
+  border: 1px solid rgba(45, 212, 191, 0.35);
+  background: rgba(45, 212, 191, 0.10);
+  font-size: 0.78em;
+  line-height: 1.45;
+}
+.battle-map-los-path-summary[hidden] { display: none; }
+/* 当前使徒的面板数据一行：尺寸 / 移速 / 攻击距离 / 射程 / 盲区。 */
+.battle-map-los-stats {
+  margin: 0;
+  padding: 5px 7px;
+  border-radius: 6px;
+  border: 1px solid rgba(180, 132, 255, 0.35);
+  background: rgba(180, 132, 255, 0.10);
+  font-size: 0.8em;
+  line-height: 1.45;
+}
+.battle-map-los-opt { display: flex; align-items: center; gap: 6px; font-size: 0.85em; }
+.battle-map-los-opt[hidden] { display: none; }
 
 .battle-map-coordinate-layer {
   z-index: 5;
@@ -161,6 +391,35 @@
   height: 100%;
   display: block;
   object-fit: contain;
+  pointer-events: none;
+}
+
+.battle-map-terrain.special-terrain {
+  display: grid;
+  place-items: center;
+  border-color: color-mix(in srgb, var(--battle-special-color, #f0c15d) 72%, #fff 28%);
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.34), transparent 30%),
+    linear-gradient(180deg, color-mix(in srgb, var(--battle-special-color, #f0c15d) 82%, #fff 18%), var(--battle-special-color, #f0c15d));
+  box-shadow:
+    inset 0 0 0 2px rgba(0, 0, 0, 0.44),
+    0 0 0 1px rgba(255, 255, 255, 0.28),
+    0 0 14px var(--battle-special-glow, rgba(240, 193, 93, 0.5));
+}
+
+.battle-map-special-label {
+  display: grid;
+  place-items: center;
+  width: 70%;
+  height: 70%;
+  border: 2px solid rgba(255, 255, 255, 0.86);
+  border-radius: 999px;
+  color: #fff;
+  font-size: clamp(10px, 1.2vw, 18px);
+  font-weight: 950;
+  line-height: 1;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.86);
+  background: rgba(0, 0, 0, 0.22);
   pointer-events: none;
 }
 
@@ -270,9 +529,9 @@
 }
 
 .battle-map-cards {
-  max-width: 1180px;
-  margin: 18px auto 0;
-  padding-top: 14px;
+  min-width: 0;
+  margin: 0;
+  padding-top: 8px;
   border-top: 1px solid rgba(199, 173, 114, 0.2);
 }
 

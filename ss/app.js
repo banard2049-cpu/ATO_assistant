@@ -6,6 +6,7 @@ const elements = {
   battleSidebarContent: document.querySelector(".battle-sidebar-content"),
   battleBoardFrame: document.querySelector("#battleBoardFrame"),
   battleTerrainLayer: document.querySelector("#battleTerrainLayer"),
+  battleLosLayer: document.querySelector("#battleLosLayer"),
   battleStartLayer: document.querySelector("#battleStartLayer"),
   battleCoordinateLayer: document.querySelector("#battleCoordinateLayer"),
   battleTerrainCards: document.querySelector("#battleTerrainCards"),
@@ -257,7 +258,7 @@ function renderBattleStarts(apostle, map) {
   elements.battleStartLayer.replaceChildren();
   elements.battleStartLayer.hidden = map.showStarts === false;
   if (map.showStarts === false) return;
-  const starts = window.BattleTerrain.getInitialPositions(apostle, map.startLevel, map.setupId);
+  const starts = window.BattleTerrain.getInitialPositions(apostle, map.startLevel, map.setupId, map.startPositionId);
   if (starts.apostle) {
     const marker = document.createElement("div");
     const arrow = document.createElement("span");
@@ -266,7 +267,8 @@ function renderBattleStarts(apostle, map) {
       apostle,
       map.apostleFacing,
       map.setupId,
-      map.startLevel
+      map.startLevel,
+      map.startPositionId
     );
     marker.className = "battle-start-marker apostle";
     marker.textContent = "A";
@@ -309,17 +311,60 @@ function renderBattleCoordinates(map) {
   }
 }
 
-function renderBattleTerrain(apostle, level, battleMap) {
+// 视线 / 射程 / 距离标注。主控台只传参数（来源锚点、攻击距离、朝向、高地与开关），
+// 这里用 aibp 那份同样的 battle_los.js 重算并绘制，所以两屏逐格一致。
+function renderBattleLos(apostle, map, los) {
+  if (!elements.battleLosLayer) return;
+  if (!window.BattleLOS || !los?.active) {
+    elements.battleLosLayer.replaceChildren();
+    elements.battleLosLayer.hidden = true;
+    return;
+  }
+  const overlay = window.BattleLOS.buildLosOverlay(map, los, window.BattleTerrain, apostle);
+  window.BattleLOS.renderLosOverlay(elements.battleLosLayer, overlay);
+}
+
+function setStyleProperty(element, name, value) {
+  if (typeof element.style.setProperty === "function") element.style.setProperty(name, value);
+  else element.style[name] = value;
+}
+
+function renderBattleSpecialTerrain(placement) {
+  const definition = window.BattleTerrain.catalog[placement.name] || {};
+  const tile = document.createElement("div");
+  const label = document.createElement("span");
+  const style = window.BattleTerrain.getTileStyle(placement);
+  tile.className = "battle-terrain-special";
+  tile.title = placement.name;
+  tile.style.left = style.left;
+  tile.style.top = style.top;
+  tile.style.width = style.width;
+  tile.style.height = style.height;
+  tile.style.transform = `translate(-50%, -50%) rotate(${style.rotation})`;
+  setStyleProperty(tile, "--battle-special-color", definition.color || "#f0c15d");
+  setStyleProperty(tile, "--battle-special-glow", definition.glow || "rgba(240, 193, 93, 0.5)");
+  label.className = "battle-terrain-special-label";
+  label.textContent = definition.label || placement.name.slice(0, 1);
+  tile.appendChild(label);
+  elements.battleTerrainLayer.appendChild(tile);
+}
+
+function renderBattleTerrain(apostle, level, battleMap, los) {
   elements.battleTerrainLayer.replaceChildren();
   const map = window.BattleTerrain.normalizeBattleMap(battleMap, apostle, level);
   elements.battleBoardFrame.classList.toggle("coordinates-visible", map.showCoordinates === true);
   const tiles = window.BattleTerrain.getMapTiles(map);
   tiles.forEach((placement) => {
+    const definition = window.BattleTerrain.catalog[placement.name] || {};
+    if (definition.special && !definition.file) {
+      renderBattleSpecialTerrain(placement);
+      return;
+    }
     const image = document.createElement("img");
     const sources = window.BattleTerrain.getAssetSources(placement, "./terrain");
     const style = window.BattleTerrain.getTileStyle(placement);
     image.className = "battle-terrain-tile";
-    image.src = sources[0];
+    image.src = sources[0] || "";
     if (sources[1]) {
       image.addEventListener("error", () => {
         if (image.src !== sources[1]) image.src = sources[1];
@@ -336,6 +381,7 @@ function renderBattleTerrain(apostle, level, battleMap) {
   });
   renderBattleStarts(apostle, map);
   renderBattleCoordinates(map);
+  renderBattleLos(apostle, map, los);
 }
 
 function openBattle(screen) {
@@ -360,6 +406,9 @@ function openBattle(screen) {
     rotation,
     swapped,
     boardVisible,
+    // 视线参数单列进 key：改锚点/攻击距离/朝向这类操作不动牌堆，光靠 updatedAt
+    // 不一定变，漏掉会导致第二屏卡在旧标注上。
+    state.los || null,
   ]);
   if (renderKey === battleRenderKey) {
     applyBattleLayout(scale / 100, rotation, boardVisible);
@@ -368,7 +417,8 @@ function openBattle(screen) {
   battleRenderKey = renderKey;
 
   elements.battleView.dataset.apostle = state.apostle || "";
-  if (boardVisible) renderBattleTerrain(state.apostle, state.level, map);
+  if (boardVisible) renderBattleTerrain(state.apostle, state.level, map, state.los);
+  else renderBattleLos(state.apostle, map, null);
   renderBattleTerrainCards(map, !boardVisible);
   [
     [elements.bossPanel, state.panelSrc],
