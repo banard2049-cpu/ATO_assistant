@@ -35,6 +35,9 @@ try {
   if (-not (Test-Path -LiteralPath '.github\workflows\android-release.yml')) {
     throw 'Android release workflow is missing.'
   }
+  if (-not (Test-Path -LiteralPath '.github\workflows\portable-release.yml')) {
+    throw 'Portable release workflow is missing.'
+  }
 
   & git remote get-url $Remote 2>$null | Out-Null
   if ($LASTEXITCODE -ne 0) { throw "Git remote does not exist: $Remote" }
@@ -49,7 +52,7 @@ try {
     Invoke-Git diff --cached --check
     & git diff --cached --quiet
     if ($LASTEXITCODE -eq 1) {
-      $message = if ($CommitMessage) { $CommitMessage } else { "release: Android $tag" }
+      $message = if ($CommitMessage) { $CommitMessage } else { "release: $tag" }
       Invoke-Git commit -m $message
     } elseif ($LASTEXITCODE -ne 0) {
       throw 'Could not inspect staged changes.'

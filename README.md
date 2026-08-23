@@ -96,7 +96,7 @@ python3 tools/build_storybook_placeholder.py <APK 文件> story/storybook-placeh
 
 ## 本地导出工具
 
-仓库不会自动创建或上传 Release。所有成品统一写入根目录的 `export/`；该目录已被 Git 完整忽略，不会提交 APK、ZIP 或中间文件。目录不存在时，工具会自动创建。
+本地导出工具不会自动上传成品。所有成品统一写入根目录的 `export/`；该目录已被 Git 完整忽略，不会提交 APK、ZIP 或中间文件。目录不存在时，工具会自动创建。推送 `v*` 标签时，GitHub Actions 会构建 Android APK，以及 Windows x64、macOS Apple Silicon、macOS Intel 三个 Portable ZIP，并附加到同一个 GitHub Release。
 
 ### 环境要求
 
@@ -151,6 +151,17 @@ python3 tools/export_portable.py --version 1.0.0 --target windows-x64 --target d
 
 Windows 和 macOS 包已封装 PHP 及其运行依赖，不要求用户安装 PHP、Node.js、Python 或仓库中的开发工具。启动后浏览器会打开 `http://127.0.0.1:8793/`。
 
+### 发布 Portable Release
+
+推送 `v*` 标签后，`.github/workflows/portable-release.yml` 会自动生成并发布三个桌面 ZIP 及各自的 SHA-256 文件。也可以在 GitHub Actions 中手动运行该工作流并填写版本号。
+
+本地可先构建校验；加入 `-Publish` 后会通过 GitHub CLI 创建或更新对应 Release：
+
+```powershell
+./tools/release_portable.ps1 -Version 1.2.0 -AllowDirty
+./tools/release_portable.ps1 -Version 1.2.0 -Publish
+```
+
 ### 导出内容规则
 
 所有目标在打包前后都会执行内容审计：
@@ -159,7 +170,7 @@ Windows 和 macOS 包已封装 PHP 及其运行依赖，不要求用户安装 PH
 - 不复制任意层级现有的 `data` 内容，包括私人战役存档和本地完整故事数据。
 - Windows、macOS 和 Docker 成品从空的 `data` 目录开始；之后产生的存档保留在成品目录内。
 - Android 不包含 `data` 目录，存档保存在 Android 应用私有空间。
-- 完成后的 APK/ZIP 位于本地 `export/`，不会自动上传、发布或被 Git 追踪。
+- 本地导出的 APK/ZIP 位于 `export/`，不会被 Git 追踪；只有 release 脚本的 `-Publish` 参数和 GitHub Release 工作流会上传成品。
 
 ## ATO 素材库 WebUI
 
