@@ -1,0 +1,95 @@
+name: Portable release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version, for example 1.2.0"
+        required: true
+        type: string
+      prerelease:
+        description: "Mark as a prerelease"
+        required: false
+        default: false
+        type: boolean
+      draft:
+        description: "Create as a draft release"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: portable-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - name: Check out release sources
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Resolve release version
+        id: release
+        shell: pwsh
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          if ($env:EVENT_NAME -eq 'push') {
+            $version = $env:REF_NAME -replace '^v', ''
+          } else {
+            $version = $env:INPUT_VERSION -replace '^v', ''
+          }
+          if ($version -notmatch '^[0-9]+\.[0-9]+\.[0-9]+(?:[-.][0-9A-Za-z.-]+)?$') {
+            throw "Invalid release version: $version"
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Build and publish Portable archives
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+          INPUT_PRERELEASE: ${{ inputs.prerelease }}
+          INPUT_DRAFT: ${{ inputs.draft }}
+        run: |
+          $arguments = @{
+            Version = $env:RELEASE_VERSION
+            Publish = $true
+          }
+          if ($env:EVENT_NAME -eq 'workflow_dispatch') {
+            if ($env:INPUT_PRERELEASE -eq 'true') { $arguments.Prerelease = $true }
+            if ($env:INPUT_DRAFT -eq 'true') { $arguments.Draft = $true }
+          } elseif ($env:RELEASE_VERSION -match '-') {
+            $arguments.Prerelease = $true
+          }
+          ./tools/release_portable.ps1 @arguments
+
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ATO-Assistant-Portable-${{ steps.release.outputs.version }}
+          path: |
+            export/ATO-Assistant-Portable-${{ steps.release.outputs.version }}-windows-x64.zip
+            export/ATO-Assistant-Portable-${{ steps.release.outputs.version }}-windows-x64.zip.sha256
+            export/ATO-Assistant-Portable-${{ steps.release.outputs.version }}-macos-arm64.zip
+            export/ATO-Assistant-Portable-${{ steps.release.outputs.version }}-macos-arm64.zip.sha256
+            export/ATO-Assistant-Portable-${{ steps.release.outputs.version }}-macos-x64.zip
+            export/ATO-Assistant-Portable-${{ steps.release.outputs.version }}-macos-x64.zip.sha256
+          if-no-files-found: error
