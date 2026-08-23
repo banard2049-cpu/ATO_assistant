@@ -119,23 +119,33 @@ def download(url: str, destination: Path) -> Path:
         print(f"使用缓存：{destination.name}")
         return destination
     partial = destination.with_suffix(destination.suffix + ".partial")
-    print(f"下载：{url}")
-    request = urllib.request.Request(url, headers={"User-Agent": "ATO-Packager/1.0"})
-    with urllib.request.urlopen(request) as response, partial.open("wb") as output:
-        total = int(response.headers.get("Content-Length", "0"))
-        copied = 0
-        while True:
-            chunk = response.read(1024 * 1024)
-            if not chunk:
-                break
-            output.write(chunk)
-            copied += len(chunk)
+    last_error: Exception | None = None
+    for attempt in range(1, 4):
+        try:
+            print(f"下载：{url}（第 {attempt}/3 次）")
+            request = urllib.request.Request(url, headers={"User-Agent": "ATO-Packager/1.0"})
+            with urllib.request.urlopen(request) as response, partial.open("wb") as output:
+                total = int(response.headers.get("Content-Length", "0"))
+                copied = 0
+                while True:
+                    chunk = response.read(1024 * 1024)
+                    if not chunk:
+                        break
+                    output.write(chunk)
+                    copied += len(chunk)
+                    if total:
+                        print(f"\r  {copied * 100 // total:3d}%", end="", flush=True)
             if total:
-                print(f"\r  {copied * 100 // total:3d}%", end="", flush=True)
-    if total:
-        print()
-    partial.replace(destination)
-    return destination
+                print()
+            partial.replace(destination)
+            return destination
+        except Exception as error:
+            last_error = error
+            partial.unlink(missing_ok=True)
+            if attempt < 3:
+                print(f"下载失败，将自动重试：{error}")
+    assert last_error is not None
+    raise last_error
 
 
 def extract_archive(archive: Path, destination: Path) -> None:

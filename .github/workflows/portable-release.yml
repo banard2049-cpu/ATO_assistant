@@ -42,6 +42,12 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Cache Portable runtime downloads
+        uses: actions/cache@v4
+        with:
+          path: tools/.packaging-cache
+          key: portable-runtime-php-8.4.22-${{ runner.os }}
+
       - name: Resolve release version
         id: release
         shell: pwsh
