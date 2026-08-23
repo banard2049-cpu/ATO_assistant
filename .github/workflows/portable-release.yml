@@ -70,6 +70,8 @@ jobs:
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
+          PYTHONUTF8: "1"
+          PYTHONIOENCODING: "utf-8"
           EVENT_NAME: ${{ github.event_name }}
           RELEASE_VERSION: ${{ steps.release.outputs.version }}
           INPUT_PRERELEASE: ${{ inputs.prerelease }}

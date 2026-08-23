@@ -92,7 +92,16 @@ try {
   $arguments = @((Join-Path $projectRoot 'tools\export_portable.py'), '--version', $versionText)
   foreach ($target in $portableTargets) { $arguments += @('--target', $target) }
   Write-Host "Building Portable release $versionText..."
-  Invoke-Checked $python @arguments
+  $previousPythonUtf8 = [Environment]::GetEnvironmentVariable('PYTHONUTF8', 'Process')
+  $previousPythonIoEncoding = [Environment]::GetEnvironmentVariable('PYTHONIOENCODING', 'Process')
+  try {
+    [Environment]::SetEnvironmentVariable('PYTHONUTF8', '1', 'Process')
+    [Environment]::SetEnvironmentVariable('PYTHONIOENCODING', 'utf-8', 'Process')
+    Invoke-Checked $python @arguments
+  } finally {
+    [Environment]::SetEnvironmentVariable('PYTHONUTF8', $previousPythonUtf8, 'Process')
+    [Environment]::SetEnvironmentVariable('PYTHONIOENCODING', $previousPythonIoEncoding, 'Process')
+  }
 
   $exportRoot = Join-Path $projectRoot 'export'
   $artifacts = @(
