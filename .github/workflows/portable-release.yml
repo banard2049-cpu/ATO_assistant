@@ -95,9 +95,6 @@ jobs:
           name: ATO-Assistant-Portable-${{ steps.release.outputs.version }}
           path: |
             export/ATO-Assistant-Portable-${{ steps.release.outputs.version }}-windows-x64.zip
-            export/ATO-Assistant-Portable-${{ steps.release.outputs.version }}-windows-x64.zip.sha256
             export/ATO-Assistant-Portable-${{ steps.release.outputs.version }}-macos-arm64.zip
-            export/ATO-Assistant-Portable-${{ steps.release.outputs.version }}-macos-arm64.zip.sha256
             export/ATO-Assistant-Portable-${{ steps.release.outputs.version }}-macos-x64.zip
-            export/ATO-Assistant-Portable-${{ steps.release.outputs.version }}-macos-x64.zip.sha256
           if-no-files-found: error

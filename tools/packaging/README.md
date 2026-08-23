@@ -39,7 +39,7 @@ commit all current changes before pushing. See the root `README.md` for target
 names and runtime instructions.
 
 `../release_portable.ps1 -Version 1.2.0` audits and builds the Windows x64,
-macOS arm64, and macOS x64 Portable ZIPs plus SHA-256 files. Add `-Publish` to
+macOS arm64, and macOS x64 Portable ZIPs. Add `-Publish` to
 attach them to the matching GitHub Release. `.github/workflows/portable-release.yml`
 runs this for `v*` tags and manual dispatches; it shares the release safely with
 the Android workflow.

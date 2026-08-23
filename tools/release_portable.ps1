@@ -116,10 +116,7 @@ try {
     if ((Get-Item -LiteralPath $artifact).Length -le 0) {
       throw "Portable builder created an empty archive: $artifact"
     }
-    $hash = (Get-FileHash -LiteralPath $artifact -Algorithm SHA256).Hash.ToLowerInvariant()
-    Set-Content -LiteralPath "$artifact.sha256" -Value "$hash  $([IO.Path]::GetFileName($artifact))" -Encoding utf8
     Write-Host "Portable: $artifact"
-    Write-Host "SHA-256: $hash"
   }
 
   if (-not $Publish) {
@@ -128,9 +125,7 @@ try {
   }
 
   Ensure-GitHubRelease -GhPath $gh.Source
-  $uploadFiles = @()
-  foreach ($artifact in $artifacts) { $uploadFiles += $artifact; $uploadFiles += "$artifact.sha256" }
-  $uploadArguments = @('release', 'upload', $releaseTag) + $uploadFiles + @('--clobber')
+  $uploadArguments = @('release', 'upload', $releaseTag) + $artifacts + @('--clobber')
   Invoke-Checked $gh.Source @uploadArguments
   Write-Host "GitHub Release ready: $releaseTag"
 } finally {

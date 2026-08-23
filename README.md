@@ -153,7 +153,7 @@ Windows 和 macOS 包已封装 PHP 及其运行依赖，不要求用户安装 PH
 
 ### 发布 Portable Release
 
-推送 `v*` 标签后，`.github/workflows/portable-release.yml` 会自动生成并发布三个桌面 ZIP 及各自的 SHA-256 文件。也可以在 GitHub Actions 中手动运行该工作流并填写版本号。
+推送 `v*` 标签后，`.github/workflows/portable-release.yml` 会自动生成并发布三个桌面 ZIP。也可以在 GitHub Actions 中手动运行该工作流并填写版本号。
 
 本地可先构建校验；加入 `-Publish` 后会通过 GitHub CLI 创建或更新对应 Release：
 
