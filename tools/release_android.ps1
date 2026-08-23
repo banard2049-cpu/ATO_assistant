@@ -122,7 +122,15 @@ try {
     )
     if ($Draft) { $arguments += '--draft' }
     if ($Prerelease) { $arguments += '--prerelease' }
-    Invoke-Checked $gh.Source @arguments
+    # The Portable workflow can create the same tag release concurrently.
+    & $gh.Source @arguments
+    if ($LASTEXITCODE -ne 0) {
+      & $gh.Source release view $releaseTag '--json' 'tagName' 2>$null | Out-Null
+      if ($LASTEXITCODE -ne 0) {
+        throw "Could not create or find GitHub Release $releaseTag."
+      }
+      Invoke-Checked $gh.Source 'release' 'upload' $releaseTag $apk $checksum '--clobber'
+    }
   }
   Write-Host "GitHub Release ready: $releaseTag"
 } finally {
