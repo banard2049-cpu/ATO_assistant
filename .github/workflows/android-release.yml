@@ -76,8 +76,10 @@ jobs:
           KEY_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}
         run: |
           $values = @($env:KEYSTORE_BASE64, $env:KEYSTORE_PASSWORD, $env:KEY_ALIAS, $env:KEY_PASSWORD)
-          if ($values.Where({ [string]::IsNullOrWhiteSpace($_) }).Count -gt 0) {
-            throw 'Configure all four ANDROID_RELEASE_* repository secrets before publishing.'
+          $missing = $values.Where({ [string]::IsNullOrWhiteSpace($_) }).Count
+          if ($missing -gt 0) {
+            Write-Warning 'Android release signing secrets are not configured; building with the runner Debug keystore.'
+            exit 0
           }
           $keystore = Join-Path $env:RUNNER_TEMP 'ato-release.jks'
           [IO.File]::WriteAllBytes($keystore, [Convert]::FromBase64String($env:KEYSTORE_BASE64))

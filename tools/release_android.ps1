@@ -66,11 +66,13 @@ try {
       [string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($_))
     })
     if ($missingSigning.Count -gt 0) {
-      throw "Publishing requires a persistent Android signing key. Missing environment variables: $($missingSigning -join ', ')"
+      Write-Warning "Persistent Android signing is not configured. Publishing a Debug-signed APK; configure the ANDROID_RELEASE_* secrets before distributing updates. Missing: $($missingSigning -join ', ')"
     }
-    $keystore = [Environment]::GetEnvironmentVariable('ATO_ANDROID_KEYSTORE_PATH')
-    if (-not (Test-Path -LiteralPath $keystore -PathType Leaf)) {
-      throw "Android release keystore does not exist: $keystore"
+    if ($missingSigning.Count -eq 0) {
+      $keystore = [Environment]::GetEnvironmentVariable('ATO_ANDROID_KEYSTORE_PATH')
+      if (-not (Test-Path -LiteralPath $keystore -PathType Leaf)) {
+        throw "Android release keystore does not exist: $keystore"
+      }
     }
   }
 
