@@ -1,8 +1,21 @@
 services:
   ato:
+    image: ghcr.io/banard2049-cpu/ato_assistant:${ATO_VERSION:-latest}
     build: .
+    pull_policy: missing
     ports:
       - "8793:8793"
     volumes:
       - ./data:/app/data
+      - ./app/aibp/ps:/app/aibp/ps
+      - ./app/assets/exploration-cards:/app/assets/exploration-cards
+      - ./app/assets/story-doom-cards:/app/assets/story-doom-cards
+      - ./app/hero/assets:/app/hero/assets
+      - ./app/map/images:/app/map/images
+      - ./app/map/tokens:/app/map/tokens
+      - ./app/record/assets:/app/record/assets
+      - ./app/ss/terrain:/app/ss/terrain
+      - ./app/ss/terrain-cards:/app/ss/terrain-cards
+      - ./app/story/images:/app/story/images
+      - ./app/technology/images:/app/technology/images
     restart: unless-stopped

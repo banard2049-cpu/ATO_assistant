@@ -184,8 +184,13 @@ git push origin main refs/tags/v1.2.0
 
 ### 使用 GitHub Packages（Docker）
 
-GitHub Packages 可用于发布 Docker 镜像。当前仓库的正式下载入口仍是 GitHub Release 中的
-Docker ZIP；如果仓库启用了 GHCR 镜像发布工作流，可使用以下方式运行：
+仓库会在推送版本标签时将 Docker 镜像发布到 GitHub Packages（GHCR）。正式镜像地址为：
+
+```text
+ghcr.io/banard2049-cpu/ato_assistant
+```
+
+也可以继续使用 GitHub Release 中的 Docker ZIP。使用 GHCR 镜像时：
 
 ```bash
 docker login ghcr.io
@@ -213,10 +218,10 @@ Docker 镜像只应保存程序代码和默认运行环境。战役存档必须�
 ```yaml
 volumes:
   - ./data:/app/data
-  - ./aibp/ps:/app/aibp/ps
-  - ./assets:/app/assets
-  - ./map/images:/app/map/images
-  - ./technology/images:/app/technology/images
+  - ./app/aibp/ps:/app/aibp/ps
+  - ./app/assets/exploration-cards:/app/assets/exploration-cards
+  - ./app/map/images:/app/map/images
+  - ./app/technology/images:/app/technology/images
 ```
 
 `docker pull` 不会删除宿主机目录中的图片或存档；它只会替换镜像。更新前建议先备份整个
