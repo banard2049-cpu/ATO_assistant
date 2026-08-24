@@ -4,6 +4,70 @@ ATO_assistant 是一个为ATO战役流程准备的本地 Web 工具。它把每�
 
 这个仓库只发布工具源码和少量允许公开的配置/辅助数据；图片、音频、完整故事文本、官方素材、个人存档和运行日志不会随仓库上传。
 
+## 快速开始
+
+### Docker 一键部署（服务器 / NAS / SSH）
+
+GHCR 镜像是公开的，不需要 docker login。服务器需要安装 Docker Engine 和 Docker Compose v2。
+
+SSH 登录服务器后，将下面整段复制到终端执行。它会创建安装目录、下载 Compose 配置、拉取最新镜像并启动服务：
+
+~~~
+set -eu
+INSTALL_DIR="${ATO_DIR:-$HOME/ato-assistant}"
+mkdir -p "$INSTALL_DIR"
+curl -fsSL https://raw.githubusercontent.com/banard2049-cpu/ATO_assistant/main/tools/packaging/docker/compose.yaml -o "$INSTALL_DIR/compose.yaml"
+cd "$INSTALL_DIR"
+IMAGE=ghcr.io/banard2049-cpu/ato_assistant:latest
+docker pull "$IMAGE"
+if [ ! -f app/index.html ]; then
+  CONTAINER_ID=$(docker create "$IMAGE")
+  mkdir -p app
+  docker cp "$CONTAINER_ID:/app/." app/
+  docker rm "$CONTAINER_ID" >/dev/null
+fi
+docker compose up -d
+echo "ATO Assistant 已启动，请访问 http://服务器IP:8793/"
+~~~
+
+没有 curl 时，把下载行替换为：
+
+~~~
+wget -O "$INSTALL_DIR/compose.yaml" https://raw.githubusercontent.com/banard2049-cpu/ATO_assistant/main/tools/packaging/docker/compose.yaml
+~~~
+
+查看状态、日志和停止服务：
+
+~~~
+cd ~/ato-assistant
+docker compose ps
+docker compose logs -f
+docker compose down
+~~~
+
+更新到最新版本：
+
+~~~
+cd ~/ato-assistant
+docker compose pull
+docker compose up -d
+~~~
+
+固定使用某个版本（例如 1.1.9）：
+
+~~~
+cd ~/ato-assistant
+ATO_VERSION=1.1.9 docker compose up -d
+~~~
+
+存档位于安装目录的 data/，图片位于 app/ 下对应目录。它们通过 Compose 挂载到容器，docker compose pull 不会删除。更新前可备份：
+
+~~~
+tar -czf "ato-assistant-backup-$(date +%Y%m%d-%H%M%S).tar.gz" ~/ato-assistant/data ~/ato-assistant/app
+~~~
+
+浏览器访问 http://服务器IP:8793/。
+
 ## 功能
 
 - 战役主控台：按天推进战役流程，记录今日事项、日期轨和战役笔记。
@@ -36,7 +100,7 @@ ATO-Local 0.2.11 的书册、章节、条目和战斗导航结构，但所有正
 战斗条目的 AIBP 跳转按键仍可使用。本地存在
 `story/data/storybook-data.js` 时，页面会自动使用完整数据覆盖占位版。
 
-## 本地运行
+## 本地运行（源码开发）
 
 ### 一键启动
 
@@ -63,17 +127,15 @@ http://127.0.0.1:8793/
 
 第二屏幕的显示大小按模块独立保存。主控台可分别调整地图和决战版图的显示大小，互不覆盖。在 AIBP 点击并确认“开启新战役”后，第二屏幕切换到决战版图大图模式：右侧显示 80:100 的版图占位图，左侧同步 Boss 大卡、惯常、标志、Trait/特殊卡、当前 AI/BP、卡背顺序、弃牌数和损伤；在战利品计算中成功添加到记录表后，第二屏幕恢复地图。切换或聚焦页面不会改变第二屏幕。
 
-### 使用 Docker Compose
+### 源码目录中的 Docker Compose
+
+仅用于开发调试：
 
 ```powershell
 docker compose up -d
 ```
 
-默认访问：
-
-```text
-http://127.0.0.1:11451/
-```
+访问 `http://127.0.0.1:11451/`。服务器部署请使用 README 顶部的 GHCR 一键部署命令。
 
 ## 本地数据
 
@@ -181,51 +243,6 @@ git push origin main refs/tags/v1.2.0
 
 标签会触发 Android 和 Portable 发布工作流，构建结果会附加到同一个 GitHub Release。
 版本号必须是三段式版本，例如 `v1.2.0`；带 `-beta`、`-rc.1` 等后缀的版本会作为预发布版本处理。
-
-### 使用 GitHub Packages（Docker）
-
-仓库会在推送版本标签时将 Docker 镜像发布到 GitHub Packages（GHCR）。正式镜像地址为：
-
-```text
-ghcr.io/banard2049-cpu/ato_assistant
-```
-
-也可以继续使用 GitHub Release 中的 Docker ZIP。使用 GHCR 镜像时：
-
-```bash
-docker login ghcr.io
-docker pull ghcr.io/banard2049-cpu/ato_assistant:latest
-docker compose up -d
-```
-
-固定到指定版本可避免 `latest` 变化导致的意外更新：
-
-```bash
-docker pull ghcr.io/banard2049-cpu/ato_assistant:1.2.0
-```
-
-更新已有实例时使用：
-
-```bash
-docker compose pull
-docker compose up -d
-```
-
-Docker 镜像只应保存程序代码和默认运行环境。战役存档必须挂载到宿主机的 `data/`，
-用户后来下载的图片也必须挂载到宿主机对应的图片目录；否则重建容器时，存放在旧容器内部的
-图片和其他运行时文件可能丢失。推荐至少保留：
-
-```yaml
-volumes:
-  - ./data:/app/data
-  - ./app/aibp/ps:/app/aibp/ps
-  - ./app/assets/exploration-cards:/app/assets/exploration-cards
-  - ./app/map/images:/app/map/images
-  - ./app/technology/images:/app/technology/images
-```
-
-`docker pull` 不会删除宿主机目录中的图片或存档；它只会替换镜像。更新前建议先备份整个
-`data/` 目录以及所有本地图片目录。
 
 ### 导出内容规则
 
