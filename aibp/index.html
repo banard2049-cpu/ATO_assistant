@@ -237,6 +237,28 @@
       white-space: nowrap;
     }
 
+    .title-actions .deck-order-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 36px;
+      padding: 7px 10px;
+      border: 1px solid rgba(199, 173, 114, 0.42);
+      border-radius: 6px;
+      background: var(--panel);
+      color: var(--gold);
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .title-actions .deck-order-toggle input {
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      accent-color: var(--accent);
+    }
+
     .title-actions .return-main-link {
       border: 1px solid rgba(199, 173, 114, 0.42);
       background: var(--panel);
@@ -583,6 +605,98 @@
       min-height: 34px;
       padding: 6px 12px;
       border-radius: 7px;
+    }
+
+    .scry-dialog {
+      width: min(1080px, calc(100vw - 28px));
+      max-height: min(820px, calc(100vh - 28px));
+    }
+
+    .scry-dialog form {
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr) auto;
+      max-height: inherit;
+    }
+
+    .scry-setup {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .scry-setup input {
+      width: 70px;
+      min-height: 32px;
+      padding: 4px 8px;
+      border: 1px solid rgba(199, 173, 114, 0.42);
+      border-radius: 6px;
+      background: #0b0b0a;
+      color: var(--text);
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .scry-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 12px;
+      min-height: 140px;
+      padding: 14px;
+      overflow: auto;
+      background: #0b0b0a;
+    }
+
+    .scry-card {
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) auto;
+      gap: 6px;
+      min-width: 0;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    .scry-card img {
+      width: 100%;
+      max-height: 300px;
+      object-fit: contain;
+      background: #080808;
+    }
+
+    .scry-card-caption {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+      overflow-wrap: anywhere;
+    }
+
+    .scry-card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 5px;
+      margin-top: 4px;
+    }
+
+    .scry-card-actions button {
+      min-width: 30px;
+      min-height: 28px;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .scry-dialog .trait-dialog-actions {
+      flex-wrap: wrap;
+    }
+
+    .scry-dialog .trait-dialog-actions button {
+      min-height: 34px;
     }
 
     .cards-panel {
@@ -1783,6 +1897,10 @@
           </select>
         </div>
         <div class="title-actions">
+          <label class="deck-order-toggle" title="切换 AI/BP 卡背信息的详细程度">
+            <input type="checkbox" id="viewDeckOrderToggle" checked>
+            查看牌背顺序
+          </label>
           <a class="return-main-link" href="../index.html">返回主控制台</a>
           <div class="path" id="folderPath"></div>
           <button type="button" id="traitButton">Trait</button>
@@ -1830,6 +1948,7 @@
                 <button type="button" id="drawFlareButton" class="hermesian-only-action">抽取闪粉</button>
                 <button type="button" id="drawFeintButton" class="titan-x-only-action">抽取变招</button>
                 <button type="button" id="nietzscheStateButton" class="state-button hidden">状态 1</button>
+                <button type="button" id="scryAiButton">观星 AI</button>
               </div>
               <div class="draw-preview" id="aiDrawPreview">未抽取 AI</div>
             </div>
@@ -1866,6 +1985,7 @@
                 <button type="button" id="removeLabyrinthaurosSpecialBpButton" class="labyrinthauros-only-action">移出特殊 BP</button>
                 <button type="button" id="promoteBpSingleButton">BP 晋升</button>
                 <button type="button" id="promoteBpButton">联动晋升</button>
+                <button type="button" id="scryBpButton">观星 BP</button>
               </div>
               <div class="draw-preview" id="bpDrawPreview">未抽取 BP</div>
             </div>
@@ -1992,6 +2112,28 @@
       <div class="trait-dialog-actions">
         <button type="button" id="tokenClearButton">清空新增</button>
         <button type="button" id="tokenSaveButton">新增 Token 堆</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="trait-dialog scry-dialog" id="scryDialog">
+    <form method="dialog">
+      <div class="trait-dialog-head">
+        <div class="trait-dialog-title" id="scryDialogTitle">AI 观星</div>
+        <button type="button" id="scryCloseButton">取消</button>
+      </div>
+      <div class="scry-setup" id="scrySetup">
+        <label for="scryCountInput">观星张数</label>
+        <input id="scryCountInput" type="number" min="1" max="1" value="1" inputmode="numeric">
+        <button type="button" id="scryStartButton">开始观星</button>
+        <span id="scrySetupHint"></span>
+      </div>
+      <div class="scry-cards" id="scryCards" hidden></div>
+      <div class="trait-dialog-actions" id="scryActions">
+        <button type="button" id="scryBottomButton" hidden>放到底部</button>
+        <button type="button" id="scryShuffleButton" hidden>洗回牌堆</button>
+        <button type="button" id="scryRemoveButton" hidden>移除</button>
+        <button type="button" id="scryTopButton" hidden>调整顺序后盖回</button>
       </div>
     </form>
   </dialog>
@@ -2318,6 +2460,7 @@
     const bpGrid = document.getElementById("bpGrid");
     const aiBackInfo = document.getElementById("aiBackInfo");
     const bpBackInfo = document.getElementById("bpBackInfo");
+    const viewDeckOrderToggle = document.getElementById("viewDeckOrderToggle");
     const aibpLayout = document.querySelector(".aibp-layout");
     const bpColumn = document.getElementById("bpColumn");
     const bpDamageSummary = document.getElementById("bpDamageSummary");
@@ -2338,6 +2481,7 @@
     const tokenClearButton = document.getElementById("tokenClearButton");
     const tokenSaveButton = document.getElementById("tokenSaveButton");
     const drawAiButton = document.getElementById("drawAiButton");
+    const scryAiButton = document.getElementById("scryAiButton");
     const undoAiButton = document.getElementById("undoAiButton");
     const confirmAiButton = document.getElementById("confirmAiButton");
     const promoteAiSingleButton = document.getElementById("promoteAiSingleButton");
@@ -2346,6 +2490,7 @@
     const drawFeintButton = document.getElementById("drawFeintButton");
     const aiDrawPreview = document.getElementById("aiDrawPreview");
     const drawBpButton = document.getElementById("drawBpButton");
+    const scryBpButton = document.getElementById("scryBpButton");
     const undoBpButton = document.getElementById("undoBpButton");
     const discardBpButton = document.getElementById("discardBpButton");
     const defeatBpButton = document.getElementById("defeatBpButton");
@@ -2372,6 +2517,18 @@
     const imageZoomMoveActions = document.getElementById("imageZoomMoveActions");
     const imageZoomTokenActions = document.getElementById("imageZoomTokenActions");
     const imageZoomTokenTitle = document.getElementById("imageZoomTokenTitle");
+    const scryDialog = document.getElementById("scryDialog");
+    const scryDialogTitle = document.getElementById("scryDialogTitle");
+    const scryCloseButton = document.getElementById("scryCloseButton");
+    const scrySetup = document.getElementById("scrySetup");
+    const scryCountInput = document.getElementById("scryCountInput");
+    const scryStartButton = document.getElementById("scryStartButton");
+    const scrySetupHint = document.getElementById("scrySetupHint");
+    const scryCards = document.getElementById("scryCards");
+    const scryTopButton = document.getElementById("scryTopButton");
+    const scryBottomButton = document.getElementById("scryBottomButton");
+    const scryShuffleButton = document.getElementById("scryShuffleButton");
+    const scryRemoveButton = document.getElementById("scryRemoveButton");
 
     function normalizeApostleName(value) {
       return String(value || "").trim().toUpperCase().replace(/[\s-]+/g, "_");
@@ -2396,6 +2553,7 @@
     }
     const piles = {};
     const storageKey = "aibp-apostle-viewer-piles-v3";
+    const deckOrderViewStorageKey = "aibp-view-deck-order-v1";
     const secondScreenSnapshotUrl = "../api/campaign-state.php?section=aibp";
     const secondScreenModeUrl = "../api/campaign-state.php?action=second-screen-mode";
     let secondScreenSnapshotTimer = null;
@@ -2405,8 +2563,13 @@
     let zoomCloseAction = null;
     let activeMoveContext = null;
     let activeTokenContext = null;
+    let activeScry = null;
     let traitLoadToken = 0;
     let tokenLoadToken = 0;
+
+    if (viewDeckOrderToggle) {
+      viewDeckOrderToggle.checked = localStorage.getItem(deckOrderViewStorageKey) !== "0";
+    }
 
     function loadSavedPiles() {
       try {
@@ -2488,8 +2651,8 @@
               ? state.BP.pending
               : (state.BP.pending || state.AI.pending)
         ),
-        aiBacks: deckBackText(state.AI.deck || []),
-        bpBacks: deckBackText(state.BP.deck || []),
+        aiBacks: deckBackDisplayText(state.AI.deck || []),
+        bpBacks: deckBackDisplayText(state.BP.deck || []),
         aiDeckCount: (state.AI.deck || []).length,
         bpDeckCount: (state.BP.deck || []).length,
         aiDiscardCount: (state.AI.discard || []).length,
@@ -3654,9 +3817,229 @@
       renderAibpCards();
     }
 
+    function scryCardSrc(card, apostle) {
+      if (card?.special) return `ps/other/${card.special}.jpg`;
+      return `ps/${apostle}/${cardFileName(card, apostle)}`;
+    }
+
+    function renderScryCards() {
+      if (!scryCards) return;
+      scryCards.replaceChildren();
+      if (!activeScry) return;
+
+      activeScry.cards.forEach((card, index) => {
+        const item = document.createElement("div");
+        item.className = "scry-card";
+        const image = imageOrMessage(
+          scryCardSrc(card, activeScry.apostle),
+          `${activeScry.type} 观星 ${index + 1}`
+        );
+        item.appendChild(image);
+
+        const details = document.createElement("div");
+        const caption = document.createElement("div");
+        caption.className = "scry-card-caption";
+        caption.textContent = `${index + 1}. ${cardAlt(card)}`;
+        details.appendChild(caption);
+
+        const controls = document.createElement("div");
+        controls.className = "scry-card-actions";
+        const upButton = document.createElement("button");
+        upButton.type = "button";
+        upButton.textContent = "↑";
+        upButton.title = "上移";
+        upButton.disabled = index === 0;
+        upButton.dataset.scryMove = "-1";
+        upButton.dataset.scryIndex = String(index);
+        const downButton = document.createElement("button");
+        downButton.type = "button";
+        downButton.textContent = "↓";
+        downButton.title = "下移";
+        downButton.disabled = index === activeScry.cards.length - 1;
+        downButton.dataset.scryMove = "1";
+        downButton.dataset.scryIndex = String(index);
+        const cardActions = [
+          ["top", "盖回顶", "将这张牌盖回牌堆顶"],
+          ["bottom", "放到底", "将这张牌放到牌堆底部"],
+          ["shuffle", "洗回", "将这张牌洗回牌堆"],
+          ["remove", "移除", "将这张牌移出游戏"]
+        ].map(([action, label, title]) => {
+          const actionButton = document.createElement("button");
+          actionButton.type = "button";
+          actionButton.textContent = label;
+          actionButton.title = title;
+          actionButton.dataset.scryAction = action;
+          actionButton.dataset.scryIndex = String(index);
+          return actionButton;
+        });
+        controls.append(upButton, downButton, ...cardActions);
+        details.appendChild(controls);
+        item.appendChild(details);
+        scryCards.appendChild(item);
+      });
+    }
+
+    function resetScryDialog() {
+      if (!scryDialog) return;
+      scryDialogTitle.textContent = "观星";
+      scrySetup.hidden = false;
+      scryCards.hidden = true;
+      scryCards.replaceChildren();
+      scryStartButton.hidden = false;
+      scryCountInput.disabled = false;
+      [scryTopButton, scryBottomButton, scryShuffleButton, scryRemoveButton]
+        .forEach((button) => { button.hidden = true; });
+      scrySetupHint.textContent = "";
+    }
+
+    function openScry(type) {
+      if (!scryDialog || activeScry || !["AI", "BP"].includes(type)) return;
+      ensurePiles(currentApostle);
+      const pile = piles[currentApostle][type];
+      if (pile.pending) {
+        window.alert(`请先处理当前抽取的 ${type} 卡，再进行观星。`);
+        return;
+      }
+      const available = pile.deck.length || pile.discard.length;
+      if (!available) {
+        window.alert(`${type} 抽牌堆为空，无法观星。`);
+        return;
+      }
+      resetScryDialog();
+      scryDialog.dataset.scryType = type;
+      scryDialogTitle.textContent = `${type} 观星`;
+      scryCountInput.max = String(available);
+      scryCountInput.value = String(Math.min(3, available));
+      scrySetupHint.textContent = `当前最多可查看 ${available} 张`;
+      if (typeof scryDialog.showModal === "function") scryDialog.showModal();
+    }
+
+    function startScry() {
+      if (!scryDialog || activeScry) return;
+      const type = scryDialog.dataset.scryType;
+      if (!["AI", "BP"].includes(type)) return;
+      ensurePiles(currentApostle);
+      const apostle = currentApostle;
+      const pile = piles[apostle][type];
+      rememberUndo(apostle, type);
+      if (pile.deck.length === 0 && pile.discard.length > 0) {
+        pile.deck = shuffleCards(pile.discard);
+        pile.discard = [];
+      }
+      const count = Math.max(1, Math.min(pile.deck.length, Math.floor(Number(scryCountInput.value) || 1)));
+      if (!count) return;
+      activeScry = { apostle, type, cards: pile.deck.splice(0, count) };
+      scrySetup.hidden = true;
+      scryCards.hidden = false;
+      scryStartButton.hidden = true;
+      scryCountInput.disabled = true;
+      [scryTopButton, scryBottomButton, scryShuffleButton, scryRemoveButton]
+        .forEach((button) => { button.hidden = false; });
+      renderScryCards();
+      savePiles();
+      renderAibpCards();
+    }
+
+    function moveScryCard(index, delta) {
+      if (!activeScry) return;
+      const target = index + delta;
+      if (target < 0 || target >= activeScry.cards.length) return;
+      [activeScry.cards[index], activeScry.cards[target]] = [activeScry.cards[target], activeScry.cards[index]];
+      renderScryCards();
+    }
+
+    function applyScryCardAction(index, mode) {
+      if (!activeScry) return;
+      const session = activeScry;
+      const pile = piles[session.apostle]?.[session.type];
+      if (!pile || !["top", "bottom", "shuffle", "remove"].includes(mode)) return;
+      const [card] = session.cards.splice(index, 1);
+      if (!card) return;
+      if (mode === "top") {
+        pile.deck.unshift(card);
+      } else if (mode === "bottom") {
+        pile.deck.push(card);
+      } else if (mode === "shuffle") {
+        pile.deck = shuffleCards(pile.deck.concat(card));
+      } else {
+        pile.removed.push(card);
+      }
+      if (session.cards.length === 0) {
+        activeScry = null;
+        savePiles();
+        renderAibpCards();
+        if (scryDialog?.open) scryDialog.close();
+        return;
+      }
+      renderScryCards();
+      renderAibpCards();
+    }
+
+    function cancelScry() {
+      if (!activeScry) return;
+      const session = activeScry;
+      activeScry = null;
+      const stack = undoStacks[session.apostle] || [];
+      const entry = stack.at(-1);
+      if (entry?.scope === session.type || entry?.scope === "AIBP") {
+        stack.pop();
+        piles[session.apostle] = clonePileState(entry.state);
+      } else {
+        const pile = piles[session.apostle]?.[session.type];
+        if (pile) pile.deck.unshift(...session.cards);
+      }
+      savePiles();
+      updateUndoButtons();
+      if (session.apostle === currentApostle) renderAibpCards();
+    }
+
+    function finishScry(mode) {
+      if (!activeScry) return;
+      const session = activeScry;
+      const pile = piles[session.apostle]?.[session.type];
+      if (!pile) return;
+      if (mode === "top") {
+        pile.deck.unshift(...session.cards);
+      } else if (mode === "bottom") {
+        pile.deck.push(...session.cards);
+      } else if (mode === "shuffle") {
+        pile.deck = shuffleCards(pile.deck.concat(session.cards));
+      } else if (mode === "remove") {
+        pile.removed.push(...session.cards);
+      } else {
+        return;
+      }
+      activeScry = null;
+      savePiles();
+      if (session.apostle === currentApostle) renderAibpCards();
+      if (scryDialog?.open) scryDialog.close();
+    }
+
     function deckBackText(cards) {
       if (cards.length === 0) return "空";
       return cards.map((card) => levelBack[card.level] || card.level).join("-");
+    }
+
+    function deckBackCompositionText(cards) {
+      if (cards.length === 0) return "空";
+      const counts = new Map();
+      cards.forEach((card) => {
+        const level = levelBack[card.level] || card.level || "?";
+        counts.set(level, (counts.get(level) || 0) + 1);
+      });
+      const preferredOrder = ["0", "1", "2", "3", "X"];
+      const levels = [...preferredOrder, ...counts.keys()].filter((level, index, all) =>
+        counts.has(level) && all.indexOf(level) === index
+      );
+      const firstLevel = levelBack[cards[0].level] || cards[0].level || "?";
+      const composition = levels.map((level) => `${level}×${counts.get(level)}`).join("，");
+      return `${firstLevel}（${composition}）`;
+    }
+
+    function deckBackDisplayText(cards) {
+      return viewDeckOrderToggle?.checked === false
+        ? deckBackCompositionText(cards)
+        : deckBackText(cards);
     }
 
     function shuffleCards(cards) {
@@ -4392,8 +4775,8 @@
 
     function renderDeckInfo() {
       ensurePiles(currentApostle);
-      aiBackInfo.textContent = deckBackText(piles[currentApostle].AI.deck);
-      bpBackInfo.textContent = deckBackText(piles[currentApostle].BP.deck);
+      aiBackInfo.textContent = deckBackDisplayText(piles[currentApostle].AI.deck);
+      bpBackInfo.textContent = deckBackDisplayText(piles[currentApostle].BP.deck);
       const damageSummary = currentBpDamageSummary();
       bpDamageSummary.textContent = isChimera()
         ? `损伤：${damageSummary.total}（${damageSummary.damage1}+${damageSummary.damage2}）`
@@ -5994,6 +6377,33 @@
       if (!button || button.disabled) return;
       changeZoomTokenCount(button.dataset.tokenZoomAction);
     });
+    scryCards?.addEventListener("click", (event) => {
+      const actionButton = event.target.closest("button[data-scry-action]");
+      if (actionButton) {
+        applyScryCardAction(Number(actionButton.dataset.scryIndex), actionButton.dataset.scryAction);
+        return;
+      }
+      const moveButton = event.target.closest("button[data-scry-move]");
+      if (moveButton) {
+        moveScryCard(Number(moveButton.dataset.scryIndex), Number(moveButton.dataset.scryMove));
+      }
+    });
+    scryAiButton?.addEventListener("click", () => openScry("AI"));
+    scryBpButton?.addEventListener("click", () => openScry("BP"));
+    scryStartButton?.addEventListener("click", startScry);
+    scryTopButton?.addEventListener("click", () => finishScry("top"));
+    scryBottomButton?.addEventListener("click", () => finishScry("bottom"));
+    scryShuffleButton?.addEventListener("click", () => finishScry("shuffle"));
+    scryRemoveButton?.addEventListener("click", () => finishScry("remove"));
+    scryCloseButton?.addEventListener("click", () => {
+      cancelScry();
+      if (scryDialog?.open) scryDialog.close();
+    });
+    scryDialog?.addEventListener("cancel", () => cancelScry());
+    scryDialog?.addEventListener("close", () => {
+      if (activeScry) cancelScry();
+      resetScryDialog();
+    });
     window.addEventListener("keydown", (event) => {
       if (event.key === "Escape" && imageZoomOverlay.classList.contains("show")) {
         closeImageZoom();
@@ -6005,6 +6415,11 @@
         currentBpView = currentBpDamageView();
         renderAibpCards();
       }
+    });
+    viewDeckOrderToggle?.addEventListener("change", () => {
+      localStorage.setItem(deckOrderViewStorageKey, viewDeckOrderToggle.checked ? "1" : "0");
+      renderAibpCards();
+      scheduleSecondScreenSnapshot();
     });
     apostleLevelSelect.addEventListener("change", () => {
       const level = Number(apostleLevelSelect.value);
