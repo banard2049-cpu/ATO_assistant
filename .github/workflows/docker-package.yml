@@ -55,6 +55,14 @@ jobs:
           VERSION: ${{ steps.release.outputs.version }}
         run: python tools/export_portable.py --version "$VERSION" --target docker
 
+      - name: Extract Docker image context
+        shell: bash
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          mkdir -p tools/.docker-image-context
+          unzip -q "export/ATO-Assistant-Docker-${VERSION}.zip" -d tools/.docker-image-context
+
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
@@ -74,7 +82,7 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v6
         with:
-          context: tools/.packaging-cache/portable-build/ATO-Assistant-Docker-${{ steps.release.outputs.version }}
+          context: tools/.docker-image-context
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
