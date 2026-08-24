@@ -60,8 +60,13 @@ jobs:
         env:
           VERSION: ${{ steps.release.outputs.version }}
         run: |
+          temp_dir="$(mktemp -d)"
           mkdir -p tools/.docker-image-context
-          unzip -q "export/ATO-Assistant-Docker-${VERSION}.zip" -d tools/.docker-image-context
+          unzip -q "export/ATO-Assistant-Docker-${VERSION}.zip" -d "$temp_dir"
+          package_dir="$temp_dir/ATO-Assistant-Docker-${VERSION}"
+          test -f "$package_dir/Dockerfile"
+          cp -a "$package_dir"/. tools/.docker-image-context/
+          rm -rf "$temp_dir"
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
