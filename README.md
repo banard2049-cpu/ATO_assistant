@@ -162,6 +162,66 @@ Windows 和 macOS 包已封装 PHP 及其运行依赖，不要求用户安装 PH
 ./tools/release_portable.ps1 -Version 1.2.0 -Publish
 ```
 
+### 使用 GitHub Release
+
+普通用户应从仓库的 [Releases](https://github.com/banard2049-cpu/ATO_assistant/releases)
+页面下载成品，而不是下载源码 ZIP：
+
+- Android：下载对应版本的 `ATO-Assistant-<版本>.apk` 并安装。
+- Windows/macOS：下载对应平台的 Portable ZIP，完整解压后运行启动脚本。
+- Docker：下载 `ATO-Assistant-Docker-<版本>.zip`，完整解压后按压缩包内的
+  `README-DOCKER.txt` 启动。
+
+发布新版本时，维护者提交代码并推送 `v<主版本>.<次版本>.<修订版本>` 标签：
+
+```bash
+git tag -a v1.2.0 -m "ATO Assistant 1.2.0"
+git push origin main refs/tags/v1.2.0
+```
+
+标签会触发 Android 和 Portable 发布工作流，构建结果会附加到同一个 GitHub Release。
+版本号必须是三段式版本，例如 `v1.2.0`；带 `-beta`、`-rc.1` 等后缀的版本会作为预发布版本处理。
+
+### 使用 GitHub Packages（Docker）
+
+GitHub Packages 可用于发布 Docker 镜像。当前仓库的正式下载入口仍是 GitHub Release 中的
+Docker ZIP；如果仓库启用了 GHCR 镜像发布工作流，可使用以下方式运行：
+
+```bash
+docker login ghcr.io
+docker pull ghcr.io/banard2049-cpu/ato_assistant:latest
+docker compose up -d
+```
+
+固定到指定版本可避免 `latest` 变化导致的意外更新：
+
+```bash
+docker pull ghcr.io/banard2049-cpu/ato_assistant:1.2.0
+```
+
+更新已有实例时使用：
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+Docker 镜像只应保存程序代码和默认运行环境。战役存档必须挂载到宿主机的 `data/`，
+用户后来下载的图片也必须挂载到宿主机对应的图片目录；否则重建容器时，存放在旧容器内部的
+图片和其他运行时文件可能丢失。推荐至少保留：
+
+```yaml
+volumes:
+  - ./data:/app/data
+  - ./aibp/ps:/app/aibp/ps
+  - ./assets:/app/assets
+  - ./map/images:/app/map/images
+  - ./technology/images:/app/technology/images
+```
+
+`docker pull` 不会删除宿主机目录中的图片或存档；它只会替换镜像。更新前建议先备份整个
+`data/` 目录以及所有本地图片目录。
+
 ### 导出内容规则
 
 所有目标在打包前后都会执行内容审计：
