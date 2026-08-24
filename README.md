@@ -64,16 +64,6 @@ docker compose up -d
 
 data/ 和 app/ 下的本地图片目录会挂载到容器，拉取新镜像不会删除它们。
 
-## 本地开发
-
-需要 PHP 8.1 或更高版本：
-
-~~~bash
-php -S 0.0.0.0:8793 -t .
-~~~
-
-然后打开 http://127.0.0.1:8793/。Windows/macOS 也可以直接双击仓库根目录的 start-windows.bat 或 start-macos.command。
-
 ## 素材库工具
 
 asset-studio/ 是独立的素材拍摄、导入和分享工具。完整说明见 [asset-studio/README.md](asset-studio/README.md)。
