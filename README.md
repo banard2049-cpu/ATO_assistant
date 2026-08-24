@@ -42,25 +42,16 @@ technology/images/
 
 更新版本时，解压到新的目录并保留旧目录中的 data/ 和本地图片目录即可。第二屏幕在主控台开启后，通过当前地址的 /ss/ 访问。
 
+如果需要拍摄或批量整理素材，运行 asset-studio/ 下的 start-windows.bat 或
+start-macos.command。电脑端在“分享与安装”中选择 ATO_assistant 根目录，预览差异后即可把
+新增图片安装到对应目录；也可以先导出 .atopack 再导入。
+
 ## Docker（服务器 / NAS）
 
-GHCR 镜像公开可用。SSH 登录服务器后复制下面整段命令：
+GHCR 镜像公开可用。SSH 登录服务器后执行这一行即可：
 
 ~~~
-set -eu
-INSTALL_DIR="$HOME/ato-assistant"
-mkdir -p "$INSTALL_DIR"
-curl -fsSL https://raw.githubusercontent.com/banard2049-cpu/ATO_assistant/main/tools/packaging/docker/compose.yaml -o "$INSTALL_DIR/compose.yaml"
-cd "$INSTALL_DIR"
-IMAGE=ghcr.io/banard2049-cpu/ato_assistant:latest
-docker pull "$IMAGE"
-if [ ! -f app/index.html ]; then
-  CONTAINER_ID=$(docker create "$IMAGE")
-  mkdir -p app
-  docker cp "$CONTAINER_ID:/app/." app/
-  docker rm "$CONTAINER_ID" >/dev/null
-fi
-docker compose up -d
+curl -fsSL https://raw.githubusercontent.com/banard2049-cpu/ATO_assistant/main/tools/install-docker.sh | bash
 ~~~
 
 访问 http://服务器IP:8793/。更新：
