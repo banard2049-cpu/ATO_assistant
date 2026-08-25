@@ -36,7 +36,10 @@ $backupCount = 10;
 
 function respond(int $status, array $payload): void {
   http_response_code($status);
-  echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+  echo json_encode(
+    $payload,
+    JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE
+  );
   exit;
 }
 
@@ -159,7 +162,13 @@ function second_screen_urls(): array {
       $hosts[] = $address;
     }
   }
-  if ($hostname) $hosts[] = $hostname . '.local';
+  // On Windows, gethostname() can be returned in the system code page (for
+  // example GBK) rather than UTF-8. Passing that value to json_encode() makes
+  // it return false and leaves a successful HTTP 200 response with an empty
+  // body. Only include hostnames that are safe ASCII DNS labels.
+  if (is_string($hostname) && preg_match('/^[A-Za-z0-9][A-Za-z0-9.-]*$/', $hostname) === 1) {
+    $hosts[] = $hostname . '.local';
+  }
   $hosts = array_values(array_unique($hosts));
   $path = second_screen_path();
   return array_map(static function (string $host) use ($scheme, $portSuffix, $path): string {
