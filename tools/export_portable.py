@@ -99,6 +99,7 @@ def build_docker(version: str) -> Path:
     (stage / "data").mkdir()
     docker_source = TOOLS_ROOT / "packaging/docker"
     shutil.copy2(docker_source / "Dockerfile", stage / "Dockerfile")
+    shutil.copy2(docker_source / "docker-entrypoint.sh", stage / "docker-entrypoint.sh")
     shutil.copy2(docker_source / "compose.yaml", stage / "compose.yaml")
     shutil.copy2(docker_source / "README.txt", stage / "README-DOCKER.txt")
     audit_export_tree(stage)

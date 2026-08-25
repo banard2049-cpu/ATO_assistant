@@ -1,6 +1,18 @@
 <?php
 declare(strict_types=1);
 
+// API responses must remain valid JSON even when the runtime cannot write its
+// data directory.  Keep PHP warnings out of the response body and send them to
+// the server log instead; the operation below still checks every return value
+// and reports a structured error to the client.
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+set_error_handler(static function (int $severity, string $message, string $file, int $line): bool {
+  if (!(error_reporting() & $severity)) return false;
+  error_log(sprintf('%s in %s on line %d', $message, $file, $line));
+  return true;
+});
+
 $cookieLifetime = 60 * 60 * 24 * 180;
 ini_set('session.gc_maxlifetime', (string) $cookieLifetime);
 session_set_cookie_params([
