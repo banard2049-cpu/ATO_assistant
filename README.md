@@ -57,10 +57,11 @@ curl -fsSL https://raw.githubusercontent.com/banard2049-cpu/ATO_assistant/main/t
 访问 http://服务器IP:8793/。更新：
 
 ~~~bash
-cd ~/ato-assistant
 docker compose pull
 docker compose up -d
 ~~~
+
+一键安装默认使用执行命令时的当前文件夹；也可以通过 `ATO_DIR=/path/to/dir` 指定安装目录。
 
 data/ 和 app/ 下的本地图片目录会挂载到容器，拉取新镜像不会删除它们。
 

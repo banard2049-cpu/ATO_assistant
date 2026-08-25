@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eu
 
-install_dir="${ATO_DIR:-$HOME/ato-assistant}"
+install_dir="${ATO_DIR:-$PWD}"
 image="${ATO_IMAGE:-ghcr.io/banard2049-cpu/ato_assistant:latest}"
 compose_url="https://raw.githubusercontent.com/banard2049-cpu/ATO_assistant/main/tools/packaging/docker/compose.yaml"
 
