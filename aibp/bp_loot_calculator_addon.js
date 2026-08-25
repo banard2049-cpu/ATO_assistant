@@ -1649,7 +1649,6 @@ Add these script tags after the main viewer script:
           try {
             const { added, skipped, cycle, syncedToServer, syncWarning } = await addLootResultToRecord(lastLootResult);
             button.textContent = syncedToServer ? `已同步到 NAS (${cycle})` : `已添加到本机 (${cycle})`;
-            await window.AIBP_setSecondScreenMode?.("map");
             window.alert([
               "已添加到阿尔戈号记录表：",
               added.join("\n"),

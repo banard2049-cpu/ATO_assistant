@@ -259,6 +259,33 @@
       accent-color: var(--accent);
     }
 
+    .title-actions .second-screen-mode-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 36px;
+      padding: 7px 10px;
+      border: 1px solid rgba(199, 173, 114, 0.42);
+      border-radius: 6px;
+      background: var(--panel);
+      color: var(--gold);
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .title-actions .second-screen-mode-toggle input {
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      accent-color: var(--accent);
+    }
+
+    .title-actions .second-screen-mode-toggle.disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+
     .title-actions .return-main-link {
       border: 1px solid rgba(199, 173, 114, 0.42);
       background: var(--panel);
@@ -1901,6 +1928,10 @@
             <input type="checkbox" id="viewDeckOrderToggle" checked>
             查看牌背顺序
           </label>
+          <label class="second-screen-mode-toggle" title="勾选后第二屏显示决战版图，取消勾选后显示地图">
+            <input type="checkbox" id="secondScreenBattleModeToggle">
+            第二屏显示决战版图
+          </label>
           <a class="return-main-link" href="../index.html">返回主控制台</a>
           <div class="path" id="folderPath"></div>
           <button type="button" id="traitButton">Trait</button>
@@ -2461,6 +2492,7 @@
     const aiBackInfo = document.getElementById("aiBackInfo");
     const bpBackInfo = document.getElementById("bpBackInfo");
     const viewDeckOrderToggle = document.getElementById("viewDeckOrderToggle");
+    const secondScreenBattleModeToggle = document.getElementById("secondScreenBattleModeToggle");
     const aibpLayout = document.querySelector(".aibp-layout");
     const bpColumn = document.getElementById("bpColumn");
     const bpDamageSummary = document.getElementById("bpDamageSummary");
@@ -2556,7 +2588,9 @@
     const deckOrderViewStorageKey = "aibp-view-deck-order-v1";
     const secondScreenSnapshotUrl = "../api/campaign-state.php?section=aibp";
     const secondScreenModeUrl = "../api/campaign-state.php?action=second-screen-mode";
+    const secondScreenStatusUrl = "../api/campaign-state.php?action=second-screen-status";
     let secondScreenSnapshotTimer = null;
+    let secondScreenModeBusy = false;
     let battleMapControl = null;
     const undoStacks = {};
     const maxUndoSteps = 30;
@@ -2598,6 +2632,40 @@
       }
     }
     window.AIBP_setSecondScreenMode = setSecondScreenMode;
+
+    async function refreshSecondScreenModeToggle() {
+      if (!secondScreenBattleModeToggle) return;
+      try {
+        const response = await fetch(secondScreenStatusUrl, { cache: "no-store" });
+        const payload = await response.json().catch(() => null);
+        if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+        secondScreenBattleModeToggle.checked = Boolean(payload.enabled) && payload.displayMode === "aibp";
+        secondScreenBattleModeToggle.disabled = !payload.enabled;
+        secondScreenBattleModeToggle.classList.toggle("disabled", !payload.enabled);
+        secondScreenBattleModeToggle.title = payload.enabled
+          ? "勾选后第二屏显示决战版图，取消勾选后显示地图"
+          : "请先在主控制台开启第二屏幕";
+      } catch {
+        // AIBP can be opened without signing in; keep the control harmless in that case.
+        secondScreenBattleModeToggle.checked = false;
+        secondScreenBattleModeToggle.disabled = true;
+        secondScreenBattleModeToggle.classList.add("disabled");
+        secondScreenBattleModeToggle.title = "请先在主控制台开启第二屏幕";
+      }
+    }
+
+    async function toggleSecondScreenBattleMode() {
+      if (!secondScreenBattleModeToggle || secondScreenModeBusy) return;
+      secondScreenModeBusy = true;
+      secondScreenBattleModeToggle.disabled = true;
+      const requestedMode = secondScreenBattleModeToggle.checked ? "aibp" : "map";
+      const saved = await setSecondScreenMode(requestedMode);
+      if (!saved) {
+        secondScreenBattleModeToggle.checked = !secondScreenBattleModeToggle.checked;
+      }
+      secondScreenModeBusy = false;
+      await refreshSecondScreenModeToggle();
+    }
 
     function publicCardSnapshot(card) {
       if (!card) return null;
@@ -4770,7 +4838,6 @@
       renderExtraCards();
       renderPanelTokens();
       battleMapControl?.reset();
-      void setSecondScreenMode("aibp");
     }
 
     function renderDeckInfo() {
@@ -6421,6 +6488,7 @@
       renderAibpCards();
       scheduleSecondScreenSnapshot();
     });
+    secondScreenBattleModeToggle?.addEventListener("change", toggleSecondScreenBattleMode);
     apostleLevelSelect.addEventListener("change", () => {
       const level = Number(apostleLevelSelect.value);
       if (level >= 1 && level <= maxApostleLevel) {
@@ -6499,11 +6567,16 @@
     window.addEventListener("resize", updateViewerScale);
     window.addEventListener("focus", refreshRecordApostleLevels);
     document.addEventListener("visibilitychange", () => {
-      if (!document.hidden) refreshRecordApostleLevels();
+      if (!document.hidden) {
+        refreshRecordApostleLevels();
+        refreshSecondScreenModeToggle();
+      }
     });
+    window.addEventListener("focus", refreshSecondScreenModeToggle);
     loadSavedPiles();
     renderApostle(currentApostle);
     refreshRecordApostleLevels();
+    refreshSecondScreenModeToggle();
   </script>
   <script src="ps/other/resouce/bp_resource_map.js"></script>
   <script src="ps/other/resouce/bp_resource_map_c1_c3.js"></script>

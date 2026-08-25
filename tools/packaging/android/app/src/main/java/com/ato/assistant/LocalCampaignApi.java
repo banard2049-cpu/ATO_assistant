@@ -134,6 +134,7 @@ final class LocalCampaignApi {
     put(response, "battleRotation", settings.optInt("battleRotation", 0));
     put(response, "battleSwapped", settings.optBoolean("battleSwapped"));
     put(response, "battleBoardVisible", settings.optBoolean("battleBoardVisible", true));
+    put(response, "displayMode", settings.optString("displayMode", "map"));
     put(response, "urls", new JSONArray(urls));
     return response;
   }
@@ -144,6 +145,7 @@ final class LocalCampaignApi {
     String mode = "aibp".equalsIgnoreCase(payload.optString("mode")) ? "aibp" : "map";
     JSONObject settings = loadSecondScreenSettings();
     settings.put("displayMode", mode);
+    if ("aibp".equals(mode)) settings.put("battleBoardVisible", true);
     saveSecondScreenSettings(settings);
     JSONObject response = ok();
     put(response, "displayMode", mode);

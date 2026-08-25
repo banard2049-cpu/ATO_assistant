@@ -407,7 +407,12 @@ function openBattle(screen) {
   elements.battleView.hidden = false;
   const scale = Math.max(60, Math.min(200, Number(screen.displayScales?.battleBoard || 100)));
   const rotation = [0, 90, 180, 270].includes(Number(screen.battleRotation)) ? Number(screen.battleRotation) : 0;
-  const boardVisible = screen.battleBoardVisible !== false;
+  // The AIBP first-row checkbox selects the whole second-screen mode now:
+  // AIBP mode always means the battle board. Keep the legacy flag for older
+  // payloads only.
+  const boardVisible = screen.displayMode === "aibp"
+    ? true
+    : screen.battleBoardVisible !== false;
   const swapped = Boolean(screen.battleSwapped);
   const map = window.BattleTerrain.normalizeBattleMap(state.battleMap, state.apostle, state.level);
   elements.battleView.classList.toggle("board-hidden", !boardVisible);

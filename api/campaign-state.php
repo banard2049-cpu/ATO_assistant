@@ -618,6 +618,7 @@ if ($action === 'second-screen-status') {
   $battleRotation = 0;
   $battleSwapped = false;
   $battleBoardVisible = true;
+  $displayMode = 'map';
   foreach ($store['screens'] as $token => $entry) {
     if (($entry['userId'] ?? null) === $user['id']) {
       $userToken = (string) $token;
@@ -631,6 +632,7 @@ if ($action === 'second-screen-status') {
       if (!in_array($battleRotation, [0, 90, 180, 270], true)) $battleRotation = 0;
       $battleSwapped = !empty($entry['battleSwapped']);
       $battleBoardVisible = !array_key_exists('battleBoardVisible', $entry) || !empty($entry['battleBoardVisible']);
+      $displayMode = ($entry['displayMode'] ?? 'map') === 'aibp' ? 'aibp' : 'map';
       break;
     }
   }
@@ -703,6 +705,7 @@ if ($action === 'second-screen-status') {
     'battleRotation' => $battleRotation,
     'battleSwapped' => $battleSwapped,
     'battleBoardVisible' => $battleBoardVisible,
+    'displayMode' => $displayMode,
     'urls' => $userToken !== '' ? second_screen_urls() : [],
   ]);
 }
@@ -728,6 +731,12 @@ if ($action === 'second-screen-mode') {
       $store['screens'][$token]['displayMode'] = $mode;
       $store['screens'][$token]['modeChangedAt'] = gmdate('c');
       unset($store['screens'][$token]['focusedModule'], $store['screens'][$token]['focusedAt']);
+      $changed = true;
+    }
+    // The AIBP mode is the battle-board view. Keep the legacy board-visibility
+    // flag from making the new AIBP checkbox show only the sidebar mirror.
+    if ($mode === 'aibp' && ($entry['battleBoardVisible'] ?? true) !== true) {
+      $store['screens'][$token]['battleBoardVisible'] = true;
       $changed = true;
     }
   }
