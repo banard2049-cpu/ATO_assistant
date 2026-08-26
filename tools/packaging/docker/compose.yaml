@@ -15,10 +15,9 @@ services:
       - ./app/map/tokens:/app/map/tokens
       - ./app/record/assets:/app/record/assets
       # The battle board is a local asset and is not included in the public image.
-      # Keep it bind-mounted so Docker can serve /ss/battle-board.jpg.
-      - ./app/ss/battle-board.jpg:/app/ss/battle-board.jpg:ro
-      - ./app/ss/terrain:/app/ss/terrain
-      - ./app/ss/terrain-cards:/app/ss/terrain-cards
+      # Mount the whole SS asset tree so a missing file cannot be auto-created
+      # as a directory by Docker's short file-bind syntax.
+      - ./app/ss:/app/ss:ro
       - ./app/story/images:/app/story/images
       - ./app/technology/images:/app/technology/images
     restart: unless-stopped
