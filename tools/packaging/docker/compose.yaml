@@ -14,6 +14,9 @@ services:
       - ./app/map/images:/app/map/images
       - ./app/map/tokens:/app/map/tokens
       - ./app/record/assets:/app/record/assets
+      # The battle board is a local asset and is not included in the public image.
+      # Keep it bind-mounted so Docker can serve /ss/battle-board.jpg.
+      - ./app/ss/battle-board.jpg:/app/ss/battle-board.jpg:ro
       - ./app/ss/terrain:/app/ss/terrain
       - ./app/ss/terrain-cards:/app/ss/terrain-cards
       - ./app/story/images:/app/story/images
