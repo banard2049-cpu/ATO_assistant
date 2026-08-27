@@ -29,45 +29,58 @@ const edgeDirectionLabels = {
   left: "左",
 };
 const tokenAssets = [
-  { id: "AG", label: "AG进入", path: "./tokens/AG.jpg", unique: true },
-  { id: "AD", label: "AD", path: "./tokens/AD.jpg", unique: true },
-  { id: "c11", label: "C11", path: "./tokens/c11.jpg", group: "c1", cycles: ["c1"] },
-  { id: "c12", label: "C12", path: "./tokens/c12.jpg", group: "c1", cycles: ["c1"] },
-  { id: "c13", label: "C13", path: "./tokens/c13.jpg", group: "c1", cycles: ["c1"] },
-  { id: "ENGIN", label: "ENGIN", path: "./tokens/ENGIN.jpg" },
-  { id: "hs", label: "HS", path: "./tokens/hs.jpg", unique: true },
-  { id: "last_city", label: "Last City", path: "./tokens/last_city.jpg" },
-  { id: "last_oasis", label: "最后到访的绿洲", path: "./tokens/last_oasis.png", cycles: ["c4"] },
+  { id: "AG", label: "AG进入", path: "./tokens/argo.png", unique: true },
+  { id: "AD", label: "AD", path: "./tokens/adversary.png", unique: true },
+  { id: "c11", label: "C11", path: "./tokens/c11.jpg", group: "c1", cycles: ["c1"], square: true },
+  { id: "c12", label: "C12", path: "./tokens/c12.jpg", group: "c1", cycles: ["c1"], square: true },
+  { id: "c13", label: "C13", path: "./tokens/c13.jpg", group: "c1", cycles: ["c1"], square: true },
+  { id: "ENGIN", label: "ENGIN", path: "./tokens/engine_nymph.png" },
+  { id: "hs", label: "HS", path: "./tokens/hemolia_scout.png", unique: true },
+  { id: "last_city", label: "Last City", path: "./tokens/last_visited_city.png" },
+  { id: "night_nymph", label: "Night Nymph", path: "./tokens/night_nymph.png", cycles: ["c3", "c4", "c5"] },
+  { id: "last_oasis", label: "最后到访的绿洲", path: "./tokens/last_visited_oasis.png", group: "c4", cycles: ["c4"] },
+  { id: "c4_city_of_squalor", label: "City of Squalor", path: "./tokens/c4_city_of_squalor.png", group: "c4", cycles: ["c4"], square: true },
+  { id: "c4_cloud_ship", label: "Cloud Ship", path: "./tokens/c4_cloud_ship.png", group: "c4", cycles: ["c4"], square: true },
   {
     id: "sandstorm",
     label: "沙尘暴",
     path: "./tokens/sandstorm.jpg",
+    group: "c4",
     cycles: ["c4"],
     edge: true,
   },
   {
     id: "last_silver_ruin",
     label: "最后到访的白银遗迹",
-    path: "./tokens/last_silver_ruin.png",
+    path: "./tokens/silver_remnant.png",
+    group: "c5",
     cycles: ["c5"],
   },
-  { id: "taitan", label: "Taitan", path: "./tokens/taitan.png", group: "odyssey" },
-  { id: "staff", label: "Staff", path: "./tokens/staff.png", group: "odyssey" },
-  { id: "body", label: "Body", path: "./tokens/body.png", group: "odyssey" },
-  { id: "knowledge", label: "Knowledge", path: "./tokens/knowledge.png", group: "odyssey" },
-  { id: "rr", label: "RR", path: "./tokens/rr.png", group: "odyssey" },
-  { id: "dof", label: "DOF", path: "./tokens/dof.png", group: "odyssey" },
+  { id: "c5_atlantean_capital", label: "Atlantean Capital", path: "./tokens/c5_atlantean_capital.png", group: "c5", cycles: ["c5"], square: true },
+  { id: "c5_black_beak", label: "Black Beak", path: "./tokens/c5_black_beak.png", group: "c5", cycles: ["c5"] },
+  { id: "c5_last_visited_underwater_city", label: "最后到访的水下城市", path: "./tokens/c5_last_visited_underwater_city.png", group: "c5", cycles: ["c5"], unique: true },
+  { id: "c5_nemesis", label: "Nemesis", path: "./tokens/c5_nemesis.png", group: "c5", cycles: ["c5"] },
+  { id: "c5_ruin", label: "Ruin", path: "./tokens/c5_ruin.png", group: "c5", cycles: ["c5"], square: true },
+  { id: "taitan", label: "Taitan", path: "./tokens/reward_token_3.png", group: "odyssey" },
+  { id: "staff", label: "Staff", path: "./tokens/reward_token_2.png", group: "odyssey" },
+  { id: "body", label: "Body", path: "./tokens/reward_token_1.png", group: "odyssey" },
+  { id: "knowledge", label: "Knowledge", path: "./tokens/reward_token_4.png", group: "odyssey" },
+  { id: "rr", label: "RR", path: "./tokens/reward_token_6.png", group: "odyssey" },
+  { id: "dof", label: "DOF", path: "./tokens/reward_token_5.png", group: "odyssey" },
   { id: "end", label: "End", path: "./tokens/end.png", group: "odyssey" },
   {
     id: "token_2",
     label: "AA",
-    path: "./tokens/AA.png",
+    path: "./tokens/adrianes_anchor.png",
     cycles: ["c3"],
+    square: true,
   },
 ];
 const tokenAssetById = Object.fromEntries(tokenAssets.map((token) => [token.id, token]));
 const tokenMenuGroups = [
   { id: "c1", label: "Cycle I", shortLabel: "C1" },
+  { id: "c4", label: "Cycle IV", shortLabel: "C4" },
+  { id: "c5", label: "Cycle V", shortLabel: "C5" },
   { id: "odyssey", label: "Odyssey", shortLabel: "OO", actions: [{ id: "odyssey_supplies", label: "Auto" }] },
 ];
 const odysseySupplyTokenIds = ["body", "staff", "taitan", "knowledge", "dof", "rr"];
@@ -474,6 +487,7 @@ function tilePreviewRevealLabels(tileId, cycleState = activeCycleState()) {
     cycleState.previewRevealed?.[tileId] ? "手动揭示" : "",
     markers.hs ? "侦察船侦察" : "",
     markers.ENGIN ? "引擎 token 揭示" : "",
+    markers.night_nymph ? "黑夜宁芙 token 揭示" : "",
   ].filter(Boolean);
 }
 
@@ -1467,7 +1481,7 @@ function renderTileTokens(tokenIds) {
   const icons = tokenIds.map((tokenId) => {
     const token = tokenAssetById[tokenId];
     if (!token?.path) return "";
-    return `<img class="map-token token-${escapeHtml(tokenId.toLowerCase())}" src="${escapeHtml(token.path)}" alt="${escapeHtml(token.label)}">`;
+    return `<img class="map-token token-${escapeHtml(tokenId.toLowerCase())}${token.square ? " token-square" : ""}" src="${escapeHtml(token.path)}" alt="${escapeHtml(token.label)}">`;
   }).join("");
   return `<div class="tile-tokens">${icons}</div>`;
 }

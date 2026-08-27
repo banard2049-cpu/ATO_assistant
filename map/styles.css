@@ -605,7 +605,7 @@ h1 {
   min-width: 18px;
   aspect-ratio: 1 / 1;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.82);
+  background: transparent;
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.35);
   object-fit: contain;
 }
@@ -617,7 +617,11 @@ h1 {
 }
 
 .map-token.token-ad {
-  background: rgba(255, 238, 235, 0.9);
+  background: transparent;
+}
+
+.map-token.token-square {
+  border-radius: 4px;
 }
 
 .tile-edge-tokens {
@@ -635,7 +639,7 @@ h1 {
   aspect-ratio: 1 / 1;
   border-radius: 4px;
   object-fit: contain;
-  background: rgba(255, 255, 255, 0.9);
+  background: transparent;
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.48);
 }
 

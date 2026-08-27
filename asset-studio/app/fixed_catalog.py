@@ -895,6 +895,63 @@ def fixed_catalog_payload() -> dict[str, Any]:
             item["faces"]["front"] = "aibp/ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_AI_III_001.jpg"
         corrected_oracle_items.append(item)
     payload["items"] = corrected_oracle_items
+
+    # 地图页的标记素材由项目目录维护。清单最初只收录了旧版 APK 中的
+    # 20 个文件；地图实现后来更换了文件名并增加了 C4/C5 专用标记。
+    # 以当前 map/app.js 使用的资源为准，避免导出资料包继续引用已删除的
+    # AA.png、AG.jpg 等旧路径。
+    map_token_files = {
+        "AG": "argo.png",
+        "AD": "adversary.png",
+        "c11": "c11.jpg",
+        "c12": "c12.jpg",
+        "c13": "c13.jpg",
+        "ENGIN": "engine_nymph.png",
+        "hs": "hemolia_scout.png",
+        "last_city": "last_visited_city.png",
+        "night_nymph": "night_nymph.png",
+        "last_oasis": "last_visited_oasis.png",
+        "c4_city_of_squalor": "c4_city_of_squalor.png",
+        "c4_cloud_ship": "c4_cloud_ship.png",
+        "sandstorm": "sandstorm.jpg",
+        "last_silver_ruin": "silver_remnant.png",
+        "c5_atlantean_capital": "c5_atlantean_capital.png",
+        "c5_black_beak": "c5_black_beak.png",
+        "c5_last_visited_underwater_city": "c5_last_visited_underwater_city.png",
+        "c5_nemesis": "c5_nemesis.png",
+        "c5_ruin": "c5_ruin.png",
+        "taitan": "reward_token_3.png",
+        "staff": "reward_token_2.png",
+        "body": "reward_token_1.png",
+        "knowledge": "reward_token_4.png",
+        "rr": "reward_token_6.png",
+        "dof": "reward_token_5.png",
+        "end": "end.png",
+        "AA": "adrianes_anchor.png",
+    }
+    payload["items"] = [
+        item for item in payload["items"]
+        if not any(path.startswith("map/tokens/") for path in item.get("faces", {}).values())
+    ]
+    map_cycles = {
+        "c11": ["c1"], "c12": ["c1"], "c13": ["c1"],
+        "last_oasis": ["c4"], "c4_city_of_squalor": ["c4"],
+        "c4_cloud_ship": ["c4"], "sandstorm": ["c4"],
+        "last_silver_ruin": ["c5"], "c5_atlantean_capital": ["c5"],
+        "c5_black_beak": ["c5"], "c5_last_visited_underwater_city": ["c5"],
+        "c5_nemesis": ["c5"], "c5_ruin": ["c5"], "AA": ["c3"],
+    }
+    unique_tokens = {"AG", "AD", "hs", "c5_last_visited_underwater_city"}
+    square_tokens = {"c11", "c12", "c13", "c4_city_of_squalor", "c4_cloud_ship", "c5_atlantean_capital", "c5_ruin", "AA"}
+    for order, (number, filename) in enumerate(map_token_files.items()):
+        label = MAP_TOKEN_LABELS.get(number, f"地图标记（{number}）")
+        cycle = map_cycles.get(number, [])
+        payload["items"].append({
+            "id": make_id("common", "通用标记", "地图标记", number, label),
+            "cycle": "common", "module": "通用标记", "subgroup": "地图标记",
+            "name": label, "number": number, "sort_order": 58_000 + order,
+            "faces": {"front": f"map/tokens/{filename}"}, "capture_required": True,
+        })
     existing_ids = {item["id"] for item in payload["items"]}
     for order, (filename, (label, subgroup)) in enumerate(HERO_RECORD_ICONS.items()):
         stem = filename.rsplit(".", 1)[0]
