@@ -45,7 +45,9 @@ def build_windows(version: str) -> Path:
     package_name = f"ATO-Assistant-Portable-{version}-windows-x64"
     stage = CACHE_ROOT / "portable-build" / package_name
     prepare_site(stage)
-    filename = f"php-{PHP_WINDOWS_VERSION}-cli-win.zip"
+    # Keep a distinct cache name so older static-php archives (which lack
+    # session) are never reused after switching runtime sources.
+    filename = f"php-{PHP_WINDOWS_VERSION}-Win32-vs17-x64.zip"
     # The static-php CLI builds omit the session extension used by
     # campaign-state.php. Use the official Windows distribution instead.
     archive = download(
