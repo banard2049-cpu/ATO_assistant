@@ -17,7 +17,7 @@ PROJECT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT))
 
 from app.fixed_catalog import fixed_catalog_payload  # noqa: E402
-from app.packages import PACKAGE_VERSION  # noqa: E402
+from app.packages import PACKAGE_VERSION, safe_member  # noqa: E402
 from app.story_extras import (  # noqa: E402
     ENTITY_INDEX_JSON_TARGET,
     ENTITY_INDEX_JS_TARGET,
@@ -100,8 +100,10 @@ def build(apk_path: Path, destination: Path, overlay_root: Path | None = None) -
 
             for index, (item, face, target) in enumerate(faces, 1):
                 overlay_file = overlay_files.get(target)
-                suffix = PurePosixPath(target).suffix.lower()
-                member = f"assets/full/{index:05d}{suffix}"
+                # Preserve the original project-relative resource path and
+                # filename in the archive; manifest hashes remain the
+                # canonical identity for deduplication and verification.
+                member = str(safe_member(target))
                 digest = hashlib.sha256()
                 source = (
                     overlay_file.open("rb")

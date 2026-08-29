@@ -90,15 +90,25 @@ def export_package(
     }
     destination.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(destination, "w", compression=zipfile.ZIP_DEFLATED, allowZip64=True) as archive:
-        written_members = set()
+        written_members: dict[str, str] = {}
         total = max(len(rows), 1)
         for index, row in enumerate(rows, 1):
             source = library / row["original_path"]
-            extension = source.suffix
-            member = f"assets/{row['sha256']}{extension}"
-            if member not in written_members:
+            # Keep the catalog's original project-relative path and filename
+            # inside the .atopack.  This makes the archive directly usable as
+            # a resource tree (and avoids losing meaningful names to hashes),
+            # while the manifest hash still provides content identity and
+            # integrity checking during import.
+            target = json.loads(row["faces_json"]).get(row["face"])
+            if not target:
+                raise ValueError(f"清单中缺少资源路径：{row['item_id']} / {row['face']}")
+            member = str(safe_member(str(target)))
+            previous_hash = written_members.get(member)
+            if previous_hash is not None and previous_hash != row["sha256"]:
+                raise ValueError(f"清单资源路径冲突：{member}")
+            if previous_hash is None:
                 archive.write(source, member)
-                written_members.add(member)
+                written_members[member] = row["sha256"]
             manifest["assets"].append({
                 "itemId": row["item_id"], "face": row["face"], "sha256": row["sha256"],
                 "member": member, "mimeType": row["mime_type"], "originalName": row["original_name"],

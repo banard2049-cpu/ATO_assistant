@@ -274,6 +274,10 @@ class CoreTests(unittest.TestCase):
         pack = self.library / "exports" / "test.atopack"
         result = export_package(self.db, self.library, pack)
         self.assertEqual(1, result["assets"])
+        with zipfile.ZipFile(pack) as archive:
+            # .atopack keeps the original project tree and filename rather
+            # than replacing them with an opaque hash-based member name.
+            self.assertIn("assets/test/001-front.jpg", archive.namelist())
         inspection = inspect_package(self.db, pack)
         self.assertEqual(1, inspection["summary"]["same"])
         self.assertEqual({"add": 0, "replace": 0}, inspection["stories"])

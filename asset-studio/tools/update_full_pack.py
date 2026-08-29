@@ -17,7 +17,7 @@ PROJECT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT))
 
 from app.fixed_catalog import fixed_catalog_payload  # noqa: E402
-from app.packages import PACKAGE_VERSION  # noqa: E402
+from app.packages import PACKAGE_VERSION, safe_member  # noqa: E402
 
 
 CHUNK = 4 * 1024 * 1024
@@ -65,8 +65,8 @@ def update_full_pack(base_pack: Path, destination: Path, overlay_root: Path) -> 
                 partial, "w", compression=zipfile.ZIP_STORED, allowZip64=True
             ) as output_zip:
                 for index, (item, face, target) in enumerate(faces, 1):
-                    suffix = PurePosixPath(target).suffix.lower()
-                    member = f"assets/full/{index:05d}{suffix}"
+                    # Keep the resource tree and filename from the catalog.
+                    member = str(safe_member(target))
                     overlay = overlay_root / Path(*PurePosixPath(target).parts)
                     old_asset = old_assets.get((item["id"], face))
                     digest = hashlib.sha256()
