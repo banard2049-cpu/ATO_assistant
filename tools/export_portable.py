@@ -23,7 +23,9 @@ from packaging.package_common import (
 
 
 PHP_MAC_VERSION = "8.4.22"
-PHP_WINDOWS_VERSION = "8.4.22"
+# PHP for Windows publishes its own release cadence; 8.4.12 is an available
+# official Win32 VS17 x64 build (the static CLI 8.4.22 filename is not).
+PHP_WINDOWS_VERSION = "8.4.12"
 PHP_STATIC_BASE = "https://dl.static-php.dev/static-php-cli"
 PHP_WINDOWS_BASE = "https://windows.php.net/downloads/releases"
 TARGETS = ("windows-x64", "macos-arm64", "macos-x64", "docker")
