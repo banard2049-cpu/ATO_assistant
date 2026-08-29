@@ -189,9 +189,53 @@ def zip_directory(source: Path, destination: Path) -> Path:
                 continue
             info = zipfile.ZipInfo.from_file(path, relative.as_posix())
             info.compress_type = zipfile.ZIP_DEFLATED
+            # ZIP archives created on Windows do not reliably retain POSIX
+            # execute bits (``Path.chmod`` is effectively a no-op for them).
+            # Portable macOS launchers and bundled CLI runtimes must remain
+            # executable after extraction, otherwise Finder cannot launch the
+            # .command file by double-clicking it.  Encode an explicit Unix
+            # mode for known executable payloads rather than relying on the
+            # host filesystem's mode metadata.
+            if _is_archive_executable(path, relative):
+                info.create_system = 3  # Unix
+                info.external_attr = (stat.S_IFREG | 0o755) << 16
             with path.open("rb") as input_file, archive.open(info, "w", force_zip64=True) as output_file:
                 shutil.copyfileobj(input_file, output_file, 1024 * 1024)
     return destination
+
+
+def _is_archive_executable(path: Path, relative: Path) -> bool:
+    """Return whether *path* needs executable mode preserved in a release ZIP."""
+    name = path.name.lower()
+    if name.endswith((".command", ".sh")):
+        return True
+    # Static PHP builds are shipped as runtime/php/bin/php on macOS.
+    return relative.as_posix().lower().endswith("/runtime/php/bin/php")
+
+
+def audit_zip_executables(archive_path: Path) -> None:
+    """Fail fast if executable files lost their Unix mode in a release ZIP."""
+    required = {
+        name.lower()
+        for name in ("start-ato-portable.command", "runtime/php/bin/php")
+    }
+    with zipfile.ZipFile(archive_path) as archive:
+        for required_name in required:
+            info = next(
+                (
+                    candidate
+                    for candidate in archive.infolist()
+                    if candidate.filename.lower().endswith(required_name)
+                ),
+                None,
+            )
+            if info is None:
+                continue  # Windows packages do not contain these files.
+            mode = (info.external_attr >> 16) & 0o777
+            if info.create_system != 3 or mode & 0o111 == 0:
+                raise RuntimeError(
+                    f"发布包中的 {required_name} 没有 Unix 执行权限（mode={mode:o}）。"
+                )
 
 
 def host_key() -> tuple[str, str]:

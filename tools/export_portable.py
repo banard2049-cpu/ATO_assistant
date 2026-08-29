@@ -10,6 +10,7 @@ from packaging.package_common import (
     EXPORT_ROOT,
     TOOLS_ROOT,
     audit_export_tree,
+    audit_zip_executables,
     copy_export_tree,
     download,
     extract_archive,
@@ -34,6 +35,7 @@ def prepare_site(stage: Path) -> None:
 
 def finish_zip(stage: Path, filename: str) -> Path:
     output = zip_directory(stage, EXPORT_ROOT / filename)
+    audit_zip_executables(output)
     shutil.rmtree(stage)
     return output
 
