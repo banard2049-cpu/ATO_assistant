@@ -16,7 +16,7 @@ if not exist "%PHP_BIN%" (
 rem Authentication requires PHP's session extension.  Fail with a useful
 rem message instead of serving an empty HTTP 500 response when a bad runtime
 rem is copied into the portable package.
-"%PHP_BIN%" -m 2>nul | findstr /I /R "^session$" >nul
+"%PHP_BIN%" -r "exit(extension_loaded('session')?0:1);" >nul 2>nul
 if errorlevel 1 (
   echo Portable PHP runtime is missing the session extension.
   echo Please re-download or rebuild the portable package.
