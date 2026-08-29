@@ -46,7 +46,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: tools/.packaging-cache
-          key: portable-runtime-php-8.4.12-${{ runner.os }}
+          key: portable-runtime-php-8.4.12-official-${{ runner.os }}
 
       - name: Resolve release version
         id: release

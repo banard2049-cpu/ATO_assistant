@@ -23,7 +23,7 @@ from packaging.package_common import (
 
 
 PHP_MAC_VERSION = "8.4.22"
-PHP_WINDOWS_VERSION = "8.4.22"
+PHP_WINDOWS_VERSION = "8.4.12"
 PHP_STATIC_BASE = "https://dl.static-php.dev/static-php-cli"
 TARGETS = ("windows-x64", "macos-arm64", "macos-x64", "docker")
 
@@ -45,7 +45,10 @@ def build_windows(version: str) -> Path:
     stage = CACHE_ROOT / "portable-build" / package_name
     prepare_site(stage)
     filename = f"php-{PHP_WINDOWS_VERSION}-cli-win.zip"
-    archive = download(f"{PHP_STATIC_BASE}/common/{filename}", CACHE_ROOT / "php" / filename)
+    archive = download(
+        f"https://windows.php.net/downloads/releases/archives/php-{PHP_WINDOWS_VERSION}-Win32-vs17-x64.zip",
+        CACHE_ROOT / "php" / filename,
+    )
     runtime = stage / "runtime" / "php"
     extract_archive(archive, runtime)
     php = runtime / "php.exe"
