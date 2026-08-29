@@ -25,6 +25,7 @@ from packaging.package_common import (
 PHP_MAC_VERSION = "8.4.22"
 PHP_WINDOWS_VERSION = "8.4.22"
 PHP_STATIC_BASE = "https://dl.static-php.dev/static-php-cli"
+PHP_WINDOWS_BASE = "https://windows.php.net/downloads/releases"
 TARGETS = ("windows-x64", "macos-arm64", "macos-x64", "docker")
 
 
@@ -45,12 +46,10 @@ def build_windows(version: str) -> Path:
     stage = CACHE_ROOT / "portable-build" / package_name
     prepare_site(stage)
     filename = f"php-{PHP_WINDOWS_VERSION}-cli-win.zip"
-    # The minimal static build omits the session extension used by
-    # campaign-state.php for authentication.  Use the max build for the
-    # portable server so first-time registration does not die with an empty
-    # HTTP 500 response.
+    # The static-php CLI builds omit the session extension used by
+    # campaign-state.php. Use the official Windows distribution instead.
     archive = download(
-        f"{PHP_STATIC_BASE}/windows/spc-max/{filename}",
+        f"{PHP_WINDOWS_BASE}/php-{PHP_WINDOWS_VERSION}-Win32-vs17-x64.zip",
         CACHE_ROOT / "php" / filename,
     )
     runtime = stage / "runtime" / "php"
@@ -62,6 +61,11 @@ def build_windows(version: str) -> Path:
             shutil.copy2(found, php)
     if not php.exists():
         raise RuntimeError("下载的 Windows PHP 中没有 php.exe。")
+    # The official ZIP ships extensions as DLLs and does not include an active
+    # php.ini. Enable the session extension required by the local auth API.
+    php_ini = runtime / "php.ini"
+    if not php_ini.exists():
+        php_ini.write_text("[PHP]\nextension_dir=\"ext\"\nextension=session\n", encoding="ascii")
     shutil.copy2(TOOLS_ROOT / "packaging/portable/start-ato-portable.bat", stage / "start-ato-portable.bat")
     shutil.copy2(TOOLS_ROOT / "packaging/portable/README.txt", stage / "README-PORTABLE.txt")
     audit_export_tree(stage)
