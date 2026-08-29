@@ -92,7 +92,25 @@ function write_json_file(string $file, array $value): void {
   flock($handle, LOCK_UN);
   fclose($handle);
 
-  if ($written === false || $written < strlen($json) || !rename($tempFile, $file)) {
+  // POSIX rename() atomically replaces an existing destination.  Windows
+  // PHP, however, refuses to rename over an existing file, which made every
+  // subsequent save (including registering another account) fail with HTTP
+  // 500 in the portable build. Keep the atomic path where possible and
+  // fall back to copy() on Windows.
+  $renamed = false;
+  if ($written !== false && $written >= strlen($json)) {
+    $renamed = @rename($tempFile, $file);
+    if (!$renamed && DIRECTORY_SEPARATOR === '\\') {
+      // copy() replaces an existing file on Windows and also handles builds
+      // where rename is blocked by antivirus/indexing.  Keep the temporary
+      // file until the copy succeeds, then clean it up.
+      if (@copy($tempFile, $file)) {
+        @unlink($tempFile);
+        $renamed = true;
+      }
+    }
+  }
+  if (!$renamed) {
     @unlink($tempFile);
     respond(500, ['ok' => false, 'error' => 'Could not write JSON.']);
   }

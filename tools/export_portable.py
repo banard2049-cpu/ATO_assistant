@@ -45,8 +45,12 @@ def build_windows(version: str) -> Path:
     stage = CACHE_ROOT / "portable-build" / package_name
     prepare_site(stage)
     filename = f"php-{PHP_WINDOWS_VERSION}-cli-win.zip"
+    # The minimal static build omits the session extension used by
+    # campaign-state.php for authentication.  Use the max build for the
+    # portable server so first-time registration does not die with an empty
+    # HTTP 500 response.
     archive = download(
-        f"{PHP_STATIC_BASE}/windows/spc-min/{filename}",
+        f"{PHP_STATIC_BASE}/windows/spc-max/{filename}",
         CACHE_ROOT / "php" / filename,
     )
     runtime = stage / "runtime" / "php"
