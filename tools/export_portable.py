@@ -23,11 +23,8 @@ from packaging.package_common import (
 
 
 PHP_MAC_VERSION = "8.4.22"
-# PHP for Windows publishes its own release cadence; 8.4.12 is an available
-# official Win32 VS17 x64 build (the static CLI 8.4.22 filename is not).
-PHP_WINDOWS_VERSION = "8.4.12"
+PHP_WINDOWS_VERSION = "8.4.22"
 PHP_STATIC_BASE = "https://dl.static-php.dev/static-php-cli"
-PHP_WINDOWS_BASE = "https://windows.php.net/downloads/releases"
 TARGETS = ("windows-x64", "macos-arm64", "macos-x64", "docker")
 
 
@@ -47,15 +44,8 @@ def build_windows(version: str) -> Path:
     package_name = f"ATO-Assistant-Portable-{version}-windows-x64"
     stage = CACHE_ROOT / "portable-build" / package_name
     prepare_site(stage)
-    # Keep a distinct cache name so older static-php archives (which lack
-    # session) are never reused after switching runtime sources.
-    filename = f"php-{PHP_WINDOWS_VERSION}-Win32-vs17-x64.zip"
-    # The static-php CLI builds omit the session extension used by
-    # campaign-state.php. Use the official Windows distribution instead.
-    archive = download(
-        f"{PHP_WINDOWS_BASE}/php-{PHP_WINDOWS_VERSION}-Win32-vs17-x64.zip",
-        CACHE_ROOT / "php" / filename,
-    )
+    filename = f"php-{PHP_WINDOWS_VERSION}-cli-win.zip"
+    archive = download(f"{PHP_STATIC_BASE}/common/{filename}", CACHE_ROOT / "php" / filename)
     runtime = stage / "runtime" / "php"
     extract_archive(archive, runtime)
     php = runtime / "php.exe"
@@ -65,11 +55,6 @@ def build_windows(version: str) -> Path:
             shutil.copy2(found, php)
     if not php.exists():
         raise RuntimeError("下载的 Windows PHP 中没有 php.exe。")
-    # The official ZIP ships extensions as DLLs and does not include an active
-    # php.ini. Enable the session extension required by the local auth API.
-    php_ini = runtime / "php.ini"
-    if not php_ini.exists():
-        php_ini.write_text("[PHP]\nextension_dir=\"ext\"\nextension=session\n", encoding="ascii")
     shutil.copy2(TOOLS_ROOT / "packaging/portable/start-ato-portable.bat", stage / "start-ato-portable.bat")
     shutil.copy2(TOOLS_ROOT / "packaging/portable/README.txt", stage / "README-PORTABLE.txt")
     audit_export_tree(stage)
