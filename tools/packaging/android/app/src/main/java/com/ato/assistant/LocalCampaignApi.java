@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 final class LocalCampaignApi {
-  private static final String[] SECTIONS = {"dashboard", "map", "record", "technology", "heroes", "aibp"};
+  private static final String[] SECTIONS = {"dashboard", "map", "record", "technology", "heroes", "aibp", "story"};
   private static final int BACKUP_COUNT = 10;
   private final SharedPreferences store;
   private final Object lock = new Object();
@@ -142,7 +142,8 @@ final class LocalCampaignApi {
   private JSONObject secondScreenMode(String method, String requestBody) throws Exception {
     if (!"POST".equalsIgnoreCase(method)) throw new ApiException(405, error("This action requires POST."));
     JSONObject payload = requestBody.isEmpty() ? new JSONObject() : new JSONObject(requestBody);
-    String mode = "aibp".equalsIgnoreCase(payload.optString("mode")) ? "aibp" : "map";
+    String requestedMode = payload.optString("mode").toLowerCase(java.util.Locale.ROOT);
+    String mode = "aibp".equals(requestedMode) || "story".equals(requestedMode) ? requestedMode : "map";
     JSONObject settings = loadSecondScreenSettings();
     settings.put("displayMode", mode);
     if ("aibp".equals(mode)) settings.put("battleBoardVisible", true);
@@ -182,6 +183,7 @@ final class LocalCampaignApi {
     JSONObject mapCycle = mapCycles == null ? null : mapCycles.optJSONObject(cycleId);
     if (mapCycle == null) mapCycle = new JSONObject();
     JSONObject aibpState = userSectionState(sections.opt("aibp"), profileId);
+    JSONObject storyState = userSectionState(sections.opt("story"), profileId);
     JSONObject revisions = campaign.getJSONObject("sectionRevisions");
 
     JSONObject screen = new JSONObject();
@@ -190,9 +192,11 @@ final class LocalCampaignApi {
     screen.put("day", dashboardState.has("day") ? dashboardState.opt("day") : 0);
     screen.put("map", mapCycle);
     screen.put("aibp", aibpState);
+    screen.put("story", storyState);
     screen.put("displayMode", settings.optString("displayMode", "map"));
     screen.put("mapRevision", revisions.optInt("map", 0));
     screen.put("aibpRevision", revisions.optInt("aibp", 0));
+    screen.put("storyRevision", revisions.optInt("story", 0));
     screen.put("dashboardRevision", revisions.optInt("dashboard", 0));
     screen.put("updatedAt", campaign.opt("updatedAt"));
     screen.put("displayScales", settings.getJSONObject("displayScales"));
@@ -227,7 +231,8 @@ final class LocalCampaignApi {
     settings.put("battleRotation", validRotation(rotation) ? rotation : 0);
     settings.put("battleSwapped", settings.optBoolean("battleSwapped"));
     settings.put("battleBoardVisible", !settings.has("battleBoardVisible") || settings.optBoolean("battleBoardVisible"));
-    settings.put("displayMode", "aibp".equals(settings.optString("displayMode")) ? "aibp" : "map");
+    String displayMode = settings.optString("displayMode");
+    settings.put("displayMode", "aibp".equals(displayMode) || "story".equals(displayMode) ? displayMode : "map");
     settings.remove("displayScale");
     return settings;
   }

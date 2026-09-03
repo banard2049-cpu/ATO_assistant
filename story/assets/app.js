@@ -24,6 +24,8 @@
   const ttsButton = document.querySelector("#ttsButton");
   const ttsSpeed = document.querySelector("#ttsSpeed");
   const ttsVoice = document.querySelector("#ttsVoice");
+  const secondScreenStoryModeLabel = document.querySelector("#secondScreenStoryModeLabel");
+  const secondScreenStoryModeToggle = document.querySelector("#secondScreenStoryModeToggle");
   const battleShortcutPanel = document.createElement("div");
   battleShortcutPanel.id = "battleShortcutPanel";
   battleShortcutPanel.className = "battle-shortcuts";
@@ -31,6 +33,11 @@
 
   let activeBook = null;
   let activeEntry = null;
+  const secondScreenSnapshotUrl = "../api/campaign-state.php?section=story";
+  const secondScreenModeUrl = "../api/campaign-state.php?action=second-screen-mode";
+  const secondScreenStatusUrl = "../api/campaign-state.php?action=second-screen-status";
+  let secondScreenSnapshotTimer = null;
+  let secondScreenModeBusy = false;
   let historyStack = [];
   let memories = [];
   let voices = [];
@@ -2191,6 +2198,79 @@
     annotateEntityTextNodes(storyText);
   }
 
+  function buildSecondScreenStorySnapshot() {
+    if (!activeEntry) return null;
+    return {
+      bookTitle: currentBook()?.title || "故事书",
+      section: sectionLabel.textContent || activeEntry.chapter || "",
+      id: activeEntry.id || "",
+      title: activeEntry.title || "故事段落",
+      text: activeEntry.text || storyText.textContent || "",
+      updatedAt: new Date().toISOString(),
+    };
+  }
+
+  function scheduleSecondScreenStorySnapshot() {
+    window.clearTimeout(secondScreenSnapshotTimer);
+    secondScreenSnapshotTimer = window.setTimeout(async () => {
+      const snapshot = buildSecondScreenStorySnapshot();
+      if (!snapshot) return;
+      try {
+        await fetch(secondScreenSnapshotUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ section: "story", state: snapshot }),
+        });
+      } catch {}
+    }, 120);
+  }
+
+  async function setSecondScreenMode(mode) {
+    try {
+      const response = await fetch(secondScreenModeUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: mode === "story" ? "story" : "map" }),
+      });
+      return response.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  async function refreshSecondScreenStoryModeToggle() {
+    if (!secondScreenStoryModeToggle) return;
+    try {
+      const response = await fetch(secondScreenStatusUrl, { cache: "no-store" });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+      const enabled = Boolean(payload.enabled);
+      secondScreenStoryModeToggle.checked = enabled && payload.displayMode === "story";
+      secondScreenStoryModeToggle.disabled = !enabled;
+      secondScreenStoryModeLabel?.classList.toggle("disabled", !enabled);
+      secondScreenStoryModeLabel.title = enabled
+        ? "勾选后第二屏显示当前故事文本，取消勾选后显示地图"
+        : "请先在主控制台开启第二屏幕";
+    } catch {
+      secondScreenStoryModeToggle.checked = false;
+      secondScreenStoryModeToggle.disabled = true;
+      secondScreenStoryModeLabel?.classList.add("disabled");
+      if (secondScreenStoryModeLabel) secondScreenStoryModeLabel.title = "请先在主控制台开启第二屏幕";
+    }
+  }
+
+  async function toggleSecondScreenStoryMode() {
+    if (!secondScreenStoryModeToggle || secondScreenModeBusy) return;
+    secondScreenModeBusy = true;
+    secondScreenStoryModeToggle.disabled = true;
+    if (secondScreenStoryModeToggle.checked) scheduleSecondScreenStorySnapshot();
+    const requestedMode = secondScreenStoryModeToggle.checked ? "story" : "map";
+    const saved = await setSecondScreenMode(requestedMode);
+    if (!saved) secondScreenStoryModeToggle.checked = !secondScreenStoryModeToggle.checked;
+    secondScreenModeBusy = false;
+    await refreshSecondScreenStoryModeToggle();
+  }
+
   function renderAiTranslatedSupplement(entry, imagesHtml) {
     const notice = entry.translationNotice
       || "AI 翻译（非官方），可能存在术语或 OCR 误差；请以英文原文和扫描页图为准。";
@@ -2273,6 +2353,7 @@
     entryBadge.textContent = entry.id;
 
     renderStory(entry);
+    scheduleSecondScreenStorySnapshot();
     renderLinkPanel(entry);
     renderResults(searchEntries(searchInput.value));
     syncUrlToEntry(entry);
@@ -2812,6 +2893,7 @@
   });
 
   backButton.addEventListener("click", goBack);
+  secondScreenStoryModeToggle?.addEventListener("change", toggleSecondScreenStoryMode);
   rememberButton.addEventListener("click", rememberParagraph);
   ttsButton.addEventListener("click", toggleSpeech);
   ttsUi.configButton.addEventListener("click", openTtsConfigModal);
@@ -2944,6 +3026,10 @@
   });
 
   window.atoStoryNavigate = navigateToStoryTarget;
+  window.addEventListener("focus", refreshSecondScreenStoryModeToggle);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) refreshSecondScreenStoryModeToggle();
+  });
   window.addEventListener("message", (event) => {
     if (window.location.protocol !== "file:" && event.origin !== window.location.origin) return;
     const message = event.data || {};
@@ -2952,4 +3038,5 @@
   });
 
   init();
+  refreshSecondScreenStoryModeToggle();
 })();

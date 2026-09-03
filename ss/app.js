@@ -2,6 +2,12 @@ const endpoint = "../api/campaign-state.php?action=second-screen";
 const elements = {
   mapFrame: document.querySelector("#mapFrame"),
   mapStage: document.querySelector(".map-stage"),
+  storyView: document.querySelector("#storyView"),
+  storyBookTitle: document.querySelector("#storyBookTitle"),
+  storySection: document.querySelector("#storySection"),
+  storyTitle: document.querySelector("#storyTitle"),
+  storyEntryId: document.querySelector("#storyEntryId"),
+  storyBody: document.querySelector("#storyBody"),
   battleView: document.querySelector("#battleView"),
   battleSidebarContent: document.querySelector(".battle-sidebar-content"),
   battleBoardFrame: document.querySelector("#battleBoardFrame"),
@@ -31,6 +37,7 @@ const elements = {
 
 let retryTimer = null;
 let battleRenderKey = "";
+let storyRenderKey = "";
 let activeMode = "map";
 let latestBattleScale = 1;
 let latestBattleRotation = 0;
@@ -154,19 +161,63 @@ function applyBattleLayout(
 }
 
 function showUnavailable(message = "") {
+  activeMode = "unavailable";
   elements.unavailableView.hidden = false;
   elements.unavailableMessage.textContent = message;
   elements.mapFrame.removeAttribute("src");
   elements.mapStage.hidden = true;
+  elements.storyView.hidden = true;
   elements.battleView.hidden = true;
 }
 
 function openMap() {
   activeMode = "map";
   elements.unavailableView.hidden = true;
+  elements.storyView.hidden = true;
   elements.battleView.hidden = true;
   elements.mapStage.hidden = false;
   if (!elements.mapFrame.getAttribute("src")) elements.mapFrame.src = "../map/index.html?second=1";
+}
+
+function openStory(screen) {
+  const previousMode = activeMode;
+  activeMode = "story";
+  const story = screen.story || {};
+  elements.unavailableView.hidden = true;
+  elements.mapStage.hidden = true;
+  elements.battleView.hidden = true;
+  elements.storyView.hidden = false;
+  const renderKey = JSON.stringify([screen.storyRevision, story.updatedAt, story.id, story.text]);
+  if (renderKey === storyRenderKey && previousMode === "story") return;
+  storyRenderKey = renderKey;
+  elements.storyBookTitle.textContent = story.bookTitle || "ATO 故事书";
+  elements.storySection.textContent = story.section || "";
+  elements.storyTitle.textContent = story.title || "当前故事文本";
+  elements.storyEntryId.textContent = story.id || "";
+  elements.storyBody.textContent = story.text || "请先在故事书中选择一个段落。";
+  fitStoryTextToViewport();
+}
+
+function fitStoryTextToViewport() {
+  if (activeMode !== "story" || elements.storyView.hidden) return;
+  window.requestAnimationFrame(() => {
+    const body = elements.storyBody;
+    let low = 10;
+    let high = 22;
+    let best = low;
+    while (low <= high) {
+      const size = Math.floor((low + high) / 2);
+      body.style.fontSize = `${size}px`;
+      if (body.scrollHeight <= body.clientHeight + 1 && body.scrollWidth <= body.clientWidth + 1) {
+        best = size;
+        low = size + 1;
+      } else {
+        high = size - 1;
+      }
+    }
+    body.style.fontSize = `${best}px`;
+    body.scrollTop = 0;
+  });
 }
 
 function aibpImageUrl(path) {
@@ -404,6 +455,7 @@ function openBattle(screen) {
   const state = screen.aibp || {};
   elements.unavailableView.hidden = true;
   elements.mapStage.hidden = true;
+  elements.storyView.hidden = true;
   elements.battleView.hidden = false;
   const scale = Math.max(60, Math.min(200, Number(screen.displayScales?.battleBoard || 100)));
   const rotation = [0, 90, 180, 270].includes(Number(screen.battleRotation)) ? Number(screen.battleRotation) : 0;
@@ -475,6 +527,7 @@ async function checkConnection() {
       return;
     }
     if (payload.screen.displayMode === "aibp") openBattle(payload.screen);
+    else if (payload.screen.displayMode === "story") openStory(payload.screen);
     else openMap();
   } catch (error) {
     showUnavailable(String(error.message || error));
@@ -494,6 +547,7 @@ window.addEventListener("message", (event) => {
 
 window.addEventListener("resize", () => {
   if (activeMode === "aibp") applyBattleLayout();
+  if (activeMode === "story") fitStoryTextToViewport();
 });
 
 checkConnection();

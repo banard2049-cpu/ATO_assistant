@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>ATO 故事书跳转器</title>
-    <link rel="stylesheet" href="./assets/styles.css?v=20260814entitybio1" />
+    <link rel="stylesheet" href="./assets/styles.css?v=20260903-second-screen-story1" />
   </head>
   <body>
     <aside class="sidebar">
@@ -65,6 +65,10 @@
           <h2 id="entryTitle">选择模块或输入段落号后开始阅读</h2>
         </div>
         <div class="reader-actions">
+          <label id="secondScreenStoryModeLabel" class="second-screen-mode-toggle" title="勾选后第二屏显示当前故事文本，取消勾选后显示地图">
+            <input type="checkbox" id="secondScreenStoryModeToggle" />
+            第二屏显示文本
+          </label>
           <button id="entityBioToggle" type="button" class="entity-bio-toggle" aria-pressed="false" title="显示或隐藏人物小传">人物小传：关</button>
           <button id="ttsButton" type="button" class="tts-btn" title="朗读">朗读</button>
           <select id="ttsSpeed" class="tts-select">
@@ -94,6 +98,6 @@
     <script src="./data/storybook-data.js?v=20260729c5full3"></script>
     <script src="./data/entity-index.js?v=20260815entitybio4"></script>
     <script src="./audio-packs/audio/manifest.js?v=20260614structure1"></script>
-    <script src="./assets/app.js?v=20260815entitybio2"></script>
+    <script src="./assets/app.js?v=20260903-second-screen-story1"></script>
   </body>
 </html>

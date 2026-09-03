@@ -27,7 +27,7 @@ session_start();
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 
-$allowedSections = ['dashboard', 'map', 'record', 'technology', 'heroes', 'aibp'];
+$allowedSections = ['dashboard', 'map', 'record', 'technology', 'heroes', 'aibp', 'story'];
 $dataDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'data';
 $usersFile = $dataDir . DIRECTORY_SEPARATOR . 'ato-users.json';
 $secondScreensFile = $dataDir . DIRECTORY_SEPARATOR . 'ato-second-screens.json';
@@ -54,6 +54,7 @@ function default_campaign(): array {
       'technology' => null,
       'heroes' => null,
       'aibp' => null,
+      'story' => null,
     ],
     'sectionRevisions' => [
       'dashboard' => 0,
@@ -62,6 +63,7 @@ function default_campaign(): array {
       'technology' => 0,
       'heroes' => 0,
       'aibp' => 0,
+      'story' => 0,
     ],
   ];
 }
@@ -223,6 +225,12 @@ function public_second_screen_payload(array $campaign, array $screenEntry = []):
   }
   $aibpState = is_array($aibpState) ? $aibpState : [];
 
+  $storyState = $campaign['sections']['story'] ?? null;
+  if (is_array($storyState['users'] ?? null)) {
+    $storyState = $storyState['users'][$profileId] ?? null;
+  }
+  $storyState = is_array($storyState) ? $storyState : [];
+
   $legacyScale = max(60, min(200, (int) ($screenEntry['displayScale'] ?? 100)));
   $savedScales = is_array($screenEntry['displayScales'] ?? null) ? $screenEntry['displayScales'] : [];
   $displayScales = [
@@ -240,9 +248,11 @@ function public_second_screen_payload(array $campaign, array $screenEntry = []):
     'day' => $dashboardCycle['day'] ?? 0,
     'map' => $mapCycle,
     'aibp' => $aibpState,
+    'story' => $storyState,
     'displayMode' => (string) ($screenEntry['displayMode'] ?? 'map'),
     'mapRevision' => (int) ($campaign['sectionRevisions']['map'] ?? 0),
     'aibpRevision' => (int) ($campaign['sectionRevisions']['aibp'] ?? 0),
+    'storyRevision' => (int) ($campaign['sectionRevisions']['story'] ?? 0),
     'dashboardRevision' => (int) ($campaign['sectionRevisions']['dashboard'] ?? 0),
     'updatedAt' => $campaign['updatedAt'] ?? null,
     'displayScales' => $displayScales,
@@ -650,7 +660,8 @@ if ($action === 'second-screen-status') {
       if (!in_array($battleRotation, [0, 90, 180, 270], true)) $battleRotation = 0;
       $battleSwapped = !empty($entry['battleSwapped']);
       $battleBoardVisible = !array_key_exists('battleBoardVisible', $entry) || !empty($entry['battleBoardVisible']);
-      $displayMode = ($entry['displayMode'] ?? 'map') === 'aibp' ? 'aibp' : 'map';
+      $requestedMode = (string) ($entry['displayMode'] ?? 'map');
+      $displayMode = in_array($requestedMode, ['aibp', 'story'], true) ? $requestedMode : 'map';
       break;
     }
   }
@@ -734,7 +745,7 @@ if ($action === 'second-screen-mode') {
   $payload = json_decode((string) $raw, true);
   if (!is_array($payload)) respond(400, ['ok' => false, 'error' => 'Request body must be JSON.']);
   $mode = strtolower(trim((string) ($payload['mode'] ?? '')));
-  $mode = $mode === 'aibp' ? 'aibp' : 'map';
+  $mode = in_array($mode, ['aibp', 'story'], true) ? $mode : 'map';
 
   $lockHandle = fopen($secondScreensFile . '.lock', 'c');
   if (!$lockHandle || !flock($lockHandle, LOCK_EX)) {

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ATO 第二屏幕</title>
-  <link rel="stylesheet" href="./styles.css?v=20260819-c5-light1">
+  <link rel="stylesheet" href="./styles.css?v=20260903-second-screen-story4">
 </head>
 <body>
   <main class="screen-shell">
@@ -18,6 +18,17 @@
     </section>
     <section class="map-stage" aria-label="辅助地图">
       <iframe id="mapFrame" class="map-frame" title="ATO 辅助地图"></iframe>
+    </section>
+    <section id="storyView" class="story-view" aria-label="当前故事文本" hidden>
+      <article class="story-card">
+        <header class="story-card-head">
+          <div id="storyBookTitle" class="story-book-title">故事书</div>
+          <div id="storySection" class="story-section"></div>
+          <h1 id="storyTitle">当前故事文本</h1>
+          <div id="storyEntryId" class="story-entry-id"></div>
+        </header>
+        <div id="storyBody" class="story-body"></div>
+      </article>
     </section>
     <section id="battleView" class="battle-view" aria-label="决战版图" hidden>
       <aside class="battle-sidebar">
@@ -68,6 +79,6 @@
 
   <script src="./terrain-data.js?v=20260819-c5-light1"></script>
   <script src="../aibp/battle_los.js?v=20260819-hekaton4-labyrinthauros-start1"></script>
-  <script src="./app.js?v=20260819-c5-light1"></script>
+  <script src="./app.js?v=20260903-second-screen-story3"></script>
 </body>
 </html>

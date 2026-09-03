@@ -3732,10 +3732,12 @@
       elements.secondScreenHint.textContent = enabled && !preferred
         ? "第二屏幕服务已开启，但未检测到 Wi-Fi 或有线局域网地址。请先连接局域网后刷新状态。"
         : enabled
-        ? battleBoardVisible
-          ? "第二屏幕已开启。AIBP 开启新战役时显示决战版图，战利品写入记录表后恢复地图。"
-          : "第二屏幕已开启。战斗期间显示 AIBP 镜像和当前地形卡，决战版图状态仍会保留。"
-        : "打开后，同一局域网设备可通过专用网址查看地图或决战版图。";
+        ? payload.displayMode === "story"
+          ? "第二屏幕已开启，当前正在显示故事书阅读文本。"
+          : battleBoardVisible
+            ? "第二屏幕已开启。AIBP 开启新战役时显示决战版图，战利品写入记录表后恢复地图。"
+            : "第二屏幕已开启。战斗期间显示 AIBP 镜像和当前地形卡，决战版图状态仍会保留。"
+        : "打开后，同一局域网设备可通过专用网址查看地图、决战版图或故事文本。";
     }
 
     async function loadSecondScreenStatus() {
