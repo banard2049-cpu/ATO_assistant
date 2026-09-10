@@ -24,6 +24,7 @@ const elements = {
   bossSignature: document.querySelector("#bossSignature"),
   supportCards: document.querySelector(".support-cards"),
   traitCards: document.querySelector("#traitCards"),
+  pendingCards: document.querySelector(".pending-cards"),
   currentPending: document.querySelector("#currentPending"),
   currentPendingLabel: document.querySelector("#currentPendingLabel"),
   aiBacks: document.querySelector("#aiBacks"),
@@ -73,6 +74,115 @@ function layoutSupportCards(availableWidth, smallWidth, smallHeight, oneRow = fa
   return secondRowCount > 0 ? 2 : 1;
 }
 
+// 侧栏卡牌尺寸全部由可用宽高推出来，不写死。返回值就是纵向排布的全部输入：
+// 竖排（有版图、未旋转）时 Boss 卡 / 惯常·Trait / 结算区是三行叠着放的，前两行的高度
+// 和 cardBlockHeight 随 fit 近乎线性变化，放不下时按溢出比例缩回去即可。
+// fit = 1 是「按宽度铺满」的自然尺寸，< 1 表示纵向放不下时整体缩小。
+function battleSidebarMetrics(context, fit = 1) {
+  const {
+    quarterTurn,
+    aibpMirror,
+    hasTerrainCards,
+    availableSidebarWidth,
+    availableSidebarHeight,
+    terrainCardAreaHeight,
+  } = context;
+  const sectionGap = 10;
+  const minimumPanelWidth = 96;
+  // 结算区（AIBP 信息 + 正在结算的卡牌）要占的高度：既要装得下左侧信息列，
+  // 又不能让「正在结算」的卡牌被挤到紧贴屏幕底边。按可用高度取比例，再夹住上下限。
+  const minimumResolutionHeight = Math.max(
+    150,
+    Math.min(260, Math.round(availableSidebarHeight * 0.24))
+  );
+  const bossHeightRatio = 1650 / 2407;
+  const smallHeightRatio = (1 / 5) * (1050 / 750);
+  const minimumSplitAibpWidth = aibpMirror
+    ? Math.max(160, availableSidebarWidth * 0.3)
+    : Math.max(180, availableSidebarWidth * 0.28);
+  const splitPanelWidth = Math.max(
+    minimumPanelWidth,
+    availableSidebarWidth - minimumSplitAibpWidth - sectionGap
+  );
+  // 旋转 90/270 或 AIBP 镜像：结算区和 Boss 卡左右并排，所以只受总高限制。
+  const heightLimitedPanelWidth = Math.max(
+    minimumPanelWidth,
+    (
+      availableSidebarHeight
+      - terrainCardAreaHeight
+      - sectionGap * (hasTerrainCards ? 2 : 1)
+      - 3
+    ) / (bossHeightRatio + smallHeightRatio)
+  );
+  // 竖排（有版图、未旋转）：Boss 卡按侧栏宽度铺满后，Boss 卡 + 惯常/Trait 两行会高过屏幕，
+  // 把下面的结算区挤成 0 高 —— 「正在结算」的卡牌下半张就被切在屏幕外了。
+  // 所以这里按高度预算反推 Boss 卡的最大宽度，先给结算区留出 minimumResolutionHeight。
+  const stackedCardBlockRatio = bossHeightRatio + smallHeightRatio * 2;
+  const stackedReservedHeight = minimumResolutionHeight + sectionGap * 2 + 10;
+  const stackedPanelWidth = Math.min(
+    availableSidebarWidth,
+    (availableSidebarHeight - stackedReservedHeight) / stackedCardBlockRatio
+  );
+  const basePanelWidth = quarterTurn || aibpMirror
+    ? Math.min(splitPanelWidth, heightLimitedPanelWidth)
+    : stackedPanelWidth;
+  const bossPanelWidth = Math.max(minimumPanelWidth, basePanelWidth) * fit;
+  const bossPanelHeight = bossPanelWidth * bossHeightRatio;
+  const smallWidth = bossPanelWidth / 5;
+  const smallHeight = smallWidth * (1050 / 750);
+  const traitAreaHeight = quarterTurn || aibpMirror ? smallHeight + 3 : smallHeight * 2 + 10;
+  const resolutionHeight = Math.max(
+    minimumResolutionHeight,
+    availableSidebarHeight
+      - bossPanelHeight
+      - traitAreaHeight
+      - terrainCardAreaHeight
+      - sectionGap * (hasTerrainCards ? 3 : 2)
+  );
+  return {
+    bossPanelWidth,
+    bossPanelHeight,
+    smallWidth,
+    smallHeight,
+    traitAreaHeight,
+    resolutionHeight,
+    cardBlockHeight: bossPanelHeight + traitAreaHeight,
+  };
+}
+
+function applyBattleSidebarMetrics(context, metrics) {
+  layoutSupportCards(
+    context.availableSidebarWidth,
+    metrics.smallWidth,
+    metrics.smallHeight,
+    context.quarterTurn || context.aibpMirror
+  );
+  elements.battleView.style.setProperty("--boss-small-card-width", `${metrics.smallWidth}px`);
+  elements.battleView.style.setProperty("--boss-small-card-height", `${metrics.smallHeight}px`);
+  elements.battleView.style.setProperty("--boss-panel-width", `${metrics.bossPanelWidth}px`);
+  elements.battleView.style.setProperty("--boss-panel-height", `${metrics.bossPanelHeight}px`);
+  elements.battleView.style.setProperty("--trait-area-height", `${metrics.traitAreaHeight}px`);
+  elements.battleView.style.setProperty("--resolution-area-height", `${metrics.resolutionHeight}px`);
+}
+
+// 兜底量尺：结算卡牌的下缘在侧栏内容框里的位置（布局坐标，不受 rotate/transform 影响）。
+// 竖排和旋转两种摆法都合用一套算法。
+function measureBattleSidebarBottom() {
+  const pending = elements.pendingCards;
+  if (!pending) return 0;
+  const bottom = Number(pending.offsetTop) + Number(pending.offsetHeight);
+  return Number.isFinite(bottom) && bottom > 0 ? bottom : 0;
+}
+
+function measureBattleSidebarOverflow() {
+  const content = elements.battleSidebarContent;
+  if (!content) return 0;
+  const available = Number(content.clientHeight);
+  const bottom = measureBattleSidebarBottom();
+  if (!Number.isFinite(available) || available <= 0 || bottom <= 0) return 0;
+  return Math.max(0, bottom - available);
+}
+
 function applyBattleLayout(
   scale = latestBattleScale,
   rotation = latestBattleRotation,
@@ -103,44 +213,19 @@ function applyBattleLayout(
   const logicalWidth = quarterTurn ? safeHeight : sidebarWidth;
   const logicalHeight = quarterTurn ? sidebarWidth : safeHeight;
   const sidebarPadding = 20;
-  const sectionGap = 10;
   const availableSidebarWidth = Math.max(120, logicalWidth - sidebarPadding);
   const availableSidebarHeight = Math.max(160, logicalHeight - sidebarPadding);
-  const bossHeightRatio = 1650 / 2407;
-  const smallHeightRatio = (1 / 5) * (1050 / 750);
-  const minimumSplitAibpWidth = aibpMirror
-    ? Math.max(160, availableSidebarWidth * 0.3)
-    : Math.max(180, availableSidebarWidth * 0.28);
-  const splitPanelWidth = Math.max(96, availableSidebarWidth - minimumSplitAibpWidth - sectionGap);
   const terrainCardAreaHeight = hasTerrainCards
     ? Math.max(145, Math.min(280, availableSidebarHeight * 0.28))
     : 0;
-  const heightLimitedPanelWidth = Math.max(
-    96,
-    (
-      availableSidebarHeight
-      - terrainCardAreaHeight
-      - sectionGap * (hasTerrainCards ? 2 : 1)
-      - 3
-    ) / (bossHeightRatio + smallHeightRatio)
-  );
-  const bossPanelWidth = quarterTurn || aibpMirror
-    ? Math.min(splitPanelWidth, heightLimitedPanelWidth)
-    : availableSidebarWidth;
-  const bossPanelHeight = bossPanelWidth * bossHeightRatio;
-  const minimumResolutionHeight = 110;
-  const smallWidth = bossPanelWidth / 5;
-  const smallHeight = smallWidth * 1050 / 750;
-  layoutSupportCards(availableSidebarWidth, smallWidth, smallHeight, quarterTurn || aibpMirror);
-  const traitAreaHeight = quarterTurn || aibpMirror ? smallHeight + 3 : smallHeight * 2 + 10;
-  const resolutionHeight = Math.max(
-    minimumResolutionHeight,
-    availableSidebarHeight
-      - bossPanelHeight
-      - traitAreaHeight
-      - terrainCardAreaHeight
-      - sectionGap * (hasTerrainCards ? 3 : 2)
-  );
+  const context = {
+    quarterTurn,
+    aibpMirror,
+    hasTerrainCards,
+    availableSidebarWidth,
+    availableSidebarHeight,
+    terrainCardAreaHeight,
+  };
 
   elements.battleView.style.setProperty("--battle-scale", String(latestBattleScale));
   elements.battleView.style.setProperty("--battle-safe-width", `${safeWidth}px`);
@@ -149,15 +234,32 @@ function applyBattleLayout(
   elements.battleView.style.setProperty("--battle-rotation", `${-effectiveRotation}deg`);
   elements.battleView.style.setProperty("--sidebar-content-width", `${logicalWidth}px`);
   elements.battleView.style.setProperty("--sidebar-content-height", `${logicalHeight}px`);
-  elements.battleView.style.setProperty("--boss-small-card-width", `${smallWidth}px`);
-  elements.battleView.style.setProperty("--boss-small-card-height", `${smallHeight}px`);
-  elements.battleView.style.setProperty("--boss-panel-width", `${bossPanelWidth}px`);
-  elements.battleView.style.setProperty("--boss-panel-height", `${bossPanelHeight}px`);
-  elements.battleView.style.setProperty("--trait-area-height", `${traitAreaHeight}px`);
-  elements.battleView.style.setProperty("--resolution-area-height", `${resolutionHeight}px`);
   elements.battleView.style.setProperty("--terrain-card-area-height", `${terrainCardAreaHeight}px`);
+  // 类名要先切，卡片尺寸量的就是切换后的排布（竖排 vs 旋转/镜像横排）。
   elements.battleSidebarContent.classList.toggle("quarter-turn", quarterTurn);
   elements.battleSidebarContent.classList.toggle("aibp-mirror", aibpMirror);
+
+  let metrics = battleSidebarMetrics(context, 1);
+  applyBattleSidebarMetrics(context, metrics);
+  // 上面是按尺寸推算出来的，这里再按真实布局量一遍：万一还有算不准的极端尺寸（屏幕特别矮、
+  // 或是以后改了样式），就按溢出比例继续整体缩小，保证「正在结算」的卡牌整张落在屏幕内。
+  let fit = 1;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const overflow = measureBattleSidebarOverflow();
+    if (overflow <= 1) break;
+    fit = Math.max(0.4, fit * (1 - overflow / Math.max(1, metrics.cardBlockHeight)));
+    metrics = battleSidebarMetrics(context, fit);
+    applyBattleSidebarMetrics(context, metrics);
+  }
+  // 最后一道兜底：卡牌还是越界就直接把整块侧栏内容等比缩到框内。缩放绕内容中心，
+  // 所以位置不变、不会被裁掉；用布局坐标算比例，不会再触发第二轮测量。
+  const boxHeight = Math.max(1, Number(elements.battleSidebarContent.clientHeight) || 0);
+  const cardBottom = measureBattleSidebarBottom();
+  const remaining = Math.max(0, cardBottom - boxHeight);
+  const fitScale = remaining > 1 && cardBottom > boxHeight
+    ? Math.max(0.5, (boxHeight - 2) / (2 * cardBottom - boxHeight))
+    : 1;
+  elements.battleView.style.setProperty("--sidebar-fit-scale", String(fitScale));
 }
 
 function showUnavailable(message = "") {

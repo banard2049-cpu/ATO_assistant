@@ -249,6 +249,8 @@ h1 {
   --battle-rotation: 0deg;
   --sidebar-content-width: 50vw;
   --sidebar-content-height: 100vh;
+  /* app.js 量到「正在结算」卡牌仍然越界时会把它压到 1 以下，整块侧栏等比缩到屏幕内。 */
+  --sidebar-fit-scale: 1;
   position: fixed;
   left: 50%;
   top: 50%;
@@ -304,7 +306,7 @@ h1 {
   top: 50%;
   width: var(--sidebar-content-width);
   height: var(--sidebar-content-height);
-  transform: translate(-50%, -50%) rotate(var(--battle-rotation));
+  transform: translate(-50%, -50%) rotate(var(--battle-rotation)) scale(var(--sidebar-fit-scale, 1));
   transform-origin: center;
   display: grid;
   grid-template-rows: var(--boss-panel-height) var(--trait-area-height) minmax(0, 1fr);
@@ -366,6 +368,29 @@ h1 {
 .battle-sidebar-content.quarter-turn .pending-cards,
 .battle-sidebar-content.aibp-mirror .pending-cards {
   margin-top: 0;
+}
+
+/* 旋转 90/270 度时整块侧栏内容是转过来看的，所以「上下」要按卡牌自己的方向算：
+   信息块（当前卡背 / BP 卡背 / 弃牌 / 当前损伤）排到「正在结算」卡牌的上方。
+   也就是结算区由左右两列改成上下两行 —— 第一行信息块，第二行卡牌。
+   （内容被旋转过，所以这里的「上」在物理屏幕上分别是左/右，不是屏幕的正上方。） */
+.battle-sidebar-content.quarter-turn .resolution-panel {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 8px;
+}
+
+.battle-sidebar-content.quarter-turn .resolution-panel .aibp-slot {
+  grid-column: 1;
+  grid-row: 1;
+  /* 信息在左、损伤牌在右：信息块只占内容高度，剩下的高度全留给卡牌。 */
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.battle-sidebar-content.quarter-turn .resolution-panel .pending-cards {
+  grid-column: 1;
+  grid-row: 2;
 }
 
 .battle-terrain-cards {
@@ -548,6 +573,8 @@ h1 {
   grid-template-columns: 2fr 3fr;
   gap: 10px;
   padding-top: 10px;
+  /* 底下留一点余量：「正在结算」的卡牌下缘别贴着屏幕底边（电视过扫描会直接切掉）。 */
+  padding-bottom: 18px;
   border-top: 1px solid rgba(228, 181, 92, .22);
 }
 
@@ -587,12 +614,25 @@ h1 {
 }
 
 .current-card {
+  position: relative;
   min-width: 0;
   min-height: 0;
   display: grid;
   place-items: center;
   overflow: hidden;
   background: #090b0a;
+}
+
+/* 「正在结算」的卡牌必须按框缩放：图片改成绝对定位铺满整个框，再用 object-fit: contain。
+   静态定位时图片会按自身比例把所在的行撑高（例：框 353×300，图被撑成 353×495），
+   多出来的下半张就被 .current-card 的 overflow:hidden 裁掉 —— 决战版图缩小、侧栏变宽时
+   最容易出现，看起来就是「正在结算的卡下半段在屏幕外」。 */
+.current-card img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .empty-card,
