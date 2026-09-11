@@ -5,6 +5,7 @@
 # relevant copyright holder has explicitly licensed the files for publishing.
 
 # Images, documents, audio, video, archives, and font files
+*.atopack
 *.png
 *.jpg
 !/tools/packaging/android/app/src/main/res/drawable-nodpi/app_icon.jpg

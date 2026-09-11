@@ -9,6 +9,7 @@ import mimetypes
 import os
 import re
 import sys
+import time
 import zipfile
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
@@ -181,9 +182,18 @@ def build(apk_path: Path, destination: Path, overlay_root: Path | None = None) -
                 "manifest.json",
                 json.dumps(manifest, ensure_ascii=False, separators=(",", ":")),
             )
-        os.replace(partial, destination)
+        last_error = None
+        for attempt in range(12):
+            try:
+                os.replace(partial, destination)
+                last_error = None
+                break
+            except PermissionError as error:
+                last_error = error
+                time.sleep(2)
+        if last_error is not None:
+            raise last_error
     except Exception:
-        partial.unlink(missing_ok=True)
         raise
     return {
         "path": str(destination),

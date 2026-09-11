@@ -8,6 +8,7 @@ import json
 import mimetypes
 import os
 import sys
+import time
 import zipfile
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
@@ -148,9 +149,22 @@ def update_full_pack(base_pack: Path, destination: Path, overlay_root: Path) -> 
                     "manifest.json",
                     json.dumps(manifest, ensure_ascii=False, separators=(",", ":")),
                 )
-        os.replace(partial, destination)
+        # Windows Defender/indexers may briefly hold a newly-closed ZIP.
+        # Retry the atomic rename instead of deleting a fully built package.
+        last_error = None
+        for attempt in range(12):
+            try:
+                os.replace(partial, destination)
+                last_error = None
+                break
+            except PermissionError as error:
+                last_error = error
+                time.sleep(2)
+        if last_error is not None:
+            raise last_error
     except Exception:
-        partial.unlink(missing_ok=True)
+        # Preserve completed/partially completed output for recovery and
+        # diagnostics when the filesystem refuses the final rename.
         raise
 
     return {
