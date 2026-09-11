@@ -20,7 +20,7 @@ services:
       - ./app/ss:/app/ss:ro
       - ./app/story/images:/app/story/images
       # Keep Storybook data local; it is intentionally absent from the public image.
-      # Put the private storybook-data.js in ./story-data on the host.
-      - ./story-data:/app/story/data:ro
+      # Put the private storybook-data.js in ./app/story/data on the host.
+      - ./app/story/data:/app/story/data:ro
       - ./app/technology/images:/app/technology/images
     restart: unless-stopped
