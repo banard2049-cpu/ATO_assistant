@@ -29,6 +29,7 @@ from app.story_extras import (  # noqa: E402
 
 CHUNK = 4 * 1024 * 1024
 STORY_MEMBER = "assets/web/story/data/storybook-data.js"
+STORYBOOK_DATA_MEMBER = "story/data/storybook-data.js"
 
 
 def parse_story(raw: bytes) -> dict:
@@ -127,7 +128,8 @@ def build(apk_path: Path, destination: Path, overlay_root: Path | None = None) -
                 if index == 1 or index % 100 == 0 or index == len(faces):
                     print(f"图片 {index}/{len(faces)}", flush=True)
 
-            stories = parse_story(source_zip.read(STORY_MEMBER))
+            storybook_raw = source_zip.read(STORY_MEMBER)
+            stories = parse_story(storybook_raw)
             entity_index = load_entity_index(source_zip, source_members, overlay_root)
             story_review = [
                 {
@@ -164,6 +166,17 @@ def build(apk_path: Path, destination: Path, overlay_root: Path | None = None) -
                 },
             }
             output_zip.writestr(ENTITY_INDEX_MEMBER, entity_index.json_bytes)
+            # Keep the project-relative story/data files in the resource pack.
+            # The Android importer still regenerates them, but retaining them
+            # makes the .atopack self-contained for desktop reconstruction.
+            output_zip.writestr(STORYBOOK_DATA_MEMBER, storybook_raw)
+            output_zip.writestr(
+                "story/data/entity-index.json", entity_index.json_bytes
+            )
+            output_zip.writestr(
+                "story/data/entity-index.js",
+                entity_index_javascript(entity_index),
+            )
             output_zip.writestr(
                 "manifest.json",
                 json.dumps(manifest, ensure_ascii=False, separators=(",", ":")),

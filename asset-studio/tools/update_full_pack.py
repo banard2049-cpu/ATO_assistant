@@ -18,6 +18,7 @@ sys.path.insert(0, str(PROJECT))
 
 from app.fixed_catalog import fixed_catalog_payload  # noqa: E402
 from app.packages import PACKAGE_VERSION, safe_member  # noqa: E402
+from app.story_extras import entity_index_javascript, parse_entity_index  # noqa: E402
 
 
 CHUNK = 4 * 1024 * 1024
@@ -131,6 +132,18 @@ def update_full_pack(base_pack: Path, destination: Path, overlay_root: Path) -> 
                         "correctedProjectOverlay": True,
                     },
                 }
+                # Materialize story/data files so the pack can reconstruct the
+                # project directly, even when the base pack only stored stories
+                # inside manifest.json.
+                story_payload = manifest.get("stories", {"books": []})
+                storybook_text = "window.STORYBOOK_DATA = " + json.dumps(
+                    story_payload, ensure_ascii=False, separators=(",", ":")
+                ) + ";\n"
+                output_zip.writestr("story/data/storybook-data.js", storybook_text)
+                entity_raw = source_zip.read("story/entity-index.json")
+                entity = parse_entity_index(entity_raw, Path("story/entity-index.json"))
+                output_zip.writestr("story/data/entity-index.json", entity.json_bytes)
+                output_zip.writestr("story/data/entity-index.js", entity_index_javascript(entity))
                 output_zip.writestr(
                     "manifest.json",
                     json.dumps(manifest, ensure_ascii=False, separators=(",", ":")),

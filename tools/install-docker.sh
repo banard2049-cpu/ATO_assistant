@@ -6,6 +6,7 @@ image="${ATO_IMAGE:-ghcr.io/banard2049-cpu/ato_assistant:latest}"
 compose_url="https://raw.githubusercontent.com/banard2049-cpu/ATO_assistant/main/tools/packaging/docker/compose.yaml"
 
 mkdir -p "$install_dir"
+mkdir -p "$install_dir/story-data"
 curl -fsSL "$compose_url" -o "$install_dir/compose.yaml"
 cd "$install_dir"
 docker pull "$image"

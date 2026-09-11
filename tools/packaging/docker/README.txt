@@ -16,6 +16,8 @@ Update:
   docker compose up -d
 
 The package starts with an empty data directory. Saves remain in ./data.
+Private Storybook data is loaded from ./story-data/storybook-data.js. Copy your
+local file there; it is mounted read-only and is not uploaded to GitHub.
 Downloaded images remain in the app/ image folders mounted by compose, so
 pulling a newer application image does not delete them.
 No tools directory is included.
