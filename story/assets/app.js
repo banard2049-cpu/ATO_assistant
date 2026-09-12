@@ -21,6 +21,8 @@
   const storyText = document.querySelector("#storyText");
   const linkPanel = document.querySelector("#linkPanel");
   const entityBioToggle = document.querySelector("#entityBioToggle");
+  const storyVersionToggle = document.querySelector("#storyVersionToggle");
+  const storyVersionSelect = document.querySelector("#storyVersionSelect");
   const ttsButton = document.querySelector("#ttsButton");
   const ttsSpeed = document.querySelector("#ttsSpeed");
   const ttsVoice = document.querySelector("#ttsVoice");
@@ -33,6 +35,7 @@
 
   let activeBook = null;
   let activeEntry = null;
+  let storyVersion = localStorage.getItem("ato-story-version-v1") || "民间版";
   const secondScreenSnapshotUrl = "../api/campaign-state.php?section=story";
   const secondScreenModeUrl = "../api/campaign-state.php?action=second-screen-mode";
   const secondScreenStatusUrl = "../api/campaign-state.php?action=second-screen-status";
@@ -2181,21 +2184,45 @@
   }
 
   function renderStory(entry) {
-    const isTranslatedSupplement = Boolean(entry.originalText);
-    const imagesHtml = renderBattleImages(entry, {
+    const displayEntry = getDisplayEntry(entry);
+    const isTranslatedSupplement = Boolean(displayEntry.originalText);
+    const imagesHtml = renderBattleImages(displayEntry, {
       includeAibpLink: !isTranslatedSupplement,
     });
     const html = isTranslatedSupplement
-      ? renderAiTranslatedSupplement(entry, imagesHtml)
-      : entry.html
-      ? renderHtmlStory(entry, imagesHtml)
-      : entry.chapterKey === "battle"
-      ? renderBattleSectionedStory(entry, imagesHtml)
-      : entry.chapterKey === "special-aftermath"
-        ? renderSectionedStory(entry, imagesHtml)
-        : `${linkify(entry.text, currentBook())}${imagesHtml ? `<div class="battle-gallery">${imagesHtml}</div>` : ""}`;
+      ? renderAiTranslatedSupplement(displayEntry, imagesHtml)
+      : displayEntry.html
+      ? renderHtmlStory(displayEntry, imagesHtml)
+      : displayEntry.chapterKey === "battle"
+      ? renderBattleSectionedStory(displayEntry, imagesHtml)
+      : displayEntry.chapterKey === "special-aftermath"
+        ? renderSectionedStory(displayEntry, imagesHtml)
+        : `${linkify(displayEntry.text, currentBook())}${imagesHtml ? `<div class="battle-gallery">${imagesHtml}</div>` : ""}`;
     storyText.innerHTML = html;
     annotateEntityTextNodes(storyText);
+  }
+
+  function supportsOfficialVersion(book = currentBook()) {
+    return ["c1", "c2", "c3"].includes(book?.id);
+  }
+
+  function getDisplayEntry(entry) {
+    if (storyVersion !== "官方版" || !supportsOfficialVersion()) return entry;
+    if (entry.officialStatus !== "ready" || !entry.officialText) {
+      return {
+        ...entry,
+        text: `【官方版待校核】\n\n该条目的官方版正文尚未完成 PDF 校核。\n来源：${entry.officialSource?.pdf || "指定故事书 PDF"}${entry.officialSource?.pages?.length ? `，第 ${entry.officialSource.pages.join("、")} 页` : ""}`,
+        title: entry.officialTitle || entry.title,
+      };
+    }
+    return { ...entry, title: entry.officialTitle || entry.title, text: entry.officialText };
+  }
+
+  function refreshStoryVersionControl(book = currentBook()) {
+    const enabled = supportsOfficialVersion(book);
+    if (!storyVersionToggle || !storyVersionSelect) return;
+    storyVersionToggle.hidden = !enabled;
+    storyVersionSelect.value = enabled ? storyVersion : "民间版";
   }
 
   function buildSecondScreenStorySnapshot() {
@@ -2345,11 +2372,13 @@
     }
 
     activeBook = currentBook();
+    refreshStoryVersionControl(activeBook);
     activeEntry = entry;
+    refreshStoryVersionControl(activeBook);
     syncSelectorsToEntry(entry);
 
     sectionLabel.textContent = entry.encounter ? `${entry.chapter} / ${entry.encounter}` : entry.chapter || "未命名模块";
-    entryTitle.textContent = entry.title || "故事段落";
+    entryTitle.textContent = getDisplayEntry(entry).title || "故事段落";
     entryBadge.textContent = entry.id;
 
     renderStory(entry);
@@ -2850,6 +2879,8 @@
 
   bookSelect.addEventListener("change", () => {
     activeBook = currentBook();
+    if (!supportsOfficialVersion(activeBook)) storyVersion = "民间版";
+    refreshStoryVersionControl(activeBook);
     activeEntry = null;
     historyStack = [];
     searchInput.value = "";
@@ -2896,6 +2927,15 @@
   secondScreenStoryModeToggle?.addEventListener("change", toggleSecondScreenStoryMode);
   rememberButton.addEventListener("click", rememberParagraph);
   ttsButton.addEventListener("click", toggleSpeech);
+  storyVersionSelect?.addEventListener("change", (event) => {
+    storyVersion = event.target.value === "官方版" && supportsOfficialVersion() ? "官方版" : "民间版";
+    localStorage.setItem("ato-story-version-v1", storyVersion);
+    if (activeEntry) {
+      entryTitle.textContent = getDisplayEntry(activeEntry).title || "故事段落";
+      renderStory(activeEntry);
+      scheduleSecondScreenStorySnapshot();
+    }
+  });
   ttsUi.configButton.addEventListener("click", openTtsConfigModal);
   ttsUi.engineSelect.addEventListener("change", (event) => {
     ttsConfig.activeEngine = event.target.value;

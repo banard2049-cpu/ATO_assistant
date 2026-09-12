@@ -70,6 +70,13 @@
             第二屏显示文本
           </label>
           <button id="entityBioToggle" type="button" class="entity-bio-toggle" aria-pressed="false" title="显示或隐藏人物小传">人物小传：关</button>
+          <label id="storyVersionToggle" class="story-version-toggle" hidden>
+            <span>版本</span>
+            <select id="storyVersionSelect" aria-label="故事版本">
+              <option value="民间版">民间版</option>
+              <option value="官方版">官方版</option>
+            </select>
+          </label>
           <button id="ttsButton" type="button" class="tts-btn" title="朗读">朗读</button>
           <select id="ttsSpeed" class="tts-select">
             <option value="1" selected>1x</option>
@@ -99,5 +106,7 @@
     <script src="./data/entity-index.js?v=20260815entitybio4"></script>
     <script src="./audio-packs/audio/manifest.js?v=20260614structure1"></script>
     <script src="./assets/app.js?v=20260903-second-screen-story1"></script>
-  </body>
+    <script src="../assets/ato-terms.js?v=20260912f"></script>
+  <script src="../assets/term-language.js?v=20260912d"></script>
+</body>
 </html>

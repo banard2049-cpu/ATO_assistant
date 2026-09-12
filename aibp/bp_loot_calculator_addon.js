@@ -92,7 +92,7 @@ Add these script tags after the main viewer script:
     THE_NIETZSCJEAN: "尼采超人",
     HYPERTIME_ORACLE: "超时神谕",
     ICARIAN_HARPY: "伊卡洛斯鹰身女妖",
-    SUN_DESCENDANT: "太阳后裔",
+    SUN_DESCENDANT: "坠落太阳",
     MIDASCORE: "迈达狮",
     DEMIDJINN: "半神迪精",
     THE_BABELIAN_LUNACY: "巴比伦疯塔",

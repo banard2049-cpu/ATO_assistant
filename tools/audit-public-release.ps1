@@ -39,10 +39,12 @@ $blockedPathPatterns = @(
 )
 
 $allowedPaths = @(
+  'assets/ato-terms.js',
   'assets/exploration-card-rules.js',
   'assets/exploration-card-tags.js',
   'assets/page-focus-router.js',
   'assets/story-doom-card-data.js',
+  'assets/term-language.js',
   'tools/packaging/android/app/src/main/res/drawable-nodpi/app_icon.jpg'
 )
 

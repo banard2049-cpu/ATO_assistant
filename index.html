@@ -2034,6 +2034,7 @@
             当前 Cycle
             <select id="cycleSelect"></select>
           </label>
+          <button id="termLanguageToggle" class="secondary" type="button" aria-pressed="false" title="切换术语版本" data-dashboard-readonly-allowed>官方版术语</button>
         </div>
         <p class="subtitle"><span id="campaignSaveStatus" class="campaign-save-status" data-state="saving" aria-live="polite">正在连接存档...</span></p>
       </div>
@@ -2182,9 +2183,11 @@
     const authUrl = "./api/campaign-state.php";
     const campaignStorageUrl = "./api/campaign-state.php?section=dashboard";
     const campaignStorageSection = "dashboard";
+    const termLanguageStorageKey = "ato-term-language-v1";
     const dashboardWriterLeaseKey = "ato-dashboard-writer-lease-v1";
     const dashboardWriterLeaseTtl = 12000;
     const dashboardWriterHeartbeatInterval = 3000;
+    // Shared term language behavior is provided by assets/term-language.js.
     const storyDoomData = window.ATO_STORY_DOOM_DATA || { cycles: {} };
     const cardTrackGroups = {
       story: {
@@ -3315,7 +3318,11 @@
 
     function clearLocalStorageAfterLogout() {
       try {
+        // The terminology version is a display preference of this browser rather
+        // than account data, so keep it across a logout.
+        const termLanguage = storedTermLanguage();
         localStorage.clear();
+        if (termLanguage) localStorage.setItem(termLanguageStorageKey, termLanguage);
       } catch (error) {
         console.warn("无法清空本地存储：", error);
       }
@@ -3443,6 +3450,15 @@
         currentProfile().activeCycleId = requestedCycleId;
       }
       state = currentCycle().state;
+      if (campaignSectionBaseline) {
+        // The terminology shown on screen is a per-browser display preference.
+        // The campaign profile only seeds it for a browser that never chose one,
+        // so a re-render must never copy the stored profile value back over the
+        // local choice (a read-only second console used to reset it to 民间版).
+        window.dispatchEvent(new CustomEvent("ato-term-language-changed", {
+          detail: { official: storedTermLanguage() === "official" },
+        }));
+      }
       syncInputs();
       renderProfiles();
       renderCycles();
@@ -3615,6 +3631,17 @@
       return { activeProfileId, profiles };
     }
 
+    // Read the terminology picked in this browser. `null` means the browser never
+    // chose one, in which case the campaign profile is used as the first seed.
+    function storedTermLanguage() {
+      try {
+        const value = localStorage.getItem(termLanguageStorageKey);
+        return value === "official" || value === "fan" ? value : null;
+      } catch {
+        return null;
+      }
+    }
+
     function normalizeProfile(profile) {
       const activeCycleId = cycleConfigs.some((cycle) => cycle.id === profile.activeCycleId)
         ? profile.activeCycleId
@@ -3632,6 +3659,7 @@
       return {
         id: profile.id,
         name: profile.name || "未命名用户",
+        termLanguage: storedTermLanguage() || (profile.termLanguage === "official" ? "official" : "fan"),
         activeCycleId,
         cycles,
       };
@@ -4696,6 +4724,27 @@
       currentCycle().state = state;
       queueCampaignSave();
     }
+    window.ATOSetTermLanguage = (language) => {
+      const value = language === "official" ? "official" : "fan";
+      let warn = "";
+      try {
+        localStorage.setItem(termLanguageStorageKey, value);
+      } catch (error) {
+        warn = "（无法写入浏览器存储，本次切换仅在关闭页面前有效）";
+        console.warn("无法保存术语版本：", error);
+      }
+      // Mirror the choice into the campaign profile so a browser that has never
+      // chosen a terminology starts from it. The local preference always wins and
+      // switching must never depend on holding the dashboard write lease.
+      const profile = currentProfile();
+      if (profile && profile.termLanguage !== value) {
+        profile.termLanguage = value;
+        if (ownsDashboardWriteLease()) queueCampaignSave();
+      }
+      return warn;
+    };
+    window.ATOGetTermLanguage = () => storedTermLanguage()
+      || (currentProfile()?.termLanguage === "official" ? "official" : "fan");
 
     function mapCycleDefinition(cycleId = currentCycleConfig().id) {
       return (window.ATO_MAP_DATA?.cycles || []).find((cycle) => cycle.id === cycleId) || null;
@@ -6592,6 +6641,9 @@
         checkbox.className = "flow-check";
         checkbox.checked = checked;
         checkbox.setAttribute("aria-label", `完成${step.title}`);
+        // Marks the step name so the official version can use the full step
+        // wording (探索步骤/剧情步骤…) here only (see assets/term-language.js).
+        checkbox.setAttribute("data-term-scope", "step-name");
         checkbox.addEventListener("change", () => {
           state.completed[step.id] = checkbox.checked;
           if (step.id === "encounter" && checkbox.checked) {
@@ -6607,7 +6659,7 @@
           ? `<button type="button" class="flow-title-button" data-card-track-open="${step.id}">${escapeHtml(step.title)}</button>`
           : `<span>${escapeHtml(step.title)}</span>`;
         text.innerHTML = `
-          <div class="step-title">
+          <div class="step-title" data-term-scope="step-name">
             <span class="step-index">${String(index + 1).padStart(2, "0")}</span>
             ${titleText}
             <span class="step-kind">${escapeHtml(step.kind)}</span>
@@ -7955,5 +8007,7 @@
     setAuthMode("login");
     initAuth();
   </script>
+  <script src="./assets/ato-terms.js?v=20260912f"></script>
+  <script src="./assets/term-language.js?v=20260912d"></script>
 </body>
 </html>

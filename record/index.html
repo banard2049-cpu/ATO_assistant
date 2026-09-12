@@ -5458,6 +5458,9 @@
       const popup = document.createElement("div");
       popup.id = "matrix-summary";
       popup.className = "matrix-summary-popup";
+      // The summary is prose: keep the wording the players wrote, and only
+      // translate the surrounding UI labels (see assets/term-language.js).
+      popup.setAttribute("data-term-ignore", "");
 
       const title = document.createElement("span");
       title.className = "summary-title";
@@ -5738,5 +5741,7 @@
     renderAll();
     loadServerState();
   </script>
+  <script src="../assets/ato-terms.js?v=20260912f"></script>
+  <script src="../assets/term-language.js?v=20260912d"></script>
 </body>
 </html>

@@ -23,6 +23,11 @@ def normalize_title(value):
     value = value.casefold()
     value = value.replace("’", "'")
     value = re.sub(r"\bprotype\b", "prototype", value)
+    # Known APK/TTS naming variants. These are equivalent card names, not
+    # missing translations: normalize them before stripping punctuation.
+    value = re.sub(r"\bexcursion\s+propylon\s+(?:2|ii)\b", "excursion propylon 2", value)
+    value = re.sub(r"\bhephaestean\b", "hephaestan", value)
+    value = re.sub(r"\brendevous\b", "rendezvous", value)
     value = re.sub(r"\s+", " ", value).strip()
     parts = [part.strip() for part in value.split("/") if part.strip()]
     normalized_parts = []
