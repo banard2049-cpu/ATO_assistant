@@ -113,25 +113,29 @@
     });
   }
   function updateButton(button) {
-    button.textContent = state.official ? "民间版术语" : "官方版术语";
+    // The label names the version a click switches TO, so it always reads
+    // "切换为…翻译" whichever version is active now.
+    const label = state.official ? "切换为民间翻译" : "切换为官方翻译";
+    button.textContent = label;
     button.setAttribute("aria-pressed", String(state.official));
-    button.title = state.official ? "切换回民间版术语" : "切换为官方版术语";
+    button.setAttribute("aria-label", label);
+    button.title = label;
   }
   function refresh() {
     apply(document.body || document);
   }
   function init() {
     adopt(resolveInitial());
-    // The console owns the toggle button in its top bar. Module pages only use a
-    // button when they already provide one; otherwise they just follow the
-    // version chosen elsewhere.
+    // The console owns the toggle button, next to the archive export button in
+    // the 用户与存档 panel. This fixed fallback only exists for a console build
+    // that lost that markup; it sits bottom-right to match that spot.
     let button = document.querySelector("#termLanguageToggle, [data-term-toggle]");
     if (!button && isMainConsole()) {
       button = document.createElement("button");
       button.type = "button";
       button.className = "secondary";
       button.dataset.termToggle = "true";
-      button.style.cssText = "position:fixed;top:12px;right:12px;z-index:9999";
+      button.style.cssText = "position:fixed;bottom:16px;right:16px;z-index:9999";
       button.setAttribute("aria-label", "切换术语版本");
       (document.body || document.documentElement).appendChild(button);
     }

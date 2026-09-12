@@ -2034,7 +2034,6 @@
             当前 Cycle
             <select id="cycleSelect"></select>
           </label>
-          <button id="termLanguageToggle" class="secondary" type="button" aria-pressed="false" title="切换术语版本" data-dashboard-readonly-allowed>官方版术语</button>
         </div>
         <p class="subtitle"><span id="campaignSaveStatus" class="campaign-save-status" data-state="saving" aria-live="polite">正在连接存档...</span></p>
       </div>
@@ -2141,6 +2140,7 @@
             <div class="archive-actions">
               <button id="exportButton" type="button" class="secondary" data-dashboard-readonly-allowed>导出状态</button>
               <button id="importButton" type="button" class="secondary">导入状态</button>
+              <button id="termLanguageToggle" class="secondary" type="button" aria-pressed="false" title="切换为官方翻译" data-dashboard-readonly-allowed>切换为官方翻译</button>
               <input id="importInput" type="file" accept="application/json,.json" hidden>
             </div>
             <div id="resourcePackCard" class="second-screen-card" hidden>
@@ -8008,6 +8008,6 @@
     initAuth();
   </script>
   <script src="./assets/ato-terms.js?v=20260912f"></script>
-  <script src="./assets/term-language.js?v=20260912d"></script>
+  <script src="./assets/term-language.js?v=20260913a"></script>
 </body>
 </html>
