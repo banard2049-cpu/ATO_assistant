@@ -17,6 +17,7 @@ from pathlib import Path, PurePosixPath
 PROJECT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT))
 
+from app.official_resources import add_to_archive
 from app.fixed_catalog import fixed_catalog_payload  # noqa: E402
 from app.packages import PACKAGE_VERSION, safe_member  # noqa: E402
 from app.story_extras import entity_index_javascript, parse_entity_index  # noqa: E402
@@ -117,7 +118,7 @@ def update_full_pack(base_pack: Path, destination: Path, overlay_root: Path) -> 
                 ]
                 manifest = {
                     "format": "ato-asset-pack",
-                    "version": PACKAGE_VERSION,
+                    "version": 2,
                     "createdAt": datetime.now(timezone.utc).isoformat(),
                     "catalogSource": fixed["source"],
                     "items": manifest_items,
@@ -133,6 +134,12 @@ def update_full_pack(base_pack: Path, destination: Path, overlay_root: Path) -> 
                         "correctedProjectOverlay": True,
                     },
                 }
+                # Use the current fan-only dataset rather than carrying an old
+                # combined official/fan dataset forward from the base pack.
+                story_overlay = overlay_root / "story/data/storybook-data.js"
+                if story_overlay.is_file():
+                    from tools.build_full_pack import parse_story
+                    manifest["stories"] = parse_story(story_overlay.read_bytes())
                 # Materialize story/data files so the pack can reconstruct the
                 # project directly, even when the base pack only stored stories
                 # inside manifest.json.
@@ -145,6 +152,7 @@ def update_full_pack(base_pack: Path, destination: Path, overlay_root: Path) -> 
                 entity = parse_entity_index(entity_raw, Path("story/entity-index.json"))
                 output_zip.writestr("story/data/entity-index.json", entity.json_bytes)
                 output_zip.writestr("story/data/entity-index.js", entity_index_javascript(entity))
+                add_to_archive(output_zip, manifest, overlay_root, source_zip, source_manifest)
                 output_zip.writestr(
                     "manifest.json",
                     json.dumps(manifest, ensure_ascii=False, separators=(",", ":")),
@@ -173,6 +181,7 @@ def update_full_pack(base_pack: Path, destination: Path, overlay_root: Path) -> 
         "assets": len(assets),
         "overlay_assets": overlay_count,
         "reused_assets": reused_count,
+        "official_files": len(manifest.get("resourceFiles", [])),
         "bytes": destination.stat().st_size,
     }
 

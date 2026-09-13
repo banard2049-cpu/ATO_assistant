@@ -289,9 +289,23 @@ function openStory(screen) {
   elements.mapStage.hidden = true;
   elements.battleView.hidden = true;
   elements.storyView.hidden = false;
-  const renderKey = JSON.stringify([screen.storyRevision, story.updatedAt, story.id, story.text]);
+  const renderKey = JSON.stringify([screen.storyRevision, story.updatedAt, story.id, story.text, story.imagesOnly, story.images]);
   if (renderKey === storyRenderKey && previousMode === "story") return;
   storyRenderKey = renderKey;
+  elements.storyView.classList.toggle("images-only", Boolean(story.imagesOnly));
+  if (story.imagesOnly) {
+    elements.storyBody.replaceChildren();
+    for (const src of Array.isArray(story.images) ? story.images : []) {
+      const url = new URL(src, window.location.href);
+      if (url.origin !== window.location.origin || !url.pathname.includes("/story/data/ato-storybook-key-scans/")) continue;
+      const image = document.createElement("img");
+      image.src = url.href;
+      image.alt = "官方故事书扫描图";
+      elements.storyBody.append(image);
+    }
+    elements.storyBody.scrollTop = 0;
+    return;
+  }
   elements.storyBookTitle.textContent = story.bookTitle || "ATO 故事书";
   elements.storySection.textContent = story.section || "";
   elements.storyTitle.textContent = story.title || "当前故事文本";
@@ -301,8 +315,9 @@ function openStory(screen) {
 }
 
 function fitStoryTextToViewport() {
-  if (activeMode !== "story" || elements.storyView.hidden) return;
+  if (activeMode !== "story" || elements.storyView.hidden || elements.storyView.classList.contains("images-only")) return;
   window.requestAnimationFrame(() => {
+    if (elements.storyView.classList.contains("images-only")) return;
     const body = elements.storyBody;
     let low = 10;
     let high = 22;

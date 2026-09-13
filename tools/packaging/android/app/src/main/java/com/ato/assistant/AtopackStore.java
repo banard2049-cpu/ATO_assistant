@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 final class AtopackStore {
-  private static final int PACKAGE_VERSION = 2;
+  private static final int PACKAGE_VERSION = 3;
   private static final int MAX_MANIFEST_BYTES = 64 * 1024 * 1024;
   private static final int MAX_ENTITY_INDEX_BYTES = 128 * 1024 * 1024;
   private static final int MAX_ASSETS = 20_000;
@@ -152,6 +152,27 @@ final class AtopackStore {
       boolean entityIndexImported = importStoryFiles(archive, manifest.optJSONArray("storyFiles"), next);
       if (version >= 2 && incomingBookCount > 0 && !entityIndexImported) {
         throw new IOException("新版资料包含有故事，但没有人物小传索引");
+      }
+      JSONArray officialFiles = manifest.optJSONArray("resourceFiles");
+      if (officialFiles != null) {
+        if (officialFiles.length() > MAX_ASSETS) throw new IOException("官方资料数量超过限制");
+        for (int index = 0; index < officialFiles.length(); index++) {
+          JSONObject resource = officialFiles.getJSONObject(index);
+          String target = safePath(resource.optString("target"), "官方资料路径");
+          boolean storyData = "story/data/storybook-official-data.js".equals(target);
+          if (!storyData && !target.matches("story/data/ato-storybook-key-scans/c[123]-[A-Za-z0-9_-]+\\.jpg")) {
+            throw new IOException("不支持的官方资料路径：" + target);
+          }
+          if (!target.equals(resource.optString("member"))) throw new IOException("官方资料目标不匹配");
+          ZipArchiveEntry entry = archive.getEntry(target);
+          if (entry == null || entry.isDirectory() || entry.getSize() < 0 || entry.getSize() > MAX_ENTITY_INDEX_BYTES) throw new IOException("官方资料缺失或过大");
+          if (resource.has("bytes") && resource.optLong("bytes", -1) != entry.getSize()) {
+            throw new IOException("官方资料文件长度不匹配：" + target);
+          }
+          String sha256 = validSha256(resource.optString("sha256"));
+          installBlob(archive, entry, sha256);
+          next.put(target, new ResourceEntry(sha256, storyData ? "application/javascript" : "image/jpeg"));
+        }
       }
       int importedBooks = mergeStories(incomingStories, next);
 

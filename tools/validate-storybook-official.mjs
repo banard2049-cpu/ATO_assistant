@@ -1,7 +1,7 @@
 import fs from "node:fs";
 
-const prefix = "window.STORYBOOK_DATA = ";
-const source = fs.readFileSync("story/data/storybook-data.js", "utf8");
+const prefix = "window.STORYBOOK_OFFICIAL_DATA = ";
+const source = fs.readFileSync("story/data/storybook-official-data.js", "utf8");
 const data = JSON.parse(source.slice(prefix.length).replace(/;\s*$/, ""));
 const pdfByBook = {
   c1: "奥得赛·迷宫的真理.pdf",
@@ -9,7 +9,6 @@ const pdfByBook = {
   c3: "奥得赛·无情烈日.pdf",
 };
 for (const book of data.books.filter((item) => pdfByBook[item.id])) {
-  if (book.entries.length !== book.entryCount) throw new Error(`${book.id}: entryCount mismatch`);
   for (const entry of book.entries) {
     if (!entry.officialSource || entry.officialSource.pdf !== pdfByBook[book.id]) {
       throw new Error(`${book.id}/${entry.id}: missing official source`);

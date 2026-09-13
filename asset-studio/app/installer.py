@@ -8,6 +8,7 @@ import tempfile
 from datetime import datetime
 from pathlib import Path, PurePosixPath
 
+from .official_resources import LIBRARY, collect
 from .db import Database
 from .storage import sha256_file, write_compatible_image
 from .story_extras import (
@@ -130,6 +131,13 @@ def install_plan(db: Database, library: Path, root: Path) -> dict:
                 "target": relative,
                 "status": status,
             })
+    for relative, source in collect(library / LIBRARY):
+        destination = safe_target(root, relative)
+        status = "add" if not destination.exists() else ("same" if sha256_file(destination) == sha256_file(source) else "replace")
+        summary[status] += 1
+        files.append({"item_id": "official-story", "name": "官方故事书／截图", "face": "data",
+                      "source": source.relative_to(library).as_posix(), "target": relative,
+                      "status": status, "direct_copy": True})
     return {"root": str(root), "summary": summary, "files": files}
 
 

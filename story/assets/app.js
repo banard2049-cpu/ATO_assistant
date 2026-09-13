@@ -1,5 +1,8 @@
 (function () {
   const data = window.STORYBOOK_DATA;
+  const officialData = window.STORYBOOK_OFFICIAL_DATA || { books: [] };
+  const officialEntries = new Map();
+  officialData.books.forEach((book) => (book.entries || []).forEach((entry) => officialEntries.set(`${book.id}:${entry.key}`, entry)));
   const characterData = window.STORY_CHARACTER_DATA || { characters: [] };
   const entityData = buildEntityData(window.STORY_ENTITY_INDEX, characterData);
   const storageKey = "ato-story-memory-v1";
@@ -21,8 +24,6 @@
   const storyText = document.querySelector("#storyText");
   const linkPanel = document.querySelector("#linkPanel");
   const entityBioToggle = document.querySelector("#entityBioToggle");
-  const storyVersionToggle = document.querySelector("#storyVersionToggle");
-  const storyVersionSelect = document.querySelector("#storyVersionSelect");
   const ttsButton = document.querySelector("#ttsButton");
   const ttsSpeed = document.querySelector("#ttsSpeed");
   const ttsVoice = document.querySelector("#ttsVoice");
@@ -35,7 +36,8 @@
 
   let activeBook = null;
   let activeEntry = null;
-  let storyVersion = localStorage.getItem("ato-story-version-v1") || "民间版";
+  let storyVersion = localStorage.getItem("ato-term-language-v1") === "official" ? "官方版" : "民间版";
+  const storyLanguageChannel = "BroadcastChannel" in window ? new BroadcastChannel("ato-term-language") : null;
   const secondScreenSnapshotUrl = "../api/campaign-state.php?section=story";
   const secondScreenModeUrl = "../api/campaign-state.php?action=second-screen-mode";
   const secondScreenStatusUrl = "../api/campaign-state.php?action=second-screen-status";
@@ -2198,8 +2200,17 @@
       : displayEntry.chapterKey === "special-aftermath"
         ? renderSectionedStory(displayEntry, imagesHtml)
         : `${linkify(displayEntry.text, currentBook())}${imagesHtml ? `<div class="battle-gallery">${imagesHtml}</div>` : ""}`;
-    storyText.innerHTML = html;
+    storyText.innerHTML = html + renderOfficialScan(entry);
     annotateEntityTextNodes(storyText);
+  }
+
+  function renderOfficialScan(entry) {
+    if (storyVersion !== "官方版" || !supportsOfficialVersion()) return "";
+    const scan = officialEntries.get(`${currentBook()?.id}:${entry.key}`)?.officialScan;
+    if (!scan?.src) return '<div class="supplement-gallery-hint">该条目暂无对应的官方扫描图。</div>';
+    const note = scan.status === "title-only" ? "（仅定位标题）"
+      : scan.status === "page-context" ? "（含完整原页上下文）" : "";
+    return `<div class="supplement-gallery-hint">官方扫描图${note} · 点击放大查看</div><div class="battle-gallery supplement-gallery"><img class="battle-page zoomable-page" src="${escapeHtml(scan.src)}" alt="${escapeHtml(entry.title)} 官方扫描图" loading="lazy" data-page-viewer tabindex="0" role="button" title="点击放大查看原书页"></div>`;
   }
 
   function supportsOfficialVersion(book = currentBook()) {
@@ -2208,31 +2219,30 @@
 
   function getDisplayEntry(entry) {
     if (storyVersion !== "官方版" || !supportsOfficialVersion()) return entry;
-    if (entry.officialStatus !== "ready" || !entry.officialText) {
+    const official = officialEntries.get(`${currentBook()?.id}:${entry.key}`) || {};
+    if (!official.officialText?.trim()) {
       return {
         ...entry,
-        text: `【官方版待校核】\n\n该条目的官方版正文尚未完成 PDF 校核。\n来源：${entry.officialSource?.pdf || "指定故事书 PDF"}${entry.officialSource?.pages?.length ? `，第 ${entry.officialSource.pages.join("、")} 页` : ""}`,
-        title: entry.officialTitle || entry.title,
+        text: `【官方版暂无正文】\n\n该条目的官方版正文尚未收录。\n来源：${official.officialSource?.pdf || "指定故事书 PDF"}${official.officialSource?.pages?.length ? `，第 ${official.officialSource.pages.join("、")} 页` : ""}`,
+        title: official.officialTitle || entry.title,
       };
     }
-    return { ...entry, title: entry.officialTitle || entry.title, text: entry.officialText };
-  }
-
-  function refreshStoryVersionControl(book = currentBook()) {
-    const enabled = supportsOfficialVersion(book);
-    if (!storyVersionToggle || !storyVersionSelect) return;
-    storyVersionToggle.hidden = !enabled;
-    storyVersionSelect.value = enabled ? storyVersion : "民间版";
+    const notice = official.officialStatus === "ready" ? "" : "【官方版待校核】以下为官方版草稿，尚未完成 PDF 校核。\n\n";
+    return { ...entry, title: official.officialTitle || entry.title, text: notice + official.officialText };
   }
 
   function buildSecondScreenStorySnapshot() {
     if (!activeEntry) return null;
+    const imagesOnly = storyVersion === "官方版" && supportsOfficialVersion();
+    const scan = officialEntries.get(`${currentBook()?.id}:${activeEntry.key}`)?.officialScan;
     return {
+      imagesOnly,
+      images: imagesOnly && scan?.src ? [new URL(scan.src, window.location.href).pathname] : [],
       bookTitle: currentBook()?.title || "故事书",
       section: sectionLabel.textContent || activeEntry.chapter || "",
       id: activeEntry.id || "",
       title: activeEntry.title || "故事段落",
-      text: activeEntry.text || storyText.textContent || "",
+      text: imagesOnly ? "" : activeEntry.text || storyText.textContent || "",
       updatedAt: new Date().toISOString(),
     };
   }
@@ -2372,9 +2382,7 @@
     }
 
     activeBook = currentBook();
-    refreshStoryVersionControl(activeBook);
     activeEntry = entry;
-    refreshStoryVersionControl(activeBook);
     syncSelectorsToEntry(entry);
 
     sectionLabel.textContent = entry.encounter ? `${entry.chapter} / ${entry.encounter}` : entry.chapter || "未命名模块";
@@ -2879,8 +2887,6 @@
 
   bookSelect.addEventListener("change", () => {
     activeBook = currentBook();
-    if (!supportsOfficialVersion(activeBook)) storyVersion = "民间版";
-    refreshStoryVersionControl(activeBook);
     activeEntry = null;
     historyStack = [];
     searchInput.value = "";
@@ -2927,14 +2933,24 @@
   secondScreenStoryModeToggle?.addEventListener("change", toggleSecondScreenStoryMode);
   rememberButton.addEventListener("click", rememberParagraph);
   ttsButton.addEventListener("click", toggleSpeech);
-  storyVersionSelect?.addEventListener("change", (event) => {
-    storyVersion = event.target.value === "官方版" && supportsOfficialVersion() ? "官方版" : "民间版";
-    localStorage.setItem("ato-story-version-v1", storyVersion);
+  function syncStoryLanguage(official) {
+    const nextVersion = official ? "官方版" : "民间版";
+    if (storyVersion === nextVersion) return;
+    storyVersion = nextVersion;
     if (activeEntry) {
       entryTitle.textContent = getDisplayEntry(activeEntry).title || "故事段落";
       renderStory(activeEntry);
       scheduleSecondScreenStorySnapshot();
     }
+  }
+  window.addEventListener("storage", (event) => {
+    if (event.key === "ato-term-language-v1") syncStoryLanguage(event.newValue === "official");
+  });
+  window.addEventListener("ato-term-language-changed", (event) => {
+    if (typeof event.detail?.official === "boolean") syncStoryLanguage(event.detail.official);
+  });
+  storyLanguageChannel?.addEventListener("message", (event) => {
+    if (typeof event.data?.official === "boolean") syncStoryLanguage(event.data.official);
   });
   ttsUi.configButton.addEventListener("click", openTtsConfigModal);
   ttsUi.engineSelect.addEventListener("change", (event) => {

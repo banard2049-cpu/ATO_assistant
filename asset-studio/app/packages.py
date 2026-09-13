@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 from typing import Any, Callable
 
+from .official_resources import LIBRARY, collect, add_to_archive, checked_bytes, import_resources
 from .db import Database
 from .storage import store_image, write_compatible_image
 from .story_extras import (
@@ -26,7 +27,7 @@ from .story_extras import (
 from .stories import storybook_javascript, storybook_payload
 
 
-PACKAGE_VERSION = 2
+PACKAGE_VERSION = 3
 
 
 def safe_member(name: str) -> PurePosixPath:
@@ -76,7 +77,7 @@ def export_package(
     if stories.get("books") and entity_index is None:
         raise ValueError("人物小传索引缺失；请先设置包含 story/data/entity-index.json 的 ATO_assistant 目录")
     manifest = {
-        "format": "ato-asset-pack", "version": PACKAGE_VERSION,
+        "format": "ato-asset-pack", "version": 2,
         "createdAt": datetime.now(timezone.utc).isoformat(),
         "catalogSource": db.get_meta("catalog_source", {}),
         "items": [
@@ -117,6 +118,9 @@ def export_package(
                 progress(index, total, f"正在写入第 {index}/{len(rows)} 个图片")
         if entity_index:
             archive.writestr(ENTITY_INDEX_MEMBER, entity_index.json_bytes)
+        if filters.get("include_stories", True):
+            official_root = ato_root if collect(ato_root) else library / LIBRARY
+            add_to_archive(archive, manifest, official_root)
         archive.writestr("manifest.json", json.dumps(manifest, ensure_ascii=False, indent=2))
     return {
         "path": str(destination),
@@ -161,6 +165,8 @@ def inspect_package(
         local_books = {row["id"] for row in db.all("SELECT id FROM story_books")}
         incoming_books = {str(book.get("id")) for book in manifest.get("stories", {}).get("books", []) if book.get("id")}
         story_summary = {"add": len(incoming_books - local_books), "replace": len(incoming_books & local_books)}
+        for resource in manifest.get("resourceFiles", []):
+            checked_bytes(archive, resource)
         entity_summary = _inspect_story_files(archive, manifest, names, verify_hashes)
         if int(manifest.get("version", 0)) >= 2 and incoming_books and not entity_summary["included"]:
             raise ValueError("新版资料包含有故事，但没有人物小传索引")
@@ -169,6 +175,7 @@ def inspect_package(
         "assets": assets,
         "stories": story_summary,
         "entity_index": entity_summary,
+        "official_resources": len(manifest.get("resourceFiles", [])),
         "manifest": manifest,
     }
 
@@ -242,6 +249,7 @@ def import_package(
             imported += 1
             if progress:
                 progress(index, total, f"正在恢复第 {index}/{len(inspection['assets'])} 个图片")
+        import_resources(archive, manifest, library, replace)
         entity_index_imported = False
         for story_file in manifest.get("storyFiles", []):
             if story_file.get("kind") != ENTITY_INDEX_KIND:
@@ -400,6 +408,11 @@ def export_compat(
             archive.writestr("story/data/storybook-data.js", storybook_javascript(db, book_ids=cycles or None))
             archive.writestr(ENTITY_INDEX_JSON_TARGET, entity_index.json_bytes)
             archive.writestr(ENTITY_INDEX_JS_TARGET, entity_index_javascript(entity_index))
+        if filters.get("include_stories", True):
+            official_root = ato_root if collect(ato_root) else library / LIBRARY
+            for target, source in collect(official_root):
+                archive.write(source, target)
+                written += 1
     return {
         "path": str(destination),
         "files": written + (3 if include_stories else 0),

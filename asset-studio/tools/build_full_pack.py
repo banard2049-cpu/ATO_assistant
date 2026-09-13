@@ -17,12 +17,14 @@ from pathlib import Path, PurePosixPath
 PROJECT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT))
 
+from app.official_resources import add_to_archive
 from app.fixed_catalog import fixed_catalog_payload  # noqa: E402
 from app.packages import PACKAGE_VERSION, safe_member  # noqa: E402
 from app.story_extras import (  # noqa: E402
     ENTITY_INDEX_JSON_TARGET,
     ENTITY_INDEX_JS_TARGET,
     ENTITY_INDEX_MEMBER,
+    entity_index_javascript,
     entity_index_manifest_entry,
     parse_entity_index,
 )
@@ -148,7 +150,7 @@ def build(apk_path: Path, destination: Path, overlay_root: Path | None = None) -
             ]
             manifest = {
                 "format": "ato-asset-pack",
-                "version": PACKAGE_VERSION,
+                "version": 2,
                 "createdAt": datetime.now(timezone.utc).isoformat(),
                 "catalogSource": fixed["source"],
                 "items": manifest_items,
@@ -178,6 +180,7 @@ def build(apk_path: Path, destination: Path, overlay_root: Path | None = None) -
                 "story/data/entity-index.js",
                 entity_index_javascript(entity_index),
             )
+            add_to_archive(output_zip, manifest, overlay_root)
             output_zip.writestr(
                 "manifest.json",
                 json.dumps(manifest, ensure_ascii=False, separators=(",", ":")),

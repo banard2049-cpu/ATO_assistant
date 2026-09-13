@@ -103,6 +103,12 @@ body {
   scrollbar-color: #62594c transparent;
 }
 
+.story-view.images-only { padding: 0; background: #070d0c; }
+.images-only .story-card { padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.images-only .story-card-head { display: none; }
+.images-only .story-body { padding: 0; white-space: normal; }
+.images-only .story-body img { display: block; width: 100%; height: 100%; object-fit: contain; }
+
 .pair-view {
   position: fixed;
   inset: 0;
