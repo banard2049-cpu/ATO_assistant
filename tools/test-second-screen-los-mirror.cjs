@@ -29,7 +29,7 @@ class FakeElement {
     this.tagName = tagName.toUpperCase();
     this.children = [];
     this.listeners = new Map();
-    this.style = {};
+    this.style = { setProperty(name, value) { this[name] = value; } };
     this.dataset = {};
     this.className = "";
     this.textContent = "";
@@ -238,6 +238,7 @@ const aibpMapSnapshot = window.BattleTerrain.normalizeBattleMap(map, apostle, 1)
 // ---- 2. 跑真的 ss/app.js ------------------------------------------------
 // ss/app.js 是顶层脚本（无导出），靠假 document + 假 fetch 把它整个跑一遍。
 const ssIds = [
+  "storyView",
   "mapFrame", "battleView", "battleBoardFrame", "battleTerrainLayer", "battleLosLayer",
   "battleStartLayer", "battleCoordinateLayer", "battleTerrainCards", "battleTerrainCardList",
   "battleTerrainCardCount", "bossPanel", "bossTokens", "bossRoutine", "bossSignature",
@@ -401,6 +402,19 @@ assert.notDeepEqual(afterMove, beforeMove,
 assert.deepEqual(afterMove, snapshotLayer(aibpLosLayer),
   "重画后仍要与 aibp 逐格一致");
 ok("只改视线参数（不动牌堆）时第二屏照样跟着变，且仍逐格一致");
+
+payload.screen.displayMode = "blank";
+await timers.at(-1)();
+for (const selector of ["#unavailableView", ".map-stage", "#storyView", "#battleView"]) {
+  assert.equal(ssEl[selector].hidden, true, `${selector} must be hidden while blank`);
+}
+payload.screen.displayMode = "map";
+await timers.at(-1)();
+assert.equal(ssEl[".map-stage"].hidden, false, `map: ${ssEl["#unavailableMessage"].textContent}`);
+payload.screen.displayMode = "aibp";
+await timers.at(-1)();
+assert.equal(ssEl["#battleView"].hidden, false, `battle: ${ssEl["#unavailableMessage"].textContent}`);
+ok("留空模式隐藏全部内容，并能恢复地图和战斗显示");
 
 console.log(`\n${checks}/${checks} passed`);
 }

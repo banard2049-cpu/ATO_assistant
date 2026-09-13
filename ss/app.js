@@ -272,6 +272,15 @@ function showUnavailable(message = "") {
   elements.battleView.hidden = true;
 }
 
+function openBlank() {
+  activeMode = "blank";
+  elements.unavailableView.hidden = true;
+  elements.mapStage.hidden = true;
+  elements.storyView.hidden = true;
+  elements.battleView.hidden = true;
+  elements.mapFrame.removeAttribute("src");
+}
+
 function openMap() {
   activeMode = "map";
   elements.unavailableView.hidden = true;
@@ -645,6 +654,7 @@ async function checkConnection() {
     }
     if (payload.screen.displayMode === "aibp") openBattle(payload.screen);
     else if (payload.screen.displayMode === "story") openStory(payload.screen);
+    else if (payload.screen.displayMode === "blank") openBlank();
     else openMap();
   } catch (error) {
     showUnavailable(String(error.message || error));

@@ -3760,7 +3760,9 @@
       elements.secondScreenHint.textContent = enabled && !preferred
         ? "第二屏幕服务已开启，但未检测到 Wi-Fi 或有线局域网地址。请先连接局域网后刷新状态。"
         : enabled
-        ? payload.displayMode === "story"
+        ? payload.displayMode === "blank"
+          ? "第二屏幕已开启，当前暂时不显示内容。"
+          : payload.displayMode === "story"
           ? "第二屏幕已开启，当前正在显示故事书阅读文本。"
           : battleBoardVisible
             ? "第二屏幕已开启。AIBP 开启新战役时显示决战版图，战利品写入记录表后恢复地图。"

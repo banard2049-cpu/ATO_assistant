@@ -137,7 +137,7 @@ h1 {
 
 .control-panel {
   display: grid;
-  grid-template-columns: minmax(180px, 240px) minmax(150px, 220px) minmax(220px, 280px) auto;
+  grid-template-columns: minmax(130px, 160px) minmax(120px, 150px) minmax(160px, 180px) minmax(0, 1fr);
   gap: 12px;
   align-items: end;
   margin-bottom: 14px;
@@ -201,6 +201,31 @@ h1 {
   line-height: 1.25;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.second-screen-mode-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.second-screen-mode-toggle input {
+  width: 16px;
+  height: 16px;
+  min-height: 0;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.second-screen-mode-toggle.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .map-status .campaign-save-status[data-state="saving"] {
@@ -422,6 +447,7 @@ h1 {
 }
 
 .control-panel label {
+  min-width: 0;
   display: grid;
   gap: 7px;
   color: var(--muted);
@@ -430,7 +456,7 @@ h1 {
 }
 
 #searchInput {
-  max-width: 220px;
+  max-width: 150px;
 }
 
 .toggle-row {
@@ -459,12 +485,13 @@ h1 {
 }
 
 .zoom-control {
-  min-width: 220px;
+  min-width: 0;
+  max-width: 180px;
 }
 
 .zoom-row {
   display: grid;
-  grid-template-columns: minmax(130px, 1fr) 52px;
+  grid-template-columns: minmax(80px, 1fr) 46px;
   align-items: center;
   gap: 10px;
 }
@@ -704,11 +731,12 @@ body.second-screen-map .tile-grid-viewport {
   height: 100vh;
   max-height: none;
   border-radius: 0;
-  pointer-events: none;
+  touch-action: pan-x pan-y;
 }
 
 body.second-screen-map .tile-grid {
   margin: 50vh 50vw;
+  pointer-events: none;
 }
 
 .tile-blue-cover {
@@ -951,10 +979,14 @@ button.danger {
   }
 
   .control-panel {
-    grid-template-columns: minmax(170px, 230px) minmax(150px, 200px) minmax(210px, 260px) auto;
+    grid-template-columns: minmax(130px, 160px) minmax(120px, 150px) minmax(160px, 180px);
     gap: 8px;
     margin-bottom: 8px;
     padding: 10px;
+  }
+
+  .toggle-row {
+    grid-column: 1 / -1;
   }
 
   input,
@@ -1005,6 +1037,10 @@ button.danger {
 
   .cycle-tabs {
     justify-content: flex-start;
+  }
+
+  .control-panel > label {
+    max-width: 180px;
   }
 
   .token-panel {

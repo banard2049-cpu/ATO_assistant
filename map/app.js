@@ -138,6 +138,8 @@ if ("scrollRestoration" in window.history) {
 }
 
 const elements = {
+  secondScreenMapModeLabel: document.querySelector("#secondScreenMapModeLabel"),
+  secondScreenMapModeToggle: document.querySelector("#secondScreenMapModeToggle"),
   cycleTabs: document.querySelector("#cycleTabs"),
   currentTileSelect: document.querySelector("#currentTileSelect"),
   campaignSaveStatus: document.querySelector("#campaignSaveStatus"),
@@ -195,6 +197,7 @@ let undoStack = [];
 const maxUndoSteps = 40;
 let shouldFocusArgoAfterRender = true;
 let focusArgoAttempts = 0;
+let secondScreenManualScroll = false;
 
 function isPlainObject(value) {
   return value && typeof value === "object" && !Array.isArray(value);
@@ -563,6 +566,49 @@ function saveState() {
   queueCampaignSave();
 }
 
+let secondScreenMapModeBusy = false;
+let secondScreenMapModeRefresh = 0;
+
+async function refreshSecondScreenMapModeToggle() {
+  if (secondScreenMode || secondScreenMapModeBusy || !elements.secondScreenMapModeToggle) return;
+  const refresh = ++secondScreenMapModeRefresh;
+  let payload = null;
+  try {
+    const response = await fetch(`${campaignStorageUrl}?action=second-screen-status`, { cache: "no-store" });
+    payload = await response.json();
+    if (!response.ok || !payload?.ok) payload = null;
+  } catch {}
+  if (refresh !== secondScreenMapModeRefresh || secondScreenMapModeBusy) return;
+  const enabled = Boolean(payload?.enabled);
+  elements.secondScreenMapModeToggle.checked = enabled && payload.displayMode === "map";
+  elements.secondScreenMapModeToggle.disabled = !enabled;
+  elements.secondScreenMapModeLabel.classList.toggle("disabled", !enabled);
+  elements.secondScreenMapModeLabel.title = enabled
+    ? "勾选后第二屏显示地图，取消勾选后第二屏暂时不显示内容"
+    : "请先在主控制台开启第二屏幕";
+}
+
+async function toggleSecondScreenMapMode() {
+  if (secondScreenMode || secondScreenMapModeBusy) return;
+  secondScreenMapModeBusy = true;
+  ++secondScreenMapModeRefresh;
+  elements.secondScreenMapModeToggle.disabled = true;
+  try {
+    const response = await fetch(`${campaignStorageUrl}?action=second-screen-mode`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mode: elements.secondScreenMapModeToggle.checked ? "map" : "blank" }),
+    });
+    const payload = await response.json();
+    if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+  } catch (error) {
+    window.alert(`第二屏幕显示设置失败：${String(error.message || error)}`);
+  } finally {
+    secondScreenMapModeBusy = false;
+    await refreshSecondScreenMapModeToggle();
+  }
+}
+
 function delay(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
@@ -873,16 +919,17 @@ async function loadSecondScreenMapState() {
     }
     const screen = payload.screen || {};
     const mapDisplayScale = screen.displayScales?.map || screen.displayScale || 100;
-    const fingerprint = JSON.stringify([screen.cycleId, screen.mapRevision, screen.dashboardRevision, mapDisplayScale, screen.map]);
+    const fingerprint = JSON.stringify([screen.cycleId, screen.mapRevision, screen.dashboardRevision, mapDisplayScale, screen.map, screen.mapDisplay]);
     if (fingerprint === secondScreenFingerprint) return;
+    const focusMap = !secondScreenFingerprint || state.activeCycleId !== screen.cycleId;
     secondScreenFingerprint = fingerprint;
     state = normalizeState({
+      ...screen.mapDisplay,
       activeCycleId: screen.cycleId,
-      hideUnknown: true,
       mapZoom: mapDisplayScale,
       cycles: { [screen.cycleId]: screen.map || {} },
     });
-    focusArgoAfterNextRender(6);
+    if (focusMap) focusArgoAfterNextRender(6);
     render();
     window.parent.postMessage({
       type: "ato-second-screen-updated",
@@ -1536,6 +1583,7 @@ function scheduleArgoFocus() {
 }
 
 function scrollArgoIntoView() {
+  if (secondScreenMode && secondScreenManualScroll) return;
   const targetTileId = argoTileId();
   const currentTile = elements.tileGrid.querySelector(".tile-card.current")
     || [...elements.tileGrid.querySelectorAll(".tile-card[data-id]")].find((tile) => tile.dataset.id === targetTileId);
@@ -1566,6 +1614,7 @@ function scrollArgoIntoView() {
 }
 
 function centerMapViewportOnArgo(tile = null) {
+  if (secondScreenMode && secondScreenManualScroll) return;
   const viewport = elements.tileGridViewport;
   if (!viewport) return;
   const targetTileId = argoTileId();
@@ -2415,7 +2464,26 @@ window.addEventListener("resize", () => {
 window.addEventListener("online", reconnectCampaignNow);
 window.addEventListener("focus", reconnectCampaignNow);
 
+if (secondScreenMode && elements.tileGridViewport) {
+  const allowManualScroll = () => { secondScreenManualScroll = true; };
+  for (const type of ["wheel", "touchstart", "pointerdown", "keydown"]) {
+    elements.tileGridViewport.addEventListener(type, allowManualScroll, { passive: true });
+  }
+  elements.tileGridViewport.tabIndex = 0;
+}
+
 render();
 loadCampaignMapSection();
+if (!secondScreenMode) {
+  elements.secondScreenMapModeToggle?.addEventListener("change", toggleSecondScreenMapMode);
+  window.addEventListener("focus", refreshSecondScreenMapModeToggle);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) refreshSecondScreenMapModeToggle();
+  });
+  window.setInterval(() => {
+    if (!document.hidden) refreshSecondScreenMapModeToggle();
+  }, 1500);
+  refreshSecondScreenMapModeToggle();
+}
 
 

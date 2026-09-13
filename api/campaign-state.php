@@ -247,6 +247,13 @@ function public_second_screen_payload(array $campaign, array $screenEntry = []):
     'cycleId' => $cycleId,
     'day' => $dashboardCycle['day'] ?? 0,
     'map' => $mapCycle,
+    'mapDisplay' => [
+      'showBack' => (bool) ($mapState['showBack'] ?? false),
+      'onlyExplored' => (bool) ($mapState['onlyExplored'] ?? false),
+      'hideUnknown' => (bool) ($mapState['hideUnknown'] ?? true),
+      'showAdjacency' => (bool) ($mapState['showAdjacency'] ?? false),
+      'query' => (string) ($mapState['query'] ?? ''),
+    ],
     'aibp' => $aibpState,
     'story' => $storyState,
     'displayMode' => (string) ($screenEntry['displayMode'] ?? 'map'),
@@ -661,7 +668,7 @@ if ($action === 'second-screen-status') {
       $battleSwapped = !empty($entry['battleSwapped']);
       $battleBoardVisible = !array_key_exists('battleBoardVisible', $entry) || !empty($entry['battleBoardVisible']);
       $requestedMode = (string) ($entry['displayMode'] ?? 'map');
-      $displayMode = in_array($requestedMode, ['aibp', 'story'], true) ? $requestedMode : 'map';
+      $displayMode = in_array($requestedMode, ['aibp', 'story', 'blank'], true) ? $requestedMode : 'map';
       break;
     }
   }
@@ -745,7 +752,7 @@ if ($action === 'second-screen-mode') {
   $payload = json_decode((string) $raw, true);
   if (!is_array($payload)) respond(400, ['ok' => false, 'error' => 'Request body must be JSON.']);
   $mode = strtolower(trim((string) ($payload['mode'] ?? '')));
-  $mode = in_array($mode, ['aibp', 'story'], true) ? $mode : 'map';
+  $mode = in_array($mode, ['aibp', 'story', 'blank'], true) ? $mode : 'map';
 
   $lockHandle = fopen($secondScreensFile . '.lock', 'c');
   if (!$lockHandle || !flock($lockHandle, LOCK_EX)) {

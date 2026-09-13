@@ -143,7 +143,7 @@ final class LocalCampaignApi {
     if (!"POST".equalsIgnoreCase(method)) throw new ApiException(405, error("This action requires POST."));
     JSONObject payload = requestBody.isEmpty() ? new JSONObject() : new JSONObject(requestBody);
     String requestedMode = payload.optString("mode").toLowerCase(java.util.Locale.ROOT);
-    String mode = "aibp".equals(requestedMode) || "story".equals(requestedMode) ? requestedMode : "map";
+    String mode = "aibp".equals(requestedMode) || "story".equals(requestedMode) || "blank".equals(requestedMode) ? requestedMode : "map";
     JSONObject settings = loadSecondScreenSettings();
     settings.put("displayMode", mode);
     if ("aibp".equals(mode)) settings.put("battleBoardVisible", true);
@@ -191,6 +191,13 @@ final class LocalCampaignApi {
     screen.put("cycleId", cycleId);
     screen.put("day", dashboardState.has("day") ? dashboardState.opt("day") : 0);
     screen.put("map", mapCycle);
+    JSONObject mapDisplay = new JSONObject();
+    mapDisplay.put("showBack", mapState.optBoolean("showBack", false));
+    mapDisplay.put("onlyExplored", mapState.optBoolean("onlyExplored", false));
+    mapDisplay.put("hideUnknown", mapState.optBoolean("hideUnknown", true));
+    mapDisplay.put("showAdjacency", mapState.optBoolean("showAdjacency", false));
+    mapDisplay.put("query", mapState.optString("query", ""));
+    screen.put("mapDisplay", mapDisplay);
     screen.put("aibp", aibpState);
     screen.put("story", storyState);
     screen.put("displayMode", settings.optString("displayMode", "map"));
@@ -232,7 +239,7 @@ final class LocalCampaignApi {
     settings.put("battleSwapped", settings.optBoolean("battleSwapped"));
     settings.put("battleBoardVisible", !settings.has("battleBoardVisible") || settings.optBoolean("battleBoardVisible"));
     String displayMode = settings.optString("displayMode");
-    settings.put("displayMode", "aibp".equals(displayMode) || "story".equals(displayMode) ? displayMode : "map");
+    settings.put("displayMode", "aibp".equals(displayMode) || "story".equals(displayMode) || "blank".equals(displayMode) ? displayMode : "map");
     settings.remove("displayScale");
     return settings;
   }

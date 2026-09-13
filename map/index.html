@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ATO 地图模块</title>
-  <link rel="stylesheet" href="./styles.css?v=20260828-token-transparent">
+  <link rel="stylesheet" href="./styles.css?v=20260913-compact-controls">
 </head>
 <body>
   <script>if (new URLSearchParams(location.search).get("second") === "1") document.body.classList.add("second-screen-map");</script>
@@ -51,6 +51,10 @@
         <label class="check-label">
           <input id="showAdjacencyToggle" type="checkbox">
           显示邻接
+        </label>
+        <label id="secondScreenMapModeLabel" class="check-label second-screen-mode-toggle" title="请先在主控制台开启第二屏幕">
+          <input type="checkbox" id="secondScreenMapModeToggle" disabled>
+          第二屏显示地图
         </label>
       </div>
     </section>
@@ -122,7 +126,7 @@
   <script src="../assets/page-focus-router.js?v=20260813-no-screen-focus1"></script>
   <script src="./map-data.js?v=20260730-cycle-labels"></script>
   <script src="./map-tile-tags.js?v=20260730-c5-silver-ruin-token-crop"></script>
-  <script src="./app.js?v=20260828-token-transparent"></script>
+  <script src="./app.js?v=20260913-free-scroll"></script>
   <script src="../assets/ato-terms.js?v=20260912f"></script>
   <script src="../assets/term-language.js?v=20260913a"></script>
 </body>
