@@ -97,6 +97,26 @@ body {
   background: #15575f;
   color: #fff;
 }
+.tool-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 7px 10px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.tool-check:hover { border-color: var(--accent-2); color: var(--accent-2); }
+.tool-check input {
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--accent-2);
+}
 .search {
   width: 220px;
   border: 1px solid var(--line);
@@ -223,6 +243,36 @@ body {
   background: #fff;
   box-shadow: inset 0 0 0 1px #111, 0 0 0 3px rgba(216, 163, 25, .24);
 }
+/* 「不显示未知科技」：未知节点用白色盖住底图上的名字，只留一个空白框。 */
+.tree-wrap.hide-unknown .node.unknown,
+.tree-wrap.hide-unknown .node.unknown:hover,
+.tree-wrap.hide-unknown .node.unknown.active {
+  background: #fff;
+  border-color: var(--line);
+  box-shadow: none;
+}
+.tree-wrap.hide-unknown .node.unknown .node-label { display: none; }
+/* 被遮挡的节点没有名字可看，搜索时不必再淡出（保留 filtered 的不可点击）。 */
+.tree-wrap.hide-unknown .node.unknown.filtered { opacity: 1; }
+/* 印在节点框下方的解锁条件复选框：点击切换，勾选后在格子里画对勾。 */
+.cond-box {
+  position: absolute;
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent center / contain no-repeat;
+  cursor: pointer;
+}
+.cond-box:hover {
+  background-color: rgba(216, 163, 25, .22);
+  box-shadow: inset 0 0 0 1px var(--accent-2);
+}
+.cond-box:checked {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M16 52 L40 76 L86 24' fill='none' stroke='%231d2328' stroke-width='15' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+}
+.cond-box:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 1px; }
 .node.filtered { opacity: .16; pointer-events: none; }
 .badge {
   display: inline-flex;
@@ -586,6 +636,18 @@ button.modal-tech-item:hover {
   margin-top: 8px;
   padding-top: 8px;
 }
+.modal-condition-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 750;
+  color: var(--ink);
+  cursor: pointer;
+}
+.modal-condition-toggle input { margin: 0; cursor: pointer; accent-color: var(--accent-2); }
+.modal-condition-hint { margin-top: 2px; font-size: 11px; line-height: 1.4; color: var(--muted); }
 .modal-actions {
   display: grid;
   gap: 8px;
@@ -945,6 +1007,18 @@ button.gear-group-name:hover {
 #gearImageModalCaption {
   color: #fff; font-weight: 800; font-size: 14px;
 }
+/* 顶栏控件多，中等宽度下排不下时改为换行，避免右侧被裁掉。 */
+@media (min-width: 981px) and (max-width: 1260px) {
+  .topbar {
+    height: auto;
+    min-height: 56px;
+    flex-wrap: wrap;
+    row-gap: 8px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  .tools { flex-wrap: wrap; justify-content: flex-end; row-gap: 8px; }
+}
 @media (max-width: 980px) {
   .app { grid-template-columns: 1fr; }
   .topbar {
@@ -1019,6 +1093,10 @@ button.gear-group-name:hover {
         <span class="badge" id="cycleBadge">Cycle I</span>
         <input id="search" class="search" placeholder="搜索科技" autocomplete="off">
         <button class="tool-btn" id="clearUnlocked" type="button">重置进度</button>
+        <label class="tool-check" id="hideUnknownLabel" title="勾选后只显示已解锁与可解锁科技的名字，其余节点用白色遮挡">
+          <input id="hideUnknownToggle" type="checkbox" checked>
+          不显示未知科技
+        </label>
         <span id="campaignSaveStatus" class="campaign-save-status" data-state="saving" aria-live="polite">正在连接...</span>
         <span id="count"></span>
       </div>
@@ -1952,6 +2030,116 @@ const PAGE_METADATA = [
   }
 ];
 
+// 印刷版科技树里，部分节点的方框正下方印着空白方格——解锁条件复选框：
+// 左边缘与节点框左边对齐、上边缘从节点框底边开始往下堆叠，宽约 13.5 页px，
+// 高度随条件文字行数变化（13.5~28 页px）。多数节点只有 1 格，少数节点（如循环I「和平」）
+// 有 2~3 格，对应印在方格右侧的多行解锁条件。
+// 这里记录从底图检测出的每个节点及其全部方格 [相对框底的纵向偏移, 高度]（页面像素）：
+// 对 tech_tree_pages/*_tree_v24.png 取亮度 >246 的封闭白区，保留宽 9.5~18、高 9.5~46 页px、
+// 左边缘与节点框左边对齐、且从框底首尾相接堆叠的那些。重新导出底图后可用同一判据重新生成。
+const PRINTED_CONDITION_BOXES = {
+  cycle1: {
+    'cycle1_0': [[0.0, 13.5]],
+    'cycle1_7': [[0.4, 13.5]],
+    'cycle1_10': [[-0.0, 13.5]],
+    'cycle1_11': [[0.2, 19.0]],
+    'cycle1_17': [[0.1, 13.5]],
+    'cycle1_20': [[0.2, 19.0]],
+    'cycle1_25': [[-0.0, 13.5]],
+    'cycle1_26': [[-0.2, 14.0]],
+    'cycle1_28': [[0.4, 13.5]],
+    'cycle1_29': [[-0.0, 19.5]],
+    'cycle1_30': [[-0.0, 19.5]],
+    'cycle1_33': [[0.0, 13.5]],
+    'cycle1_37': [[-0.1, 14.0]],
+    'cycle1_41': [[0.0, 13.5]],
+    'cycle1_42': [[-0.1, 14.0]],
+    'cycle1_48': [[0.0, 13.5]],
+    'cycle1_49': [[0.4, 13.5], [14.4, 13.5]],
+  },
+  cycle2: {
+    'cycle2_1': [[-0.0, 13.5]],
+    'cycle2_4': [[-0.0, 14.0]],
+    'cycle2_8': [[-0.0, 13.5]],
+    'cycle2_9': [[-0.0, 13.5]],
+    'cycle2_10': [[-0.2, 14.0]],
+    'cycle2_28': [[0.2, 20.5]],
+    'cycle2_30': [[0.1, 13.5]],
+    'cycle2_31': [[0.2, 13.5]],
+    'cycle2_33': [[-0.2, 14.0]],
+    'cycle2_34': [[0.1, 13.5]],
+    'cycle2_42': [[-0.0, 14.0]],
+    'cycle2_43': [[0.2, 20.5]],
+    'cycle2_52': [[0.1, 13.5]],
+    'cycle2_54': [[-0.1, 14.0]],
+    'cycle2_64': [[0.2, 21.0]],
+  },
+  cycle3: {
+    'cycle3_1': [[-0.0, 21.0]],
+    'cycle3_2': [[-0.1, 21.0]],
+    'cycle3_15': [[0.2, 13.5]],
+    'cycle3_19': [[0.0, 13.5]],
+    'cycle3_20': [[-0.0, 21.0]],
+    'cycle3_21': [[0.0, 28.0]],
+    'cycle3_22': [[-0.1, 21.0]],
+    'cycle3_23': [[0.2, 27.5]],
+    'cycle3_25': [[0.1, 20.5]],
+    'cycle3_31': [[-0.1, 14.0]],
+    'cycle3_32': [[-0.2, 14.0]],
+    'cycle3_35': [[0.2, 20.5]],
+    'cycle3_37': [[0.3, 13.5], [14.3, 20.5]],
+    'cycle3_43': [[-0.1, 21.0]],
+    'cycle3_44': [[0.2, 13.5]],
+    'cycle3_46': [[-0.0, 13.5]],
+    'cycle3_63': [[-0.1, 21.0]],
+    'cycle3_64': [[0.1, 13.5], [14.6, 13.5], [28.6, 13.5]],
+    'cycle3_65': [[0.2, 13.5]],
+  },
+  cycle4: {
+    'cycle4_da2172': [[-0.1, 13.5]],
+    'cycle4_da2173': [[-0.1, 13.5]],
+    'cycle4_da2174': [[-0.1, 13.5]],
+    'cycle4_da2175': [[0.0, 13.5]],
+    'cycle4_da2176': [[-0.0, 13.5]],
+    'cycle4_da2177': [[-0.0, 13.5]],
+    'cycle4_da2178': [[-0.0, 13.5]],
+    'cycle4_da2179': [[0.0, 13.5]],
+    'cycle4_da2180': [[-0.0, 13.5]],
+    'cycle4_da2185': [[-0.1, 13.5]],
+    'cycle4_da2186': [[-0.1, 13.5]],
+    'cycle4_da2204': [[0.2, 13.5]],
+    'cycle4_da2209': [[0.2, 13.5]],
+    'cycle4_da2211': [[0.1, 13.5]],
+    'cycle4_da2212': [[0.3, 13.5]],
+    'cycle4_da2213': [[0.3, 13.5]],
+    'cycle4_da2218': [[-0.0, 14.0]],
+    'cycle4_da2220': [[-0.0, 14.0]],
+    'cycle4_da2221': [[0.0, 13.5], [14.5, 20.5]],
+    'cycle4_da2222': [[0.0, 13.5]],
+    'cycle4_da2224': [[-0.0, 14.0], [14.5, 13.5]],
+  },
+  cycle5: {
+    'cycle5_ea2731': [[-0.1, 21.0]],
+    'cycle5_ea2732': [[-0.1, 21.0]],
+    'cycle5_ea2733': [[-0.1, 21.0]],
+    'cycle5_ea2737': [[0.1, 20.5]],
+    'cycle5_ea2738': [[0.1, 20.5]],
+    'cycle5_ea2739': [[0.2, 20.5]],
+    'cycle5_ea2740': [[-0.2, 14.0]],
+    'cycle5_ea2741': [[-0.2, 14.0]],
+    'cycle5_ea2742': [[0.0, 13.5]],
+    'cycle5_ea2746': [[-0.2, 14.0]],
+    'cycle5_ea2747': [[0.2, 13.5]],
+    'cycle5_ea2748': [[0.0, 13.5]],
+    'cycle5_ea2767': [[0.4, 13.5]],
+    'cycle5_ea2777': [[-0.1, 14.0]],
+    'cycle5_ea2779': [[-0.1, 14.0]],
+    'cycle5_ea2789': [[0.1, 13.5], [14.1, 21.0]],
+    'cycle5_ea2790': [[-0.1, 14.0]],
+  },
+};
+const PRINTED_CONDITION_BOX_WIDTH = 13.5;
+
 let data = { pages: [], cards: [], tag_dictionary: {} };
 
 let PAGE_INDEX = new Map();
@@ -2320,6 +2508,8 @@ let viewPage = null;
 let currentTab = null;
 let selectedNodeId = null;
 let treeLanguage = 'en';
+let hideUnknownTech = true;
+const UNKNOWN_TECH_TITLE = '未知科技';
 
 const tabs = document.getElementById('tabs');
 const mainView = document.getElementById('mainView');
@@ -2331,6 +2521,7 @@ const cycleSelect = document.getElementById('cycleSelect');
 const languageToggle = document.getElementById('languageToggle');
 const cycleBadge = document.getElementById('cycleBadge');
 const clearUnlocked = document.getElementById('clearUnlocked');
+const hideUnknownToggle = document.getElementById('hideUnknownToggle');
 const campaignSaveStatus = document.getElementById('campaignSaveStatus');
 const unlockedModal = document.getElementById('unlockedModal');
 const unlockedModalImage = document.getElementById('unlockedModalImage');
@@ -2343,6 +2534,7 @@ const modalToggleUnimportant = document.getElementById('modalToggleUnimportant')
 const modalClose = document.getElementById('modalClose');
 let unlocked = new Set();
 let unimportant = new Set();
+let conditionTicked = new Set();
 let activeUnlockedRecord = null;
 let activeModalMode = null;
 let campaignStorageAvailable = false;
@@ -2469,14 +2661,77 @@ function isRequirementUnlocked(requirement) {
 }
 function isUnlockableNode(pageKey, node) {
   if (isUnlockedNode(pageKey, node)) return false;
+  if (!isConditionSatisfied(pageKey, node)) return false;
   const andReady = (node.requires || []).every(isRequirementUnlocked);
   const orReady = (node.requires_any_groups || []).every(group => group.some(isRequirementUnlocked));
   return andReady && orReady;
 }
+// 印刷在节点框下方的条件方格（见 PRINTED_CONDITION_BOXES）：每一格都要勾上，
+// 只要有一格没勾，这个节点就不算满足条件（即不算「可解锁」）。
+function conditionCells(pageKey, node) {
+  const cells = PRINTED_CONDITION_BOXES[pageKey]?.[node?.id];
+  return Array.isArray(cells) ? cells : null;
+}
+function hasPrintedConditionBox(pageKey, node) {
+  return conditionCells(pageKey, node) !== null;
+}
+function conditionCellKey(pageKey, node, index) {
+  const base = nodeKey(pageKey, node);
+  return index > 0 ? `${base}#cond${index + 1}` : base;
+}
+function isConditionCellTicked(pageKey, node, index) {
+  return conditionTicked.has(conditionCellKey(pageKey, node, index));
+}
+function isConditionTicked(pageKey, node) {
+  const cells = conditionCells(pageKey, node);
+  if (!cells) return false;
+  return cells.every((_, index) => isConditionCellTicked(pageKey, node, index));
+}
+function isConditionSatisfied(pageKey, node) {
+  return !hasPrintedConditionBox(pageKey, node) || isConditionTicked(pageKey, node);
+}
+function conditionCaptionText(node) {
+  const groups = [node?.xlsm_special_requirements, node?.xlsm_special_leads_to];
+  const captions = groups
+    .flatMap(group => group?.conditions || [])
+    .map(item => item.caption || item.text || '')
+    .filter(Boolean);
+  return [...new Set(captions)].join(' / ');
+}
+// 多格节点：数据里的条件条数常常少于印刷行数（底图上的文字没有全部进词典），
+// 这时格子只标号，不硬套对不上的文字。
+function conditionCellCaption(pageKey, node, index) {
+  const cells = conditionCells(pageKey, node) || [];
+  const conditions = [...new Set([...(node?.xlsm_special_requirements?.conditions || []), ...(node?.xlsm_special_leads_to?.conditions || [])]
+    .map(item => item.caption || item.text || '').filter(Boolean))];
+  if (conditions.length === cells.length) return conditions[index] || '';
+  return conditions.join(' / ');
+}
+function conditionToggleLabel(pageKey, node, index = null) {
+  const cells = conditionCells(pageKey, node) || [];
+  const single = cells.length === 1;
+  const caption = conditionCellCaption(pageKey, node, index ?? 0);
+  if (single) return caption ? `解锁条件：${caption}` : '解锁条件方格';
+  const head = `解锁条件第 ${(index ?? 0) + 1}/${cells.length} 格`;
+  return caption ? `${head}：${caption}` : head;
+}
 function applyNodeState(el, pageKey, node) {
   const unlockedNow = isUnlockedNode(pageKey, node);
+  const unlockableNow = !unlockedNow && isUnlockableNode(pageKey, node);
+  const unknownNow = !unlockedNow && !unlockableNow;
   el.classList.toggle('unlocked', unlockedNow);
-  el.classList.toggle('unlockable', !unlockedNow && isUnlockableNode(pageKey, node));
+  el.classList.toggle('unlockable', unlockableNow);
+  el.classList.toggle('unknown', unknownNow);
+  el.title = hideUnknownTech && unknownNow ? UNKNOWN_TECH_TITLE : displayTechName(node);
+}
+function syncHideUnknownToggle() {
+  const toggle = document.getElementById('hideUnknownToggle');
+  if (toggle) {
+    toggle.checked = hideUnknownTech;
+    toggle.setAttribute('aria-checked', hideUnknownTech ? 'true' : 'false');
+  }
+  const treeWrap = document.getElementById('treeWrap');
+  if (treeWrap) treeWrap.classList.toggle('hide-unknown', hideUnknownTech);
 }
 function isUnimportantNode(pageKey, node) { return unimportant.has(nodeKey(pageKey, node)); }
 function isNegotiationNode(pageKey, node) {
@@ -2558,6 +2813,27 @@ function renderConditionNotes(special) {
   const text = conditions.map(item => item.caption || item.text || '').filter(Boolean).join(' / ');
   return text ? `<div class="modal-tech-conditions">条件：${esc(text)}</div>` : '';
 }
+function renderConditionToggle(pageKey, node) {
+  const cells = conditionCells(pageKey, node);
+  if (!cells) return '';
+  const rows = cells.map((_, index) => {
+    const ticked = isConditionCellTicked(pageKey, node, index);
+    const caption = conditionCellCaption(pageKey, node, index);
+    const label = cells.length > 1
+      ? `第 ${index + 1}/${cells.length} 格${caption ? `：${esc(caption)}` : ''}`
+      : `已满足解锁条件${caption ? `：${esc(caption)}` : ''}`;
+    return `
+      <label class="modal-condition-toggle">
+        <input type="checkbox" class="modal-cond-toggle" data-page="${esc(pageKey)}" data-node="${esc(node.id)}" data-cell-index="${index}"${ticked ? ' checked' : ''}>
+        <span>${label}</span>
+      </label>
+    `;
+  }).join('');
+  const hint = cells.length > 1
+    ? `这个节点下方印了 ${cells.length} 个方格，全部勾上才算满足解锁条件（未勾满仍可手动解锁）。`
+    : '未勾选时该节点不算可解锁（仍可手动解锁）。方格就是科技树上节点框正下方的那个。';
+  return `${rows}<div class="modal-condition-hint">${hint}</div>`;
+}
 function renderRequirementUnlockColumns(pageKey, node) {
   const requirements = node?.requires || node?.xlsm_requirements || [];
   const requirementAnyGroups = node?.requires_any_groups || node?.xlsm_requirement_any_groups || [];
@@ -2574,6 +2850,7 @@ function renderRequirementUnlockColumns(pageKey, node) {
       ${requirementList}
       ${renderRequirementAnyGroups(requirementAnyGroups)}
       ${renderConditionNotes(node?.xlsm_special_requirements)}
+      ${renderConditionToggle(pageKey, node)}
     </section>
     <section class="modal-tech-column">
       <h3>解锁</h3>
@@ -2592,6 +2869,7 @@ function defaultAccounts() {
       currentCycle: data.pages[0].key,
       unlocked: [],
       unimportant: [],
+      conditions: [],
     },
   };
 }
@@ -2603,12 +2881,14 @@ function resetTechnologyToDefault() {
   currentTab = viewPage;
   unlocked = new Set();
   unimportant = new Set();
+  conditionTicked = new Set();
   unlockAutomaticCyclesThrough(currentCycle);
   selectedNodeId = null;
   updateLanguageToggle();
   renderAccountSelect();
   renderCycleSelect();
   renderTabs();
+  syncHideUnknownToggle();
   renderTree();
 }
 function saveAccounts() {
@@ -2616,6 +2896,7 @@ function saveAccounts() {
   account.currentCycle = currentCycle;
   account.unlocked = [...unlocked].sort();
   account.unimportant = [...unimportant].filter(name => unlocked.has(name)).sort();
+  account.conditions = [...conditionTicked].sort();
   queueCampaignTechnologySave();
 }
 function technologySectionState() {
@@ -2624,7 +2905,9 @@ function technologySectionState() {
     currentCycle,
     unlocked: [...unlocked].sort(),
     unimportant: [...unimportant].filter(name => unlocked.has(name)).sort(),
+    conditions: [...conditionTicked].sort(),
     treeLanguage,
+    hideUnknownTech,
   };
 }
 function techAccountFromUser(profileId, profile, techSection) {
@@ -2634,6 +2917,7 @@ function techAccountFromUser(profileId, profile, techSection) {
     currentCycle: validPageKey(saved.currentCycle) || TECH_CYCLE_BY_MAIN_CYCLE[profile?.activeCycleId] || data.pages[0].key,
     unlocked: Array.isArray(saved.unlocked) ? saved.unlocked : [],
     unimportant: Array.isArray(saved.unimportant) ? saved.unimportant : [],
+    conditions: Array.isArray(saved.conditions) ? saved.conditions : [],
   };
 }
 function applyCampaignUsersToTechnology(campaign) {
@@ -2648,17 +2932,21 @@ function applyCampaignUsersToTechnology(campaign) {
   activeAccountId = accounts[dashboard.activeProfileId] ? dashboard.activeProfileId : Object.keys(accounts)[0];
   const activeTech = isPlainObject(techSection?.users?.[activeAccountId]) ? techSection.users[activeAccountId] : techSection;
   treeLanguage = activeTech.treeLanguage === 'zh' || techSection.treeLanguage === 'zh' ? 'zh' : 'en';
+  const savedHideUnknown = activeTech.hideUnknownTech ?? techSection.hideUnknownTech;
+  hideUnknownTech = savedHideUnknown === undefined ? true : Boolean(savedHideUnknown);
   currentCycle = validPageKey(accounts[activeAccountId]?.currentCycle) || data.pages[0].key;
   viewPage = viewPageFor(currentCycle);
   currentTab = viewPage;
   unlocked = new Set(accounts[activeAccountId]?.unlocked || []);
   unimportant = new Set(accounts[activeAccountId]?.unimportant || []);
+  conditionTicked = new Set(accounts[activeAccountId]?.conditions || []);
   unlockAutomaticCyclesThrough(currentCycle);
   selectedNodeId = null;
   updateLanguageToggle();
   renderAccountSelect();
   renderCycleSelect();
   renderTabs();
+  syncHideUnknownToggle();
   renderTree();
   return true;
 }
@@ -2822,6 +3110,7 @@ function unlockedTechSnapshot() {
     techCycleLabel: pageByKey(currentCycle)?.label || currentCycle,
     unlockedKeys: [...unlocked].sort(),
     unimportantKeys: [...unimportant].filter(name => unlocked.has(name)).sort(),
+    conditionKeys: [...conditionTicked].sort(),
     unlocked: records.map(({ page, node }) => ({
       key: nodeKey(page.key, node),
       pageKey: page.key,
@@ -3182,11 +3471,27 @@ function toggleUnlocked(pageKey, node) {
   const selectedNode = page?.nodes.find(item => item.id === selectedNodeId);
   if (selectedNode && activeModalMode === 'tree') updateModalUnlockButton(page.key, selectedNode);
 }
+function toggleCondition(pageKey, nodeId, cellIndex, checked) {
+  const page = pageByKey(pageKey);
+  const node = page?.nodes.find(item => item.id === nodeId);
+  if (!page || !node || !hasPrintedConditionBox(page.key, node)) return;
+  const key = conditionCellKey(page.key, node, Number(cellIndex) || 0);
+  if (checked) conditionTicked.add(key);
+  else conditionTicked.delete(key);
+  saveAccounts();
+  refreshUnlockState();
+  if (activeModalMode === 'tree' && activeUnlockedRecord?.node?.id === node.id) showNodeModal(node);
+}
 function refreshUnlockState() {
   document.querySelectorAll('.node').forEach(el => {
     const page = pageByKey(el.dataset.pageKey);
     const node = page?.nodes.find(item => item.id === el.dataset.nodeId);
     if (page && node) applyNodeState(el, page.key, node);
+  });
+  document.querySelectorAll('.cond-box').forEach(el => {
+    const page = pageByKey(el.dataset.pageKey);
+    const node = page?.nodes.find(item => item.id === el.dataset.nodeId);
+    if (page && node) el.checked = isConditionCellTicked(page.key, node, Number(el.dataset.cellIndex) || 0);
   });
   applySearch();
   if (currentTab === 'unlocked') renderUnlockedPage();
@@ -3273,12 +3578,12 @@ function renderTree() {
   const treeWrap = document.getElementById('treeWrap');
   treeWrap.style.aspectRatio = `${page.width} / ${page.height}`;
   treeWrap.classList.toggle('zh-labels', treeLanguage === 'zh');
+  treeWrap.classList.toggle('hide-unknown', hideUnknownTech);
   treeWrap.innerHTML = `<img class="tree-img" src="${esc(page.image)}" alt="${esc(page.label)} technology tree">`;
   for (const node of page.nodes) {
     const el = document.createElement('button');
     el.type = 'button';
     el.className = 'node';
-    el.title = displayTechName(node);
     el.dataset.nodeId = node.id;
     el.dataset.pageKey = page.key;
     el.dataset.name = `${node.name || ''} ${node.name_zh || ''}`.toLowerCase();
@@ -3310,7 +3615,32 @@ function renderTree() {
     });
     treeWrap.appendChild(el);
   }
+  renderConditionBoxes(treeWrap, page);
   applySearch();
+}
+function renderConditionBoxes(treeWrap, page) {
+  for (const node of page.nodes) {
+    const cells = conditionCells(page.key, node);
+    if (!cells) continue;
+    const box = node.tree_box || node;
+    cells.forEach(([dy, height], index) => {
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.className = 'cond-box';
+      input.dataset.pageKey = page.key;
+      input.dataset.nodeId = node.id;
+      input.dataset.cellIndex = String(index);
+      input.checked = isConditionCellTicked(page.key, node, index);
+      const label = conditionToggleLabel(page.key, node, index);
+      input.title = `${label}（点击方格切换；${cells.length > 1 ? '每个方格都要勾上，' : ''}未勾选时该节点不算可解锁）`;
+      input.setAttribute('aria-label', `${displayTechName(node)} ${label}`);
+      input.style.left = (box.x / page.width * 100) + '%';
+      input.style.top = ((box.y + box.h + dy) / page.height * 100) + '%';
+      input.style.width = (PRINTED_CONDITION_BOX_WIDTH / page.width * 100) + '%';
+      input.style.height = (height / page.height * 100) + '%';
+      treeWrap.appendChild(input);
+    });
+  }
 }
 function applySearch() {
   if (currentTab === 'gear-production') {
@@ -3341,6 +3671,11 @@ modalToggleUnlock.addEventListener('click', () => {
 });
 modalToggleUnimportant.addEventListener('click', toggleUnimportantForActive);
 modalClose.addEventListener('click', closeUnlockedModal);
+unlockedModal.addEventListener('change', event => {
+  const target = event.target;
+  if (!target?.classList?.contains('modal-cond-toggle')) return;
+  toggleCondition(target.dataset.page, target.dataset.node, target.dataset.cellIndex, target.checked);
+});
 unlockedModal.addEventListener('click', event => {
   const techButton = event.target.closest('.modal-tech-item[data-page][data-node]');
   if (techButton) {
@@ -3360,6 +3695,18 @@ window.addEventListener('focus', () => {
   if (currentTab === 'gear-production') void loadGearRecordState();
 });
 search.addEventListener('input', applySearch);
+hideUnknownToggle.addEventListener('change', () => {
+  hideUnknownTech = hideUnknownToggle.checked;
+  queueCampaignTechnologySave();
+  syncHideUnknownToggle();
+  refreshUnlockState();
+});
+mainView.addEventListener('change', (event) => {
+  const target = event.target;
+  if (target?.classList?.contains('cond-box')) {
+    toggleCondition(target.dataset.pageKey, target.dataset.nodeId, target.dataset.cellIndex, target.checked);
+  }
+});
 languageToggle.addEventListener('click', () => {
   treeLanguage = treeLanguage === 'zh' ? 'en' : 'zh';
   queueCampaignTechnologySave();
@@ -3392,6 +3739,7 @@ clearUnlocked.addEventListener('click', () => {
   if (!confirm('重置当前账号的解锁进度？')) return;
   unlocked.clear();
   unimportant.clear();
+  conditionTicked.clear();
   currentCycle = data.pages[0].key;
   viewPage = currentCycle;
   currentTab = viewPage;
@@ -3421,8 +3769,10 @@ function boot(appData) {
   selectedNodeId = null;
   unlocked = new Set(accounts[activeAccountId]?.unlocked || []);
   unimportant = new Set(accounts[activeAccountId]?.unimportant || []);
+  conditionTicked = new Set(accounts[activeAccountId]?.conditions || []);
   unlockAutomaticCyclesThrough(currentCycle);
   updateLanguageToggle();
+  syncHideUnknownToggle();
   renderAccountSelect();
   renderCycleSelect();
   renderTabs();
