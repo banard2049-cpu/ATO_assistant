@@ -690,6 +690,27 @@
       font-weight: 800;
       line-height: 1.2;
     }
+    .argonaut-picker-card.unnamed {
+      border-style: dashed;
+      background: #faf8f4;
+    }
+    .argonaut-picker-card.unnamed img {
+      opacity: 0.72;
+      filter: saturate(0.55);
+    }
+    .argonaut-picker-card.unnamed span {
+      color: var(--muted);
+    }
+    .picker-note {
+      margin: 0 0 12px;
+      padding: 8px 10px;
+      border-left: 3px solid var(--line);
+      background: #f7f6f2;
+      border-radius: 4px;
+      font-size: 12px;
+      line-height: 1.55;
+      color: var(--muted);
+    }
     .graveyard-card {
       display: grid;
       grid-template-columns: 48px minmax(0, 1fr);
@@ -943,6 +964,15 @@
       { id: "aktisaeos", en: "Aktisaeos", zh: "阿克提赛俄斯" },
       { id: "oleander", en: "Oleander", zh: "欧利安德" },
       { id: "omorfos", en: "Omorfos", zh: "欧莫弗斯" },
+      // 以下 7 项对应素材 hero/assets/argonaut_10..16_blank.png：原版素材里没有英雄名的占位头像槽位。
+      // 仅在英雄记录表中提供选择，名字固定标注为「未命名」，选中后双击英雄标题即可改成实际名称。
+      { id: "blank10", en: "Unnamed Slot 10", zh: "未命名 10", unnamed: true },
+      { id: "blank11", en: "Unnamed Slot 11", zh: "未命名 11", unnamed: true },
+      { id: "blank12", en: "Unnamed Slot 12", zh: "未命名 12", unnamed: true },
+      { id: "blank13", en: "Unnamed Slot 13", zh: "未命名 13", unnamed: true },
+      { id: "blank14", en: "Unnamed Slot 14", zh: "未命名 14", unnamed: true },
+      { id: "blank15", en: "Unnamed Slot 15", zh: "未命名 15", unnamed: true },
+      { id: "blank16", en: "Unnamed Slot 16", zh: "未命名 16", unnamed: true },
     ];
 
     const ARGONAUT_PORTRAITS = {
@@ -964,6 +994,13 @@
       aktisaeos: "argonaut_23_aktisaeos.png",
       oleander: "argonaut_24_oleander.png",
       omorfos: "argonaut_25_omorfos.png",
+      blank10: "argonaut_10_blank.png",
+      blank11: "argonaut_11_blank.png",
+      blank12: "argonaut_12_blank.png",
+      blank13: "argonaut_13_blank.png",
+      blank14: "argonaut_14_blank.png",
+      blank15: "argonaut_15_blank.png",
+      blank16: "argonaut_16_blank.png",
     };
 
     const SKILLS = [
@@ -2120,13 +2157,16 @@
       let html = '<div class="picker-overlay" id="pickerOverlay" onclick="if(event.target===this)closePicker()">';
       html += '<div class="picker-dialog">';
       html += '<div class="picker-head"><h2>选择英雄</h2><button onclick="closePicker()">关闭</button></div>';
-      html += '<div class="picker-body"><div class="argonaut-picker-grid">';
+      html += '<div class="picker-body">';
+      html += '<p class="picker-note">末尾 7 个标注「未命名」的虚线槽位，对应素材里没有英雄名的占位头像（编号 10–16），可正常选用；选中后双击英雄标题即可改成实际名称。</p>';
+      html += '<div class="argonaut-picker-grid">';
       ARGONAUTS.forEach(a => {
         const src = argonautPortraitSrc(a.id);
         const imgHtml = src
           ? `<img src="${escHtml(src)}" alt="${escHtml(a.zh)}" onerror="this.outerHTML='<span style=font-size:14px;font-weight:900;padding:20px>${escHtml(a.zh)}</span>'">`
           : `<span style="font-size:14px;font-weight:900;padding:20px">${escHtml(a.zh)}</span>`;
-        html += `<div class="argonaut-picker-card" data-pick-argonaut="${escHtml(a.id)}">${imgHtml}<span>${escHtml(a.zh)}</span></div>`;
+        const cardTitle = a.unnamed ? `${a.zh}（占位头像槽位，未命名）` : a.zh;
+        html += `<div class="argonaut-picker-card${a.unnamed ? " unnamed" : ""}" data-pick-argonaut="${escHtml(a.id)}" title="${escHtml(cardTitle)}">${imgHtml}<span>${escHtml(a.zh)}</span></div>`;
       });
       html += '</div></div></div></div>';
       document.getElementById("pickerOverlay")?.remove();
