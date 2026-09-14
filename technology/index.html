@@ -147,7 +147,37 @@ body {
   background: #fff;
   border: 1px solid var(--line);
   box-shadow: 0 10px 30px rgba(27, 36, 44, .08);
+  container-type: inline-size;
 }
+/* 「不显示底图」：藏掉印刷图，节点名与条件文字改由页面文字绘制。 */
+.tree-wrap.no-image .tree-img { display: none; }
+.tree-wrap.no-image .node { background: #fff; }
+.tree-wrap.no-image .cond-box {
+  background-color: #fff;
+  box-shadow: inset 0 0 0 1px #6b7480;
+}
+.tree-wrap.no-image .cond-box:hover {
+  background-color: rgba(216, 163, 25, .22);
+  box-shadow: inset 0 0 0 1px var(--accent-2);
+}
+.cond-text {
+  position: absolute;
+  display: none;
+  align-items: center;
+  padding-left: 2px;
+  color: var(--ink);
+  font-size: 10px;                 /* 老浏览器回退值 */
+  font-size: 0.72cqw;
+  font-weight: 700;
+  line-height: 1.04;
+  overflow: hidden;
+  pointer-events: none;
+  white-space: normal;
+  word-break: break-word;
+}
+.tree-wrap.no-image .cond-text { display: flex; }
+.tree-wrap.no-image .cond-text.prereq-locked { visibility: hidden; }
+.tree-wrap.no-image .cond-text.is-placeholder { color: var(--muted); font-weight: 600; font-style: italic; }
 .tree-img {
   display: block;
   width: 100%;
@@ -243,17 +273,27 @@ body {
   background: #fff;
   box-shadow: inset 0 0 0 1px #111, 0 0 0 3px rgba(216, 163, 25, .24);
 }
-/* 「不显示未知科技」：未知节点用白色盖住底图上的名字，只留一个空白框。 */
+/* 「不显示未知科技」：未知（名字会被遮的）节点用白底盖住底图上的名字，连框线都不画——位置只留空白。 */
 .tree-wrap.hide-unknown .node.unknown,
 .tree-wrap.hide-unknown .node.unknown:hover,
 .tree-wrap.hide-unknown .node.unknown.active {
   background: #fff;
-  border-color: var(--line);
+  border-color: transparent;
   box-shadow: none;
 }
 .tree-wrap.hide-unknown .node.unknown .node-label { display: none; }
 /* 被遮挡的节点没有名字可看，搜索时不必再淡出（保留 filtered 的不可点击）。 */
 .tree-wrap.hide-unknown .node.unknown.filtered { opacity: 1; }
+/* 前置科技没解锁时，用白块盖住节点框下方那条条件文字（复选框本身留在上面可点）。 */
+.cond-mask {
+  position: absolute;
+  display: none;
+  background: #fff;
+  pointer-events: none;
+}
+.cond-mask.prereq-locked { display: block; }
+/* 完全遮挡的节点：下方条件方格也隐藏（名字那一格由上面的 .unknown 规则留白）。 */
+.cond-box.prereq-locked { display: none; }
 /* 印在节点框下方的解锁条件复选框：点击切换，勾选后在格子里画对勾。 */
 .cond-box {
   position: absolute;
@@ -1096,6 +1136,10 @@ button.gear-group-name:hover {
         <label class="tool-check" id="hideUnknownLabel" title="勾选后只显示已解锁与可解锁科技的名字，其余节点用白色遮挡">
           <input id="hideUnknownToggle" type="checkbox" checked>
           不显示未知科技
+        </label>
+        <label class="tool-check" id="hideImageLabel" title="勾选后隐藏印刷底图，节点名与解锁条件文字改为页面文字显示（多格节点的每个方格都要勾）">
+          <input id="hideImageToggle" type="checkbox">
+          不显示底图
         </label>
         <span id="campaignSaveStatus" class="campaign-save-status" data-state="saving" aria-live="polite">正在连接...</span>
         <span id="count"></span>
@@ -2139,6 +2183,148 @@ const PRINTED_CONDITION_BOXES = {
   },
 };
 const PRINTED_CONDITION_BOX_WIDTH = 13.5;
+// 底图上印着、但词典里没有的解锁条件文字（逐字读自 tech_tree_pages/*.png）。
+// 读取方式：把已知条件文字在图上裁成字形样本训练分类器，再用它认这些行，最后用官方汉化模板校对。
+const PRINTED_CONDITION_TEXT = {
+  'cycle1_26': 'Hekaton LVL 2 Battle',
+  'cycle1_25': 'Hekaton LVL 3 Battle',
+  'cycle1_10': 'Hekaton LVL 4 Battle',
+  'cycle1_30': 'Labyrinthauros LVL 2 Battle',
+  'cycle1_29': 'Labyrinthauros LVL 3 Battle',
+  'cycle1_11': 'Labyrinthauros LVL 4 Battle',
+  'cycle1_42': 'Temenos LVL 1 Battle',
+  'cycle1_37': 'Pursuer LVL 1 Battle',
+  'cycle1_17': '5+ Argo Knowledge',
+  'cycle1_33': '6+ Argo Knowledge',
+  'cycle1_48': '2+ Argo Knowledge',
+  'cycle1_0': '4+ Argo Knowledge',
+  'cycle1_41': '3+ Argo Knowledge',
+  'cycle1_20': "Pursuit's End Battle Victory",
+  'cycle2_42': '20+ Argo Knowledge',
+  'cycle2_43': 'Nietzschean LVL 1 Battle',
+  'cycle3_36': 'Burden LVL 1 Battle',
+  'cycle2_30': 'Burden LVL 1 Battle',
+  'cycle2_4': 'Story 3A',
+  'cycle2_64': 'Diplomacy (any Faction) 7+',
+  'cycle3_31': '45+ Argo Knowledge',
+  'cycle3_35': 'Burden Hardest to Bear Battle Victory',
+  // 下面这批是「图上印的与词典不同」、以图为准更正的（词长/数字/模板三重核对过）
+  'cycle1_28': '30+ explored Map tiles',        // 词典写的是 plus 30 tiles
+  'cycle1_7': '45+ explored Map tiles',         // 词典写的是 plus 45 tiles
+  'cycle2_1': 'Chimera LVL 4 Battle',           // 词典少了 Battle
+  'cycle2_8': 'Chimera LVL 3 Battle',
+  'cycle2_9': 'Chimera LVL 2 Battle',
+  'cycle2_10': 'Cyclonus LVL 4 Battle',
+  'cycle2_33': 'Cyclonus LVL 3 Battle',
+  'cycle2_34': 'Cyclonus LVL 2 Battle',
+  // 多格节点：每格一个独立条件（词典把它们并成了一句，这里按图逐格分开）
+  'cycle1_49': 'At War / Lose -1 Titan',
+  'cycle3_64': 'At War / Lose -1 Titan / Gain +1 Doom',
+  'cycle3_37': '51+ Argo Knowledge / Pursuit\'s End Battle Victory',
+};
+// 节点解锁条件文字的中文对照（术语与词典里的中文科技名保持一致）。
+// 词典新增条件文字而这里没有条目时，中文模式下先照原样显示英文。
+const CONDITION_TEXT_ZH = {
+  // 官方 APP 1.1.7 汉化模板对应关系：{0}+ explored Map Tiles=已探索地图板块{0}+，
+  // {0} lvl {1} battle=等级{1}的{0}战斗，{0} Alliance=与{0}结盟，Argo Knowledge {0}+=阿尔戈号知识{0}+ 等。
+  '10+ explored Map tiles': '已探索地图板块 10+',
+  '18+ explored Map tiles': '已探索地图板块 18+',
+  '20+ Explored tiles in the Past': '过去已探索地图板块 20+',
+  '20+ Explored tiles in the Present': '现在已探索地图板块 20+',
+  '25+ explored Map tiles': '已探索地图板块 25+',
+  '3+ Sow tally marks': '播种记号 3+',
+  '30+ Explored tiles': '已探索地图板块 30+',
+  '30+ explored Map tiles': '已探索地图板块 30+',
+  '35+ explored Map tiles': '已探索地图板块 35+',
+  '45+ Explored tiles': '已探索地图板块 45+',
+  '45+ explored Map tiles': '已探索地图板块 45+',
+  '48+ Argo Knowledge': '阿尔戈号知识 48+',
+  '51+ Argo Knowledge': '阿尔戈号知识 51+',
+  '78+ Argo Knowledge': '阿尔戈号知识 78+',
+  'Argo Knowledge 51': '阿尔戈号知识 51+',
+  'Aristotelians Alliance': '与亚里士多德远征军结盟',
+  'At War Diplomacy Status': '处于战争外交状态',
+  'At War Status': '处于战争状态',
+  'Chimera LVL 2': '蠕变奇美拉 等级 2',
+  'Chimera LVL 3': '蠕变奇美拉 等级 3',
+  'Chimera LVL 4': '蠕变奇美拉 等级 4',
+  'Cloud Thieves Alliance': '与云贼结盟',
+  'Cycladean Protectorate Alliance': '与基克拉泽斯保护国结盟',
+  'Cyclonus LVL 2': '独眼巨人 等级 2',
+  'Cyclonus LVL 3': '独眼巨人 等级 3',
+  'Cyclonus LVL 4': '独眼巨人 等级 4',
+  'Cyclopean Alliance': '与独眼巨人结盟',
+  'Dahaka LVL 1 Battle': '等级 1 的达哈卡战斗',
+  'Demidjinn LVL 2 Battle': '等级 2 的半神迪精战斗',
+  'Demidjinn LVL 3 Battle': '等级 3 的半神迪精战斗',
+  'Demidjinn LVL 4 Battle': '等级 4 的半神迪精战斗',
+  'Dragon of Phobos LVL 2 Battle': '等级 2 的深海惧龙战斗',
+  'Dragon of Phobos LVL 3 Battle': '等级 3 的深海惧龙战斗',
+  'Dragon of Phobos LVL 4 Battle': '等级 4 的深海惧龙战斗',
+  'Followers of Areté Alliance': '与阿瑞特追随者结盟',
+  'Hypertime Oracle LVL 2 Battle': '等级 2 的超时光先知战斗',
+  'Hypertime Oracle LVL 3 Battle': '等级 3 的超时光先知战斗',
+  'Hypertime Oracle LVL 4 Battle': '等级 4 的超时光先知战斗',
+  'Icarian Harpy LVL 2 Battle': '等级 2 的伊卡洛斯哈尔皮战斗',
+  'Icarian Harpy LVL 3 Battle': '等级 3 的伊卡洛斯哈尔皮战斗',
+  'Icarian Harpy LVL 4 Battle': '等级 4 的伊卡洛斯哈尔皮战斗',
+  'Killed the Pursuer': '已击杀追踪者',
+  'Killing the Pursuer': '击杀追踪者',
+  'Meduketos LVL 2 Battle': '等级 2 的须目刻托斯战斗',
+  'Meduketos LVL 3 Battle': '等级 3 的须目刻托斯战斗',
+  'Meduketos LVL 4 Battle': '等级 4 的须目刻托斯战斗',
+  'Midascore LVL 2 Battle': '等级 2 的迈达狮战斗',
+  'Midascore LVL 3 Battle': '等级 3 的迈达狮战斗',
+  'Midascore LVL 4 Battle': '等级 4 的迈达狮战斗',
+  'Outcast Vanguard Alliance': '与弃民先锋结盟',
+  'Pursuer Order': '追踪者指令',
+  'Pursuit\'s End Battle Victory': '追踪的终结战斗胜利',
+  'SP Gain +1 Paradox': '获得 1+ 悖论',
+  'Sisyphus Gear': '西西弗斯装备',
+  'Spartan Alliance': '与斯巴达人结盟',
+  'Still Life Battle Victory': '静物战斗胜利',
+  'Story 3A': '故事3A',
+  'Sun Descendant LVL 1 Battle': '等级 1 的坠落太阳战斗',
+  'Sunheirs Alliance': '与太阳后裔结盟',
+  'Symmachy Alliance': '与邦联同盟结盟',
+  'Titan X Battle Victory': '泰坦X战斗胜利',
+  'Titan X LVL 1 Battle': '等级 1 的泰坦X战斗',
+  'Twilight Watch Alliance': '与暮光守望结盟',
+  'Ur-Fleece LVL 1 Battle': '等级 1 的乌尔-弗里斯战斗',
+  'Wasters Alliance': '与浪费者结盟',
+  'plus 30 tiles': '已探索 30+ 格',
+  'plus 45 tiles': '已探索 45+ 格',
+  // 下面 21 条是底图上有、词典里没有的条件文字（读自图片），译文沿用官方措辞
+  'Hekaton LVL 2 Battle': '等级 2 的百臂巨人战斗',
+  'Hekaton LVL 3 Battle': '等级 3 的百臂巨人战斗',
+  'Hekaton LVL 4 Battle': '等级 4 的百臂巨人战斗',
+  'Labyrinthauros LVL 2 Battle': '等级 2 的迷宫机牛战斗',
+  'Labyrinthauros LVL 3 Battle': '等级 3 的迷宫机牛战斗',
+  'Labyrinthauros LVL 4 Battle': '等级 4 的迷宫机牛战斗',
+  'Temenos LVL 1 Battle': '等级 1 的吞域兽战斗',
+  'Pursuer LVL 1 Battle': '等级 1 的追踪者战斗',
+  '5+ Argo Knowledge': '阿尔戈号知识 5+',
+  '6+ Argo Knowledge': '阿尔戈号知识 6+',
+  '2+ Argo Knowledge': '阿尔戈号知识 2+',
+  '4+ Argo Knowledge': '阿尔戈号知识 4+',
+  '3+ Argo Knowledge': '阿尔戈号知识 3+',
+  '20+ Argo Knowledge': '阿尔戈号知识 20+',
+  '45+ Argo Knowledge': '阿尔戈号知识 45+',
+  'Nietzschean LVL 1 Battle': '等级 1 的尼采超人战斗',
+  'Burden LVL 1 Battle': '等级 1 的重担战斗',
+  'Burden Hardest to Bear Battle Victory': '承受最重之担战役胜利',
+  'Diplomacy (any Faction) 7+': '外交（任意势力）7+',
+  // 以图为准更正的那几条（见 PRINTED_CONDITION_TEXT）
+  'Chimera LVL 2 Battle': '等级 2 的蠕变奇美拉战斗',
+  'Chimera LVL 3 Battle': '等级 3 的蠕变奇美拉战斗',
+  'Chimera LVL 4 Battle': '等级 4 的蠕变奇美拉战斗',
+  'Cyclonus LVL 2 Battle': '等级 2 的独眼巨人战斗',
+  'Cyclonus LVL 3 Battle': '等级 3 的独眼巨人战斗',
+  'Cyclonus LVL 4 Battle': '等级 4 的独眼巨人战斗',
+  'At War': '处于战争状态',
+  'Lose -1 Titan': '失去 1 个泰坦',
+  'Gain +1 Doom': '获得 1+ 灾祸',
+};
 
 let data = { pages: [], cards: [], tag_dictionary: {} };
 
@@ -2509,6 +2695,7 @@ let currentTab = null;
 let selectedNodeId = null;
 let treeLanguage = 'en';
 let hideUnknownTech = true;
+let hideTreeImage = false;
 const UNKNOWN_TECH_TITLE = '未知科技';
 
 const tabs = document.getElementById('tabs');
@@ -2522,6 +2709,7 @@ const languageToggle = document.getElementById('languageToggle');
 const cycleBadge = document.getElementById('cycleBadge');
 const clearUnlocked = document.getElementById('clearUnlocked');
 const hideUnknownToggle = document.getElementById('hideUnknownToggle');
+const hideImageToggle = document.getElementById('hideImageToggle');
 const campaignSaveStatus = document.getElementById('campaignSaveStatus');
 const unlockedModal = document.getElementById('unlockedModal');
 const unlockedModalImage = document.getElementById('unlockedModalImage');
@@ -2662,9 +2850,21 @@ function isRequirementUnlocked(requirement) {
 function isUnlockableNode(pageKey, node) {
   if (isUnlockedNode(pageKey, node)) return false;
   if (!isConditionSatisfied(pageKey, node)) return false;
-  const andReady = (node.requires || []).every(isRequirementUnlocked);
-  const orReady = (node.requires_any_groups || []).every(group => group.some(isRequirementUnlocked));
+  return areRequirementsMet(node);
+}
+// 前置科技是否都已解锁（不看条件方格）。
+function areRequirementsMet(node) {
+  const andReady = (node?.requires || []).every(isRequirementUnlocked);
+  const orReady = (node?.requires_any_groups || []).every(group => group.some(isRequirementUnlocked));
   return andReady && orReady;
+}
+// 前置没解锁的节点：连它框下方那行条件文字也一并遮住（「不显示未知科技」打开时生效；
+// 已解锁的节点不遮，因为技术已经拿到手了）。复选框本身保留，仍然可以点。
+function isConditionTextHidden(pageKey, node) {
+  if (!hideUnknownTech) return false;
+  if (!hasPrintedConditionBox(pageKey, node)) return false;
+  if (isUnlockedNode(pageKey, node)) return false;
+  return !areRequirementsMet(node);
 }
 // 印刷在节点框下方的条件方格（见 PRINTED_CONDITION_BOXES）：每一格都要勾上，
 // 只要有一格没勾，这个节点就不算满足条件（即不算「可解锁」）。
@@ -2702,6 +2902,14 @@ function conditionCaptionText(node) {
 // 这时格子只标号，不硬套对不上的文字。
 function conditionCellCaption(pageKey, node, index) {
   const cells = conditionCells(pageKey, node) || [];
+  // 以图为准：先从底图上读出来的印刷文字里取（含与词典不一致的更正），没有再退回词典。
+  const printed = PRINTED_CONDITION_TEXT[node?.id];
+  if (printed) {
+    if (cells.length === 1) return printed;
+    // 多格节点：印刷文字里用 ' / ' 分隔各格（没分隔就每格都用同一条）
+    const parts = printed.split(' / ');
+    return parts.length === cells.length ? parts[index] : printed;
+  }
   const conditions = [...new Set([...(node?.xlsm_special_requirements?.conditions || []), ...(node?.xlsm_special_leads_to?.conditions || [])]
     .map(item => item.caption || item.text || '').filter(Boolean))];
   if (conditions.length === cells.length) return conditions[index] || '';
@@ -2722,6 +2930,8 @@ function applyNodeState(el, pageKey, node) {
   el.classList.toggle('unlocked', unlockedNow);
   el.classList.toggle('unlockable', unlockableNow);
   el.classList.toggle('unknown', unknownNow);
+  // 完全遮挡（前置没解锁、条件文字也被遮）的节点：下方方格也隐藏，只留空白
+  el.classList.toggle('prereq-locked', isConditionTextHidden(pageKey, node));
   el.title = hideUnknownTech && unknownNow ? UNKNOWN_TECH_TITLE : displayTechName(node);
 }
 function syncHideUnknownToggle() {
@@ -2730,8 +2940,16 @@ function syncHideUnknownToggle() {
     toggle.checked = hideUnknownTech;
     toggle.setAttribute('aria-checked', hideUnknownTech ? 'true' : 'false');
   }
+  if (hideImageToggle) {
+    hideImageToggle.checked = hideTreeImage;
+    hideImageToggle.setAttribute('aria-checked', hideTreeImage ? 'true' : 'false');
+  }
   const treeWrap = document.getElementById('treeWrap');
-  if (treeWrap) treeWrap.classList.toggle('hide-unknown', hideUnknownTech);
+  if (!treeWrap) return;
+  treeWrap.classList.toggle('hide-unknown', hideUnknownTech);
+  treeWrap.classList.toggle('no-image', hideTreeImage);
+  // zh-labels 的含义是「节点名由页面绘制」：中文模式，或者底图被隐藏时都要打开。
+  treeWrap.classList.toggle('zh-labels', treeLanguage === 'zh' || hideTreeImage);
 }
 function isUnimportantNode(pageKey, node) { return unimportant.has(nodeKey(pageKey, node)); }
 function isNegotiationNode(pageKey, node) {
@@ -2908,6 +3126,7 @@ function technologySectionState() {
     conditions: [...conditionTicked].sort(),
     treeLanguage,
     hideUnknownTech,
+    hideTreeImage,
   };
 }
 function techAccountFromUser(profileId, profile, techSection) {
@@ -2934,6 +3153,8 @@ function applyCampaignUsersToTechnology(campaign) {
   treeLanguage = activeTech.treeLanguage === 'zh' || techSection.treeLanguage === 'zh' ? 'zh' : 'en';
   const savedHideUnknown = activeTech.hideUnknownTech ?? techSection.hideUnknownTech;
   hideUnknownTech = savedHideUnknown === undefined ? true : Boolean(savedHideUnknown);
+  const savedHideImage = activeTech.hideTreeImage ?? techSection.hideTreeImage;
+  hideTreeImage = savedHideImage === undefined ? false : Boolean(savedHideImage);
   currentCycle = validPageKey(accounts[activeAccountId]?.currentCycle) || data.pages[0].key;
   viewPage = viewPageFor(currentCycle);
   currentTab = viewPage;
@@ -3491,7 +3712,26 @@ function refreshUnlockState() {
   document.querySelectorAll('.cond-box').forEach(el => {
     const page = pageByKey(el.dataset.pageKey);
     const node = page?.nodes.find(item => item.id === el.dataset.nodeId);
-    if (page && node) el.checked = isConditionCellTicked(page.key, node, Number(el.dataset.cellIndex) || 0);
+    if (!page || !node) return;
+    const index = Number(el.dataset.cellIndex) || 0;
+    el.checked = isConditionCellTicked(page.key, node, index);
+    el.classList.toggle('prereq-locked', isConditionTextHidden(page.key, node));
+    el.title = conditionCellTitle(page.key, node, index);
+  });
+  document.querySelectorAll('.cond-mask').forEach(el => {
+    const page = pageByKey(el.dataset.pageKey);
+    const node = page?.nodes.find(item => item.id === el.dataset.nodeId);
+    el.classList.toggle('prereq-locked', Boolean(page && node && isConditionTextHidden(page.key, node)));
+  });
+  document.querySelectorAll('.cond-text').forEach(el => {
+    const page = pageByKey(el.dataset.pageKey);
+    const node = page?.nodes.find(item => item.id === el.dataset.nodeId);
+    if (!page || !node) return;
+    const index = Number(el.dataset.cellIndex) || 0;
+    el.classList.toggle('prereq-locked', isConditionTextHidden(page.key, node));
+    el.classList.toggle('is-placeholder', !conditionCellCaption(page.key, node, index));
+    el.textContent = conditionCellDisplayText(page.key, node, index);
+    el.style.fontSize = conditionTextFontCqw(el.textContent) + 'cqw';
   });
   applySearch();
   if (currentTab === 'unlocked') renderUnlockedPage();
@@ -3577,7 +3817,8 @@ function renderTree() {
   mainView.innerHTML = `<div class="tree-wrap" id="treeWrap"></div>`;
   const treeWrap = document.getElementById('treeWrap');
   treeWrap.style.aspectRatio = `${page.width} / ${page.height}`;
-  treeWrap.classList.toggle('zh-labels', treeLanguage === 'zh');
+  treeWrap.classList.toggle('zh-labels', treeLanguage === 'zh' || hideTreeImage);
+  treeWrap.classList.toggle('no-image', hideTreeImage);
   treeWrap.classList.toggle('hide-unknown', hideUnknownTech);
   treeWrap.innerHTML = `<img class="tree-img" src="${esc(page.image)}" alt="${esc(page.label)} technology tree">`;
   for (const node of page.nodes) {
@@ -3595,7 +3836,7 @@ function renderTree() {
     el.style.top = (box.y / page.height * 100) + '%';
     el.style.width = (box.w / page.width * 100) + '%';
     el.style.height = (box.h / page.height * 100) + '%';
-    el.innerHTML = `<span class="node-label">${esc(node.name_zh || node.name)}</span>`;
+    el.innerHTML = `<span class="node-label">${esc(displayTechName(node))}</span>`;
     let clickTimer = null;
     el.addEventListener('click', (event) => {
       if (event.detail > 1) return;
@@ -3618,7 +3859,49 @@ function renderTree() {
   renderConditionBoxes(treeWrap, page);
   applySearch();
 }
+// 「不显示底图」时用来顶替印刷文字的条件文字（中文模式下走对照表）。
+// 条件文字按长度自适应字号（单位 cqw = 树宽的 1%），长句自动小一号，避免被格子裁掉。
+function conditionTextFontCqw(text) {
+  const n = (text || '').length;
+  if (n <= 16) return 0.72;
+  if (n <= 22) return 0.64;
+  if (n <= 30) return 0.56;
+  if (n <= 38) return 0.48;
+  return 0.42;
+}
+function conditionCellDisplayText(pageKey, node, index) {
+  const caption = conditionCellCaption(pageKey, node, index);
+  if (!caption) return treeLanguage === 'zh' ? '（条件文字词典未收录）' : '(condition text not in dictionary)';
+  if (treeLanguage !== 'zh') return caption;
+  return CONDITION_TEXT_ZH[caption] || caption;
+}
+function conditionCellTitle(pageKey, node, index) {
+  const cells = conditionCells(pageKey, node) || [];
+  if (isConditionTextHidden(pageKey, node)) {
+    const count = cells.length > 1 ? `第 ${index + 1}/${cells.length} 格` : '解锁条件方格';
+    return `${count}（前置科技未解锁，条件文字已遮挡）——点击勾选`;
+  }
+  const label = conditionToggleLabel(pageKey, node, index);
+  return `${label}（点击方格切换；${cells.length > 1 ? '每个方格都要勾上，' : ''}未勾选时该节点不算可解锁）`;
+}
 function renderConditionBoxes(treeWrap, page) {
+  // 先铺遮挡块，再放复选框，保证方格永远在遮挡之上、点得到。
+  for (const node of page.nodes) {
+    const cells = conditionCells(page.key, node);
+    if (!cells) continue;
+    const box = node.tree_box || node;
+    const mask = document.createElement('div');
+    mask.className = 'cond-mask';
+    mask.dataset.pageKey = page.key;
+    mask.dataset.nodeId = node.id;
+    if (isConditionTextHidden(page.key, node)) mask.classList.add('prereq-locked');
+    // 条件面板与节点框同宽：整条面板都盖住（含左边印刷的方格），完全遮挡时位置只留空白。
+    mask.style.left = (box.x / page.width * 100) + '%';
+    mask.style.top = ((box.y + box.h + cells[0][0]) / page.height * 100) + '%';
+    mask.style.width = (box.w / page.width * 100) + '%';
+    mask.style.height = (((cells[cells.length - 1][0] + cells[cells.length - 1][1]) - cells[0][0]) / page.height * 100) + '%';
+    treeWrap.appendChild(mask);
+  }
   for (const node of page.nodes) {
     const cells = conditionCells(page.key, node);
     if (!cells) continue;
@@ -3631,14 +3914,30 @@ function renderConditionBoxes(treeWrap, page) {
       input.dataset.nodeId = node.id;
       input.dataset.cellIndex = String(index);
       input.checked = isConditionCellTicked(page.key, node, index);
-      const label = conditionToggleLabel(page.key, node, index);
-      input.title = `${label}（点击方格切换；${cells.length > 1 ? '每个方格都要勾上，' : ''}未勾选时该节点不算可解锁）`;
-      input.setAttribute('aria-label', `${displayTechName(node)} ${label}`);
+      if (isConditionTextHidden(page.key, node)) input.classList.add('prereq-locked');
+      input.title = conditionCellTitle(page.key, node, index);
+      input.setAttribute('aria-label', `${displayTechName(node)} ${conditionToggleLabel(page.key, node, index)}`);
       input.style.left = (box.x / page.width * 100) + '%';
       input.style.top = ((box.y + box.h + dy) / page.height * 100) + '%';
       input.style.width = (PRINTED_CONDITION_BOX_WIDTH / page.width * 100) + '%';
       input.style.height = (height / page.height * 100) + '%';
       treeWrap.appendChild(input);
+      // 「不显示底图」时用页面文字顶替印刷的条件文字。
+      const text = document.createElement('span');
+      text.className = 'cond-text';
+      text.dataset.pageKey = page.key;
+      text.dataset.nodeId = node.id;
+      text.dataset.cellIndex = String(index);
+      if (isConditionTextHidden(page.key, node)) text.classList.add('prereq-locked');
+      if (!conditionCellCaption(page.key, node, index)) text.classList.add('is-placeholder');
+      text.textContent = conditionCellDisplayText(page.key, node, index);
+      text.style.fontSize = conditionTextFontCqw(text.textContent) + 'cqw';
+      text.style.lineHeight = '1.06';
+      text.style.left = ((box.x + PRINTED_CONDITION_BOX_WIDTH) / page.width * 100) + '%';
+      text.style.top = ((box.y + box.h + dy) / page.height * 100) + '%';
+      text.style.width = ((box.w - PRINTED_CONDITION_BOX_WIDTH) / page.width * 100) + '%';
+      text.style.height = (height / page.height * 100) + '%';
+      treeWrap.appendChild(text);
     });
   }
 }
@@ -3700,6 +3999,12 @@ hideUnknownToggle.addEventListener('change', () => {
   queueCampaignTechnologySave();
   syncHideUnknownToggle();
   refreshUnlockState();
+});
+hideImageToggle.addEventListener('change', () => {
+  hideTreeImage = hideImageToggle.checked;
+  queueCampaignTechnologySave();
+  syncHideUnknownToggle();
+  renderTree();
 });
 mainView.addEventListener('change', (event) => {
   const target = event.target;
