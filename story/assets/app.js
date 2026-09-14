@@ -946,6 +946,8 @@
   }
 
   function cachedAudioForEntry(entry) {
+    // 现有离线包由民间正文生成，不能用于官方版。
+    if (storyVersion === "官方版" && supportsOfficialVersion()) return null;
     const entries = storyAudioManifest?.entries || {};
     let record = entries[entry?.key || ""];
     if (!record && entry) {
@@ -1097,6 +1099,7 @@
 
   function prepareSpeechText(text) {
     return text
+      .replace(/【官方版待校核】\s*以下为官方版草稿，尚未完成\s*PDF\s*校核。/g, " ")
       .replace(/（[^（）]*）/g, " ")
       .replace(/\([^()]*\)/g, " ")
       .replace(/【[^【】]*】/g, " ")
@@ -1967,7 +1970,7 @@
     if (!(ttsConfig.activeEngine === "cloud" || ttsConfig.activeEngine === "local")) return;
     if (storyAudioManifest) return;
     const book = currentBook();
-    const targets = collectLikelyJumpIds(entry)
+    const targets = collectLikelyJumpIds(getDisplayEntry(entry))
       .map((id) => preferredEntry(book, id, {
         chapterKey: entry.chapterKey,
         encounterKey: entry.encounterKey,
@@ -1977,7 +1980,7 @@
       .slice(0, 6);
 
     targets.forEach((target) => {
-      const chunks = createSpeechChunks(prepareSpeechText(target.text)).slice(0, 5);
+      const chunks = createSpeechChunks(prepareSpeechText(getSpeechEntryText(target))).slice(0, 5);
       chunks.forEach((chunk) => {
         getExternalAudioJob(chunk).catch(() => {});
       });
@@ -1988,7 +1991,7 @@
   function prewarmEntryStart(entry) {
     if (!(ttsConfig.activeEngine === "cloud" || ttsConfig.activeEngine === "local")) return;
     if (storyAudioManifest || hasCachedEntryAudio(entry)) return;
-    const chunks = createSpeechChunks(prepareSpeechText(entry.text)).slice(0, 5);
+    const chunks = createSpeechChunks(prepareSpeechText(getSpeechEntryText(entry))).slice(0, 5);
     if (!chunks.length) return;
 
     let hits = 0;
@@ -2818,10 +2821,14 @@
   }
 
   async function speakEntry(entry) {
-    const text = prepareSpeechText(entry.text);
-    if (!text) return;
-    await ensureStoryAudioManifest();
+    const text = prepareSpeechText(getSpeechEntryText(entry));
+    if (!text) {
+      pushTtsStatus("当前版本暂无可朗读正文。", "warn");
+      return;
+    }
     const token = ++activeSpeechToken;
+    await ensureStoryAudioManifest();
+    if (token !== activeSpeechToken) return;
     try {
       if (await speakCachedEntryAudio(entry, token)) return;
     } catch (error) {
@@ -2829,8 +2836,10 @@
         pushTtsStatus(`Offline audio failed: ${String(error.message || error).slice(0, 100)}`, "warn");
       }
     }
+    if (token !== activeSpeechToken) return;
     if (ttsConfig.activeEngine === "offline") {
       await ensureStoryAudioManifest(true);
+      if (token !== activeSpeechToken) return;
       try {
         if (await speakCachedEntryAudio(entry, token)) return;
       } catch (error) {
@@ -2838,11 +2847,19 @@
           pushTtsStatus(`Offline audio failed after reload: ${String(error.message || error).slice(0, 100)}`, "warn");
         }
       }
-      pushTtsStatus("No offline audio for this entry. Generate it first.", "warn");
+      if (token !== activeSpeechToken) return;
+      pushTtsStatus("当前版本没有可用的离线音频，请切换到浏览器、本地或云端语音。", "warn");
       finishSpeech(token);
       return;
     }
     speakText(text);
+  }
+
+  function getSpeechEntryText(entry) {
+    if (storyVersion === "官方版" && supportsOfficialVersion()) {
+      return officialEntries.get(`${currentBook()?.id}:${entry.key}`)?.officialText || "";
+    }
+    return entry.text || "";
   }
 
   function init() {
@@ -2936,6 +2953,7 @@
   function syncStoryLanguage(official) {
     const nextVersion = official ? "官方版" : "民间版";
     if (storyVersion === nextVersion) return;
+    stopSpeech();
     storyVersion = nextVersion;
     if (activeEntry) {
       entryTitle.textContent = getDisplayEntry(activeEntry).title || "故事段落";
