@@ -43,6 +43,8 @@ let activeMode = "map";
 let latestBattleScale = 1;
 let latestBattleRotation = 0;
 let latestBattleBoardVisible = true;
+let latestSupportCards = [];
+let latestSupportTerrainCards = [];
 const aibpBaseUrl = new URL("../aibp/", document.baseURI);
 const battleBoardAspectRatio = 20 / 14;
 
@@ -60,7 +62,8 @@ function layoutSupportCards(availableWidth, smallWidth, smallHeight, oneRow = fa
     });
     return 1;
   }
-  const secondRowCount = cards.length > 5 ? Math.min(2, cards.length - 5) : 0;
+  const rowCapacity = Math.max(1, Math.floor((availableWidth + 0.01) / smallWidth));
+  const secondRowCount = cards.length > rowCapacity ? Math.min(rowCapacity, cards.length - rowCapacity) : 0;
   const firstRowCount = cards.length - secondRowCount;
   const columns = Math.max(1, firstRowCount);
 
@@ -151,11 +154,20 @@ function battleSidebarMetrics(context, fit = 1) {
 }
 
 function applyBattleSidebarMetrics(context, metrics) {
+  const oneRow = context.quarterTurn || context.aibpMirror;
+  const columns = Math.max(1, Math.floor((context.availableSidebarWidth + 0.01) / metrics.smallWidth));
+  // 惯常、标志和 Trait / 特殊卡优先，地形卡只补完整的空位。
+  const supportCards = latestSupportCards.filter((card) => card.large !== true);
+  const freeSlots = Math.max(0, columns * (oneRow ? 1 : 2) - 2 - supportCards.length);
+  renderImageList(elements.traitCards, [
+    ...supportCards,
+    ...latestSupportTerrainCards.slice(0, freeSlots),
+  ], "暂无 Trait / 特殊卡");
   layoutSupportCards(
     context.availableSidebarWidth,
     metrics.smallWidth,
     metrics.smallHeight,
-    context.quarterTurn || context.aibpMirror
+    oneRow
   );
   elements.battleView.style.setProperty("--boss-small-card-width", `${metrics.smallWidth}px`);
   elements.battleView.style.setProperty("--boss-small-card-height", `${metrics.smallHeight}px`);
@@ -621,7 +633,11 @@ function openBattle(screen) {
     image.hidden = !src;
     if (src) image.src = aibpImageUrl(src);
   });
-  renderImageList(elements.traitCards, state.extraCards?.length ? state.extraCards : (state.traits || []), "暂无 Trait / 特殊卡");
+  latestSupportCards = state.extraCards?.length ? state.extraCards : (state.traits || []);
+  // 隐藏版图时已有独立地形卡区；显示版图时使用 Trait 区的空位。
+  latestSupportTerrainCards = boardVisible
+    ? window.BattleTerrain.getTerrainCards(map, new URL("./terrain-cards", document.baseURI).href)
+    : [];
   applyBattleLayout(scale / 100, rotation, boardVisible);
   renderBossTokens(state.tokens || []);
   const pendingType = state.pendingType === "AI" || state.pendingType === "BP"
