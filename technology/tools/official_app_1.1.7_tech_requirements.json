@@ -1,0 +1,332 @@
+{
+ "source": "C7 ATO官方APP1.1.7汉化版.xapk -> ATO_CN/com.itustudio.atoscribe.apk -> assets/bin/Data/data.unity3d",
+ "package": "com.itustudio.atoscribe",
+ "version_name": "1.1.7",
+ "version_code": 21,
+ "requirement_templates": {
+  "lbl_tech_req_none": "None",
+  "lbl_tech_req_battle": "{0} lvl {1} battle 等级{1}的{0}战斗",
+  "lbl_tech_req_tiles": "{0}+ explored Map Tiles 已探索地图板块{0}+",
+  "lbl_tech_req_atwar": "At War 处于战争状态",
+  "lbl_tech_req_xtitan": "Lose -1 Titan 失去1个泰坦",
+  "lbl_tech_req_argo_know": "Argo Knowledge {0}+ 阿尔戈号知识{0}+",
+  "lbl_tech_req_allied": "{0} Alliance 与{0}个势力结盟",
+  "lbl_tech_req_prusuits_end": "Pursuit’s End Battle Victory 追踪的终结战斗胜利",
+  "lbl_tech_req_story_3a": "Story 3A 故事3A",
+  "lbl_tech_req_diplo": "Diplomacy (any Faction) {0}+ 外交（任意势力）{0}+",
+  "lbl_tech_req_paradox": "Gain +{0} Paradox 获得{0}+悖论",
+  "lbl_tech_req_burden_final": "Burden Hardest to Bear Battle Victory 承受最重之担战役胜利",
+  "lbl_tech_req_tiles_past": "{0}+ explored Map Tiles in Past 过去已探索地图板块{0}+",
+  "lbl_tech_req_tiles_present": "{0}+ explored Map Tiles in Present 现在已探索地图板块{0}+",
+  "lbl_tech_req_doom": "Gain +{0} Doom 获得{0}+灾祸",
+  "lbl_tech_req_winnowing_victory": "The Winnowing Battle Victory 簸筛战斗胜利",
+  "lbl_tech_req_sisyphus_gear": "Sisyphus Gear 西西弗斯装备",
+  "lbl_tech_req_tally_mark": "{0}+ Sow Tally Marks 播种记号{0}+",
+  "lbl_tech_req_thicker_than_water_battle_victory": "Titan X Battle Victory 泰坦X战斗胜利"
+ },
+ "tech_card_assets": {
+  "EA2722": {
+   "front": "Sharing the Knowledge 分享知识",
+   "back": "Last Academy 最后的学院"
+  },
+  "EA2723": {
+   "front": "Voyage Home 返航",
+   "back": "Damaged Bridge Tholos 损坏的圆桌舰桥"
+  },
+  "EA2724": {
+   "front": "Babelian Armor 巴比伦盔甲",
+   "back": "Babelian Armor 巴比伦盔甲",
+   "facility": "Root Masons 根基工匠"
+  },
+  "EA2725": {
+   "front": "Babelian Weapons 巴比伦武器",
+   "back": "Babelian Weapons 巴比伦武器",
+   "facility": "Tunnelforge 隧道熔炉"
+  },
+  "EA2726": {
+   "front": "Babelian Ranged Weapons 巴比伦远程武器",
+   "back": "Babelian Ranged Weapons 巴比伦远程武器",
+   "facility": "Steeplejack Crown 尖塔工匠王冠"
+  },
+  "EA2727": {
+   "front": "Babelian Support 巴比伦支援",
+   "back": "Babelian Support 巴比伦支援",
+   "facility": "Lampwright 灯匠"
+  },
+  "EA2728": {
+   "front": "Abyss Armor 深渊盔甲",
+   "back": "Abyss Armor 深渊盔甲",
+   "facility": "Umbilical Workshop 脐带工坊"
+  },
+  "EA2729": {
+   "front": "Abyss Weapons 深渊武器",
+   "back": "Abyss Weapons 深渊武器",
+   "facility": "Trench Works 战壕工坊"
+  },
+  "EA2730": {
+   "front": "Abyss Support 深渊支援",
+   "back": "Abyss Support 深渊支援",
+   "facility": "Bathysphere Research Station 深海球研究站"
+  },
+  "EA2731": {
+   "front": "Vanguard Gear 先锋装备",
+   "back": "Vanguard Gear 先锋装备",
+   "facility": "The Vanguard Reliquary 先锋圣物库"
+  },
+  "EA2732": {
+   "front": "Cycladean Protectorate 基克拉泽斯保护国",
+   "back": "Cycladean Protectorate 基克拉泽斯保护国",
+   "facility": "Protectorate Heritage Vault 保护国遗产库"
+  },
+  "EA2733": {
+   "front": "Followers of Areté Gear 阿瑞特追随者装备",
+   "back": "Followers of Areté Gear 阿瑞特追随者装备",
+   "facility": "Hoard Of Arete 阿瑞特宝库"
+  },
+  "EA2734": {
+   "front": "Atlantean Armor 亚特兰蒂斯盔甲",
+   "back": "Atlantean Armor 亚特兰蒂斯盔甲",
+   "facility": "Reclaimer Operations 回收行动中心"
+  },
+  "EA2735": {
+   "front": "Atlantean Weapons 亚特兰蒂斯武器",
+   "back": "Atlantean Weapons 亚特兰蒂斯武器",
+   "facility": "Atlantean Retrofitters 亚特兰蒂斯改装厂"
+  },
+  "EA2736": {
+   "front": "Atlantean Support 亚特兰蒂斯支援",
+   "back": "Atlantean Support 亚特兰蒂斯支援",
+   "facility": "Reverse-Engineering Atelier 反向工程工作室"
+  },
+  "EA2737": {
+   "front": "Dragon of Phobos Sighting 深海惧龙目击",
+   "back": "Dragon of Phobos Sighting 深海惧龙目击",
+   "facility": "Phobosian Starcharters 恐惧星图绘制者"
+  },
+  "EA2738": {
+   "front": "Dragon of Phobos Autopsy 深海惧龙解剖",
+   "back": "Dragon of Phobos Autopsy 深海惧龙解剖",
+   "facility": "Orrery Of Fear 恐惧天球仪"
+  },
+  "EA2739": {
+   "front": "Dragon of Phobos Live Study 深海惧龙活体研究",
+   "back": "Dragon of Phobos Live Study 深海惧龙活体研究",
+   "facility": "Tranquility Tank 宁静之罐"
+  },
+  "EA2740": {
+   "front": "Meduketos Sighting 须目刻托斯目击",
+   "back": "Meduketos Sighting 须目刻托斯目击",
+   "facility": "Blacksound Stage 黑音舞台"
+  },
+  "EA2741": {
+   "front": "Meduketos Autopsy 须目刻托斯解剖",
+   "back": "Meduketos Autopsy 须目刻托斯解剖",
+   "facility": "Hyperbaric Oven 高压釜"
+  },
+  "EA2742": {
+   "front": "Meduketos Live Study 须目刻托斯活体研究",
+   "back": "Meduketos Live Study 须目刻托斯活体研究",
+   "facility": "Microwave Solutions 微波结算方案中心"
+  },
+  "EA2743": {
+   "front": "Silvered Weapons 镀银武器",
+   "back": "Silvered Weapons 镀银武器",
+   "facility": "Silverstring Chorus 银弦合唱团"
+  },
+  "EA2744": {
+   "front": "Silvered Armor 镀银盔甲",
+   "back": "Silvered Armor 镀银盔甲",
+   "facility": "Non-Euclidean Vault 非欧几里得宝库"
+  },
+  "EA2745": {
+   "front": "Silvered Support 镀银支援",
+   "back": "Silvered Support 镀银支援",
+   "facility": "Silvered Organ 镀银器官"
+  },
+  "EA2746": {
+   "front": "Ur-Fleece Sighting 乌尔-弗里斯目击",
+   "back": "Ur-Fleece Sighting 乌尔-弗里斯目击",
+   "facility": "Mortal Gatehouse 凡人门楼"
+  },
+  "EA2747": {
+   "front": "Titan X Sighting 泰坦X目击",
+   "back": "Titan X Sighting 泰坦X目击",
+   "facility": "Crisis War Room 危机作战室"
+  },
+  "EA2748": {
+   "front": "Titan X Investigation 泰坦X调查",
+   "back": "Titan X Investigation 泰坦X调查",
+   "facility": "The Lookout 瞭望台"
+  },
+  "EA2749": {
+   "front": "The Last Wish 最后的愿望",
+   "back": "Nereidan Shell 涅瑞伊得贝壳"
+  },
+  "EA2750": {
+   "front": "Calculate Statistical Certainty 计算统计确定性",
+   "back": "Calculate Statistical Certainty 计算统计确定性"
+  },
+  "EA2751": {
+   "front": "Kintsukuroi Pharos 金缮法洛斯",
+   "back": "Kintsukuroi Pharos 金缮法洛斯"
+  },
+  "EA2752": {
+   "front": "Oxygen Tubes 氧气管",
+   "back": "Oxygen Tubes 氧气管"
+  },
+  "EA2753": {
+   "front": "Drag It Back! 把它拖回来！",
+   "back": "Drag It Back! 把它拖回来！"
+  },
+  "EA2754": {
+   "front": "Underwater Support Fleet 水下支援舰队",
+   "back": "Underwater Support Fleet 水下支援舰队"
+  },
+  "EA2755": {
+   "front": "Flash Backstep 闪回步",
+   "back": "Flash Backstep 闪回步"
+  },
+  "EA2756": {
+   "front": "Painkiller Shot 止痛射击",
+   "back": "Painkiller Shot 止痛射击"
+  },
+  "EA2757": {
+   "front": "Triskelion Override 三幅节重写",
+   "back": "Triskelion Override 三幅节重写"
+  },
+  "EA2758": {
+   "front": "Inner Light 内在之光",
+   "back": "Inner Light 内在之光"
+  },
+  "EA2759": {
+   "front": "Anchor Drop Pod 锚点投放舱",
+   "back": "Anchor Drop Pod 锚点投放舱"
+  },
+  "EA2760": {
+   "front": "Soulbalm 灵魂香膏",
+   "back": "Soulbalm 灵魂香膏"
+  },
+  "EA2761": {
+   "front": "The Future of the Argo 阿尔戈号的未来",
+   "back": "Half-lit Agora 半明广场"
+  },
+  "EA2762": {
+   "front": "Shared Fates 共享命运",
+   "back": "Titan Oikos 泰坦家园"
+  },
+  "EA2763": {
+   "front": "Argo Crew Rebuilding 阿尔戈号船员重建",
+   "back": "Argo Crew Rebuilding 阿尔戈号船员重建"
+  },
+  "EA2764": {
+   "front": "Argo Philosophy 阿尔戈号哲学",
+   "back": "Argo Philosophy 阿尔戈号哲学"
+  },
+  "EA2765": {
+   "front": "Argo Initiative 阿尔戈号计划",
+   "back": "Argo Initiative 阿尔戈号计划"
+  },
+  "EA2766": {
+   "front": "Atlantean Investigations 亚特兰蒂斯调查",
+   "back": "Atlantean Investigations 亚特兰蒂斯调查"
+  },
+  "EA2767": {
+   "front": "Pattern Deciphering 模式破译",
+   "back": "Pattern Deciphering 模式破译"
+  },
+  "EA2768": {
+   "front": "Scientific Debunking 科学驳斥",
+   "back": "Scientific Debunking 科学驳斥"
+  },
+  "EA2769": {
+   "front": "The Peace Mission 和平使命",
+   "back": "The Peace Mission 和平使命"
+  },
+  "EA2770": {
+   "front": "Cyclades Intelligence 基克拉泽斯情报",
+   "back": "Cyclades Intelligence 基克拉泽斯情报"
+  },
+  "EA2771": {
+   "front": "Spiral Theory 螺旋理论",
+   "back": "Spiral Theory 螺旋理论"
+  },
+  "EA2772": {
+   "front": "Fresher Start 新的开始",
+   "back": "Fresher Start 新的开始"
+  },
+  "EA2773": {
+   "front": "Grassroots Diplomacy 基层外交",
+   "back": "Grassroots Diplomacy 基层外交"
+  },
+  "EA2774": {
+   "front": "Cyclades Commerce 基克拉泽斯商业",
+   "back": "Cyclades Commerce 基克拉泽斯商业"
+  },
+  "EA2775": {
+   "front": "Cyclades Information Circulation 基克拉泽斯信息传播",
+   "back": "Cyclades Information Circulation 基克拉泽斯信息传播"
+  },
+  "EA2776": {
+   "front": "Underwater Scouting 水下侦察",
+   "back": "Underwater Scouting 水下侦察"
+  },
+  "EA2777": {
+   "front": "Improved Submergence 改进潜航",
+   "back": "Improved Submergence 改进潜航"
+  },
+  "EA2778": {
+   "front": "Tight-spaces Navigation 狭窄空间航行",
+   "back": "Tight-spaces Navigation 狭窄空间航行"
+  },
+  "EA2779": {
+   "front": "Superior Submergence 超级潜航",
+   "back": "Superior Submergence 超级潜航"
+  },
+  "EA2780": {
+   "front": "Moirai Rebellion 摩伊赖叛乱",
+   "back": "Moirai Rebellion 摩伊赖叛乱"
+  },
+  "EA2781": {
+   "front": "Phobian Psychology 恐惧心理学",
+   "back": "Phobian Psychology 恐惧心理学"
+  },
+  "EA2782": {
+   "front": "Atlantean Docking Procedures 亚特兰蒂斯对接程序",
+   "back": "Atlantean Docking Procedures 亚特兰蒂斯对接程序"
+  },
+  "EA2783": {
+   "front": "Mortal Alliance 凡人同盟",
+   "back": "Mortal Alliance 凡人同盟"
+  },
+  "EA2784": {
+   "front": "Atlantean Maintenance Procedures 亚特兰蒂斯维护程序",
+   "back": "Atlantean Maintenance Procedures 亚特兰蒂斯维护程序"
+  },
+  "EA2785": {
+   "front": "Ultimate Titan Breeding 终极泰坦培育",
+   "back": "Ultimate Titan Breeding 终极泰坦培育"
+  },
+  "EA2786": {
+   "front": "New Oikos 新家园",
+   "back": "New Oikos 新家园"
+  },
+  "EA2787": {
+   "front": "Gaia’s Stepchildren 盖亚的庶子",
+   "back": "Gaia’s Stepchildren 盖亚的庶子"
+  },
+  "EA2788": {
+   "front": "Mnestis Training 记忆训练",
+   "back": "Mnestis Training 记忆训练"
+  },
+  "EA2789": {
+   "front": "Cryptex Technology 密码箱科技",
+   "back": "Cryptex Technology 密码箱科技",
+   "facility": "Cryptexarium 密码箱档案馆"
+  },
+  "EA2790": {
+   "front": "Monomythological Support 单一神话支援",
+   "back": "Monomythological Support 单一神话支援",
+   "facility": "Monomythological Workshop 单一神话工坊"
+  }
+ }
+}
