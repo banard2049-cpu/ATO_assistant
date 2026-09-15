@@ -91,8 +91,12 @@ test('index.html 引用 assets/update 下的脚本，避免移动后静默 404',
   assert.ok(!html.includes('./update-check.js'), 'index.html 仍引用根目录的 update-check.js');
   assert.ok(!html.includes('./app-version.js'), 'index.html 仍引用根目录的 app-version.js');
   const sectionAt = html.indexOf('class="app-updates"');
-  assert.ok(sectionAt > html.indexOf('class="app-credit"'), '版本更新区块应排在页脚之后');
   assert.ok(sectionAt < html.indexOf('</main>'), '版本更新区块应留在 #appShell 内');
+  assert.ok(!/<footer class="app-credit"/.test(html), '版权行不应再单独占一行');
+  const controlsAt = html.indexOf('class="update-controls"');
+  const controls = html.slice(controlsAt, html.indexOf('</div>', controlsAt));
+  assert.ok(controls.includes('id="updateStatus"'), '状态文字应与版本号和按钮排在同一行');
+  assert.ok(controls.includes('class="app-credit"'), '版权行应与检查更新排在同一行');
 });
 test('限流提示只在 403/429 且额度为 0 时出现', () => {
   const reset = String(Math.floor(Date.now() / 1000) + 600);

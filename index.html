@@ -222,7 +222,7 @@
     .campaign-save-status[data-state="readonly"] { color: #8a5a00; }
 
     .app-credit {
-      margin: 2px 0 0;
+      margin-left: auto;
       color: var(--muted);
       font-size: 12px;
       text-align: right;
@@ -1914,6 +1914,8 @@
 
     @media (max-width: 620px) {
       .app-credit {
+        margin-left: 0;
+        width: 100%;
         text-align: center;
       }
 
@@ -2155,15 +2157,14 @@
 
       </div>
     </div>
-    <footer class="app-credit">ATO民间辅助程序，制作：Banard</footer>
-
-    <section class="app-updates" aria-label="版本更新" data-term-ignore>
+    <section class="app-updates" aria-label="版本更新与版权信息" data-term-ignore>
       <div class="update-controls">
         <span id="appVersionLabel"></span>
         <button id="checkUpdateButton" type="button" class="secondary" data-dashboard-readonly-allowed>检查更新</button>
+        <span id="updateStatus" class="update-status" role="status"></span>
         <a href="https://github.com/banard2049-cpu/ATO_assistant/releases" rel="noopener noreferrer">GitHub 发布页</a>
+        <span class="app-credit">ATO民间辅助程序，制作：Banard</span>
       </div>
-      <p id="updateStatus" class="update-status" role="status"></p>
       <div id="updateNotice" class="update-notice" hidden>
         <h3 id="updateHeading"></h3>
         <p id="updateVersions"></p>
