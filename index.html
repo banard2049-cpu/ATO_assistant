@@ -2155,6 +2155,15 @@
           </div>
         </section>
 
+        <section class="panel">
+          <div class="panel-head">
+            <h2>背景音乐</h2>
+          </div>
+          <div class="panel-body">
+            <div id="bgmControls" class="bgm-controls" data-term-ignore></div>
+          </div>
+        </section>
+
       </div>
     </div>
     <section class="app-updates" aria-label="版本更新与版权信息" data-term-ignore>
@@ -2196,6 +2205,9 @@
   <script src="./assets/exploration-card-rules.js"></script>
   <script src="./map/map-tile-tags.js?v=20260730-c4-oasis-tag"></script>
   <script src="./map/map-data.js?v=20260730-cycle-labels"></script>
+  <script>window.ATO_BGM_CONFIG = { expect: "bgm14" };</script>
+  <script src="./assets/bgm/manifest.js?v=20260921-bgm14"></script>
+  <script src="./assets/bgm/bgm.js?v=20260921-bgm14"></script>
   <script>
     const legacyStorageKey = "ato-campaign-dashboard-v1";
     const storageKey = "ato-campaign-dashboard-profiles-v1";
@@ -2299,7 +2311,7 @@
         kind: "条件执行",
         desc: "如果本日有**定时战斗或战斗事件**，完成战斗准备并进入对应战斗工具。",
         links: [
-          { label: "战斗模块", href: "./story/index.html?module=battle" },
+          { label: "战斗模块", bgm: "encounter", href: "./story/index.html?module=battle" },
         ],
       },
       {
@@ -2323,6 +2335,36 @@
         desc: "如果本日有**灾祸事件**，或灾祸进程被触发，进行结算并记录后果。",
       },
     ];
+
+    // 背景音乐跟随「今日流程」。曲目表在 assets/bgm/manifest.js，播放器在 assets/bgm/bgm.js。
+    // 判定规则：
+    //   1. 从**最后一个已勾选**的步骤往后找（不是从第一个没勾的找），所以跳着点也不会卡住；
+    //   2. 途中遇到「条件执行」但今天根本没这回事的步骤（没战斗、没冒险、没灾祸）直接跳过；
+    //   3. 后面都没有事，就停在最后已勾选步骤的下一步。
+    function bgmStepPending(step) {
+      if (step.kind !== "条件执行") return true;
+      return getStepTrackReminders(step.id).length > 0;
+    }
+
+    function bgmFlowStepId(steps = flowSteps, completed = state.completed, isPending = bgmStepPending) {
+      const list = steps || [];
+      if (!list.length) return "doom";
+      let lastDone = -1;
+      list.forEach((step, index) => {
+        if (completed && completed[step.id]) lastDone = index;
+      });
+      const start = Math.min(lastDone + 1, list.length - 1);
+      for (let index = start; index < list.length; index += 1) {
+        if (isPending(list[index])) return list[index].id;
+      }
+      return list[start].id;
+    }
+
+    function syncBgmStage() {
+      const api = window.ATO_BGM;
+      if (!api || typeof api.setFlowStage !== "function") return;
+      api.setFlowStage(bgmFlowStepId());
+    }
 
     const dateIconTypes = {
       structureTech: { label: "结构科技", className: "structure-tech" },
@@ -5707,6 +5749,7 @@
       const target = getActiveSurveyHubTarget();
       if (!data || !target) return {
         label: "冒险中枢",
+        bgm: "hub",
         href: getStoryHref({ module: "冒险中枢" }),
       };
 
@@ -5714,6 +5757,7 @@
       const [, roll, title] = findSurveyHubBox(hub, target.boxId) || [];
       return {
         label: "冒险中枢",
+        bgm: "hub",
         title: `${hub?.title || ""}${roll ? ` ${roll}` : ""}${title ? ` · ${title}` : ""}`,
         href: getStoryHref({
           chapter: surveyHubChapterKey(data, target.itemId),
@@ -5727,12 +5771,14 @@
       const target = getActiveSurveyRrTarget();
       if (!data || !target) return {
         label: "R&R",
+        bgm: "rest",
         href: getStoryHref({ module: "rr" }),
       };
 
       const row = data.rr.find(([id]) => id === target.itemId);
       return {
         label: "R&R",
+        bgm: "rest",
         title: row ? `${row[0]} · ${row[1]}` : "",
         href: getStoryHref({
           chapter: "rr-adventures",
@@ -5746,16 +5792,19 @@
       const target = getActivePharosDreamTarget();
       if (!data) return {
         label: "法洛斯之梦",
+        bgm: "pharos",
         href: getStoryHref({ chapter: "dreams-of-pharos" }),
       };
       if (!target) return {
         label: data.title,
+        bgm: "pharos",
         href: getStoryHref({ chapter: data.module }),
       };
 
       const row = findSimpleConstantRow(data, target);
       return {
         label: data.title,
+        bgm: "pharos",
         title: row ? `${row[1]} · ${row[2]}` : "",
         href: getStoryHref({
           chapter: data.module,
@@ -5769,12 +5818,14 @@
       const target = getActiveMainStoryTarget();
       if (!data || !target) return {
         label: "主线",
+        bgm: "story",
         href: getStoryHref({ module: "主线" }),
       };
 
       const row = findSimpleConstantRow(data, target);
       return {
         label: "主线",
+        bgm: "story",
         title: row ? `${row[1]} · ${row[2]}` : "",
         href: getStoryHref({
           chapter: data.chapter,
@@ -5788,12 +5839,14 @@
       const target = getActiveMnemosBreakthroughTarget();
       if (!data || !target) return {
         label: "回忆突破",
+        bgm: "mnemos",
         href: getStoryHref({ module: "mnemos-breakthroughs" }),
       };
 
       const row = findSimpleConstantRow(data, target);
       return {
         label: "回忆突破",
+        bgm: "mnemos",
         title: row ? `${row[1]} · ${row[2]}` : "",
         href: getStoryHref({
           chapter: data.chapter,
@@ -5812,6 +5865,7 @@
         : rawPosition;
       return {
         label: "内蕴奥德赛",
+        bgm: "inward",
         title: range && entry !== rawPosition
           ? `当前内蕴奥德赛 ${rawPosition || "未设置"}，跳转到可用段落 ${entry}`
           : `当前内蕴奥德赛 ${entry || "未设置"}`,
@@ -5827,12 +5881,14 @@
       const target = getActiveSpecialEventTarget();
       if (!data || !target) return {
         label: "特殊事件",
+        bgm: "tension",
         href: getStoryHref({ module: "特殊事件" }),
       };
 
       const row = findSimpleConstantRow(data, target);
       return {
         label: "特殊事件",
+        bgm: "tension",
         title: row ? `${row[1]} · ${row[2]}` : "",
         href: getStoryHref({
           chapter: data.chapter,
@@ -6700,6 +6756,18 @@
           anchor.href = link.href;
           anchor.textContent = link.label;
           if (link.title) anchor.title = link.title;
+          // 带 bgm 的入口（冒险中枢 / R&R / 回忆突破 / 内蕴奥德赛 / 法洛斯之梦 / 主线 / 特殊事件 / 战斗）
+          // 点一下就切到对应阶段；新开标签是为了不把主控台导航走（音乐要留在这页放）。
+          if (link.bgm) {
+            anchor.target = "_blank";
+            anchor.rel = "noopener";
+            anchor.dataset.bgmStage = link.bgm;
+            if (!anchor.title) anchor.title = "打开并切换背景音乐";
+            anchor.addEventListener("click", () => {
+              const api = window.ATO_BGM;
+              if (api && typeof api.setScene === "function") api.setScene(link.bgm);
+            });
+          }
           actions.appendChild(anchor);
         });
         if (actions.children.length) text.querySelector(".step-title")?.appendChild(actions);
@@ -6733,6 +6801,7 @@
       elements.flowList.appendChild(fragment);
       renderProgress();
       updateRecordLinks();
+      syncBgmStage();
     }
 
     function createExplorationTools() {
@@ -7078,7 +7147,7 @@
           getSurveyHubStoryLink(),
           getSurveyRrStoryLink(),
         ];
-        return currentCycleConfig().storyBook ? [{ label: "打开 Story", href: getStoryHref() }] : [];
+        return currentCycleConfig().storyBook ? [{ label: "打开 Story", bgm: "story", href: getStoryHref() }] : [];
       }
       if (step.id === "story") {
         return currentCycleConfig().storyBook ? [

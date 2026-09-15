@@ -40,6 +40,9 @@ $blockedPathPatterns = @(
 
 $allowedPaths = @(
   'assets/ato-terms.js',
+  'assets/bgm/README.md',
+  'assets/bgm/bgm.js',
+  'assets/bgm/manifest.js',
   'assets/exploration-card-rules.js',
   'assets/exploration-card-tags.js',
   'assets/page-focus-router.js',

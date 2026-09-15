@@ -60,6 +60,8 @@
 !/assets/term-language.js
 # 应用自身的更新检测脚本，不是版权素材，随源码发布
 !/assets/update/
+# 主控台 BGM：播放器代码随源码发布，音频仍被 *.mp3 / *.ogg 规则忽略
+!/assets/bgm/
 /map/images/
 /map/tokens/
 /record/assets/
@@ -85,6 +87,9 @@ error_log
 *.tmp.*
 *.log
 *.lock
+
+# 一次性排查草稿，不随源码发布
+/tmp/
 
 # Local/editor/runtime files
 __pycache__/
