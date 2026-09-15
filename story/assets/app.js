@@ -1,5 +1,6 @@
 (function () {
-  const data = window.STORYBOOK_DATA;
+  const fanData = window.STORYBOOK_DATA;
+  let data = fanData;
   const officialData = window.STORYBOOK_OFFICIAL_DATA || { books: [] };
   const officialEntries = new Map();
   officialData.books.forEach((book) => (book.entries || []).forEach((entry) => officialEntries.set(`${book.id}:${entry.key}`, entry)));
@@ -37,6 +38,7 @@
   let activeBook = null;
   let activeEntry = null;
   let storyVersion = localStorage.getItem("ato-term-language-v1") === "official" ? "官方版" : "民间版";
+  data = buildVersionData(storyVersion === "官方版");
   const storyLanguageChannel = "BroadcastChannel" in window ? new BroadcastChannel("ato-term-language") : null;
   const secondScreenSnapshotUrl = "../api/campaign-state.php?section=story";
   const secondScreenModeUrl = "../api/campaign-state.php?action=second-screen-mode";
@@ -294,6 +296,38 @@
     return value.trim().toLowerCase();
   }
 
+  function buildVersionData(official) {
+    if (!official || !fanData?.books) return fanData;
+    // These source-transcribed paragraphs have no counterpart in the fan index.
+    const chaptersByKey = {
+      "c1-7-official-0002": "hub-05-uneasy-rests-the-head",
+      "c2-3-official-0038": "hub-02-the-other-thermopylae",
+      "c3-7-official-0027": "hub-05-cant-go-back",
+    };
+    return { ...fanData, books: fanData.books.map((book) => {
+      const entries = book.entries.slice();
+      const sourceBook = officialData.books.find((item) => item.id === book.id);
+      for (const source of sourceBook?.entries || []) {
+        if (entries.some((entry) => entry.key === source.key)) continue;
+        const chapterKey = source.chapterKey || chaptersByKey[source.key];
+        const chapter = book.chapters.find((item) => item.key === chapterKey);
+        if (!chapter) continue;
+        const text = source.officialText || "";
+        const next = entries.find((entry) => entry.chapterKey === chapterKey && entry.id > source.id);
+        const peers = entries.filter((entry) => entry.chapterKey === chapterKey);
+        entries.push({
+          key: source.key, id: source.id, chapterKey, chapter: chapter.title,
+          title: source.officialTitle || source.id, text,
+          officialOnly: true,
+          order: next ? next.order - 0.5 : Math.max(0, ...peers.map((entry) => entry.order)) + 0.5,
+          links: [...new Set(text.match(/\b\d{4}\b/g) || [])],
+        });
+      }
+      entries.sort((a, b) => a.order - b.order);
+      return { ...book, entries, entryCount: entries.length };
+    }) };
+  }
+
   function currentBook() {
     return data.books.find((book) => book.id === bookSelect.value) || data.books[0];
   }
@@ -417,7 +451,7 @@
   function entryFromDeepLink(book, target) {
     if (target.entryKey) {
       const byKey = book.entries.find((entry) => entry.key === target.entryKey);
-      if (byKey) return byKey;
+      return byKey || null;
     }
 
     if (target.entryId) {
@@ -469,7 +503,7 @@
 
     if (options.entryKey) {
       const exact = matches.find((entry) => entry.key === options.entryKey);
-      if (exact) return exact;
+      return exact || null;
     }
 
     if (options.chapterKey) {
@@ -2955,11 +2989,29 @@
     if (storyVersion === nextVersion) return;
     stopSpeech();
     storyVersion = nextVersion;
+    const chapterKey = selectedChapterKey();
+    const encounterKey = selectedEncounterKey();
+    data = buildVersionData(official);
+    activeBook = currentBook();
+    populateChapters(activeBook, chapterKey);
+    populateEncounters(activeBook, encounterKey);
+    for (const option of bookSelect.options) {
+      const book = data.books.find((item) => item.id === option.value);
+      if (book) option.textContent = `${book.title} (${book.entryCount})`;
+    }
+    if (activeEntry && !activeBook.entries.some((entry) => entry.key === activeEntry.key)) {
+      activeEntry = null;
+      entryTitle.textContent = "当前版本没有此条目";
+      entryBadge.textContent = "----";
+      storyText.textContent = "该条目为官方版独有，请切换至官方版后打开。";
+      linkPanel.innerHTML = "";
+    }
     if (activeEntry) {
       entryTitle.textContent = getDisplayEntry(activeEntry).title || "故事段落";
       renderStory(activeEntry);
       scheduleSecondScreenStorySnapshot();
     }
+    renderResults(searchEntries(searchInput.value));
   }
   window.addEventListener("storage", (event) => {
     if (event.key === "ato-term-language-v1") syncStoryLanguage(event.newValue === "official");

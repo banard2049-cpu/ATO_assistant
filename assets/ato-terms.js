@@ -1,4 +1,55 @@
 window.ATO_TERMS = [
+  // C1-C3 record sheet backs (official simplified Chinese edition).
+  {
+    "from": "循环",
+    "to": "循环",
+    "scope": ".date-track-panel"
+  },
+  {
+    "from": "Cycle III 航行时间表",
+    "to": "循环纪 III 航行时间线",
+    "scope": ".date-track-panel"
+  },
+  {
+    "from": "Cycle II 航行时间表",
+    "to": "循环纪 II 航行时间线",
+    "scope": ".date-track-panel"
+  },
+  {
+    "from": "Cycle I 航行时间表",
+    "to": "循环纪 I 航行时间线",
+    "scope": ".date-track-panel"
+  },
+  {
+    "from": "Cackle Special Event",
+    "to": "特殊事件怪笑",
+    "scope": ".date-track-panel"
+  },
+  {
+    "from": "Relentless Adversary Special Event",
+    "to": "特殊事件不休夙敌",
+    "scope": ".date-track-panel"
+  },
+  {
+    "from": "Vicious Circle (0040)",
+    "to": "恶性闭环（查看 0040）",
+    "scope": ".date-track-panel"
+  },
+  {
+    "from": "Acclimation",
+    "to": "环境顺应",
+    "scope": ".date-track-panel"
+  },
+  {
+    "from": "扎根",
+    "to": "环境顺应",
+    "scope": ".date-track-panel"
+  },
+  {
+    "from": "Day ",
+    "to": "日期 ",
+    "scope": ".date-track-panel"
+  },
   {
     "from": "达哈卡之刃/达哈卡之刃(盲点/云雾)",
     "to": "达哈卡之刃/达哈卡之刃（视野盲区/云层）"
