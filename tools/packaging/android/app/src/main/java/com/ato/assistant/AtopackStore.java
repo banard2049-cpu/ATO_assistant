@@ -33,6 +33,8 @@ final class AtopackStore {
   private static final int PACKAGE_VERSION = 3;
   private static final int MAX_MANIFEST_BYTES = 64 * 1024 * 1024;
   private static final int MAX_ENTITY_INDEX_BYTES = 128 * 1024 * 1024;
+  private static final long MAX_BGM_BYTES = 32L * 1024 * 1024;
+  private static final int MAX_BGM_FILES = 128;
   private static final int MAX_ASSETS = 20_000;
   private static final String WEB_PREFIX = "/android_asset/web/";
 
@@ -174,8 +176,31 @@ final class AtopackStore {
           next.put(target, new ResourceEntry(sha256, storyData ? "application/javascript" : "image/jpeg"));
         }
       }
+      // 主控台背景音乐：APK 不带音频，随资料包的 bgmFiles 段解包到 web 根目录的
+      // assets/bgm/，主控台按相对路径 ./assets/bgm/*.mp3 直接播放。
+      JSONArray bgmFiles = manifest.optJSONArray("bgmFiles");
+      if (bgmFiles != null) {
+        if (bgmFiles.length() > MAX_BGM_FILES) throw new IOException("背景音乐数量超过限制");
+        for (int index = 0; index < bgmFiles.length(); index++) {
+          JSONObject resource = bgmFiles.getJSONObject(index);
+          String target = safePath(resource.optString("target"), "背景音乐路径");
+          if (!target.matches("assets/bgm/[A-Za-z0-9][A-Za-z0-9._-]*\\.(mp3|ogg)")) {
+            throw new IOException("不支持的背景音乐路径：" + target);
+          }
+          if (!target.equals(resource.optString("member"))) throw new IOException("背景音乐目标不匹配");
+          ZipArchiveEntry entry = archive.getEntry(target);
+          if (entry == null || entry.isDirectory() || entry.getSize() < 0 || entry.getSize() > MAX_BGM_BYTES) {
+            throw new IOException("背景音乐缺失或过大：" + target);
+          }
+          if (resource.has("bytes") && resource.optLong("bytes", -1) != entry.getSize()) {
+            throw new IOException("背景音乐文件长度不匹配：" + target);
+          }
+          String sha256 = validSha256(resource.optString("sha256"));
+          installBlob(archive, entry, sha256);
+          next.put(target, new ResourceEntry(sha256, safeMime(resource.optString("mimeType"), target)));
+        }
+      }
       int importedBooks = mergeStories(incomingStories, next);
-
       updatedAt = Long.toString(System.currentTimeMillis());
       writeIndex(next);
       resources = next;
@@ -404,7 +429,8 @@ final class AtopackStore {
   }
 
   private static String safeMime(String mimeType, String target) {
-    if (mimeType != null && mimeType.toLowerCase(Locale.ROOT).startsWith("image/")) return mimeType;
+    if (mimeType != null && (mimeType.toLowerCase(Locale.ROOT).startsWith("image/")
+        || mimeType.toLowerCase(Locale.ROOT).startsWith("audio/"))) return mimeType;
     String extension = MimeTypeMap.getFileExtensionFromUrl(target);
     String detected = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.toLowerCase(Locale.ROOT));
     return detected == null ? "application/octet-stream" : detected;

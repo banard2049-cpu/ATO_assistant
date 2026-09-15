@@ -17,6 +17,8 @@ from pathlib import Path, PurePosixPath
 PROJECT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT))
 
+from app.bgm_resources import add_to_archive as add_bgm_to_archive  # noqa: E402
+from app.bgm_resources import allowed_target as is_bgm_target  # noqa: E402
 from app.official_resources import add_to_archive
 from app.fixed_catalog import fixed_catalog_payload  # noqa: E402
 from app.packages import PACKAGE_VERSION, safe_member  # noqa: E402
@@ -32,7 +34,10 @@ def copy_stream(source, destination, digest) -> None:
         destination.write(chunk)
 
 
-def update_full_pack(base_pack: Path, destination: Path, overlay_root: Path) -> dict:
+def update_full_pack(
+    base_pack: Path, destination: Path, overlay_root: Path,
+    bgm_library: Path | None = None,
+) -> dict:
     if base_pack == destination:
         raise ValueError("输出资料包不能覆盖输入资料包")
     if destination.exists():
@@ -44,6 +49,8 @@ def update_full_pack(base_pack: Path, destination: Path, overlay_root: Path) -> 
         (item, face, target)
         for item in items
         for face, target in item["faces"].items()
+        # BGM 音频由使用者自备，随资料包的 bgmFiles 段分发，不参与固定素材包。
+        if not is_bgm_target(target)
     ]
     destination.parent.mkdir(parents=True, exist_ok=True)
     partial = destination.with_suffix(destination.suffix + ".partial")
@@ -52,6 +59,7 @@ def update_full_pack(base_pack: Path, destination: Path, overlay_root: Path) -> 
     assets = []
     overlay_count = 0
     reused_count = 0
+    bgm_count = 0
     try:
         with zipfile.ZipFile(base_pack) as source_zip:
             source_manifest = json.loads(source_zip.read("manifest.json").decode("utf-8"))
@@ -153,6 +161,12 @@ def update_full_pack(base_pack: Path, destination: Path, overlay_root: Path) -> 
                 output_zip.writestr("story/data/entity-index.json", entity.json_bytes)
                 output_zip.writestr("story/data/entity-index.js", entity_index_javascript(entity))
                 add_to_archive(output_zip, manifest, overlay_root, source_zip, source_manifest)
+                # 主控台 BGM：音频由使用者自备，随 bgmFiles 段分发（根目录没有音频时
+                # 退回素材库里的副本）。BGM 不参与上面的固定素材遍历，见文件开头的过滤。
+                bgm_count = add_bgm_to_archive(
+                    output_zip, manifest, overlay_root, fallback_library=bgm_library
+                )
+                manifest.setdefault("build", {})["audioIncluded"] = bool(bgm_count)
                 output_zip.writestr(
                     "manifest.json",
                     json.dumps(manifest, ensure_ascii=False, separators=(",", ":")),
@@ -182,6 +196,7 @@ def update_full_pack(base_pack: Path, destination: Path, overlay_root: Path) -> 
         "overlay_assets": overlay_count,
         "reused_assets": reused_count,
         "official_files": len(manifest.get("resourceFiles", [])),
+        "bgm_files": bgm_count,
         "bytes": destination.stat().st_size,
     }
 
@@ -191,11 +206,17 @@ def main() -> None:
     parser.add_argument("base_pack", type=Path)
     parser.add_argument("destination", type=Path)
     parser.add_argument("--overlay-root", type=Path, required=True)
+    parser.add_argument(
+        "--bgm-library",
+        type=Path,
+        help="根目录 assets/bgm/ 没有音频时，从这里（素材库目录）读取已导入的副本",
+    )
     args = parser.parse_args()
     result = update_full_pack(
         args.base_pack.expanduser().resolve(),
         args.destination.expanduser().resolve(),
         args.overlay_root.expanduser().resolve(),
+        args.bgm_library.expanduser().resolve() if args.bgm_library else None,
     )
     print(json.dumps(result, ensure_ascii=False, indent=2), flush=True)
 

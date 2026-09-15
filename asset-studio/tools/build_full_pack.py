@@ -17,6 +17,7 @@ from pathlib import Path, PurePosixPath
 PROJECT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT))
 
+from app.bgm_resources import allowed_target as is_bgm_target  # noqa: E402
 from app.official_resources import add_to_archive
 from app.fixed_catalog import fixed_catalog_payload  # noqa: E402
 from app.packages import PACKAGE_VERSION, safe_member  # noqa: E402
@@ -78,6 +79,9 @@ def build(apk_path: Path, destination: Path, overlay_root: Path | None = None) -
         (item, face, target)
         for item in items
         for face, target in item["faces"].items()
+        # BGM 音频不在 APK 里（也不在完整素材包里）：它由使用者自备，
+        # 通过导出资料包时的 bgmFiles 段分发，见 app/bgm_resources.py。
+        if not is_bgm_target(target)
     ]
     destination.parent.mkdir(parents=True, exist_ok=True)
     partial = destination.with_suffix(destination.suffix + ".partial")

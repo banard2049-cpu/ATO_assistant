@@ -9,6 +9,7 @@ from datetime import datetime
 from pathlib import Path, PurePosixPath
 
 from .official_resources import LIBRARY, collect
+from .bgm_resources import collect_library as collect_bgm_library
 from .db import Database
 from .storage import sha256_file, write_compatible_image
 from .story_extras import (
@@ -136,6 +137,13 @@ def install_plan(db: Database, library: Path, root: Path) -> dict:
         status = "add" if not destination.exists() else ("same" if sha256_file(destination) == sha256_file(source) else "replace")
         summary[status] += 1
         files.append({"item_id": "official-story", "name": "官方故事书／截图", "face": "data",
+                      "source": source.relative_to(library).as_posix(), "target": relative,
+                      "status": status, "direct_copy": True})
+    for relative, source in collect_bgm_library(library):
+        destination = safe_target(root, relative)
+        status = "add" if not destination.exists() else ("same" if sha256_file(destination) == sha256_file(source) else "replace")
+        summary[status] += 1
+        files.append({"item_id": "bgm", "name": f"背景音乐：{PurePosixPath(relative).name}", "face": "audio",
                       "source": source.relative_to(library).as_posix(), "target": relative,
                       "status": status, "direct_copy": True})
     return {"root": str(root), "summary": summary, "files": files}

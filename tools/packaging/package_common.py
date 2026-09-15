@@ -30,6 +30,24 @@ BLOCKED_SUFFIXES = (
     ".atoback.partial",
 )
 
+# 主控台 BGM：程序（assets/bgm/*.js）随包发布，音频文件由使用者自备，
+# 通过 asset-studio 的资料包或手动放置安装，不进便携版 / Docker / APK。
+# 根目录 bgm/ 是早期版本的位置，这里一并排除，避免旧副本混进发布包。
+BGM_MEDIA_DIR = "assets/bgm"
+LEGACY_BGM_MEDIA_DIR = "bgm"
+BGM_MEDIA_SUFFIXES = (
+    ".mp3", ".ogg", ".m4a", ".aac", ".wav", ".flac", ".opus", ".wma",
+)
+
+
+def is_bgm_media(relative: Path) -> bool:
+    parts = [part.lower() for part in relative.parts]
+    if not parts or relative.suffix.lower() not in BGM_MEDIA_SUFFIXES:
+        return False
+    if parts[0] == LEGACY_BGM_MEDIA_DIR:
+        return True
+    return len(parts) >= 3 and parts[0] == "assets" and "/".join(parts[:2]) == BGM_MEDIA_DIR
+
 
 def version_text(value: str | None) -> str:
     if value:
@@ -48,6 +66,8 @@ def excluded(relative: Path) -> bool:
     if "tools" in parts or "data" in parts:
         return True
     if parts[0] in BLOCKED_TOP:
+        return True
+    if is_bgm_media(relative):
         return True
     leaf = parts[-1]
     if leaf in BLOCKED_LEAVES:

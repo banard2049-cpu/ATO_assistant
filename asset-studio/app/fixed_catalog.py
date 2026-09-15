@@ -135,6 +135,28 @@ TERRAIN_CARD_STEMS = (
     "trireme-graveyard", "windblighted-fleet", "wishstorm",
 )
 
+BGM_TRACKS = (
+    ("LB_Bridge_Tholos_2", "航行 · 时间表推进 / 休整 · 过场"),
+    ("LB_Argo_Rush_Theme", "航行 · 紧迫（追猎、计时）"),
+    ("LB_Exploration_Step", "探索"),
+    ("XX_LB_Expedition_Step_Ambience", "探索 · 氛围垫底"),
+    ("XX_LB_Expedition_Step_Anchor", "探索 · 转场音"),
+    ("LB_Excursion_Propylon", "考察 · 冒险出发"),
+    ("LB_Grand_Agora", "冒险中枢 · 城邦"),
+    ("LB_Primordial_Encounter_Theme", "遭遇 · 战斗"),
+    ("LB_Armory", "战斗准备 · 军械库"),
+    ("LB_Crafting_and_Training", "发展 · 打造与训练"),
+    ("LB_Titan_Stoa", "泰坦柱廊"),
+    ("LB_Old_Priest_Theme", "故事 · 主线剧情"),
+    ("LB_Last_Academy_2", "回忆突破"),
+    ("LB_Nymph_Addyton", "内蕴奥德赛"),
+    ("LB_Dreams_of_Pharos", "法洛斯之梦"),
+    ("LB_Foreboding_Theme", "灾祸"),
+    ("LB_Forlorn_Naos", "低谷 · 失败剧情"),
+    ("LB_Aftermath_2_nocrows", "战斗结算 · 特殊后果"),
+    ("LB_Argonaut_Mausoleum", "阿尔戈英雄寝园 · 终局"),
+)
+
 NEW_SUMMON_CARD_FILES = (
     "246_Godform_Dionysus.jpg",
     "247_Godform_Aphrodite.jpg",
@@ -1249,6 +1271,18 @@ def fixed_catalog_payload() -> dict[str, Any]:
         faces={"front": "technology/images/gear_cards/cj1475.jpg"},
     ))
 
+    # 主控台 BGM：不进程序包，由使用者在根目录 assets/bgm/ 自备（见 assets/bgm/README.md）。
+    # 这里只登记条目，capture_required=False 表示不需要拍摄；音频随 .atopack 的
+    # bgmFiles 段分发（app/bgm_resources.py）。
+    for order, (stem, label) in enumerate(BGM_TRACKS):
+        additions.append(CatalogItem(
+            id=make_id("common", "背景音乐", "主控台 BGM", stem, label),
+            cycle="common", module="背景音乐", subgroup="主控台 BGM",
+            name=f"{label}（{stem}）", number=stem, sort_order=70_000 + order,
+            faces={"front": f"assets/bgm/{stem}.mp3"},
+            capture_required=False,
+        ))
+
     for item in additions:
         if item.id in existing_ids or any(path in existing_paths for path in item.faces.values()):
             continue
@@ -1283,7 +1317,7 @@ def fixed_catalog_payload() -> dict[str, Any]:
             marker = str(item.get("number") or "").strip()
             item["sort_order"] = list(AIBP_TOKEN_LABELS).index(marker)
     payload["source"]["catalog_items"] = len(payload["items"])
-    payload["source"]["catalog_version"] = "ATO-Local-0.2.11+complete-import-assets-11-c3-anchors"
+    payload["source"]["catalog_version"] = "ATO-Local-0.2.11+complete-import-assets-12-bgm"
     return payload
 
 

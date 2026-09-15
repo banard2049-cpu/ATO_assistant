@@ -128,6 +128,7 @@ class ExportPayload(BaseModel):
     modules: list[str] = []
     complete_only: bool = False
     include_stories: bool = True
+    include_bgm: bool = True
     kind: str = "atopack"
 
 

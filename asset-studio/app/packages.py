@@ -10,6 +10,10 @@ from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 from typing import Any, Callable
 
+from .bgm_resources import add_to_archive as add_bgm_to_archive
+from .bgm_resources import collect_library as collect_bgm_library
+from .bgm_resources import checked_bytes as bgm_checked_bytes
+from .bgm_resources import import_resources as import_bgm_resources
 from .official_resources import LIBRARY, collect, add_to_archive, checked_bytes, import_resources
 from .db import Database
 from .storage import store_image, write_compatible_image
@@ -121,11 +125,14 @@ def export_package(
         if filters.get("include_stories", True):
             official_root = ato_root if collect(ato_root) else library / LIBRARY
             add_to_archive(archive, manifest, official_root)
+        if filters.get("include_bgm", True):
+            add_bgm_to_archive(archive, manifest, ato_root, fallback_library=library)
         archive.writestr("manifest.json", json.dumps(manifest, ensure_ascii=False, indent=2))
     return {
         "path": str(destination),
         "assets": len(rows),
         "entity_index": bool(entity_index),
+        "bgm_files": len(manifest.get("bgmFiles", [])),
         "bytes": destination.stat().st_size,
     }
 
@@ -167,6 +174,9 @@ def inspect_package(
         story_summary = {"add": len(incoming_books - local_books), "replace": len(incoming_books & local_books)}
         for resource in manifest.get("resourceFiles", []):
             checked_bytes(archive, resource)
+        bgm_files = manifest.get("bgmFiles", []) or []
+        for resource in bgm_files:
+            bgm_checked_bytes(archive, resource)
         entity_summary = _inspect_story_files(archive, manifest, names, verify_hashes)
         if int(manifest.get("version", 0)) >= 2 and incoming_books and not entity_summary["included"]:
             raise ValueError("新版资料包含有故事，但没有人物小传索引")
@@ -176,6 +186,7 @@ def inspect_package(
         "stories": story_summary,
         "entity_index": entity_summary,
         "official_resources": len(manifest.get("resourceFiles", [])),
+        "bgm_files": len(bgm_files),
         "manifest": manifest,
     }
 
@@ -250,6 +261,7 @@ def import_package(
             if progress:
                 progress(index, total, f"正在恢复第 {index}/{len(inspection['assets'])} 个图片")
         import_resources(archive, manifest, library, replace)
+        bgm_imported = import_bgm_resources(archive, manifest, library, replace)
         entity_index_imported = False
         for story_file in manifest.get("storyFiles", []):
             if story_file.get("kind") != ENTITY_INDEX_KIND:
@@ -280,6 +292,7 @@ def import_package(
         "skipped": skipped,
         "stories_imported": len(imported_books),
         "entity_index_imported": entity_index_imported,
+        "bgm_imported": bgm_imported,
     }
 
 
@@ -413,9 +426,15 @@ def export_compat(
             for target, source in collect(official_root):
                 archive.write(source, target)
                 written += 1
+        bgm_written = 0
+        if filters.get("include_bgm", True):
+            bgm_manifest: dict = {}
+            bgm_written = add_bgm_to_archive(archive, bgm_manifest, ato_root, fallback_library=library)
+            written += bgm_written
     return {
         "path": str(destination),
         "files": written + (3 if include_stories else 0),
         "entity_index": bool(include_stories),
+        "bgm_files": bgm_written,
         "bytes": destination.stat().st_size,
     }
