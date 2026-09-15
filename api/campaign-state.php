@@ -769,8 +769,13 @@ if ($action === 'second-screen-mode') {
   }
   $store = read_second_screens($secondScreensFile);
   $changed = false;
+  // 存档里有没有属于当前账号的第二屏条目。以前没有匹配条目时照样回 200 并回报请求的
+  // 模式，页面以为切成功了、第二屏却一直停在地图，排查时完全看不出问题，所以这里要
+  // 单独记一笔，最后明确报错。
+  $matched = false;
   foreach ($store['screens'] as $token => $entry) {
     if (($entry['userId'] ?? null) !== $user['id']) continue;
+    $matched = true;
     if (($entry['displayMode'] ?? 'map') !== $mode) {
       $store['screens'][$token]['displayMode'] = $mode;
       $store['screens'][$token]['modeChangedAt'] = gmdate('c');
@@ -787,6 +792,13 @@ if ($action === 'second-screen-mode') {
   if ($changed) write_json_file($secondScreensFile, $store);
   flock($lockHandle, LOCK_UN);
   fclose($lockHandle);
+  if (!$matched) {
+    respond(409, [
+      'ok' => false,
+      'code' => 'SCREEN_NOT_ENABLED',
+      'error' => 'Second screen is not enabled for this account.',
+    ]);
+  }
   respond(200, ['ok' => true, 'displayMode' => $mode]);
 }
 

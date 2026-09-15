@@ -7,7 +7,8 @@
  *      该条目没有扫描图时改发正文（官方版正文缺失时就是阅读器里那句占位提示）；
  *   2. 第二屏收到 imagesOnly 但拿不到本站扫描图时，同样退回正文而不是留白；
  *   3. 快照没写进存档时（空 section）第二屏保留上一屏内容，不再显示阅读器视角的提示；
- *   4. 故事页写快照失败会重试，并把原因留在第二屏开关的提示里。
+ *   4. 故事页写快照失败会重试，并把原因留在第二屏开关的提示里；
+ *   5. 切换第二屏显示失败（PHP 409）时把服务端原因带回来，别只把勾选弹回去。
  */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -20,7 +21,11 @@ const SS_SOURCE = fs.readFileSync(path.join(__dirname, '../../ss/app.js'), 'utf8
 const SCAN = './data/ato-storybook-key-scans/c1-0-0.jpg';
 
 function slice(source, name, indent) {
-  const start = source.indexOf(`${indent}function ${name}(`);
+  // 有的函数是 async 声明的，两种写法都要能找到
+  const start = Math.max(
+    source.indexOf(`${indent}function ${name}(`),
+    source.indexOf(`${indent}async function ${name}(`),
+  );
   assert.ok(start >= 0, `找不到函数 ${name}`);
   const end = source.indexOf(`\n${indent}}`, start) + indent.length + 2;
   return source.slice(start, end);
@@ -229,6 +234,7 @@ function storyPageContext() {
     SECOND_SCREEN_SNAPSHOT_ATTEMPTS: 3,
     SECOND_SCREEN_STORY_MODE_TITLE: '勾选后第二屏显示当前故事文本，取消勾选后显示地图',
     secondScreenSnapshotFailure: '',
+    secondScreenModeFailure: '',
     secondScreenSnapshotTimer: null,
     secondScreenStoryModeLabel: label,
     secondScreenStoryModeToggle: { disabled: false },
@@ -267,4 +273,27 @@ test('快照写失败会重试并把原因留在第二屏开关提示里', async
   assert.equal(ctx.secondScreenSnapshotFailure, '');
   assert.ok(!ctx.secondScreenStoryModeLabel.classList.contains('sync-error'));
   assert.equal(ctx.secondScreenStoryModeTitle(ctx.SECOND_SCREEN_STORY_MODE_TITLE), ctx.SECOND_SCREEN_STORY_MODE_TITLE);
+
+  // 模式切换失败（PHP 回 409：第二屏没有为当前账号开启）也要留在提示里
+  ctx.secondScreenModeFailure = '切换第二屏显示失败：Second screen is not enabled for this account.';
+  assert.match(ctx.secondScreenStoryModeTitle(ctx.SECOND_SCREEN_STORY_MODE_TITLE), /not enabled/);
+});
+
+test('模式切换失败时把服务端原因交回调用方（以前只回 true/false）', async () => {
+  function modeContext(payload, status) {
+    const context = vm.createContext({
+      secondScreenModeUrl: '../api/campaign-state.php?action=second-screen-mode',
+      fetch: async () => ({ ok: status < 400, status, json: async () => payload }),
+    });
+    vm.runInContext(slice(STORY_SOURCE, 'setSecondScreenMode', '  '), context);
+    return context;
+  }
+
+  const denied = await vm.runInContext('setSecondScreenMode("story")',
+    modeContext({ ok: false, code: 'SCREEN_NOT_ENABLED', error: 'Second screen is not enabled for this account.' }, 409));
+  assert.deepEqual(JSON.parse(JSON.stringify(denied)),
+    { ok: false, error: 'Second screen is not enabled for this account.' });
+
+  const saved = await vm.runInContext('setSecondScreenMode("story")', modeContext({}, 200));
+  assert.deepEqual(JSON.parse(JSON.stringify(saved)), { ok: true, error: '' });
 });

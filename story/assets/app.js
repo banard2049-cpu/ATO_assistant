@@ -47,6 +47,7 @@
   const SECOND_SCREEN_STORY_MODE_TITLE = "勾选后第二屏显示当前故事文本，取消勾选后显示地图";
   let secondScreenSnapshotTimer = null;
   let secondScreenSnapshotFailure = "";
+  let secondScreenModeFailure = "";
   let secondScreenModeBusy = false;
   let historyStack = [];
   let memories = [];
@@ -2321,10 +2322,13 @@
   }
 
   // 状态刷新会重写这条提示，所以同步失败的原因要拼在里面，别被刷掉。
+  // 切换模式失败（例如第二屏其实没为当前账号开启，PHP 会回 409）同样要留痕：
+  // 那时勾选会自己弹回去，页面上却看不出为什么。
   function secondScreenStoryModeTitle(base) {
-    return secondScreenSnapshotFailure
-      ? `${base}（上一次故事文本同步失败：${secondScreenSnapshotFailure}）`
-      : base;
+    const reasons = [];
+    if (secondScreenSnapshotFailure) reasons.push(`上一次故事文本同步失败：${secondScreenSnapshotFailure}`);
+    if (secondScreenModeFailure) reasons.push(secondScreenModeFailure);
+    return reasons.length ? `${base}（${reasons.join("；")}）` : base;
   }
 
   function scheduleSecondScreenStorySnapshot() {
@@ -2348,6 +2352,8 @@
     }, 120);
   }
 
+  // 第二屏没为当前账号开启时 PHP 会回 409：以前这里只看 response.ok，界面只会把勾选
+  // 弹回去，看不出原因，所以把服务端的错误一起带出来。
   async function setSecondScreenMode(mode) {
     try {
       const response = await fetch(secondScreenModeUrl, {
@@ -2355,9 +2361,11 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mode: mode === "story" ? "story" : "map" }),
       });
-      return response.ok;
-    } catch {
-      return false;
+      if (response.ok) return { ok: true, error: "" };
+      const payload = await response.json().catch(() => null);
+      return { ok: false, error: String(payload?.error || `HTTP ${response.status}`) };
+    } catch (error) {
+      return { ok: false, error: String(error?.message || error) };
     }
   }
 
@@ -2388,8 +2396,14 @@
     secondScreenStoryModeToggle.disabled = true;
     if (secondScreenStoryModeToggle.checked) scheduleSecondScreenStorySnapshot();
     const requestedMode = secondScreenStoryModeToggle.checked ? "story" : "map";
-    const saved = await setSecondScreenMode(requestedMode);
-    if (!saved) secondScreenStoryModeToggle.checked = !secondScreenStoryModeToggle.checked;
+    const result = await setSecondScreenMode(requestedMode);
+    if (result.ok) {
+      secondScreenModeFailure = "";
+    } else {
+      secondScreenStoryModeToggle.checked = !secondScreenStoryModeToggle.checked;
+      secondScreenModeFailure = `切换第二屏显示失败：${result.error}`;
+      console.warn("第二屏显示模式切换失败：", result.error);
+    }
     secondScreenModeBusy = false;
     await refreshSecondScreenStoryModeToggle();
   }
