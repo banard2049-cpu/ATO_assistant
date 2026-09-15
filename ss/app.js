@@ -39,6 +39,7 @@ const elements = {
 let retryTimer = null;
 let battleRenderKey = "";
 let storyRenderKey = "";
+let storyRendered = false;
 let activeMode = "map";
 let latestBattleScale = 1;
 let latestBattleRotation = 0;
@@ -302,25 +303,66 @@ function openMap() {
   if (!elements.mapFrame.getAttribute("src")) elements.mapFrame.src = "../map/index.html?second=1";
 }
 
+// 官方故事书扫描图只认本站 story 数据目录下的图片，其它来源一律忽略。
+function storyScanImages(story) {
+  const scans = [];
+  for (const src of Array.isArray(story.images) ? story.images : []) {
+    let url = null;
+    try {
+      url = new URL(src, window.location.href);
+    } catch {
+      continue;
+    }
+    if (url.origin !== window.location.origin || !url.pathname.includes("/story/data/ato-storybook-key-scans/")) continue;
+    scans.push(url.href);
+  }
+  return scans;
+}
+
+// 存档里连快照都没有（故事页从没发过、发送失败，或第二屏跟故事页不是同一个账号）时，
+// story 会是 PHP 兜底的空数组，这里必须把「没有快照」跟「这条目空着」分开处理。
+function hasStorySnapshot(story) {
+  return Boolean(story.id || story.title || story.text || story.imagesOnly);
+}
+
 function openStory(screen) {
   const previousMode = activeMode;
   activeMode = "story";
-  const story = screen.story || {};
+  const story = screen.story && typeof screen.story === "object" && !Array.isArray(screen.story)
+    ? screen.story
+    : {};
   elements.unavailableView.hidden = true;
   elements.mapStage.hidden = true;
   elements.battleView.hidden = true;
   elements.storyView.hidden = false;
-  const renderKey = JSON.stringify([screen.storyRevision, story.updatedAt, story.id, story.text, story.imagesOnly, story.images]);
+  // 官方版是「只看扫描图」，但该条目没有对应扫描图时必须退回正文：
+  // 只按 story.imagesOnly 走图，第二屏会只剩标题、正文一片空白。
+  const scans = storyScanImages(story);
+  const imagesOnly = Boolean(story.imagesOnly) && scans.length > 0;
+  const renderKey = JSON.stringify([screen.storyRevision, story.updatedAt, story.id, story.text, imagesOnly, scans]);
   if (renderKey === storyRenderKey && previousMode === "story") return;
   storyRenderKey = renderKey;
-  elements.storyView.classList.toggle("images-only", Boolean(story.imagesOnly));
-  if (story.imagesOnly) {
+  if (!hasStorySnapshot(story)) {
+    // 第二屏是跟随显示：快照迟到或没写进来时保留上一屏内容，不要用阅读器视角的
+    // 「请先在故事书中选择一个段落。」把已经显示的正文顶掉。真的一份都没有时才提示。
+    if (storyRendered) return;
+    elements.storyView.classList.toggle("images-only", false);
+    elements.storyBookTitle.textContent = "";
+    elements.storySection.textContent = "";
+    elements.storyTitle.textContent = "等待故事文本";
+    elements.storyEntryId.textContent = "";
+    elements.storyBody.textContent = "还没有收到故事书阅读文本。\n"
+      + "请在故事页打开一个段落；若故事页已经打开，请确认它跟开启第二屏幕的是同一个账号。";
+    fitStoryTextToViewport();
+    return;
+  }
+  storyRendered = true;
+  elements.storyView.classList.toggle("images-only", imagesOnly);
+  if (imagesOnly) {
     elements.storyBody.replaceChildren();
-    for (const src of Array.isArray(story.images) ? story.images : []) {
-      const url = new URL(src, window.location.href);
-      if (url.origin !== window.location.origin || !url.pathname.includes("/story/data/ato-storybook-key-scans/")) continue;
+    for (const src of scans) {
       const image = document.createElement("img");
-      image.src = url.href;
+      image.src = src;
       image.alt = "官方故事书扫描图";
       elements.storyBody.append(image);
     }
@@ -331,7 +373,8 @@ function openStory(screen) {
   elements.storySection.textContent = story.section || "";
   elements.storyTitle.textContent = story.title || "当前故事文本";
   elements.storyEntryId.textContent = story.id || "";
-  elements.storyBody.textContent = story.text || "请先在故事书中选择一个段落。";
+  elements.storyBody.textContent = story.text
+    || (story.imagesOnly ? "该条目暂无对应的官方扫描图与正文。" : "该条目暂无正文文本。");
   fitStoryTextToViewport();
 }
 

@@ -386,6 +386,12 @@ h2 {
   opacity: 0.55;
 }
 
+/* 第二屏故事文本没写进存档时，别让它悄悄停在旧内容上。 */
+.second-screen-mode-toggle.sync-error {
+  border-color: #b4552f;
+  color: #b4552f;
+}
+
 .ai-translation {
   padding: 20px;
   border: 1px solid rgba(42, 84, 123, 0.28);

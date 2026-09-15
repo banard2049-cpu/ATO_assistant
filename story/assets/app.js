@@ -43,7 +43,10 @@
   const secondScreenSnapshotUrl = "../api/campaign-state.php?section=story";
   const secondScreenModeUrl = "../api/campaign-state.php?action=second-screen-mode";
   const secondScreenStatusUrl = "../api/campaign-state.php?action=second-screen-status";
+  const SECOND_SCREEN_SNAPSHOT_ATTEMPTS = 3;
+  const SECOND_SCREEN_STORY_MODE_TITLE = "勾选后第二屏显示当前故事文本，取消勾选后显示地图";
   let secondScreenSnapshotTimer = null;
+  let secondScreenSnapshotFailure = "";
   let secondScreenModeBusy = false;
   let historyStack = [];
   let memories = [];
@@ -2270,18 +2273,58 @@
 
   function buildSecondScreenStorySnapshot() {
     if (!activeEntry) return null;
-    const imagesOnly = storyVersion === "官方版" && supportsOfficialVersion();
+    const displayEntry = getDisplayEntry(activeEntry);
     const scan = officialEntries.get(`${currentBook()?.id}:${activeEntry.key}`)?.officialScan;
+    // 官方版优先让第二屏看官方扫描图，但扫描图不是每个条目都有（官方 PDF 未收录的
+    // 条目就没有）。这时必须退回正文，否则第二屏只剩标题、正文一片空白。
+    const imagesOnly = storyVersion === "官方版" && supportsOfficialVersion() && Boolean(scan?.src);
     return {
       imagesOnly,
-      images: imagesOnly && scan?.src ? [new URL(scan.src, window.location.href).pathname] : [],
+      images: imagesOnly ? [new URL(scan.src, window.location.href).pathname] : [],
       bookTitle: currentBook()?.title || "故事书",
       section: sectionLabel.textContent || activeEntry.chapter || "",
       id: activeEntry.id || "",
-      title: activeEntry.title || "故事段落",
-      text: imagesOnly ? "" : activeEntry.text || storyText.textContent || "",
+      title: displayEntry.title || "故事段落",
+      text: imagesOnly ? "" : displayEntry.text || storyText.textContent || "",
       updatedAt: new Date().toISOString(),
     };
+  }
+
+  // 第二屏的故事文本靠这条 POST 落到存档里，写失败时第二屏只能停在旧内容或空态，
+  // 所以这里既重试也留痕。
+  function postSecondScreenStorySnapshot(snapshot) {
+    return fetch(secondScreenSnapshotUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ section: "story", state: snapshot }),
+    }).then((response) => {
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return response;
+    });
+  }
+
+  function reportSecondScreenSnapshotFailure(reason) {
+    secondScreenSnapshotFailure = reason;
+    console.warn("第二屏故事文本同步失败：", reason);
+    if (!secondScreenStoryModeLabel) return;
+    secondScreenStoryModeLabel.classList.add("sync-error");
+    secondScreenStoryModeLabel.title = `故事文本同步失败：${reason}。第二屏会停在上一屏内容，请检查登录状态或稍后重试。`;
+  }
+
+  function clearSecondScreenSnapshotFailure() {
+    if (!secondScreenSnapshotFailure) return;
+    secondScreenSnapshotFailure = "";
+    secondScreenStoryModeLabel?.classList.remove("sync-error");
+    if (secondScreenStoryModeLabel && !secondScreenStoryModeToggle?.disabled) {
+      secondScreenStoryModeLabel.title = SECOND_SCREEN_STORY_MODE_TITLE;
+    }
+  }
+
+  // 状态刷新会重写这条提示，所以同步失败的原因要拼在里面，别被刷掉。
+  function secondScreenStoryModeTitle(base) {
+    return secondScreenSnapshotFailure
+      ? `${base}（上一次故事文本同步失败：${secondScreenSnapshotFailure}）`
+      : base;
   }
 
   function scheduleSecondScreenStorySnapshot() {
@@ -2289,13 +2332,19 @@
     secondScreenSnapshotTimer = window.setTimeout(async () => {
       const snapshot = buildSecondScreenStorySnapshot();
       if (!snapshot) return;
-      try {
-        await fetch(secondScreenSnapshotUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ section: "story", state: snapshot }),
-        });
-      } catch {}
+      // 以前这里把失败整个吞掉：快照写不进存档时第二屏会一直停在旧内容或空态，
+      // 看起来就像「官方版没图」。现在重试两次，并把原因留在第二屏开关的提示里。
+      for (let attempt = 0; attempt < SECOND_SCREEN_SNAPSHOT_ATTEMPTS; attempt += 1) {
+        try {
+          await postSecondScreenStorySnapshot(snapshot);
+          clearSecondScreenSnapshotFailure();
+          return;
+        } catch (error) {
+          const reason = String(error?.message || error);
+          if (attempt === SECOND_SCREEN_SNAPSHOT_ATTEMPTS - 1) reportSecondScreenSnapshotFailure(reason);
+          else await new Promise((resolve) => window.setTimeout(resolve, 400 * (attempt + 1)));
+        }
+      }
     }, 120);
   }
 
@@ -2323,7 +2372,7 @@
       secondScreenStoryModeToggle.disabled = !enabled;
       secondScreenStoryModeLabel?.classList.toggle("disabled", !enabled);
       secondScreenStoryModeLabel.title = enabled
-        ? "勾选后第二屏显示当前故事文本，取消勾选后显示地图"
+        ? secondScreenStoryModeTitle(SECOND_SCREEN_STORY_MODE_TITLE)
         : "请先在主控制台开启第二屏幕";
     } catch {
       secondScreenStoryModeToggle.checked = false;
