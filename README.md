@@ -64,9 +64,23 @@ docker compose pull
 docker compose up -d
 ~~~
 
-一键安装默认使用执行命令时的当前文件夹；也可以通过 `ATO_DIR=/path/to/dir` 指定安装目录。
+compose 里的 `pull_policy` 是 `always`：镜像标签 `latest` 会移动，用默认的 `missing` 时 `docker compose pull` 可能认为「本地已有同名镜像」而什么都不拉，更新看起来成功、实际还在跑旧版。代价是 GHCR 不可达时手动 `docker compose up -d` 会报错（已经在跑的容器不受影响）；想固定版本可以在安装目录建一个 `.env`，写上 `ATO_VERSION=1.3.1` 这样的具体版本号。
 
-data/ 和 app/ 下的本地图片目录会挂载到容器，拉取新镜像不会删除它们。
+一键安装默认使用执行命令时的当前文件夹；也可以通过 `ATO_DIR=/path/to/dir` 指定安装目录。脚本会建好挂载点：决战版图底图的占位文件 `app/ss/battle-board.jpg`（把真图覆盖上去，文件名不要改）、BGM 目录 `app/assets/bgm/audio/`，并把旧版直接放在 `app/assets/bgm/` 下的音频移进 `audio/`。
+
+data/ 和 app/ 下的本地素材目录会挂载到容器，拉取新镜像不会删除它们。
+
+**容器里只有素材是本地的，程序一律来自镜像**，所以 `docker compose pull` 能完整更新（包括第二屏前端和 BGM 播放器）。宿主机上的对应位置：
+
+| 放什么 | 宿主机位置 |
+| --- | --- |
+| 决战版图底图 | `app/ss/battle-board.jpg`（单文件挂载，缺文件会直接报错，不会静默失效） |
+| 第二屏地形图 / 地形卡 | `app/ss/terrain/`、`app/ss/terrain-cards/` |
+| 主控台背景音乐 | `app/assets/bgm/audio/`（`.mp3` / `.ogg`，文件名见 [bgm 说明](assets/bgm/README.md)） |
+| 其它本地图片 | `app/map/images/`、`app/technology/images/`、`app/story/images/` 等（见 `compose.yaml`） |
+| 私有故事书数据 | `app/story/data/`（只读挂载） |
+
+`app/ss/` 下的 `index.html` / `app.js` / `styles.css` / `terrain-data.js` 是镜像提供的程序文件，宿主机上的同名旧副本不会生效，可以直接删掉。
 
 ## 素材库工具
 

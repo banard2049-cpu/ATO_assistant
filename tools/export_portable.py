@@ -99,6 +99,13 @@ def build_docker(version: str) -> Path:
     app = stage / "app"
     prepare_site(app, version)
     (stage / "data").mkdir()
+    # compose 把这张底图作为单文件挂进容器（公开镜像里没有官方素材）。文件缺失时
+    # Docker 会建一个同名目录顶上，版图背景就废了，所以包里先放一个占位文件；
+    # 本地构建已经带着真图时不覆盖它。
+    battle_board = app / "ss" / "battle-board.jpg"
+    battle_board.parent.mkdir(parents=True, exist_ok=True)
+    if not battle_board.exists():
+        battle_board.touch()
     docker_source = TOOLS_ROOT / "packaging/docker"
     shutil.copy2(docker_source / "Dockerfile", stage / "Dockerfile")
     shutil.copy2(docker_source / "docker-entrypoint.sh", stage / "docker-entrypoint.sh")

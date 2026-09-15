@@ -2,7 +2,11 @@ services:
   ato:
     image: ghcr.io/banard2049-cpu/ato_assistant:${ATO_VERSION:-latest}
     build: .
-    pull_policy: missing
+    # latest 是会移动的标签，而 missing 的语义是「本地已经有同名镜像就别拉」：
+    # 两者凑在一起，`docker compose pull` 有可能什么都不拉，更新看起来成功、
+    # 实际还在跑旧镜像。这里必须是 always，pull 才是真的 pull。
+    # （代价：GHCR 不可达时手动 `docker compose up -d` 会报错；已经在跑的容器不受影响。）
+    pull_policy: always
     ports:
       - "8793:8793"
     volumes:
@@ -10,14 +14,29 @@ services:
       - ./app/aibp/ps:/app/aibp/ps
       - ./app/assets/exploration-cards:/app/assets/exploration-cards
       - ./app/assets/story-doom-cards:/app/assets/story-doom-cards
+      # 主控台 BGM：只挂音频子目录。assets/bgm/ 里混着程序（bgm.js / manifest.js）
+      # 和自备音频，整目录挂载会把播放器代码一起钉死在宿主机上，pull 就再也更新不到它；
+      # 所以音频放 ./app/assets/bgm/audio/，程序交给镜像（见 assets/bgm/README.md）。
+      - ./app/assets/bgm/audio:/app/assets/bgm/audio:ro
       - ./app/hero/assets:/app/hero/assets
       - ./app/map/images:/app/map/images
       - ./app/map/tokens:/app/map/tokens
       - ./app/record/assets:/app/record/assets
-      # The battle board is a local asset and is not included in the public image.
-      # Mount the whole SS asset tree so a missing file cannot be auto-created
-      # as a directory by Docker's short file-bind syntax.
-      - ./app/ss:/app/ss:ro
+      # 第二屏：只挂本地素材（版图底图 + 地形图），ss/ 里的程序文件
+      # （index.html / app.js / styles.css / terrain-data.js）必须由镜像提供。以前整棵挂
+      # ./app/ss 会把它们全部遮住 —— 镜像里修好的第二屏前端永远进不了容器，
+      # 表现为「主控台更新了、第二屏还是旧版」。
+      # battle-board.jpg 是单文件挂载：文件不存在时 Docker 会建一个同名目录顶上，
+      # 版图背景就悄悄废了，所以用 create_host_path: false 让它直接报错。
+      # 安装脚本（tools/install-docker.sh）会先放一个 0 字节占位文件。
+      - type: bind
+        source: ./app/ss/battle-board.jpg
+        target: /app/ss/battle-board.jpg
+        read_only: true
+        bind:
+          create_host_path: false
+      - ./app/ss/terrain:/app/ss/terrain:ro
+      - ./app/ss/terrain-cards:/app/ss/terrain-cards:ro
       - ./app/story/images:/app/story/images
       # Keep Storybook data local; it is intentionally absent from the public image.
       # Put the private storybook-data.js in ./app/story/data on the host.
