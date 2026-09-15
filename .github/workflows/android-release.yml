@@ -115,5 +115,4 @@ jobs:
           name: ATO-Assistant-Android-${{ steps.release.outputs.version }}
           path: |
             export/ATO-Assistant-${{ steps.release.outputs.version }}.apk
-            export/ATO-Assistant-${{ steps.release.outputs.version }}.apk.sha256
           if-no-files-found: error

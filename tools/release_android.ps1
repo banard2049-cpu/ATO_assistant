@@ -17,6 +17,9 @@ $ErrorActionPreference = 'Stop'
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $versionText = $Version -replace '^v', ''
 $releaseTag = if ($Tag) { $Tag } else { "v$versionText" }
+# 更新公告随仓库发布：release-notes/<标签>.md 存在就用它，否则退回 GitHub 自动生成的提交列表。
+$notesFile = Join-Path $projectRoot "release-notes\$releaseTag.md"
+$hasNotes = Test-Path -LiteralPath $notesFile -PathType Leaf
 $requiredSigningVariables = @(
   'ATO_ANDROID_KEYSTORE_PATH',
   'ATO_ANDROID_KEYSTORE_PASSWORD',
@@ -96,11 +99,9 @@ try {
   $apkInfo = Get-Item -LiteralPath $apk
   if ($apkInfo.Length -le 0) { throw 'Android builder created an empty APK.' }
 
-  $hash = (Get-FileHash -LiteralPath $apk -Algorithm SHA256).Hash.ToLowerInvariant()
-  $checksum = "$apk.sha256"
-  Set-Content -LiteralPath $checksum -Value "$hash  $($apkInfo.Name)" -Encoding utf8
-  Write-Host "APK: $apk"
-  Write-Host "SHA-256: $hash"
+  # Release assets stay APK-only: no checksum sidecar is generated or uploaded.
+  $apkSizeMb = '{0:N1}' -f ($apkInfo.Length / 1MB)
+  Write-Host "APK: $apk ($apkSizeMb MB)"
 
   if (-not $Publish) {
     Write-Host 'Local release build complete. Nothing was uploaded.'
@@ -111,17 +112,25 @@ try {
   if (-not $gh) { throw 'GitHub CLI (gh) is required for -Publish.' }
   Invoke-Checked $gh.Source 'auth' 'status'
 
+  if ($hasNotes) { Write-Host "Release notes: $notesFile" }
+
   & $gh.Source release view $releaseTag '--json' 'tagName' 2>$null | Out-Null
   $releaseExists = $LASTEXITCODE -eq 0
   if ($releaseExists) {
-    Invoke-Checked $gh.Source 'release' 'upload' $releaseTag $apk $checksum '--clobber'
+    # Portable workflow may have created the release first with generated notes.
+    if ($hasNotes) { Invoke-Checked $gh.Source 'release' 'edit' $releaseTag '--notes-file' $notesFile }
+    Invoke-Checked $gh.Source 'release' 'upload' $releaseTag $apk '--clobber'
   } else {
     $arguments = @(
-      'release', 'create', $releaseTag, $apk, $checksum,
+      'release', 'create', $releaseTag, $apk,
       '--title', "ATO Assistant $versionText",
-      '--target', (git rev-parse HEAD),
-      '--generate-notes'
+      '--target', (git rev-parse HEAD)
     )
+    if ($hasNotes) {
+      $arguments += @('--notes-file', $notesFile)
+    } else {
+      $arguments += '--generate-notes'
+    }
     if ($Draft) { $arguments += '--draft' }
     if ($Prerelease) { $arguments += '--prerelease' }
     # The Portable workflow can create the same tag release concurrently.
@@ -131,7 +140,8 @@ try {
       if ($LASTEXITCODE -ne 0) {
         throw "Could not create or find GitHub Release $releaseTag."
       }
-      Invoke-Checked $gh.Source 'release' 'upload' $releaseTag $apk $checksum '--clobber'
+      if ($hasNotes) { Invoke-Checked $gh.Source 'release' 'edit' $releaseTag '--notes-file' $notesFile }
+      Invoke-Checked $gh.Source 'release' 'upload' $releaseTag $apk '--clobber'
     }
   }
   Write-Host "GitHub Release ready: $releaseTag"

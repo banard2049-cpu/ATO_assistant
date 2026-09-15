@@ -17,6 +17,9 @@ $ErrorActionPreference = 'Stop'
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $versionText = $Version -replace '^v', ''
 $releaseTag = if ($Tag) { $Tag } else { "v$versionText" }
+# 更新公告随仓库发布：release-notes/<标签>.md 存在就用它，否则退回 GitHub 自动生成的提交列表。
+$notesFile = Join-Path $projectRoot "release-notes\$releaseTag.md"
+$hasNotes = Test-Path -LiteralPath $notesFile -PathType Leaf
 $portableTargets = @('windows-x64', 'macos-arm64', 'macos-x64')
 
 function Invoke-Checked {
@@ -43,15 +46,25 @@ function Find-Python {
 function Ensure-GitHubRelease {
   param([Parameter(Mandatory = $true)][string]$GhPath)
 
+  if ($hasNotes) { Write-Host "Release notes: $notesFile" }
+
   & $GhPath release view $releaseTag '--json' 'tagName' 2>$null | Out-Null
-  if ($LASTEXITCODE -eq 0) { return }
+  if ($LASTEXITCODE -eq 0) {
+    # Android workflow may have created the release first with generated notes.
+    if ($hasNotes) { Invoke-Checked $GhPath 'release' 'edit' $releaseTag '--notes-file' $notesFile }
+    return
+  }
 
   $arguments = @(
     'release', 'create', $releaseTag,
     '--title', "ATO Assistant $versionText",
-    '--target', (git rev-parse HEAD),
-    '--generate-notes'
+    '--target', (git rev-parse HEAD)
   )
+  if ($hasNotes) {
+    $arguments += @('--notes-file', $notesFile)
+  } else {
+    $arguments += '--generate-notes'
+  }
   if ($Draft) { $arguments += '--draft' }
   if ($Prerelease) { $arguments += '--prerelease' }
 
@@ -63,6 +76,7 @@ function Ensure-GitHubRelease {
     if ($LASTEXITCODE -ne 0) {
       throw "Could not create or find GitHub Release $releaseTag."
     }
+    if ($hasNotes) { Invoke-Checked $GhPath 'release' 'edit' $releaseTag '--notes-file' $notesFile }
   }
 }
 
