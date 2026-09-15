@@ -1998,6 +1998,7 @@
       }
     }
   </style>
+  <link rel="stylesheet" href="./assets/update/update-check.css?v=1">
 </head>
 <body>
   <section id="authGate" class="auth-gate" hidden>
@@ -2148,12 +2149,34 @@
               <button id="resourcePackButton" type="button" class="secondary">从 .atopack 导入资源</button>
               <p id="resourcePackStatus" class="second-screen-hint">尚未导入资源包。</p>
             </div>
+
           </div>
         </section>
 
       </div>
     </div>
     <footer class="app-credit">ATO民间辅助程序，制作：Banard</footer>
+
+    <section class="app-updates" aria-label="版本更新" data-term-ignore>
+      <div class="update-controls">
+        <span id="appVersionLabel"></span>
+        <button id="checkUpdateButton" type="button" class="secondary" data-dashboard-readonly-allowed>检查更新</button>
+        <a href="https://github.com/banard2049-cpu/ATO_assistant/releases" rel="noopener noreferrer">GitHub 发布页</a>
+      </div>
+      <p id="updateStatus" class="update-status" role="status"></p>
+      <div id="updateNotice" class="update-notice" hidden>
+        <h3 id="updateHeading"></h3>
+        <p id="updateVersions"></p>
+        <h4>更新报告</h4>
+        <pre id="updateReport" class="update-report"></pre>
+        <p>更新前请导出存档。下载对应平台的新版，并保留现有存档和资源包。</p>
+        <div class="update-actions">
+          <a id="updateGithubLink" rel="noopener noreferrer">前往 GitHub 更新</a>
+          <button id="skipUpdateButton" type="button" class="secondary" data-dashboard-readonly-allowed>跳过此版本</button>
+          <button id="closeUpdateButton" type="button" class="secondary" data-dashboard-readonly-allowed>稍后再说</button>
+        </div>
+      </div>
+    </section>
   </main>
 
   <dialog id="cardTrackDialog" class="card-track-dialog">
@@ -8012,5 +8035,7 @@
   </script>
   <script src="./assets/ato-terms.js?v=20260915a"></script>
   <script src="./assets/term-language.js?v=20260913a"></script>
+  <script src="./assets/update/app-version.js?v=1"></script>
+  <script src="./assets/update/update-check.js?v=1"></script>
 </body>
 </html>

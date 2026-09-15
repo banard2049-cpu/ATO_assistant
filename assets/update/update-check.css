@@ -1,0 +1,8 @@
+.app-updates { margin: 18px 0 0; padding-top: 16px; border-top: 1px solid var(--line); font-size: 14px; }
+.update-controls, .update-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.app-updates a { color: #bba36a; }
+.update-status { margin: 8px 0; color: #aaa; }
+.update-notice { margin-top: 12px; padding: 18px; border: 1px solid #8b7547; border-radius: 12px; background: #1c2027; color: #eee; }
+.update-notice h3 { margin: 0 0 8px; }
+.update-report { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 320px; overflow-y: auto; line-height: 1.65; font-family: inherit; font-size: 14px; }
+.update-actions a { padding: 8px 12px; border: 1px solid #8b7547; border-radius: 8px; }

@@ -28,8 +28,8 @@ PHP_STATIC_BASE = "https://dl.static-php.dev/static-php-cli"
 TARGETS = ("windows-x64", "macos-arm64", "macos-x64", "docker")
 
 
-def prepare_site(stage: Path) -> None:
-    copy_export_tree(stage)
+def prepare_site(stage: Path, version: str = "local") -> None:
+    copy_export_tree(stage, app_version=version)
     audit_export_tree(stage)
 
 
@@ -43,7 +43,7 @@ def finish_zip(stage: Path, filename: str) -> Path:
 def build_windows(version: str) -> Path:
     package_name = f"ATO-Assistant-Portable-{version}-windows-x64"
     stage = CACHE_ROOT / "portable-build" / package_name
-    prepare_site(stage)
+    prepare_site(stage, version)
     filename = f"php-{PHP_WINDOWS_VERSION}-cli-win.zip"
     archive = download(
         f"https://windows.php.net/downloads/releases/archives/php-{PHP_WINDOWS_VERSION}-Win32-vs17-x64.zip",
@@ -68,7 +68,7 @@ def build_macos(version: str, architecture: str) -> Path:
     target = f"macos-{architecture}"
     package_name = f"ATO-Assistant-Portable-{version}-{target}"
     stage = CACHE_ROOT / "portable-build" / package_name
-    prepare_site(stage)
+    prepare_site(stage, version)
     runtime_arch = "aarch64" if architecture == "arm64" else "x86_64"
     filename = f"php-{PHP_MAC_VERSION}-cli-macos-{runtime_arch}.tar.gz"
     archive = download(f"{PHP_STATIC_BASE}/common/{filename}", CACHE_ROOT / "php" / filename)
@@ -97,7 +97,7 @@ def build_docker(version: str) -> Path:
         shutil.rmtree(stage)
     stage.mkdir(parents=True)
     app = stage / "app"
-    prepare_site(app)
+    prepare_site(app, version)
     (stage / "data").mkdir()
     docker_source = TOOLS_ROOT / "packaging/docker"
     shutil.copy2(docker_source / "Dockerfile", stage / "Dockerfile")

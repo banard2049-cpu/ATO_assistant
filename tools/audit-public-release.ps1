@@ -45,6 +45,9 @@ $allowedPaths = @(
   'assets/page-focus-router.js',
   'assets/story-doom-card-data.js',
   'assets/term-language.js',
+  'assets/update/app-version.js',
+  'assets/update/update-check.css',
+  'assets/update/update-check.js',
   'tools/packaging/android/app/src/main/res/drawable-nodpi/app_icon.jpg'
 )
 

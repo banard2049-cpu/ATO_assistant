@@ -58,6 +58,8 @@
 !/assets/page-focus-router.js
 !/assets/story-doom-card-data.js
 !/assets/term-language.js
+# 应用自身的更新检测脚本，不是版权素材，随源码发布
+!/assets/update/
 /map/images/
 /map/tokens/
 /record/assets/

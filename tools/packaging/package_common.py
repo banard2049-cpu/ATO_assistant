@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import json
 import re
 import shutil
 import stat
@@ -62,6 +63,7 @@ def excluded(relative: Path) -> bool:
 
 def copy_export_tree(
     destination: Path, *, create_data: bool = True,
+    app_version: str | None = None,
     excluded_suffixes: tuple[str, ...] = (),
     excluded_paths: set[str] | None = None,
 ) -> None:
@@ -91,6 +93,13 @@ def copy_export_tree(
     if create_data:
         (destination / "data").mkdir(exist_ok=True)
     disable_developer_links(destination)
+    if app_version is not None:
+        version_file = destination / "assets" / "update" / "app-version.js"
+        version_file.parent.mkdir(parents=True, exist_ok=True)
+        version_file.write_text(
+            "window.ATO_APP_VERSION = " + json.dumps(version_text(app_version)) + ";\n",
+            encoding="utf-8",
+        )
 
 
 def disable_developer_links(root: Path) -> None:

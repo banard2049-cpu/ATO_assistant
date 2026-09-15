@@ -172,7 +172,7 @@ def ensure_android_sdk(java: Path) -> Path:
     return sdk_root
 
 
-def prepare_android_project() -> tuple[Path, Path]:
+def prepare_android_project(version: str = "local") -> tuple[Path, Path]:
     stage = CACHE_ROOT / "android" / "project-build"
     if stage.exists():
         shutil.rmtree(stage)
@@ -187,6 +187,7 @@ def prepare_android_project() -> tuple[Path, Path]:
     copy_export_tree(
         web_root,
         create_data=False,
+        app_version=version,
         excluded_suffixes=ANDROID_RESOURCE_SUFFIXES,
         excluded_paths=catalog_paths,
     )
@@ -229,7 +230,7 @@ def main() -> int:
     java = ensure_java()
     gradle = ensure_gradle()
     sdk_root = ensure_android_sdk(java)
-    stage, _ = prepare_android_project()
+    stage, _ = prepare_android_project(version)
 
     digits = "".join(character for character in version if character.isdigit())
     version_code = min(int(digits or "1"), 2_100_000_000)
