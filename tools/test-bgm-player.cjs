@@ -35,6 +35,7 @@ test("清单：今日流程每一步都有阶段，且阶段曲目可解析", ()
   });
   assert.ok(manifest.stages[manifest.defaultStage], "defaultStage 必须是有效阶段");
   assert.equal(manifest.baseDir, "./", "baseDir 应按 manifest.js 自身目录解析，不能是页面相对路径");
+  assert.equal(manifest.audioDir, "./audio/", "audioDir 应指向 assets/bgm/audio/（Docker 只挂载这一个子目录）");
   Object.keys(manifest.stages).forEach((key) => {
     const stage = manifest.stages[key];
     assert.ok(stage.label, `${key} 缺少 label`);
@@ -114,7 +115,39 @@ test("曲目全缺时只提示缺少文件，不抛错", async () => {
   assert.deepEqual(harness.playing(), []);
   assert.equal(api.state().stage, "development");
   assert.ok(api.state().missing.length >= 2, "两个候选都应记为缺失");
-  assert.match(harness.panel().querySelector("#atoBgmStatus").textContent, /assets\/bgm\//, "提示里要写清放哪里");
+  assert.match(harness.panel().querySelector("#atoBgmStatus").textContent, /assets\/bgm\/ 或 assets\/bgm\/audio\//, "提示里要写清两个可选目录");
+});
+
+test("音频放在 assets/bgm/audio/ 时也能播（Docker 只挂载这一个子目录）", async () => {
+  // 容器里的真实情形：播放器代码来自镜像，宿主机只把音频挂进 audio/，
+  // 所以本目录的候选全都 404，必须继续往 audio/ 找。
+  const harness = createHarness({
+    exists: (url) => url.includes("/assets/bgm/audio/") && url.endsWith(".mp3"),
+  });
+  const api = harness.api;
+  api.setEnabled(true);
+  await api.setStage("hub");
+  await waitFor(() => harness.loudest() === "LB_Grand_Agora.mp3", "audio/ 里的冒险中枢曲");
+  assert.equal(api.state().url, "http://ato.local/assets/bgm/audio/LB_Grand_Agora.mp3");
+});
+
+test("本目录优先于 audio/；清单把 audioDir 写成空字符串后只认本目录", async () => {
+  // 两处都有文件时用本目录：便携版 / Android / 桌面的既有行为不变
+  const both = createHarness();
+  both.api.setEnabled(true);
+  await both.api.setStage("hub");
+  await waitFor(() => both.loudest() === "LB_Grand_Agora.mp3", "本目录优先");
+  assert.equal(both.api.state().url, "http://ato.local/assets/bgm/LB_Grand_Agora.mp3");
+
+  // audioDir: "" → 关掉回退，audio/ 里有文件也当缺失
+  const off = createHarness({
+    exists: (url) => url.includes("/assets/bgm/audio/"),
+    manifest: { audioDir: "" },
+  });
+  off.api.setEnabled(true);
+  await off.api.setStage("hub");
+  await waitFor(() => /缺少音频文件/.test(off.panel().querySelector("#atoBgmStatus").textContent), "关掉回退后的缺失提示");
+  assert.deepEqual(off.playing(), []);
 });
 
 test("音频按脚本目录解析，不受页面深浅影响", async () => {

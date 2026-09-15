@@ -194,6 +194,8 @@ function createHarness(options = {}) {
   if (options.config) sandbox.ATO_BGM_CONFIG = options.config;
   vm.createContext(sandbox);
   vm.runInContext(manifestSource, sandbox, { filename: "assets/bgm/manifest.js" });
+  // 允许用例覆盖清单字段（例如 audioDir: "" 关掉备用音频目录），必须在加载播放器之前改
+  if (options.manifest) Object.assign(sandbox.ATO_BGM_MANIFEST, options.manifest);
   // 测试里把淡入淡出与远端轮询压短，避免每个用例等好几秒。
   Object.assign(sandbox.ATO_BGM_MANIFEST.defaults, {
     crossfadeMs: 40,

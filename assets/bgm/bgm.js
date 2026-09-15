@@ -18,7 +18,7 @@
   const CONTAINER_ID = "bgmControls";
   const AUTO_LABEL = "自动（跟随今日流程）";
   // 改动本文件时同步更新：这里的 BUILD 与两个页面里的 ?v= 标签（测试会校验一致）
-  const BUILD = "bgm14";
+  const BUILD = "bgm15";
 
   if (!manifest || !manifest.stages || !Object.keys(manifest.stages).length) {
     window.ATO_BGM = createDisabledApi("缺少 assets/bgm/manifest.js");
@@ -27,8 +27,19 @@
 
   const defaults = manifest.defaults || {};
   const baseDir = String(manifest.baseDir || "./");
+  // 备用音频目录（manifest.audioDir）：Docker / NAS 只把 assets/bgm/audio 挂进容器，
+  // 播放器代码由镜像提供，所以音频在那里；其它平台音频就在本目录。两处都会试。
+  // 清单没写这个字段时按默认值走（老的自定义清单也能用上 Docker 部署）；
+  // 想彻底关掉回退，在清单里写 audioDir: ""。
+  const audioDir = normalizeAudioDir(manifest.audioDir === undefined ? "audio/" : manifest.audioDir);
   const scriptDir = resolveScriptDir();
   const assetBase = resolveAssetBase();
+
+  function normalizeAudioDir(value) {
+    const text = String(value == null ? "" : value).trim().replace(/^\.?\//, "").replace(/^\/+/, "");
+    if (!text) return "";
+    return text.endsWith("/") ? text : text + "/";
+  }
 
   // 每个页面自己的角色（写在页面里，见 window.ATO_BGM_CONFIG）：
   //   play   本页是否出声（默认 true）
@@ -479,6 +490,12 @@
 
   // 提示里显示的目录（去掉源站与开头的斜杠），例如 assets/bgm/
   function displayBase() {
+    const flat = displayFlatBase();
+    // 有备用目录时把两处都写出来，免得用户放着音乐在 audio/ 里却以为没生效
+    return audioDir ? flat + " 或 " + flat + audioDir : flat;
+  }
+
+  function displayFlatBase() {
     if (assetBase) {
       try {
         return new URL(assetBase).pathname.replace(/^\//, "");
@@ -495,7 +512,11 @@
     const files = Array.isArray(value)
       ? value
       : (value && Array.isArray(value.files) ? value.files : []);
-    return files.map(joinUrl);
+    // 本目录优先（便携版 / Android / 桌面），再来 audioDir（Docker 只挂载它）。
+    const names = audioDir
+      ? files.concat(files.map(function (file) { return audioDir + String(file).replace(/^\/+/, ""); }))
+      : files;
+    return names.map(joinUrl);
   }
 
   function baseName(url) {

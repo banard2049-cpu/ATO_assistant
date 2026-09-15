@@ -39,7 +39,7 @@ for %f in ("D:\desktop\mp3\*.ogg") do ffmpeg -y -i "%f" -map_metadata -1 -codec:
 
 ### 手动放文件
 
-把音频按下面的文件名丢进 `assets/bgm/`，控制条就会自动识别：
+把音频按下面的文件名丢进 `assets/bgm/`，控制条就会自动识别；Docker / NAS 上请丢进 `assets/bgm/audio/`（见下面的「Docker / NAS 部署」）：
 
 | 阶段 | 文件名 |
 | --- | --- |
@@ -66,6 +66,24 @@ for %f in ("D:\desktop\mp3\*.ogg") do ffmpeg -y -i "%f" -map_metadata -1 -codec:
 音频目录由 `manifest.js` 里的 `baseDir` 决定，**相对 `manifest.js` 自身所在的目录**解析（脚本加载时会记下自己的绝对路径），所以主控台 `/index.html`、story `/story/index.html`、第二屏幕等不同层级的页面都指向同一处；整个 `assets/bgm/` 目录搬家时不用改任何页面。
 
 缺文件不会报错：控制条会提示缺少哪个文件，其它阶段照常播放。
+
+### Docker / NAS 部署
+
+容器里跑的是镜像自带的播放器（`bgm.js` + `manifest.js`），只有**音频**是从宿主机挂进去的，挂在 `app/assets/bgm/audio/`：
+
+```text
+<安装目录>/app/assets/bgm/audio/LB_Armory.mp3      ← 音频
+<安装目录>/app/assets/bgm/bgm.js                   ← 镜像提供，宿主机上这份不生效
+<安装目录>/app/assets/bgm/manifest.js              ← 同上
+```
+
+音频放这里的原因：`assets/bgm/` 一个目录里混着播放器代码和自备音频，如果整目录挂进容器，`docker compose pull` 就永远更新不到播放器（第二屏曾经就是这么坏掉的）。所以播放器留在镜像里，音频下沉一层。
+
+- 播放器会先在 `assets/bgm/` 找，再去 `assets/bgm/audio/` 找，两处先命中的生效 —— 便携版 / Android / 桌面继续把音频放在 `assets/bgm/` 即可，不用改。
+- 清单里 `audioDir` 控制这个回退目录（默认 `"./audio/"`，写 `""` 就只认本目录）。
+- `tools/install-docker.sh` 每次执行都会把直接放在 `app/assets/bgm/` 下的音频搬进 `audio/`，不会丢文件。
+- 想改阶段 / 文件名 / 淡入淡出，改的是容器里那份 `manifest.js`，所以要在宿主机覆盖它：在 `compose.yaml` 里加一行
+  `- ./app/assets/bgm/manifest.js:/app/assets/bgm/manifest.js:ro`（默认不加，保持 `pull` 能更新它）。
 
 **打包不带音频**：便携版 / Docker / APK 都会跳过 `assets/bgm/` 下的音频（规则见 `tools/packaging/package_common.py` 的 `is_bgm_media`，回归测试 `python tools/test_packaging_exclusions.py`），只带 `assets/bgm/*.js` 与本文档。音频通过素材库的资料包流程分发：
 
