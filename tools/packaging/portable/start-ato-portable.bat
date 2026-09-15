@@ -21,8 +21,12 @@ if not exist "data\sessions\" goto :invalid_sessions
 echo ATO Portable is starting: %ATO_URL%
 echo Close this window or press Ctrl-C to stop it.
 start "" "%ATO_URL%"
-rem A relative INI value avoids PHP parsing special characters in the folder name.
-"%PHP_BIN%" -d "session.save_path=data/sessions" -S 0.0.0.0:%ATO_PORT% -t "%CD%"
+rem PHP's built-in server changes the working directory to the requested
+rem script's directory, so a relative session.save_path resolved to
+rem api\data\sessions and every login session was silently dropped.  The value
+rem must be absolute: %CD% is quoted here and delayed expansion is disabled
+rem above, so metacharacters in the folder name still arrive intact.
+"%PHP_BIN%" -d "session.save_path=%CD%\data\sessions" -S 0.0.0.0:%ATO_PORT% -t "%CD%"
 set "ATO_EXIT_CODE=%ERRORLEVEL%"
 if not "%ATO_EXIT_CODE%"=="0" pause
 exit /b %ATO_EXIT_CODE%

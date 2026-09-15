@@ -15,6 +15,14 @@ set_error_handler(static function (int $severity, string $message, string $file,
 
 $cookieLifetime = 60 * 60 * 24 * 180;
 ini_set('session.gc_maxlifetime', (string) $cookieLifetime);
+// PHP's built-in server changes the working directory to the requested script's
+// directory, so a relative session.save_path resolved under api/ and every
+// login session was silently dropped.  Pin the portable session directory when
+// it exists: session storage must not depend on how the site was launched.
+$sessionDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'sessions';
+if (is_dir($sessionDir) && is_writable($sessionDir)) {
+  session_save_path($sessionDir);
+}
 session_set_cookie_params([
   'lifetime' => $cookieLifetime,
   'path' => '/',

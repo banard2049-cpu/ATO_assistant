@@ -2,6 +2,8 @@
 
 Run with Python on Windows or macOS; PHP must be on PATH. The selected native
 launcher runs from folders with spaces, parentheses and shell/INI metacharacters.
+The probe also emulates the built-in server's per-script chdir, so a relative
+session.save_path (which silently loses every login) fails the test.
 """
 import os
 from pathlib import Path
@@ -34,14 +36,24 @@ work = Path(tempfile.mkdtemp(prefix="portable-launcher-test-", dir=scratch))
 
 def prepare(folder, runtime=True):
     folder.mkdir(parents=True)
+    (folder / "api").mkdir()
     script = source.replace('\n', '\r\n') if WINDOWS else source
     (folder / launcher_name).write_bytes(script.encode("utf-8"))
-    (folder / "probe.php").write_text('''<?php
-if (ini_get('session.save_path') !== 'data/sessions') exit(10);
+    # PHP's built-in server changes the working directory to the requested
+    # script's directory before running it, so a relative session.save_path
+    # silently resolves to api/data/sessions and every login is dropped.  The
+    # probe therefore demands an absolute save_path and emulates that chdir;
+    # otherwise it would sit in the package root and never catch the bug.
+    (folder / "probe.php").write_text(r'''<?php
+$savePath = (string) ini_get('session.save_path');
+$isAbsolute = $savePath !== ''
+  && ($savePath[0] === '/' || $savePath[0] === '\\' || (strlen($savePath) > 1 && $savePath[1] === ':'));
+if (!$isAbsolute) exit(10);
+chdir(__DIR__ . '/api');
 if (!session_start()) exit(11);
 $_SESSION['portable_test'] = 'ok';
 if (!session_write_close()) exit(12);
-if (!glob('data/sessions/sess_*')) exit(13);
+if (!glob(__DIR__ . '/data/sessions/sess_*')) exit(13);
 exit((int) getenv('ATO_TEST_EXIT'));
 ''', encoding="utf-8")
     if runtime:

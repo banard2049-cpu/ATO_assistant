@@ -1,6 +1,15 @@
 <?php
 declare(strict_types=1);
 
+// PHP's built-in server changes the working directory to the requested script's
+// directory, so a relative session.save_path resolved under api/ and every
+// login session was silently dropped.  Pin the portable session directory when
+// it exists: session storage must not depend on how the site was launched.
+$sessionDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'sessions';
+if (is_dir($sessionDir) && is_writable($sessionDir)) {
+  session_save_path($sessionDir);
+}
+
 session_start();
 
 header('Content-Type: application/json; charset=utf-8');
