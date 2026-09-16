@@ -8,7 +8,12 @@ param(
   [switch]$Publish,
   [switch]$Draft,
   [switch]$Prerelease,
-  [switch]$AllowDirty
+  [switch]$AllowDirty,
+  # 显式允许发布 Debug 签名的 APK。默认关闭：没有常驻签名时发布会被拒绝，因为
+  # Debug 签名用的是构建机的临时密钥，装了它的用户以后无法用正式签名的包覆盖升级，
+  # 只能卸载重装。预发布版本在没有配置密钥时用这个开关放行，并由调用方
+  # （android-release.yml）在发布说明里写明代价。
+  [switch]$AllowUnsigned
 )
 
 Set-StrictMode -Version Latest
@@ -69,14 +74,21 @@ try {
       [string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($_))
     })
     if ($missingSigning.Count -gt 0) {
-      throw "Persistent Android signing is not configured, so publishing is refused: a Debug-signed APK cannot be replaced by a later properly signed build. Configure the ANDROID_RELEASE_* secrets and set these variables: $($missingSigning -join ', ')"
+      if (-not $AllowUnsigned) {
+        throw "Persistent Android signing is not configured, so publishing is refused: a Debug-signed APK cannot be replaced by a later properly signed build. Configure the ANDROID_RELEASE_* secrets and set these variables: $($missingSigning -join ', '). Pass -AllowUnsigned to publish a Debug-signed APK anyway (users will have to uninstall before they can install a properly signed build)."
+      }
+      # -AllowUnsigned 是调用方的显式决定（android-release.yml 在密钥缺失时传它）。
+      # 不设置 ATO_ANDROID_REQUIRE_SIGNING，Gradle 就会按自己的规则回退到 Debug keystore；
+      # 代价写在发布说明里，不能只留在日志里。
+      Write-Warning "Android release signing is not configured ($($missingSigning -join ', ')); publishing a Debug-signed APK because -AllowUnsigned was passed. Users must uninstall before installing a properly signed build."
+    } else {
+      $keystore = [Environment]::GetEnvironmentVariable('ATO_ANDROID_KEYSTORE_PATH')
+      if (-not (Test-Path -LiteralPath $keystore -PathType Leaf)) {
+        throw "Android release keystore does not exist: $keystore"
+      }
+      # 发布路径同时要求 Gradle 侧拒绝退回 Debug keystore（本地未发布构建不受影响）。
+      [Environment]::SetEnvironmentVariable('ATO_ANDROID_REQUIRE_SIGNING', '1', 'Process')
     }
-    $keystore = [Environment]::GetEnvironmentVariable('ATO_ANDROID_KEYSTORE_PATH')
-    if (-not (Test-Path -LiteralPath $keystore -PathType Leaf)) {
-      throw "Android release keystore does not exist: $keystore"
-    }
-    # 发布路径同时要求 Gradle 侧拒绝退回 Debug keystore（本地未发布构建不受影响）。
-    [Environment]::SetEnvironmentVariable('ATO_ANDROID_REQUIRE_SIGNING', '1', 'Process')
   }
 
   $python = Find-Python
