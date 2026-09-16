@@ -456,6 +456,20 @@ def main() -> int:
             f"{DOCKER_WORKFLOW.name} 没有注册 QEMU："
             "arm/v7 是在 x86 runner 上跨架构构建的，缺了它 RUN 步骤会直接失败"
         )
+    # 光有 QEMU 不够：多平台输出需要 docker-container driver，而 runner 默认的
+    # docker driver 只支持单平台，实测会报
+    # "Multi-platform build is not supported for the docker driver"。
+    # setup-buildx-action 必须在 build-push-action 之前（它创建的 builder 会被后者选用）。
+    if "docker/setup-buildx-action" not in workflow:
+        failures.append(
+            f"{DOCKER_WORKFLOW.name} 没有 setup-buildx-action："
+            "默认的 docker driver 不支持多平台构建，arm/v7 那一份永远出不来"
+        )
+    elif workflow.index("docker/setup-buildx-action") > workflow.index("docker/build-push-action"):
+        failures.append(
+            f"{DOCKER_WORKFLOW.name} 的 setup-buildx-action 排在 build-push-action 之后："
+            "builder 必须在构建之前创建，否则多平台构建仍然走默认 driver"
+        )
     # 8b. 拉不到预构建镜像时必须能退回本机构建，否则 arm64 之类的机器只得到
     #     no matching manifest。构建上下文就是发布镜像用的那份 Dockerfile。
     if "build_local_image()" not in install_script:

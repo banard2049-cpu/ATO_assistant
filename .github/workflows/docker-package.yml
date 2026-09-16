@@ -81,6 +81,12 @@ jobs:
         # 不写 platforms: 就是注册全部支持架构（含 arm64），以后加架构不必再动这里。
         uses: docker/setup-qemu-action@v3
 
+      - name: Set up Buildx
+        # 必须显式切到 docker-container driver：默认的 docker driver 只支持单平台，
+        # 多平台构建会直接报 "Multi-platform build is not supported for the docker driver"。
+        # QEMU 只负责让 x86 runner 能执行 arm 指令，多平台输出还得靠 buildx 容器。
+        uses: docker/setup-buildx-action@v3
+
       - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5
