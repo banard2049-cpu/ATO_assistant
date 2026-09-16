@@ -37,12 +37,46 @@ jobs:
         with:
           fetch-depth: 0
 
+      # 必须排在 Set up Python / Java 之前：它设置 steps.signing.outputs.ready，后面的步骤
+      # 靠它决定要不要真的构建。GitHub Actions 里引用一个「还没执行过」的 step 的输出得到的是
+      # 空串（判为 false），所以这个检查放在后面会把 Setup 步骤永久跳过、构建必然失败。
+      - name: Check Android release signing key
+        id: signing
+        shell: pwsh
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_RELEASE_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_RELEASE_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}
+        run: |
+          $names = @('ANDROID_RELEASE_KEYSTORE_BASE64', 'ANDROID_RELEASE_STORE_PASSWORD', 'ANDROID_RELEASE_KEY_ALIAS', 'ANDROID_RELEASE_KEY_PASSWORD')
+          $missing = @($names | Where-Object { [string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($_)) })
+          if ($missing.Count -gt 0) {
+            # 没有签名密钥时**跳过** Android 构建：既不失败（发布不该因为没配密钥就变红），
+            # 也绝不退回 Debug 签名 —— Debug 签名的 APK 用的是构建机自己的临时密钥，之后无法
+            # 被正式签名的包替换，装过的用户只能卸载重装，等于给用户埋雷。
+            # 想发布 APK 时补上这四个仓库密钥即可（见 tools/packaging/README.md），
+            # 工作流会自动开始构建，不需要改这里的任何内容。
+            "ready=false" >> $env:GITHUB_OUTPUT
+            Write-Host "::notice title=Android APK skipped::Android release signing secrets are not configured ($($missing -join ', ')); no APK is built or attached. Configure the four ANDROID_RELEASE_* repository secrets to enable the Android build."
+            exit 0
+          }
+          $keystore = Join-Path $env:RUNNER_TEMP 'ato-release.jks'
+          [IO.File]::WriteAllBytes($keystore, [Convert]::FromBase64String($env:KEYSTORE_BASE64))
+          "ATO_ANDROID_KEYSTORE_PATH=$keystore" >> $env:GITHUB_ENV
+          "ATO_ANDROID_KEYSTORE_PASSWORD=$env:KEYSTORE_PASSWORD" >> $env:GITHUB_ENV
+          "ATO_ANDROID_KEY_ALIAS=$env:KEY_ALIAS" >> $env:GITHUB_ENV
+          "ATO_ANDROID_KEY_PASSWORD=$env:KEY_PASSWORD" >> $env:GITHUB_ENV
+          "ready=true" >> $env:GITHUB_OUTPUT
+
       - name: Set up Python
+        if: steps.signing.outputs.ready == 'true'
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
       - name: Set up Java
+        if: steps.signing.outputs.ready == 'true'
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -67,27 +101,8 @@ jobs:
           }
           "version=$version" >> $env:GITHUB_OUTPUT
 
-      - name: Install Android release signing key
-        shell: pwsh
-        env:
-          KEYSTORE_BASE64: ${{ secrets.ANDROID_RELEASE_KEYSTORE_BASE64 }}
-          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_RELEASE_STORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}
-        run: |
-          $names = @('ANDROID_RELEASE_KEYSTORE_BASE64', 'ANDROID_RELEASE_STORE_PASSWORD', 'ANDROID_RELEASE_KEY_ALIAS', 'ANDROID_RELEASE_KEY_PASSWORD')
-          $missing = @($names | Where-Object { [string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($_)) })
-          if ($missing.Count -gt 0) {
-            throw "Android release signing secrets are not configured: $($missing -join ', '). The release job refuses to publish a Debug-signed APK, because a later properly signed build could not replace it."
-          }
-          $keystore = Join-Path $env:RUNNER_TEMP 'ato-release.jks'
-          [IO.File]::WriteAllBytes($keystore, [Convert]::FromBase64String($env:KEYSTORE_BASE64))
-          "ATO_ANDROID_KEYSTORE_PATH=$keystore" >> $env:GITHUB_ENV
-          "ATO_ANDROID_KEYSTORE_PASSWORD=$env:KEYSTORE_PASSWORD" >> $env:GITHUB_ENV
-          "ATO_ANDROID_KEY_ALIAS=$env:KEY_ALIAS" >> $env:GITHUB_ENV
-          "ATO_ANDROID_KEY_PASSWORD=$env:KEY_PASSWORD" >> $env:GITHUB_ENV
-
       - name: Build and publish GitHub Release
+        if: steps.signing.outputs.ready == 'true'
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
@@ -109,6 +124,7 @@ jobs:
           ./tools/release_android.ps1 @arguments
 
       - name: Upload workflow artifact
+        if: steps.signing.outputs.ready == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: ATO-Assistant-Android-${{ steps.release.outputs.version }}
