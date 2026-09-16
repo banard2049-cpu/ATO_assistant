@@ -189,12 +189,28 @@ final class LocalSecondScreenServer {
   }
 
   // 局域网入口只转发第二屏展示需要的只读请求，登录、退出、读写存档等 action 一律不转发给本机 API。
+  // 这里用的是 java.net.URI（见文件顶部的 import），它没有 getQueryParameter —— 那是
+  // android.net.Uri 的方法。手写查询串解析，只依赖 JDK 的 getRawQuery / URLDecoder（两者都已导入）。
   private static boolean allowedApiAction(URI uri) {
     try {
-      return "second-screen".equals(uri.getQueryParameter("action"));
+      return "second-screen".equals(queryParameter(uri.getRawQuery(), "action"));
     } catch (IllegalArgumentException error) {
       return false;
     }
+  }
+
+  // rawQuery 是已编码的查询串（不含 '?'），可能为 null。
+  private static String queryParameter(String rawQuery, String name) {
+    if (rawQuery == null || rawQuery.isEmpty()) return null;
+    for (String pair : rawQuery.split("&")) {
+      if (pair.isEmpty()) continue;
+      int separator = pair.indexOf('=');
+      String key = separator < 0 ? pair : pair.substring(0, separator);
+      if (!name.equals(URLDecoder.decode(key, StandardCharsets.UTF_8))) continue;
+      String value = separator < 0 ? "" : pair.substring(separator + 1);
+      return URLDecoder.decode(value, StandardCharsets.UTF_8);
+    }
+    return null;
   }
 
   private static String apiDenied() {
