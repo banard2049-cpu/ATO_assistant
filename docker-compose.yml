@@ -4,7 +4,37 @@ services:
     container_name: ato
     ports:
       - "11451:80"
+    # 只挂应用真正要访问的路径（外加可写的 data 卷），绝不整棵挂 ./。
+    # 以前那句 `./:/var/www/html` 把整个仓库目录放上了 11451 端口：打包器当作私有产物的
+    # 东西全都能直接下载 —— export/**（含使用者自备的 *.atopack 资料包）、tools/
+    # （含 xfyun-long-tts.config.json 这类本地凭据）、asset-studio/、release*/、tests/、
+    # tmp/、logs/ 与 .git/。镜像 php:8.3-apache 的 /var/www/html 本来是空的，所以下面
+    # 这些挂载就是 Web 根的全部内容：少挂一条，对应页面就 404。
+    # 注意：tools/ 不再挂进容器，所以地图页里「打开标签编辑器」的链接（map/app.js 指向
+    # ../tools/tag-editor.html）在这个部署里不可用 —— 与发布包一致（打包时同样排除
+    # tools/），要开发标签编辑器请直接用仓库根目录的本地启动脚本。
     volumes:
-      - ./:/var/www/html
+      # 页面与私有目录拦截规则：.htaccess 是 Apache/NAS 部署唯一的私有目录拒绝规则
+      # （PHP 内置服务器的 router.php 在这里不会被执行），少挂它 data/、export/、logs/
+      # 就重新变成可下载的静态文件。详见 .htaccess 与 router.php 里的说明。
+      - ./index.html:/var/www/html/index.html:ro
+      - ./router.php:/var/www/html/router.php:ro
+      - ./.htaccess:/var/www/html/.htaccess:ro
+      # 让 .htaccess 真正生效：php:8.3-apache 用的是 Debian 默认 apache2.conf，
+      # /var/www/ 上是 AllowOverride None，.htaccess 会被整个忽略 —— 那样 data/
+      # （账号哈希、完整存档、session、备份）在这个端口上仍是可下载的静态文件。
+      # 这份补充配置只做 AllowOverride All + 关掉目录列表，拒绝规则仍在 .htaccess 里。
+      - ./tools/packaging/docker/apache-ato-lan.conf:/etc/apache2/conf-enabled/zz-ato-lan.conf:ro
+      - ./api:/var/www/html/api
+      - ./assets:/var/www/html/assets
+      - ./aibp:/var/www/html/aibp
+      - ./hero:/var/www/html/hero
+      - ./map:/var/www/html/map
+      - ./record:/var/www/html/record
+      - ./ss:/var/www/html/ss
+      - ./story:/var/www/html/story
+      - ./technology:/var/www/html/technology
+      # 账号、存档、session 与备份的持久化目录（entrypoint 会建目录并 chown 给 www-data）。
+      - ./data:/var/www/html/data
     entrypoint: /bin/sh -c "mkdir -p /var/www/html/data && chown -R 33:33 /var/www/html/data && apache2-foreground"
     restart: unless-stopped

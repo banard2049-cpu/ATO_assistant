@@ -145,15 +145,19 @@
 
     .session-card {
       display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      align-items: end;
       gap: 10px;
     }
 
     .session-account {
+      min-width: 0;
       padding: 10px 12px;
       border: 1px solid var(--line);
       border-radius: 6px;
       background: #fff;
       font-weight: 800;
+      overflow-wrap: anywhere;
     }
 
     .topbar {
@@ -1998,6 +2002,18 @@
       .card-track-empty {
         width: min(100%, 520px);
       }
+
+      .session-card {
+        grid-template-columns: minmax(0, 1fr) auto;
+      }
+
+      .session-card label {
+        grid-column: 1 / -1;
+      }
+
+      .session-card button {
+        width: 100%;
+      }
     }
   </style>
   <link rel="stylesheet" href="./assets/update/update-check.css?v=1">
@@ -2111,6 +2127,7 @@
                 <span id="sessionAccountName" class="session-account"></span>
               </label>
               <button id="logoutButton" type="button" class="secondary" data-dashboard-readonly-allowed>登出</button>
+              <button id="previousDayButton" type="button" class="secondary" data-dashboard-readonly-allowed>回到前一天</button>
             </div>
             <div class="second-screen-card">
               <label class="second-screen-toggle">
@@ -3194,6 +3211,7 @@
       dayInput: document.querySelector("#dayInput"),
       cycleSelect: document.querySelector("#cycleSelect"),
       nextDayButton: document.querySelector("#nextDayButton"),
+      previousDayButton: document.querySelector("#previousDayButton"),
       resetTodayButton: document.querySelector("#resetTodayButton"),
       currentDateNote: document.querySelector("#currentDateNote"),
       notesInput: document.querySelector("#notesInput"),
@@ -3235,6 +3253,7 @@
     let campaignStorageAvailable = false;
     let campaignSaveTimer = null;
     let campaignSaveInFlight = false;
+    let campaignRestoreInFlight = false;
     let campaignSavePending = false;
     let campaignSaveQueuedBeforeReady = false;
     let campaignSectionRevision = 0;
@@ -3286,6 +3305,36 @@
           && leftKeys.every((key) => Object.prototype.hasOwnProperty.call(right, key) && jsonEqual(left[key], right[key]));
       }
       return false;
+    }
+
+    // Three-way merge used after a 409, so a retry never resubmits a state that
+    // silently drops whatever the other writer just saved. Local edits win where
+    // the other writer left the value alone; values both sides changed
+    // differently are reported instead of being overwritten.
+    function mergeCampaignValues(base, local, remote, conflicts, path) {
+      if (jsonEqual(local, base)) return cloneJson(remote);
+      if (jsonEqual(remote, base)) return cloneJson(local);
+      if (jsonEqual(local, remote)) return cloneJson(local);
+      if (isPlainObject(local) && isPlainObject(remote)) {
+        const baseObject = isPlainObject(base) ? base : {};
+        const merged = {};
+        const keys = new Set([...Object.keys(baseObject), ...Object.keys(local), ...Object.keys(remote)]);
+        keys.forEach((key) => {
+          merged[key] = mergeCampaignValues(baseObject[key], local[key], remote[key], conflicts, `${path}.${key}`);
+        });
+        Object.keys(merged).forEach((key) => {
+          if (merged[key] === undefined) delete merged[key];
+        });
+        return merged;
+      }
+      conflicts.push(path);
+      return cloneJson(local);
+    }
+
+    function mergeCampaignSections(base, local, remote) {
+      const conflicts = [];
+      const merged = mergeCampaignValues(isPlainObject(base) ? base : {}, local, remote, conflicts, "state");
+      return { merged, conflicts };
     }
 
     function dashboardLeaseUserId() {
@@ -3541,11 +3590,48 @@
       }
       const payload = await response.json();
       if (!payload.ok) throw new Error(payload.error || "读取失败");
+      // 服务端每次读取都会带上这份存档属于哪个账号。局域网里另一个标签以别人
+      // 的身份登录后，这个 GET 仍然成功，但返回的是别人的存档；不校验就会把它
+      // 合并进本页渲染出来，随后的保存再被服务端以 409 拒绝，于是陷入「保存
+      // 失败，等待重试」的无限重连。这里就地停下。
+      const serverAccountId = payload.user?.id;
+      if (serverAccountId && sessionUser?.id && serverAccountId !== sessionUser.id) {
+        throw accountMismatchError();
+      }
       return {
         archive: normalizeArchive(payload.state || defaultArchive),
         revision: Math.max(0, Number(payload.revision || 0)),
         exists: Boolean(payload.exists),
       };
+    }
+
+    function accountMismatchError() {
+      const error = new Error("登录账号已切换，已停止保存。请刷新页面读取当前账号。");
+      error.code = "ACCOUNT_MISMATCH";
+      return error;
+    }
+
+    // 收到账号不一致（本地校验或服务端 409 ACCOUNT_MISMATCH）后的统一收尾：清掉
+    // sessionUser、抬高 epoch、放弃写租约并停掉定时器。既有闸门会自然接管后续：
+    // ownsDashboardWriteLease() 变 false 让所有保存路径早退，!sessionUser 让
+    // scheduleCampaignReconnect()/reconnectCampaignNow() 不再重连，epoch 让在途
+    // 回调失效 —— 于是不会再往别人的档案里写东西，只留一条提示等用户刷新。
+    function stopForAccountMismatch() {
+      if (!sessionUser) return;
+      sessionUser = null;
+      campaignSessionEpoch += 1;
+      campaignStorageAvailable = false;
+      campaignSaveQueuedBeforeReady = false;
+      campaignSavePending = false;
+      campaignConflictReloading = false;
+      campaignExternalSyncInFlight = false;
+      clearCampaignReconnect();
+      clearTimeout(campaignSaveTimer);
+      campaignSaveTimer = null;
+      releaseDashboardWriteLease();
+      updateDashboardWriteAccessUi();
+      setCampaignSaveStatus("登录账号已切换，已停止保存，请刷新页面", "conflict");
+      window.alert("登录账号已切换，本页已停止保存以免写入其他账号的存档。请刷新页面。");
     }
 
     function scheduleCampaignReconnect(sessionEpoch = campaignSessionEpoch) {
@@ -3576,6 +3662,15 @@
 
         if (hadQueuedSave) {
           const merged = mergeDashboardChanges(localBaseline, localArchive, latest.archive);
+          if (merged.conflicts.length) {
+            const shown = merged.conflicts.slice(0, 8).join("\n");
+            const keepLocal = window.confirm(`重连后发现相同字段已被其他页面修改：\n${shown}\n\n确定：保留当前页面的值并合并保存\n取消：加载服务器最新数据`);
+            if (!keepLocal) {
+              renderDashboardArchive(latest.archive);
+              setCampaignSaveStatus("已加载服务器版本", "saved");
+              return;
+            }
+          }
           renderDashboardArchive(merged.value);
           setCampaignSaveStatus("已重连，正在同步", "saving");
           queueCampaignSave();
@@ -3589,6 +3684,10 @@
         if (sessionEpoch !== campaignSessionEpoch) return;
         if (error?.status === 401) {
           showAuth("登录已过期，请重新登录。");
+          return;
+        }
+        if (error?.code === "ACCOUNT_MISMATCH") {
+          stopForAccountMismatch();
           return;
         }
         console.warn(error);
@@ -3610,10 +3709,12 @@
     }
 
     async function syncDashboardFromExternalUpdate() {
+      if (campaignRestoreInFlight) return;
       if (!campaignStorageAvailable || campaignExternalSyncInFlight || campaignConflictReloading || campaignSaveInFlight) return;
       campaignExternalSyncInFlight = true;
       try {
         const latest = await readLatestDashboardSection();
+        if (campaignRestoreInFlight) return;
         if (!ownsDashboardWriteLease()) {
           campaignSectionRevision = latest.revision;
           campaignSectionExists = latest.exists;
@@ -3788,11 +3889,21 @@
       const currentShortUrl = new URL("./ss/", window.location.href).href;
       const currentHostIsLoopback = /^(?:127(?:\.\d+){3}|localhost|\[?::1\]?)$/i.test(window.location.hostname);
       const lanUrl = urls.find((url) => !/\/\/(?:127(?:\.\d+){3}|localhost|\[?::1\]?)(?::|\/)/i.test(url)) || "";
+      // 服务端生成的地址现在带 ?token=…，第二屏幕缺 token 会 403。主控台本身可能是
+      // 从局域网 IP 打开的，那时 ./ss/ 这个短地址不带 token，别的设备打开只会被拒，
+      // 所以优先选「与当前地址同主机」的那条服务端地址（它带 token）。
+      const sameHostUrl = urls.find((url) => {
+        try {
+          return new URL(url).host === window.location.host;
+        } catch {
+          return false;
+        }
+      }) || "";
       const preferred = window.ATOAndroid
-        ? lanUrl
+        ? (lanUrl || sameHostUrl)
         : currentHostIsLoopback
-          ? (lanUrl || currentShortUrl)
-          : currentShortUrl;
+          ? (lanUrl || sameHostUrl || currentShortUrl)
+          : (sameHostUrl || lanUrl || currentShortUrl);
       elements.secondScreenToggle.checked = enabled;
       if (secondScreenEnabled !== enabled) {
         secondScreenEnabled = enabled;
@@ -4853,11 +4964,17 @@
       };
     }
 
-    async function loadMapCommandState() {
+    async function loadMapCommandState(profileId = archive.activeProfileId) {
       const response = await fetch(`${authUrl}?section=map`, { cache: "no-store" });
       const payload = await response.json().catch(() => null);
       if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
-      const profileId = archive.activeProfileId;
+      // 与 readLatestDashboardSection 同理：换账号后这次 GET 会返回别人的存档，
+      // 地图命令必须停下来，否则会把命令作用到别人的档案上。
+      const serverAccountId = payload.user?.id;
+      if (serverAccountId && sessionUser?.id && serverAccountId !== sessionUser.id) {
+        stopForAccountMismatch();
+        throw accountMismatchError();
+      }
       const section = payload.state;
       const userState = section?.users ? section.users[profileId] : section;
       return {
@@ -4867,8 +4984,9 @@
       };
     }
 
-    async function saveMapCommandState(commandState) {
-      for (let attempt = 0; attempt < 2; attempt += 1) {
+    async function saveMapCommandState(commandState, baseState) {
+      let mergeBase = baseState;
+      for (let attempt = 0; attempt < 3; attempt += 1) {
         const response = await fetch(`${authUrl}?section=map`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -4877,20 +4995,34 @@
             userId: commandState.profileId,
             state: commandState.state,
             expectedRevision: commandState.revision,
+            expectedAccountId: sessionUser?.id || "",
           }),
         });
         const payload = await response.json().catch(() => null);
-        if (response.status === 409 && payload?.revision) {
-          // The map page saved the section meanwhile; adopt the latest
-          // revision and re-save the command state once.
-          commandState.revision = payload.revision;
+        if (response.status === 409 && payload?.code === "SAVE_CONFLICT") {
+          // The map page saved the section meanwhile. Re-read the latest state
+          // and re-apply only this command on top of it, instead of resubmitting
+          // the stale state and dropping the map page's changes.
+          if (!mergeBase) throw new Error("地图状态在保存时被其他页面更新，请重试。");
+          // 重读必须仍然针对这条命令原本所属的档案。主控台在这笔 POST 在途时
+          // 切换了档案的话，用新档案去重读会把旧档案的编辑合并进新档案并写回去
+          // （曾经会静默把别人的档案改掉）。
+          const fresh = await loadMapCommandState(commandState.profileId);
+          const merged = mergeCampaignSections(mergeBase, commandState.state, fresh.state);
+          if (merged.conflicts.length) {
+            console.warn("地图命令冲突：其他页面改动了相同内容", merged.conflicts);
+            throw new Error("地图状态被其他页面同时改动，请刷新后再执行该操作。");
+          }
+          commandState.state = merged.merged;
+          commandState.revision = fresh.revision;
+          mergeBase = cloneJson(fresh.state);
           continue;
         }
         if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
         commandState.revision = payload.revision || commandState.revision;
         return;
       }
-      throw new Error("地图状态在保存时被其他页面更新，请重试。");
+      throw new Error("地图状态在保存时持续被其他页面更新，请稍后重试。");
     }
 
     function currentMapCommandCycle(commandState) {
@@ -4997,6 +5129,7 @@
       setMapCommandStatus("正在同步地图…");
       try {
         const commandState = await loadMapCommandState();
+        const commandBaseState = cloneJson(commandState.state);
         const { cycleId, cycle, cycleState } = currentMapCommandCycle(commandState);
         let message = "地图已更新。";
         let battleHref = "";
@@ -5085,8 +5218,11 @@
           }
         }
 
-        await saveMapCommandState(commandState);
-        syncDashboardMapSnapshot(cycleId, cycle, cycleState);
+        await saveMapCommandState(commandState, commandBaseState);
+        // A conflict retry may have rebased the command onto a newer state, so
+        // re-read the cycle the snapshot must be built from.
+        const savedCycle = currentMapCommandCycle(commandState);
+        syncDashboardMapSnapshot(savedCycle.cycleId, savedCycle.cycle, savedCycle.cycleState);
         setMapCommandStatus(message);
         if (battleHref) {
           if (window.ATO_PAGE_ROUTER?.focusOrNavigate) {
@@ -5115,6 +5251,13 @@
         const payload = await response.json();
         if (sessionEpoch !== campaignSessionEpoch) return;
         if (!payload.ok) throw new Error(payload.error || "读取失败");
+        // 这次读取属于哪个账号？局域网里 cookie 换人之后，这个 GET 会返回别人的
+        // 存档。写路径已经被 stopForAccountMismatch 拦住，读路径同样不能把别人的
+        // 档案渲染出来（否则屏幕上是别人的进度，用户以为自己的存档丢了）。
+        const serverAccountId = payload.user?.id;
+        if (serverAccountId && sessionUser?.id && serverAccountId !== sessionUser.id) {
+          throw accountMismatchError();
+        }
         campaignStorageAvailable = true;
         clearCampaignReconnect();
         campaignSectionRevision = Math.max(0, Number(payload.revision || 0));
@@ -5136,6 +5279,10 @@
         refreshCachedArgoRecord();
       } catch (error) {
         if (sessionEpoch !== campaignSessionEpoch) return;
+        if (error?.code === "ACCOUNT_MISMATCH") {
+          stopForAccountMismatch();
+          return;
+        }
         campaignStorageAvailable = false;
         setCampaignSaveStatus("存档离线，等待重连", "offline");
         console.warn(error);
@@ -5214,6 +5361,7 @@
             section: campaignStorageSection,
             state: archiveBeingSaved,
             expectedRevision: campaignSectionRevision,
+            expectedAccountId: sessionUser?.id || "",
           }),
         });
         if (sessionEpoch !== campaignSessionEpoch) return;
@@ -5222,6 +5370,11 @@
           return;
         }
         const payload = await response.json().catch(() => null);
+        // 服务端明确回答「这份存档属于另一个账号」：写进去就是串档案，立即停手。
+        if (response.status === 409 && payload?.code === "ACCOUNT_MISMATCH") {
+          stopForAccountMismatch();
+          return false;
+        }
         if (response.status === 409 && payload?.code === "SAVE_CONFLICT") {
           setCampaignSaveStatus("正在合并其他页面的修改", "saving");
           campaignSavePending = false;
@@ -5271,6 +5424,10 @@
         campaignSyncChannel?.postMessage({ revision: campaignSectionRevision });
       } catch (error) {
         campaignConflictReloading = false;
+        if (error?.code === "ACCOUNT_MISMATCH") {
+          stopForAccountMismatch();
+          return false;
+        }
         if (!ownsDashboardWriteLease()) {
           setDashboardWriteLeaseState(false);
           return false;
@@ -5668,6 +5825,7 @@
               section: "heroes",
               state: next,
               expectedRevision: latest.revision,
+              expectedAccountId: sessionUser?.id || "",
             }),
           });
           const payload = await response.json().catch(() => null);
@@ -6049,6 +6207,12 @@
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const payload = await response.json();
       if (!payload.ok) throw new Error(payload.error || "read failed");
+      // 换账号后这个 GET 会返回别人的记录表：既不能渲染，也不能被之后的保存带回去。
+      const serverAccountId = payload.user?.id;
+      if (serverAccountId && sessionUser?.id && serverAccountId !== sessionUser.id) {
+        stopForAccountMismatch();
+        return { available: false, record: null, error: "account mismatch" };
+      }
       const savedRecord = payload.exists && isPlainObject(payload.state) ? payload.state : null;
       const profileRecord = isPlainObject(savedRecord?.users)
         ? savedRecord.users[archive.activeProfileId] || null
@@ -6088,6 +6252,7 @@
           userId: archive.activeProfileId,
           state: record,
           expectedRevision,
+          expectedAccountId: sessionUser?.id || "",
         }),
       });
       const payload = await response.json().catch(() => null);
@@ -7759,12 +7924,92 @@
       renderDateTrack({ focusCurrentDay: true });
     }
 
+    function previousCampaignDay() {
+      const entries = dateTrackData[currentCycleConfig().id]?.entries || [];
+      const index = entries.findIndex((entry) => String(entry.day) === String(state.day));
+      if (index >= 0) return index > 0 ? entries[index - 1].day : null;
+      const day = Number(state.day);
+      return Number.isFinite(day) && day > 0 ? day - 1 : null;
+    }
+
+    async function previousDay() {
+      if (campaignRestoreInFlight) return;
+      if (!sessionUser?.id) {
+        // 服务端的 restore-previous-day 把 expectedAccountId 当成必填并硬校验，
+        // 发空串只会换来一个语焉不详的 409。这里先讲清楚。
+        window.alert("尚未登录或登录信息已失效，请刷新页面后重新登录。");
+        return;
+      }
+      if (!ownsDashboardWriteLease()) {
+        // 这个按钮带 data-dashboard-readonly-allowed，只读时仍然可点，所以不能像
+        // 以前那样静默返回 —— 用户会以为按钮坏了。
+        window.alert("本页当前是只读模式（另一个主控制台正在编辑）。请先点「接管编辑」，再回到前一天。");
+        return;
+      }
+      const day = previousCampaignDay();
+      const profileId = archive.activeProfileId;
+      const cycleId = currentCycleConfig().id;
+      const currentDay = String(state.day);
+      if (day === null) {
+        window.alert("当前已是本 Cycle 的第一天，没有前一天可恢复。");
+        return;
+      }
+      campaignRestoreInFlight = true;
+      elements.previousDayButton.disabled = true;
+      elements.previousDayButton.textContent = "正在读档...";
+      elements.appShell.inert = true;
+      try {
+        saveState();
+        if (!await flushCampaignSave()) throw new Error("当前进度尚未保存，请连接存档后重试。");
+        if (!ownsDashboardWriteLease()) throw new Error("编辑权限已变更，请接管编辑后重试。");
+        if (archive.activeProfileId !== profileId || currentCycleConfig().id !== cycleId || String(state.day) !== currentDay) {
+          throw new Error("当前日期或 Cycle 已变更，请重试。");
+        }
+        const response = await fetch(`${authUrl}?action=restore-previous-day`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            expectedAccountId: sessionUser?.id || "",
+            expectedRevision: campaignSectionRevision,
+            profileId,
+            cycleId,
+            currentDay,
+            day: String(day),
+          }),
+        });
+        const payload = await response.json();
+        if (!response.ok || !payload.ok) throw new Error(payload.error || `HTTP ${response.status}`);
+        archive = normalizeArchive(payload.campaign.sections.dashboard);
+        state = currentCycle().state;
+        campaignSectionRevision = payload.campaign.sectionRevisions.dashboard;
+        campaignSectionBaseline = cloneJson(archive);
+        campaignSavePending = false;
+        clearTimeout(campaignSaveTimer);
+        campaignSyncChannel?.postMessage({ revision: campaignSectionRevision });
+        window.location.reload();
+      } catch (error) {
+        window.alert(`回到前一天失败：${String(error.message || error)}`);
+      } finally {
+        campaignRestoreInFlight = false;
+        elements.appShell.inert = false;
+        elements.previousDayButton.disabled = false;
+        elements.previousDayButton.textContent = "回到前一天";
+      }
+    }
+
     async function loadFullCampaign() {
       try {
         const response = await fetch(authUrl, { cache: "no-store" });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const payload = await response.json();
         if (!payload.ok) throw new Error(payload.error || "读取失败");
+        // 导出会把服务端各 section 与本页内存合到一起；读到别人的存档就等于把
+        // 别人的战役数据导出成本地文件。宁可不导出服务端部分。
+        const serverAccountId = payload.user?.id;
+        if (serverAccountId && sessionUser?.id && serverAccountId !== sessionUser.id) {
+          stopForAccountMismatch();
+          throw accountMismatchError();
+        }
         return payload.campaign || null;
       } catch (error) {
         console.warn(error);
@@ -7772,21 +8017,39 @@
       }
     }
 
-    async function saveImportedCampaignSection(section, sectionState) {
-      if (sectionState == null) return;
-      try {
-        const response = await fetch(`${authUrl}?section=${encodeURIComponent(section)}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ section, state: sectionState }),
-        });
-        const payload = await response.json().catch(() => null);
-        if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
-        return payload;
-      } catch (error) {
-        console.warn(error);
-        return null;
+    // Wait for the debounced save to finish, so callers such as the export read
+    // one consistent point in time instead of mixing memory and server state.
+    async function flushCampaignSave() {
+      clearTimeout(campaignSaveTimer);
+      campaignSaveTimer = null;
+      if (campaignSaveInFlight) {
+        campaignSavePending = true;
+        while (campaignSaveInFlight) await new Promise((resolve) => window.setTimeout(resolve, 40));
       }
+      if (!campaignHasUnsavedChanges()) return true;
+      await saveCampaignSection();
+      return !campaignHasUnsavedChanges();
+    }
+
+    async function saveImportedCampaignSection(section, sectionState, expectedRevision) {
+      if (sectionState == null) return null;
+      const response = await fetch(`${authUrl}?section=${encodeURIComponent(section)}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          section,
+          state: sectionState,
+          expectedAccountId: sessionUser?.id || "",
+          expectedRevision: Math.max(0, Number(expectedRevision || 0)),
+        }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.ok) {
+        // Never swallow this: the caller must not report a successful import
+        // while a section was actually rejected or lost.
+        throw new Error(`${section}：${payload?.error || `HTTP ${response.status}`}`);
+      }
+      return payload;
     }
 
     function downloadJsonPayload(payload) {
@@ -7803,42 +8066,64 @@
       URL.revokeObjectURL(url);
     }
 
+    // Sections a full state backup carries, in one place so the export and the
+    // import can never drift apart again. Keep in sync with $allowedSections in
+    // api/campaign-state.php; "dashboard" is special because it also backs the
+    // top-level profiles/legacyDashboard copies of the same file. This is the
+    // server-side state only: data that lives purely in the browser (for example
+    // the AIBP piles kept in localStorage) is deliberately not part of it.
+    const backupSectionIds = ["dashboard", "map", "record", "technology", "heroes", "aibp", "story"];
+
     async function exportState() {
       saveState();
       const previousText = elements.exportButton.textContent;
       elements.exportButton.textContent = "正在导出...";
       elements.exportButton.disabled = true;
       try {
+        // Flush the pending save first, otherwise the export mixes the newest
+        // in-memory edit with an older server snapshot.
+        const flushed = await flushCampaignSave();
         const serverCampaign = await loadFullCampaign();
         const serverSections = serverCampaign?.sections || {};
-        const sections = {
-          dashboard: serverSections.dashboard || archive || null,
-          map: serverSections.map || null,
-          record: serverSections.record || null,
-          technology: serverSections.technology || null,
-          heroes: serverSections.heroes || null,
-        };
+        const serverDashboard = isPlainObject(serverSections.dashboard) && isPlainObject(serverSections.dashboard.profiles)
+          ? serverSections.dashboard
+          : null;
+        // The dashboard section, the top-level profiles and the legacy fallback
+        // must all come from the same snapshot, or the file mixes two moments.
+        const dashboardSnapshot = (serverDashboard && flushed)
+          ? serverDashboard
+          : (isPlainObject(archive) ? archive : serverDashboard);
+        const sections = Object.fromEntries(backupSectionIds.map((section) => [
+          section,
+          section === "dashboard" ? dashboardSnapshot : (serverSections[section] ?? null),
+        ]));
         const payload = {
           app: "ATO Campaign Save Package",
-          version: 2,
+          version: 3,
           exportedAt: new Date().toISOString(),
-          activeProfileId: archive.activeProfileId,
-          profiles: archive.profiles,
+          activeProfileId: dashboardSnapshot?.activeProfileId ?? archive.activeProfileId,
+          profiles: dashboardSnapshot?.profiles ?? archive.profiles,
           sections,
           source: {
             serverIncluded: Boolean(serverCampaign),
             serverUpdatedAt: serverCampaign?.updatedAt || null,
+            pendingLocalChanges: !flushed,
           },
           legacyDashboard: {
-            activeProfileId: archive.activeProfileId,
-            profiles: archive.profiles,
+            activeProfileId: dashboardSnapshot?.activeProfileId ?? archive.activeProfileId,
+            profiles: dashboardSnapshot?.profiles ?? archive.profiles,
           },
         };
         downloadJsonPayload(payload);
-        elements.exportButton.textContent = "已下载";
+        elements.exportButton.textContent = flushed ? "已下载" : "已下载（含未同步修改）";
         window.setTimeout(() => {
           elements.exportButton.textContent = previousText;
         }, 1200);
+      } catch (error) {
+        // 没有 catch 时上一版会把按钮文字永远留在「正在导出...」且不告诉用户原因。
+        console.error(error);
+        elements.exportButton.textContent = previousText;
+        window.alert(`导出状态失败：${String(error?.message || error)}`);
       } finally {
         elements.exportButton.disabled = false;
       }
@@ -7867,13 +8152,30 @@
 
           archive = nextArchive;
           state = currentCycle().state;
-          const [dashboardSave] = await Promise.all([
-            saveImportedCampaignSection("dashboard", archive),
-            sections?.map ? saveImportedCampaignSection("map", sections.map) : Promise.resolve(),
-            sections?.record ? saveImportedCampaignSection("record", sections.record) : Promise.resolve(),
-            sections?.technology ? saveImportedCampaignSection("technology", sections.technology) : Promise.resolve(),
-            sections?.heroes ? saveImportedCampaignSection("heroes", sections.heroes) : Promise.resolve(),
-          ]);
+          const currentCampaign = await loadFullCampaign();
+          const currentRevisions = currentCampaign?.sectionRevisions || {};
+          const saveTargets = backupSectionIds
+            .map((section) => [section, section === "dashboard" ? archive : sections?.[section]])
+            .filter(([, sectionState]) => sectionState != null);
+          const settled = await Promise.allSettled(
+            saveTargets.map(([section, sectionState]) => saveImportedCampaignSection(
+              section,
+              sectionState,
+              currentRevisions[section] ?? 0
+            ))
+          );
+          const failedSections = saveTargets
+            .filter((_, index) => settled[index].status === "rejected")
+            .map(([section]) => section);
+          if (failedSections.length) {
+            // Keep the imported data in this page, but never claim success and
+            // never advance the save baseline for a partial import.
+            throw new Error(`以下部分未写入服务器：${failedSections.join("、")}`);
+          }
+          const dashboardIndex = saveTargets.findIndex(([section]) => section === "dashboard");
+          const dashboardSave = dashboardIndex >= 0 && settled[dashboardIndex].status === "fulfilled"
+            ? settled[dashboardIndex].value
+            : null;
           campaignSectionRevision = Math.max(0, Number(dashboardSave?.revision || campaignSectionRevision));
           campaignSectionExists = Boolean(dashboardSave?.ok || campaignSectionExists);
           campaignSectionBaseline = cloneJson(archive);
@@ -7941,6 +8243,7 @@
     });
     elements.resetTodayButton.addEventListener("click", resetToday);
     elements.nextDayButton.addEventListener("click", nextDay);
+    elements.previousDayButton.addEventListener("click", previousDay);
     elements.loginModeButton.addEventListener("click", () => setAuthMode("login"));
     elements.registerModeButton.addEventListener("click", () => setAuthMode("register"));
     elements.authForm.addEventListener("submit", async (event) => {

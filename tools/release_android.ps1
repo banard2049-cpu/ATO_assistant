@@ -69,14 +69,14 @@ try {
       [string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($_))
     })
     if ($missingSigning.Count -gt 0) {
-      Write-Warning "Persistent Android signing is not configured. Publishing a Debug-signed APK; configure the ANDROID_RELEASE_* secrets before distributing updates. Missing: $($missingSigning -join ', ')"
+      throw "Persistent Android signing is not configured, so publishing is refused: a Debug-signed APK cannot be replaced by a later properly signed build. Configure the ANDROID_RELEASE_* secrets and set these variables: $($missingSigning -join ', ')"
     }
-    if ($missingSigning.Count -eq 0) {
-      $keystore = [Environment]::GetEnvironmentVariable('ATO_ANDROID_KEYSTORE_PATH')
-      if (-not (Test-Path -LiteralPath $keystore -PathType Leaf)) {
-        throw "Android release keystore does not exist: $keystore"
-      }
+    $keystore = [Environment]::GetEnvironmentVariable('ATO_ANDROID_KEYSTORE_PATH')
+    if (-not (Test-Path -LiteralPath $keystore -PathType Leaf)) {
+      throw "Android release keystore does not exist: $keystore"
     }
+    # 发布路径同时要求 Gradle 侧拒绝退回 Debug keystore（本地未发布构建不受影响）。
+    [Environment]::SetEnvironmentVariable('ATO_ANDROID_REQUIRE_SIGNING', '1', 'Process')
   }
 
   $python = Find-Python

@@ -6,6 +6,7 @@ declare(strict_types=1);
 // login session was silently dropped.  Pin the portable session directory when
 // it exists: session storage must not depend on how the site was launched.
 $sessionDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'sessions';
+if (!is_dir($sessionDir)) @mkdir($sessionDir, 0770, true);
 if (is_dir($sessionDir) && is_writable($sessionDir)) {
   session_save_path($sessionDir);
 }
@@ -123,7 +124,9 @@ function write_map_file(string $mapFile, array $data): void {
   flock($handle, LOCK_UN);
   fclose($handle);
 
-  if ($written === false || $written < strlen($content) || !rename($tempFile, $mapFile)) {
+  // rename() 在同目录内是原子替换（Windows 上也一样）；失败时不能退回 copy()，
+  // 那会原地截断正在使用中的文件。写不进去就明确报错。
+  if ($written === false || $written < strlen($content) || !@rename($tempFile, $mapFile)) {
     @unlink($tempFile);
     respond(500, ['ok' => false, 'error' => 'Could not write map-tile-tags.js.']);
   }

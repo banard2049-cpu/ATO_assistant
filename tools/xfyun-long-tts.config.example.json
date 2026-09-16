@@ -1,0 +1,13 @@
+{
+  "engine": "online",
+  "appId": "YOUR_XFYUN_APP_ID",
+  "apiKey": "YOUR_XFYUN_API_KEY",
+  "apiSecret": "YOUR_XFYUN_API_SECRET",
+  "vcn": "x4_lingbosong_bad_talk",
+  "voiceLabel": "聆伯松-反派老人",
+  "encoding": "lame",
+  "sampleRate": 16000,
+  "speed": 50,
+  "volume": 50,
+  "pitch": 50
+}

@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ATO 故事书语音工具包</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <div class="mark">ATO</div>
+        <div>
+          <h1>故事书语音工具包</h1>
+          <p>选择数据文件、填写讯飞账号与音色，批量生成离线朗读音频</p>
+        </div>
+      </div>
+      <div class="status" id="serverStatus">连接中…</div>
+    </header>
+
+    <main class="layout">
+      <section class="card">
+        <h2>1. 数据来源</h2>
+
+        <label class="field">
+          <span>故事书数据文件（要朗读的正文）</span>
+          <select id="dataFileSelect"></select>
+        </label>
+        <label class="field">
+          <span>或手动填写相对路径</span>
+          <input id="dataFileInput" type="text" placeholder="story/data/storybook-official-data.js" />
+        </label>
+
+        <details class="advanced">
+          <summary>高级选项</summary>
+          <label class="field">
+            <span>民间数据文件（仅用于判定「战斗模块」，可留空）</span>
+            <input id="fanFileInput" type="text" placeholder="story/data/storybook-data.js" />
+          </label>
+          <label class="field">
+            <span>输出目录</span>
+            <input id="outDirInput" type="text" placeholder="story/audio-packs/audio-lingbosong" />
+          </label>
+          <div class="grid-3">
+            <label class="field">
+              <span>故事书</span>
+              <select id="bookSelect">
+                <option value="all">全部</option>
+                <option value="c1">c1</option>
+                <option value="c2">c2</option>
+                <option value="c3">c3</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>只生成前 N 条（0 = 不限）</span>
+              <input id="limitInput" type="number" min="0" value="0" />
+            </label>
+            <label class="field">
+              <span>指定段落 key（可选）</span>
+              <input id="entryInput" type="text" placeholder="c1-0-0" />
+            </label>
+          </div>
+          <label class="check">
+            <input type="checkbox" id="includeBattle" />
+            <span>包含战斗模块（默认跳过）</span>
+          </label>
+          <label class="check">
+            <input type="checkbox" id="forceRegen" />
+            <span>强制重新生成（忽略已有音频，会重新消耗额度）</span>
+          </label>
+        </details>
+      </section>
+
+      <section class="card">
+        <h2>2. 讯飞账号</h2>
+        <p class="hint">
+          密钥只保存在本机 <code>tools/xfyun-long-tts.config.json</code>，不会上传。留空表示沿用已保存的值。
+        </p>
+
+        <div class="grid-2">
+          <label class="field">
+            <span>引擎</span>
+            <select id="engineSelect">
+              <option value="online">在线语音合成（流式版）</option>
+              <option value="long">长文本语音合成</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>AppID</span>
+            <input id="appIdInput" type="text" autocomplete="off" placeholder="控制台 AppID" />
+          </label>
+        </div>
+
+        <label class="field">
+          <span>APIKey <span class="saved" id="apiKeySaved"></span></span>
+          <input id="apiKeyInput" type="password" autocomplete="off" placeholder="留空 = 沿用已保存" />
+        </label>
+        <label class="field">
+          <span>APISecret <span class="saved" id="apiSecretSaved"></span></span>
+          <input id="apiSecretInput" type="password" autocomplete="off" placeholder="留空 = 沿用已保存" />
+        </label>
+
+        <div class="row">
+          <button type="button" class="btn" id="saveConfigBtn">保存账号</button>
+          <button type="button" class="btn ghost" id="testBtn">测试连接</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>3. 音色与参数</h2>
+
+        <label class="field">
+          <span>音色（vcn）</span>
+          <input id="vcnInput" type="text" list="voiceList" placeholder="x4_lingbosong_bad_talk" />
+          <datalist id="voiceList"></datalist>
+        </label>
+        <label class="field">
+          <span>音色显示名（仅用于记录）</span>
+          <input id="voiceLabelInput" type="text" placeholder="聆伯松-反派老人" />
+        </label>
+
+        <div class="grid-3">
+          <label class="field">
+            <span>语速 <b id="speedValue">50</b></span>
+            <input id="speedInput" type="range" min="0" max="100" value="50" />
+          </label>
+          <label class="field">
+            <span>音量 <b id="volumeValue">50</b></span>
+            <input id="volumeInput" type="range" min="0" max="100" value="50" />
+          </label>
+          <label class="field">
+            <span>音调 <b id="pitchValue">50</b></span>
+            <input id="pitchInput" type="range" min="0" max="100" value="50" />
+          </label>
+        </div>
+        <button type="button" class="btn" id="saveVoiceBtn">保存音色设置</button>
+      </section>
+
+      <section class="card wide">
+        <h2>4. 生成</h2>
+        <div class="row">
+          <button type="button" class="btn ghost" id="planBtn">预览计划（不消耗额度）</button>
+          <button type="button" class="btn primary" id="startBtn">开始批量生成</button>
+          <button type="button" class="btn danger" id="stopBtn" disabled>停止</button>
+          <button type="button" class="btn ghost" id="rebuildBtn">重建播放清单</button>
+        </div>
+        <p class="hint">
+          「重建播放清单」只扫描已生成的音频重建 manifest，不调用接口也不消耗额度；中途中断后建议点一次。
+        </p>
+
+        <div class="progress-wrap">
+          <div class="progress-info">
+            <span id="progressText">已生成 0 个音频文件</span>
+            <span id="progressSize"></span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        </div>
+
+        <div class="log-head">
+          <strong>运行日志</strong>
+          <button type="button" class="btn tiny" id="clearLogBtn">清空显示</button>
+        </div>
+        <pre class="log" id="logBox"></pre>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

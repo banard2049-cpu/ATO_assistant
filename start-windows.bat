@@ -1,8 +1,14 @@
 @echo off
-setlocal EnableExtensions
+setlocal EnableExtensions DisableDelayedExpansion
 chcp 65001 >nul
 cd /d "%~dp0"
 if not exist data mkdir data
+if not exist "data\sessions\" mkdir "data\sessions"
+if not exist "data\sessions\" (
+  echo 无法创建 data\sessions。请把本目录放到可写位置后再启动。
+  pause
+  exit /b 1
+)
 set "ATO_URL=http://127.0.0.1:8793/"
 set "PHP_BIN="
 set "DOCKER_BIN="
@@ -86,9 +92,38 @@ for /f "delims=" %%V in ('"%PHP_BIN%" -r "echo PHP_VERSION;"') do set "PHP_VERSI
 echo 使用 PHP：%PHP_BIN%（%PHP_VERSION%）
 echo 关闭此窗口或按 Ctrl-C 即可停止。
 start "" "%ATO_URL%"
-"%PHP_BIN%" -S 0.0.0.0:8793 -t "%CD%"
+rem The built-in server would publish data\ (account hashes, campaign saves,
+rem sessions, backups) as static files; router.php rejects those requests.
+rem session.save_path must be absolute (PHP's built-in server chdir's to the
+rem requested script), and it must NOT go through -d: PHP parses the value of -d
+rem as INI text, so a folder name with a space, & ( ) ! [ ] (very common:
+rem "ATO_assistant (1)") truncates the value there -- session_start() then fails
+rem and every login is dropped.  PHP therefore writes the setting into a
+rem generated INI file (path derived by getcwd(), so it never appears on a
+rem command line) and the server starts with -c pointing at it; the php.ini PHP
+rem would load anyway is copied in first, so extensions and settings survive.
+rem post_max_size must stay ABOVE the API's own body cap (api/campaign-state.php
+rem answers 413 PAYLOAD_TOO_LARGE above 6 MiB): a body over post_max_size is
+rem dropped during PHP request startup, before any script runs, and PHP then
+rem flushes an HTML warning with a 200 status instead of the API's structured 413.
+rem Only *display* is turned off (display_errors / display_startup_errors), so such
+rem a startup warning can never end up in the response body; logging stays ON
+rem (log_errors = 1) and no error_log is set, so PHP writes the warning to stderr
+rem -- i.e. into this launcher's own console window, which is where a local user
+rem looks when something breaks.  With both off, a fatal error would leave no
+rem trace anywhere and the failure would be an undebuggable blank 500.
+rem The file sits in data\, which router.php keeps off HTTP.
+set "ATO_SESSION_INI=%CD%\data\ato-session.ini"
+"%PHP_BIN%" -r "$d=getcwd().'/data/ato-session.ini';$q=chr(34);$s=php_ini_loaded_file();$x=['session.save_path = '.$q.str_replace(chr(92),'/',getcwd()).'/data/sessions'.$q,'post_max_size = 12M','display_errors = 0','log_errors = 1','display_startup_errors = 0'];file_put_contents($d,($s?file_get_contents($s):'').implode(PHP_EOL,$x).PHP_EOL);"
+if not exist "%ATO_SESSION_INI%" goto :session_ini_failed
+"%PHP_BIN%" -c "%ATO_SESSION_INI%" -S 0.0.0.0:8793 -t "%CD%" "%CD%\router.php"
 if errorlevel 1 pause
 exit /b 0
+
+:session_ini_failed
+echo 无法写入 data\ato-session.ini。请把本目录放到可写位置后再启动。
+pause
+exit /b 1
 
 :try_php
 if defined PHP_BIN exit /b 0

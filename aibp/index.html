@@ -2198,6 +2198,7 @@
     </div>
   </div>
 
+  <script src="../assets/campaign-session.js?v=20260917"></script>
   <script src="../assets/page-focus-router.js?v=20260813-no-screen-focus1"></script>
   <script src="../map/map-tile-tags.js"></script>
   <script src="ps/CHIMERA_METASTASIOS/bp_status_map.js"></script>
@@ -2589,7 +2590,11 @@
     const secondScreenSnapshotUrl = "../api/campaign-state.php?section=aibp";
     const secondScreenModeUrl = "../api/campaign-state.php?action=second-screen-mode";
     const secondScreenStatusUrl = "../api/campaign-state.php?action=second-screen-status";
+    const campaignSession = window.ATO_CAMPAIGN_SESSION?.create?.();
+    let aibpSectionRevision = 0;
     let secondScreenSnapshotTimer = null;
+    let secondScreenSnapshotInFlight = false;
+    let secondScreenSnapshotQueued = false;
     let secondScreenModeBusy = false;
     let battleMapControl = null;
     const undoStacks = {};
@@ -2608,14 +2613,20 @@
     function loadSavedPiles() {
       try {
         const saved = JSON.parse(localStorage.getItem(storageKey) || "{}");
+        const session = saved.activeScry;
+        delete saved.activeScry;
         Object.assign(piles, saved);
+        if (Array.isArray(session?.cards) && session.cards.length > 0 && ["AI", "BP"].includes(session.type)) {
+          activeScry = session;
+        }
       } catch {
         localStorage.removeItem(storageKey);
       }
     }
 
     function savePiles() {
-      localStorage.setItem(storageKey, JSON.stringify(piles));
+      // 观星会话与牌堆同存同取：被查看的牌不能只留在内存里，否则中途刷新就永久丢牌。
+      localStorage.setItem(storageKey, JSON.stringify(activeScry ? { ...piles, activeScry } : piles));
       scheduleSecondScreenSnapshot();
     }
 
@@ -2756,17 +2767,82 @@
       };
     }
 
+    async function readAibpSection() {
+      const response = await fetch(secondScreenSnapshotUrl, { cache: "no-store" });
+      const payload = campaignSession ? campaignSession.accept(await response.json().catch(() => null)) : await response.json().catch(() => null);
+      if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+      aibpSectionRevision = Math.max(0, Number(payload.revision || 0));
+      return payload;
+    }
+
+    function currentCampaignAccountId() {
+      if (!campaignSession || campaignSession.changed) return "";
+      try {
+        return campaignSession.accountId || "";
+      } catch {
+        return "";
+      }
+    }
+
+    async function postSecondScreenSnapshot(snapshot) {
+      campaignSession?.assertCurrent();
+      const body = {
+        section: "aibp",
+        state: snapshot,
+        expectedRevision: aibpSectionRevision,
+      };
+      const accountId = currentCampaignAccountId();
+      if (accountId) body.expectedAccountId = accountId;
+      const response = await fetch(secondScreenSnapshotUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const payload = campaignSession ? campaignSession.accept(await response.json().catch(() => null)) : await response.json().catch(() => null);
+      if (response.status === 409 && payload?.code === "SAVE_CONFLICT" && payload.revision != null) {
+        aibpSectionRevision = Math.max(0, Number(payload.revision || 0));
+        const error = new Error(payload.error || "SAVE_CONFLICT");
+        error.code = "SAVE_CONFLICT";
+        throw error;
+      }
+      if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+      aibpSectionRevision = Math.max(0, Number(payload.revision || aibpSectionRevision));
+      return payload;
+    }
+
+    async function sendSecondScreenSnapshot() {
+      if (campaignSession?.changed) return;
+      if (secondScreenSnapshotInFlight) {
+        secondScreenSnapshotQueued = true;
+        return;
+      }
+      secondScreenSnapshotInFlight = true;
+      try {
+        let conflicts = 0;
+        do {
+          secondScreenSnapshotQueued = false;
+          try {
+            await postSecondScreenSnapshot(buildSecondScreenSnapshot());
+            return;
+          } catch (error) {
+            if (error?.code === "ACCOUNT_MISMATCH") return;
+            if (error?.code === "SAVE_CONFLICT" && ++conflicts <= 5) {
+              try { await readAibpSection(); } catch { return; }
+              secondScreenSnapshotQueued = true;
+              continue;
+            }
+            return;
+          }
+        } while (secondScreenSnapshotQueued);
+      } finally {
+        secondScreenSnapshotInFlight = false;
+        if (secondScreenSnapshotQueued) scheduleSecondScreenSnapshot();
+      }
+    }
+
     function scheduleSecondScreenSnapshot() {
       window.clearTimeout(secondScreenSnapshotTimer);
-      secondScreenSnapshotTimer = window.setTimeout(async () => {
-        try {
-          await fetch(secondScreenSnapshotUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ section: "aibp", state: buildSecondScreenSnapshot() }),
-          });
-        } catch {}
-      }, 180);
+      secondScreenSnapshotTimer = window.setTimeout(() => { void sendSecondScreenSnapshot(); }, 180);
     }
 
     function clonePileState(state) {
@@ -3848,6 +3924,17 @@
     function placeCardInTarget(target, card) {
       const targetCards = pileArrayForLocation(target.location, true);
       if (!targetCards) return false;
+      // 同一张实体卡只能存在于一个牌堆：入堆前清掉各个牌堆里指向这张卡的引用。
+      const state = piles[currentApostle];
+      [state?.AI, state?.BP, state?.flare, state?.feint].forEach((pile) => {
+        if (!pile) return;
+        Object.values(pile).forEach((cards) => {
+          if (!Array.isArray(cards)) return;
+          for (let index = cards.length - 1; index >= 0; index--) {
+            if (cards[index] === card) cards.splice(index, 1);
+          }
+        });
+      });
       if (target.placement === "top") {
         targetCards.unshift(card);
       } else if (target.placement === "random") {
@@ -4039,6 +4126,7 @@
         if (scryDialog?.open) scryDialog.close();
         return;
       }
+      savePiles();
       renderScryCards();
       renderAibpCards();
     }
@@ -4081,6 +4169,31 @@
       savePiles();
       if (session.apostle === currentApostle) renderAibpCards();
       if (scryDialog?.open) scryDialog.close();
+    }
+
+    function restoreScrySession() {
+      if (!activeScry) return;
+      const session = activeScry;
+      ensurePiles(session.apostle);
+      const pile = piles[session.apostle]?.[session.type];
+      // 恢复不了观星界面时把牌放回抽牌堆，避免它们只留在持久化会话里取不回来。
+      if (!scryDialog || !pile || typeof scryDialog.showModal !== "function") {
+        activeScry = null;
+        if (pile) pile.deck.unshift(...session.cards);
+        savePiles();
+        renderAibpCards();
+        return;
+      }
+      scryDialog.dataset.scryType = session.type;
+      scryDialogTitle.textContent = `${session.type} 观星`;
+      scrySetup.hidden = true;
+      scryCards.hidden = false;
+      scryStartButton.hidden = true;
+      scryCountInput.disabled = true;
+      [scryTopButton, scryBottomButton, scryShuffleButton, scryRemoveButton]
+        .forEach((button) => { button.hidden = false; });
+      renderScryCards();
+      if (!scryDialog.open) scryDialog.showModal();
     }
 
     function deckBackText(cards) {
@@ -4384,19 +4497,19 @@
         return;
       }
 
-      // BP III：按规则不把这张 BP3 当作普通损伤显示；它被放在一旁，损伤堆加入通用双重损伤 DW。
-      bp.removed.push(card);
+      // BP III（普通击败）：按规则不把这张 BP3 当作损伤；向损伤堆加入 1 张通用双重
+      // 损伤 DW，把这张 BP3 放在一旁，等晋升结算完再放回 BP 卡组底部
+      // （规则书 P52 损伤堆叠 / P53 晋升表：最后将击伤的此 BP3 卡放在 BP 卡组底部）。
       pushBpDamage({ special: "DW" });
 
       if (hasSupply("BP", "III")) {
         removeLowestCard("BP");
         insertPromotedCard("BP", "III");
-        bp.deck.push(card);
       } else {
         bp.deck = shuffleCards(bp.deck.concat(bp.discard));
         bp.discard = [];
-        bp.deck.push(card);
       }
+      bp.deck.push(card);
 
       promoteAiForBpIII();
     }
@@ -6576,8 +6689,10 @@
     window.addEventListener("focus", refreshSecondScreenModeToggle);
     loadSavedPiles();
     renderApostle(currentApostle);
+    restoreScrySession();
     refreshRecordApostleLevels();
     refreshSecondScreenModeToggle();
+    void readAibpSection().catch(() => {});
   </script>
   <script src="ps/other/resouce/bp_resource_map.js"></script>
   <script src="ps/other/resouce/bp_resource_map_c1_c3.js"></script>

@@ -1682,6 +1682,7 @@
 
   <script src="../assets/page-focus-router.js?v=20260813-no-screen-focus1"></script>
   <script src="./matrix-summaries.js"></script>
+  <script src="../assets/campaign-session.js?v=20260917"></script>
   <script>
     const storageKey = "ato-argo-record-sheet-v1";
     const serverStorageUrl = "../api/campaign-state.php";
@@ -2287,9 +2288,12 @@
     let matrixUnlocked = false;
     let serverStorageAvailable = false;
     let campaignUserId = "default";
+    const campaignSession = window.ATO_CAMPAIGN_SESSION.create();
+    let recordProfileLoaded = false;
     let serverSaveTimer = null;
     let serverSaveInFlight = false;
     let serverSavePending = false;
+    let serverSaveNeedsRetry = false;
     let serverSaveQueuedBeforeReady = false;
     let serverSectionRevision = 0;
     let serverStateBaseline = null;
@@ -2429,7 +2433,10 @@
 
     function recordStateFromCampaign(campaign) {
       const dashboard = campaign?.sections?.dashboard;
-      const userId = dashboard?.activeProfileId || campaignUserId || "default";
+      const userId = recordProfileLoaded ? campaignUserId : (dashboard?.activeProfileId || "default");
+      if (recordProfileLoaded && dashboard?.profiles && !dashboard.profiles[userId]) {
+        throw new Error("原记录表档案已不存在，请刷新页面后重试。");
+      }
       const recordSection = campaign?.sections?.record;
       const userState = recordSection?.users?.[userId] || (recordSection?.users ? null : recordSection);
       return {
@@ -2442,17 +2449,19 @@
     async function readLatestRecordState() {
       const response = await fetch(serverStorageUrl, { cache: "no-store" });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const payload = await response.json();
+      const payload = campaignSession.accept(await response.json());
       if (!payload.ok) throw new Error(payload.error || "读取失败");
       return recordStateFromCampaign(payload.campaign || {});
     }
 
     async function syncRecordFromExternalUpdate(options = {}) {
+      if (campaignSession.changed) { setSaveStatus("登录账号已切换，已停止保存，请刷新页面。"); return; }
       if (!serverStorageAvailable || serverExternalSyncInFlight || serverConflictMerging || serverSaveInFlight) return;
       serverExternalSyncInFlight = true;
       try {
         const latest = await readLatestRecordState();
         if (latest.revision <= serverSectionRevision) {
+          flushPendingServerSave();
           if (options.retry && !options.retried) {
             window.setTimeout(() => void syncRecordFromExternalUpdate({ retry: true, retried: true }), 500);
           }
@@ -2721,6 +2730,7 @@
     }
 
     function setSaveStatus(message) {
+      if (campaignSession.changed) message = "登录账号已切换，已停止保存，请刷新页面。";
       if (elements.saveStatus) elements.saveStatus.textContent = message;
     }
 
@@ -2728,7 +2738,7 @@
       try {
         const response = await fetch(serverStorageUrl, { cache: "no-store" });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const payload = await response.json();
+        const payload = campaignSession.accept(await response.json());
         if (!payload.ok) throw new Error(payload.error || "读取失败");
         serverStorageAvailable = true;
         const flushQueuedSave = serverSaveQueuedBeforeReady;
@@ -2737,6 +2747,7 @@
         campaignUserId = latest.userId;
         serverSectionRevision = latest.revision;
         serverStateBaseline = cloneJson(latest.state);
+        recordProfileLoaded = true;
         if (payload.campaign?.sections?.record) {
           state = latest.state;
           applyRequestedCycleFromUrl();
@@ -2754,11 +2765,12 @@
         serverStorageAvailable = false;
         console.warn(error);
         clearDashboardSurveyNoteFromUrl();
-        setSaveStatus("NAS 存档接口不可用，当前仅保存到本机浏览器");
+        setSaveStatus("NAS 存档接口不可用，当前修改只保留在页面内存中，刷新或关闭页面会丢失");
       }
     }
 
     function queueServerSave() {
+      if (campaignSession.changed) { setSaveStatus("登录账号已切换，已停止保存，请刷新页面。"); return; }
       if (!serverStorageAvailable) {
         serverSaveQueuedBeforeReady = true;
         return;
@@ -2768,6 +2780,7 @@
     }
 
     async function saveStateToServer() {
+      if (campaignSession.changed) { setSaveStatus("登录账号已切换，已停止保存，请刷新页面。"); return; }
       if (!serverStorageAvailable) return;
       if (serverSaveInFlight) {
         serverSavePending = true;
@@ -2785,9 +2798,10 @@
             userId: campaignUserId,
             state: stateBeingSaved,
             expectedRevision: serverSectionRevision,
+            expectedAccountId: campaignSession.accountId,
           }),
         });
-        const payload = await response.json().catch(() => null);
+        const payload = campaignSession.accept(await response.json().catch(() => null));
         if (response.status === 409 && payload?.code === "SAVE_CONFLICT") {
           serverSavePending = false;
           if (!serverConflictMerging) {
@@ -2824,16 +2838,24 @@
         if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
         serverSectionRevision = Math.max(0, Number(payload.revision || serverSectionRevision));
         serverStateBaseline = stateBeingSaved;
+        serverSaveNeedsRetry = false;
         recordSyncChannel?.postMessage({ revision: serverSectionRevision });
         setSaveStatus(`已同步到 NAS ${new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })}`);
       } catch (error) {
         serverConflictMerging = false;
+        serverSaveNeedsRetry = true;
         console.warn(error);
-        setSaveStatus("NAS 同步失败，本机浏览器已有临时存档");
+        setSaveStatus("NAS 同步失败，修改只保留在页面内存中，连接恢复后会自动重试");
       } finally {
         serverSaveInFlight = false;
         if (serverSavePending) saveStateToServer();
       }
+    }
+
+    function flushPendingServerSave() {
+      if (!serverSaveNeedsRetry) return;
+      if (!serverStorageAvailable || serverSaveInFlight || serverSavePending || serverConflictMerging) return;
+      saveStateToServer();
     }
 
     function normalizeAdventureTitle(value) {

@@ -1,4 +1,27 @@
-const endpoint = "../api/campaign-state.php?action=second-screen";
+// 第二屏的网址由 api/campaign-state.php 的 second_screen_urls() 生成，里面带着开启
+// 第二屏时生成的随机 token（?token=…）。服务端只认这个 token：匿名直接请求接口不再
+// 返回存档内容。这里从自己的网址里把它取出来，之后每次请求都附上（#hash 也接受一份，
+// 便于复制粘贴时不被某些输入框截断）。
+function secondScreenTokenFromLocation() {
+  const read = (value) => {
+    try {
+      return new URLSearchParams(String(value || "")).get("token") || "";
+    } catch {
+      return "";
+    }
+  };
+  return read(String(window.location?.search || "").replace(/^\?/, ""))
+    || read(String(window.location?.hash || "").replace(/^#/, ""));
+}
+
+const secondScreenToken = secondScreenTokenFromLocation();
+// 地图模式由内嵌的 map/index.html 渲染，那份前端自己直连 ?action=second-screen 且不归
+// 本次改动管，所以顺手把 token 写进同源 Cookie，让它照旧读得到；token 本身仍然是必需的。
+if (secondScreenToken) {
+  document.cookie = `ato_second_screen_token=${encodeURIComponent(secondScreenToken)}; path=/; SameSite=Lax; max-age=15552000`;
+}
+const endpoint = "../api/campaign-state.php?action=second-screen"
+  + (secondScreenToken ? `&token=${encodeURIComponent(secondScreenToken)}` : "");
 const elements = {
   mapFrame: document.querySelector("#mapFrame"),
   mapStage: document.querySelector(".map-stage"),
@@ -304,17 +327,26 @@ function openMap() {
 }
 
 // 官方故事书扫描图只认本站 story 数据目录下的图片，其它来源一律忽略。
+// 快照里存的是应用相对路径，但 Android 侧发出来的老快照可能还带着 APK 内部前缀
+// （/android_asset/web/…）。这里先剥掉前缀，再按第二屏自己的 HTTP 根解析，
+// 同一份快照在 file:// 和 http:// 两侧才指向同一张图。
 function storyScanImages(story) {
   const scans = [];
   for (const src of Array.isArray(story.images) ? story.images : []) {
+    let base = null;
     let url = null;
     try {
-      url = new URL(src, window.location.href);
+      base = new URL(window.location.href);
+      url = new URL(String(src || ""), base);
     } catch {
       continue;
     }
-    if (url.origin !== window.location.origin || !url.pathname.includes("/story/data/ato-storybook-key-scans/")) continue;
-    scans.push(url.href);
+    if (url.origin !== base.origin) continue;
+    const relative = url.pathname.startsWith("/android_asset/web/")
+      ? url.pathname.slice("/android_asset/web".length)
+      : url.pathname;
+    if (!relative.includes("/story/data/ato-storybook-key-scans/")) continue;
+    scans.push(new URL(relative, base).href);
   }
   return scans;
 }
@@ -360,10 +392,26 @@ function openStory(screen) {
   elements.storyView.classList.toggle("images-only", imagesOnly);
   if (imagesOnly) {
     elements.storyBody.replaceChildren();
+    // 图仍然可能取不到：老快照里的 APK 内部路径、或者 APK 里根本没有这张图。
+    // 一张都加载不出来时不能把屏幕留空——退回快照另存的正文。
+    let failedImages = 0;
     for (const src of scans) {
       const image = document.createElement("img");
       image.src = src;
       image.alt = "官方故事书扫描图";
+      image.addEventListener?.("error", () => {
+        if (storyRenderKey !== renderKey || activeMode !== "story") return;
+        failedImages += 1;
+        if (failedImages < scans.length) return;
+        elements.storyView.classList.toggle("images-only", false);
+        elements.storyBookTitle.textContent = story.bookTitle || "ATO 故事书";
+        elements.storySection.textContent = story.section || "";
+        elements.storyTitle.textContent = story.title || "当前故事文本";
+        elements.storyEntryId.textContent = story.id || "";
+        elements.storyBody.replaceChildren();
+        elements.storyBody.textContent = story.fallbackText || "官方扫描图加载失败，请回到故事页重新选择该条目。";
+        fitStoryTextToViewport();
+      });
       elements.storyBody.append(image);
     }
     elements.storyBody.scrollTop = 0;
@@ -373,7 +421,7 @@ function openStory(screen) {
   elements.storySection.textContent = story.section || "";
   elements.storyTitle.textContent = story.title || "当前故事文本";
   elements.storyEntryId.textContent = story.id || "";
-  elements.storyBody.textContent = story.text
+  elements.storyBody.textContent = story.text || story.fallbackText
     || (story.imagesOnly ? "该条目暂无对应的官方扫描图与正文。" : "该条目暂无正文文本。");
   fitStoryTextToViewport();
 }

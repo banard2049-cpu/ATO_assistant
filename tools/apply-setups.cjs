@@ -1,4 +1,12 @@
-/* 用 TTS 转换数据生成新的 setups 段，替换 ss/terrain-data.js */
+/* 用 TTS 转换数据生成新的 setups 段，替换 ss/terrain-data.js
+ *
+ * 这个脚本会**整体重写**已跟踪的 ss/terrain-data.js：里面 2026-08-19 手工修正过的
+ * 朝向/翻面会全部丢失，而它躺在 tools/ 下、名字又像普通脚本，很容易被
+ * 「跑一遍 tools/*.cjs 看看」之类的批量操作误触发（本会话已经发生过两次，还连带
+ * 让 tools/test-ss-terrain-data.cjs 变红）。所以必须显式加 --apply 才会写入；
+ * 不带参数时只做校验并打印将要发生什么。
+ */
+const APPLY = process.argv.includes("--apply");
 const fs = require("node:fs");
 const path = require("node:path");
 const converted = require("./tts-converted.json");
@@ -130,6 +138,14 @@ const newSetups = `  const setups = {
     ${parts.join(",\n    ")},
   };
   setups.THE_NIETZSCHEAN = setups.THE_NIETZSCJEAN;`;
+
+if (!APPLY) {
+  console.log("dry-run（没有写入任何文件）。这份数据会重写以下已跟踪文件：");
+  console.log("  tools/setups-block.txt");
+  console.log("  ss/terrain-data.js    <- 会丢掉 2026-08-19 的手工修正（朝向/翻面）");
+  console.log("确认要覆盖就重新运行：node tools/apply-setups.cjs --apply");
+  process.exit(0);
+}
 
 fs.writeFileSync(path.join(__dirname, "setups-block.txt"), newSetups, "utf8");
 console.log("generated setups-block.txt, length:", newSetups.length);

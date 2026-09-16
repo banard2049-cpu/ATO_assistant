@@ -75,11 +75,10 @@ jobs:
           KEY_ALIAS: ${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}
         run: |
-          $values = @($env:KEYSTORE_BASE64, $env:KEYSTORE_PASSWORD, $env:KEY_ALIAS, $env:KEY_PASSWORD)
-          $missing = $values.Where({ [string]::IsNullOrWhiteSpace($_) }).Count
-          if ($missing -gt 0) {
-            Write-Warning 'Android release signing secrets are not configured; building with the runner Debug keystore.'
-            exit 0
+          $names = @('ANDROID_RELEASE_KEYSTORE_BASE64', 'ANDROID_RELEASE_STORE_PASSWORD', 'ANDROID_RELEASE_KEY_ALIAS', 'ANDROID_RELEASE_KEY_PASSWORD')
+          $missing = @($names | Where-Object { [string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($_)) })
+          if ($missing.Count -gt 0) {
+            throw "Android release signing secrets are not configured: $($missing -join ', '). The release job refuses to publish a Debug-signed APK, because a later properly signed build could not replace it."
           }
           $keystore = Join-Path $env:RUNNER_TEMP 'ato-release.jks'
           [IO.File]::WriteAllBytes($keystore, [Convert]::FromBase64String($env:KEYSTORE_BASE64))

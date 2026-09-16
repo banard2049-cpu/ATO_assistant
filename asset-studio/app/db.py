@@ -36,18 +36,27 @@ CREATE TABLE IF NOT EXISTS asset_revisions (
   item_id TEXT NOT NULL REFERENCES catalog_items(id) ON DELETE CASCADE,
   face TEXT NOT NULL,
   sha256 TEXT NOT NULL,
+  -- original_path is the effective (already edited) object: previews, package
+  -- export, compat export and installation all read this one file.
   original_path TEXT NOT NULL,
+  -- source_path is the pristine upload the edit was baked from; it is shared
+  -- between entries and revisions that uploaded identical bytes.
+  source_path TEXT NOT NULL DEFAULT '',
   preview_path TEXT NOT NULL,
   mime_type TEXT NOT NULL,
   original_name TEXT NOT NULL,
   width INTEGER,
   height INTEGER,
   source TEXT NOT NULL DEFAULT 'upload',
+  -- Edit that produced original_path, as {"rotation": n, "crop": {...}|null}.
+  transform_json TEXT NOT NULL DEFAULT '{}',
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   is_current INTEGER NOT NULL DEFAULT 1
 );
 CREATE INDEX IF NOT EXISTS asset_current_idx
   ON asset_revisions(item_id, face, is_current);
+CREATE INDEX IF NOT EXISTS asset_preview_idx
+  ON asset_revisions(preview_path, is_current);
 CREATE UNIQUE INDEX IF NOT EXISTS asset_dedupe_idx
   ON asset_revisions(item_id, face, sha256);
 
@@ -92,8 +101,13 @@ CREATE TABLE IF NOT EXISTS pending_files (
   suggested_item_id TEXT,
   suggested_face TEXT,
   status TEXT NOT NULL DEFAULT 'pending',
+  -- Monotonic import order: created_at only has second precision, so photos
+  -- imported in the same second must not fall back to random-UUID ordering.
+  import_seq INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+CREATE INDEX IF NOT EXISTS pending_status_idx
+  ON pending_files(status, created_at, import_seq);
 
 CREATE TABLE IF NOT EXISTS upload_sessions (
   id TEXT PRIMARY KEY,
@@ -135,6 +149,24 @@ class Database:
                 conn.execute(
                     "ALTER TABLE story_segments ADD COLUMN metadata_json TEXT NOT NULL DEFAULT '{}'"
                 )
+            revision_columns = {
+                row["name"] for row in conn.execute("PRAGMA table_info(asset_revisions)")
+            }
+            if "source_path" not in revision_columns:
+                conn.execute("ALTER TABLE asset_revisions ADD COLUMN source_path TEXT NOT NULL DEFAULT ''")
+                # Libraries written before edits were baked: the stored object
+                # was the pristine upload, so it is its own source.
+                conn.execute("UPDATE asset_revisions SET source_path=original_path")
+            if "transform_json" not in revision_columns:
+                conn.execute("ALTER TABLE asset_revisions ADD COLUMN transform_json TEXT NOT NULL DEFAULT '{}'")
+            pending_columns = {
+                row["name"] for row in conn.execute("PRAGMA table_info(pending_files)")
+            }
+            if "import_seq" not in pending_columns:
+                conn.execute("ALTER TABLE pending_files ADD COLUMN import_seq INTEGER NOT NULL DEFAULT 0")
+                # Physical insertion order is the closest available record of
+                # the real import order for rows already in the table.
+                conn.execute("UPDATE pending_files SET import_seq=rowid")
 
     @contextmanager
     def connect(self) -> Iterator[sqlite3.Connection]:

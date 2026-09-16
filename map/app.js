@@ -179,6 +179,7 @@ const elements = {
 };
 
 let state = loadState();
+const campaignSession = window.ATO_CAMPAIGN_SESSION.create();
 let campaignStorageAvailable = false;
 let campaignUserId = "default";
 let campaignSaveTimer = null;
@@ -190,6 +191,15 @@ let campaignReconnectInFlight = false;
 let campaignReconnectDelay = 2000;
 let mapSectionRevision = 0;
 let dashboardSectionRevision = 0;
+// The profile the in-memory map state belongs to. Saves always target this
+// profile, so another page switching the active profile cannot redirect this
+// page's edits into a different campaign.
+let mapStateProfileId = "default";
+let mapStateLoadedFromServer = false;
+let mapSaveConflict = false;
+// Last state confirmed by the server, used as the merge base when the server
+// rejects a save because someone else wrote the section first.
+let mapStateBaseline = cloneValue(state);
 let pendingAdversarySpawnCandidates = new Set();
 let editingNoteTileId = "";
 let tileClickTimer = 0;
@@ -204,7 +214,55 @@ function isPlainObject(value) {
 }
 
 function cloneValue(value) {
-  return JSON.parse(JSON.stringify(value));
+  return value === undefined ? undefined : JSON.parse(JSON.stringify(value));
+}
+
+function deepEqualValue(left, right) {
+  if (left === right) return true;
+  if (Array.isArray(left) || Array.isArray(right)) {
+    if (!Array.isArray(left) || !Array.isArray(right) || left.length !== right.length) return false;
+    return left.every((item, index) => deepEqualValue(item, right[index]));
+  }
+  if (isPlainObject(left) && isPlainObject(right)) {
+    const leftKeys = Object.keys(left);
+    if (leftKeys.length !== Object.keys(right).length) return false;
+    return leftKeys.every((key) => Object.hasOwn(right, key) && deepEqualValue(left[key], right[key]));
+  }
+  return false;
+}
+
+// Three-way merge used when the server already changed a section we are saving.
+// The local edit wins where the other writer left the value alone, the server
+// value wins where this page left it alone, and values both sides changed
+// differently are reported instead of being overwritten silently.
+function mergeValues(base, local, remote, conflicts, path) {
+  if (deepEqualValue(local, base)) return cloneValue(remote);
+  if (deepEqualValue(remote, base)) return cloneValue(local);
+  if (deepEqualValue(local, remote)) return cloneValue(local);
+  if (isPlainObject(local) && isPlainObject(remote)) {
+    const baseObject = isPlainObject(base) ? base : {};
+    const merged = {};
+    const keys = new Set([...Object.keys(baseObject), ...Object.keys(local), ...Object.keys(remote)]);
+    keys.forEach((key) => {
+      merged[key] = mergeValues(baseObject[key], local[key], remote[key], conflicts, `${path}.${key}`);
+    });
+    Object.keys(merged).forEach((key) => {
+      if (merged[key] === undefined) delete merged[key];
+    });
+    return merged;
+  }
+  conflicts.push(path);
+  return cloneValue(local);
+}
+
+function mergeMapStates(base, local, remote) {
+  const conflicts = [];
+  const merged = mergeValues(isPlainObject(base) ? base : {}, local, remote, conflicts, "state");
+  return { merged, conflicts };
+}
+
+function noteMapMergeConflict(conflicts) {
+  console.warn("地图存档冲突：以下内容被其他页面同时改动，本页未覆盖服务端版本", conflicts);
 }
 
 function pushUndo() {
@@ -614,9 +672,55 @@ function delay(ms) {
 }
 
 function setCampaignSaveStatus(message, status = "saved") {
+  if (campaignSession.changed) { message = "登录账号已切换，已停止保存，请刷新页面"; status = "conflict"; }
+  else if (mapSaveConflict) { message = "保存冲突，已暂停保存，请刷新地图页确认"; status = "conflict"; }
   if (!elements.campaignSaveStatus) return;
   elements.campaignSaveStatus.textContent = message;
   elements.campaignSaveStatus.dataset.state = status;
+}
+
+function pickServerMapState(mapSection, profileId) {
+  if (!mapSection) return null;
+  const userState = mapSection.users ? mapSection.users?.[profileId] : mapSection;
+  return isPlainObject(userState) ? normalizeState(userState) : null;
+}
+
+// Adopt the server map state without dropping edits made before or while it was
+// loading. The in-memory state keeps belonging to the profile it was loaded for,
+// so a profile switch in another page can never redirect these edits elsewhere.
+function applyServerMapState(mapSection, activeProfileId, hasLocalEdits) {
+  const targetProfileId = mapStateLoadedFromServer ? mapStateProfileId : activeProfileId;
+  const picked = pickServerMapState(mapSection, targetProfileId);
+  // 服务器没有这个档案的桶时：首次加载当然从空地图开始；但重连时把屏幕上已经显示
+  // 的地图清空是重构时引入的行为回归（旧代码只在 userState 为真时才覆盖 state），
+  // 所以这里沿用内存里的状态。
+  const serverState = picked || (mapStateLoadedFromServer ? cloneValue(state) : normalizeState({}));
+  if (hasLocalEdits) {
+    const result = mergeMapStates(mapStateBaseline, state, serverState);
+    if (result.conflicts.length) {
+      mapSaveConflict = true;
+      noteMapMergeConflict(result.conflicts);
+      setCampaignSaveStatus("保存冲突：请刷新地图页确认，当前修改尚未提交", "conflict");
+      return { switched: targetProfileId !== activeProfileId, conflict: true };
+    }
+    state = normalizeState(result.merged);
+  } else {
+    state = serverState;
+  }
+  mapStateProfileId = targetProfileId;
+  mapStateBaseline = cloneValue(serverState);
+  mapStateLoadedFromServer = true;
+  focusArgoAfterNextRender();
+  render();
+  return { switched: targetProfileId !== activeProfileId };
+}
+
+async function loadCampaignMapSectionState(profileId) {
+  const response = await fetch(`${campaignStorageUrl}?section=map`, { cache: "no-store" });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const payload = campaignSession.accept(await response.json());
+  if (!payload?.ok) throw new Error(payload?.error || "读取地图存档失败");
+  return { state: pickServerMapState(payload.state, profileId) || normalizeState({}), revision: Number(payload.revision || 0) };
 }
 
 async function loadCampaignMapSection() {
@@ -628,7 +732,7 @@ async function loadCampaignMapSection() {
   try {
     const response = await fetch(campaignStorageUrl, { cache: "no-store" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const payload = await response.json();
+    const payload = campaignSession.accept(await response.json());
     if (!payload.ok) throw new Error(payload.error || "读取失败");
     campaignStorageAvailable = true;
     campaignReconnectDelay = 2000;
@@ -639,14 +743,10 @@ async function loadCampaignMapSection() {
     campaignUserId = dashboard?.activeProfileId || "default";
     mapSectionRevision = campaign.sectionRevisions?.map || 0;
     dashboardSectionRevision = campaign.sectionRevisions?.dashboard || 0;
-    const mapSection = campaign.sections?.map;
-    const userState = mapSection?.users?.[campaignUserId] || (mapSection?.users ? null : mapSection);
-    if (userState) {
-      state = normalizeState(userState);
-      focusArgoAfterNextRender();
-      render();
-    }
+    const applied = applyServerMapState(campaign.sections?.map, campaignUserId, flushQueuedSave);
+    if (applied.conflict) return;
     if (flushQueuedSave) queueCampaignSave();
+    else if (applied.switched) setCampaignSaveStatus("主控台已切换到其他档案，本页仍保存原档案", "saved");
     else setCampaignSaveStatus("已同步", "saved");
   } catch (error) {
     campaignStorageAvailable = false;
@@ -657,6 +757,7 @@ async function loadCampaignMapSection() {
 }
 
 function scheduleReconnectAttempt() {
+  if (campaignSession.changed || mapSaveConflict) return;
   if (campaignReconnectTimer || campaignReconnectInFlight || campaignStorageAvailable) return;
   const wait = campaignReconnectDelay;
   campaignReconnectDelay = Math.min(30000, campaignReconnectDelay * 2);
@@ -669,32 +770,27 @@ function scheduleReconnectAttempt() {
 // Reconnect without replacing in-memory edits. If nothing changed while the
 // server was unavailable, the latest server state can safely be loaded.
 async function probeCampaignReconnect() {
+  if (campaignSession.changed || mapSaveConflict) return;
   if (campaignStorageAvailable || campaignReconnectInFlight) return;
   campaignReconnectInFlight = true;
   try {
     const response = await fetch(campaignStorageUrl, { cache: "no-store" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const payload = await response.json();
+    const payload = campaignSession.accept(await response.json());
     if (!payload.ok) throw new Error(payload.error || "读取失败");
     const campaign = payload.campaign || {};
     const dashboard = campaign.sections?.dashboard;
-    if (dashboard?.activeProfileId) campaignUserId = dashboard.activeProfileId;
+    campaignUserId = dashboard?.activeProfileId || campaignUserId;
     mapSectionRevision = campaign.sectionRevisions?.map || 0;
     dashboardSectionRevision = campaign.sectionRevisions?.dashboard || 0;
     const hadQueued = campaignSaveQueuedBeforeReady;
-    if (!hadQueued) {
-      const mapSection = campaign.sections?.map;
-      const userState = mapSection?.users?.[campaignUserId] || (mapSection?.users ? null : mapSection);
-      if (userState) {
-        state = normalizeState(userState);
-        focusArgoAfterNextRender();
-        render();
-      }
-    }
+    const applied = applyServerMapState(campaign.sections?.map, campaignUserId, hadQueued);
     campaignStorageAvailable = true;
     campaignReconnectDelay = 2000;
     campaignSaveQueuedBeforeReady = false;
+    if (applied.conflict) return;
     if (hadQueued) queueCampaignSave();
+    else if (applied.switched) setCampaignSaveStatus("主控台已切换到其他档案，本页仍保存原档案", "saved");
     else setCampaignSaveStatus("已重新连接", "saved");
   } catch (error) {
     console.warn(error);
@@ -714,6 +810,10 @@ function reconnectCampaignNow() {
 }
 
 function queueCampaignSave() {
+  if (campaignSession.changed || mapSaveConflict) {
+    setCampaignSaveStatus("保存已暂停，请刷新页面确认当前存档", "conflict");
+    return;
+  }
   if (!campaignStorageAvailable) {
     campaignSaveQueuedBeforeReady = true;
     setCampaignSaveStatus("有修改待同步", "offline");
@@ -726,6 +826,7 @@ function queueCampaignSave() {
 }
 
 async function saveCampaignMapSection() {
+  if (campaignSession.changed || mapSaveConflict) return false;
   if (!campaignStorageAvailable) {
     campaignSaveQueuedBeforeReady = true;
     setCampaignSaveStatus("有修改待同步", "offline");
@@ -748,23 +849,41 @@ async function saveCampaignMapSection() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           section: "map",
-          userId: campaignUserId,
+          userId: mapStateProfileId,
           state: stateBeingSaved,
           expectedRevision: mapSectionRevision,
+          expectedAccountId: campaignSession.accountId,
         }),
       });
-      const payload = await response.json().catch(() => null);
+      const payload = campaignSession.accept(await response.json().catch(() => null));
       if (response.status === 409 && payload?.revision != null) {
         // Another page (e.g. the dashboard map commands) saved the map section
-        // meanwhile. Adopt the latest revision and explicitly retry.
-        mapSectionRevision = payload.revision;
+        // meanwhile. Re-read it and re-apply only this page's edits instead of
+        // resubmitting the stale state, which would drop their changes.
         conflictRetries += 1;
         if (conflictRetries >= 5) throw new Error("地图存档持续冲突，请稍后重试。");
+        const remote = await loadCampaignMapSectionState(mapStateProfileId);
+        const remoteState = remote.state;
+        const merged = mergeMapStates(mapStateBaseline, state, remoteState);
+        if (merged.conflicts.length) {
+          mapSaveConflict = true;
+          campaignSavePending = false;
+          campaignSaveQueuedBeforeReady = false;
+          noteMapMergeConflict(merged.conflicts);
+          setCampaignSaveStatus("保存冲突：其他页面改动了相同内容，未覆盖，请刷新地图页确认", "conflict");
+          return false;
+        }
+        state = normalizeState(merged.merged);
+        // 重试要用服务器当前版本号。正常情况下这次 GET 就带着它；若某个代理/旧版
+        // 接口没返回 revision，宁可退回 409 响应体里的版本号，也不要变成 0。
+        mapSectionRevision = Math.max(Number(remote.revision || 0), Number(payload.revision || 0));
+        mapStateBaseline = cloneValue(remoteState);
         campaignSavePending = true;
         continue;
       }
       if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
       mapSectionRevision = payload.revision || mapSectionRevision;
+      mapStateBaseline = stateBeingSaved;
       conflictRetries = 0;
     } while (campaignSavePending);
     campaignSaveQueuedBeforeReady = false;
@@ -784,6 +903,7 @@ async function saveCampaignMapSection() {
 }
 
 async function flushCampaignMapSave() {
+  if (campaignSession.changed || mapSaveConflict) return false;
   if (!campaignStorageAvailable) {
     campaignSaveQueuedBeforeReady = true;
     setCampaignSaveStatus("有修改待同步", "offline");
@@ -795,20 +915,19 @@ async function flushCampaignMapSave() {
   if (campaignSaveInFlight) {
     campaignSavePending = true;
     while (campaignSaveInFlight) await delay(40);
-    return campaignStorageAvailable && !campaignSaveQueuedBeforeReady;
+    return campaignStorageAvailable && !campaignSaveQueuedBeforeReady && !mapSaveConflict && !campaignSession.changed;
   }
   return saveCampaignMapSection();
 }
 
 async function loadCampaignDashboardArchive() {
-  try {
-    const response = await fetch(campaignDashboardUrl, { cache: "no-store" });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const payload = await response.json();
-    if (payload.ok && payload.exists && payload.state) return payload.state;
-  } catch (error) {
-    console.warn(error);
-  }
+  const response = await fetch(campaignDashboardUrl, { cache: "no-store" });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const payload = campaignSession.accept(await response.json());
+  if (!payload?.ok) throw new Error(payload?.error || "读取主控台存档失败");
+  // A failed read must never be reported as "no archive yet": the caller would
+  // build a default archive and replace every stored profile with it.
+  if (payload.exists && payload.state) return payload.state;
   return null;
 }
 
@@ -820,9 +939,10 @@ async function saveCampaignDashboardArchive(archive) {
       section: "dashboard",
       state: archive,
       expectedRevision: dashboardSectionRevision,
+      expectedAccountId: campaignSession.accountId,
     }),
   });
-  const payload = await response.json().catch(() => null);
+  const payload = campaignSession.accept(await response.json().catch(() => null));
   if (response.status === 409 && payload?.revision) {
     const conflict = new Error(payload?.error || "SAVE_CONFLICT");
     conflict.code = "SAVE_CONFLICT";
@@ -833,7 +953,7 @@ async function saveCampaignDashboardArchive(archive) {
   dashboardSectionRevision = payload.revision || dashboardSectionRevision;
 }
 
-async function buildDashboardArchive(snapshot) {
+async function buildDashboardArchive(snapshot, targetProfileId = mapStateProfileId) {
   let archive = await loadCampaignDashboardArchive();
   if (!isPlainObject(archive) || !isPlainObject(archive.profiles)) {
     archive = {
@@ -848,7 +968,10 @@ async function buildDashboardArchive(snapshot) {
       },
     };
   }
-  const profile = archive.profiles?.[archive.activeProfileId] || Object.values(archive.profiles || {})[0];
+  // The snapshot belongs to the profile this map was loaded for, not to whatever
+  // profile the dashboard happens to have active now.
+  const profile = archive.profiles?.[targetProfileId];
+  if (!profile) throw new Error("原地图档案已不存在，请刷新页面后重试。");
   if (profile) {
     archive.activeProfileId ||= profile.id;
     profile.activeCycleId = snapshot.cycleId;
@@ -1996,7 +2119,9 @@ async function triggerAdversaryBattle(recordUndo = false) {
   // Flush the queued save before leaving the page so the adversary removal
   // and current position are persisted (no debounce window loss).
   if (!await flushCampaignMapSave()) {
-    window.alert("地图尚未保存，已保留当前修改并等待服务恢复。");
+    window.alert(campaignSession.changed || mapSaveConflict
+      ? "地图尚未保存：登录账号已切换或存档存在冲突，请查看页面保存提示。"
+      : "地图尚未保存，已保留当前修改并等待服务恢复。");
     return;
   }
 
@@ -2485,5 +2610,3 @@ if (!secondScreenMode) {
   }, 1500);
   refreshSecondScreenMapModeToggle();
 }
-
-

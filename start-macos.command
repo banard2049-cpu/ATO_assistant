@@ -5,7 +5,7 @@ SCRIPT_DIR="${0:A:h}"
 cd "$SCRIPT_DIR" || exit 1
 PORT=8793
 URL="http://127.0.0.1:${PORT}/"
-mkdir -p data
+mkdir -p data/sessions
 
 open_later() {
   (sleep 1; open "$URL") >/dev/null 2>&1 &
@@ -64,7 +64,35 @@ if [[ -n "$PHP_BIN" ]]; then
   echo "使用 PHP：$PHP_BIN（$($PHP_BIN -r 'echo PHP_VERSION;')）"
   echo "关闭此窗口或按 Control-C 即可停止。"
   open_later
-  exec "$PHP_BIN" -S "0.0.0.0:${PORT}" -t "$SCRIPT_DIR"
+  # The built-in server would publish data/ (account hashes, campaign saves,
+  # sessions, backups) as static files; router.php rejects those requests.
+  # session.save_path must be absolute (the built-in server chdir's to the
+  # requested script), and it must NOT go through -d: PHP parses the value of -d
+  # as INI text, so a folder name with a space, & ( ) ! [ ] (very common:
+  # "ATO_assistant (1)") truncates the value there -- session_start() then fails
+  # and every login is dropped.  PHP therefore writes the setting into a
+  # generated INI file (path derived by getcwd(), so it never appears in a shell
+  # word) and the server starts with -c pointing at it; the php.ini PHP would
+  # load anyway is copied in first, so extensions and settings survive.
+  # post_max_size must stay ABOVE the API's own body cap (api/campaign-state.php
+  # answers 413 PAYLOAD_TOO_LARGE above 6 MiB): a body over post_max_size is
+  # dropped during PHP request startup, before any script runs, and PHP then
+  # flushes an HTML warning with a 200 status instead of the API's structured 413.
+  # Only *display* is turned off (display_errors / display_startup_errors), so such
+  # a startup warning can never end up in the response body; logging stays ON
+  # (log_errors = 1) and no error_log is set, so PHP writes the warning to stderr
+  # -- i.e. into this launcher's own console window, which is where a local user
+  # looks when something breaks.  With both off, a fatal error would leave no
+  # trace anywhere and the failure would be an undebuggable blank 500.
+  # The file sits in data/, which router.php keeps off HTTP.
+  SESSION_INI="$SCRIPT_DIR/data/ato-session.ini"
+  "$PHP_BIN" -r '$d=getcwd()."/data/ato-session.ini";$q=chr(34);$s=php_ini_loaded_file();$x=["session.save_path = ".$q.getcwd()."/data/sessions".$q,"post_max_size = 12M","display_errors = 0","log_errors = 1","display_startup_errors = 0"];file_put_contents($d,($s?file_get_contents($s):"").implode(PHP_EOL,$x).PHP_EOL);'
+  if [[ ! -f "$SESSION_INI" ]]; then
+    echo "无法写入 $SESSION_INI。请把本目录放到可写位置后再启动。"
+    read -k 1 "?按任意键退出..."
+    exit 1
+  fi
+  exec "$PHP_BIN" -c "$SESSION_INI" -S "0.0.0.0:${PORT}" -t "$SCRIPT_DIR" "$SCRIPT_DIR/router.php"
 fi
 
 DOCKER_BIN="$(command -v docker 2>/dev/null || true)"

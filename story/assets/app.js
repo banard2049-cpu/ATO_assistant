@@ -43,6 +43,8 @@
   const secondScreenSnapshotUrl = "../api/campaign-state.php?section=story";
   const secondScreenModeUrl = "../api/campaign-state.php?action=second-screen-mode";
   const secondScreenStatusUrl = "../api/campaign-state.php?action=second-screen-status";
+  const campaignSession = window.ATO_CAMPAIGN_SESSION?.create?.();
+  let storySectionRevision = 0;
   const SECOND_SCREEN_SNAPSHOT_ATTEMPTS = 3;
   const SECOND_SCREEN_STORY_MODE_TITLE = "勾选后第二屏显示当前故事文本，取消勾选后显示地图";
   let secondScreenSnapshotTimer = null;
@@ -88,9 +90,35 @@
   const legacyDefaultTtsVoices = ["mimo_default", "Dean"];
   const defaultTtsVoice = "白桦";
   const cloudPresetVoices = ["mimo_default", "冰糖", "茉莉", "苏打", "白桦", "Mia", "Chloe", "Milo", "Dean"];
+  // 讯飞在线语音合成发音人（浏览器只能走 WebSocket 版，HTTP 版会被 CORS 拦下）。
+  const xfyunPresetVoices = [
+    { vcn: "x4_lingbosong_bad_talk", label: "聆伯松-反派老人" },
+    { vcn: "x4_lingbosong", label: "聆伯松-老年男声" },
+    { vcn: "x4_xiaoyan", label: "讯飞小燕" },
+    { vcn: "x4_pengfei", label: "小鹏" },
+    { vcn: "x4_yeting", label: "希涵" },
+    { vcn: "x4_guanshan", label: "关山-专题" },
+    { vcn: "x4_qianxue", label: "千雪" },
+    { vcn: "x4_xiuying", label: "秀英-老年女声" },
+    { vcn: "x4_mingge", label: "明哥" },
+    { vcn: "x4_doudou", label: "豆豆" },
+    { vcn: "x4_xiaoguo", label: "小果" },
+    { vcn: "x4_xiaozhong", label: "小忠" },
+    { vcn: "x4_yezi", label: "小露" },
+    { vcn: "x4_chaoge", label: "超哥" },
+    { vcn: "x4_feidie", label: "飞碟哥" },
+    { vcn: "x4_lingfeihao_upbeatads", label: "聆飞皓-广告" },
+    { vcn: "x4_wangqianqian", label: "嘉欣" },
+    { vcn: "x4_lingxiaozhen_eclives", label: "聆小臻" },
+  ];
+  const cloudProviders = [
+    { id: "mimo", label: "MIMO / OpenAI 兼容" },
+    { id: "xfyun", label: "讯飞在线语音合成" },
+  ];
   const offlineAudioPacks = [
     { id: "audio", label: "默认离线音色", dir: "audio-packs/audio" },
     { id: "audio-baihua-nosplit-23451", label: "白桦（整段）", dir: "audio-packs/audio-baihua-nosplit-23451" },
+    { id: "audio-lingbosong", label: "聆伯松-反派老人（官方版）", dir: "audio-packs/audio-lingbosong", official: true },
   ];
 
   const defaultTtsConfig = {
@@ -101,6 +129,7 @@
     statusCollapsed: false,
     offlineAudioPack: "audio",
     cloud: {
+      provider: "mimo",
       baseUrl: "https://api.xiaomimimo.com/v1",
       apiKey: "",
       builtInModel: "mimo-v2.5-tts",
@@ -110,6 +139,19 @@
       userMessage: defaultTtsPrompt,
       audioFormat: "mp3",
       timeout: 120000,
+      xfyun: {
+        appId: "",
+        apiKey: "",
+        apiSecret: "",
+        vcn: "x4_lingbosong_bad_talk",
+        voiceLabel: "聆伯松-反派老人",
+        host: "tts-api.xfyun.cn",
+        sampleRate: 16000,
+        speed: 50,
+        volume: 50,
+        pitch: 50,
+        timeout: 60000,
+      },
     },
     local: {
       baseUrl: "",
@@ -782,7 +824,11 @@
       const config = {
         ...defaultTtsConfig,
         ...saved,
-        cloud: { ...defaultTtsConfig.cloud, ...(saved.cloud || {}) },
+        cloud: {
+          ...defaultTtsConfig.cloud,
+          ...(saved.cloud || {}),
+          xfyun: { ...defaultTtsConfig.cloud.xfyun, ...((saved.cloud || {}).xfyun || {}) },
+        },
         local: { ...defaultTtsConfig.local, ...(saved.local || {}) },
       };
       if (!config.cloud.baseUrl || /api\.mimo-v2\.com/i.test(config.cloud.baseUrl) || /127\.0\.0\.1:8788|localhost:8788/i.test(config.cloud.baseUrl)) {
@@ -868,6 +914,12 @@
       return `离线保存音频 [${pack.label}]`;
     }
     if (ttsConfig.activeEngine === "local") return `本地部署 [${ttsConfig.local.model || "未配置"}]`;
+    if (cloudProvider() === "xfyun") {
+      const xf = ttsConfig.cloud.xfyun || {};
+      const name = xf.voiceLabel || xf.vcn || "动态音色";
+      if (!isXfyunConfigured(xf)) return "云端 API·讯飞 [未配置账号]";
+      return `云端 API·讯飞 [${name}]`;
+    }
     if (ttsConfig.cloud.voiceCloneDataUrl) return "云端 API [已导入克隆音色]";
     return `云端 API [${ttsConfig.cloud.voice || "动态音色"}]`;
   }
@@ -876,12 +928,17 @@
     const title = document.querySelector("#ttsStatusTitle");
     const toggle = document.querySelector("#ttsStatusToggle");
     const body = document.querySelector("#ttsStatusBody");
+    const box = document.querySelector("#ttsStatusBox");
     if (!title || !toggle || !body) return;
 
+    const collapsed = Boolean(ttsConfig.statusCollapsed);
+    // 收起后整块缩到只剩这一个按钮：标题和「引擎配置」一起藏起来。
+    if (box) box.classList.toggle("collapsed", collapsed);
     title.textContent = `TTS 状态 | ${getEngineStatusLabel()}`;
-    toggle.textContent = ttsConfig.statusCollapsed ? "展开" : "收起";
-    body.hidden = ttsConfig.statusCollapsed;
-    if (ttsConfig.statusCollapsed) return;
+    toggle.textContent = collapsed ? "展开" : "收起";
+    toggle.setAttribute("aria-expanded", String(!collapsed));
+    body.hidden = collapsed;
+    if (collapsed) return;
 
     body.innerHTML = statusEntries.length
       ? statusEntries.map((item) => `
@@ -984,8 +1041,12 @@
   }
 
   function cachedAudioForEntry(entry) {
-    // 现有离线包由民间正文生成，不能用于官方版。
-    if (storyVersion === "官方版" && supportsOfficialVersion()) return null;
+    // 民间离线包不能用于官方正文；讯飞聆伯松包按官方版生成，清单里带 official 标记，官方版可用。
+    if (storyVersion === "官方版" && supportsOfficialVersion()) {
+      const packs = typeof offlineAudioPacks === "undefined" ? [] : offlineAudioPacks;
+      const pack = packs.find((item) => item.id === ttsConfig.offlineAudioPack) || packs[0];
+      if (!(storyAudioManifest?.official || pack?.official)) return null;
+    }
     const entries = storyAudioManifest?.entries || {};
     let record = entries[entry?.key || ""];
     if (!record && entry) {
@@ -1810,9 +1871,257 @@
     throw new Error(failures.join(" | ") || "all api keys failed");
   }
 
+  // ---------- 讯飞在线语音合成（WebSocket） ----------
+
+  function cloudProvider(conf = ttsConfig.cloud) {
+    return (conf && conf.provider) || "mimo";
+  }
+
+  // 注意：签名结果是任意二进制，必须按字节做 base64，
+  // 不能先当 UTF-8 文本再编码，否则高位字节会被改写、签名失效。
+  function bytesToBase64(bytes) {
+    let binary = "";
+    for (const byte of bytes) binary += String.fromCharCode(byte);
+    return btoa(binary);
+  }
+
+  function utf8ToBase64(text) {
+    return bytesToBase64(new TextEncoder().encode(text));
+  }
+
+  // ---- 纯 JS 的 SHA-256 / HMAC-SHA256（无 crypto.subtle 时使用）----
+  // crypto.subtle 只在“安全上下文”里存在：https、localhost、file:// 有，
+  // 而本应用按设计跑在 http://<局域网IP>:8793/ 上 —— 那里 window.crypto.subtle
+  // 是 undefined，所以只用 Web Crypto 会让讯飞合成在局域网地址上必然失败。
+  // 下面这份实现让签名在任何上下文都能算出来；有 subtle 时仍优先用原生实现。
+  const SHA256_K = new Uint32Array([
+    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
+  ]);
+
+  function rotateRight32(value, bits) {
+    return ((value >>> bits) | (value << (32 - bits))) >>> 0;
+  }
+
+  function sha256Bytes(bytes) {
+    const length = bytes.length;
+    const paddedLength = Math.ceil((length + 9) / 64) * 64;
+    const buffer = new Uint8Array(paddedLength);
+    buffer.set(bytes);
+    buffer[length] = 0x80;
+    const view = new DataView(buffer.buffer);
+    // 位长度写成 64 位大端：高位用除法取，低位交给 >>> 0，避免 32 位移位丢位。
+    view.setUint32(paddedLength - 8, Math.floor((length * 8) / 4294967296), false);
+    view.setUint32(paddedLength - 4, (length * 8) >>> 0, false);
+
+    const h = new Uint32Array([
+      0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19,
+    ]);
+    const w = new Uint32Array(64);
+    for (let offset = 0; offset < paddedLength; offset += 64) {
+      for (let i = 0; i < 16; i += 1) w[i] = view.getUint32(offset + i * 4, false);
+      for (let i = 16; i < 64; i += 1) {
+        const s0 = rotateRight32(w[i - 15], 7) ^ rotateRight32(w[i - 15], 18) ^ (w[i - 15] >>> 3);
+        const s1 = rotateRight32(w[i - 2], 17) ^ rotateRight32(w[i - 2], 19) ^ (w[i - 2] >>> 10);
+        w[i] = (w[i - 16] + s0 + w[i - 7] + s1) >>> 0;
+      }
+      let a = h[0], b = h[1], c = h[2], d = h[3], e = h[4], f = h[5], g = h[6], hh = h[7];
+      for (let i = 0; i < 64; i += 1) {
+        const sum1 = rotateRight32(e, 6) ^ rotateRight32(e, 11) ^ rotateRight32(e, 25);
+        const choose = (e & f) ^ (~e & g);
+        const temp1 = (hh + sum1 + choose + SHA256_K[i] + w[i]) >>> 0;
+        const sum0 = rotateRight32(a, 2) ^ rotateRight32(a, 13) ^ rotateRight32(a, 22);
+        const majority = (a & b) ^ (a & c) ^ (b & c);
+        const temp2 = (sum0 + majority) >>> 0;
+        hh = g; g = f; f = e; e = (d + temp1) >>> 0;
+        d = c; c = b; b = a; a = (temp1 + temp2) >>> 0;
+      }
+      h[0] = (h[0] + a) >>> 0; h[1] = (h[1] + b) >>> 0; h[2] = (h[2] + c) >>> 0; h[3] = (h[3] + d) >>> 0;
+      h[4] = (h[4] + e) >>> 0; h[5] = (h[5] + f) >>> 0; h[6] = (h[6] + g) >>> 0; h[7] = (h[7] + hh) >>> 0;
+    }
+    const out = new Uint8Array(32);
+    const outView = new DataView(out.buffer);
+    for (let i = 0; i < 8; i += 1) outView.setUint32(i * 4, h[i], false);
+    return out;
+  }
+
+  function hmacSha256Bytes(keyBytes, messageBytes) {
+    const blockSize = 64;
+    const key = keyBytes.length > blockSize ? sha256Bytes(keyBytes) : keyBytes;
+    const innerPad = new Uint8Array(blockSize + messageBytes.length);
+    const outerPad = new Uint8Array(blockSize + 32);
+    for (let i = 0; i < blockSize; i += 1) {
+      const byte = i < key.length ? key[i] : 0;
+      innerPad[i] = byte ^ 0x36;
+      outerPad[i] = byte ^ 0x5c;
+    }
+    innerPad.set(messageBytes, blockSize);
+    outerPad.set(sha256Bytes(innerPad), blockSize);
+    return sha256Bytes(outerPad);
+  }
+
+  async function hmacSha256Base64(secret, message) {
+    const encoder = new TextEncoder();
+    if (window.crypto?.subtle) {
+      const key = await window.crypto.subtle.importKey(
+        "raw",
+        encoder.encode(secret),
+        { name: "HMAC", hash: "SHA-256" },
+        false,
+        ["sign"]
+      );
+      const signature = await window.crypto.subtle.sign("HMAC", key, encoder.encode(message));
+      return bytesToBase64(new Uint8Array(signature));
+    }
+    // 明文 HTTP（局域网地址）下没有 crypto.subtle：用上面的纯 JS 实现，
+    // 结果与 Web Crypto 逐字节一致（tools/test-story-tts-xfyun.cjs 会比对）。
+    return bytesToBase64(hmacSha256Bytes(encoder.encode(secret), encoder.encode(message)));
+  }
+
+  async function buildXfyunAuthUrl(host, path, apiKey, apiSecret) {
+    const date = new Date().toUTCString();
+    // WebSocket 握手是 GET，签名里的请求行必须与之一致。
+    const signatureOrigin = `host: ${host}\ndate: ${date}\nGET ${path} HTTP/1.1`;
+    const signature = await hmacSha256Base64(apiSecret, signatureOrigin);
+    const authorizationOrigin = `api_key="${apiKey}", algorithm="hmac-sha256", headers="host date request-line", signature="${signature}"`;
+    const query = new URLSearchParams({
+      host,
+      date,
+      authorization: utf8ToBase64(authorizationOrigin),
+    });
+    return `wss://${host}${path}?${query.toString()}`;
+  }
+
+  function isXfyunConfigured(xf) {
+    return Boolean(xf && xf.appId && xf.apiKey && xf.apiSecret);
+  }
+
+  function synthesizeXfyunOnline(text, conf) {
+    const xf = conf.xfyun || {};
+    if (!isXfyunConfigured(xf)) {
+      return Promise.reject(new Error("讯飞未配置 AppID / APIKey / APISecret"));
+    }
+    const timeoutMs = Number(xf.timeout || conf.timeout || 60000);
+    const path = "/v2/tts";
+
+    return buildXfyunAuthUrl(xf.host || "tts-api.xfyun.cn", path, xf.apiKey, xf.apiSecret)
+      .then((url) => new Promise((resolve, reject) => {
+        let socket;
+        try {
+          socket = new WebSocket(url);
+        } catch (error) {
+          reject(new Error(`无法建立讯飞连接：${String(error.message || error)}`));
+          return;
+        }
+
+        const pieces = [];
+        let settled = false;
+        const timer = window.setTimeout(() => {
+          done(new Error("讯飞合成超时"));
+        }, timeoutMs);
+
+        function done(error, blob) {
+          if (settled) return;
+          settled = true;
+          window.clearTimeout(timer);
+          try {
+            socket.close();
+          } catch {
+            // 忽略关闭异常
+          }
+          if (error) reject(error);
+          else resolve(blob);
+        }
+
+        socket.onopen = () => {
+          socket.send(JSON.stringify({
+            common: { app_id: xf.appId },
+            business: {
+              aue: "lame",
+              sfl: 1,
+              auf: `audio/L16;rate=${Number(xf.sampleRate) || 16000}`,
+              vcn: xf.vcn || "x4_xiaoyan",
+              tte: "UTF8",
+              speed: Number(xf.speed ?? 50),
+              volume: Number(xf.volume ?? 50),
+              pitch: Number(xf.pitch ?? 50),
+            },
+            data: { status: 2, text: utf8ToBase64(text) },
+          }));
+        };
+
+        socket.onmessage = (event) => {
+          let frame;
+          try {
+            frame = JSON.parse(typeof event.data === "string" ? event.data : "");
+          } catch {
+            done(new Error("讯飞返回了无法解析的数据"));
+            return;
+          }
+          if (Number(frame.code) !== 0) {
+            const hint = String(frame.code) === "11200"
+              ? "（服务或发音人未授权，请到讯飞控制台开通）"
+              : "";
+            done(new Error(`讯飞错误 ${frame.code}：${frame.message || ""}${hint}`));
+            return;
+          }
+          const audio = frame?.data?.audio;
+          if (typeof audio === "string" && audio.length) {
+            pieces.push(decodeBase64Audio(audio));
+          }
+          if (Number(frame?.data?.status) === 2) {
+            if (!pieces.length) {
+              done(new Error("讯飞没有返回音频数据"));
+              return;
+            }
+            done(null, new Blob(pieces, { type: "audio/mpeg" }));
+          }
+        };
+
+        socket.onerror = () => {
+          done(new Error("讯飞连接失败：请检查网络，或 AppID / APIKey / APISecret 是否正确"));
+        };
+
+        socket.onclose = (event) => {
+          if (!settled) {
+            done(new Error(`讯飞连接提前关闭（code=${event.code}）`));
+          }
+        };
+      }));
+  }
+
+  async function speakWithXfyun(text, token, conf, options = {}) {
+    const xf = conf.xfyun || {};
+    const label = `${xf.voiceLabel || xf.vcn || "讯飞音色"}`;
+    try {
+      pushTtsStatus(`[云端·讯飞] 请求中：${label}`, "pending");
+      const blob = await synthesizeXfyunOnline(text, conf);
+      if (token !== activeSpeechToken) return true;
+      pushTtsStatus(`[云端·讯飞] 连接成功：${label}`, "success");
+      await playAudioBlob(blob, token, options.keepActive);
+      return true;
+    } catch (error) {
+      clearActiveAudio();
+      if (token === activeSpeechToken) currentUtterance = null;
+      const message = String(error?.message || error);
+      console.error("[Story TTS] xfyun request failed", error);
+      pushTtsStatus(`云端·讯飞请求失败：${message.slice(0, 120)}`, /未授权|11200|鉴权|签名/i.test(message) ? "error" : "warn");
+      return false;
+    }
+  }
+
   async function speakWithExternal(text, token, engineType, overrides = null, options = {}) {
     const isCloud = engineType === "cloud";
     const conf = overrides || (isCloud ? ttsConfig.cloud : ttsConfig.local);
+    if (isCloud && cloudProvider(conf) === "xfyun") {
+      return speakWithXfyun(text, token, conf, options);
+    }
     const baseUrl = normalizeBaseUrl(conf.baseUrl);
     if (!baseUrl) {
       pushTtsStatus(`${isCloud ? "云端" : "本地"}引擎未配置 Base URL，准备回退浏览器。`, "warn");
@@ -1910,6 +2219,11 @@
   async function fetchExternalAudio(text, token, engineType, overrides = null) {
     const isCloud = engineType === "cloud";
     const conf = overrides || (isCloud ? ttsConfig.cloud : ttsConfig.local);
+    if (isCloud && cloudProvider(conf) === "xfyun") {
+      const blob = await synthesizeXfyunOnline(text, conf);
+      if (token !== null && token !== activeSpeechToken) throw new Error("朗读已停止");
+      return blob;
+    }
     const baseUrl = normalizeBaseUrl(conf.baseUrl);
     if (!baseUrl) throw new Error(`${isCloud ? "云端" : "本地"}引擎未配置 Base URL`);
 
@@ -1954,6 +2268,19 @@
   function externalAudioCacheKey(text) {
     const isCloud = ttsConfig.activeEngine === "cloud";
     const conf = isCloud ? ttsConfig.cloud : ttsConfig.local;
+    if (isCloud && cloudProvider(conf) === "xfyun") {
+      const xf = conf.xfyun || {};
+      return [
+        ttsConfig.activeEngine,
+        "xfyun",
+        xf.host || "",
+        xf.vcn || "",
+        xf.speed ?? "",
+        xf.volume ?? "",
+        xf.pitch ?? "",
+        text,
+      ].join("\u001f");
+    }
     const model = isCloud
       ? (conf.voiceCloneDataUrl && conf.voiceCloneModel ? conf.voiceCloneModel : conf.builtInModel)
       : conf.model;
@@ -2054,14 +2381,22 @@
     isSpeaking = true;
     ttsButton.textContent = "停止";
 
+    const isXfyun = cloudProvider() === "xfyun";
     const originalVoice = ttsConfig.cloud.voice;
+    const originalXfyunVcn = ttsConfig.cloud.xfyun?.vcn;
     const sampleText = "这是故事书语音试听。愿你的航程顺利，选择清晰。";
+    const voiceList = isXfyun ? xfyunPresetVoices.map((voice) => voice.vcn) : cloudPresetVoices;
 
     try {
-      for (const voice of cloudPresetVoices) {
+      for (const voice of voiceList) {
         if (token !== activeSpeechToken) return;
-        ttsConfig.cloud.voice = voice;
-        pushTtsStatus(`试听音色：${voice}`, "info");
+        if (isXfyun) {
+          ttsConfig.cloud.xfyun.vcn = voice;
+          pushTtsStatus(`试听音色：${voice}`, "info");
+        } else {
+          ttsConfig.cloud.voice = voice;
+          pushTtsStatus(`试听音色：${voice}`, "info");
+        }
         const blob = await fetchExternalAudio(sampleText, token, "cloud");
         if (token !== activeSpeechToken) return;
         await playAudioBlob(blob, token, true);
@@ -2073,6 +2408,7 @@
       }
     } finally {
       ttsConfig.cloud.voice = originalVoice;
+      if (isXfyun && ttsConfig.cloud.xfyun) ttsConfig.cloud.xfyun.vcn = originalXfyunVcn;
       if (token === activeSpeechToken) finishSpeech(token);
     }
   }
@@ -2279,28 +2615,79 @@
     // 官方版优先让第二屏看官方扫描图，但扫描图不是每个条目都有（官方 PDF 未收录的
     // 条目就没有）。这时必须退回正文，否则第二屏只剩标题、正文一片空白。
     const imagesOnly = storyVersion === "官方版" && supportsOfficialVersion() && Boolean(scan?.src);
+    // 快照要给 file://（Android 的 APK 内）和 http://（第二屏）两侧用同一份资源路径，
+    // 所以只存应用相对路径：Android 里故事页是 file:///android_asset/web/story/index.html，
+    // 直接存 pathname 会带上 /android_asset/web 前缀，第二屏按 HTTP 根去找就变成
+    // web/android_asset/web/story/…，而真正的资源键只有 story/data/…。
+    let scanPath = "";
+    if (imagesOnly) {
+      try {
+        scanPath = new URL(scan.src, window.location.href).pathname;
+      } catch {
+        scanPath = "";
+      }
+      if (scanPath.startsWith("/android_asset/web/")) scanPath = scanPath.slice("/android_asset/web".length);
+    }
+    const text = imagesOnly ? "" : displayEntry.text || storyText.textContent || "";
     return {
       imagesOnly,
-      images: imagesOnly ? [new URL(scan.src, window.location.href).pathname] : [],
+      images: scanPath ? [scanPath] : [],
+      // 「只看扫描图」时 text 故意留空（第二屏整屏看图），正文另存一份：扫描图仍然取不到
+      // 时第二屏还能退回来显示内容，而不是只剩标题或白屏。其它情况 text 已经带了正文，
+      // 不再重复存一遍。
+      fallbackText: imagesOnly ? displayEntry.text || storyText.textContent || "" : "",
       bookTitle: currentBook()?.title || "故事书",
       section: sectionLabel.textContent || activeEntry.chapter || "",
       id: activeEntry.id || "",
       title: displayEntry.title || "故事段落",
-      text: imagesOnly ? "" : displayEntry.text || storyText.textContent || "",
+      text,
       updatedAt: new Date().toISOString(),
     };
   }
 
   // 第二屏的故事文本靠这条 POST 落到存档里，写失败时第二屏只能停在旧内容或空态，
   // 所以这里既重试也留痕。
+  async function readStorySection() {
+    const response = await fetch(secondScreenSnapshotUrl, { cache: "no-store" });
+    const payload = campaignSession ? campaignSession.accept(await response.json().catch(() => null)) : await response.json().catch(() => null);
+    if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+    storySectionRevision = Math.max(0, Number(payload.revision || 0));
+    return payload;
+  }
+
+  function currentCampaignAccountId() {
+    if (!campaignSession || campaignSession.changed) return "";
+    try {
+      return campaignSession.accountId || "";
+    } catch {
+      return "";
+    }
+  }
+
   function postSecondScreenStorySnapshot(snapshot) {
+    campaignSession?.assertCurrent();
+    const body = {
+      section: "story",
+      state: snapshot,
+      expectedRevision: storySectionRevision,
+    };
+    const accountId = currentCampaignAccountId();
+    if (accountId) body.expectedAccountId = accountId;
     return fetch(secondScreenSnapshotUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ section: "story", state: snapshot }),
-    }).then((response) => {
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return response;
+      body: JSON.stringify(body),
+    }).then(async (response) => {
+      const payload = campaignSession ? campaignSession.accept(await response.json().catch(() => null)) : await response.json().catch(() => null);
+      if (response.status === 409 && payload?.code === "SAVE_CONFLICT" && payload.revision != null) {
+        storySectionRevision = Math.max(0, Number(payload.revision || 0));
+        const error = new Error(payload.error || `HTTP ${response.status}`);
+        error.code = "SAVE_CONFLICT";
+        throw error;
+      }
+      if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+      storySectionRevision = Math.max(0, Number(payload.revision || storySectionRevision));
+      return payload;
     });
   }
 
@@ -2333,23 +2720,35 @@
 
   function scheduleSecondScreenStorySnapshot() {
     window.clearTimeout(secondScreenSnapshotTimer);
-    secondScreenSnapshotTimer = window.setTimeout(async () => {
+    // 每次排任务都换一个定时器句柄，这个句柄同时充当「最新一代」的记号：clearTimeout 只能
+    // 掐掉还没执行的定时器，掐不掉已经醒来、正在等 400ms 重试的那个循环；旧循环必须在每次
+    // 重试前确认自己还是最新任务，否则它会拿旧条目把用户刚切到的条目覆盖回去。
+    const generation = window.setTimeout(async () => {
       const snapshot = buildSecondScreenStorySnapshot();
       if (!snapshot) return;
       // 以前这里把失败整个吞掉：快照写不进存档时第二屏会一直停在旧内容或空态，
       // 看起来就像「官方版没图」。现在重试两次，并把原因留在第二屏开关的提示里。
       for (let attempt = 0; attempt < SECOND_SCREEN_SNAPSHOT_ATTEMPTS; attempt += 1) {
+        if (secondScreenSnapshotTimer !== generation) return;
         try {
           await postSecondScreenStorySnapshot(snapshot);
           clearSecondScreenSnapshotFailure();
           return;
         } catch (error) {
+          if (error?.code === "ACCOUNT_MISMATCH") {
+            reportSecondScreenSnapshotFailure("登录账号已切换，请刷新故事页后再同步第二屏。");
+            return;
+          }
+          if (error?.code === "SAVE_CONFLICT") {
+            try { await readStorySection(); } catch { /* keep retrying with the revision from the 409 */ }
+          }
           const reason = String(error?.message || error);
           if (attempt === SECOND_SCREEN_SNAPSHOT_ATTEMPTS - 1) reportSecondScreenSnapshotFailure(reason);
           else await new Promise((resolve) => window.setTimeout(resolve, 400 * (attempt + 1)));
         }
       }
     }, 120);
+    secondScreenSnapshotTimer = generation;
   }
 
   // 第二屏没为当前账号开启时 PHP 会回 409：以前这里只看 response.ok，界面只会把勾选
@@ -2690,9 +3089,10 @@
     return escapeHtml(value).replace(/`/g, "&#096;");
   }
 
-  function modalField(id, label, value, type = "text", placeholder = "") {
+  // span=2 用于在 3 列网格里让字段占两列
+  function modalField(id, label, value, type = "text", placeholder = "", span = 1) {
     return `
-      <label class="tts-modal-field">
+      <label class="tts-modal-field${span === 2 ? " span-2" : ""}">
         <span>${label}</span>
         <input id="${id}" type="${type}" value="${escapeAttribute(value || "")}" placeholder="${escapeAttribute(placeholder)}">
       </label>
@@ -2701,67 +3101,144 @@
 
   function modalTextArea(id, label, value, placeholder = "", rows = 3) {
     return `
-      <label class="tts-modal-field wide">
+      <label class="tts-modal-field">
         <span>${label}</span>
         <textarea id="${id}" rows="${rows}" placeholder="${escapeAttribute(placeholder)}">${escapeHtml(value || "")}</textarea>
       </label>
     `;
   }
 
+  function modalSelect(id, label, options, current) {
+    const items = options.map((item) => {
+      const selected = item.id === current ? " selected" : "";
+      return `<option value="${escapeAttribute(item.id)}"${selected}>${escapeHtml(item.label)}</option>`;
+    }).join("");
+    return `
+      <label class="tts-modal-field">
+        <span>${label}</span>
+        <select id="${id}">${items}</select>
+      </label>
+    `;
+  }
+
+  function modalGroupTitle(text) {
+    return `<div class="tts-group-title">${escapeHtml(text)}</div>`;
+  }
+
+  function modalGrid(columns, fields) {
+    return `<div class="tts-field-grid cols-${columns}">${fields}</div>`;
+  }
+
   function openTtsConfigModal() {
     const cloud = ttsConfig.cloud;
     const local = ttsConfig.local;
+    const xf = cloud.xfyun || defaultTtsConfig.cloud.xfyun;
+    const isXfyun = cloudProvider(cloud) === "xfyun";
     ttsUi.overlay.hidden = false;
     ttsUi.overlay.innerHTML = `
-      <div class="tts-modal" role="dialog" aria-modal="true" aria-label="配置外部 TTS 引擎">
+      <div class="tts-modal" role="dialog" aria-modal="true" aria-label="配置朗读引擎">
         <header class="tts-modal-head">
           <div>
-            <h3>配置外部 TTS 引擎</h3>
-            <p>本地部署走 OpenAI audio/speech 风格接口；云端 API 走 Arkham 脚本里的 chat/completions 音频返回格式。</p>
+            <h3>配置朗读引擎</h3>
+            <p>云端 API 支持 MIMO 与讯飞在线语音合成；本地部署走 OpenAI audio/speech 风格接口。</p>
           </div>
-          <button id="ttsModalClose" type="button">关闭</button>
+          <button id="ttsModalClose" type="button" class="tts-btn-close" aria-label="关闭">✕</button>
         </header>
 
-        <section class="tts-modal-section">
-          <div class="tts-modal-title">
-            <strong>云端 API 配置</strong>
-            <div>
-              <button id="ttsPreviewVoices" type="button">试听所有音色</button>
-              <button id="ttsCloneImport" type="button">导入克隆音色</button>
-              <button id="ttsCloneClear" type="button">清除克隆音色</button>
+        <div class="tts-modal-body">
+          <section class="tts-card">
+            <div class="tts-card-head">
+              <h4>云端 API</h4>
+              <span class="tts-card-hint">走公网接口，可随时朗读任意段落</span>
             </div>
-          </div>
-          <div class="tts-modal-grid">
-            ${modalField("ttsCloudBase", "Base URL", cloud.baseUrl, "text", "https://example.com/v1")}
-            ${modalTextArea("ttsCloudKey", "API Keys", cloud.apiKey, "sk-xxx\\nsk-yyy")}
-            ${modalField("ttsCloudModel", "内置模型", cloud.builtInModel, "text", "mimo-v2.5-tts")}
-            ${modalField("ttsCloudCloneModel", "克隆模型", cloud.voiceCloneModel, "text", "mimo-v2.5-tts-voiceclone")}
-            ${modalField("ttsCloudVoice", "预设音色", cloud.voice, "text", "voice name")}
-            ${modalField("ttsCloudFormat", "音频格式", cloud.audioFormat || "wav", "text", "wav")}
-            ${modalField("ttsCloudTimeout", "超时 ms", cloud.timeout, "number", "120000")}
-            <label class="tts-modal-field wide">
-              <span>风格提示词</span>
-              <textarea id="ttsCloudPrompt" rows="2" placeholder="例如：冷静、中速、带一点故事感。">${escapeHtml(cloud.userMessage || "")}</textarea>
-            </label>
-          </div>
-          <button id="ttsCloudTest" type="button" class="tts-test-btn">测试云端连接并试听</button>
-        </section>
+            <div class="tts-card-body">
+              ${modalGrid(2, modalSelect("ttsCloudProvider", "服务商", cloudProviders, cloudProvider(cloud)))}
 
-        <section class="tts-modal-section">
-          <div class="tts-modal-title"><strong>本地部署配置</strong></div>
-          <div class="tts-modal-grid">
-            ${modalField("ttsLocalBase", "Base URL", local.baseUrl, "text", "http://127.0.0.1:8000/v1")}
-            ${modalTextArea("ttsLocalKey", "API Keys", local.apiKey, "sk-none")}
-            ${modalField("ttsLocalModel", "模型名称", local.model, "text", "tts-1")}
-            ${modalField("ttsLocalVoice", "发音人", local.voice, "text", "alloy")}
-            ${modalField("ttsLocalTimeout", "超时 ms", local.timeout, "number", "60000")}
-            <label class="tts-modal-field wide">
-              <span>风格提示词</span>
-              <textarea id="ttsLocalPrompt" rows="2" placeholder="本地服务支持 prompt 时会生效。">${escapeHtml(local.userMessage || "")}</textarea>
-            </label>
-          </div>
-          <button id="ttsLocalTest" type="button" class="tts-test-btn">测试本地连接并试听</button>
-        </section>
+              <div id="ttsMimoFields" class="tts-group"${isXfyun ? " hidden" : ""}>
+                ${modalGroupTitle("连接")}
+                ${modalGrid(2, [
+                  modalField("ttsCloudBase", "Base URL", cloud.baseUrl, "text", "https://example.com/v1"),
+                  modalField("ttsCloudTimeout", "超时 ms", cloud.timeout, "number", "120000"),
+                ].join(""))}
+                ${modalGrid(1, modalTextArea("ttsCloudKey", "API Keys（每行一个）", cloud.apiKey, "sk-xxx\\nsk-yyy", 2))}
+
+                ${modalGroupTitle("模型")}
+                ${modalGrid(2, [
+                  modalField("ttsCloudModel", "内置模型", cloud.builtInModel, "text", "mimo-v2.5-tts"),
+                  modalField("ttsCloudCloneModel", "克隆模型", cloud.voiceCloneModel, "text", "mimo-v2.5-tts-voiceclone"),
+                ].join(""))}
+
+                ${modalGroupTitle("音色")}
+                ${modalGrid(2, [
+                  modalField("ttsCloudVoice", "预设音色", cloud.voice, "text", "voice name"),
+                  modalField("ttsCloudFormat", "音频格式", cloud.audioFormat || "wav", "text", "wav"),
+                ].join(""))}
+                ${modalGrid(1, modalTextArea("ttsCloudPrompt", "风格提示词", cloud.userMessage, "例如：冷静、中速、带一点故事感。", 2))}
+              </div>
+
+              <div id="ttsXfyunFields" class="tts-group"${isXfyun ? "" : " hidden"}>
+                ${modalGroupTitle("账号")}
+                ${modalGrid(3, [
+                  modalField("ttsXfyunAppId", "AppID", xf.appId, "text", "控制台 AppID"),
+                  modalField("ttsXfyunKey", "APIKey", xf.apiKey, "text", "32 位字符串"),
+                  modalField("ttsXfyunSecret", "APISecret", xf.apiSecret, "text", "32 位字符串"),
+                ].join(""))}
+
+                ${modalGroupTitle("音色与语调")}
+                ${modalGrid(2, [
+                  `<label class="tts-modal-field">
+                     <span>发音人</span>
+                     <input id="ttsXfyunVoice" type="text" list="ttsXfyunVoiceList" value="${escapeAttribute(xf.vcn || "")}" placeholder="x4_lingbosong_bad_talk">
+                     <datalist id="ttsXfyunVoiceList">
+                       ${xfyunPresetVoices.map((voice) => `<option value="${escapeAttribute(voice.vcn)}">${escapeHtml(voice.label)}</option>`).join("")}
+                     </datalist>
+                   </label>`,
+                  modalField("ttsXfyunSampleRate", "采样率", xf.sampleRate || 16000, "number", "16000"),
+                ].join(""))}
+                ${modalGrid(3, [
+                  modalField("ttsXfyunRate", "语速 0-100", xf.speed ?? 50, "number", "50"),
+                  modalField("ttsXfyunVolume", "音量 0-100", xf.volume ?? 50, "number", "50"),
+                  modalField("ttsXfyunPitch", "音调 0-100", xf.pitch ?? 50, "number", "50"),
+                ].join(""))}
+                ${modalGrid(2, modalField("ttsXfyunTimeout", "超时 ms", xf.timeout || 60000, "number", "60000"))}
+                <p class="tts-note">浏览器只能走 WebSocket 版。发音人需先在讯飞控制台开通，未开通会返回 11200。</p>
+              </div>
+            </div>
+            <div class="tts-card-actions">
+              <button id="ttsPreviewVoices" type="button">试听所有音色</button>
+              <button id="ttsCloneImport" type="button" class="mimo-only"${isXfyun ? " hidden" : ""}>导入克隆音色</button>
+              <button id="ttsCloneClear" type="button" class="mimo-only"${isXfyun ? " hidden" : ""}>清除克隆音色</button>
+              <span class="tts-spacer"></span>
+              <button id="ttsCloudTest" type="button" class="tts-btn-primary">测试连接并试听</button>
+            </div>
+          </section>
+
+          <section class="tts-card">
+            <div class="tts-card-head">
+              <h4>本地部署</h4>
+              <span class="tts-card-hint">指向自建服务，使用 OpenAI audio/speech 风格接口</span>
+            </div>
+            <div class="tts-card-body">
+              ${modalGroupTitle("连接")}
+              ${modalGrid(2, [
+                modalField("ttsLocalBase", "Base URL", local.baseUrl, "text", "http://127.0.0.1:8000/v1"),
+                modalField("ttsLocalTimeout", "超时 ms", local.timeout, "number", "60000"),
+              ].join(""))}
+              ${modalGrid(1, modalTextArea("ttsLocalKey", "API Keys（每行一个）", local.apiKey, "sk-none", 2))}
+
+              ${modalGroupTitle("模型与音色")}
+              ${modalGrid(2, [
+                modalField("ttsLocalModel", "模型名称", local.model, "text", "tts-1"),
+                modalField("ttsLocalVoice", "发音人", local.voice, "text", "alloy"),
+              ].join(""))}
+              ${modalGrid(1, modalTextArea("ttsLocalPrompt", "风格提示词", local.userMessage, "本地服务支持 prompt 时会生效。", 2))}
+            </div>
+            <div class="tts-card-actions">
+              <span class="tts-spacer"></span>
+              <button id="ttsLocalTest" type="button" class="tts-btn-primary">测试连接并试听</button>
+            </div>
+          </section>
+        </div>
 
         <footer class="tts-modal-foot">
           <div>
@@ -2779,6 +3256,7 @@
     };
     const readModalConfig = () => ({
       cloud: {
+        provider: document.querySelector("#ttsCloudProvider").value || "mimo",
         baseUrl: document.querySelector("#ttsCloudBase").value.trim(),
         apiKey: document.querySelector("#ttsCloudKey").value.trim(),
         builtInModel: document.querySelector("#ttsCloudModel").value.trim(),
@@ -2788,6 +3266,19 @@
         userMessage: document.querySelector("#ttsCloudPrompt").value.trim(),
         audioFormat: document.querySelector("#ttsCloudFormat").value.trim() || "wav",
         timeout: Number(document.querySelector("#ttsCloudTimeout").value || 120000),
+        xfyun: {
+          appId: document.querySelector("#ttsXfyunAppId").value.trim(),
+          apiKey: document.querySelector("#ttsXfyunKey").value.trim(),
+          apiSecret: document.querySelector("#ttsXfyunSecret").value.trim(),
+          vcn: document.querySelector("#ttsXfyunVoice").value.trim() || "x4_lingbosong_bad_talk",
+          voiceLabel: xfyunPresetVoices.find((voice) => voice.vcn === document.querySelector("#ttsXfyunVoice").value.trim())?.label || "",
+          host: ttsConfig.cloud.xfyun?.host || "tts-api.xfyun.cn",
+          sampleRate: Number(document.querySelector("#ttsXfyunSampleRate").value || 16000),
+          speed: Number(document.querySelector("#ttsXfyunRate").value || 50),
+          volume: Number(document.querySelector("#ttsXfyunVolume").value || 50),
+          pitch: Number(document.querySelector("#ttsXfyunPitch").value || 50),
+          timeout: Number(document.querySelector("#ttsXfyunTimeout").value || 60000),
+        },
       },
       local: {
         baseUrl: document.querySelector("#ttsLocalBase").value.trim(),
@@ -2797,6 +3288,16 @@
         userMessage: document.querySelector("#ttsLocalPrompt").value.trim(),
         timeout: Number(document.querySelector("#ttsLocalTimeout").value || 60000),
       },
+    });
+
+    // 切换服务商时显示对应的配置区；克隆音色按钮只对 MIMO 有意义。
+    document.querySelector("#ttsCloudProvider").addEventListener("change", (event) => {
+      const xfyun = event.target.value === "xfyun";
+      document.querySelector("#ttsMimoFields").hidden = xfyun;
+      document.querySelector("#ttsXfyunFields").hidden = !xfyun;
+      document.querySelectorAll(".mimo-only").forEach((element) => {
+        element.hidden = xfyun;
+      });
     });
 
     document.querySelector("#ttsModalClose").addEventListener("click", close);
@@ -2874,6 +3375,25 @@
       });
     } else if (engine === "cloud") {
       voices = [];
+      if (cloudProvider() === "xfyun") {
+        const current = ttsConfig.cloud.xfyun?.vcn || "";
+        xfyunPresetVoices.forEach((voice) => {
+          const option = document.createElement("option");
+          option.value = voice.vcn;
+          option.textContent = `${voice.label}（${voice.vcn}）`;
+          if (voice.vcn === current) option.selected = true;
+          ttsVoice.appendChild(option);
+        });
+        // 控制台里开通了别的发音人时也能直接填。
+        if (current && !xfyunPresetVoices.some((voice) => voice.vcn === current)) {
+          const option = document.createElement("option");
+          option.value = current;
+          option.textContent = current;
+          option.selected = true;
+          ttsVoice.appendChild(option);
+        }
+        return;
+      }
       cloudPresetVoices.forEach((v) => {
         const option = document.createElement("option");
         option.value = v;
@@ -3164,7 +3684,9 @@
       await ensureStoryAudioManifest(true);
     } else if (engine === "cloud") {
       const val = ttsVoice.value;
-      if (val && val !== "__clone__") {
+      if (cloudProvider() === "xfyun") {
+        if (val) ttsConfig.cloud.xfyun.vcn = val;
+      } else if (val && val !== "__clone__") {
         ttsConfig.cloud.voice = val;
         ttsConfig.cloud.voiceCloneDataUrl = "";
       }
@@ -3228,4 +3750,5 @@
 
   init();
   refreshSecondScreenStoryModeToggle();
+  void readStorySection().catch(() => {});
 })();

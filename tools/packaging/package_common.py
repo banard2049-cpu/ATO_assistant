@@ -17,18 +17,39 @@ TOOLS_ROOT = PROJECT_ROOT / "tools"
 CACHE_ROOT = TOOLS_ROOT / ".packaging-cache"
 EXPORT_ROOT = PROJECT_ROOT / "export"
 
+# 本地私有产物：这些文件被 .gitignore 留在工作目录里（*.atopack、/tmp/、/logs/ 等），
+# 但打包走的是 os.walk()、不看 Git 清单，所以必须在这里独立排除。分成两组常量是为了
+# 让 audit_export_tree() 能用同一份清单独立复核：即使排除规则被绕过，审计也要报错。
+#
+# 私藏资料包（使用者自备的素材包）及其写一半的 .partial 副本：按扩展名封杀，不按
+# 「personal.*」这类文件名，改名后仍挡得住，也不会误伤同名的程序文件。
+PRIVATE_PACK_SUFFIXES = (".atopack", ".atopack.partial")
+# 顶层本地草稿 / 运行期目录：tmp/ 放一次性排查草稿（router.php 也把 tmp 当私有目录，
+# 直接拒绝访问），logs/ 与 log/ 放运行日志，.claude/ 是同类的本机工具残留目录
+# （与已在 BLOCKED_TOP 里的 .agents/.codex 同类）。
+LOCAL_SCRATCH_TOP = {".claude", "log", "logs", "tmp"}
+# 编辑器 / 操作系统 / 运行时残留：.ds_store 原已在文件名表里，这里补齐同类的 Windows
+# 版文件与 Python 字节码缓存目录（.gitignore 的「Local/editor/runtime files」一节）。
+LOCAL_SCRATCH_LEAVES = {"__pycache__", "desktop.ini", "thumbs.db"}
+
 BLOCKED_TOP = {
     ".git", ".github", ".agents", ".codex", ".idea", ".vscode",
     "asset-studio", "dist", "export", "release", "releases", "node_modules",
-}
+    # tests/ 是仓库根目录的开发测试（agent 回归测试同样住在这里），不是运行时要用的
+    # 东西：它们既没有理由进便携版 ZIP / Docker 镜像，也没有理由进 APK。
+    "tests",
+} | LOCAL_SCRATCH_TOP
 BLOCKED_LEAVES = {
     ".ds_store", ".gitattributes", ".gitignore", "dockerfile",
     "docker-compose.yml", "docker-compose.yaml",
-}
+    # NAS 变体与上面两份 compose 同类：都是本机部署脚本，不该随包发布
+    # （.gitignore 不管它，它是受跟踪文件，只能在这里独立封杀）。
+    "docker-compose.nas.yml",
+} | LOCAL_SCRATCH_LEAVES
 BLOCKED_SUFFIXES = (
     ".backup", ".bak", ".tmp", ".log", ".lock", ".atoback",
     ".atoback.partial",
-)
+) + PRIVATE_PACK_SUFFIXES
 
 # 主控台 BGM：程序（assets/bgm/*.js）随包发布，音频文件由使用者自备，
 # 通过 asset-studio 的资料包或手动放置安装，不进便携版 / Docker / APK。
@@ -140,6 +161,17 @@ def audit_export_tree(root: Path) -> None:
             raise RuntimeError(f"导出内容包含 tools：{relative}")
         if "data" in parts and path.is_file():
             raise RuntimeError(f"导出内容的 data 不为空：{relative}")
+        # 私有资料包与本地草稿的独立复核：判定用的是上面那份常量，而不是 copy 时的
+        # 结果，所以即使排除规则被绕过（手工拷进 stage、以后有人放宽 BLOCKED_*），
+        # 产物审计一样会失败，不必依赖 .gitignore 或人工检查。
+        # 注意这里不复用 BLOCKED_LEAVES/BLOCKED_SUFFIXES：Docker 包根目录本来就带
+        # Dockerfile / compose.yaml，而 Portable 包会另行加入 runtime/，跨阶段复核会误报。
+        if parts[0] in LOCAL_SCRATCH_TOP:
+            raise RuntimeError(f"导出内容包含本地草稿目录：{relative}")
+        if parts[-1] in LOCAL_SCRATCH_LEAVES:
+            raise RuntimeError(f"导出内容包含本地临时文件：{relative}")
+        if path.is_file() and any(parts[-1].endswith(suffix) for suffix in PRIVATE_PACK_SUFFIXES):
+            raise RuntimeError(f"导出内容包含私有资料包：{relative}")
 
 
 def download(url: str, destination: Path) -> Path:

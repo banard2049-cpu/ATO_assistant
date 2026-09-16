@@ -911,6 +911,42 @@ h2 {
   padding: 6px 12px 10px;
 }
 
+/* 收起后整块只剩一个按钮：标题和「引擎配置」都藏起来 */
+.tts-status.collapsed {
+  width: auto;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.tts-status.collapsed .tts-status-head {
+  justify-content: flex-end;
+  padding: 0;
+  border-bottom: 0;
+}
+
+.tts-status.collapsed .tts-status-head strong,
+.tts-status.collapsed .tts-config-btn {
+  display: none;
+}
+
+.tts-status.collapsed .tts-status-actions {
+  gap: 0;
+}
+
+.tts-status.collapsed .tts-status-actions button {
+  min-height: 34px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: #27231d;
+  box-shadow: 0 10px 28px rgba(24, 20, 14, 0.3);
+}
+
+.tts-status.collapsed .tts-status-actions button:hover {
+  background: #3a3227;
+}
+
 .tts-status-row {
   display: grid;
   grid-template-columns: 62px 1fr;
@@ -1181,11 +1217,15 @@ h2 {
 }
 
 .tts-modal {
-  width: min(760px, 96vw);
-  max-height: 90vh;
-  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  width: min(880px, 96vw);
+  max-height: 88vh;
+  /* 移动端地址栏收起时 vh 偏大，支持的浏览器用 dvh 更准 */
+  max-height: 88dvh;
+  overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 14px;
   background: var(--panel);
   color: var(--ink);
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.34);
@@ -1196,63 +1236,134 @@ h2 {
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  padding: 16px 18px;
-  background: #27231d;
+  flex: none;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #2b2620, #1c1813);
   color: #f8f0df;
 }
 
 .tts-modal-head h3 {
   margin: 0;
-  font-size: 18px;
+  font-size: 17px;
 }
 
 .tts-modal-head p {
-  margin-top: 5px;
-  color: #cfc3ae;
+  margin: 6px 0 0;
+  max-width: 58ch;
+  color: #b9ac95;
   font-size: 12px;
-  line-height: 1.45;
+  line-height: 1.5;
 }
 
-.tts-modal-head button {
+.tts-btn-close {
+  flex: none;
+  width: 32px;
   min-height: 32px;
-  background: #5d5141;
+  padding: 0;
+  border: 1px solid #4d4437;
+  border-radius: 8px;
+  background: transparent;
+  color: #cfc3ae;
+  font-size: 14px;
+  line-height: 1;
 }
 
-.tts-modal-section {
-  padding: 16px 18px;
+.tts-btn-close:hover {
+  background: #3a3227;
+  color: #ffffff;
+}
+
+.tts-modal-body {
+  display: grid;
+  /* 卡片带 overflow:hidden，作为网格项的自动最小尺寸是 0，会被压缩到撑不出滚动条。
+     显式按内容定高，让内容溢出到滚动区。 */
+  grid-auto-rows: max-content;
+  align-content: start;
+  gap: 16px;
+  /* flex 子项默认 min-height:auto，不写 0 就撑破弹窗、滚动条不出现 */
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 18px 24px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.tts-card {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fffefb;
+}
+
+.tts-card-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--line);
+  background: #faf6ee;
 }
 
-.tts-modal-title {
+.tts-card-head h4 {
+  margin: 0;
+  color: var(--accent-strong);
+  font-size: 14px;
+}
+
+.tts-card-hint {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.tts-card-body {
+  display: grid;
+  gap: 16px;
+  padding: 16px;
+}
+
+.tts-group {
+  display: grid;
+  gap: 12px;
+}
+
+.tts-group[hidden] {
+  display: none;
+}
+
+.tts-group-title {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
 }
 
-.tts-modal-title div,
-.tts-modal-foot div {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+.tts-group-title::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
 }
 
-.tts-modal-title button,
-.tts-modal-foot button,
-.tts-test-btn {
-  min-height: 34px;
-  padding: 0 12px;
-  border: 1px solid var(--line);
-  background: #ffffff;
-  color: var(--accent);
-  font-size: 12px;
-}
-
-.tts-modal-grid {
+.tts-field-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+}
+
+.tts-field-grid.cols-1 {
+  grid-template-columns: 1fr;
+}
+
+.tts-field-grid.cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.tts-field-grid.cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .tts-modal-field {
@@ -1263,29 +1374,96 @@ h2 {
   font-weight: 700;
 }
 
-.tts-modal-field.wide {
-  grid-column: 1 / -1;
+.tts-modal-field.span-2 {
+  grid-column: span 2;
 }
 
 .tts-modal-field input,
+.tts-modal-field select,
 .tts-modal-field textarea {
   width: 100%;
+  min-height: 38px;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: 8px;
   background: #ffffff;
   color: var(--ink);
-  padding: 9px 10px;
+  padding: 8px 11px;
   font: inherit;
   font-weight: 400;
 }
 
 .tts-modal-field textarea {
+  min-height: 64px;
   resize: vertical;
+  line-height: 1.5;
 }
 
-.tts-test-btn {
-  margin-top: 12px;
+.tts-modal-field input:focus,
+.tts-modal-field select:focus,
+.tts-modal-field textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(15, 107, 95, 0.14);
+}
+
+.tts-note {
+  margin: 0;
+  padding: 10px 12px;
+  border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  background: #f2f8f6;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.55;
+}
+
+.tts-card-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--line);
+  background: #faf6ee;
+}
+
+.tts-spacer {
+  flex: 1;
+}
+
+.tts-card-actions button,
+.tts-modal-foot button {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.tts-card-actions button:hover,
+.tts-modal-foot button:hover {
+  border-color: var(--accent);
+  background: #f2f8f6;
+}
+
+/* 这些按钮会随服务商切换隐藏 */
+.tts-card-actions button[hidden] {
+  display: none;
+}
+
+.tts-btn-primary {
+  border-color: var(--accent);
   background: var(--accent);
+  color: #ffffff;
+}
+
+.tts-card-actions .tts-btn-primary:hover,
+.tts-modal-foot button#ttsSaveConfig:hover {
+  background: var(--accent-strong);
   color: #ffffff;
 }
 
@@ -1294,14 +1472,40 @@ h2 {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 16px 18px;
+  flex: none;
+  padding: 14px 24px;
+  border-top: 1px solid var(--line);
+  background: #faf6ee;
+}
+
+.tts-modal-foot > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 #ttsSaveConfig {
-  border: 0;
+  border-color: var(--accent);
   background: var(--accent);
   color: #ffffff;
   font-weight: 800;
+}
+
+@media (max-width: 720px) {
+  .tts-modal-body,
+  .tts-modal-head,
+  .tts-modal-foot {
+    padding-inline: 16px;
+  }
+
+  .tts-field-grid.cols-2,
+  .tts-field-grid.cols-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .tts-modal-field.span-2 {
+    grid-column: auto;
+  }
 }
 
 .link-chip {

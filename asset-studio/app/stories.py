@@ -78,6 +78,8 @@ def split_segments(text: str, chapter_key: str, chapter_title: str) -> list[dict
     if not segments:
         paragraphs = [part.strip() for part in re.split(r"\n\s*\n", text) if part.strip()]
         segments = [{"entry_number": str(index + 1), "title": "", "body_lines": [part]} for index, part in enumerate(paragraphs)]
+        # 未找到编号时，整篇文本已经按段落到各条目；继续保留前言会把全文再重复一次
+        preface = []
     if preface:
         segments.insert(0, {"entry_number": "前言", "title": chapter_title, "body_lines": preface})
     output = []

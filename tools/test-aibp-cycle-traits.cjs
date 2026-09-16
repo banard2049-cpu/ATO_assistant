@@ -6,7 +6,11 @@ const vm = require("node:vm");
 
 const root = path.join(__dirname, "..");
 const source = fs.readFileSync(path.join(root, "aibp", "index.html"), "utf8");
-const match = source.match(/const cycleTraitCards = (\[[\s\S]*?\n    \]);\n    const tokenBasePath/);
+// aibp/index.html 是 CRLF 换行，正则里的换行必须写成 \r?\n：早先的 \n 版本永远匹配
+// 不上（源文件里是 "];\r\n    const tokenBasePath"），assert 直接抛错把整个文件掐死，
+// 下面四个用例一个都没跑过 —— 于是这条回归测试长期是「哑巴测试」。
+// 收尾锚在数组自己的 "\n    ];  + const tokenBasePath" 上，不会误抓到别的数组。
+const match = source.match(/const cycleTraitCards = (\[[\s\S]*?\r?\n    \]);\r?\n    const tokenBasePath/);
 
 assert.ok(match, "cycleTraitCards should be present in aibp/index.html");
 const cards = JSON.parse(JSON.stringify(vm.runInNewContext(match[1])));

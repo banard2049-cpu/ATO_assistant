@@ -13,7 +13,11 @@ docker pull "$image"
 # compose 只把「本地素材」挂进容器，程序文件（含第二屏的 index.html / app.js）全部由镜像
 # 提供 —— 这样 docker compose pull 才能完整更新。这里先把挂载点建好：目录 Docker 会自动
 # 创建，单文件不行，见下面的占位底图。
-mkdir -p app/aibp/ps app/assets/exploration-cards app/assets/story-doom-cards \
+# AIBP 卡图：ps/ 整棵挂进容器（宿主机目录就是使用者投放卡图的位置，图片和程序数据同级，
+# 拆开挂会让图消失），程序数据由镜像里的 /opt/ato/aibp-ps-program 在启动时补回，所以这里
+# 只要建出这一个目录。
+mkdir -p app/aibp/ps \
+  app/assets/exploration-cards app/assets/story-doom-cards \
   app/assets/bgm/audio app/hero/assets app/map/images app/map/tokens app/record/assets \
   app/ss/terrain app/ss/terrain-cards app/story/images app/story/data app/technology/images
 

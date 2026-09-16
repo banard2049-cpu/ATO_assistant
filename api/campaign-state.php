@@ -20,6 +20,7 @@ ini_set('session.gc_maxlifetime', (string) $cookieLifetime);
 // login session was silently dropped.  Pin the portable session directory when
 // it exists: session storage must not depend on how the site was launched.
 $sessionDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'sessions';
+if (!is_dir($sessionDir)) @mkdir($sessionDir, 0770, true);
 if (is_dir($sessionDir) && is_writable($sessionDir)) {
   session_save_path($sessionDir);
 }
@@ -39,16 +40,57 @@ $allowedSections = ['dashboard', 'map', 'record', 'technology', 'heroes', 'aibp'
 $dataDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'data';
 $usersFile = $dataDir . DIRECTORY_SEPARATOR . 'ato-users.json';
 $secondScreensFile = $dataDir . DIRECTORY_SEPARATOR . 'ato-second-screens.json';
-$maxBytes = 1024 * 1024 * 8;
+// 必须比 php.ini 的 post_max_size（默认 8M）小：请求体一旦超过 post_max_size，
+// PHP 在脚本运行之前就把正文丢掉了（php://input 变空，还会往响应里插一段 HTML
+// 警告），脚本自己看不到超大请求，只能在读正文之前按 CONTENT_LENGTH 判掉。
+$maxBytes = 1024 * 1024 * 6;
 $backupCount = 10;
 
+function release_lock(): void {
+  $handle = $GLOBALS['atoLockHandle'] ?? null;
+  $GLOBALS['atoLockHandle'] = null;
+  if (!$handle) return;
+  flock($handle, LOCK_UN);
+  fclose($handle);
+}
+
 function respond(int $status, array $payload): void {
+  release_lock();
   http_response_code($status);
   echo json_encode(
     $payload,
     JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE
   );
   exit;
+}
+
+register_shutdown_function(static function (): void {
+  release_lock();
+});
+
+// 账号文件是「整文件读—改—写」：写入时的原子 rename 只保护读者，两个进程同时
+// 注册会各自读到旧内容再写回，后写的那次把先写的账号整个盖掉（实测 24 个并发注册
+// 只留下 14 个，被盖掉的账号永久登录不上）。所以改动之前必须先拿独占锁，并在锁内
+// 重新读一遍。锁句柄走 $GLOBALS['atoLockHandle']，respond() 和 shutdown 回调都会释放。
+function lock_store(string $file, string $error): void {
+  $handle = fopen($file . '.lock', 'c');
+  if (!$handle || !flock($handle, LOCK_EX)) {
+    if ($handle) fclose($handle);
+    respond(500, ['ok' => false, 'error' => $error]);
+  }
+  $GLOBALS['atoLockHandle'] = $handle;
+}
+
+// 超过 post_max_size 的请求体会被 PHP 在脚本运行前丢掉，之后读 php://input 只会
+// 得到空串，再往下走就会误报成「正文不是 JSON」甚至 AUTH_REQUIRED。先按
+// CONTENT_LENGTH 判一次，明确回 413。（PHP 那段 request-startup 警告脚本管不到，
+// 生产 ini 里 display_errors=Off 时本来就不会输出。）
+if ((int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > $maxBytes) {
+  respond(413, [
+    'ok' => false,
+    'code' => 'PAYLOAD_TOO_LARGE',
+    'error' => 'Save payload is too large.',
+  ]);
 }
 
 function default_campaign(): array {
@@ -102,25 +144,12 @@ function write_json_file(string $file, array $value): void {
   flock($handle, LOCK_UN);
   fclose($handle);
 
-  // POSIX rename() atomically replaces an existing destination.  Windows
-  // PHP, however, refuses to rename over an existing file, which made every
-  // subsequent save (including registering another account) fail with HTTP
-  // 500 in the portable build. Keep the atomic path where possible and
-  // fall back to copy() on Windows.
-  $renamed = false;
-  if ($written !== false && $written >= strlen($json)) {
-    $renamed = @rename($tempFile, $file);
-    if (!$renamed && DIRECTORY_SEPARATOR === '\\') {
-      // copy() replaces an existing file on Windows and also handles builds
-      // where rename is blocked by antivirus/indexing.  Keep the temporary
-      // file until the copy succeeds, then clean it up.
-      if (@copy($tempFile, $file)) {
-        @unlink($tempFile);
-        $renamed = true;
-      }
-    }
-  }
-  if (!$renamed) {
+  // 同目录内的 rename() 是原子替换：读者拿到的要么是上一份完整内容，要么是新写的
+  // 完整内容。Windows 上 rename() 覆盖已存在的文件同样成功（本机 PHP 8.4 实测），
+  // 只有目标文件正好被别人打开（共享冲突）时才会失败。那种失败绝不能退回 copy()：
+  // copy() 会原地截断并重写正在使用中的存档，并发读者可能读到半个文件，磁盘写满时
+  // 连上一份存档也一起毁掉。写不进去就明确报错，让调用方重试。
+  if ($written === false || $written < strlen($json) || !@rename($tempFile, $file)) {
     @unlink($tempFile);
     respond(500, ['ok' => false, 'error' => 'Could not write JSON.']);
   }
@@ -174,7 +203,7 @@ function request_is_https(): bool {
   return $forwardedProto === 'https' || (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
 }
 
-function second_screen_urls(): array {
+function second_screen_urls(string $token): array {
   $scheme = request_is_https() ? 'https' : 'http';
   $forwardedHost = trim(explode(',', (string) ($_SERVER['HTTP_X_FORWARDED_HOST'] ?? ''))[0]);
   $hostHeader = $forwardedHost !== '' ? $forwardedHost : (string) ($_SERVER['HTTP_HOST'] ?? '127.0.0.1:8793');
@@ -198,10 +227,27 @@ function second_screen_urls(): array {
     $hosts[] = $hostname . '.local';
   }
   $hosts = array_values(array_unique($hosts));
-  $path = second_screen_path();
+  // 网址里必须带上开启第二屏时生成的随机 token：第二屏返回的是账号的存档内容，
+  // 匿名访问光凭这个地址不该拿得到。
+  $path = second_screen_path() . ($token !== '' ? '?token=' . rawurlencode($token) : '');
   return array_map(static function (string $host) use ($scheme, $portSuffix, $path): string {
     return $scheme . '://' . $host . $portSuffix . $path;
   }, $hosts);
+}
+
+// 第二屏页面（ss/app.js）从自己的网址里取出 token，之后每次请求都附在 query 上；
+// 地图模式渲染在 ss 内嵌的 map/index.html 里，那份前端不归本次改动管、只会请求裸
+// 地址，所以第二屏页面同时把 token 写进同源 Cookie 作为兜底。两处都按 hash_equals 比对。
+function second_screen_request_token(): string {
+  $token = $_GET['token'] ?? null;
+  if (!is_string($token) || trim($token) === '') $token = $_COOKIE['ato_second_screen_token'] ?? '';
+  return is_string($token) ? trim($token) : '';
+}
+
+function second_screen_token_matches(string $expected): bool {
+  if ($expected === '') return false;
+  $provided = second_screen_request_token();
+  return $provided !== '' && hash_equals($expected, $provided);
 }
 
 function public_second_screen_payload(array $campaign, array $screenEntry = []): array {
@@ -332,7 +378,10 @@ function campaign_game_day(array $campaign): array {
 function campaign_backup_component(string $value): string {
   $component = trim((string) preg_replace('/[^A-Za-z0-9_-]+/', '-', $value), '-');
   if ($component === '') $component = 'value';
-  $needsHash = $component !== $value || strlen($component) > 80;
+  // 截断阈值是 70 个字符：判断要不要加哈希必须用同一个阈值，否则 71–80 个字符的
+  // profileId/cycleId 会被截到 70 个字符又不带哈希，两个不同的值共用同一个备份目录，
+  // "恢复前一天"就会读到别人那天的存档。
+  $needsHash = $component !== $value || strlen($component) > 70;
   if (strlen($component) > 70) $component = substr($component, 0, 70);
   if ($needsHash) $component .= '-' . substr(hash('sha256', $value), 0, 8);
   return $component;
@@ -347,7 +396,7 @@ function campaign_backup_root(string $saveFile): string {
 }
 
 function ensure_campaign_backup_dir(string $dir): void {
-  if (!is_dir($dir) && !mkdir($dir, 0775, true)) {
+  if (!is_dir($dir) && !mkdir($dir, 0770, true)) {
     respond(500, ['ok' => false, 'error' => 'Could not create a campaign backup directory.']);
   }
 }
@@ -522,6 +571,19 @@ function payload_user_id(array $payload): ?string {
   return $userId;
 }
 
+// 保存请求可以声明客户端认为自己正在保存的登录账号。旧页面在账号切换后仍持有上一个
+// 账号的内存状态，只凭 Cookie 会把 A 的存档写进 B，所以写入前先核对一次。
+// expectedRevision 同样：有字段就核对，缺字段的旧客户端仍按原行为处理。
+// 空值按「没给」处理：仓库里的页面在首次读到档案之前会先发 expectedAccountId: ""，
+// 把它当成"另一个账号"会硬回 409 并让页面的保存守卫卡死。
+function payload_expected_account_id(array $payload): ?string {
+  if (!array_key_exists('expectedAccountId', $payload)) return null;
+  $accountId = $payload['expectedAccountId'];
+  if (!is_string($accountId)) return null;
+  $accountId = trim($accountId);
+  return $accountId === '' ? null : $accountId;
+}
+
 function section_has_user_buckets($section): bool {
   return is_array($section) && (
     array_key_exists('users', $section)
@@ -551,7 +613,7 @@ function update_campaign_section(array $campaign, string $section, $state, ?stri
   return $campaign;
 }
 
-if (!is_dir($dataDir) && !mkdir($dataDir, 0775, true)) {
+if (!is_dir($dataDir) && !mkdir($dataDir, 0770, true)) {
   respond(500, ['ok' => false, 'error' => 'Could not create the data directory.']);
 }
 
@@ -591,12 +653,18 @@ if ($action === 'login' || $action === 'register') {
   }
 
   $userId = preg_replace('/[^a-z0-9_-]/', '', $username);
+  // 加锁之后再重新读一遍账号文件：进到这里之前那次读（$users）可能已经被另一个
+  // 进程改过，用它写回就会丢账号。密码哈希在锁外先算好，别把 bcrypt 的时间也算进锁里。
+  $newPasswordHash = $action === 'register' ? password_hash($password, PASSWORD_DEFAULT) : '';
+  lock_store($usersFile, 'Could not lock the account store.');
+  $usersStore = read_users($usersFile);
+  $users = $usersStore['users'];
   if ($action === 'register') {
     if (isset($users[$userId])) respond(409, ['ok' => false, 'error' => 'Account already exists.']);
     $users[$userId] = [
       'id' => $userId,
       'username' => $username,
-      'passwordHash' => password_hash($password, PASSWORD_DEFAULT),
+      'passwordHash' => $newPasswordHash,
       'createdAt' => gmdate('c'),
     ];
     $usersStore['version'] = 1;
@@ -632,10 +700,27 @@ if ($action === 'second-screen' && $method === 'GET') {
   $screens = read_second_screens($secondScreensFile)['screens'];
   $entries = array_filter($screens, static fn($entry): bool => is_array($entry) && !empty($entry['userId']));
   uasort($entries, static fn(array $left, array $right): int => strcmp((string) ($right['enabledAt'] ?? ''), (string) ($left['enabledAt'] ?? '')));
+  $screenToken = $entries ? (string) array_key_first($entries) : '';
   $entry = $entries ? reset($entries) : null;
   $userId = (string) ($entry['userId'] ?? '');
   if (!$entry || $userId === '') {
     respond(404, ['ok' => false, 'code' => 'SCREEN_NOT_FOUND', 'error' => 'Second screen is unavailable.']);
+  }
+  // 这个分支在登录校验之前，返回的却是账号存档里的内容（角色名、天数、地图状态、
+  // 地图筛选、AIBP、故事）。所以它不能只看"有没有开启第二屏"：必须出示开启第二屏
+  // 时生成并存进 ato-second-screens.json 的那个随机 token。以前这条分支拿到的
+  // token 只是存着、从没被核对过，匿名直连就能把整份存档读走。
+  // 例外只有一种：同一个浏览器里已经登录、且开启第二屏的正是本人。主控台从局域网
+  // 地址打开时地址栏显示的是不带 token 的 ./ss/ 短地址（见 index.html 的
+  // currentShortUrl 分支），同一浏览器里打开还得能用；匿名请求没有会话，仍然 403。
+  $sessionUser = current_user($users);
+  if (!second_screen_token_matches($screenToken)
+      && !($sessionUser !== null && (string) $sessionUser['id'] === $userId)) {
+    respond(403, [
+      'ok' => false,
+      'code' => 'SCREEN_FORBIDDEN',
+      'error' => 'Second screen link is missing or no longer valid. Please re-open the URL shown in the dashboard.',
+    ]);
   }
   $campaign = read_campaign(user_campaign_file($dataDir, $userId));
   respond(200, ['ok' => true, 'screen' => public_second_screen_payload($campaign, $entry)]);
@@ -655,6 +740,7 @@ if ($action === 'second-screen-status') {
     if ($lockHandle) fclose($lockHandle);
     respond(500, ['ok' => false, 'error' => 'Could not lock second-screen settings.']);
   }
+  $GLOBALS['atoLockHandle'] = $lockHandle;
   $store = read_second_screens($secondScreensFile);
   $userToken = '';
   $displayScales = ['map' => 100, 'battleBoard' => 100];
@@ -684,8 +770,6 @@ if ($action === 'second-screen-status') {
     $raw = file_get_contents('php://input');
     $payload = json_decode((string) $raw, true);
     if (!is_array($payload)) {
-      flock($lockHandle, LOCK_UN);
-      fclose($lockHandle);
       respond(400, ['ok' => false, 'error' => 'Request body must be JSON.']);
     }
     $enabled = !empty($payload['enabled']);
@@ -740,8 +824,6 @@ if ($action === 'second-screen-status') {
     }
     write_json_file($secondScreensFile, $store);
   }
-  flock($lockHandle, LOCK_UN);
-  fclose($lockHandle);
   respond(200, [
     'ok' => true,
     'enabled' => $userToken !== '',
@@ -750,7 +832,7 @@ if ($action === 'second-screen-status') {
     'battleSwapped' => $battleSwapped,
     'battleBoardVisible' => $battleBoardVisible,
     'displayMode' => $displayMode,
-    'urls' => $userToken !== '' ? second_screen_urls() : [],
+    'urls' => $userToken !== '' ? second_screen_urls($userToken) : [],
   ]);
 }
 
@@ -767,6 +849,7 @@ if ($action === 'second-screen-mode') {
     if ($lockHandle) fclose($lockHandle);
     respond(500, ['ok' => false, 'error' => 'Could not lock second-screen settings.']);
   }
+  $GLOBALS['atoLockHandle'] = $lockHandle;
   $store = read_second_screens($secondScreensFile);
   $changed = false;
   // 存档里有没有属于当前账号的第二屏条目。以前没有匹配条目时照样回 200 并回报请求的
@@ -790,8 +873,6 @@ if ($action === 'second-screen-mode') {
     }
   }
   if ($changed) write_json_file($secondScreensFile, $store);
-  flock($lockHandle, LOCK_UN);
-  fclose($lockHandle);
   if (!$matched) {
     respond(409, [
       'ok' => false,
@@ -808,6 +889,70 @@ if ($section !== null && !in_array($section, $allowedSections, true)) {
 }
 
 $saveFile = user_campaign_file($dataDir, $user['id']);
+
+if ($action === 'restore-previous-day') {
+  if ($method !== 'POST') respond(405, ['ok' => false, 'error' => 'This action requires POST.']);
+  $payload = json_decode((string) file_get_contents('php://input'), true);
+  if (!is_array($payload)) respond(400, ['ok' => false, 'error' => 'Request body must be JSON.']);
+  if (payload_expected_account_id($payload) !== (string) $user['id']) {
+    respond(409, ['ok' => false, 'code' => 'ACCOUNT_MISMATCH', 'error' => '登录账号已变更，请刷新后重试。']);
+  }
+  foreach (['profileId', 'cycleId', 'currentDay', 'day'] as $field) {
+    if (!isset($payload[$field]) || !is_string($payload[$field]) || $payload[$field] === '' || strlen($payload[$field]) > 128) {
+      respond(400, ['ok' => false, 'error' => '恢复日期无效。']);
+    }
+  }
+  $lockHandle = fopen($saveFile . '.lock', 'c');
+  if (!$lockHandle || !flock($lockHandle, LOCK_EX)) {
+    if ($lockHandle) fclose($lockHandle);
+    respond(500, ['ok' => false, 'error' => 'Could not lock the save file.']);
+  }
+  $GLOBALS['atoLockHandle'] = $lockHandle;
+  $campaign = read_campaign($saveFile);
+  $currentDay = campaign_game_day($campaign);
+  if (!$currentDay['valid']
+      || $currentDay['parts'] !== [$payload['profileId'], $payload['cycleId'], $payload['currentDay']]
+      || !isset($payload['expectedRevision'])
+      || (int) $payload['expectedRevision'] !== (int) $campaign['sectionRevisions']['dashboard']) {
+    respond(409, ['ok' => false, 'code' => 'SAVE_CONFLICT', 'error' => '当前存档已变更，请刷新后重试。']);
+  }
+  if ($payload['day'] === $payload['currentDay']) {
+    respond(400, ['ok' => false, 'error' => '恢复日期必须是前一天。']);
+  }
+  migrate_legacy_campaign_backups($saveFile, $backupCount);
+  $targetDay = ['parts' => [$payload['profileId'], $payload['cycleId'], $payload['day']]];
+  $candidates = glob(campaign_day_backup_dir($saveFile, $targetDay, 'daily') . DIRECTORY_SEPARATOR . '*.json') ?: [];
+  $restored = null;
+  $latestRevision = -1;
+  $latestModified = -1;
+  foreach ($candidates as $file) {
+    $candidate = json_decode((string) file_get_contents($file), true);
+    if (!is_array($candidate) || !is_array($candidate['sections'] ?? null)) continue;
+    $candidateDay = campaign_game_day($candidate);
+    if (!$candidateDay['valid'] || $candidateDay['parts'] !== $targetDay['parts']) continue;
+    // Revisions distinguish repeated visits even when archives share a timestamp.
+    $revision = (int) ($candidate['sectionRevisions']['dashboard'] ?? 0);
+    $modified = (int) filemtime($file);
+    if ($restored === null || $revision > $latestRevision || ($revision === $latestRevision && $modified >= $latestModified)) {
+      $restored = $candidate;
+      $latestRevision = $revision;
+      $latestModified = $modified;
+    }
+  }
+  if ($restored === null) {
+    respond(404, ['ok' => false, 'code' => 'BACKUP_NOT_FOUND', 'error' => '没有找到前一天（Day ' . $payload['day'] . '）的可用备份。']);
+  }
+  $restored['sections'] += default_campaign()['sections'];
+  $restored['sectionRevisions'] = [];
+  // Never roll revision counters back: stale pages must conflict with the restored save.
+  foreach ($allowedSections as $name) {
+    $restored['sectionRevisions'][$name] = (int) ($campaign['sectionRevisions'][$name] ?? 0) + 1;
+  }
+  prepare_campaign_backups($saveFile, $campaign, $restored, $backupCount);
+  write_campaign($saveFile, $restored);
+  $restored = read_campaign($saveFile);
+  respond(200, ['ok' => true, 'campaign' => $restored, 'user' => public_user($user)]);
+}
 
 if ($method === 'GET') {
   $campaign = read_campaign($saveFile);
@@ -847,13 +992,24 @@ if ($method === 'POST') {
     fclose($lockHandle);
     respond(500, ['ok' => false, 'error' => 'Could not lock the save file.']);
   }
+  $GLOBALS['atoLockHandle'] = $lockHandle;
 
   $campaign = read_campaign($saveFile);
   $expectedRevision = $payload['expectedRevision'] ?? null;
   $currentRevision = (int) ($campaign['sectionRevisions'][$payloadSection] ?? 0);
+  $expectedAccountId = payload_expected_account_id($payload);
+  if ($expectedAccountId !== null && $expectedAccountId !== (string) $user['id']) {
+    // 客户端自己说这份状态属于另一个账号：当前会话已经换人，绝不能写入。
+    respond(409, [
+      'ok' => false,
+      'code' => 'ACCOUNT_MISMATCH',
+      'error' => 'This page was loaded for another account. Reload it before saving.',
+      'section' => $payloadSection,
+      'revision' => $currentRevision,
+      'updatedAt' => $campaign['updatedAt'],
+    ]);
+  }
   if ($expectedRevision !== null && (int) $expectedRevision !== $currentRevision) {
-    flock($lockHandle, LOCK_UN);
-    fclose($lockHandle);
     respond(409, [
       'ok' => false,
       'code' => 'SAVE_CONFLICT',
@@ -868,8 +1024,6 @@ if ($method === 'POST') {
   $campaign['sectionRevisions'][$payloadSection] = $currentRevision + 1;
   prepare_campaign_backups($saveFile, $currentCampaign, $campaign, $backupCount);
   write_campaign($saveFile, $campaign);
-  flock($lockHandle, LOCK_UN);
-  fclose($lockHandle);
   respond(200, [
     'ok' => true,
     'section' => $payloadSection,

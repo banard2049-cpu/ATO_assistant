@@ -9,6 +9,7 @@ import shutil
 import socket
 import tempfile
 import time
+import urllib.parse
 import urllib.request
 import uuid
 import webbrowser
@@ -29,7 +30,7 @@ from .fixed_catalog import ensure_fixed_catalog
 from .installer import apply_install, install_plan, validate_target
 from .packages import export_compat, export_package, import_package, inspect_package
 from .security import make_token, valid_token
-from .storage import ensure_preview, image_preview, new_temp_file, store_image, write_upload
+from .storage import ensure_preview, new_temp_file, store_image, transform_revision, write_upload
 from .stories import import_story, merge_next_segment, split_segment, story_books, story_segments, update_segment
 
 
@@ -39,15 +40,81 @@ app = FastAPI(title="ATO 素材库", version="0.1.0")
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
-def local_request(request: Request) -> bool:
+# A loopback connection is a convenience, not proof of user authorization: a
+# hostile page or a DNS-rebinding name also reaches 127.0.0.1. The Host header
+# must therefore name a local host, and state-changing requests must come from
+# a same-origin page.
+LOCAL_HOSTNAMES = {"127.0.0.1", "localhost", "::1", "testclient", "testserver"}
+LOOPBACK_CLIENTS = {"127.0.0.1", "::1", "localhost", "testclient"}
+
+
+def local_client(request: Request) -> bool:
     host = request.client.host if request.client else ""
-    return host in {"127.0.0.1", "::1", "localhost", "testclient"}
+    return host in LOOPBACK_CLIENTS
+
+
+def split_host_port(value: str) -> tuple[str, int | None]:
+    parsed = urllib.parse.urlsplit(f"//{value.strip()}")
+    # 结尾的点是 DNS 绝对名写法（localhost.），等价于 localhost
+    return (parsed.hostname or "").lower().rstrip("."), parsed.port
+
+
+def bound_port(request: Request) -> int | None:
+    """本进程实际监听的端口（uvicorn 会把它放在 scope["server"] 里）。"""
+    server = request.scope.get("server") or ()
+    if len(server) >= 2 and isinstance(server[1], int):
+        return server[1]
+    return None
+
+
+def port_is_trusted(request: Request, port: int | None) -> bool:
+    """端口校验：本机客户端（ssh -L / 反向代理 / 端口映射）不强制端口一致。"""
+    if port is None or port == config.port:
+        return True
+    if local_client(request):
+        return True
+    return port == bound_port(request)
+
+
+def trusted_host(request: Request) -> bool:
+    header = request.headers.get("host")
+    try:
+        if header:
+            hostname, port = split_host_port(header)
+        else:
+            hostname, port = (request.url.hostname or "").lower().rstrip("."), request.url.port
+    except ValueError:
+        return False
+    return hostname in LOCAL_HOSTNAMES and port_is_trusted(request, port)
+
+
+def trusted_origin(request: Request) -> bool:
+    origin = request.headers.get("origin")
+    if not origin:
+        return True
+    try:
+        parsed = urllib.parse.urlsplit(origin)
+        port = parsed.port if parsed.port is not None else (443 if parsed.scheme == "https" else 80)
+    except ValueError:
+        return False
+    return (parsed.scheme in {"http", "https"} and (parsed.hostname or "").lower().rstrip(".") in LOCAL_HOSTNAMES
+            and port_is_trusted(request, port))
+
+
+def local_request(request: Request) -> bool:
+    """Trusted local request: loopback client, local Host and same-origin page."""
+    return local_client(request) and trusted_host(request) and trusted_origin(request)
 
 
 def require_auth(request: Request, ato_session: str | None = Cookie(default=None)) -> None:
-    if local_request(request) or valid_token(ato_session):
+    if valid_token(ato_session):
         return
-    raise HTTPException(status_code=401, detail="请先用配对码连接")
+    if not local_client(request):
+        raise HTTPException(status_code=401, detail="请先用配对码连接")
+    if not trusted_host(request):
+        raise HTTPException(status_code=403, detail="请求的 Host 不是本机地址")
+    if not trusted_origin(request):
+        raise HTTPException(status_code=403, detail="请求来自其他站点，已拒绝")
 
 
 def library_and_db() -> tuple[Path, Database]:
@@ -62,6 +129,27 @@ def library_and_db() -> tuple[Path, Database]:
 
 def safe_error(exc: Exception) -> HTTPException:
     return HTTPException(status_code=400, detail=str(exc))
+
+
+# 请求体上限：先看 Content-Length 再读，写入过程中再按实际字节数兜底
+# （分块传输没有 Content-Length，只靠这一步）。
+CHUNK_LIMIT = 4 * 1024 * 1024
+MAX_ASSET_UPLOAD_BYTES = 512 * 1024 * 1024
+MAX_BATCH_UPLOAD_BYTES = 8 * 1024 * 1024 * 1024
+MAX_PACKAGE_UPLOAD_BYTES = 8 * 1024 * 1024 * 1024
+MAX_STORY_UPLOAD_BYTES = 256 * 1024 * 1024
+
+
+def require_content_length(request: Request, limit: int, message: str) -> None:
+    header = request.headers.get("content-length")
+    if header is None:
+        return
+    try:
+        declared = int(header)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Content-Length 无效") from None
+    if declared > limit:
+        raise HTTPException(status_code=400, detail=message)
 
 
 class SetupPayload(BaseModel):
@@ -140,6 +228,8 @@ class PackageImportPayload(BaseModel):
 class InstallPayload(BaseModel):
     ato_path: str | None = None
     replacements: list[str] = []
+    # 整书替换：项目里多余的段落只有在这里显式点名某本书时才会被删掉。
+    replace_books: list[str] = []
     apply: bool = False
 
 
@@ -200,14 +290,15 @@ def run_import_job(db_path: Path, library: Path, package: Path, replace: bool, j
         job_update(db, job_id, status="failed", message="导入失败，可重新确认后再试", error=str(exc))
 
 
-def run_inspect_job(db_path: Path, package: Path, pending_id: str, job_id: str) -> None:
+def run_inspect_job(db_path: Path, library: Path, package: Path, pending_id: str, job_id: str) -> None:
     db = Database(db_path)
     job_update(db, job_id, status="running", progress=1, message="正在读取资料包清单")
     callback = lambda done, total, message: job_update(
         db, job_id, progress=min(98, max(1, int(done / max(total, 1) * 98))), message=message
     )
     try:
-        result = inspect_package(db, package, verify_hashes=True, progress=callback)
+        # 预览和导入必须看同一个素材库，否则两边的冲突判断会不一致
+        result = inspect_package(db, package, verify_hashes=True, progress=callback, library=library)
         result.pop("manifest", None)
         result["pending_id"] = pending_id
         job_update(db, job_id, status="complete", progress=100, message="校验完成", result=result)
@@ -227,15 +318,20 @@ def index() -> FileResponse:
 
 
 @app.get("/api/status")
-def status(request: Request, ato_session: str | None = Cookie(default=None)) -> dict:
+def status(request: Request, response: Response, ato_session: str | None = Cookie(default=None)) -> dict:
     ready = bool(config.library_path)
-    authenticated = local_request(request) or valid_token(ato_session)
+    local = local_request(request)
+    authenticated = local or valid_token(ato_session)
+    if local:
+        # Hand the local browser the same run-tied token the pairing flow uses,
+        # so its writes are not bare loopback trust.
+        response.set_cookie("ato_session", make_token(), httponly=True, samesite="strict", max_age=60 * 60 * 24 * 30)
     return {
-        "ready": ready, "authenticated": authenticated, "local": local_request(request),
-        "library_path": config.library_path if local_request(request) else "",
-        "ato_path": config.ato_path if local_request(request) else "",
-        "pairing_required": not local_request(request), "pairing_code": PAIRING_CODE if local_request(request) else "",
-        "lan_urls": lan_urls(config.port) if local_request(request) else [],
+        "ready": ready, "authenticated": authenticated, "local": local,
+        "library_path": config.library_path if local else "",
+        "ato_path": config.ato_path if local else "",
+        "pairing_required": not local, "pairing_code": PAIRING_CODE if local else "",
+        "lan_urls": lan_urls(config.port) if local else [],
     }
 
 
@@ -258,25 +354,71 @@ def setup(payload: SetupPayload, request: Request) -> dict:
 # In-memory pairing throttle (single-process uvicorn is fine): after several
 # consecutive failures the endpoint is locked for a short window, so a LAN
 # attacker cannot brute-force the pairing code.
-_pair_failures = 0
-_pair_lock_until = 0.0
+# 计数按客户端分开：过去用全局计数，一个局域网客户端每 30 秒发 5 次错码就能
+# 永久锁死所有手机。全局窗口（30 秒内累计 30 次失败）仍然保留，用来挡住
+# 轮换 IP 的暴力破解：单个客户端在窗口内最多只能贡献 5 次（随后被自己的锁
+# 挡住 30 秒），所以它无论如何都触发不了全局锁。
+_pair_failures: dict[str, int] = {}
+_pair_lock_until: dict[str, float] = {}
+_pair_window: dict[str, int] = {}
+_pair_window_start = 0.0
+_pair_lock_until_global = 0.0
 _MAX_PAIR_FAILURES = 5
+_MAX_PAIR_FAILURES_GLOBAL = 30
 _PAIR_LOCK_SECONDS = 30
 
 
+def pair_client_key(request: Request) -> str:
+    return request.client.host if request.client else "unknown"
+
+
+def prune_pair_state(now: float) -> None:
+    """丢掉已过期且没有失败计数的客户端，避免字典无限增长。"""
+    for key in [key for key, until in _pair_lock_until.items() if until <= now]:
+        if not _pair_failures.get(key):
+            _pair_lock_until.pop(key, None)
+            _pair_failures.pop(key, None)
+    if len(_pair_failures) > 1024:
+        for key in list(_pair_failures)[:-512]:
+            _pair_failures.pop(key, None)
+            _pair_lock_until.pop(key, None)
+
+
+def note_pair_failure(client: str, now: float) -> bool:
+    """记一次配对失败，返回是否应当触发全局锁。"""
+    global _pair_window_start
+    if now - _pair_window_start >= _PAIR_LOCK_SECONDS:
+        _pair_window.clear()
+        _pair_window_start = now
+    _pair_window[client] = _pair_window.get(client, 0) + 1
+    return sum(_pair_window.values()) >= _MAX_PAIR_FAILURES_GLOBAL
+
+
 @app.post("/api/pair")
-def pair(payload: PairPayload, response: Response) -> dict:
-    global _pair_failures, _pair_lock_until
+def pair(payload: PairPayload, request: Request, response: Response) -> dict:
+    global _pair_lock_until_global
     now = time.monotonic()
-    if now < _pair_lock_until:
+    client = pair_client_key(request)
+    if now < _pair_lock_until_global:
+        raise HTTPException(status_code=429, detail="配对尝试过于频繁，请稍后再试")
+    if now < _pair_lock_until.get(client, 0.0):
         raise HTTPException(status_code=429, detail="配对尝试过于频繁，请稍后再试")
     if payload.code.strip() != PAIRING_CODE:
-        _pair_failures += 1
-        if _pair_failures >= _MAX_PAIR_FAILURES:
-            _pair_lock_until = now + _PAIR_LOCK_SECONDS
-            _pair_failures = 0
+        failures = _pair_failures.get(client, 0) + 1
+        if failures >= _MAX_PAIR_FAILURES:
+            _pair_lock_until[client] = now + _PAIR_LOCK_SECONDS
+            _pair_failures[client] = 0
+        else:
+            _pair_failures[client] = failures
+        if note_pair_failure(client, now):
+            _pair_lock_until_global = now + _PAIR_LOCK_SECONDS
+            _pair_window.clear()
+            _pair_window_start = now
+        prune_pair_state(now)
         raise HTTPException(status_code=401, detail="配对码不正确")
-    _pair_failures = 0
+    # 配对成功只清掉这个客户端的计数
+    _pair_failures.pop(client, None)
+    _pair_lock_until.pop(client, None)
     response.set_cookie("ato_session", make_token(), httponly=True, samesite="strict", max_age=60 * 60 * 24 * 30)
     return {"ok": True}
 
@@ -315,7 +457,7 @@ def upload_asset(
     library, db = library_and_db()
     temp = new_temp_file(library, Path(file.filename or "upload").suffix)
     try:
-        write_upload(file.file, temp)
+        write_upload(file.file, temp, limit=MAX_ASSET_UPLOAD_BYTES)
         transform = {"rotation": rotation, "crop": json.loads(crop) if crop else None}
         return store_image(db, library, temp, item_id, face, file.filename or "upload", file.content_type or "application/octet-stream", "camera", transform)
     except Exception:
@@ -352,8 +494,15 @@ async def upload_chunk(upload_id: str, request: Request, offset: int) -> dict:
         raise HTTPException(status_code=404, detail="上传任务不存在")
     if offset != session["received_size"]:
         raise HTTPException(status_code=409, detail={"expected_offset": session["received_size"]})
-    chunk = await request.body()
-    if not chunk or len(chunk) > 4 * 1024 * 1024:
+    # 先按 Content-Length 拒绝，再边读边计数：不能先整个读进内存再看大小
+    # （64MB 的块曾经会占掉上百 MB 内存）。
+    require_content_length(request, CHUNK_LIMIT, "分块必须在 1B 到 4MB 之间")
+    chunk = bytearray()
+    async for part in request.stream():
+        chunk.extend(part)
+        if len(chunk) > CHUNK_LIMIT:
+            raise HTTPException(status_code=400, detail="分块必须在 1B 到 4MB 之间")
+    if not chunk:
         raise HTTPException(status_code=400, detail="分块必须在 1B 到 4MB 之间")
     if offset + len(chunk) > session["total_size"]:
         raise HTTPException(status_code=400, detail="上传内容超过声明大小")
@@ -394,10 +543,8 @@ def transform_asset(payload: TransformPayload) -> dict:
     revision = db.one("SELECT * FROM asset_revisions WHERE item_id=? AND face=? AND is_current=1", (payload.item_id, payload.face))
     if not revision:
         raise HTTPException(status_code=404, detail="还没有可调整的图片")
-    preview = library / revision["preview_path"]
-    width, height = image_preview(library / revision["original_path"], preview, payload.rotation, payload.crop)
-    db.execute("UPDATE asset_revisions SET width=?,height=? WHERE id=?", (width, height, revision["id"]))
-    return {"ok": True, "width": width, "height": height, "preview": f"/media/{revision['preview_path']}?v={uuid.uuid4().hex[:8]}"}
+    updated = transform_revision(db, library, revision, payload.rotation, payload.crop)
+    return {"ok": True, "width": updated["width"], "height": updated["height"], "preview": f"/media/{updated['preview_path']}?v={uuid.uuid4().hex[:8]}"}
 
 
 @app.get("/media/{relative:path}", dependencies=[Depends(require_auth)])
@@ -414,8 +561,9 @@ def media(relative: str) -> FileResponse:
 
 
 @app.post("/api/batch/upload", dependencies=[Depends(require_auth)])
-def batch_upload(files: list[UploadFile] = File(...)) -> dict:
+def batch_upload(request: Request, files: list[UploadFile] = File(...)) -> dict:
     library, db = library_and_db()
+    require_content_length(request, MAX_BATCH_UPLOAD_BYTES, "单次批量导入总量不能超过 8GB")
     if len(files) > 5000:
         raise HTTPException(status_code=400, detail="单次最多导入 5000 个文件")
     candidates = catalog_candidates(db)
@@ -425,25 +573,30 @@ def batch_upload(files: list[UploadFile] = File(...)) -> dict:
         filename = upload.filename or "upload"
         if filename.lower().endswith(".zip"):
             archive_temp = new_temp_file(library, ".zip")
-            write_upload(upload.file, archive_temp)
-            with zipfile.ZipFile(archive_temp) as archive:
-                image_infos = [info for info in archive.infolist() if not info.is_dir() and Path(info.filename).suffix.lower() in {".jpg", ".jpeg", ".png", ".webp"}]
-                if len(image_infos) > 5000 or sum(info.file_size for info in image_infos) > 8 * 1024 * 1024 * 1024:
-                    archive_temp.unlink(missing_ok=True)
-                    raise HTTPException(status_code=400, detail="ZIP 超过 5000 张图片或解压后超过 8GB")
-                for info in image_infos:
-                    if PurePosixPath(info.filename).is_absolute() or ".." in PurePosixPath(info.filename).parts:
-                        continue
-                    temp = new_temp_file(library, Path(info.filename).suffix)
-                    with archive.open(info) as source, temp.open("wb") as output:
-                        shutil.copyfileobj(source, output, 1024 * 1024)
-                    pending.append(register_pending(db, library, temp, Path(info.filename).name, mimetypes.guess_type(info.filename)[0] or "image/jpeg", candidates))
-            archive_temp.unlink(missing_ok=True)
+            # 损坏的 ZIP 必须变成 400，并且无论走哪条失败路径都不留临时文件。
+            try:
+                write_upload(upload.file, archive_temp, limit=MAX_BATCH_UPLOAD_BYTES)
+                try:
+                    with zipfile.ZipFile(archive_temp) as archive:
+                        image_infos = [info for info in archive.infolist() if not info.is_dir() and Path(info.filename).suffix.lower() in {".jpg", ".jpeg", ".png", ".webp"}]
+                        if len(image_infos) > 5000 or sum(info.file_size for info in image_infos) > MAX_BATCH_UPLOAD_BYTES:
+                            raise HTTPException(status_code=400, detail="ZIP 超过 5000 张图片或解压后超过 8GB")
+                        for info in image_infos:
+                            if PurePosixPath(info.filename).is_absolute() or ".." in PurePosixPath(info.filename).parts:
+                                continue
+                            temp = new_temp_file(library, Path(info.filename).suffix)
+                            with archive.open(info) as source, temp.open("wb") as output:
+                                shutil.copyfileobj(source, output, 1024 * 1024)
+                            pending.append(register_pending(db, library, temp, Path(info.filename).name, mimetypes.guess_type(info.filename)[0] or "image/jpeg", candidates))
+                except zipfile.BadZipFile as exc:
+                    raise HTTPException(status_code=400, detail=f"{filename} 不是有效的 ZIP 文件") from exc
+            finally:
+                archive_temp.unlink(missing_ok=True)
         else:
             temp = new_temp_file(library, Path(filename).suffix)
-            write_upload(upload.file, temp)
+            write_upload(upload.file, temp, limit=MAX_BATCH_UPLOAD_BYTES)
             expanded_size += temp.stat().st_size
-            if expanded_size > 8 * 1024 * 1024 * 1024:
+            if expanded_size > MAX_BATCH_UPLOAD_BYTES:
                 temp.unlink(missing_ok=True)
                 raise HTTPException(status_code=400, detail="单次批量导入总量不能超过 8GB")
             pending.append(register_pending(db, library, temp, filename, upload.content_type or "application/octet-stream", candidates))
@@ -453,7 +606,10 @@ def batch_upload(files: list[UploadFile] = File(...)) -> dict:
 @app.get("/api/batch/pending", dependencies=[Depends(require_auth)])
 def batch_pending() -> list[dict]:
     _, db = library_and_db()
-    return db.all("SELECT * FROM pending_files WHERE status='pending' ORDER BY created_at,id")
+    # import_seq is the monotonic import order; created_at only has second
+    # precision, and a random UUID must never decide how photos pair with cards.
+    # rowid keeps rows written before import_seq existed in insertion order.
+    return db.all("SELECT * FROM pending_files WHERE status='pending' ORDER BY created_at,import_seq,rowid")
 
 
 @app.post("/api/batch/assign", dependencies=[Depends(require_auth)])
@@ -486,14 +642,15 @@ def batch_sequence(payload: SequencePayload) -> dict:
 
 @app.post("/api/stories/import", dependencies=[Depends(require_auth)])
 def stories_import(
-    file: UploadFile = File(...), book_id: str = Form(...), title: str = Form(...),
+    request: Request, file: UploadFile = File(...), book_id: str = Form(...), title: str = Form(...),
     chapter_key: str = Form("main"), chapter_title: str = Form("正文"),
     page_start: int | None = Form(None), page_end: int | None = Form(None),
 ) -> dict:
     library, db = library_and_db()
+    require_content_length(request, MAX_STORY_UPLOAD_BYTES, "故事文件不能超过 256MB")
     suffix = Path(file.filename or "story").suffix.lower()
     temp = new_temp_file(library, suffix)
-    write_upload(file.file, temp)
+    write_upload(file.file, temp, limit=MAX_STORY_UPLOAD_BYTES)
     try:
         return import_story(db, library, temp, book_id.strip(), title.strip(), chapter_key.strip(), chapter_title.strip(), page_start, page_end, file.filename or "story")
     finally:
@@ -570,13 +727,14 @@ def download_export(filename: str) -> FileResponse:
 
 
 @app.post("/api/packages/inspect", dependencies=[Depends(require_auth)])
-def packages_inspect(background_tasks: BackgroundTasks, file: UploadFile = File(...)) -> dict:
+def packages_inspect(request: Request, background_tasks: BackgroundTasks, file: UploadFile = File(...)) -> dict:
     library, db = library_and_db()
+    require_content_length(request, MAX_PACKAGE_UPLOAD_BYTES, "资料包不能超过 8GB")
     pending_id = uuid.uuid4().hex
     destination = library / "tmp" / f"package-{pending_id}.atopack"
-    write_upload(file.file, destination)
+    write_upload(file.file, destination, limit=MAX_PACKAGE_UPLOAD_BYTES)
     job_id = new_job(db, "inspect-atopack")
-    background_tasks.add_task(run_inspect_job, db.path, destination, pending_id, job_id)
+    background_tasks.add_task(run_inspect_job, db.path, library, destination, pending_id, job_id)
     return {"job_id": job_id}
 
 
@@ -602,9 +760,10 @@ def install(payload: InstallPayload, request: Request) -> dict:
     if not root_text:
         raise HTTPException(status_code=400, detail="请先选择 ATO_assistant 目录")
     root = Path(root_text)
+    replace_books = {str(book_id) for book_id in payload.replace_books if book_id}
     if payload.apply:
-        return apply_install(db, library, root, payload.replacements)
-    return install_plan(db, library, root)
+        return apply_install(db, library, root, payload.replacements, replace_books)
+    return install_plan(db, library, root, replace_books)
 
 
 def normalize_filename(value: str) -> str:
@@ -632,7 +791,8 @@ def register_pending(db: Database, library: Path, temp: Path, filename: str, mim
     pending_id = uuid.uuid4().hex
     stored_rel = temp.relative_to(library).as_posix()
     db.execute(
-        "INSERT INTO pending_files(id,stored_path,original_name,mime_type,size,suggested_item_id,suggested_face) VALUES(?,?,?,?,?,?,?)",
+        """INSERT INTO pending_files(id,stored_path,original_name,mime_type,size,suggested_item_id,suggested_face,import_seq)
+        VALUES(?,?,?,?,?,?,?,(SELECT IFNULL(MAX(import_seq),0)+1 FROM pending_files))""",
         (pending_id, stored_rel, filename, mime_type, temp.stat().st_size, item_id, face),
     )
     return {"id": pending_id, "original_name": filename, "size": temp.stat().st_size, "suggested_item_id": item_id, "suggested_face": face, "ambiguous": len(matches) > 1}

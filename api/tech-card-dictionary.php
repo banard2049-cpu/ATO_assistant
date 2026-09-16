@@ -6,6 +6,7 @@ declare(strict_types=1);
 // login session was silently dropped.  Pin the portable session directory when
 // it exists: session storage must not depend on how the site was launched.
 $sessionDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'sessions';
+if (!is_dir($sessionDir)) @mkdir($sessionDir, 0770, true);
 if (is_dir($sessionDir) && is_writable($sessionDir)) {
   session_save_path($sessionDir);
 }
@@ -36,7 +37,15 @@ function write_dictionary(string $file, array $data): void {
   $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
   if ($json === false) respond(500, ['ok' => false, 'error' => '无法编码科技字典。']);
   $temp = $file . '.tmp';
-  if (file_put_contents($temp, $json, LOCK_EX) === false || !rename($temp, $file)) {
+  $written = file_put_contents($temp, $json, LOCK_EX);
+  // 写短了也算失败：以前只看 === false，截断的临时文件照样会被 rename 上线。
+  if ($written === false || $written < strlen($json)) {
+    @unlink($temp);
+    respond(500, ['ok' => false, 'error' => '无法保存科技字典。']);
+  }
+  // rename() 在同目录内是原子替换（Windows 上也一样）；失败时不能退回 copy()，
+  // 那会原地截断正在使用中的文件。写不进去就明确报错。
+  if (!@rename($temp, $file)) {
     @unlink($temp);
     respond(500, ['ok' => false, 'error' => '无法保存科技字典。']);
   }

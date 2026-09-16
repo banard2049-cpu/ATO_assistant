@@ -175,6 +175,10 @@ final class LocalSecondScreenServer {
       }
       boolean head = "HEAD".equals(request[0]);
       if ("/api/campaign-state.php".equals(uri.getPath())) {
+        if (!allowedApiAction(uri)) {
+          sendText(connection.getOutputStream(), 403, "application/json; charset=utf-8", apiDenied(), head);
+          return;
+        }
         serveApi(connection.getOutputStream(), request[1], head);
       } else {
         serveStatic(connection.getOutputStream(), uri.getRawPath(), head);
@@ -182,6 +186,19 @@ final class LocalSecondScreenServer {
     } catch (IOException ignored) {
       // Browsers commonly close stale image requests during a screen refresh.
     }
+  }
+
+  // 局域网入口只转发第二屏展示需要的只读请求，登录、退出、读写存档等 action 一律不转发给本机 API。
+  private static boolean allowedApiAction(URI uri) {
+    try {
+      return "second-screen".equals(uri.getQueryParameter("action"));
+    } catch (IllegalArgumentException error) {
+      return false;
+    }
+  }
+
+  private static String apiDenied() {
+    return "{\"ok\":false,\"error\":\"This action is not available from the local network.\"}";
   }
 
   private void serveApi(OutputStream output, String target, boolean head) throws IOException {
@@ -254,8 +271,8 @@ final class LocalSecondScreenServer {
   }
 
   private static void writeHeaders(OutputStream output, int status, String contentType, long length) throws IOException {
-    String reason = status == 200 ? "OK" : status == 400 ? "Bad Request" : status == 404 ? "Not Found"
-      : status == 405 ? "Method Not Allowed" : "Error";
+    String reason = status == 200 ? "OK" : status == 400 ? "Bad Request" : status == 403 ? "Forbidden"
+      : status == 404 ? "Not Found" : status == 405 ? "Method Not Allowed" : "Error";
     StringBuilder headers = new StringBuilder("HTTP/1.1 ").append(status).append(' ').append(reason).append("\r\n")
       .append("Content-Type: ").append(contentType).append("\r\n")
       .append("Cache-Control: no-store\r\n")

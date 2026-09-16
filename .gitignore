@@ -56,6 +56,7 @@
 !/assets/exploration-card-rules.js
 !/assets/exploration-card-tags.js
 !/assets/page-focus-router.js
+!/assets/campaign-session.js
 !/assets/story-doom-card-data.js
 !/assets/term-language.js
 # 应用自身的更新检测脚本，不是版权素材，随源码发布
@@ -90,6 +91,9 @@ error_log
 
 # 一次性排查草稿，不随源码发布
 /tmp/
+
+# Local TTS credentials (copy from tools/xfyun-long-tts.config.example.json)
+/tools/xfyun-long-tts.config.json
 
 # Local/editor/runtime files
 __pycache__/

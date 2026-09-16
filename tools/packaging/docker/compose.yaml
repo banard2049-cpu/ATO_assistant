@@ -11,6 +11,17 @@ services:
       - "8793:8793"
     volumes:
       - ./data:/app/data
+      # AIBP 卡图：整棵挂 ./app/aibp/ps —— 这个目录就是使用者投放自备卡图的位置。
+      # ps/ 里不只有图片：CHIMERA_METASTASIOS/bp_status_map.{js,json}、
+      # other/token/token_manifest.js、other/resouce/bp_resource_map*.js 是程序数据，
+      # 由 aibp/index.html 以 <script src="ps/..."> 直接引用，而整目录挂载会把它们一起
+      # 遮住 —— 新装时宿主机目录是空的，这些脚本在容器里根本不存在；旧宿主机留下的副本
+      # 又会一直遮住镜像的新版本，pull 更新不到。
+      # 对策是「整目录挂载 + 启动时还原程序文件」：镜像在 /opt/ato/aibp-ps-program 存一份
+      # 原版程序数据（见 Dockerfile），docker-entrypoint.sh 启动时把缺失或与镜像不同的
+      # 文件补回 /app/aibp/ps，只动程序文件、不删使用者的图片。
+      # 不要再把这里拆成「只挂纯素材子目录」：CHIMERA_METASTASIOS / other/token /
+      # other/resouce / other 里图片与程序数据同级，拆开就等于使用者的图全部看不见。
       - ./app/aibp/ps:/app/aibp/ps
       - ./app/assets/exploration-cards:/app/assets/exploration-cards
       - ./app/assets/story-doom-cards:/app/assets/story-doom-cards

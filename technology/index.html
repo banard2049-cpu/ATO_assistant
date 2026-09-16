@@ -1165,6 +1165,7 @@ button.gear-group-name:hover {
   </div>
 </div>
   <script src="../assets/page-focus-router.js?v=20260813-no-screen-focus1"></script>
+  <script src="../assets/campaign-session.js?v=20260917"></script>
 <script>
 const TECH_DICTIONARY_URL = 'tech_card_dictionary.min.json';
 const GEAR_PRODUCTION_URL = 'ato_gear_production.json';
@@ -1566,7 +1567,7 @@ function normalizeCraftRecordResources(value) {
 }
 function recordStateFromCampaign(campaign) {
   const dashboard = campaign?.sections?.dashboard;
-  const userId = dashboard?.activeProfileId || activeAccountId || 'default';
+  const userId = campaignTechLoaded ? activeAccountId : (dashboard?.activeProfileId || 'default');
   const recordSection = campaign?.sections?.record;
   const userState = recordSection?.users?.[userId] || (recordSection?.users ? null : recordSection);
   const state = isPlainObject(userState) ? JSON.parse(JSON.stringify(userState)) : {};
@@ -1580,7 +1581,7 @@ function recordStateFromCampaign(campaign) {
 async function readLatestRecordState() {
   const response = await fetch(CAMPAIGN_STORAGE_URL, { cache: 'no-store' });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
-  const payload = await response.json();
+  const payload = campaignSession.accept(await response.json());
   if (!payload.ok) throw new Error(payload.error || '读取记录表失败');
   return recordStateFromCampaign(payload.campaign || {});
 }
@@ -1611,9 +1612,9 @@ async function mutateCampaignRecordState(mutator) {
     const response = await fetch(CAMPAIGN_RECORD_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ section: 'record', userId: latest.userId, state: next, expectedRevision: latest.revision }),
+      body: JSON.stringify({ section: 'record', userId: latest.userId, state: next, expectedRevision: latest.revision, expectedAccountId: campaignSession.accountId }),
     });
-    const payload = await response.json().catch(() => null);
+    const payload = campaignSession.accept(await response.json().catch(() => null));
     if (response.status === 409 && payload?.code === 'SAVE_CONFLICT') continue;
     if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
     gearRecordUserId = latest.userId;
@@ -2726,6 +2727,9 @@ let conditionTicked = new Set();
 let activeUnlockedRecord = null;
 let activeModalMode = null;
 let campaignStorageAvailable = false;
+const campaignSession = window.ATO_CAMPAIGN_SESSION.create();
+let campaignTechLoaded = false;
+let campaignTechConflict = false;
 let campaignSaveTimer = null;
 let campaignSaveInFlight = false;
 let campaignSavePending = false;
@@ -2734,6 +2738,8 @@ let campaignReconnectTimer = null;
 let campaignReconnectInFlight = false;
 let campaignReconnectDelay = 2000;
 let campaignTechRevision = 0;
+// State this page last loaded/saved for the active account; used as the merge base.
+let campaignTechBaseState = null;
 let gearRecordState = null;
 let gearRecordRevision = 0;
 let gearRecordUserId = 'default';
@@ -2752,10 +2758,13 @@ function delay(ms) {
   return new Promise(resolve => window.setTimeout(resolve, ms));
 }
 function setCampaignSaveStatus(message, status = 'saved') {
+  if (campaignSession.changed) { message = '登录账号已切换，已停止保存，请刷新页面'; status = 'conflict'; }
+  else if (campaignTechConflict) { message = '科技存档冲突，已暂停保存，请刷新页面确认'; status = 'conflict'; }
   campaignSaveStatus.textContent = message;
   campaignSaveStatus.dataset.state = status;
 }
 function scheduleCampaignReconnect() {
+  if (campaignSession.changed || campaignTechConflict) return;
   if (campaignReconnectTimer || campaignReconnectInFlight || campaignStorageAvailable) return;
   const wait = campaignReconnectDelay;
   campaignReconnectDelay = Math.min(30000, campaignReconnectDelay * 2);
@@ -2765,19 +2774,19 @@ function scheduleCampaignReconnect() {
   }, wait);
 }
 async function probeCampaignReconnect() {
+  if (campaignSession.changed || campaignTechConflict) return;
   if (campaignStorageAvailable || campaignReconnectInFlight) return;
   campaignReconnectInFlight = true;
   try {
     const response = await fetch(CAMPAIGN_STORAGE_URL, { cache: 'no-store' });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const payload = await response.json();
+    const payload = campaignSession.accept(await response.json());
     if (!payload.ok) throw new Error(payload.error || '读取失败');
     const hadQueuedSave = campaignSaveQueuedBeforeReady;
     campaignStorageAvailable = true;
-    campaignTechRevision = Math.max(0, Number(payload.campaign?.sectionRevisions?.technology || 0));
     campaignSaveQueuedBeforeReady = false;
     campaignReconnectDelay = 2000;
-    if (!hadQueuedSave && payload.exists && payload.campaign) applyCampaignUsersToTechnology(payload.campaign);
+    if (!adoptTechnologyCampaign(payload.campaign || {}, hadQueuedSave)) return;
     if (hadQueuedSave) queueCampaignTechnologySave();
     else setCampaignSaveStatus('已重新连接', 'saved');
   } catch (error) {
@@ -3129,6 +3138,71 @@ function technologySectionState() {
     hideTreeImage,
   };
 }
+// Fields of one account's technology state, with the labels used in the conflict message.
+const TECH_STATE_FIELD_LABELS = {
+  currentCycle: '当前循环',
+  unlocked: '已解锁科技',
+  unimportant: '不重要的科技',
+  conditions: '条件勾选',
+  treeLanguage: '界面语言',
+  hideUnknownTech: '不显示未知科技',
+  hideTreeImage: '不显示底图',
+};
+// 数组在这里表达的是「集合」：两张页面各自按自己的插入顺序存下同一批已解锁科技
+// 时，JSON.stringify 会给出不同字符串，于是「内容其实相同」被误判成冲突，页面进入
+// campaignTechConflict 后所有保存都会被永久拒绝，直到手动刷新。比较前先把数组按
+// 规范化后的字典序排好（只影响比较，不影响真正存下去的顺序），对象的键序交给
+// JSON.stringify 自己保证。
+function technologyStateValuesEqual(left, right) {
+  const normalize = (value) => {
+    if (Array.isArray(value)) {
+      return value.map(normalize)
+        .sort((a, b) => String(JSON.stringify(a)).localeCompare(String(JSON.stringify(b))));
+    }
+    if (isPlainObject(value)) {
+      const out = {};
+      Object.keys(value).sort().forEach((key) => { out[key] = normalize(value[key]); });
+      return out;
+    }
+    return value === undefined ? null : value;
+  };
+  return JSON.stringify(normalize(left)) === JSON.stringify(normalize(right));
+}
+// Three-way merge of one account's technology state: keep the remote value unless this
+// page changed that field, and report fields both sides changed to different values.
+function mergeTechnologyAccountState(base, local, remote) {
+  const state = { ...remote };
+  const conflicts = [];
+  Object.keys(TECH_STATE_FIELD_LABELS).forEach((field) => {
+    const localValue = local?.[field];
+    const remoteValue = remote[field];
+    const baseValue = base?.[field];
+    if (technologyStateValuesEqual(localValue, remoteValue)) return;
+    if (technologyStateValuesEqual(localValue, baseValue)) {
+      // 只有远端变了：整段缺这个字段时不能因为 remoteValue === undefined 就把本页
+      // 已有的值丢掉（导入流程或主控台新建的档案可能没有这个键）。
+      if (remoteValue === undefined && localValue !== undefined) state[field] = localValue;
+      return;
+    }
+    if (technologyStateValuesEqual(remoteValue, baseValue)) state[field] = localValue;
+    else conflicts.push(field);
+  });
+  return { state, conflicts };
+}
+// Re-read one account's technology slice for a conflict retry.
+async function readLatestTechnologySectionState(userId) {
+  const response = await fetch(CAMPAIGN_TECH_URL, { cache: 'no-store' });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const payload = campaignSession.accept(await response.json());
+  if (!payload.ok) throw new Error(payload.error || '读取科技存档失败');
+  const section = payload.state;
+  const bucketed = isPlainObject(section) && ('users' in section || 'accounts' in section);
+  const userState = bucketed ? section.users?.[userId] || section.accounts?.[userId] : section;
+  return {
+    state: isPlainObject(userState) ? userState : null,
+    revision: Math.max(0, Number(payload.revision || 0)),
+  };
+}
 function techAccountFromUser(profileId, profile, techSection) {
   const saved = techSection?.users?.[profileId] || techSection?.accounts?.[profileId] || techSection || {};
   return {
@@ -3139,7 +3213,7 @@ function techAccountFromUser(profileId, profile, techSection) {
     conditions: Array.isArray(saved.conditions) ? saved.conditions : [],
   };
 }
-function applyCampaignUsersToTechnology(campaign) {
+function applyCampaignUsersToTechnology(campaign, profileId = null) {
   const dashboard = campaign?.sections?.dashboard;
   const techSection = isPlainObject(campaign?.sections?.technology) ? campaign.sections.technology : {};
   if (!isPlainObject(dashboard?.profiles)) return false;
@@ -3148,7 +3222,8 @@ function applyCampaignUsersToTechnology(campaign) {
     accounts[id] = techAccountFromUser(id, profile, techSection);
   });
   if (!Object.keys(accounts).length) return false;
-  activeAccountId = accounts[dashboard.activeProfileId] ? dashboard.activeProfileId : Object.keys(accounts)[0];
+  activeAccountId = profileId || (accounts[dashboard.activeProfileId] ? dashboard.activeProfileId : Object.keys(accounts)[0]);
+  if (!accounts[activeAccountId]) throw new Error('原科技档案已不存在，请刷新页面后重试。');
   const activeTech = isPlainObject(techSection?.users?.[activeAccountId]) ? techSection.users[activeAccountId] : techSection;
   treeLanguage = activeTech.treeLanguage === 'zh' || techSection.treeLanguage === 'zh' ? 'zh' : 'en';
   const savedHideUnknown = activeTech.hideUnknownTech ?? techSection.hideUnknownTech;
@@ -3169,14 +3244,64 @@ function applyCampaignUsersToTechnology(campaign) {
   renderTabs();
   syncHideUnknownToggle();
   renderTree();
+  campaignTechBaseState = technologySectionState();
   return true;
+}
+// Reconnects must merge against the last confirmed state before adopting a new
+// revision. Keep the profile selected when these edits were made.
+function adoptTechnologyCampaign(campaign, hasLocalEdits) {
+  const profileId = campaignTechLoaded ? activeAccountId : (campaign.sections?.dashboard?.activeProfileId || 'default');
+  if (campaign.sections?.dashboard?.profiles && !campaign.sections.dashboard.profiles[profileId]) {
+    throw new Error('原科技档案已不存在，请刷新页面后重试。');
+  }
+  if (hasLocalEdits) {
+    const section = campaign.sections?.technology;
+    const bucketed = isPlainObject(section) && ('users' in section || 'accounts' in section);
+    const remote = (bucketed ? section.users?.[profileId] || section.accounts?.[profileId] : section) || {};
+    const merged = mergeTechnologyAccountState(campaignTechBaseState, technologySectionState(), remote);
+    if (merged.conflicts.length) {
+      campaignTechConflict = true;
+      campaignSavePending = false;
+      setCampaignSaveStatus('科技存档冲突，已暂停保存，请刷新页面确认', 'conflict');
+      return false;
+    }
+    activeAccountId = profileId;
+    accounts[profileId] ||= techAccountFromUser(profileId, campaign.sections?.dashboard?.profiles?.[profileId], section);
+    applyTechnologyAccountState(merged.state);
+    campaignTechBaseState = JSON.parse(JSON.stringify(remote));
+  } else {
+    applyCampaignUsersToTechnology(campaign, profileId);
+  }
+  campaignTechRevision = Math.max(0, Number(campaign.sectionRevisions?.technology || 0));
+  campaignTechLoaded = true;
+  return true;
+}
+// Adopt a server-side technology state into the page memory and re-render it.
+function applyTechnologyAccountState(state) {
+  if (!isPlainObject(state)) return;
+  currentCycle = validPageKey(state.currentCycle) || currentCycle;
+  viewPage = viewPageFor(currentCycle);
+  currentTab = viewPage;
+  unlocked = new Set(state.unlocked || []);
+  unimportant = new Set(state.unimportant || []);
+  conditionTicked = new Set(state.conditions || []);
+  if (state.treeLanguage === 'zh' || state.treeLanguage === 'en') treeLanguage = state.treeLanguage;
+  if (state.hideUnknownTech !== undefined) hideUnknownTech = Boolean(state.hideUnknownTech);
+  if (state.hideTreeImage !== undefined) hideTreeImage = Boolean(state.hideTreeImage);
+  unlockAutomaticCyclesThrough(currentCycle);
+  selectedNodeId = null;
+  updateLanguageToggle();
+  renderCycleSelect();
+  renderTabs();
+  syncHideUnknownToggle();
+  renderTree();
 }
 async function loadCampaignTechnologySection() {
   setCampaignSaveStatus('正在连接', 'saving');
   try {
     const response = await fetch(CAMPAIGN_STORAGE_URL, { cache: 'no-store' });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const payload = await response.json();
+    const payload = campaignSession.accept(await response.json());
     if (!payload.ok) throw new Error(payload.error || '读取失败');
     campaignStorageAvailable = true;
     const flushQueuedSave = campaignSaveQueuedBeforeReady;
@@ -3184,8 +3309,7 @@ async function loadCampaignTechnologySection() {
     campaignReconnectDelay = 2000;
     window.clearTimeout(campaignReconnectTimer);
     campaignReconnectTimer = null;
-    campaignTechRevision = Math.max(0, Number(payload.campaign?.sectionRevisions?.technology || 0));
-    if (!flushQueuedSave && payload.exists && payload.campaign) applyCampaignUsersToTechnology(payload.campaign);
+    if (!adoptTechnologyCampaign(payload.campaign || {}, flushQueuedSave)) return;
     if (flushQueuedSave) queueCampaignTechnologySave();
     else setCampaignSaveStatus('已同步', 'saved');
     // Auto-sync snapshot to main dashboard so negotiation tags stay current.
@@ -3198,6 +3322,10 @@ async function loadCampaignTechnologySection() {
   }
 }
 function queueCampaignTechnologySave() {
+  if (campaignSession.changed || campaignTechConflict) {
+    setCampaignSaveStatus('保存已暂停，请刷新页面确认当前存档', 'conflict');
+    return;
+  }
   if (!campaignStorageAvailable) {
     campaignSaveQueuedBeforeReady = true;
     setCampaignSaveStatus('有修改待同步', 'offline');
@@ -3209,6 +3337,7 @@ function queueCampaignTechnologySave() {
   campaignSaveTimer = setTimeout(() => void saveCampaignTechnologySection(), 260);
 }
 async function saveCampaignTechnologySection() {
+  if (campaignSession.changed || campaignTechConflict) return false;
   if (!campaignStorageAvailable) {
     campaignSaveQueuedBeforeReady = true;
     setCampaignSaveStatus('有修改待同步', 'offline');
@@ -3230,14 +3359,31 @@ async function saveCampaignTechnologySection() {
       const response = await fetch(CAMPAIGN_TECH_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ section: 'technology', userId, state: sectionState, expectedRevision: campaignTechRevision }),
+        body: JSON.stringify({ section: 'technology', userId, state: sectionState, expectedRevision: campaignTechRevision, expectedAccountId: campaignSession.accountId }),
       });
-      const payload = await response.json().catch(() => null);
+      const payload = campaignSession.accept(await response.json().catch(() => null));
       if (response.status === 409 && payload?.code === 'SAVE_CONFLICT') {
-        // Another writer bumped this section. Re-read the latest revision and
-        // resend our value: the technology section is bucketed per profile and
-        // only this page writes it, so retrying with the local state is safe.
-        campaignTechRevision = Math.max(0, Number(payload.revision || 0));
+        // Another writer bumped this section. Re-read the state they saved and re-apply
+        // only our own edits on top of it: resending our stale full state would erase it.
+        const remote = await readLatestTechnologySectionState(userId);
+        if (!remote.state) {
+          campaignTechConflict = true;
+          campaignSavePending = false;
+          setCampaignSaveStatus('保存冲突：无法读取该档案的最新科技存档，本次修改未提交，页面内容保持不变。', 'offline');
+          return false;
+        }
+        const merged = mergeTechnologyAccountState(campaignTechBaseState, technologySectionState(), remote.state);
+        if (merged.conflicts.length) {
+          campaignTechConflict = true;
+          campaignSavePending = false;
+          const fields = merged.conflicts.map(field => TECH_STATE_FIELD_LABELS[field] || field).join('、');
+          console.warn('科技存档冲突，已保留页面内容：', merged.conflicts);
+          setCampaignSaveStatus(`保存冲突：${fields} 已被其他页面同时修改，本次修改未提交，页面内容保持不变。`, 'offline');
+          return false;
+        }
+        campaignTechRevision = remote.revision;
+        campaignTechBaseState = remote.state;
+        applyTechnologyAccountState(merged.state);
         conflictRetries += 1;
         if (conflictRetries >= 5) throw new Error('科技存档持续冲突，请稍后重试。');
         campaignSavePending = true;
@@ -3245,6 +3391,7 @@ async function saveCampaignTechnologySection() {
       }
       if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
       campaignTechRevision = Math.max(0, Number(payload.revision || campaignTechRevision));
+      campaignTechBaseState = sectionState;
       conflictRetries = 0;
     } while (campaignSavePending);
     campaignSaveQueuedBeforeReady = false;
@@ -3263,6 +3410,7 @@ async function saveCampaignTechnologySection() {
   }
 }
 async function flushCampaignTechnologySave() {
+  if (campaignSession.changed || campaignTechConflict) return false;
   if (!campaignStorageAvailable) {
     campaignSaveQueuedBeforeReady = true;
     setCampaignSaveStatus('有修改待同步', 'offline');
@@ -3274,14 +3422,14 @@ async function flushCampaignTechnologySave() {
   if (campaignSaveInFlight) {
     campaignSavePending = true;
     while (campaignSaveInFlight) await delay(40);
-    return campaignStorageAvailable && !campaignSaveQueuedBeforeReady;
+    return campaignStorageAvailable && !campaignSaveQueuedBeforeReady && !campaignTechConflict && !campaignSession.changed;
   }
   return saveCampaignTechnologySection();
 }
 async function readCampaignDashboardArchive() {
   const response = await fetch(CAMPAIGN_DASHBOARD_URL, { cache: 'no-store' });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
-  const payload = await response.json();
+  const payload = campaignSession.accept(await response.json());
   if (!payload.ok) throw new Error(payload.error || '读取失败');
   return {
     state: payload.exists && payload.state ? payload.state : null,
@@ -3300,9 +3448,9 @@ async function mutateCampaignDashboardArchive(mutator) {
     const response = await fetch(CAMPAIGN_DASHBOARD_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ section: 'dashboard', state: next, expectedRevision: current.revision }),
+      body: JSON.stringify({ section: 'dashboard', state: next, expectedRevision: current.revision, expectedAccountId: campaignSession.accountId }),
     });
-    const payload = await response.json().catch(() => null);
+    const payload = campaignSession.accept(await response.json().catch(() => null));
     if (response.status === 409 && payload?.code === 'SAVE_CONFLICT') continue;
     if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
     return true;
@@ -3365,11 +3513,8 @@ async function writeSnapshotToMainArchive(snapshot) {
       };
     }
 
-    const profileId = archive.activeProfileId && archive.profiles[archive.activeProfileId]
-      ? archive.activeProfileId
-      : Object.keys(archive.profiles)[0] || 'default';
-    archive.activeProfileId = profileId;
-    archive.profiles[profileId] ||= { id: profileId, name: '默认用户', activeCycleId: cycleId, cycles: {} };
+    const profileId = snapshot.accountId;
+    if (!profileId || !archive.profiles[profileId]) throw new Error('原科技档案已不存在，请刷新页面后重试。');
     const profile = archive.profiles[profileId];
     profile.activeCycleId ||= cycleId;
     if (!isPlainObject(profile.cycles)) profile.cycles = {};
@@ -3391,9 +3536,13 @@ async function saveAndReturnMain() {
       || window.open(dashboardUrl, `ato-module-${dashboardModule}`);
   returnMain.disabled = true;
   try {
-    const snapshot = unlockedTechSnapshot();
-    if (!await flushCampaignTechnologySave()) throw new Error('科技进度尚未写入服务器，已保留当前修改并等待重连。');
-    await writeSnapshotToMainArchive(snapshot);
+    saveAccounts();
+    // 同样是离线放行：本地快照已经写好，服务端那份会在重连后补上。
+    const wasOffline = !campaignStorageAvailable;
+    if (!await flushCampaignTechnologySave() && !wasOffline) {
+      throw new Error('科技进度尚未写入服务器，已保留当前修改并等待重连。');
+    }
+    await writeSnapshotToMainArchive(unlockedTechSnapshot());
     returnMain.textContent = '已保存';
     if (singleWindow) {
       window.location.href = dashboardUrl;
@@ -3420,6 +3569,15 @@ function renderAccountSelect() {
 async function switchAccount(id) {
   if (!accounts[id]) return;
   saveAccounts();
+  // 离线时 flush 必然返回 false，但那只是「还没同步到服务器」：saveAccounts() 已经
+  // 把本页改动落到本地，切换档案不该被永久挡住 —— 旧行为会让离线会话完全无法切换，
+  // 而提示里说的「请先处理保存提示」离线时并没有可操作的处理方式。只有「本来就
+  // 在线、却写不进去」才算硬阻塞。
+  const wasOffline = !campaignStorageAvailable;
+  if (!await flushCampaignTechnologySave() && !wasOffline) {
+    alert('当前档案尚未保存，已暂停切换。请先处理保存提示。');
+    return;
+  }
   try {
     await mutateCampaignDashboardArchive((dashboard) => {
       if (!dashboard?.profiles?.[id]) return null;
@@ -3439,8 +3597,10 @@ async function switchAccount(id) {
   currentTab = viewPage;
   unlocked = new Set(accounts[id].unlocked || []);
   unimportant = new Set(accounts[id].unimportant || []);
+  conditionTicked = new Set(accounts[id].conditions || []);
   unlockAutomaticCyclesThrough(currentCycle);
   selectedNodeId = null;
+  campaignTechBaseState = technologySectionState();
   renderAccountSelect();
   renderCycleSelect();
   renderTabs();
@@ -4076,6 +4236,7 @@ function boot(appData) {
   unimportant = new Set(accounts[activeAccountId]?.unimportant || []);
   conditionTicked = new Set(accounts[activeAccountId]?.conditions || []);
   unlockAutomaticCyclesThrough(currentCycle);
+  campaignTechBaseState = technologySectionState();
   updateLanguageToggle();
   syncHideUnknownToggle();
   renderAccountSelect();

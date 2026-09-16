@@ -57,17 +57,22 @@ final class LocalCampaignApi {
     if ("second-screen".equals(action) && "GET".equalsIgnoreCase(method)) return secondScreen();
     if ("me".equals(action)) return me();
     if ("logout".equals(action)) {
+      if (!"POST".equalsIgnoreCase(method)) throw new ApiException(405, error("This action requires POST."));
       if (secondScreenServer != null) secondScreenServer.stop();
       currentUser = "";
       store.edit().remove("currentUser").apply();
       return ok();
     }
-    if ("login".equals(action) || "register".equals(action)) return authenticate(requestBody);
+    if ("login".equals(action) || "register".equals(action)) {
+      if (!"POST".equalsIgnoreCase(method)) throw new ApiException(405, error("This action requires POST."));
+      return authenticate(requestBody);
+    }
 
     if (currentUser.isEmpty()) throw new ApiException(401, authRequired());
 
     if ("second-screen-status".equals(action)) return secondScreenStatus(method, requestBody);
     if ("second-screen-mode".equals(action)) return secondScreenMode(method, requestBody);
+    if ("restore-previous-day".equals(action)) return restorePreviousDay(method, requestBody);
 
     String section = uri.getQueryParameter("section");
     if ("GET".equalsIgnoreCase(method)) return read(section);
@@ -292,6 +297,19 @@ final class LocalCampaignApi {
     JSONObject campaign = loadCampaign();
     JSONObject revisions = campaign.getJSONObject("sectionRevisions");
     int revision = revisions.optInt(section, 0);
+    // 与 PHP 的 payload_expected_account_id() 及账号校验对齐：页面自己声明这份状态
+    // 属于哪个账号，与当前登录不一致就绝不允许写入。旧客户端不发这个字段（或发空
+    // 字符串）时按「未声明」处理，行为不变。
+    String expectedAccountId = payload.has("expectedAccountId")
+        ? payload.optString("expectedAccountId", "").trim() : "";
+    if (!expectedAccountId.isEmpty() && !expectedAccountId.equals(currentUser)) {
+      JSONObject mismatch = error("This page was loaded for another account. Reload it before saving.");
+      put(mismatch, "code", "ACCOUNT_MISMATCH");
+      put(mismatch, "section", section);
+      put(mismatch, "revision", revision);
+      put(mismatch, "updatedAt", campaign.opt("updatedAt"));
+      throw new ApiException(409, mismatch);
+    }
     if (payload.has("expectedRevision") && payload.optInt("expectedRevision", -1) != revision) {
       JSONObject conflict = error("This section was changed in another page.");
       put(conflict, "code", "SAVE_CONFLICT");
@@ -334,6 +352,68 @@ final class LocalCampaignApi {
     put(response, "revision", revision + 1);
     put(response, "updatedAt", campaign.opt("updatedAt"));
     put(response, "user", user());
+    return response;
+  }
+
+  private JSONObject restorePreviousDay(String method, String requestBody) throws Exception {
+    if (!"POST".equalsIgnoreCase(method)) throw new ApiException(405, error("This action requires POST."));
+    JSONObject payload = new JSONObject(requestBody);
+    if (!currentUser.equals(payload.optString("expectedAccountId", ""))) {
+      JSONObject failure = error("登录账号已变更，请刷新后重试。");
+      failure.put("code", "ACCOUNT_MISMATCH");
+      throw new ApiException(409, failure);
+    }
+    for (String field : new String[]{"profileId", "cycleId", "currentDay", "day"}) {
+      Object value = payload.opt(field);
+      if (!(value instanceof String) || ((String) value).isEmpty() || ((String) value).length() > 128) {
+        throw new ApiException(400, error("恢复日期无效。"));
+      }
+    }
+    String prefix = Uri.encode(payload.getString("profileId")) + "::" + Uri.encode(payload.getString("cycleId")) + "::";
+    JSONObject campaign = loadCampaign();
+    JSONObject revisions = campaign.getJSONObject("sectionRevisions");
+    if (!gameDayKey(campaign).equals(prefix + Uri.encode(payload.getString("currentDay")))
+        || payload.optInt("expectedRevision", -1) != revisions.optInt("dashboard", 0)) {
+      JSONObject failure = error("当前存档已变更，请刷新后重试。");
+      failure.put("code", "SAVE_CONFLICT");
+      throw new ApiException(409, failure);
+    }
+    if (payload.getString("day").equals(payload.getString("currentDay"))) {
+      throw new ApiException(400, error("恢复日期必须是前一天。"));
+    }
+    String targetDay = prefix + Uri.encode(payload.getString("day"));
+    String backupPrefix = campaignKey() + "::daily::" + targetDay + "::";
+    JSONObject restored = null;
+    int latestRevision = -1;
+    String latestKey = "";
+    for (String key : store.getAll().keySet()) {
+      if (!key.startsWith(backupPrefix)) continue;
+      try {
+        JSONObject candidate = normalizeCampaign(new JSONObject(store.getString(key, "")));
+        if (!targetDay.equals(gameDayKey(candidate))) continue;
+        int revision = candidate.getJSONObject("sectionRevisions").optInt("dashboard", 0);
+        if (restored == null || revision > latestRevision || (revision == latestRevision && key.compareTo(latestKey) > 0)) {
+          restored = candidate;
+          latestRevision = revision;
+          latestKey = key;
+        }
+      } catch (JSONException ignored) {
+        // An incomplete archive must not prevent trying other backups of this day.
+      }
+    }
+    if (restored == null) {
+      JSONObject failure = error("没有找到前一天（Day " + payload.getString("day") + "）的可用备份。");
+      failure.put("code", "BACKUP_NOT_FOUND");
+      throw new ApiException(404, failure);
+    }
+    for (String section : SECTIONS) {
+      restored.getJSONObject("sectionRevisions").put(section, revisions.optInt(section, 0) + 1);
+    }
+    restored.put("updatedAt", System.currentTimeMillis());
+    saveCampaign(restored);
+    JSONObject response = ok();
+    response.put("campaign", restored);
+    response.put("user", user());
     return response;
   }
 

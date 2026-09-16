@@ -30,6 +30,20 @@ from packaging.package_common import (
 GRADLE_VERSION = "8.10.2"
 ANDROID_TOOLS_REVISION = "15859902"
 ANDROID_API = "35"
+# Android versionCode：Play 与系统的上限，任何编码结果都必须留在范围内。
+ANDROID_VERSION_CODE_LIMIT = 2_100_000_000
+# major / minor / patch 以及预发布序号各自的取值范围：越界直接报错，不回绕、不截断。
+ANDROID_VERSION_FIELD_LIMIT = 99
+# 阶段位（权重 100）：0-8 是预发布标记的排序，必须是正式版的下界。
+ANDROID_RELEASE_STAGE = 9
+ANDROID_PRERELEASE_UNKNOWN_RANK = 4
+ANDROID_PRERELEASE_RANKS = {
+    "dev": 0, "snapshot": 0,
+    "alpha": 1, "a": 1,
+    "beta": 2, "b": 2,
+    "rc": 3, "pre": 3, "preview": 3,
+}
+ANDROID_VERSION_PATTERN = re.compile(r"^(\d+)\.(\d+)\.(\d+)(?:[-.]?([0-9A-Za-z][0-9A-Za-z.-]*))?$")
 ANDROID_RESOURCE_SUFFIXES = (
     ".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".tif", ".tiff", ".svg",
     ".pdf", ".mp3", ".wav", ".ogg", ".m4a", ".flac", ".mp4", ".webm", ".mov",
@@ -219,6 +233,63 @@ def prepare_android_project(version: str = "local") -> tuple[Path, Path]:
     return stage, web_root
 
 
+def android_version_code(version: str) -> int:
+    """把版本号编码成严格单调递增的 Android versionCode。
+
+    按字段加权，从高位到低位（各段范围固定，互不重叠）：
+
+    ==============  ==========  ==========
+    字段            范围        权重
+    ==============  ==========  ==========
+    major           0-99        10_000_000
+    minor           0-99        100_000
+    patch           0-99        1_000
+    阶段位          0-9         100
+    预发布序号      0-99        1
+    ==============  ==========  ==========
+
+    阶段位 9 是正式版，高于任何预发布标记（dev/snapshot=0、alpha=1、beta=2、
+    rc=3，其他标记=4），所以预发布版一定排在自己的正式版下面，而任何更高的
+    版本一定大于更低的版本：1.3.1-rc.1 < 1.3.1 < 1.3.9 < 1.3.10 < 1.4.0。
+    旧的「拼接所有数字」会让 1.4.0(140) 小于 1.3.10(1310)（被系统当成降级），
+    也会让 1.2.30 与 1.23.0 撞车，这里用固定权重彻底避免。
+
+    字段超范围或结果超过 Android 上限时直接报错，不静默回绕；只有完全不含数字的
+    本地标记（默认的 local / dev）保留历史行为，返回 1。
+    """
+    match = ANDROID_VERSION_PATTERN.match(version)
+    if not match:
+        if not any(character.isdigit() for character in version):
+            return 1
+        raise ValueError(f"无法解析 Android 版本号：{version}（需要 major.minor.patch，例如 1.4.0）")
+
+    fields = [int(match.group(index)) for index in (1, 2, 3)]
+    for name, value in zip(("主版本", "次版本", "补丁号"), fields):
+        if value > ANDROID_VERSION_FIELD_LIMIT:
+            raise ValueError(
+                f"Android 版本号 {name} 超出编码范围 0-{ANDROID_VERSION_FIELD_LIMIT}：{version}"
+            )
+
+    stage = ANDROID_RELEASE_STAGE
+    prerelease = 0
+    suffix = match.group(4)
+    if suffix:
+        marker = re.match(r"[A-Za-z]+", suffix)
+        stage = ANDROID_PRERELEASE_RANKS.get(marker.group(0).lower() if marker else "", ANDROID_PRERELEASE_UNKNOWN_RANK)
+        number = re.search(r"\d+", suffix)
+        prerelease = int(number.group(0)) if number else 0
+        if prerelease > ANDROID_VERSION_FIELD_LIMIT:
+            raise ValueError(
+                f"Android 预发布序号超出编码范围 0-{ANDROID_VERSION_FIELD_LIMIT}：{version}"
+            )
+
+    major, minor, patch = fields
+    version_code = major * 10_000_000 + minor * 100_000 + patch * 1_000 + stage * 100 + prerelease
+    if version_code > ANDROID_VERSION_CODE_LIMIT:
+        raise ValueError(f"Android versionCode 超出上限 {ANDROID_VERSION_CODE_LIMIT}：{version}")
+    return version_code
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="导出可安装 Android APK；缺少 JDK、Gradle 或 Android SDK 时自动下载（运行即表示接受相应许可）。")
     parser.add_argument("--version", default="local", help="APK 版本与文件名")
@@ -232,8 +303,7 @@ def main() -> int:
     sdk_root = ensure_android_sdk(java)
     stage, _ = prepare_android_project(version)
 
-    digits = "".join(character for character in version if character.isdigit())
-    version_code = min(int(digits or "1"), 2_100_000_000)
+    version_code = android_version_code(version)
     detected_java_home = java_home(java)
     env = os.environ.copy()
     env.update({"JAVA_HOME": str(detected_java_home), "ANDROID_SDK_ROOT": str(sdk_root), "ANDROID_HOME": str(sdk_root)})

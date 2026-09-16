@@ -4,7 +4,30 @@ services:
     container_name: ato-tools
     ports:
       - "11451:80"
+    # NAS（群晖/威联通）上的 Apache 部署。挂载面与 docker-compose.yml 完全一致：
+    # 只挂应用真正要访问的路径 + data 卷，绝不整棵挂 ./ —— 整棵挂载会把打包器视为
+    # 私有产物的 export/**（含使用者自备的 *.atopack 资料包）、tools/、asset-studio/、
+    # release*/、tests/、tmp/、logs/、.git/ 一起放到这个端口上供人下载。
     volumes:
-      - ./:/var/www/html
+      # .htaccess 是 Apache/NAS 部署唯一的私有目录拒绝规则（router.php 只在 PHP 内置
+      # 服务器下生效），少挂它 data/、export/、logs/ 就重新变成可下载的静态文件。
+      - ./index.html:/var/www/html/index.html:ro
+      - ./router.php:/var/www/html/router.php:ro
+      - ./.htaccess:/var/www/html/.htaccess:ro
+      # 让 .htaccess 真正生效（php:8.3-apache 的 Debian 默认配置里 /var/www/ 是
+      # AllowOverride None，.htaccess 会被忽略，data/ 就成了可下载的静态文件）。
+      # 群晖/威联通自带的 Apache 一般允许 .htaccess，这份配置对它们无害、对官方镜像必要。
+      - ./tools/packaging/docker/apache-ato-lan.conf:/etc/apache2/conf-enabled/zz-ato-lan.conf:ro
+      - ./api:/var/www/html/api
+      - ./assets:/var/www/html/assets
+      - ./aibp:/var/www/html/aibp
+      - ./hero:/var/www/html/hero
+      - ./map:/var/www/html/map
+      - ./record:/var/www/html/record
+      - ./ss:/var/www/html/ss
+      - ./story:/var/www/html/story
+      - ./technology:/var/www/html/technology
+      # 账号、存档、session 与备份的持久化目录（entrypoint 会建目录并 chown 给 www-data）。
+      - ./data:/var/www/html/data
     entrypoint: /bin/sh -c "mkdir -p /var/www/html/data && chown -R 33:33 /var/www/html/data && apache2-foreground"
     restart: unless-stopped

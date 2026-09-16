@@ -239,7 +239,9 @@ function storyPageContext() {
     secondScreenStoryModeLabel: label,
     secondScreenStoryModeToggle: { disabled: false },
     console: { warn() {} },
-    fetch: async () => ({ ok: true, status: 200 }),
+    campaignSession: null,
+    storySectionRevision: 0,
+    fetch: async () => ({ ok: true, status: 200, json: async () => ({ ok: true, revision: 1 }) }),
     buildSecondScreenStorySnapshot: () => ({ id: '0001', title: '标题', text: '正文' }),
     window: {
       clearTimeout() {},
@@ -248,7 +250,7 @@ function storyPageContext() {
       setTimeout(fn, ms) { if (Number(ms) < 200) { timers.push(fn); return timers.length; } fn(); return 0; },
     },
   });
-  ['postSecondScreenStorySnapshot', 'reportSecondScreenSnapshotFailure',
+  ['currentCampaignAccountId', 'postSecondScreenStorySnapshot', 'reportSecondScreenSnapshotFailure',
     'clearSecondScreenSnapshotFailure', 'secondScreenStoryModeTitle', 'scheduleSecondScreenStorySnapshot']
     .forEach(name => vm.runInContext(slice(STORY_SOURCE, name, '  '), context));
   return context;
@@ -257,7 +259,7 @@ function storyPageContext() {
 test('快照写失败会重试并把原因留在第二屏开关提示里', async () => {
   const ctx = storyPageContext();
   let calls = 0;
-  ctx.fetch = async () => { calls += 1; return { ok: false, status: 401 }; };
+  ctx.fetch = async () => { calls += 1; return { ok: false, status: 401, json: async () => ({ ok: false, error: 'HTTP 401' }) }; };
   ctx.scheduleSecondScreenStorySnapshot();
   assert.equal(ctx.__timers.length, 1, '快照是先排一次定时器再发');
   await ctx.__timers.shift()();
@@ -267,7 +269,7 @@ test('快照写失败会重试并把原因留在第二屏开关提示里', async
   // 状态刷新重写提示时，失败原因不能被刷掉
   assert.match(ctx.secondScreenStoryModeTitle(ctx.SECOND_SCREEN_STORY_MODE_TITLE), /401/);
 
-  ctx.fetch = async () => { calls += 1; return { ok: true, status: 200 }; };
+  ctx.fetch = async () => { calls += 1; return { ok: true, status: 200, json: async () => ({ ok: true, revision: 2 }) }; };
   ctx.scheduleSecondScreenStorySnapshot();
   await ctx.__timers.shift()();
   assert.equal(ctx.secondScreenSnapshotFailure, '');

@@ -1171,6 +1171,11 @@
     let saveTimer = null;
     let serverStorageAvailable = false;
     let serverSectionRevision = 0;
+    let heroServerBaseline = null;
+    let heroSaveInFlight = false;
+    let heroSavePending = false;
+    let heroLoading = false;
+    let heroSessionEpoch = 0;
 
     function loadState() {
       try {
@@ -1212,35 +1217,68 @@
           if (!Array.isArray(h.fatedMnemos[c])) h.fatedMnemos[c] = [];
         });
       });
-      if (state.heroes.length && !state.activeHeroId) state.activeHeroId = state.heroes[0].id;
+      if (!state.heroes.some(hero => hero.id === state.activeHeroId)) state.activeHeroId = state.heroes[0]?.id || "";
     }
 
     function persistLocal() {
-      try { localStorage.setItem(storageKey, JSON.stringify(state)); } catch {}
+      try { localStorage.setItem(storageKey, JSON.stringify({ ...state, _syncBaseline: heroServerBaseline })); } catch {}
     }
 
-    // Merge two hero states without losing data from either side:
-    // - same hero id: keep the local (currently-edited) version
-    // - hero only on server: adopt it
-    // - graveyard: union
-    function mergeHeroStates(localState, serverState) {
-      const localHeroes = Array.isArray(localState.heroes) ? localState.heroes : [];
-      const serverHeroes = Array.isArray(serverState.heroes) ? serverState.heroes : [];
-      const byId = new Map();
-      localHeroes.forEach((h) => { if (h && h.id) byId.set(h.id, h); });
-      serverHeroes.forEach((h) => { if (h && h.id && !byId.has(h.id)) byId.set(h.id, h); });
-      const grave = new Set();
-      (Array.isArray(localState.graveyard) ? localState.graveyard : []).forEach((id) => grave.add(id));
-      (Array.isArray(serverState.graveyard) ? serverState.graveyard : []).forEach((id) => grave.add(id));
-      return {
-        heroes: Array.from(byId.values()),
-        activeHeroId: localState.activeHeroId || serverState.activeHeroId || "",
-        graveyard: Array.from(grave),
-      };
+    function heroSnapshot(value) {
+      return JSON.parse(JSON.stringify({
+        heroes: Array.isArray(value?.heroes) ? value.heroes : [],
+        activeHeroId: value?.activeHeroId || "",
+        graveyard: Array.isArray(value?.graveyard) ? value.graveyard : [],
+      }));
+    }
+
+    function mergeHeroStates(baseState, localState, serverState) {
+      const conflicts = [];
+      const copy = value => value === undefined ? undefined : JSON.parse(JSON.stringify(value));
+      const equal = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+      const object = value => value && typeof value === "object" && !Array.isArray(value);
+      function merge(base, local, remote, path) {
+        if (equal(local, remote)) return copy(local);
+        if (equal(local, base)) return copy(remote);
+        if (equal(remote, base)) return copy(local);
+        if (object(local) && object(remote) && (base === undefined || object(base))) {
+          const result = {};
+          for (const key of new Set([...Object.keys(base || {}), ...Object.keys(local), ...Object.keys(remote)])) {
+            const value = merge(base?.[key], local[key], remote[key], `${path}.${key}`);
+            if (value !== undefined) result[key] = value;
+          }
+          return result;
+        }
+        conflicts.push(path);
+        return copy(local);
+      }
+      function mergeList(field) {
+        // Graveyard entries retain hero IDs; retiring/deleting a hero is a
+        // deletion, not a missing entry that should be reintroduced by union.
+        const keyed = list => new Map((list || []).map(item => [item?.id || JSON.stringify(item), item]));
+        const base = keyed(baseState?.[field]);
+        const local = keyed(localState?.[field]);
+        const remote = keyed(serverState?.[field]);
+        return [...new Set([...local.keys(), ...remote.keys(), ...base.keys()])]
+          .map(id => merge(base.get(id), local.get(id), remote.get(id), `${field}.${id}`))
+          .filter(item => item !== undefined);
+      }
+      return { state: {
+        heroes: mergeList("heroes"),
+        graveyard: mergeList("graveyard"),
+        activeHeroId: localState?.activeHeroId || serverState?.activeHeroId || "",
+      }, conflicts };
+    }
+
+    function chooseHeroMerge(remote) {
+      const merged = mergeHeroStates(heroServerBaseline, heroSnapshot(state), remote);
+      if (merged.conflicts.length && !window.confirm(`英雄记录存在同时修改：\n${merged.conflicts.slice(0, 8).join("\n")}\n\n确定：保留本页冲突字段并合并\n取消：加载服务器版本（本机未同步修改将被放弃）`)) return remote;
+      return merged.state;
     }
 
     function queueSave() {
       state._dirty = true;
+      if (heroSaveInFlight) heroSavePending = true;
       persistLocal();
       clearTimeout(saveTimer);
       saveTimer = setTimeout(() => {
@@ -1249,144 +1287,143 @@
     }
 
     async function saveToServer() {
+      if (heroLoading) { heroSavePending = true; return; }
+      if (!state._userId) return;
+      if (heroSaveInFlight) { heroSavePending = true; return; }
+      heroSaveInFlight = true;
+      const sessionEpoch = heroSessionEpoch;
       try {
-        const response = await fetch(serverStorageUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            section: serverStorageSection,
-            state: state,
-            expectedRevision: serverSectionRevision,
-          }),
-        });
-        const payload = await response.json().catch(() => null);
-        if (response.ok && payload?.ok) {
-          serverStorageAvailable = true;
-          serverSectionRevision = payload.revision || serverSectionRevision;
-          state._lastSyncRevision = serverSectionRevision;
-          state._dirty = false;
-          persistLocal();
-          setSaveStatus("已同步 " + new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }));
-        } else if (response.status === 409 && payload?.revision) {
-          // Conflict — fetch the latest server state, merge (keep local edits,
-          // adopt server-only heroes), then retry with the corrected revision.
-          serverSectionRevision = payload.revision;
-          try {
-            const latestRes = await fetch(serverStorageUrl + "?section=" + serverStorageSection, { cache: "no-store" });
-            if (latestRes.ok) {
-              const latestPayload = await latestRes.json();
-              if (latestPayload.ok && latestPayload.state) {
-                const merged = mergeHeroStates(state, latestPayload.state);
-                merged._userId = state._userId;
-                merged._lastSyncRevision = serverSectionRevision;
-                merged._dirty = true;
-                state = merged;
-                normalizeState();
-                persistLocal();
-              }
-            }
-          } catch {}
-          const retry = await fetch(serverStorageUrl, {
+        let conflicts = 0;
+        do {
+          heroSavePending = false;
+          const ownerId = state._userId;
+          const snapshot = heroSnapshot(state);
+          const response = await fetch(serverStorageUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               section: serverStorageSection,
-              state: state,
+              state: snapshot,
               expectedRevision: serverSectionRevision,
+              expectedAccountId: ownerId,
             }),
           });
-          const retryPayload = await retry.json().catch(() => null);
-          if (retry.ok && retryPayload?.ok) {
-            serverStorageAvailable = true;
-            serverSectionRevision = retryPayload.revision || serverSectionRevision;
-            state._lastSyncRevision = serverSectionRevision;
-            state._dirty = false;
+          const payload = await response.json().catch(() => null);
+          if (sessionEpoch !== heroSessionEpoch) return;
+          if (payload?.code === "ACCOUNT_MISMATCH") { await reloadAfterAccountChange(); return; }
+          if (response.status === 409 && payload?.code === "SAVE_CONFLICT") {
+            if (++conflicts > 5) throw new Error("英雄记录持续冲突，请稍后重试。");
+            const latestRes = await fetch(serverStorageUrl + "?section=" + serverStorageSection, { cache: "no-store" });
+            const latest = await latestRes.json();
+            if (sessionEpoch !== heroSessionEpoch) return;
+            if (!latestRes.ok || !latest?.ok) throw new Error("无法读取最新英雄记录");
+            if (latest.user?.id !== ownerId) { await reloadAfterAccountChange(); return; }
+            const remote = heroSnapshot(latest.state);
+            state = { ...chooseHeroMerge(remote), _userId: ownerId, _dirty: true };
+            heroServerBaseline = remote;
+            serverSectionRevision = Number(latest.revision || 0);
+            normalizeState();
+            renderAll();
             persistLocal();
-            setSaveStatus("已同步 " + new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }));
-          } else {
-            setSaveStatus("同步失败，已保存到本机");
+            heroSavePending = true;
+            continue;
           }
-        } else {
-          setSaveStatus("同步失败，已保存到本机");
-        }
+          if (!response.ok || !payload?.ok) throw new Error(payload?.error || "保存失败");
+          serverStorageAvailable = true;
+          serverSectionRevision = Number(payload.revision || serverSectionRevision);
+          heroServerBaseline = snapshot;
+          state._lastSyncRevision = serverSectionRevision;
+          state._dirty = JSON.stringify(heroSnapshot(state)) !== JSON.stringify(snapshot);
+          heroSavePending = state._dirty;
+          persistLocal();
+          conflicts = 0;
+        } while (heroSavePending);
+        setSaveStatus("已同步 " + new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }));
       } catch {
+        if (sessionEpoch !== heroSessionEpoch) return;
+        state._dirty = true;
+        persistLocal();
         setSaveStatus("同步失败，已保存到本机");
+      } finally {
+        heroSaveInFlight = false;
+        if (sessionEpoch !== heroSessionEpoch && heroSavePending && state._dirty && state._userId) void saveToServer();
+      }
+    }
+
+    // 本页内存里的存档已经不属于当前登录账号（在别的主控台标签页退出并登录了别的账号）。
+    // 这时既不能写回服务器，也不能和服务器上的新账号存档合并：只能丢掉内存状态，按当前
+    // 会话重新读取。读取失败时同样不能保留旧账号的英雄，否则下次保存会写错账号。
+    async function reloadAfterAccountChange() {
+      const sessionEpoch = ++heroSessionEpoch;
+      heroSavePending = false;
+      heroServerBaseline = null;
+      clearTimeout(saveTimer);
+      saveTimer = null;
+      state._dirty = false;
+      try {
+        const response = await fetch(serverStorageUrl + "?section=" + serverStorageSection, { cache: "no-store" });
+        const payload = await response.json().catch(() => null);
+        if (sessionEpoch !== heroSessionEpoch) return;
+        if (!response.ok || !payload?.ok) throw new Error();
+        serverStorageAvailable = true;
+        serverSectionRevision = payload.revision || 0;
+        state = payload.state && Array.isArray(payload.state.heroes)
+          ? payload.state
+          : { heroes: [], activeHeroId: "", graveyard: [] };
+        state._userId = payload.user?.id || "";
+        state._lastSyncRevision = serverSectionRevision;
+        state._dirty = false;
+        heroServerBaseline = heroSnapshot(state);
+        normalizeState();
+        persistLocal();
+        renderAll();
+        setSaveStatus("登录账号已切换，已读取当前账号的存档");
+      } catch {
+        if (sessionEpoch !== heroSessionEpoch) return;
+        serverStorageAvailable = false;
+        state = { heroes: [], activeHeroId: "", graveyard: [] };
+        state._userId = "";
+        state._lastSyncRevision = 0;
+        state._dirty = false;
+        normalizeState();
+        persistLocal();
+        renderAll();
+        setSaveStatus("登录账号已切换，请重新载入页面");
       }
     }
 
     async function loadFromServer() {
+      const sessionEpoch = heroSessionEpoch;
+      heroLoading = true;
       try {
         const response = await fetch(serverStorageUrl + "?section=" + serverStorageSection, { cache: "no-store" });
-        if (!response.ok) throw new Error();
         const payload = await response.json();
-        if (!payload.ok) throw new Error();
-        serverStorageAvailable = true;
-        const serverState = payload.state;
-        const serverRevision = payload.revision || 0;
-        serverSectionRevision = serverRevision;
-        const serverUser = payload.user?.id || "";
-        const localUser = state._userId || "";
-        const localRevision = state._lastSyncRevision || 0;
-        const localHasData = state.heroes && state.heroes.length > 0;
-        const serverHasData = serverState && Array.isArray(serverState.heroes) && serverState.heroes.length > 0;
-        // Detect account switch
-        if (serverUser && localUser && serverUser !== localUser) {
-          if (serverHasData) {
-            state = serverState;
-          } else {
-            state = { heroes: [], activeHeroId: "", graveyard: [] };
-          }
-          state._userId = serverUser;
-          state._lastSyncRevision = serverRevision;
-          normalizeState();
-          persistLocal();
-          renderAll();
-          setSaveStatus(serverHasData ? "已从 NAS 读取" : "NAS 已连接");
-        } else if (serverHasData && serverRevision > localRevision) {
-          // Server is newer (another device pushed) — pull, but never silently
-          // discard local unsynced edits: merge them back.
-          if (state._dirty) {
-            const merged = mergeHeroStates(state, serverState);
-            merged._userId = serverUser;
-            merged._lastSyncRevision = serverRevision;
-            merged._dirty = true;
-            state = merged;
-            normalizeState();
-            persistLocal();
-            renderAll();
-            setSaveStatus("已合并本地与 NAS 数据");
-            saveToServer();
-          } else {
-            state = serverState;
-            state._userId = serverUser;
-            state._lastSyncRevision = serverRevision;
-            normalizeState();
-            persistLocal();
-            renderAll();
-            setSaveStatus("已从 NAS 读取");
-          }
-        } else if (localHasData) {
-          // Local is current or newer — push to server
-          state._userId = serverUser;
-          setSaveStatus("NAS 已连接");
-          saveToServer();
-        } else if (serverHasData) {
-          // Local empty, pull from server
-          state = serverState;
-          state._userId = serverUser;
-          state._lastSyncRevision = serverRevision;
-          normalizeState();
-          persistLocal();
-          renderAll();
-          setSaveStatus("已从 NAS 读取");
-        } else {
-          state._userId = serverUser;
-          persistLocal();
-          setSaveStatus("NAS 已连接");
+        if (sessionEpoch !== heroSessionEpoch) return;
+        if (!response.ok || !payload?.ok || !payload.user?.id) throw new Error();
+        const serverUser = payload.user.id;
+        const accountChanged = Boolean(state._userId && state._userId !== serverUser);
+        const remote = heroSnapshot(payload.state);
+        let next = remote;
+        if (!accountChanged) {
+          if (state._dirty) next = chooseHeroMerge(remote);
+          else if (!payload.exists && !state._userId && state.heroes.length) next = heroSnapshot(state);
         }
+        serverStorageAvailable = true;
+        serverSectionRevision = Number(payload.revision || 0);
+        heroServerBaseline = remote;
+        state = { ...next, _userId: serverUser, _lastSyncRevision: serverSectionRevision };
+        normalizeState();
+        state._dirty = JSON.stringify(heroSnapshot(state)) !== JSON.stringify(remote);
+        persistLocal();
+        renderAll();
+        setSaveStatus(accountChanged ? "已读取当前登录账号的存档" : "已从 NAS 读取");
       } catch {
+        if (sessionEpoch !== heroSessionEpoch) return;
         serverStorageAvailable = false;
         setSaveStatus("NAS 不可用，使用本机存档");
+      } finally {
+        heroLoading = false;
+        if (sessionEpoch === heroSessionEpoch && serverStorageAvailable && state._dirty) void saveToServer();
       }
     }
 
@@ -2380,6 +2417,19 @@
       img.src = assetSrc("reset_triskelion_F4F4F4.png");
     });
 
+    // 主控台登出/切换账号的广播。旧页面必须立刻停下待保存的计时器，并丢掉内存里旧账号
+    // 的英雄，否则 Cookie 已经换成新账号后旧页面还会继续保存。
+    const dashboardWriterChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-dashboard-writer-v1") : null;
+    if (dashboardWriterChannel) dashboardWriterChannel.addEventListener("message", (event) => {
+      const message = event.data || {};
+      if (message.type !== "session-logout") return;
+      clearTimeout(saveTimer);
+      saveTimer = null;
+      state._dirty = false;
+      setSaveStatus("登录账号已切换，正在重新读取");
+      reloadAfterAccountChange();
+    });
+
     // Mnemos tag sync — reload hero state when dashboard modifies it
     const heroMnemosSyncChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-hero-mnemos-sync-v1") : null;
     if (heroMnemosSyncChannel) heroMnemosSyncChannel.addEventListener("message", (event) => {
@@ -2397,6 +2447,8 @@
 
     // Init
     state = loadState();
+    heroServerBaseline = state._syncBaseline ? heroSnapshot(state._syncBaseline) : null;
+    delete state._syncBaseline;
     normalizeState();
     renderAll();
     loadFromServer();

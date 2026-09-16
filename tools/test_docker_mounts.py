@@ -6,27 +6,75 @@
 挂载是"整棵盖住"的 —— 挂载点一旦落在镜像自带的程序文件上，那些文件在容器里就永远是
 宿主机那份，`docker compose pull` 再也更新不到它们。第二屏就是这么坏过：整棵挂
 `./app/ss` 把 ss/app.js 一起遮住，主控台更新了、第二屏还是旧前端。
+aibp/ps 属于另一种情况：它必须整棵挂（那是使用者投放卡图的位置，图片和程序数据同级），
+所以 ps/ 里的程序文件改由「镜像内另存原版 + 启动时还原」来保证，见检查 6。
 
 这里不引用第三方 YAML 库，直接按缩进解析 compose.yaml 的 volumes 段，检查：
-  1. 没有任何挂载点等于/覆盖镜像自带的程序文件（ss/ 与 assets/bgm/）；
-  2. 第二屏素材、BGM 音频目录仍然挂进来了，且 BGM 挂载点与 manifest.audioDir 一致；
+  1. 没有任何挂载点等于/覆盖镜像自带、又不带还原兜底的程序文件（ss/、assets/bgm/），
+     且 aibp/ps 下的程序数据（.js/.json）全部登记在案；
+  2. 第二屏素材、BGM 音频目录、整棵 aibp/ps 仍然挂进来了（图片与程序数据同级的
+     ps 子目录必须一起带进容器），且 BGM 挂载点与 manifest.audioDir 一致；
   3. 单文件挂载带 bind.create_host_path: false，且安装脚本/导出脚本会先放占位文件；
-  4. pull_policy 不是 missing（镜像标签 latest 会移动）。
+  4. pull_policy 不是 missing（镜像标签 latest 会移动）；
+  5. 安装脚本 mkdir 出来的目录与 compose 挂载点一一对应；
+  6. aibp/ps 被整棵挂载后，ps/ 下的程序文件必须靠「镜像里另存一份原版 + 启动时还原」
+     兜底（代码里的 1c）：Dockerfile 把 app/aibp/ps/ 拷到 /opt/ato/aibp-ps-program，
+     docker-entrypoint.sh 启动时把缺失或被旧宿主机副本盖住的程序文件写回
+     /app/aibp/ps。少了任何一半，新装或升级后这些脚本就会缺版本；
+  7. 仓库根目录的两份 compose（Apache/NAS 部署）只挂应用真正要访问的路径 + data 卷：
+     整棵挂 ./ 等于把打包器判定为私有的东西（export/** 里的 *.atopack 资料包、tools/、
+     asset-studio/、release*/、tests/、tmp/、logs/、.git/）全部发布到 11451 端口上供人
+     下载。这里既要求「没有整棵挂载、没挂私有树」，也要求「应用需要的路径一条不少」——
+     只查前者会有人把 Web 根挂空，只查后者会有人悄悄收回整棵挂载。
 """
 from __future__ import annotations
 
 import re
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 COMPOSE = ROOT / "tools/packaging/docker/compose.yaml"
+DOCKERFILE = ROOT / "tools/packaging/docker/Dockerfile"
+ENTRYPOINT = ROOT / "tools/packaging/docker/docker-entrypoint.sh"
 INSTALL_SCRIPT = ROOT / "tools/install-docker.sh"
 EXPORTER = ROOT / "tools/export_portable.py"
 MANIFEST = ROOT / "assets/bgm/manifest.js"
 
+sys.path.insert(0, str(ROOT / "tools"))
+from packaging import package_common as pc  # noqa: E402  （共用同一份私有目录清单）
+
+# 仓库根目录的 compose：直接用仓库目录当 Apache 的 Web 根，没有 Dockerfile 兜底，
+# 所以每一条应用路径都必须显式挂进去。
+ROOT_COMPOSES = (ROOT / "docker-compose.yml", ROOT / "docker-compose.nas.yml")
+ROOT_WEB_ROOT = "/var/www/html"
+# 应用真正要访问的路径（少一条对应页面/接口就 404）。data 单个列出来：它是可写的
+# 持久化目录，不是页面资源。
+ROOT_APP_PATHS = (
+    "index.html",     # 主控台入口
+    "router.php",     # 内置服务器的私有目录拦截脚本（发布包与便携版都靠它启动）
+    ".htaccess",      # Apache/NAS 一边的私有目录拒绝规则
+    "api",            # 存档 / 账号 API
+    "assets",         # 主控台脚本样式、登录守卫、BGM 程序
+    "aibp",           # AIBP（ps/ 里的程序数据与使用者卡图同级，必须整棵挂）
+    "hero",
+    "map",
+    "record",
+    "ss",             # 第二屏
+    "story",
+    "technology",
+    "data",           # 账号/存档/session/备份（entrypoint 会建目录并 chown）
+)
+# 宿主机上可能还不存在、由 Docker/entrypoint 建出来的挂载源（别的都必须真在仓库里，
+# 否则就是写错了名字 —— 单文件挂载写错时 Docker 还会建一个同名目录顶上）。
+ROOT_CREATED_BY_DEPLOYMENT = {"data"}
+# Apache 补充配置：让根目录的 .htaccess 在官方 php:apache 镜像里真正生效。
+APACHE_CONF = ROOT / "tools/packaging/docker/apache-ato-lan.conf"
+APACHE_CONF_TARGET = "/etc/apache2/conf-enabled/zz-ato-lan.conf"
+
 # 镜像自带的程序文件：任何一个的容器路径被挂载点遮住，pull 就更新不到它。
-# （只列会被挂载的树；其它目录根本没挂，不受影响。）
-IMAGE_PROGRAM_FILES = (
+# 这里只放宿主目录根本不挂的树 —— 覆盖到就是硬错误。
+NEVER_SHADOWED_FILES = (
     "ss/index.html",
     "ss/app.js",
     "ss/styles.css",
@@ -36,15 +84,47 @@ IMAGE_PROGRAM_FILES = (
     "assets/bgm/README.md",
 )
 
+# aibp/ps 不一样：整棵挂载是刻意的（宿主机目录既是使用者的卡图投放位置，图片又与程序
+# 数据同级），所以 ps/ 里的程序文件必然被挂载点遮住。它们由 entrypoint 从镜像内另存的
+# 原版（PRISTINE_PS_DIR）还原回 PS_PROGRAM_DIR —— 见检查 1c。
+PS_PROGRAM_DIR = "/app/aibp/ps"
+PRISTINE_PS_DIR = "/opt/ato/aibp-ps-program"
+RESTORED_PROGRAM_FILES = (
+    "aibp/ps/CHIMERA_METASTASIOS/bp_status_map.js",
+    "aibp/ps/CHIMERA_METASTASIOS/bp_status_map.json",
+    "aibp/ps/other/resouce/bp_resource_map.js",
+    "aibp/ps/other/resouce/bp_resource_map_c1_c3.js",
+    "aibp/ps/other/resouce/bp_resource_map_c4_c5.js",
+    "aibp/ps/other/token/token_manifest.js",
+)
+
+# ps/ 下所有程序数据（.js/.json）都要登记在上面两张表里，1b 会按目录实际内容核对。
+IMAGE_PROGRAM_FILES = NEVER_SHADOWED_FILES + RESTORED_PROGRAM_FILES
+
+# 图片与程序数据混放的目录：整棵挂载必须把它们一起带进容器。上一版只挂「纯素材」子目录，
+# 这几个目录里的卡图就静默消失了，所以这里逐个确认有挂载点覆盖。
+MIXED_MEDIA_DIRS = (
+    "/app/aibp/ps/CHIMERA_METASTASIOS",
+    "/app/aibp/ps/other/token",
+    "/app/aibp/ps/other/resouce",
+    "/app/aibp/ps/other",
+)
+
 # 必须挂在宿主机上的本地素材（镜像里没有，不挂就永远是空的）
 REQUIRED_TARGETS = (
     "/app/ss/battle-board.jpg",
     "/app/ss/terrain",
     "/app/ss/terrain-cards",
     "/app/assets/bgm/audio",
+    # ps/ 整棵挂进来：它既是使用者的卡图投放位置，又和程序数据同级，拆开挂会让图消失。
+    "/app/aibp/ps",
 )
 
 ENTRY_RE = re.compile(r"^(\s*)-\s+(.*)$")
+MKDIR_RE = re.compile(r"^\s*mkdir\s+-p\s+(.*)$", re.M)
+COPY_RE = re.compile(r"^\s*COPY\s+(\S+)\s+(\S+)\s*$", re.M)
+# entrypoint 的还原循环：遍历镜像里的原版程序数据（这句没了，新装就是空目录）
+RESTORE_LOOP_RE = re.compile(r"^\s*find\s+" + re.escape(PRISTINE_PS_DIR) + r"\s+-type\s+f\s*\|", re.M)
 
 
 def parse_volumes(text: str) -> list[dict[str, object]]:
@@ -94,34 +174,110 @@ def covers(target: str, container_path: str) -> bool:
     return normalized == container_path or container_path.startswith(normalized + "/")
 
 
+def parse_created_dirs(text: str) -> list[str]:
+    """安装脚本 mkdir -p 在宿主机建出来的目录（含续行），用来和 compose 的挂载点对齐。"""
+    joined = re.sub(r"\\\r?\n", " ", text)
+    created: list[str] = []
+    for match in MKDIR_RE.finditer(joined):
+        for token in match.group(1).split():
+            token = token.strip("\"'")
+            if token.startswith("app/"):
+                created.append(token)
+    return created
+
+
 def main() -> int:
     compose = COMPOSE.read_text(encoding="utf-8")
+    dockerfile = DOCKERFILE.read_text(encoding="utf-8")
+    entrypoint = ENTRYPOINT.read_text(encoding="utf-8")
     install_script = INSTALL_SCRIPT.read_text(encoding="utf-8")
     exporter = EXPORTER.read_text(encoding="utf-8")
     manifest = MANIFEST.read_text(encoding="utf-8")
     entries = parse_volumes(compose)
     targets = [str(entry["target"]) for entry in entries]
+    sources = [str(entry["source"]) for entry in entries]
     failures: list[str] = []
 
     if not entries:
         failures.append("没能从 compose.yaml 解析出任何挂载点（解析器或文件结构变了？）")
 
-    # 1. 程序文件不能被遮住
+    # 1. 程序文件不能被白遮住：宿主目录根本不挂的那些树，任何挂载点覆盖到都算失败。
+    # aibp/ps 不在此列（整棵挂载是刻意的），它由 1c 的还原机制保证。
     for entry in entries:
         target = str(entry["target"])
         if not target.startswith("/app/"):
             continue
-        for relative in IMAGE_PROGRAM_FILES:
+        for relative in NEVER_SHADOWED_FILES:
             if covers(target, "/app/" + relative):
                 failures.append(
                     f"挂载点 {target} 遮住了镜像自带的程序文件 {relative}；"
                     "程序文件必须由镜像提供，否则 docker compose pull 更新不到它"
                 )
 
-    # 2. 素材仍然挂进来
+    # 1b. ps/ 下所有程序数据（.js/.json）都要登记在上面那张表里：以后往 aibp/ps 新增程序
+    # 文件时不用改测试也能守住（素材是图片，不算程序数据）。
+    for path in sorted((ROOT / "aibp/ps").rglob("*")):
+        if not path.is_file() or path.suffix.lower() not in (".js", ".json"):
+            continue
+        relative = path.relative_to(ROOT).as_posix()
+        if relative not in IMAGE_PROGRAM_FILES:
+            failures.append(f"aibp/ps 里的程序文件 {relative} 没有登记进 IMAGE_PROGRAM_FILES")
+
+    # 1c. aibp/ps 整棵挂载：ps/ 里的程序文件必须靠「镜像另存原版 + 启动时还原」兜底。
+    # Dockerfile 把 app/aibp/ps/ 拷到 PRISTINE_PS_DIR，entrypoint 再从那里写回
+    # PS_PROGRAM_DIR 下缺失或与镜像不同的文件 —— 新装（宿主机是空目录）和旧宿主机留下
+    # 旧副本两种情况都不会再遮住程序文件。这是负向兜底：删掉 COPY、删掉还原循环、
+    # 还原时不比内容、或改成先删后拷，下面都会失败。
+    copy_pairs = [
+        (match.group(1).rstrip("/"), match.group(2).rstrip("/"))
+        for match in COPY_RE.finditer(dockerfile)
+    ]
+    if ("app/aibp/ps", PRISTINE_PS_DIR) not in copy_pairs:
+        failures.append(
+            f"Dockerfile 没有把 aibp/ps 的程序数据拷到 {PRISTINE_PS_DIR}"
+            f"（需要 COPY app/aibp/ps/ {PRISTINE_PS_DIR}/）；"
+            "整棵挂载 aibp/ps 后，ps/ 下的程序文件只能由这份镜像内的原版还原"
+        )
+    if not RESTORE_LOOP_RE.search(entrypoint):
+        failures.append(
+            f"docker-entrypoint.sh 没有遍历 {PRISTINE_PS_DIR} 还原程序文件的循环；"
+            "新装时宿主机 app/aibp/ps 是空目录，bp_status_map.js 等脚本在容器里就会缺失"
+        )
+    if PS_PROGRAM_DIR + "/" not in entrypoint:
+        failures.append(
+            f"docker-entrypoint.sh 的还原逻辑没有写回 {PS_PROGRAM_DIR}/；"
+            "程序文件仍然被宿主机目录遮住，pull 更新不到"
+        )
+    if "cmp -s" not in entrypoint:
+        failures.append(
+            "docker-entrypoint.sh 还原前没有用 cmp -s 比较内容；"
+            "旧宿主机留下的程序文件副本会一直遮住镜像的新版本"
+        )
+    if "cp -f" not in entrypoint:
+        failures.append("docker-entrypoint.sh 没有用 cp -f 覆盖旧副本，旧宿主机上的程序文件仍然生效")
+    # 本地自行 build 时 build context 里可能有使用者自己的图片（发布镜像用 git 检出，
+    # 只有受跟踪的程序文件）。原版拷贝必须只剩程序文件，否则还原会把用户替换掉的图片
+    # 一次次写回构建时的版本。
+    if not re.search(r"find\s+" + re.escape(PRISTINE_PS_DIR) + r"\b[^\n]*-delete", dockerfile):
+        failures.append(
+            f"Dockerfile 没有清理 {PRISTINE_PS_DIR} 里的非程序文件；"
+            "本地 build 会把使用者自己的图片也拷进原版拷贝，之后每次启动都会覆盖回去"
+        )
+    if re.search(r"\brm\b", entrypoint):
+        failures.append("docker-entrypoint.sh 的还原逻辑里出现了 rm：还原只能补文件，绝不能删掉使用者的图片")
+
+    # 2. 素材仍然挂进来；图片与程序数据混放的 ps 子目录必须被整棵挂载带到容器里
+    # （只挂「纯素材」子目录的那一版会把使用者放在这些目录里的卡图静默丢掉）。
     for required in REQUIRED_TARGETS:
         if required not in targets:
             failures.append(f"缺少必需的素材挂载点：{required}")
+    for mixed in MIXED_MEDIA_DIRS:
+        if not any(covers(target, mixed) for target in targets):
+            failures.append(
+                f"素材目录 {mixed} 没有被任何挂载点覆盖："
+                "这个目录里图片与程序数据同级，必须整棵挂载 + 由 entrypoint 还原程序文件，"
+                "不挂就等于使用者的卡图不见了"
+            )
 
     # 3. BGM 挂载点要和 manifest.audioDir 对上（两边不一致就永远找不到音频）
     audio_match = re.search(r'audioDir:\s*"([^"]*)"', manifest)
@@ -161,12 +317,112 @@ def main() -> int:
     if "app/assets/bgm/audio/" not in install_script:
         failures.append("tools/install-docker.sh 没有把平铺的 BGM 音频迁进 audio/")
 
+    # 5b. 安装脚本建的目录和 compose 的挂载点必须一一对应：compose 挂的目录要在宿主机
+    # 建出来（现在 aibp/ps 是整棵挂载，建的就是 app/aibp/ps 这一个），ps/ 下另外建出来的
+    # 子目录也必须真的挂进去 —— 否则又会出现「建了目录却没挂上」的素材黑洞。
+    created = parse_created_dirs(install_script)
+    if not created:
+        failures.append("没能从 tools/install-docker.sh 解析出任何 mkdir 目录（解析器或脚本结构变了？）")
+    for entry in entries:
+        source = str(entry["source"]).lstrip("./")
+        if not source.startswith("app/") or Path(source).suffix:
+            continue
+        if source not in created:
+            failures.append(f"tools/install-docker.sh 没有创建挂载点目录 {source}")
+    for created_dir in created:
+        if not created_dir.startswith("app/aibp/ps/"):
+            continue
+        if "./" + created_dir not in sources:
+            failures.append(
+                f"tools/install-docker.sh 创建了 {created_dir}，但 compose 没有挂载它；"
+                "ps/ 的素材目录与挂载点必须一一对应（整棵挂 aibp/ps 时不该再建子目录）"
+            )
+
     # 6. latest 是会移动的标签，pull_policy 必须是 always，pull 才是真的 pull
     policy = re.search(r"^\s*pull_policy:\s*(\S+)\s*$", compose, re.M)
     if not policy or policy.group(1) != "always":
         failures.append("compose.yaml 的 pull_policy 应为 always（镜像标签 latest 会移动）")
     if "latest" not in compose:
         failures.append("compose.yaml 里应保留 ${ATO_VERSION:-latest} 之类可变标签或说明固定版本的方式")
+
+    # 7. 根目录的 docker-compose.yml / docker-compose.nas.yml（Apache、NAS 部署）：
+    #    没有 Dockerfile 兜底，仓库目录就是 Web 根，所以「挂什么就发布什么」。
+    #    私有目录清单直接复用 package_common 的那一份（BLOCKED_TOP + 打包器特判的
+    #    tools/），以后新增一条私有顶层目录，两边的检查一起跟上。
+    #    私有树里的文件挂到 Web 根之外（例如 tools/packaging/docker/ 里的 Apache 补充
+    #    配置挂到 /etc/apache2/conf-enabled/）是允许的：那不是发布内容，是容器配置。
+    private_top = pc.BLOCKED_TOP | {"tools"}
+    # php:8.3-apache 用的是 Debian 默认 apache2.conf，/var/www/ 上是 AllowOverride None，
+    # 也就是 .htaccess 会被整个忽略 —— 那样 data/（账号哈希、完整存档、session、备份）
+    # 在这个端口上仍然是可下载的静态文件。两份 compose 都必须把补充配置挂进
+    # conf-enabled，否则「挂了 .htaccess」只是摆设。
+    if not APACHE_CONF.is_file():
+        failures.append(f"缺少 Apache 补充配置 {APACHE_CONF.relative_to(ROOT)}（.htaccess 会被 AllowOverride None 忽略）")
+    else:
+        apache_conf = APACHE_CONF.read_text(encoding="utf-8")
+        if "AllowOverride All" not in apache_conf or "<Directory " + ROOT_WEB_ROOT not in apache_conf:
+            failures.append(
+                f"{APACHE_CONF.name} 没有对 {ROOT_WEB_ROOT} 打开 AllowOverride All："
+                ".htaccess 仍然不会生效，私有目录照样可下载"
+            )
+    for compose_path in ROOT_COMPOSES:
+        text = compose_path.read_text(encoding="utf-8")
+        root_entries = parse_volumes(text)
+        root_targets = [str(entry["target"]) for entry in root_entries]
+        if not root_entries:
+            failures.append(f"没能从 {compose_path.name} 解析出任何挂载点（解析器或文件结构变了？）")
+        if APACHE_CONF_TARGET not in root_targets:
+            failures.append(
+                f"{compose_path.name}：没有把 {APACHE_CONF.name} 挂到 {APACHE_CONF_TARGET}；"
+                "php:8.3-apache 的默认 AllowOverride None 会忽略 .htaccess，"
+                "data/（账号哈希、完整存档、session、备份）在端口上可被直接下载"
+            )
+        for entry in root_entries:
+            source = str(entry["source"]).replace("\\", "/")
+            target = str(entry["target"]).rstrip("/") or "/"
+            # 去掉开头的 "./" 与路径里的 "." 段：".", "./", "./." 全都是整棵仓库。
+            parts = [part for part in source.split("/") if part not in ("", ".")]
+            if not parts:
+                failures.append(
+                    f"{compose_path.name}：{entry['source']} → {target} 把整个仓库目录挂进了容器，"
+                    "export/**、tools/、asset-studio/、release*/、tests/、tmp/、logs/、.git/ "
+                    "都会跟着发布到这个端口上"
+                )
+                continue
+            in_web_root = target == ROOT_WEB_ROOT or target.startswith(ROOT_WEB_ROOT + "/")
+            if in_web_root and parts[0] in private_top:
+                failures.append(
+                    f"{compose_path.name}：挂载源 {entry['source']} 是打包器判定为私有的 {parts[0]}/，"
+                    f"不能挂进 Web 根（{target}）"
+                )
+            if target == ROOT_WEB_ROOT:
+                failures.append(
+                    f"{compose_path.name}：挂载点就是 Web 根 {ROOT_WEB_ROOT}，"
+                    "等于把整个仓库目录当网站发布（私有产物可直接下载）"
+                )
+            elif target.startswith(ROOT_WEB_ROOT + "/"):
+                mounted = target[len(ROOT_WEB_ROOT) + 1:].split("/")[0].lower()
+                if mounted in private_top:
+                    failures.append(
+                        f"{compose_path.name}：{entry['source']} 被挂到 {target}，"
+                        f"把私有的 {mounted}/ 放进了 Web 根"
+                    )
+            # 挂载源必须真的在仓库里（data/ 例外：由 Docker/entrypoint 建）。单文件挂载
+            # 写错名字时 Docker 会建一个同名目录顶上去，页面静默坏掉。
+            leaf = parts[-1]
+            if leaf not in ROOT_CREATED_BY_DEPLOYMENT and not (ROOT / Path(*parts)).exists():
+                failures.append(
+                    f"{compose_path.name}：挂载源 {entry['source']} 在仓库里不存在"
+                    "（写错名字；单文件挂载还会被 Docker 建成同名目录顶掉原文件）"
+                )
+        # 反向检查：应用需要的路径一条都不能少（只查「不许整棵挂」会把 Web 根挂空）。
+        for app_path in ROOT_APP_PATHS:
+            container_path = f"{ROOT_WEB_ROOT}/{app_path}"
+            if not any(covers(target, container_path) for target in root_targets):
+                failures.append(
+                    f"{compose_path.name}：缺少应用需要的挂载点 {container_path}；"
+                    f"少挂 {app_path} 对应页面/接口就 404"
+                )
 
     if failures:
         print("Docker 挂载不变量测试失败：")

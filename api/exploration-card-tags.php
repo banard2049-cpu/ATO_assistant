@@ -6,6 +6,7 @@ declare(strict_types=1);
 // login session was silently dropped.  Pin the portable session directory when
 // it exists: session storage must not depend on how the site was launched.
 $sessionDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'sessions';
+if (!is_dir($sessionDir)) @mkdir($sessionDir, 0770, true);
 if (is_dir($sessionDir) && is_writable($sessionDir)) {
   session_save_path($sessionDir);
 }
@@ -77,7 +78,15 @@ function write_tags(string $tagFile, array $data): void {
   if ($json === false) respond(500, ['ok' => false, 'error' => '无法编码探索卡标签。']);
   $content = "window.ATO_EXPLORATION_CARD_TAGS = " . $json . ";\n";
   $tempFile = $tagFile . '.tmp';
-  if (file_put_contents($tempFile, $content, LOCK_EX) === false || !rename($tempFile, $tagFile)) {
+  $written = file_put_contents($tempFile, $content, LOCK_EX);
+  // 写短了也算失败：以前只看 === false，截断的临时文件照样会被 rename 上线。
+  if ($written === false || $written < strlen($content)) {
+    @unlink($tempFile);
+    respond(500, ['ok' => false, 'error' => '无法写入探索卡标签文件。']);
+  }
+  // rename() 在同目录内是原子替换（Windows 上也一样）；失败时不能退回 copy()，
+  // 那会原地截断正在使用中的文件。写不进去就明确报错。
+  if (!@rename($tempFile, $tagFile)) {
     @unlink($tempFile);
     respond(500, ['ok' => false, 'error' => '无法写入探索卡标签文件。']);
   }

@@ -115,7 +115,9 @@ Object.entries(expectedAdversaryBattles).forEach(([cycleId, expected]) => {
 const runMapCommandSource = extractFunction(dashboardSource, "runMapCommand");
 assert((runMapCommandSource.match(/battleHref = adversaryBattleHref\(cycleId\)/g) || []).length === 3,
   "Not every dashboard adversary collision path opens the configured battle.");
-assert(/await saveMapCommandState\(commandState\);[\s\S]*if \(battleHref\)/.test(runMapCommandSource),
+const saveCommandIndex = runMapCommandSource.indexOf("await saveMapCommandState(commandState");
+const battleNavigationIndex = runMapCommandSource.indexOf("if (battleHref)");
+assert(saveCommandIndex >= 0 && battleNavigationIndex > saveCommandIndex,
   "Dashboard adversary battle navigation runs before the map state is saved.");
 
 const dashboardFunctions = [

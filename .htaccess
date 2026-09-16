@@ -3,3 +3,38 @@
     Header set Cache-Control "no-cache, must-revalidate"
   </FilesMatch>
 </IfModule>
+
+# data/ holds the account file (password hashes), complete campaign saves,
+# sessions and backups; the API reads them from disk and they must never be
+# downloadable.  export/ holds local build artifacts and user-supplied
+# *.atopack resource packs, log(s)/ holds runtime logs.  The PHP built-in server
+# ignores .htaccess entirely, so the launchers pass router.php to `php -S` —
+# this block covers the Apache and NAS deployments (docker-compose.yml,
+# docker-compose.nas.yml) instead.  Keep the two lists in sync with
+# $privateDirectories in router.php.
+#
+# The optional `scheme://authority` prefix matters: a client may send an
+# HTTP/1.1 absolute-form request target ("GET http://host/data/x HTTP/1.1"),
+# and %{REQUEST_URI} then holds the whole URL, so an anchored ^/ pattern would
+# not match and the private file would be served.
+<IfModule mod_authz_core.c>
+  <If "%{REQUEST_URI} =~ m#^(?:[a-z][a-z0-9+.\-]*://[^/]*)?/(?:data|tmp|export|log|logs|\.git)(?:/|$)#i">
+    Require all denied
+  </If>
+</IfModule>
+# Second layer in case the conditional above is not evaluated (older 2.4
+# builds); mod_alias is enabled in the official php:apache and NAS images.
+<IfModule mod_alias.c>
+  RedirectMatch 404 (?i)^(?:[a-z][a-z0-9+.\-]*://[^/]*)?/?(?:data|tmp|export|log|logs|\.git)(?:/|$)
+</IfModule>
+
+# tools/ must stay reachable (map/app.js opens ../tools/tag-editor.html), so the
+# local TTS credential file is denied by name instead of by directory.  Mirrors
+# $privateFiles in router.php; .htaccess itself is denied by Apache by default
+# but is listed there because `php -S` would serve it.
+<IfModule mod_authz_core.c>
+  <FilesMatch "(?i)^(?:xfyun-long-tts\.config\.json|\.htaccess)$">
+    Require all denied
+  </FilesMatch>
+</IfModule>
+

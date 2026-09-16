@@ -4,7 +4,9 @@ import hashlib
 import json
 import os
 import re
+import shutil
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 
 
@@ -21,6 +23,7 @@ class EntityIndex:
     payload: dict
     json_bytes: bytes
     source: Path
+    backup: Path | None = None
 
     @property
     def sha256(self) -> str:
@@ -74,10 +77,24 @@ def store_entity_index(library: Path, raw: bytes) -> EntityIndex:
     parsed = parse_entity_index(raw, Path(ENTITY_INDEX_MEMBER))
     destination = library / ENTITY_INDEX_LIBRARY_PATH
     destination.parent.mkdir(parents=True, exist_ok=True)
-    temporary = destination.with_name(f".{destination.name}.tmp")
-    temporary.write_bytes(parsed.json_bytes)
-    os.replace(temporary, destination)
-    return EntityIndex(payload=parsed.payload, json_bytes=parsed.json_bytes, source=destination)
+    if destination.is_file() and destination.read_bytes() == parsed.json_bytes:
+        return EntityIndex(payload=parsed.payload, json_bytes=parsed.json_bytes, source=destination)
+    backup = None
+    if destination.is_file():
+        # 与 installer 一致：每次操作一个带时间戳的备份目录，不散落在 backups/ 根下。
+        now = datetime.now()
+        backup_dir = library / "backups" / now.strftime("%Y%m%d-%H%M%S")
+        backup_dir.mkdir(parents=True, exist_ok=True)
+        backup = backup_dir / f"entity-index-{now.strftime('%f')}.json"
+        shutil.copy2(destination, backup)
+    # 临时名必须唯一：固定名字在并发导入时会互相覆盖。
+    temporary = destination.with_name(f".{destination.name}-{os.urandom(6).hex()}.tmp")
+    try:
+        temporary.write_bytes(parsed.json_bytes)
+        os.replace(temporary, destination)
+    finally:
+        temporary.unlink(missing_ok=True)
+    return EntityIndex(payload=parsed.payload, json_bytes=parsed.json_bytes, source=destination, backup=backup)
 
 
 def entity_index_manifest_entry(index: EntityIndex) -> dict:

@@ -6,6 +6,7 @@ declare(strict_types=1);
 // login session was silently dropped.  Pin the portable session directory when
 // it exists: session storage must not depend on how the site was launched.
 $sessionDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'sessions';
+if (!is_dir($sessionDir)) @mkdir($sessionDir, 0770, true);
 if (is_dir($sessionDir) && is_writable($sessionDir)) {
   session_save_path($sessionDir);
 }
@@ -133,8 +134,15 @@ function write_map(string $mapFile, string $backupFile, string $content): void {
     if ($current !== false) file_put_contents($backupFile, $current, LOCK_EX);
   }
   $temporaryFile = $mapFile . '.tmp';
-  if (file_put_contents($temporaryFile, $content, LOCK_EX) === false
-      || !rename($temporaryFile, $mapFile)) {
+  $written = file_put_contents($temporaryFile, $content, LOCK_EX);
+  // 写短了也算失败：以前只看 === false，截断的临时文件照样会被 rename 上线。
+  if ($written === false || $written < strlen($content)) {
+    @unlink($temporaryFile);
+    respond(500, ['ok' => false, 'error' => '无法保存 C4-C5 资源映射。']);
+  }
+  // rename() 在同目录内是原子替换（Windows 上也一样）；失败时不能退回 copy()，
+  // 那会原地截断正在使用中的文件。写不进去就明确报错。
+  if (!@rename($temporaryFile, $mapFile)) {
     @unlink($temporaryFile);
     respond(500, ['ok' => false, 'error' => '无法保存 C4-C5 资源映射。']);
   }
