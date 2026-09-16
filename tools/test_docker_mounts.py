@@ -25,7 +25,13 @@ aibp/ps 属于另一种情况：它必须整棵挂（那是使用者投放卡图
      整棵挂 ./ 等于把打包器判定为私有的东西（export/** 里的 *.atopack 资料包、tools/、
      asset-studio/、release*/、tests/、tmp/、logs/、.git/）全部发布到 11451 端口上供人
      下载。这里既要求「没有整棵挂载、没挂私有树」，也要求「应用需要的路径一条不少」——
-     只查前者会有人把 Web 根挂空，只查后者会有人悄悄收回整棵挂载。
+     只查前者会有人把 Web 根挂空，只查后者会有人悄悄收回整棵挂载；
+  8. 多架构发布：公开镜像必须同时覆盖 linux/amd64 与 linux/arm/v7（树莓派 4 上 32 位
+     Raspberry Pi OS 的架构），且 CI 要注册 QEMU —— 少了 platforms 或少了 QEMU，
+     arm/v7 要么根本不在清单里（使用者 pull 到 no matching manifest），要么构建直接失败。
+     这两条只守 CI，不负责别的架构：arm64 之类没有预构建镜像，安装脚本会按源码在本机
+     构建，这里同样守住那条兜底路径（缺了它，非 amd64/armv7 的机器只能看到一句
+     no matching manifest 就结束）。
 """
 from __future__ import annotations
 
@@ -40,6 +46,7 @@ ENTRYPOINT = ROOT / "tools/packaging/docker/docker-entrypoint.sh"
 INSTALL_SCRIPT = ROOT / "tools/install-docker.sh"
 EXPORTER = ROOT / "tools/export_portable.py"
 MANIFEST = ROOT / "assets/bgm/manifest.js"
+DOCKER_WORKFLOW = ROOT / ".github/workflows/docker-package.yml"
 
 sys.path.insert(0, str(ROOT / "tools"))
 from packaging import package_common as pc  # noqa: E402  （共用同一份私有目录清单）
@@ -423,6 +430,58 @@ def main() -> int:
                     f"{compose_path.name}：缺少应用需要的挂载点 {container_path}；"
                     f"少挂 {app_path} 对应页面/接口就 404"
                 )
+
+    # 8. 多架构发布（见模块 docstring 第 8 条）。
+    #    8a. CI 必须为 amd64 与 arm/v7 各构建一份：build-push-action 没有 platforms 时
+    #        只产出 runner 自己的架构（amd64），arm/v7 使用者 pull 到的是
+    #        no matching manifest —— 这正是树莓派 4（32 位 Raspberry Pi OS）遇到的现象。
+    #        两个架构必须在同一条 platforms 里：拆成两个 tag 就破坏了「同名 tag 按架构自选」。
+    workflow = DOCKER_WORKFLOW.read_text(encoding="utf-8")
+    platforms = re.search(r"^\s*platforms:\s*(\S+)\s*$", workflow, re.M)
+    if not platforms:
+        failures.append(
+            f"{DOCKER_WORKFLOW.name} 的 build-push-action 没有 platforms："
+            "只会产出 linux/amd64，arm/v7 上 pull 会报 no matching manifest"
+        )
+    else:
+        declared = {item.strip() for item in platforms.group(1).split(",")}
+        for required_platform in ("linux/amd64", "linux/arm/v7"):
+            if required_platform not in declared:
+                failures.append(
+                    f"{DOCKER_WORKFLOW.name} 的 platforms 里没有 {required_platform}"
+                    f"（当前：{platforms.group(1)}）"
+                )
+    if "docker/setup-qemu-action" not in workflow:
+        failures.append(
+            f"{DOCKER_WORKFLOW.name} 没有注册 QEMU："
+            "arm/v7 是在 x86 runner 上跨架构构建的，缺了它 RUN 步骤会直接失败"
+        )
+    # 8b. 拉不到预构建镜像时必须能退回本机构建，否则 arm64 之类的机器只得到
+    #     no matching manifest。构建上下文就是发布镜像用的那份 Dockerfile。
+    if "build_local_image()" not in install_script:
+        failures.append(
+            "tools/install-docker.sh 没有「没有匹配本机架构的镜像就按源码本机构建」的分支："
+            "arm64 等架构上安装只会停在 no matching manifest"
+        )
+    if "[ ! -f \"$context/Dockerfile\" ]" not in install_script:
+        failures.append("tools/install-docker.sh 的本地构建没有检查构建上下文里的 Dockerfile")
+    if "tools/packaging/docker" not in install_script:
+        failures.append("tools/install-docker.sh 的本地构建没有取 tools/packaging/docker 作为构建上下文")
+    if "build_local_image \"$(fetch_version)\"" not in install_script:
+        failures.append("tools/install-docker.sh 拉取失败后没有调用本地构建")
+    # 本地构建的镜像不在任何 registry 里：compose 必须改成 never，image 必须能被覆盖，
+    # 且改写后要自检 —— 两行里任何一行的格式一变，改写就会静默失效。
+    if "pull_policy: never" not in install_script:
+        failures.append("tools/install-docker.sh 没有把 compose 的 pull_policy 改成 never（本地镜像没有 registry）")
+    if "${ATO_IMAGE:-" not in install_script:
+        failures.append("tools/install-docker.sh 改写的 image 行没有走 ${ATO_IMAGE:-...} 覆盖")
+    if "ATO_IMAGE" not in install_script.split("main \"$@\"")[0]:
+        failures.append("tools/install-docker.sh 没有在 main 之前定义 ATO_IMAGE 的默认值")
+    # 探针、版本兜底与 compose 改写后的自检：没有它们，「拉不到就构建」会变成「悄悄跑旧镜像」
+    if "docker pull \"$image\" 2>/dev/null" not in install_script:
+        failures.append("tools/install-docker.sh 没有安静的可用性探针（能拉到就不该去编译源码）")
+    if "ATO_VERSION=1.3.2" not in install_script:
+        failures.append("tools/install-docker.sh 的版本兜底提示里没有示例 ATO_VERSION（版本解析失败时给了空话）")
 
     if failures:
         print("Docker 挂载不变量测试失败：")

@@ -79,6 +79,16 @@ docker compose up -d
 
 compose 里的 `pull_policy` 是 `always`：镜像标签 `latest` 会移动，用默认的 `missing` 时 `docker compose pull` 可能认为「本地已有同名镜像」而什么都不拉，更新看起来成功、实际还在跑旧版。代价是 GHCR 不可达时手动 `docker compose up -d` 会报错（已经在跑的容器不受影响）；想固定版本可以在安装目录建一个 `.env`，写上 `ATO_VERSION=1.3.1` 这样的具体版本号。
 
+### 镜像架构与树莓派
+
+公开镜像按 `linux/amd64` 与 `linux/arm/v7` 两个架构发布，同一个标签同时指向两份，Docker 会按本机架构自动挑，不需要写 `--platform`。**32 位 Raspberry Pi OS 用的就是 `linux/arm/v7`**，树莓派 3/4/5 装 32 位系统时直接跑上面那条一键安装命令即可。
+
+其它架构（`linux/arm64`、`riscv64` 等）没有预构建镜像。一键安装脚本在这种情况下**不会**停在 `no matching manifest`，而是自己取对应版本的源码、用发布镜像那份 Dockerfile 在本机构建（基础镜像 `php:8.4-cli-alpine` 有 arm32v7/arm64 清单，应用是纯静态文件加 PHP 内置服务器，不需要编译任何东西）。这时脚本会把安装目录里的 compose 改成指向本地镜像，并把 `pull_policy` 改成 `never`：镜像不在任何 registry 里，留着 `always` 会去拉一个不存在的东西。以后升级只要重跑一次安装命令。
+
+64-bit Raspberry Pi OS 属于 `linux/arm64`，走的就是上面这条本地构建路径；想省掉自己构建，装 32 位系统用现成的 `linux/arm/v7` 镜像更省事。
+
+安装脚本默认从 GitHub 取最新 tag 的源码。GitHub 不可达时可以在安装目录的 `.env` 里写明版本（`ATO_VERSION=1.3.2`），或直接 `ATO_VERSION=1.3.2 bash install-docker.sh`。
+
 一键安装默认使用执行命令时的当前文件夹；也可以通过 `ATO_DIR=/path/to/dir` 指定安装目录。脚本会建好挂载点：决战版图底图的占位文件 `app/ss/battle-board.jpg`（把真图覆盖上去，文件名不要改）、BGM 目录 `app/assets/bgm/audio/`，并把旧版直接放在 `app/assets/bgm/` 下的音频移进 `audio/`。
 
 data/ 和 app/ 下的本地素材目录会挂载到容器，拉取新镜像不会删除它们。

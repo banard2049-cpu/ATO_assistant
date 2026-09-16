@@ -75,6 +75,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set up QEMU
+        # linux/arm/v7 这一段是在 x86 runner 上跨架构构建的，必须靠 QEMU 模拟。
+        # runner 上没有预注册 arm/v7 的 binfmt，缺了这一步构建会在 RUN 处直接失败。
+        # 不写 platforms: 就是注册全部支持架构（含 arm64），以后加架构不必再动这里。
+        uses: docker/setup-qemu-action@v3
+
       - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -89,5 +95,12 @@ jobs:
         with:
           context: tools/.docker-image-context
           push: true
+          # 多架构清单：同一个 tag 同时指向 amd64 与 arm/v7，docker pull 会按本机架构自动挑。
+          # arm/v7 是树莓派 4 上 32 位 Raspberry Pi OS（linux/arm/v7）用的那份；
+          # 基础镜像 php:8.4-cli-alpine 有 arm32v7 清单，应用是纯 PHP 内置服务器 + 静态文件，
+          # 因此不需要为它改 Dockerfile。arm64、riscv64 之类仍然没有预构建镜像，
+          # tools/install-docker.sh 在这类架构上会退回本机构建。
+          # 加架构时这里与上面的 setup-qemu-action 一起改。
+          platforms: linux/amd64,linux/arm/v7
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

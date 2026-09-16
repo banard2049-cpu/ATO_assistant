@@ -3,6 +3,30 @@ ATO Assistant Docker Package
 Requirements: Docker Desktop or Docker Engine with Compose v2 (the compose file uses
 `bind.create_host_path`, which needs Compose 2.17 or newer).
 
+A clone of the repository only. Nobody's pictures, audio, or saves travel with it.
+
+Architectures
+-------------
+The published image covers linux/amd64 and linux/arm/v7 (32-bit Raspberry Pi OS),
+so `docker compose pull` picks the right one on its own. On any other architecture
+(linux/arm64, riscv64, ...) there is no prebuilt image: build it here instead on
+the machine that will run it, which resolves the base image for the local
+architecture:
+
+  docker build -t ato-assistant:local .
+
+Then point compose at that image before starting, in a `.env` file next to
+compose.yaml:
+
+  ATO_IMAGE=ato-assistant:local
+
+The one-line installer (tools/install-docker.sh in the repository) does this by
+itself when the prebuilt image does not exist for the local architecture: it
+fetches the matching source tag, builds, and rewrites compose to use the local
+image with `pull_policy: never` (a locally built image is not in any registry, so
+`always` would try to pull something that does not exist). Upgrading then means
+running the installer again.
+
 Start:
   docker compose up -d
 
@@ -15,6 +39,9 @@ Stop:
 Update:
   docker compose pull
   docker compose up -d
+
+(With a locally built image there is nothing to pull: rebuild it and recreate the
+container instead — `docker build -t ato-assistant:local . && docker compose up -d`.)
 
 The package starts with an empty data directory. Saves remain in ./data.
 
