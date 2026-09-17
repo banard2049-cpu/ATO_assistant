@@ -2,6 +2,15 @@ window.ATO_EXPLORATION_CARD_TAGS = {
   "version": 1,
   "updatedAt": "2026-07-30T06:30:00.000Z",
   "cards": {
+    "c1:8201": {
+      "cycleId": "c1",
+      "cardId": "8201",
+      "removal": "remove",
+      "draw": "chain",
+      "reviewed": true,
+      "notes": "移出卡组直到下一次定时战斗。",
+      "updatedAt": "2026-09-17T13:30:00.000Z"
+    },
     "c1:13400": {
       "cycleId": "c1",
       "cardId": "13400",

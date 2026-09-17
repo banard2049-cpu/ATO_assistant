@@ -1072,6 +1072,41 @@
       accent-color: var(--accent);
     }
 
+    .exploration-hidden {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fbfcfa;
+    }
+
+    .exploration-hidden-body {
+      display: grid;
+      gap: 9px;
+      padding: 0 10px 10px;
+    }
+
+    .exploration-hidden-card {
+      border-top: 1px solid var(--line);
+      padding-top: 9px;
+    }
+
+    .exploration-hidden-card label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--ink);
+      font-size: 13px;
+    }
+
+    .exploration-hidden-card input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--accent);
+    }
+
+    .exploration-hidden-card .exploration-library-preview {
+      max-width: 320px;
+    }
+
     .exploration-library button {
       grid-column: 1 / -1;
       min-height: 26px;
@@ -2697,6 +2732,17 @@
           ],
         },
       ],
+    };
+
+    // Workshop Secret content / Secret Deck 2, GUID 677b8a.
+    // The card back explicitly identifies Cycle I Exploration. Other secret
+    // cards in this source are equipment, technology, traits, etc.
+    const hiddenExplorationCards = {
+      c1: [{ id: "8201", name: "Theseus's Cache" }],
+      c2: [],
+      c3: [],
+      c4: [],
+      c5: [],
     };
 
     const explorationCornerNumbers = {
@@ -4347,7 +4393,11 @@
     }
 
     function getExplorationLibrary() {
-      const cards = (explorationDecks[currentCycleConfig().id] || []).flatMap((deck) => deck.cards);
+      const cycleId = currentCycleConfig().id;
+      const cards = [
+        ...(explorationDecks[cycleId] || []).flatMap((deck) => deck.cards),
+        ...(hiddenExplorationCards[cycleId] || []).map((card) => ({ ...card, hidden: true })),
+      ];
       const seen = new Set();
       return cards.filter((card) => {
         if (seen.has(card.id)) return false;
@@ -6236,8 +6286,13 @@
         } catch (error) {
           console.warn(error);
         }
-        cachedArgoRecord = mergeArgoRecords(serverRecord, localRecord);
-        renderFlow();
+        const nextRecord = mergeArgoRecords(serverRecord, localRecord);
+        // Closing a confirmation dialog can refocus the window. Do not rebuild
+        // the card picker (and discard its open menus/draft) for unchanged data.
+        if (!jsonEqual(cachedArgoRecord, nextRecord)) {
+          cachedArgoRecord = nextRecord;
+          renderFlow();
+        }
       } finally {
         argoRecordRefreshInFlight = false;
       }
@@ -6969,6 +7024,73 @@
       syncBgmStage();
     }
 
+    function createHiddenExplorationMenu(cards, selectedIds, disabledIds = new Set()) {
+      const menu = document.createElement("details");
+      menu.className = "exploration-hidden";
+      const heading = document.createElement("summary");
+      heading.textContent = "隐藏探索卡 · 剧透提醒";
+      menu.appendChild(heading);
+      let populated = false;
+
+      heading.addEventListener("click", (event) => {
+        event.preventDefault();
+        if (menu.open) {
+          menu.open = false;
+          menu.querySelectorAll("details").forEach((preview) => { preview.open = false; });
+          return;
+        }
+        if (!window.confirm("剧透提醒：隐藏探索卡的名称也可能透露剧情。建议仅在游戏指示加入这些卡时查看。确定打开吗？")) return;
+        if (!populated) {
+          const body = document.createElement("div");
+          body.className = "exploration-hidden-body";
+          const hint = document.createElement("div");
+          hint.className = "exploration-summary";
+          hint.textContent = cards.length
+            ? "勾选加入，取消勾选移出，然后点击「应用选择」。卡图需逐张展开。"
+            : "当前导入的模组中未找到此循环的隐藏探索卡。";
+          body.appendChild(hint);
+          cards.forEach((card) => {
+            const item = document.createElement("article");
+            item.className = "exploration-hidden-card";
+            const label = document.createElement("label");
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.value = card.id;
+            checkbox.checked = selectedIds.has(card.id);
+            checkbox.disabled = disabledIds.has(card.id);
+            checkbox.addEventListener("change", () => {
+              if (checkbox.checked) selectedIds.add(card.id);
+              else selectedIds.delete(card.id);
+            });
+            const name = document.createElement("span");
+            name.textContent = card.name;
+            label.append(checkbox, name);
+
+            const preview = document.createElement("details");
+            const previewHeading = document.createElement("summary");
+            previewHeading.textContent = "展开卡图";
+            preview.appendChild(previewHeading);
+            preview.addEventListener("toggle", () => {
+              previewHeading.textContent = preview.open ? "收起卡图" : "展开卡图";
+              if (!preview.open || preview.querySelector('[role="img"]')) return;
+              const face = document.createElement("div");
+              face.className = "exploration-library-preview";
+              face.setAttribute("role", "img");
+              face.setAttribute("aria-label", card.name);
+              face.style.cssText = getExplorationCardImageStyle(card.id);
+              preview.appendChild(face);
+            });
+            item.append(label, preview);
+            body.appendChild(item);
+          });
+          menu.appendChild(body);
+          populated = true;
+        }
+        menu.open = true;
+      });
+      return menu;
+    }
+
     function createExplorationTools() {
       const library = getExplorationLibrary();
       const selectedIds = getSelectedExplorationIds();
@@ -7135,16 +7257,6 @@
       applyButton.type = "button";
       applyButton.textContent = "应用选择";
 
-      const selectAllButton = document.createElement("button");
-      selectAllButton.type = "button";
-      selectAllButton.className = "secondary";
-      selectAllButton.textContent = "全选";
-
-      const clearButton = document.createElement("button");
-      clearButton.type = "button";
-      clearButton.className = "secondary";
-      clearButton.textContent = "清空";
-
       const restoreDefaultButton = document.createElement("button");
       restoreDefaultButton.type = "button";
       restoreDefaultButton.className = "secondary";
@@ -7156,7 +7268,11 @@
       libraryList.className = "exploration-library";
       const selectedSet = new Set(selectedIds);
       const destructionSet = new Set(specialRule ? getDestructionCardIds() : []);
-      library.forEach((card) => {
+      const hiddenCards = library.filter((card) => card.hidden);
+      // Keep saved hidden selections even when their spoiler menu is unopened.
+      const hiddenSelected = new Set(hiddenCards.filter((card) => selectedSet.has(card.id)).map((card) => card.id));
+      const hiddenMenu = createHiddenExplorationMenu(hiddenCards, hiddenSelected, destructionSet);
+      library.filter((card) => !card.hidden).forEach((card) => {
         const item = document.createElement("label");
         const preview = document.createElement("div");
         preview.className = "exploration-library-preview";
@@ -7190,21 +7306,14 @@
         libraryList.appendChild(item);
       });
 
-      const getCheckedIds = () => [...libraryList.querySelectorAll('input[type="checkbox"]:checked')].map((input) => input.value);
+      const getCheckedIds = () => [
+        ...[...libraryList.querySelectorAll('input[type="checkbox"]:checked')].map((input) => input.value),
+        ...hiddenSelected,
+      ];
       applyButton.addEventListener("click", () => applyExplorationSelection(getCheckedIds()));
-      selectAllButton.addEventListener("click", () => {
-        libraryList.querySelectorAll('input[type="checkbox"]:not(:disabled)').forEach((input) => {
-          input.checked = true;
-        });
-      });
-      clearButton.addEventListener("click", () => {
-        libraryList.querySelectorAll('input[type="checkbox"]:not(:disabled)').forEach((input) => {
-          input.checked = false;
-        });
-      });
 
-      builderActions.append(applyButton, selectAllButton, clearButton, restoreDefaultButton);
-      builderBody.append(builderActions, libraryList);
+      builderActions.append(applyButton, restoreDefaultButton);
+      builderBody.append(builderActions, hiddenMenu, libraryList);
       builder.appendChild(builderBody);
 
       wrapper.append(toolbar, summary);
