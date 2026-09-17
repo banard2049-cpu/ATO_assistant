@@ -1,2 +1,2 @@
 // Release builders overwrite this value with the packaged version.
-window.ATO_APP_VERSION = "1.3.2-rc.4";
+window.ATO_APP_VERSION = "1.3.2";
