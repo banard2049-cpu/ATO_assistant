@@ -1041,6 +1041,13 @@ def fixed_catalog_payload() -> dict[str, Any]:
 
     additions: list[CatalogItem] = []
 
+    additions.append(CatalogItem(
+        id=make_id("c1", "exploration", "cards", "8201", "8201"),
+        cycle="c1", module="探索卡", subgroup="探索卡",
+        name="8201", number="8201", sort_order=0,
+        faces={"front": "assets/exploration-cards/c1/8201.png"},
+    ))
+
     # AIBP overview sheets, shared physical cards, and cycle traits are useful
     # capture/install targets, not the audit/contact-sheet derivatives that the
     # original APK catalog builder intentionally skipped.
@@ -1316,8 +1323,14 @@ def fixed_catalog_payload() -> dict[str, Any]:
         if path.startswith("aibp/ps/other/token/"):
             marker = str(item.get("number") or "").strip()
             item["sort_order"] = list(AIBP_TOKEN_LABELS).index(marker)
+    c1_exploration = sorted(
+        (item for item in payload["items"] if item["cycle"] == "c1" and item["module"] == "探索卡"),
+        key=lambda item: int(item["number"]),
+    )
+    for order, item in enumerate(c1_exploration):
+        item["sort_order"] = order
     payload["source"]["catalog_items"] = len(payload["items"])
-    payload["source"]["catalog_version"] = "ATO-Local-0.2.11+complete-import-assets-12-bgm"
+    payload["source"]["catalog_version"] = "ATO-Local-0.2.11+complete-import-assets-13-c1-8201"
     return payload
 
 

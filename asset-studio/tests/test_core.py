@@ -70,12 +70,31 @@ class CoreTests(unittest.TestCase):
         stats = catalog_stats(self.db)
         self.assertEqual(["back"], stats["items"][0]["missing"])
 
+    def test_c1_8201_upgrades_existing_capture_catalog(self):
+        payload = fixed_catalog_payload()
+        new_id = "c1:exploration:cards:8201"
+        old_items = [CatalogItem(**item) for item in payload["items"] if item["id"] != new_id]
+        old_source = {**payload["source"], "catalog_version": "ATO-Local-0.2.11+complete-import-assets-12-bgm"}
+        apply_catalog(self.db, old_items, old_source)
+        ensure_fixed_catalog(self.db)
+        cards = [item for item in catalog_stats(self.db)["items"]
+                 if item["cycle"] == "c1" and item["module"] == "探索卡"]
+        card = next(item for item in cards if item["id"] == new_id)
+        self.assertEqual(["front"], card["missing"])
+        row = self.db.one("SELECT * FROM catalog_items WHERE id=?", (new_id,))
+        self.assertEqual({"front": "assets/exploration-cards/c1/8201.png"}, json.loads(row["faces_json"]))
+        numbers = [int(item["number"]) for item in cards]
+        self.assertEqual(sorted(numbers), numbers)
+        store_image(self.db, self.library, self.image(), new_id, "front", "8201.png", "image/png")
+        ensure_fixed_catalog(self.db)
+        self.assertEqual(1, self.db.one("SELECT COUNT(*) n FROM asset_revisions WHERE item_id=?", (new_id,))["n"])
+
     def test_fixed_catalog_initializes_without_apk(self):
         empty = Database(self.root / "empty.sqlite3")
         result = ensure_fixed_catalog(empty)
         payload = fixed_catalog_payload()
-        # 2749 张固定素材 + 19 首主控台 BGM（登记为「无需拍摄」，见 test_bgm_resources）。
-        self.assertEqual(2768, result["items"])
+        # 2750 张固定素材 + 19 首主控台 BGM（登记为「无需拍摄」，见 test_bgm_resources）。
+        self.assertEqual(2769, result["items"])
         self.assertEqual(19, result["aibp_enemies"])
         self.assertEqual({"c1", "c1.5", "c2", "c2.5", "c3", "c4", "c5"}, {book["id"] for book in payload["source"]["stories"]})
         self.assertNotIn("apk", payload["source"])
@@ -119,11 +138,11 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(45, len(terrain_cards))
         self.assertTrue(any(item["number"] == "CJ1475" for item in payload["items"]))
         fixed_paths = {path for item in payload["items"] for path in item["faces"].values()}
-        # 4271 张固定素材 + 19 首主控台 BGM（音频不进图片清单，随 bgmFiles 段分发）。
+        # 4272 张固定素材 + 19 首主控台 BGM（音频不进图片清单，随 bgmFiles 段分发）。
         bgm_paths = {path for path in fixed_paths if path.startswith("assets/bgm/")}
-        self.assertEqual(4271, len(fixed_paths - bgm_paths))
+        self.assertEqual(4272, len(fixed_paths - bgm_paths))
         self.assertEqual(19, len(bgm_paths))
-        self.assertEqual(4290, len(fixed_paths))
+        self.assertEqual(4291, len(fixed_paths))
         self.assertIn("map/images/c5-face-a.png", fixed_paths)
         self.assertIn("map/images/c5-face-b.png", fixed_paths)
         self.assertIn("aibp/ps/other/SW.jpg", fixed_paths)
