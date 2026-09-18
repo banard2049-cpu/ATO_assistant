@@ -2420,7 +2420,9 @@
       level: "X",
       index: 1,
       fileName: "LABYRINTHAUROS_TP_X_001.jpg",
-      specialBp: true
+      specialBp: true,
+      // 实体牌背是普通 BP III，洗入后不能在卡背信息里暴露成 X。
+      backLevel: "III"
     };
     const chimeraPhaseStates = {
       C: {
@@ -3702,7 +3704,7 @@
         }
         const src = cardSrc(card);
         const img = imageOrMessage(src, cardAlt(card));
-        img.addEventListener("load", () => enableOptionalCardBack(img, src), { once: true });
+        img.addEventListener("load", () => enableOptionalCardBack(img, src, card), { once: true });
         tile.appendChild(img);
         if (card.damageValue && card.damageValue > 1) {
           const badge = document.createElement("div");
@@ -4196,23 +4198,36 @@
       if (!scryDialog.open) scryDialog.showModal();
     }
 
+    function cardBackDisplayLevel(card) {
+      if (!card) return "?";
+      const level = card.backLevel || (card.specialBp ? "III" : card.level);
+      return levelBack[level] || level || "?";
+    }
+
+    function cardBackImageSrc(card, frontSrc) {
+      if (card?.specialBp || card?.backLevel === "III") {
+        return `ps/${currentApostle}/${currentApostle}_BP_III_001_BACK.jpg`;
+      }
+      return frontSrc.replace(/(\.[^.]+)$/, "_BACK$1");
+    }
+
     function deckBackText(cards) {
       if (cards.length === 0) return "空";
-      return cards.map((card) => levelBack[card.level] || card.level).join("-");
+      return cards.map((card) => cardBackDisplayLevel(card)).join("-");
     }
 
     function deckBackCompositionText(cards) {
       if (cards.length === 0) return "空";
       const counts = new Map();
       cards.forEach((card) => {
-        const level = levelBack[card.level] || card.level || "?";
+        const level = cardBackDisplayLevel(card);
         counts.set(level, (counts.get(level) || 0) + 1);
       });
       const preferredOrder = ["0", "1", "2", "3", "X"];
       const levels = [...preferredOrder, ...counts.keys()].filter((level, index, all) =>
         counts.has(level) && all.indexOf(level) === index
       );
-      const firstLevel = levelBack[cards[0].level] || cards[0].level || "?";
+      const firstLevel = cardBackDisplayLevel(cards[0]);
       const composition = levels.map((level) => `${level}×${counts.get(level)}`).join("，");
       return `${firstLevel}（${composition}）`;
     }
@@ -5331,8 +5346,8 @@
       extraGrid.replaceChildren(...reordered);
     }
 
-    function enableOptionalCardBack(img, frontSrc) {
-      const backSrc = frontSrc.replace(/(\.[^.]+)$/, "_BACK$1");
+    function enableOptionalCardBack(img, frontSrc, card = null) {
+      const backSrc = cardBackImageSrc(card, frontSrc);
       if (backSrc === frontSrc) return;
       const probe = new Image();
       probe.onload = () => {
