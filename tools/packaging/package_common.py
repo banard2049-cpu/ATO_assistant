@@ -62,6 +62,12 @@ BGM_MEDIA_SUFFIXES = (
     ".mp3", ".ogg", ".m4a", ".aac", ".wav", ".flac", ".opus", ".wma",
 )
 
+LICENSE_FILENAME = "LICENSE"
+LICENSE_MARKERS = (
+    "PolyForm Noncommercial License 1.0.0",
+    "Required Notice: Copyright 2026 banard",
+)
+
 
 def is_bgm_media(relative: Path) -> bool:
     parts = [part.lower() for part in relative.parts]
@@ -156,6 +162,16 @@ def disable_developer_links(root: Path) -> None:
 
 
 def audit_export_tree(root: Path) -> None:
+    license_path = root / LICENSE_FILENAME
+    if not license_path.is_file():
+        raise RuntimeError(f"导出内容缺少 {LICENSE_FILENAME}：无法满足 PolyForm 通知义务")
+    license_text = license_path.read_text(encoding="utf-8", errors="replace")
+    missing_markers = [marker for marker in LICENSE_MARKERS if marker not in license_text]
+    if missing_markers:
+        raise RuntimeError(
+            f"导出内容的 {LICENSE_FILENAME} 不是预期的 PolyForm NC 1.0.0 文本："
+            + "、".join(missing_markers)
+        )
     for path in root.rglob("*"):
         relative = path.relative_to(root)
         parts = [part.lower() for part in relative.parts]

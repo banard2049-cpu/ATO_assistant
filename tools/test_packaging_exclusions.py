@@ -91,6 +91,10 @@ def packaged_relative(document_root: str, script: str) -> str:
 
 def build_project(root: Path) -> None:
     files = {
+        "LICENSE": (
+            "PolyForm Noncommercial License 1.0.0\n\n"
+            "Required Notice: Copyright 2026 banard\n"
+        ),
         "index.html": "<html></html>",
         "assets/bgm/bgm.js": "// player\n",
         "assets/bgm/manifest.js": "// manifest\n",
@@ -210,7 +214,7 @@ def main() -> int:
 
     failures: list[str] = []
 
-    for expected in ("assets/bgm/bgm.js", "assets/bgm/manifest.js", "assets/bgm/README.md", "index.html"):
+    for expected in ("LICENSE", "assets/bgm/bgm.js", "assets/bgm/manifest.js", "assets/bgm/README.md", "index.html"):
         if expected not in packaged:
             failures.append(f"应进包但缺失：{expected}")
 

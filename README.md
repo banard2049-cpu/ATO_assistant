@@ -113,8 +113,8 @@ asset-studio/ 是独立的素材拍摄、导入和分享工具。完整说明见
 
 ## 许可与素材声明
 
-本项目源代码以 [MIT 许可证](LICENSE) 发布：可以自由使用、修改、分发和商用，只需保留版权声明与许可文本。
+本项目源代码自本次许可变更起以 [PolyForm Noncommercial License 1.0.0](LICENSE) 发布，SPDX 标识为 `PolyForm-Noncommercial-1.0.0`。允许个人、教育、研究、公益等非商业用途使用、修改和分发；商业用途不在该许可范围内，需要事先取得版权方的单独授权。分发时必须同时提供许可证文本或其官方 URL，并保留许可证中的 `Required Notice`。
 
 许可证只覆盖本仓库的程序代码，不覆盖游戏素材。本项目不包含官方游戏素材授权。使用者需要自行确保本地图片、故事文本和音频的来源与使用方式符合相关授权要求。
 
-便携版 ZIP 与 Docker 镜像里打包的 PHP 运行时及其依赖扩展不适用 MIT，仍归各自的许可证（PHP License 3.01 等）管辖。
+便携版 ZIP、Android APK 与 Docker 镜像里包含的第三方运行时、库及依赖不适用本项目的 PolyForm Noncommercial 许可证，仍分别由其自身许可证（PHP License 3.01 等）管辖。
