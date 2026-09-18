@@ -62,6 +62,8 @@ test('切换版本重建索引和目录，并清除民间版不存在的当前�
   Object.assign(ctx, {
     storyVersion: '民间版', data: ctx.fanData,
     stopSpeech() {}, populateChapters() {}, populateEncounters() {},
+    refreshSecondScreenStoryContentToggle() {},
+    secondScreenStoryModeToggle: { checked: false },
     renderResults() {}, searchInput: { value: '' }, bookSelect: { options: [] },
     entryTitle: {}, entryBadge: {}, storyText: {}, linkPanel: {},
     currentBook: () => ctx.data.books.find(book => book.id === 'c3'),

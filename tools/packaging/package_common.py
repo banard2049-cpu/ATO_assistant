@@ -28,13 +28,15 @@ PRIVATE_PACK_SUFFIXES = (".atopack", ".atopack.partial")
 # 直接拒绝访问），logs/ 与 log/ 放运行日志，.claude/ 是同类的本机工具残留目录
 # （与已在 BLOCKED_TOP 里的 .agents/.codex 同类）。
 LOCAL_SCRATCH_TOP = {".claude", "log", "logs", "tmp"}
+# 官中图片由 .atopack 导出器按需读取，不能随着便携版 / Docker / APK 的源码树发布。
+PRIVATE_ASSET_TOP = {"official-assets"}
 # 编辑器 / 操作系统 / 运行时残留：.ds_store 原已在文件名表里，这里补齐同类的 Windows
 # 版文件与 Python 字节码缓存目录（.gitignore 的「Local/editor/runtime files」一节）。
 LOCAL_SCRATCH_LEAVES = {"__pycache__", "desktop.ini", "thumbs.db"}
 
 BLOCKED_TOP = {
     ".git", ".github", ".agents", ".codex", ".idea", ".vscode",
-    "asset-studio", "dist", "export", "release", "releases", "node_modules",
+    "asset-studio", "official-assets", "dist", "export", "release", "releases", "node_modules",
     # tests/ 是仓库根目录的开发测试（agent 回归测试同样住在这里），不是运行时要用的
     # 东西：它们既没有理由进便携版 ZIP / Docker 镜像，也没有理由进 APK。
     "tests",
@@ -168,6 +170,8 @@ def audit_export_tree(root: Path) -> None:
         # Dockerfile / compose.yaml，而 Portable 包会另行加入 runtime/，跨阶段复核会误报。
         if parts[0] in LOCAL_SCRATCH_TOP:
             raise RuntimeError(f"导出内容包含本地草稿目录：{relative}")
+        if parts[0] in PRIVATE_ASSET_TOP:
+            raise RuntimeError(f"导出内容包含本地官中资源目录：{relative}")
         if parts[-1] in LOCAL_SCRATCH_LEAVES:
             raise RuntimeError(f"导出内容包含本地临时文件：{relative}")
         if path.is_file() and any(parts[-1].endswith(suffix) for suffix in PRIVATE_PACK_SUFFIXES):

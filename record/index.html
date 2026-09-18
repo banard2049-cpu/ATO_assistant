@@ -119,6 +119,19 @@
       line-height: 1.08;
     }
 
+    .cycle-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .cycle-title .cycle-symbol {
+      width: 42px;
+      height: 42px;
+      flex: 0 0 42px;
+      object-fit: contain;
+    }
+
     .subtitle {
       margin-top: 8px;
       color: var(--muted);
@@ -1454,7 +1467,7 @@
   <main class="app">
     <header class="topbar">
       <div>
-        <h1>阿尔戈号记录表</h1>
+        <h1 id="recordTitle" class="cycle-title">阿尔戈号记录表</h1>
         <p class="subtitle">把循环 I-V 的纸质记录表整理成可保存、可导出、可打印的战役记录页。</p>
       </div>
       <div class="topbar-tools">
@@ -1682,6 +1695,7 @@
 
   <script src="../assets/page-focus-router.js?v=20260813-no-screen-focus1"></script>
   <script src="./matrix-summaries.js"></script>
+  <script src="../cycle-symbols.js?v=20260918"></script>
   <script src="../assets/campaign-session.js?v=20260917"></script>
   <script>
     const storageKey = "ato-argo-record-sheet-v1";
@@ -3294,6 +3308,7 @@
 
     function renderAll() {
       renderCycleOptions();
+      window.ATO_CYCLE_SYMBOLS?.prependTitleIcon(document.querySelector("#recordTitle"), state.cycle, "../");
       document.querySelectorAll("[data-bind]").forEach((input) => {
         input.value = getBindValue(input.dataset.bind);
       });
@@ -3604,7 +3619,7 @@
       chips.className = "chips";
       const normalizedValues = group === "enemies" ? evolutionStages(values) : values;
       const trackValues = group === "enemies" && (key === "adversary" || options.hasTriangle)
-        ? [{ id: "triangle", label: "▲", marker: "triangle", title: "三角标志" }, ...normalizedValues]
+        ? [{ id: "triangle", label: "▼", marker: "triangle", title: "倒三角标志" }, ...normalizedValues]
         : normalizedValues;
       trackValues.forEach((value, index) => {
         const stage = group === "enemies" ? (isPlainObject(value) ? value : getEvolutionStage(value, index)) : (isPlainObject(value) ? value : { id: String(value), label: String(value) });
@@ -3733,8 +3748,20 @@
       };
     }
 
+    function revealDiplomacySelection(scale, button) {
+      if (!scale?.isConnected || !button?.isConnected) return;
+      const scaleRect = scale.getBoundingClientRect();
+      const buttonRect = button.getBoundingClientRect();
+      const buttonCenter = buttonRect.left + buttonRect.width / 2;
+      const scaleCenter = scaleRect.left + scale.clientWidth / 2;
+      const maxScrollLeft = Math.max(0, scale.scrollWidth - scale.clientWidth);
+      const targetScrollLeft = scale.scrollLeft + buttonCenter - scaleCenter;
+      scale.scrollLeft = Math.max(0, Math.min(maxScrollLeft, targetScrollLeft));
+    }
+
     function renderDiplomacy() {
       elements.diplomacyTracks.innerHTML = "";
+      const selectionsToReveal = [];
       const diplomacyBonuses = {
         c1: { "开战": "-3", "恶劣": "-2", "交恶": "-1", "中立": "0", "友善": "+1", "结盟": "+2" },
         c3: { "开战": "-3", "恶劣": "-2", "交恶": "-1", "中立": "0", "友善": "+1", "结盟": "+2" },
@@ -3785,10 +3812,12 @@
         const chips = document.createElement("div");
         chips.className = "diplomacy-chips";
         chips.style.gridTemplateColumns = `repeat(${max - min + 1}, 34px)`;
+        let activeButton = null;
         for (let value = min; value <= max; value += 1) {
           const button = document.createElement("button");
           button.type = "button";
-          button.className = `chip${String(state.diplomacy[stateKey] ?? "") === String(value) ? " active" : ""}`;
+          const active = String(state.diplomacy[stateKey] ?? "") === String(value);
+          button.className = `chip${active ? " active" : ""}`;
           button.textContent = value > 0 ? `+${value}` : String(value);
           button.addEventListener("click", () => {
             state.diplomacy[stateKey] = String(value);
@@ -3796,10 +3825,15 @@
             queueSave();
           });
           chips.appendChild(button);
+          if (active) activeButton = button;
         }
         scale.append(markerRow, chips);
         row.append(makeTrackTitle(zh, diplomacyTitle.title, { icon: diplomacyFactionIcon(key) }), scale);
         elements.diplomacyTracks.appendChild(row);
+        if (activeButton) selectionsToReveal.push([scale, activeButton]);
+      });
+      requestAnimationFrame(() => {
+        selectionsToReveal.forEach(([scale, button]) => revealDiplomacySelection(scale, button));
       });
     }
 

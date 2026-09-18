@@ -1680,6 +1680,7 @@ function renderTileEdgeTokens(edgeTokens) {
 
 function render() {
   renderCycleTabs();
+  window.ATO_CYCLE_SYMBOLS?.prependTitleIcon(document.querySelector("#mapTitle"), state.activeCycleId, "../");
   renderTokenPalette();
   renderControls();
   renderUndoControl();

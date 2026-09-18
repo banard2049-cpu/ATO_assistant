@@ -96,9 +96,15 @@ textarea {
   margin-bottom: 18px;
 }
 
+.topbar-tools {
+  display: grid;
+  justify-items: end;
+  gap: 10px;
+}
+
 .back-link {
   display: inline-flex;
-  margin-bottom: 10px;
+  margin-bottom: 0;
   color: var(--accent);
   font-weight: 800;
   text-decoration: none;
@@ -112,6 +118,19 @@ p {
 h1 {
   font-size: clamp(28px, 4vw, 44px);
   line-height: 1.08;
+}
+
+.cycle-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cycle-title .cycle-symbol {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  object-fit: contain;
 }
 
 .topbar p {

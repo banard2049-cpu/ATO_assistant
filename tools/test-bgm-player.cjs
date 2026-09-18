@@ -97,6 +97,35 @@ test("默认关闭；开启后跟随步骤切换主曲与氛围层", async () =>
   await waitFor(() => !harness.playing().includes("XX_LB_Expedition_Step_Ambience.mp3"), "探索氛围层应淡出");
 });
 
+test("刷新后开启偏好不会在初始空阶段崩溃，并恢复播放", async () => {
+  const localStorage = new Map();
+  const first = createHarness({ localStorage });
+  first.api.setEnabled(true);
+  await first.api.setFlowStage("explore");
+  await waitFor(() => first.loudest() === "LB_Exploration_Step.mp3", "首次打开的探索曲");
+  first.close();
+
+  const reloaded = createHarness({ localStorage });
+  await waitFor(() => reloaded.loudest() === "LB_Bridge_Tholos_2.mp3", "刷新后的默认曲");
+  assert.equal(reloaded.api.state().enabled, true);
+  assert.equal(reloaded.api.state().needGesture, false);
+  reloaded.close();
+});
+
+test("刷新后恢复手动锁定阶段", async () => {
+  const localStorage = new Map();
+  const first = createHarness({ localStorage });
+  first.api.setEnabled(true);
+  await first.api.setStage("mnemos");
+  await waitFor(() => first.loudest() === "LB_Last_Academy_2.mp3", "首次打开的回忆突破曲");
+  first.close();
+
+  const reloaded = createHarness({ localStorage });
+  await waitFor(() => reloaded.loudest() === "LB_Last_Academy_2.mp3", "刷新后的回忆突破曲");
+  assert.equal(reloaded.api.state().forcedStage, "mnemos");
+  reloaded.close();
+});
+
 test("缺少 .mp3 时自动改用 .ogg 候选", async () => {
   const harness = createHarness({ exists: (url) => !url.endsWith(".mp3") });
   const api = harness.api;

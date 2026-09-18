@@ -4200,6 +4200,12 @@
 
     function cardBackDisplayLevel(card) {
       if (!card) return "?";
+      if (currentApostle === "HYPERTIME_ORACLE"
+        && card.type === "AI"
+        && card.level === "X"
+        && card.index === 2) {
+        return "3";
+      }
       const level = card.backLevel || (card.specialBp ? "III" : card.level);
       return levelBack[level] || level || "?";
     }

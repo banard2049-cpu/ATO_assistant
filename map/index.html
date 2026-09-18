@@ -11,11 +11,13 @@
   <main class="app">
     <header class="topbar">
       <div>
-        <a class="back-link" href="../index.html">返回主控台</a>
-        <h1>ATO 地图模块</h1>
+        <h1 id="mapTitle" class="cycle-title">ATO 地图模块</h1>
         <p>按 Cycle 管理地图板块、当前位置和已探索状态。</p>
       </div>
-      <div class="cycle-tabs" id="cycleTabs"></div>
+      <div class="topbar-tools">
+        <a class="back-link" href="../index.html">返回主控台</a>
+        <div class="cycle-tabs" id="cycleTabs"></div>
+      </div>
     </header>
 
     <div class="sticky-actions">
@@ -126,6 +128,7 @@
   <script src="../assets/page-focus-router.js?v=20260813-no-screen-focus1"></script>
   <script src="./map-data.js?v=20260730-cycle-labels"></script>
   <script src="./map-tile-tags.js?v=20260730-c5-silver-ruin-token-crop"></script>
+  <script src="../cycle-symbols.js?v=20260918"></script>
   <script src="../assets/campaign-session.js?v=20260917"></script>
   <script src="./app.js?v=20260916-save-guards"></script>
   <script src="../assets/ato-terms.js?v=20260912f"></script>

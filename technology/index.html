@@ -176,7 +176,18 @@ body {
   word-break: break-word;
 }
 .tree-wrap.no-image .cond-text { display: flex; }
+.tree-wrap.zh-conditions .cond-text { display: flex; }
+.tree-wrap.zh-conditions .cond-mask { display: block; }
 .tree-wrap.no-image .cond-text.prereq-locked { visibility: hidden; }
+.tree-wrap.zh-conditions .cond-text.prereq-locked { visibility: hidden; }
+.tree-wrap.zh-conditions .cond-box {
+  z-index: 2;
+  border: 1px solid #1d2328;
+  background-color: #fff;
+  box-sizing: border-box;
+}
+.tree-wrap.zh-conditions .cond-text { z-index: 1; }
+.tree-wrap.zh-conditions .cond-box:hover { background-color: rgba(216, 163, 25, .22); }
 .tree-wrap.no-image .cond-text.is-placeholder { color: var(--muted); font-weight: 600; font-style: italic; }
 .tree-img {
   display: block;
@@ -2959,6 +2970,7 @@ function syncHideUnknownToggle() {
   treeWrap.classList.toggle('no-image', hideTreeImage);
   // zh-labels 的含义是「节点名由页面绘制」：中文模式，或者底图被隐藏时都要打开。
   treeWrap.classList.toggle('zh-labels', treeLanguage === 'zh' || hideTreeImage);
+  treeWrap.classList.toggle('zh-conditions', treeLanguage === 'zh');
 }
 function isUnimportantNode(pageKey, node) { return unimportant.has(nodeKey(pageKey, node)); }
 function isNegotiationNode(pageKey, node) {
@@ -3978,6 +3990,7 @@ function renderTree() {
   const treeWrap = document.getElementById('treeWrap');
   treeWrap.style.aspectRatio = `${page.width} / ${page.height}`;
   treeWrap.classList.toggle('zh-labels', treeLanguage === 'zh' || hideTreeImage);
+  treeWrap.classList.toggle('zh-conditions', treeLanguage === 'zh');
   treeWrap.classList.toggle('no-image', hideTreeImage);
   treeWrap.classList.toggle('hide-unknown', hideUnknownTech);
   treeWrap.innerHTML = `<img class="tree-img" src="${esc(page.image)}" alt="${esc(page.label)} technology tree">`;
@@ -4055,10 +4068,13 @@ function renderConditionBoxes(treeWrap, page) {
     mask.dataset.pageKey = page.key;
     mask.dataset.nodeId = node.id;
     if (isConditionTextHidden(page.key, node)) mask.classList.add('prereq-locked');
-    // 条件面板与节点框同宽：整条面板都盖住（含左边印刷的方格），完全遮挡时位置只留空白。
-    mask.style.left = (box.x / page.width * 100) + '%';
+    // 中文模式只盖住右侧印刷文字，保留左侧复选框；前置未满足时仍整块遮挡。
+    const maskOffset = treeLanguage === 'zh' && !isConditionTextHidden(page.key, node)
+      ? PRINTED_CONDITION_BOX_WIDTH
+      : 0;
+    mask.style.left = ((box.x + maskOffset) / page.width * 100) + '%';
     mask.style.top = ((box.y + box.h + cells[0][0]) / page.height * 100) + '%';
-    mask.style.width = (box.w / page.width * 100) + '%';
+    mask.style.width = ((box.w - maskOffset) / page.width * 100) + '%';
     mask.style.height = (((cells[cells.length - 1][0] + cells[cells.length - 1][1]) - cells[0][0]) / page.height * 100) + '%';
     treeWrap.appendChild(mask);
   }

@@ -18,7 +18,7 @@
   const CONTAINER_ID = "bgmControls";
   const AUTO_LABEL = "自动（跟随今日流程）";
   // 改动本文件时同步更新：这里的 BUILD 与两个页面里的 ?v= 标签（测试会校验一致）
-  const BUILD = "bgm15";
+  const BUILD = "bgm16";
 
   if (!manifest || !manifest.stages || !Object.keys(manifest.stages).length) {
     window.ATO_BGM = createDisabledApi("缺少 assets/bgm/manifest.js");
@@ -81,6 +81,8 @@
   };
 
   const prefs = loadPrefs();
+  // 手动锁定阶段也属于本机偏好；恢复它后，刷新页面不会先回到默认曲目。
+  state.forcedStage = prefs.stage || "";
 
   /* ---------- 自选曲目 ----------
    * 使用者导入的音频存在浏览器 IndexedDB（Blob），指派表（阶段 → 曲目 id）存 localStorage。
@@ -695,7 +697,7 @@
       text = "音乐已关闭";
     } else if (state.needGesture) {
       text = "浏览器拦截了自动播放，点击页面任意处开始";
-    } else if (state.missingStageKey === state.currentKey) {
+    } else if (state.missingStageKey && state.missingStageKey === state.currentKey && stage) {
       const first = (manifest.stages[state.currentKey].files || [])[0] || "";
       text = "缺少音频文件：" + first + "（放进 " + displayBase() + " 目录）";
     } else if (state.currentUrl) {
@@ -1170,4 +1172,3 @@
     };
   }
 })();
-

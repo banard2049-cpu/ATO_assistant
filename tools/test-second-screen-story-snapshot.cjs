@@ -13,7 +13,8 @@
  *      资源键 story/data/ato-storybook-key-scans/c1-0-0.jpg（已存的老快照也治得好）；
  *   3. 跨站绝对地址一律忽略；
  *   4. 扫描图一张都加载失败时第二屏不留白，退回快照另存的正文（正文也缺时给一句说明）；
- *   5. 被取代的旧条目 400ms 重试不能再 POST，不能覆盖新条目（另附旧逻辑对照组）。
+ *   5. 官方扫描图开关关闭时，快照改发官方正文而不带图片路径；
+ *   6. 被取代的旧条目 400ms 重试不能再 POST，不能覆盖新条目（另附旧逻辑对照组）。
  *
  * 路径按本文件位置解析。
  */
@@ -58,6 +59,7 @@ function storySnapshotContext(locationHref) {
     }]]),
     sectionLabel: { textContent: '主线' },
     storyText: { textContent: '阅读器里的文本' },
+    secondScreenStoryContentToggle: { checked: true },
     window: { location: { href: locationHref } },
     URL,
   });
@@ -68,6 +70,9 @@ function storySnapshotContext(locationHref) {
 
 const androidSnapshot = storySnapshotContext('file:///android_asset/web/story/index.html').buildSecondScreenStorySnapshot();
 const httpSnapshot = storySnapshotContext('http://192.168.1.5/story/index.html').buildSecondScreenStorySnapshot();
+const textSnapshotContext = storySnapshotContext('http://192.168.1.5/story/index.html');
+textSnapshotContext.secondScreenStoryContentToggle.checked = false;
+const textSnapshot = textSnapshotContext.buildSecondScreenStorySnapshot();
 
 // ---- 2. 第二屏：按自己的 HTTP 根解析，并核对服务器真能取到这张图 ----------------
 function ssStoryContext(href, origin) {
@@ -202,6 +207,13 @@ async function main() {
     assert.equal(androidSnapshot.text, '');
     assert.equal(androidSnapshot.fallbackText, '官方正文');
     assert.equal(httpSnapshot.fallbackText, '官方正文');
+  });
+
+  await check('官方扫描图开关关闭时，第二屏快照改发官方正文', () => {
+    assert.equal(textSnapshot.imagesOnly, false);
+    assert.deepEqual([...textSnapshot.images], []);
+    assert.equal(textSnapshot.text, '官方正文');
+    assert.equal(textSnapshot.fallbackText, '');
   });
 
   await check('第二屏解析到自己的 HTTP 根，且服务器拿得到这张图', () => {

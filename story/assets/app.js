@@ -18,7 +18,7 @@
   const resultList = document.querySelector("#resultList");
   const memoryList = document.querySelector("#memoryList");
   const chapterSummary = document.querySelector("#chapterSummary");
-  const bookMeta = document.querySelector("#bookMeta");
+  const storyMark = document.querySelector("#storyMark");
   const sectionLabel = document.querySelector("#sectionLabel");
   const entryTitle = document.querySelector("#entryTitle");
   const entryBadge = document.querySelector("#entryBadge");
@@ -27,9 +27,14 @@
   const entityBioToggle = document.querySelector("#entityBioToggle");
   const ttsButton = document.querySelector("#ttsButton");
   const ttsSpeed = document.querySelector("#ttsSpeed");
-  const ttsVoice = document.querySelector("#ttsVoice");
+  const ttsVoice = document.querySelector("#ttsVoice") || Object.assign(document.createElement("select"), {
+    id: "ttsVoice",
+    className: "tts-select",
+  });
   const secondScreenStoryModeLabel = document.querySelector("#secondScreenStoryModeLabel");
   const secondScreenStoryModeToggle = document.querySelector("#secondScreenStoryModeToggle");
+  const secondScreenStoryContentLabel = document.querySelector("#secondScreenStoryContentLabel");
+  const secondScreenStoryContentToggle = document.querySelector("#secondScreenStoryContentToggle");
   const battleShortcutPanel = document.createElement("div");
   battleShortcutPanel.id = "battleShortcutPanel";
   battleShortcutPanel.className = "battle-shortcuts";
@@ -47,10 +52,17 @@
   let storySectionRevision = 0;
   const SECOND_SCREEN_SNAPSHOT_ATTEMPTS = 3;
   const SECOND_SCREEN_STORY_MODE_TITLE = "勾选后第二屏显示当前故事文本，取消勾选后显示地图";
+  const SECOND_SCREEN_STORY_CONTENT_TITLE = "官方版有扫描图时，勾选后第二屏显示原书扫描图，取消勾选后显示官方正文";
   let secondScreenSnapshotTimer = null;
   let secondScreenSnapshotFailure = "";
   let secondScreenModeFailure = "";
   let secondScreenModeBusy = false;
+  let secondScreenStoryImagesPreference = true;
+  try {
+    secondScreenStoryImagesPreference = localStorage.getItem("ato-second-screen-story-content-v1") !== "text";
+  } catch {
+    // 浏览器隐私模式可能禁止 localStorage；本页仍可正常使用本次切换。
+  }
   let historyStack = [];
   let memories = [];
   let voices = [];
@@ -375,7 +387,17 @@
   }
 
   function currentBook() {
-    return data.books.find((book) => book.id === bookSelect.value) || data.books[0];
+    const book = data.books.find((item) => item.id === bookSelect.value) || data.books[0];
+    const cycleId = String(book?.id || "").replace(/\.5$/, "");
+    const themedCycle = ["c1", "c2", "c3", "c4", "c5"].includes(cycleId) ? cycleId : "";
+    if (document.body.dataset.cycle !== themedCycle) document.body.dataset.cycle = themedCycle;
+    window.ATO_CYCLE_SYMBOLS?.setBrandMark(storyMark, cycleId, "../");
+    document.querySelectorAll("[data-cycle-link]").forEach((link) => {
+      const url = new URL(link.getAttribute("href"), window.location.href);
+      if (cycleId) url.searchParams.set("cycle", cycleId);
+      link.href = url.href;
+    });
+    return book;
   }
 
   function selectedChapterKey() {
@@ -882,6 +904,7 @@
           <button id="ttsStatusToggle" type="button">收起</button>
         </div>
       </div>
+      <div id="ttsQuickConfig" class="tts-quick-config" aria-label="朗读设置"></div>
       <div id="ttsStatusBody" class="tts-status-body"></div>
     `;
     statusBox.querySelector(".tts-status-actions").prepend(configButton);
@@ -901,7 +924,16 @@
     importInput.accept = "application/json,.json";
     importInput.hidden = true;
 
-    ttsVoice.insertAdjacentElement("afterend", engineSelect);
+    const quickConfig = statusBox.querySelector("#ttsQuickConfig");
+    const engineField = document.createElement("label");
+    engineField.className = "tts-quick-field";
+    engineField.innerHTML = "<span>朗读方式</span>";
+    engineField.append(engineSelect);
+    const voiceField = document.createElement("label");
+    voiceField.className = "tts-quick-field";
+    voiceField.innerHTML = "<span>音色</span>";
+    voiceField.append(ttsVoice);
+    quickConfig.append(engineField, voiceField);
     document.body.append(statusBox, overlay, cloneInput, importInput);
 
     return { engineSelect, configButton, statusBox, overlay, cloneInput, importInput };
@@ -2579,6 +2611,48 @@
         : `${linkify(displayEntry.text, currentBook())}${imagesHtml ? `<div class="battle-gallery">${imagesHtml}</div>` : ""}`;
     storyText.innerHTML = html + renderOfficialScan(entry);
     annotateEntityTextNodes(storyText);
+    refreshSecondScreenStoryContentToggle(Boolean(secondScreenStoryModeToggle?.checked));
+  }
+
+  function activeOfficialScan(entry = activeEntry) {
+    if (!entry || storyVersion !== "官方版" || !supportsOfficialVersion()) return null;
+    return officialEntries.get(`${currentBook()?.id}:${entry.key}`)?.officialScan || null;
+  }
+
+  function refreshSecondScreenStoryContentToggle(storyMode = false) {
+    if (!secondScreenStoryContentLabel || !secondScreenStoryContentToggle) return;
+    const officialVersion = storyVersion === "官方版" && supportsOfficialVersion();
+    secondScreenStoryContentLabel.hidden = !officialVersion;
+    if (!officialVersion) {
+      secondScreenStoryContentToggle.disabled = true;
+      secondScreenStoryContentLabel.classList.remove("disabled");
+      secondScreenStoryContentLabel.title = "";
+      return;
+    }
+
+    const hasScan = Boolean(activeOfficialScan()?.src);
+    secondScreenStoryContentToggle.checked = hasScan && secondScreenStoryImagesPreference;
+    secondScreenStoryContentToggle.disabled = !storyMode || !hasScan;
+    secondScreenStoryContentLabel.classList.toggle("disabled", !storyMode || !hasScan);
+    secondScreenStoryContentLabel.title = !hasScan
+      ? "当前官方条目没有对应的扫描图，只能显示官方正文"
+      : storyMode
+        ? SECOND_SCREEN_STORY_CONTENT_TITLE
+        : "请先开启第二屏故事文本模式，再切换图片或文字";
+  }
+
+  function toggleSecondScreenStoryContent() {
+    if (!secondScreenStoryContentToggle || secondScreenStoryContentToggle.disabled) return;
+    secondScreenStoryImagesPreference = secondScreenStoryContentToggle.checked;
+    try {
+      localStorage.setItem(
+        "ato-second-screen-story-content-v1",
+        secondScreenStoryImagesPreference ? "image" : "text"
+      );
+    } catch {
+      // 浏览器隐私模式可能禁止 localStorage；本次切换仍需立即同步。
+    }
+    scheduleSecondScreenStorySnapshot();
   }
 
   function renderOfficialScan(entry) {
@@ -2613,8 +2687,15 @@
     const displayEntry = getDisplayEntry(activeEntry);
     const scan = officialEntries.get(`${currentBook()?.id}:${activeEntry.key}`)?.officialScan;
     // 官方版优先让第二屏看官方扫描图，但扫描图不是每个条目都有（官方 PDF 未收录的
-    // 条目就没有）。这时必须退回正文，否则第二屏只剩标题、正文一片空白。
-    const imagesOnly = storyVersion === "官方版" && supportsOfficialVersion() && Boolean(scan?.src);
+    // 条目就没有）。这时必须退回正文，否则第二屏只剩标题、正文一片空白。官方扫描图
+    // 开关默认开启；测试或旧嵌入页没有这个控件时也保持原来的默认行为。
+    const showOfficialScan = typeof secondScreenStoryContentToggle === "undefined"
+      ? true
+      : Boolean(secondScreenStoryContentToggle?.checked);
+    const imagesOnly = storyVersion === "官方版"
+      && supportsOfficialVersion()
+      && showOfficialScan
+      && Boolean(scan?.src);
     // 快照要给 file://（Android 的 APK 内）和 http://（第二屏）两侧用同一份资源路径，
     // 所以只存应用相对路径：Android 里故事页是 file:///android_asset/web/story/index.html，
     // 直接存 pathname 会带上 /android_asset/web 前缀，第二屏按 HTTP 根去找就变成
@@ -2775,17 +2856,20 @@
       const payload = await response.json().catch(() => null);
       if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
       const enabled = Boolean(payload.enabled);
-      secondScreenStoryModeToggle.checked = enabled && payload.displayMode === "story";
+      const storyMode = enabled && payload.displayMode === "story";
+      secondScreenStoryModeToggle.checked = storyMode;
       secondScreenStoryModeToggle.disabled = !enabled;
       secondScreenStoryModeLabel?.classList.toggle("disabled", !enabled);
       secondScreenStoryModeLabel.title = enabled
         ? secondScreenStoryModeTitle(SECOND_SCREEN_STORY_MODE_TITLE)
         : "请先在主控制台开启第二屏幕";
+      refreshSecondScreenStoryContentToggle(storyMode);
     } catch {
       secondScreenStoryModeToggle.checked = false;
       secondScreenStoryModeToggle.disabled = true;
       secondScreenStoryModeLabel?.classList.add("disabled");
       if (secondScreenStoryModeLabel) secondScreenStoryModeLabel.title = "请先在主控制台开启第二屏幕";
+      refreshSecondScreenStoryContentToggle(false);
     }
   }
 
@@ -3510,7 +3594,6 @@
     const requestedEncounterKey = resolveEncounterKey(activeBook, deepLinkTarget.encounterKey);
     if (requestedEncounterKey) populateEncounters(activeBook, requestedEncounterKey);
     if (deepLinkTarget.query) searchInput.value = deepLinkTarget.query;
-    bookMeta.textContent = `${data.books.length} 本故事书 · ${data.generatedAt}`;
     const requestedEntry = entryFromDeepLink(activeBook, deepLinkTarget);
     if (requestedEntry) {
       showEntry(requestedEntry, false);
@@ -3565,6 +3648,7 @@
 
   backButton.addEventListener("click", goBack);
   secondScreenStoryModeToggle?.addEventListener("change", toggleSecondScreenStoryMode);
+  secondScreenStoryContentToggle?.addEventListener("change", toggleSecondScreenStoryContent);
   rememberButton.addEventListener("click", rememberParagraph);
   ttsButton.addEventListener("click", toggleSpeech);
   function syncStoryLanguage(official) {
@@ -3572,6 +3656,7 @@
     if (storyVersion === nextVersion) return;
     stopSpeech();
     storyVersion = nextVersion;
+    refreshSecondScreenStoryContentToggle(Boolean(secondScreenStoryModeToggle?.checked));
     const chapterKey = selectedChapterKey();
     const encounterKey = selectedEncounterKey();
     data = buildVersionData(official);

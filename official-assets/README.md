@@ -1,0 +1,11 @@
+# 官中图片资源
+
+把自己有权使用的官方中文图片放在这里。这个目录是本地私有覆盖目录，不会被便携版、Docker 或 APK 的源码打包带走。
+
+打包 `.atopack`、完整资源包或兼容 ZIP 时，程序会按清单目标寻找对应图片：
+
+- 推荐直接镜像项目路径，例如 `official-assets/aibp/ps/HEKATON/HEKATON_BP_I_001.jpg`；
+- 也支持按资源目录缩短，例如 `official-assets/HEKATON/HEKATON_BP_I_001.jpg`；
+- 找不到对应图片时，继续使用素材库或原始项目/APK 中的图片。
+
+文件名和扩展名应与项目清单一致（`.jpg`、`.jpeg`、`.png`、`.webp`）。目录中的额外文件不会进入资料包。

@@ -44,9 +44,9 @@ function recordCycleResources(cycle) {
     : "\n    };\n\n    const sharedResourceKeys";
   const end = source.indexOf(endToken, start);
   const block = source.slice(start, end);
-  const resourceStart = block.indexOf("\n        resources: [");
-  const resourceEnd = block.indexOf("\n        ],\n        events:", resourceStart);
-  return [...block.slice(resourceStart, resourceEnd)
+  const resourceBlock = block.match(/\r?\n\s*resources:\s*\[([\s\S]*?)\r?\n\s*\],\r?\n\s*events:/)?.[1] || "";
+  assert.ok(resourceBlock, `${cycle} record resource list not found`);
+  return [...resourceBlock
     .matchAll(/\["([A-Za-z][A-Za-z0-9]*)",/g)]
     .map((match) => match[1])
     .filter((key) => ![

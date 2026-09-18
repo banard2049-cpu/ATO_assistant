@@ -19,6 +19,7 @@ sys.path.insert(0, str(PROJECT))
 
 from app.bgm_resources import allowed_target as is_bgm_target  # noqa: E402
 from app.official_resources import add_to_archive
+from app.official_assets import resolve as resolve_official_asset  # noqa: E402
 from app.fixed_catalog import fixed_catalog_payload  # noqa: E402
 from app.packages import PACKAGE_VERSION, safe_member  # noqa: E402
 from app.story_extras import (  # noqa: E402
@@ -92,11 +93,13 @@ def build(apk_path: Path, destination: Path, overlay_root: Path | None = None) -
             partial, "w", compression=zipfile.ZIP_STORED, allowZip64=True
         ) as output_zip:
             source_members = normalized_member_lookup(source_zip)
-            overlay_files = {
-                target: overlay_root / Path(*PurePosixPath(target).parts)
-                for _, _, target in faces
-                if overlay_root is not None
-            }
+            overlay_files = {}
+            overlay_flags = {}
+            for _, _, target in faces:
+                fallback = overlay_root / Path(*PurePosixPath(target).parts) if overlay_root is not None else Path()
+                source, overridden = resolve_official_asset(overlay_root, target, fallback)
+                overlay_files[target] = source
+                overlay_flags[target] = overridden
             required = {
                 f"assets/web/{target}"
                 for _, _, target in faces
@@ -169,6 +172,7 @@ def build(apk_path: Path, destination: Path, overlay_root: Path | None = None) -
                     "kind": "full-resource-pack",
                     "sourceApk": apk_path.name,
                     "correctedProjectOverlay": bool(overlay_root),
+                    "officialAssets": sum(1 for value in overlay_flags.values() if value),
                     "audioIncluded": False,
                 },
             }
@@ -209,6 +213,7 @@ def build(apk_path: Path, destination: Path, overlay_root: Path | None = None) -
         "books": len(stories.get("books", [])),
         "stories": sum(len(book.get("entries", [])) for book in stories.get("books", [])),
         "entities": entity_index.entity_count,
+        "official_assets": sum(1 for value in overlay_flags.values() if value),
         "bytes": destination.stat().st_size,
     }
 
@@ -220,7 +225,7 @@ def main() -> None:
     parser.add_argument(
         "--overlay-root",
         type=Path,
-        help="优先读取修正版 ATO_assistant 根目录中的同路径素材",
+        help="优先读取 ATO_assistant 根目录中的修正版素材；其中 official-assets/ 官中图片优先级最高",
     )
     args = parser.parse_args()
     result = build(

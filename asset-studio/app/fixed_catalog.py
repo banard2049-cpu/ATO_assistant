@@ -1041,6 +1041,25 @@ def fixed_catalog_payload() -> dict[str, Any]:
 
     additions: list[CatalogItem] = []
 
+    cycle_symbol_files = {
+        "c1": ("c1-brown.png", "循环 I 图标"),
+        "c2": ("c2-red.png", "循环 II 图标"),
+        "c3": ("c3-purple.png", "循环 III 图标"),
+        "c4": ("c4-yellow.png", "循环 IV 图标"),
+        "c5": ("c5-black-transparent.png", "循环 V 图标"),
+    }
+    for order, (cycle, (filename, name)) in enumerate(cycle_symbol_files.items()):
+        additions.append(CatalogItem(
+            id=make_id(cycle, "循环图标", "循环图标", cycle, name),
+            cycle=cycle,
+            module="循环图标",
+            subgroup="循环图标",
+            name=name,
+            number=cycle,
+            sort_order=49_000 + order,
+            faces={"front": f"assets/cycle-symbols/{filename}"},
+        ))
+
     additions.append(CatalogItem(
         id=make_id("c1", "exploration", "cards", "8201", "8201"),
         cycle="c1", module="探索卡", subgroup="探索卡",
@@ -1330,7 +1349,7 @@ def fixed_catalog_payload() -> dict[str, Any]:
     for order, item in enumerate(c1_exploration):
         item["sort_order"] = order
     payload["source"]["catalog_items"] = len(payload["items"])
-    payload["source"]["catalog_version"] = "ATO-Local-0.2.11+complete-import-assets-13-c1-8201"
+    payload["source"]["catalog_version"] = "ATO-Local-0.2.11+complete-import-assets-14-cycle-symbols"
     return payload
 
 

@@ -46,6 +46,8 @@ technology/images/
 
 主控台的背景音乐是可选功能：把音频放进 assets/bgm/ 目录，「用户与存档」下方的「背景音乐」面板默认跟随「今日流程」自动切曲；「故事」步骤里的 回忆突破 / 内蕴奥德赛 / 法洛斯之梦 / 主线 / 特殊事件 入口，以及「考察」里的 冒险中枢 / R&R，点一下也会连带切曲，另外还能导入自选 BGM。**只有主控台出声**，故事模块（story/）不再参与音乐。文件名与安装方式见 [bgm 说明](assets/bgm/README.md)；音频不进仓库，也不打进便携版 / Docker / APK，需要自己准备（可用 tools/install-bgm.bat 从本地音乐目录安装）。
 
+官中图片可以放在项目根目录的 `official-assets/`。导出 `.atopack`、完整资源包或兼容 ZIP 时，打包器会优先使用这里与清单目标对应的图片；没有对应文件时才回退到素材库或原来的项目/APK 资源。推荐按原路径保存，也支持按资源目录缩短一级，例如 `official-assets/HEKATON/HEKATON_BP_I_001.jpg` 对应 `aibp/ps/HEKATON/HEKATON_BP_I_001.jpg`。该目录属于本地私有资源，不会进入便携版、Docker 或 APK。
+
 ### 导入资源（.atopack）
 
 图片资产不必一张张下载，也不必装素材库：拿到 `.atopack` 资料包后解压、拖进去就行。

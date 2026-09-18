@@ -4,20 +4,19 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>ATO 故事书跳转器</title>
-    <link rel="stylesheet" href="./assets/styles.css?v=20260917-tts-status-collapse1" />
+    <link rel="stylesheet" href="./assets/styles.css?v=20260918-cycle-colors1" />
   </head>
   <body>
     <aside class="sidebar">
       <div class="brand">
-        <div class="mark">ATO</div>
+        <div id="storyMark" class="mark">ATO</div>
         <div>
           <h1>故事书跳转器</h1>
-          <p id="bookMeta">正在载入故事索引</p>
         </div>
       </div>
       <a class="home-link" href="../index.html">返回主控台</a>
-      <a class="home-link" href="../record/index.html" style="margin-top:-12px;margin-bottom:4px;font-size:13px;border-color:#c89742;color:#ffd480;background:#17140f;">阿尔戈号记录表</a>
-      <a class="home-link" href="../hero/index.html" style="margin-top:0;margin-bottom:18px;font-size:13px;border-color:#c89742;color:#ffd480;background:#17140f;">英雄记录表</a>
+      <a class="home-link record-link" href="../record/index.html" data-cycle-link style="margin-top:-12px;margin-bottom:4px;font-size:13px;">阿尔戈号记录表</a>
+      <a class="home-link record-link" href="../hero/index.html" data-cycle-link style="margin-top:0;margin-bottom:18px;font-size:13px;">英雄记录表</a>
 
       <label class="field">
         <span>故事书</span>
@@ -69,6 +68,10 @@
             <input type="checkbox" id="secondScreenStoryModeToggle" />
             第二屏显示文本
           </label>
+          <label id="secondScreenStoryContentLabel" class="second-screen-mode-toggle" hidden title="官方版有扫描图时，勾选后第二屏显示原书扫描图，取消勾选后显示官方正文">
+            <input type="checkbox" id="secondScreenStoryContentToggle" checked />
+            第二屏显示图片
+          </label>
           <button id="entityBioToggle" type="button" class="entity-bio-toggle" aria-pressed="false" title="显示或隐藏人物小传">人物小传：关</button>
           <button id="ttsButton" type="button" class="tts-btn" title="朗读">朗读</button>
           <select id="ttsSpeed" class="tts-select">
@@ -78,7 +81,6 @@
             <option value="1.75">1.75x</option>
             <option value="2">2x</option>
           </select>
-          <select id="ttsVoice" class="tts-select"></select>
           <div id="entryBadge" class="entry-badge">----</div>
         </div>
       </header>
@@ -100,7 +102,8 @@
     <script src="./data/storybook-official-data.js?v=20260913-official-scans1"></script>
     <script src="./data/entity-index.js?v=20260815entitybio4"></script>
     <script src="./audio-packs/audio/manifest.js?v=20260614structure1"></script>
-    <script src="./assets/app.js?v=20260917-xfyun-cloud1"></script>
+    <script src="../cycle-symbols.js?v=20260918"></script>
+    <script src="./assets/app.js?v=20260918-cycle-colors1"></script>
     <script src="../assets/ato-terms.js?v=20260912f"></script>
   <script src="../assets/term-language.js?v=20260913a"></script>
 </body>

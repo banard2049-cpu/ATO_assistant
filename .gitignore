@@ -63,6 +63,11 @@
 !/assets/update/
 # 主控台 BGM：播放器代码随源码发布，音频仍被 *.mp3 / *.ogg 规则忽略
 !/assets/bgm/
+
+# Local official-Chinese image overrides are read only by the explicit asset
+# pack exporters; they must never be part of a source or application release.
+/official-assets/*
+!/official-assets/README.md
 /map/images/
 /map/tokens/
 /record/assets/

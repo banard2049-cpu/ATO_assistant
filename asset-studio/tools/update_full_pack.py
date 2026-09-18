@@ -20,6 +20,7 @@ sys.path.insert(0, str(PROJECT))
 from app.bgm_resources import add_to_archive as add_bgm_to_archive  # noqa: E402
 from app.bgm_resources import allowed_target as is_bgm_target  # noqa: E402
 from app.official_resources import add_to_archive
+from app.official_assets import resolve as resolve_official_asset  # noqa: E402
 from app.fixed_catalog import fixed_catalog_payload  # noqa: E402
 from app.packages import PACKAGE_VERSION, safe_member  # noqa: E402
 from app.story_extras import entity_index_javascript, parse_entity_index  # noqa: E402
@@ -58,6 +59,7 @@ def update_full_pack(
 
     assets = []
     overlay_count = 0
+    official_asset_count = 0
     reused_count = 0
     bgm_count = 0
     try:
@@ -78,10 +80,15 @@ def update_full_pack(
                 for index, (item, face, target) in enumerate(faces, 1):
                     # Keep the resource tree and filename from the catalog.
                     member = str(safe_member(target))
-                    overlay = overlay_root / Path(*PurePosixPath(target).parts)
+                    overlay, official_override = resolve_official_asset(
+                        overlay_root, target,
+                        overlay_root / Path(*PurePosixPath(target).parts),
+                    )
                     old_asset = old_assets.get((item["id"], face))
                     digest = hashlib.sha256()
 
+                    if official_override:
+                        official_asset_count += 1
                     if overlay.is_file():
                         source = overlay.open("rb")
                         overlay_count += 1
@@ -194,6 +201,7 @@ def update_full_pack(
         "items": len(items),
         "assets": len(assets),
         "overlay_assets": overlay_count,
+        "official_assets": official_asset_count,
         "reused_assets": reused_count,
         "official_files": len(manifest.get("resourceFiles", [])),
         "bgm_files": bgm_count,
@@ -205,7 +213,10 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("base_pack", type=Path)
     parser.add_argument("destination", type=Path)
-    parser.add_argument("--overlay-root", type=Path, required=True)
+    parser.add_argument(
+        "--overlay-root", type=Path, required=True,
+        help="修正版 ATO_assistant 根目录；其中 official-assets/ 官中图片优先级最高",
+    )
     parser.add_argument(
         "--bgm-library",
         type=Path,

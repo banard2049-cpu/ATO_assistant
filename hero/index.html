@@ -87,6 +87,19 @@
 
     h1, h2, h3, p { margin: 0; }
     h1 { font-size: clamp(28px, 4vw, 42px); line-height: 1.08; }
+
+    .cycle-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .cycle-title .cycle-symbol {
+      width: 42px;
+      height: 42px;
+      flex: 0 0 42px;
+      object-fit: contain;
+    }
     .subtitle { margin-top: 8px; color: var(--muted); font-size: 15px; }
 
     .topbar-tools { display: grid; gap: 10px; justify-items: end; }
@@ -912,7 +925,7 @@
   <main class="app">
     <header class="topbar">
       <div>
-        <h1>英雄记录表</h1>
+        <h1 id="heroTitle" class="cycle-title">英雄记录表</h1>
         <p class="subtitle">追踪阿尔戈号英雄的技能、记忆与成长</p>
       </div>
       <div class="topbar-tools">
@@ -940,6 +953,7 @@
     </div>
   </main>
 <!-- PLACEHOLDER_SCRIPT -->
+  <script src="../cycle-symbols.js?v=20260918"></script>
   <script>
     const storageKey = "ato-hero-record-v1";
     const serverStorageUrl = "../api/campaign-state.php";
@@ -1145,6 +1159,26 @@
 
     const CYCLES = ["c1", "c2", "c3", "c4", "c5"];
     const CYCLE_LABELS = { c1: "C1", c2: "C2", c3: "C3", c4: "C4", c5: "C5" };
+    let titleCycle = CYCLES.includes(new URLSearchParams(window.location.search).get("cycle"))
+      ? new URLSearchParams(window.location.search).get("cycle")
+      : "c1";
+    const dashboardCycleChannel = typeof BroadcastChannel === "function"
+      ? new BroadcastChannel("ato-dashboard-cycle-v1")
+      : null;
+
+    function setTitleCycle(cycleId) {
+      if (!CYCLES.includes(cycleId) || cycleId === titleCycle) return;
+      titleCycle = cycleId;
+      window.ATO_CYCLE_SYMBOLS?.prependTitleIcon(
+        document.querySelector("#heroTitle"),
+        titleCycle,
+        "../",
+      );
+    }
+
+    dashboardCycleChannel?.addEventListener("message", (event) => {
+      if (event.data?.type === "active-cycle-changed") setTitleCycle(event.data.cycleId);
+    });
 
     function defaultHero() {
       return {
@@ -1477,6 +1511,7 @@
     }
 
     function renderAll() {
+      window.ATO_CYCLE_SYMBOLS?.prependTitleIcon(document.querySelector("#heroTitle"), titleCycle, "../");
       renderHeroContent();
     }
 

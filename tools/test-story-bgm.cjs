@@ -74,7 +74,9 @@ test("渲染链接时接上「点一下临时切阶段」，并且新开标签�
 test("跟随流程的阶段判定：跳过今天没事的条件步骤，也不会卡在没点的按钮上", () => {
   const start = CONSOLE_HTML.indexOf("function bgmFlowStepId(");
   assert.ok(start > 0, "找不到 bgmFlowStepId");
-  const end = CONSOLE_HTML.indexOf("\n    }\n", CONSOLE_HTML.indexOf("return list[start].id;")) + 6;
+  const returnEnd = CONSOLE_HTML.indexOf("return list[start].id;", start) + "return list[start].id;".length;
+  const end = CONSOLE_HTML.indexOf("}", returnEnd) + 1;
+  assert.ok(returnEnd > start && end > returnEnd, "无法完整截取 bgmFlowStepId");
   const source = CONSOLE_HTML.slice(start, end);
 
   const steps = [

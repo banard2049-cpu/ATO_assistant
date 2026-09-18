@@ -14,10 +14,11 @@ from .bgm_resources import add_to_archive as add_bgm_to_archive
 from .bgm_resources import collect_library as collect_bgm_library
 from .bgm_resources import checked_bytes as bgm_checked_bytes
 from .bgm_resources import import_resources as import_bgm_resources
+from .official_assets import resolve as resolve_official_asset
 from .official_resources import LIBRARY, collect, add_to_archive, checked_bytes, import_resources
 from .db import Database
 from .installer import installable_relative, safe_relative
-from .storage import store_image, write_compatible_image
+from .storage import sha256_file, store_image, write_compatible_image
 from .story_extras import (
     ENTITY_INDEX_KIND,
     ENTITY_INDEX_LIBRARY_PATH,
@@ -128,9 +129,9 @@ def export_package(
     destination.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(destination, "w", compression=zipfile.ZIP_DEFLATED, allowZip64=True) as archive:
         written_members: dict[str, str] = {}
+        official_assets = 0
         total = max(len(rows), 1)
         for index, row in enumerate(rows, 1):
-            source = library / row["original_path"]
             # Keep the catalog's original project-relative path and filename
             # inside the .atopack.  This makes the archive directly usable as
             # a resource tree (and avoids losing meaningful names to hashes),
@@ -140,14 +141,20 @@ def export_package(
             if not target:
                 raise ValueError(f"清单中缺少资源路径：{row['item_id']} / {row['face']}")
             member = str(safe_member(str(target)))
+            source, overridden = resolve_official_asset(
+                ato_root, target, library / row["original_path"]
+            )
+            if overridden:
+                official_assets += 1
+            source_hash = sha256_file(source)
             previous_hash = written_members.get(member)
-            if previous_hash is not None and previous_hash != row["sha256"]:
+            if previous_hash is not None and previous_hash != source_hash:
                 raise ValueError(f"清单资源路径冲突：{member}")
             if previous_hash is None:
                 archive.write(source, member)
-                written_members[member] = row["sha256"]
+                written_members[member] = source_hash
             manifest["assets"].append({
-                "itemId": row["item_id"], "face": row["face"], "sha256": row["sha256"],
+                "itemId": row["item_id"], "face": row["face"], "sha256": source_hash,
                 "member": member, "mimeType": row["mime_type"], "originalName": row["original_name"],
             })
             if progress:
@@ -163,6 +170,7 @@ def export_package(
     return {
         "path": str(destination),
         "assets": len(rows),
+        "official_assets": official_assets,
         "entity_index": bool(entity_index),
         "bgm_files": len(manifest.get("bgmFiles", [])),
         "bytes": destination.stat().st_size,
@@ -590,6 +598,7 @@ def export_compat(
         rows = [row for row in rows if row["item_id"] in complete_ids]
     destination.parent.mkdir(parents=True, exist_ok=True)
     written = 0
+    official_assets = 0
     with zipfile.ZipFile(destination, "w", compression=zipfile.ZIP_DEFLATED, allowZip64=True) as archive:
         total = max(len(rows), 1)
         for index, row in enumerate(rows, 1):
@@ -610,7 +619,12 @@ def export_compat(
                 if rendered.resolve().parent != Path(temp_dir).resolve():
                     raise ValueError(f"资料包含有不安全的渲染文件名：{target}")
                 source_path = row["original_path"] if row["source"] == "package" else row["preview_path"]
-                write_compatible_image(library / source_path, rendered)
+                source, overridden = resolve_official_asset(
+                    ato_root, target, library / source_path
+                )
+                if overridden:
+                    official_assets += 1
+                write_compatible_image(source, rendered)
                 archive.write(rendered, str(member))
             written += 1
             if progress:
@@ -637,6 +651,7 @@ def export_compat(
     return {
         "path": str(destination),
         "files": written + (3 if include_stories else 0),
+        "official_assets": official_assets,
         "entity_index": bool(include_stories),
         "bgm_files": bgm_written,
         "bytes": destination.stat().st_size,

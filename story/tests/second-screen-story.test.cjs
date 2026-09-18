@@ -18,6 +18,7 @@ const test = require('node:test');
 
 const STORY_SOURCE = fs.readFileSync(path.join(__dirname, '../assets/app.js'), 'utf8');
 const SS_SOURCE = fs.readFileSync(path.join(__dirname, '../../ss/app.js'), 'utf8');
+const STORY_STYLES = fs.readFileSync(path.join(__dirname, '../assets/styles.css'), 'utf8');
 const SCAN = './data/ato-storybook-key-scans/c1-0-0.jpg';
 
 function slice(source, name, indent) {
@@ -151,6 +152,38 @@ test('民间版仍然发民间正文，不受扫描图影响', () => {
   assert.equal(snapshot.imagesOnly, false);
   assert.equal(snapshot.text, '民间正文');
   assert.equal(snapshot.title, '民间标题');
+});
+
+test('民间版隐藏第二屏显示图片复选框，官方版才显示', () => {
+  const label = {
+    hidden: false,
+    title: '旧提示',
+    classList: { remove() {}, toggle() {} },
+  };
+  const toggle = { checked: true, disabled: false };
+  const ctx = vm.createContext({
+    storyVersion: '民间版',
+    activeEntry: { key: 'entry' },
+    currentBook: () => ({ id: 'c1' }),
+    officialEntries: new Map(),
+    secondScreenStoryImagesPreference: true,
+    SECOND_SCREEN_STORY_CONTENT_TITLE: '官方版有扫描图时，勾选后第二屏显示原书扫描图，取消勾选后显示官方正文',
+    secondScreenStoryContentLabel: label,
+    secondScreenStoryContentToggle: toggle,
+  });
+  ['supportsOfficialVersion', 'activeOfficialScan', 'refreshSecondScreenStoryContentToggle']
+    .forEach(name => vm.runInContext(slice(STORY_SOURCE, name, '  '), ctx));
+
+  ctx.refreshSecondScreenStoryContentToggle(true);
+  assert.equal(label.hidden, true);
+  assert.equal(toggle.disabled, true);
+
+  ctx.storyVersion = '官方版';
+  ctx.officialEntries = new Map([['c1:entry', { officialScan: { src: SCAN } }]]);
+  ctx.refreshSecondScreenStoryContentToggle(true);
+  assert.equal(label.hidden, false);
+  assert.equal(toggle.disabled, false);
+  assert.match(STORY_STYLES, /\.second-screen-mode-toggle\[hidden\]\s*\{\s*display:\s*none;/);
 });
 
 test('第二屏只有拿到本站扫描图才走只看扫描图的分支', () => {

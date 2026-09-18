@@ -187,6 +187,19 @@
       gap: 18px;
     }
 
+    .cycle-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .cycle-title .cycle-symbol {
+      width: 42px;
+      height: 42px;
+      flex: 0 0 42px;
+      object-fit: contain;
+    }
+
     .title-cycle-control {
       min-width: min(280px, 100%);
       display: grid;
@@ -2083,7 +2096,7 @@
     <header class="topbar">
       <div>
         <div class="title-row">
-          <h1>ATO 战役主控台</h1>
+          <h1 id="dashboardTitle" class="cycle-title">ATO 战役主控台</h1>
           <label class="title-cycle-control">
             当前 Cycle
             <select id="cycleSelect"></select>
@@ -2097,8 +2110,8 @@
           <input id="dayInput" type="text" inputmode="numeric" value="0">
         </label>
         <div class="record-links">
-          <a class="record-card-link" href="./record/index.html">阿尔戈号记录表</a>
-          <a class="record-card-link hero-card-link" href="./hero/index.html">英雄记录表</a>
+          <a class="record-card-link" href="./record/index.html" data-cycle-link>阿尔戈号记录表</a>
+          <a class="record-card-link hero-card-link" href="./hero/index.html" data-cycle-link>英雄记录表</a>
           <a class="record-card-link aibp-card-link" href="./aibp/index.html">AIBP</a>
           <a class="record-card-link technology-card-link" href="./technology/index.html">科技</a>
         </div>
@@ -2257,9 +2270,10 @@
   <script src="./assets/exploration-card-rules.js"></script>
   <script src="./map/map-tile-tags.js?v=20260730-c4-oasis-tag"></script>
   <script src="./map/map-data.js?v=20260730-cycle-labels"></script>
-  <script>window.ATO_BGM_CONFIG = { expect: "bgm15" };</script>
-  <script src="./assets/bgm/manifest.js?v=20260921-bgm15"></script>
-  <script src="./assets/bgm/bgm.js?v=20260921-bgm15"></script>
+  <script src="./cycle-symbols.js?v=20260918"></script>
+  <script>window.ATO_BGM_CONFIG = { expect: "bgm16" };</script>
+  <script src="./assets/bgm/manifest.js?v=20260921-bgm16"></script>
+  <script src="./assets/bgm/bgm.js?v=20260921-bgm16"></script>
   <script>
     const legacyStorageKey = "ato-campaign-dashboard-v1";
     const storageKey = "ato-campaign-dashboard-profiles-v1";
@@ -3315,6 +3329,7 @@
     let dashboardWriterLeaseTimer = null;
     const dashboardPageId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
     const campaignSyncChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-dashboard-sync-v1") : null;
+    const dashboardCycleChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-dashboard-cycle-v1") : null;
     const dashboardWriterChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-dashboard-writer-v1") : null;
     const recordSyncChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-record-sync-v1") : null;
     const heroMnemosSyncChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-hero-mnemos-sync-v1") : null;
@@ -5681,6 +5696,16 @@
         elements.cycleSelect.appendChild(option);
       });
       elements.cycleSelect.value = currentProfile().activeCycleId;
+      window.ATO_CYCLE_SYMBOLS?.prependTitleIcon(
+        document.querySelector("#dashboardTitle"),
+        currentProfile().activeCycleId,
+        "./",
+      );
+      document.querySelectorAll("[data-cycle-link]").forEach((link) => {
+        const url = new URL(link.getAttribute("href"), window.location.href);
+        url.searchParams.set("cycle", currentProfile().activeCycleId);
+        link.href = url.href;
+      });
     }
 
     function switchCycle(cycleId) {
@@ -5695,6 +5720,7 @@
       renderCycles();
       renderFlow();
       renderDateTrack();
+      dashboardCycleChannel?.postMessage({ type: "active-cycle-changed", cycleId });
     }
 
     function getCurrentSurveyConstantData() {

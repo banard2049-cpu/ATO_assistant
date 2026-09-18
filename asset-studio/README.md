@@ -121,6 +121,14 @@ PDF 必须带有可提取的文字层。扫描图片型 PDF 不支持 OCR；检�
 资料包可能达到数 GB，生成和导入需要等待一段时间。仓库的 `.gitignore` 已排除
 `*.atopack`，因此本地生成的资源包不会被意外提交到 GitHub。
 
+### 官中图片覆盖
+
+把官中图片放在 ATO_assistant 根目录的 `official-assets/`。导出 `.atopack`、兼容 ZIP
+或完整资源包时，工具会按清单目标路径优先读取这里的对应图片；缺失时继续使用素材库、
+项目原图或 APK 中的原始文件。目录可以镜像完整项目路径，也可以只保留资源目录，例如
+`official-assets/HEKATON/HEKATON_BP_I_001.jpg` 会匹配
+`aibp/ps/HEKATON/HEKATON_BP_I_001.jpg`。该目录是本地私有资源，不会进入发布包。
+
 ## 数据与安全
 
 - 原图、预览图、SQLite 资料库、导出包和备份都位于用户选择的资料库目录。

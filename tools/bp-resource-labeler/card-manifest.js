@@ -4,24 +4,25 @@
   const resourcesByCycle = {
     C4: [
       ["cursedDerelict", "CD", "诅咒船骸", "Cursed Derelict"],
+      ["imperialScroll", "IS", "帝国卷轴", "Imperial Scroll"],
+      ["babylonianContraption", "BC", "巴比伦装置", "Babylonian Contraption"],
+      ["mutableAmbrosia", "MA", "易变神浆", "Mutable Ambrosia"],
       ["blackenedHalo", "BH", "黑化光环", "Blackened Halo"],
       ["burnedOutGrace", "BG", "燃尽恩典", "Burned-out Grace"],
       ["cursedBloatsack", "CB", "诅咒胀囊", "Cursed Bloatsack"],
       ["livingGold", "LG", "活化黄金", "Living Gold"],
-      ["imperialScroll", "IS", "帝国卷轴", "Imperial Scroll"],
       ["wishEmbryo", "WE", "愿望胚胎", "Wish Embryo"],
       ["oldIremFragment", "OIF", "旧伊雷姆碎片", "Old Irem Fragment"],
       ["blackTaintedStepfinger", "BTS", "染黑阶梯指", "Black-tainted Stepfinger"],
       ["promisedFuturesCarcass", "PFC", "未来承诺残骸", "Promised Future's Carcass"],
-      ["babylonianContraption", "BC", "巴比伦装置", "Babylonian Contraption"],
       ["onyxDust", "OD", "缟玛瑙粉尘", "Onyx Dust"],
-      ["ireEssence", "IE", "愤怒精华", "Ire Essence"],
-      ["mutableAmbrosia", "MA", "易变神浆", "Mutable Ambrosia"]
+      ["ireEssence", "IE", "愤怒精华", "Ire Essence"]
     ],
     C5: [
       ["atlanteanTekne", "AT", "亚特兰蒂斯技艺", "Atlantean Tekne"],
       ["orichalcumChunk", "OC", "山铜块", "Orichalcum Chunk"],
       ["liquidAether", "LA", "液态以太", "Liquid Aether"],
+      ["oxidizedAmbrosia", "OXA", "氧化神浆", "Oxidized Ambrosia"],
       ["promisedFuturesCarcass", "PFC", "未来承诺残骸", "Promised Future's Carcass"],
       ["blackTaintedStepfinger", "BTS", "染黑阶梯指", "Black-tainted Stepfinger"],
       ["hydradynamicScales", "HS", "流体力学鳞片", "Hydradynamic Scales"],
@@ -31,8 +32,7 @@
       ["blackWoolStrand", "BW", "黑羊毛丝", "Black Wool Strand"],
       ["fadingLightConstruct", "FL", "消逝之光构造体", "Fading Light Construct"],
       ["orichalcumAlloy", "OA", "山铜合金", "Orichalcum Alloy"],
-      ["slaveMetal", "SM", "奴隶金属", "Slave Metal"],
-      ["oxidizedAmbrosia", "OXA", "氧化神浆", "Oxidized Ambrosia"]
+      ["slaveMetal", "SM", "奴隶金属", "Slave Metal"]
     ]
   };
   const resourceKeys = Array.from(new Set(
