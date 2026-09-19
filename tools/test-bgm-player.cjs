@@ -207,9 +207,10 @@ test("手动锁定阶段优先于今日流程，选回自动后恢复", async ()
   await api.setFlowStage("doom");
   assert.equal(api.state().stage, "mausoleum", "锁定期间不跟随步骤");
   await api.setScene("mnemos");
-  assert.equal(api.state().stage, "mausoleum", "锁定期间也不跟随场景（story 模块）");
+  assert.equal(api.state().stage, "mausoleum", "锁定期间也不跟随入口场景");
+  assert.equal(api.state().sceneStage, "", "锁定期间不积压临时场景");
   await api.setAuto();
-  await waitFor(() => harness.loudest() === "LB_Last_Academy_2.mp3", "解除锁定后回到场景曲");
+  await waitFor(() => harness.loudest() === "LB_Foreboding_Theme.mp3", "解除锁定后直接跟随流程");
   assert.ok(!/手动锁定/.test(harness.panel().querySelector("#atoBgmStatus").textContent), "解除锁定后不再提示");
   await api.setScene("");
   await waitFor(() => harness.loudest() === "LB_Foreboding_Theme.mp3", "清空场景后跟随流程（灾祸）");
@@ -252,6 +253,153 @@ test("临时切换（按钮/入口走的就是它）：控制台阶段一变就�
 });
 
 /* ---------- 自选 BGM ---------- */
+
+test("临时场景在下拉中可见，点跟随流程立即退出临时切换", async (t) => {
+  const harness = createHarness();
+  t.after(() => harness.close());
+  const { api } = harness;
+  api.setEnabled(true);
+  await api.setFlowStage("survey");
+  await api.setScene("hub");
+  const panel = harness.panel();
+  assert.equal(panel.querySelector("#atoBgmStage").value, "scene:hub");
+  assert.match(panel.querySelector("#atoBgmStage").innerHTML, /临时：冒险中枢/);
+  assert.equal(panel.querySelector("#atoBgmAuto").hidden, false);
+  panel.querySelector("#atoBgmAuto").dispatch("click");
+  await waitFor(() => harness.loudest() === "LB_Excursion_Propylon.mp3", "返回考察流程");
+  assert.equal(api.state().sceneStage, "");
+  assert.equal(api.state().mode, "auto");
+  assert.equal(panel.querySelector("#atoBgmStage").value, "");
+  assert.equal(panel.querySelector("#atoBgmAuto").hidden, true);
+});
+
+test("普通同步保留临时曲；流程上下文变化即使步骤相同也会撤销临时曲", async (t) => {
+  const harness = createHarness();
+  t.after(() => harness.close());
+  const { api } = harness;
+  api.setEnabled(true);
+  await api.setFlowStage("move", "profile:c1:1");
+  await api.setScene("hub");
+  await api.setFlowStage("move", "profile:c1:1");
+  assert.equal(api.state().mode, "scene");
+  await api.setFlowStage("move", "profile:c1:2");
+  assert.equal(api.state().stage, "voyage");
+  assert.equal(api.state().sceneStage, "");
+  await api.setStage("mnemos");
+  await api.setFlowStage("move", "other:c2:1");
+  assert.equal(api.state().stage, "mnemos", "跨存档/日期不解除手动锁定");
+});
+
+test("同曲切换模式、临时场景与无关自选指派不重播", async (t) => {
+  const harness = createHarness();
+  t.after(() => harness.close());
+  const { api } = harness;
+  api.setEnabled(true);
+  await api.setFlowStage("move");
+  const active = harness.audios.find((audio) => !audio.paused);
+  active.currentTime = 42;
+  const calls = () => harness.audios.reduce((sum, audio) => sum + audio.playCalls, 0);
+  const before = calls();
+  await api.setStage("voyage");
+  await api.setAuto();
+  await api.setScene("rest");
+  await api.setAuto();
+  await api.importTrack(makeAudioFile("unrelated.mp3"), "doom");
+  await waitFor(() => !api.state().loading, "指派完成");
+  assert.equal(calls(), before);
+  assert.equal(active.currentTime, 42);
+});
+
+test("旧的文件探测最后返回，也不能抢回新场景或暂停新曲", async (t) => {
+  const harness = createHarness();
+  t.after(() => harness.close());
+  const { api } = harness;
+  api.setEnabled(true);
+  await api.setFlowStage("move");
+  let release;
+  harness.sandbox.fetch = (url) => url.includes("LB_Last_Academy")
+    ? new Promise((resolve) => { release = () => resolve({ ok: true }); })
+    : Promise.resolve({ ok: true });
+  const old = api.setScene("mnemos");
+  await waitFor(() => release, "旧文件探测等待中");
+  await api.setScene("hub");
+  release();
+  await old;
+  await waitFor(() => harness.playing().length === 1, "旧曲淡出");
+  assert.deepEqual(harness.playing(), ["LB_Grand_Agora.mp3"]);
+  assert.equal(api.state().stage, "hub");
+  assert.equal(api.state().missing.length, 0);
+});
+
+test("连续切换取消未完成的 play，旧的失败回调不能污染新曲", async (t) => {
+  const harness = createHarness();
+  t.after(() => harness.close());
+  const { api } = harness;
+  api.setEnabled(true);
+  await api.setFlowStage("move");
+  let rejectOld;
+  harness.audios.forEach((audio) => {
+    const normalPlay = audio.play;
+    audio.play = function () {
+      if (!this.src.includes("LB_Last_Academy")) return normalPlay.call(this);
+      this.paused = false;
+      return new Promise((resolve, reject) => { rejectOld = reject; });
+    };
+  });
+  const old = api.setScene("mnemos");
+  await waitFor(() => rejectOld, "旧播放等待中");
+  await api.setScene("hub");
+  rejectOld(Object.assign(new Error("cancelled"), { name: "AbortError" }));
+  await old;
+  await waitFor(() => harness.playing().length === 1, "只剩最新曲目");
+  assert.deepEqual(harness.playing(), ["LB_Grand_Agora.mp3"]);
+  assert.equal(api.state().needGesture, false);
+  assert.equal(api.state().missing.length, 0);
+});
+
+test("加载期间关音乐，迟到的请求不会继续播放", async (t) => {
+  const harness = createHarness();
+  t.after(() => harness.close());
+  const { api } = harness;
+  api.setEnabled(true);
+  await api.setFlowStage("move");
+  let release;
+  harness.sandbox.fetch = () => new Promise((resolve) => { release = () => resolve({ ok: true }); });
+  const pending = api.setScene("hub");
+  await waitFor(() => release, "新曲加载中");
+  api.setEnabled(false);
+  release();
+  await pending;
+  await waitFor(() => harness.playing().length === 0, "关闭所有音频");
+  assert.equal(api.state().url, "");
+  assert.equal(api.state().loading, false);
+});
+
+test("离开探索时同时结束氛围层与转场音", async (t) => {
+  const harness = createHarness();
+  t.after(() => harness.close());
+  const { api } = harness;
+  api.setEnabled(true);
+  await api.setFlowStage("explore");
+  assert.ok(harness.playing().includes("XX_LB_Expedition_Step_Anchor.mp3"));
+  await api.setFlowStage("survey");
+  await waitFor(() => harness.playing().length === 1, "探索所有音轨都已淡出");
+  assert.deepEqual(harness.playing(), ["LB_Excursion_Propylon.mp3"]);
+});
+
+test("快速复用淡出中的槽位时，原来的定时清理不会截断新曲", async (t) => {
+  const harness = createHarness();
+  t.after(() => harness.close());
+  const { api } = harness;
+  api.setEnabled(true);
+  await api.setFlowStage("move");
+  await api.setScene("hub");
+  await api.setScene("mnemos");
+  await api.setScene("pharos");
+  await new Promise((resolve) => setTimeout(resolve, 250));
+  assert.deepEqual(harness.playing(), ["LB_Dreams_of_Pharos.mp3"]);
+  assert.equal(api.state().stage, "pharos");
+});
 
 test("导入自选 BGM：指派到阶段后该阶段播自选曲，内置曲目作为兜底", async () => {
   const harness = createHarness();
@@ -328,7 +476,7 @@ test("控制条里有导入入口、自选标记与曲目列表", async () => {
   assert.match(panel.innerHTML, /ato-bgm-volume ato-bgm-only-on/, "音量也在关闭时隐藏");
   assert.match(panel.innerHTML, /<div class="ato-bgm-row"><span class="ato-bgm-status"/, "状态文字单独一行");
   assert.match(panel.innerHTML, /ato-bgm-tracks ato-bgm-only-on/, "曲目列表在关闭时隐藏");
-  assert.match(harness.sandbox.document.head.children.map((node) => node.textContent).join("\n"), /\.ato-bgm-status\{[^}]*white-space:nowrap/);
+  assert.match(harness.sandbox.document.head.children.map((node) => node.textContent).join("\n"), /\.ato-bgm-status\{[^}]*white-space:normal/);
 
   await harness.api.importTrack(makeAudioFile("ui-track.mp3"), "armory");
   const list = panel.querySelector("#atoBgmTracks").innerHTML;

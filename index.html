@@ -2271,9 +2271,9 @@
   <script src="./map/map-tile-tags.js?v=20260730-c4-oasis-tag"></script>
   <script src="./map/map-data.js?v=20260730-cycle-labels"></script>
   <script src="./cycle-symbols.js?v=20260918"></script>
-  <script>window.ATO_BGM_CONFIG = { expect: "bgm16" };</script>
-  <script src="./assets/bgm/manifest.js?v=20260921-bgm16"></script>
-  <script src="./assets/bgm/bgm.js?v=20260921-bgm16"></script>
+  <script>window.ATO_BGM_CONFIG = { expect: "bgm17" };</script>
+  <script src="./assets/bgm/manifest.js?v=20260921-bgm17"></script>
+  <script src="./assets/bgm/bgm.js?v=20260921-bgm17"></script>
   <script>
     const legacyStorageKey = "ato-campaign-dashboard-v1";
     const storageKey = "ato-campaign-dashboard-profiles-v1";
@@ -2405,31 +2405,28 @@
     // 背景音乐跟随「今日流程」。曲目表在 assets/bgm/manifest.js，播放器在 assets/bgm/bgm.js。
     // 判定规则：
     //   1. 从**最后一个已勾选**的步骤往后找（不是从第一个没勾的找），所以跳着点也不会卡住；
-    //   2. 途中遇到「条件执行」但今天根本没这回事的步骤（没战斗、没冒险、没灾祸）直接跳过；
-    //   3. 后面都没有事，就停在最后已勾选步骤的下一步。
-    function bgmStepPending(step) {
-      if (step.kind !== "条件执行") return true;
-      return getStepTrackReminders(step.id).length > 0;
-    }
-
-    function bgmFlowStepId(steps = flowSteps, completed = state.completed, isPending = bgmStepPending) {
+    //   2. 没有提醒不代表已完成，考察/遭遇等条件步骤也等待用户勾选确认；
+    //   3. 最后一步完成后进入休整。
+    function bgmFlowStepId(steps = flowSteps, completed = state.completed) {
       const list = steps || [];
-      if (!list.length) return "doom";
+      if (!list.length) return "rest";
       let lastDone = -1;
       list.forEach((step, index) => {
         if (completed && completed[step.id]) lastDone = index;
       });
-      const start = Math.min(lastDone + 1, list.length - 1);
-      for (let index = start; index < list.length; index += 1) {
-        if (isPending(list[index])) return list[index].id;
-      }
-      return list[start].id;
+      return list[lastDone + 1]?.id || "rest";
     }
 
+    let bgmResetRevision = 0;
     function syncBgmStage() {
       const api = window.ATO_BGM;
       if (!api || typeof api.setFlowStage !== "function") return;
-      api.setFlowStage(bgmFlowStepId());
+      // 普通重绘保持临时曲；换用户/存档/Cycle/日期、勾选或重置今日才撤销。
+      const context = JSON.stringify([
+        sessionUser?.id || "", archive.activeProfileId, currentCycleConfig().id, state.day,
+        flowSteps.map((step) => Boolean(state.completed[step.id])), bgmResetRevision,
+      ]);
+      api.setFlowStage(bgmFlowStepId(), context);
     }
 
     const dateIconTypes = {
@@ -7003,12 +7000,12 @@
           anchor.textContent = link.label;
           if (link.title) anchor.title = link.title;
           // 带 bgm 的入口（冒险中枢 / R&R / 回忆突破 / 内蕴奥德赛 / 法洛斯之梦 / 主线 / 特殊事件 / 战斗）
-          // 点一下就切到对应阶段；新开标签是为了不把主控台导航走（音乐要留在这页放）。
+          // 自动模式下临时切曲；新开标签让主控台继续播放。
           if (link.bgm) {
             anchor.target = "_blank";
             anchor.rel = "noopener";
             anchor.dataset.bgmStage = link.bgm;
-            if (!anchor.title) anchor.title = "打开并切换背景音乐";
+            anchor.title = [anchor.title, "自动模式下临时切换背景音乐；手动锁定时保持当前音乐"].filter(Boolean).join("；");
             anchor.addEventListener("click", () => {
               const api = window.ATO_BGM;
               if (api && typeof api.setScene === "function") api.setScene(link.bgm);
@@ -8036,6 +8033,7 @@
     }
 
     function resetToday() {
+      bgmResetRevision += 1;
       state.completed = {};
       state.events = state.events.map((item) => ({ ...item, done: false }));
       saveState();

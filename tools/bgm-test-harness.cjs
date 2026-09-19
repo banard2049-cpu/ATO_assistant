@@ -26,6 +26,9 @@ function fakeElement(tag) {
     loop: false,
     preload: "",
     paused: true,
+    ended: false,
+    currentTime: 0,
+    playCalls: 0,
     classList: (() => {
       const names = new Set();
       return {
@@ -42,7 +45,10 @@ function fakeElement(tag) {
     appendChild(child) { this.children.push(child); return child; },
     setAttribute(name, value) { this.attributes[name] = String(value); },
     getAttribute(name) { return this.attributes[name]; },
-    removeAttribute(name) { delete this.attributes[name]; },
+    removeAttribute(name) {
+      delete this.attributes[name];
+      if (name === "src") this.src = "";
+    },
     addEventListener(name, handler) {
       if (!listeners.has(name)) listeners.set(name, []);
       listeners.get(name).push(handler);
@@ -63,6 +69,7 @@ function fakeElement(tag) {
       return [];
     },
     play() {
+      this.playCalls += 1;
       this.paused = false;
       if (this.failPlay) return Promise.reject(Object.assign(new Error("blocked"), { name: this.failPlay }));
       const element = this;
@@ -70,7 +77,7 @@ function fakeElement(tag) {
       return Promise.resolve();
     },
     pause() { this.paused = true; },
-    load() {},
+    load() { this.currentTime = 0; },
   };
   return element;
 }
@@ -111,7 +118,7 @@ function createHarness(options = {}) {
         get value() { return node.value; },
         set value(next) { node.value = next; },
         cancelScheduledValues() {},
-        setValueAtTime() {},
+        setValueAtTime(target) { node.value = target; },
         linearRampToValueAtTime(target) { node.value = target; },
       },
       connect() {},

@@ -17,8 +17,8 @@
   const PREFS_KEY = "ato-bgm-prefs-v1";
   const CONTAINER_ID = "bgmControls";
   const AUTO_LABEL = "自动（跟随今日流程）";
-  // 改动本文件时同步更新：这里的 BUILD 与两个页面里的 ?v= 标签（测试会校验一致）
-  const BUILD = "bgm16";
+  // 改动本文件时同步更新 BUILD 与主控台的 ?v= 标签。
+  const BUILD = "bgm17";
 
   if (!manifest || !manifest.stages || !Object.keys(manifest.stages).length) {
     window.ATO_BGM = createDisabledApi("缺少 assets/bgm/manifest.js");
@@ -58,12 +58,13 @@
 
   const state = {
     stepId: "",
+    flowContext: "",
     sceneStage: "",
     forcedStage: "",
     currentKey: "",
     currentUrl: "",
     currentName: "",
-    started: false,
+    loading: false,
     needGesture: false,
     missingStageKey: "",
     playToken: 0,
@@ -177,7 +178,8 @@
     const el = new window.Audio();
     el.preload = "auto";
     el.loop = false;
-    return { el: el, node: null, gain: null, level: 0, url: "", playing: false, timer: null };
+    el.volume = 0;
+    return { el: el, node: null, gain: null, level: 0, url: "", playing: false, timer: null, retireTimer: null, cancelPlay: null };
   }
 
   function eachSlot(visit) {
@@ -554,14 +556,19 @@
     return new Promise(function (resolve, reject) {
       let settled = false;
       const timer = window.setTimeout(function () {
-        finish(resolve, url);
+        finish(reject, new Error("音频加载超时：" + url));
       }, 9000);
+      const cancel = function () {
+        finish(reject, Object.assign(new Error("播放已取消"), { name: "AbortError" }));
+      };
+      slot.cancelPlay = cancel;
       function finish(callback, value) {
         if (settled) return;
         settled = true;
         window.clearTimeout(timer);
         slot.el.removeEventListener("playing", onPlaying);
         slot.el.removeEventListener("error", onError);
+        if (slot.cancelPlay === cancel) slot.cancelPlay = null;
         callback(value);
       }
       function onPlaying() {
@@ -579,10 +586,14 @@
       } catch (error) {
         /* 忽略 */
       }
-      const started = slot.el.play();
-      if (started && typeof started.catch === "function") started.catch(function (error) {
+      try {
+        const started = slot.el.play();
+        if (started && typeof started.catch === "function") started.catch(function (error) {
+          finish(reject, error);
+        });
+      } catch (error) {
         finish(reject, error);
-      });
+      }
     });
   }
 
@@ -591,13 +602,17 @@
       if (token !== state.playToken) return "";
       const url = files[index];
       if (!(await urlUsable(url))) continue;
+      if (token !== state.playToken) return "";
       try {
         await playUrl(slot, url, loop);
+        if (token !== state.playToken) return "";
         slot.url = url;
         slot.playing = true;
         state.needGesture = false;
         return url;
       } catch (error) {
+        if (token !== state.playToken) return "";
+        resetSlot(slot);
         if (isBlockedError(error)) {
           state.needGesture = true;
           return "";
@@ -616,6 +631,7 @@
   }
 
   async function activatePool(pool, files, gain, token, options) {
+    if (token !== state.playToken) return "";
     const opts = options || {};
     const previousIndex = pool.active;
     const previous = previousIndex >= 0 ? pool.slots[previousIndex] : null;
@@ -624,16 +640,20 @@
       pool.active = -1;
       return "";
     }
+    // 相同曲目继续播放；切换模式、刷新流程或修改其它阶段的指派不从头重播。
+    const preferred = files.find(function (url) { return !missingUrls.has(url); });
+    if (previous && previous.playing && !previous.el.paused && !previous.el.ended && previous.url === preferred) {
+      fadeSlot(previous, gain, opts.fadeMs);
+      return previous.url;
+    }
     const index = idleSlot(pool);
     const slot = pool.slots[index];
+    resetSlot(slot);
     const url = await startSlot(slot, files, token, opts.loop !== false);
-    if (url && token !== state.playToken) {
-      // 这次激活已经被更新的阶段取代：刚开始的这个元素要收掉，
-      // 否则会留下一个没人管的正在播放的元素（表现为两首曲子同时响）。
-      retireSlot(slot, numberOr(defaults.fadeRampMs, 160));
-      return "";
-    }
+    // 旧请求不能操作可能已被新请求复用的槽位。
+    if (token !== state.playToken) return "";
     if (!url) {
+      resetSlot(slot);
       if (previous) retireSlot(previous, opts.fadeMs);
       pool.active = -1;
       return "";
@@ -645,29 +665,49 @@
   }
 
   function retireSlot(slot, ms) {
+    if (slot.cancelPlay) {
+      resetSlot(slot);
+      return;
+    }
+    if (slot.retireTimer) window.clearTimeout(slot.retireTimer);
     if (!slot.playing) {
       fadeSlot(slot, 0, 0);
       return;
     }
     const fade = numberOr(ms, numberOr(defaults.crossfadeMs, 2400));
     fadeSlot(slot, 0, fade);
-    window.setTimeout(function () {
-      if (slot.level > 0) return;
-      slot.playing = false;
-      slot.url = "";
-      try {
-        slot.el.pause();
-        slot.el.removeAttribute("src");
-        slot.el.load();
-      } catch (error) {
-        /* 忽略 */
-      }
+    slot.retireTimer = window.setTimeout(function () {
+      slot.retireTimer = null;
+      if (slot.level === 0) resetSlot(slot);
     }, fade + 120);
+  }
+
+  function resetSlot(slot) {
+    if (slot.cancelPlay) slot.cancelPlay();
+    if (slot.timer) window.clearInterval(slot.timer);
+    if (slot.retireTimer) window.clearTimeout(slot.retireTimer);
+    slot.timer = null;
+    slot.retireTimer = null;
+    slot.level = 0;
+    slot.playing = false;
+    slot.url = "";
+    if (slot.gain && ctx) {
+      slot.gain.gain.cancelScheduledValues(ctx.currentTime);
+      slot.gain.gain.setValueAtTime(quiet, ctx.currentTime);
+    }
+    slot.el.volume = slot.gain ? 1 : 0;
+    try {
+      slot.el.pause();
+      slot.el.removeAttribute("src");
+      slot.el.load();
+    } catch (error) {
+      /* 忽略 */
+    }
   }
 
   /* ---------- 阶段 ---------- */
 
-  // 解析优先级：手动锁定 > 远端场景（story 广播） > 本页场景 > 今日流程步骤 > 默认阶段
+  // 解析优先级：手动锁定 > 临时场景 > 今日流程步骤 > 默认阶段。
   function resolveKey() {
     if (state.forcedStage && manifest.stages[state.forcedStage]) return state.forcedStage;
     if (state.sceneStage && manifest.stages[state.sceneStage]) return state.sceneStage;
@@ -680,6 +720,10 @@
 
   function stageGain(stage) {
     return clamp(numberOr(stage.gain, numberOr(defaults.stageGain, 0.6)), 0, 1);
+  }
+
+  function playbackMode() {
+    return state.forcedStage ? "manual" : state.sceneStage ? "scene" : "auto";
   }
 
   function setStatus() {
@@ -700,16 +744,19 @@
     } else if (state.missingStageKey && state.missingStageKey === state.currentKey && stage) {
       const first = (manifest.stages[state.currentKey].files || [])[0] || "";
       text = "缺少音频文件：" + first + "（放进 " + displayBase() + " 目录）";
+    } else if (state.loading && !state.currentUrl) {
+      text = "正在切换到：" + (stage ? stage.label : state.currentKey);
     } else if (state.currentUrl) {
       const trackName = state.currentName ? state.currentName : baseName(state.currentUrl);
       text = (stage ? stage.label : state.currentKey) + "｜" + trackName;
     } else {
       text = stage ? stage.label : "等待开始";
     }
-    // 手动锁定时说明白：这时 story 的模块切换不会改变曲目
-    if (state.forcedStage) text += "（手动锁定）";
-    else if (state.sceneStage) text += "（临时切换）";
+    if (state.forcedStage) text += "（手动锁定，入口与流程不切曲）";
+    else if (state.sceneStage) text += "（临时切换，流程推进后恢复）";
+    else if (prefs.enabled) text += "（跟随今日流程）";
     ui.status.textContent = text;
+    ui.status.title = text;
     // 关闭音乐时把「阶段 / 音量 / 导入 / 曲目列表」收起来，只留开关；
     // 但脚本版本过期这类提醒仍然要能看到。
     if (ui.panel && ui.panel.classList) ui.panel.classList.toggle("off", prefs.enabled !== true);
@@ -717,19 +764,27 @@
     ui.toggle.textContent = prefs.enabled ? "音乐：开" : "音乐：关";
     ui.toggle.setAttribute("aria-pressed", prefs.enabled ? "true" : "false");
     ui.toggle.classList.toggle("on", prefs.enabled);
-    if (ui.select.value !== (state.forcedStage || "")) ui.select.value = state.forcedStage || "";
+    const selection = state.forcedStage || (state.sceneStage ? "scene:" + state.sceneStage : "");
+    ui.select.innerHTML = stageOptions(true);
+    ui.select.value = selection;
+    if (ui.auto) ui.auto.hidden = !state.forcedStage && !state.sceneStage;
     if (ui.target && !targetTouched && manifest.stages[state.currentKey]) ui.target.value = state.currentKey;
   }
 
   async function applyStage(options) {
     const opts = options || {};
-    await ensureCustomReady();
-    const key = resolveKey();
     const token = (state.playToken += 1);
+    eachSlot(function (slot) { if (slot.cancelPlay) resetSlot(slot); });
+    await ensureCustomReady();
+    if (token !== state.playToken) return resolveKey();
+    const key = resolveKey();
     const changed = key !== state.currentKey;
     state.currentKey = key;
     state.missingStageKey = "";
     state.currentUrl = "";
+    state.currentName = "";
+    state.needGesture = false;
+    state.loading = prefs.enabled && pageConfig.play;
     setStatus();
     if (!prefs.enabled || !pageConfig.play) {
       if (opts.stopWhenDisabled !== false) stopAll();
@@ -743,6 +798,7 @@
         /* 等待用户手势 */
       }
     }
+    if (token !== state.playToken) return key;
     const stage = manifest.stages[key];
     const fadeMs = numberOr(defaults.crossfadeMs, 2400);
     // 指派了自选曲目的阶段：先试自选音频，失败再退回内置曲目候选项
@@ -755,12 +811,13 @@
     state.currentName = url && customUrl && url === customUrl ? String(custom.name || "") : "";
     if (!url) state.missingStageKey = key;
 
-    const bedFiles = stage.bed ? fileList(stage, "bed") : [];
+    const bedFiles = url && stage.bed ? fileList(stage, "bed") : [];
     if (bedFiles.length) {
       await activatePool(pools.bed, bedFiles, clamp(numberOr(stage.bed.gain, 0.25), 0, 1), token, { fadeMs: fadeMs });
     } else {
       await activatePool(pools.bed, [], 0, token, { fadeMs: fadeMs });
     }
+    if (token !== state.playToken) return key;
 
     if (stage.stinger && (changed || opts.force) && url) {
       const now = Date.now();
@@ -770,9 +827,13 @@
           loop: false,
         });
         // 只有真的响过才占用间隔，否则被取代的那次会把机会吃掉。
-        if (stingerUrl) lastStingerAt = Date.now();
+        if (stingerUrl && token === state.playToken) lastStingerAt = Date.now();
       }
+    } else if (!stage.stinger || !url) {
+      await activatePool(pools.stinger, [], 0, token, { fadeMs: fadeMs });
     }
+    if (token !== state.playToken) return key;
+    state.loading = false;
     setStatus();
     return key;
   }
@@ -780,6 +841,9 @@
   function stopAll() {
     state.playToken += 1;
     state.currentUrl = "";
+    state.currentName = "";
+    state.loading = false;
+    state.needGesture = false;
     Object.keys(pools).forEach(function (name) {
       const pool = pools[name];
       pool.slots.forEach(function (slot) {
@@ -787,6 +851,7 @@
       });
       pool.active = -1;
     });
+    setStatus();
   }
 
   /* ---------- 控制条 ---------- */
@@ -795,6 +860,9 @@
 
   function stageOptions(withAuto) {
     const list = withAuto ? ['<option value="">' + AUTO_LABEL + "</option>"] : [];
+    if (withAuto && state.sceneStage && !state.forcedStage) {
+      list.push('<option value="scene:' + state.sceneStage + '" disabled>临时：' + escapeHtml(manifest.stages[state.sceneStage].label) + '</option>');
+    }
     return list
       .concat(stageKeys.map(function (key) {
         const mark = assignedTrack(key) ? "（自选）" : "";
@@ -817,7 +885,8 @@
     panel.innerHTML =
       '<div class="ato-bgm-row">' +
         '<button type="button" id="atoBgmToggle" aria-pressed="false" data-dashboard-readonly-allowed>音乐：关</button>' +
-        '<label class="ato-bgm-field ato-bgm-only-on">阶段<select id="atoBgmStage" data-dashboard-readonly-allowed>' + options + "</select></label>" +
+        '<label class="ato-bgm-field ato-bgm-only-on">播放选择<select id="atoBgmStage" title="选择具体阶段会持续锁定；选择自动则跟随今日流程" data-dashboard-readonly-allowed>' + options + "</select></label>" +
+        '<button type="button" id="atoBgmAuto" class="ato-bgm-only-on" hidden data-dashboard-readonly-allowed>跟随流程</button>' +
         '<label class="ato-bgm-field ato-bgm-volume ato-bgm-only-on">音量<input id="atoBgmVolume" type="range" min="0" max="100" step="5" data-dashboard-readonly-allowed></label>' +
       "</div>" +
       '<div class="ato-bgm-row ato-bgm-only-on">' +
@@ -839,6 +908,7 @@
     ui.panel = panel;
     ui.toggle = panel.querySelector("#atoBgmToggle");
     ui.select = panel.querySelector("#atoBgmStage");
+    ui.auto = panel.querySelector("#atoBgmAuto");
     ui.volume = panel.querySelector("#atoBgmVolume");
     ui.status = panel.querySelector("#atoBgmStatus");
     ui.file = panel.querySelector("#atoBgmFile");
@@ -855,6 +925,7 @@
       if (ui.select.value) setStage(ui.select.value);
       else setAuto();
     });
+    ui.auto.addEventListener("click", setAuto);
     ui.volume.addEventListener("input", function () {
       setVolume(Number(ui.volume.value) / 100);
     });
@@ -954,7 +1025,7 @@
       ".ato-bgm-field{display:flex;gap:4px;align-items:center;white-space:nowrap}",
       ".ato-bgm-bar select{font:inherit;padding:3px 6px;border-radius:6px;border:1px solid rgba(127,127,127,.5);background:transparent;color:inherit;max-width:190px}",
       ".ato-bgm-volume input{width:90px}",
-      ".ato-bgm-status{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.75}",
+      ".ato-bgm-status{flex:1 1 auto;min-width:0;white-space:normal;overflow-wrap:anywhere;opacity:.75}",
       ".ato-bgm-import{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:6px;border:1px dashed rgba(127,127,127,.6);cursor:pointer}",
       ".ato-bgm-import:hover{border-color:#3f8f6f}",
       ".ato-bgm-note{white-space:nowrap;opacity:.75}",
@@ -986,19 +1057,22 @@
 
   function setStage(key) {
     const next = manifest.stages[key] ? String(key) : "";
+    if (!next) return setAuto();
+    state.sceneStage = "";
     state.forcedStage = next;
     prefs.stage = next;
     savePrefs();
     if (ui.select) ui.select.value = next;
-    return applyStage({ force: true, stopWhenDisabled: false });
+    return applyStage({ stopWhenDisabled: false });
   }
 
   function setAuto() {
     state.forcedStage = "";
+    state.sceneStage = "";
     prefs.stage = "";
     savePrefs();
     if (ui.select) ui.select.value = "";
-    return applyStage({ force: true, stopWhenDisabled: false });
+    return applyStage({ stopWhenDisabled: false });
   }
 
   function setVolume(value) {
@@ -1015,10 +1089,12 @@
     return ducked;
   }
 
-  function setFlowStage(stepId) {
+  function setFlowStage(stepId, contextKey) {
     const next = stepId ? String(stepId) : "";
-    if (next === state.stepId) return state.currentKey;
+    const context = contextKey === undefined ? state.flowContext : String(contextKey);
+    if (next === state.stepId && context === state.flowContext) return state.currentKey;
     state.stepId = next;
+    state.flowContext = context;
     // 控制台自己的阶段变了（勾步骤 / 下一天 / 换 Cycle）：撤销按钮或入口带来的临时切换，
     // 音乐回到跟随今日流程；下拉锁定（forcedStage）不受影响。
     const hadScene = state.sceneStage !== "";
@@ -1030,16 +1106,12 @@
     return applyStage({ stopWhenDisabled: false });
   }
 
-  // 临时场景（控制条的阶段按钮、故事/考察入口链接都走这里）：
-  // 立即切曲，但不写入偏好；控制台阶段一变就自动切回跟随流程。
+  // 入口临时切曲不写入偏好；手动锁定期间忽略入口，不积压待播放场景。
   function setScene(key) {
+    if (state.forcedStage) return state.currentKey;
     const next = manifest.stages[key] ? String(key) : "";
     if (next === state.sceneStage) return state.currentKey;
     state.sceneStage = next;
-    if (state.forcedStage) {
-      setStatus();
-      return state.currentKey;
-    }
     return applyStage({ stopWhenDisabled: false });
   }
 
@@ -1089,6 +1161,8 @@
         stepId: state.stepId,
         sceneStage: state.sceneStage,
         forcedStage: state.forcedStage,
+        mode: playbackMode(),
+        loading: state.loading,
         needGesture: state.needGesture,
         missing: Array.from(missingUrls),
         customTracks: customTracks.length,
@@ -1119,7 +1193,7 @@
     // 自选曲目要在解析阶段前就绪；applyStage 内部会等这个 promise，
     // 这里不再自己补一次播放，免得和页面里的调用抢同一个阶段。
     ensureCustomReady().then(function () {
-      if (prefs.enabled && pageConfig.play && !state.currentKey) applyStage({ force: true, stopWhenDisabled: false });
+      if (prefs.enabled && pageConfig.play && state.playToken === 0) applyStage({ force: true, stopWhenDisabled: false });
       else setStatus();
     });
   }

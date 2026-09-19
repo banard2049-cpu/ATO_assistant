@@ -26,6 +26,7 @@
   const linkPanel = document.querySelector("#linkPanel");
   const entityBioToggle = document.querySelector("#entityBioToggle");
   const ttsButton = document.querySelector("#ttsButton");
+  const ttsPauseButton = document.querySelector("#ttsPauseButton");
   const ttsSpeed = document.querySelector("#ttsSpeed");
   const ttsVoice = document.querySelector("#ttsVoice") || Object.assign(document.createElement("select"), {
     id: "ttsVoice",
@@ -71,6 +72,7 @@
   let activeAudio = null;
   let activeAudioUrl = "";
   let isSpeaking = false;
+  let isSpeechPaused = false;
   let statusEntries = [];
   let storyAudioManifest = null;
   let storyAudioManifestPromise = null;
@@ -1019,6 +1021,42 @@
     }
   }
 
+  function updateSpeechControls() {
+    ttsButton.textContent = isSpeaking ? "停止" : "朗读";
+    if (!ttsPauseButton) return;
+    ttsPauseButton.hidden = !isSpeaking;
+    ttsPauseButton.textContent = isSpeechPaused ? "继续" : "暂停";
+    ttsPauseButton.title = isSpeechPaused ? "继续朗读" : "暂停朗读";
+    ttsPauseButton.setAttribute("aria-pressed", String(isSpeechPaused));
+  }
+
+  function beginSpeech() {
+    isSpeaking = true;
+    isSpeechPaused = false;
+    updateSpeechControls();
+  }
+
+  function applyPendingSpeechPause() {
+    if (!isSpeechPaused) return;
+    if (activeAudio && !activeAudio.paused) activeAudio.pause();
+    if (window.speechSynthesis && !window.speechSynthesis.paused) window.speechSynthesis.pause();
+  }
+
+  function toggleSpeechPause() {
+    if (!isSpeaking) return;
+    isSpeechPaused = !isSpeechPaused;
+    if (activeAudio) {
+      if (isSpeechPaused) activeAudio.pause();
+      else activeAudio.play().catch((error) => {
+        pushTtsStatus(`继续朗读失败：${String(error.message || error)}`, "error");
+      });
+    } else if (window.speechSynthesis) {
+      if (isSpeechPaused) window.speechSynthesis.pause();
+      else window.speechSynthesis.resume();
+    }
+    updateSpeechControls();
+  }
+
   function manifestAudioBaseUrl() {
     const pack = offlineAudioPacks.find((item) => item.id === ttsConfig.offlineAudioPack) || offlineAudioPacks[0];
     return new URL(`./${pack.dir}/`, window.location.href);
@@ -1126,7 +1164,7 @@
         if (activeAudio === audio) activeAudio = null;
         reject(new Error("cached audio playback failed"));
       };
-      audio.play().catch(reject);
+      audio.play().then(applyPendingSpeechPause).catch(reject);
     });
   }
 
@@ -1139,8 +1177,7 @@
       .filter(Boolean);
     if (!chunks.length) return false;
 
-    isSpeaking = true;
-    ttsButton.textContent = "停止";
+    beginSpeech();
     pushTtsStatus(`Playing offline audio ${chunks.length} chunks`, "success");
     for (let index = 0; index < chunks.length; index += 1) {
       if (token !== activeSpeechToken) return true;
@@ -1169,7 +1206,8 @@
     if (window.speechSynthesis) window.speechSynthesis.cancel();
     currentUtterance = null;
     isSpeaking = false;
-    ttsButton.textContent = "朗读";
+    isSpeechPaused = false;
+    updateSpeechControls();
   }
 
   const localBattleImages = [
@@ -1800,7 +1838,8 @@
     currentUtterance = null;
     if (keepActive) return;
     isSpeaking = false;
-    ttsButton.textContent = "朗读";
+    isSpeechPaused = false;
+    updateSpeechControls();
   }
 
   function speakWithBrowser(text, token, options = {}) {
@@ -1813,21 +1852,27 @@
       const utterance = new SpeechSynthesisUtterance(cleanText);
       configureUtterance(utterance);
 
-      const timeoutMs = Math.max(10000, (cleanText.length * 400) / Math.max(ttsConfig.rate || 1, 0.1));
-      const fallbackTimer = window.setTimeout(() => {
+      let remainingTimeoutMs = Math.max(10000, (cleanText.length * 400) / Math.max(ttsConfig.rate || 1, 0.1));
+      let timeoutCheckedAt = Date.now();
+      const fallbackTimer = window.setInterval(() => {
+        const now = Date.now();
+        if (!isSpeechPaused) remainingTimeoutMs -= now - timeoutCheckedAt;
+        timeoutCheckedAt = now;
+        if (remainingTimeoutMs > 0) return;
+        window.clearInterval(fallbackTimer);
         window.speechSynthesis.cancel();
         pushTtsStatus("浏览器语音长时间无响应，已停止本次朗读。", "warn");
         finishSpeech(token, options.keepActive);
         resolve();
-      }, timeoutMs);
+      }, 500);
 
       utterance.onend = () => {
-        window.clearTimeout(fallbackTimer);
+        window.clearInterval(fallbackTimer);
         finishSpeech(token, options.keepActive);
         resolve();
       };
       utterance.onerror = (event) => {
-        window.clearTimeout(fallbackTimer);
+        window.clearInterval(fallbackTimer);
         if (event.error !== "canceled") pushTtsStatus(`浏览器语音错误：${event.error || "未知错误"}`, "error");
         finishSpeech(token, options.keepActive);
         resolve();
@@ -1835,6 +1880,7 @@
 
       if (window.speechSynthesis.paused) window.speechSynthesis.resume();
       window.speechSynthesis.speak(utterance);
+      applyPendingSpeechPause();
     });
   }
 
@@ -2229,6 +2275,7 @@
           reject(new Error("音频播放失败"));
         };
         audio.play().then(() => {
+          applyPendingSpeechPause();
           pushTtsStatus(`连接成功：${modeLabel}`, "success");
         }).catch(reject);
       });
@@ -2410,8 +2457,7 @@
     stopActiveAudio();
     if (window.speechSynthesis) window.speechSynthesis.cancel();
     currentUtterance = null;
-    isSpeaking = true;
-    ttsButton.textContent = "停止";
+    beginSpeech();
 
     const isXfyun = cloudProvider() === "xfyun";
     const originalVoice = ttsConfig.cloud.voice;
@@ -2463,7 +2509,7 @@
         clearActiveAudio(audio, audioUrl);
         reject(new Error("音频播放失败"));
       };
-      audio.play().catch(reject);
+      audio.play().then(applyPendingSpeechPause).catch(reject);
     });
   }
 
@@ -2531,8 +2577,7 @@
     const token = ++activeSpeechToken;
     const chunks = createSpeechChunks(cleanText);
     if (!chunks.length) return;
-    isSpeaking = true;
-    ttsButton.textContent = "停止";
+    beginSpeech();
 
     try {
       let externalUsable = ttsConfig.activeEngine === "cloud" || ttsConfig.activeEngine === "local";
@@ -3651,6 +3696,7 @@
   secondScreenStoryContentToggle?.addEventListener("change", toggleSecondScreenStoryContent);
   rememberButton.addEventListener("click", rememberParagraph);
   ttsButton.addEventListener("click", toggleSpeech);
+  ttsPauseButton?.addEventListener("click", toggleSpeechPause);
   function syncStoryLanguage(official) {
     const nextVersion = official ? "官方版" : "民间版";
     if (storyVersion === nextVersion) return;

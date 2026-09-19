@@ -71,13 +71,8 @@ test("渲染链接时接上「点一下临时切阶段」，并且新开标签�
   assert.match(block, /anchor\.dataset\.bgmStage = link\.bgm/);
 });
 
-test("跟随流程的阶段判定：跳过今天没事的条件步骤，也不会卡在没点的按钮上", () => {
-  const start = CONSOLE_HTML.indexOf("function bgmFlowStepId(");
-  assert.ok(start > 0, "找不到 bgmFlowStepId");
-  const returnEnd = CONSOLE_HTML.indexOf("return list[start].id;", start) + "return list[start].id;".length;
-  const end = CONSOLE_HTML.indexOf("}", returnEnd) + 1;
-  assert.ok(returnEnd > start && end > returnEnd, "无法完整截取 bgmFlowStepId");
-  const source = CONSOLE_HTML.slice(start, end);
+test("跟随流程只由勾选推进，不因缺少提醒提前跳到打造与训练", () => {
+  const source = CONSOLE_HTML.match(/    function bgmFlowStepId\([^]*?\n    }/)[0];
 
   const steps = [
     { id: "move", kind: "总是执行" },
@@ -88,27 +83,24 @@ test("跟随流程的阶段判定：跳过今天没事的条件步骤，也不�
     { id: "story", kind: "条件执行" },
     { id: "doom", kind: "条件执行" },
   ];
-  const run = (completed, pending) => {
+  const run = (completed) => {
     const context = vm.createContext({ list: steps });
     vm.runInContext(`this.bgmFlowStepId = ${source}`, context);
-    const set = new Set(pending);
-    return context.bgmFlowStepId(steps, completed, (step) => step.kind !== "条件执行" || set.has(step.id));
+    return context.bgmFlowStepId(steps, completed);
   };
 
   // 什么都没勾 → 第一个步骤
-  assert.equal(run({}, []), "move");
+  assert.equal(run({}), "move");
   // 勾了移动 → 探索
-  assert.equal(run({ move: true }, []), "explore");
-  // 勾了探索、今天没冒险也没战斗 → 跳过考察和遭遇，直接到发展
-  assert.equal(run({ move: true, explore: true }, []), "development");
-  // 今天有战斗（即使没勾考察）→ 走到遭遇
-  assert.equal(run({ move: true, explore: true }, ["encounter"]), "encounter");
-  // 今天有冒险 → 走到考察
-  assert.equal(run({ move: true, explore: true }, ["survey"]), "survey");
+  assert.equal(run({ move: true }), "explore");
+  assert.equal(run({ move: true, explore: true }), "survey");
+  assert.equal(run({ move: true, explore: true, survey: true }), "encounter");
+  assert.equal(run({ move: true, explore: true, survey: true, encounter: true }), "development");
   // 跳着勾（跳过考察/遭遇/发展 直接勾故事）→ 灾祸
-  assert.equal(run({ move: true, explore: true, story: true }, []), "doom");
-  // 全勾完 → 停在最后一个步骤
-  assert.equal(run({ move: true, explore: true, survey: true, encounter: true, development: true, story: true, doom: true }, []), "doom");
+  assert.equal(run({ move: true, explore: true, story: true }), "doom");
+  // 全勾完 → 休整；撤销最后一步又回到灾祸。
+  assert.equal(run({ move: true, explore: true, survey: true, encounter: true, development: true, story: true, doom: true }), "rest");
+  assert.equal(run({ story: true, doom: false }), "doom");
 });
 
 test("控制条不再有阶段按钮那一排，story 那套广播配置也已清干净", () => {
@@ -122,6 +114,37 @@ test("控制条不再有阶段按钮那一排，story 那套广播配置也已�
   // 阶段切换时间改成 1 秒
   const manifest = fs.readFileSync(path.join(ROOT, "assets/bgm/manifest.js"), "utf8");
   assert.match(manifest, /crossfadeMs: 1000/);
+});
+
+test("同步包含用户、存档、Cycle、日期、勾选与重置，普通重绘保持同一上下文", () => {
+  const source = CONSOLE_HTML.match(/    function syncBgmStage\([^]*?\n    }/)[0];
+  const calls = [];
+  const context = vm.createContext({
+    sessionUser: { id: "account" }, archive: { activeProfileId: "campaign" },
+    cycle: "c1", currentCycleConfig() { return { id: context.cycle }; },
+    state: { day: 1, completed: {} }, flowSteps: [{ id: "move" }, { id: "explore" }],
+    bgmResetRevision: 0, bgmFlowStepId: () => "move",
+    window: { ATO_BGM: { setFlowStage: (...args) => calls.push(args) } },
+  });
+  vm.runInContext(source, context);
+  context.syncBgmStage();
+  context.syncBgmStage();
+  assert.equal(calls[0][1], calls[1][1], "相同状态的重绘不打断临时曲");
+  [
+    () => { context.state.day = 2; },
+    () => { context.cycle = "c2"; },
+    () => { context.archive.activeProfileId = "other"; },
+    () => { context.sessionUser.id = "other-account"; },
+    () => { context.state.completed.move = true; },
+    () => { context.bgmResetRevision += 1; },
+  ].forEach((change) => {
+    const previous = calls.at(-1)[1];
+    change();
+    context.syncBgmStage();
+    assert.notEqual(calls.at(-1)[1], previous, "实际流程变化会产生新的上下文");
+  });
+  const resetSource = CONSOLE_HTML.match(/    function resetToday\([^]*?\n    }/)[0];
+  assert.match(resetSource, /bgmResetRevision \+= 1/);
 });
 
 if (require.main === module) {
