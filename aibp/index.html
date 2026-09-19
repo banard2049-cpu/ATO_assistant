@@ -2234,6 +2234,9 @@
     const traitProbeMaxIndex = 99;
     const traitProbeExtensions = ["jpg", "png", "jpeg"];
     const defaultTraitProbeMaxIndex = 12;
+    const commonTraitTitles = {
+      2: "逆行动量"
+    };
     const cycleTraitCards = [
       ...[
         "Bleak Outlook",
@@ -5100,6 +5103,15 @@
       return `ps/other/trait/${commonTraitFileName(index, ext)}`;
     }
 
+    function isCommonTraitAvailable(index, name = currentApostle) {
+      if (index !== 2) return true;
+      const track = apostleRecordTracks[name];
+      const cycle = Array.isArray(track)
+        ? track.find((entry) => entry.cycle === campaignMapFactionState.cycleId)?.cycle
+        : track?.cycle;
+      return cycle === "c3";
+    }
+
     function cycleTraitDefinition(card) {
       return cycleTraitCards.find((candidate) => candidate.scope === card?.scope && candidate.index === card?.index);
     }
@@ -5124,7 +5136,9 @@
             : "C4/C5 通用 Trait";
         return `${group} · ${definition.title}`;
       }
-      return card.scope === "common" ? `通用特质 ${card.index}` : `TR ${card.level} ${card.index}`;
+      return card.scope === "common"
+        ? `${card.index === 2 ? "C3 特质" : "通用特质"} ${card.index}${commonTraitTitles[card.index] ? ` · ${commonTraitTitles[card.index]}` : ""}`
+        : `TR ${card.level} ${card.index}`;
     }
 
     function traitCardSrc(name, card) {
@@ -5174,6 +5188,67 @@
       loading.textContent = "正在试探加载 TR 图片……";
       traitDialogGrid.appendChild(loading);
 
+      // Load shared cards before the large per-boss image probe queue.
+      availableCycleTraitCards(name).forEach((card) => {
+        const img = new Image();
+        const option = document.createElement("label");
+        option.className = "trait-option";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.dataset.level = "COMMON";
+        checkbox.dataset.index = String(card.index);
+        checkbox.dataset.ext = "jpg";
+        checkbox.dataset.scope = card.scope;
+        checkbox.checked = selected.has(traitKey("COMMON", card.index, "jpg", card.scope));
+
+        const label = traitCardLabel({ ...card, level: "COMMON", ext: "jpg" });
+        img.alt = label;
+        img.onerror = () => option.remove();
+
+        const caption = document.createElement("span");
+        caption.textContent = label;
+
+        option.append(checkbox, img, caption);
+        traitDialogGrid.appendChild(option);
+        img.src = cycleTraitSrc(card);
+      });
+
+      for (let index = 1; index <= traitProbeMaxIndex; index++) {
+        if (!isCommonTraitAvailable(index, name)) continue;
+        traitProbeExtensions.forEach((ext) => {
+          const src = commonTraitSrc(index, ext);
+          const img = new Image();
+          img.onload = () => {
+            if (token !== traitLoadToken) return;
+            if (loading.isConnected) loading.remove();
+            loaded += 1;
+
+            const option = document.createElement("label");
+            option.className = "trait-option";
+
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.dataset.level = "COMMON";
+            checkbox.dataset.index = String(index);
+            checkbox.dataset.ext = ext;
+            checkbox.dataset.scope = "common";
+            checkbox.checked = selected.has(traitKey("COMMON", index, ext, "common"));
+
+            const label = traitCardLabel({ scope: "common", index });
+            img.alt = label;
+
+            const caption = document.createElement("span");
+            caption.textContent = label;
+
+            option.append(checkbox, img, caption);
+            traitDialogGrid.appendChild(option);
+          };
+          img.onerror = () => {};
+          img.src = src;
+        });
+      }
+
       traitLevels.forEach((level) => {
         for (let index = 1; index <= traitProbeMaxIndex; index++) {
           traitProbeExtensions.forEach((ext) => {
@@ -5208,64 +5283,6 @@
           });
         }
       });
-
-      availableCycleTraitCards(name).forEach((card) => {
-        const img = new Image();
-        const option = document.createElement("label");
-        option.className = "trait-option";
-
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.dataset.level = "COMMON";
-        checkbox.dataset.index = String(card.index);
-        checkbox.dataset.ext = "jpg";
-        checkbox.dataset.scope = card.scope;
-        checkbox.checked = selected.has(traitKey("COMMON", card.index, "jpg", card.scope));
-
-        const label = traitCardLabel({ ...card, level: "COMMON", ext: "jpg" });
-        img.alt = label;
-        img.onerror = () => option.remove();
-
-        const caption = document.createElement("span");
-        caption.textContent = label;
-
-        option.append(checkbox, img, caption);
-        traitDialogGrid.appendChild(option);
-        img.src = cycleTraitSrc(card);
-      });
-
-      for (let index = 1; index <= traitProbeMaxIndex; index++) {
-        traitProbeExtensions.forEach((ext) => {
-          const src = commonTraitSrc(index, ext);
-          const img = new Image();
-          img.onload = () => {
-            if (token !== traitLoadToken) return;
-            if (loading.isConnected) loading.remove();
-            loaded += 1;
-
-            const option = document.createElement("label");
-            option.className = "trait-option";
-
-            const checkbox = document.createElement("input");
-            checkbox.type = "checkbox";
-            checkbox.dataset.level = "COMMON";
-            checkbox.dataset.index = String(index);
-            checkbox.dataset.ext = ext;
-            checkbox.dataset.scope = "common";
-            checkbox.checked = selected.has(traitKey("COMMON", index, ext, "common"));
-
-            img.alt = `通用特质 ${String(index).padStart(3, "0")}`;
-
-            const caption = document.createElement("span");
-            caption.textContent = `通用特质 ${String(index).padStart(3, "0")}`;
-
-            option.append(checkbox, img, caption);
-            traitDialogGrid.appendChild(option);
-          };
-          img.onerror = () => {};
-          img.src = src;
-        });
-      }
 
       window.setTimeout(() => {
         if (token !== traitLoadToken) return;
@@ -5595,6 +5612,7 @@
       // 主要从 token_manifest.js 获取 token 文件夹中所有图片。
       // 如果清单不存在，则只兜底试探常见图片命名。
       const names = new Set(tokenFileNames.map(normalizeTokenFileName).filter(isTokenImageFileName));
+      if (names.size > 0) return Array.from(names).sort(naturalCompareTokenFile);
       for (let index = 1; index <= tokenProbeMaxIndex; index++) {
         const padded3 = String(index).padStart(3, "0");
         const padded2 = String(index).padStart(2, "0");
@@ -5733,7 +5751,9 @@
 
       const manifestNames = tokenFileNames.map(normalizeTokenFileName).filter(isTokenImageFileName);
       const directoryNames = manifestNames.length > 0 ? [] : await loadTokenFileNamesFromDirectoryIndex();
-      const candidates = Array.from(new Set((manifestNames.length > 0 ? manifestNames : directoryNames).concat(tokenProbeFileNames())))
+      if (token !== tokenLoadToken) return;
+      const knownNames = manifestNames.length > 0 ? manifestNames : directoryNames;
+      const candidates = Array.from(new Set(knownNames.length > 0 ? knownNames : tokenProbeFileNames()))
         .filter(isTokenImageFileName)
         .sort(naturalCompareTokenFile);
 
