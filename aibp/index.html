@@ -1278,6 +1278,19 @@
       border-color: rgba(199, 173, 114, 0.72);
     }
 
+    /* 名单里有、本机没有这张图时的占位：不隐藏整项，只把图换成文件名。 */
+    .trait-option.token-option img.token-image-missing {
+      display: block;
+      min-height: 104px;
+      padding: 8px;
+      border-style: dashed;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+      text-align: center;
+      background: #12110f;
+    }
+
     .token-option-count {
       display: grid;
       grid-template-columns: 28px minmax(44px, 1fr) 28px;
@@ -2202,7 +2215,7 @@
   <script src="../assets/page-focus-router.js?v=20260813-no-screen-focus1"></script>
   <script src="../map/map-tile-tags.js"></script>
   <script src="ps/CHIMERA_METASTASIOS/bp_status_map.js"></script>
-  <script src="ps/other/token/token_manifest.js"></script>
+  <!-- Token 名单写在本页脚本里（tokenFileNames），不再加载 ps/other/token/token_manifest.js。 -->
   <script src="../ss/terrain-data.js?v=20260819-c5-light1"></script>
   <script src="battle_los.js?v=20260819-hekaton4-labyrinthauros-start1"></script>
   <script src="battle_map_control.js?v=20260819-c5-light2"></script>
@@ -2274,14 +2287,31 @@
       }))
     ];
     const tokenBasePath = "ps/other/token";
-    // token 文件夹里的所有图片都从 token_manifest.js 读取。
-    // 生成文件位置：ps/other/token/token_manifest.js
-    // 内容格式：window.AIBP_TOKEN_FILES = ["xxx.png", "yyy.jpg"];
-    const tokenFileNames = Array.isArray(window.AIBP_TOKEN_FILES) ? window.AIBP_TOKEN_FILES : [];
+    // 「新增 Token 堆」弹窗只按这份写死的名单渲染。
+    // 静态页面读不到目录内容，猜文件名（001.png、TOKEN_001.png……）在真实部署里也只会得到
+    // 404，所以这里不留任何扫描/探测回退：名单就是 ps/other/token/ 里实际存在的图片。
+    // 以后往 token 文件夹里加图，把文件名补进这个数组即可（顺序不限）。
+    const tokenFileNames = [
+      "Ambrosia .png",
+      "AT+.png",
+      "AT-.png",
+      "CA.jpg",
+      "CM.jpg",
+      "DA+.png",
+      "DA-.png",
+      "ED+.png",
+      "ED-.png",
+      "GF.jpg",
+      "HT+.png",
+      "HT-.png",
+      "ps+.png",
+      "ps-.png",
+      "py+.png",
+      "SP+.png",
+      "SP-.png"
+    ];
     const aiExhaustedBonusTokens = ["DA+.png", "HT+.png", "ED+.png", "AT+.png"];
     const nonStackingTokenFiles = new Set(["CA.jpg", "CM.jpg", "GF.jpg"]);
-    const tokenProbeMaxIndex = 199;
-    const tokenProbeExtensions = ["png", "jpg", "jpeg"];
     let tokenStackSequence = 0;
     const apostleLevelOverrideKey = "aibp-apostle-level-overrides-v1";
     const recordStorageUrl = "../api/campaign-state.php";
@@ -2612,7 +2642,6 @@
     let activeTokenContext = null;
     let activeScry = null;
     let traitLoadToken = 0;
-    let tokenLoadToken = 0;
 
     if (viewDeckOrderToggle) {
       viewDeckOrderToggle.checked = localStorage.getItem(deckOrderViewStorageKey) !== "0";
@@ -5611,32 +5640,10 @@
       return String(file || "").replace(/\\/g, "/").split("/").pop();
     }
 
-    function tokenProbeFileNames() {
-      // 主要从 token_manifest.js 获取 token 文件夹中所有图片。
-      // 如果清单不存在，则只兜底试探常见图片命名。
-      const names = new Set(tokenFileNames.map(normalizeTokenFileName).filter(isTokenImageFileName));
-      if (names.size > 0) return Array.from(names).sort(naturalCompareTokenFile);
-      for (let index = 1; index <= tokenProbeMaxIndex; index++) {
-        const padded3 = String(index).padStart(3, "0");
-        const padded2 = String(index).padStart(2, "0");
-        const loose = String(index);
-        tokenProbeExtensions.forEach((ext) => {
-          names.add(`${padded3}.${ext}`);
-          names.add(`${padded2}.${ext}`);
-          names.add(`${loose}.${ext}`);
-          names.add(`TOKEN_${padded3}.${ext}`);
-          names.add(`TOKEN_${padded2}.${ext}`);
-          names.add(`TOKEN${padded3}.${ext}`);
-          names.add(`TOKEN${loose}.${ext}`);
-          names.add(`token_${padded3}.${ext}`);
-          names.add(`token_${padded2}.${ext}`);
-          names.add(`token${padded3}.${ext}`);
-          names.add(`token${loose}.${ext}`);
-          names.add(`Token_${padded3}.${ext}`);
-          names.add(`Token${loose}.${ext}`);
-        });
-      }
-      return Array.from(names).sort(naturalCompareTokenFile);
+    function tokenListFileNames() {
+      // 名单就是唯一来源：不去列举目录，也不试探文件名。
+      return Array.from(new Set(tokenFileNames.map(normalizeTokenFileName).filter(isTokenImageFileName)))
+        .sort(naturalCompareTokenFile);
     }
 
     function tokenSrc(file) {
@@ -5720,64 +5727,34 @@
       tokenDialogGrid.appendChild(option);
     }
 
-    async function loadTokenFileNamesFromDirectoryIndex() {
-      // 只有当你用本地服务器打开，并且 ps/other/token/ 开启目录列表时才会成功。
-      // file:// 或普通静态服务器通常不允许 JS 直接枚举目录。
-      try {
-        const response = await fetch(`${tokenBasePath}/`, { cache: "no-store" });
-        if (!response.ok) return [];
-        const html = await response.text();
-        const doc = new DOMParser().parseFromString(html, "text/html");
-        return Array.from(doc.querySelectorAll("a"))
-          .map((a) => decodeURIComponent(a.getAttribute("href") || ""))
-          .map((href) => normalizeTokenFileName(href))
-          .filter(isTokenImageFileName)
-          .sort(naturalCompareTokenFile);
-      } catch {
-        return [];
-      }
-    }
-
-    async function renderTokenCandidates() {
+    function renderTokenCandidates() {
       ensurePiles(currentApostle);
       const selected = selectedTokenStacksMap();
-      const token = ++tokenLoadToken;
-      let loaded = 0;
 
       tokenDialogTitle.textContent = `${currentApostle.replaceAll("_", " ")} - 新增 Token 堆`;
       tokenDialogGrid.replaceChildren();
-      const loading = document.createElement("div");
-      loading.className = "missing";
-      loading.textContent = "正在从相对路径 ps/other/token/ 加载所有 Token PNG……";
-      tokenDialogGrid.appendChild(loading);
       tokenFolderHint.textContent = "同类 Token 会自动合并；通用标记仍会新增独立堆。已有堆请点击面板上的 Token 单独增减或清空。";
 
-      const manifestNames = tokenFileNames.map(normalizeTokenFileName).filter(isTokenImageFileName);
-      const directoryNames = manifestNames.length > 0 ? [] : await loadTokenFileNamesFromDirectoryIndex();
-      if (token !== tokenLoadToken) return;
-      const knownNames = manifestNames.length > 0 ? manifestNames : directoryNames;
-      const candidates = Array.from(new Set(knownNames.length > 0 ? knownNames : tokenProbeFileNames()))
-        .filter(isTokenImageFileName)
-        .sort(naturalCompareTokenFile);
+      const candidates = tokenListFileNames();
+      if (candidates.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "missing";
+        empty.textContent = "Token 名单是空的：请把图片放进 ps/other/token/，再把文件名写进本页脚本里的 tokenFileNames。";
+        tokenDialogGrid.appendChild(empty);
+        return;
+      }
 
+      // 名单里的每一项都立刻渲染，不再等图片 onload 才出现（以前图取不到时整项会静默消失，
+      // 弹窗看起来就是「扫不出来」）。缺图只降级成文件名占位，仍然可以新增这一堆。
       candidates.forEach((file) => {
         const img = new Image();
-        img.onload = () => {
-          if (token !== tokenLoadToken) return;
-          if (loading.isConnected) loading.remove();
-          loaded += 1;
-          appendTokenOption(file, img, selected);
+        img.onerror = () => {
+          img.classList.add("token-image-missing");
+          img.alt = `${file}（本地没有这张图）`;
         };
-        img.onerror = () => {};
         img.src = tokenSrc(file);
+        appendTokenOption(file, img, selected);
       });
-
-      window.setTimeout(() => {
-        if (token !== tokenLoadToken) return;
-        if (loaded === 0 && tokenDialogGrid.children.length === 1 && loading.isConnected) {
-          loading.textContent = "没有加载到 token。请先在 ps/other/token/ 里生成 token_manifest.js；静态 HTML 不能直接扫描文件夹。";
-        }
-      }, 900);
     }
 
     function openTokenDialog() {
@@ -6744,6 +6721,6 @@
   <script src="c45_specials.js?v=20260816-demidjinn-wish-signature"></script>
   <script src="bp_loot_calculator_addon.js?v=20260816-c45-loot-icons"></script>
   <script src="../assets/ato-terms.js?v=20260919-chimera"></script>
-  <script src="../assets/term-language.js?v=20260919-chimera"></script>
+  <script src="../assets/term-language.js?v=20260923-nocascade"></script>
 </body>
 </html>

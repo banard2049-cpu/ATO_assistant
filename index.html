@@ -2362,6 +2362,7 @@
         entry: "重担之战-burden-battle",
       },
       c3: {
+        // 循环 3 的宿敌战斗读的仍是 C2 故事书里的重担之战，不是笔误。
         book: "c2",
         chapter: "battle",
         encounter: "重担之战-burden-battle",
@@ -2380,9 +2381,14 @@
         entry: "the-devil-himself-battle",
       },
     };
+    // 内蕴奥德赛按「阿尔戈号知识」结算，条目号就是知识等级；
+    // 每个循环只覆盖自己那 20 段，区间外的知识值夹到当循环可用段落。
     const inwardOdysseyStoryRanges = {
+      c1: { min: 1, max: 20 },
       c2: { min: 21, max: 40 },
+      c3: { min: 41, max: 60 },
       c4: { min: 61, max: 80 },
+      c5: { min: 81, max: 101 },
     };
 
     const flowSteps = [
@@ -3127,6 +3133,15 @@
           ["0249", "0249", "Crew Depleted"],
         ],
       },
+      c3: {
+        title: "主线故事",
+        chapter: "main",
+        boxes: [
+          ["0271", "0271", "船体失败", { entry: "0271" }],
+          ["0272", "0272", "船员失败", { entry: "0272" }],
+          ["0273", "0273", "阿尔戈号命运失败", { entry: "0273" }],
+        ],
+      },
       c4: {
         title: "主线故事",
         chapter: "main",
@@ -3180,7 +3195,16 @@
       },
     };
 
-    const mnemosBreakthroughConstants = {};
+    // 回忆突破没有每日可勾的「定数框」，但每个循环都要给出自己的章节键：
+    // c2 的故事书用的是单数 mnemos-breakthrough，c1/c3/c4/c5 是复数。
+    // （没有这张表时按钮只能写死章节名，c2 会解析不到章节、落到主线。）
+    const mnemosBreakthroughConstants = {
+      c1: { title: "回忆突破", chapter: "mnemos-breakthroughs", boxes: [] },
+      c2: { title: "回忆突破", chapter: "mnemos-breakthrough", boxes: [] },
+      c3: { title: "回忆突破", chapter: "mnemos-breakthroughs", boxes: [] },
+      c4: { title: "回忆突破", chapter: "mnemos-breakthroughs", boxes: [] },
+      c5: { title: "回忆突破", chapter: "mnemos-breakthroughs", boxes: [] },
+    };
 
     const specialEventConstants = {
       c1: {
@@ -6110,15 +6134,20 @@
     function getMnemosBreakthroughLink() {
       const data = currentMnemosBreakthroughConstants();
       const target = getActiveMnemosBreakthroughTarget();
-      if (!data || !target) return {
+      if (!data) return {
         label: "回忆突破",
         bgm: "mnemos",
         href: getStoryHref({ module: "mnemos-breakthroughs" }),
       };
 
+      if (!target) return {
+        label: data.title,
+        bgm: "mnemos",
+        href: getStoryHref({ chapter: data.chapter }),
+      };
       const row = findSimpleConstantRow(data, target);
       return {
-        label: "回忆突破",
+        label: data.title,
         bgm: "mnemos",
         title: row ? `${row[1]} · ${row[2]}` : "",
         href: getStoryHref({
@@ -6701,6 +6730,9 @@
       ensureTodaySurveyConstants();
       const wrapper = document.createElement("details");
       wrapper.className = "survey-constants";
+      // 只标在勘察步骤的定数框上：官方翻译用这些术语把分支总表 / 分支卡 / R&R 卡里的
+      // 英文换成故事书官方标题（见 assets/ato-terms.js 的 survey-record 一段）。
+      wrapper.setAttribute("data-term-scope", "survey-record");
       rememberConstantDetailsOpen(wrapper, "survey");
       const summary = document.createElement("summary");
       summary.textContent = "定数框";
@@ -6804,6 +6836,9 @@
       const values = options.ensure();
       const wrapper = document.createElement("details");
       wrapper.className = "survey-constants";
+      // 故事步骤的三个定数框（法洛斯之梦 / 主线故事 / 特殊事件）都建在这里。官方翻译下
+      // 用 step-constants 一段术语把它们里面的英文与民间译名换成官方说法。
+      wrapper.setAttribute("data-term-scope", "step-constants");
       rememberConstantDetailsOpen(wrapper, options.openKey);
       const summary = document.createElement("summary");
       summary.textContent = options.summary;
@@ -8164,6 +8199,8 @@
         tag: { label: "板块", className: "battle-tech" },
         desc: `${terrain.terrain}${source ? `，来源：${source}` : ""}。`,
         className: "tech",
+        // 地形与分支名都出自勘察步骤的定数框，官方翻译沿用同一段术语（survey-record）。
+        scope: "survey-record",
       }];
     }
 
@@ -8223,7 +8260,7 @@
                 <span>${escapeHtml(reminder.title)}</span>
                 ${reminder.html ? `<span class="step-track-action">${reminder.html}</span>` : ""}
               </div>
-              <p class="step-track-desc">${escapeHtml(reminder.desc)}</p>
+              <p class="step-track-desc"${reminder.scope ? ` data-term-scope="${reminder.scope}"` : ""}>${escapeHtml(reminder.desc)}</p>
             </div>
           `).join("")}
         </div>
@@ -8822,8 +8859,8 @@
     setAuthMode("login");
     initAuth();
   </script>
-  <script src="./assets/ato-terms.js?v=20260915a"></script>
-  <script src="./assets/term-language.js?v=20260913a"></script>
+  <script src="./assets/ato-terms.js?v=20260922-official-terms"></script>
+  <script src="./assets/term-language.js?v=20260923-nocascade"></script>
   <script src="./assets/update/app-version.js?v=1"></script>
   <script src="./assets/update/update-check.js?v=1"></script>
 </body>

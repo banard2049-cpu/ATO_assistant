@@ -481,6 +481,12 @@
       "特殊事件": "special-events",
       "battle": "battle",
       "战斗": "battle",
+      // 回忆突破的章节键各循环不一致（c2 是单数 mnemos-breakthrough），
+      // 主控台和地图提醒都按复数写：用前缀别名落到当前故事书自己的那章。
+      "mnemos": "mnemos-",
+      "mnemos-breakthrough": "mnemos-",
+      "mnemos-breakthroughs": "mnemos-",
+      "回忆突破": "mnemos-",
     };
     const alias = aliases[normalized];
     if (alias) {
@@ -551,6 +557,57 @@
     return [];
   }
 
+  // 深链里的「短号」：主控台和地图提醒用箱号 / 编号跳转（12、1-2、α、Ω…），
+  // 但多数循环的条目 id 是「编号 + slug」——c1 的内蕴奥德赛是 12-the-argonites、
+  // c3 的冒险中枢是 1-2-turf-laws、c1 的 α 箱子更是只写在标题里。
+  // 精确 id 查不到时按 id 前缀、再按标题前缀在指定章节内匹配；缺了这一层，
+  // 深链会静默回落到该章第一条（表现就是「按钮不跟着进度跳」）。
+  function normalizeShortIdValue(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[\u2010-\u2015\u2212]/g, "-")
+      .replace(/[\s_]+/g, "-")
+      .replace(/[|｜()（）?:!,.，。！？：；、]/g, "");
+  }
+
+  function normalizeShortIdTitle(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[\u2010-\u2015\u2212]/g, "-")
+      .replace(/[|｜()（）?:!,.，。！？：；、]/g, " ")
+      .replace(/\s+/g, " ");
+  }
+
+  function entriesByShortId(book, id, options = {}) {
+    const value = normalizeShortIdValue(id);
+    if (!value || /^m\d+$/.test(value)) return [];
+    // 只在明确知道章节时兜底：否则「12」这类短号可能命中别的模块。
+    const chapterKey = "chapterKey" in options
+      ? options.chapterKey
+      : (activeEntry?.chapterKey || (selectedChapterKey() === "all" ? "" : selectedChapterKey()));
+    if (!chapterKey || chapterKey === "all") return [];
+    const scoped = book.entries.filter((entry) => entry.chapterKey === chapterKey);
+
+    const idMatches = scoped.filter((entry) => normalizeShortIdValue(entry.id).startsWith(`${value}-`));
+    if (idMatches.length) {
+      // c1 冒险中枢把编号写重复了（1-2 → 1-2-1-2-the-pilgrimage-family），
+      // 优先取编号后面直接接 slug 的那个，避免命中最短却不相干的 id。
+      const slugFirst = idMatches.filter((entry) => !/^\d/.test(normalizeShortIdValue(entry.id).slice(value.length + 1)));
+      return (slugFirst.length ? slugFirst : idMatches)
+        .slice()
+        .sort((a, b) => String(a.id).length - String(b.id).length || a.order - b.order);
+    }
+
+    return scoped
+      .filter((entry) => {
+        const title = normalizeShortIdTitle(entry.title);
+        return title === value || title.startsWith(`${value} `);
+      })
+      .sort((a, b) => String(a.title).length - String(b.title).length || a.order - b.order);
+  }
+
   function hasEntryContent(entry) {
     return !!String(entry?.text || "").trim() || (Array.isArray(entry?.links) && entry.links.length > 0);
   }
@@ -565,7 +622,8 @@
   }
 
   function preferredEntry(book, id, options = {}) {
-    const matches = preferEntriesWithContent(entriesById(book, id));
+    let matches = preferEntriesWithContent(entriesById(book, id));
+    if (!matches.length) matches = preferEntriesWithContent(entriesByShortId(book, id, options));
     if (!matches.length) return null;
 
     if (options.bookId && options.bookId !== book.id) return null;

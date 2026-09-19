@@ -38,6 +38,22 @@
     if (pairLists.size < 32) pairLists.set(key, sorted);
     return sorted;
   };
+  // 按首字分桶，供逐字匹配查表用（同一首字内保持「长的先试」）。
+  const pairIndexes = new Map();
+  const indexFor = (scopes) => {
+    const key = scopes.join("\u0000");
+    const cached = pairIndexes.get(key);
+    if (cached) return cached;
+    const index = new Map();
+    for (const pair of pairsFor(scopes)) {
+      if (!pair.from) continue;
+      const head = pair.from[0];
+      const bucket = index.get(head);
+      if (bucket) bucket.push(pair); else index.set(head, [pair]);
+    }
+    if (pairIndexes.size < 32) pairIndexes.set(key, index);
+    return index;
+  };
   const activeScopes = (element) => {
     if (!scopeSelectors.length || !element) return EMPTY_SCOPES;
     let found = null;
@@ -81,10 +97,32 @@
     state.official = official;
     return changed;
   };
+  // 术语只对「原文」套用一次：从左往右取最长命中，写进去的译文不会再被别的条目改写。
+  // 之前是「按 from 长度倒序逐条 split/join」，短条目会连锁改写长条目刚写出来的官方名：
+  // 「力量 => 狂怒」把 Market Forces 的官方名「市场力量」改成「市场狂怒」，
+  // 「循环 => 故事集」把航行时间线的「循环纪」改成「剧情集纪」，
+  // 「弩炮 => 弩炮枪」把「赫尔墨斯弩炮枪」改成「赫尔墨斯弩炮枪枪枪」。
   const translate = (value, scopes = EMPTY_SCOPES) => {
     if (!state.official || !value) return value;
-    let out = value;
-    for (const pair of pairsFor(scopes)) out = out.split(pair.from).join(pair.to);
+    const index = indexFor(scopes);
+    let out = "";
+    let at = 0;
+    while (at < value.length) {
+      const bucket = index.get(value[at]);
+      let matched = null;
+      if (bucket) {
+        for (const pair of bucket) {
+          if (value.startsWith(pair.from, at)) { matched = pair; break; }
+        }
+      }
+      if (matched) {
+        out += matched.to;
+        at += matched.from.length;
+      } else {
+        out += value[at];
+        at += 1;
+      }
+    }
     return out;
   };
   // Regions that must keep their original wording: scripts/styles, the toggle

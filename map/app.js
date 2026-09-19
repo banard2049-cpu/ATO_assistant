@@ -114,6 +114,7 @@ const adversaryBattleByCycle = {
     entry: "重担之战-burden-battle",
   },
   c3: {
+    // 循环 3 的宿敌战斗读的仍是 C2 故事书里的重担之战，不是笔误。
     book: "c2",
     chapter: "battle",
     encounter: "重担之战-burden-battle",

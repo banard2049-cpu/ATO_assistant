@@ -1040,6 +1040,12 @@
       { id: "gods", en: "Gods", zh: "众神" },
     ];
 
+    // 回忆词条徽章平时显示英文 id（deed / voyage），官方翻译下由 assets/ato-terms.js 的
+    // mnemos-tag 一段换成中文；这里的中文名同时用作悬停提示。
+    function mnemosTagZh(id) {
+      return MNEMOS_TAGS.find(tag => tag.id === id)?.zh || id;
+    }
+
     const MNEMOS = {
       c1: [
         { id: "c1_00", en: "Siren Survivor", zh: "塞壬幸存者", skill1: "courage", skill2: "will", nodes: ["M003","M013","M023"], thresholds: [3,7,10], card: "AG0134", tags: ["voyage","supernatural","deed"] },
@@ -1695,7 +1701,8 @@
       if (!allSelected.length) return '<div style="color:var(--muted);font-size:12px;text-align:center">暂无回忆</div>';
       return allSelected.map(m => {
         const progress = hero.mnemosProgress[m.id] || 0;
-        const tagsHtml = (m.tags || []).map(t => `<span class="mnemos-tag-badge">${t}</span>`).join("");
+        // data-term-scope：官方翻译下把 deed / voyage 这类回忆词条换成中文（见 assets/ato-terms.js）。
+        const tagsHtml = (m.tags || []).map(t => `<span class="mnemos-tag-badge" data-term-scope="mnemos-tag" title="${escHtml(mnemosTagZh(t))}">${t}</span>`).join("");
         return `<div class="mnemos-card">
           <div class="mnemos-title-row">
             <div class="mnemos-title">${escHtml(m.zh)} <span class="mnemos-title-en">${escHtml(m.en)}</span> <span class="mnemos-cycle">${escHtml(CYCLE_LABELS[m.cycleId] || "")}</span> ${tagsHtml}</div>
@@ -1721,7 +1728,7 @@
       if (!allSelected.length) return '<div style="color:var(--muted);font-size:12px;text-align:center">暂无宿命回忆</div>';
       return allSelected.map(fm => {
         const progress = hero.fatedProgress[fm.id] || 0;
-        const tagsHtml = (fm.tags || []).map(t => `<span class="mnemos-tag-badge">${t}</span>`).join("");
+        const tagsHtml = (fm.tags || []).map(t => `<span class="mnemos-tag-badge" data-term-scope="mnemos-tag" title="${escHtml(mnemosTagZh(t))}">${t}</span>`).join("");
         return `<div class="mnemos-card">
           <div class="mnemos-title-row">
             <div class="mnemos-title">${escHtml(fm.zh)} <span class="mnemos-title-en">${escHtml(fm.en)}</span> <span class="mnemos-cycle">${escHtml(CYCLE_LABELS[fm.cycleId] || "")}</span> ${tagsHtml}</div>
@@ -2490,7 +2497,7 @@
   </script>
   <script src="../assets/page-focus-router.js?v=20260813-no-screen-focus1"></script>
 
-  <script src="../assets/ato-terms.js?v=20260912f"></script>
-  <script src="../assets/term-language.js?v=20260913a"></script>
+  <script src="../assets/ato-terms.js?v=20260922-official-terms"></script>
+  <script src="../assets/term-language.js?v=20260923-nocascade"></script>
 </body>
 </html>
