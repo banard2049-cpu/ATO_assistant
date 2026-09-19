@@ -48,7 +48,7 @@ technology/images/
 
 BGM 按流程勾选推进：探索 → 考察 → 遭遇 → 发展，不会因缺少提醒而提前跳到打造与训练。下拉选具体阶段会持续锁定；自动模式下点入口只临时切曲，点「跟随流程」立即恢复自动。流程全部完成后播放休整曲。
 
-官中图片可以放在项目根目录的 `official-assets/`。导出 `.atopack`、完整资源包或兼容 ZIP 时，打包器会优先使用这里与清单目标对应的图片；没有对应文件时才回退到素材库或原来的项目/APK 资源。推荐按原路径保存，也支持按资源目录缩短一级，例如 `official-assets/HEKATON/HEKATON_BP_I_001.jpg` 对应 `aibp/ps/HEKATON/HEKATON_BP_I_001.jpg`；扩展名与清单不同也能匹配（`CARD.png` 配 `CARD.jpg` 目标），只要求去掉后缀后的路径唯一，资料包内路径始终照清单目标。该目录属于本地私有资源，不会进入便携版、Docker 或 APK。
+官中图片可以放在项目根目录的 `official-assets/`。**这个目录的图默认不进任何资料包**（属于本地私有资源，不随 `.atopack`、兼容 ZIP、便携版、Docker 或 APK 分发）：导出的包只带素材库里自己拍下/导入的素材；要把官中图一起发出去，得在素材库导出面板显式勾选「使用 official-assets 官中覆盖图」。勾选后按清单目标路径查找覆盖文件，推荐按原路径保存，也支持按资源目录缩短一级，例如 `official-assets/HEKATON/HEKATON_BP_I_001.jpg` 对应 `aibp/ps/HEKATON/HEKATON_BP_I_001.jpg`；扩展名与清单不同也能匹配（`CARD.png` 配 `CARD.jpg` 目标），只要求去掉后缀后的路径唯一，资料包内路径始终照清单目标。
 
 ### 导入资源（.atopack）
 

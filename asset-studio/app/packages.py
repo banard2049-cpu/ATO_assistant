@@ -90,8 +90,14 @@ def export_package(
     filters = filters or {}
     cycles = set(filters.get("cycles") or [])
     modules = set(filters.get("modules") or [])
-    # 官方版故事书截图默认不进包：民间版资源包只带官方故事书数据（官方版正文）。
+    # 官方版故事书截图默认不进包：民间版资源包不带原书扫描图。
     official_scans = bool(filters.get("official_scans", False))
+    # 官方故事书正文数据（storybook-official-data.js）同样属于官方内容，默认不进包：
+    # 民间版只带素材库里的民间正文与人物小传。要打官方版资料包才显式打开。
+    include_official = official_scans or bool(filters.get("official_story", False))
+    # official-assets/ 是本地私有的官中覆盖图，属于「不该随包分发」的一批文件：
+    # 默认一律不进包，包里的图必须来自素材库自己拍下/导入的素材。需要时才显式打开。
+    use_official_assets = bool(filters.get("official_assets", False))
     rows = db.all("""
       SELECT a.*,c.cycle,c.module,c.subgroup,c.name,c.number,c.faces_json
       FROM asset_revisions a JOIN catalog_items c ON c.id=a.item_id
@@ -143,9 +149,12 @@ def export_package(
             if not target:
                 raise ValueError(f"清单中缺少资源路径：{row['item_id']} / {row['face']}")
             member = str(safe_member(str(target)))
-            source, overridden = resolve_official_asset(
-                ato_root, target, library / row["original_path"]
-            )
+            if use_official_assets:
+                source, overridden = resolve_official_asset(
+                    ato_root, target, library / row["original_path"]
+                )
+            else:
+                source, overridden = library / row["original_path"], False
             if overridden:
                 official_assets += 1
             source_hash = sha256_file(source)
@@ -164,8 +173,12 @@ def export_package(
         if entity_index:
             archive.writestr(ENTITY_INDEX_MEMBER, entity_index.json_bytes)
         if filters.get("include_stories", True):
-            official_root = ato_root if collect(ato_root, include_scans=official_scans) else library / LIBRARY
-            add_to_archive(archive, manifest, official_root, include_scans=official_scans)
+            if include_official:
+                official_root = ato_root if collect(ato_root, include_scans=official_scans) else library / LIBRARY
+                add_to_archive(archive, manifest, official_root, include_scans=official_scans)
+            else:
+                # 民间版资料包：官方故事书正文数据与原书截图都不带（都属于官方内容）。
+                manifest["resourceFiles"] = []
         if filters.get("include_bgm", True):
             add_bgm_to_archive(archive, manifest, ato_root, fallback_library=library)
         archive.writestr("manifest.json", json.dumps(manifest, ensure_ascii=False, indent=2))
@@ -592,6 +605,10 @@ def export_compat(
     modules = set(filters.get("modules") or [])
     # 官方版故事书截图默认不进包：民间版资源包只带官方故事书数据（官方版正文）。
     official_scans = bool(filters.get("official_scans", False))
+    # 与 export_package 一致：官方资料（正文数据 + 截图）默认都不进包。
+    include_official = official_scans or bool(filters.get("official_story", False))
+    # 与 export_package 一致：官中覆盖图默认不进包。
+    use_official_assets = bool(filters.get("official_assets", False))
     rows = db.all("""
       SELECT a.*,c.cycle,c.module,c.faces_json FROM asset_revisions a JOIN catalog_items c ON c.id=a.item_id
       WHERE a.is_current=1 ORDER BY c.sort_order
@@ -623,9 +640,12 @@ def export_compat(
                 if rendered.resolve().parent != Path(temp_dir).resolve():
                     raise ValueError(f"资料包含有不安全的渲染文件名：{target}")
                 source_path = row["original_path"] if row["source"] == "package" else row["preview_path"]
-                source, overridden = resolve_official_asset(
-                    ato_root, target, library / source_path
-                )
+                if use_official_assets:
+                    source, overridden = resolve_official_asset(
+                        ato_root, target, library / source_path
+                    )
+                else:
+                    source, overridden = library / source_path, False
                 if overridden:
                     official_assets += 1
                 write_compatible_image(source, rendered)
@@ -642,7 +662,7 @@ def export_compat(
             archive.writestr("story/data/storybook-data.js", storybook_javascript(db, book_ids=cycles or None))
             archive.writestr(ENTITY_INDEX_JSON_TARGET, entity_index.json_bytes)
             archive.writestr(ENTITY_INDEX_JS_TARGET, entity_index_javascript(entity_index))
-        if filters.get("include_stories", True):
+        if filters.get("include_stories", True) and include_official:
             official_root = ato_root if collect(ato_root, include_scans=official_scans) else library / LIBRARY
             for target, source in collect(official_root, include_scans=official_scans):
                 archive.write(source, target)

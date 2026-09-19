@@ -118,9 +118,11 @@ PDF 必须带有可提取的文字层。扫描图片型 PDF 不支持 OCR；检�
 导出时可按循环、模块和完成状态筛选。朋友在“分享与安装”中选择该文件后，工具会先
 校验并预览新增、相同和冲突内容，再由用户决定保留现有素材还是替换冲突。
 
-资料包默认不包含官方版故事书截图（原书扫描图，`story/data/ato-storybook-key-scans/*`），
-只带官方故事书正文数据 `story/data/storybook-official-data.js`：官方版模式仍能读官方正文。
-需要构建官方版资料包时，在导出面板勾选「包含官方版故事书截图」，或给完整包命令行工具加
+资料包默认**不带任何官方内容**：既不包含官方故事书正文数据
+`story/data/storybook-official-data.js`，也不包含官方版故事书截图
+（`story/data/ato-storybook-key-scans/*`）。民间版资料包只有素材库里的民间正文、人物小传
+和自己拍下/导入的图片。要构建官方版资料包，在导出面板勾选「包含官方故事书正文数据」与
+「包含官方版故事书截图」（截图会顺带带上正文数据），或给完整包命令行工具加
 `--include-official-scans`；细节见 [官方故事书资料打包](OFFICIAL-STORY-PACKING.md)。
 
 截图后缀不限于 `.jpg`：`.jpg/.jpeg/.png/.webp` 都会被收进官方版资料包，且**不限大小写**
@@ -128,15 +130,29 @@ PDF 必须带有可提取的文字层。扫描图片型 PDF 不支持 OCR；检�
 导入用的是同一套规则。官方故事书数据文件名 `storybook-official-data.js` 仍按原名精确匹配——
 故事页就是照这个名字加载的。
 
+### 命令行打包（推荐用来出分发包）
+
+界面导出直接往最终文件写 ZIP，中途被打断就会留下一个打不开的半成品。要出正式分发的
+资料包，用命令行打包器：两者都以 ATO_assistant 工程目录为素材真源（卡图、故事正文、
+人物小传、官方故事书正文数据、BGM 都从那里读），一条命令出包，**先写 `.partial`、
+校验通过之后才原子改名**，失败时最终路径上不会留下任何文件。
+
+- `tools/build_fan_pack.py` —— **民间版**：故事正文用工程里的民间版，官方内容只带故事书正文数据（格式版本 3）。
+- `tools/build_official_pack.py` —— **官方版**：官中覆盖图 `official-assets/` 优先替换（没有则保留工程原图）、
+  故事书 js 只留官方正文、官方原书扫描图一起打进包。
+- `tools/check_pack.py` —— 检查任意 `.atopack` 是否完整（能一眼认出"没有中央目录的半成品"）。
+
+用法、参数和排查见 [.atopack 打包（民间版 / 官方版）](ATOPACK-PACKING.md)。
+
 资料包可能达到数 GB，生成和导入需要等待一段时间。仓库的 `.gitignore` 已排除
 `*.atopack`，因此本地生成的资源包不会被意外提交到 GitHub。
 
 ### 官中图片覆盖
 
-把官中图片放在 ATO_assistant 根目录的 `official-assets/`。导出 `.atopack`、兼容 ZIP
-或完整资源包时，工具会按清单目标路径优先读取这里的对应图片；缺失时继续使用素材库、
-项目原图或 APK 中的原始文件。目录可以镜像完整项目路径，也可以只保留资源目录，例如
-`official-assets/HEKATON/HEKATON_BP_I_001.jpg` 会匹配
+把官中图片放在 ATO_assistant 根目录的 `official-assets/`。**这个目录的图默认不进任何资料包**：
+导出 `.atopack` / 兼容 ZIP 时只带素材库里自己拍下/导入的素材；要连官中图一起发出去，必须在导出面板
+显式勾选「使用 official-assets 官中覆盖图」（接口里是 `official_assets: true`）。目录可以镜像完整项目
+路径，也可以只保留资源目录，例如 `official-assets/HEKATON/HEKATON_BP_I_001.jpg` 会匹配
 `aibp/ps/HEKATON/HEKATON_BP_I_001.jpg`。该目录是本地私有资源，不会进入发布包。
 
 扩展名不必与清单一致：`official-assets/.../CARD.png` 同样能匹配清单目标

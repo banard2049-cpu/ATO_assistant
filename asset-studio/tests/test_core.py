@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import shutil
@@ -103,6 +104,34 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(1, self.db.one("SELECT COUNT(*) n FROM asset_revisions")["n"])
         stats = catalog_stats(self.db)
         self.assertEqual(["back"], stats["items"][0]["missing"])
+
+    def test_export_skips_official_assets_unless_enabled(self):
+        """official-assets/ 是本地私有的官中覆盖图，默认不进资料包。
+
+        包里的图必须来自素材库自己拍下/导入的素材；只有显式
+        ``{"official_assets": True}`` 才允许换成覆盖图。
+        """
+        stored = store_image(
+            self.db, self.library, self.image(), self.item.id, "front", "photo.png", "image/png"
+        )
+        ato_root = self.root / "ato"
+        overlay = ato_root / "official-assets" / "assets" / "test"
+        overlay.mkdir(parents=True)
+        Image.new("RGB", (320, 440), (10, 200, 10)).save(overlay / "001-front.jpg")
+        overlay_digest = hashlib.sha256((overlay / "001-front.jpg").read_bytes()).hexdigest()
+        self.assertNotEqual(stored["sha256"], overlay_digest)
+
+        plain = self.root / "plain.atopack"
+        export_package(self.db, self.library, plain, {}, ato_root=ato_root)
+        with zipfile.ZipFile(plain) as archive:
+            member = hashlib.sha256(archive.read("assets/test/001-front.jpg")).hexdigest()
+        self.assertEqual(stored["sha256"], member, "默认导出不该用 official-assets 的覆盖图")
+
+        opted_in = self.root / "with-official.atopack"
+        export_package(self.db, self.library, opted_in, {"official_assets": True}, ato_root=ato_root)
+        with zipfile.ZipFile(opted_in) as archive:
+            member = hashlib.sha256(archive.read("assets/test/001-front.jpg")).hexdigest()
+        self.assertEqual(overlay_digest, member, "显式打开后才允许用覆盖图")
 
     def test_c1_8201_upgrades_existing_capture_catalog(self):
         payload = fixed_catalog_payload()

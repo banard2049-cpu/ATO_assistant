@@ -49,21 +49,35 @@ class OfficialResourceTests(unittest.TestCase):
     def tearDown(self) -> None:
         shutil.rmtree(SCRATCH, ignore_errors=True)
 
-    def test_export_omits_official_scans_by_default(self):
-        """民间版资源包：带官方故事书正文数据，不带官方版故事书截图。"""
+    def test_export_omits_all_official_resources_by_default(self):
+        """民间版资源包：官方故事书正文数据与原书截图都不带。"""
         pack = SCRATCH / "fan.atopack"
         export_package(self.db, self.library, pack, ato_root=self.source)
+        result = inspect_package(self.db, pack)
+        self.assertEqual(0, result["official_resources"])
+        self.assertEqual([], list(result["manifest"]["resourceFiles"]))
+        # 没有任何官方资料就是普通格式版本 2。
+        self.assertEqual(2, result["manifest"]["version"])
+        with zipfile.ZipFile(pack) as archive:
+            names = archive.namelist()
+            self.assertNotIn(DATA, names)
+            self.assertEqual([], [name for name in names if name.startswith(SCANS)])
+
+    def test_export_includes_official_story_data_only_when_asked(self):
+        """官方故事书正文数据（不带截图）也要显式打开才进包。"""
+        pack = SCRATCH / "official-story.atopack"
+        export_package(
+            self.db, self.library, pack, {"official_story": True}, ato_root=self.source
+        )
         result = inspect_package(self.db, pack)
         self.assertEqual(1, result["official_resources"])
         self.assertEqual(
             [DATA], [item["target"] for item in result["manifest"]["resourceFiles"]]
         )
-        # 官方资料仍是版本 3 特征：不带截图也不会把版本号降回去。
         self.assertEqual(3, result["manifest"]["version"])
         with zipfile.ZipFile(pack) as archive:
-            names = archive.namelist()
-            self.assertIn(DATA, names)
-            self.assertEqual([], [name for name in names if name.startswith(SCANS)])
+            self.assertIn(DATA, archive.namelist())
+            self.assertEqual([], [name for name in archive.namelist() if name.startswith(SCANS)])
 
     def test_export_includes_scans_when_building_the_official_pack(self):
         pack = SCRATCH / "official.atopack"
@@ -153,13 +167,13 @@ class OfficialResourceTests(unittest.TestCase):
             self.assertEqual(b"upper scan bytes", archive.read(upper_scan))
 
     def test_missing_scan_only_blocks_the_official_pack(self):
-        """不带截图的包不该因为本地缺截图而导不出来。"""
+        """不带官方资料的包不该因为本地缺截图而导不出来。"""
         (self.source / SCAN).unlink()
         pack = SCRATCH / "fan.atopack"
         export_package(self.db, self.library, pack, ato_root=self.source)
-        self.assertEqual(1, inspect_package(self.db, pack)["official_resources"])
+        self.assertEqual(0, inspect_package(self.db, pack)["official_resources"])
         with zipfile.ZipFile(pack) as archive:
-            self.assertIn(DATA, archive.namelist())
+            self.assertNotIn(DATA, archive.namelist())
         # 素材库安装要取回全部官方资料，所以 collect 的默认行为不变。
         with self.assertRaises(ValueError):
             collect(self.source)
@@ -170,12 +184,12 @@ class OfficialResourceTests(unittest.TestCase):
                 {"official_scans": True}, ato_root=self.source,
             )
 
-    def test_compat_zip_omits_official_scans_by_default(self):
+    def test_compat_zip_omits_all_official_resources_by_default(self):
         compat = SCRATCH / "fan-compat.zip"
         export_compat(self.db, self.library, compat, ato_root=self.source)
         with zipfile.ZipFile(compat) as archive:
             names = archive.namelist()
-            self.assertIn(DATA, names)
+            self.assertNotIn(DATA, names)
             self.assertEqual([], [name for name in names if name.startswith(SCANS)])
 
     def test_official_pack_roundtrip_install_and_reexport(self):

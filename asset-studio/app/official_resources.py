@@ -1,8 +1,9 @@
 """Official story data and scans carried verbatim in .atopack files.
 
-对外发布的民间版资源包只带官方故事书数据（官方版正文），不带官方版故事书截图：
-截图就是原书页面，属于最不该随包分发的一批文件。构建官方版资料包的入口
-（命令行 ``--include-official-scans``、素材工具导出勾选项）显式打开后才打包截图。
+官方故事书正文数据与原书查询图都属于官方内容，**默认都不进资料包**：民间版资源包
+（素材库导出、`export_package`）只带素材库里的民间正文与人物小传。要打官方版资料包
+才显式打开（导出面板的「包含官方版故事书截图」/「包含官方故事书正文数据」，
+或 `build_full_pack.py` / `update_full_pack.py` 的 `--include-official-scans`）。
 
 截图后缀不限定 ``.jpg``：``.jpg/.jpeg/.png/.webp`` 都算官方截图，打包、校验、
 导入与 Android 端走同一套后缀，避免只因为扩展名不同就把原书页面判成非法路径。
