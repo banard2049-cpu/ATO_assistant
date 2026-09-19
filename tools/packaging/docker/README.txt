@@ -2,6 +2,7 @@ ATO Assistant Docker Package
 
 Requirements: Docker Desktop or Docker Engine with Compose v2 (the compose file uses
 `bind.create_host_path`, which needs Compose 2.17 or newer).
+For legacy docker-compose v1 (1.21.0+), use compose.legacy.yaml as described below.
 
 A clone of the repository only. Nobody's pictures, audio, or saves travel with it.
 
@@ -44,6 +45,28 @@ Update:
 container instead — `docker build -t ato-assistant:local . && docker compose up -d`.)
 
 The package starts with an empty data directory. Saves remain in ./data.
+
+Legacy docker-compose (including 32-bit Raspberry Pi OS)
+------------------------------------------------------
+Use compose.legacy.yaml next to data/ and app/. It uses version "2.4" and omits
+pull_policy and bind.create_host_path, which v1 does not support. The image, port,
+saves and artwork paths are the same as in compose.yaml. It pulls the published
+image; for a local build, build with docker build and edit its image: line.
+
+Before the first start, app/ss/battle-board.jpg must be a FILE, not a directory.
+Move aside any directory created there by an earlier failed start before running:
+
+  mkdir -p data app/ss
+  touch app/ss/battle-board.jpg
+  docker-compose -f compose.legacy.yaml pull && docker-compose -f compose.legacy.yaml up -d
+
+touch preserves any existing image content. Replace an empty placeholder with your
+real board image later. Visit http://127.0.0.1:8793/ (or use your server's IP).
+
+Update: repeat the pull && up -d command above; up alone may reuse the old image.
+Stop: docker-compose -f compose.legacy.yaml down
+Pin a version: put ATO_VERSION=1.3.6 in .env next to compose.legacy.yaml.
+Always pass -f compose.legacy.yaml; compose.yaml requires Compose v2.
 
 Which parts live on the host
 ----------------------------

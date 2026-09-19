@@ -68,7 +68,7 @@ start-macos.command。电脑端在“分享与安装”中选择 ATO_assistant �
 
 ## Docker（服务器 / NAS）
 
-GHCR 镜像公开可用。SSH 登录服务器后执行这一行即可：
+GHCR 镜像公开可用。已安装 `docker compose`（Compose v2.17+）时，SSH 登录服务器后执行这一行即可；只有 `docker-compose` 的系统请用下方兼容配置：
 
 ~~~
 curl -fsSL https://raw.githubusercontent.com/banard2049-cpu/ATO_assistant/main/tools/install-docker.sh | bash
@@ -83,9 +83,23 @@ docker compose up -d
 
 compose 里的 `pull_policy` 是 `always`：镜像标签 `latest` 会移动，用默认的 `missing` 时 `docker compose pull` 可能认为「本地已有同名镜像」而什么都不拉，更新看起来成功、实际还在跑旧版。代价是 GHCR 不可达时手动 `docker compose up -d` 会报错（已经在跑的容器不受影响）；想固定版本可以在安装目录建一个 `.env`，写上 `ATO_VERSION=1.3.1` 这样的具体版本号。
 
+### 旧版 docker-compose（含 32 位系统）
+
+使用 [compose.legacy.yaml](tools/packaging/docker/compose.legacy.yaml)，要求 `docker-compose` 1.21.0 或更新的 v1 版本（可用 `docker-compose version` 查看）。它使用 `version: "2.4"`，移除了 v1 不支持的 `pull_policy` / `bind.create_host_path`，保留相同的端口、存档和全部素材挂载。
+
+把这份文件复制到安装目录，与 `data/`、`app/` 同级，然后在该目录执行。**首次启动前，`app/ss/battle-board.jpg` 必须是文件**；若之前失败的启动已把它建成目录，先将该目录移走再执行。`touch` 不会清空已有的底图。
+
+~~~bash
+mkdir -p data app/ss
+touch app/ss/battle-board.jpg
+docker-compose -f compose.legacy.yaml pull && docker-compose -f compose.legacy.yaml up -d
+~~~
+
+访问 `http://服务器IP:8793/`。更新仍执行上面的 `pull && up -d`，停止使用 `docker-compose -f compose.legacy.yaml down`。如需固定版本，在同目录的 `.env` 中写 `ATO_VERSION=1.3.6`。所有命令都带 `-f compose.legacy.yaml`，避免旧版工具读到仅供 Compose v2 使用的 `compose.yaml`。
+
 ### 镜像架构与树莓派
 
-公开镜像按 `linux/amd64` 与 `linux/arm/v7` 两个架构发布，同一个标签同时指向两份，Docker 会按本机架构自动挑，不需要写 `--platform`。**32 位 Raspberry Pi OS 用的就是 `linux/arm/v7`**，树莓派 3/4/5 装 32 位系统时直接跑上面那条一键安装命令即可。
+公开镜像按 `linux/amd64` 与 `linux/arm/v7` 两个架构发布，同一个标签同时指向两份，Docker 会按本机架构自动挑，不需要写 `--platform`。**32 位 Raspberry Pi OS 用的就是 `linux/arm/v7`**，树莓派 3/4/5 装 32 位系统时也可使用该镜像；只有 `docker-compose` 时按上面的兼容配置启动，有 Compose v2.17+ 时可使用一键安装命令。
 
 其它架构（`linux/arm64`、`riscv64` 等）没有预构建镜像。一键安装脚本在这种情况下**不会**停在 `no matching manifest`，而是自己取对应版本的源码、用发布镜像那份 Dockerfile 在本机构建（基础镜像 `php:8.4-cli-alpine` 有 arm32v7/arm64 清单，应用是纯静态文件加 PHP 内置服务器，不需要编译任何东西）。这时脚本会把安装目录里的 compose 改成指向本地镜像，并把 `pull_policy` 改成 `never`：镜像不在任何 registry 里，留着 `always` 会去拉一个不存在的东西。以后升级只要重跑一次安装命令。
 
@@ -101,7 +115,7 @@ data/ 和 app/ 下的本地素材目录会挂载到容器，拉取新镜像不�
 
 | 放什么 | 宿主机位置 |
 | --- | --- |
-| 决战版图底图 | `app/ss/battle-board.jpg`（单文件挂载，缺文件会直接报错，不会静默失效） |
+| 决战版图底图 | `app/ss/battle-board.jpg`（单文件挂载；v2 配置缺文件会报错，v1 兼容配置需提前创建文件） |
 | 第二屏地形图 / 地形卡 | `app/ss/terrain/`、`app/ss/terrain-cards/` |
 | 主控台背景音乐 | `app/assets/bgm/audio/`（`.mp3` / `.ogg`，文件名见 [bgm 说明](assets/bgm/README.md)） |
 | 其它本地图片 | `app/map/images/`、`app/technology/images/`、`app/story/images/` 等（见 `compose.yaml`） |

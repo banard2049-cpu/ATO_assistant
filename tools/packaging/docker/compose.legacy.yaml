@@ -1,0 +1,35 @@
+# Docker Compose v1 (docker-compose >= 1.21.0).
+# Save next to the existing data/ and app/ directories, then run:
+#   mkdir -p data app/ss
+#   touch app/ss/battle-board.jpg
+#   docker-compose -f compose.legacy.yaml pull
+#   docker-compose -f compose.legacy.yaml up -d
+# battle-board.jpg must be a FILE, not a directory. Keep an existing real image.
+# v1 cannot use pull_policy or bind.create_host_path; always pull before updating.
+version: "2.4"
+
+services:
+  ato:
+    image: ghcr.io/banard2049-cpu/ato_assistant:${ATO_VERSION:-latest}
+    ports:
+      - "8793:8793"
+    volumes:
+      - ./data:/app/data
+      # The image entrypoint restores program data inside aibp/ps on startup.
+      - ./app/aibp/ps:/app/aibp/ps
+      - ./app/assets/exploration-cards:/app/assets/exploration-cards
+      - ./app/assets/story-doom-cards:/app/assets/story-doom-cards
+      - ./app/assets/bgm/audio:/app/assets/bgm/audio:ro
+      - ./app/hero/assets:/app/hero/assets
+      - ./app/map/images:/app/map/images
+      - ./app/map/tokens:/app/map/tokens
+      - ./app/record/assets:/app/record/assets
+      # Create the placeholder file BEFORE up; v1 otherwise creates a directory.
+      # Only mount artwork so the second-screen program can still update.
+      - ./app/ss/battle-board.jpg:/app/ss/battle-board.jpg:ro
+      - ./app/ss/terrain:/app/ss/terrain:ro
+      - ./app/ss/terrain-cards:/app/ss/terrain-cards:ro
+      - ./app/story/images:/app/story/images
+      - ./app/story/data:/app/story/data:ro
+      - ./app/technology/images:/app/technology/images
+    restart: unless-stopped

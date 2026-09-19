@@ -112,6 +112,7 @@ def build_docker(version: str) -> Path:
     shutil.copy2(docker_source / "Dockerfile", stage / "Dockerfile")
     shutil.copy2(docker_source / "docker-entrypoint.sh", stage / "docker-entrypoint.sh")
     shutil.copy2(docker_source / "compose.yaml", stage / "compose.yaml")
+    shutil.copy2(docker_source / "compose.legacy.yaml", stage / "compose.legacy.yaml")
     shutil.copy2(docker_source / "README.txt", stage / "README-DOCKER.txt")
     audit_export_tree(stage)
     return finish_zip(stage, f"{package_name}.zip")
