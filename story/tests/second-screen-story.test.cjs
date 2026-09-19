@@ -21,6 +21,16 @@ const SS_SOURCE = fs.readFileSync(path.join(__dirname, '../../ss/app.js'), 'utf8
 const STORY_STYLES = fs.readFileSync(path.join(__dirname, '../assets/styles.css'), 'utf8');
 const SCAN = './data/ato-storybook-key-scans/c1-0-0.jpg';
 
+function sourceConst(name) {
+  const match = new RegExp(`const ${name} = "([^"]+)"`).exec(STORY_SOURCE);
+  assert.ok(match, `找不到常量 ${name}`);
+  return match[1];
+}
+
+// 本机没有原书页时阅读器用的那句话，直接取源码里的值，避免测试自己造一份文案。
+const MISSING_SCAN_HINT = sourceConst('MISSING_OFFICIAL_SCAN_HINT');
+assert.match(MISSING_SCAN_HINT, /本地未提供原书页/);
+
 function slice(source, name, indent) {
   // 有的函数是 async 声明的，两种写法都要能找到
   const start = Math.max(
@@ -38,13 +48,15 @@ function storyContext(overrides = {}) {
     activeEntry: { key: 'entry', id: '0001', title: '民间标题', text: '民间正文', chapter: '主线' },
     currentBook: () => ({ id: 'c1', title: '故事书' }),
     officialEntries: new Map(),
+    // 官方数据声明了扫描图但本机没有这张图时，失败过的条目登记在这里。
+    missingOfficialScans: new Set(),
     sectionLabel: { textContent: '主线' },
     storyText: { textContent: '阅读器里的文本' },
     window: { location: { href: 'http://localhost:8080/story/index.html' } },
     URL,
     ...overrides,
   });
-  ['supportsOfficialVersion', 'getDisplayEntry', 'buildSecondScreenStorySnapshot']
+  ['supportsOfficialVersion', 'getDisplayEntry', 'officialScanMissingLocally', 'buildSecondScreenStorySnapshot']
     .forEach(name => vm.runInContext(slice(STORY_SOURCE, name, '  '), context));
   return context;
 }
@@ -166,12 +178,13 @@ test('民间版隐藏第二屏显示图片复选框，官方版才显示', () =>
     activeEntry: { key: 'entry' },
     currentBook: () => ({ id: 'c1' }),
     officialEntries: new Map(),
+    missingOfficialScans: new Set(),
     secondScreenStoryImagesPreference: true,
     SECOND_SCREEN_STORY_CONTENT_TITLE: '官方版有扫描图时，勾选后第二屏显示原书扫描图，取消勾选后显示官方正文',
     secondScreenStoryContentLabel: label,
     secondScreenStoryContentToggle: toggle,
   });
-  ['supportsOfficialVersion', 'activeOfficialScan', 'refreshSecondScreenStoryContentToggle']
+  ['supportsOfficialVersion', 'activeOfficialScan', 'officialScanMissingLocally', 'refreshSecondScreenStoryContentToggle']
     .forEach(name => vm.runInContext(slice(STORY_SOURCE, name, '  '), ctx));
 
   ctx.refreshSecondScreenStoryContentToggle(true);
@@ -331,4 +344,109 @@ test('模式切换失败时把服务端原因交回调用方（以前只回 true
 
   const saved = await vm.runInContext('setSecondScreenMode("story")', modeContext({}, 200));
   assert.deepEqual(JSON.parse(JSON.stringify(saved)), { ok: true, error: '' });
+});
+
+test('阅读器渲染的扫描图带兜底钩子，图取不到时换成同一句说明', () => {
+  // 民间版资源包不带官方版故事书截图：官方数据里仍然声明着扫描图，本地却没有这张
+  // 原书页。这时阅读器不能只留一个加载失败的方框。
+  const calls = { refresh: 0, schedule: 0 };
+  const ctx = vm.createContext({
+    storyVersion: '官方版',
+    currentBook: () => ({ id: 'c1' }),
+    officialEntries: new Map([['c1:entry', { officialScan: { src: SCAN, status: 'exact' } }]]),
+    missingOfficialScans: new Set(),
+    MISSING_OFFICIAL_SCAN_HINT: MISSING_SCAN_HINT,
+    secondScreenStoryModeToggle: { checked: true },
+    refreshSecondScreenStoryContentToggle: () => { calls.refresh += 1; },
+    scheduleSecondScreenStorySnapshot: () => { calls.schedule += 1; },
+  });
+  ['supportsOfficialVersion', 'escapeHtml', 'officialScanHintHtml', 'renderOfficialScan', 'handleStoryImageError']
+    .forEach(name => vm.runInContext(slice(STORY_SOURCE, name, '  '), ctx));
+
+  const html = ctx.renderOfficialScan({ key: 'entry', title: '民间标题' });
+  assert.match(html, /data-supplement-scan="c1:entry"/);
+  assert.match(html, /data-supplement-scan-hint/);
+  assert.match(html, /data-page-viewer/);
+
+  // 模拟这块 DOM：加载失败的是块里的 img，块自己带着登记键。
+  const block = {
+    replaced: '',
+    getAttribute: name => (name === 'data-supplement-scan' ? 'c1:entry' : null),
+    set outerHTML(value) { this.replaced = value; },
+  };
+  const image = { closest: selector => (selector === '[data-supplement-scan]' ? block : null) };
+  assert.equal(ctx.handleStoryImageError({ target: image }), true);
+  assert.ok(block.replaced.includes(MISSING_SCAN_HINT), '整块应换成「本地未提供原书页」的说明');
+  assert.equal([...ctx.missingOfficialScans].join(), 'c1:entry');
+  // 提示语换了口径，勾选框和第二屏快照都要跟着重算、重发
+  assert.equal(calls.refresh, 1);
+  assert.equal(calls.schedule, 1);
+
+  // 再渲染同一个条目时不再发那个必然失败的图片请求
+  const again = ctx.renderOfficialScan({ key: 'entry', title: '民间标题' });
+  assert.doesNotMatch(again, /<img/);
+  assert.ok(again.includes(MISSING_SCAN_HINT));
+
+  // 别的图（战斗插图等）加载失败不归这里管，它们各自有 onerror 处理。
+  assert.equal(ctx.handleStoryImageError({ target: { closest: () => null } }), false);
+  assert.equal(ctx.handleStoryImageError({ target: null }), false);
+
+  // 没声明扫描图时仍然只给一句提示，不产生会加载失败的 img。
+  ctx.missingOfficialScans.clear();
+  ctx.officialEntries = new Map([['c1:entry', { officialScan: null }]]);
+  const emptyHtml = ctx.renderOfficialScan({ key: 'entry', title: '民间标题' });
+  assert.match(emptyHtml, /该条目暂无对应的官方扫描图。/);
+  assert.doesNotMatch(emptyHtml, /<img/);
+});
+
+test('扫描图本机缺失时勾选框只说没有这张图', () => {
+  const label = {
+    hidden: false,
+    title: '',
+    classList: { remove() {}, toggle() {} },
+  };
+  const toggle = { checked: true, disabled: false };
+  const ctx = vm.createContext({
+    storyVersion: '官方版',
+    activeEntry: { key: 'entry' },
+    currentBook: () => ({ id: 'c1' }),
+    officialEntries: new Map([['c1:entry', { officialScan: { src: SCAN } }]]),
+    missingOfficialScans: new Set(['c1:entry']),
+    secondScreenStoryImagesPreference: true,
+    SECOND_SCREEN_STORY_CONTENT_TITLE: '官方版有扫描图时，勾选后第二屏显示原书扫描图，取消勾选后显示官方正文',
+    secondScreenStoryContentLabel: label,
+    secondScreenStoryContentToggle: toggle,
+  });
+  ['supportsOfficialVersion', 'activeOfficialScan', 'officialScanMissingLocally', 'refreshSecondScreenStoryContentToggle']
+    .forEach(name => vm.runInContext(slice(STORY_SOURCE, name, '  '), ctx));
+
+  ctx.refreshSecondScreenStoryContentToggle(true);
+  assert.equal(label.hidden, false);
+  // 数据里有图、本机没有：勾选要弹回去并禁用，提示语也要说实话
+  assert.equal(toggle.checked, false);
+  assert.equal(toggle.disabled, true);
+  assert.match(label.title, /本机没有这张原书扫描图/);
+});
+
+test('扫描图本机缺失时快照改发官方正文', () => {
+  const ctx = storyContext({
+    storyVersion: '官方版',
+    officialEntries: new Map([['c1:entry', {
+      officialTitle: '官方标题',
+      officialText: '官方正文',
+      officialStatus: 'ready',
+      officialScan: { src: SCAN, status: 'exact' },
+    }]]),
+    missingOfficialScans: new Set(['c1:entry']),
+  });
+  const snapshot = ctx.buildSecondScreenStorySnapshot();
+  assert.equal(snapshot.imagesOnly, false);
+  assert.deepEqual([...snapshot.images], []);
+  assert.equal(snapshot.text, '官方正文');
+  assert.equal(snapshot.title, '官方标题');
+});
+
+test('阅读器在捕获阶段接管扫描图加载失败', () => {
+  // error 事件不冒泡：漏了捕获阶段，兜底函数就永远不会被调用。
+  assert.match(STORY_SOURCE, /storyText\.addEventListener\("error", handleStoryImageError, true\)/);
 });

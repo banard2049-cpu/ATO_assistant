@@ -11,7 +11,7 @@
 2b. 第二层防线独立成立：``faces = ".."``（``PurePosixPath("..").name`` 仍是 ``".."``）以及
    带盘符/UNC 的写法，即使清单校验被绕过，也不能让渲染路径落到渲染目录之外，
    压缩包成员名也不能跑出资料包；
-3. 内置清单（2774 条 / 4296 个目标）里的合法目标仍然全部导出、安装 —— 防止修安全
+3. 内置清单（2775 条 / 4297 个目标）里的合法目标仍然全部导出、安装 —— 防止修安全
    问题时把正常素材一起挡掉；
 4. 成员字节与 manifest 声明的 sha256 不符时必须导入失败（否则会静默指向库里另一张图）；
 5. 失败的导入不留 library/tmp 临时文件，也不改清单。
@@ -276,9 +276,9 @@ class HostilePackSafetyTests(unittest.TestCase):
         """内置清单的合法目标必须照旧通过校验、导出、安装。"""
         ensure_fixed_catalog(self.db)
         rows = self.db.all("SELECT id,faces_json FROM catalog_items")
-        self.assertEqual(2774, len(rows))
+        self.assertEqual(2775, len(rows))
         targets = [target for row in rows for target in json.loads(row["faces_json"]).values()]
-        self.assertEqual(4296, len(targets))
+        self.assertEqual(4297, len(targets))
         rejected = []
         for target in targets:
             try:

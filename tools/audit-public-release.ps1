@@ -46,6 +46,8 @@ $allowedPaths = @(
   'assets/bgm/manifest.js',
   'assets/campaign-session.js',
   'assets/exploration-card-rules.js',
+  'assets/exploration-card-resource-rules.js',
+  'assets/exploration-card-resources.js',
   'assets/exploration-card-tags.js',
   'assets/page-focus-router.js',
   'assets/story-doom-card-data.js',

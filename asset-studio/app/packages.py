@@ -90,6 +90,8 @@ def export_package(
     filters = filters or {}
     cycles = set(filters.get("cycles") or [])
     modules = set(filters.get("modules") or [])
+    # 官方版故事书截图默认不进包：民间版资源包只带官方故事书数据（官方版正文）。
+    official_scans = bool(filters.get("official_scans", False))
     rows = db.all("""
       SELECT a.*,c.cycle,c.module,c.subgroup,c.name,c.number,c.faces_json
       FROM asset_revisions a JOIN catalog_items c ON c.id=a.item_id
@@ -162,8 +164,8 @@ def export_package(
         if entity_index:
             archive.writestr(ENTITY_INDEX_MEMBER, entity_index.json_bytes)
         if filters.get("include_stories", True):
-            official_root = ato_root if collect(ato_root) else library / LIBRARY
-            add_to_archive(archive, manifest, official_root)
+            official_root = ato_root if collect(ato_root, include_scans=official_scans) else library / LIBRARY
+            add_to_archive(archive, manifest, official_root, include_scans=official_scans)
         if filters.get("include_bgm", True):
             add_bgm_to_archive(archive, manifest, ato_root, fallback_library=library)
         archive.writestr("manifest.json", json.dumps(manifest, ensure_ascii=False, indent=2))
@@ -588,6 +590,8 @@ def export_compat(
     filters = filters or {}
     cycles = set(filters.get("cycles") or [])
     modules = set(filters.get("modules") or [])
+    # 官方版故事书截图默认不进包：民间版资源包只带官方故事书数据（官方版正文）。
+    official_scans = bool(filters.get("official_scans", False))
     rows = db.all("""
       SELECT a.*,c.cycle,c.module,c.faces_json FROM asset_revisions a JOIN catalog_items c ON c.id=a.item_id
       WHERE a.is_current=1 ORDER BY c.sort_order
@@ -639,8 +643,8 @@ def export_compat(
             archive.writestr(ENTITY_INDEX_JSON_TARGET, entity_index.json_bytes)
             archive.writestr(ENTITY_INDEX_JS_TARGET, entity_index_javascript(entity_index))
         if filters.get("include_stories", True):
-            official_root = ato_root if collect(ato_root) else library / LIBRARY
-            for target, source in collect(official_root):
+            official_root = ato_root if collect(ato_root, include_scans=official_scans) else library / LIBRARY
+            for target, source in collect(official_root, include_scans=official_scans):
                 archive.write(source, target)
                 written += 1
         bgm_written = 0

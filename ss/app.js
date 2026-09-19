@@ -345,7 +345,8 @@ function storyScanImages(story) {
     const relative = url.pathname.startsWith("/android_asset/web/")
       ? url.pathname.slice("/android_asset/web".length)
       : url.pathname;
-    if (!relative.includes("/story/data/ato-storybook-key-scans/")) continue;
+    // 路径大小写不敏感：扫描图文件名的大小写由本地导出决定，别因此漏掉第二屏配图。
+    if (!relative.toLowerCase().includes("/story/data/ato-storybook-key-scans/")) continue;
     scans.push(new URL(relative, base).href);
   }
   return scans;

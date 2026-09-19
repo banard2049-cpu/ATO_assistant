@@ -60,10 +60,12 @@ function storySnapshotContext(locationHref) {
     sectionLabel: { textContent: '主线' },
     storyText: { textContent: '阅读器里的文本' },
     secondScreenStoryContentToggle: { checked: true },
+    // 官方数据声明了扫描图但本机没有这张图时，加载失败过的条目登记在这里。
+    missingOfficialScans: new Set(),
     window: { location: { href: locationHref } },
     URL,
   });
-  ['supportsOfficialVersion', 'getDisplayEntry', 'buildSecondScreenStorySnapshot']
+  ['supportsOfficialVersion', 'getDisplayEntry', 'officialScanMissingLocally', 'buildSecondScreenStorySnapshot']
     .forEach((name) => vm.runInContext(extract(STORY_SOURCE, name, '  '), context));
   return context;
 }
@@ -134,8 +136,8 @@ function serverAssetCandidates(pathname) {
   const relative = pathname.startsWith('/') ? pathname.slice(1) : pathname;
   return { atopackKey: relative, apkAsset: `web/${relative}` };
 }
-// AtopackStore.java:165 允许收进资料包的官方扫描图键
-const SCAN_KEY_RE = /^story\/data\/ato-storybook-key-scans\/c[123]-[A-Za-z0-9_-]+\.jpg$/;
+// AtopackStore.java:165 允许收进资料包的官方扫描图键（后缀 .jpg/.jpeg/.png/.webp，大小写不敏感）
+const SCAN_KEY_RE = /^story\/data\/ato-storybook-key-scans\/c[123]-[A-Za-z0-9_-]+\.(?:jpg|jpeg|png|webp)$/i;
 
 const ss = ssStoryContext('http://192.168.1.5/ss/index.html', 'http://192.168.1.5');
 const resolved = [...ss.storyScanImages(androidSnapshot)];
@@ -234,6 +236,16 @@ async function main() {
 
   await check('跨站绝对地址仍然一律忽略', () => {
     assert.deepEqual([...ss.storyScanImages({ images: ['https://other.example/story/data/ato-storybook-key-scans/c1-0-0.jpg'] })], []);
+  });
+
+  await check('扫描图路径大小写不同也照样认（.JPG / 大写目录）', () => {
+    assert.deepEqual(
+      [...ss.storyScanImages({ images: ['/story/data/ato-storybook-key-scans/C1-0-0.JPG'] })],
+      ['http://192.168.1.5/story/data/ato-storybook-key-scans/C1-0-0.JPG']);
+    assert.deepEqual(
+      [...ss.storyScanImages({ images: ['/STORY/DATA/ATO-STORYBOOK-KEY-SCANS/c2-15-3.PNG'] })],
+      ['http://192.168.1.5/STORY/DATA/ATO-STORYBOOK-KEY-SCANS/c2-15-3.PNG']);
+    assert.match('story/data/ato-storybook-key-scans/C1-0-0.JPG', SCAN_KEY_RE);
   });
 
   await check('扫描图加载失败时退回快照带的正文', () => {

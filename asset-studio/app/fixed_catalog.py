@@ -1100,6 +1100,16 @@ def fixed_catalog_payload() -> dict[str, Any]:
             name="恶毒 / Vicious（通用 Trait）", number="COMMON_TR_001", sort_order=50_102,
             faces={"front": "aibp/ps/other/trait/COMMON_TR_001.jpg"},
         ),
+        # 逆行动量（CT1326）：应用里只在 C3 Boss 的 Trait 列表可选
+        # （aibp/index.html 的 commonTraitTitles[2] 与 isCommonTraitAvailable），
+        # 图片路径由 commonTraitSrc() 拼成 ps/other/trait/COMMON_TR_002.jpg，
+        # 但清单此前漏登记，导致素材库不提示拍摄、打包也带不上它。
+        CatalogItem(
+            id=make_id("common", "AIBP", "通用 Trait", "COMMON_TR_002", "Reverse Momentum"),
+            cycle="common", module="AIBP", subgroup="通用 Trait",
+            name="逆行动量 / Reverse Momentum（通用 Trait）", number="COMMON_TR_002", sort_order=50_103,
+            faces={"front": "aibp/ps/other/trait/COMMON_TR_002.jpg"},
+        ),
     ))
 
     for order, (cycle, subgroup, number, title) in enumerate(CYCLE_TRAIT_CARDS):
@@ -1110,7 +1120,7 @@ def fixed_catalog_payload() -> dict[str, Any]:
             subgroup=subgroup,
             name=f"{title}（{subgroup}）",
             number=number,
-            sort_order=50_103 + order,
+            sort_order=50_104 + order,
             faces={"front": f"aibp/ps/other/trait/{number}.jpg"},
         ))
 

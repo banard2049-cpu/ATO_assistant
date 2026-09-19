@@ -54,6 +54,10 @@
   const SECOND_SCREEN_SNAPSHOT_ATTEMPTS = 3;
   const SECOND_SCREEN_STORY_MODE_TITLE = "勾选后第二屏显示当前故事文本，取消勾选后显示地图";
   const SECOND_SCREEN_STORY_CONTENT_TITLE = "官方版有扫描图时，勾选后第二屏显示原书扫描图，取消勾选后显示官方正文";
+  const MISSING_OFFICIAL_SCAN_HINT = "该条目暂无对应的官方扫描图（本地未提供原书页）。";
+  // 官方数据声明了扫描图，不等于本机真有这张原书页（民间版资源包不带扫描图）。加载失败过
+  // 的条目登记在这里：之后不再渲染会失败的 img，勾选框和第二屏快照也按「没有扫描图」处理。
+  const missingOfficialScans = new Set();
   let secondScreenSnapshotTimer = null;
   let secondScreenSnapshotFailure = "";
   let secondScreenModeFailure = "";
@@ -2664,6 +2668,11 @@
     return officialEntries.get(`${currentBook()?.id}:${entry.key}`)?.officialScan || null;
   }
 
+  // 声明了扫描图不等于本机真有这张图：加载失败过的条目一律按「没有扫描图」处理。
+  function officialScanMissingLocally(entry = activeEntry) {
+    return missingOfficialScans.has(`${currentBook()?.id}:${entry?.key}`);
+  }
+
   function refreshSecondScreenStoryContentToggle(storyMode = false) {
     if (!secondScreenStoryContentLabel || !secondScreenStoryContentToggle) return;
     const officialVersion = storyVersion === "官方版" && supportsOfficialVersion();
@@ -2675,15 +2684,19 @@
       return;
     }
 
-    const hasScan = Boolean(activeOfficialScan()?.src);
+    const scan = activeOfficialScan();
+    const missingLocally = officialScanMissingLocally();
+    const hasScan = Boolean(scan?.src) && !missingLocally;
     secondScreenStoryContentToggle.checked = hasScan && secondScreenStoryImagesPreference;
     secondScreenStoryContentToggle.disabled = !storyMode || !hasScan;
     secondScreenStoryContentLabel.classList.toggle("disabled", !storyMode || !hasScan);
-    secondScreenStoryContentLabel.title = !hasScan
+    secondScreenStoryContentLabel.title = !scan?.src
       ? "当前官方条目没有对应的扫描图，只能显示官方正文"
-      : storyMode
-        ? SECOND_SCREEN_STORY_CONTENT_TITLE
-        : "请先开启第二屏故事文本模式，再切换图片或文字";
+      : missingLocally
+        ? "本机没有这张原书扫描图，第二屏会改为显示官方正文"
+        : storyMode
+          ? SECOND_SCREEN_STORY_CONTENT_TITLE
+          : "请先开启第二屏故事文本模式，再切换图片或文字";
   }
 
   function toggleSecondScreenStoryContent() {
@@ -2702,11 +2715,39 @@
 
   function renderOfficialScan(entry) {
     if (storyVersion !== "官方版" || !supportsOfficialVersion()) return "";
-    const scan = officialEntries.get(`${currentBook()?.id}:${entry.key}`)?.officialScan;
-    if (!scan?.src) return '<div class="supplement-gallery-hint">该条目暂无对应的官方扫描图。</div>';
+    const scanKey = `${currentBook()?.id}:${entry.key}`;
+    const scan = officialEntries.get(scanKey)?.officialScan;
+    if (!scan?.src) return officialScanHintHtml("", "该条目暂无对应的官方扫描图。");
+    // 已经知道本机没有这张图时不再渲染 img：反复发一个必然失败的请求没有意义。
+    if (missingOfficialScans.has(scanKey)) return officialScanHintHtml(scanKey, MISSING_OFFICIAL_SCAN_HINT);
     const note = scan.status === "title-only" ? "（仅定位标题）"
       : scan.status === "page-context" ? "（含完整原页上下文）" : "";
-    return `<div class="supplement-gallery-hint">官方扫描图${note} · 点击放大查看</div><div class="battle-gallery supplement-gallery"><img class="battle-page zoomable-page" src="${escapeHtml(scan.src)}" alt="${escapeHtml(entry.title)} 官方扫描图" loading="lazy" data-page-viewer tabindex="0" role="button" title="点击放大查看原书页"></div>`;
+    // 声明了扫描图不等于本地真有这张图：民间版资源包不带原书扫描图，图也可能没跟着
+    // 项目走。这一块整体包在 data-supplement-scan 里，图加载失败时由
+    // handleStoryImageError 换成同一句说明，而不是留一个破图。
+    return `<div class="supplement-scan" data-supplement-scan="${escapeHtml(scanKey)}"><div class="supplement-gallery-hint" data-supplement-scan-hint>官方扫描图${note} · 点击放大查看</div><div class="battle-gallery supplement-gallery"><img class="battle-page zoomable-page" src="${escapeHtml(scan.src)}" alt="${escapeHtml(entry.title)} 官方扫描图" loading="lazy" data-page-viewer tabindex="0" role="button" title="点击放大查看原书页"></div></div>`;
+  }
+
+  // 扫描图那一块的提示语：有 data-supplement-scan 属性时就是「这块图加载失败过」的登记键。
+  function officialScanHintHtml(scanKey, message) {
+    const attribute = scanKey ? ` data-supplement-scan="${escapeHtml(scanKey)}"` : "";
+    return `<div class="supplement-scan"${attribute}><div class="supplement-gallery-hint" data-supplement-scan-hint>${message}</div></div>`;
+  }
+
+  // 官方扫描图取不到（民间版资源包不带原书扫描图、原书页没跟项目走，或图被删了）时，
+  // 把整块扫描图换成说法一致的提示：第二屏那边本来就会退回正文，阅读器这边也不能只剩
+  // 一个加载失败的方框。这条还要记下来，否则「第二屏显示原书扫描图」勾选框会一直以为
+  // 有图。图片的 error 事件不冒泡，所以监听要开捕获阶段。
+  function handleStoryImageError(event) {
+    const image = event?.target;
+    const block = image?.closest?.("[data-supplement-scan]");
+    if (!block) return false;
+    const scanKey = block.getAttribute?.("data-supplement-scan") || "";
+    if (scanKey) missingOfficialScans.add(scanKey);
+    block.outerHTML = officialScanHintHtml(scanKey, MISSING_OFFICIAL_SCAN_HINT);
+    refreshSecondScreenStoryContentToggle(Boolean(secondScreenStoryModeToggle?.checked));
+    scheduleSecondScreenStorySnapshot();
+    return true;
   }
 
   function supportsOfficialVersion(book = currentBook()) {
@@ -2740,7 +2781,9 @@
     const imagesOnly = storyVersion === "官方版"
       && supportsOfficialVersion()
       && showOfficialScan
-      && Boolean(scan?.src);
+      && Boolean(scan?.src)
+      // 本机已经没有这张图（加载失败过）时改发官方正文：别再让第二屏去取一张取不到的图。
+      && !officialScanMissingLocally();
     // 快照要给 file://（Android 的 APK 内）和 http://（第二屏）两侧用同一份资源路径，
     // 所以只存应用相对路径：Android 里故事页是 file:///android_asset/web/story/index.html，
     // 直接存 pathname 会带上 /android_asset/web 前缀，第二屏按 HTTP 根去找就变成
@@ -3858,6 +3901,9 @@
     event.preventDefault();
     openPageViewer(pageTarget);
   });
+
+  // 扫描图加载失败要能兜底，error 不冒泡所以用捕获阶段（见 handleStoryImageError）。
+  storyText.addEventListener("error", handleStoryImageError, true);
 
   ["pointerenter", "pointerdown", "focusin"].forEach((eventName) => {
     storyText.addEventListener(eventName, (event) => {

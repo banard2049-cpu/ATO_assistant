@@ -825,34 +825,6 @@
       justify-content: end;
     }
 
-    .exploration-buttons button {
-      min-height: 36px;
-    }
-
-    .exploration-return-preview {
-      position: absolute;
-      z-index: 4;
-      width: min(520px, calc(100vw - 36px));
-      max-height: min(520px, 60vh);
-      overflow: auto;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 10px;
-      background: #fff;
-      box-shadow: var(--shadow);
-    }
-
-    .exploration-return-preview[hidden] {
-      display: none;
-    }
-
-    .exploration-return-preview-title {
-      margin-bottom: 8px;
-      color: var(--ink);
-      font-size: 13px;
-      font-weight: 900;
-    }
-
     .exploration-summary {
       display: grid;
       gap: 5px;
@@ -899,12 +871,6 @@
       list-style-position: inside;
     }
 
-    .exploration-drawn-title {
-      color: var(--ink);
-      font-size: 13px;
-      font-weight: 900;
-    }
-
     .exploration-drawn-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
@@ -915,10 +881,6 @@
     .exploration-active-grid {
       grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
       gap: 12px;
-    }
-
-    .exploration-active-grid .exploration-drawn-meta {
-      font-size: 12px;
     }
 
     .exploration-drawn-card {
@@ -938,29 +900,68 @@
       box-shadow: 0 6px 14px rgba(28, 38, 34, 0.12);
     }
 
-    .exploration-drawn-meta {
-      color: var(--muted);
-      font-size: 11px;
-      font-weight: 800;
-      line-height: 1.25;
-      overflow-wrap: anywhere;
-    }
-
-    .exploration-card-tag {
-      display: inline-flex;
-      margin-top: 3px;
-      border-radius: 999px;
-      padding: 2px 6px;
-      background: #edf3f1;
-      color: #50645e;
-      font-size: 10px;
-      font-weight: 900;
-    }
-
     .exploration-destruction {
       border: 1px solid rgba(157, 51, 44, 0.2);
       border-radius: 7px;
       background: #fff8f5;
+    }
+
+    .exploration-settle {
+      display: grid;
+      gap: 5px;
+      margin-top: 6px;
+      border-top: 1px dashed rgba(30, 38, 35, 0.18);
+      padding-top: 6px;
+    }
+
+    .exploration-settle-status {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .exploration-settle-status strong {
+      color: #18734b;
+    }
+
+    .exploration-settle-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .exploration-settle-actions button {
+      border: 1px solid rgba(24, 115, 75, 0.35);
+      border-radius: 999px;
+      padding: 3px 8px;
+      background: #eef7f2;
+      color: #16623f;
+      font: inherit;
+      font-size: 10px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .exploration-settle-actions button.secondary {
+      border-color: rgba(30, 38, 35, 0.25);
+      background: #f2f5f3;
+      color: #46574f;
+    }
+
+    .exploration-settle-actions button:disabled {
+      cursor: default;
+      opacity: 0.55;
+    }
+
+    .exploration-settle-manual {
+      margin: 0;
+      padding-left: 14px;
+      color: #8a5a12;
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1.35;
     }
 
     .exploration-destruction summary {
@@ -1330,7 +1331,7 @@
     }
 
     .card-track-dialog {
-      width: min(1240px, calc(100vw - 28px));
+      width: min(1440px, calc(100vw - 28px));
       max-height: min(920px, calc(100vh - 28px));
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -1383,7 +1384,7 @@
     }
 
     .card-track-dialog[data-group="story"] .card-track-body {
-      grid-template-columns: minmax(620px, 1fr) minmax(260px, 340px);
+      grid-template-columns: minmax(760px, 1fr) minmax(240px, 300px);
     }
 
     .card-track-dialog[data-group="doom"] .card-track-body {
@@ -1392,12 +1393,13 @@
     }
 
     .card-track-dialog[data-group="doom"] .card-track-item {
-      width: min(100%, 720px);
+      width: min(100%, 1080px);
     }
 
+    /* 和故事卡同宽：灾难卡面不能比故事卡小。容器留够 1px 边框 + 10px 内边距。 */
     .card-track-dialog[data-group="doom"] .card-track-face,
     .card-track-dialog[data-group="doom"] .card-track-empty {
-      width: min(100%, 620px);
+      width: min(100%, 1040px);
     }
 
     .card-track-item {
@@ -1426,7 +1428,7 @@
     }
 
     .card-track-face {
-      width: min(100%, 920px);
+      width: min(100%, 1040px);
       justify-self: center;
       aspect-ratio: 1.4;
       overflow: hidden;
@@ -1493,7 +1495,7 @@
     }
 
     .card-track-empty {
-      width: min(100%, 920px);
+      width: min(100%, 1040px);
       justify-self: center;
       aspect-ratio: 1.4;
       display: grid;
@@ -1628,6 +1630,36 @@
     .step-actions a:hover {
       border-color: var(--accent);
       color: var(--accent);
+    }
+
+    /* 宿敌控制按钮紧跟在探索步骤的 Map 按钮后面，与第二屏幕开关无关。 */
+    .nemesis-step-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    /* 步骤内的紧凑操作按钮：步骤标题行里的入口按钮（宿敌、进入下一天…）
+       和探索卡工具区的按钮共用，保证同一屏里按钮尺寸一致。
+       探索卡工具区新增按钮时记得挂上这个 class；破坏卡组的「移回」
+       （.exploration-destruction-card button）和探索卡库的「加入破坏」
+       （.exploration-library button）是更小的内联控件，故意不参与统一。 */
+    .step-action-button {
+      min-height: 30px;
+      padding: 0 10px;
+      font-size: 12px;
+      line-height: 1.18;
+    }
+
+    .nemesis-step-status {
+      margin-top: 6px;
+    }
+
+    /* 没有命令结果时整行收起，不留空白；有结果时才撑开显示。 */
+    .nemesis-step-status:empty {
+      min-height: 0;
+      margin-top: 0;
     }
 
     .step-action-context {
@@ -2268,6 +2300,8 @@
   <script src="./assets/story-doom-card-data.js"></script>
   <script src="./assets/exploration-card-tags.js"></script>
   <script src="./assets/exploration-card-rules.js"></script>
+  <script src="./assets/exploration-card-resource-rules.js"></script>
+  <script src="./assets/exploration-card-resources.js"></script>
   <script src="./map/map-tile-tags.js?v=20260730-c4-oasis-tag"></script>
   <script src="./map/map-data.js?v=20260730-cycle-labels"></script>
   <script src="./cycle-symbols.js?v=20260918"></script>
@@ -4264,6 +4298,7 @@
         destructionByCycle: isPlainObject(value?.destructionByCycle) ? value.destructionByCycle : {},
         destructionCardIdsByCycle: isPlainObject(value?.destructionCardIdsByCycle) ? value.destructionCardIdsByCycle : {},
         acclimationsByCycle: isPlainObject(value?.acclimationsByCycle) ? value.acclimationsByCycle : {},
+        settledByCycle: isPlainObject(value?.settledByCycle) ? value.settledByCycle : {},
       };
     }
 
@@ -4719,6 +4754,9 @@
         window.alert("探索牌堆已空。请将暂时移出的牌放回，或重新配置探索牌组。");
         return;
       }
+      // A new draw starts a new settlement round: the previous round's
+      // "已结算" marks must not silence the button for the same card today.
+      clearExplorationSettlements(currentCycleConfig().id);
 
       const result = window.ATO_EXPLORATION_RULES.drawTwoPiles(
         drawState.drawPile,
@@ -4890,7 +4928,7 @@
       title.textContent = `破坏卡组（${destructionPileIds.length}）`;
       const addButton = document.createElement("button");
       addButton.type = "button";
-      addButton.className = "danger";
+      addButton.className = "danger step-action-button";
       addButton.textContent = "随机加入破坏卡";
       addButton.disabled = destructionPileIds.length === 0;
       addButton.addEventListener("click", addRandomDestructionCard);
@@ -6859,68 +6897,98 @@
       return escapeHtml(desc).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
     }
 
+    // 宿敌控制按钮挂在探索步骤的 Map 按钮后面，不跟随第二屏幕开关。
+    function createNemesisStepTools(stepId) {
+      if (stepId !== "explore" || !currentCycleConfig().map) return null;
+      const group = document.createElement("div");
+      group.className = "nemesis-step-buttons";
+      group.innerHTML = `
+        <button type="button" class="step-action-button" data-map-command="spawn-nemesis">生成宿敌</button>
+        <button type="button" class="secondary step-action-button" data-map-command="chase-nemesis">追击 1 格</button>
+      `;
+      return group;
+    }
+
+    // 第七步（灾祸 / 末日）在特殊事件后面补一个进入下一天，省得再回到顶部日期区。
+    function createNextDayStepButton(stepId) {
+      if (stepId !== "doom") return null;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "step-action-button";
+      button.textContent = "进入下一天";
+      button.title = "结清今日流程并推进到时间表的下一天";
+      button.addEventListener("click", () => {
+        nextDay();
+        scrollPageToTopAfterNextDay();
+      });
+      return button;
+    }
+
+    // 进入下一天会把勾选清空，接下来要从第一步（移动和时间表）重新开始，
+    // 所以一律把页面带回最顶端，不做可见性判断。
+    function scrollPageToTopAfterNextDay() {
+      // 等这一天渲染完、页面高度稳定后再滚，免得滚完又被新布局拉回去。
+      window.requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+      });
+    }
+
+    function createMapStepStatus(stepId) {
+      const status = document.createElement("div");
+      status.className = stepId === "explore"
+        ? "map-command-status nemesis-step-status"
+        : "map-command-status";
+      // 探索步骤不显示静态提示，这里只作为宿敌命令结果的反馈区（空着时不占位）。
+      status.textContent = stepId === "move"
+        ? "移动到未揭示目标时，会自动标记为已探索。"
+        : "";
+      return status;
+    }
+
     function createMapStepTools(stepId) {
-      if (!secondScreenEnabled || !currentCycleConfig().map || (stepId !== "move" && stepId !== "explore")) return null;
+      if (!secondScreenEnabled || !currentCycleConfig().map || stepId !== "move") return null;
       const wrapper = document.createElement("div");
       wrapper.className = "map-step-tools";
 
-      if (stepId === "move") {
-        const group = document.createElement("div");
-        group.className = "map-step-group";
-        group.innerHTML = `
-          <span class="map-step-label">移动阿尔戈号</span>
-          <div class="argo-direction-pad" aria-label="阿尔戈号方向移动">
-            <button type="button" class="secondary" data-map-direction="up" aria-label="向上移动">↑</button>
-            <button type="button" class="secondary" data-map-direction="down" aria-label="向下移动">↓</button>
-            <button type="button" class="secondary" data-map-direction="left" aria-label="向左移动">←</button>
-            <button type="button" class="secondary" data-map-direction="right" aria-label="向右移动">→</button>
-          </div>
-        `;
-        wrapper.appendChild(group);
+      const group = document.createElement("div");
+      group.className = "map-step-group";
+      group.innerHTML = `
+        <span class="map-step-label">移动阿尔戈号</span>
+        <div class="argo-direction-pad" aria-label="阿尔戈号方向移动">
+          <button type="button" class="secondary" data-map-direction="up" aria-label="向上移动">↑</button>
+          <button type="button" class="secondary" data-map-direction="down" aria-label="向下移动">↓</button>
+          <button type="button" class="secondary" data-map-direction="left" aria-label="向左移动">←</button>
+          <button type="button" class="secondary" data-map-direction="right" aria-label="向右移动">→</button>
+        </div>
+      `;
+      wrapper.appendChild(group);
 
-        if (currentCycleConfig().id === "c5") {
-          const flipGroup = document.createElement("div");
-          flipGroup.className = "map-step-group";
-          flipGroup.innerHTML = `
-            <span class="map-step-label">C5 地图</span>
-            <div class="map-step-buttons">
-              <button type="button" class="secondary" data-map-command="flip-c5-tile">当前板块翻面</button>
-            </div>
-          `;
-          wrapper.appendChild(flipGroup);
-        }
-
-        if (currentCycleConfig().id === "c3") {
-          const specialGroup = document.createElement("div");
-          specialGroup.className = "map-step-group c3-special-group";
-          specialGroup.innerHTML = `
-            <span class="map-step-label">C3 特殊连接</span>
-            <div class="map-step-buttons" data-c3-special-buttons>
-              <span class="map-command-status">正在读取连接…</span>
-            </div>
-          `;
-          wrapper.appendChild(specialGroup);
-          window.setTimeout(() => renderC3SpecialButtons(specialGroup.querySelector("[data-c3-special-buttons]")), 0);
-        }
-      } else {
-        const group = document.createElement("div");
-        group.className = "map-step-group";
-        group.innerHTML = `
-          <span class="map-step-label">宿敌</span>
+      if (currentCycleConfig().id === "c5") {
+        const flipGroup = document.createElement("div");
+        flipGroup.className = "map-step-group";
+        flipGroup.innerHTML = `
+          <span class="map-step-label">C5 地图</span>
           <div class="map-step-buttons">
-            <button type="button" data-map-command="spawn-nemesis">生成宿敌</button>
-            <button type="button" class="secondary" data-map-command="chase-nemesis">追击 1 格</button>
+            <button type="button" class="secondary" data-map-command="flip-c5-tile">当前板块翻面</button>
           </div>
         `;
-        wrapper.appendChild(group);
+        wrapper.appendChild(flipGroup);
       }
 
-      const status = document.createElement("div");
-      status.className = "map-command-status";
-      status.textContent = stepId === "move"
-        ? "移动到未揭示目标时，会自动标记为已探索。"
-        : "生成在距离阿尔戈号 4 格处；追击沿已揭示路线前进 1 格。";
-      wrapper.appendChild(status);
+      if (currentCycleConfig().id === "c3") {
+        const specialGroup = document.createElement("div");
+        specialGroup.className = "map-step-group c3-special-group";
+        specialGroup.innerHTML = `
+          <span class="map-step-label">C3 特殊连接</span>
+          <div class="map-step-buttons" data-c3-special-buttons>
+            <span class="map-command-status">正在读取连接…</span>
+          </div>
+        `;
+        wrapper.appendChild(specialGroup);
+        window.setTimeout(() => renderC3SpecialButtons(specialGroup.querySelector("[data-c3-special-buttons]")), 0);
+      }
+
+      wrapper.appendChild(createMapStepStatus(stepId));
       return wrapper;
     }
 
@@ -7013,9 +7081,16 @@
           }
           actions.appendChild(anchor);
         });
+        // 宿敌控制按钮排在 Map 按钮右边，两者同处标题行的操作区。
+        const nemesisTools = createNemesisStepTools(step.id);
+        if (nemesisTools) actions.appendChild(nemesisTools);
+        // 第七步（灾祸 / 末日）的进入下一天排在特殊事件右边。
+        const stepNextDayButton = createNextDayStepButton(step.id);
+        if (stepNextDayButton) actions.appendChild(stepNextDayButton);
         if (actions.children.length) text.querySelector(".step-title")?.appendChild(actions);
         const mapTools = createMapStepTools(step.id);
         if (mapTools) text.appendChild(mapTools);
+        if (nemesisTools) text.appendChild(createMapStepStatus(step.id));
         if (step.id === "explore") {
           text.appendChild(createExplorationTools());
         }
@@ -7114,6 +7189,264 @@
       return menu;
     }
 
+    function explorationResourceRules() {
+      return window.ATO_EXPLORATION_RESOURCE_RULES || null;
+    }
+
+    function explorationResourceDataset() {
+      return window.ATO_EXPLORATION_CARD_RESOURCES || null;
+    }
+
+    function explorationCardResources(cardId) {
+      const rules = explorationResourceRules();
+      if (!rules) return null;
+      return rules.getCard(explorationResourceDataset(), currentCycleConfig().id, cardId);
+    }
+
+    // The printed condition badges are diplomacy statuses, so the automatic
+    // settlement reads the same faction status the toolbar already shows for the
+    // tile the Argo is standing on.
+    function currentExplorationDiplomacy() {
+      const cycleId = currentCycleConfig().id;
+      return currentMapFactions()
+        .filter((factionId) => factionId && factionId !== "none")
+        .map((factionId, index) => {
+          const value = diplomacyValue(cycleId, factionId);
+          if (value === null) return null;
+          const status = diplomacyStatus(cycleId, value);
+          return {
+            id: factionId,
+            label: mapFactionLabel(cycleId, factionId, index),
+            statusLabel: status.label || "",
+            bonus: Number(status.bonus) || 0,
+            value,
+          };
+        })
+        .filter(Boolean);
+    }
+
+    function explorationSettlementContext() {
+      return {
+        cycleId: currentCycleConfig().id,
+        diplomacy: currentExplorationDiplomacy(),
+        // Lets the rules module print the record sheet's own resource names.
+        dataset: explorationResourceDataset(),
+      };
+    }
+
+    function explorationSettlementStore(entry) {
+      state.exploration = normalizeExploration(state.exploration);
+      const cycleId = currentCycleConfig().id;
+      state.exploration.settledByCycle[cycleId] ||= {};
+      return {
+        cycleId,
+        store: state.exploration.settledByCycle[cycleId],
+        key: `${cycleId}:${entry.id}:${normalizeCampaignDay(entry.day, cycleId)}`,
+      };
+    }
+
+    function getExplorationSettlement(entry) {
+      const { store, key } = explorationSettlementStore(entry);
+      return isPlainObject(store[key]) ? store[key] : null;
+    }
+
+    function clearExplorationSettlements(cycleId) {
+      state.exploration = normalizeExploration(state.exploration);
+      state.exploration.settledByCycle[cycleId] = {};
+    }
+
+    async function writeExplorationResourceChanges(changes, logMessage, mode = "apply") {
+      const rules = explorationResourceRules();
+      if (!rules) throw new Error("资源结算模块未加载，请刷新页面。");
+      if (!Array.isArray(changes) || !changes.length) return null;
+
+      const localRecord = readLocalArgoRecord();
+      let serverAvailable = false;
+      let serverRecord = null;
+      let serverRevision = 0;
+      try {
+        const server = await readServerArgoRecord();
+        serverAvailable = server.available;
+        serverRecord = server.record;
+        serverRevision = server.revision || serverRevision;
+      } catch (error) {
+        console.warn(error);
+      }
+      if (!serverAvailable) throw new Error("读取不到记录表存档，资源未写入。");
+
+      const applyChange = (baseRecord) => {
+        const record = mergeArgoRecords(baseRecord, localRecord);
+        record.profileName ||= "阿尔戈号记录";
+        record.cycle = currentCycleConfig().id;
+        const current = isPlainObject(record.resources) ? record.resources : {};
+        record.resources = mode === "revert"
+          ? rules.revertChanges(current, changes)
+          : rules.applyChanges(current, changes);
+        appendRecordSyncLog(record, logMessage);
+        return record;
+      };
+
+      let record = applyChange(serverRecord);
+      updateRecordLinks();
+      let written = false;
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        const writeResult = await writeServerArgoRecord(record, serverRevision);
+        if (!writeResult.conflict) {
+          recordSyncChannel?.postMessage({ revision: writeResult.revision });
+          written = true;
+          break;
+        }
+        const latest = await readServerArgoRecord();
+        serverRevision = latest.revision || serverRevision;
+        record = applyChange(latest.record);
+      }
+      if (!written) throw new Error("记录表被其他页面改动，请刷新后重试。");
+      cachedArgoRecord = record;
+      return record;
+    }
+
+    function createExplorationSettleBlock(entry) {
+      const rules = explorationResourceRules();
+      const card = explorationCardResources(entry.id);
+      if (!rules || !card || card.kind === rules.KIND_NONE) return null;
+
+      const cycleId = currentCycleConfig().id;
+      const block = document.createElement("div");
+      block.className = "exploration-settle";
+      const status = document.createElement("div");
+      status.className = "exploration-settle-status";
+      const actions = document.createElement("div");
+      actions.className = "exploration-settle-actions";
+      block.append(status, actions);
+
+      const saved = getExplorationSettlement(entry);
+      const kindLabel = card.kind === rules.KIND_RESOURCE_ONLY ? "纯资源卡" : "含其它效果";
+      // Only computed for an unsettled card: the plan drives both the button and
+      // the list of effects the player still has to resolve by hand.
+      const planInfo = saved ? { plan: null } : { plan: rules.plan(card, explorationSettlementContext()) };
+      const manualList = (items) => {
+        const list = items.filter((item) => item?.text);
+        if (!list.length) return null;
+        const ul = document.createElement("ul");
+        ul.className = "exploration-settle-manual";
+        list.forEach((item) => {
+          const li = document.createElement("li");
+          li.textContent = item.badge ? `[${item.badge}] ${item.text}` : item.text;
+          ul.appendChild(li);
+        });
+        return ul;
+      };
+
+      const setBusy = (busy, message) => {
+        actions.querySelectorAll("button").forEach((button) => { button.disabled = busy; });
+        if (message) status.textContent = message;
+      };
+
+      if (saved) {
+        status.innerHTML = `${escapeHtml(kindLabel)} · 已结算：<strong>${escapeHtml(saved.summary || "")}</strong>`;
+        const undoButton = document.createElement("button");
+        undoButton.type = "button";
+        undoButton.className = "secondary";
+        undoButton.textContent = "撤销结算";
+        undoButton.addEventListener("click", async () => {
+          const current = getExplorationSettlement(entry);
+          if (!current?.changes?.length) return;
+          setBusy(true, "正在撤销…");
+          try {
+            await writeExplorationResourceChanges(
+              current.changes,
+              `撤销探索卡结算 D${entry.day} ${entry.name} #${entry.id}：${current.summary || ""}`,
+              "revert"
+            );
+            const { store, key } = explorationSettlementStore(entry);
+            delete store[key];
+            saveState();
+            renderFlow();
+          } catch (error) {
+            console.warn(error);
+            setBusy(false);
+            window.alert(`撤销失败：${error?.message || error}`);
+          }
+        });
+        actions.appendChild(undoButton);
+      } else {
+        const plan = planInfo.plan;
+        const statusText = plan.status === "empty"
+          ? `${kindLabel} · 资源收益无法自动识读，请手动结算`
+          : (plan.status === "auto" && !plan.grants.length
+            ? `${kindLabel} · 当前外交状态下没有资源收益，只有下列效果`
+            : `${kindLabel} · ${plan.summary}`);
+        status.textContent = statusText;
+
+        const runSettle = async (variant) => {
+          const grants = variant ? variant.grants : plan.grants;
+          const changes = rules.planChanges(explorationResourceDataset(), cycleId, grants);
+          if (!changes.length) return;
+          const summary = rules.describeChanges(changes);
+          setBusy(true, "正在写入记录表…");
+          try {
+            await writeExplorationResourceChanges(
+              changes,
+              `探索卡自动结算 D${entry.day} ${entry.name} #${entry.id}：${summary}`,
+              "apply"
+            );
+            const { store, key } = explorationSettlementStore(entry);
+            store[key] = {
+              at: Date.now(),
+              day: normalizeCampaignDay(entry.day, cycleId),
+              cardId: entry.id,
+              variant: variant?.id || "auto",
+              summary,
+              changes,
+            };
+            saveState();
+            renderFlow();
+          } catch (error) {
+            console.warn(error);
+            setBusy(false);
+            window.alert(`自动结算失败：${error?.message || error}`);
+          }
+        };
+
+        if (plan.status === "auto") {
+          // A diplomacy menu can resolve to a branch that grants no scannable
+          // resource (the branch's effect is printed as a picture).  There is
+          // nothing to write then, so do not offer a button that does nothing.
+          if (plan.grants.length) {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.textContent = card.kind === rules.KIND_RESOURCE_ONLY ? "自动结算" : "结算资源部分";
+            button.title = plan.summary;
+            button.addEventListener("click", () => void runSettle(null));
+            actions.appendChild(button);
+          }
+        } else if (plan.status === "choice") {
+          plan.variants.forEach((variant) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.textContent = variant.id === "base" ? "基础值结算" : variant.label;
+            const conditionHint = variant.badge ? `条件：${variant.badge}。` : "";
+            button.title = `${conditionHint}${rules.describeChanges(rules.planChanges(explorationResourceDataset(), cycleId, variant.grants))}（卡面条件无法自动判定，请按实际战况选择）`;
+            button.addEventListener("click", () => void runSettle(variant));
+            actions.appendChild(button);
+          });
+        }
+      }
+
+      const manual = planInfo.plan?.manual || [];
+      if (manual.length) {
+        const list = manualList(manual);
+        if (list) block.appendChild(list);
+      }
+      if (!saved && card.kind === rules.KIND_RESOURCE_PLUS) {
+        const hint = document.createElement("div");
+        hint.className = "exploration-settle-status";
+        hint.textContent = "卡面其它效果仍需手动处理。";
+        block.appendChild(hint);
+      }
+      return block;
+    }
+
     function createExplorationTools() {
       const library = getExplorationLibrary();
       const selectedIds = getSelectedExplorationIds();
@@ -7133,9 +7466,6 @@
 
       const status = document.createElement("div");
       status.className = "exploration-status";
-      status.innerHTML = `
-        <div class="exploration-count">已选 ${selectedIds.length} / ${library.length} 张</div>
-      `;
       status.appendChild(createExplorationFactionStatus());
 
       const buttons = document.createElement("div");
@@ -7143,6 +7473,7 @@
       const hasActiveExplorationDraw = drawState.activePiles.flat().length > 0;
       const drawButton = document.createElement("button");
       drawButton.type = "button";
+      drawButton.className = "step-action-button";
       drawButton.textContent = hasActiveExplorationDraw ? "结算完毕" : "抽探索卡";
       drawButton.disabled = selectedIds.length === 0 && !hasActiveExplorationDraw;
       drawButton.addEventListener("click", () => {
@@ -7152,7 +7483,7 @@
 
       const returnButton = document.createElement("button");
       returnButton.type = "button";
-      returnButton.className = "secondary";
+      returnButton.className = "secondary step-action-button";
       returnButton.textContent = `放回暂时移出（${drawState.temporaryRemoved.length}）`;
       returnButton.disabled = drawState.temporaryRemoved.length === 0;
       returnButton.addEventListener("click", returnTemporaryExplorationCards);
@@ -7166,88 +7497,34 @@
         <div>牌堆 ${drawState.drawPile.length} / 当前牌组 ${selectedIds.length}，待结算 ${drawState.activePiles.flat().length}，暂时移出 ${drawState.temporaryRemoved.length}${specialRule ? `，破坏卡组 ${destructionPileIds.length}` : ""}</div>
       `;
 
-      const createDrawnCard = (entry) => {
+      // 抽出的牌只显示牌面本身：天数/卡名/黑底编号和移出·连抽标签都不再重复印在卡下面，
+      // 卡面上本来就有这些信息；抽出的张数由上方状态行负责说明，不再单独加标题。
+      const createDrawnCard = (entry, options = {}) => {
         const drawnCard = document.createElement("article");
         drawnCard.className = "exploration-drawn-card";
         const drawnFace = document.createElement("div");
         drawnFace.className = "exploration-drawn-face";
-        drawnFace.setAttribute("aria-label", entry.name);
+        drawnFace.setAttribute("aria-label", `${entry.name} #${entry.id}`);
         drawnFace.setAttribute("role", "img");
         drawnFace.style.cssText = getExplorationCardImageStyle(entry.id);
-        const meta = document.createElement("div");
-        meta.className = "exploration-drawn-meta";
-        const cornerNumber = getExplorationCornerNumber(entry.id);
-        const removalLabel = entry.removal === "permanent" ? "永久移出" : (entry.removal === "remove" ? "暂时移出" : "洗回牌堆");
-        const drawLabel = entry.draw === "chain" ? "连抽" : "不连抽";
-        meta.innerHTML = `
-          <div>D${entry.day} · ${escapeHtml(entry.name)} #${entry.id}${cornerNumber ? ` · 黑底${cornerNumber}` : ""}</div>
-          <span class="exploration-card-tag">${removalLabel} · ${drawLabel}</span>
-        `;
-        drawnCard.append(drawnFace, meta);
+        drawnCard.append(drawnFace);
+        if (options.interactive) {
+          const settleBlock = createExplorationSettleBlock(entry);
+          if (settleBlock) drawnCard.appendChild(settleBlock);
+        }
         return drawnCard;
       };
 
-      if (drawState.temporaryRemoved.length) {
-        const preview = document.createElement("div");
-        preview.className = "exploration-return-preview";
-        preview.hidden = true;
-        preview.setAttribute("role", "region");
-        preview.setAttribute("aria-label", "暂时移出牌堆预览");
-        const title = document.createElement("div");
-        title.className = "exploration-return-preview-title";
-        title.textContent = `暂时移出牌堆（${drawState.temporaryRemoved.length} 张）`;
-        const grid = document.createElement("div");
-        grid.className = "exploration-drawn-grid";
-        drawState.temporaryRemoved.forEach((entry) => grid.appendChild(createDrawnCard(entry)));
-        preview.append(title, grid);
-
-        const showPreview = () => {
-          const rect = returnButton.getBoundingClientRect();
-          preview.style.left = `${Math.max(12, Math.min(rect.left, window.innerWidth - Math.min(520, window.innerWidth - 36) - 12))}px`;
-          preview.style.top = `${Math.min(window.innerHeight - 80, rect.bottom + 8)}px`;
-          preview.hidden = false;
-          returnButton.setAttribute("aria-expanded", "true");
-        };
-        const hidePreview = () => {
-          preview.hidden = true;
-          returnButton.setAttribute("aria-expanded", "false");
-        };
-        returnButton.setAttribute("aria-haspopup", "true");
-        returnButton.setAttribute("aria-expanded", "false");
-        returnButton.addEventListener("pointerenter", (event) => {
-          if (event.pointerType === "mouse") showPreview();
-        });
-        returnButton.addEventListener("pointerleave", (event) => {
-          if (event.pointerType === "mouse") window.setTimeout(() => {
-            if (!preview.matches(":hover")) hidePreview();
-          }, 80);
-        });
-        preview.addEventListener("pointerleave", hidePreview);
-        returnButton.addEventListener("focus", showPreview);
-        returnButton.addEventListener("blur", () => window.setTimeout(() => {
-          if (!preview.contains(document.activeElement)) hidePreview();
-        }, 0));
-        returnButton.addEventListener("pointerdown", (event) => {
-          if (event.pointerType !== "touch") return;
-          if (preview.hidden) {
-            event.preventDefault();
-            showPreview();
-          }
-        });
-        wrapper.appendChild(preview);
-      }
-
+      // 「放回暂时移出」按钮只负责放回，不再悬停弹出卡牌预览：暂时移出的牌在下方的
+      // 「暂时移出牌堆」折叠区里本来就能看到，鼠标扫过按钮就弹窗反而会挡住牌面。
       const drawnCards = document.createElement("section");
       drawnCards.className = "exploration-drawn";
       const activeCards = drawState.activePiles.flat();
       if (activeCards.length) {
-        const drawnTitle = document.createElement("div");
-        drawnTitle.className = "exploration-drawn-title";
-        drawnTitle.textContent = `本次探索结果（${activeCards.length} 张）`;
         const drawnGrid = document.createElement("div");
         drawnGrid.className = "exploration-drawn-grid exploration-active-grid";
-        activeCards.forEach((entry) => drawnGrid.appendChild(createDrawnCard(entry)));
-        drawnCards.append(drawnTitle, drawnGrid);
+        activeCards.forEach((entry) => drawnGrid.appendChild(createDrawnCard(entry, { interactive: true })));
+        drawnCards.appendChild(drawnGrid);
       }
 
       const removedPiles = document.createElement("section");
@@ -7278,11 +7555,12 @@
 
       const applyButton = document.createElement("button");
       applyButton.type = "button";
+      applyButton.className = "step-action-button";
       applyButton.textContent = "应用选择";
 
       const restoreDefaultButton = document.createElement("button");
       restoreDefaultButton.type = "button";
-      restoreDefaultButton.className = "secondary";
+      restoreDefaultButton.className = "secondary step-action-button";
       restoreDefaultButton.textContent = "恢复初始";
       restoreDefaultButton.hidden = !defaultExplorationSelections[currentCycleConfig().id]?.length;
       restoreDefaultButton.addEventListener("click", restoreDefaultExplorationSelection);
@@ -7345,6 +7623,11 @@
       const destructionTools = createExplorationDestructionTools(selectedIds, destructionPileIds);
       if (destructionTools) wrapper.appendChild(destructionTools);
       wrapper.appendChild(builder);
+      // 「已选 N / M 张」跟着「选择探索卡库」入口走：它说的是牌库选择，不占抽牌那一行。
+      const selectedCount = document.createElement("div");
+      selectedCount.className = "exploration-count";
+      selectedCount.textContent = `已选 ${selectedIds.length} / ${library.length} 张`;
+      wrapper.appendChild(selectedCount);
       return wrapper;
     }
 
@@ -7494,6 +7777,9 @@
       elements.currentDateNote.textContent = note ? `日期轨笔记：${note}` : "";
     }
 
+    // 只滚动日期轨自己的列表把当天居中，绝不动整个页面：
+    // 日期轨在顶部 header 里，第七步的「进入下一天」在页面底部，
+    // 之前的 scrollIntoView 会把整页拽回顶部，用户点了以后就找不着原来的位置了。
     function keepCurrentDateVisible() {
       const list = elements.dateTrackList;
       if (currentCycleConfig().id === "c1" && state.day === "T0") {
@@ -7509,13 +7795,6 @@
         const centeredOffset = currentRect.top - listRect.top - (list.clientHeight - currentRect.height) / 2;
         const maxScrollTop = Math.max(0, list.scrollHeight - list.clientHeight);
         list.scrollTop = Math.min(maxScrollTop, Math.max(0, list.scrollTop + centeredOffset));
-
-        const updatedRect = current.getBoundingClientRect();
-        const viewportTop = 12;
-        const viewportBottom = window.innerHeight - 12;
-        if (updatedRect.top < viewportTop || updatedRect.bottom > viewportBottom) {
-          current.scrollIntoView({ block: "nearest", inline: "nearest" });
-        }
       };
 
       window.requestAnimationFrame(() => {

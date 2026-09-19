@@ -37,7 +37,7 @@ def copy_stream(source, destination, digest) -> None:
 
 def update_full_pack(
     base_pack: Path, destination: Path, overlay_root: Path,
-    bgm_library: Path | None = None,
+    bgm_library: Path | None = None, include_official_scans: bool = False,
 ) -> dict:
     if base_pack == destination:
         raise ValueError("输出资料包不能覆盖输入资料包")
@@ -147,6 +147,8 @@ def update_full_pack(
                         "kind": "full-resource-pack",
                         "updatedFrom": base_pack.name,
                         "correctedProjectOverlay": True,
+                        # 民间版资源包默认丢掉旧包里的官方版故事书截图；显式要求时保留。
+                        "officialScans": include_official_scans,
                     },
                 }
                 # Use the current fan-only dataset rather than carrying an old
@@ -167,7 +169,10 @@ def update_full_pack(
                 entity = parse_entity_index(entity_raw, Path("story/entity-index.json"))
                 output_zip.writestr("story/data/entity-index.json", entity.json_bytes)
                 output_zip.writestr("story/data/entity-index.js", entity_index_javascript(entity))
-                add_to_archive(output_zip, manifest, overlay_root, source_zip, source_manifest)
+                add_to_archive(
+                    output_zip, manifest, overlay_root, source_zip, source_manifest,
+                    include_scans=include_official_scans,
+                )
                 # 主控台 BGM：音频由使用者自备，随 bgmFiles 段分发（根目录没有音频时
                 # 退回素材库里的副本）。BGM 不参与上面的固定素材遍历，见文件开头的过滤。
                 bgm_count = add_bgm_to_archive(
@@ -222,12 +227,20 @@ def main() -> None:
         type=Path,
         help="根目录 assets/bgm/ 没有音频时，从这里（素材库目录）读取已导入的副本",
     )
+    parser.add_argument(
+        "--include-official-scans",
+        action="store_true",
+        help="构建官方版资料包：保留旧包/本地目录里的官方版故事书截图"
+             "（story/data/ato-storybook-key-scans/*，后缀 .jpg/.jpeg/.png/.webp 均可，不限大小写）。"
+             "默认不打包截图，只带官方故事书正文数据。",
+    )
     args = parser.parse_args()
     result = update_full_pack(
         args.base_pack.expanduser().resolve(),
         args.destination.expanduser().resolve(),
         args.overlay_root.expanduser().resolve(),
         args.bgm_library.expanduser().resolve() if args.bgm_library else None,
+        args.include_official_scans,
     )
     print(json.dumps(result, ensure_ascii=False, indent=2), flush=True)
 

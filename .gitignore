@@ -54,6 +54,9 @@
 /assets/*
 !/assets/ato-terms.js
 !/assets/exploration-card-rules.js
+# 探索卡资源结算的运行时数据与逻辑（脚本生成，index.html 直接引用，必须随源码发布）
+!/assets/exploration-card-resource-rules.js
+!/assets/exploration-card-resources.js
 !/assets/exploration-card-tags.js
 !/assets/page-focus-router.js
 !/assets/campaign-session.js

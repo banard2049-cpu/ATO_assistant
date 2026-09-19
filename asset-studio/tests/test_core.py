@@ -93,9 +93,9 @@ class CoreTests(unittest.TestCase):
         empty = Database(self.root / "empty.sqlite3")
         result = ensure_fixed_catalog(empty)
         payload = fixed_catalog_payload()
-        # 2755 张固定素材（含 5 个循环图标）+ 19 首主控台 BGM
+        # 2756 张固定素材（含 5 个循环图标）+ 19 首主控台 BGM
         # （登记为「无需拍摄」，见 test_bgm_resources）。
-        self.assertEqual(2774, result["items"])
+        self.assertEqual(2775, result["items"])
         self.assertEqual(19, result["aibp_enemies"])
         self.assertEqual({"c1", "c1.5", "c2", "c2.5", "c3", "c4", "c5"}, {book["id"] for book in payload["source"]["stories"]})
         self.assertNotIn("apk", payload["source"])
@@ -139,17 +139,18 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(45, len(terrain_cards))
         self.assertTrue(any(item["number"] == "CJ1475" for item in payload["items"]))
         fixed_paths = {path for item in payload["items"] for path in item["faces"].values()}
-        # 4277 张固定素材（含 5 个循环图标）+ 19 首主控台 BGM
+        # 4278 张固定素材（含 5 个循环图标）+ 19 首主控台 BGM
         # （音频不进图片清单，随 bgmFiles 段分发）。
         bgm_paths = {path for path in fixed_paths if path.startswith("assets/bgm/")}
-        self.assertEqual(4277, len(fixed_paths - bgm_paths))
+        self.assertEqual(4278, len(fixed_paths - bgm_paths))
         self.assertEqual(19, len(bgm_paths))
-        self.assertEqual(4296, len(fixed_paths))
+        self.assertEqual(4297, len(fixed_paths))
         self.assertIn("map/images/c5-face-a.png", fixed_paths)
         self.assertIn("map/images/c5-face-b.png", fixed_paths)
         self.assertIn("aibp/ps/other/SW.jpg", fixed_paths)
         self.assertIn("aibp/ps/other/DW.jpg", fixed_paths)
         self.assertIn("aibp/ps/other/trait/COMMON_TR_001.jpg", fixed_paths)
+        self.assertIn("aibp/ps/other/trait/COMMON_TR_002.jpg", fixed_paths)
         self.assertIn("aibp/ps/other/trait/C4_CURSED_TR_001.jpg", fixed_paths)
         self.assertIn("aibp/ps/other/trait/C5_TR_001.jpg", fixed_paths)
         self.assertIn("aibp/ps/other/trait/C45_COMMON_TR_001.jpg", fixed_paths)

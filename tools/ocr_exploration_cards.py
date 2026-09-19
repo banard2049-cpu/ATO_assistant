@@ -20,6 +20,7 @@ from PIL import Image, ImageEnhance, ImageOps
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CARDS_DIR = ROOT / "assets" / "exploration-cards"
+CYCLES = ["c1", "c2", "c3", "c4", "c5"]
 DEFAULT_TESSERACT_PATHS = (
     Path("C:/Program Files/Tesseract-OCR/tesseract.exe"),
     Path("C:/Program Files (x86)/Tesseract-OCR/tesseract.exe"),
@@ -112,7 +113,7 @@ def ocr_card(path: Path, tesseract: str, lang: str) -> dict[str, object]:
 def collect_cards(args: argparse.Namespace) -> list[Path]:
     if args.images:
         return [Path(image).resolve() for image in args.images]
-    cycles = args.cycle or ["c1", "c2", "c3"]
+    cycles = args.cycle or CYCLES
     cards: list[Path] = []
     for cycle in cycles:
         cards.extend(sorted((DEFAULT_CARDS_DIR / cycle).glob("*.png")))
@@ -122,7 +123,7 @@ def collect_cards(args: argparse.Namespace) -> list[Path]:
 def main() -> int:
     parser = argparse.ArgumentParser(description="OCR exploration card scans with Tesseract.")
     parser.add_argument("images", nargs="*", help="Specific card image(s) to OCR.")
-    parser.add_argument("--cycle", action="append", choices=["c1", "c2", "c3"], help="OCR all cards in a cycle.")
+    parser.add_argument("--cycle", action="append", choices=CYCLES, help="OCR all cards in a cycle.")
     parser.add_argument("--lang", default="chi_sim+eng", help="Tesseract language list. Default: chi_sim+eng.")
     parser.add_argument("--tesseract", help="Path to tesseract.exe.")
     parser.add_argument("--output", "-o", help="Write JSON output to this path.")

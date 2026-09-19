@@ -73,7 +73,10 @@ def load_entity_index(
     raise ValueError("完整资料包缺少人物小传索引")
 
 
-def build(apk_path: Path, destination: Path, overlay_root: Path | None = None) -> dict:
+def build(
+    apk_path: Path, destination: Path, overlay_root: Path | None = None,
+    include_official_scans: bool = False,
+) -> dict:
     fixed = fixed_catalog_payload()
     items = fixed["items"]
     faces = [
@@ -173,6 +176,8 @@ def build(apk_path: Path, destination: Path, overlay_root: Path | None = None) -
                     "sourceApk": apk_path.name,
                     "correctedProjectOverlay": bool(overlay_root),
                     "officialAssets": sum(1 for value in overlay_flags.values() if value),
+                    # 民间版资源包默认不带官方版故事书截图；只有显式要求时才打包。
+                    "officialScans": include_official_scans,
                     "audioIncluded": False,
                 },
             }
@@ -188,7 +193,10 @@ def build(apk_path: Path, destination: Path, overlay_root: Path | None = None) -
                 "story/data/entity-index.js",
                 entity_index_javascript(entity_index),
             )
-            add_to_archive(output_zip, manifest, overlay_root)
+            add_to_archive(
+                output_zip, manifest, overlay_root,
+                include_scans=include_official_scans,
+            )
             output_zip.writestr(
                 "manifest.json",
                 json.dumps(manifest, ensure_ascii=False, separators=(",", ":")),
@@ -214,6 +222,7 @@ def build(apk_path: Path, destination: Path, overlay_root: Path | None = None) -
         "stories": sum(len(book.get("entries", [])) for book in stories.get("books", [])),
         "entities": entity_index.entity_count,
         "official_assets": sum(1 for value in overlay_flags.values() if value),
+        "official_files": len(manifest.get("resourceFiles", [])),
         "bytes": destination.stat().st_size,
     }
 
@@ -227,11 +236,19 @@ def main() -> None:
         type=Path,
         help="优先读取 ATO_assistant 根目录中的修正版素材；其中 official-assets/ 官中图片优先级最高",
     )
+    parser.add_argument(
+        "--include-official-scans",
+        action="store_true",
+        help="构建官方版资料包：把官方版故事书截图（story/data/ato-storybook-key-scans/*，"
+             "后缀 .jpg/.jpeg/.png/.webp 均可，不限大小写）一起打包。"
+             "默认不打包截图，只带官方故事书正文数据。",
+    )
     args = parser.parse_args()
     result = build(
         args.apk.expanduser().resolve(),
         args.destination.expanduser().resolve(),
         args.overlay_root.expanduser().resolve() if args.overlay_root else None,
+        args.include_official_scans,
     )
     print(json.dumps(result, ensure_ascii=False, indent=2), flush=True)
 

@@ -1,4 +1,13 @@
-"""Official story data and scans carried verbatim in .atopack files."""
+"""Official story data and scans carried verbatim in .atopack files.
+
+对外发布的民间版资源包只带官方故事书数据（官方版正文），不带官方版故事书截图：
+截图就是原书页面，属于最不该随包分发的一批文件。构建官方版资料包的入口
+（命令行 ``--include-official-scans``、素材工具导出勾选项）显式打开后才打包截图。
+
+截图后缀不限定 ``.jpg``：``.jpg/.jpeg/.png/.webp`` 都算官方截图，打包、校验、
+导入与 Android 端走同一套后缀，避免只因为扩展名不同就把原书页面判成非法路径。
+大小写一律不敏感（``.JPG``、``C1-0-0.PNG`` 同样收）。
+"""
 from __future__ import annotations
 
 import hashlib
@@ -8,13 +17,29 @@ from pathlib import Path
 DATA = "story/data/storybook-official-data.js"
 SCANS = "story/data/ato-storybook-key-scans/"
 LIBRARY = Path("sources/official-resources")
+# 截图格式不限定一种：同一批原书页面可能是 .jpg 导出，也可能是 .png 截图，
+# 打包与导入都按同一套后缀放行（Android 端 AtopackStore 保持同一条规则）。
+# 大小写同样不敏感：相机/导出工具常给出 `.JPG`、`.PNG`，路径里的大写也不该被判非法。
+SCAN_SUFFIXES = ("jpg", "jpeg", "png", "webp")
+_SCAN_NAME = r"c[123]-[A-Za-z0-9_-]+\.(?:" + "|".join(SCAN_SUFFIXES) + r")"
 
 
 def allowed_target(target: str) -> bool:
-    return target == DATA or bool(re.fullmatch(re.escape(SCANS) + r"c[123]-[A-Za-z0-9_-]+\.jpg", target))
+    return target == DATA or bool(
+        re.fullmatch(re.escape(SCANS) + _SCAN_NAME, target, re.IGNORECASE)
+    )
 
 
-def collect(root: Path | None) -> list[tuple[str, Path]]:
+def collect(root: Path | None, include_scans: bool = True) -> list[tuple[str, Path]]:
+    """Collect the official files that exist under ``root``.
+
+    ``include_scans=False`` keeps only the official story data and skips the
+    page screenshots.  That is what a 民间版 resource pack needs: the screenshots
+    are the official book's own pages (2195 files locally) and must not be
+    redistributed, while the official text alone still lets the story page fall
+    back to 官方正文.  A scan that is missing locally is only an export error
+    when the scans are actually being packed.
+    """
     if root is None or not (root / DATA).is_file():
         return []
     import json
@@ -22,21 +47,32 @@ def collect(root: Path | None) -> list[tuple[str, Path]]:
     prefix = "window.STORYBOOK_OFFICIAL_DATA = "
     if not text.startswith(prefix):
         raise ValueError("官方故事书数据格式无法识别")
+    # 数据文件本身两种模式都要带，所以格式错误一律在此拦下，别把坏文件打进包里。
     payload = json.loads(text[len(prefix):].strip().removesuffix(";"))
     targets = {DATA}
-    for book in payload["books"]:
-        for entry in book["entries"]:
-            src = (entry.get("officialScan") or {}).get("src")
-            if src:
-                target = "story/" + src.removeprefix("./")
-                if not allowed_target(target) or not (root / target).is_file():
-                    raise ValueError(f"官方截图缺失或路径无效：{target}")
-                targets.add(target)
+    if include_scans:
+        for book in payload["books"]:
+            for entry in book["entries"]:
+                src = (entry.get("officialScan") or {}).get("src")
+                if src:
+                    target = "story/" + src.removeprefix("./")
+                    if not allowed_target(target) or not (root / target).is_file():
+                        raise ValueError(f"官方截图缺失或路径无效：{target}")
+                    targets.add(target)
     return [(target, root / target) for target in sorted(targets)]
 
 
-def add_to_archive(archive, manifest: dict, root: Path | None, fallback=None, fallback_manifest=None) -> None:
-    files = collect(root)
+def add_to_archive(
+    archive, manifest: dict, root: Path | None, fallback=None, fallback_manifest=None,
+    include_scans: bool = False,
+) -> None:
+    """Write the official story files into an ``.atopack``.
+
+    ``include_scans`` 默认关闭：对外发布的民间版资源包不带官方版故事书截图。
+    只有显式构建官方版资料包时才传 ``True``。关闭时旧包回退（``fallback``）里
+    的截图也要一并丢掉，只留官方故事书数据文件。
+    """
+    files = collect(root, include_scans=include_scans)
     manifest["resourceFiles"] = []
     if files:
         for target, path in files:
@@ -46,6 +82,8 @@ def add_to_archive(archive, manifest: dict, root: Path | None, fallback=None, fa
                 "sha256": hashlib.sha256(raw).hexdigest(), "bytes": len(raw)})
     elif fallback is not None:
         for item in (fallback_manifest or {}).get("resourceFiles", []):
+            if not include_scans and item.get("target") != DATA:
+                continue
             raw = checked_bytes(fallback, item)
             archive.writestr(item["target"], raw)
             manifest["resourceFiles"].append(item)

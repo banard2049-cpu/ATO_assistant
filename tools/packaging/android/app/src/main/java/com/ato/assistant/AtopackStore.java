@@ -162,7 +162,7 @@ final class AtopackStore {
           JSONObject resource = officialFiles.getJSONObject(index);
           String target = safePath(resource.optString("target"), "官方资料路径");
           boolean storyData = "story/data/storybook-official-data.js".equals(target);
-          if (!storyData && !target.matches("story/data/ato-storybook-key-scans/c[123]-[A-Za-z0-9_-]+\\.jpg")) {
+          if (!storyData && !target.matches("(?i)story/data/ato-storybook-key-scans/c[123]-[A-Za-z0-9_-]+\\.(jpg|jpeg|png|webp)")) {
             throw new IOException("不支持的官方资料路径：" + target);
           }
           if (!target.equals(resource.optString("member"))) throw new IOException("官方资料目标不匹配");
@@ -173,7 +173,7 @@ final class AtopackStore {
           }
           String sha256 = validSha256(resource.optString("sha256"));
           installBlob(archive, entry, sha256);
-          next.put(target, new ResourceEntry(sha256, storyData ? "application/javascript" : "image/jpeg"));
+          next.put(target, new ResourceEntry(sha256, storyData ? "application/javascript" : scanMime(target)));
         }
       }
       // 主控台背景音乐：APK 不带音频，随资料包的 bgmFiles 段解包到 web 根目录的
@@ -434,6 +434,13 @@ final class AtopackStore {
     String extension = MimeTypeMap.getFileExtensionFromUrl(target);
     String detected = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.toLowerCase(Locale.ROOT));
     return detected == null ? "application/octet-stream" : detected;
+  }
+
+  /** 官方截图后缀不限于 .jpg（可能是 .png/.webp），MIME 跟着实际后缀走。 */
+  private static String scanMime(String target) {
+    String extension = MimeTypeMap.getFileExtensionFromUrl(target);
+    String detected = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.toLowerCase(Locale.ROOT));
+    return detected == null ? "image/jpeg" : detected;
   }
 
   private static boolean isImageTarget(String target) {
