@@ -2430,6 +2430,7 @@
     const chimeraPhaseStates = {
       C: {
         label: "腐蚀液态",
+        officialEffect: `在你成功结算攻击（至少1个命中）之后，如果你的武器没有特性<span class="chimera-term">石料</span>、<span class="chimera-term">雕塑</span>、<span class="chimera-term">神界</span>、<span class="chimera-term">神匠合金</span>、<span class="chimera-term">独眼巨人</span>、<span class="chimera-term">神话</span>、<span class="chimera-term">银金</span>，则横置该武器并获得等同于嵌合体等级的危险。`,
         effect: (level) => `在你对奇美拉结算完一次至少 1 个命中的攻击后，如果该攻击的启用武器材料特性不是 <span class="chimera-term">Stone</span>（石）、<span class="chimera-term">Relief</span>（岩雕）、<span class="chimera-term">Divine</span>（神圣）、<span class="chimera-term">Hephaestum</span>（赫淮斯托斯）、<span class="chimera-term">Cyclopean</span>（独眼巨人）、<span class="chimera-term">Mythic</span>（神话）或 <span class="chimera-term">Electrum</span>（琥珀金），将该武器横置，并获得 ${level} 危险。`,
         left: "87.4%",
         top: "4.6%",
@@ -2438,6 +2439,7 @@
       },
       G: {
         label: "凝胶态",
+        officialEffect: (level) => `如果使用不具有特性<span class="chimera-term">棍棒</span>、<span class="chimera-term">拳套</span>、<span class="chimera-term">平板剑</span>、<span class="chimera-term">盾</span>的武器攻击，则嵌合体具有+${level >= 2 ? 2 : 1} AT。`,
         effect: (level) => `当受到非 <span class="chimera-term">Club</span>（棍棒）、<span class="chimera-term">Cestus</span>（拳套）、<span class="chimera-term">Slabsword</span>（板剑）或 <span class="chimera-term">Shield</span>（盾）类武器攻击时，奇美拉视作 +${level >= 2 ? 2 : 1} AT。`,
         left: "79.5%",
         top: "28.8%",
@@ -2446,6 +2448,7 @@
       },
       S: {
         label: "超固态",
+        officialEffect: (level) => `如果使用具有特性<span class="chimera-term">棍棒</span>、<span class="chimera-term">拳套</span>、<span class="chimera-term">平板剑</span>或<span class="chimera-term">盾</span>的武器攻击，则嵌合体具有+${level >= 4 ? 2 : 1} AT。`,
         effect: (level) => `当受到 <span class="chimera-term">Club</span>（棍棒）、<span class="chimera-term">Cestus</span>（拳套）、<span class="chimera-term">Slabsword</span>（板剑）或 <span class="chimera-term">Shield</span>（盾）类武器攻击时，奇美拉视作 +${level >= 4 ? 2 : 1} AT。`,
         left: "92.9%",
         top: "28.7%",
@@ -6073,7 +6076,7 @@
       const level = currentApostleLevel();
       return [{
         title: state.label,
-        html: typeof state.effect === "function" ? state.effect(level) : (state.effect || state.label)
+        html: `<span data-term-variant="fan" data-term-ignore>${typeof state.effect === "function" ? state.effect(level) : (state.effect || state.label)}</span><span data-term-variant="official" data-term-ignore hidden>${typeof state.officialEffect === "function" ? state.officialEffect(level) : state.officialEffect}</span>`
       }];
     }
 
@@ -6740,7 +6743,7 @@
   <script src="ps/other/resouce/bp_resource_map_c4_c5.js?v=20260730e"></script>
   <script src="c45_specials.js?v=20260816-demidjinn-wish-signature"></script>
   <script src="bp_loot_calculator_addon.js?v=20260816-c45-loot-icons"></script>
-  <script src="../assets/ato-terms.js?v=20260912f"></script>
-  <script src="../assets/term-language.js?v=20260913a"></script>
+  <script src="../assets/ato-terms.js?v=20260919-chimera"></script>
+  <script src="../assets/term-language.js?v=20260919-chimera"></script>
 </body>
 </html>

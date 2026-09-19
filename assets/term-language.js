@@ -93,6 +93,11 @@
   const SKIP_SELECTOR = "script,style,[data-term-toggle],#storyText,[data-term-ignore]";
   function apply(root = document) {
     const scope = root.nodeType ? root : document;
+    const variants = [...(scope.querySelectorAll?.("[data-term-variant]") || [])];
+    if (scope.matches?.("[data-term-variant]")) variants.unshift(scope);
+    for (const element of variants) {
+      element.hidden = element.dataset.termVariant !== (state.official ? "official" : "fan");
+    }
     const walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT);
     const nodes = [];
     while (walker.nextNode()) nodes.push(walker.currentNode);

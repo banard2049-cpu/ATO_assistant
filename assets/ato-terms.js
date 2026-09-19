@@ -1,4 +1,5 @@
 window.ATO_TERMS = [
+  { "from": "腐蚀液态", "to": "腐蚀态" },
   // C1-C3 record sheet backs (official simplified Chinese edition).
   {
     "from": "循环",
