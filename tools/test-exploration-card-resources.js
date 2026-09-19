@@ -121,7 +121,7 @@ assert.equal(rules.describeChanges(triremeChanges), "船材（Trireme）+2");
 
 // --- dataset integrity ----------------------------------------------------- //
 const cards = Object.values(dataset.cards);
-assert.equal(cards.length, 222, "五个循环的探索卡全部扫过");
+assert.equal(cards.length, 223, "五个循环的探索卡全部扫过");
 for (const card of cards) {
   const catalog = dataset.cycles[card.cycleId].resources;
   for (const grant of card.grants) {
@@ -143,6 +143,6 @@ const counts = cards.reduce((acc, card) => {
   acc[card.kind] = (acc[card.kind] || 0) + 1;
   return acc;
 }, {});
-assert.deepEqual(counts, { "resource-only": 38, "resource-plus": 102, none: 82 });
+assert.deepEqual(counts, { "resource-only": 38, "resource-plus": 102, none: 83 });
 
 console.log("exploration-card-resource-rules tests passed");

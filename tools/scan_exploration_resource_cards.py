@@ -420,7 +420,7 @@ def grant_text(card: dict) -> str:
 
 def write_js(cards: list[dict], cycles: dict) -> None:
     # One compact line per card: the file is served to every dashboard load, so
-    # pretty-printing 222 cards would cost ~200 kB for nothing.  The review CSV
+    # pretty-printing 223 cards would cost ~200 kB for nothing.  The review CSV
     # is the human-readable companion.
     compact = {"ensure_ascii": False, "separators": (",", ":")}
     lines = [

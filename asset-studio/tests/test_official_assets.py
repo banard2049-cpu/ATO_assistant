@@ -10,8 +10,10 @@ from __future__ import annotations
 import shutil
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
-from app.official_assets import find, resolve
+from app import official_assets
+from app.official_assets import clear_cache, find, resolve
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -22,10 +24,14 @@ SCRATCH = ROOT / ".local" / "tests" / "official-asset-overrides"
 
 class OfficialAssetTests(unittest.TestCase):
     def setUp(self) -> None:
+        # 索引带缓存（导出一个包会调 4000+ 次 find，不该重复建索引），用例之间必须
+        # 显式清掉，否则上一个用例的索引会在 TTL 内被下一个用例复用。
+        clear_cache()
         shutil.rmtree(SCRATCH, ignore_errors=True)
         self.assets = SCRATCH / "official-assets"
 
     def tearDown(self) -> None:
+        clear_cache()
         shutil.rmtree(SCRATCH, ignore_errors=True)
 
     def write(self, relative: str, payload: bytes = b"official") -> Path:
@@ -55,6 +61,9 @@ class OfficialAssetTests(unittest.TestCase):
         self.assertEqual(png, find(SCRATCH, "aibp/ps/HEKATON/CARD.jpg"))
 
         jpg = self.write("doom/DOOM.jpg", b"official jpg")
+        # 索引在 TTL 内是缓存视图（长驻进程最多 2 秒看到新文件）；用例中途改目录要
+        # 显式清一次，避免测到旧视图。
+        clear_cache()
         self.assertEqual(jpg, find(SCRATCH, "assets/story-doom-cards/DOOM.png"))
 
     def test_same_stem_in_two_folders_still_falls_back(self) -> None:
@@ -74,6 +83,33 @@ class OfficialAssetTests(unittest.TestCase):
         exact = self.write("HEKATON/CARD.jpg", b"exact")
         self.write("HEKATON/CARD.png", b"other")
         self.assertEqual(exact, find(SCRATCH, "aibp/ps/HEKATON/CARD.jpg"))
+
+    def test_lookup_index_is_cached_and_clearable(self) -> None:
+        """索引只建一次：导出一个包会调 4000+ 次 find，重复扫描是几十分钟的开销。
+
+        实测（真实官中目录 1300+ 张）单次 find 从 426 ms 降到 3 ms。
+        """
+        self.write("HEKATON/CARD.jpg")
+        clear_cache()
+        scanned: list[Path] = []
+        original = official_assets._files
+
+        def counting(root: Path):
+            scanned.append(root)
+            return original(root)
+
+        with patch.object(official_assets, "_files", counting):
+            find(SCRATCH, "aibp/ps/HEKATON/CARD.jpg")
+            find(SCRATCH, "aibp/ps/HEKATON/CARD.jpg")
+            find(SCRATCH, "aibp/ps/HEKATON/OTHER.jpg")
+            self.assertEqual(1, len(scanned))
+            # 清缓存后重新扫一次，新放进来的图立刻可见。
+            clear_cache()
+            self.assertIsNone(find(SCRATCH, "aibp/ps/HEKATON/ADDED.jpg"))
+            self.write("HEKATON/ADDED.jpg")
+            clear_cache()
+            self.assertIsNotNone(find(SCRATCH, "aibp/ps/HEKATON/ADDED.jpg"))
+            self.assertEqual(3, len(scanned))
 
 
 if __name__ == "__main__":

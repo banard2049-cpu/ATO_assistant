@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import os
+import shutil
 import sqlite3
 import tempfile
 import unittest
@@ -37,6 +39,38 @@ from tools.build_full_pack import build as build_full_pack
 
 
 APK = Path("/Users/wawafish/Downloads/ATO-Local-0.2.11-images-no-audio.apk")
+
+
+def _mkdtemp_0777(suffix: str | None = None, prefix: str | None = None, dir: str | None = None) -> str:
+    suffix = suffix or ""
+    prefix = prefix or "tmp"
+    directory = dir or tempfile.gettempdir()
+    for _ in range(10000):
+        name = os.path.join(directory, prefix + next(tempfile._get_candidate_names()) + suffix)
+        try:
+            os.mkdir(name, 0o777)
+        except FileExistsError:
+            continue
+        return name
+    raise FileExistsError("无法创建临时目录")
+
+
+def _relax_tempdirs_when_the_sandbox_forbids_0700_dirs() -> None:
+    """探测沙箱是否禁止在 0700 目录里创建条目；是则只在本进程内换成 0777 版本。
+
+    与 test_hostile_pack_safety.py 同一套办法：受限环境里 mkdtemp 建的目录是 0700，
+    连它自己的子目录都建不出来，setUp 会直接 PermissionError。
+    """
+    probe = tempfile.mkdtemp()
+    try:
+        (Path(probe) / "probe").write_text("x", encoding="utf-8")
+    except OSError:
+        tempfile.mkdtemp = _mkdtemp_0777
+    finally:
+        shutil.rmtree(probe, ignore_errors=True)
+
+
+_relax_tempdirs_when_the_sandbox_forbids_0700_dirs()
 
 
 class CoreTests(unittest.TestCase):
@@ -89,13 +123,41 @@ class CoreTests(unittest.TestCase):
         ensure_fixed_catalog(self.db)
         self.assertEqual(1, self.db.one("SELECT COUNT(*) n FROM asset_revisions WHERE item_id=?", (new_id,))["n"])
 
+    def test_new_items_upgrade_existing_catalog(self):
+        """老素材库（上一版 catalog_version）启动后要收下后来补的条目。
+
+        这条锁住版本号门控：逆行动量（COMMON_TR_002）与 C2 探索卡 13642 是分两批补进
+        清单的，只要 catalog_version 没递增，老库就看不到它们（实测见
+        tmp/library-gate-check.py 的复现）。
+        """
+        payload = fixed_catalog_payload()
+        new_ids = {
+            "common:aibp:trait:common-tr-002",
+            "c2:exploration:cards:13642",
+        }
+        self.assertTrue(new_ids <= {item["id"] for item in payload["items"]})
+        old_items = [CatalogItem(**item) for item in payload["items"] if item["id"] not in new_ids]
+        old_source = {
+            **payload["source"],
+            "catalog_version": "ATO-Local-0.2.11+complete-import-assets-14-cycle-symbols",
+        }
+        apply_catalog(self.db, old_items, old_source)
+        self.assertEqual(0, self.db.one(
+            "SELECT COUNT(*) n FROM catalog_items WHERE id IN (?,?)", tuple(new_ids))["n"])
+
+        ensure_fixed_catalog(self.db)
+        self.assertEqual(2, self.db.one(
+            "SELECT COUNT(*) n FROM catalog_items WHERE id IN (?,?)", tuple(new_ids))["n"])
+        row = self.db.one("SELECT * FROM catalog_items WHERE id=?", ("c2:exploration:cards:13642",))
+        self.assertEqual({"front": "assets/exploration-cards/c2/13642.png"}, json.loads(row["faces_json"]))
+
     def test_fixed_catalog_initializes_without_apk(self):
         empty = Database(self.root / "empty.sqlite3")
         result = ensure_fixed_catalog(empty)
         payload = fixed_catalog_payload()
-        # 2756 张固定素材（含 5 个循环图标）+ 19 首主控台 BGM
+        # 2757 张固定素材（含 5 个循环图标）+ 19 首主控台 BGM
         # （登记为「无需拍摄」，见 test_bgm_resources）。
-        self.assertEqual(2775, result["items"])
+        self.assertEqual(2776, result["items"])
         self.assertEqual(19, result["aibp_enemies"])
         self.assertEqual({"c1", "c1.5", "c2", "c2.5", "c3", "c4", "c5"}, {book["id"] for book in payload["source"]["stories"]})
         self.assertNotIn("apk", payload["source"])
@@ -139,18 +201,19 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(45, len(terrain_cards))
         self.assertTrue(any(item["number"] == "CJ1475" for item in payload["items"]))
         fixed_paths = {path for item in payload["items"] for path in item["faces"].values()}
-        # 4278 张固定素材（含 5 个循环图标）+ 19 首主控台 BGM
+        # 4279 张固定素材（含 5 个循环图标）+ 19 首主控台 BGM
         # （音频不进图片清单，随 bgmFiles 段分发）。
         bgm_paths = {path for path in fixed_paths if path.startswith("assets/bgm/")}
-        self.assertEqual(4278, len(fixed_paths - bgm_paths))
+        self.assertEqual(4279, len(fixed_paths - bgm_paths))
         self.assertEqual(19, len(bgm_paths))
-        self.assertEqual(4297, len(fixed_paths))
+        self.assertEqual(4298, len(fixed_paths))
         self.assertIn("map/images/c5-face-a.png", fixed_paths)
         self.assertIn("map/images/c5-face-b.png", fixed_paths)
         self.assertIn("aibp/ps/other/SW.jpg", fixed_paths)
         self.assertIn("aibp/ps/other/DW.jpg", fixed_paths)
         self.assertIn("aibp/ps/other/trait/COMMON_TR_001.jpg", fixed_paths)
         self.assertIn("aibp/ps/other/trait/COMMON_TR_002.jpg", fixed_paths)
+        self.assertIn("assets/exploration-cards/c2/13642.png", fixed_paths)
         self.assertIn("aibp/ps/other/trait/C4_CURSED_TR_001.jpg", fixed_paths)
         self.assertIn("aibp/ps/other/trait/C5_TR_001.jpg", fixed_paths)
         self.assertIn("aibp/ps/other/trait/C45_COMMON_TR_001.jpg", fixed_paths)
@@ -284,6 +347,40 @@ class CoreTests(unittest.TestCase):
         migrated = Database(legacy_path)
         columns = migrated.all("PRAGMA table_info(story_segments)")
         self.assertIn("metadata_json", {column["name"] for column in columns})
+
+    def test_database_migrates_legacy_pending_import_seq(self):
+        """老素材库缺 pending_files.import_seq 时也要能打开。
+
+        SCHEMA 里的 pending_status_idx 引用这个列，而 executescript(SCHEMA) 跑在加列迁移
+        之前——索引留在 SCHEMA 里会让 Database() 直接抛 no such column: import_seq，
+        老库连启动都启动不了（实测：D:\\delete 那份库就是这种老库）。
+        """
+        legacy_path = self.root / "legacy-pending.sqlite3"
+        with closing(sqlite3.connect(legacy_path)) as conn:
+            conn.execute("""CREATE TABLE pending_files (
+                id TEXT PRIMARY KEY,
+                stored_path TEXT NOT NULL,
+                original_name TEXT NOT NULL,
+                mime_type TEXT NOT NULL,
+                size INTEGER NOT NULL,
+                suggested_item_id TEXT,
+                suggested_face TEXT,
+                status TEXT NOT NULL DEFAULT 'pending',
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )""")
+            conn.execute(
+                "INSERT INTO pending_files (id, stored_path, original_name, mime_type, size)"
+                " VALUES ('p1', 'objects/aa/x.jpg', 'x.jpg', 'image/jpeg', 10)"
+            )
+            # DDL 在 sqlite3 里是自动提交的，DML 不是：不显式 commit，关连接就回滚了。
+            conn.commit()
+        migrated = Database(legacy_path)
+        columns = {column["name"] for column in migrated.all("PRAGMA table_info(pending_files)")}
+        self.assertIn("import_seq", columns)
+        row = migrated.one("SELECT import_seq FROM pending_files WHERE id='p1'")
+        self.assertGreater(row["import_seq"], 0)
+        indexes = {index["name"] for index in migrated.all("PRAGMA index_list(pending_files)")}
+        self.assertIn("pending_status_idx", indexes)
 
     def test_scanned_pdf_is_rejected(self):
         from pypdf import PdfWriter

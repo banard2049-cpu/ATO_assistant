@@ -758,6 +758,15 @@ window.ATO_EXPLORATION_CARD_TAGS = {
       "notes": "",
       "updatedAt": "2026-06-24T15:31:38.056Z"
     },
+    "c2:13642": {
+      "cycleId": "c2",
+      "cardId": "13642",
+      "removal": "permanent",
+      "draw": "chain",
+      "reviewed": true,
+      "notes": "C2 补录卡，实体卡号 BB1241。卡面印「从牌库中永久移除。」，故 removal=permanent（永久移出）；会移出的卡都要补抽，故 draw=chain（连抽）。与 C1 同名卡 6439 一致。",
+      "updatedAt": "2026-09-19T12:26:28.000Z"
+    },
     "c3:13500": {
       "cycleId": "c3",
       "cardId": "13500",

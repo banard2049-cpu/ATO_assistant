@@ -10,11 +10,11 @@
    "cornerNumber": "",
    "lines": [
     {
-     "text": "每有3 ICON(cloaked-figure glyph)，失去-1 ✕，然后失去-3 ICON(cloaked-figure glyph)。",
+     "text": "每有3 ICON(cloaked-figure glyph)，失去-1 Crew，然后失去-3 ICON(cloaked-figure glyph)。",
      "badge": ""
     },
     {
-     "text": "如果没有失去 ✕，获得+1 ICON(cloaked-figure glyph)。",
+     "text": "如果没有失去 Crew，获得+1 ICON(cloaked-figure glyph)。",
      "badge": ""
     },
     {
@@ -35,13 +35,13 @@
     }
    ],
    "otherEffects": [
-    "每有3 ICON(cloaked-figure glyph)，失去-1 ✕，然后失去-3 ICON(cloaked-figure glyph)。",
-    "如果没有失去 ✕，获得+1 ICON(cloaked-figure glyph)。",
+    "每有3 ICON(cloaked-figure glyph)，失去-1 Crew，然后失去-3 ICON(cloaked-figure glyph)。",
+    "如果没有失去 Crew，获得+1 ICON(cloaked-figure glyph)。",
     "Remove until the next Timeline Battle."
    ],
    "resourceOnly": false,
    "confidence": "medium",
-   "notes": "Chinese rules text; two glyphs unresolved: a dark cloaked-figure icon (4 uses, white round head) and a bold ✕. Badge is a dark lozenge with a white vessel glyph plus '7+'. No corner disc."
+   "notes": "Chinese rules text; two glyphs unresolved: a dark cloaked-figure icon (4 uses, white round head) and a bold ✕. Badge is a dark lozenge with a white vessel glyph plus '7+'. No corner disc. 图标命名按玩家确认：✕＝船员 Crew，黑三角带白钩＝阿尔戈号命运 Argo Fate。"
   },
   "c1:6401": {
    "key": "c1:6401",
@@ -151,7 +151,7 @@
      "badge": "Denounced"
     },
     {
-     "text": "Lose -1 ✕.",
+     "text": "Lose -1 Crew.",
      "badge": "At War"
     },
     {
@@ -187,13 +187,13 @@
     "根据你们与角誓者的外交关系结算一项效果。",
     "Chosen Argonaut gains 1 Mnemos node.",
     "Chosen Argonaut gains +1 A.",
-    "Lose -1 ✕.",
+    "Lose -1 Crew.",
     "随机一名阿尔戈英雄获得1枚绝望指示物。",
     "Remove until the next Timeline Battle."
    ],
    "resourceOnly": false,
    "confidence": "medium",
-   "notes": "Diplomacy card. Unresolved glyphs: dark cup-or-urn glyph (Allied+Unfriendly grants), dark cloaked-figure glyph (Denounced grant), bold ✕. Badge = dark lozenge with white vessel glyph plus '7+'."
+   "notes": "Diplomacy card. Unresolved glyphs: dark cup-or-urn glyph (Allied+Unfriendly grants), dark cloaked-figure glyph (Denounced grant), bold ✕. Badge = dark lozenge with white vessel glyph plus '7+'. 图标命名按玩家确认：✕＝船员 Crew，黑三角带白钩＝阿尔戈号命运 Argo Fate。"
   },
   "c1:6403": {
    "key": "c1:6403",
@@ -207,7 +207,7 @@
      "badge": ""
     },
     {
-     "text": "Gain +1 ✕ and +1 ICON(cloaked-figure glyph).",
+     "text": "Gain +1 Crew and +1 ICON(cloaked-figure glyph).",
      "badge": "Allied"
     },
     {
@@ -227,7 +227,7 @@
      "badge": "Denounced"
     },
     {
-     "text": "Gain +1 ICON(skull glyph).",
+     "text": "Gain +1 Doom Token.",
      "badge": "At War"
     },
     {
@@ -241,7 +241,7 @@
    ],
    "resourceGains": [
     {
-     "resource": "✕",
+     "resource": "Crew",
      "amount": 1,
      "badge": "Allied",
      "instead": false
@@ -271,7 +271,7 @@
      "instead": false
     },
     {
-     "resource": "ICON(skull glyph)",
+     "resource": "Doom Token",
      "amount": 1,
      "badge": "At War",
      "instead": false
@@ -286,7 +286,7 @@
    ],
    "resourceOnly": false,
    "confidence": "medium",
-   "notes": "Diplomacy card. Unresolved glyphs: bold ✕, dark cloaked-figure glyph, dark cup-or-urn glyph, and a small dark glyph with a white skull (At War grant); Neutral glyph may be 'A'."
+   "notes": "Diplomacy card. Unresolved glyphs: bold ✕, dark cloaked-figure glyph, dark cup-or-urn glyph, and a small dark glyph with a white skull (At War grant); Neutral glyph may be 'A'. 图标命名按玩家确认：✕＝船员 Crew，黑三角带白钩＝阿尔戈号命运 Argo Fate。 图标命名按玩家确认：✕＝船员 Crew，黑三角带白钩＝阿尔戈号命运 Argo Fate，骷髅＝灾祸 Doom Token，苍白徽记＝进展 Progress Token。"
   },
   "c1:6404": {
    "key": "c1:6404",
@@ -791,7 +791,7 @@
      "badge": ""
     },
     {
-     "text": "Gain +1 ICON(black triangle enclosing a white skull, small point beneath).",
+     "text": "Gain +1 Doom Token.",
      "badge": "Denounced-"
     }
    ],
@@ -804,11 +804,11 @@
     }
    ],
    "otherEffects": [
-    "Gain +1 ICON(black triangle enclosing a white skull, small point beneath)."
+    "Gain +1 Doom Token."
    ],
    "resourceOnly": false,
    "confidence": "medium",
-   "notes": "Corner disc reads 12; code AB0094. The Denounced grant is an icon-only symbol (triangle with skull) that matches none of the app's resource icons, so its name is unreadable."
+   "notes": "Corner disc reads 12; code AB0094. The Denounced grant is an icon-only symbol (triangle with skull) that matches none of the app's resource icons, so its name is unreadable. 图标命名按玩家确认：✕＝船员 Crew，黑三角带白钩＝阿尔戈号命运 Argo Fate，骷髅＝灾祸 Doom Token，苍白徽记＝进展 Progress Token。"
   },
   "c1:6420": {
    "key": "c1:6420",
@@ -1261,7 +1261,7 @@
    "cornerNumber": "",
    "lines": [
     {
-     "text": "Gain +1 ICON(black triangle with pale emblem).",
+     "text": "Gain +1 Progress Token.",
      "badge": ""
     },
     {
@@ -1271,7 +1271,7 @@
    ],
    "resourceGains": [
     {
-     "resource": "ICON(black triangle with pale emblem)",
+     "resource": "Progress Token",
      "amount": 1,
      "badge": "",
      "instead": false
@@ -1288,7 +1288,7 @@
    ],
    "resourceOnly": false,
    "confidence": "medium",
-   "notes": "Panel text fully legible. Both grants print only symbols, no resource name; 2nd grant also needs a d10 roll of 8+. Removal line is printed below the panel."
+   "notes": "Panel text fully legible. Both grants print only symbols, no resource name; 2nd grant also needs a d10 roll of 8+. Removal line is printed below the panel. 图标命名按玩家确认：✕＝船员 Crew，黑三角带白钩＝阿尔戈号命运 Argo Fate，骷髅＝灾祸 Doom Token，苍白徽记＝进展 Progress Token。"
   },
   "c1:6436": {
    "key": "c1:6436",
@@ -1372,23 +1372,23 @@
    "cornerNumber": "",
    "lines": [
     {
-     "text": "Gain +1 ICON(black triangle with white skull).",
+     "text": "Gain +1 Doom Token.",
      "badge": ""
     },
     {
-     "text": "Gain +2 ICON(black triangle with white skull) instead.",
+     "text": "Gain +2 Doom Token instead.",
      "badge": "ICON(black hexagon with triangle-hook glyph)/7+"
     }
    ],
    "resourceGains": [
     {
-     "resource": "ICON(black triangle with white skull)",
+     "resource": "Doom Token",
      "amount": 1,
      "badge": "",
      "instead": false
     },
     {
-     "resource": "ICON(black triangle with white skull)",
+     "resource": "Doom Token",
      "amount": 2,
      "badge": "ICON(black hexagon with triangle-hook glyph)/7+",
      "instead": true
@@ -1399,7 +1399,7 @@
    ],
    "resourceOnly": false,
    "confidence": "medium",
-   "notes": "Divider inside the panel separates the base grant from the replacement. Grant is a symbol only (black triangle enclosing a white skull); no resource name printed."
+   "notes": "Divider inside the panel separates the base grant from the replacement. Grant is a symbol only (black triangle enclosing a white skull); no resource name printed. 图标命名按玩家确认：✕＝船员 Crew，黑三角带白钩＝阿尔戈号命运 Argo Fate，骷髅＝灾祸 Doom Token，苍白徽记＝进展 Progress Token。"
   },
   "c1:6439": {
    "key": "c1:6439",
@@ -1409,29 +1409,29 @@
    "cornerNumber": "",
    "lines": [
     {
-     "text": "Gain +1 ICON(crossed oars).",
+     "text": "Gain +1 Crew.",
      "badge": ""
     },
     {
-     "text": "Lose -1 ICON(black triangle with white hook).",
+     "text": "Lose -1 Argo Fate.",
      "badge": "Allied"
     }
    ],
    "resourceGains": [
     {
-     "resource": "ICON(crossed oars)",
+     "resource": "Crew",
      "amount": 1,
      "badge": "",
      "instead": false
     }
    ],
    "otherEffects": [
-    "Lose -1 ICON(black triangle with white hook).",
+    "Lose -1 Argo Fate.",
     "Remove from the deck permanently."
    ],
    "resourceOnly": false,
    "confidence": "medium",
-   "notes": "Both quantities are printed as symbols: two crossed oar/weapon shapes (gain) and a black triangle enclosing a white hook (loss). Removal text below the panel reads 'permanently'."
+   "notes": "Both quantities are printed as symbols: two crossed oar/weapon shapes (gain) and a black triangle enclosing a white hook (loss). Removal text below the panel reads 'permanently'. 图标命名按玩家确认：✕＝船员 Crew，黑三角带白钩＝阿尔戈号命运 Argo Fate。"
   },
   "c1:6440": {
    "key": "c1:6440",
@@ -3088,6 +3088,38 @@
    "confidence": "medium",
    "notes": "Badge lozenge reads 'Allied' clearly. Both resource glyphs are small dark icons (banner-like, structure-like) that I could not resolve to printed names."
   },
+  "c2:13642": {
+   "key": "c2:13642",
+   "titleEn": "RECRUITMENT DRIVE",
+   "titleZh": "招募活动",
+   "cardCode": "BB1241",
+   "cornerNumber": "",
+   "lines": [
+    {
+     "text": "Gain +1 Crew.",
+     "badge": ""
+    },
+    {
+     "text": "Lose -1 Argo Fate.",
+     "badge": "Allied"
+    }
+   ],
+   "resourceGains": [
+    {
+     "resource": "Crew",
+     "amount": 1,
+     "badge": "",
+     "instead": false
+    }
+   ],
+   "otherEffects": [
+    "Lose -1 Argo Fate.",
+    "Remove from the deck permanently."
+   ],
+   "resourceOnly": false,
+   "confidence": "high",
+   "notes": "官方 C2 印刷版（实体卡号 BB1241），逐字读自卡图 assets/exploration-cards/c2/13642.png：正文「获得1✕。」+ 徽章「结盟」下的「失去1(黑三角带白钩)」，底部「从牌库中永久移除。」。与 C1 同名卡 6439、C5 Cyclades Recruitment Drive 属同一族，三张的文字结构一致。 图标命名按玩家确认：✕＝船员 Crew，黑三角带白钩＝阿尔戈号命运 Argo Fate。"
+  },
   "c3:13500": {
    "key": "c3:13500",
    "titleEn": "Abyss Listens",
@@ -4174,7 +4206,7 @@
      "badge": "Denounced"
     },
     {
-     "text": "Lose -1 ✕.",
+     "text": "Lose -1 Crew.",
      "badge": "At War"
     },
     {
@@ -4216,13 +4248,13 @@
    ],
    "otherEffects": [
     "Resolve an effect based on your Diplomacy with the Twilight Watch.",
-    "Lose -1 ✕.",
+    "Lose -1 Crew.",
     "Random Argonaut gains 1 Fated Mnemos card.",
     "Remove until the next Timeline Battle."
    ],
    "resourceOnly": false,
    "confidence": "medium",
-   "notes": "Title printed on two lines (TWILIGHT / PATHFINDER). Allied and Neutral glyphs are two different dark shapes whose names are unresolved; badge inner glyph tiny."
+   "notes": "Title printed on two lines (TWILIGHT / PATHFINDER). Allied and Neutral glyphs are two different dark shapes whose names are unresolved; badge inner glyph tiny. 图标命名按玩家确认：✕＝船员 Crew，黑三角带白钩＝阿尔戈号命运 Argo Fate。"
   },
   "c3:13532": {
    "key": "c3:13532",
@@ -4236,7 +4268,7 @@
      "badge": ""
     },
     {
-     "text": "Gain +1 ✕ and +1 ICON(outlined slanted angular glyph with white bars).",
+     "text": "Gain +1 Crew and +1 ICON(outlined slanted angular glyph with white bars).",
      "badge": "Allied"
     },
     {
@@ -4252,7 +4284,7 @@
      "badge": "Unfriendly"
     },
     {
-     "text": "Lose -1 ✕ or -1 ICON(black disc with white emblem).",
+     "text": "Lose -1 Crew or -1 ICON(black disc with white emblem).",
      "badge": "Denounced"
     },
     {
@@ -4266,7 +4298,7 @@
    ],
    "resourceGains": [
     {
-     "resource": "✕",
+     "resource": "Crew",
      "amount": 1,
      "badge": "Allied",
      "instead": false
@@ -4294,13 +4326,13 @@
     "Resolve an effect based on your Diplomacy with the Sunheirs.",
     "Place 1 ICON(outlined slanted angular glyph with white bars) on Inward Odyssey.",
     "Each Argonaut gains +1 Ψ.",
-    "Lose -1 ✕ or -1 ICON(black disc with white emblem).",
+    "Lose -1 Crew or -1 ICON(black disc with white emblem).",
     "Random Argonaut gains 1 Fated Mnemos card.",
     "Remove until the next Timeline Battle."
    ],
    "resourceOnly": false,
    "confidence": "medium",
-   "notes": "All seven lozenges legible; the Friendly line is a placement, not a grant. Small dark grant glyphs (slanted, solid triangle, pale triangle, disc) have unresolved names; badge inner glyph tiny."
+   "notes": "All seven lozenges legible; the Friendly line is a placement, not a grant. Small dark grant glyphs (slanted, solid triangle, pale triangle, disc) have unresolved names; badge inner glyph tiny. 图标命名按玩家确认：✕＝船员 Crew，黑三角带白钩＝阿尔戈号命运 Argo Fate。"
   },
   "c3:13533": {
    "key": "c3:13533",
@@ -4331,7 +4363,7 @@
    "cornerNumber": "",
    "lines": [
     {
-     "text": "Lose -1 Frozen Time and either -1 ✕ or -1 ICON(black disc with white emblem).",
+     "text": "Lose -1 Frozen Time and either -1 Crew or -1 ICON(black disc with white emblem).",
      "badge": "ICON(outlined slanted angular glyph with white bars)/3+"
     },
     {
@@ -4356,14 +4388,14 @@
     }
    ],
    "otherEffects": [
-    "Lose -1 Frozen Time and either -1 ✕ or -1 ICON(black disc with white emblem).",
+    "Lose -1 Frozen Time and either -1 Crew or -1 ICON(black disc with white emblem).",
     "有2张回忆卡且回忆节点总数最多的一名阿尔戈英雄将它的回忆卡节点数量互相交换。",
     "在之后的故事步骤中结算因此导致的回忆突破。",
     "Remove until the next Timeline Battle."
    ],
    "resourceOnly": false,
    "confidence": "medium",
-   "notes": "No corner disc; code CB1657. Two badge-conditioned blocks (3+ and 4+); the Chinese block split into its two sentences. Badge and gain glyphs are tiny dark angular icons, names unresolved."
+   "notes": "No corner disc; code CB1657. Two badge-conditioned blocks (3+ and 4+); the Chinese block split into its two sentences. Badge and gain glyphs are tiny dark angular icons, names unresolved. 图标命名按玩家确认：✕＝船员 Crew，黑三角带白钩＝阿尔戈号命运 Argo Fate。"
   },
   "c3:13535": {
    "key": "c3:13535",
@@ -6261,7 +6293,7 @@
    "cornerNumber": "27",
    "lines": [
     {
-     "text": "If you have 3+ ICON(small dark resource glyph), lose -1 ✕.",
+     "text": "If you have 3+ ICON(small dark resource glyph), lose -1 Crew.",
      "badge": ""
     },
     {
@@ -6269,11 +6301,11 @@
      "badge": ""
     },
     {
-     "text": "If no ✕ was lost, gain +1 ICON(small dark resource glyph).",
+     "text": "If no Crew was lost, gain +1 ICON(small dark resource glyph).",
      "badge": ""
     },
     {
-     "text": "You cannot lose ✕ from this effect if you only had 1 ✕ to begin with.",
+     "text": "You cannot lose Crew from this effect if you only had 1 Crew to begin with.",
      "badge": ""
     },
     {
@@ -6290,15 +6322,15 @@
     }
    ],
    "otherEffects": [
-    "If you have 3+ ICON(small dark resource glyph), lose -1 ✕.",
+    "If you have 3+ ICON(small dark resource glyph), lose -1 Crew.",
     "Then lose -3 ICON(small dark resource glyph).",
-    "If no ✕ was lost, gain +1 ICON(small dark resource glyph).",
-    "You cannot lose ✕ from this effect if you only had 1 ✕ to begin with.",
+    "If no Crew was lost, gain +1 ICON(small dark resource glyph).",
+    "You cannot lose Crew from this effect if you only had 1 Crew to begin with.",
     "Remove until the next Timeline Battle."
    ],
    "resourceOnly": false,
    "confidence": "medium",
-   "notes": "✕ is printed as a bold crossed glyph, kept verbatim; the tracked/gained resource is an icon-only dark glyph. Badge reads 7+. Italic 'Remove until the next Timeline Battle.' below the panel. Disc 27, code DB2113."
+   "notes": "✕ is printed as a bold crossed glyph, kept verbatim; the tracked/gained resource is an icon-only dark glyph. Badge reads 7+. Italic 'Remove until the next Timeline Battle.' below the panel. Disc 27, code DB2113. 图标命名按玩家确认：✕＝船员 Crew，黑三角带白钩＝阿尔戈号命运 Argo Fate。"
   },
   "c4:9341": {
    "key": "c4:9341",
@@ -6649,7 +6681,7 @@
      "badge": ""
     },
     {
-     "text": "Gain +1 ✕ and lose -1 Titan.",
+     "text": "Gain +1 Crew and lose -1 Titan.",
      "badge": "Allied"
     },
     {
@@ -6665,7 +6697,7 @@
      "badge": "Denounced"
     },
     {
-     "text": "Lose -1 ✕.",
+     "text": "Lose -1 Crew.",
      "badge": "Aligned with Nemesis"
     },
     {
@@ -6675,7 +6707,7 @@
    ],
    "resourceGains": [
     {
-     "resource": "✕",
+     "resource": "Crew",
      "amount": 1,
      "badge": "Allied",
      "instead": false
@@ -6697,12 +6729,12 @@
     "Resolve an effect based on your Diplomacy with the Followers of Areté.",
     "lose -1 Titan.",
     "Each Argonaut gains +2 Ψ.",
-    "Lose -1 ✕.",
+    "Lose -1 Crew.",
     "Random Argonaut gains a random Phobia Affliction."
    ],
    "resourceOnly": false,
    "confidence": "medium",
-   "notes": "Words/digits clear; the Unfriendly grant's dark pictogram is unresolved (hand-like), as is the badge's tiny white glyph. Disc 33, code EB2680."
+   "notes": "Words/digits clear; the Unfriendly grant's dark pictogram is unresolved (hand-like), as is the badge's tiny white glyph. Disc 33, code EB2680. 图标命名按玩家确认：✕＝船员 Crew，黑三角带白钩＝阿尔戈号命运 Argo Fate。"
   },
   "c5:10301": {
    "key": "c5:10301",
@@ -6720,7 +6752,7 @@
      "badge": "Allied"
     },
     {
-     "text": "Gain +1 ✕.",
+     "text": "Gain +1 Crew.",
      "badge": "Friendly"
     },
     {
@@ -6752,7 +6784,7 @@
      "instead": false
     },
     {
-     "resource": "✕",
+     "resource": "Crew",
      "amount": 1,
      "badge": "Friendly",
      "instead": false
@@ -6783,7 +6815,7 @@
    ],
    "resourceOnly": false,
    "confidence": "medium",
-   "notes": "Words/digits clear. Dark pictograms unresolved: V-notch glyph (Allied/Denounced), hand-like glyph (Unfriendly), white-emblem glyph (Aligned). Badge glyph tiny; 9+. Disc 32."
+   "notes": "Words/digits clear. Dark pictograms unresolved: V-notch glyph (Allied/Denounced), hand-like glyph (Unfriendly), white-emblem glyph (Aligned). Badge glyph tiny; 9+. Disc 32. 图标命名按玩家确认：✕＝船员 Crew，黑三角带白钩＝阿尔戈号命运 Argo Fate。"
   },
   "c5:10302": {
    "key": "c5:10302",
@@ -6797,7 +6829,7 @@
      "badge": ""
     },
     {
-     "text": "Gain +1 ✕ and +1 ICON(dark glyph with a white V-notch).",
+     "text": "Gain +1 Crew and +1 ICON(dark glyph with a white V-notch).",
      "badge": "Allied"
     },
     {
@@ -6827,7 +6859,7 @@
    ],
    "resourceGains": [
     {
-     "resource": "✕",
+     "resource": "Crew",
      "amount": 1,
      "badge": "Allied",
      "instead": false
@@ -6865,7 +6897,7 @@
    ],
    "resourceOnly": false,
    "confidence": "medium",
-   "notes": "Words/digits clear. Dark pictograms unresolved: V-notch (Allied/Unfriendly) and hand-like (Friendly/Denounced/Aligned). Badge glyph tiny; 9+. Λ may be a crossbar-less A. Disc 31."
+   "notes": "Words/digits clear. Dark pictograms unresolved: V-notch (Allied/Unfriendly) and hand-like (Friendly/Denounced/Aligned). Badge glyph tiny; 9+. Λ may be a crossbar-less A. Disc 31. 图标命名按玩家确认：✕＝船员 Crew，黑三角带白钩＝阿尔戈号命运 Argo Fate。"
   },
   "c5:10303": {
    "key": "c5:10303",
@@ -6933,7 +6965,7 @@
    "cornerNumber": "",
    "lines": [
     {
-     "text": "Unless you are submerged, emergency submerge or lose -1 ✕.",
+     "text": "Unless you are submerged, emergency submerge or lose -1 Crew.",
      "badge": ""
     },
     {
@@ -6943,12 +6975,12 @@
    ],
    "resourceGains": [],
    "otherEffects": [
-    "Unless you are submerged, emergency submerge or lose -1 ✕.",
+    "Unless you are submerged, emergency submerge or lose -1 Crew.",
     "Resolve ICON(black disc with a white beast-head emblem)."
    ],
    "resourceOnly": false,
    "confidence": "medium",
-   "notes": "All wording/digits clear. ✕ glyph and the white beast-head disc glyph unresolved. No corner disc; code EB2675. Badge threshold 8+ (tiny white pictogram)."
+   "notes": "All wording/digits clear. ✕ glyph and the white beast-head disc glyph unresolved. No corner disc; code EB2675. Badge threshold 8+ (tiny white pictogram). 图标命名按玩家确认：✕＝船员 Crew，黑三角带白钩＝阿尔戈号命运 Argo Fate。"
   },
   "c5:10306": {
    "key": "c5:10306",
@@ -6958,11 +6990,11 @@
    "cornerNumber": "",
    "lines": [
     {
-     "text": "If you have 3+ ICON(small dark hand-like glyph), lose -1 ✕ and lose -3 ICON(small dark hand-like glyph).",
+     "text": "If you have 3+ ICON(small dark hand-like glyph), lose -1 Crew and lose -3 ICON(small dark hand-like glyph).",
      "badge": ""
     },
     {
-     "text": "You cannot lose ✕ from this effect if you only had 1 ✕ to begin with.",
+     "text": "You cannot lose Crew from this effect if you only had 1 Crew to begin with.",
      "badge": ""
     },
     {
@@ -6979,12 +7011,12 @@
     }
    ],
    "otherEffects": [
-    "If you have 3+ ICON(small dark hand-like glyph), lose -1 ✕ and lose -3 ICON(small dark hand-like glyph).",
-    "You cannot lose ✕ from this effect if you only had 1 ✕ to begin with."
+    "If you have 3+ ICON(small dark hand-like glyph), lose -1 Crew and lose -3 ICON(small dark hand-like glyph).",
+    "You cannot lose Crew from this effect if you only had 1 Crew to begin with."
    ],
    "resourceOnly": false,
    "confidence": "medium",
-   "notes": "Wording/numbers clear. The small dark pictogram (3 uses) and the ✕ glyph are unresolved; badge pictogram tiny, threshold 7+ clear. No corner disc; code EB2674."
+   "notes": "Wording/numbers clear. The small dark pictogram (3 uses) and the ✕ glyph are unresolved; badge pictogram tiny, threshold 7+ clear. No corner disc; code EB2674. 图标命名按玩家确认：✕＝船员 Crew，黑三角带白钩＝阿尔戈号命运 Argo Fate。"
   },
   "c5:10307": {
    "key": "c5:10307",
@@ -7021,7 +7053,7 @@
    "cornerNumber": "",
    "lines": [
     {
-     "text": "Gain +1 ✕.",
+     "text": "Gain +1 Crew.",
      "badge": ""
     },
     {
@@ -7031,7 +7063,7 @@
    ],
    "resourceGains": [
     {
-     "resource": "✕",
+     "resource": "Crew",
      "amount": 1,
      "badge": "",
      "instead": false
@@ -7042,7 +7074,7 @@
    ],
    "resourceOnly": false,
    "confidence": "medium",
-   "notes": "Badge 'Allied' clear; thin divider above it. Grant glyph is the crossed-blades mark (kept as ✕ per c5:10301). Loss glyph is a dark shape with a pale hand-like mark, unresolved. Code EB2721; no disc."
+   "notes": "Badge 'Allied' clear; thin divider above it. Grant glyph is the crossed-blades mark (kept as ✕ per c5:10301). Loss glyph is a dark shape with a pale hand-like mark, unresolved. Code EB2721; no disc. 图标命名按玩家确认：✕＝船员 Crew，黑三角带白钩＝阿尔戈号命运 Argo Fate。"
   },
   "c5:10309": {
    "key": "c5:10309",

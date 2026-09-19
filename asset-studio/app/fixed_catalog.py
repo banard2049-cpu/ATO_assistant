@@ -1067,6 +1067,17 @@ def fixed_catalog_payload() -> dict[str, Any]:
         faces={"front": "assets/exploration-cards/c1/8201.png"},
     ))
 
+    # C2 补录卡：实体卡号 BB1241「招募活动 / RECRUITMENT DRIVE」。app 的牌组列表
+    # （index.html 的 explorationDecks.c2）跳过了 BB1239–BB1241，清单自然也没有这张。
+    # 卡号取 C2 段的下一号 13642（不动既有卡号：它同时是牌库键、标签键和图片文件名），
+    # sort_order 接在 C2 现有探索卡之后（C2 那批是 41–82）。
+    additions.append(CatalogItem(
+        id=make_id("c2", "exploration", "cards", "13642", "13642"),
+        cycle="c2", module="探索卡", subgroup="探索卡",
+        name="13642", number="13642", sort_order=83,
+        faces={"front": "assets/exploration-cards/c2/13642.png"},
+    ))
+
     # AIBP overview sheets, shared physical cards, and cycle traits are useful
     # capture/install targets, not the audit/contact-sheet derivatives that the
     # original APK catalog builder intentionally skipped.
@@ -1359,7 +1370,14 @@ def fixed_catalog_payload() -> dict[str, Any]:
     for order, item in enumerate(c1_exploration):
         item["sort_order"] = order
     payload["source"]["catalog_items"] = len(payload["items"])
-    payload["source"]["catalog_version"] = "ATO-Local-0.2.11+complete-import-assets-14-cycle-symbols"
+    # 新增或改动清单条目时**必须**给这个版本号加后缀：ensure_fixed_catalog() 只在库里的
+    # catalog_version 与这里不同时才重写清单，否则老素材库永远收不到新条目（看不到、
+    # 也就不会提示补图、更不会进资料包）。apply_catalog 只用 insert/update，并删除
+    # 「既不在新清单、也没有素材」的条目，已有素材不会被碰。
+    payload["source"]["catalog_version"] = (
+        "ATO-Local-0.2.11+complete-import-assets-14-cycle-symbols"
+        "+c45-trait-common-tr-002+c2-exploration-13642"
+    )
     return payload
 
 

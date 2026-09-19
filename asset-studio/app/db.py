@@ -106,8 +106,9 @@ CREATE TABLE IF NOT EXISTS pending_files (
   import_seq INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-CREATE INDEX IF NOT EXISTS pending_status_idx
-  ON pending_files(status, created_at, import_seq);
+-- pending_status_idx 不写在这里：老库的 pending_files 没有 import_seq 列，而
+-- executescript(SCHEMA) 跑在下面的加列迁移之前，索引一旦引用它就会让整个 Database()
+-- 打不开老素材库（no such column: import_seq）。索引改到迁移之后建。
 
 CREATE TABLE IF NOT EXISTS upload_sessions (
   id TEXT PRIMARY KEY,
@@ -167,6 +168,11 @@ class Database:
                 # Physical insertion order is the closest available record of
                 # the real import order for rows already in the table.
                 conn.execute("UPDATE pending_files SET import_seq=rowid")
+            # 索引在这之后建：老库要先补上 import_seq 列（见 SCHEMA 里的说明）。
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS pending_status_idx "
+                "ON pending_files(status, created_at, import_seq)"
+            )
 
     @contextmanager
     def connect(self) -> Iterator[sqlite3.Connection]:
