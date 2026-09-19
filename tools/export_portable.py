@@ -98,6 +98,8 @@ def build_docker(version: str) -> Path:
     stage.mkdir(parents=True)
     app = stage / "app"
     prepare_site(app, version)
+    # 外层分发包和镜像内的应用都保留许可证；两层分别接受产物审计。
+    shutil.copy2(app / "LICENSE", stage / "LICENSE")
     (stage / "data").mkdir()
     # compose 把这张底图作为单文件挂进容器（公开镜像里没有官方素材）。文件缺失时
     # Docker 会建一个同名目录顶上，版图背景就废了，所以包里先放一个占位文件；
