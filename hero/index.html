@@ -953,7 +953,7 @@
     </div>
   </main>
 <!-- PLACEHOLDER_SCRIPT -->
-  <script src="../cycle-symbols.js?v=20260918"></script>
+  <script src="../assets/cycle-symbols.js?v=20260918"></script>
   <script>
     const storageKey = "ato-hero-record-v1";
     const serverStorageUrl = "../api/campaign-state.php";
@@ -1503,6 +1503,17 @@
       return count;
     }
 
+    // 判定用「复合排序」，不是「先主判据、分不出才用次判据」。
+    // 先比回忆卡张数，张数相同再比轨道推进的格数（1–10 那排格子），两者一起决定名次。
+    //
+    // 差别很关键：若写成「主判据有胜负就不再管次判据」，那么卡数并列最多的几个人会被
+    // 一起判成最大似然——连其中轨道推得最少的那个也算，这就是「节点多的和少的都是
+    // 最大似然」的来由。复合排序保证最大/最小各只有一个（真·全员同分时才不打标记）。
+    function heroMnemosRankCompare(left, right) {
+      if (left.cards !== right.cards) return left.cards - right.cards;
+      return left.track - right.track;
+    }
+
     function computeLikelihood() {
       if (state.heroes.length < 2) return {};
       const rows = state.heroes.map(h => ({
@@ -1510,26 +1521,15 @@
         cards: heroMnemosCardCount(h),
         track: heroMnemosTrackCount(h),
       }));
-      // 主判据
-      let rankOf = (row) => row.cards;
-      let values = rows.map(rankOf);
-      let max = Math.max(...values);
-      let min = Math.min(...values);
-      if (max === min) {
-        // 张数全相同，退化到次判据：轨道已推进格数
-        rankOf = (row) => row.track;
-        values = rows.map(rankOf);
-        max = Math.max(...values);
-        min = Math.min(...values);
+      let best = rows[0];
+      let worst = rows[0];
+      for (const row of rows) {
+        if (heroMnemosRankCompare(row, best) > 0) best = row;
+        if (heroMnemosRankCompare(row, worst) < 0) worst = row;
       }
-      if (max === min) return {};
-      const result = {};
-      rows.forEach(row => {
-        const value = rankOf(row);
-        if (value === max) result[row.id] = "most";
-        else if (value === min) result[row.id] = "least";
-      });
-      return result;
+      // 全员同分（张数与格数都一样）：分不出最大最小，不打标记
+      if (heroMnemosRankCompare(best, worst) === 0) return {};
+      return { [best.id]: "most", [worst.id]: "least" };
     }
 
     function heroDisplayName(hero) {

@@ -60,7 +60,7 @@ function extractConst(name) {
   return match[1];
 }
 
-const FUNCTIONS = ['heroMnemosCardCount', 'heroMnemosTrackCount', 'computeLikelihood'];
+const FUNCTIONS = ['heroMnemosCardCount', 'heroMnemosTrackCount', 'heroMnemosRankCompare', 'computeLikelihood'];
 const CONSTANTS = { MNEMOS_TRACK_LENGTH: extractConst('MNEMOS_TRACK_LENGTH') };
 
 function makeEnv(heroes) {
@@ -201,6 +201,43 @@ test('判据函数本身：卡数跨循环累加；轨道格数逐卡累加且�
 test('轨道格数对进度做上限保护，不会超过 10 格', () => {
   const env = makeEnv([hero('a', { cards: [{ cycle: 'c1', progress: 99 }] })]);
   assert.equal(env.heroMnemosTrackCount(env.state.heroes[0]), TRACK_LENGTH, `进度异常时最多算 ${TRACK_LENGTH} 格`);
+});
+
+// 回归：判据必须是「复合排序」，不能在主判据分出胜负后就丢掉次判据。
+// 旧实现只在「所有英雄卡数完全相同」时才看次判据，于是卡数并列最多的几个人会被一起
+// 判成最大似然——连其中轨道推得最少的那个也算。
+test('回归：卡数并列最多时，轨道推得少的那个不该也被判最大似然', () => {
+  const env = makeEnv([
+    hero('a', { cards: [{ cycle: 'c1', progress: 10 }, { cycle: 'c1', progress: 10 }] }), // cards=2 track=20
+    hero('b', { cards: [{ cycle: 'c1', progress: 2 }, { cycle: 'c1', progress: 2 }] }),   // cards=2 track=4
+    hero('c', { cards: [{ cycle: 'c1', progress: 5 }] }),                                 // cards=1 track=5
+  ]);
+  const result = env.computeLikelihood();
+  const detail = describe(env, result);
+  assert.equal(result.a, 'most', `卡数相同、轨道最多的 a 才是最大似然 — ${detail}`);
+  assert.equal(result.b, undefined, `b 卡数与 a 并列但轨道少，不该判最大似然 — ${detail}`);
+  assert.equal(result.c, 'least', `c 卡数最少，是最小似然 — ${detail}`);
+});
+
+test('最大与最小各只有一个（并列也不会重复打标记）', () => {
+  const env = makeEnv([
+    hero('a', { cards: [{ cycle: 'c1', progress: 10 }, { cycle: 'c1', progress: 10 }] }),
+    hero('b', { cards: [{ cycle: 'c1', progress: 10 }, { cycle: 'c1', progress: 10 }] }),
+    hero('c', { cards: [{ cycle: 'c1', progress: 1 }] }),
+    hero('d', { cards: [{ cycle: 'c1', progress: 2 }] }),
+  ]);
+  const result = env.computeLikelihood();
+  const values = Object.values(result);
+  assert.equal(values.filter((v) => v === 'most').length, 1, '最大似然只标一个');
+  assert.equal(values.filter((v) => v === 'least').length, 1, '最小似然只标一个');
+});
+
+test('复合排序：先比卡数，卡数相同才用轨道格数细分', () => {
+  const env = makeEnv([hero('a'), hero('b')]);
+  const compare = env.heroMnemosRankCompare;
+  assert.ok(compare({ cards: 2, track: 0 }, { cards: 1, track: 10 }) > 0, '卡数优先：2 张的空轨道仍大于 1 张的满轨道');
+  assert.ok(compare({ cards: 1, track: 10 }, { cards: 1, track: 3 }) > 0, '卡数相同才比轨道格数');
+  assert.equal(compare({ cards: 2, track: 7 }, { cards: 2, track: 7 }), 0, '两项都相同即同分');
 });
 
 // 数据侧的一致性：所有回忆卡的节点都固定落在第 3/7/10 格，轨道因此统一是 10 格。
