@@ -44,8 +44,10 @@ BLOCKED_TOP = {
 BLOCKED_LEAVES = {
     ".ds_store", ".gitattributes", ".gitignore", "dockerfile",
     "docker-compose.yml", "docker-compose.yaml",
-    # NAS 变体与上面两份 compose 同类：都是本机部署脚本，不该随包发布
-    # （.gitignore 不管它，它是受跟踪文件，只能在这里独立封杀）。
+    # 本机 Docker 部署脚本都归在这里：docker-compose.yml 与曾经的 NAS 变体
+    # docker-compose.nas.yml。两者都是受跟踪文件，.gitignore 不管它们，只能在
+    # 这里封杀。nas.yml 已删除（与 docker-compose.yml 逐行重复，唯一差异是容器名），
+    # 这条规则留着防它被误恢复后跟着整包发出去。
     "docker-compose.nas.yml",
 } | LOCAL_SCRATCH_LEAVES
 BLOCKED_SUFFIXES = (

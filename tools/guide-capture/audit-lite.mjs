@@ -24,7 +24,7 @@ const BLOCKED_PATH_PATTERNS = [
 
 const ALLOWED_PATHS = new Set([
   'assets/ato-terms.js', 'assets/bgm/README.md', 'assets/bgm/bgm.js', 'assets/bgm/manifest.js',
-  'assets/campaign-session.js', 'assets/exploration-card-rules.js',
+  'assets/campaign-session.js', 'assets/cycle-symbols.js', 'assets/exploration-card-rules.js',
   'assets/exploration-card-resource-rules.js', 'assets/exploration-card-resources.js',
   'assets/exploration-card-tags.js', 'assets/page-focus-router.js',
   'assets/story-doom-card-data.js', 'assets/term-language.js', 'assets/update/app-version.js',

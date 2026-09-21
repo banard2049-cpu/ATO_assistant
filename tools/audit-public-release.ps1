@@ -45,6 +45,7 @@ $allowedPaths = @(
   'assets/bgm/bgm.js',
   'assets/bgm/manifest.js',
   'assets/campaign-session.js',
+  'assets/cycle-symbols.js',
   'assets/exploration-card-rules.js',
   'assets/exploration-card-resource-rules.js',
   'assets/exploration-card-resources.js',

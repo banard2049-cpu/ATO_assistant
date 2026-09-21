@@ -1508,7 +1508,8 @@
     //
     // 差别很关键：若写成「主判据有胜负就不再管次判据」，那么卡数并列最多的几个人会被
     // 一起判成最大似然——连其中轨道推得最少的那个也算，这就是「节点多的和少的都是
-    // 最大似然」的来由。复合排序保证最大/最小各只有一个（真·全员同分时才不打标记）。
+    // 最大似然」的来由。复合排序下只有「张数与格数都完全相同」才算同一名次，完全并列的
+    // 几位一起打标记；真·全员同分（谁都分不出高低）时才不打标记。
     function heroMnemosRankCompare(left, right) {
       if (left.cards !== right.cards) return left.cards - right.cards;
       return left.track - right.track;
@@ -1529,7 +1530,14 @@
       }
       // 全员同分（张数与格数都一样）：分不出最大最小，不打标记
       if (heroMnemosRankCompare(best, worst) === 0) return {};
-      return { [best.id]: "most", [worst.id]: "least" };
+      // 复合排序完全并列的几位（回忆卡张数与轨道推进格数都一样）本来就是同一个名次，
+      // 一起打标记；只给最先遇到的那个打标记，标记会随英雄排列顺序「跳人」。
+      const result = {};
+      for (const row of rows) {
+        if (heroMnemosRankCompare(row, best) === 0) result[row.id] = "most";
+        else if (heroMnemosRankCompare(row, worst) === 0) result[row.id] = "least";
+      }
+      return result;
     }
 
     function heroDisplayName(hero) {

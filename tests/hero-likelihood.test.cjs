@@ -1,9 +1,10 @@
 /*
  * 英雄「最大 / 最小似然」判定回归。
  *
- * 判定是两级判据，顺序不能颠倒（旧实现只有次判据，且次判据本身也算错了）：
+ * 判定是两级复合判据，顺序不能颠倒（旧实现只有次判据，且次判据本身也算错了）：
  *   1. 回忆卡张数（宿命回忆 fatedMnemos 不算）——多者最大似然、少者最小似然；
  *   2. 张数相同时，才比轨道上已推进的格数（1–10 那排格子，节点格同样计入）。
+ * 两级都完全相同才算同一名次：完全并列的几位一起打标记（真·全员同分才都不打标记）。
  *
  * 两处历史错误都被钉在这里：
  *   - computeLikelihood() 曾直接拿「轨道格数」当唯一判据，于是「卡少但推得深」的英雄
@@ -219,17 +220,36 @@ test('回归：卡数并列最多时，轨道推得少的那个不该也被判�
   assert.equal(result.c, 'least', `c 卡数最少，是最小似然 — ${detail}`);
 });
 
-test('最大与最小各只有一个（并列也不会重复打标记）', () => {
+// 复合排序完全并列（记忆卡张数与记忆节点推进都一样）时，这几位本来就是同一个名次，
+// 应当一起打标记。上一版为了「极值唯一」只取最先遇到的那个，标记会随英雄顺序「跳人」。
+test('回归：卡数与节点推进都相同的最多者，一起判最大似然', () => {
   const env = makeEnv([
-    hero('a', { cards: [{ cycle: 'c1', progress: 10 }, { cycle: 'c1', progress: 10 }] }),
-    hero('b', { cards: [{ cycle: 'c1', progress: 10 }, { cycle: 'c1', progress: 10 }] }),
-    hero('c', { cards: [{ cycle: 'c1', progress: 1 }] }),
-    hero('d', { cards: [{ cycle: 'c1', progress: 2 }] }),
+    hero('a', { cards: [{ cycle: 'c1', progress: 10 }, { cycle: 'c1', progress: 10 }] }), // cards=2 track=20
+    hero('b', { cards: [{ cycle: 'c1', progress: 10 }, { cycle: 'c1', progress: 10 }] }), // cards=2 track=20
+    hero('c', { cards: [{ cycle: 'c1', progress: 1 }] }),                                 // cards=1 track=1
+    hero('d', { cards: [{ cycle: 'c1', progress: 2 }] }),                                 // cards=1 track=2
   ]);
   const result = env.computeLikelihood();
-  const values = Object.values(result);
-  assert.equal(values.filter((v) => v === 'most').length, 1, '最大似然只标一个');
-  assert.equal(values.filter((v) => v === 'least').length, 1, '最小似然只标一个');
+  const detail = describe(env, result);
+  assert.equal(result.a, 'most', `a 与 b 完全同分，都该判最大似然 — ${detail}`);
+  assert.equal(result.b, 'most', `b 与 a 完全同分，都该判最大似然 — ${detail}`);
+  assert.equal(result.c, 'least', `c 推进最少，是最小似然 — ${detail}`);
+  assert.equal(result.d, undefined, `d 与 c 张数并列但推进不同，不算同分 — ${detail}`);
+});
+
+test('回归：卡数与节点推进都相同的最少者，一起判最小似然', () => {
+  const env = makeEnv([
+    hero('a', { cards: [{ cycle: 'c1', progress: 9 }, { cycle: 'c1', progress: 9 }] }), // cards=2 track=18
+    hero('b', { cards: [{ cycle: 'c1', progress: 1 }] }),                              // cards=1 track=1
+    hero('c', { cards: [{ cycle: 'c1', progress: 1 }] }),                              // cards=1 track=1
+    hero('d', { cards: [{ cycle: 'c1', progress: 3 }] }),                              // cards=1 track=3
+  ]);
+  const result = env.computeLikelihood();
+  const detail = describe(env, result);
+  assert.equal(result.a, 'most', `a 卡最多，是最大似然 — ${detail}`);
+  assert.equal(result.b, 'least', `b 与 c 完全同分，都该判最小似然 — ${detail}`);
+  assert.equal(result.c, 'least', `c 与 b 完全同分，都该判最小似然 — ${detail}`);
+  assert.equal(result.d, undefined, `d 与 b、c 张数并列但推进不同，不算同分 — ${detail}`);
 });
 
 test('复合排序：先比卡数，卡数相同才用轨道格数细分', () => {

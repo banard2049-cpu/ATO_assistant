@@ -25,7 +25,9 @@ aibp/ps 属于另一种情况：它必须整棵挂（那是使用者投放卡图
      整棵挂 ./ 等于把打包器判定为私有的东西（export/** 里的 *.atopack 资料包、tools/、
      asset-studio/、release*/、tests/、tmp/、logs/、.git/）全部发布到 11451 端口上供人
      下载。这里既要求「没有整棵挂载、没挂私有树」，也要求「应用需要的路径一条不少」——
-     只查前者会有人把 Web 根挂空，只查后者会有人悄悄收回整棵挂载；
+     只查前者会有人把 Web 根挂空，只查后者会有人悄悄收回整棵挂载；7b 再从页面里
+      实际引用的静态资源反推一遍必须挂载的根级条目 —— 手写清单漏登记一条不会报错，
+      cycle-symbols.js 就是这样在五个页面里静默 404 的；
   8. 多架构发布：公开镜像必须同时覆盖 linux/amd64 与 linux/arm/v7（树莓派 4 上 32 位
      Raspberry Pi OS 的架构），且 CI 要注册 QEMU —— 少了 platforms 或少了 QEMU，
      arm/v7 要么根本不在清单里（使用者 pull 到 no matching manifest），要么构建直接失败。
@@ -35,6 +37,7 @@ aibp/ps 属于另一种情况：它必须整棵挂（那是使用者投放卡图
 """
 from __future__ import annotations
 
+import posixpath
 import re
 import sys
 from pathlib import Path
@@ -53,7 +56,9 @@ from packaging import package_common as pc  # noqa: E402  （共用同一份私�
 
 # 仓库根目录的 compose：直接用仓库目录当 Apache 的 Web 根，没有 Dockerfile 兜底，
 # 所以每一条应用路径都必须显式挂进去。
-ROOT_COMPOSES = (ROOT / "docker-compose.yml", ROOT / "docker-compose.nas.yml")
+# 只剩这一份：docker-compose.nas.yml 曾与它逐行重复（唯一差异是服务名/容器名），
+# 群晖、威联通与普通 Linux 用同一条 `docker compose up -d` 即可，重复副本已删除。
+ROOT_COMPOSES = (ROOT / "docker-compose.yml",)
 ROOT_WEB_ROOT = "/var/www/html"
 # 应用真正要访问的路径（少一条对应页面/接口就 404）。data 单个列出来：它是可写的
 # 持久化目录，不是页面资源。
@@ -179,6 +184,52 @@ def covers(target: str, container_path: str) -> bool:
     """挂载点是否等于或覆盖某个容器内路径（整目录挂载会覆盖里面的所有文件）。"""
     normalized = target.rstrip("/") or "/"
     return normalized == container_path or container_path.startswith(normalized + "/")
+
+
+# 页面运行所需的静态资源引用。只认 <script src> 与 <link href>：这两类少了页面就坏，
+# 而 <a href> 指向的多半是页面自身或开发用链接（tools/ 不发布，见 map/app.js）。
+PAGE_REFERENCE_RE = re.compile(r'<(?:script|link)\b[^>]*?(?:src|href)="([^"]+)"', re.I)
+# 带协议的绝对 URL、协议相对 URL 与页内锚点都不是仓库内的路径。
+EXTERNAL_REFERENCE_RE = re.compile(r"^(?:[a-zA-Z][a-zA-Z0-9+.\-]*:|//|#)")
+
+
+def app_pages() -> list[Path]:
+    """会被发布的页面：根 index.html，加上各应用目录里的 *.html。"""
+    pages = [ROOT / "index.html"]
+    for app_path in ROOT_APP_PATHS:
+        directory = ROOT / app_path
+        if directory.is_dir():
+            pages.extend(sorted(directory.rglob("*.html")))
+    return [page for page in pages if page.is_file()]
+
+
+def web_root_references() -> dict[str, set[str]]:
+    """页面引用的 Web 根一级条目 → 引用它的页面。
+
+    仓库根的 compose 是逐条白名单挂载，而 ROOT_APP_PATHS 也是手写的：清单里少了
+    一条，页面在容器里就 404，本地直接打开 index.html 却完全正常。cycle-symbols.js
+    正是这样漏掉的 —— 便携版与镜像走打包器的全树复制，照样带着它，只有 compose 那条
+    路径缺文件，五个页面的循环图标静默消失。所以这里从引用反推，而不是只信清单。
+    """
+    references: dict[str, set[str]] = {}
+    for page in app_pages():
+        relative = page.relative_to(ROOT).as_posix()
+        text = page.read_text(encoding="utf-8", errors="replace")
+        for match in PAGE_REFERENCE_RE.finditer(text):
+            url = match.group(1)
+            if EXTERNAL_REFERENCE_RE.match(url):
+                continue
+            path = url.split("?")[0].split("#")[0]
+            if not path:
+                continue
+            target = posixpath.normpath(posixpath.join(posixpath.dirname(relative), path))
+            # 走不出 Web 根的相对引用（../ 越界）与站内绝对路径都不是这次要管的东西。
+            if target.startswith(("..", "/")):
+                continue
+            first = target.split("/")[0]
+            if first:
+                references.setdefault(first, set()).add(relative)
+    return references
 
 
 def parse_created_dirs(text: str) -> list[str]:
@@ -352,7 +403,7 @@ def main() -> int:
     if "latest" not in compose:
         failures.append("compose.yaml 里应保留 ${ATO_VERSION:-latest} 之类可变标签或说明固定版本的方式")
 
-    # 7. 根目录的 docker-compose.yml / docker-compose.nas.yml（Apache、NAS 部署）：
+    # 7. 根目录的 docker-compose.yml（Apache、NAS 部署）：
     #    没有 Dockerfile 兜底，仓库目录就是 Web 根，所以「挂什么就发布什么」。
     #    私有目录清单直接复用 package_common 的那一份（BLOCKED_TOP + 打包器特判的
     #    tools/），以后新增一条私有顶层目录，两边的检查一起跟上。
@@ -361,7 +412,7 @@ def main() -> int:
     private_top = pc.BLOCKED_TOP | {"tools"}
     # php:8.3-apache 用的是 Debian 默认 apache2.conf，/var/www/ 上是 AllowOverride None，
     # 也就是 .htaccess 会被整个忽略 —— 那样 data/（账号哈希、完整存档、session、备份）
-    # 在这个端口上仍然是可下载的静态文件。两份 compose 都必须把补充配置挂进
+    # 在这个端口上仍然是可下载的静态文件。compose 必须把补充配置挂进
     # conf-enabled，否则「挂了 .htaccess」只是摆设。
     if not APACHE_CONF.is_file():
         failures.append(f"缺少 Apache 补充配置 {APACHE_CONF.relative_to(ROOT)}（.htaccess 会被 AllowOverride None 忽略）")
@@ -372,6 +423,8 @@ def main() -> int:
                 f"{APACHE_CONF.name} 没有对 {ROOT_WEB_ROOT} 打开 AllowOverride All："
                 ".htaccess 仍然不会生效，私有目录照样可下载"
             )
+    # 页面实际引用的根级条目：与下面的挂载点核对共用同一份解析结果（见 7b）。
+    referenced_entries = web_root_references()
     for compose_path in ROOT_COMPOSES:
         text = compose_path.read_text(encoding="utf-8")
         root_entries = parse_volumes(text)
@@ -429,6 +482,20 @@ def main() -> int:
                 failures.append(
                     f"{compose_path.name}：缺少应用需要的挂载点 {container_path}；"
                     f"少挂 {app_path} 对应页面/接口就 404"
+                )
+
+        # 7b. 上面那条只核对清单本身：清单漏登记一条，就没有任何断言会出声。这里从
+        #     页面真正引用的静态资源反推必须挂载的根级条目 —— 逐条白名单挂载下漏一条
+        #     就是页面 404，而本地直接打开文件完全看不出问题（cycle-symbols.js 的先例：
+        #     便携版与镜像走全树复制照样带着它，只有仓库根的 compose 缺这个文件）。
+        for reference, pages in sorted(referenced_entries.items()):
+            container_path = f"{ROOT_WEB_ROOT}/{reference}"
+            if not any(covers(mount_target, container_path) for mount_target in root_targets):
+                pages_hint = "、".join(sorted(pages)[:3])
+                failures.append(
+                    f"{compose_path.name}：页面引用了根级 {reference}（{pages_hint}），"
+                    f"但没有挂载点覆盖 {container_path}，容器里这条请求会 404；"
+                    "把它放进 assets/ 这类已挂载的目录，或同时补上 ROOT_APP_PATHS 与 volumes"
                 )
 
     # 8. 多架构发布（见模块 docstring 第 8 条）。

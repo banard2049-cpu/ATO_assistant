@@ -12,9 +12,9 @@
 最后一段是负向验证 —— 把规则临时摘掉，这些文件必须真的进包且被审计报错，否则说明
 断言是假保护。
 
-还有两条「受跟踪但一样不该发布」的规则：仓库根目录的 tests/ 开发测试与
-docker-compose.nas.yml（.gitignore 不管它们，漏掉就会跟着便携版 ZIP / Docker 镜像 /
-APK 一起发出去）；以及反向的启动入口检查 —— router.php 与 assets/campaign-session.js
+还有一条「受跟踪但一样不该发布」的规则：仓库根目录的 tests/ 开发测试
+（.gitignore 不管它们，漏掉就会跟着便携版 ZIP / Docker 镜像 / APK 一起发出去）；
+以及反向的启动入口检查 —— router.php 与 assets/campaign-session.js
 必须始终进包，因为 Dockerfile 的 CMD 和两个便携启动器都靠它们启动（router.php 少一个，
 容器/便携版的私有目录就会重新变成可下载的静态文件）。
 """
@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import re
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -47,11 +48,16 @@ NEGATIVE_RULES = (
     ("tmp", "top", "tmp/private-note.txt"),
 )
 
-# 启动入口：Dockerfile 的 CMD 与两个便携启动器都把 router.php 交给 php -S 当路由脚本，
-# 页面又都要走 assets/campaign-session.js。这两个文件必须始终进包 —— 一旦有人把它们
-# 加进 BLOCKED_LEAVES 之类的排除清单，容器/便携版会启动不起来，而且 data/、export/、
-# logs/ 这些私有目录会重新变成可下载的静态文件（见 router.php 里的说明）。
-REQUIRED_ENTRY_FILES = ("router.php", "assets/campaign-session.js")
+# 启动入口与公共前端模块：Dockerfile 的 CMD 与两个便携启动器都把 router.php 交给 php -S
+# 当路由脚本，页面又都要走 assets/campaign-session.js（账号守卫）与 assets/cycle-symbols.js
+# （五个页面的循环图标）。这些文件必须始终进包 —— 一旦有人把它们加进 BLOCKED_LEAVES
+# 之类的排除清单，容器/便携版会启动不起来，而且 data/、export/、logs/ 这些私有目录会
+# 重新变成可下载的静态文件（见 router.php 里的说明），循环图标也会整站消失。
+REQUIRED_ENTRY_FILES = (
+    "router.php",
+    "assets/campaign-session.js",
+    "assets/cycle-symbols.js",
+)
 LAUNCHER_FILES = (
     ROOT / "tools/packaging/docker/Dockerfile",
     ROOT / "tools/packaging/portable/start-ato-portable.bat",
@@ -114,18 +120,30 @@ def build_project(root: Path) -> None:
         "story/data/storybook-data.js": "// local only\n",
         "tools/export_portable.py": "# tool\n",
         "data/ato-campaign-x.json": "{}",
-        # 启动入口与登录守卫：必须随包发布（见 REQUIRED_ENTRY_FILES）。
+        # 启动入口、账号守卫与循环图标模块：必须随包发布（见 REQUIRED_ENTRY_FILES）。
         "router.php": "<?php\nreturn false;\n",
         "assets/campaign-session.js": "// session guard\n",
+        "assets/cycle-symbols.js": "// cycle symbols\n",
         # 受跟踪、但同样不该随包发布的开发/部署文件。
         "tests/test_lan_account_guard.py": "# dev test\n",
         "tests/test_previous_day_restore.py": "# dev test\n",
-        "docker-compose.nas.yml": "services: {}\n",
     }
     for relative, content in (files | LOCAL_ONLY_FILES).items():
         path = root / relative
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8")
+
+
+def tracked_files() -> set[str] | None:
+    """git 跟踪的文件（相对仓库根、正斜杠）。不在 git 仓库里时返回 None。"""
+    try:
+        result = subprocess.run(
+            ["git", "ls-files", "-z"],
+            cwd=ROOT, capture_output=True, check=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    return {item for item in result.stdout.decode("utf-8", "replace").split("\0") if item}
 
 
 def audit_error(root: Path) -> str | None:
@@ -240,16 +258,27 @@ def main() -> int:
         if forbidden in packaged:
             failures.append(f"不应进包：{forbidden}")
 
-    # 仓库根目录的开发测试与 NAS 部署脚本是受跟踪文件：.gitignore 管不到它们，
-    # 只能靠 BLOCKED_TOP / BLOCKED_LEAVES 挡住，漏一条就跟着整包发布出去
-    # （tests/ 里还有使用者的账号与存档回归用例）。同时直接问一遍规则本身，
-    # 免得断言只看结果、规则被改坏却恰好因为别的原因没进包。
-    for forbidden in ("tests/test_lan_account_guard.py", "tests/test_previous_day_restore.py",
-                      "docker-compose.nas.yml"):
+    # 仓库根目录的开发测试是受跟踪文件：.gitignore 管不到它们，只能靠 BLOCKED_TOP /
+    # BLOCKED_LEAVES 挡住，漏一条就跟着整包发布出去（tests/ 里还有使用者的账号与存档
+    # 回归用例）。同时直接问一遍规则本身，免得断言只看结果、规则被改坏却恰好因为
+    # 别的原因没进包。
+    for forbidden in ("tests/test_lan_account_guard.py", "tests/test_previous_day_restore.py"):
         if forbidden in packaged:
             failures.append(f"不应进包：{forbidden}")
         if not pc.excluded(Path(forbidden)):
             failures.append(f"排除规则没有挡住：{forbidden}")
+
+    # 本地 Docker 部署脚本是受跟踪文件，同样只能靠 BLOCKED_LEAVES 挡住（.gitignore
+    # 管不到受跟踪文件）。docker-compose.yml 在树里，可以连「没进包」一起查；
+    # docker-compose.nas.yml 已删除（它与前者逐行重复，唯一差异是容器名），只剩规则，
+    # 防的是它将来被误恢复后又跟着整包发出去，所以不要求它存在。
+    for forbidden in ("docker-compose.yml",):
+        if forbidden in packaged:
+            failures.append(f"不应进包：{forbidden}")
+        if not pc.excluded(Path(forbidden)):
+            failures.append(f"排除规则没有挡住：{forbidden}")
+    if not pc.excluded(Path("docker-compose.nas.yml")):
+        failures.append("排除规则没有挡住：docker-compose.nas.yml")
 
     # 启动入口必须进包：漏掉 router.php，容器与便携版启动就没了私有目录拦截，
     # data/（账号哈希、完整存档、session）、export/、logs/ 全部变成可下载的静态文件。
@@ -258,6 +287,20 @@ def main() -> int:
             failures.append(f"应进包但缺失：{expected}（启动入口，少一个容器/便携版就起不来或私有目录外泄）")
         if pc.excluded(Path(expected)):
             failures.append(f"排除规则误伤了启动入口：{expected}")
+
+    # 这些模块还必须真的在 git 里：assets/ 是整目录 /assets/* 忽略、再靠逐条 ! 放行的。
+    # 把文件挪进 assets/ 却忘了加白名单，它就脱离了版本控制 —— 新 clone 与 CI 构建都拿
+    # 不到它（CI 从 checkout 的代码跑打包），而本地测试完全看不出来：磁盘上它还躺着。
+    tracked = tracked_files()
+    if tracked is None:
+        failures.append("无法执行 git ls-files：本测试要在 git 仓库内运行，才能核对文件是否被跟踪")
+    else:
+        for expected in REQUIRED_ENTRY_FILES:
+            if expected not in tracked:
+                failures.append(
+                    f"{expected} 没有被 git 跟踪：assets/ 默认整目录忽略，"
+                    "记得在 .gitignore 的 ! 白名单里放行，否则 clone 与 CI 都拿不到它"
+                )
 
     # 启动参数与产物对齐：Dockerfile 的 CMD 和两个便携启动器传给 php -S 的路由脚本
     # 必须真的在包里的同一位置，别的写法（换了路径、改名、被排除）都会在这里失败。
