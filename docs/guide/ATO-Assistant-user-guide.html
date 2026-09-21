@@ -43,12 +43,11 @@
 <table><thead><tr><th>项目</th><th>说明</th></tr></thead><tbody><tr><td>适用版本</td><td>ATO Assistant 2.0.0（界面右下角可看到当前版本号）</td></tr><tr><td>手册形态</td><td>图文对照教程，按「装 → 启动 → 上手 → 分模块 → 进阶」顺序编排</td></tr><tr><td>阅读建议</td><td>第一次安装只看第 1、2、3 章；装好之后按第 4、5 章查具体功能</td></tr><tr><td>截图说明</td><td>全部截图取自真实运行界面，采集时账号为演示账号 <code>atoguide26</code>、战役为全新存档，因此图中数据都是初始值</td></tr></tbody></table>
 <hr>
 <h2 id="交付物与格式说明">交付物与格式说明</h2>
-<table><thead><tr><th>文件</th><th>用途</th><th>怎么打开</th></tr></thead><tbody><tr><td><code>ATO-Assistant-图文使用手册.docx</code></td><td><strong>主要交付物</strong>。图片已嵌入文档，可在 Word / WPS 里编辑、加批注、导出 PDF</td><td>双击用 Word 或 WPS 打开</td></tr><tr><td><code>ATO-Assistant-图文使用手册.html</code></td><td>浏览器直接看的图文版，排版为打印优化</td><td>双击用浏览器打开；<code>Ctrl + P</code> 可直接打印或「另存为 PDF」</td></tr><tr><td><code>ATO-Assistant-图文使用手册.md</code></td><td>Markdown 母版，便于版本管理、二次修改后重新生成</td><td>任意 Markdown 编辑器</td></tr></tbody></table>
+<table><thead><tr><th>文件</th><th>用途</th><th>怎么打开</th></tr></thead><tbody><tr><td><code>ATO-Assistant-user-guide.docx</code></td><td><strong>主要交付物</strong>。图片已嵌入文档，可在 Word / WPS 里编辑、加批注、导出 PDF</td><td>双击用 Word 或 WPS 打开</td></tr><tr><td><code>ATO-Assistant-user-guide.html</code></td><td>浏览器直接看的图文版，排版为打印优化</td><td>双击用浏览器打开；<code>Ctrl + P</code> 可直接打印或「另存为 PDF」</td></tr><tr><td><code>ATO-Assistant-user-guide.md</code></td><td>Markdown 母版，便于版本管理、二次修改后重新生成</td><td>任意 Markdown 编辑器</td></tr></tbody></table>
 <p><strong>要得到 PDF</strong>，任选一种（本机生成 PDF 需要浏览器或 Office；在当前运行环境里，命令行调用浏览器渲染会被权限策略拦截，因此没有预先生成 PDF）：</p>
 <ol><li><strong>用 Word / WPS 打开 `.docx`</strong> → 「文件 → 导出 → 创建 PDF」。</li><li><strong>用浏览器打开 `.html`</strong> → <code>Ctrl + P</code> → 目标打印机选「另存为 PDF」→ 建议在「更多设置」里<strong>取消勾选「页眉和页脚」</strong>。</li></ol>
 <p>修改正文后重新生成 docx / html：</p>
 <pre><code>node tools/guide-capture/build-docs.mjs</code></pre>
-<hr>
 <hr>
 <h2 id="目录">目录</h2>
 <ul><li><a href="#1-开始之前">1. 开始之前</a></li><li><a href="#2-下载与安装">2. 下载与安装</a></li><li><a href="#3-第一次启动从空白到进入主控台">3. 第一次启动：从空白到进入主控台</a></li><li><a href="#4-主控台速览">4. 主控台速览</a></li><li><a href="#5-核心模块详解">5. 核心模块详解</a></li><li><a href="#6-资源与素材让画面和音乐完整起来">6. 资源与素材：让画面和音乐完整起来</a></li><li><a href="#7-进阶与常见问题">7. 进阶与常见问题</a></li><li><a href="#附录-a-截图索引">附录 A. 截图索引</a></li><li><a href="#附录-b-本手册的采集说明与已知缺口">附录 B. 本手册的采集说明与已知缺口</a></li><li><a href="#附录-c-本手册是怎么做出来的可复现">附录 C. 本手册是怎么做出来的（可复现）</a></li></ul>

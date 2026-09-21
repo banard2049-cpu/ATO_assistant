@@ -15,7 +15,12 @@ import { spawnSync } from 'node:child_process';
 import { parseMarkdown, parseInline } from './md.mjs';
 
 const GUIDE = 'D:\\desktop\\ATO_assistant\\docs\\guide';
-const MD = path.join(GUIDE, 'ATO-Assistant-图文使用手册.md');
+// 产物刻意用 ASCII 文件名：git 对非 ASCII 路径默认输出八进制转义并加引号，
+// Windows PowerShell 的 Path::GetExtension() 会因此抛 "Illegal characters in path"，
+// 而 tools/audit-public-release.ps1 设了 $ErrorActionPreference='Stop'，
+// 会让 CI 的 Public release audit 整脚本失败。
+const BASENAME = 'ATO-Assistant-user-guide';
+const MD = path.join(GUIDE, `${BASENAME}.md`);
 const wantPdf = process.argv.includes('--pdf');
 const CHROME = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 
@@ -143,7 +148,7 @@ ${blocksHtml(blocks).join('\n')}
 </html>
 `;
 
-const htmlOut = path.join(GUIDE, 'ATO-Assistant-图文使用手册.html');
+const htmlOut = path.join(GUIDE, `${BASENAME}.html`);
 fs.writeFileSync(htmlOut, html, 'utf8');
 console.log('html  -> ' + htmlOut + `  (${(html.length / 1024).toFixed(0)} KB)`);
 
@@ -452,13 +457,13 @@ const docxEntries = [
   ...media.map((m) => ({ name: 'word/' + m.target, data: fs.readFileSync(m.abs) })),
 ];
 
-const docxOut = path.join(GUIDE, 'ATO-Assistant-图文使用手册.docx');
+const docxOut = path.join(GUIDE, `${BASENAME}.docx`);
 fs.writeFileSync(docxOut, zipStore(docxEntries));
 console.log('docx  -> ' + docxOut + `  (${(fs.statSync(docxOut).size / 1024 / 1024).toFixed(1)} MB, ${media.length} images)`);
 
 // -------------------------------------------------------------------- PDF ---
 if (wantPdf) {
-  const pdfOut = path.join(GUIDE, 'ATO-Assistant-图文使用手册.pdf');
+  const pdfOut = path.join(GUIDE, `${BASENAME}.pdf`);
   const res = spawnSync(CHROME, [
     '--headless=new', '--single-process', '--no-zygote', '--no-sandbox', '--disable-gpu',
     '--disable-crash-reporter', '--disable-breakpad',

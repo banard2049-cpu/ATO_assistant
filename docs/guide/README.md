@@ -4,10 +4,14 @@
 
 | 文件 | 说明 |
 | --- | --- |
-| `ATO-Assistant-图文使用手册.docx` | **主要交付物**：21 处内嵌截图（20 张，其中主控台底部图复用于两处）+ 20 张表格，可在 Word / WPS 编辑或导出 PDF |
-| `ATO-Assistant-图文使用手册.html` | 浏览器直接看的图文版（打印优化，`Ctrl + P` 可另存为 PDF） |
-| `ATO-Assistant-图文使用手册.md` | Markdown 母版，改文案后重新生成上两者 |
+| `ATO-Assistant-user-guide.docx` | **主要交付物**：21 处内嵌截图（20 张，其中主控台底部图复用于两处）+ 20 张表格，可在 Word / WPS 编辑或导出 PDF |
+| `ATO-Assistant-user-guide.html` | 浏览器直接看的图文版（打印优化，`Ctrl + P` 可另存为 PDF） |
+| `ATO-Assistant-user-guide.md` | Markdown 母版，改文案后重新生成上两者 |
 | `images/` | 20 张原始截图（19 张 1600×1000 桌面 + 1 张 430 宽窄屏），按章节编号命名 |
+
+> 产物文件名刻意保持 ASCII：git 对非 ASCII 路径默认输出八进制转义并加引号，
+> `tools/audit-public-release.ps1`（CI 的 Public release audit）里的
+> `[System.IO.Path]::GetExtension()` 会因此报 `Illegal characters in path` 而整脚本失败。
 
 ## 手册结构
 
@@ -26,7 +30,7 @@
 
 ```bash
 node ../tools/guide-capture/build-docs.mjs          # 生成 docx + html
-node ../tools/guide-capture/verify-docx.mjs "ATO-Assistant-图文使用手册.docx"   # 校验 docx
+node ../tools/guide-capture/verify-docx.mjs "ATO-Assistant-user-guide.docx"   # 校验 docx
 node ../tools/guide-capture/build-docs.mjs --pdf    # 需要浏览器权限，受限环境下会失败
 ```
 

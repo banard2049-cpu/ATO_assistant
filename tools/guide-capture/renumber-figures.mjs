@@ -5,8 +5,11 @@
 // node renumber-figures.mjs [--dry]
 
 import fs from 'node:fs';
+import path from 'node:path';
 
-const MD = 'D:\\desktop\\ATO_assistant\\docs\\guide\\ATO-Assistant-图文使用手册.md';
+// 与 build-docs.mjs 保持一致：ASCII 文件名（见那边的注释）。
+const BASENAME = 'ATO-Assistant-user-guide';
+const MD = path.join('D:\\desktop\\ATO_assistant\\docs\\guide', `${BASENAME}.md`);
 const dry = process.argv.includes('--dry');
 
 const lines = fs.readFileSync(MD, 'utf8').split('\n');

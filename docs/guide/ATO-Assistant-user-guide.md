@@ -15,9 +15,9 @@
 
 | 文件 | 用途 | 怎么打开 |
 | --- | --- | --- |
-| `ATO-Assistant-图文使用手册.docx` | **主要交付物**。图片已嵌入文档，可在 Word / WPS 里编辑、加批注、导出 PDF | 双击用 Word 或 WPS 打开 |
-| `ATO-Assistant-图文使用手册.html` | 浏览器直接看的图文版，排版为打印优化 | 双击用浏览器打开；`Ctrl + P` 可直接打印或「另存为 PDF」 |
-| `ATO-Assistant-图文使用手册.md` | Markdown 母版，便于版本管理、二次修改后重新生成 | 任意 Markdown 编辑器 |
+| `ATO-Assistant-user-guide.docx` | **主要交付物**。图片已嵌入文档，可在 Word / WPS 里编辑、加批注、导出 PDF | 双击用 Word 或 WPS 打开 |
+| `ATO-Assistant-user-guide.html` | 浏览器直接看的图文版，排版为打印优化 | 双击用浏览器打开；`Ctrl + P` 可直接打印或「另存为 PDF」 |
+| `ATO-Assistant-user-guide.md` | Markdown 母版，便于版本管理、二次修改后重新生成 | 任意 Markdown 编辑器 |
 
 **要得到 PDF**，任选一种（本机生成 PDF 需要浏览器或 Office；在当前运行环境里，命令行调用浏览器渲染会被权限策略拦截，因此没有预先生成 PDF）：
 
@@ -29,8 +29,6 @@
 ```bash
 node tools/guide-capture/build-docs.mjs
 ```
-
----
 
 ---
 
