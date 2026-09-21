@@ -101,7 +101,7 @@ main() {
   # 拆开挂会让图消失），程序数据由镜像里的 /opt/ato/aibp-ps-program 在启动时补回，所以这里
   # 只要建出这一个目录。
   mkdir -p app/aibp/ps \
-    app/assets/exploration-cards app/assets/story-doom-cards \
+    app/assets/exploration-cards app/assets/story-doom-cards app/assets/cycle-symbols \
     app/assets/bgm/audio app/hero/assets app/map/images app/map/tokens app/record/assets \
     app/ss/terrain app/ss/terrain-cards app/story/images app/story/data app/technology/images
 

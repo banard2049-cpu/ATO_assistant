@@ -19,6 +19,8 @@ services:
       - ./app/aibp/ps:/app/aibp/ps
       - ./app/assets/exploration-cards:/app/assets/exploration-cards
       - ./app/assets/story-doom-cards:/app/assets/story-doom-cards
+      # Cycle marker icons are copyright artwork: absent from the image, supply them here.
+      - ./app/assets/cycle-symbols:/app/assets/cycle-symbols
       - ./app/assets/bgm/audio:/app/assets/bgm/audio:ro
       - ./app/hero/assets:/app/hero/assets
       - ./app/map/images:/app/map/images

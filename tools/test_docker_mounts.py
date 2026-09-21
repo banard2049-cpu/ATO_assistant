@@ -16,7 +16,8 @@ aibp/ps 属于另一种情况：它必须整棵挂（那是使用者投放卡图
      ps 子目录必须一起带进容器），且 BGM 挂载点与 manifest.audioDir 一致；
   3. 单文件挂载带 bind.create_host_path: false，且安装脚本/导出脚本会先放占位文件；
   4. pull_policy 不是 missing（镜像标签 latest 会移动）；
-  5. 安装脚本 mkdir 出来的目录与 compose 挂载点一一对应；
+  5. 安装脚本 mkdir 出来的目录与 compose 挂载点一一对应，且 compose.legacy.yaml 的挂载目标
+      与 compose.yaml 完全一致（老 docker-compose v1 的用户走的是前者）；
   6. aibp/ps 被整棵挂载后，ps/ 下的程序文件必须靠「镜像里另存一份原版 + 启动时还原」
      兜底（代码里的 1c）：Dockerfile 把 app/aibp/ps/ 拷到 /opt/ato/aibp-ps-program，
      docker-entrypoint.sh 启动时把缺失或被旧宿主机副本盖住的程序文件写回
@@ -44,6 +45,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 COMPOSE = ROOT / "tools/packaging/docker/compose.yaml"
+LEGACY_COMPOSE = ROOT / "tools/packaging/docker/compose.legacy.yaml"
 DOCKERFILE = ROOT / "tools/packaging/docker/Dockerfile"
 ENTRYPOINT = ROOT / "tools/packaging/docker/docker-entrypoint.sh"
 INSTALL_SCRIPT = ROOT / "tools/install-docker.sh"
@@ -128,6 +130,10 @@ REQUIRED_TARGETS = (
     "/app/ss/terrain",
     "/app/ss/terrain-cards",
     "/app/assets/bgm/audio",
+    # 五个循环的标记图标：版权素材，公开镜像里没有（CI 从 git 检出构建，这几张 PNG 被
+    # .gitignore 挡在外面），只能由宿主机提供。漏掉它不会报错，只是五个页面的循环标题前
+    # 少一个图标 —— cycle-symbols.js 会移除加载失败的 <img>，所以看不到裂图。
+    "/app/assets/cycle-symbols",
     # ps/ 整棵挂进来：它既是使用者的卡图投放位置，又和程序数据同级，拆开挂会让图消失。
     "/app/aibp/ps",
 )
@@ -394,6 +400,31 @@ def main() -> int:
             failures.append(
                 f"tools/install-docker.sh 创建了 {created_dir}，但 compose 没有挂载它；"
                 "ps/ 的素材目录与挂载点必须一一对应（整棵挂 aibp/ps 时不该再建子目录）"
+            )
+
+    # 5c. compose.legacy.yaml（给老 docker-compose v1 用）与 compose.yaml 的挂载目标必须
+    #     完全一致：用不了 v2 的那批人走的是前者，README 也承诺两者「artwork paths 相同」。
+    #     只查 compose.yaml 的话，新素材目录在一份里加了、另一份漏了，没人会出声
+    #     —— 循环图标正是这样漏的：两份 compose 都没有它的挂载点。
+    if not LEGACY_COMPOSE.is_file():
+        failures.append(f"缺少 {LEGACY_COMPOSE.name}（老 docker-compose v1 的部署文件）")
+    else:
+        legacy_targets = {
+            str(entry["target"]).rstrip("/")
+            for entry in parse_volumes(LEGACY_COMPOSE.read_text(encoding="utf-8"))
+        }
+        modern_targets = {str(entry["target"]).rstrip("/") for entry in entries}
+        missing_in_legacy = sorted(modern_targets - legacy_targets)
+        extra_in_legacy = sorted(legacy_targets - modern_targets)
+        if missing_in_legacy:
+            failures.append(
+                f"{LEGACY_COMPOSE.name} 缺少这些挂载点：{'、'.join(missing_in_legacy)}"
+                "（老 docker-compose v1 的部署里这些素材永远是空的）"
+            )
+        if extra_in_legacy:
+            failures.append(
+                f"{LEGACY_COMPOSE.name} 多出这些挂载点：{'、'.join(extra_in_legacy)}"
+                "（两份 compose 应当同步）"
             )
 
     # 6. latest 是会移动的标签，pull_policy 必须是 always，pull 才是真的 pull
