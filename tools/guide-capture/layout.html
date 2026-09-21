@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>layout discovery</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; }
+  #frame { position: fixed; inset: 0; width: 100vw; height: 100vh; border: 0; }
+  #out {
+    position: fixed; left: 0; top: 0; right: 0; max-height: 100vh; overflow: auto; margin: 0;
+    padding: 10px; background: rgba(255, 255, 255, .97); color: #111;
+    font: 13px/1.45 Consolas, monospace; white-space: pre-wrap; z-index: 99;
+  }
+</style>
+</head>
+<body>
+<iframe id="frame"></iframe>
+<pre id="out">collecting…</pre>
+<script>
+// Layout discovery: http://127.0.0.1:8793/tools/guide-capture/layout.html?url=/hero/index.html
+// Renders the page in a full-viewport frame and prints its scroll containers,
+// largest panels, buttons and dialogs large enough to read off a screenshot.
+const q = new URLSearchParams(location.search);
+const url = q.get('url') || '/index.html';
+const frame = document.getElementById('frame');
+const out = document.getElementById('out');
+frame.src = url;
+
+function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
+
+async function until(fn, timeout = 20000, label = 'condition') {
+  const end = Date.now() + timeout;
+  let last;
+  while (Date.now() < end) {
+    try { last = fn(); } catch (e) { last = 'threw ' + e.message; }
+    if (last === true) return true;
+    await sleep(80);
+  }
+  out.textContent += `\nTIMEOUT: ${label} (last=${last})`;
+  return false;
+}
+
+(async () => {
+  await until(() => {
+    const d = frame.contentDocument;
+    return !!(d && d.readyState === 'complete' && d.body && d.body.children.length);
+  }, 20000, 'frame ready');
+  await sleep(1200);
+
+  const doc = frame.contentDocument;
+  const win = frame.contentWindow;
+  const lines = [];
+  lines.push('URL: ' + url);
+  lines.push('doc scrollHeight=' + doc.documentElement.scrollHeight + ' scrollWidth=' + doc.documentElement.scrollWidth);
+  lines.push('');
+  lines.push('== SCROLL CONTAINERS ==');
+  for (const el of doc.querySelectorAll('*')) {
+    const cs = win.getComputedStyle(el);
+    const scrollable = /(auto|scroll)/.test(cs.overflowY) || /(auto|scroll)/.test(cs.overflow);
+    if (!scrollable) continue;
+    if (el.scrollHeight <= el.clientHeight + 20) continue;
+    if (el.clientHeight < 120) continue;
+    lines.push(`.${(el.className || '').toString().split(/\s+/).filter(Boolean).slice(0, 3).join('.')} #${el.id}  client=${el.clientWidth}x${el.clientHeight} scroll=${el.scrollWidth}x${el.scrollHeight}`);
+  }
+  lines.push('');
+  lines.push('== LARGEST PANELS ==');
+  const panels = [...doc.querySelectorAll('div,section,main,aside')]
+    .filter((el) => el.clientWidth > 320 && el.clientHeight > 200)
+    .map((el) => ({ el, area: el.clientWidth * el.clientHeight }))
+    .sort((a, b) => b.area - a.area)
+    .slice(0, 24);
+  for (const { el } of panels) {
+    const cls = (el.className || '').toString().split(/\s+/).filter(Boolean).slice(0, 4).join('.');
+    lines.push(`${el.tagName.toLowerCase()}.${cls} #${el.id}  ${el.clientWidth}x${el.clientHeight} top=${Math.round(el.getBoundingClientRect().top)}`);
+  }
+  lines.push('');
+  lines.push('== BUTTONS ==');
+  const seen = new Set();
+  for (const b of doc.querySelectorAll('button, [role=button], a.btn, .tab')) {
+    const t = (b.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 22);
+    const cls = (b.className || '').toString().split(/\s+/).filter(Boolean).slice(0, 2).join('.');
+    const key = `${b.id}|${cls}|${t}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    lines.push(`btn #${b.id} .${cls} "${t}"`);
+  }
+  lines.push('');
+  lines.push('== MODAL-LIKE ==');
+  for (const m of doc.querySelectorAll('[class*=modal],[class*=dialog],[class*=popup],[class*=overlay]')) {
+    const cls = (m.className || '').toString().split(/\s+/).slice(0, 3).join('.');
+    lines.push(`.${cls} hidden=${m.hidden} display=${win.getComputedStyle(m).display} size=${m.clientWidth}x${m.clientHeight}`);
+  }
+  out.textContent = lines.join('\n');
+  document.title = 'ready';
+})();
+</script>
+</body>
+</html>

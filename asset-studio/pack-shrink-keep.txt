@@ -1,0 +1,43 @@
+# 打包时 --image-quality 的豁免名单：命中的图不重编码，按原字节进包。
+# 一行一条 fnmatch 通配（大小写不敏感，* 会跨目录），`#` 开头是注释。
+# 用法：
+#   python asset-studio/tools/build_official_pack.py ... --image-quality 85 \
+#       --image-quality-keep-file asset-studio/pack-shrink-keep.txt
+
+# 决战板图：铺满屏幕看的大图，保原样
+ss/battle-board.jpg
+
+# 使徒完整面板（aibp/ps/<敌人>/<敌人>.jpg）：19 张
+aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS.jpg
+aibp/ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS.jpg
+aibp/ps/CYCLONUS/CYCLONUS.jpg
+aibp/ps/DAHAKA/DAHAKA.jpg
+aibp/ps/DEMIDJINN/DEMIDJINN.jpg
+aibp/ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS.jpg
+aibp/ps/HEKATON/HEKATON.jpg
+aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER.jpg
+aibp/ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE.jpg
+aibp/ps/ICARIAN_HARPY/ICARIAN_HARPY.jpg
+aibp/ps/LABYRINTHAUROS/LABYRINTHAUROS.jpg
+aibp/ps/MEDUKETOS/MEDUKETOS.jpg
+aibp/ps/MIDASCORE/MIDASCORE.jpg
+aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT.jpg
+aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY.jpg
+aibp/ps/THE_BURDEN/THE_BURDEN.jpg
+aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN.jpg
+aibp/ps/TITAN_X/TITAN_X.jpg
+aibp/ps/UR_FLEECE/UR_FLEECE.jpg
+
+# 使徒 Trait 大卡（aibp/ps/<敌人>/<敌人>_TR_O_001.jpg）：12 张
+aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_O_001.jpg
+aibp/ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_O_001.jpg
+aibp/ps/CYCLONUS/CYCLONUS_TR_O_001.jpg
+aibp/ps/DAHAKA/DAHAKA_TR_O_001.jpg
+aibp/ps/DEMIDJINN/DEMIDJINN_TR_O_001.jpg
+aibp/ps/HEKATON/HEKATON_TR_O_001.jpg
+aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_O_001.jpg
+aibp/ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_O_001.jpg
+aibp/ps/LABYRINTHAUROS/LABYRINTHAUROS_TR_O_001.jpg
+aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_O_001.jpg
+aibp/ps/THE_BURDEN/THE_BURDEN_TR_O_001.jpg
+aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_O_001.jpg

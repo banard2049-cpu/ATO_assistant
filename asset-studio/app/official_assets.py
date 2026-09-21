@@ -27,6 +27,16 @@ SCAN_CACHE_SECONDS = 2.0
 # 精确文件名、去后缀文件名（后两张表可能对应多个文件，靠调用侧要求唯一命中）。
 _index_cache: dict[str, tuple[float, dict[str, object]]] = {}
 
+# 官中素材里按「扁平目录」收纳、目录名又与项目目标目录不同的那一类，必须显式声明它
+# 归哪个项目目录。地形卡就是唯一的实例：``official-assets/terrain-cards/`` 收的是地形
+# 卡（提示卡）官图，项目目标却是 ``ss/terrain-cards/``；只按文件名兜底时，它同样会命中
+# 同名的 ``ss/terrain/<name>.jpg``（地形**板块**）——板块和提示卡同名不同物（例如
+# ``abandoned-temple.jpg`` 两边都有），换错了就是拿卡面盖掉板块图。声明归属之后，
+# 这类目录只对它声明的项目目录生效。
+FLAT_DIRECTORY_OWNERS: dict[str, tuple[str, ...]] = {
+    "terrain-cards": ("ss", "terrain-cards"),
+}
+
 
 def clear_cache() -> None:
     """丢掉索引缓存；测试与「刚放进新图就要用」的场景可以显式调用。"""
@@ -74,23 +84,61 @@ def _unique(candidates: list[Path]) -> Path | None:
     return candidates[0] if len(candidates) == 1 else None
 
 
+def _owner_matches(relative: tuple[str, ...], parts: tuple[str, ...]) -> bool:
+    """声明了归属的官中目录，只允许命中它声明的项目目录。
+
+    例如 ``terrain-cards`` 只归 ``ss/terrain-cards/``：命中 ``ss/terrain/``（地形板块）
+    时直接拒绝，而不因为两者文件名同名就替换。
+    """
+    for owner in FLAT_DIRECTORY_OWNERS.get(relative[-1] if relative else "", ()):
+        if len(parts) < len(owner) or parts[-len(owner):] != tuple(owner):
+            return False
+    return True
+
+
+def _filename_hit(index: dict[str, object], parts: tuple[str, ...]) -> Path | None:
+    """按文件名兜底时的唯一命中；目录归属不一致的候选不算命中。
+
+    项目目标的父目录与官中目录通常同名（``aibp/ps/HEKATON/`` ← ``HEKATON/``），
+    所以允许「官中目录名与目标某一段目录同名」。唯一要挡的就是声明了归属、却属于
+    另一个项目目录的官中目录（``terrain-cards`` → 地形卡，不是地形板块）。
+
+    精确文件名与去后缀文件名分两轮，和引入归属规则之前的判定次序保持一致。
+    """
+    by_path = index["by_path"]
+    filename = parts[-1].casefold()
+    for table, key in (("name", filename), ("name_stem", _without_suffix(filename))):
+        candidates = [
+            path
+            for path in index[table].get(key, [])
+            if not by_path.get(path) or _owner_matches(by_path[path], parts)
+        ]
+        match = _unique(candidates)
+        if match is not None:
+            return match
+    return None
+
+
 def _build_index(base: Path) -> dict[str, object]:
     all_files = _files(base)
     by_relative: dict[str, Path] = {}
     by_relative_stem: dict[str, list[Path]] = defaultdict(list)
     by_name: dict[str, list[Path]] = defaultdict(list)
     by_name_stem: dict[str, list[Path]] = defaultdict(list)
+    by_path: dict[Path, tuple[str, ...]] = {}
     for path in all_files:
         relative = path.relative_to(base).as_posix().casefold()
         by_relative.setdefault(relative, path)
         by_relative_stem[_without_suffix(relative)].append(path)
         by_name[path.name.casefold()].append(path)
         by_name_stem[_without_suffix(path.name.casefold())].append(path)
+        by_path[path] = tuple(relative.split("/")[:-1])
     return {
         "relative": by_relative,
         "relative_stem": by_relative_stem,
         "name": by_name,
         "name_stem": by_name_stem,
+        "by_path": by_path,
     }
 
 
@@ -118,6 +166,11 @@ def find(root: Path | None, target: str) -> Path | None:
     扩展名不参与匹配：清单目标写 ``.png`` 而官方图是 ``.jpg``（或反过来）时，
     按去掉后缀的路径再找一次，同样要求唯一命中。写入资料包的成员名仍按清单目标，
     所以包内路径不会因为官方图的扩展名而改变。
+
+    文件名兜底还要满足目录归属：官中目录名与目标的一段目录同名（``HEKATON/`` ←
+    ``aibp/ps/HEKATON/``），或该目录在 :data:`FLAT_DIRECTORY_OWNERS` 里声明了归属。
+    同名不同物的官中目录（``terrain-cards/`` 是地形卡，不是地形板块 ``ss/terrain/``）
+    因此不会张冠李戴。
     """
     parts = _safe_target(target)
     base = directory(root)
@@ -127,8 +180,6 @@ def find(root: Path | None, target: str) -> Path | None:
     index = _index(base)
     by_relative = index["relative"]
     by_relative_stem = index["relative_stem"]
-    by_name = index["name"]
-    by_name_stem = index["name_stem"]
 
     # Exact path first, then increasingly compact trailing paths. Require at
     # least a directory plus filename for suffix matching to avoid broad hits.
@@ -145,11 +196,8 @@ def find(root: Path | None, target: str) -> Path | None:
         if path is not None:
             return path
 
-    filename = parts[-1].casefold()
-    match = _unique(by_name.get(filename, []))
-    if match is not None:
-        return match
-    return _unique(by_name_stem.get(_without_suffix(filename), []))
+    # 文件名兜底：同名候选里只认目录归属一致的那个（见 FLAT_DIRECTORY_OWNERS）。
+    return _filename_hit(index, parts)
 
 
 def resolve(root: Path | None, target: str, fallback: Path) -> tuple[Path, bool]:

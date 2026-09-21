@@ -1,0 +1,6 @@
+[
+  { "name": "63-story-text",
+    "url": "http://127.0.0.1:8793/tools/guide-capture/driver.html?auth=login&username=atoguide26&password=guidepass2026&target=/story/index.html&waitText=%E6%89%80%E9%9C%80%E6%9D%BF%E5%9D%97&scrollTo=900&budget=32000", "budget": 38000 },
+  { "name": "64-story-tts",
+    "url": "http://127.0.0.1:8793/tools/guide-capture/driver.html?auth=login&username=atoguide26&password=guidepass2026&target=/story/index.html&click=%E5%BC%95%E6%93%8E%E8%AE%BE%E7%BD%AE&budget=32000", "budget": 38000 }
+]

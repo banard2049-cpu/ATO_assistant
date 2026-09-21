@@ -140,6 +140,9 @@ PDF 必须带有可提取的文字层。扫描图片型 PDF 不支持 OCR；检�
 - `tools/build_fan_pack.py` —— **民间版**：故事正文用工程里的民间版，官方内容只带故事书正文数据（格式版本 3）。
 - `tools/build_official_pack.py` —— **官方版**：官中覆盖图 `official-assets/` 优先替换（没有则保留工程原图）、
   故事书 js 只留官方正文、官方原书扫描图一起打进包。
+  官中目录名与目标的一段目录同名才算命中；收在扁平目录里的素材若目录名与项目目录不同
+  （`terrain-cards/` 对应 `ss/terrain-cards/`），要在 `app/official_assets.FLAT_DIRECTORY_OWNERS`
+  里声明归属——否则同名不同物的卡面会被张冠李戴（地形卡换掉地形**板块**就是这个原因）。
 - `tools/check_pack.py` —— 检查任意 `.atopack` 是否完整（能一眼认出"没有中央目录的半成品"）。
 
 用法、参数和排查见 [.atopack 打包（民间版 / 官方版）](ATOPACK-PACKING.md)。

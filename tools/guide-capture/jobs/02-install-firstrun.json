@@ -1,0 +1,14 @@
+[
+  { "name": "02-login-mobile", "url": "http://127.0.0.1:8793/index.html", "width": 430, "height": 860, "budget": 12000 },
+  { "name": "03-register",
+    "url": "http://127.0.0.1:8793/tools/guide-capture/driver.html?pre=/index.html&mode=register&budget=15000", "budget": 20000 },
+  { "name": "04-dashboard",
+    "url": "http://127.0.0.1:8793/tools/guide-capture/driver.html?auth=both&username=atoguide26&password=guidepass2026&target=/index.html&waitText=%E4%BB%8A%E6%97%A5%E6%B5%81%E7%A8%8B&budget=30000", "budget": 35000 },
+  { "name": "05-dashboard-bottom",
+    "url": "http://127.0.0.1:8793/tools/guide-capture/driver.html?auth=login&username=atoguide26&password=guidepass2026&target=/index.html&waitText=%E8%83%8C%E6%99%AF%E9%9F%B3%E4%B9%90&scrollTo=3000&budget=30000", "budget": 35000 },
+  { "name": "06-dashboard-bottom2",
+    "url": "http://127.0.0.1:8793/tools/guide-capture/driver.html?auth=login&username=atoguide26&password=guidepass2026&target=/index.html&waitText=%E7%94%A8%E6%88%B7%E4%B8%8E%E5%AD%98%E6%A1%A3&scrollTo=6000&budget=30000", "budget": 35000 },
+  { "name": "07-dashboard-mobile",
+    "url": "http://127.0.0.1:8793/tools/guide-capture/driver.html?auth=login&username=atoguide26&password=guidepass2026&target=/index.html&waitText=%E4%BB%8A%E6%97%A5%E6%B5%81%E7%A8%8B&budget=30000",
+    "width": 430, "height": 900, "budget": 35000 }
+]

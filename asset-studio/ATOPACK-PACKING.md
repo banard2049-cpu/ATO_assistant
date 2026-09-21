@@ -61,8 +61,11 @@ python asset-studio/tools/build_official_pack.py \
 
 1. **图片**：`--ato-root/official-assets/` 里有的目标用官中覆盖图替换，没有的原样保留工程
    目录里那份（`official-assets/` 支持镜像完整项目路径、只留资源目录、后缀不一致，
-   规则见 `app/official_assets.py`）。实测 4279 张里 **1516 张被官中图替换**、
-   2763 张保留工程原图。加 `--no-official-assets` 可关掉替换。
+   规则见 `app/official_assets.py`）。实测 4279 张里 **1708 张被官中图替换**、
+   2571 张保留工程原图。加 `--no-official-assets` 可关掉替换。
+   目录归属：官中目录名要与目标的一段目录同名（`HEKATON/` ← `aibp/ps/HEKATON/`），
+   `terrain-cards/` 则显式归 `ss/terrain-cards/`——地形**卡**（提示卡）与同名的地形
+   **板块** `ss/terrain/<name>.jpg` 是两种卡面，只按文件名兜底会把板块图换成卡图。
 2. **故事书 js**：`story/data/storybook-data.js` 由 `story/data/storybook-official-data.js`
    生成——条目 `id`/`key` 与官方数据一致，标题与正文一律取 `officialTitle` /
    `officialText`，**没有官方正文的条目直接不要**（实测丢掉 53 条），官方数据里独有的

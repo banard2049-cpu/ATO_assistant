@@ -47,9 +47,11 @@ from pathlib import Path
 
 if __package__:
     from .build_fan_pack import PackError, Reporter, as_list, build, report
+    from .image_shrink import load_keep_patterns
 else:  # 直接当脚本跑（python build_official_pack.py）
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     from build_fan_pack import PackError, Reporter, as_list, build, report
+    from image_shrink import load_keep_patterns
 
 TOOL_NAME = "build_official_pack"
 TOOL_VERSION = "1.0.0"
@@ -94,6 +96,21 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="改名之前的包内校验强度（默认抽样）",
     )
     parser.add_argument("--verify-sample", type=int, default=32, help="抽样校验的成员数量（默认 32）")
+    parser.add_argument(
+        "--image-quality", type=int, default=None,
+        help=(
+            "打包时把图片重新编码到这个 JPEG 质量（40–95，常用 85）来缩小体积；"
+            "不传就完全不重编（历史口径）。成员名不变，透明图走调色板 PNG，收益不够的保持原样"
+        ),
+    )
+    parser.add_argument(
+        "--image-quality-keep", action="append", default=[],
+        help="重编码豁免通配（可重复/逗号分隔），命中的图原样进包，例如 ss/battle-board.jpg",
+    )
+    parser.add_argument(
+        "--image-quality-keep-file", type=Path,
+        help="豁免名单文件：一行一条通配，`#` 开头是注释",
+    )
     parser.add_argument("--json", action="store_true", help="stdout 输出机器可读摘要")
     parser.add_argument("--quiet", action="store_true", help="不打印进度")
     parser.add_argument("--version", action="version", version=f"{TOOL_NAME} {TOOL_VERSION}")
@@ -127,6 +144,9 @@ def main(argv: list[str] | None = None) -> int:
             reporter=reporter,
             story_source=args.story_source,
             edition="official",
+            image_quality=args.image_quality,
+            image_quality_keep=as_list(args.image_quality_keep)
+            + load_keep_patterns(args.image_quality_keep_file),
         )
     except PackError as error:
         print(f"打包失败：{error}", file=sys.stderr)

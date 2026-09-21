@@ -1101,9 +1101,13 @@
         { id: "c5_04", en: "Last Crusader", zh: "最后的十字军", skill1: "endurance", skill2: "wisdom", nodes: ["M002","M012","M022"], thresholds: [3,7,10], card: "EG2644", tags: ["deed","voyage","crime"] },
         { id: "c5_05", en: "Words and Deeds", zh: "言行合一", skill1: "courage", skill2: "will", nodes: ["M001","M011","M021"], thresholds: [3,7,10], card: "EG2645", tags: ["family","heritage","gods"] },
         { id: "c5_06", en: "Twilight", zh: "暮光之刻", skill1: "endurance", skill2: "fury", nodes: ["M007","M017","M027"], thresholds: [3,7,10], card: "EG2646", tags: ["supernatural","tragedy","curse"] },
-        { id: "c5_07", en: "He Spoke Truth", zh: "他说出了真相", skill1: "courage", skill2: "wisdom", nodes: ["M008","M018","M028"], thresholds: [5,9,14], card: "EG2647", tags: ["deed","curse","voyage"] },
+        { id: "c5_07", en: "He Spoke Truth", zh: "他说出了真相", skill1: "courage", skill2: "wisdom", nodes: ["M008","M018","M028"], thresholds: [3,7,10], card: "EG2647", tags: ["deed","curse","voyage"] },
       ],
     };
+
+    // 回忆卡轨道的格数固定是 10（节点落在第 3/7/10 格，见上面每张卡的 thresholds）。
+    // 似然判定里按「1–10 已推进的格数」比较，所以上限就是它。
+    const MNEMOS_TRACK_LENGTH = 10;
 
     const FATED_MNEMOS = {
       c1: [
@@ -1475,22 +1479,25 @@
       return state.heroes.find(h => h.id === state.activeHeroId) || null;
     }
 
-    function heroMnemosNodeCount(hero) {
+    // 似然判定有主次两级判据，顺序不能颠倒：
+    //   1. 回忆卡张数（宿命回忆 fatedMnemos 不算）——多者为「最大似然」、少者为「最小似然」；
+    //   2. 只有回忆卡张数相同时，才比较轨道上已推进的格数（1–10 那排格子，节点格也算，
+    //      所以某张卡推到第 10 格就是 10 格）。
+    // 曾经这里直接拿「已推进格数」当唯一判据，会把「卡少但推得深」的英雄误判成最大似然。
+    function heroMnemosCardCount(hero) {
+      return CYCLES.reduce((sum, cycleId) => sum + (hero.mnemos?.[cycleId] || []).length, 0);
+    }
+
+    // 轨道已推进的格数：每张回忆卡记的是 mnemosProgress[id]（1–10 的推进位置），
+    // 逐格累加，节点格同样计入（对比上一版：它把节点格跳过了，第 10 格只算 7 格）。
+    function heroMnemosTrackCount(hero) {
+      const progressByCard = hero.mnemosProgress || {};
       let count = 0;
-      hero.mnemosProgress = hero.mnemosProgress || {};
       CYCLES.forEach(cycleId => {
-        (hero.mnemos[cycleId] || []).forEach(mId => {
-          const m = (MNEMOS[cycleId] || []).find(x => x.id === mId);
-          if (m) {
-            const progress = hero.mnemosProgress[m.id] || 0;
-            const thresholds = m.thresholds || [];
-            // Count progress steps excluding M-prefixed special nodes
-            for (let i = 1; i <= progress; i++) {
-              const nodeIndex = thresholds.indexOf(i);
-              if (nodeIndex >= 0 && (m.nodes[nodeIndex] || "").startsWith("M")) continue;
-              count++;
-            }
-          }
+        (hero.mnemos?.[cycleId] || []).forEach(mId => {
+          const progress = Number(progressByCard[mId]) || 0;
+          if (progress <= 0) return;
+          count += Math.min(progress, MNEMOS_TRACK_LENGTH);
         });
       });
       return count;
@@ -1498,14 +1505,29 @@
 
     function computeLikelihood() {
       if (state.heroes.length < 2) return {};
-      const counts = state.heroes.map(h => ({ id: h.id, count: heroMnemosNodeCount(h) }));
-      const max = Math.max(...counts.map(c => c.count));
-      const min = Math.min(...counts.map(c => c.count));
+      const rows = state.heroes.map(h => ({
+        id: h.id,
+        cards: heroMnemosCardCount(h),
+        track: heroMnemosTrackCount(h),
+      }));
+      // 主判据
+      let rankOf = (row) => row.cards;
+      let values = rows.map(rankOf);
+      let max = Math.max(...values);
+      let min = Math.min(...values);
+      if (max === min) {
+        // 张数全相同，退化到次判据：轨道已推进格数
+        rankOf = (row) => row.track;
+        values = rows.map(rankOf);
+        max = Math.max(...values);
+        min = Math.min(...values);
+      }
       if (max === min) return {};
       const result = {};
-      counts.forEach(c => {
-        if (c.count === max) result[c.id] = "most";
-        else if (c.count === min) result[c.id] = "least";
+      rows.forEach(row => {
+        const value = rankOf(row);
+        if (value === max) result[row.id] = "most";
+        else if (value === min) result[row.id] = "least";
       });
       return result;
     }

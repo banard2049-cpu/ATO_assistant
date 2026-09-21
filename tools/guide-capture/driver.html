@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>ATO guide capture driver</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #eef1f3; overflow: hidden; }
+  iframe { display: block; border: 0; width: 100vw; height: 100vh; }
+  #stage { position: fixed; inset: 0; background: #eef1f3; z-index: 50; }
+  #stage[hidden] { display: none; }
+  #driver-error {
+    position: fixed; left: 0; right: 0; bottom: 0; margin: 0; padding: 12px;
+    background: #b00020; color: #fff; font: 12px/1.5 Consolas, monospace;
+    white-space: pre-wrap; z-index: 9999; max-height: 45vh; overflow: auto;
+  }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script>
+// Scripted screenshot driver, served from the application's own origin so that
+// session cookies and same-origin fetches behave exactly as they do for a user.
+//
+// Parameters
+//   username, password  credentials used when `auth` is set (the API field is
+//                       `username`; `account` is accepted as an alias)
+//   auth=register|login account created (register) and/or signed in (login)
+//   pre=<url>           page to render while the scripted steps run (e.g. the
+//                       first-run login screen); omitted means an empty stage
+//   target=<url>        page rendered full-viewport once the steps finish
+//   waitSel / waitText  readiness conditions inside the rendered page
+//   click / clicksel    button text (and optional selector) to click inside the
+//                       rendered page before the shot; repeatable via click2…
+//   second=enable       enable the second screen for the signed-in account and
+//                       render the generated ?token=… URL as the target
+//   scrollTo=<px>       scroll the rendered page before the shot
+//   hold=<ms>           keep virtual time busy this long before the shot
+//   budget=<ms>         hard limit for the whole flow (default 20000)
+
+const q = new URLSearchParams(location.search);
+const budget = parseInt(q.get('budget') || '20000', 10);
+const hold = Math.max(0, parseInt(q.get('hold') || '0', 10) || 0);
+const stage = document.getElementById('stage');
+
+function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
+function norm(s) { return (s || '').replace(/\s+/g, ' ').trim(); }
+
+// Virtual time only advances while the renderer is idle, so every wait is a
+// short real sleep first and then a poll: the platform fast-forwards the
+// sleeping part, which is what makes a 20 s budget finish in under a second.
+async function until(fn, { timeout = budget, label = 'condition' } = {}) {
+  const end = Date.now() + timeout;
+  let last;
+  while (Date.now() < end) {
+    try { last = await fn(); } catch (e) { last = 'threw: ' + e.message; }
+    if (last === true || (last && last.ok)) return last;
+    await sleep(80);
+  }
+  throw new Error(`timeout waiting for ${label} (last=${JSON.stringify(last)})`);
+}
+
+async function drvApi(method, url, body) {
+  const res = await fetch(url, {
+    method,
+    credentials: 'same-origin',
+    headers: body ? { 'Content-Type': 'application/json' } : undefined,
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const text = await res.text();
+  let data;
+  try { data = JSON.parse(text); } catch { data = text; }
+  return { status: res.status, data };
+}
+
+const frames = [];
+
+async function render(url) {
+  const frame = document.createElement('iframe');
+  frame.src = url;
+  stage.innerHTML = '';
+  stage.appendChild(frame);
+  frames.push(frame);
+  await until(() => frame.contentDocument && frame.contentDocument.readyState === 'complete'
+    ? true : `readyState=${frame.contentDocument && frame.contentDocument.readyState}`, { label: `frame load ${url}` });
+  return frame;
+}
+
+function setValue(doc, el, value) {
+  const proto = el instanceof HTMLTextAreaElement ? doc.defaultView.HTMLTextAreaElement : doc.defaultView.HTMLInputElement;
+  const setter = Object.getOwnPropertyDescriptor(proto.prototype, 'value').set;
+  setter.call(el, value);
+  el.dispatchEvent(new doc.defaultView.Event('input', { bubbles: true }));
+  el.dispatchEvent(new doc.defaultView.Event('change', { bubbles: true }));
+}
+
+async function inFrame(frame, fn, label, timeout = budget) {
+  return until(() => {
+    const doc = frame.contentDocument;
+    if (!doc || !doc.body) return 'no document';
+    return fn(doc) === true ? true : `not ready: ${label}`;
+  }, { label, timeout });
+}
+
+async function waitTextIn(frame, text) {
+  return until(() => {
+    const doc = frame.contentDocument;
+    if (!doc || !doc.body) return 'no body';
+    return doc.body.innerText.includes(text) ? true : 'text not present';
+  }, { label: `text "${text}"` });
+}
+
+function visible(el) { return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length); }
+
+function findButton(doc, pattern) {
+  const re = new RegExp(pattern);
+  return [...doc.querySelectorAll('button, input[type=submit], a, [role=button], .tab, .step, .card')]
+    .filter(visible)
+    .find((el) => re.test(norm(el.textContent || el.value || ''))) || null;
+}
+
+function findInput(doc, pattern) {
+  const re = new RegExp(pattern, 'i');
+  return [...doc.querySelectorAll('input, textarea')]
+    .filter((el) => el.type !== 'hidden' && visible(el))
+    .find((el) => {
+      const label = el.labels && el.labels[0] ? el.labels[0].textContent : '';
+      const forLabel = el.id ? (doc.querySelector(`label[for="${CSS.escape(el.id)}"]`)?.textContent || '') : '';
+      const hay = [el.placeholder, el.name, el.id, el.getAttribute('aria-label'), label, forLabel,
+        el.previousElementSibling?.textContent, el.parentElement?.textContent?.slice(0, 60)].filter(Boolean).join(' ');
+      return re.test(hay);
+    }) || null;
+}
+
+(async () => {
+  const account = q.get('username') || q.get('account') || '';
+  const password = q.get('password') || '';
+  const auth = q.get('auth') || '';       // 'register' | 'login' | 'both'
+  const pre = q.get('pre') || '';
+  let target = q.get('target') || '';
+  const second = q.get('second') || '';
+
+  try {
+    if (auth && account && password) {
+      if (auth === 'register' || auth === 'both') {
+        const r = await drvApi('POST', '/api/campaign-state.php?action=register', { username: account, password });
+        // 409/400 on a repeat run is fine: the account then already exists.
+        if (r.status >= 500) throw new Error(`register failed: ${r.status} ${JSON.stringify(r.data)}`);
+        if (r.status >= 400 && !/exist/i.test(JSON.stringify(r.data))) {
+          throw new Error(`register rejected: ${r.status} ${JSON.stringify(r.data)}`);
+        }
+      }
+      if (auth === 'login' || auth === 'both') {
+        let r = await drvApi('POST', '/api/campaign-state.php?action=login', { username: account, password });
+        if (r.status >= 400 && (auth === 'both' || auth === 'login')) {
+          const reg = await drvApi('POST', '/api/campaign-state.php?action=register', { username: account, password });
+          if (reg.status >= 500) throw new Error(`register failed: ${reg.status} ${JSON.stringify(reg.data)}`);
+          r = await drvApi('POST', '/api/campaign-state.php?action=login', { username: account, password });
+        }
+        if (r.status >= 400) throw new Error(`login failed: ${r.status} ${JSON.stringify(r.data)}`);
+      }
+      const me = await drvApi('GET', '/api/campaign-state.php?action=me');
+      if (!me.data || (me.data.ok === false) || me.data.authenticated === false) {
+        throw new Error(`session not established: ${JSON.stringify(me.data)}`);
+      }
+    }
+
+    if (second === 'enable' && !target) {
+      const r = await drvApi('POST', '/api/campaign-state.php?action=second-screen-status', { enabled: true });
+      const urls = (r.data && r.data.urls) || [];
+      const pick = urls.find((u) => /\/ss\//.test(u)) || urls[0];
+      if (!pick) throw new Error(`second screen URL missing: ${JSON.stringify(r.data)}`);
+      target = new URL(pick, location.origin).pathname + new URL(pick, location.origin).search;
+    }
+
+    if (pre) {
+      const f = await render(pre);
+      await sleep(150);
+      const mode = q.get('mode');
+      if (mode === 'register') {
+        await inFrame(f, (doc) => {
+          const tab = [...doc.querySelectorAll('button, [role=tab], .tab, a')].find((el) => /注册/.test(norm(el.textContent)));
+          if (tab) { tab.click(); return true; }
+          return 'no register tab';
+        }, 'register tab');
+      }
+      if (q.get('fillform')) {
+        await inFrame(f, (doc) => {
+          const u = findInput(doc, '账号|用户名|user');
+          const p = findInput(doc, '密码|password');
+          if (!u || !p) return 'no form fields';
+          setValue(doc, u, account || 'ato-guide');
+          setValue(doc, p, password ? '••••••••' : '');
+          return true;
+        }, 'fill login form');
+      }
+    }
+
+    if (target) {
+      const f = await render(target);
+      if (q.get('waitSel')) await inFrame(f, (doc) => doc.querySelector(q.get('waitSel')) ? true : 'selector missing', `selector ${q.get('waitSel')}`);
+      if (q.get('waitText')) await waitTextIn(f, q.get('waitText'));
+      // select the n-th non-empty option of a <select> and fire change, which is
+      // how the storybook pickers load their next dropdown.
+      for (const [k, v] of q.entries()) {
+        const m = /^select(\d*)$/.exec(k);
+        if (!m) continue;
+        const spec = v.split('|');            // selector|optionIndex|dispatch
+        const sel = spec[0];
+        const nth = parseInt(spec[1] || '1', 10);
+        await inFrame(f, (doc) => {
+          const el = doc.querySelector(sel);
+          if (!el) return `no select ${sel}`;
+          const opts = [...el.options].filter((o) => o.value !== '');
+          const pick = opts[Math.min(nth, opts.length - 1)];
+          if (!pick) return 'no options yet';
+          el.value = pick.value;
+          el.dispatchEvent(new doc.defaultView.Event('change', { bubbles: true }));
+          return true;
+        }, `select ${sel}`);
+        await sleep(600);
+      }
+      const clicks = [];
+      for (const [k, v] of q.entries()) if (k === 'click' || /^click\d+$/.test(k)) clicks.push(v);
+      const clickSel = q.get('clicksel');
+      for (const [i, text] of clicks.entries()) {
+        await inFrame(f, (doc) => {
+          const sel = clickSel || 'button, a, [role=button], .tab, .step, .card, .nav-item';
+          const re = new RegExp(text);
+          const el = [...doc.querySelectorAll(sel)].filter(visible).find((e) => re.test(norm(e.textContent || e.value || '')));
+          if (!el) return `no element matching ${text}`;
+          el.scrollIntoView({ block: 'center', inline: 'center' });
+          el.click();
+          return true;
+        }, `click "${text}"`);
+        await sleep(400);
+      }
+      if (q.get('afterText')) await waitTextIn(f, q.get('afterText'));
+      if (q.get('scrollSel')) {
+        await inFrame(f, (doc) => {
+          const el = doc.querySelector(q.get('scrollSel'));
+          if (!el) return `no element ${q.get('scrollSel')}`;
+          el.scrollTop = parseInt(q.get('scrollTop') || '0', 10);
+          return true;
+        }, `scroll container ${q.get('scrollSel')}`);
+        await sleep(250);
+      }
+      if (q.get('scrollTo')) {
+        await inFrame(f, (doc) => { doc.defaultView.scrollTo(0, parseInt(q.get('scrollTo'), 10)); return true; }, 'scroll');
+        await sleep(200);
+      }
+      if (q.get('scrollToSel')) {
+        await inFrame(f, (doc) => {
+          const el = doc.querySelector(q.get('scrollToSel'));
+          if (!el) return `no element ${q.get('scrollToSel')}`;
+          el.scrollIntoView({ block: 'start' });
+          return true;
+        }, `scrollIntoView ${q.get('scrollToSel')}`);
+        await sleep(250);
+      }
+    }
+
+    if (hold) await sleep(hold);
+    stage.removeAttribute('hidden');
+    document.title = 'ready';
+  } catch (err) {
+    const box = document.createElement('pre');
+    box.id = 'driver-error';
+    box.textContent = 'DRIVER ERROR: ' + (err && err.stack ? err.stack : String(err));
+    document.body.appendChild(box);
+    document.title = 'error';
+  }
+})();
+</script>
+</body>
+</html>

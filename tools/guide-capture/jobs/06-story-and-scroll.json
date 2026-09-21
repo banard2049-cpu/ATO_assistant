@@ -1,0 +1,8 @@
+[
+  { "name": "62-story-pick",
+    "url": "http://127.0.0.1:8793/tools/guide-capture/driver.html?auth=login&username=atoguide26&password=guidepass2026&target=/story/index.html&select=%23bookSelect%7C0&select2=%23chapterSelect%7C1&budget=32000", "budget": 38000 },
+  { "name": "08-dashboard-account",
+    "url": "http://127.0.0.1:8793/tools/guide-capture/driver.html?auth=login&username=atoguide26&password=guidepass2026&target=/index.html&waitText=%E7%94%A8%E6%88%B7%E4%B8%8E%E5%AD%98%E6%A1%A3&scrollTo=6000&budget=30000", "budget": 35000 },
+  { "name": "05b-dashboard-bottom",
+    "url": "http://127.0.0.1:8793/tools/guide-capture/driver.html?auth=login&username=atoguide26&password=guidepass2026&target=/index.html&waitText=%E6%88%98%E5%BD%B9%E7%AC%94%E8%AE%B0&scrollTo=1200&budget=30000", "budget": 35000 }
+]

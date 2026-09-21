@@ -19,7 +19,7 @@ from contextlib import redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
-from PIL import Image
+from PIL import Image, ImageFilter
 
 from app.catalog import CatalogItem, apply_catalog
 from app.db import Database
@@ -245,6 +245,51 @@ class OfficialPackTests(OfficialFixture):
         self.assertEqual(
             self.project_digests["assets/test/001-front.jpg"],
             hashlib.sha256(self.pack_member_bytes("assets/test/001-front.jpg")).hexdigest(),
+        )
+
+    def test_image_quality_reencodes_and_keeps_manifest_in_sync(self):
+        """--image-quality：PNG 目标换成更小的 JPEG 字节，清单哈希与包内大小都得跟着走。
+
+        打包器改名前的 full 校验会逐个比对成员大小与哈希，所以这条测试同时也证明
+        重编码过的成员不会因为「包内大小 ≠ 磁盘原文件大小」而报错。
+        """
+        target = "assets/test/003-photo.png"
+        path = self.ato / target
+        path.parent.mkdir(parents=True, exist_ok=True)
+        noise = Image.frombytes("RGB", (600, 400), os.urandom(600 * 400 * 3))
+        noise.filter(ImageFilter.GaussianBlur(1.2)).save(path)
+        self.payload["items"].append(
+            {
+                "id": "c1:test:cards:003", "cycle": "c1", "module": "测试卡", "subgroup": "测试",
+                "name": "测试卡 003", "number": "003", "sort_order": 3,
+                "capture_required": 1, "faces": {"front": target},
+            }
+        )
+        original = path.read_bytes()
+        result = self.build(image_quality=85)
+
+        packed = self.pack_member_bytes(target)
+        self.assertTrue(packed.startswith(b"\xff\xd8\xff"), "PNG 目标被换成了 JPEG 字节")
+        self.assertLess(len(packed), len(original), "换出来必须更小")
+        declared = {asset["member"]: asset["sha256"] for asset in self.read_manifest()["assets"]}
+        self.assertEqual(hashlib.sha256(packed).hexdigest(), declared[target], "清单哈希要等于包内真实字节")
+        self.assertEqual("full", result.verification["mode"])
+        self.assertIsNotNone(result.shrink)
+        self.assertGreaterEqual(result.shrink["pngToJpeg"], 1, "至少有一张 PNG 被换成 JPEG")
+        self.assertGreater(result.shrink["saved"], 0)
+        # 没开重编码时，同样的图必须原样进包
+        plain = self.build(force=True)
+        self.assertIsNone(plain.shrink)
+        self.assertEqual(
+            hashlib.sha256(original).hexdigest(),
+            hashlib.sha256(self.pack_member_bytes(target)).hexdigest(),
+        )
+        # 豁免名单命中的成员：即使开着重编码也按原字节进包
+        kept = self.build(force=True, image_quality=85, image_quality_keep=[target, "assets/test/never-*"])
+        self.assertEqual(1, kept.shrink["keptByRule"], "命中豁免的那张不该被重编")
+        self.assertEqual(
+            hashlib.sha256(original).hexdigest(),
+            hashlib.sha256(self.pack_member_bytes(target)).hexdigest(),
         )
 
     def test_story_js_keeps_only_official_text(self):

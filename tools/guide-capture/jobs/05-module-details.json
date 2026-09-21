@@ -1,0 +1,16 @@
+[
+  { "name": "32-hero-add",
+    "url": "http://127.0.0.1:8793/tools/guide-capture/driver.html?auth=login&username=atoguide26&password=guidepass2026&target=/hero/index.html&click=%E6%B7%BB%E5%8A%A0%E8%8B%B1%E9%9B%84&budget=30000", "budget": 35000 },
+  { "name": "41-tech-cycle3",
+    "url": "http://127.0.0.1:8793/tools/guide-capture/driver.html?auth=login&username=atoguide26&password=guidepass2026&target=/technology/index.html&click=Cycle%20III&budget=30000", "budget": 35000 },
+  { "name": "52-record-resource",
+    "url": "http://127.0.0.1:8793/tools/guide-capture/driver.html?auth=login&username=atoguide26&password=guidepass2026&target=/record/index.html&scrollSel=.record-layout&scrollTop=760&budget=35000", "budget": 40000 },
+  { "name": "53-record-adventure",
+    "url": "http://127.0.0.1:8793/tools/guide-capture/driver.html?auth=login&username=atoguide26&password=guidepass2026&target=/record/index.html&scrollSel=.record-layout&scrollTop=1700&budget=35000", "budget": 40000 },
+  { "name": "61-story-panel",
+    "url": "http://127.0.0.1:8793/tools/guide-capture/driver.html?auth=login&username=atoguide26&password=guidepass2026&target=/story/index.html&click=%E4%BA%BA%E7%89%A9%E5%B0%8F%E4%BC%A0&budget=30000", "budget": 35000 },
+  { "name": "71-ss-story",
+    "url": "http://127.0.0.1:8793/tools/guide-capture/driver.html?auth=login&username=atoguide26&password=guidepass2026&second=enable&budget=30000", "budget": 35000 },
+  { "name": "21-map-explore",
+    "url": "http://127.0.0.1:8793/tools/guide-capture/driver.html?auth=login&username=atoguide26&password=guidepass2026&target=/map/index.html&click=%E6%98%BE%E7%A4%BA%E8%83%8C%E6%99%AF&budget=30000", "budget": 35000 }
+]

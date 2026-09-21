@@ -90,8 +90,29 @@ from app.story_extras import (  # noqa: E402
     find_entity_index,
 )
 
+if __package__:  # 作为包导入（build_official_pack 走这条路）
+    from .image_shrink import (
+        ShrinkStats,
+        is_image_member,
+        load_keep_patterns,
+        matches_any,
+        shrink_image,
+    )
+else:  # 直接当脚本跑：tools/ 在 sys.path 上
+    from image_shrink import (
+        ShrinkStats,
+        is_image_member,
+        load_keep_patterns,
+        matches_any,
+        shrink_image,
+    )
+
 TOOL_NAME = "build_fan_pack"
 TOOL_VERSION = "2.1.0"
+
+# 图片重编码（--image-quality）允许的质量范围；不传就是完全不重编，保持历史口径。
+IMAGE_QUALITY_MIN = 40
+IMAGE_QUALITY_MAX = 95
 
 PACKAGE_FORMAT = "ato-asset-pack"
 # 不带官方资料时是 2；带上官方故事书正文数据（或截图）就是 3，与
@@ -627,6 +648,10 @@ class WriteOutcome:
     resources_written: int
     hash_mismatch_count: int
     hash_mismatches: list[str]
+    # 重编码之后包内成员的真实大小（只有被换掉的成员在里面）；verify_partial 用它，
+    # 免得拿计划里的原始大小去比包内实际大小。
+    sizes: dict[str, int] = field(default_factory=dict)
+    shrink: ShrinkStats | None = None
 
 
 def build_manifest(
@@ -713,8 +738,15 @@ def write_pack(
     compression: int,
     reporter: Reporter,
     edition: str = "fan",
+    image_quality: int | None = None,
+    image_quality_keep: list[str] | None = None,
 ) -> WriteOutcome:
-    """先写 .partial；写入时顺手算真实哈希（清单哈希必须等于真实字节）。"""
+    """先写 .partial；写入时顺手算真实哈希（清单哈希必须等于真实字节）。
+
+    ``image_quality`` 打开时，图片成员会先过一遍 :func:`image_shrink.shrink_image`：
+    换掉了就写新字节（成员名不变、哈希按新字节算），没换就原样流式写入。
+    ``image_quality_keep`` 里的通配命中的成员永远按原字节进包（决战板图、使徒大图这类）。
+    """
     written: list[tuple[PlannedAsset, str]] = []
     digest_by_member: dict[str, str] = {}
     extra_members: list[str] = []
@@ -722,21 +754,39 @@ def write_pack(
     mismatch_count = 0
     started = time.monotonic()
     written_bytes = 0
+    shrink_stats = ShrinkStats() if image_quality else None
+    size_overrides: dict[str, int] = {}
 
     with zipfile.ZipFile(partial, "w", compression=compression, allowZip64=True) as archive:
         for index, asset in enumerate(plan, 1):
             digest = digest_by_member.get(asset.member)
             if digest is None:
-                digest = hashlib.sha256()
-                with asset.source.open("rb") as source, archive.open(
-                    asset.member, "w", force_zip64=True
-                ) as target:
-                    while chunk := source.read(CHUNK_SIZE):
-                        digest.update(chunk)
-                        target.write(chunk)
-                digest = digest.hexdigest()
+                shrunk = None
+                if image_quality and is_image_member(asset.member):
+                    if matches_any(asset.member, image_quality_keep):
+                        if shrink_stats is not None:
+                            shrink_stats.kept_by_rule += 1
+                    else:
+                        raw = asset.source.read_bytes()
+                        shrunk = shrink_image(
+                            raw, image_quality, member=asset.member, stats=shrink_stats
+                        )
+                        if shrunk is not None:
+                            digest = hashlib.sha256(shrunk).hexdigest()
+                            archive.writestr(asset.member, shrunk)
+                            written_bytes += len(shrunk)
+                            size_overrides[asset.member] = len(shrunk)
+                if shrunk is None:
+                    digest = hashlib.sha256()
+                    with asset.source.open("rb") as source, archive.open(
+                        asset.member, "w", force_zip64=True
+                    ) as target:
+                        while chunk := source.read(CHUNK_SIZE):
+                            digest.update(chunk)
+                            target.write(chunk)
+                    digest = digest.hexdigest()
+                    written_bytes += asset.size
                 digest_by_member[asset.member] = digest
-                written_bytes += asset.size
             if asset.expected_sha256 and asset.expected_sha256 != digest:
                 # 素材库兜底时记录对不上；工程目录是原始文件，不存在这个问题。
                 mismatch_count += 1
@@ -814,6 +864,8 @@ def write_pack(
         resources_written=len(resource_files),
         hash_mismatch_count=mismatch_count,
         hash_mismatches=mismatches,
+        sizes=size_overrides,
+        shrink=shrink_stats,
     )
 
 
@@ -830,6 +882,7 @@ def verify_partial(
     mode: str,
     sample: int,
     reporter: Reporter,
+    size_overrides: dict[str, int] | None = None,
 ) -> dict:
     declared_lookup: dict[str, str] = {}
     for asset in manifest.get("assets", []):
@@ -840,6 +893,11 @@ def verify_partial(
         declared_lookup[member] = digest
 
     expected_sizes = {asset.member: asset.size for asset in plan}
+    if size_overrides:
+        # 图片重编码过：包内大小按重编码后的字节算，不是磁盘原文件大小。
+        expected_sizes.update(
+            {member: size for member, size in size_overrides.items() if member in expected_sizes}
+        )
     with zipfile.ZipFile(partial) as archive:
         names = archive.namelist()
         name_set = set(names)
@@ -966,6 +1024,7 @@ class BuildResult:
     hash_mismatch_count: int = 0
     verification: dict = field(default_factory=dict)
     elapsed_seconds: float = 0.0
+    shrink: dict | None = None
 
 
 def build(
@@ -991,11 +1050,17 @@ def build(
     reporter: Reporter,
     story_source: str = "project",
     edition: str = "fan",
+    image_quality: int | None = None,
+    image_quality_keep: list[str] | None = None,
 ) -> BuildResult:
     started = time.monotonic()
     ato_root = ato_root.expanduser().resolve()
     if not (ato_root / "index.html").is_file():
         raise PackError(f"这不像 ATO_assistant 根目录（没有 index.html）：{ato_root}")
+    if image_quality is not None and not IMAGE_QUALITY_MIN <= image_quality <= IMAGE_QUALITY_MAX:
+        raise PackError(
+            f"--image-quality 要在 {IMAGE_QUALITY_MIN}–{IMAGE_QUALITY_MAX} 之间：{image_quality}"
+        )
 
     items, catalog_source = load_catalog(set(cycles), set(modules), reporter)
     library = LibraryReader(library_path) if library_path is not None else None
@@ -1114,6 +1179,10 @@ def build(
     )
     reporter.say(f"背景音乐  : {len(bgm)} 首")
     reporter.say(f"成员/体积 : {member_count} / {human_bytes(total_bytes)}")
+    if image_quality:
+        reporter.say(f"图片重编码: 开（JPEG 质量 {image_quality}，不缩放；实际体积以写盘后为准）")
+        if image_quality_keep:
+            reporter.say(f"            名单豁免 {len(image_quality_keep)} 条通配，命中的图原样进包")
     if stats.missing:
         reporter.say(f"跳过的面  : {len(stats.missing)}（--skip-missing）")
 
@@ -1180,10 +1249,19 @@ def build(
             compression=compression,
             reporter=reporter,
             edition=edition,
+            image_quality=image_quality,
+            image_quality_keep=image_quality_keep,
         )
         reporter.say("校验 .partial（改名之前）……")
         verification = verify_partial(
-            partial, outcome.manifest, planned, outcome.extra_members, verify_mode, verify_sample, reporter
+            partial,
+            outcome.manifest,
+            planned,
+            outcome.extra_members,
+            verify_mode,
+            verify_sample,
+            reporter,
+            size_overrides=outcome.sizes,
         )
     except BaseException:
         reporter.warn(f"打包失败：未完成的包留在 {partial}，最终路径 {output} 上没有生成任何文件")
@@ -1195,6 +1273,8 @@ def build(
         )
         for entry in outcome.hash_mismatches:
             reporter.warn(f"  {entry}")
+    if outcome.shrink is not None:
+        reporter.say(f"  {outcome.shrink.describe()}")
 
     commit_partial(partial, output, reporter)
     return BuildResult(
@@ -1226,6 +1306,7 @@ def build(
         hash_mismatch_count=outcome.hash_mismatch_count,
         verification=verification,
         elapsed_seconds=time.monotonic() - started,
+        shrink=outcome.shrink.as_dict() if outcome.shrink else None,
     )
 
 
@@ -1263,6 +1344,12 @@ def report(result: BuildResult, reporter: Reporter) -> None:
         + ("（含原书扫描图）" if result.official_scans else "")
     )
     reporter.say(f"  背景音乐  : {result.bgm_files} 首")
+    if result.shrink:
+        reporter.say(
+            f"  图片瘦身  : 重编 {result.shrink['converted']} 张，"
+            f"{human_bytes(result.shrink['before'])} → {human_bytes(result.shrink['after'])}"
+            f"（省 {human_bytes(result.shrink['saved'])}）"
+        )
     reporter.say(
         f"  成员/校验 : {result.members} / "
         f"{result.verification.get('mode')}（比对 {result.verification.get('hashes_checked', 0)} 个哈希）"
@@ -1306,6 +1393,21 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="改名之前的包内校验强度（默认抽样）",
     )
     parser.add_argument("--verify-sample", type=int, default=32, help="抽样校验的成员数量（默认 32）")
+    parser.add_argument(
+        "--image-quality", type=int, default=None,
+        help=(
+            "打包时把图片重新编码到这个 JPEG 质量（40–95，常用 85）来缩小体积；"
+            "不传就完全不重编。成员名不变，收益不够的图保持原样"
+        ),
+    )
+    parser.add_argument(
+        "--image-quality-keep", action="append", default=[],
+        help="重编码豁免通配（可重复/逗号分隔），命中的图原样进包，例如 ss/battle-board.jpg",
+    )
+    parser.add_argument(
+        "--image-quality-keep-file", type=Path,
+        help="豁免名单文件：一行一条通配，`#` 开头是注释",
+    )
     parser.add_argument("--json", action="store_true", help="stdout 输出机器可读摘要")
     parser.add_argument("--quiet", action="store_true", help="不打印进度")
     parser.add_argument("--version", action="version", version=f"{TOOL_NAME} {TOOL_VERSION}")
@@ -1350,6 +1452,9 @@ def main(argv: list[str] | None = None) -> int:
             verify_mode=args.verify,
             verify_sample=args.verify_sample,
             reporter=reporter,
+            image_quality=args.image_quality,
+            image_quality_keep=as_list(args.image_quality_keep)
+            + load_keep_patterns(args.image_quality_keep_file),
         )
     except PackError as error:
         print(f"打包失败：{error}", file=sys.stderr)

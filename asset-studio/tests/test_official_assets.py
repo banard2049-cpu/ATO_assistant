@@ -72,6 +72,38 @@ class OfficialAssetTests(unittest.TestCase):
             self.write(f"{folder}/CARD.png", folder.encode())
         self.assertIsNone(find(SCRATCH, "assets/cards/CARD.jpg"))
 
+    def test_flat_terrain_cards_only_replace_terrain_cards(self) -> None:
+        """地形卡官图只换地形卡（提示卡），不能盖掉同名同姓的地形板块。
+
+        ``official-assets/terrain-cards/abandoned-temple.jpg`` 是一张地形卡，而
+        ``ss/terrain/abandoned-temple.jpg`` 是**地形板块**——两边同名但不是同一种卡面。
+        没有目录归属时，按文件名兜底会让地形板块被地形卡替换。
+        """
+        card = self.write("terrain-cards/abandoned-temple.jpg", b"official terrain card")
+        self.assertEqual(card, find(SCRATCH, "ss/terrain-cards/abandoned-temple.jpg"))
+        self.assertIsNone(
+            find(SCRATCH, "ss/terrain/abandoned-temple.jpg"),
+            "地形板块不该被地形卡官图替换",
+        )
+
+    def test_flat_directory_still_matches_after_owner_check(self) -> None:
+        """归属检查不能误伤本来就该命中的两类：根目录散图与目录同名。
+
+        索引在 TTL 内是缓存视图，用例中途新写入素材要显式清一次缓存（同
+        ``test_other_extension_still_matches_the_target``）。
+        """
+        loose = self.write("cj1475.jpg", b"loose official card")
+        self.assertEqual(loose, find(SCRATCH, "technology/images/gear_cards/cj1475.jpg"))
+
+        same = self.write("HEKATON/CARD.jpg", b"same folder name")
+        clear_cache()
+        self.assertEqual(same, find(SCRATCH, "aibp/ps/HEKATON/CARD.jpg"))
+
+        # 官方目录名是目标目录段的后缀时仍然算命中（story-doom-cards ← doom）。
+        doom = self.write("doom/DOOM.jpg", b"official doom")
+        clear_cache()
+        self.assertEqual(doom, find(SCRATCH, "assets/story-doom-cards/DOOM.png"))
+
     def test_case_does_not_matter(self) -> None:
         """路径与扩展名的大小写都不参与匹配。"""
         upper = self.write("hekaton/CARD.PNG", b"upper")
