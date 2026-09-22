@@ -1755,7 +1755,7 @@
           ["不安的头颅", "Uneasy Rests the Head"],
           ["米诺陶洛斯之泪", "Tears of a Minotaur"],
           ["暴露的梦境", "Dreams Laid Bare"],
-          ["教程", "Tutorial"],
+          ["教程", "Tutorial", "three"],
         ],
         diplomacy: [
           ["minoians", "米诺斯人", "Minoans", -10, 10],
@@ -2919,7 +2919,10 @@
       ) {
         slot = boxId;
       } else {
-        const middleSlots = slotPreset === "five" ? ["mid1", "mid2", "mid3"] : ["mid1", "mid2"];
+        // 中间空格数随预设变化：three 只留 1 个中间格，five 有 3 个，其余 2 个。
+        const middleSlots = slotPreset === "five" ? ["mid1", "mid2", "mid3"]
+          : slotPreset === "three" ? ["mid1"]
+            : ["mid1", "mid2"];
         slot = middleSlots.find((candidate) => !state.adventures[`${prefix}-${candidate}`]) || "";
       }
 
@@ -3685,6 +3688,11 @@
           { id: "alpha", label: "α" },
           { id: "mid1", label: "" },
           { id: "mid2", label: "" },
+          { id: "omega", label: "Ω" },
+        ],
+        three: [
+          { id: "alpha", label: "α" },
+          { id: "mid1", label: "" },
           { id: "omega", label: "Ω" },
         ],
         five: [
