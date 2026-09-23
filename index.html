@@ -6578,7 +6578,11 @@
     }
 
     function recordAdventureMiddleSlots(cycleId, adventureIndex) {
-      const usesFiveSlots = (cycleId === "c4" && adventureIndex < 6)
+      // 对照循环 I-IV 中文记录表的冒险轨；保留格子 ID 以兼容已有存档。
+      if (cycleId === "c1" && adventureIndex === 7) return ["mid1"];
+      const usesFiveSlots = (cycleId === "c1" && [0, 1, 2, 3, 6].includes(adventureIndex))
+        || (cycleId === "c3" && [0, 1, 2, 6].includes(adventureIndex))
+        || (cycleId === "c4" && adventureIndex >= 0 && adventureIndex < 5)
         || (cycleId === "c5" && adventureIndex >= 1 && adventureIndex <= 3);
       return usesFiveSlots ? ["mid1", "mid2", "mid3"] : ["mid1", "mid2"];
     }
