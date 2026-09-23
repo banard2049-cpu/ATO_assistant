@@ -2082,7 +2082,7 @@
               <select data-battle-map-add-select aria-label="新增地形"></select>
               <button type="button" data-battle-map-add>+ 新增地形</button>
             </div>
-            <div class="battle-map-selection" data-battle-map-selection>未选择地形</div>
+            <div class="battle-map-selection" data-battle-map-selection>双击地形选中，再次双击取消</div>
             <div class="battle-map-los" data-battle-map-los-control>
               <div class="battle-map-los-head">
                 <span>视线判断</span>
@@ -2218,7 +2218,7 @@
   <!-- Token 名单写在本页脚本里（tokenFileNames），不再加载 ps/other/token/token_manifest.js。 -->
   <script src="../ss/terrain-data.js?v=20260819-c5-light1"></script>
   <script src="battle_los.js?v=20260819-hekaton4-labyrinthauros-start1"></script>
-  <script src="battle_map_control.js?v=20260819-c5-light2"></script>
+  <script src="battle_map_control.js?v=20260924-double-click"></script>
   <script>
     const apostles = [
       "HEKATON",
@@ -2637,6 +2637,7 @@
     let battleMapControl = null;
     const undoStacks = {};
     const maxUndoSteps = 30;
+    let pendingUndoEntry = null;
     let zoomCloseAction = null;
     let activeMoveContext = null;
     let activeTokenContext = null;
@@ -2651,8 +2652,20 @@
       try {
         const saved = JSON.parse(localStorage.getItem(storageKey) || "{}");
         const session = saved.activeScry;
+        const history = saved.undoStacks;
         delete saved.activeScry;
+        delete saved.undoStacks;
         Object.assign(piles, saved);
+        if (isPlainObject(history)) {
+          apostles.forEach((name) => {
+            if (Array.isArray(history[name])) {
+              undoStacks[name] = history[name].filter((entry) =>
+                ["AI", "BP", "AIBP"].includes(entry?.scope)
+                && isPlainObject(entry.state?.AI) && isPlainObject(entry.state?.BP));
+              trimUndoStack(name);
+            }
+          });
+        }
         if (Array.isArray(session?.cards) && session.cards.length > 0 && ["AI", "BP"].includes(session.type)) {
           activeScry = session;
         }
@@ -2662,8 +2675,9 @@
     }
 
     function savePiles() {
-      // 观星会话与牌堆同存同取：被查看的牌不能只留在内存里，否则中途刷新就永久丢牌。
-      localStorage.setItem(storageKey, JSON.stringify(activeScry ? { ...piles, activeScry } : piles));
+      captureUndoEffects();
+      // 牌堆、回溯记录和观星会话一起保存，刷新后仍能沿同一条时间线回退。
+      localStorage.setItem(storageKey, JSON.stringify({ ...piles, undoStacks, ...(activeScry ? { activeScry } : {}) }));
       scheduleSecondScreenSnapshot();
     }
 
@@ -2891,36 +2905,127 @@
 
     function rememberUndo(name, scope = "AIBP") {
       ensurePiles(name);
+      captureUndoEffects();
       undoStacks[name] ||= [];
-      undoStacks[name].push({
+      const entry = {
         scope,
         state: clonePileState(piles[name]),
         aiView: currentAiView,
         bpView: currentBpView
-      });
-      if (undoStacks[name].length > maxUndoSteps) {
-        undoStacks[name].shift();
-      }
+      };
+      undoStacks[name].push(entry);
+      pendingUndoEntry = { name, entry };
+      trimUndoStack(name);
       updateUndoButtons();
     }
 
-    function canUndo(name, type = "") {
+    function trimUndoStack(name) {
       const stack = undoStacks[name] || [];
-      const entry = stack[stack.length - 1];
-      if (!entry) return false;
-      if (!type) return true;
-      return entry.scope === type || entry.scope === "AIBP";
+      ["AI", "BP"].forEach((type) => {
+        let count = 0;
+        for (let index = stack.length - 1; index >= 0; index--) {
+          const entry = stack[index];
+          if (entry.scope !== type && entry.scope !== "AIBP") continue;
+          if (++count <= maxUndoSteps) continue;
+          if (entry.scope === "AIBP") entry.scope = type === "AI" ? "BP" : "AI";
+          else stack.splice(index, 1);
+        }
+      });
+    }
+
+    function undoSharedState(state) {
+      // 牌堆各自回退；面板上的联动效果单独记录，不能覆盖另一边后续的操作。
+      const { AI, BP, flare, feint, aiExhaustedBonusIndex, lastPendingType, battleMap, ...shared } = state;
+      return shared;
+    }
+
+    function captureUndoEffects() {
+      if (!pendingUndoEntry) return;
+      const { name, entry } = pendingUndoEntry;
+      if ((undoStacks[name] || []).at(-1) !== entry) {
+        pendingUndoEntry = null;
+        return;
+      }
+      entry.sharedAfter = clonePileState(undoSharedState(piles[name]));
+      // BP 结算可能使 AI 晋升：两边都留下可独立回退的记录。
+      const other = entry.scope === "AI" ? "BP" : "AI";
+      if (entry.scope !== "AIBP"
+        && JSON.stringify(entry.state[other]) !== JSON.stringify(piles[name][other])) {
+        entry.scope = "AIBP";
+        trimUndoStack(name);
+      }
+    }
+
+    function undoEntryIndex(name, type = "") {
+      const stack = undoStacks[name] || [];
+      for (let index = stack.length - 1; index >= 0; index--) {
+        if (!type || stack[index].scope === type || stack[index].scope === "AIBP") return index;
+      }
+      return -1;
+    }
+
+    function reverseUndoEffects(current, before, after) {
+      if (JSON.stringify(before) === JSON.stringify(after)) return current;
+      if (isPlainObject(before) && isPlainObject(after) && isPlainObject(current)) {
+        const result = { ...current };
+        new Set([...Object.keys(before), ...Object.keys(after)]).forEach((key) => {
+          const value = reverseUndoEffects(current[key], before[key], after[key]);
+          if (value === undefined) delete result[key];
+          else result[key] = value;
+        });
+        return result;
+      }
+      return JSON.stringify(current) === JSON.stringify(after) ? before : current;
+    }
+
+    function canUndo(name, type = "") {
+      if (activeScry) return false;
+      return undoEntryIndex(name, type) >= 0;
     }
 
     function undoLastAibp(type = "") {
       ensurePiles(currentApostle);
       const stack = undoStacks[currentApostle] || [];
-      const entry = stack[stack.length - 1];
-      if (!entry || (type && entry.scope !== type && entry.scope !== "AIBP")) return;
-      stack.pop();
-      piles[currentApostle] = clonePileState(entry.state);
-      currentAiView = entry.aiView;
-      currentBpView = entry.bpView;
+      if (!canUndo(currentApostle, type)) return;
+      captureUndoEffects();
+      pendingUndoEntry = null;
+      const index = undoEntryIndex(currentApostle, type);
+      const entry = stack[index];
+      const state = piles[currentApostle];
+      // DAHAKA 使用同一副实体 AIBP 牌，必须保留它的共同牌堆规则。
+      const combined = currentApostle === "DAHAKA";
+      const scope = combined ? "AIBP" : (type || entry.scope);
+      const before = undoSharedState(entry.state);
+      const after = entry.sharedAfter || before;
+      const shared = reverseUndoEffects(undoSharedState(state), before, after);
+      Object.keys(undoSharedState(state)).forEach((key) => { delete state[key]; });
+      Object.assign(state, clonePileState(shared));
+      // 将还没撤销的记录同步到当前分支，避免之后撤销另一边时复活已撤销的联动效果。
+      stack.slice(index).forEach((later) => {
+        const previous = reverseUndoEffects(undoSharedState(later.state), before, after);
+        Object.keys(undoSharedState(later.state)).forEach((key) => { delete later.state[key]; });
+        Object.assign(later.state, clonePileState(previous));
+        if (later.sharedAfter) later.sharedAfter = clonePileState(reverseUndoEffects(later.sharedAfter, before, after));
+      });
+      if (scope === "AI" || scope === "AIBP") {
+        ["AI", "flare", "feint", "aiExhaustedBonusIndex"].forEach((key) => {
+          if (entry.state[key] !== undefined) state[key] = clonePileState(entry.state[key]);
+        });
+        currentAiView = entry.aiView;
+      }
+      if (scope === "BP" || scope === "AIBP") {
+        state.BP = clonePileState(entry.state.BP);
+        currentBpView = entry.bpView;
+      }
+      if (combined && entry.state.aibp) {
+        state.aibp = clonePileState(entry.state.aibp);
+        state.AI = state.BP = state.aibp;
+      }
+      if (entry.scope === "AIBP" && scope !== "AIBP") entry.scope = scope === "AI" ? "BP" : "AI";
+      else stack.splice(index, 1);
+      if (!state[state.lastPendingType]?.pending) {
+        state.lastPendingType = state.BP.pending ? "BP" : state.AI.pending ? "AI" : "";
+      }
       savePiles();
       updateAiViewTabs();
       updateBpViewTabs();
@@ -2928,12 +3033,18 @@
       renderAibpCards();
       renderExtraCards();
       renderPanelTokens();
+      battleMapControl?.render();
       updateUndoButtons();
     }
 
     function updateUndoButtons() {
-      if (undoAiButton) undoAiButton.disabled = !canUndo(currentApostle, "AI");
-      if (undoBpButton) undoBpButton.disabled = !canUndo(currentApostle, "BP");
+      [[undoAiButton, "AI"], [undoBpButton, "BP"]].forEach(([button, type]) => {
+        if (!button) return;
+        const count = (undoStacks[currentApostle] || []).filter((entry) => entry.scope === type || entry.scope === "AIBP").length;
+        button.disabled = !canUndo(currentApostle, type);
+        button.textContent = count ? `撤销 ${type}（${count}）` : `撤销 ${type}`;
+        button.title = `连续回溯 ${type}，剩余 ${count} 步；刷新后仍可继续`;
+      });
     }
 
     function imageOrMessage(src, alt, className = "") {
@@ -5028,7 +5139,7 @@
       confirmAiButton.disabled = !aiPending;
       discardBpButton.disabled = !bpPending;
       defeatBpButton.disabled = !bpPending;
-      criticalBpButton.disabled = !bpPending || (bpPending.level !== "III" && !bpPending.specialBp);
+      criticalBpButton.disabled = !bpPending;
 
       if (!aiPending) {
         aiDrawPreview.classList.remove("has-card");
@@ -5796,10 +5907,8 @@
       imageZoomBpActions.querySelectorAll("[data-bp-zoom-action]").forEach((button) => {
         const action = button.dataset.bpZoomAction;
         const isVpAction = action === "vp-defeat" || action === "vp-critical";
-        const isCriticalAction = action === "critical" || action === "vp-critical";
         button.hidden = isVpAction && !isChimera();
         button.disabled = !pending
-          || (isCriticalAction && pending.level !== "III" && !pending.specialBp)
           || (isVpAction && !isChimera());
       });
     }
@@ -6718,7 +6827,7 @@
   <script src="ps/other/resouce/bp_resource_map.js"></script>
   <script src="ps/other/resouce/bp_resource_map_c1_c3.js"></script>
   <script src="ps/other/resouce/bp_resource_map_c4_c5.js?v=20260730e"></script>
-  <script src="c45_specials.js?v=20260816-demidjinn-wish-signature"></script>
+  <script src="c45_specials.js?v=20260924-bp-critical"></script>
   <script src="bp_loot_calculator_addon.js?v=20260816-c45-loot-icons"></script>
   <script src="../assets/ato-terms.js?v=20260919-chimera"></script>
   <script src="../assets/term-language.js?v=20260923-nocascade"></script>

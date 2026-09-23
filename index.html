@@ -1384,7 +1384,20 @@
     }
 
     .card-track-dialog[data-group="story"] .card-track-body {
-      grid-template-columns: minmax(760px, 1fr) minmax(240px, 300px);
+      grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
+      align-items: start;
+    }
+
+    .card-track-dialog[data-group="story"] .card-track-item {
+      min-width: 0;
+      align-content: start;
+    }
+
+    /* 按可用高度缩放卡面，为标题、进展和推进/回退操作预留空间。 */
+    .card-track-dialog[data-group="story"] .card-track-face,
+    .card-track-dialog[data-group="story"] .card-track-empty {
+      width: min(100%, 896px, max(252px, calc(140vh - 392px)));
+      width: min(100%, 896px, max(252px, calc(140dvh - 392px)));
     }
 
     .card-track-dialog[data-group="doom"] .card-track-body {
@@ -2081,6 +2094,23 @@
       .card-track-face,
       .card-track-empty {
         width: min(100%, 520px);
+      }
+
+      .card-track-dialog[data-group="story"] .card-track-knowledge {
+        min-height: 0;
+        grid-template-columns: auto 1fr;
+        padding: 10px;
+      }
+
+      .card-track-dialog[data-group="story"] .card-track-knowledge-value {
+        font-size: 32px;
+      }
+
+      /* 单列时也为下方的知识面板预留高度，小屏仍可滚动查看完整内容。 */
+      .card-track-dialog[data-group="story"] .card-track-face,
+      .card-track-dialog[data-group="story"] .card-track-empty {
+        width: min(100%, 520px, max(196px, calc(140vh - 728px)));
+        width: min(100%, 520px, max(196px, calc(140dvh - 728px)));
       }
 
       .session-card {
@@ -8865,7 +8895,7 @@
   </script>
   <script src="./assets/ato-terms.js?v=20260922-official-terms"></script>
   <script src="./assets/term-language.js?v=20260923-nocascade"></script>
-  <script src="./assets/update/app-version.js?v=1"></script>
+  <script src="./assets/update/app-version.js?v=2.0.4-rc.1"></script>
   <script src="./assets/update/update-check.js?v=1"></script>
 </body>
 </html>

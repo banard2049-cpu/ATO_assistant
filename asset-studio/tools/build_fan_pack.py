@@ -64,6 +64,8 @@ import re
 import sys
 import time
 import zipfile
+import zlib
+from contextlib import nullcontext
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
@@ -290,6 +292,9 @@ class PlannedAsset:
     size: int
     origin: str
     expected_sha256: str | None = None
+    # 源文件的改动时间（纳秒）。增量打包靠它判断"源没变"，从而连读盘都省掉；
+    # 重编码过的成员没法用哈希比（包内字节与源不同），只能用这条指纹。
+    source_mtime_ns: int = 0
 
 
 @dataclass
@@ -448,15 +453,17 @@ def plan_assets(
             if source is None:
                 stats.missing.append(f"{item.id} / {face} → {member}")
                 continue
+            stat = source.stat()
             planned.append(
                 PlannedAsset(
                     item_id=item.id,
                     face=face,
                     member=member,
                     source=source,
-                    size=source.stat().st_size,
+                    size=stat.st_size,
                     origin=origin,
                     expected_sha256=expected,
+                    source_mtime_ns=stat.st_mtime_ns,
                 )
             )
             if origin == "project":
@@ -652,6 +659,8 @@ class WriteOutcome:
     # 免得拿计划里的原始大小去比包内实际大小。
     sizes: dict[str, int] = field(default_factory=dict)
     shrink: ShrinkStats | None = None
+    # 增量打包：从底包原样复用的成员数（0 表示这一轮是全量写入）。
+    reused_members: int = 0
 
 
 def build_manifest(
@@ -696,6 +705,10 @@ def build_manifest(
                 "member": asset.member,
                 "mimeType": mimetypes.guess_type(asset.member)[0] or "application/octet-stream",
                 "originalName": PurePosixPath(asset.member).name,
+                # 源文件指纹：增量打包据此判断"源没变"，从而跳过读盘与重编码。
+                # 读取方只认 member/sha256，多出来的键会被忽略。
+                "sourceBytes": asset.size,
+                "sourceMtimeNs": asset.source_mtime_ns,
             }
             for asset, digest in written
         ],
@@ -719,6 +732,80 @@ def build_manifest(
     return manifest
 
 
+def _crc32_of(path: Path) -> int:
+    """按块算文件的 CRC32：用来快速判断"源文件就是底包里那份"。"""
+    crc = 0
+    with path.open("rb") as handle:
+        while chunk := handle.read(CHUNK_SIZE):
+            crc = zlib.crc32(chunk, crc)
+    return crc & 0xFFFFFFFF
+
+
+def load_incremental_index(previous: Path, reporter: Reporter) -> tuple[dict[str, str], dict, dict]:
+    """读上一个包的成员摘要索引，供增量复用。
+
+    返回 ``(member -> sha256, build 段, 成员边信息)``。边上信息是
+    ``{"bytes": 源/包内字节数, "crc": 包内 CRC32}``，用来在动手算 SHA-256 之前先用
+    大小 + CRC 判断"跟底包是同一份"（2195 张官方扫描图能因此省掉全量读盘）。
+    旧包打不开或没有清单时直接报错：增量宁可失败，也不要悄悄退化成"以为复用了其实全量重编"。
+    """
+    try:
+        with zipfile.ZipFile(previous) as archive:
+            manifest = json.loads(archive.read("manifest.json").decode("utf-8"))
+            infos = {info.filename: info for info in archive.infolist()}
+    except FileNotFoundError as error:
+        raise PackError(f"增量底包不存在：{previous}") from error
+    except (KeyError, zipfile.BadZipFile, json.JSONDecodeError) as error:
+        raise PackError(f"增量底包不是完整的资料包（缺少可读的 manifest.json）：{previous}") from error
+    if manifest.get("format") != PACKAGE_FORMAT:
+        raise PackError(f"增量底包不是 {PACKAGE_FORMAT} 格式：{previous}")
+    digests: dict[str, str] = {}
+    edges: dict[str, dict] = {}
+
+    def remember(member: str, digest: str, declared: int, asset: dict | None = None) -> None:
+        info = infos.get(member)
+        if info is None:
+            return
+        # packed 是包内真实字节数：重编码过的图与源大小不同，校验要拿它比。
+        entry: dict = {
+            "bytes": int(declared or info.file_size),
+            "packed": info.file_size,
+            "crc": info.CRC,
+        }
+        if asset is not None:
+            # 计划内成员带源指纹；没有这两项的底包（旧版本打的）就只能走全量。
+            if asset.get("sourceMtimeNs") is not None:
+                entry["sourceBytes"] = int(asset.get("sourceBytes") or 0)
+                entry["sourceMtimeNs"] = int(asset.get("sourceMtimeNs") or 0)
+        digests[member] = digest
+        edges[member] = entry
+
+    for asset in manifest.get("assets", []):
+        member = str(asset.get("member") or "")
+        digest = str(asset.get("sha256") or "")
+        if member and SHA256_RE.fullmatch(digest):
+            remember(member, digest, int(asset.get("bytes") or 0), asset)
+    for section in ("resourceFiles", "bgmFiles"):
+        for entry in manifest.get(section, []) or []:
+            member = str(entry.get("member") or entry.get("target") or "")
+            digest = str(entry.get("sha256") or "")
+            if member and SHA256_RE.fullmatch(digest):
+                remember(member, digest, int(entry.get("bytes") or 0))
+    reporter.say(f"增量底包  : {previous.name}（{len(digests)} 个成员有摘要，可参与复用）")
+    return digests, dict(manifest.get("build") or {}), edges
+
+
+def incremental_compatible(old_build: dict, *, image_quality: int | None, keep: list[str]) -> bool:
+    """旧包与本次的图片编码策略是否一致；不一致就整体禁用复用。
+
+    旧包是 q85 重编过的、这次却不重编（或反过来），复用它就会把上次的口径带进新包。
+    """
+    return (
+        old_build.get("imageQuality") == image_quality
+        and sorted(old_build.get("imageQualityKeep") or []) == sorted(keep)
+    )
+
+
 def write_pack(
     *,
     plan: list[PlannedAsset],
@@ -740,12 +827,17 @@ def write_pack(
     edition: str = "fan",
     image_quality: int | None = None,
     image_quality_keep: list[str] | None = None,
+    incremental: tuple[Path, dict[str, str], dict, dict] | None = None,
 ) -> WriteOutcome:
     """先写 .partial；写入时顺手算真实哈希（清单哈希必须等于真实字节）。
 
     ``image_quality`` 打开时，图片成员会先过一遍 :func:`image_shrink.shrink_image`：
     换掉了就写新字节（成员名不变、哈希按新字节算），没换就原样流式写入。
     ``image_quality_keep`` 里的通配命中的成员永远按原字节进包（决战板图、使徒大图这类）。
+
+    ``incremental`` 给出 ``(底包路径, 成员摘要索引, 底包 build 段, 成员大小表)``：源文件
+    摘要与旧清单一致、且图片编码策略没变的成员直接从旧包复用压缩字节，跳过读盘与重编码。
+    复用只影响速度，写进包的字节仍然是"该成员当前应有的字节"，随后照常走全量校验。
     """
     written: list[tuple[PlannedAsset, str]] = []
     digest_by_member: dict[str, str] = {}
@@ -756,36 +848,87 @@ def write_pack(
     written_bytes = 0
     shrink_stats = ShrinkStats() if image_quality else None
     size_overrides: dict[str, int] = {}
+    keep_patterns = list(image_quality_keep or [])
+    keep_by_member = {
+        asset.member: bool(keep_patterns) and matches_any(asset.member, keep_patterns)
+        for asset in plan
+    }
 
-    with zipfile.ZipFile(partial, "w", compression=compression, allowZip64=True) as archive:
+    # 增量：把底包的压缩字节原样搬进新包。只有"源摘要与旧清单一致"才复用。
+    old_digests: dict[str, str] = {}
+    old_edges: dict[str, dict] = {}
+    previous_archive: zipfile.ZipFile | None = None
+    reuse_allowed = False
+    if incremental is not None:
+        previous_path, old_digests, old_build, old_edges = incremental
+        reuse_allowed = incremental_compatible(
+            old_build, image_quality=image_quality, keep=keep_patterns
+        )
+        if not reuse_allowed:
+            reporter.warn(
+                "增量底包的图片编码策略与本次不同（image-quality / 豁免名单），"
+                "已改为全量重编；复用需要两者一致"
+            )
+        else:
+            try:
+                previous_archive = zipfile.ZipFile(previous_path)
+            except (OSError, zipfile.BadZipFile) as error:
+                raise PackError(f"增量底包打不开：{previous_path}（{error}）") from error
+    reused_members = 0
+    old_names: set[str] = set(previous_archive.namelist()) if previous_archive is not None else set()
+
+    with (
+        nullcontext() if previous_archive is None else previous_archive
+    ), zipfile.ZipFile(partial, "w", compression=compression, allowZip64=True) as archive:
         for index, asset in enumerate(plan, 1):
             digest = digest_by_member.get(asset.member)
             if digest is None:
-                shrunk = None
-                if image_quality and is_image_member(asset.member):
-                    if matches_any(asset.member, image_quality_keep):
-                        if shrink_stats is not None:
-                            shrink_stats.kept_by_rule += 1
-                    else:
-                        raw = asset.source.read_bytes()
-                        shrunk = shrink_image(
-                            raw, image_quality, member=asset.member, stats=shrink_stats
-                        )
-                        if shrunk is not None:
-                            digest = hashlib.sha256(shrunk).hexdigest()
-                            archive.writestr(asset.member, shrunk)
-                            written_bytes += len(shrunk)
-                            size_overrides[asset.member] = len(shrunk)
-                if shrunk is None:
-                    digest = hashlib.sha256()
-                    with asset.source.open("rb") as source, archive.open(
-                        asset.member, "w", force_zip64=True
-                    ) as target:
-                        while chunk := source.read(CHUNK_SIZE):
-                            digest.update(chunk)
-                            target.write(chunk)
-                    digest = digest.hexdigest()
-                    written_bytes += asset.size
+                cached = old_digests.get(asset.member) if reuse_allowed else None
+                edge = old_edges.get(asset.member) or {}
+                reused = False
+                if (
+                    cached is not None
+                    and asset.member in old_names
+                    and edge.get("sourceMtimeNs") is not None
+                    and asset.size == edge.get("sourceBytes")
+                    and asset.source_mtime_ns == edge.get("sourceMtimeNs")
+                ):
+                    # 源文件指纹一致 → 当前应有的字节就是底包那份，直接搬，不读盘不重编码。
+                    archive.writestr(asset.member, previous_archive.read(asset.member))
+                    digest = cached
+                    reused_members += 1
+                    reused = True
+                    packed = int(edge.get("packed") or 0)
+                    if packed and packed != asset.size:
+                        # 底包里这个成员是重编码过的：包内大小要与源大小区分开，
+                        # verify_partial 拿 size_overrides 比的就是包内真实字节数。
+                        size_overrides[asset.member] = packed
+                if not reused:
+                    shrunk = None
+                    if image_quality and is_image_member(asset.member):
+                        if keep_by_member.get(asset.member):
+                            if shrink_stats is not None:
+                                shrink_stats.kept_by_rule += 1
+                        else:
+                            raw = asset.source.read_bytes()
+                            shrunk = shrink_image(
+                                raw, image_quality, member=asset.member, stats=shrink_stats
+                            )
+                            if shrunk is not None:
+                                digest = hashlib.sha256(shrunk).hexdigest()
+                                archive.writestr(asset.member, shrunk)
+                                written_bytes += len(shrunk)
+                                size_overrides[asset.member] = len(shrunk)
+                    if shrunk is None:
+                        digest = hashlib.sha256()
+                        with asset.source.open("rb") as source, archive.open(
+                            asset.member, "w", force_zip64=True
+                        ) as target:
+                            while chunk := source.read(CHUNK_SIZE):
+                                digest.update(chunk)
+                                target.write(chunk)
+                        digest = digest.hexdigest()
+                        written_bytes += asset.size
                 digest_by_member[asset.member] = digest
             if asset.expected_sha256 and asset.expected_sha256 != digest:
                 # 素材库兜底时记录对不上；工程目录是原始文件，不存在这个问题。
@@ -797,9 +940,52 @@ def write_pack(
                 reporter.progress(index, total_members, written_bytes, started)
         reporter.progress_done()
 
+        # 官方资料 / BGM 是"字符串 key 对应文件"的一长串（官方版一到两千张扫描图）。
+        # 增量时先看包内清单记下的大小 + mtime，一致就直接搬旧字节；底包没记 mtime
+        # （或列表里少一项）时退到"大小 + CRC32"再确认一次，绝不凭路径相同就当同一份。
+        def reuse_plain_file(member: str, path: Path) -> str | None:
+            nonlocal reused_members
+            if not reuse_allowed or previous_archive is None or member not in old_names:
+                return None
+            cached = old_digests.get(member)
+            edge = old_edges.get(member) or {}
+            if cached is None:
+                return None
+            try:
+                stat = path.stat()
+            except OSError:
+                return None
+            recorded = edge.get("sourceMtimeNs")
+            if (
+                recorded is not None
+                and stat.st_size == edge.get("sourceBytes")
+                and stat.st_mtime_ns == recorded
+            ):
+                archive.writestr(member, previous_archive.read(member))
+                reused_members += 1
+                return cached
+            if stat.st_size != int(edge.get("bytes") or -1):
+                return None
+            if _crc32_of(path) != edge.get("crc"):
+                return None
+            archive.writestr(member, previous_archive.read(member))
+            reused_members += 1
+            return cached
+
         # 官方故事书正文数据（可选原书截图）：与素材库导出同一个 resourceFiles 段。
         resource_files: list[dict] = []
         for target, path in official_files:
+            cached = reuse_plain_file(target, path)
+            if cached is not None:
+                resource_files.append(
+                    {
+                        "target": target,
+                        "member": target,
+                        "sha256": cached,
+                        "bytes": int((old_edges.get(target) or {}).get("bytes") or 0),
+                    }
+                )
+                continue
             raw = path.read_bytes()
             archive.writestr(target, raw)
             resource_files.append(
@@ -828,6 +1014,18 @@ def write_pack(
 
         bgm_entries: list[dict] = []
         for target, path in bgm_files:
+            cached = reuse_plain_file(target, path)
+            if cached is not None:
+                bgm_entries.append(
+                    {
+                        "target": target,
+                        "member": target,
+                        "sha256": cached,
+                        "bytes": int((old_edges.get(target) or {}).get("bytes") or 0),
+                        "mimeType": bgm_mime(target),
+                    }
+                )
+                continue
             raw = path.read_bytes()
             archive.writestr(target, raw)
             bgm_entries.append(
@@ -839,7 +1037,6 @@ def write_pack(
                     "mimeType": bgm_mime(target),
                 }
             )
-
         manifest = build_manifest(
             catalog_source=catalog_source,
             items=items,
@@ -854,6 +1051,13 @@ def write_pack(
         )
         manifest["build"]["edition"] = edition
         manifest["build"]["kind"] = "official-resource-pack" if edition == "official" else "fan-resource-pack"
+        # 记下本次图片编码口径：下次拿这个包做增量底包时，只有口径一致才允许复用旧字节
+        # （否则会把上次的压缩质量 / 豁免名单带进新包）。读取方会忽略这些键。
+        manifest["build"]["imageQuality"] = image_quality
+        manifest["build"]["imageQualityKeep"] = sorted(keep_patterns) if image_quality else []
+        if incremental is not None:
+            manifest["build"]["incrementalFrom"] = Path(incremental[0]).name
+            manifest["build"]["reusedMembers"] = reused_members
         archive.writestr(
             "manifest.json", json.dumps(manifest, ensure_ascii=False, separators=(",", ":"))
         )
@@ -866,6 +1070,7 @@ def write_pack(
         hash_mismatches=mismatches,
         sizes=size_overrides,
         shrink=shrink_stats,
+        reused_members=reused_members,
     )
 
 
@@ -1025,6 +1230,8 @@ class BuildResult:
     verification: dict = field(default_factory=dict)
     elapsed_seconds: float = 0.0
     shrink: dict | None = None
+    # 增量打包：从底包原样复用的成员数（0 表示这一轮全量写入）。
+    reused_members: int = 0
 
 
 def build(
@@ -1052,6 +1259,7 @@ def build(
     edition: str = "fan",
     image_quality: int | None = None,
     image_quality_keep: list[str] | None = None,
+    incremental_from: Path | None = None,
 ) -> BuildResult:
     started = time.monotonic()
     ato_root = ato_root.expanduser().resolve()
@@ -1229,6 +1437,11 @@ def build(
     partial.unlink(missing_ok=True)
 
     compression = zipfile.ZIP_STORED if compression_name == "store" else zipfile.ZIP_DEFLATED
+    incremental: tuple[Path, dict[str, str], dict, dict] | None = None
+    if incremental_from is not None:
+        # 底包解析失败一律中断：宁可全量重打，也不要"以为复用了"。
+        previous = incremental_from.expanduser().resolve()
+        incremental = (previous,) + load_incremental_index(previous, reporter)
     try:
         reporter.say(f"开始写入 {partial.name} ……")
         outcome = write_pack(
@@ -1251,6 +1464,7 @@ def build(
             edition=edition,
             image_quality=image_quality,
             image_quality_keep=image_quality_keep,
+            incremental=incremental,
         )
         reporter.say("校验 .partial（改名之前）……")
         verification = verify_partial(
@@ -1307,6 +1521,7 @@ def build(
         verification=verification,
         elapsed_seconds=time.monotonic() - started,
         shrink=outcome.shrink.as_dict() if outcome.shrink else None,
+        reused_members=outcome.reused_members,
     )
 
 
@@ -1344,6 +1559,10 @@ def report(result: BuildResult, reporter: Reporter) -> None:
         + ("（含原书扫描图）" if result.official_scans else "")
     )
     reporter.say(f"  背景音乐  : {result.bgm_files} 首")
+    if result.reused_members:
+        reporter.say(
+            f"  增量复用  : {result.reused_members} 个成员直接取自底包（跳过读盘与重编码）"
+        )
     if result.shrink:
         reporter.say(
             f"  图片瘦身  : 重编 {result.shrink['converted']} 张，"
@@ -1408,6 +1627,14 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--image-quality-keep-file", type=Path,
         help="豁免名单文件：一行一条通配，`#` 开头是注释",
     )
+    parser.add_argument(
+        "--incremental-from", type=Path,
+        help=(
+            "增量打包：以上一个 .atopack 作底包，源文件摘要与它清单一致的成员直接复用"
+            "旧字节（跳过读盘与重编码），只重做变化的成员。图片编码口径与底包不同时"
+            "自动退回全量。产出与全量等价，仍走 .partial 原子写入与改名前的校验"
+        ),
+    )
     parser.add_argument("--json", action="store_true", help="stdout 输出机器可读摘要")
     parser.add_argument("--quiet", action="store_true", help="不打印进度")
     parser.add_argument("--version", action="version", version=f"{TOOL_NAME} {TOOL_VERSION}")
@@ -1455,6 +1682,7 @@ def main(argv: list[str] | None = None) -> int:
             image_quality=args.image_quality,
             image_quality_keep=as_list(args.image_quality_keep)
             + load_keep_patterns(args.image_quality_keep_file),
+            incremental_from=args.incremental_from,
         )
     except PackError as error:
         print(f"打包失败：{error}", file=sys.stderr)

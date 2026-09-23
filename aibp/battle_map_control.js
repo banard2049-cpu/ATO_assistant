@@ -551,7 +551,7 @@
       deleteButton.disabled = disabled;
       flipButton.setAttribute("aria-pressed", selected?.flipped ? "true" : "false");
       if (!selected) {
-        selectionText.textContent = "未选择地形";
+        selectionText.textContent = "双击地形选中，再次双击取消";
         return;
       }
       selectionText.replaceChildren();
@@ -613,7 +613,7 @@
         button.className = `battle-map-terrain${placement.id === selectedId ? " selected" : ""}`;
         button.dataset.terrainId = placement.id;
         button.setAttribute("aria-label", placement.name);
-        button.title = placement.name;
+        button.title = `${placement.name}（双击选中，再次双击取消）`;
         applyPlacementStyle(button, placement);
         if (definition.special && !definition.file) {
           renderSpecialTerrain(button, placement);
@@ -631,17 +631,14 @@
           button.appendChild(image);
         }
         button.addEventListener("click", (event) => {
-          if (selectedId !== placement.id) {
-            event.stopPropagation();
-            selectedId = placement.id;
-            renderMap(map);
-          }
+          // 双击前的两次单击都不能移动地形或重建按钮，否则双击无法触发。
+          if (!losState.active) event.stopPropagation();
         });
         button.addEventListener("dblclick", (event) => {
           event.preventDefault();
           event.stopPropagation();
-          if (!selectedId) return;
-          selectedId = "";
+          if (losState.active) return;
+          selectedId = selectedId === placement.id ? "" : placement.id;
           renderMap(map);
         });
         terrainLayer.appendChild(button);

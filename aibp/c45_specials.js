@@ -1133,7 +1133,7 @@
       confirmAiButton.disabled = !isAi;
       discardBpButton.disabled = !isBp;
       defeatBpButton.disabled = !isBp;
-      criticalBpButton.disabled = !isBp || pile.pending?.bpLevel !== "III";
+      criticalBpButton.disabled = !isBp;
       promoteAiSingleButton.textContent = "AI/BP 晋升";
       promoteBpSingleButton.textContent = "AI/BP 晋升";
       if (isAi) {
@@ -1476,8 +1476,7 @@
       const action = button.dataset.bpZoomAction;
       if (action !== "vp-defeat" && action !== "vp-critical") return;
       button.hidden = false;
-      button.disabled = !pending
-        || (action === "vp-critical" && pending.level !== "III");
+      button.disabled = !pending;
     });
   };
 

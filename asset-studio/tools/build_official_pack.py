@@ -111,6 +111,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--image-quality-keep-file", type=Path,
         help="豁免名单文件：一行一条通配，`#` 开头是注释",
     )
+    parser.add_argument(
+        "--incremental-from", type=Path,
+        help=(
+            "增量打包：以上一个官方版 .atopack 作底包，源摘要一致且图片编码口径相同的成员"
+            "直接复用旧字节，只重做变化的成员；口径不一致自动退回全量"
+        ),
+    )
     parser.add_argument("--json", action="store_true", help="stdout 输出机器可读摘要")
     parser.add_argument("--quiet", action="store_true", help="不打印进度")
     parser.add_argument("--version", action="version", version=f"{TOOL_NAME} {TOOL_VERSION}")
@@ -147,6 +154,7 @@ def main(argv: list[str] | None = None) -> int:
             image_quality=args.image_quality,
             image_quality_keep=as_list(args.image_quality_keep)
             + load_keep_patterns(args.image_quality_keep_file),
+            incremental_from=args.incremental_from,
         )
     except PackError as error:
         print(f"打包失败：{error}", file=sys.stderr)

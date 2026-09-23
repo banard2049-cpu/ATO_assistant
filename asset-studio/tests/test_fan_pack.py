@@ -228,6 +228,77 @@ class Fixture(unittest.TestCase):
             return json.loads(archive.read("manifest.json").decode("utf-8"))
 
 
+class IncrementalTests(Fixture):
+    """增量打包：--incremental-from 复用未变成员，产出与全量等价。"""
+
+    def base_pack(self, name: str = "base.atopack") -> Path:
+        """先打一个全量包当底包。"""
+        base = self.root / name
+        self.build(output=base, force=True)
+        return base
+
+    def build_incremental(self, base: Path, name: str = "again.atopack", **overrides):
+        return self.build(output=self.root / name, force=True, incremental_from=base, **overrides)
+
+    def member_bytes(self, pack: Path) -> dict[str, bytes]:
+        with zipfile.ZipFile(pack) as archive:
+            return {name: archive.read(name) for name in archive.namelist()}
+
+    def test_incremental_pack_equals_full_pack_and_reuses(self):
+        """没有改动时：成员字节与全量包逐一相同，且大量成员来自复用。"""
+        base = self.base_pack()
+        result = self.build_incremental(base)
+        again = self.root / "again.atopack"
+
+        full_members = self.member_bytes(base)
+        incremental_members = self.member_bytes(again)
+        self.assertEqual(set(full_members), set(incremental_members))
+        for name, data in full_members.items():
+            if name == "manifest.json":
+                continue  # 清单里含时间戳/复用统计，本就不该逐字节相同
+            self.assertEqual(hashlib.sha256(data).hexdigest(),
+                             hashlib.sha256(incremental_members[name]).hexdigest(),
+                             f"{name} 的字节在增量包里变了")
+
+        # 复用发生在"源摘要与底包清单一致"的成员上；这里至少覆盖工程图片与 BGM。
+        self.assertGreaterEqual(result.reused_members, 6)
+        self.assertEqual(result.reused_members, self.read_manifest(again)["build"]["reusedMembers"])
+        self.assertTrue(self.read_manifest(again)["build"]["incrementalFrom"])
+
+    def test_changed_source_is_rebuilt_not_reused(self):
+        """源文件改了就重新读盘进包，不能沿用底包里的旧字节。"""
+        base = self.base_pack()
+        before = self.build_incremental(base, name="before.atopack")
+        target = self.ato / "assets/test/001-front.jpg"
+        Image.new("RGB", (240, 320), (7, 200, 90)).save(target)
+
+        after = self.build_incremental(base, name="after.atopack")
+        self.assertLess(after.reused_members, before.reused_members, "改过的成员不该再复用")
+        with zipfile.ZipFile(self.root / "after.atopack") as archive:
+            self.assertEqual(
+                hashlib.sha256(target.read_bytes()).hexdigest(),
+                hashlib.sha256(archive.read("assets/test/001-front.jpg")).hexdigest(),
+            )
+
+    def test_write_pack_records_image_quality_policy(self):
+        """清单记下图片编码口径；底包与本次口径不同时增量自动退回全量。"""
+        base = self.base_pack()
+        manifest = self.read_manifest(base)
+        self.assertIsNone(manifest["build"]["imageQuality"])
+        self.assertEqual([], manifest["build"]["imageQualityKeep"])
+
+        switched = self.build_incremental(base, name="q85.atopack", image_quality=85)
+        self.assertEqual(0, switched.reused_members, "编码口径变了就不该复用底包字节")
+        self.assertEqual(85, self.read_manifest(self.root / "q85.atopack")["build"]["imageQuality"])
+
+    def test_broken_base_pack_fails_loudly(self):
+        """底包不是完整资料包时直接报错，不静默退化成全量。"""
+        broken = self.root / "broken.atopack"
+        broken.write_bytes(b"PK\x03\x04not-a-real-zip")
+        with self.assertRaises(PackError):
+            self.build_incremental(broken, name="never.atopack")
+
+
 class ProjectSourceTests(Fixture):
     def test_pack_is_complete_importable_and_comes_from_the_project(self):
         result = self.build()
