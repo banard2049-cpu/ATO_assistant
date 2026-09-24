@@ -2334,6 +2334,7 @@
   <script src="./assets/exploration-card-resources.js"></script>
   <script src="./map/map-tile-tags.js?v=20260730-c4-oasis-tag"></script>
   <script src="./map/map-data.js?v=20260730-cycle-labels"></script>
+  <script src="./map/nemesis-path.js?v=20260924-shared"></script>
   <script src="./assets/cycle-symbols.js?v=20260918"></script>
   <script>window.ATO_BGM_CONFIG = { expect: "bgm17" };</script>
   <script src="./assets/bgm/manifest.js?v=20260921-bgm17"></script>
@@ -5239,40 +5240,6 @@
         .filter((targetId) => cycle.tiles.some((tile) => tile.id === targetId)))];
     }
 
-    function mapAdjacentIds(cycle, cycleState, tileId) {
-      const tile = cycle.tiles.find((item) => item.id === tileId);
-      if (!tile) return [];
-      const revealed = (id) => Boolean(cycleState.explored[id] || cycleState.previewRevealed[id] || id === cycleState.tokens.AD);
-      return [...new Set([
-        ...Object.values(tile.neighbors || {}),
-        ...Object.values(tile.exits || {}),
-        ...cycle.tiles.filter((candidate) => (
-          Object.values(candidate.neighbors || {}).includes(tileId)
-          || Object.values(candidate.exits || {}).includes(tileId)
-        )).map((candidate) => candidate.id),
-      ].filter((id) => id && revealed(id)))];
-    }
-
-    function shortestMapPath(cycle, cycleState, startId, targetId) {
-      if (startId === targetId) return [startId];
-      const previous = new Map([[startId, ""]]);
-      const queue = [startId];
-      while (queue.length) {
-        const current = queue.shift();
-        for (const neighborId of mapAdjacentIds(cycle, cycleState, current)) {
-          if (previous.has(neighborId)) continue;
-          previous.set(neighborId, current);
-          if (neighborId === targetId) {
-            const path = [targetId];
-            while (previous.get(path[0])) path.unshift(previous.get(path[0]));
-            return path;
-          }
-          queue.push(neighborId);
-        }
-      }
-      return [];
-    }
-
     function setMapCommandStatus(message, error = false) {
       document.querySelectorAll(".map-command-status").forEach((target) => {
         target.textContent = message;
@@ -5347,23 +5314,32 @@
         } else if (command === "spawn-nemesis") {
           const targetId = cycleState.currentTile;
           if (!targetId) throw new Error("请先设置阿尔戈号当前位置。");
-          const candidates = cycle.tiles.map((tile) => ({
-            tile,
-            path: shortestMapPath(cycle, cycleState, targetId, tile.id),
-          })).filter(({ tile, path }) => tile.id !== targetId && cycleState.explored[tile.id] && path.length === 5);
+          const candidates = window.ATO_NEMESIS_PATH.spawnCandidates(cycle, cycleState);
           if (!candidates.length) throw new Error("没有距离阿尔戈号正好 4 格的已揭示板块。");
-          const chosen = candidates[Math.floor(Math.random() * candidates.length)].tile;
+          let chosen = candidates[0];
+          if (candidates.length > 1) {
+            const options = candidates.map((tile, index) => `${index + 1}. ${tile.label || tile.id} (${tile.id})`).join("\n");
+            const selection = window.prompt(`有多个符合条件的板块，请选择宿敌生成位置：\n${options}`, "1");
+            if (selection === null) {
+              setMapCommandStatus("已取消生成宿敌。");
+              return;
+            }
+            const index = Number(selection) - 1;
+            if (!Number.isInteger(index) || index < 0 || index >= candidates.length) {
+              throw new Error("请选择列表中的位置编号。");
+            }
+            chosen = candidates[index];
+          }
           cycleState.tokens.AD = chosen.id;
-          message = `宿敌已生成在 ${chosen.label || chosen.id}${candidates.length > 1 ? `（从 ${candidates.length} 个候选板块随机选择）` : ""}。`;
+          message = `宿敌已生成在 ${chosen.label || chosen.id}。`;
         } else if (command === "chase-nemesis") {
           const startId = cycleState.tokens.AD;
           const targetId = cycleState.currentTile;
           if (!startId) throw new Error("地图上还没有宿敌，请先生成。");
           if (!targetId) throw new Error("请先设置阿尔戈号当前位置。");
           if (startId !== targetId) {
-            const path = shortestMapPath(cycle, cycleState, startId, targetId);
-            if (path.length < 2) throw new Error("宿敌与阿尔戈号之间没有已揭示路线。");
-            cycleState.tokens.AD = path[1];
+            const path = window.ATO_NEMESIS_PATH.shortestPath(cycle, cycleState, startId, targetId);
+            if (path.length >= 2) cycleState.tokens.AD = path[1];
           }
           if (cycleState.tokens.AD === targetId) {
             cycleState.tokens.AD = "";
@@ -5372,7 +5348,9 @@
               ? "宿敌追上阿尔戈号：已移除宿敌，正在打开宿敌战斗。"
               : "宿敌追上阿尔戈号：已移除宿敌，请结算宿敌战斗。";
           } else {
-            message = `宿敌已追击 1 格，移动至 ${cycleState.tokens.AD}。`;
+            message = cycleState.tokens.AD === startId
+              ? "宿敌与阿尔戈号之间没有已揭示路线，宿敌未移动。"
+              : `宿敌已追击 1 格，移动至 ${cycleState.tokens.AD}。`;
           }
         }
 
@@ -8895,7 +8873,7 @@
   </script>
   <script src="./assets/ato-terms.js?v=20260922-official-terms"></script>
   <script src="./assets/term-language.js?v=20260923-nocascade"></script>
-  <script src="./assets/update/app-version.js?v=2.0.4-rc.1"></script>
+  <script src="./assets/update/app-version.js?v=2.0.4"></script>
   <script src="./assets/update/update-check.js?v=1"></script>
 </body>
 </html>

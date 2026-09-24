@@ -12,15 +12,6 @@ const c1AlternateTileAssets = Object.fromEntries(
     back: `./images/c1-tile-${id}-alt-back.jpg`,
   }]),
 );
-const c1AlternateTileConnections = {
-  "009": { up: "004", right: "010", down: "014", left: "008" },
-  "013": { up: "008", right: "", down: "", left: "012" },
-  "014": { up: "009", right: "015", down: "019", left: "" },
-  "018": { up: "", right: "019", down: "", left: "017" },
-  "022": { up: "017", right: "023", down: "027", left: "021" },
-  "023": { up: "", right: "024", down: "", left: "022" },
-  "035": { up: "030", right: "071", down: "040", left: "034" },
-};
 const edgeDirections = ["up", "right", "down", "left"];
 const edgeDirectionLabels = {
   up: "上",
@@ -555,10 +546,6 @@ function tilePreviewRevealLabels(tileId, cycleState = activeCycleState()) {
 
 function tilePreviewRevealedByMarker(tileId, cycleState = activeCycleState()) {
   return tilePreviewRevealLabels(tileId, cycleState).length > 0;
-}
-
-function tileIsFaceUp(tileId, cycleState = activeCycleState()) {
-  return Boolean(cycleState.explored[tileId] || tilePreviewRevealedByMarker(tileId, cycleState));
 }
 
 function recallScout() {
@@ -1307,206 +1294,7 @@ function renderTiles() {
 }
 
 function displayLayout(cycle) {
-  const tileWidth = cycle.tileWidth || 1;
-  if (cycle.id === "c1") {
-    const positions = c1NeighborLayout(cycle);
-    return {
-      tileWidth,
-      width: positions.width,
-      height: positions.height,
-      position: (tile) => positions.byId.get(tile.id) || { x: 0, y: 0 },
-    };
-  }
-
-  if (cycle.id !== "c3") {
-    return {
-      tileWidth,
-      width: cycle.width || tileWidth,
-      height: cycle.height || tileWidth,
-      position: (tile) => ({ x: tile.nx || 0, y: tile.ny || 0 }),
-    };
-  }
-
-  const positions = cyclePhysicalLayout(cycle);
-  return {
-    tileWidth,
-    width: positions.width,
-    height: positions.height,
-    position: (tile) => positions.byId.get(tile.id) || { x: 0, y: 0 },
-  };
-}
-
-function c1NeighborLayout(cycle) {
-  const numberedTiles = cycle.tiles.filter((tile) => /^\d{3}$/.test(tile.id));
-  const terrainTiles = cycle.tiles.filter((tile) => /^T\d{2}$/.test(tile.id));
-  const mainLayout = connectedTileLayout(numberedTiles);
-  const terrainLayout = connectedTileLayout(terrainTiles);
-  const byIdPosition = new Map();
-
-  mainLayout.byId.forEach((position, id) => {
-    byIdPosition.set(id, position);
-  });
-  terrainLayout.byId.forEach((position, id) => {
-    byIdPosition.set(id, {
-      x: position.x,
-      y: mainLayout.height + 1 + position.y,
-    });
-  });
-
-  return {
-    byId: byIdPosition,
-    width: Math.max(mainLayout.width, terrainLayout.width),
-    height: mainLayout.height + 1 + terrainLayout.height,
-  };
-}
-
-function connectedTileLayout(tiles) {
-  const byId = new Map(tiles.map((tile) => [tile.id, tile]));
-  const positions = new Map();
-  const sortedIds = [...byId.keys()].sort((a, b) => a.localeCompare(b));
-  const queue = sortedIds.length ? [sortedIds[0]] : [];
-  const directions = {
-    right: [1, 0],
-    left: [-1, 0],
-    down: [0, 1],
-    up: [0, -1],
-  };
-
-  if (queue.length) positions.set(queue[0], { x: 0, y: 0 });
-  while (queue.length) {
-    const id = queue.shift();
-    const tile = byId.get(id);
-    const position = positions.get(id);
-    Object.entries(directions).forEach(([direction, [dx, dy]]) => {
-      const targetId = tile?.neighbors?.[direction];
-      if (!targetId || targetId === id || !byId.has(targetId) || positions.has(targetId)) return;
-      positions.set(targetId, { x: position.x + dx, y: position.y + dy });
-      queue.push(targetId);
-    });
-    byId.forEach((candidate) => {
-      Object.entries(directions).forEach(([direction, [dx, dy]]) => {
-        if (candidate.id === id || candidate.neighbors?.[direction] !== id || positions.has(candidate.id)) return;
-        positions.set(candidate.id, { x: position.x - dx, y: position.y - dy });
-        queue.push(candidate.id);
-      });
-    });
-  }
-
-  const points = [...positions.values()];
-  const minX = Math.min(...points.map((point) => point.x), 0);
-  const minY = Math.min(...points.map((point) => point.y), 0);
-  const maxX = Math.max(...points.map((point) => point.x), 0);
-  const maxY = Math.max(...points.map((point) => point.y), 0);
-  const normalized = new Map();
-  positions.forEach((position, id) => {
-    normalized.set(id, { x: position.x - minX, y: position.y - minY });
-  });
-
-  return {
-    byId: normalized,
-    width: maxX - minX + 1,
-    height: maxY - minY + 1,
-  };
-}
-
-function cyclePhysicalLayout(cycle) {
-  const byId = new Map(cycle.tiles.map((tile) => [tile.id, tile]));
-  const localPositions = new Map();
-  const components = [];
-  const directions = {
-    right: [1, 0],
-    left: [-1, 0],
-    down: [0, 1],
-    up: [0, -1],
-  };
-
-  cycle.tiles.forEach((start) => {
-    if (localPositions.has(start.id)) return;
-    const component = [];
-    const queue = [start.id];
-    localPositions.set(start.id, { x: 0, y: 0 });
-
-    while (queue.length) {
-      const id = queue.shift();
-      const tile = byId.get(id);
-      const position = localPositions.get(id);
-      component.push(id);
-
-      Object.entries(directions).forEach(([direction, [dx, dy]]) => {
-        const targetId = tile?.neighbors?.[direction];
-        if (!targetId || !byId.has(targetId) || localPositions.has(targetId)) return;
-        localPositions.set(targetId, { x: position.x + dx, y: position.y + dy });
-        queue.push(targetId);
-      });
-    }
-
-    components.push(component);
-  });
-
-  if (cycle.id === "c3") {
-    const fixedPlacements = [
-      { anchor: "034", x: 5, y: 7 },
-      { anchor: "067", x: 7, y: 0 },
-      { anchor: "008", x: 0, y: 1 },
-      { anchor: "079", x: 0, y: 8 },
-      { anchor: "065", x: 12, y: 0 },
-      { anchor: "333", x: 7, y: 6 },
-    ];
-    const byIdPosition = new Map();
-    components.forEach((component) => {
-      const points = component.map((id) => localPositions.get(id));
-      const minX = Math.min(...points.map((point) => point.x));
-      const minY = Math.min(...points.map((point) => point.y));
-      const placement = fixedPlacements.find((item) => component.includes(item.anchor)) || { x: 0, y: 0 };
-      component.forEach((id) => {
-        const point = localPositions.get(id);
-        byIdPosition.set(id, {
-          x: placement.x + point.x - minX,
-          y: placement.y + point.y - minY,
-        });
-      });
-    });
-    return { byId: byIdPosition, width: 15, height: 13 };
-  }
-
-  const byIdPosition = new Map();
-  const gap = 1;
-  const maxRowWidth = 18;
-  let cursorX = 0;
-  let cursorY = 0;
-  let rowHeight = 0;
-  let width = 1;
-  let height = 1;
-
-  components.forEach((component) => {
-    const points = component.map((id) => localPositions.get(id));
-    const minX = Math.min(...points.map((point) => point.x));
-    const minY = Math.min(...points.map((point) => point.y));
-    const maxX = Math.max(...points.map((point) => point.x));
-    const maxY = Math.max(...points.map((point) => point.y));
-    const componentWidth = maxX - minX + 1;
-    const componentHeight = maxY - minY + 1;
-
-    if (cursorX > 0 && cursorX + componentWidth > maxRowWidth) {
-      cursorX = 0;
-      cursorY += rowHeight + gap;
-      rowHeight = 0;
-    }
-
-    component.forEach((id) => {
-      const point = localPositions.get(id);
-      const x = cursorX + point.x - minX;
-      const y = cursorY + point.y - minY;
-      byIdPosition.set(id, { x, y });
-      width = Math.max(width, x + 1);
-      height = Math.max(height, y + 1);
-    });
-
-    cursorX += componentWidth + gap;
-    rowHeight = Math.max(rowHeight, componentHeight);
-  });
-
-  return { byId: byIdPosition, width, height };
+  return window.ATO_NEMESIS_PATH.displayLayout(cycle);
 }
 
 function tileAssets(tile, cycleState = activeCycleState()) {
@@ -1524,36 +1312,12 @@ function tileAssets(tile, cycleState = activeCycleState()) {
 }
 
 function effectiveTile(tile, cycleState = activeCycleState()) {
-  const alternateConnections = state.activeCycleId === "c1" && cycleState.tileVariants?.[tile.id] === "alternate"
-    ? c1AlternateTileConnections[tile.id]
-    : null;
-  if (!alternateConnections) return tile;
-  const exits = {};
-  if (alternateConnections.up) exits.TOP_MIDDLE = alternateConnections.up;
-  if (alternateConnections.right) exits.RIGHT_MIDDLE = alternateConnections.right;
-  if (alternateConnections.down) exits.BOTTOM_MIDDLE = alternateConnections.down;
-  if (alternateConnections.left) exits.LEFT_MIDDLE = alternateConnections.left;
-  return {
-    ...tile,
-    neighbors: { ...alternateConnections, special: "" },
-    exits,
-  };
-}
-
-function isAlternateTile(tileId, cycleState = activeCycleState()) {
-  return state.activeCycleId === "c1" && cycleState.tileVariants?.[tileId] === "alternate";
+  return window.ATO_NEMESIS_PATH.effectiveTile(activeCycle(), cycleState, tile);
 }
 
 function tileConnectsTo(tile, targetId) {
   return ["left", "right", "up", "down"].some((direction) => tile.neighbors?.[direction] === targetId)
     || Object.values(tile.exits || {}).includes(targetId);
-}
-
-function tileConnectsBackForAdversary(tile, targetId) {
-  return ["left", "right", "up", "down"].some((direction) => tile.neighbors?.[direction] === targetId)
-    || Object.entries(tile.exits || {}).some(([exit, destination]) => (
-      !String(exit).startsWith("SPECIAL_CYCLE_3") && destination === targetId
-    ));
 }
 
 function renderVariantToggle(tile, cycleState = activeCycleState(), faceVisible = true) {
@@ -2069,30 +1833,18 @@ function spawnAdversary() {
     window.alert("请先设置 AG/当前位置。");
     return;
   }
-  const revealed = revealedTiles();
-  const candidates = revealed.filter((tile) => tile.id !== targetId && cycleState.explored[tile.id]);
-  const scored = candidates.map((tile) => ({
-    tile,
-    distance: shortestPlacedPath(targetId, tile.id, revealed).length - 1,
-  })).filter((item) => item.distance >= 0);
-
-  if (!scored.length) {
-    window.alert("没有可放置仇敌的已翻开地图板块。");
-    return;
-  }
-
-  const exact = scored.filter((item) => item.distance === 4);
+  const exact = window.ATO_NEMESIS_PATH.spawnCandidates(activeCycle(), cycleState);
   if (!exact.length) {
     window.alert("没有距离阿尔戈号正好 4 格的已揭示地图板块。");
     return;
   }
 
   if (exact.length === 1) {
-    placeAdversary(exact[0].tile.id);
+    placeAdversary(exact[0].id);
     return;
   }
 
-  pendingAdversarySpawnCandidates = new Set(exact.map((item) => item.tile.id));
+  pendingAdversarySpawnCandidates = new Set(exact.map((tile) => tile.id));
   saveState();
   renderTiles();
   window.alert("有多个符合条件的板块，请点击高亮板块生成仇敌。");
@@ -2135,13 +1887,6 @@ async function triggerAdversaryBattle(recordUndo = false) {
   }
   render();
   window.alert("仇敌与阿尔戈号同板块：移除仇敌，并在当前步骤结束时结算仇敌战斗。");
-}
-
-function placedTiles() {
-  const cycleState = activeCycleState();
-  return activeCycle().tiles
-    .filter((tile) => tileIsFaceUp(tile.id, cycleState) || tile.id === cycleState.tokens.AD)
-    .map((tile) => effectiveTile(tile, cycleState));
 }
 
 function adversaryBattleUrl() {
@@ -2327,94 +2072,8 @@ function revealedTiles() {
     .map((tile) => effectiveTile(tile, cycleState));
 }
 
-function adjacentPlacedTiles(tileId, tiles = placedTiles()) {
-  const tile = tiles.find((item) => item.id === tileId);
-  if (!tile) return [];
-  const cycleState = activeCycleState();
-  const placedById = new Map(tiles.map((item) => [item.id, item]));
-  const adjacentIds = new Set();
-  const physicalDirections = ["left", "right", "up", "down"];
-  physicalDirections.forEach((direction) => {
-    const targetId = tile.neighbors?.[direction];
-    if (targetId && placedById.has(targetId)) adjacentIds.add(targetId);
-  });
-  Object.values(tile.exits || {}).forEach((targetId) => {
-    if (targetId && placedById.has(targetId)) adjacentIds.add(targetId);
-  });
-  tiles.forEach((candidate) => {
-    if (candidate.id === tileId) return;
-    const tileIsAlternate = isAlternateTile(tile.id, cycleState);
-    const candidateIsAlternate = isAlternateTile(candidate.id, cycleState);
-    const tileConnects = tileConnectsTo(tile, candidate.id);
-    const candidateConnects = tileConnectsBackForAdversary(candidate, tile.id);
-    const variantAllowsConnection = (!tileIsAlternate || tileConnects)
-      && (!candidateIsAlternate || candidateConnects);
-    const connectsBack = candidateConnects && variantAllowsConnection;
-    const physicallyAdjacent = tilesPhysicallyConnected(tile, candidate);
-    if ((tileConnects && variantAllowsConnection) || connectsBack || physicallyAdjacent) adjacentIds.add(candidate.id);
-  });
-  return [...adjacentIds].map((id) => placedById.get(id)).filter(Boolean);
-}
-
-function shortestPlacedPath(startId, targetId, tiles = placedTiles()) {
-  if (startId === targetId) return [startId];
-
-  const placedById = new Map(tiles.map((tile) => [tile.id, tile]));
-  if (!placedById.has(startId) || !placedById.has(targetId)) return [];
-
-  const previous = new Map([[startId, ""]]);
-  const queue = [startId];
-  while (queue.length) {
-    const current = queue.shift();
-    const options = sortAdversaryMoveOptions(current, targetId, adjacentPlacedTiles(current, tiles));
-    for (const neighbor of options) {
-      if (previous.has(neighbor.id)) continue;
-      previous.set(neighbor.id, current);
-      if (neighbor.id === targetId) {
-        const path = [targetId];
-        while (previous.get(path[0])) path.unshift(previous.get(path[0]));
-        return path;
-      }
-      queue.push(neighbor.id);
-    }
-  }
-
-  return [];
-}
-
-function sortAdversaryMoveOptions(fromId, targetId, options) {
-  const from = activeCycle().tiles.find((tile) => tile.id === fromId);
-  const target = activeCycle().tiles.find((tile) => tile.id === targetId);
-  if (!from || !target) return options;
-
-  return [...options].sort((a, b) => {
-    const preferVertical = state.activeCycleId === "c2";
-    const aPreferredDirection = preferVertical
-      ? (Number(a.nx) === Number(from.nx) ? 0 : 1)
-      : (Number(a.ny) === Number(from.ny) ? 0 : 1);
-    const bPreferredDirection = preferVertical
-      ? (Number(b.nx) === Number(from.nx) ? 0 : 1)
-      : (Number(b.ny) === Number(from.ny) ? 0 : 1);
-    if (aPreferredDirection !== bPreferredDirection) return aPreferredDirection - bPreferredDirection;
-
-    const aDistance = manhattan(a, target);
-    const bDistance = manhattan(b, target);
-    if (aDistance !== bDistance) return aDistance - bDistance;
-
-    return a.id.localeCompare(b.id);
-  });
-}
-
-function manhattan(a, b) {
-  return Math.abs(Number(a.nx) - Number(b.nx)) + Math.abs(Number(a.ny) - Number(b.ny));
-}
-
-function tilesPhysicallyConnected(a, b) {
-  const layout = displayLayout(activeCycle());
-  const aPosition = layout.position(a);
-  const bPosition = layout.position(b);
-  return Math.abs(Number(aPosition.x) - Number(bPosition.x))
-    + Math.abs(Number(aPosition.y) - Number(bPosition.y)) === 1;
+function shortestPlacedPath(startId, targetId, tiles) {
+  return window.ATO_NEMESIS_PATH.shortestPath(activeCycle(), activeCycleState(), startId, targetId, tiles);
 }
 
 function visibleTileIdsForUnknownFilter(cycle, cycleState) {
