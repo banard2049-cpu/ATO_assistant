@@ -16,6 +16,25 @@ function constant(name) {
   return match[0];
 }
 
+test('Cycle I black 32 and starting selection use Dog Days instead of Untamed Titan', () => {
+  const ctx = vm.createContext({});
+  vm.runInContext([
+    constant('explorationDecks'),
+    constant('explorationCornerNumbers'),
+    constant('defaultExplorationSelections'),
+  ].join('\n'), ctx);
+  const result = vm.runInContext(`({
+    start: explorationDecks.c1.find(deck => deck.id === 'start').cards.map(card => card.id),
+    corner: explorationCornerNumbers.c1,
+    selected: defaultExplorationSelections.c1,
+  })`, ctx);
+  assert.ok(result.start.includes('6400'));
+  assert.equal(result.corner['6400'], '32');
+  assert.equal(result.corner['6433'], undefined);
+  assert.ok(result.selected.includes('6400'));
+  assert.ok(!result.selected.includes('6433'));
+});
+
 test('hidden exploration is cycle scoped, selectable and absent from starting decks', () => {
   let cycle = 'c1';
   const ctx = vm.createContext({
