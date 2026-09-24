@@ -87,6 +87,8 @@ function buildContext(cycleConfig, spies = {}, options = {}) {
     renderC3SpecialButtons() {},
     nextDay: () => { spies.nextDay = (spies.nextDay || 0) + 1; },
     currentCycleConfig: () => cycleConfig,
+    queueMicrotask() {},
+    updateDashboardTitanXTrack() {},
   });
   vm.runInContext(
     `let secondScreenEnabled = false;\n${[
@@ -113,6 +115,13 @@ function commandsOf(node) {
 
 const mapCycle = { id: "c1", map: true };
 const noMapCycle = { id: "c1", map: false };
+
+{
+  const context = buildContext({ id: "c5", map: true });
+  const tools = vm.runInContext('createNemesisStepTools("explore")', context);
+  assert.deepEqual(commandsOf(tools), ["spawn-nemesis", "chase-nemesis", "retreat-titan-x"]);
+  assert.ok(markupOf(tools).includes('data-titan-x-space="7"'), "Cycle 5 缺少泰坦 X 追踪轨");
+}
 
 // 1) 第二屏幕关闭时，探索步骤照样出宿敌按钮。
 for (const secondScreen of [false, true]) {

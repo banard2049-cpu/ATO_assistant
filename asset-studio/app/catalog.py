@@ -124,6 +124,7 @@ MAP_TOKEN_LABELS = {
     "taitan": "后日奥德赛·泰坦补给标记（Taitan）",
     "c4_city_of_squalor": "循环 IV 贫民窟城市标记（City of Squalor）",
     "c4_cloud_ship": "循环 IV 云船标记（Cloud Ship）",
+    "c5_ae_siren": "循环 V 战后塞壬标记（Ae-Siren）",
     "c5_atlantean_capital": "循环 V 亚特兰蒂斯首都标记（Atlantean Capital）",
     "c5_black_beak": "循环 V 黑喙标记（Black Beak）",
     "c5_last_visited_underwater_city": "循环 V 最后到访的水下城市标记",

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ATO 地图模块</title>
-  <link rel="stylesheet" href="./styles.css?v=20260913-compact-controls">
+  <link rel="stylesheet" href="./styles.css?v=20260924-titan-x-track">
 </head>
 <body>
   <script>if (new URLSearchParams(location.search).get("second") === "1") document.body.classList.add("second-screen-map");</script>
@@ -90,6 +90,12 @@
           <button id="adSpawnButton" type="button">生成</button>
           <button id="adMoveButton" type="button" class="secondary">移动</button>
         </div>
+        <div id="titanXTrack" class="action-group titan-x-track" role="group" aria-label="泰坦 X 追踪轨" hidden>
+          <span class="toolbar-label">泰坦 X 追踪轨</span>
+          <div id="titanXTrackSpaces" class="titan-x-track-spaces"></div>
+          <button id="titanXRetreatButton" type="button" class="secondary" title="本次探索阶段没有激活探索指示物时，向 7 移动一格">减缓</button>
+          <span id="titanXTrackStatus" class="titan-x-track-status" aria-live="polite"></span>
+        </div>
         <div class="action-group reveal-group">
           <span class="toolbar-label">揭示</span>
           <input id="revealTileInput" type="text" inputmode="text" autocomplete="off" placeholder="板块ID" aria-label="揭示板块 ID">
@@ -131,7 +137,7 @@
   <script src="../assets/cycle-symbols.js?v=20260918"></script>
   <script src="../assets/campaign-session.js?v=20260917"></script>
   <script src="./nemesis-path.js?v=20260924-shared"></script>
-  <script src="./app.js?v=20260924-shared-nemesis"></script>
+  <script src="./app.js?v=20260924-c5-face-reveal"></script>
   <script src="../assets/ato-terms.js?v=20260912f"></script>
   <script src="../assets/term-language.js?v=20260923-nocascade"></script>
 </body>

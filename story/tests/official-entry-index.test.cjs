@@ -11,10 +11,13 @@ function setup() {
     vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../data', file), 'utf8'), { window });
   }
   const context = vm.createContext({
+    window,
+    document: { getElementById: () => null },
     fanData: window.STORYBOOK_DATA, officialData: window.STORYBOOK_OFFICIAL_DATA,
     activeEntry: null, selectedChapterKey: () => 'all', selectedEncounterKey: () => 'all',
   });
-  for (const name of ['buildVersionData', 'entriesById', 'hasEntryContent', 'preferEntriesWithContent', 'preferredEntry', 'entryFromDeepLink', 'normalizeQuery', 'sortForCurrentContext', 'searchEntries', 'syncStoryLanguage']) {
+  vm.runInContext(fs.readFileSync(path.join(__dirname, '../assets/pharos-codes.js'), 'utf8'), context);
+  for (const name of ['buildVersionData', 'entriesById', 'hasEntryContent', 'preferEntriesWithContent', 'preferredEntry', 'entryFromDeepLink', 'normalizeQuery', 'sortForCurrentContext', 'searchEntries', 'pharosTitleAnswer', 'storyTitleText', 'renderEntryTitle', 'syncStoryLanguage']) {
     const start = source.indexOf(`  function ${name}(`);
     const end = source.indexOf('\n  }', start) + 4;
     vm.runInContext(source.slice(start, end), context);
@@ -66,6 +69,7 @@ test('切换版本重建索引和目录，并清除民间版不存在的当前�
     secondScreenStoryModeToggle: { checked: false },
     renderResults() {}, searchInput: { value: '' }, bookSelect: { options: [] },
     entryTitle: {}, entryBadge: {}, storyText: {}, linkPanel: {},
+    pharosTitleDecodeButton: { hidden: true },
     currentBook: () => ctx.data.books.find(book => book.id === 'c3'),
     currentScopedEntries: () => ctx.currentBook().entries,
   });
@@ -78,4 +82,47 @@ test('切换版本重建索引和目录，并清除民间版不存在的当前�
   assert.ok(!ctx.currentBook().entries.some(entry => entry.key === 'c3-7-official-0027'));
   ctx.syncStoryLanguage(true);
   assert.equal(ctx.currentBook().entries.filter(entry => entry.key === 'c3-7-official-0027').length, 1);
+});
+
+test('法洛斯标题解密按当前故事版本替换数字标题', () => {
+  const ctx = setup();
+  const key = 'c1-12-0';
+  const entry = ctx.fanData.books[0].entries.find(item => item.key === key);
+  Object.assign(ctx, {
+    storyVersion: '民间版',
+    decodedPharosTitleKeys: new Set(),
+    pharosTitleDecodeButton: { hidden: true },
+    entryTitle: {},
+    supportsOfficialVersion: () => true,
+    getDisplayEntry: () => ({ title: '1 卷轴 (Scroll) 13914152012118' }),
+  });
+  ctx.renderEntryTitle(entry);
+  assert.equal(ctx.entryTitle.textContent, '1 卷轴 (Scroll) · 13914152012118');
+  assert.equal(ctx.pharosTitleDecodeButton.hidden, false);
+  ctx.decodedPharosTitleKeys.add(key);
+  ctx.renderEntryTitle(entry);
+  assert.equal(ctx.entryTitle.textContent, '1 卷轴 (Scroll) · Minotaur');
+  assert.equal(ctx.pharosTitleDecodeButton.hidden, true);
+  ctx.storyVersion = '官方版';
+  ctx.getDisplayEntry = () => ({ title: '1 卷轴', text: '1 卷轴\n\n13914211520115122115199' });
+  ctx.renderEntryTitle(entry);
+  assert.equal(ctx.entryTitle.textContent, '1 卷轴 · 米诺陶洛斯');
+  ctx.decodedPharosTitleKeys.delete(key);
+  ctx.renderEntryTitle(entry);
+  assert.equal(ctx.entryTitle.textContent, '1 卷轴 · 13914211520115122115199');
+  const correctedFan = ctx.fanData.books[0].entries.find(item => item.key === 'c1-12-7');
+  ctx.storyVersion = '民间版';
+  ctx.getDisplayEntry = item => item;
+  ctx.renderEntryTitle(correctedFan);
+  assert.equal(ctx.entryTitle.textContent, '8 平板 (Tablet) · 201892519156208521815142651651516125');
+  const c2Fan = ctx.fanData.books.find(book => book.id === 'c2').entries.find(item => item.key === 'c2-12-0');
+  ctx.renderEntryTitle(c2Fan);
+  assert.equal(ctx.entryTitle.textContent, '1 卷轴 · 154251919521199');
+  const scanCorrected = ctx.fanData.books[0].entries.find(item => item.key === 'c1-12-6');
+  ctx.storyVersion = '官方版';
+  ctx.getDisplayEntry = () => ({ title: '7 卷轴', text: '7 卷轴\n\n49411221151995385772115' });
+  ctx.renderEntryTitle(scanCorrected);
+  assert.equal(ctx.entryTitle.textContent, '7 卷轴 · 49411221151994538514772115');
+  ctx.renderEntryTitle({ ...entry, chapterKey: 'main' });
+  assert.equal(ctx.pharosTitleDecodeButton.hidden, true);
 });

@@ -361,6 +361,44 @@ h1 {
   background: #f8faf7;
 }
 
+.titan-x-track[hidden] {
+  display: none;
+}
+
+.titan-x-track-spaces {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.map-actions .titan-x-track-space {
+  min-width: 25px;
+  min-height: 28px;
+  padding: 0 4px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #fff;
+  color: var(--ink);
+}
+
+.map-actions .titan-x-track-space.trigger {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.map-actions .titan-x-track-space.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.titan-x-track-status {
+  min-width: 42px;
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
 .map-actions button {
   min-height: 30px;
   padding: 0 8px;

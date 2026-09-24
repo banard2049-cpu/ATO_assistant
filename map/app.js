@@ -48,9 +48,10 @@ const tokenAssets = [
     cycles: ["c5"],
   },
   { id: "c5_atlantean_capital", label: "Atlantean Capital", path: "./tokens/c5_atlantean_capital.png", group: "c5", cycles: ["c5"], square: true },
-  { id: "c5_black_beak", label: "Black Beak", path: "./tokens/c5_black_beak.png", group: "c5", cycles: ["c5"] },
+  { id: "c5_black_beak", label: "Black Beak", path: "./tokens/c5_black_beak.png", group: "c5", cycles: ["c5"], unique: true },
   { id: "c5_last_visited_underwater_city", label: "最后到访的水下城市", path: "./tokens/c5_last_visited_underwater_city.png", group: "c5", cycles: ["c5"], unique: true },
-  { id: "c5_nemesis", label: "Nemesis", path: "./tokens/c5_nemesis.png", group: "c5", cycles: ["c5"] },
+  { id: "c5_nemesis", label: "Nemesis", path: "./tokens/c5_nemesis.png", group: "c5", cycles: ["c5"], unique: true },
+  { id: "c5_ae_siren", label: "Ae-Siren", path: "./tokens/c5_ae_siren.png", group: "c5", cycles: ["c5"], unique: true },
   { id: "c5_ruin", label: "Ruin", path: "./tokens/c5_ruin.png", group: "c5", cycles: ["c5"], square: true },
   { id: "taitan", label: "Taitan", path: "./tokens/reward_token_3.png", group: "odyssey" },
   { id: "staff", label: "Staff", path: "./tokens/reward_token_2.png", group: "odyssey" },
@@ -155,6 +156,10 @@ const elements = {
   hsDestroyButton: document.querySelector("#hsDestroyButton"),
   adSpawnButton: document.querySelector("#adSpawnButton"),
   adMoveButton: document.querySelector("#adMoveButton"),
+  titanXTrack: document.querySelector("#titanXTrack"),
+  titanXTrackSpaces: document.querySelector("#titanXTrackSpaces"),
+  titanXRetreatButton: document.querySelector("#titanXRetreatButton"),
+  titanXTrackStatus: document.querySelector("#titanXTrackStatus"),
   revealTileInput: document.querySelector("#revealTileInput"),
   revealTileButton: document.querySelector("#revealTileButton"),
   undoButton: document.querySelector("#undoButton"),
@@ -287,6 +292,7 @@ function defaultCycleState() {
     previewRevealed: {},
     tileNotes: {},
     tileVariants: {},
+    titanXTrackPosition: null,
     tokens: {
       AG: "",
       AD: "",
@@ -338,6 +344,10 @@ function normalizeState(saved) {
       tileVariants: isPlainObject(saved.cycles?.[id]?.tileVariants)
         ? saved.cycles[id].tileVariants
         : {},
+      titanXTrackPosition: normalizeTitanXTrackPosition(
+        saved.cycles?.[id]?.titanXTrackPosition,
+        id === "c5" && Boolean(saved.cycles?.[id]?.tokens?.AD),
+      ),
       tokens: normalizeTokens(saved.cycles?.[id]),
     };
   });
@@ -363,6 +373,13 @@ function normalizeState(saved) {
       : "up",
     query: saved.query || "",
   };
+}
+
+function normalizeTitanXTrackPosition(value, hasLegacyAdversary = false) {
+  if (value === undefined && hasLegacyAdversary) return 7;
+  if (value === null || value === undefined || value === "") return null;
+  const position = Number(value);
+  return Number.isInteger(position) && position >= 1 && position <= 7 ? position : null;
 }
 
 function normalizeTokens(cycleState = {}) {
@@ -403,14 +420,14 @@ function normalizeEdgeMarkers(edgeMarkers = {}) {
 function normalizeMarkers(markers = {}) {
   if (!isPlainObject(markers)) return {};
   const normalized = {};
-  let scoutKept = false;
+  const uniqueKept = new Set();
   Object.entries(markers).forEach(([tileId, tileMarkers]) => {
     if (!isPlainObject(tileMarkers)) return;
     Object.entries(tileMarkers).forEach(([tokenId, enabled]) => {
       if (!enabled || !tokenAssetById[tokenId]) return;
-      if (tokenId === "hs") {
-        if (scoutKept) return;
-        scoutKept = true;
+      if (tokenAssetById[tokenId].unique) {
+        if (uniqueKept.has(tokenId)) return;
+        uniqueKept.add(tokenId);
       }
       normalized[tileId] ||= {};
       normalized[tileId][tokenId] = true;
@@ -585,6 +602,18 @@ function markTileExplored(cycleState, tileId) {
   if (cycleState.previewRevealed) delete cycleState.previewRevealed[tileId];
   if (!wasExplored) cycleState.latestRevealedTile = tileId;
   return !wasExplored;
+}
+
+function inheritCycleFiveTileFace(cycleState, destinationId) {
+  if (state.activeCycleId !== "c5" || !destinationId || cycleState.explored[destinationId]) return;
+  const sourceId = argoTileId(cycleState);
+  if (!sourceId || sourceId === destinationId) return;
+  cycleState.tileVariants ||= {};
+  if (cycleState.tileVariants[sourceId] === "alternate") {
+    cycleState.tileVariants[destinationId] = "alternate";
+  } else {
+    delete cycleState.tileVariants[destinationId];
+  }
 }
 
 function syncDepartedLandmarkMarkers(cycleState, nextTileId) {
@@ -1184,6 +1213,36 @@ function renderControls() {
   elements.showAdjacencyToggle.checked = state.showAdjacency;
   if (elements.markCurrentButton) elements.markCurrentButton.disabled = !cycleState.currentTile;
   renderScoutControls(cycleState);
+  renderTitanXTrack(cycleState);
+}
+
+function renderTitanXTrack(cycleState) {
+  const isCycleFive = state.activeCycleId === "c5";
+  elements.titanXTrack.hidden = !isCycleFive;
+  elements.adMoveButton.textContent = isCycleFive ? "推进" : "移动";
+  elements.adMoveButton.title = isCycleFive ? "激活探索指示物：泰坦 X 追踪指示物向左移动一格" : "";
+  if (!isCycleFive) {
+    elements.adMoveButton.disabled = false;
+    return;
+  }
+
+  const position = cycleState.titanXTrackPosition;
+  elements.adMoveButton.disabled = position == null || position <= 1;
+  elements.titanXRetreatButton.disabled = position == null || position >= 7;
+  elements.titanXTrackStatus.textContent = position == null ? "未生成" : `位置 ${position}`;
+  elements.titanXTrackSpaces.replaceChildren();
+  for (let space = 1; space <= 7; space += 1) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `titan-x-track-space${space === position ? " active" : ""}${space === 3 || space === 6 ? " trigger" : ""}`;
+    button.textContent = String(space);
+    button.title = space === 3 || space === 6 ? `经过 ${space} 时放置泰坦 X 航行模型` : `追踪轨 ${space}`;
+    button.setAttribute("aria-label", `泰坦 X 追踪轨 ${space}${space === position ? "，当前位置" : ""}`);
+    button.setAttribute("aria-pressed", String(space === position));
+    button.disabled = position == null;
+    button.addEventListener("click", () => setTitanXTrackPosition(space));
+    elements.titanXTrackSpaces.appendChild(button);
+  }
 }
 
 function renderScoutControls(cycleState = activeCycleState()) {
@@ -1205,7 +1264,9 @@ function renderSummary(filteredCount) {
     `${cycle.tiles.length} 块地图`,
     `已探索 ${exploredCount}`,
     current ? `当前位置 ${current.label}` : "未设置当前位置",
-    cycleState.tokens.AD ? `仇敌 ${cycleState.tokens.AD}` : "仇敌未在地图上",
+    cycle.id === "c5" && cycleState.titanXTrackPosition != null
+      ? `泰坦 X 追踪轨 ${cycleState.titanXTrackPosition}${cycleState.tokens.AD ? ` / 航行模型 ${cycleState.tokens.AD}` : ""}`
+      : (cycleState.tokens.AD ? `仇敌 ${cycleState.tokens.AD}` : "仇敌未在地图上"),
     `侦察船 ${cycleState.tokens.hsCount}${scoutPlacedTileId(cycleState) ? " / 已派出" : ""}`,
     sandstorms.length
       ? `沙尘暴 ${sandstorms.map(({ tileId, direction }) => `${tileId} ${edgeDirectionLabels[direction]}`).join("、")}`
@@ -1231,16 +1292,17 @@ function renderTiles() {
   const tiles = cycle.tiles.filter((tile) => {
     const explored = Boolean(cycleState.explored[tile.id]);
     const isSpawnCandidate = pendingAdversarySpawnCandidates.has(tile.id);
+    const isAdversaryTile = cycleState.tokens.AD === tile.id;
     const isArgoTile = tile.id === effectiveArgoTileId;
     const hasNote = Boolean((cycleState.tileNotes?.[tile.id] || "").trim());
     const previewRevealed = tilePreviewRevealedByMarker(tile.id, cycleState);
     const matchesQuery = !query || [tile.id, tile.label, tile.source].some((value) => {
       return String(value || "").toLowerCase().includes(query);
     });
-    const matchesUnknownFilter = !visibleUnknownTileIds || visibleUnknownTileIds.has(tile.id) || isSpawnCandidate || isArgoTile || hasNote || previewRevealed;
-    return (matchesQuery || isSpawnCandidate || isArgoTile)
+    const matchesUnknownFilter = !visibleUnknownTileIds || visibleUnknownTileIds.has(tile.id) || isSpawnCandidate || isArgoTile || isAdversaryTile || hasNote || previewRevealed;
+    return (matchesQuery || isSpawnCandidate || isArgoTile || isAdversaryTile)
       && matchesUnknownFilter
-      && (!state.onlyExplored || explored || isSpawnCandidate || isArgoTile);
+      && (!state.onlyExplored || explored || isSpawnCandidate || isArgoTile || isAdversaryTile);
   });
 
   elements.tileGrid.innerHTML = "";
@@ -1540,6 +1602,7 @@ function setCurrentTile(tileId, reveal = true, recordUndo = true) {
   clearPendingAdversarySpawn();
   const cycleState = activeCycleState();
   if (recordUndo) pushUndo();
+  if (reveal) inheritCycleFiveTileFace(cycleState, tileId);
   syncDepartedLandmarkMarkers(cycleState, tileId);
   cycleState.currentTile = tileId;
   cycleState.tokens.AG = tileId;
@@ -1561,6 +1624,7 @@ function placeToken(tileId) {
 
   if (tokenId === "AG") {
     pushUndo();
+    inheritCycleFiveTileFace(cycleState, tileId);
     syncDepartedLandmarkMarkers(cycleState, tileId);
     cycleState.currentTile = tileId;
     cycleState.tokens.AG = tileId;
@@ -1603,8 +1667,12 @@ function placeToken(tileId) {
     }
   } else {
     pushUndo();
+    const alreadyPlacedHere = Boolean(cycleState.tokens.markers[tileId]?.[tokenId]);
+    if (tokenAssetById[tokenId]?.unique && !alreadyPlacedHere) {
+      removeMarkerEverywhere(cycleState, tokenId);
+    }
     cycleState.tokens.markers[tileId] ||= {};
-    cycleState.tokens.markers[tileId][tokenId] = !cycleState.tokens.markers[tileId][tokenId];
+    cycleState.tokens.markers[tileId][tokenId] = !alreadyPlacedHere;
     if (!cycleState.tokens.markers[tileId][tokenId]) delete cycleState.tokens.markers[tileId][tokenId];
     if (!Object.keys(cycleState.tokens.markers[tileId]).length) delete cycleState.tokens.markers[tileId];
   }
@@ -1801,6 +1869,11 @@ function shuffled(items) {
 
 function moveAdversary() {
   clearPendingAdversarySpawn();
+  if (state.activeCycleId === "c5") {
+    const position = activeCycleState().titanXTrackPosition;
+    if (position != null) setTitanXTrackPosition(position - 1);
+    return;
+  }
   const cycleState = activeCycleState();
   const startId = cycleState.tokens.AD;
   const targetId = cycleState.currentTile;
@@ -1828,6 +1901,14 @@ function moveAdversary() {
 function spawnAdversary() {
   clearPendingAdversarySpawn();
   const cycleState = activeCycleState();
+  if (state.activeCycleId === "c5") {
+    pushUndo();
+    cycleState.titanXTrackPosition = 7;
+    cycleState.tokens.AD = "";
+    saveState();
+    render();
+    return;
+  }
   const targetId = cycleState.currentTile;
   if (!targetId) {
     window.alert("请先设置 AG/当前位置。");
@@ -1850,6 +1931,46 @@ function spawnAdversary() {
   window.alert("有多个符合条件的板块，请点击高亮板块生成仇敌。");
 }
 
+function titanXAdjacentTileCandidates(cycleState) {
+  const argoId = argoTileId(cycleState);
+  const argoTile = activeCycle().tiles.find((tile) => tile.id === argoId);
+  if (!argoTile) return [];
+  const effectiveArgoTile = effectiveTile(argoTile, cycleState);
+  const adjacent = activeCycle().tiles.filter((tile) => {
+    if (tile.id === argoId) return false;
+    const effectiveCandidate = effectiveTile(tile, cycleState);
+    return Object.values(effectiveArgoTile.neighbors || {}).includes(tile.id)
+      || Object.values(effectiveCandidate.neighbors || {}).includes(argoId);
+  });
+  const unexplored = adjacent.filter((tile) => !cycleState.explored[tile.id]);
+  return unexplored.length ? unexplored : adjacent.filter((tile) => cycleState.explored[tile.id]);
+}
+
+function setTitanXTrackPosition(nextPosition) {
+  if (state.activeCycleId !== "c5") return;
+  const cycleState = activeCycleState();
+  const previous = cycleState.titanXTrackPosition;
+  if (previous == null || !Number.isInteger(nextPosition) || nextPosition < 1 || nextPosition > 7 || nextPosition === previous) return;
+
+  pushUndo();
+  cycleState.titanXTrackPosition = nextPosition;
+  const crossed = [6, 3].filter((space) => previous > space && nextPosition <= space);
+  const placements = [];
+  crossed.forEach((space) => {
+    const candidates = titanXAdjacentTileCandidates(cycleState);
+    if (!candidates.length) {
+      placements.push(`经过 ${space}：无法确定阿尔戈号的相邻板块，请手动放置泰坦 X 航行模型。`);
+      return;
+    }
+    const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+    cycleState.tokens.AD = chosen.id;
+    placements.push(`经过 ${space}：泰坦 X 航行模型放到 ${chosen.label}。`);
+  });
+  saveState();
+  render();
+  if (placements.length) window.alert(placements.join("\n"));
+}
+
 function placeAdversary(tileId) {
   const cycleState = activeCycleState();
   pushUndo();
@@ -1869,6 +1990,7 @@ async function triggerAdversaryBattle(recordUndo = false) {
   const cycleState = activeCycleState();
   if (recordUndo) pushUndo();
   cycleState.tokens.AD = "";
+  if (state.activeCycleId === "c5") cycleState.titanXTrackPosition = null;
   saveState();
   // Flush the queued save before leaving the page so the adversary removal
   // and current position are persisted (no debounce window loss).
@@ -1971,6 +2093,7 @@ function currentMapSnapshot() {
     currentTileFace,
     adversaryTileId: cycleState.tokens.AD || "",
     adversaryTileLabel: adversary?.label || cycleState.tokens.AD || "",
+    titanXTrackPosition: cycle.id === "c5" ? cycleState.titanXTrackPosition : null,
     latestRevealedTileId: cycleState.latestRevealedTile || "",
     latestRevealedTileLabel: latestRevealed?.label || cycleState.latestRevealedTile || "",
     latestRevealedTileFace,
@@ -2170,6 +2293,10 @@ elements.hsRecallButton.addEventListener("click", recallScout);
 elements.hsDestroyButton.addEventListener("click", destroyScout);
 elements.adSpawnButton.addEventListener("click", spawnAdversary);
 elements.adMoveButton.addEventListener("click", moveAdversary);
+elements.titanXRetreatButton.addEventListener("click", () => {
+  const position = activeCycleState().titanXTrackPosition;
+  if (position != null) setTitanXTrackPosition(position + 1);
+});
 if (elements.revealTileButton) elements.revealTileButton.addEventListener("click", revealTilePreviewById);
 if (elements.revealTileInput) {
   elements.revealTileInput.addEventListener("keydown", (event) => {

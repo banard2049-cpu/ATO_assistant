@@ -1653,6 +1653,35 @@
       align-items: center;
     }
 
+    .titan-x-step-track {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 3px 6px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      font-size: 12px;
+    }
+
+    .titan-x-step-track span[data-titan-x-space] {
+      display: inline-grid;
+      place-items: center;
+      width: 22px;
+      height: 22px;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+    }
+
+    .titan-x-step-track span[data-titan-x-space="3"],
+    .titan-x-step-track span[data-titan-x-space="6"] {
+      border-color: var(--danger);
+    }
+
+    .titan-x-step-track span.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
     /* 步骤内的紧凑操作按钮：步骤标题行里的入口按钮（宿敌、进入下一天…）
        和探索卡工具区的按钮共用，保证同一屏里按钮尺寸一致。
        探索卡工具区新增按钮时记得挂上这个 class；破坏卡组的「移回」
@@ -5101,11 +5130,16 @@
           latestRevealedTile: saved.latestRevealedTile || "",
           tileNotes: isPlainObject(saved.tileNotes) ? saved.tileNotes : {},
           tileVariants: isPlainObject(saved.tileVariants) ? saved.tileVariants : {},
+          titanXTrackPosition: Number.isInteger(Number(saved.titanXTrackPosition))
+            && Number(saved.titanXTrackPosition) >= 1 && Number(saved.titanXTrackPosition) <= 7
+            ? Number(saved.titanXTrackPosition)
+            : (cycle.id === "c5" && saved.titanXTrackPosition === undefined && tokens.AD ? 7 : null),
           tokens: {
             AG: tokens.AG || saved.currentTile || "",
             AD: tokens.AD || "",
             hsCount: Math.max(0, Math.floor(Number(tokens.hsCount || saved.hsCount || 0))),
             markers: isPlainObject(tokens.markers) ? tokens.markers : {},
+            edgeMarkers: isPlainObject(tokens.edgeMarkers) ? tokens.edgeMarkers : {},
           },
         };
       });
@@ -5211,8 +5245,15 @@
         cycleLabel: cycle.label,
         currentTileId: cycleState.currentTile || "",
         currentTileLabel: current?.label || cycleState.currentTile || "",
+        currentTileFace: cycleId === "c5" && cycleState.currentTile
+          ? (cycleState.tileVariants?.[cycleState.currentTile] === "alternate" ? "B" : "A")
+          : "",
         adversaryTileId: cycleState.tokens.AD || "",
         adversaryTileLabel: adversary?.label || cycleState.tokens.AD || "",
+        titanXTrackPosition: cycleId === "c5" ? cycleState.titanXTrackPosition : null,
+        latestRevealedTileFace: cycleId === "c5" && cycleState.latestRevealedTile
+          ? (cycleState.tileVariants?.[cycleState.latestRevealedTile] === "alternate" ? "B" : "A")
+          : "",
         exploredIds,
         exploredCount: exploredIds.length,
         totalTiles: cycle.tiles.length,
@@ -5228,6 +5269,18 @@
       const target = cycle.tiles.find((tile) => tile.id === targetId);
       if (!target) throw new Error("地图数据中找不到目标板块。");
       return targetId;
+    }
+
+    function inheritCycleFiveMapCommandFace(cycleState, destinationId) {
+      if (!destinationId || cycleState.explored[destinationId]) return;
+      const sourceId = cycleState.currentTile || cycleState.tokens.AG;
+      if (!sourceId || sourceId === destinationId) return;
+      cycleState.tileVariants ||= {};
+      if (cycleState.tileVariants[sourceId] === "alternate") {
+        cycleState.tileVariants[destinationId] = "alternate";
+      } else {
+        delete cycleState.tileVariants[destinationId];
+      }
     }
 
     function currentC3SpecialTargets(cycle, cycleState) {
@@ -5247,6 +5300,18 @@
       });
     }
 
+    function titanXAdjacentCandidates(cycle, cycleState) {
+      const argoId = cycleState.currentTile || cycleState.tokens.AG;
+      const argo = cycle.tiles.find((tile) => tile.id === argoId);
+      if (!argo) return [];
+      const neighbors = cycle.tiles.filter((tile) => tile.id !== argoId && (
+        Object.values(argo.neighbors || {}).includes(tile.id)
+        || Object.values(tile.neighbors || {}).includes(argoId)
+      ));
+      const unexplored = neighbors.filter((tile) => !cycleState.explored[tile.id]);
+      return unexplored.length ? unexplored : neighbors.filter((tile) => cycleState.explored[tile.id]);
+    }
+
     async function runMapCommand(command, value = "") {
       if (mapCommandBusy) return;
       mapCommandBusy = true;
@@ -5262,6 +5327,7 @@
         if (command === "move-argo") {
           const targetId = mapDirectionalTarget(cycle, cycleState, value);
           const newlyExplored = !cycleState.explored[targetId];
+          if (cycleId === "c5") inheritCycleFiveMapCommandFace(cycleState, targetId);
           cycleState.currentTile = targetId;
           cycleState.tokens.AG = targetId;
           cycleState.explored[targetId] = true;
@@ -5269,13 +5335,16 @@
           if (newlyExplored) cycleState.latestRevealedTile = targetId;
           if (cycleState.tokens.AD === targetId) {
             cycleState.tokens.AD = "";
+            if (cycleId === "c5") cycleState.titanXTrackPosition = null;
             battleHref = adversaryBattleHref(cycleId);
             message = battleHref
               ? `阿尔戈号已移动至 ${targetId}，与宿敌相遇：已移除宿敌，正在打开宿敌战斗。`
               : `阿尔戈号已移动至 ${targetId}，与宿敌相遇：已移除宿敌，请结算宿敌战斗。`;
           } else {
             message = newlyExplored
-              ? `目标板块 ${targetId} 已自动标记为已探索，阿尔戈号已移动过去。`
+              ? (cycleId === "c5"
+                ? `目标板块 ${targetId} 已按出发板块的 ${cycleState.tileVariants?.[targetId] === "alternate" ? "B" : "A"} 面揭示，阿尔戈号已移动过去。`
+                : `目标板块 ${targetId} 已自动标记为已探索，阿尔戈号已移动过去。`)
               : `阿尔戈号已移动至 ${targetId}。`;
           }
         } else if (command === "move-special") {
@@ -5289,6 +5358,7 @@
           if (newlyExplored) cycleState.latestRevealedTile = value;
           if (cycleState.tokens.AD === value) {
             cycleState.tokens.AD = "";
+            if (cycleId === "c5") cycleState.titanXTrackPosition = null;
             battleHref = adversaryBattleHref(cycleId);
             message = battleHref
               ? `阿尔戈号经特殊连接移动至 ${value}，与宿敌相遇：已移除宿敌，正在打开宿敌战斗。`
@@ -5312,46 +5382,75 @@
             message = `地图板块 ${tileId} 已翻至 B 面。`;
           }
         } else if (command === "spawn-nemesis") {
-          const targetId = cycleState.currentTile;
-          if (!targetId) throw new Error("请先设置阿尔戈号当前位置。");
-          const candidates = window.ATO_NEMESIS_PATH.spawnCandidates(cycle, cycleState);
-          if (!candidates.length) throw new Error("没有距离阿尔戈号正好 4 格的已揭示板块。");
-          let chosen = candidates[0];
-          if (candidates.length > 1) {
-            const options = candidates.map((tile, index) => `${index + 1}. ${tile.label || tile.id} (${tile.id})`).join("\n");
-            const selection = window.prompt(`有多个符合条件的板块，请选择宿敌生成位置：\n${options}`, "1");
-            if (selection === null) {
-              setMapCommandStatus("已取消生成宿敌。");
-              return;
-            }
-            const index = Number(selection) - 1;
-            if (!Number.isInteger(index) || index < 0 || index >= candidates.length) {
-              throw new Error("请选择列表中的位置编号。");
-            }
-            chosen = candidates[index];
-          }
-          cycleState.tokens.AD = chosen.id;
-          message = `宿敌已生成在 ${chosen.label || chosen.id}。`;
-        } else if (command === "chase-nemesis") {
-          const startId = cycleState.tokens.AD;
-          const targetId = cycleState.currentTile;
-          if (!startId) throw new Error("地图上还没有宿敌，请先生成。");
-          if (!targetId) throw new Error("请先设置阿尔戈号当前位置。");
-          if (startId !== targetId) {
-            const path = window.ATO_NEMESIS_PATH.shortestPath(cycle, cycleState, startId, targetId);
-            if (path.length >= 2) cycleState.tokens.AD = path[1];
-          }
-          if (cycleState.tokens.AD === targetId) {
+          if (cycleId === "c5") {
+            cycleState.titanXTrackPosition = 7;
             cycleState.tokens.AD = "";
-            battleHref = adversaryBattleHref(cycleId);
-            message = battleHref
-              ? "宿敌追上阿尔戈号：已移除宿敌，正在打开宿敌战斗。"
-              : "宿敌追上阿尔戈号：已移除宿敌，请结算宿敌战斗。";
+            message = "泰坦 X 已生成，追踪指示物放在 7。";
           } else {
-            message = cycleState.tokens.AD === startId
-              ? "宿敌与阿尔戈号之间没有已揭示路线，宿敌未移动。"
-              : `宿敌已追击 1 格，移动至 ${cycleState.tokens.AD}。`;
+            const targetId = cycleState.currentTile;
+            if (!targetId) throw new Error("请先设置阿尔戈号当前位置。");
+            const candidates = window.ATO_NEMESIS_PATH.spawnCandidates(cycle, cycleState);
+            if (!candidates.length) throw new Error("没有距离阿尔戈号正好 4 格的已揭示板块。");
+            let chosen = candidates[0];
+            if (candidates.length > 1) {
+              const options = candidates.map((tile, index) => `${index + 1}. ${tile.label || tile.id} (${tile.id})`).join("\n");
+              const selection = window.prompt(`有多个符合条件的板块，请选择宿敌生成位置：\n${options}`, "1");
+              if (selection === null) {
+                setMapCommandStatus("已取消生成宿敌。");
+                return;
+              }
+              const index = Number(selection) - 1;
+              if (!Number.isInteger(index) || index < 0 || index >= candidates.length) {
+                throw new Error("请选择列表中的位置编号。");
+              }
+              chosen = candidates[index];
+            }
+            cycleState.tokens.AD = chosen.id;
+            message = `宿敌已生成在 ${chosen.label || chosen.id}。`;
           }
+        } else if (command === "chase-nemesis") {
+          if (cycleId === "c5") {
+            const position = cycleState.titanXTrackPosition;
+            if (position == null) throw new Error("泰坦 X 尚未生成，请先将追踪指示物放在 7。");
+            if (position <= 1) throw new Error("泰坦 X 追踪指示物已在 1。");
+            cycleState.titanXTrackPosition = position - 1;
+            message = `泰坦 X 追踪指示物移至 ${cycleState.titanXTrackPosition}。`;
+            if (cycleState.titanXTrackPosition === 6 || cycleState.titanXTrackPosition === 3) {
+              const candidates = titanXAdjacentCandidates(cycle, cycleState);
+              if (candidates.length) {
+                const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+                cycleState.tokens.AD = chosen.id;
+                message += ` 航行模型已随机放置在阿尔戈号相邻的 ${chosen.label || chosen.id}。`;
+              } else {
+                message += " 请设置阿尔戈号位置并手动将航行模型放在相邻板块。";
+              }
+            }
+          } else {
+            const startId = cycleState.tokens.AD;
+            const targetId = cycleState.currentTile;
+            if (!startId) throw new Error("地图上还没有宿敌，请先生成。");
+            if (!targetId) throw new Error("请先设置阿尔戈号当前位置。");
+            if (startId !== targetId) {
+              const path = window.ATO_NEMESIS_PATH.shortestPath(cycle, cycleState, startId, targetId);
+              if (path.length >= 2) cycleState.tokens.AD = path[1];
+            }
+            if (cycleState.tokens.AD === targetId) {
+              cycleState.tokens.AD = "";
+              battleHref = adversaryBattleHref(cycleId);
+              message = battleHref
+                ? "宿敌追上阿尔戈号：已移除宿敌，正在打开宿敌战斗。"
+                : "宿敌追上阿尔戈号：已移除宿敌，请结算宿敌战斗。";
+            } else {
+              message = cycleState.tokens.AD === startId
+                ? "宿敌与阿尔戈号之间没有已揭示路线，宿敌未移动。"
+                : `宿敌已追击 1 格，移动至 ${cycleState.tokens.AD}。`;
+            }
+          }
+        } else if (command === "retreat-titan-x") {
+          if (cycleId !== "c5") throw new Error("只有 Cycle 5 使用泰坦 X 追踪轨。");
+          if (cycleState.titanXTrackPosition == null) throw new Error("泰坦 X 尚未生成。");
+          cycleState.titanXTrackPosition = Math.min(7, cycleState.titanXTrackPosition + 1);
+          message = `泰坦 X 追踪指示物退至 ${cycleState.titanXTrackPosition}。`;
         }
 
         await saveMapCommandState(commandState, commandBaseState);
@@ -5359,6 +5458,7 @@
         // re-read the cycle the snapshot must be built from.
         const savedCycle = currentMapCommandCycle(commandState);
         syncDashboardMapSnapshot(savedCycle.cycleId, savedCycle.cycle, savedCycle.cycleState);
+        updateDashboardTitanXTrack();
         setMapCommandStatus(message);
         if (battleHref) {
           if (window.ATO_PAGE_ROUTER?.focusOrNavigate) {
@@ -6682,6 +6782,10 @@
         }
         if (!Object.keys(state.surveyConstants.hubs[itemId]).length) delete state.surveyConstants.hubs[itemId];
       }
+      // Commit and redraw the checkbox before the hero progress prompt or record sync
+      // can yield to another event and refresh the dashboard from saved state.
+      saveState();
+      renderFlow();
       if (groupId !== "rr" && checked) {
         recordSyncChannel?.postMessage({ source: "dashboard-constant-pending" });
         void syncSurveyAdventureToArgoRecord();
@@ -6692,12 +6796,10 @@
           const box = hub.boxes.find(b => b[0] === boxId);
           const tag = box?.[3];
           if (tag) {
-            applyMnemosTagToHeroes(tag, hub.title, box[2]);
+            void applyMnemosTagToHeroes(tag, hub.title, box[2]);
           }
         }
       }
-      saveState();
-      renderFlow();
     }
 
     function createSurveyConstantCard(item, groupId) {
@@ -6953,11 +7055,30 @@
       if (stepId !== "explore" || !currentCycleConfig().map) return null;
       const group = document.createElement("div");
       group.className = "nemesis-step-buttons";
+      const isCycleFive = currentCycleConfig().id === "c5";
       group.innerHTML = `
         <button type="button" class="step-action-button" data-map-command="spawn-nemesis">生成宿敌</button>
-        <button type="button" class="secondary step-action-button" data-map-command="chase-nemesis">追击 1 格</button>
+        <button type="button" class="secondary step-action-button" data-map-command="chase-nemesis">${isCycleFive ? "追踪推进 1 格" : "追击 1 格"}</button>
+        ${isCycleFive ? `
+          <button type="button" class="secondary step-action-button" data-map-command="retreat-titan-x" title="没有激活探索指示物的探索阶段使用">追踪减缓 1 格</button>
+          <span class="titan-x-step-track" aria-label="泰坦 X 追踪轨">
+            泰坦 X ${[1, 2, 3, 4, 5, 6, 7].map((space) => `<span data-titan-x-space="${space}">${space}</span>`).join("")}
+            <span class="titan-x-step-status"></span>
+          </span>` : ""}
       `;
+      if (isCycleFive) queueMicrotask(updateDashboardTitanXTrack);
       return group;
+    }
+
+    function updateDashboardTitanXTrack() {
+      const snapshot = state.mapSnapshot;
+      const position = snapshot?.cycleId === "c5" ? snapshot.titanXTrackPosition : null;
+      document.querySelectorAll(".titan-x-step-track").forEach((track) => {
+        track.querySelectorAll("[data-titan-x-space]").forEach((space) => {
+          space.classList.toggle("active", Number(space.dataset.titanXSpace) === position);
+        });
+        track.querySelector(".titan-x-step-status").textContent = position == null ? "未生成" : `位置 ${position}`;
+      });
     }
 
     // 第七步（灾祸 / 末日）在特殊事件后面补一个进入下一天，省得再回到顶部日期区。
@@ -8873,7 +8994,7 @@
   </script>
   <script src="./assets/ato-terms.js?v=20260922-official-terms"></script>
   <script src="./assets/term-language.js?v=20260923-nocascade"></script>
-  <script src="./assets/update/app-version.js?v=2.0.4"></script>
+  <script src="./assets/update/app-version.js?v=2.0.5-rc.1"></script>
   <script src="./assets/update/update-check.js?v=1"></script>
 </body>
 </html>

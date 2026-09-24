@@ -21,6 +21,7 @@
   const storyMark = document.querySelector("#storyMark");
   const sectionLabel = document.querySelector("#sectionLabel");
   const entryTitle = document.querySelector("#entryTitle");
+  const pharosTitleDecodeButton = document.querySelector("#pharosTitleDecodeButton");
   const entryBadge = document.querySelector("#entryBadge");
   const storyText = document.querySelector("#storyText");
   const linkPanel = document.querySelector("#linkPanel");
@@ -43,6 +44,7 @@
 
   let activeBook = null;
   let activeEntry = null;
+  const decodedPharosTitleKeys = new Set();
   let storyVersion = localStorage.getItem("ato-term-language-v1") === "official" ? "官方版" : "民间版";
   data = buildVersionData(storyVersion === "官方版");
   const storyLanguageChannel = "BroadcastChannel" in window ? new BroadcastChannel("ato-term-language") : null;
@@ -699,7 +701,8 @@
 
     return scopedEntries
       .filter((entry) => {
-        const haystack = `${entry.id} ${entry.title} ${entry.englishTitle || ""} ${entry.chapter} ${entry.encounter || ""} ${entry.section || ""} ${entry.text} ${entry.originalText || ""}`.toLowerCase();
+        const correctedTitle = entry.chapterKey === "dreams-of-pharos" ? storyTitleText(entry) : "";
+        const haystack = `${entry.id} ${entry.title} ${correctedTitle} ${entry.englishTitle || ""} ${entry.chapter} ${entry.encounter || ""} ${entry.section || ""} ${entry.text} ${entry.originalText || ""}`.toLowerCase();
         return haystack.includes(q);
       })
       .slice(0, 100);
@@ -714,11 +717,14 @@
 
     const fragment = document.createDocumentFragment();
     entries.forEach((entry) => {
+      const title = entry.chapterKey === "dreams-of-pharos"
+        ? storyTitleText(entry)
+        : `${entry.id} · ${entry.title || "故事段落"}`;
       const button = document.createElement("button");
       button.type = "button";
       button.className = `result-item${activeEntry && entry.key === activeEntry.key ? " active" : ""}`;
       button.innerHTML = `
-        <span class="result-id">${escapeHtml(entry.id)} · ${escapeHtml(entry.title || "故事段落")}</span>
+        <span class="result-id">${escapeHtml(title)}</span>
         <span class="result-section">${escapeHtml(entry.encounter ? `${entry.chapter} / ${entry.encounter}` : entry.chapter || "未命名模块")}</span>
         <span class="result-preview">${escapeHtml(entry.text.replace(/\s+/g, " ").slice(0, 72))}</span>
       `;
@@ -2866,7 +2872,7 @@
       bookTitle: currentBook()?.title || "故事书",
       section: sectionLabel.textContent || activeEntry.chapter || "",
       id: activeEntry.id || "",
-      title: displayEntry.title || "故事段落",
+      title: storyTitleText(activeEntry, displayEntry),
       text,
       updatedAt: new Date().toISOString(),
     };
@@ -3100,6 +3106,33 @@
     window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
   }
 
+  function pharosTitleAnswer(entry) {
+    if (entry?.chapterKey !== "dreams-of-pharos") return null;
+    const answers = window.PHAROS_TITLE_ANSWERS;
+    if (!answers?.solved?.[entry.key]) return null;
+    return storyVersion === "官方版" && supportsOfficialVersion()
+      ? answers.chinese?.[entry.key]
+      : answers.solved[entry.key][1];
+  }
+
+  function storyTitleText(entry, displayEntry = getDisplayEntry(entry)) {
+    const originalTitle = displayEntry.title || "故事段落";
+    const answer = pharosTitleAnswer(entry);
+    if (!answer) return originalTitle;
+    const official = storyVersion === "官方版" && supportsOfficialVersion();
+    const code = window.PHAROS_TITLE_ANSWERS.titleCode(entry, displayEntry, official);
+    if (!code) return originalTitle;
+    const numberedTitle = originalTitle.replace(/\s*\d{6,}\s*$/, "");
+    return `${numberedTitle} · ${decodedPharosTitleKeys.has(entry.key) ? answer : code}`;
+  }
+
+  function renderEntryTitle(entry) {
+    entryTitle.textContent = storyTitleText(entry);
+    if (pharosTitleDecodeButton) {
+      pharosTitleDecodeButton.hidden = !pharosTitleAnswer(entry) || decodedPharosTitleKeys.has(entry.key);
+    }
+  }
+
   function showEntry(entry, pushHistory) {
     if (pushHistory && activeEntry && activeEntry.key !== entry.key) {
       historyStack.push({
@@ -3115,7 +3148,7 @@
     syncSelectorsToEntry(entry);
 
     sectionLabel.textContent = entry.encounter ? `${entry.chapter} / ${entry.encounter}` : entry.chapter || "未命名模块";
-    entryTitle.textContent = getDisplayEntry(entry).title || "故事段落";
+    renderEntryTitle(entry);
     entryBadge.textContent = entry.id;
 
     renderStory(entry);
@@ -3793,6 +3826,13 @@
   });
 
   backButton.addEventListener("click", goBack);
+  pharosTitleDecodeButton?.addEventListener("click", () => {
+    if (!pharosTitleAnswer(activeEntry)) return;
+    decodedPharosTitleKeys.add(activeEntry.key);
+    renderEntryTitle(activeEntry);
+    renderResults(searchEntries(searchInput.value));
+    scheduleSecondScreenStorySnapshot();
+  });
   secondScreenStoryModeToggle?.addEventListener("change", toggleSecondScreenStoryMode);
   secondScreenStoryContentToggle?.addEventListener("change", toggleSecondScreenStoryContent);
   rememberButton.addEventListener("click", rememberParagraph);
@@ -3817,12 +3857,13 @@
     if (activeEntry && !activeBook.entries.some((entry) => entry.key === activeEntry.key)) {
       activeEntry = null;
       entryTitle.textContent = "当前版本没有此条目";
+      if (pharosTitleDecodeButton) pharosTitleDecodeButton.hidden = true;
       entryBadge.textContent = "----";
       storyText.textContent = "该条目为官方版独有，请切换至官方版后打开。";
       linkPanel.innerHTML = "";
     }
     if (activeEntry) {
-      entryTitle.textContent = getDisplayEntry(activeEntry).title || "故事段落";
+      renderEntryTitle(activeEntry);
       renderStory(activeEntry);
       scheduleSecondScreenStorySnapshot();
     }

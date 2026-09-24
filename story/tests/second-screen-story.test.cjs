@@ -52,11 +52,12 @@ function storyContext(overrides = {}) {
     missingOfficialScans: new Set(),
     sectionLabel: { textContent: '主线' },
     storyText: { textContent: '阅读器里的文本' },
+    decodedPharosTitleKeys: new Set(),
     window: { location: { href: 'http://localhost:8080/story/index.html' } },
     URL,
     ...overrides,
   });
-  ['supportsOfficialVersion', 'getDisplayEntry', 'officialScanMissingLocally', 'buildSecondScreenStorySnapshot']
+  ['supportsOfficialVersion', 'getDisplayEntry', 'officialScanMissingLocally', 'pharosTitleAnswer', 'storyTitleText', 'buildSecondScreenStorySnapshot']
     .forEach(name => vm.runInContext(slice(STORY_SOURCE, name, '  '), context));
   return context;
 }

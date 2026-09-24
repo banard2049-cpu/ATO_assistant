@@ -417,6 +417,7 @@ button:hover {
 .result-id {
   color: var(--cycle-sidebar-accent);
   font-weight: 800;
+  overflow-wrap: anywhere;
 }
 
 .result-section,
@@ -448,11 +449,29 @@ button:hover {
   font-weight: 800;
 }
 
+.pharos-title-decode {
+  margin-top: 12px;
+  padding: 6px 12px;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--accent-strong);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pharos-title-decode:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
 h2 {
   margin-top: 6px;
   font-size: clamp(26px, 4vw, 42px);
   line-height: 1.12;
 }
+
+#entryTitle { overflow-wrap: anywhere; }
 
 .entry-badge {
   flex: 0 0 auto;

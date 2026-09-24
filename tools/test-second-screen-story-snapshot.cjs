@@ -60,12 +60,15 @@ function storySnapshotContext(locationHref) {
     sectionLabel: { textContent: '主线' },
     storyText: { textContent: '阅读器里的文本' },
     secondScreenStoryContentToggle: { checked: true },
+    // 法洛斯之梦的标题解密在 story/tests 里单独覆盖；这里只让 storyTitleText 走未解密分支。
+    decodedPharosTitleKeys: new Set(),
+    pharosTitleAnswer: () => null,
     // 官方数据声明了扫描图但本机没有这张图时，加载失败过的条目登记在这里。
     missingOfficialScans: new Set(),
     window: { location: { href: locationHref } },
     URL,
   });
-  ['supportsOfficialVersion', 'getDisplayEntry', 'officialScanMissingLocally', 'buildSecondScreenStorySnapshot']
+  ['supportsOfficialVersion', 'getDisplayEntry', 'officialScanMissingLocally', 'storyTitleText', 'buildSecondScreenStorySnapshot']
     .forEach((name) => vm.runInContext(extract(STORY_SOURCE, name, '  '), context));
   return context;
 }
