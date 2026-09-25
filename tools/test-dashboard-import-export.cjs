@@ -62,6 +62,25 @@ class Reader {
 }
 
 async function main() {
+  await check('Android 导出等待文件实际写入结果', async () => {
+    let filename;
+    let contents;
+    const androidWindow = { ATOAndroid: { exportStateJson(name, text) { filename = name; contents = text; } } };
+    const ctx = vm.createContext({ window: androidWindow });
+    vm.runInContext(extractFunction('downloadJsonPayload'), ctx);
+    let settled = false;
+    const saved = ctx.downloadJsonPayload({ app: 'test' }).then(() => { settled = true; });
+    assert.match(filename, /^ato-full-save-.*\.json$/);
+    assert.equal(JSON.parse(contents).app, 'test');
+    assert.equal(settled, false, '选择文件和写入完成前不能显示已下载');
+    androidWindow.ATOAndroidExportResult({ ok: true });
+    await saved;
+    assert.equal(settled, true);
+    const failed = ctx.downloadJsonPayload({ app: 'test' });
+    androidWindow.ATOAndroidExportResult({ ok: false, error: '写入失败' });
+    await assert.rejects(failed, /写入失败/);
+  });
+
   // --- 导出：先 flush，三份 dashboard 拷件来自同一快照 ---
   await check('导出先 flush 且快照一致', async () => {
     const flushedFirst = [];
@@ -156,7 +175,7 @@ async function main() {
           }
         : extra.fetch,
     });
-    vm.runInContext(between('async function saveImportedCampaignSection(', 'function downloadJsonPayload(')
+    vm.runInContext(between('async function saveImportedCampaignSection(', 'async function downloadJsonPayload(')
       + backupPrelude + between('function importStateFile(', 'function clearState('), ctx);
     return ctx;
   }

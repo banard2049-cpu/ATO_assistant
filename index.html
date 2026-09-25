@@ -8638,14 +8638,30 @@
       return payload;
     }
 
-    function downloadJsonPayload(payload) {
+    async function downloadJsonPayload(payload) {
       const text = JSON.stringify(payload, null, 2);
+      const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const filename = `ato-full-save-${stamp}.json`;
+      if (window.ATOAndroid && typeof window.ATOAndroid.exportStateJson === "function") {
+        return new Promise((resolve, reject) => {
+          window.ATOAndroidExportResult = (result) => {
+            delete window.ATOAndroidExportResult;
+            if (result?.ok) resolve();
+            else reject(new Error(result?.error || "文件写入失败"));
+          };
+          try {
+            window.ATOAndroid.exportStateJson(filename, text);
+          } catch (error) {
+            delete window.ATOAndroidExportResult;
+            reject(error);
+          }
+        });
+      }
       const blob = new Blob([text], { type: "application/json;charset=utf-8" });
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
-      const stamp = new Date().toISOString().replace(/[:.]/g, "-");
       anchor.href = url;
-      anchor.download = `ato-full-save-${stamp}.json`;
+      anchor.download = filename;
       document.body.appendChild(anchor);
       anchor.click();
       anchor.remove();
@@ -8700,7 +8716,7 @@
             profiles: dashboardSnapshot?.profiles ?? archive.profiles,
           },
         };
-        downloadJsonPayload(payload);
+        await downloadJsonPayload(payload);
         elements.exportButton.textContent = flushed ? "已下载" : "已下载（含未同步修改）";
         window.setTimeout(() => {
           elements.exportButton.textContent = previousText;
@@ -8877,8 +8893,9 @@
           elements.resourcePackStatus.textContent = `导入失败：${result?.error || "未知错误"}`;
           return;
         }
-        elements.resourcePackStatus.textContent = `本次导入 ${result.assets} 张图片、${result.books} 本故事册；共安装 ${result.totalResources} 项资源。`;
-        window.alert("资源导入完成，应用将重新载入以启用新资源。");
+        const skipped = Number(result.skipped) || 0;
+        elements.resourcePackStatus.textContent = `本次导入 ${result.assets} 张图片、${result.books} 本故事册；跳过 ${skipped} 项无效或缺失文件；共安装 ${result.totalResources} 项资源。`;
+        window.alert(`资源导入完成，跳过 ${skipped} 项，应用将重新载入以启用新资源。`);
         window.location.reload();
       };
     }

@@ -14,17 +14,20 @@ import android.webkit.WebViewClient;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 public final class MainActivity extends Activity {
   private static final String ROOT = "file:///android_asset/web/";
   private static final int FILE_CHOOSER_REQUEST = 1001;
   private static final int ATOPACK_CHOOSER_REQUEST = 1002;
+  private static final int EXPORT_CHOOSER_REQUEST = 1003;
   private WebView webView;
   private ValueCallback<Uri[]> filePathCallback;
   private LocalCampaignApi localApi;
   private AtopackStore atopackStore;
   private LocalSecondScreenServer secondScreenServer;
+  private String pendingExportJson;
 
   @Override public void onCreate(Bundle state) {
     super.onCreate(state);
@@ -83,6 +86,33 @@ public final class MainActivity extends Activity {
 
   @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     super.onActivityResult(requestCode, resultCode, data);
+    if (requestCode == EXPORT_CHOOSER_REQUEST) {
+      String json = pendingExportJson;
+      pendingExportJson = null;
+      if (resultCode != RESULT_OK || data == null || data.getData() == null) {
+        notifyExportResult(errorResult("已取消导出"));
+        return;
+      }
+      Uri destination = data.getData();
+      new Thread(() -> {
+        try (OutputStream output = getContentResolver().openOutputStream(destination, "wt")) {
+          if (output == null) throw new java.io.IOException("无法打开所选文件");
+          output.write(json.getBytes(StandardCharsets.UTF_8));
+          output.flush();
+        } catch (Exception error) {
+          notifyExportResult(errorResult(error.getMessage() == null ? error.toString() : error.getMessage()));
+          return;
+        }
+        try {
+          org.json.JSONObject result = new org.json.JSONObject();
+          result.put("ok", true);
+          notifyExportResult(result);
+        } catch (org.json.JSONException ignored) {
+          notifyExportResult(errorResult("无法确认导出结果"));
+        }
+      }, "state-export").start();
+      return;
+    }
     if (requestCode == ATOPACK_CHOOSER_REQUEST) {
       if (resultCode != RESULT_OK || data == null || data.getData() == null) {
         notifyAtopackResult(errorResult("已取消导入"));
@@ -143,6 +173,26 @@ public final class MainActivity extends Activity {
         startActivityForResult(intent, ATOPACK_CHOOSER_REQUEST);
       });
     }
+
+    @android.webkit.JavascriptInterface public void exportStateJson(String filename, String json) {
+      runOnUiThread(() -> {
+        if (pendingExportJson != null) {
+          notifyExportResult(errorResult("已有导出正在进行"));
+          return;
+        }
+        pendingExportJson = json;
+        try {
+          Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+          intent.addCategory(Intent.CATEGORY_OPENABLE);
+          intent.setType("application/json");
+          intent.putExtra(Intent.EXTRA_TITLE, filename);
+          startActivityForResult(intent, EXPORT_CHOOSER_REQUEST);
+        } catch (Exception error) {
+          pendingExportJson = null;
+          notifyExportResult(errorResult(error.getMessage() == null ? error.toString() : error.getMessage()));
+        }
+      });
+    }
   }
 
   private org.json.JSONObject errorResult(String message) {
@@ -159,5 +209,10 @@ public final class MainActivity extends Activity {
   private void notifyAtopackResult(org.json.JSONObject result) {
     runOnUiThread(() -> webView.evaluateJavascript(
       "window.ATOAtopackImportResult && window.ATOAtopackImportResult(" + result.toString() + ")", null));
+  }
+
+  private void notifyExportResult(org.json.JSONObject result) {
+    runOnUiThread(() -> webView.evaluateJavascript(
+      "window.ATOAndroidExportResult && window.ATOAndroidExportResult(" + result.toString() + ")", null));
   }
 }

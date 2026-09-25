@@ -126,53 +126,63 @@ final class AtopackStore {
 
       Map<String, ResourceEntry> next = new HashMap<>(resources);
       int importedAssets = 0;
+      ImportStats stats = new ImportStats();
       for (int index = 0; index < assets.length(); index++) {
-        JSONObject asset = assets.getJSONObject(index);
+        JSONObject asset = assets.optJSONObject(index);
+        if (asset == null) { stats.skipped++; continue; }
         String itemId = asset.optString("itemId");
         String face = asset.optString("face");
         JSONObject item = items.get(itemId);
         JSONObject faces = item == null ? null : item.optJSONObject("faces");
         String declaredTarget = faces == null ? "" : faces.optString(face);
         String target = knownTargets.get(catalogKey(itemId, face));
-        if (target == null) throw new IOException("资源不在当前 Asset Studio 名单中：" + itemId + "/" + face);
-        if (declaredTarget.isEmpty() || !target.equals(safePath(declaredTarget, "资源目标路径"))) {
-          throw new IOException("资料包资源映射与 Asset Studio 名单不一致：" + itemId + "/" + face);
-        }
-        if (!isImageTarget(target)) throw new IOException("资料包图片目标类型不受支持：" + target);
-        String member = safePath(asset.optString("member"), "资料包成员路径");
-        String sha256 = validSha256(asset.optString("sha256"));
+        if (target == null || !isImageTarget(target)) { stats.skipped++; continue; }
+        String member;
+        String sha256;
+        try {
+          if (declaredTarget.isEmpty() || !target.equals(safePath(declaredTarget, "资源目标路径"))) {
+            stats.skipped++;
+            continue;
+          }
+          member = safePath(asset.optString("member"), "资料包成员路径");
+          sha256 = validSha256(asset.optString("sha256"));
+        } catch (IOException invalid) { stats.skipped++; continue; }
         ZipArchiveEntry entry = archive.getEntry(member);
-        if (entry == null || entry.isDirectory()) throw new IOException("资料包文件缺失：" + member);
-        installBlob(archive, entry, sha256);
+        if (entry == null || entry.isDirectory()) { stats.skipped++; continue; }
+        try { installBlob(archive, entry, sha256); }
+        catch (InvalidPackEntry invalid) { stats.skipped++; continue; }
         next.put(target, new ResourceEntry(sha256, safeMime(asset.optString("mimeType"), target)));
         importedAssets++;
       }
 
       JSONObject incomingStories = manifest.optJSONObject("stories");
-      JSONArray incomingBooks = incomingStories == null ? null : incomingStories.optJSONArray("books");
-      int incomingBookCount = incomingBooks == null ? 0 : incomingBooks.length();
-      boolean entityIndexImported = importStoryFiles(archive, manifest.optJSONArray("storyFiles"), next);
-      if (version >= 2 && incomingBookCount > 0 && !entityIndexImported) {
-        throw new IOException("新版资料包含有故事，但没有人物小传索引");
-      }
+      boolean entityIndexImported = importStoryFiles(archive, manifest.optJSONArray("storyFiles"), next, stats);
       JSONArray officialFiles = manifest.optJSONArray("resourceFiles");
       if (officialFiles != null) {
         if (officialFiles.length() > MAX_ASSETS) throw new IOException("官方资料数量超过限制");
         for (int index = 0; index < officialFiles.length(); index++) {
-          JSONObject resource = officialFiles.getJSONObject(index);
-          String target = safePath(resource.optString("target"), "官方资料路径");
+          JSONObject resource = officialFiles.optJSONObject(index);
+          if (resource == null) { stats.skipped++; continue; }
+          String target;
+          String sha256;
+          try {
+            target = safePath(resource.optString("target"), "官方资料路径");
+            sha256 = validSha256(resource.optString("sha256"));
+          } catch (IOException invalid) { stats.skipped++; continue; }
           boolean storyData = "story/data/storybook-official-data.js".equals(target);
           if (!storyData && !target.matches("(?i)story/data/ato-storybook-key-scans/c[123]-[A-Za-z0-9_-]+\\.(jpg|jpeg|png|webp)")) {
-            throw new IOException("不支持的官方资料路径：" + target);
+            stats.skipped++;
+            continue;
           }
-          if (!target.equals(resource.optString("member"))) throw new IOException("官方资料目标不匹配");
+          if (!target.equals(resource.optString("member"))) { stats.skipped++; continue; }
           ZipArchiveEntry entry = archive.getEntry(target);
-          if (entry == null || entry.isDirectory() || entry.getSize() < 0 || entry.getSize() > MAX_ENTITY_INDEX_BYTES) throw new IOException("官方资料缺失或过大");
+          if (entry == null || entry.isDirectory() || entry.getSize() < 0 || entry.getSize() > MAX_ENTITY_INDEX_BYTES) { stats.skipped++; continue; }
           if (resource.has("bytes") && resource.optLong("bytes", -1) != entry.getSize()) {
-            throw new IOException("官方资料文件长度不匹配：" + target);
+            stats.skipped++;
+            continue;
           }
-          String sha256 = validSha256(resource.optString("sha256"));
-          installBlob(archive, entry, sha256);
+          try { installBlob(archive, entry, sha256); }
+          catch (InvalidPackEntry invalid) { stats.skipped++; continue; }
           next.put(target, new ResourceEntry(sha256, storyData ? "application/javascript" : scanMime(target)));
         }
       }
@@ -182,29 +192,38 @@ final class AtopackStore {
       if (bgmFiles != null) {
         if (bgmFiles.length() > MAX_BGM_FILES) throw new IOException("背景音乐数量超过限制");
         for (int index = 0; index < bgmFiles.length(); index++) {
-          JSONObject resource = bgmFiles.getJSONObject(index);
-          String target = safePath(resource.optString("target"), "背景音乐路径");
+          JSONObject resource = bgmFiles.optJSONObject(index);
+          if (resource == null) { stats.skipped++; continue; }
+          String target;
+          String sha256;
+          try {
+            target = safePath(resource.optString("target"), "背景音乐路径");
+            sha256 = validSha256(resource.optString("sha256"));
+          } catch (IOException invalid) { stats.skipped++; continue; }
           if (!target.matches("assets/bgm/[A-Za-z0-9][A-Za-z0-9._-]*\\.(mp3|ogg)")) {
-            throw new IOException("不支持的背景音乐路径：" + target);
+            stats.skipped++;
+            continue;
           }
-          if (!target.equals(resource.optString("member"))) throw new IOException("背景音乐目标不匹配");
+          if (!target.equals(resource.optString("member"))) { stats.skipped++; continue; }
           ZipArchiveEntry entry = archive.getEntry(target);
           if (entry == null || entry.isDirectory() || entry.getSize() < 0 || entry.getSize() > MAX_BGM_BYTES) {
-            throw new IOException("背景音乐缺失或过大：" + target);
+            stats.skipped++;
+            continue;
           }
           if (resource.has("bytes") && resource.optLong("bytes", -1) != entry.getSize()) {
-            throw new IOException("背景音乐文件长度不匹配：" + target);
+            stats.skipped++;
+            continue;
           }
-          String sha256 = validSha256(resource.optString("sha256"));
-          installBlob(archive, entry, sha256);
+          try { installBlob(archive, entry, sha256); }
+          catch (InvalidPackEntry invalid) { stats.skipped++; continue; }
           next.put(target, new ResourceEntry(sha256, safeMime(resource.optString("mimeType"), target)));
         }
       }
-      int importedBooks = mergeStories(incomingStories, next);
+      int importedBooks = mergeStories(incomingStories, next, stats);
       updatedAt = Long.toString(System.currentTimeMillis());
       writeIndex(next);
       resources = next;
-      return new ImportResult(importedAssets, importedBooks, entityIndexImported, next.size());
+      return new ImportResult(importedAssets, importedBooks, entityIndexImported, next.size(), stats.skipped);
     }
   }
 
@@ -212,14 +231,15 @@ final class AtopackStore {
     Map<String, JSONObject> result = new HashMap<>();
     if (items == null) return result;
     for (int index = 0; index < items.length(); index++) {
-      JSONObject item = items.getJSONObject(index);
+      JSONObject item = items.optJSONObject(index);
+      if (item == null) continue;
       String id = item.optString("id");
       if (!id.isEmpty()) result.put(id, item);
     }
     return result;
   }
 
-  private int mergeStories(JSONObject incoming, Map<String, ResourceEntry> next) throws Exception {
+  private int mergeStories(JSONObject incoming, Map<String, ResourceEntry> next, ImportStats stats) throws Exception {
     JSONArray incomingBooks = incoming == null ? null : incoming.optJSONArray("books");
     if (incomingBooks == null || incomingBooks.length() == 0) return 0;
     JSONObject merged = readJson(storiesFile, new JSONObject().put("books", new JSONArray()));
@@ -230,12 +250,16 @@ final class AtopackStore {
       JSONObject book = currentBooks.optJSONObject(index);
       if (book != null && !book.optString("id").isEmpty()) byId.put(book.optString("id"), book);
     }
+    int imported = 0;
     for (int index = 0; index < incomingBooks.length(); index++) {
-      JSONObject book = incomingBooks.getJSONObject(index);
+      JSONObject book = incomingBooks.optJSONObject(index);
+      if (book == null) { stats.skipped++; continue; }
       String id = book.optString("id");
-      if (id.isEmpty()) throw new IOException("故事册缺少 id");
+      if (id.isEmpty()) { stats.skipped++; continue; }
       byId.put(id, book);
+      imported++;
     }
+    if (imported == 0) return 0;
     JSONArray books = new JSONArray();
     for (JSONObject book : byId.values()) books.put(book);
     JSONObject payload = new JSONObject();
@@ -243,27 +267,35 @@ final class AtopackStore {
     payload.put("books", books);
     writeJson(storiesFile, payload);
     installGenerated(next, "story/data/storybook-data.js", "application/javascript", "window.STORYBOOK_DATA = " + payload + ";\n");
-    return incomingBooks.length();
+    return imported;
   }
 
-  private boolean importStoryFiles(ZipFile archive, JSONArray files, Map<String, ResourceEntry> next) throws Exception {
+  private boolean importStoryFiles(ZipFile archive, JSONArray files, Map<String, ResourceEntry> next, ImportStats stats) throws Exception {
     if (files == null) return false;
     boolean imported = false;
     for (int index = 0; index < files.length(); index++) {
-      JSONObject storyFile = files.getJSONObject(index);
+      JSONObject storyFile = files.optJSONObject(index);
+      if (storyFile == null) { stats.skipped++; continue; }
       if (!"entity-index".equals(storyFile.optString("kind"))) {
-        throw new IOException("不支持的故事附加文件：" + storyFile.optString("kind"));
+        stats.skipped++;
+        continue;
       }
-      String member = safePath(storyFile.optString("member"), "故事附加文件路径");
-      if (!"story/entity-index.json".equals(member)) throw new IOException("人物小传索引路径无效");
+      String member;
+      String expected;
+      try {
+        member = safePath(storyFile.optString("member"), "故事附加文件路径");
+        expected = validSha256(storyFile.optString("sha256"));
+      } catch (IOException invalid) { stats.skipped++; continue; }
+      if (!"story/entity-index.json".equals(member)) { stats.skipped++; continue; }
       ZipArchiveEntry entry = archive.getEntry(member);
-      if (entry == null || entry.isDirectory()) throw new IOException("资料包声明的人物小传索引缺失");
+      if (entry == null || entry.isDirectory() || entry.getSize() > MAX_ENTITY_INDEX_BYTES) { stats.skipped++; continue; }
       byte[] raw = readLimited(archive, entry, MAX_ENTITY_INDEX_BYTES);
-      String expected = validSha256(storyFile.optString("sha256"));
-      if (!expected.equals(hex(digest(raw)))) throw new IOException("人物小传索引校验失败");
-      JSONObject entityIndex = new JSONObject(new String(raw, StandardCharsets.UTF_8));
+      if (!expected.equals(hex(digest(raw)))) { stats.skipped++; continue; }
+      JSONObject entityIndex;
+      try { entityIndex = new JSONObject(new String(raw, StandardCharsets.UTF_8)); }
+      catch (JSONException invalid) { stats.skipped++; continue; }
       JSONArray entities = entityIndex.optJSONArray("entities");
-      if (entities == null || entities.length() == 0) throw new IOException("人物小传索引没有实体数据");
+      if (entities == null || entities.length() == 0) { stats.skipped++; continue; }
       installGenerated(next, "story/data/entity-index.json", "application/json", entityIndex.toString());
       installGenerated(next, "story/data/entity-index.js", "application/javascript", "(function () {\n  window.STORY_ENTITY_INDEX = " + entityIndex + ";\n})();\n");
       imported = true;
@@ -294,7 +326,7 @@ final class AtopackStore {
       try (InputStream input = archive.getInputStream(entry); FileOutputStream output = new FileOutputStream(temporary)) {
         copy(input, output, digest);
       }
-      if (!expected.equals(hex(digest.digest()))) throw new IOException("资料包文件校验失败：" + entry.getName());
+      if (!expected.equals(hex(digest.digest()))) throw new InvalidPackEntry("资料包文件校验失败：" + entry.getName());
       moveBlob(temporary, destination);
     } finally {
       if (temporary.exists()) temporary.delete();
@@ -471,22 +503,32 @@ final class AtopackStore {
     return result.toString();
   }
 
+  private static final class ImportStats {
+    int skipped;
+  }
+
+  private static final class InvalidPackEntry extends IOException {
+    InvalidPackEntry(String message) { super(message); }
+  }
+
   static final class ImportResult {
     final int assets;
     final int books;
     final boolean entityIndex;
     final int totalResources;
+    final int skipped;
 
-    ImportResult(int assets, int books, boolean entityIndex, int totalResources) {
+    ImportResult(int assets, int books, boolean entityIndex, int totalResources, int skipped) {
       this.assets = assets;
       this.books = books;
       this.entityIndex = entityIndex;
       this.totalResources = totalResources;
+      this.skipped = skipped;
     }
 
     JSONObject toJson() throws JSONException {
       return new JSONObject().put("ok", true).put("assets", assets).put("books", books)
-        .put("entityIndex", entityIndex).put("totalResources", totalResources);
+        .put("entityIndex", entityIndex).put("totalResources", totalResources).put("skipped", skipped);
     }
   }
 
