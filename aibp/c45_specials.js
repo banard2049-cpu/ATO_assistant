@@ -750,8 +750,8 @@
     if (!pile.pending) return;
     const drawn = pile.pending;
     if (mode === "AI") {
-      openImageZoom(cardSrc(drawn), "达哈卡 AI/BP（AI 半区）", () => {
-        if (piles.DAHAKA?.aibp?.pendingMode === "AI") discardAiPending(false);
+      openImageZoom(cardSrc(drawn), "达哈卡 AI/BP（AI 半区）", null, {
+        bpActions: true
       });
     } else {
       openImageZoom(cardSrc(drawn), "达哈卡 AI/BP（BP 半区）", null, {
@@ -763,7 +763,7 @@
   function resolveDahakaBp(mode) {
     const state = piles.DAHAKA;
     const pile = state.aibp;
-    if (!pile.pending || pile.pendingMode !== "BP") return;
+    if (!pile.pending || !["AI", "BP"].includes(pile.pendingMode)) return;
     rememberUndo("DAHAKA", "AIBP");
     const card = removePendingCard(pile);
     pile.pendingMode = "";
@@ -1123,14 +1123,21 @@
   function updateSpecialDrawUi() {
     promoteAiSingleButton.textContent = "AI 晋升";
     promoteBpSingleButton.textContent = "BP 晋升";
+    const isDahaka = currentApostle === "DAHAKA";
+    defeatAiAsBpButton.hidden = !isDahaka;
+    criticalAiAsBpButton.hidden = !isDahaka;
+    defeatAiAsBpButton.disabled = true;
+    criticalAiAsBpButton.disabled = true;
     if (!isC45()) return;
-    if (currentApostle === "DAHAKA") {
+    if (isDahaka) {
       const pile = piles.DAHAKA.aibp;
       const isAi = pile.pendingMode === "AI";
       const isBp = pile.pendingMode === "BP";
       drawAiButton.disabled = Boolean(pile.pending);
       drawBpButton.disabled = Boolean(pile.pending);
       confirmAiButton.disabled = !isAi;
+      defeatAiAsBpButton.disabled = !isAi;
+      criticalAiAsBpButton.disabled = !isAi;
       discardBpButton.disabled = !isBp;
       defeatBpButton.disabled = !isBp;
       criticalBpButton.disabled = !isBp;
@@ -1524,6 +1531,8 @@
           && piles.DEMIDJINN.AI.pending?.specialAi === "demidjinn-o"),
       () => discardAiPending(true)
     );
+    defeatAiAsBpButton.addEventListener("click", () => resolveBp("defeat"));
+    criticalAiAsBpButton.addEventListener("click", () => resolveBp("critical"));
     interceptDirectButton(
       drawFeintButton,
       () => currentApostle === "TITAN_X",

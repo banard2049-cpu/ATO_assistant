@@ -190,6 +190,8 @@ function makeHarness(startApostle = "MIDASCORE", options = {}) {
     "drawAiButton",
     "drawBpButton",
     "confirmAiButton",
+    "defeatAiAsBpButton",
+    "criticalAiAsBpButton",
     "discardBpButton",
     "defeatBpButton",
     "criticalBpButton",
@@ -387,8 +389,8 @@ function makeHarness(startApostle = "MIDASCORE", options = {}) {
     cardSrc(card) {
       return `ps/${context.currentApostle}/${card.fileName || `${card.type}_${card.level}_${card.index}.jpg`}`;
     },
-    openImageZoom(src, title, onClose) {
-      context.lastZoom = { src, title, onClose };
+    openImageZoom(src, title, onClose, options = {}) {
+      context.lastZoom = { src, title, onClose, options };
     },
     currentApostleLevel() {
       return context.levels[context.currentApostle] || 1;
@@ -428,6 +430,14 @@ test("Dahaka uses one visible shared AI/BP pile and BP-only promotion", () => {
   app.drawAi();
   const first = state.aibp.pending;
   assert.equal(state.aibp.pendingMode, "AI");
+  assert.equal(app.defeatAiAsBpButton.hidden, false);
+  assert.equal(app.defeatAiAsBpButton.disabled, false);
+  assert.equal(app.criticalAiAsBpButton.disabled, false);
+  assert.equal(app.lastZoom.options.bpActions, true);
+  assert.equal(app.lastZoom.onClose, null);
+  app.lastZoom.onClose?.();
+  assert.equal(state.aibp.pending.fileName, first.fileName);
+  assert.equal(state.aibp.discard.length, 0);
   app.drawBp();
   assert.equal(state.aibp.pending.fileName, first.fileName);
   app.discardAiPending();
@@ -468,6 +478,33 @@ test("Dahaka uses one visible shared AI/BP pile and BP-only promotion", () => {
     state.aibp.removed.some((card) => card.fileName === pendingFile),
     false
   );
+});
+
+test("Dahaka AI card can be defeated or critically hit as BP", () => {
+  const app = makeHarness();
+  app.renderApostle("DAHAKA");
+  const pile = app.piles.DAHAKA.aibp;
+
+  app.drawAi();
+  const defeated = pile.pending.fileName;
+  app.defeatAiAsBpButton.dispatch("click");
+  assert.equal(pile.pending, null);
+  assert.equal(pile.pendingMode, "");
+  assert.equal(pile.damage[0].fileName, defeated);
+  assert.equal(pile.supply.II.length, 5);
+  assert.equal(app.defeatAiAsBpButton.disabled, true);
+
+  const critical = pile.supply.III.pop();
+  pile.deck = [critical];
+  app.drawAi();
+  app.criticalAiAsBpButton.dispatch("click");
+  assert.equal(pile.pending, null);
+  assert.equal(pile.damage.at(-1).fileName, critical.fileName);
+  assert.equal(pile.damage.at(-1).damageValue, 2);
+
+  app.renderApostle("MIDASCORE");
+  assert.equal(app.defeatAiAsBpButton.hidden, true);
+  assert.equal(app.criticalAiAsBpButton.hidden, true);
 });
 
 test("Dahaka restores its BP column after hash cold start", () => {

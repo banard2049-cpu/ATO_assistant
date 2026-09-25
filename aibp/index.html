@@ -1987,6 +1987,8 @@
                 <button type="button" id="drawAiButton">抽取 AI</button>
                 <button type="button" id="undoAiButton" disabled>撤销 AI</button>
                 <button type="button" id="confirmAiButton" disabled>弃置</button>
+                <button type="button" id="defeatAiAsBpButton" hidden disabled>击败</button>
+                <button type="button" id="criticalAiAsBpButton" hidden disabled>暴击</button>
                 <button type="button" id="promoteAiSingleButton">AI 晋升</button>
                 <button type="button" id="addOracleAiXButton" class="oracle-only-action">添加AI X</button>
                 <button type="button" id="drawFlareButton" class="hermesian-only-action">抽取闪粉</button>
@@ -2244,7 +2246,7 @@
     const aiViews = ["当前", "弃牌", "移除", "II", "III"];
     const bpViews = ["当前", "弃牌", "损伤", "移除", "II", "III"];
     const traitLevels = ["O", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
-    const traitProbeMaxIndex = 99;
+    const traitProbeMaxIndex = 12;
     const traitProbeExtensions = ["jpg", "png", "jpeg"];
     const defaultTraitProbeMaxIndex = 12;
     const commonTraitTitles = {
@@ -2555,6 +2557,8 @@
     const scryAiButton = document.getElementById("scryAiButton");
     const undoAiButton = document.getElementById("undoAiButton");
     const confirmAiButton = document.getElementById("confirmAiButton");
+    const defeatAiAsBpButton = document.getElementById("defeatAiAsBpButton");
+    const criticalAiAsBpButton = document.getElementById("criticalAiAsBpButton");
     const promoteAiSingleButton = document.getElementById("promoteAiSingleButton");
     const addOracleAiXButton = document.getElementById("addOracleAiXButton");
     const drawFlareButton = document.getElementById("drawFlareButton");
@@ -5357,41 +5361,6 @@
         img.src = cycleTraitSrc(card);
       });
 
-      for (let index = 1; index <= traitProbeMaxIndex; index++) {
-        if (!isCommonTraitAvailable(index, name)) continue;
-        traitProbeExtensions.forEach((ext) => {
-          const src = commonTraitSrc(index, ext);
-          const img = new Image();
-          img.onload = () => {
-            if (token !== traitLoadToken) return;
-            if (loading.isConnected) loading.remove();
-            loaded += 1;
-
-            const option = document.createElement("label");
-            option.className = "trait-option";
-
-            const checkbox = document.createElement("input");
-            checkbox.type = "checkbox";
-            checkbox.dataset.level = "COMMON";
-            checkbox.dataset.index = String(index);
-            checkbox.dataset.ext = ext;
-            checkbox.dataset.scope = "common";
-            checkbox.checked = selected.has(traitKey("COMMON", index, ext, "common"));
-
-            const label = traitCardLabel({ scope: "common", index });
-            img.alt = label;
-
-            const caption = document.createElement("span");
-            caption.textContent = label;
-
-            option.append(checkbox, img, caption);
-            traitDialogGrid.appendChild(option);
-          };
-          img.onerror = () => {};
-          img.src = src;
-        });
-      }
-
       traitLevels.forEach((level) => {
         for (let index = 1; index <= traitProbeMaxIndex; index++) {
           traitProbeExtensions.forEach((ext) => {
@@ -5426,6 +5395,41 @@
           });
         }
       });
+
+      for (let index = 1; index <= traitProbeMaxIndex; index++) {
+        if (!isCommonTraitAvailable(index, name)) continue;
+        traitProbeExtensions.forEach((ext) => {
+          const src = commonTraitSrc(index, ext);
+          const img = new Image();
+          img.onload = () => {
+            if (token !== traitLoadToken) return;
+            if (loading.isConnected) loading.remove();
+            loaded += 1;
+
+            const option = document.createElement("label");
+            option.className = "trait-option";
+
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.dataset.level = "COMMON";
+            checkbox.dataset.index = String(index);
+            checkbox.dataset.ext = ext;
+            checkbox.dataset.scope = "common";
+            checkbox.checked = selected.has(traitKey("COMMON", index, ext, "common"));
+
+            const label = traitCardLabel({ scope: "common", index });
+            img.alt = label;
+
+            const caption = document.createElement("span");
+            caption.textContent = label;
+
+            option.append(checkbox, img, caption);
+            traitDialogGrid.appendChild(option);
+          };
+          img.onerror = () => {};
+          img.src = src;
+        });
+      }
 
       window.setTimeout(() => {
         if (token !== traitLoadToken) return;
@@ -6827,7 +6831,7 @@
   <script src="ps/other/resouce/bp_resource_map.js"></script>
   <script src="ps/other/resouce/bp_resource_map_c1_c3.js"></script>
   <script src="ps/other/resouce/bp_resource_map_c4_c5.js?v=20260730e"></script>
-  <script src="c45_specials.js?v=20260924-bp-critical"></script>
+  <script src="c45_specials.js?v=20260925-dahaka-ai-close"></script>
   <script src="bp_loot_calculator_addon.js?v=20260816-c45-loot-icons"></script>
   <script src="../assets/ato-terms.js?v=20260919-chimera"></script>
   <script src="../assets/term-language.js?v=20260923-nocascade"></script>
