@@ -55,19 +55,28 @@ def asset_studio_catalog() -> dict:
     studio_root = PROJECT_ROOT / "asset-studio"
     sys.path.insert(0, str(studio_root))
     try:
-        from app.fixed_catalog import fixed_catalog_payload
+        from app.fixed_catalog import collect_supplemental_resources, fixed_catalog_payload
 
         payload = fixed_catalog_payload()
+        # 内置清单之外的补充素材（约定目录下的二进制素材等）也必须进 APK 名单：
+        # 安卓导入只认这份名单，漏一项那一项就会被静默跳过。
+        supplemental, _paths = collect_supplemental_resources(PROJECT_ROOT)
     finally:
         sys.path.remove(str(studio_root))
+    items = [
+        {"id": item["id"], "faces": item.get("faces", {})}
+        for item in payload.get("items", [])
+    ]
+    items.extend(
+        {"id": item.id, "faces": dict(item.faces)} for item in supplemental
+    )
+    source = dict(payload.get("source", {}))
+    source["catalog_items"] = len(items)
     return {
         "format": "ato-android-resource-catalog",
         "version": 1,
-        "source": payload.get("source", {}),
-        "items": [
-            {"id": item["id"], "faces": item.get("faces", {})}
-            for item in payload.get("items", [])
-        ],
+        "source": source,
+        "items": items,
     }
 
 

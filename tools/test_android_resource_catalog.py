@@ -7,6 +7,7 @@ from __future__ import annotations
 import json
 import re
 import sys
+import tempfile
 import zipfile
 from pathlib import Path
 
@@ -37,6 +38,20 @@ def check_catalog(catalog: dict) -> None:
             assert targets.get(key) == expected, f"Android import catalog missing/mismatched: {key}"
             checked += 1
     assert checked, "No hidden exploration entries checked."
+    declared = json.loads((ROOT / "aibp/ps/other/3b6e9d20/catalog.json").read_text(encoding="utf-8"))["targets"]
+    assert declared, "Supplemental resource list is empty"
+    # 模拟 GitHub 的干净检出：只有路径名单，没有任何 .bin 文件。
+    sys.path.insert(0, str(ROOT / "asset-studio"))
+    from app.fixed_catalog import collect_supplemental_resources
+    with tempfile.TemporaryDirectory(dir=ROOT) as directory:
+        checkout = Path(directory)
+        manifest = checkout / "aibp/ps/other/3b6e9d20/catalog.json"
+        manifest.parent.mkdir(parents=True)
+        manifest.write_text(json.dumps({"version": 1, "targets": declared}), encoding="utf-8")
+        items, paths = collect_supplemental_resources(checkout)
+        assert paths == {f"aibp/ps/other/{path}" for path in declared}
+        for item in items:
+            assert targets.get((item.id, "front")) == item.faces["front"], "APK lacks binary import mapping"
     print(f"Android resource catalog passed: {len(targets)} mappings, {checked} hidden exploration entries.")
 
 

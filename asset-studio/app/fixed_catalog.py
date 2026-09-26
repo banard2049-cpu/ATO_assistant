@@ -1386,34 +1386,39 @@ def fixed_catalog_payload() -> dict[str, Any]:
 def collect_supplemental_resources(ato_root: Path) -> tuple[list[CatalogItem], set[str]]:
     """登记 ``aibp/ps/other/`` 里"不在内置清单、但必须随资源包分发"的**素材**。
 
-    内置清单只覆盖 ``token/``、``resouce/`` 图片、``status/`` 三个前缀；这里补上
-    ``3b6e9d20/*.bin``——赫利俄斯卡图：``aibp/b4d7e218.js`` 在运行时按源 URL 的
-    FNV-1a 哈希 ``fetch('ps/other/3b6e9d20/<hash>.bin')``，缺一张就整批加载失败。
+    内置清单只覆盖 ``token/``、``resouce/`` 图片、``status/`` 三个前缀；这个目录下
+    另有由运行时脚本按固定路径取用的``二进制素材``（``.bin``），目录名不体现内容。
+    它们不在内置清单里，打包器就不会带、素材库也不会提示，所以在这里按"目录里实际
+    存在哪些文件"逐张登记；缺哪张就登记哪张。
 
-    不登记同一目录下的 ``*.js``（``bp_resource_map*.js``、``token_manifest.js``）：
-    那些是**程序数据**，由 ``aibp/index.html`` 以 ``<script src>`` 直接引用、随程序包
-    （Portable / Docker / APK）分发——见 tools/packaging/docker/compose.yaml 与
-    tools/test_packaging_exclusions.py 的既定口径；塞进资源包等于走错分发渠道。
+    只登记 ``.bin``，同一目录下的 ``*.js`` 一律不登记：那些是**程序数据**，由页面以
+    ``<script src>`` 直接引用、随程序包（Portable / Docker / APK）分发——见
+    tools/packaging/docker/compose.yaml 与 tools/test_packaging_exclusions.py 的既定
+    口径；塞进资源包等于走错分发渠道。
 
-    目录里缺哪张就登记哪张；隐藏文件跳过。
+    隐藏文件跳过。
     """
     base = Path(ato_root) / "aibp" / "ps" / "other"
     if not base.is_dir():
         return [], set()
     items: list[CatalogItem] = []
     paths: set[str] = set()
-    members = sorted(
-        (
-            member
-            for member in base.rglob("*")
-            if member.is_file() and member.suffix.casefold() == ".bin"
-        ),
-        key=lambda member: member.relative_to(base).as_posix(),
-    )
-    for order, member in enumerate(members):
-        relative = member.relative_to(base).as_posix()
-        if member.name.startswith("."):
-            continue
+    # 发布构建没有私有素材；可提交的路径名单让 APK 与资源包使用相同的条目 ID。
+    relatives = {
+        member.relative_to(base).as_posix()
+        for member in base.rglob("*.bin")
+        if member.is_file() and not member.name.startswith(".")
+    }
+    for manifest in base.glob("*/catalog.json"):
+        declared = json.loads(manifest.read_text(encoding="utf-8"))
+        for relative in declared.get("targets", []):
+            parts = relative.split("/") if isinstance(relative, str) else []
+            if (not parts or any(not part or part in (".", "..") for part in parts)
+                    or "\\" in relative or ":" in relative or not relative.endswith(".bin")):
+                raise ValueError(f"无效的补充素材路径：{relative}")
+            relatives.add(relative)
+    for order, relative in enumerate(sorted(relatives)):
+        member = Path(relative)
         target = f"aibp/ps/other/{relative}"
         if target in paths:
             continue

@@ -41,4 +41,9 @@ for (const source of sources) {
   fs.writeFileSync(temporary, packed);
   fs.renameSync(temporary, target);
 }
+// 只提交路径名单；加密内容继续由 atopack 分发。
+fs.writeFileSync(path.join(outputRoot, "catalog.json"), JSON.stringify({
+  version: 1,
+  targets: [...names.keys()].map(target => path.posix.join("3b6e9d20", path.basename(target))).sort(),
+}, null, 2) + "\n");
 console.log(`已加密 ${sources.length} 张赫利俄斯图片到 ${outputRoot}`);

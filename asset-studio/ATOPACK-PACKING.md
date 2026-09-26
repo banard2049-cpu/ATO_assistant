@@ -126,9 +126,16 @@ python asset-studio/tools/build_official_pack.py \
 
 ## 安卓导入要求
 
-* **APK 必须是 1.4.1 或更新**（内置名单 4298 个目标 = 当前清单的全部分面）。1.4.0 不认
+* **APK 必须是 1.4.1 或更新**（内置名单 = 当前清单的全部分面）。1.4.0 不认
   「逆行动量」，更早的版本不认 C2 探索卡 13642，1.3.2 以前的 APK 连格式版本 3 都不支持
   （`PACKAGE_VERSION = 3` 从 1.3.2-rc.4 起）。
+* **清单外的补充素材**（约定目录下的二进制素材）：内置清单不含它们，所以
+  1. **必须重新打 APK**才会带上——APK 名单由 `tools/export_android.py` 的
+     `asset_studio_catalog()` 生成，它已并上 `collect_supplemental_resources()`；
+     发布构建使用随代码提交的 `catalog.json` 路径名单，不需要上传 `.bin` 内容。
+    旧 APK 的名单里没有这些目标，导入时整项被静默跳过。
+  2. 打包侧与安装侧的类型白名单已同步放行（`INSTALL_DATA_PREFIX` 限制在约定目录下），
+     但仍只认图片 / `assets/bgm/` 音频 / 该目录下的二进制素材，别的后缀一概拒绝。
 * 安卓导入是先把整个包拷进 App 缓存、再把每个 blob 落到内部存储，**需要约 2× 包大小的
   可用空间**（官方版 4.12 GiB → 准备 ~8.5 GiB；民间版 2.76 GiB → 准备 ~5.5 GiB）。
   空间紧可以用 `--compress deflate`（包体小一点，解压后大小不变）。

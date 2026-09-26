@@ -37,6 +37,12 @@ final class AtopackStore {
   private static final int MAX_BGM_FILES = 128;
   private static final int MAX_ASSETS = 20_000;
   private static final String WEB_PREFIX = "/android_asset/web/";
+  // 二进制素材（不是图片）只允许落在这个前缀下，与 tools/build_fan_pack.py、
+  // app/installer.py 的同名规则保持一致。
+  private static final String BINARY_TARGET_PREFIX = "aibp/ps/other/";
+  // 页面从 web/index.html 加载，而 aibp/ 里的脚本按 ps/... 取资源；补全一层前缀：
+  // 先按清单里的完整路径找，再按“页面视角的少一层路径”找。
+  private static final String[] OPEN_PATH_PREFIXES = {"", "aibp/"};
 
   private final Context context;
   private final File root;
@@ -73,15 +79,24 @@ final class AtopackStore {
   }
 
   OpenedResource open(String relative) {
-    ResourceEntry entry = resources.get(relative);
-    if (entry == null) return null;
-    File blob = new File(blobs, entry.sha256);
-    if (!blob.isFile()) return null;
+    String normalized;
     try {
-      return new OpenedResource(entry.mimeType, new BufferedInputStream(new FileInputStream(blob)));
+      normalized = safePath(relative, "资源路径");
     } catch (IOException ignored) {
       return null;
     }
+    for (String prefix : OPEN_PATH_PREFIXES) {
+      ResourceEntry entry = resources.get(prefix + normalized);
+      if (entry == null) continue;
+      File blob = new File(blobs, entry.sha256);
+      if (!blob.isFile()) continue;
+      try {
+        return new OpenedResource(entry.mimeType, new BufferedInputStream(new FileInputStream(blob)));
+      } catch (IOException ignored) {
+        return null;
+      }
+    }
+    return null;
   }
 
   JSONObject status() {
@@ -136,7 +151,7 @@ final class AtopackStore {
         JSONObject faces = item == null ? null : item.optJSONObject("faces");
         String declaredTarget = faces == null ? "" : faces.optString(face);
         String target = knownTargets.get(catalogKey(itemId, face));
-        if (target == null || !isImageTarget(target)) { stats.skipped++; continue; }
+        if (target == null || !isImportableTarget(target)) { stats.skipped++; continue; }
         String member;
         String sha256;
         try {
@@ -479,6 +494,13 @@ final class AtopackStore {
     String lower = target.toLowerCase(Locale.ROOT);
     return lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png")
       || lower.endsWith(".webp") || lower.endsWith(".gif");
+  }
+
+  /** 图片照旧；另外放行约定目录下的二进制素材（由页面按固定路径取用）。 */
+  private static boolean isImportableTarget(String target) {
+    if (isImageTarget(target)) return true;
+    String lower = target.toLowerCase(Locale.ROOT);
+    return lower.startsWith(BINARY_TARGET_PREFIX) && lower.endsWith(".bin");
   }
 
   private static String catalogKey(String itemId, String face) {

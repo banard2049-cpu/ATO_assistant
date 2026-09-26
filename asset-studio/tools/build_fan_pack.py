@@ -141,6 +141,10 @@ INSTALL_TREES = frozenset({"aibp", "assets", "hero", "map", "record", "ss", "sto
 INSTALL_IMAGE_SUFFIXES = frozenset({".jpg", ".jpeg", ".png", ".webp"})
 INSTALL_AUDIO_SUFFIXES = frozenset({".mp3", ".ogg"})
 INSTALL_AUDIO_PREFIX = "assets/bgm/"
+# 二进制素材：由运行时脚本按固定路径取用的封装数据（不是图片，也不是音频）。
+# 只允许落在下面这个前缀里，且必须与 app/installer.py 的同名规则保持一致。
+INSTALL_DATA_SUFFIXES = frozenset({".bin"})
+INSTALL_DATA_PREFIX = "aibp/ps/other/"
 WINDOWS_DEVICE_NAMES = frozenset(
     {"con", "prn", "aux", "nul", *(f"com{i}" for i in range(1, 10)), *(f"lpt{i}" for i in range(1, 10))}
 )
@@ -259,8 +263,16 @@ def installable_target(relative: str) -> str:
         if not relative.startswith(INSTALL_AUDIO_PREFIX):
             raise PackError(f"音频素材只能放在 {INSTALL_AUDIO_PREFIX}：{relative}")
         return relative
+    if suffix in INSTALL_DATA_SUFFIXES:
+        # 二进制素材只允许落在约定的那棵子树里，别处一律拒绝。
+        if not relative.startswith(INSTALL_DATA_PREFIX):
+            raise PackError(f"二进制素材只能放在 {INSTALL_DATA_PREFIX}：{relative}")
+        return relative
     if suffix not in INSTALL_IMAGE_SUFFIXES:
-        raise PackError(f"不支持的素材类型（只允许图片和 assets/bgm/ 音频）：{relative}")
+        raise PackError(
+            f"不支持的素材类型（只允许图片、{INSTALL_AUDIO_PREFIX} 音频"
+            f"和 {INSTALL_DATA_PREFIX} 下的二进制素材）：{relative}"
+        )
     if pure.parts[0] not in INSTALL_TREES:
         raise PackError(f"素材目标目录不在允许范围内：{relative}")
     return relative
