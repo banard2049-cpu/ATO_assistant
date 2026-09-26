@@ -20,6 +20,11 @@ on:
         required: false
         default: false
         type: boolean
+      verify_only:
+        description: "Build with the persistent signing key without publishing a release"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -37,14 +42,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      # 必须排在 Set up Python / Java 之前：它设置 steps.signing.outputs.signed，后面的步骤
-      # 靠它决定用正式签名还是 Debug 签名。GitHub Actions 里引用一个「还没执行过」的 step
-      # 的输出得到的是空串，所以这个检查放在后面会判断错误。
-      #
-      # 没有签名密钥时**不再跳过**整个 Android 构建：改成构建并上传 Debug 签名的 APK。
-      # 这是使用者的明确选择 —— Debug 签名用的是构建机的临时密钥，装了它的用户以后无法
-      # 用正式签名的包覆盖升级，只能卸载重装（代价写在 release-notes 里）。
-      # 配好 ANDROID_RELEASE_* 四个仓库密钥后，这里会自动恢复成正式签名，不需要改工作流。
+      # 发布必须使用固定密钥；检查映射后的环境变量名，缺少任一项就停止。
       - name: Check Android release signing key
         id: signing
         shell: pwsh
@@ -54,13 +52,10 @@ jobs:
           KEY_ALIAS: ${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}
         run: |
-          $names = @('ANDROID_RELEASE_KEYSTORE_BASE64', 'ANDROID_RELEASE_STORE_PASSWORD', 'ANDROID_RELEASE_KEY_ALIAS', 'ANDROID_RELEASE_KEY_PASSWORD')
+          $names = @('KEYSTORE_BASE64', 'KEYSTORE_PASSWORD', 'KEY_ALIAS', 'KEY_PASSWORD')
           $missing = @($names | Where-Object { [string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($_)) })
           if ($missing.Count -gt 0) {
-            "signed=false" >> $env:GITHUB_OUTPUT
-            # 只报密钥名，不报值（值本身也不会出现在日志里，GitHub 会打码）。
-            Write-Host "::warning title=Debug-signed APK::Android release signing is not configured ($($missing -join ', ')); the APK will be Debug-signed. Users must uninstall before they can install a properly signed build. Configure the four ANDROID_RELEASE_* repository secrets to publish a properly signed APK."
-            exit 0
+            throw "Persistent Android signing is missing ($($missing -join ', ')). Configure the four ANDROID_RELEASE_* repository secrets before publishing."
           }
           $keystore = Join-Path $env:RUNNER_TEMP 'ato-release.jks'
           [IO.File]::WriteAllBytes($keystore, [Convert]::FromBase64String($env:KEYSTORE_BASE64))
@@ -68,7 +63,7 @@ jobs:
           "ATO_ANDROID_KEYSTORE_PASSWORD=$env:KEYSTORE_PASSWORD" >> $env:GITHUB_ENV
           "ATO_ANDROID_KEY_ALIAS=$env:KEY_ALIAS" >> $env:GITHUB_ENV
           "ATO_ANDROID_KEY_PASSWORD=$env:KEY_PASSWORD" >> $env:GITHUB_ENV
-          "signed=true" >> $env:GITHUB_OUTPUT
+          "ATO_ANDROID_REQUIRE_SIGNING=1" >> $env:GITHUB_ENV
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -108,16 +103,11 @@ jobs:
           RELEASE_VERSION: ${{ steps.release.outputs.version }}
           INPUT_PRERELEASE: ${{ inputs.prerelease }}
           INPUT_DRAFT: ${{ inputs.draft }}
-          SIGNED: ${{ steps.signing.outputs.signed }}
+          VERIFY_ONLY: ${{ inputs.verify_only }}
         run: |
           $arguments = @{
             Version = $env:RELEASE_VERSION
-            Publish = $true
-          }
-          if ($env:SIGNED -ne 'true') {
-            # 没有常驻签名时显式放行 Debug 签名的 APK —— release_android.ps1 默认拒绝发布
-            # 这种包，只有调用方明确传 -AllowUnsigned 才放行。
-            $arguments.AllowUnsigned = $true
+            Publish = ($env:VERIFY_ONLY -ne 'true')
           }
           if ($env:EVENT_NAME -eq 'workflow_dispatch') {
             if ($env:INPUT_PRERELEASE -eq 'true') { $arguments.Prerelease = $true }

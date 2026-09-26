@@ -26,11 +26,9 @@ asset attached to a release; no checksum sidecar is published. A
 published build requires the four `ATO_ANDROID_*` signing environment variables.
 
 `.github/workflows/android-release.yml` runs the same release script for `v*`
-tags and manual dispatches. **Signing secrets are optional**: with the four
-secrets below unset, the workflow skips the Android build entirely (the job
-succeeds with a notice, no APK is built or attached) and the release is still
-published from the Portable workflow — the Docker image is published by its own
-workflow. Set the secrets to start attaching an APK, no workflow change needed:
+tags and manual dispatches. **Signing secrets are required**: if any of the four
+secrets below is missing, the Android job fails before building or publishing.
+There is no option to publish an APK with a temporary Debug signing key:
 
 - `ANDROID_RELEASE_KEYSTORE_BASE64`
 - `ANDROID_RELEASE_STORE_PASSWORD`
@@ -39,6 +37,10 @@ workflow. Set the secrets to start attaching an APK, no workflow change needed:
 
 The signing key must remain stable across releases or Android will reject APK
 updates, so keep the keystore and its passwords backed up somewhere permanent.
+The signing check uses the mapped `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`,
+`KEY_ALIAS`, and `KEY_PASSWORD` environment variables. Manual dispatch with
+`verify_only` enabled builds and uploads a signed workflow artifact without
+modifying a GitHub Release.
 `release_android.ps1 -Publish` (the local publish path) still refuses to run
 without them, because it would otherwise publish a Debug-signed APK that no
 later properly signed build can replace.
