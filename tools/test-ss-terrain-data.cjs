@@ -5,6 +5,11 @@ const terrain = require("../ss/terrain-data.js");
 
 assert.equal(terrain.levelNumber("IV"), 4);
 assert.equal(terrain.levelNumber("5"), 5);
+const groupStarts = terrain.getInitialPositions("TITAN_X", 1, "all-good-things");
+assert.deepEqual(groupStarts.apostles.map(({ row, column }) => [row, column]), [[9, 8], [7, 10], [9, 12]]);
+assert.deepEqual(groupStarts.titans.map(({ row, column }) => [row, column]), [[4, 7], [3, 10], [5, 12], [7, 14]]);
+const groupMap = terrain.createBattleMap("TITAN_X", 1, "all-good-things");
+assert.equal(terrain.normalizeBattleMap(groupMap, "TITAN_X", 1).setupId, "all-good-things");
 assert.equal(terrain.getTiles("HEKATON", "I").length, 18);
 assert.equal(terrain.getTiles("HEKATON", "IV").length, 18);
 assert.equal(terrain.getTiles("HEKATON", "VIII").length, 19);
@@ -338,7 +343,7 @@ assert.deepEqual(terrain.getInitialPositions("SUN_DESCENDANT", 1).apostle, {
   rotation: 90,
   facing: 90,
 });
-assert.equal(terrain.createBattleMap("UR_FLEECE", 1).apostleFacing, 270);
+assert.equal(terrain.createBattleMap("UR_FLEECE", 1).apostleFacing, 90);
 assert.equal(terrain.createBattleMap("THE_NIETZSCJEAN", 1, "the-cruel-lesson").apostleFacing, 270);
 assert.equal(terrain.getFacingLabel(0), "up");
 assert.equal(terrain.getFacingLabel(90), "right");

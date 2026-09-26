@@ -67,8 +67,8 @@
   }
 
   function urls(config) {
-    const result = new Set(Object.values(config.common));
-    for (const mode of Object.values(config.modes)) {
+    const result = new Set(Object.values(config.common || {}));
+    for (const mode of Object.values(config.modes || {})) {
       result.add(mode.panel);
       if (mode.panelHigh) result.add(mode.panelHigh);
       for (const type of ["AI", "BP"]) {
@@ -80,38 +80,99 @@
         }
       }
     }
-    for (const mode of Object.keys(config.modes)) {
+    for (const mode of Object.keys(config.modes || {})) {
       for (const card of config.extras(mode)) {
         result.add(card.src);
         result.add(card.backSrc);
       }
     }
+    // 独立配置（例如黑喙）：面板 + 额外卡 + 显式声明的加密来源。
+    if (!config.modes) {
+      if (config.panel) result.add(config.panel);
+      if (config.panelBack) result.add(config.panelBack);
+      for (const card of config.extraCards || []) {
+        result.add(card.src);
+        if (card.backSrc) result.add(card.backSrc);
+      }
+    }
+    for (const source of config.sealedSources || []) {
+      result.add(path(source));
+    }
     return [...result];
   }
 
-  async function ready(config) {
-    if (loaded) return;
-    if (loading) return loading;
+  // 单个资源最多等这么久；超时/失败都汇总成一条可读的错误，避免一直卡在「正在加载资源」。
+  const RESOURCE_TIMEOUT_MS = 20000;
+
+  async function fetchBytes(url) {
+    const controller = typeof AbortController === "function" ? new AbortController() : null;
+    let timer = null;
+    try {
+      const timeout = new Promise((resolve) => {
+        timer = setTimeout(() => {
+          controller?.abort();
+          resolve(null);
+        }, RESOURCE_TIMEOUT_MS);
+      });
+      const request = (async () => {
+        const response = await fetch(url, controller ? { signal: controller.signal } : undefined);
+        if (!response.ok) return { error: `HTTP ${response.status}` };
+        try {
+          return { plain: decode(new Uint8Array(await response.arrayBuffer())) };
+        } catch (error) {
+          return { error: `解密失败：${error?.message || error}` };
+        }
+      })().catch((error) => ({ error: String(error?.message || error) }));
+      return await Promise.race([request, timeout]);
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+  }
+
+  function encryptedUrls(config, extraConfigs) {
+    return [...new Set([config, ...(extraConfigs || [])].flatMap(urls))].filter(
+      (url) => typeof url === "string" && /^ps\/other\/3b6e9d20\/[0-9a-f]+\.bin$/.test(url));
+  }
+
+  async function ready(config, extraConfigs) {
+    const required = encryptedUrls(config, extraConfigs);
+    if (required.every((url) => cache.has(url))) return;
+    if (loading) {
+      await loading;
+      return ready(config, extraConfigs);
+    }
+    const added = [];
     loading = (async () => {
-      const pending = urls(config);
+      // 只有加密资源（ps/other/3b6e9d20/*.bin）需要预取+解密。
+      // 直接引用的明文卡图（例如黑喙复用 ps/HERMESIAN_PURSUER/）交给浏览器自己加载。
+      const pending = required.filter((url) => !cache.has(url));
+      const failures = [];
       let next = 0;
       await Promise.all(Array.from({ length: Math.min(6, pending.length) }, async () => {
         while (next < pending.length) {
           const url = pending[next++];
-          const response = await fetch(url);
-          if (!response.ok) throw new Error(`无法读取赫利俄斯资源：${url}`);
-          const plain = decode(new Uint8Array(await response.arrayBuffer()));
+          const result = await fetchBytes(url);
+          if (!result || result.error) {
+            failures.push(`${url}（${result ? result.error : "超时"}）`);
+            continue;
+          }
+          const plain = result.plain;
           const png = plain[0] === 137 && plain[1] === 80 && plain[2] === 78 && plain[3] === 71;
           cache.set(url, URL.createObjectURL(new Blob([plain], { type: png ? "image/png" : "image/jpeg" })));
+          added.push(url);
         }
       }));
+      if (failures.length) {
+        throw new Error(`有 ${failures.length}/${pending.length} 个资源读取失败：${failures.slice(0, 3).join("；")}`);
+      }
       loaded = true;
     })().catch((error) => {
-      for (const value of cache.values()) URL.revokeObjectURL(value);
-      cache.clear();
-      loading = null;
+      for (const url of added) {
+        URL.revokeObjectURL(cache.get(url));
+        cache.delete(url);
+      }
       throw error;
-    });
+    }).finally(() => { loading = null; });
     return loading;
   }
 
@@ -120,7 +181,8 @@
     transform,
     decode,
     ready,
-    isReady: () => loaded,
+    isReady: (config, extraConfigs) => config
+      ? encryptedUrls(config, extraConfigs).every((url) => cache.has(url)) : loaded,
     resolve: (url) => {
       // Existing local battle saves may still contain the former image paths.
       const encrypted = typeof url === "string" && url.startsWith("ps/ENVELOPES/")

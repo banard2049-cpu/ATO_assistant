@@ -167,4 +167,19 @@ assert.equal(result.resourceMultiplier, 1);
 assert.equal(result.totals.ireEssence, 3);
 assert.equal(result.totals.core, 1);
 
-console.log("C4-C5 BP loot multipliers and level bonuses verified.");
+const pursuerLoot = calculate("HERMESIAN_PURSUER", { type: "BP", level: "III", index: 1 }, 1);
+result = calculate("BLACKBEAK", {
+  type: "BP", level: "III", index: 1,
+  src: "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_BP_III_001.jpg",
+}, 9);
+assert.equal(result.resourceMultiplier, 1);
+assert.deepEqual({ ...result.totals }, { ...pursuerLoot.totals });
+context.piles.BLACKBEAK.blackbeak = { pendingAttack: { mode: "critical" } };
+assert.doesNotThrow(() => context.AIBP_calculateBpLoot());
+context.piles.BLACKBEAK.blackbeak.pendingAttack = null;
+context.piles.BLACKBEAK.BP.removed = context.piles.BLACKBEAK.BP.damage.splice(0);
+result = context.AIBP_calculateBpLoot();
+assert.equal(result.totals.core || 0, 0);
+assert.ok(Object.values(result.totals).every((amount) => amount === 0));
+
+console.log("C4-C5 and Blackbeak BP loot rules verified.");

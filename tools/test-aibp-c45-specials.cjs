@@ -197,6 +197,7 @@ function makeHarness(startApostle = "MIDASCORE", options = {}) {
     "criticalBpButton",
     "promoteAiSingleButton",
     "promoteBpSingleButton",
+    "promoteBpButton",
     "drawFeintButton",
     "newCampaignButton",
     "aiDrawPreview",
@@ -371,6 +372,7 @@ function makeHarness(startApostle = "MIDASCORE", options = {}) {
       });
     },
     savePiles() {},
+    bpDamageValue(card) { return card.special === "DW" || card.level === "III" ? 2 : Math.max(1, Number(card.damageValue) || 1); },
     clonePileState: structuredClone,
     shuffleCards(cards) {
       context.shuffleCount += 1;
@@ -387,6 +389,7 @@ function makeHarness(startApostle = "MIDASCORE", options = {}) {
         && left.index === right.index;
     },
     cardSrc(card) {
+      if (card.src) return card.src;
       return `ps/${context.currentApostle}/${card.fileName || `${card.type}_${card.level}_${card.index}.jpg`}`;
     },
     openImageZoom(src, title, onClose, options = {}) {
@@ -398,8 +401,11 @@ function makeHarness(startApostle = "MIDASCORE", options = {}) {
     applyCurrentApostleLevelBonuses() {}
   };
   context.window = context;
+  context.HeliosAssets = { path: require("../aibp/b4d7e218.js").path,
+    ready: async () => {}, isReady: () => true, resolve: (src) => src };
   if (options.preRender) context.renderApostle(startApostle);
   vm.createContext(context);
+  vm.runInContext(fs.readFileSync(path.join(__dirname, "..", "aibp", "titan_x_awakening.js"), "utf8"), context);
   const source = fs.readFileSync(
     path.join(__dirname, "..", "aibp", "c45_specials.js"),
     "utf8"
@@ -1230,6 +1236,164 @@ test("retired shared, Ur-Fleece, and Titan X panels are removed", () => {
   );
   assert.equal(app.specialRoot.classList.contains("show"), false);
   assert.equal(app.specialRoot.innerHTML, "");
+  assert.doesNotMatch(app.specialRoot.innerHTML, /extraRounds|公共状态牌|泰坦名单/);
+});
+
+test("Titan X awakening preserves progress, survives reload, and wins without promotion", async () => {
+  const app = makeHarness("TITAN_X");
+  const state = app.piles.TITAN_X;
+  state.BP.damage.push(...Array.from({ length: 6 }, () => ({ special: "DW" })));
+  state.special.titanX.activeStatus = { type: "FEINT", level: "X", index: 9 };
+  state.feint.active = [state.special.titanX.activeStatus];
+  const original = JSON.stringify(state.BP);
+  const ai = JSON.stringify(state.AI);
+  await app.C45Specials.ensureTitanXAwakening();
+  assert.equal(state.special.titanX.awakened, true);
+  assert.equal(state.BP.deck.length, 1);
+  assert.equal(state.BP.deck[0].woundThreshold, 20);
+  state.feint.deck.unshift({ type: "FEINT", level: "X", index: 8 });
+  app.drawFeint();
+  app.lastZoom.onClose();
+  assert.equal(state.BP.deck.length, 1, "觉醒阶段的变招不能混入普通 BP");
+  assert.equal(JSON.stringify(state.AI), ai);
+  const bytes = fs.readFileSync(path.join(__dirname, "..", "aibp", state.BP.deck[0].src));
+  assert.deepEqual(Buffer.from(require("../aibp/b4d7e218.js").decode(bytes)),
+    fs.readFileSync(path.join(__dirname, "..", "aibp", "ps/ENVELOPES/X/TITAN_X_TRAIT_ATTACK_F.jpg")));
+  app.piles.TITAN_X = JSON.parse(JSON.stringify(state));
+  app.renderApostle("TITAN_X");
+  app.drawBp();
+  assert.equal(app.piles.TITAN_X.BP.pending.titanXAwakening, true);
+  app.resolveBp("discard");
+  assert.equal(app.piles.TITAN_X.BP.deck.length, 1);
+  app.drawBp();
+  app.resolveBp("critical");
+  assert.equal(app.piles.TITAN_X.special.titanX.awakeningWon, true);
+  assert.equal(app.standardBpIIIUpgrades, 0);
+  assert.equal(app.piles.TITAN_X.BP.damage.length, 6);
+  assert.match(app.specialRoot.innerHTML, /战斗胜利/);
+  app.undoLastAibp("BP");
+  assert.equal(app.piles.TITAN_X.special.titanX.awakeningWon, false);
+  app.newCampaignButton.dispatch("click");
+  assert.equal(app.piles.TITAN_X.special.titanX.awakened, false);
+});
+
+test("Titan X awakening asset failure leaves the current battle untouched", async () => {
+  const app = makeHarness("TITAN_X");
+  app.piles.TITAN_X.BP.damage = Array.from({ length: 6 }, () => ({ special: "DW" }));
+  const before = JSON.stringify(app.piles.TITAN_X);
+  app.HeliosAssets.ready = async () => { throw new Error("HTTP 404"); };
+  await assert.rejects(app.C45Specials.ensureTitanXAwakening(), /404/);
+  assert.equal(JSON.stringify(app.piles.TITAN_X), before);
+});
+
+test("All Good Things shares decks but tracks three wounds and only escalates every third wound", async () => {
+  const app = makeHarness("TITAN_X");
+  app.C45Specials.startTitanXGroup();
+  const state = app.piles.TITAN_X;
+  const group = state.special.titanX.group;
+  const hit = (id) => {
+    app.specialRoot.dispatch("click", makeActionTarget("titan-x-group-target", { enemy: String(id) }));
+    app.drawBp();
+    app.resolveBp("defeat");
+  };
+  const supplied = state.BP.supply.II.length;
+  hit(1);
+  assert.equal(group.counter, 1);
+  assert.equal(state.BP.supply.II.length, supplied);
+  assert.equal(state.BP.damage[0].titanXOwner, 1);
+  hit(2);
+  assert.equal(group.counter, 2);
+  assert.equal(state.BP.supply.II.length, supplied);
+  hit(3);
+  assert.equal(group.counter, 0);
+  assert.equal(state.BP.damage.at(-1).titanXOwner, 3);
+  assert.equal(state.BP.damage.at(-1).type, "BP", "第三次保留实际 BP 损伤");
+  state.BP.damage.push(...Array.from({ length: 12 }, () => ({ special: "SW", titanXOwner: 1 })));
+  app.renderAibpCards();
+  await new Promise(setImmediate);
+  assert.equal(state.special.titanX.awakened, false, "三人战斗不能触发觉醒");
+  app.piles.TITAN_X = JSON.parse(JSON.stringify(state));
+  app.renderApostle("TITAN_X");
+  assert.match(app.specialRoot.innerHTML, /已击杀/);
+  assert.equal(app.piles.TITAN_X.special.titanX.group.counter, 0);
+});
+
+test("All Good Things AI executes each living enemy once and G6 finishes the last third enemy at ten", () => {
+  const app = makeHarness("TITAN_X");
+  app.C45Specials.startTitanXGroup();
+  const state = app.piles.TITAN_X;
+  const group = state.special.titanX.group;
+  app.drawAi();
+  assert.equal(group.aiActor, 1);
+  app.discardAiPending();
+  app.drawAi();
+  assert.equal(group.aiActor, 2);
+  app.discardAiPending();
+  app.drawAi();
+  assert.equal(group.aiActor, 3);
+  app.discardAiPending();
+  assert.equal(group.queue.length, 0);
+  assert.equal(state.AI.discard.length, 3);
+  app.timers.splice(0).forEach((callback) => callback());
+  assert.equal(state.AI.pending, null, "上一轮的延迟回调不能自动开启下一轮");
+  app.specialRoot.dispatch("click", makeActionTarget("titan-x-group-g6"));
+  state.BP.damage = [
+    ...Array.from({ length: 12 }, () => ({ special: "SW", titanXOwner: 1 })),
+    ...Array.from({ length: 12 }, () => ({ special: "SW", titanXOwner: 2 })),
+    ...Array.from({ length: 10 }, () => ({ special: "SW", titanXOwner: 3 })),
+  ];
+  app.renderAibpCards();
+  assert.equal(group.won, true);
+  assert.equal(state.BP.damage.at(-1).conqueredNail, true);
+  const length = state.BP.damage.length;
+  app.renderAibpCards();
+  assert.equal(state.BP.damage.length, length);
+  assert.match(app.specialRoot.innerHTML, /9299/);
+  const aiCount = state.AI.deck.length;
+  app.drawAi();
+  assert.equal(state.AI.deck.length, aiCount);
+  app.specialRoot.dispatch("click", makeActionTarget("exit-titan-x-group"));
+  assert.equal(state.special.titanX.group, undefined);
+  assert.equal(state.BP.damage.length, 0);
+});
+
+test("All Good Things Feint Injury heals only its actor and removes the Feint", () => {
+  const app = makeHarness("TITAN_X");
+  app.C45Specials.startTitanXGroup();
+  const state = app.piles.TITAN_X;
+  state.BP.damage = [{ special: "SW", titanXOwner: 1 }, { special: "DW", titanXOwner: 2 }, { special: "SW", titanXOwner: 3 }];
+  state.special.titanX.group.aiActor = 2;
+  state.feint.deck.unshift({ type: "FEINT", level: "X", index: 5 });
+  app.drawFeint();
+  app.lastZoom.onClose();
+  assert.deepEqual(state.BP.damage.map((card) => card.titanXOwner), [1, 3]);
+  assert.equal(state.BP.removed.at(-1).titanXOwner, 2);
+  assert.equal(state.feint.removed.at(-1).index, 5);
+});
+
+test("Titan X automatically awakens at 12 or more damage, and wound undo restores the normal phase", async () => {
+  const app = makeHarness("TITAN_X");
+  const state = app.piles.TITAN_X;
+  state.BP.damage = [...Array.from({ length: 5 }, () => ({ special: "DW" })), { special: "SW" }];
+  app.renderAibpCards();
+  await new Promise(setImmediate);
+  assert.equal(state.special.titanX.awakened, false);
+  app.rememberUndo("TITAN_X", "BP");
+  state.BP.damage.push({ special: "SW" });
+  app.renderAibpCards();
+  await new Promise(setImmediate);
+  assert.equal(state.special.titanX.awakened, true);
+  assert.equal(state.BP.deck[0].titanXAwakening, true);
+  assert.equal(app.extraGrid.children.length, 0, "觉醒卡不能显示在 Trait 区");
+  assert.doesNotMatch(app.specialRoot.innerHTML, /data-action="toggle-titan|切回|切换至/);
+  app.undoLastAibp("BP");
+  await new Promise(setImmediate);
+  assert.equal(app.piles.TITAN_X.special.titanX.awakened, false);
+  assert.equal(app.piles.TITAN_X.BP.damage.length, 6);
+  app.piles.TITAN_X.BP.damage.push({ special: "DW" });
+  app.renderAibpCards();
+  await new Promise(setImmediate);
+  assert.equal(app.piles.TITAN_X.special.titanX.awakened, true, "从 11 跳到 13 也应触发");
 });
 
 test("recorded titan quantities remain available without rendering a roster module", () => {

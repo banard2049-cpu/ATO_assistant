@@ -215,10 +215,10 @@
         map.setupId,
         map.startPositionId
       );
-      if (starts.apostle) {
+      (starts.apostles || (starts.apostle ? [starts.apostle] : [])).forEach((position) => {
         const marker = document.createElement("div");
         const arrow = document.createElement("span");
-        const style = window.BattleTerrain.getTileStyle(starts.apostle);
+        const style = window.BattleTerrain.getTileStyle(position);
         const facing = window.BattleTerrain.getInitialFacing(
           options.getApostle(),
           map.apostleFacing,
@@ -227,7 +227,7 @@
           map.startPositionId
         );
         marker.className = "battle-map-start apostle";
-        marker.textContent = "A";
+        marker.textContent = position.label || "A";
         marker.title = `${options.getApostle().replaceAll("_", " ")} (${window.BattleTerrain.getFacingLabel(facing)})`;
         marker.style.left = style.left;
         marker.style.top = style.top;
@@ -238,7 +238,7 @@
         arrow.style.transform = `translate(-50%, -50%) rotate(${facing}deg) translateY(-1.05em)`;
         marker.appendChild(arrow);
         startLayer.appendChild(marker);
-      }
+      });
       starts.titans.forEach((titan) => {
         const marker = document.createElement("div");
         marker.className = "battle-map-start titan";

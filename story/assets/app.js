@@ -1875,34 +1875,38 @@
 
     const buttons = links.map((link) => {
       const href = `../aibp/index.html#${encodeURIComponent(link.apostle)}`;
-      return `
-        <a class="battle-aibp-button" href="${href}" target="_blank" rel="noopener noreferrer">
-          打开${escapeHtml(link.label)}
-        </a>
-      `;
+      return `<a class="battle-aibp-button" href="${href}" target="_blank" rel="noopener noreferrer">打开${escapeHtml(link.label)}</a>`;
     }).join("");
-    return `
-      <div class="battle-aibp-action">
-        ${buttons}
-      </div>
-    `;
+    return `<div class="battle-aibp-action">${buttons}</div>`;
   }
 
-  // 「拆信封」的正文：C5 0199（打开信封 Y → 旧日幽魂）。这段是主线正文而不是
-  // 战斗模块，battleAibpLink 够不到，所以单独给一个按钮：不跳转，只提示玩家
-  // 去 AIBP 的 BOSS 搜索框里输入「赫利俄斯」，避免剧透又把入口指清楚。
-  const ENVELOPE_AIBP_HINT = "在 AIBP 的 BOSS 搜索框里输入「赫利俄斯」，即可打开隐藏的赫利俄斯 AIBP。";
-  const ENVELOPE_AIBP_TARGETS = new Set(["c5:0199"]);
+  // 隐藏战斗的引入段落只提示 BOSS 搜索入口，不直接开启战斗。
+  const ENVELOPE_AIBP_HINTS = {
+    helios: {
+      label: "赫利俄斯 AIBP",
+      text: "在 AIBP 的 BOSS 搜索框里输入「赫利俄斯」，即可打开隐藏的赫利俄斯 AIBP。",
+    },
+    blackbeak: {
+      label: "Black Beak（黑喙）AIBP",
+      text: "在 AIBP 的 BOSS 搜索框里输入「Black Beak」或「黑喙」并提交搜索，按提示确认后即可开启隐藏的黑喙 AIBP。",
+    },
+    "titan-x-group": {
+      label: "万事皆休 AIBP",
+      text: "在 AIBP 的 BOSS 搜索框里输入「万事皆休」并提交搜索，即可开启三台泰坦 X 的隐藏战斗。",
+    },
+  };
+  const ENVELOPE_AIBP_TARGETS = {
+    "c5:0199": "helios",
+    "c5:1099": "blackbeak",
+    "c5:2803": "blackbeak",
+    "c5:7539": "titan-x-group",
+  };
 
   function envelopeAibpLink(entry, bookId = "") {
-    if (!ENVELOPE_AIBP_TARGETS.has(`${bookId}:${String(entry?.id || "")}`)) return "";
-    return `
-      <div class="battle-aibp-action envelope-aibp-action" data-envelope-aibp>
-        <button class="battle-aibp-button" type="button" data-aibp-hint="helios">
-          赫利俄斯 AIBP
-        </button>
-      </div>
-    `;
+    const hintKey = ENVELOPE_AIBP_TARGETS[`${bookId}:${String(entry?.id || "")}`];
+    const hint = ENVELOPE_AIBP_HINTS[hintKey];
+    if (!hint) return "";
+    return `<div class="battle-aibp-action envelope-aibp-action" data-envelope-aibp><button class="battle-aibp-button" type="button" data-aibp-hint="${hintKey}">${hint.label}</button></div>`;
   }
 
   function envelopeAibpHintLayer() {
@@ -1927,10 +1931,12 @@
     return layer;
   }
 
-  function showEnvelopeAibpHint() {
+  function showEnvelopeAibpHint(hintKey) {
+    const hint = ENVELOPE_AIBP_HINTS[hintKey];
+    if (!hint) return;
     const layer = envelopeAibpHintLayer();
     const text = layer.querySelector("#envelopeAibpHintText");
-    if (text) text.textContent = ENVELOPE_AIBP_HINT;
+    if (text) text.textContent = hint.text;
     layer.hidden = false;
     const close = layer.querySelector(".aibp-hint-close");
     if (close) close.focus();
@@ -3105,20 +3111,21 @@
       ? `<div class="supplement-gallery-hint">点击扫描页可放大查看</div><div class="battle-gallery supplement-gallery">${imagesHtml}</div>`
       : "";
 
-    return `
-      <section class="ai-translation" aria-label="AI 中文翻译">
-        <div class="ai-translation-label">AI 翻译</div>
-        <p class="ai-translation-notice">${escapeHtml(notice)}</p>
-        <div class="ai-translation-body">${translation}</div>
-      </section>
-      ${aibpLink}
-      <details class="source-original">
-        <summary>查看英文原文（OCR）与扫描页 · ${escapeHtml(sourcePages)}</summary>
-        <p class="source-page-note">英文文字来自 PDF 自带 OCR；识别不清的页面经过本地 OCR 校正。规则图标、表格和版式请以扫描页为准。</p>
-        <div class="source-original-text">${original}</div>
-        ${gallery}
-      </details>
-    `;
+    // 正文容器保留换行，结构标签之间不要插入模板缩进形成的空行。
+    return [
+      `<section class="ai-translation" aria-label="AI 中文翻译">`,
+      `<div class="ai-translation-label">AI 翻译</div>`,
+      `<p class="ai-translation-notice">${escapeHtml(notice)}</p>`,
+      `<div class="ai-translation-body">${translation}</div>`,
+      `</section>`,
+      aibpLink,
+      `<details class="source-original">`,
+      `<summary>查看英文原文（OCR）与扫描页 · ${escapeHtml(sourcePages)}</summary>`,
+      `<p class="source-page-note">英文文字来自 PDF 自带 OCR；识别不清的页面经过本地 OCR 校正。规则图标、表格和版式请以扫描页为准。</p>`,
+      `<div class="source-original-text">${original}</div>`,
+      gallery,
+      `</details>`,
+    ].join("");
   }
 
   function entryBookId(entry) {
@@ -4067,7 +4074,7 @@
     const button = event.target.closest("[data-aibp-hint]");
     if (!button) return;
     event.preventDefault();
-    showEnvelopeAibpHint();
+    showEnvelopeAibpHint(button.dataset.aibpHint);
   });
   window.addEventListener("focus", refreshSecondScreenStoryModeToggle);
   document.addEventListener("visibilitychange", () => {

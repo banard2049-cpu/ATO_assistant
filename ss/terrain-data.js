@@ -733,6 +733,7 @@ const BattleTerrain = (() => {
       { id: "the-devil-himself", label: "The Devil Himself", levels: [5, 6, 7], terrains: [] },
       { id: "the-devil-himself", label: "The Devil Himself", levels: [8], terrains: [] },
       { id: "thicker-than-water", label: "Thicker Than Water", levels: [1], terrains: [] },
+      { id: "all-good-things", label: "万事皆休 · 三台泰坦 X", levels: [1, 2, 3, 4, 5, 6, 7, 8, 9], terrains: [] },
     ],
     SUN_DESCENDANT: [
       { levels: [1, 2], terrains: [
@@ -764,7 +765,8 @@ const BattleTerrain = (() => {
     DAHAKA: { apostle: { row: 7.5, column: 10.5, width: 2, height: 2, rotation: 0, facing: "random" }, titans: [[11, 9], [11, 12], [4, 9], [4, 12]] },
     DRAGON_OF_PHOBOS: { apostle: { row: 7.5, column: 10.5, width: 2, height: 2, rotation: 0, facing: "random" }, titans: [[10, 8], [11, 12], [6, 14], [4, 9]] },
     MEDUKETOS: { apostle: null, titans: [[11, 7], [11, 18], [5, 8], [4, 15]] },
-    UR_FLEECE: { apostle: { row: 6, column: 15, width: 3, height: 3, rotation: 90 }, titans: [[9, 18], [8, 19], [5, 19], [4, 18]] },
+    // 初始朝向泰坦最多的一侧：四台泰坦都位于羊毛右侧。
+    UR_FLEECE: { apostle: { row: 6.5, column: 15.5, width: 2, height: 2, rotation: 90, facing: 90 }, titans: [[9, 18], [8, 19], [5, 19], [4, 18]] },
     TITAN_X: { apostle: { row: 7, column: 10, width: 1, height: 1, rotation: 0, facing: "random" }, titans: [[9, 8], [10, 13], [4, 7], [5, 12]] },
   };
   initialPositions.THE_NIETZSCHEAN = initialPositions.THE_NIETZSCJEAN;
@@ -819,6 +821,15 @@ const BattleTerrain = (() => {
         },
       ],
       "thicker-than-water": [{ levels: [1], ...initialPositions.TITAN_X }],
+      "all-good-things": [{ levels: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+        apostle: { row: 9, column: 8, width: 1, height: 1, rotation: 0, facing: "random" },
+        apostles: [
+          { row: 9, column: 8, width: 1, height: 1, label: "X1" },
+          { row: 7, column: 10, width: 1, height: 1, label: "X2" },
+          { row: 9, column: 12, width: 1, height: 1, label: "X3" },
+        ],
+        titans: [[4, 7], [3, 10], [5, 12], [7, 14]],
+      }],
     },
     THE_BURDEN: {
       "hardest-to-bear": [{
@@ -866,7 +877,7 @@ const BattleTerrain = (() => {
     DAHAKA: { size: 2, speed: { 1: Infinity }, blindspot: true, alwaysLos: true },
     DRAGON_OF_PHOBOS: { size: 2, speed: { 1: Infinity, 2: Infinity, 3: Infinity, 4: Infinity }, blindspot: true },
     MEDUKETOS: { size: 3, speed: { 1: Infinity, 2: Infinity, 3: Infinity, 4: Infinity }, blindspot: false },
-    UR_FLEECE: { size: 3, speed: { 1: Infinity }, blindspot: true },
+    UR_FLEECE: { size: 2, speed: { 1: Infinity }, blindspot: true },
     // 无视阻碍 NO OBSTACLES: 忽略视线遮挡规则。
     TITAN_X: { size: 1, speed: { 1: Infinity }, blindspot: true, alwaysLos: true },
   };
@@ -1102,6 +1113,7 @@ const BattleTerrain = (() => {
       : positions;
     return {
       apostle: selectedStart.apostle ? { ...selectedStart.apostle } : null,
+      ...(positions.apostles ? { apostles: positions.apostles.map((position) => ({ ...position })) } : {}),
       titans: positions.titans.map(([row, column], index) => ({ id: `titan-${index + 1}`, label: `T${index + 1}`, row, column })),
     };
   }

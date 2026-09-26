@@ -106,6 +106,134 @@
 
   let titanRoster = [];
   let specialRoot = null;
+  let awakeningSwitchInFlight = false;
+  let resolvingGroupBp = false;
+
+  function titanXGroup(state = piles.TITAN_X) {
+    return state?.special?.titanX?.group || null;
+  }
+
+  function groupWounds(id, state = piles.TITAN_X) {
+    return (state.BP.damage || []).filter((card) => card.titanXOwner === id)
+      .reduce((sum, card) => sum + bpDamageValue(card), 0);
+  }
+
+  function groupSurvivors(state = piles.TITAN_X) {
+    return [1, 2, 3].filter((id) => groupWounds(id, state) < 12);
+  }
+
+  function updateTitanXGroup(state = piles.TITAN_X) {
+    const group = titanXGroup(state);
+    if (!group) return;
+    const alive = groupSurvivors(state);
+    if (group.g6 && alive.length === 1 && alive[0] === 3 && groupWounds(3, state) >= 10) {
+      state.BP.damage.push({ special: "DW", titanXOwner: 3, conqueredNail: true });
+    }
+    group.won = groupSurvivors(state).length === 0;
+    if (!groupSurvivors(state).includes(group.target)) group.target = groupSurvivors(state)[0] || 1;
+  }
+
+  function startTitanXGroup() {
+    if (currentApostle !== "TITAN_X" || titanXGroup()) return;
+    rememberUndo("TITAN_X", "AIBP");
+    const state = piles.TITAN_X;
+    const data = state.special.titanX;
+    data.groupBackup = clonePileState({ AI: state.AI, BP: state.BP, feint: state.feint,
+      battleMap: state.battleMap, activeStatus: data.activeStatus, pendingEffect: data.pendingEffect,
+      awakened: data.awakened, awakeningWon: data.awakeningWon });
+    state.AI = { ...makeTitanXBpPile(), deck: shuffleCards(Array.from({ length: 6 }, (_, i) => makeCard("AI", "I", i + 1))),
+      supply: { I: [], II: shuffleCards(Array.from({ length: 6 }, (_, i) => makeCard("AI", "II", i + 1))),
+        III: shuffleCards(Array.from({ length: 6 }, (_, i) => makeCard("AI", "III", i + 1))) } };
+    state.BP = makeTitanXBpPile();
+    state.feint = { deck: shuffleCards(Array.from({ length: 10 }, (_, i) => makeCard("FEINT", "X", i + 1))), active: [], removed: [] };
+    data.activeStatus = null;
+    data.pendingEffect = null;
+    data.awakened = false;
+    data.awakeningWon = false;
+    data.group = { target: 1, counter: 0, g6: false, queue: [], aiActor: null, pendingBpEnemy: null, won: false };
+    if (window.BattleTerrain) state.battleMap = window.BattleTerrain.createBattleMap("TITAN_X", currentApostleLevel(), "all-good-things");
+    saveAndRender();
+    renderExtraCards();
+    if (typeof battleMapControl !== "undefined") battleMapControl?.render();
+  }
+
+  function groupSignatureTargets(state = piles.TITAN_X) {
+    const alive = groupSurvivors(state);
+    const maximum = Math.max(...alive.map((id) => groupWounds(id, state)));
+    return alive.filter((id) => groupWounds(id, state) === maximum);
+  }
+
+  function drawTitanXGroupAi() {
+    const state = piles.TITAN_X;
+    const group = titanXGroup();
+    if (!group || group.won || state.AI.pending) return;
+    rememberUndo("TITAN_X", "AI");
+    if (!group.queue.length) group.queue = groupSurvivors();
+    group.aiActor = group.queue[0];
+    if (titanXDrawsFromBottom()) drawAiSpecial({ fromBottom: true });
+    else base.drawAi(false);
+    savePiles();
+    renderSpecials();
+  }
+
+  function resolveTitanXGroupBp(mode) {
+    const state = piles.TITAN_X;
+    const group = titanXGroup();
+    const card = state.BP.pending;
+    if (!card || group.won || !["discard", "defeat", "critical"].includes(mode)) return;
+    const owner = group.pendingBpEnemy || group.target;
+    if (!groupSurvivors().includes(owner)) return;
+    const amount = bpDamageValue(card);
+    const escalate = mode !== "discard" && group.counter + amount >= 3;
+    const before = state.BP.damage.length;
+    if (escalate) {
+      resolvingGroupBp = true;
+      try { base.resolveBp(mode); }
+      finally { resolvingGroupBp = false; }
+    }
+    else {
+      rememberUndo("TITAN_X", "BP");
+      const drawn = removePendingCard(state.BP);
+      state.BP.discard.push(drawn);
+      if (mode !== "discard") state.BP.damage.push({ special: amount === 2 ? "DW" : "SW", titanXOwner: owner });
+    }
+    state.BP.damage.slice(before).forEach((wound) => { wound.titanXOwner = owner; });
+    if (mode !== "discard") group.counter = (group.counter + amount) % 3;
+    group.pendingBpEnemy = null;
+    if (escalate && titanXDrawsFromBottom() && card.level === "III") state.BP.deck = shuffleCards(state.BP.deck);
+    updateTitanXGroup();
+    saveAndRender();
+  }
+
+  function titanXDamageTotal(state = piles.TITAN_X) {
+    return (state?.BP.damage || []).reduce((sum, card) => sum + bpDamageValue(card), 0);
+  }
+
+  async function ensureTitanXAwakening() {
+    if (currentApostle !== "TITAN_X" || awakeningSwitchInFlight) return;
+    ensurePiles("TITAN_X");
+    const state = piles.TITAN_X;
+    const data = state.special.titanX;
+    if (data.group || data.awakened || titanXDamageTotal(state) < 12) return;
+    awakeningSwitchInFlight = true;
+    try {
+      await window.HeliosAssets.ready(window.TitanXAwakeningConfig);
+      if (currentApostle !== "TITAN_X" || piles.TITAN_X !== state
+        || data.group || data.awakened || titanXDamageTotal(state) < 12) return;
+      data.beforeAwakeningBp = clonePileState(state.BP);
+      data.beforeAwakeningBp.pending = null;
+      state.BP = {
+        ...clonePileState(state.BP), deck: [window.TitanXAwakeningConfig.card()],
+        discard: [], pending: null, supply: { I: [], II: [], III: [] },
+      };
+      data.awakened = true;
+      data.awakeningWon = false;
+      saveAndRender();
+    } finally {
+      awakeningSwitchInFlight = false;
+    }
+  }
+
   const babelianFusionControl = document.getElementById(
     "babelianFusionControl"
   );
@@ -372,6 +500,9 @@
 
   function normalizeTitanX(state) {
     const special = state.special.titanX ||= {};
+    special.awakened ||= false;
+    special.awakeningWon ||= false;
+    if (special.group) updateTitanXGroup(state);
     special.activeStatus ||= null;
     special.pendingEffect = FEINT_META[special.pendingEffect?.index]?.kind === "effect"
       ? special.pendingEffect
@@ -712,6 +843,7 @@
 
   function insertTitanXOverstep(level, state = piles.TITAN_X, remember = true) {
     if (!state) return false;
+    if (state.special.titanX.awakened) return false;
     const index = level === "I" ? 1 : 4;
     const card = makeTitanXBp(level, index);
     if (pileContainsCard(state.BP, card)) return false;
@@ -910,7 +1042,15 @@
     if (!pending || cardIdentity(pending) !== cardIdentity(card)) return;
     const meta = FEINT_META[card.index] || { kind: "effect" };
     state.special.titanX.pendingEffect = null;
-    if (meta.overstep) {
+    const group = titanXGroup(state);
+    if (group && card.index === 5) {
+      const owner = group.pendingFeintEnemy || group.aiActor || group.target;
+      const index = state.BP.damage.findLastIndex((wound) => wound.titanXOwner === owner);
+      if (index >= 0) state.BP.removed.push(state.BP.damage.splice(index, 1)[0]);
+      state.feint.removed.push(card);
+      group.pendingFeintEnemy = null;
+      updateTitanXGroup(state);
+    } else if (meta.overstep) {
       insertTitanXOverstep(meta.overstep, state, false);
       state.feint.removed.push(card);
     } else {
@@ -929,6 +1069,8 @@
     if (!feint.deck.length || state.special.titanX.pendingEffect) return;
     rememberUndo("TITAN_X", "AI");
     const card = feint.deck.shift();
+    const group = titanXGroup(state);
+    if (group) group.pendingFeintEnemy = group.aiActor || group.pendingBpEnemy || group.target;
     const meta = FEINT_META[card.index] || { kind: "effect" };
     if (meta.kind === "status") {
       const previous = feint.active.shift();
@@ -1070,6 +1212,40 @@
   }
 
   function renderSpecificControls(state) {
+    if (currentApostle === "TITAN_X") {
+      const group = titanXGroup(state);
+      if (group) {
+        const survivors = groupSurvivors(state);
+        const signature = groupSignatureTargets(state);
+        return `<div class="c45-control wide titan-group-panel">
+          <div class="titan-group-head">
+            <div class="c45-control-title">万事皆休 <span>三台泰坦 X</span></div>
+            <button class="titan-group-exit" type="button" data-action="exit-titan-x-group"${state.AI.pending || state.BP.pending ? " disabled" : ""}>返回原战斗</button>
+          </div>
+          <div class="titan-group-targets">${[1, 2, 3].map((id) => {
+            const alive = survivors.includes(id);
+            const selected = group.target === id;
+            return `<button class="titan-group-target${selected ? " is-selected" : ""}${alive ? "" : " is-defeated"}" type="button" data-action="titan-x-group-target" data-enemy="${id}" aria-pressed="${selected}"${state.BP.pending || !alive ? " disabled" : ""}>
+              <span class="titan-group-target-head"><span>泰坦 X ${id}</span><span class="titan-group-target-state">${alive ? selected ? "当前目标" : "选择目标" : "已击杀"}</span></span>
+              <span class="titan-group-wounds">${groupWounds(id, state)}<small>/ 12 损伤</small></span>
+            </button>`;
+          }).join("")}</div>
+          <div class="titan-group-stats">
+            <div class="titan-group-stat"><span>晋升进度</span><strong>${group.counter}<small> / 3</small></strong><span class="titan-group-progress" aria-hidden="true">${[0, 1, 2].map((step) => `<i${step < group.counter ? ' class="is-filled"' : ""}></i>`).join("")}</span></div>
+            <div class="titan-group-stat"><span>标志行为</span><strong>${signature.length ? `泰坦 X ${signature.join(" / ")}` : "无"}</strong>${signature.length > 1 ? '<small>平局任选一台</small>' : ""}</div>
+            <button class="titan-group-g6${group.g6 ? " is-marked" : ""}" type="button" data-action="titan-x-group-g6" aria-pressed="${group.g6}"><span>G6 · 征服者之钉</span><strong>${group.g6 ? "已标记" : "未标记"}</strong></button>
+          </div>
+          <div class="titan-group-turn">${group.won ? "全部击杀：结算正常奖励与惩罚，阅读 9299。" : group.aiActor ? `当前执行：泰坦 X ${group.aiActor}${group.queue.length ? ` · 待执行 ${group.queue.join(" → ")}` : " · 本轮最后一台"}` : "抽取 AI 开始敌方轮，存活敌人依次执行。"}</div>
+          <details class="titan-group-rules"><summary>特殊战斗规则</summary><ul>
+            <li>Toying 与 Deathblow Crit 禁用；仅被攻击者执行响应。</li>
+            <li>敌人不能掉出版边，可互相穿过，重叠时位移。</li>
+            <li>G6：第三台的瞬步按征服者之钉修正；它最后存活时，10 点损伤触发自伤 DW。</li>
+          </ul></details>
+        </div>`;
+      }
+      return state.special.titanX.awakened ? `<div class="c45-control wide">
+        <div class="c45-control-note">${state.special.titanX.awakeningWon ? "觉醒 BP 已击伤：战斗胜利，阅读 5289。" : "仅攻击觉醒 BP，损伤阈值 20。每个泰坦回合后执行 AI；瞬步额外移动 4 格。"}</div></div>` : "";
+    }
     switch (currentApostle) {
       case "MIDASCORE": return "";
       case "DEMIDJINN": return renderDemidjinn(state);
@@ -1078,7 +1254,13 @@
       case "DRAGON_OF_PHOBOS": return "";
       case "MEDUKETOS": return "";
       case "UR_FLEECE": return "";
-      case "TITAN_X": return "";
+      case "TITAN_X": return state.special.titanX.awakened ? `
+        <div class="c45-control wide">
+          <div class="c45-control-title">泰坦 X · ${state.special.titanX.awakened ? "赫尔墨斯觉醒" : "普通阶段"}</div>
+          ${state.special.titanX.awakened ? `<div class="c45-control-note">${state.special.titanX.awakeningWon
+            ? "觉醒 BP 已击伤：战斗胜利，阅读 5289。"
+            : "仅攻击觉醒 BP，损伤阈值 20。切换时清空协力池，立即执行 AI，目标为造成最后损伤的泰坦。之后每个泰坦回合后执行 AI；瞬步额外移动 4 格。"}</div>` : ""}
+        </div>` : "";
       default: return "";
     }
   }
@@ -1121,6 +1303,9 @@
   }
 
   function updateSpecialDrawUi() {
+    drawAiButton.textContent = "抽取 AI";
+    promoteBpSingleButton.disabled = false;
+    promoteBpButton.disabled = false;
     promoteAiSingleButton.textContent = "AI 晋升";
     promoteBpSingleButton.textContent = "BP 晋升";
     const isDahaka = currentApostle === "DAHAKA";
@@ -1156,6 +1341,19 @@
         || !piles.DEMIDJINN.AI.pending;
     }
     if (currentApostle === "TITAN_X") {
+      const group = titanXGroup();
+      if (group) {
+        drawBpButton.disabled = group.won;
+        drawAiButton.disabled = group.won || Boolean(piles.TITAN_X.AI.pending);
+        drawAiButton.textContent = group.aiActor ? `泰坦 X ${group.aiActor} 的 AI` : "开始敌方轮（依次抽取 AI）";
+      }
+      const awakening = piles.TITAN_X.special.titanX;
+      if (!group && !awakening.awakened && titanXDamageTotal() >= 12) drawBpButton.disabled = true;
+      if (awakening.awakened) {
+        drawBpButton.disabled = awakening.awakeningWon;
+        promoteBpSingleButton.disabled = true;
+        promoteBpButton.disabled = true;
+      }
       drawFeintButton.disabled = Boolean(
         piles.TITAN_X.special.titanX.pendingEffect
       ) || piles.TITAN_X.feint.deck.length === 0;
@@ -1286,6 +1484,36 @@
 
     const action = event.target.closest("[data-action]")?.dataset.action;
     if (!action) return;
+    if (action === "exit-titan-x-group" && titanXGroup()) {
+      const state = piles.TITAN_X;
+      if (state.AI.pending || state.BP.pending) return;
+      rememberUndo("TITAN_X", "AIBP");
+      const data = state.special.titanX;
+      const saved = data.groupBackup;
+      for (const key of ["AI", "BP", "feint", "battleMap"]) state[key] = clonePileState(saved[key]);
+      for (const key of ["activeStatus", "pendingEffect", "awakened", "awakeningWon"]) data[key] = saved[key];
+      delete data.group;
+      delete data.groupBackup;
+      saveAndRender();
+      renderExtraCards();
+      if (typeof battleMapControl !== "undefined") battleMapControl?.render();
+      return;
+    }
+    if (action === "titan-x-group-target" && titanXGroup()) {
+      const id = Number(event.target.closest("[data-action]").dataset.enemy);
+      if (piles.TITAN_X.BP.pending || !groupSurvivors().includes(id)) return;
+      rememberUndo("TITAN_X", "BP");
+      titanXGroup().target = id;
+      saveAndRender();
+      return;
+    }
+    if (action === "titan-x-group-g6" && titanXGroup()) {
+      rememberUndo("TITAN_X", "BP");
+      titanXGroup().g6 = !titanXGroup().g6;
+      updateTitanXGroup();
+      saveAndRender();
+      return;
+    }
     const state = piles[currentApostle];
     const special = state.special;
     if (action === "next-global-wish") {
@@ -1334,6 +1562,9 @@
 
   renderAibpCards = function () {
     if (isC45()) ensureC45State(currentApostle);
+    if (currentApostle === "TITAN_X") {
+      void ensureTitanXAwakening().catch((error) => console.error("[AIBP] 觉醒卡加载失败", error));
+    }
     base.renderAibpCards();
     updateSpecialDrawUi();
     renderSpecials();
@@ -1360,6 +1591,7 @@
 
   drawAi = function (remember = true) {
     ensurePiles(currentApostle);
+    if (currentApostle === "TITAN_X" && titanXGroup()) { drawTitanXGroupAi(); return; }
     if (currentApostle === "DAHAKA") {
       drawDahaka("AI");
       return;
@@ -1377,6 +1609,23 @@
 
   drawBp = function () {
     ensurePiles(currentApostle);
+    if (currentApostle === "TITAN_X" && titanXGroup()) {
+      const group = titanXGroup();
+      if (group.won || !groupSurvivors().includes(group.target)) return;
+      if (titanXDrawsFromBottom()) drawBpFromBottom();
+      else base.drawBp();
+      if (piles.TITAN_X.BP.pending) group.pendingBpEnemy = group.target;
+      savePiles();
+      return;
+    }
+    if (currentApostle === "TITAN_X" && !piles.TITAN_X.special.titanX.awakened && titanXDamageTotal() >= 12) {
+      void ensureTitanXAwakening().catch((error) => console.error("[AIBP] 觉醒卡加载失败", error));
+      return;
+    }
+    if (currentApostle === "TITAN_X" && piles.TITAN_X.special.titanX.awakened) {
+      if (!piles.TITAN_X.special.titanX.awakeningWon) base.drawBp();
+      return;
+    }
     if (currentApostle === "DAHAKA") {
       drawDahaka("BP");
       return;
@@ -1389,6 +1638,19 @@
   };
 
   discardAiPending = function (remember = true) {
+    if (currentApostle === "TITAN_X" && titanXGroup()) {
+      if (!piles.TITAN_X.AI.pending) return;
+      base.discardAiPending(remember);
+      const group = titanXGroup();
+      group.queue.shift();
+      group.queue = group.queue.filter((id) => groupSurvivors().includes(id));
+      group.aiActor = null;
+      saveAndRender();
+      if (group.queue.length) window.setTimeout(() => {
+        if (currentApostle === "TITAN_X" && titanXGroup() === group && group.queue.length && !piles.TITAN_X.AI.pending) drawAi();
+      }, 0);
+      return;
+    }
     if (currentApostle === "DAHAKA") {
       const pile = piles.DAHAKA.aibp;
       if (!pile.pending || pile.pendingMode !== "AI") return;
@@ -1407,6 +1669,21 @@
   };
 
   resolveBp = function (mode) {
+    if (currentApostle === "TITAN_X" && titanXGroup()) { resolveTitanXGroupBp(mode); return; }
+    if (currentApostle === "TITAN_X" && piles.TITAN_X?.special?.titanX?.awakened) {
+      const state = piles.TITAN_X;
+      const card = state.BP.pending;
+      if (!card?.titanXAwakening || !["discard", "defeat", "critical"].includes(mode)) return;
+      rememberUndo("TITAN_X", "BP");
+      removePendingCard(state.BP);
+      if (mode === "discard") state.BP.deck.unshift(card);
+      else {
+        state.BP.removed.push(card);
+        state.special.titanX.awakeningWon = true;
+      }
+      saveAndRender();
+      return;
+    }
     if (currentApostle === "DAHAKA") {
       resolveDahakaBp(mode);
       return;
@@ -1429,6 +1706,7 @@
   };
 
   promoteSinglePile = function (type) {
+    if (type === "BP" && currentApostle === "TITAN_X" && piles.TITAN_X.special.titanX.awakened) return;
     if (currentApostle === "DAHAKA") {
       promoteDahaka();
       return;
@@ -1443,6 +1721,7 @@
   };
 
   promoteBpByRemovingLowest = function () {
+    if (currentApostle === "TITAN_X" && piles.TITAN_X.special.titanX.awakened) return;
     if (currentApostle === "DAHAKA") {
       return promoteDahaka();
     }
@@ -1516,12 +1795,14 @@
   function interceptDirectListeners() {
     interceptDirectButton(
       drawAiButton,
-      () => ["DAHAKA", "DEMIDJINN"].includes(currentApostle) || titanXDrawsFromBottom(),
+      () => ["DAHAKA", "DEMIDJINN"].includes(currentApostle) || titanXDrawsFromBottom()
+        || (currentApostle === "TITAN_X" && Boolean(titanXGroup())),
       () => drawAi()
     );
     interceptDirectButton(
       drawBpButton,
-      () => currentApostle === "DAHAKA" || titanXDrawsFromBottom(),
+      () => currentApostle === "DAHAKA" || titanXDrawsFromBottom()
+        || (currentApostle === "TITAN_X" && (titanXGroup() || piles.TITAN_X.special.titanX.awakened || titanXDamageTotal() >= 12)),
       () => drawBp()
     );
     interceptDirectButton(
@@ -1575,6 +1856,8 @@
   refreshTitanRoster();
 
   window.C45Specials = {
+    startTitanXGroup,
+    ensureTitanXAwakening,
     ensureState(name = currentApostle) {
       ensurePiles(name);
       return clonePileState(piles[name]);
@@ -1583,6 +1866,14 @@
       return clonePileState(activeRoster());
     },
     recordBpWound(amount) {
+      if (currentApostle === "TITAN_X" && titanXGroup()) {
+        if (resolvingGroupBp) return false;
+        const group = titanXGroup();
+        const count = group.counter + Math.max(0, Math.floor(Number(amount) || 0));
+        group.counter = count % 3;
+        for (let index = 0; index < Math.floor(count / 3); index++) performLinkedPromotion();
+        return true;
+      }
       if (currentApostle === "MIDASCORE") return addMidascorePain(amount);
       if (currentApostle !== "DEMIDJINN") return false;
       ensureC45State("DEMIDJINN");
@@ -1597,6 +1888,10 @@
       return true;
     },
     recordBpCardDamage(card) {
+      if (currentApostle === "TITAN_X" && titanXGroup()) {
+        card.titanXOwner = titanXGroup().pendingBpEnemy || titanXGroup().target;
+        return true;
+      }
       if (currentApostle !== "DEMIDJINN" || card?.level !== "III") return false;
       return activateDemidjinnLastWish();
     },

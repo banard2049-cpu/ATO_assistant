@@ -126,7 +126,7 @@ body[data-cycle="c5"] {
   --accent: #06243d;
   --accent-strong: #041b2e;
   --gold: #95702b;
-  --cycle-sidebar: #06243d;
+  --cycle-sidebar: #31536e;
   --cycle-sidebar-deep: #031827;
   --cycle-sidebar-line: #42617b;
   --cycle-sidebar-card: #123a59;
@@ -287,6 +287,16 @@ button:hover {
 
 #backButton {
   background: var(--cycle-sidebar-button);
+}
+
+body[data-cycle="c5"] .quick-row button,
+body[data-cycle="c5"] .memory-tools button {
+  border: 1px solid var(--cycle-sidebar-accent-line);
+}
+
+body[data-cycle="c5"] .quick-row button:hover,
+body[data-cycle="c5"] .memory-tools button:hover {
+  border-color: var(--cycle-sidebar-hover-line);
 }
 
 .result-list {
@@ -939,6 +949,7 @@ h2 {
 
 .battle-aibp-action {
   display: flex;
+  white-space: normal;
   flex-wrap: wrap;
   gap: 10px;
   justify-content: center;

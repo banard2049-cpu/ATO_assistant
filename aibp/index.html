@@ -166,6 +166,12 @@
       scrollbar-width: thin;
     }
 
+    /* 隐藏 BOSS 的模式项（C4 Old Haunt / C5 Blackbeak），跟普通等级区分开。 */
+    .helios-mode-option {
+      color: var(--gold);
+      font-weight: 800;
+    }
+
     .title-actions {
       display: flex;
       flex: 0 0 auto;
@@ -1264,7 +1270,7 @@
         grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
       }
     }
-  
+
 
     /* 本次调整：操作按钮在左，当前抽牌在右；两块共同铺满各自 AI/BP 区域 */
     .draw-box {
@@ -2040,7 +2046,7 @@
 
 
   </style>
-  <link rel="stylesheet" href="c45_specials.css?v=20260816-demidjinn-wish-top">
+  <link rel="stylesheet" href="c45_specials.css?v=20260926-titan-group-layout1">
   <link rel="stylesheet" href="battle_map_control.css?v=20260819-c5-light1">
 </head>
 <body>
@@ -2370,12 +2376,14 @@
   <script src="../map/map-tile-tags.js"></script>
   <script src="ps/CHIMERA_METASTASIOS/bp_status_map.js"></script>
   <!-- Token 名单写在本页脚本里（tokenFileNames），不再加载 ps/other/token/token_manifest.js。 -->
-  <script src="../ss/terrain-data.js?v=20260819-c5-light1"></script>
+  <script src="../ss/terrain-data.js?v=20260926-titan-x-group1"></script>
   <script src="battle_los.js?v=20260819-hekaton4-labyrinthauros-start1"></script>
-  <script src="battle_map_control.js?v=20260924-double-click"></script>
-  <script src="b4d7e218.js"></script>
-  <script src="c9f0a6d3.js"></script>
-  <script src="boss-search.js"></script>
+  <script src="battle_map_control.js?v=20260926-titan-x-group1"></script>
+  <script src="b4d7e218.js?v=20260926-hidden-ready2"></script>
+  <script src="c9f0a6d3.js?v=20260926-blackbeak1"></script>
+  <script src="5158e31a.js?v=20260926-blackbeak-manual4"></script>
+  <script src="titan_x_awakening.js?v=20260926-group-trait1"></script>
+  <script src="boss-search.js?v=20260926-titan-x-group2"></script>
   <script>
     const apostles = [
       "HEKATON",
@@ -2397,7 +2405,8 @@
       "MEDUKETOS",
       "UR_FLEECE",
       "TITAN_X",
-      "HELIOS"
+      "HELIOS",
+      "BLACKBEAK"
     ];
     const aiViews = ["当前", "弃牌", "移除", "II", "III"];
     const bpViews = ["当前", "弃牌", "损伤", "移除", "II", "III"];
@@ -2472,6 +2481,7 @@
     const nonStackingTokenFiles = new Set(["CA.jpg", "CM.jpg", "GF.jpg"]);
     let tokenStackSequence = 0;
     const apostleLevelOverrideKey = "aibp-apostle-level-overrides-v1";
+    const heliosModeKey = "aibp-helios-mode-v1";
     const recordStorageUrl = "../api/campaign-state.php";
     const linkedCycleId = /^c[1-5]$/i.test(new URLSearchParams(window.location.search).get("cycle") || "")
       ? new URLSearchParams(window.location.search).get("cycle").toLowerCase() : "";
@@ -2930,7 +2940,7 @@
         : cardSrc(card);
       return {
         src,
-        label: card.special
+        label: card.titanXOwner ? cardAlt(card) : card.special
           ? `${card.special} 特殊损伤`
           : `${card.type || "卡牌"} ${card.level || ""} ${String(card.index || "").padStart(3, "0")}`.trim(),
         damageValue: bpDamageValue(card),
@@ -2942,7 +2952,9 @@
       const state = piles[currentApostle];
       const damage = isChimera()
         ? [...(state.BP.damage1 || []), ...(state.BP.damage2 || [])]
-        : (state.BP.damage || []);
+        : currentApostle === "TITAN_X" && state.special?.titanX?.group
+          ? state.BP.damage.filter((card) => card.titanXOwner === state.special.titanX.group.target)
+          : (state.BP.damage || []);
       const damageSummary = currentBpDamageSummary();
       const renderedExtraCards = Array.from(extraGrid.querySelectorAll("img"))
         .filter((image) => image.complete && image.naturalWidth > 0)
@@ -2956,18 +2968,23 @@
         apostle: currentApostle,
         title: currentApostle === "HELIOS"
           ? window.HeliosConfig.modes[heliosMode()].label
+          : currentApostle === "TITAN_X" && state.special?.titanX?.group
+            ? `万事皆休 · 泰坦 X ${state.special.titanX.group.target}`
           : currentApostle.replaceAll("_", " "),
         level: currentApostle === "HELIOS" && heliosMode() !== "normal"
           ? heliosMode().toUpperCase()
           : levelRoman[currentApostleLevel()] || String(currentApostleLevel()),
         panelSrc: currentApostle === "HELIOS"
           ? window.HeliosConfig.panelFor(heliosMode(), currentApostleLevel())
+          : currentApostle === "BLACKBEAK" ? window.BlackbeakCardList.panel
           : `ps/${currentApostle}/${currentApostle}.jpg`,
         routineSrc: currentApostle === "HELIOS"
           ? window.HeliosConfig.common.routine
+          : currentApostle === "BLACKBEAK" ? window.BlackbeakCardList.routine.src
           : `ps/${currentApostle}/${currentApostle}_ROUTINE_X_001.jpg`,
         signatureSrc: currentApostle === "HELIOS"
           ? window.HeliosConfig.common.signature
+          : currentApostle === "BLACKBEAK" ? window.BlackbeakCardList.signature.src
           : `ps/${currentApostle}/${currentApostle}_SIGNATURE_X_001.jpg`,
         traits: (state.traits || []).map((card) => ({
           src: traitCardSrc(currentApostle, card),
@@ -3367,9 +3384,10 @@
         lastPendingType: "",
         aiExhaustedBonusIndex: 0
       };
-      if (currentApostle === "HELIOS") {
-        const config = window.HeliosConfig;
-        const mode = heliosMode();
+      if (currentApostle === "HELIOS" || currentApostle === "BLACKBEAK") {
+        // 两套隐藏 BOSS 都由配置直接给出卡牌对象（自带 src/backSrc）。
+        const config = currentApostle === "HELIOS" ? window.HeliosConfig : window.BlackbeakConfig;
+        const mode = currentApostle === "HELIOS" ? heliosMode() : "normal";
         for (const type of ["AI", "BP"]) {
           result[type].deck = shuffleCards(config.cards(mode, type, "I"));
           result[type].supply = {
@@ -3378,6 +3396,10 @@
             III: shuffleCards(config.cards(mode, type, "III")),
           };
         }
+      }
+      if (currentApostle === "BLACKBEAK") {
+        result.flare = { deck: shuffleCards(window.BlackbeakCardList.flares), discard: [] };
+        window.BlackbeakConfig.normalize(result, shuffleCards);
       }
       return result;
     }
@@ -3532,6 +3554,7 @@
           piles[name].aiExhaustedBonusIndex = 0;
         }
       }
+      if (name === "BLACKBEAK" && window.BlackbeakConfig.normalize(piles[name], shuffleCards)) savePiles();
     }
 
     function isChimera() {
@@ -3800,9 +3823,17 @@
       }
     }
 
+    // 上一次进入的 Old Haunt 模式（C4），刷新后沿用。
+    function storeHeliosMode(mode) {
+      try { localStorage.setItem(heliosModeKey, mode); } catch { /* 隐私模式下忽略 */ }
+    }
+
     function heliosMode() {
-      return apostleLevelOverrides.HELIOS === "c4"
-        ? apostleLevelOverrides.HELIOS : "normal";
+      const override = apostleLevelOverrides.HELIOS;
+      if (override === "c4") return override;
+      let saved = null;
+      try { saved = localStorage.getItem(heliosModeKey); } catch { /* 忽略 */ }
+      return saved === "c4" ? saved : "normal";
     }
 
     function heliosUnlockKey(campaign) {
@@ -3817,14 +3848,32 @@
       return `aibp-helios-unlock-v2:${accountId}:${profileId}`;
     }
 
+    // 黑喙与赫利俄斯各自独立解锁，但都挂在同一个「隐藏 BOSS」入口下。
+    let blackbeakAccessGranted = false;
+
+    function blackbeakUnlockKey(campaign) {
+      return heliosUnlockKey(campaign).replace("aibp-helios-unlock-v2:", "aibp-blackbeak-unlock-v1:");
+    }
+
     function syncHeliosAccess(campaign, dashboardCycle = activeDashboardCycleFromCampaign(campaign)) {
+      const wasGranted = currentApostle === "HELIOS" ? heliosAccessGranted : blackbeakAccessGranted;
       const key = heliosUnlockKey(campaign);
-      heliosAccessGranted = Boolean(key && (!linkedCycleId || dashboardCycle?.cycleId === linkedCycleId)
-        && window.AIBP_BOSS_SEARCH.canUnlockCycle(dashboardCycle?.cycleId)
-        && localStorage.getItem(key) === "1");
-      const button = nav.querySelector('button[data-name="HELIOS"]');
-      if (button) button.hidden = !heliosAccessGranted;
+      const cycleOk = !linkedCycleId || dashboardCycle?.cycleId === linkedCycleId;
+      const unlockable = window.AIBP_BOSS_SEARCH.canUnlockCycle(dashboardCycle?.cycleId);
+      heliosAccessGranted = Boolean(key && cycleOk && unlockable && localStorage.getItem(key) === "1");
+      const blackbeakKey = blackbeakUnlockKey(campaign);
+      blackbeakAccessGranted = Boolean(blackbeakKey && cycleOk && unlockable
+        && localStorage.getItem(blackbeakKey) === "1");
+      const heliosButton = nav.querySelector('button[data-name="HELIOS"]');
+      if (heliosButton) heliosButton.hidden = !heliosAccessGranted;
+      const blackbeakButton = nav.querySelector('button[data-name="BLACKBEAK"]');
+      if (blackbeakButton) blackbeakButton.hidden = !blackbeakAccessGranted;
+      ensureHeliosModeOptions();
+      if (currentApostle === "HELIOS") renderApostleTitle();
       if (!heliosAccessGranted && currentApostle === "HELIOS") renderApostle(apostles[0]);
+      if (!blackbeakAccessGranted && currentApostle === "BLACKBEAK") renderApostle(apostles[0]);
+      else if (!wasGranted && ((currentApostle === "HELIOS" && heliosAccessGranted)
+        || (currentApostle === "BLACKBEAK" && blackbeakAccessGranted))) renderApostle(currentApostle);
     }
 
     function activateHeliosMode() {
@@ -3857,21 +3906,70 @@
       return apostleLevelFor(currentApostle);
     }
 
+    // 赫利俄斯下拉里的额外模式项（黑喙是独立 apostle，不在这里）。
+    const HELIOS_MODE_OPTIONS = [
+      ["c4", "C4 · Old Haunt"],
+    ];
+
+    function ensureHeliosModeOptions() {
+      if (!apostleLevelSelect) return;
+      for (const [value, label] of HELIOS_MODE_OPTIONS) {
+        if (apostleLevelSelect.querySelector(`option[value="${value}"]`)) continue;
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = label;
+        option.className = "helios-mode-option";
+        apostleLevelSelect.appendChild(option);
+      }
+    }
+
     function renderApostleTitle() {
       const level = currentApostleLevel();
+      if (currentApostle === "BLACKBEAK") {
+        title.textContent = "BLACKBEAK · 黑喙";
+        renderApostleLevelSelectOptions();
+        return;
+      }
       const special = currentApostle === "HELIOS" ? heliosMode() : "normal";
+      if (currentApostle === "HELIOS") ensureHeliosModeOptions();
       title.textContent = special === "normal"
         ? `${currentApostle.replaceAll("_", " ")} · ${levelRoman[level] || level}`
         : `HELIOS · ${window.HeliosConfig.modes[special].label}`;
       renderMapFactionStatus();
+      renderApostleLevelSelectOptions();
+      document.querySelectorAll("#nav button[data-name]").forEach((button) => {
+        const name = button.dataset.name;
+        const navLevel = apostleLevelFor(name);
+        const specialMode = name === "HELIOS" ? heliosMode() : "normal";
+        button.textContent = name === "HELIOS" && specialMode !== "normal"
+          ? (window.HeliosConfig.modes[specialMode]?.navLabel
+            || `HELIOS · ${specialMode.toUpperCase()}`)
+          : `${name.replaceAll("_", " ")} · ${levelRoman[navLevel] || navLevel}`;
+      });
+    }
+
+    // 等级下拉：黑喙是独立 boss、面板固定，所以只给一个锁定位；
+    // 其余 apostle 按原来的规则（隐藏 BOSS 的额外模式项单独处理）。
+    function renderApostleLevelSelectOptions() {
+      if (!apostleLevelSelect) return;
+      const blackbeak = currentApostle === "BLACKBEAK";
       const fixedAtOne = fixedLevelOneApostles.has(currentApostle);
-      apostleLevelSelect.disabled = false;
-      Array.from(apostleLevelSelect.options).forEach((option) => {
-        const specialOption = option.value === "c4";
-        option.hidden = specialOption ? currentApostle !== "HELIOS"
-          : currentApostle !== "HELIOS" && option.value === "10";
+      apostleLevelSelect.disabled = blackbeak;
+      Array.from(apostleLevelSelect.options).forEach((option, index) => {
+        if (index === 0) return;
+        const isHelios = currentApostle === "HELIOS";
+        let visible;
+        if (option.value === "c4") visible = isHelios && heliosAccessGranted;
+        else if (blackbeak) visible = false;
+        else visible = isHelios || option.value !== "10";
+        option.hidden = !visible;
         option.disabled = option.hidden;
       });
+      if (blackbeak) {
+        apostleLevelSelect.value = "";
+        apostleLevelSelect.options[0].textContent = "固定（沿用追踪者升级轨）";
+        return;
+      }
       apostleLevelSelect.value = apostleLevelOverrides[currentApostle]
         && (currentApostle !== "HELIOS"
           || apostleLevelOverrides[currentApostle] === "c4"
@@ -3884,13 +3982,6 @@
         : recordLevel
           ? `跟随记录表（${levelRoman[recordLevel] || recordLevel}）`
           : "跟随记录表（未读取）";
-      document.querySelectorAll("#nav button[data-name]").forEach((button) => {
-        const name = button.dataset.name;
-        const navLevel = apostleLevelFor(name);
-        button.textContent = name === "HELIOS" && heliosMode() !== "normal"
-          ? `HELIOS · ${heliosMode().toUpperCase()}`
-          : `${name.replaceAll("_", " ")} · ${levelRoman[navLevel] || navLevel}`;
-      });
     }
 
     function bpViewsForCurrentApostle() {
@@ -3925,6 +4016,9 @@
     }
 
     function currentBpDamageSummary() {
+      const group = currentApostle === "TITAN_X" && piles.TITAN_X?.special?.titanX?.group;
+      if (group) return { total: piles.TITAN_X.BP.damage.filter((card) => card.titanXOwner === group.target)
+        .reduce((sum, card) => sum + bpDamageValue(card), 0) };
       if (!isChimera()) {
         return { total: bpDamageTotalForKey("damage") };
       }
@@ -4121,6 +4215,7 @@
     }
 
     function cardAlt(card) {
+      if (card.titanXOwner) return `泰坦 X ${card.titanXOwner} · ${card.special || `${card.type} ${card.level} ${card.index}`}`;
       if (card.special) {
         return `${card.special} 特殊损伤`;
       }
@@ -4190,6 +4285,8 @@
         return piles[currentApostle].AI.removed;
       }
       if (type === "BP" && view === "损伤") {
+        const group = currentApostle === "TITAN_X" && piles.TITAN_X?.special?.titanX?.group;
+        if (group) return piles.TITAN_X.BP.damage.filter((card) => card.titanXOwner === group.target);
         return piles[currentApostle].BP.damage;
       }
       if (type === "BP" && (view === "损伤1" || view === "常规损伤堆")) {
@@ -5025,7 +5122,7 @@
     }
 
     function isHermesian() {
-      return currentApostle === hermesianName;
+      return currentApostle === hermesianName || currentApostle === "BLACKBEAK";
     }
 
     function isTitanX() {
@@ -5431,7 +5528,8 @@
 
     function renderDeckInfo() {
       ensurePiles(currentApostle);
-      aiBackInfo.textContent = deckBackDisplayText(piles[currentApostle].AI.deck);
+      const aiCards = piles[currentApostle].AI.deck;
+      aiBackInfo.textContent = deckBackDisplayText(aiCards);
       bpBackInfo.textContent = deckBackDisplayText(piles[currentApostle].BP.deck);
       const damageSummary = currentBpDamageSummary();
       bpDamageSummary.textContent = isChimera()
@@ -5448,6 +5546,8 @@
       discardBpButton.disabled = !bpPending;
       defeatBpButton.disabled = !bpPending;
       criticalBpButton.disabled = !bpPending;
+      drawBpButton.disabled = false;
+      drawAiButton.disabled = false;
 
       if (!aiPending) {
         aiDrawPreview.classList.remove("has-card");
@@ -5467,6 +5567,7 @@
     }
 
     function renderAibpCards() {
+      if (!hiddenBossImagesReady()) return;
       const aiEmptyText = currentAiView === "移除"
         ? "AI 移除牌堆为空"
         : currentAiView === "闪粉牌组"
@@ -5542,6 +5643,7 @@
     }
 
     function traitSrc(name, level, index, ext = "jpg") {
+      if (name === "BLACKBEAK") name = hermesianName;
       return `ps/${name}/${traitFileName(name, level, index, ext)}`;
     }
 
@@ -5836,6 +5938,7 @@
     }
 
     function renderExtraCards() {
+      if (!hiddenBossImagesReady()) return;
       ensurePiles(currentApostle);
       if (currentApostle === "HELIOS") {
         extraGrid.replaceChildren();
@@ -5849,11 +5952,45 @@
         });
         return;
       }
+      // 黑喙：面板修改卡和专属特性作为 Trait 展示，以太吸取仍进入闪粉牌组。
+      if (currentApostle === "BLACKBEAK") {
+        extraGrid.replaceChildren();
+        (window.BlackbeakCardList?.extraCards || []).forEach((card) => {
+          const img = imageOrMessage(card.src, card.label);
+          img.dataset.frontSrc = window.HeliosAssets.resolve(card.src);
+          img.dataset.backSrc = card.backSrc ? window.HeliosAssets.resolve(card.backSrc) : "";
+          img.dataset.face = "front";
+          img.title = `${card.label}；点击放大，放大后可翻面`;
+          extraGrid.appendChild(img);
+        });
+        piles[currentApostle].traits.forEach((card) => {
+          const src = traitCardSrc(currentApostle, card);
+          const img = imageOrMessage(src, traitCardLabel(card), isLargeTraitCard(currentApostle, card) ? "panel-image" : "");
+          img.addEventListener("load", () => {
+            enableOptionalCardBack(img, src);
+            scheduleSecondScreenSnapshot();
+          }, { once: true });
+          extraGrid.appendChild(img);
+        });
+        reorderExtraGridForLargeCards();
+        return;
+      }
       const base = `ps/${currentApostle}`;
       const candidates = [];
       let loaded = 0;
 
       extraGrid.replaceChildren();
+
+      if (currentApostle === "TITAN_X" && piles.TITAN_X?.special?.titanX?.group) {
+        const card = window.TitanXGroupConfig.trait;
+        const img = imageOrMessage(card.src, card.label);
+        img.dataset.frontSrc = window.HeliosAssets.resolve(card.src);
+        img.dataset.backSrc = window.HeliosAssets.resolve(card.backSrc);
+        img.dataset.face = "front";
+        img.title = `${card.label}；点击放大，放大后可翻面`;
+        extraGrid.appendChild(img);
+        loaded += 1;
+      }
 
       const selectedTraitKeys = selectedTraitKeySet();
 
@@ -6651,9 +6788,14 @@
     }
 
     function renderPanelImage(base, name) {
-      const panelSrc = name === "HELIOS"
-        ? window.HeliosConfig.panelFor(heliosMode(), currentApostleLevel())
-        : `${base}/${name}.jpg`;
+      let panelSrc;
+      if (name === "HELIOS") {
+        panelSrc = window.HeliosConfig.panelFor(heliosMode(), currentApostleLevel());
+      } else if (name === "BLACKBEAK") {
+        panelSrc = window.BlackbeakCardList.panel;
+      } else {
+        panelSrc = `${base}/${name}.jpg`;
+      }
       const img = imageOrMessage(panelSrc, `${name} panel`, "panel-image");
       const frame = document.createElement("div");
       frame.className = "panel-frame";
@@ -6702,10 +6844,11 @@
 
     function renderFlipCard(wrap, base, name, kind) {
       const helios = name === "HELIOS" ? window.HeliosConfig.common : null;
-      const frontSrc = helios
+      const blackbeak = name === "BLACKBEAK" ? window.BlackbeakCardList[kind.toLowerCase()] : null;
+      const frontSrc = blackbeak ? blackbeak.src : helios
         ? helios[kind.toLowerCase()]
         : `${base}/${name}_${kind}_X_001.jpg`;
-      const backSrc = helios
+      const backSrc = blackbeak ? blackbeak.backSrc : helios
         ? helios[`${kind.toLowerCase()}Back`]
         : `${base}/${name}_${kind}_X_001_BACK.jpg`;
       const label = kind.toLowerCase();
@@ -6732,15 +6875,65 @@
     }
 
     let heliosRenderRequest = 0;
+    // 隐藏 BOSS 的准入与资源就绪检查：赫利俄斯 / 黑喙是两套独立配置。
+    const HIDDEN_BOSS = {
+      HELIOS: {
+        granted: () => heliosAccessGranted,
+        config: () => window.HeliosConfig,
+        extraConfigs: () => (window.BlackbeakCardList ? [window.BlackbeakCardList] : []),
+      },
+      BLACKBEAK: {
+        granted: () => blackbeakAccessGranted,
+        config: () => window.BlackbeakConfig,
+        // 黑喙的加密图清单在 BlackbeakCardList 上（面板 / 特性 / 以太吸取）。
+        extraConfigs: () => (window.BlackbeakCardList ? [window.BlackbeakCardList] : []),
+      },
+    };
+
+    function hiddenBossImagesReady() {
+      if (currentApostle === "TITAN_X" && piles.TITAN_X?.special?.titanX?.group) {
+        const config = window.TitanXGroupConfig;
+        if (!window.HeliosAssets.isReady(config)) {
+          void window.HeliosAssets.ready(config).then(() => {
+            if (currentApostle === "TITAN_X") {
+              renderAibpCards();
+              renderExtraCards();
+              scheduleSecondScreenSnapshot();
+            }
+          }).catch((error) => { title.textContent = `万事皆休 · 特性卡加载失败：${error.message}`; });
+          return false;
+        }
+      }
+      if (currentApostle === "TITAN_X" && piles.TITAN_X?.special?.titanX?.awakened) {
+        const config = window.TitanXAwakeningConfig;
+        if (!window.HeliosAssets.isReady(config)) {
+          void window.HeliosAssets.ready(config).then(() => {
+            if (currentApostle === "TITAN_X") {
+              renderAibpCards();
+              renderExtraCards();
+            }
+          }).catch((error) => { title.textContent = `泰坦 X · 觉醒资源加载失败：${error.message}`; });
+          return false;
+        }
+      }
+      const hidden = HIDDEN_BOSS[currentApostle];
+      if (!hidden) return true;
+      return hidden.granted() && window.HeliosAssets.isReady(hidden.config(), hidden.extraConfigs());
+    }
+
     function renderApostle(name) {
       const request = ++heliosRenderRequest;
-      if (name === "HELIOS" && !heliosAccessGranted) return;
-      if (name === "HELIOS" && !window.HeliosAssets.isReady()) {
-        title.textContent = "HELIOS · 正在加载资源";
-        void window.HeliosAssets.ready(window.HeliosConfig).then(() => {
+      const hidden = HIDDEN_BOSS[name];
+      if (hidden && !hidden.granted()) return;
+      if (hidden && !window.HeliosAssets.isReady(hidden.config(), hidden.extraConfigs())) {
+        title.textContent = `${name} · 正在加载资源`;
+        void window.HeliosAssets.ready(hidden.config(), hidden.extraConfigs()).then(() => {
           if (request === heliosRenderRequest) renderApostle(name);
         }).catch((error) => {
-          if (request === heliosRenderRequest) title.textContent = `HELIOS · ${error.message}`;
+          if (request !== heliosRenderRequest) return;
+          const reason = String(error?.message || error);
+          title.textContent = `${name} · 资源加载失败：${reason.slice(0, 140)}`;
+          console.error(`[AIBP] ${name} 资源加载失败`, error);
         });
         return;
       }
@@ -6799,13 +6992,13 @@
         updateUndoButtons();
         return;
       }
-      ai.pending = ai.deck[0];
+      ai.pending = currentApostle === "BLACKBEAK" ? ai.deck.at(-1) : ai.deck[0];
       piles[currentApostle].lastPendingType = "AI";
       savePiles();
       renderAibpCards();
       const drawnCard = ai.pending;
       const drawnApostle = currentApostle;
-      openImageZoom(cardSrc(drawnCard), "抽取的 AI", () => {
+      openImageZoom(cardSrc(drawnCard), drawnApostle === "BLACKBEAK" ? "抽取的 AI（牌堆底部）" : "抽取的 AI", () => {
         if (currentApostle !== drawnApostle) return;
         const pending = piles[currentApostle]?.AI?.pending;
         if (!pending || pending.level !== drawnCard.level || pending.index !== drawnCard.index) return;
@@ -6917,13 +7110,7 @@
       if (remember) {
         rememberUndo(currentApostle, "AI");
       }
-      const first = ai.deck[0];
-      if (first && first.level === ai.pending.level && first.index === ai.pending.index) {
-        ai.discard.push(ai.deck.shift());
-      } else {
-        ai.discard.push(ai.pending);
-        ai.deck = ai.deck.filter((card) => card !== ai.pending);
-      }
+      ai.discard.push(removePendingFromDeck("AI"));
       ai.pending = null;
       savePiles();
       renderAibpCards();
@@ -6955,7 +7142,7 @@
       button.type = "button";
       button.dataset.name = name;
       button.textContent = name.replaceAll("_", " ");
-      if (name === "HELIOS") button.hidden = true;
+      if (name === "HELIOS" || name === "BLACKBEAK") button.hidden = true;
       button.addEventListener("click", () => renderApostle(name));
       nav.appendChild(button);
     });
@@ -7021,8 +7208,38 @@
       return null;
     }
 
-    async function searchHelios() {
-      if (heliosSearchInFlight) return;
+    // 两个隐藏 BOSS 各自独立解锁、各自独立入口（黑喙不是赫利俄斯的模式）。
+    const SECRET_ENTRIES = {
+      normal: {
+        apostle: "HELIOS",
+        unlockKey: (campaign) => heliosUnlockKey(campaign),
+        granted: () => heliosAccessGranted,
+        spoilers: [
+          "这里包含 C4 及后续循环的 BOSS 剧透。确定继续吗？",
+          "再次确认：将解锁赫利俄斯的 BOSS 卡牌及战斗设置。",
+        ],
+      },
+      blackbeak: {
+        apostle: "BLACKBEAK",
+        unlockKey: (campaign) => blackbeakUnlockKey(campaign),
+        granted: () => blackbeakAccessGranted,
+        spoilers: [
+          "这里包含 C5 及后续循环的 BOSS 剧透。确定继续吗？",
+          "再次确认：将解锁黑喙（Blackbeak）的独立 BOSS 入口。它的卡组沿用赫尔墨斯追踪者。",
+        ],
+      },
+    };
+
+    async function searchSecret(mode) {
+      if (mode === "titan-x-group") {
+        bossSearchInput.value = "";
+        bossSearchResults.replaceChildren();
+        renderApostle("TITAN_X");
+        window.C45Specials.startTitanXGroup();
+        return;
+      }
+      const entry = SECRET_ENTRIES[mode];
+      if (!entry || heliosSearchInFlight) return;
       heliosSearchInFlight = true;
       try {
         const campaign = await readCurrentHeliosCampaign();
@@ -7033,32 +7250,49 @@
         const dashboardCycle = activeDashboardCycleFromCampaign(campaign);
         syncHeliosAccess(campaign, dashboardCycle);
         if (!window.AIBP_BOSS_SEARCH.canUnlockCycle(dashboardCycle?.cycleId)) return;
-        const unlockKey = heliosUnlockKey(campaign);
+        const unlockKey = entry.unlockKey(campaign);
         if (!unlockKey) return;
-        if (!heliosAccessGranted) {
-          if (!await confirmHeliosSpoiler("这里包含 C4 及后续循环的 BOSS 剧透。确定继续吗？", "继续")) return;
-          if (!await confirmHeliosSpoiler("再次确认：将解锁赫利俄斯的 BOSS 卡牌及战斗设置。", "确认解锁")) return;
+        if (!entry.granted()) {
+          if (!await confirmHeliosSpoiler(entry.spoilers[0], "继续")) return;
+          if (!await confirmHeliosSpoiler(entry.spoilers[1], "确认解锁")) return;
           localStorage.setItem(unlockKey, "1");
           syncHeliosAccess(campaign, dashboardCycle);
         }
         bossSearchInput.value = "";
         bossSearchResults.replaceChildren();
+        if (mode === "blackbeak") {
+          // 黑喙是独立 apostle，直接进它自己的入口。
+          blackbeakAccessGranted = true;
+          renderApostle("BLACKBEAK");
+          return;
+        }
+        // 赫利俄斯：清掉可能残留的模式，回到默认（Old Haunt）入口。
+        apostleLevelOverrides.HELIOS = "normal";
+        storeHeliosMode("normal");
+        saveApostleLevelOverrides();
+        ensureHeliosModeOptions();
         renderApostle("HELIOS");
       } finally {
         heliosSearchInFlight = false;
       }
     }
 
+    function searchHelios() {
+      return searchSecret("normal");
+    }
+
     bossSearchInput.addEventListener("input", () => {
       renderBossSearchResults();
-      if (window.AIBP_BOSS_SEARCH.isSecretQuery(bossSearchInput.value.trim())) void searchHelios();
+      const mode = window.AIBP_BOSS_SEARCH.secretMode(bossSearchInput.value.trim());
+      if (mode) void searchSecret(mode);
     });
     bossSearchForm.addEventListener("submit", (event) => {
       event.preventDefault();
       const query = bossSearchInput.value.trim();
       if (!query) return;
-      if (window.AIBP_BOSS_SEARCH.isSecretQuery(query)) {
-        void searchHelios();
+      const secretMode = window.AIBP_BOSS_SEARCH.secretMode(query);
+      if (secretMode) {
+        void searchSecret(secretMode);
         return;
       }
       const matches = window.AIBP_BOSS_SEARCH.find(query);
@@ -7204,6 +7438,7 @@
       } else {
         delete apostleLevelOverrides[currentApostle];
       }
+      if (currentApostle === "HELIOS") storeHeliosMode(heliosMode());
       saveApostleLevelOverrides();
       activateHeliosMode();
       renderApostleTitle();
@@ -7298,8 +7533,8 @@
   <script src="ps/other/resouce/bp_resource_map.js"></script>
   <script src="ps/other/resouce/bp_resource_map_c1_c3.js"></script>
   <script src="ps/other/resouce/bp_resource_map_c4_c5.js?v=20260730e"></script>
-  <script src="c45_specials.js?v=20260925-dahaka-ai-close"></script>
-  <script src="bp_loot_calculator_addon.js?v=20260816-c45-loot-icons"></script>
+  <script src="c45_specials.js?v=20260926-titan-group-layout1"></script>
+  <script src="bp_loot_calculator_addon.js?v=20260926-blackbeak-manual2"></script>
   <script src="../assets/ato-terms.js?v=20260919-chimera"></script>
   <script src="../assets/term-language.js?v=20260923-nocascade"></script>
 </body>

@@ -361,6 +361,9 @@ Add these script tags after the main viewer script:
     if (card && card.special) {
       return `ps/other/${encodePathPart(card.special)}.jpg`;
     }
+    if (card?.src) {
+      return window.HeliosAssets?.resolve ? window.HeliosAssets.resolve(card.src) : card.src;
+    }
 
     const name = fileName || safeCardFileName(card, apostle);
     return `ps/${encodePathPart(apostle)}/${encodePathFileName(name)}`;
@@ -414,7 +417,14 @@ Add these script tags after the main viewer script:
   }
 
   function getResourceMap() {
-    return window[RESOURCE_MAP_NAME] || {};
+    const map = window[RESOURCE_MAP_NAME] || {};
+    if (map.BLACKBEAK || !map.HERMESIAN_PURSUER) return map;
+    return {
+      ...map,
+      BLACKBEAK: Object.fromEntries(Object.entries(map.HERMESIAN_PURSUER)
+        .filter(([file]) => file !== "HERMESIAN_PURSUER_BP_III_006.jpg")
+        .map(([file, resources]) => [file.replace("HERMESIAN_PURSUER", "BLACKBEAK"), resources])),
+    };
   }
 
   function getCurrentApostleData() {
@@ -701,6 +711,7 @@ Add these script tags after the main viewer script:
   }
 
   function resourceMultiplierForApostle(apostle, multiplier) {
+    if (apostle === "BLACKBEAK") return 1;
     if (NO_LEVEL_RESOURCE_MULTIPLIER_APOSTLES.has(apostle)) return 1;
     return Math.max(1, Math.floor(Number(multiplier) || 1));
   }

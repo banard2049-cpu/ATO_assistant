@@ -21,9 +21,13 @@
     ["MEDUKETOS", "美杜莎刻托", "须目塞特斯", "梅杜克托斯"],
     ["UR_FLEECE", "原初羊毛", "乌尔-弗里斯", "乌尔弗里斯", "乌尔羊毛"],
     ["TITAN_X", "泰坦 X", "泰坦十"],
+    ["TITAN_X_GROUP", "万事皆休", "天下没有不散的筵席", "好事成三", "All Good Things",
+      "泰坦 X 三人组", "三台泰坦 X", "7539"],
     ["HELIOS", "赫利俄斯", "赫利奥斯", "海利欧斯", "旧日幽魂", "旧日幽灵",
       "旧日幻影", "旧日魅影", "无情者", "无情之日", "太阳神赫利俄斯",
       "Old Haunt", "Pitiless", "Pitiless Sun"],
+    ["BLACKBEAK", "黑喙", "黑喙追踪者", "黑喙追猎者", "黑嘴",
+      "Blackbeak", "Black Beak", "Blackbeak Pursuer"],
   ].map(([id, label, ...aliases]) => ({ id, label, aliases: [id.replaceAll("_", " "), label, ...aliases] }));
 
   function normalize(value) {
@@ -31,22 +35,33 @@
       .replace(/[\s_\-·•'’.,，。:：]+/g, "");
   }
 
-  const secret = entries.find((entry) => entry.id === "HELIOS");
-  const secretNames = new Set(secret.aliases.map(normalize));
+  // 隐藏 BOSS → AIBP 模式名
+  const SECRET_MODE_BY_ID = { HELIOS: "normal", BLACKBEAK: "blackbeak", TITAN_X_GROUP: "titan-x-group" };
+  const secrets = entries
+    .filter((entry) => SECRET_MODE_BY_ID[entry.id])
+    .map((entry) => ({ ...entry, mode: SECRET_MODE_BY_ID[entry.id] }));
+  const secretNames = new Set(secrets.flatMap((entry) => entry.aliases.map(normalize)));
 
   const api = {
     entries,
     normalize,
     isSecretQuery(query) { return secretNames.has(normalize(query)); },
+    // 命中隐藏 BOSS 时返回对应的 AIBP 模式（"normal" / "blackbeak"），否则 null。
+    secretMode(query) {
+      const needle = normalize(query);
+      const hit = secrets.find((entry) => entry.aliases.some((alias) => normalize(alias) === needle));
+      return hit ? hit.mode : null;
+    },
     canUnlockCycle(cycleId) {
       const match = /^c(\d+)$/i.exec(String(cycleId || ""));
-      return Boolean(match && Number(match[1]) >= 4);
+      // 隐藏 BOSS（赫利俄斯 / 黑喙）都是 C3 及之后才会遇到的内容。
+      return Boolean(match && Number(match[1]) >= 3);
     },
     find(query, includeSecret = false) {
       const needle = normalize(query);
       if (!needle || (secretNames.has(needle) && !includeSecret)) return [];
       return entries.filter((entry) => {
-        if (entry.id === "HELIOS" && !includeSecret) return false;
+        if (SECRET_MODE_BY_ID[entry.id] && !includeSecret) return false;
         return entry.aliases.some((alias) => normalize(alias).includes(needle));
       });
     },

@@ -24,6 +24,8 @@ for (const folder of ["ENVELOPES", "9a10b8d7"]) {
   if (!fs.existsSync(directory)) throw new Error(`缺少赫利俄斯原图：${directory}`);
   collect(directory, folder);
 }
+const secretDeckRoot = path.join(sourceRoot, "SECRET_DECKS");
+if (fs.existsSync(secretDeckRoot)) collect(secretDeckRoot, "SECRET_DECKS");
 
 fs.mkdirSync(outputRoot, { recursive: true });
 const names = new Map();
