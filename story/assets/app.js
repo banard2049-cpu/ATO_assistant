@@ -1888,6 +1888,54 @@
     `;
   }
 
+  // 「拆信封」的正文：C5 0199（打开信封 Y → 旧日幽魂）。这段是主线正文而不是
+  // 战斗模块，battleAibpLink 够不到，所以单独给一个按钮：不跳转，只提示玩家
+  // 去 AIBP 的 BOSS 搜索框里输入「赫利俄斯」，避免剧透又把入口指清楚。
+  const ENVELOPE_AIBP_HINT = "在 AIBP 的 BOSS 搜索框里输入「赫利俄斯」，即可打开隐藏的赫利俄斯 AIBP。";
+  const ENVELOPE_AIBP_TARGETS = new Set(["c5:0199"]);
+
+  function envelopeAibpLink(entry, bookId = "") {
+    if (!ENVELOPE_AIBP_TARGETS.has(`${bookId}:${String(entry?.id || "")}`)) return "";
+    return `
+      <div class="battle-aibp-action envelope-aibp-action" data-envelope-aibp>
+        <button class="battle-aibp-button" type="button" data-aibp-hint="helios">
+          赫利俄斯 AIBP
+        </button>
+      </div>
+    `;
+  }
+
+  function envelopeAibpHintLayer() {
+    let layer = document.getElementById("envelopeAibpHint");
+    if (layer) return layer;
+    layer = document.createElement("div");
+    layer.id = "envelopeAibpHint";
+    layer.className = "aibp-hint-layer";
+    layer.hidden = true;
+    layer.innerHTML = `
+      <div class="aibp-hint-box" role="alertdialog" aria-modal="true" aria-labelledby="envelopeAibpHintText">
+        <p id="envelopeAibpHintText"></p>
+        <button type="button" class="aibp-hint-close">知道了</button>
+      </div>
+    `;
+    layer.addEventListener("click", (event) => {
+      if (event.target === layer || event.target.closest(".aibp-hint-close")) {
+        layer.hidden = true;
+      }
+    });
+    document.body.appendChild(layer);
+    return layer;
+  }
+
+  function showEnvelopeAibpHint() {
+    const layer = envelopeAibpHintLayer();
+    const text = layer.querySelector("#envelopeAibpHintText");
+    if (text) text.textContent = ENVELOPE_AIBP_HINT;
+    layer.hidden = false;
+    const close = layer.querySelector(".aibp-hint-close");
+    if (close) close.focus();
+  }
+
   function configureUtterance(utterance) {
     const preferredVoice = voices.find((voice) => voice.name === ttsConfig.nativeVoice)
       || voices[Number(ttsVoice.value || 0)]
@@ -2722,7 +2770,8 @@
       : displayEntry.chapterKey === "special-aftermath"
         ? renderSectionedStory(displayEntry, imagesHtml)
         : `${linkify(displayEntry.text, currentBook())}${imagesHtml ? `<div class="battle-gallery">${imagesHtml}</div>` : ""}`;
-    storyText.innerHTML = html + renderOfficialScan(entry);
+    const envelopeLink = isTranslatedSupplement ? "" : envelopeAibpLink(displayEntry, entryBookId(displayEntry));
+    storyText.innerHTML = html + envelopeLink + renderOfficialScan(entry);
     annotateEntityTextNodes(storyText);
     refreshSecondScreenStoryContentToggle(Boolean(secondScreenStoryModeToggle?.checked));
   }
@@ -4013,6 +4062,13 @@
   });
 
   window.atoStoryNavigate = navigateToStoryTarget;
+  // 信封段落的按钮只弹提示，不跳转（隐藏 BOSS 的剧透保护）。
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-aibp-hint]");
+    if (!button) return;
+    event.preventDefault();
+    showEnvelopeAibpHint();
+  });
   window.addEventListener("focus", refreshSecondScreenStoryModeToggle);
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) refreshSecondScreenStoryModeToggle();

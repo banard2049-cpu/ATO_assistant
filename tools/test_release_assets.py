@@ -87,7 +87,7 @@ def check_notes_wiring(failures: list[str]) -> None:
 
 
 def check_release_notes_files(failures: list[str]) -> None:
-    """每份公告都要按 v<版本>.md 命名，并保留 更新 / 下载 / 验证 三段。"""
+    """公告按版本命名；重大剧透版本只保留用户指定的提示。"""
     notes_dir = ROOT / "release-notes"
     if not notes_dir.is_dir():
         failures.append("缺少 release-notes/ 目录")
@@ -101,6 +101,11 @@ def check_release_notes_files(failures: list[str]) -> None:
             failures.append(f"公告文件名不符合 v<版本>.md：{path.name}")
             continue
         text = read(path)
+        if path.name == "v2.1.0.md":
+            expected = "更新内容涉及重大剧透，因此不做介绍。\n\n建议 C4 及以后玩家更新。\n\n请 C4 及以后玩家同时更新资源包。"
+            if text.strip() != expected:
+                failures.append("v2.1.0.md 必须只包含剧透提示与资源包更新提醒")
+            continue
         for section in ("## 更新", "## 下载", "## 验证"):
             if section not in text:
                 failures.append(f"{path.name} 缺少段落 {section}")

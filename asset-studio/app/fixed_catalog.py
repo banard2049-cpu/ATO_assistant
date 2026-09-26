@@ -1383,6 +1383,58 @@ def fixed_catalog_payload() -> dict[str, Any]:
     return payload
 
 
+def collect_supplemental_resources(ato_root: Path) -> tuple[list[CatalogItem], set[str]]:
+    """登记 ``aibp/ps/other/`` 里"不在内置清单、但必须随资源包分发"的**素材**。
+
+    内置清单只覆盖 ``token/``、``resouce/`` 图片、``status/`` 三个前缀；这里补上
+    ``3b6e9d20/*.bin``——赫利俄斯卡图：``aibp/b4d7e218.js`` 在运行时按源 URL 的
+    FNV-1a 哈希 ``fetch('ps/other/3b6e9d20/<hash>.bin')``，缺一张就整批加载失败。
+
+    不登记同一目录下的 ``*.js``（``bp_resource_map*.js``、``token_manifest.js``）：
+    那些是**程序数据**，由 ``aibp/index.html`` 以 ``<script src>`` 直接引用、随程序包
+    （Portable / Docker / APK）分发——见 tools/packaging/docker/compose.yaml 与
+    tools/test_packaging_exclusions.py 的既定口径；塞进资源包等于走错分发渠道。
+
+    目录里缺哪张就登记哪张；隐藏文件跳过。
+    """
+    base = Path(ato_root) / "aibp" / "ps" / "other"
+    if not base.is_dir():
+        return [], set()
+    items: list[CatalogItem] = []
+    paths: set[str] = set()
+    members = sorted(
+        (
+            member
+            for member in base.rglob("*")
+            if member.is_file() and member.suffix.casefold() == ".bin"
+        ),
+        key=lambda member: member.relative_to(base).as_posix(),
+    )
+    for order, member in enumerate(members):
+        relative = member.relative_to(base).as_posix()
+        if member.name.startswith("."):
+            continue
+        target = f"aibp/ps/other/{relative}"
+        if target in paths:
+            continue
+        number = member.name
+        items.append(
+            CatalogItem(
+                id=make_id("common", "决战版图", "赫利俄斯卡图", number, relative),
+                cycle="common",
+                module="决战版图",
+                subgroup="赫利俄斯卡图",
+                name=component_display_name(target, member.stem),
+                number=number,
+                sort_order=52000 + order,
+                faces={"front": target},
+                capture_required=0,
+            )
+        )
+        paths.add(target)
+    return items, paths
+
+
 def ensure_fixed_catalog(db: Database) -> dict[str, int]:
     payload = fixed_catalog_payload()
     source = payload["source"]

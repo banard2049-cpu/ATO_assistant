@@ -399,6 +399,117 @@
       line-height: 0;
     }
 
+    .nav button[hidden] {
+      display: none;
+    }
+
+    .spoiler-dialog {
+      width: min(560px, calc(100vw - 32px));
+      max-height: min(760px, calc(100vh - 32px));
+      padding: 22px;
+      border: 1px solid rgba(199, 173, 114, 0.5);
+      border-radius: 12px;
+      background: #191613;
+      color: var(--text);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.7);
+    }
+
+    .spoiler-dialog::backdrop {
+      background: rgba(0, 0, 0, 0.8);
+    }
+
+    .spoiler-dialog h2 {
+      margin: 0 0 14px;
+      color: var(--gold);
+    }
+
+    .boss-search-form,
+    .spoiler-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .sidebar-boss-search {
+      margin-bottom: 14px;
+    }
+
+    .sidebar-boss-search label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--gold);
+      font-size: 14px;
+    }
+
+    .sidebar-boss-search .boss-search-form {
+      gap: 6px;
+    }
+
+    .boss-search-form input {
+      flex: 1;
+      min-width: 0;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #100f0e;
+      color: var(--text);
+      font: inherit;
+    }
+
+    .boss-search-form button,
+    .spoiler-actions button {
+      padding: 10px 14px;
+      border-radius: 8px;
+    }
+
+    .sidebar-boss-search .boss-search-form button {
+      padding: 10px;
+    }
+
+    .boss-search-results {
+      display: grid;
+      gap: 8px;
+      margin-top: 14px;
+      max-height: 35vh;
+      overflow: auto;
+    }
+
+    .boss-search-results button {
+      padding: 11px 12px;
+      border-radius: 8px;
+      text-align: left;
+    }
+
+    .boss-search-results small {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+    }
+
+    .spoiler-dialog p {
+      line-height: 1.6;
+    }
+
+    .spoiler-actions {
+      justify-content: flex-end;
+      margin-top: 18px;
+    }
+
+    .panel-frame.rotated-panel {
+      width: calc(var(--panel-image-height) * 1.45013);
+      height: var(--panel-image-height);
+    }
+
+    .panel-frame.rotated-panel > .panel-image {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: var(--panel-image-height);
+      height: calc(var(--panel-image-height) * 1.45013);
+      max-width: none;
+      transform-origin: top left;
+      transform: rotate(-90deg);
+    }
+
     .panel-state-marker {
       position: absolute;
       left: var(--marker-left, 50%);
@@ -842,6 +953,10 @@
       transform: translateY(-1px);
       border-color: rgba(199, 173, 114, 0.58);
       background: #241916;
+    }
+
+    #traitButton[hidden] {
+      display: none;
     }
 
     #drawAiButton,
@@ -1575,6 +1690,24 @@
       cursor: default;
     }
 
+    .image-zoom-card-stage.rotated-card {
+      --rotated-height: min(90vh, 62vw);
+      width: calc(var(--rotated-height) * 1.45013);
+      height: var(--rotated-height);
+    }
+
+    .image-zoom-card-stage.rotated-card > img {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: var(--rotated-height);
+      height: calc(var(--rotated-height) * 1.45013);
+      max-width: none;
+      max-height: none;
+      transform-origin: top left;
+      transform: rotate(-90deg);
+    }
+
     .image-zoom-card-tokens {
       position: absolute;
       inset: 0;
@@ -1910,11 +2043,19 @@
   <link rel="stylesheet" href="c45_specials.css?v=20260816-demidjinn-wish-top">
   <link rel="stylesheet" href="battle_map_control.css?v=20260819-c5-light1">
 </head>
-<body class="sidebar-collapsed">
-  <button type="button" class="sidebar-toggle" id="sidebarToggle" aria-label="展开左侧边栏" title="展开/折叠左侧边栏">☰</button>
+<body>
+  <button type="button" class="sidebar-toggle" id="sidebarToggle" aria-label="折叠左侧边栏" title="展开/折叠左侧边栏">×</button>
   <div class="app">
     <aside>
       <h1>使徒</h1>
+      <div class="sidebar-boss-search">
+        <label for="bossSearchInput">搜索 BOSS</label>
+        <form class="boss-search-form" id="bossSearchForm">
+          <input id="bossSearchInput" type="search" autocomplete="off" aria-label="BOSS 名称" placeholder="英文或中文名称">
+          <button type="submit">搜索</button>
+        </form>
+        <div class="boss-search-results" id="bossSearchResults" aria-live="polite"></div>
+      </div>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -1934,6 +2075,7 @@
             <option value="7">等级 VII</option>
             <option value="8">等级 VIII</option>
             <option value="9">等级 IX</option>
+            <option value="10" hidden disabled>等级 X</option>
           </select>
         </div>
         <div class="title-actions">
@@ -2185,6 +2327,15 @@
   </dialog>
 
 
+  <dialog class="spoiler-dialog" id="heliosSpoilerDialog" aria-labelledby="heliosSpoilerTitle">
+    <h2 id="heliosSpoilerTitle">剧透警告</h2>
+    <p id="heliosSpoilerMessage"></p>
+    <div class="spoiler-actions">
+      <button type="button" id="heliosSpoilerCancel">取消</button>
+      <button type="button" id="heliosSpoilerContinue">继续</button>
+    </div>
+  </dialog>
+
   <div class="image-zoom-overlay" id="imageZoomOverlay" aria-hidden="true">
     <button type="button" class="image-zoom-close" id="imageZoomClose" aria-label="关闭放大图">×</button>
     <div class="image-zoom-content">
@@ -2221,6 +2372,9 @@
   <script src="../ss/terrain-data.js?v=20260819-c5-light1"></script>
   <script src="battle_los.js?v=20260819-hekaton4-labyrinthauros-start1"></script>
   <script src="battle_map_control.js?v=20260924-double-click"></script>
+  <script src="b4d7e218.js"></script>
+  <script src="c9f0a6d3.js"></script>
+  <script src="boss-search.js"></script>
   <script>
     const apostles = [
       "HEKATON",
@@ -2241,7 +2395,8 @@
       "DRAGON_OF_PHOBOS",
       "MEDUKETOS",
       "UR_FLEECE",
-      "TITAN_X"
+      "TITAN_X",
+      "HELIOS"
     ];
     const aiViews = ["当前", "弃牌", "移除", "II", "III"];
     const bpViews = ["当前", "弃牌", "损伤", "移除", "II", "III"];
@@ -2317,6 +2472,8 @@
     let tokenStackSequence = 0;
     const apostleLevelOverrideKey = "aibp-apostle-level-overrides-v1";
     const recordStorageUrl = "../api/campaign-state.php";
+    const linkedCycleId = /^c[1-5]$/i.test(new URLSearchParams(window.location.search).get("cycle") || "")
+      ? new URLSearchParams(window.location.search).get("cycle").toLowerCase() : "";
     const apostleRecordTracks = {
       HEKATON: { cycle: "c1", key: "hekaton" },
       LABYRINTHAUROS: { cycle: "c1", key: "labyrinthauros" },
@@ -2348,7 +2505,8 @@
       6: "VI",
       7: "VII",
       8: "VIII",
-      9: "IX"
+      9: "IX",
+      10: "X"
     };
     const fixedLevelOneApostles = new Set([
       "HERMESIAN_PURSUER",
@@ -2418,6 +2576,9 @@
       },
       UR_FLEECE: {},
       TITAN_X: {
+        1: { promotions: 1, danger: 0, at: 0 }
+      },
+      HELIOS: {
         1: { promotions: 1, danger: 0, at: 0 }
       }
     };
@@ -2517,9 +2678,23 @@
 
     const sidebarToggle = document.getElementById("sidebarToggle");
     const nav = document.getElementById("nav");
+    const bossSearchForm = document.getElementById("bossSearchForm");
+    const bossSearchInput = document.getElementById("bossSearchInput");
+    const bossSearchResults = document.getElementById("bossSearchResults");
+    const heliosSpoilerDialog = document.getElementById("heliosSpoilerDialog");
+    const heliosSpoilerMessage = document.getElementById("heliosSpoilerMessage");
+    const heliosSpoilerCancel = document.getElementById("heliosSpoilerCancel");
+    const heliosSpoilerContinue = document.getElementById("heliosSpoilerContinue");
     const title = document.getElementById("title");
     const mapFactionStatus = document.getElementById("mapFactionStatus");
     const apostleLevelSelect = document.getElementById("apostleLevelSelect");
+    for (const [value, label] of [["c4", "特殊等级 · C4"]]) {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = label;
+      apostleLevelSelect.appendChild(option);
+    }
+
     const folderPath = document.getElementById("folderPath");
     const nietzscheStateButton = document.getElementById("nietzscheStateButton");
     const panelWrap = document.getElementById("panelWrap");
@@ -2612,10 +2787,12 @@
     function initialApostle() {
       const params = new URLSearchParams(window.location.search);
       const requested = normalizeApostleName(params.get("apostle") || decodeURIComponent(window.location.hash.replace(/^#/, "")));
-      return apostles.find((name) => name === requested) || apostles[0];
+      return requested !== "HELIOS" && apostles.includes(requested) ? requested : apostles[0];
     }
 
     let currentApostle = initialApostle();
+    let heliosAccessGranted = false;
+    let heliosAccountId = "";
     let currentAiView = "弃牌";
     let currentBpView = "弃牌";
     let nietzscheStateIndex = Number(localStorage.getItem(nietzscheStateKey) || String(nietzscheDefaultStateIndex));
@@ -2659,6 +2836,15 @@
         const history = saved.undoStacks;
         delete saved.activeScry;
         delete saved.undoStacks;
+        const wasC3 = saved.HELIOS_ACTIVE_MODE === "c3";
+        const hadC3 = wasC3 || saved.HELIOS_STATES?.c3 || saved.HELIOS_UNDO?.c3;
+        if (saved.HELIOS_STATES) delete saved.HELIOS_STATES.c3;
+        if (saved.HELIOS_UNDO) delete saved.HELIOS_UNDO.c3;
+        if (wasC3) {
+          delete saved.HELIOS;
+          delete saved.HELIOS_ACTIVE_MODE;
+          if (isPlainObject(history)) delete history.HELIOS;
+        }
         Object.assign(piles, saved);
         if (isPlainObject(history)) {
           apostles.forEach((name) => {
@@ -2670,9 +2856,11 @@
             }
           });
         }
-        if (Array.isArray(session?.cards) && session.cards.length > 0 && ["AI", "BP"].includes(session.type)) {
+        if (!(wasC3 && session?.apostle === "HELIOS")
+          && Array.isArray(session?.cards) && session.cards.length > 0 && ["AI", "BP"].includes(session.type)) {
           activeScry = session;
         }
+        if (hadC3) savePiles();
       } catch {
         localStorage.removeItem(storageKey);
       }
@@ -2737,7 +2925,7 @@
       if (!card) return null;
       const src = card.special
         ? `ps/other/${card.special}.jpg`
-        : `ps/${currentApostle}/${cardFileName(card)}`;
+        : cardSrc(card);
       return {
         src,
         label: card.special
@@ -2764,11 +2952,21 @@
       return {
         version: 1,
         apostle: currentApostle,
-        title: currentApostle.replaceAll("_", " "),
-        level: levelRoman[currentApostleLevel()] || String(currentApostleLevel()),
-        panelSrc: `ps/${currentApostle}/${currentApostle}.jpg`,
-        routineSrc: `ps/${currentApostle}/${currentApostle}_ROUTINE_X_001.jpg`,
-        signatureSrc: `ps/${currentApostle}/${currentApostle}_SIGNATURE_X_001.jpg`,
+        title: currentApostle === "HELIOS"
+          ? window.HeliosConfig.modes[heliosMode()].label
+          : currentApostle.replaceAll("_", " "),
+        level: currentApostle === "HELIOS" && heliosMode() !== "normal"
+          ? heliosMode().toUpperCase()
+          : levelRoman[currentApostleLevel()] || String(currentApostleLevel()),
+        panelSrc: currentApostle === "HELIOS"
+          ? window.HeliosConfig.panelFor(heliosMode(), currentApostleLevel())
+          : `ps/${currentApostle}/${currentApostle}.jpg`,
+        routineSrc: currentApostle === "HELIOS"
+          ? window.HeliosConfig.common.routine
+          : `ps/${currentApostle}/${currentApostle}_ROUTINE_X_001.jpg`,
+        signatureSrc: currentApostle === "HELIOS"
+          ? window.HeliosConfig.common.signature
+          : `ps/${currentApostle}/${currentApostle}_SIGNATURE_X_001.jpg`,
         traits: (state.traits || []).map((card) => ({
           src: traitCardSrc(currentApostle, card),
           label: traitCardLabel(card),
@@ -3053,7 +3251,7 @@
 
     function imageOrMessage(src, alt, className = "") {
       const img = document.createElement("img");
-      img.src = src;
+      img.src = window.HeliosAssets.resolve(src);
       img.alt = alt;
       img.className = className;
       img.onerror = () => {
@@ -3082,6 +3280,7 @@
     }
 
     function pileCardCount(type, level, apostle = currentApostle) {
+      if (apostle === "HELIOS") return window.HeliosConfig.cards(heliosMode(), type, level).length;
       return cardCountOverrides[apostle]?.[type]?.[level] ?? cardCount;
     }
 
@@ -3129,7 +3328,7 @@
     }
 
     function initialState() {
-      return {
+      const result = {
         AI: {
           deck: shuffleCards(defaultPile("AI")),
           discard: [],
@@ -3166,6 +3365,19 @@
         lastPendingType: "",
         aiExhaustedBonusIndex: 0
       };
+      if (currentApostle === "HELIOS") {
+        const config = window.HeliosConfig;
+        const mode = heliosMode();
+        for (const type of ["AI", "BP"]) {
+          result[type].deck = shuffleCards(config.cards(mode, type, "I"));
+          result[type].supply = {
+            I: [],
+            II: shuffleCards(config.cards(mode, type, "II")),
+            III: shuffleCards(config.cards(mode, type, "III")),
+          };
+        }
+      }
+      return result;
     }
 
     function ensurePiles(name) {
@@ -3327,6 +3539,10 @@
     function loadApostleLevelOverrides() {
       try {
         const value = JSON.parse(localStorage.getItem(apostleLevelOverrideKey) || "{}");
+        if (value?.HELIOS === "c3") {
+          delete value.HELIOS;
+          localStorage.setItem(apostleLevelOverrideKey, JSON.stringify(value));
+        }
         return value && typeof value === "object" ? value : {};
       } catch {
         return {};
@@ -3512,8 +3728,10 @@
       mapFactionStatus.appendChild(chip);
     }
 
-    function applyCampaignMapFactionState(campaign) {
+    function applyCampaignMapFactionState(campaign, user) {
+      heliosAccountId = String(user?.id || "");
       const dashboardCycle = activeDashboardCycleFromCampaign(campaign);
+      syncHeliosAccess(campaign, dashboardCycle);
       const mapState = dashboardMapFactions(dashboardCycle);
       campaignMapFactionState = {
         ...mapState,
@@ -3529,7 +3747,7 @@
         const response = await fetch(recordStorageUrl, { cache: "no-store" });
         if (!response.ok) return;
         const payload = await response.json();
-        applyCampaignMapFactionState(payload?.campaign);
+        applyCampaignMapFactionState(payload?.campaign, payload?.user);
       } catch {
         renderMapFactionStatus();
       } finally {
@@ -3542,7 +3760,7 @@
         const response = await fetch(recordStorageUrl, { cache: "no-store" });
         if (!response.ok) return;
         const payload = await response.json();
-        applyCampaignMapFactionState(payload?.campaign);
+        applyCampaignMapFactionState(payload?.campaign, payload?.user);
         const recordState = recordStateFromCampaign(payload?.campaign);
         if (!recordState) return;
         recordApostleLevels = Object.fromEntries(
@@ -3562,12 +3780,56 @@
       }
     }
 
+    function heliosMode() {
+      return apostleLevelOverrides.HELIOS === "c4"
+        ? apostleLevelOverrides.HELIOS : "normal";
+    }
+
+    function heliosUnlockKey(campaign) {
+      if (campaignSession?.changed) return "";
+      const dashboard = campaign?.sections?.dashboard;
+      const profileId = dashboard?.profiles?.[dashboard.activeProfileId]
+        ? dashboard.activeProfileId : Object.keys(dashboard?.profiles || {})[0];
+      const sessionAccountId = currentCampaignAccountId();
+      if (sessionAccountId && heliosAccountId && sessionAccountId !== heliosAccountId) return "";
+      const accountId = sessionAccountId || heliosAccountId;
+      if (!profileId || !dashboard?.profiles?.[profileId] || !accountId) return "";
+      return `aibp-helios-unlock-v2:${accountId}:${profileId}`;
+    }
+
+    function syncHeliosAccess(campaign, dashboardCycle = activeDashboardCycleFromCampaign(campaign)) {
+      const key = heliosUnlockKey(campaign);
+      heliosAccessGranted = Boolean(key && (!linkedCycleId || dashboardCycle?.cycleId === linkedCycleId)
+        && window.AIBP_BOSS_SEARCH.canUnlockCycle(dashboardCycle?.cycleId)
+        && localStorage.getItem(key) === "1");
+      const button = nav.querySelector('button[data-name="HELIOS"]');
+      if (button) button.hidden = !heliosAccessGranted;
+      if (!heliosAccessGranted && currentApostle === "HELIOS") renderApostle(apostles[0]);
+    }
+
+    function activateHeliosMode() {
+      if (currentApostle !== "HELIOS") return;
+      const mode = heliosMode();
+      if (piles.HELIOS_ACTIVE_MODE === mode && piles.HELIOS) return;
+      piles.HELIOS_STATES ||= {};
+      piles.HELIOS_UNDO ||= {};
+      if (piles.HELIOS_ACTIVE_MODE && piles.HELIOS) {
+        piles.HELIOS_STATES[piles.HELIOS_ACTIVE_MODE] = piles.HELIOS;
+        piles.HELIOS_UNDO[piles.HELIOS_ACTIVE_MODE] = undoStacks.HELIOS || [];
+      }
+      piles.HELIOS = piles.HELIOS_STATES[mode] || initialState();
+      undoStacks.HELIOS = piles.HELIOS_UNDO[mode] || [];
+      piles.HELIOS_ACTIVE_MODE = mode;
+      savePiles();
+    }
+
     function apostleLevelFor(name) {
       const override = Number(apostleLevelOverrides[name]);
-      if (override >= 1 && override <= maxApostleLevel) return override;
+      const upperLevel = name === "HELIOS" ? 10 : maxApostleLevel;
+      if (override >= 1 && override <= upperLevel) return override;
       if (fixedLevelOneApostles.has(name)) return 1;
       const recordLevel = Number(recordApostleLevels[name]);
-      if (recordLevel >= 1 && recordLevel <= maxApostleLevel) return recordLevel;
+      if (recordLevel >= 1 && recordLevel <= maxApostleLevel) return Math.min(recordLevel, upperLevel);
       return 1;
     }
 
@@ -3577,11 +3839,23 @@
 
     function renderApostleTitle() {
       const level = currentApostleLevel();
-      title.textContent = `${currentApostle.replaceAll("_", " ")} · ${levelRoman[level] || level}`;
+      const special = currentApostle === "HELIOS" ? heliosMode() : "normal";
+      title.textContent = special === "normal"
+        ? `${currentApostle.replaceAll("_", " ")} · ${levelRoman[level] || level}`
+        : `HELIOS · ${window.HeliosConfig.modes[special].label}`;
       renderMapFactionStatus();
       const fixedAtOne = fixedLevelOneApostles.has(currentApostle);
       apostleLevelSelect.disabled = false;
+      Array.from(apostleLevelSelect.options).forEach((option) => {
+        const specialOption = option.value === "c4";
+        option.hidden = specialOption ? currentApostle !== "HELIOS"
+          : currentApostle !== "HELIOS" && option.value === "10";
+        option.disabled = option.hidden;
+      });
       apostleLevelSelect.value = apostleLevelOverrides[currentApostle]
+        && (currentApostle !== "HELIOS"
+          || apostleLevelOverrides[currentApostle] === "c4"
+          || Number(apostleLevelOverrides[currentApostle]) <= 10)
         ? String(apostleLevelOverrides[currentApostle])
         : "";
       const recordLevel = Number(recordApostleLevels[currentApostle]) || 0;
@@ -3593,7 +3867,9 @@
       document.querySelectorAll("#nav button[data-name]").forEach((button) => {
         const name = button.dataset.name;
         const navLevel = apostleLevelFor(name);
-        button.textContent = `${name.replaceAll("_", " ")} · ${levelRoman[navLevel] || navLevel}`;
+        button.textContent = name === "HELIOS" && heliosMode() !== "normal"
+          ? `HELIOS · ${heliosMode().toUpperCase()}`
+          : `${name.replaceAll("_", " ")} · ${levelRoman[navLevel] || navLevel}`;
       });
     }
 
@@ -3820,6 +4096,7 @@
       if (card.special) {
         return `ps/other/${card.special}.jpg`;
       }
+      if (card.src) return window.HeliosAssets.resolve(card.src);
       return `ps/${currentApostle}/${cardFileName(card)}`;
     }
 
@@ -4126,6 +4403,7 @@
 
     function scryCardSrc(card, apostle) {
       if (card?.special) return `ps/other/${card.special}.jpg`;
+      if (card?.src) return window.HeliosAssets.resolve(card.src);
       return `ps/${apostle}/${cardFileName(card, apostle)}`;
     }
 
@@ -4361,6 +4639,7 @@
     }
 
     function cardBackImageSrc(card, frontSrc) {
+      if (card?.backSrc) return window.HeliosAssets.resolve(card.backSrc);
       if (card?.specialBp || card?.backLevel === "III") {
         return `ps/${currentApostle}/${currentApostle}_BP_III_001_BACK.jpg`;
       }
@@ -5312,6 +5591,7 @@
     }
 
     function automaticTraitLevels() {
+      if (currentApostle === "HELIOS") return [];
       const levels = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"];
       return [...levels.slice(0, currentApostleLevel()), "X"];
     }
@@ -5532,6 +5812,18 @@
 
     function renderExtraCards() {
       ensurePiles(currentApostle);
+      if (currentApostle === "HELIOS") {
+        extraGrid.replaceChildren();
+        window.HeliosConfig.extras(heliosMode()).forEach((card) => {
+          const img = imageOrMessage(card.src, card.label);
+          img.dataset.frontSrc = window.HeliosAssets.resolve(card.src);
+          img.dataset.backSrc = window.HeliosAssets.resolve(card.backSrc);
+          img.dataset.face = "front";
+          img.title = `${card.label}；点击放大，放大后可翻面`;
+          extraGrid.appendChild(img);
+        });
+        return;
+      }
       const base = `ps/${currentApostle}`;
       const candidates = [];
       let loaded = 0;
@@ -6060,7 +6352,8 @@
     function openImageZoom(src, alt = "放大图片", onClose = null, options = {}) {
       if (!src) return;
       zoomCloseAction = typeof onClose === "function" ? onClose : null;
-      imageZoomImg.src = src;
+      imageZoomImg.parentElement.classList.toggle("rotated-card", options.rotation === -90);
+      imageZoomImg.src = window.HeliosAssets.resolve(src);
       imageZoomImg.alt = alt || "放大图片";
       const noticeItems = Array.isArray(options.noticeImages) ? options.noticeImages : [];
       const sideNotices = options.noticeLayout === "sides" && noticeItems.length > 0;
@@ -6105,6 +6398,7 @@
       imageZoomOverlay.classList.remove("show");
       imageZoomOverlay.setAttribute("aria-hidden", "true");
       imageZoomImg.removeAttribute("src");
+      imageZoomImg.parentElement.classList.remove("rotated-card");
       imageZoomNotice.replaceChildren();
       imageZoomNotice.classList.remove("show");
       imageZoomNotice.parentElement.classList.remove("has-notice");
@@ -6133,6 +6427,7 @@
       const isBpImage = Boolean(img.closest("#bpGrid, #bpDrawPreview"));
       const cardTokenType = zoomCardTokenTypeFromImage(img);
       openImageZoom(img.currentSrc || img.src, img.alt, null, {
+        rotation: Number(img.dataset.rotate || 0),
         flipContext: flipContextFromImage(img),
         moveContext: moveContextFromImage(img),
         tokenContext: tokenContextFromImage(img),
@@ -6331,9 +6626,15 @@
     }
 
     function renderPanelImage(base, name) {
-      const img = imageOrMessage(`${base}/${name}.jpg`, `${name} panel`, "panel-image");
+      const panelSrc = name === "HELIOS"
+        ? window.HeliosConfig.panelFor(heliosMode(), currentApostleLevel())
+        : `${base}/${name}.jpg`;
+      const img = imageOrMessage(panelSrc, `${name} panel`, "panel-image");
       const frame = document.createElement("div");
       frame.className = "panel-frame";
+      const rotated = name === "HELIOS" && heliosMode() === "normal" && currentApostleLevel() >= 5;
+      frame.classList.toggle("rotated-panel", rotated);
+      if (rotated) img.dataset.rotate = "-90";
 
       const tokenLayer = document.createElement("div");
       tokenLayer.className = "panel-token-layer";
@@ -6375,13 +6676,18 @@
     }
 
     function renderFlipCard(wrap, base, name, kind) {
-      const frontSrc = `${base}/${name}_${kind}_X_001.jpg`;
-      const backSrc = `${base}/${name}_${kind}_X_001_BACK.jpg`;
+      const helios = name === "HELIOS" ? window.HeliosConfig.common : null;
+      const frontSrc = helios
+        ? helios[kind.toLowerCase()]
+        : `${base}/${name}_${kind}_X_001.jpg`;
+      const backSrc = helios
+        ? helios[`${kind.toLowerCase()}Back`]
+        : `${base}/${name}_${kind}_X_001_BACK.jpg`;
       const label = kind.toLowerCase();
       const img = imageOrMessage(frontSrc, `${name} ${label}`, "side-card-image");
       img.id = `${kind.toLowerCase()}CardImage`;
-      img.dataset.frontSrc = frontSrc;
-      img.dataset.backSrc = backSrc;
+      img.dataset.frontSrc = window.HeliosAssets.resolve(frontSrc);
+      img.dataset.backSrc = window.HeliosAssets.resolve(backSrc);
       img.dataset.face = "front";
       img.title = "点击放大，放大后可翻面";
       wrap.replaceChildren(img);
@@ -6400,8 +6706,21 @@
       updateNietzscheStateUi(marker);
     }
 
+    let heliosRenderRequest = 0;
     function renderApostle(name) {
+      const request = ++heliosRenderRequest;
+      if (name === "HELIOS" && !heliosAccessGranted) return;
+      if (name === "HELIOS" && !window.HeliosAssets.isReady()) {
+        title.textContent = "HELIOS · 正在加载资源";
+        void window.HeliosAssets.ready(window.HeliosConfig).then(() => {
+          if (request === heliosRenderRequest) renderApostle(name);
+        }).catch((error) => {
+          if (request === heliosRenderRequest) title.textContent = `HELIOS · ${error.message}`;
+        });
+        return;
+      }
       currentApostle = name;
+      activateHeliosMode();
       ensurePiles(name);
       applyBurdenInitialLinkedPromotion();
       applyCurrentApostleLevelBonuses();
@@ -6409,6 +6728,7 @@
       updateBpViewTabs();
       const base = `ps/${name}`;
       renderApostleTitle();
+      traitButton.hidden = name === "HELIOS";
       folderPath.textContent = base;
       if (window.location.hash !== `#${name}`) {
         history.replaceState(null, "", `#${name}`);
@@ -6610,8 +6930,120 @@
       button.type = "button";
       button.dataset.name = name;
       button.textContent = name.replaceAll("_", " ");
+      if (name === "HELIOS") button.hidden = true;
       button.addEventListener("click", () => renderApostle(name));
       nav.appendChild(button);
+    });
+
+    function renderBossSearchResults() {
+      const query = bossSearchInput.value.trim();
+      bossSearchResults.replaceChildren();
+      if (!query || window.AIBP_BOSS_SEARCH.isSecretQuery(query)) return;
+      const matches = window.AIBP_BOSS_SEARCH.find(query);
+      for (const match of matches) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = `${match.label} · ${match.id.replaceAll("_", " ")}`;
+        button.addEventListener("click", () => {
+          bossSearchInput.value = "";
+          bossSearchResults.replaceChildren();
+          renderApostle(match.id);
+        });
+        bossSearchResults.appendChild(button);
+      }
+      if (!matches.length) bossSearchResults.textContent = "未找到 BOSS";
+    }
+
+    function confirmHeliosSpoiler(message, buttonText) {
+      return new Promise((resolve) => {
+        heliosSpoilerMessage.textContent = message;
+        heliosSpoilerContinue.textContent = buttonText;
+        const finish = (confirmed) => {
+          heliosSpoilerContinue.removeEventListener("click", onContinue);
+          heliosSpoilerCancel.removeEventListener("click", onCancel);
+          heliosSpoilerDialog.removeEventListener("cancel", onCancel);
+          if (heliosSpoilerDialog.open) heliosSpoilerDialog.close();
+          resolve(confirmed);
+        };
+        const onContinue = () => finish(true);
+        const onCancel = (event) => { event?.preventDefault(); finish(false); };
+        heliosSpoilerContinue.addEventListener("click", onContinue);
+        heliosSpoilerCancel.addEventListener("click", onCancel);
+        heliosSpoilerDialog.addEventListener("cancel", onCancel);
+        heliosSpoilerDialog.showModal();
+      });
+    }
+
+    let heliosSearchInFlight = false;
+    async function readCurrentHeliosCampaign() {
+      for (let attempt = 0; attempt < 6; attempt += 1) {
+        try {
+          const response = await fetch(recordStorageUrl, { cache: "no-store" });
+          if (response.ok) {
+            const payload = await response.json();
+            const campaign = payload?.campaign;
+            const cycleId = activeDashboardCycleFromCampaign(campaign)?.cycleId;
+            const accountId = String(payload?.user?.id || "");
+            if (payload?.ok && accountId && cycleId && (!linkedCycleId || cycleId === linkedCycleId)
+              && (!currentCampaignAccountId() || currentCampaignAccountId() === accountId)) {
+              heliosAccountId = accountId;
+              return campaign;
+            }
+          }
+        } catch { /* 主控制台保存可能仍在进行，稍后重读。 */ }
+        if (attempt < 5) await new Promise((resolve) => window.setTimeout(resolve, 300));
+      }
+      return null;
+    }
+
+    async function searchHelios() {
+      if (heliosSearchInFlight) return;
+      heliosSearchInFlight = true;
+      try {
+        const campaign = await readCurrentHeliosCampaign();
+        if (!campaign) {
+          bossSearchResults.textContent = "暂时无法确认主控制台循环，请等待存档同步后重试。";
+          return;
+        }
+        const dashboardCycle = activeDashboardCycleFromCampaign(campaign);
+        syncHeliosAccess(campaign, dashboardCycle);
+        if (!window.AIBP_BOSS_SEARCH.canUnlockCycle(dashboardCycle?.cycleId)) return;
+        const unlockKey = heliosUnlockKey(campaign);
+        if (!unlockKey) return;
+        if (!heliosAccessGranted) {
+          if (!await confirmHeliosSpoiler("这里包含 C4 及后续循环的 BOSS 剧透。确定继续吗？", "继续")) return;
+          if (!await confirmHeliosSpoiler("再次确认：将解锁赫利俄斯的 BOSS 卡牌及战斗设置。", "确认解锁")) return;
+          localStorage.setItem(unlockKey, "1");
+          syncHeliosAccess(campaign, dashboardCycle);
+        }
+        bossSearchInput.value = "";
+        bossSearchResults.replaceChildren();
+        renderApostle("HELIOS");
+      } finally {
+        heliosSearchInFlight = false;
+      }
+    }
+
+    bossSearchInput.addEventListener("input", () => {
+      renderBossSearchResults();
+      if (window.AIBP_BOSS_SEARCH.isSecretQuery(bossSearchInput.value.trim())) void searchHelios();
+    });
+    bossSearchForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const query = bossSearchInput.value.trim();
+      if (!query) return;
+      if (window.AIBP_BOSS_SEARCH.isSecretQuery(query)) {
+        void searchHelios();
+        return;
+      }
+      const matches = window.AIBP_BOSS_SEARCH.find(query);
+      if (matches.length === 1) {
+        bossSearchInput.value = "";
+        bossSearchResults.replaceChildren();
+        renderApostle(matches[0].id);
+      } else {
+        renderBossSearchResults();
+      }
     });
 
     aiViews.forEach((view) => {
@@ -6739,13 +7171,22 @@
     secondScreenBattleModeToggle?.addEventListener("change", toggleSecondScreenBattleMode);
     apostleLevelSelect.addEventListener("change", () => {
       const level = Number(apostleLevelSelect.value);
-      if (level >= 1 && level <= maxApostleLevel) {
+      if (currentApostle === "HELIOS" && apostleLevelSelect.value === "c4") {
+        apostleLevelOverrides[currentApostle] = apostleLevelSelect.value;
+      } else if (level >= 1 && level <= (currentApostle === "HELIOS" ? 10 : maxApostleLevel)) {
         apostleLevelOverrides[currentApostle] = level;
       } else {
         delete apostleLevelOverrides[currentApostle];
       }
       saveApostleLevelOverrides();
+      activateHeliosMode();
       renderApostleTitle();
+      if (currentApostle === "HELIOS") {
+        const base = "ps/HELIOS";
+        renderPanelImage(base, "HELIOS");
+        renderFlipCard(routineWrap, base, "HELIOS", "ROUTINE");
+        renderFlipCard(signatureWrap, base, "HELIOS", "SIGNATURE");
+      }
       applyCurrentApostleLevelBonuses();
       renderCriticalMassSlot();
       renderExtraCards();

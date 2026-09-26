@@ -2203,7 +2203,7 @@
         <div class="record-links">
           <a class="record-card-link" href="./record/index.html" data-cycle-link>阿尔戈号记录表</a>
           <a class="record-card-link hero-card-link" href="./hero/index.html" data-cycle-link>英雄记录表</a>
-          <a class="record-card-link aibp-card-link" href="./aibp/index.html">AIBP</a>
+          <a class="record-card-link aibp-card-link" href="./aibp/index.html" data-cycle-link>AIBP</a>
           <a class="record-card-link technology-card-link" href="./technology/index.html">科技</a>
         </div>
         <div class="day-actions">
@@ -4041,6 +4041,11 @@
     }
 
     function startAuthenticatedApp(user) {
+      const accountUrl = new URL(window.location.href);
+      if (accountUrl.searchParams.has("cycle")) {
+        accountUrl.searchParams.delete("cycle");
+        window.history.replaceState(null, "", accountUrl);
+      }
       campaignSessionEpoch += 1;
       clearCampaignReconnect();
       clearTimeout(campaignSaveTimer);
@@ -5891,6 +5896,8 @@
       renderCycles();
       renderFlow();
       renderDateTrack();
+      queueCampaignSave();
+      void flushCampaignSave();
       dashboardCycleChannel?.postMessage({ type: "active-cycle-changed", cycleId });
     }
 

@@ -945,6 +945,14 @@ h2 {
   margin-top: 18px;
 }
 
+/* 「拆信封」段落里的隐藏 BOSS 按钮：正文下的独立一条，点了只弹提示。 */
+.envelope-aibp-action {
+  margin-top: 22px;
+  margin-bottom: 18px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--line);
+}
+
 .battle-aibp-button {
   min-height: 44px;
   display: inline-flex;
@@ -960,6 +968,62 @@ h2 {
 }
 
 .battle-aibp-button:hover {
+  background: var(--accent-strong);
+}
+
+/* 不跳转、只弹提示的按钮（button 元素）。 */
+button.battle-aibp-button {
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+}
+
+.aibp-hint-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(20, 16, 11, 0.55);
+}
+
+.aibp-hint-layer[hidden] {
+  display: none;
+}
+
+.aibp-hint-box {
+  width: min(440px, calc(100vw - 40px));
+  padding: 22px 20px 18px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+
+.aibp-hint-box p {
+  margin: 0 0 16px;
+  color: var(--ink);
+  font-weight: 700;
+  line-height: 1.7;
+}
+
+.aibp-hint-close {
+  min-height: 40px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+}
+
+.aibp-hint-close:hover {
   background: var(--accent-strong);
 }
 

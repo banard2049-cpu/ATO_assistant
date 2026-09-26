@@ -78,6 +78,7 @@ if str(PROJECT_DIR) not in sys.path:
 from app.bgm_resources import allowed_target as is_bgm_target  # noqa: E402
 from app.bgm_resources import collect as collect_bgm_files  # noqa: E402
 from app.bgm_resources import mime_for as bgm_mime  # noqa: E402
+from app.fixed_catalog import collect_supplemental_resources  # noqa: E402
 from app.fixed_catalog import fixed_catalog_payload  # noqa: E402
 from app.official_assets import clear_cache as clear_official_cache  # noqa: E402
 from app.official_assets import resolve as resolve_official_asset  # noqa: E402
@@ -309,15 +310,46 @@ class PlanStats:
     faces_without_asset: int = 0
 
 
-def load_catalog(cycles: set[str], modules: set[str], reporter: Reporter) -> tuple[list[ItemRow], dict]:
-    """提交里的固定清单（app/fixed_catalog.py），不再依赖素材库里的 catalog_items。"""
+def load_catalog(
+    cycles: set[str],
+    modules: set[str],
+    reporter: Reporter,
+    ato_root: Path | None = None,
+) -> tuple[list[ItemRow], dict]:
+    """提交里的固定清单（app/fixed_catalog.py），不再依赖素材库里的 catalog_items。
+
+    ``ato_root`` 给定时，额外并上 ``collect_supplemental_resources`` 扫出来的补充素材
+    （赫利俄斯加密卡图这类不在内置清单、但必须随资源包分发的文件）。
+    """
     try:
         payload = fixed_catalog_payload()
     except Exception as error:  # noqa: BLE001
         raise PackError(f"读不到固定清单：{error}") from error
+    raw_items = list(payload.get("items", []))
+    if ato_root is not None:
+        try:
+            supplemental, _paths = collect_supplemental_resources(Path(ato_root))
+        except Exception as error:  # noqa: BLE001
+            raise PackError(f"扫描补充素材失败：{error}") from error
+        if supplemental:
+            raw_items.extend(
+                {
+                    "id": item.id,
+                    "cycle": item.cycle,
+                    "module": item.module,
+                    "subgroup": item.subgroup,
+                    "name": item.name,
+                    "number": item.number,
+                    "sort_order": item.sort_order,
+                    "capture_required": item.capture_required,
+                    "faces": item.faces,
+                }
+                for item in supplemental
+            )
+            reporter.say(f"补充素材  : {len(supplemental)} 个（内置清单之外的赫利俄斯卡图等）")
     stats = PlanStats()
     items: list[ItemRow] = []
-    for raw in payload.get("items", []):
+    for raw in raw_items:
         cycle, module = str(raw.get("cycle") or ""), str(raw.get("module") or "")
         if cycles and cycle not in cycles:
             continue
@@ -343,7 +375,10 @@ def load_catalog(cycles: set[str], modules: set[str], reporter: Reporter) -> tup
         )
     if not items:
         raise PackError("筛选之后没有任何条目；检查 --cycle / --module")
-    return items, payload.get("source") or {}
+    source = dict(payload.get("source") or {})
+    if ato_root is not None and len(raw_items) > len(payload.get("items", [])):
+        source["catalog_items"] = len(raw_items)
+    return items, source
 
 
 class LibraryReader:
@@ -1270,7 +1305,7 @@ def build(
             f"--image-quality 要在 {IMAGE_QUALITY_MIN}–{IMAGE_QUALITY_MAX} 之间：{image_quality}"
         )
 
-    items, catalog_source = load_catalog(set(cycles), set(modules), reporter)
+    items, catalog_source = load_catalog(set(cycles), set(modules), reporter, ato_root=ato_root)
     library = LibraryReader(library_path) if library_path is not None else None
     try:
         planned, stats = plan_assets(

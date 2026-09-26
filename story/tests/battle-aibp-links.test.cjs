@@ -22,10 +22,10 @@ const functionSource = appSource.slice(functionStart, functionEnd);
 const linkContext = {
   escapeHtml: (value) => String(value),
 };
-const battleAibpLink = vm.runInNewContext(`
+const { battleAibpLink, envelopeAibpLink } = vm.runInNewContext(`
   (() => {
     ${functionSource}
-    return battleAibpLink;
+    return { battleAibpLink, envelopeAibpLink };
   })()
 `, linkContext);
 
@@ -73,6 +73,108 @@ for (const [bookId, expectedLinks] of Object.entries(expectedC45Links)) {
       );
     }
   });
+}
+
+test("C5 envelope story entry only hints at the hidden HELIOS AIBP", () => {
+  const c3Book = storyContext.window.STORYBOOK_DATA.books.find((book) => book.id === "c3");
+  const c5Book = storyContext.window.STORYBOOK_DATA.books.find((book) => book.id === "c5");
+  assert.ok(c3Book && c5Book, "c3/c5 story books are missing");
+
+  const c5Entry = c5Book.entries.find((entry) => entry.id === "0199");
+  assert.ok(c5Entry, "C5 0199 (open envelope Y) is missing");
+
+  const html = envelopeAibpLink(c5Entry, "c5");
+  assert.match(html, /data-aibp-hint="helios"/, "C5 0199 should render the hint button");
+  assert.match(html, /赫利俄斯 AIBP/, "C5 0199 button should name the hidden boss");
+  assert.doesNotMatch(html, /跳转/, "the button must not promise a jump");
+  assert.doesNotMatch(
+    html,
+    /aibp\/index\.html/,
+    "the button must not link straight to the hidden AIBP"
+  );
+  assert.doesNotMatch(
+    html,
+    /<a class="battle-aibp-button"/,
+    "the button must be a plain button, not a link"
+  );
+});
+
+test("C3 no longer gets an envelope button", () => {
+  const c3Book = storyContext.window.STORYBOOK_DATA.books.find((book) => book.id === "c3");
+  assert.ok(c3Book, "c3 story book is missing");
+  for (const id of ["0261", "0203"]) {
+    const entry = c3Book.entries.find((candidate) => candidate.id === id);
+    assert.ok(entry, `C3 ${id} is missing`);
+    assert.equal(envelopeAibpLink(entry, "c3"), "", `C3 ${id} should not render the button`);
+  }
+});
+
+test("envelope hint text, close behaviour and click wiring", () => {
+  assert.match(
+    appSource,
+    /ENVELOPE_AIBP_HINT\s*=\s*"[^"]*赫利俄斯[^"]*"/,
+    "hint text should tell the reader to search 赫利俄斯 in AIBP"
+  );
+  assert.match(
+    appSource,
+    /closest\("\[data-aibp-hint\]"\)[\s\S]{0,400}showEnvelopeAibpHint\(\)/,
+    "a click delegate should open the hint layer"
+  );
+
+  const harness = runEnvelopeHarness();
+  harness.api.showEnvelopeAibpHint();
+  assert.equal(harness.layer.hidden, false, "hint layer should open");
+  assert.match(harness.layer.textNode.textContent, /赫利俄斯/, "hint text should name 赫利俄斯");
+  assert.match(harness.layer.textNode.textContent, /BOSS 搜索框/, "hint text should point at the BOSS search box");
+  assert.match(harness.layer.textNode.textContent, /输入/, "hint text should tell the reader to type the name");
+  assert.equal(harness.layer.closeNode.focused, true, "close button should receive focus");
+
+  harness.layer.listener({
+    target: { closest: (selector) => (selector === ".aibp-hint-close" ? harness.layer.closeNode : null) },
+  });
+  assert.equal(harness.layer.hidden, true, "close button should hide the hint layer");
+});
+
+function runEnvelopeHarness() {
+  const start = appSource.indexOf("  const ENVELOPE_AIBP_HINT");
+  const end = appSource.indexOf("  function configureUtterance(utterance) {", start);
+  assert.ok(start >= 0 && end > start, "envelope hint snippet is missing");
+
+  const listeners = [];
+  const layer = {
+    id: "envelopeAibpHint",
+    className: "aibp-hint-layer",
+    hidden: true,
+    innerHTML: "",
+    listener: null,
+    appendChild() {},
+    querySelector(selector) {
+      if (selector === "#envelopeAibpHintText") return this.textNode;
+      if (selector === ".aibp-hint-close") return this.closeNode;
+      return null;
+    },
+    addEventListener(type, handler) {
+      if (type === "click") this.listener = handler;
+    },
+  };
+  layer.textNode = { textContent: "" };
+  layer.closeNode = { focused: false, focus() { this.focused = true; } };
+
+  const documentStub = {
+    getElementById: () => null,
+    createElement: () => layer,
+    addEventListener(type, handler) {
+      if (type === "click") listeners.push(handler);
+    },
+    body: { appendChild() {} },
+  };
+  const context = vm.createContext({ document: documentStub });
+  const api = vm.runInContext(
+    `(() => {\n${appSource.slice(start, end)}\nreturn { showEnvelopeAibpHint };\n})()`,
+    context
+  );
+  assert.equal(listeners.length, 0, "the snippet itself should not register global listeners");
+  return { api, layer };
 }
 
 test("existing C1-C3 mappings remain available", () => {
