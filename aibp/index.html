@@ -2320,6 +2320,7 @@
       <div class="trait-dialog-actions" id="scryActions">
         <button type="button" id="scryBottomButton" hidden>放到底部</button>
         <button type="button" id="scryShuffleButton" hidden>洗回牌堆</button>
+        <button type="button" id="scryDiscardButton" hidden>弃牌</button>
         <button type="button" id="scryRemoveButton" hidden>移除</button>
         <button type="button" id="scryTopButton" hidden>调整顺序后盖回</button>
       </div>
@@ -2778,6 +2779,7 @@
     const scryTopButton = document.getElementById("scryTopButton");
     const scryBottomButton = document.getElementById("scryBottomButton");
     const scryShuffleButton = document.getElementById("scryShuffleButton");
+    const scryDiscardButton = document.getElementById("scryDiscardButton");
     const scryRemoveButton = document.getElementById("scryRemoveButton");
 
     function normalizeApostleName(value) {
@@ -4447,6 +4449,7 @@
           ["top", "盖回顶", "将这张牌盖回牌堆顶"],
           ["bottom", "放到底", "将这张牌放到牌堆底部"],
           ["shuffle", "洗回", "将这张牌洗回牌堆"],
+          ["discard", "弃牌", "将这张牌放入弃牌堆"],
           ["remove", "移除", "将这张牌移出游戏"]
         ].map(([action, label, title]) => {
           const actionButton = document.createElement("button");
@@ -4472,7 +4475,7 @@
       scryCards.replaceChildren();
       scryStartButton.hidden = false;
       scryCountInput.disabled = false;
-      [scryTopButton, scryBottomButton, scryShuffleButton, scryRemoveButton]
+      [scryTopButton, scryBottomButton, scryShuffleButton, scryDiscardButton, scryRemoveButton]
         .forEach((button) => { button.hidden = true; });
       scrySetupHint.textContent = "";
     }
@@ -4518,7 +4521,7 @@
       scryCards.hidden = false;
       scryStartButton.hidden = true;
       scryCountInput.disabled = true;
-      [scryTopButton, scryBottomButton, scryShuffleButton, scryRemoveButton]
+      [scryTopButton, scryBottomButton, scryShuffleButton, scryDiscardButton, scryRemoveButton]
         .forEach((button) => { button.hidden = false; });
       renderScryCards();
       savePiles();
@@ -4537,7 +4540,7 @@
       if (!activeScry) return;
       const session = activeScry;
       const pile = piles[session.apostle]?.[session.type];
-      if (!pile || !["top", "bottom", "shuffle", "remove"].includes(mode)) return;
+      if (!pile || !["top", "bottom", "shuffle", "discard", "remove"].includes(mode)) return;
       const [card] = session.cards.splice(index, 1);
       if (!card) return;
       if (mode === "top") {
@@ -4546,6 +4549,8 @@
         pile.deck.push(card);
       } else if (mode === "shuffle") {
         pile.deck = shuffleCards(pile.deck.concat(card));
+      } else if (mode === "discard") {
+        pile.discard.push(card);
       } else {
         pile.removed.push(card);
       }
@@ -4592,6 +4597,8 @@
         pile.deck = shuffleCards(pile.deck.concat(session.cards));
       } else if (mode === "remove") {
         pile.removed.push(...session.cards);
+      } else if (mode === "discard") {
+        pile.discard.push(...session.cards);
       } else {
         return;
       }
@@ -4620,7 +4627,7 @@
       scryCards.hidden = false;
       scryStartButton.hidden = true;
       scryCountInput.disabled = true;
-      [scryTopButton, scryBottomButton, scryShuffleButton, scryRemoveButton]
+      [scryTopButton, scryBottomButton, scryShuffleButton, scryDiscardButton, scryRemoveButton]
         .forEach((button) => { button.hidden = false; });
       renderScryCards();
       if (!scryDialog.open) scryDialog.showModal();
@@ -7141,6 +7148,7 @@
     scryTopButton?.addEventListener("click", () => finishScry("top"));
     scryBottomButton?.addEventListener("click", () => finishScry("bottom"));
     scryShuffleButton?.addEventListener("click", () => finishScry("shuffle"));
+    scryDiscardButton?.addEventListener("click", () => finishScry("discard"));
     scryRemoveButton?.addEventListener("click", () => finishScry("remove"));
     scryCloseButton?.addEventListener("click", () => {
       cancelScry();

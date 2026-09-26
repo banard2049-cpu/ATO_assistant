@@ -101,10 +101,10 @@ def check_release_notes_files(failures: list[str]) -> None:
             failures.append(f"公告文件名不符合 v<版本>.md：{path.name}")
             continue
         text = read(path)
-        if path.name == "v2.1.0.md":
+        if path.name in {"v2.1.0.md", "v2.1.1-rc.1.md"}:
             expected = "更新内容涉及重大剧透，因此不做介绍。\n\n建议 C4 及以后玩家更新。\n\n请 C4 及以后玩家同时更新资源包。"
             if text.strip() != expected:
-                failures.append("v2.1.0.md 必须只包含剧透提示与资源包更新提醒")
+                failures.append(f"{path.name} 必须只包含剧透提示与资源包更新提醒")
             continue
         for section in ("## 更新", "## 下载", "## 验证"):
             if section not in text:
