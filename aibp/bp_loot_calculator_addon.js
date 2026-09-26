@@ -371,7 +371,8 @@ Add these script tags after the main viewer script:
 
   function resourceIconSrc(key) {
     if (DIRECT_RECORD_RESOURCE_KEYS.has(key)) {
-      return `../record/assets/resource-icons/${encodePathFileName(key)}.png`;
+      const version = key === "orichalcumAlloy" || key === "slaveMetal" ? "?v=20260926-c5-pdf1" : "";
+      return `../record/assets/resource-icons/${encodePathFileName(key)}.png${version}`;
     }
     return `${RESOURCE_ICON_BASE}/${encodePathFileName(key)}.png`;
   }

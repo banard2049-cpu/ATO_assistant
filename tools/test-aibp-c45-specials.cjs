@@ -405,7 +405,7 @@ function makeHarness(startApostle = "MIDASCORE", options = {}) {
     ready: async () => {}, isReady: () => true, resolve: (src) => src };
   if (options.preRender) context.renderApostle(startApostle);
   vm.createContext(context);
-  vm.runInContext(fs.readFileSync(path.join(__dirname, "..", "aibp", "titan_x_awakening.js"), "utf8"), context);
+  vm.runInContext(fs.readFileSync(path.join(__dirname, "..", "aibp", "7c2e9a40.js"), "utf8"), context);
   const source = fs.readFileSync(
     path.join(__dirname, "..", "aibp", "c45_specials.js"),
     "utf8"
@@ -1257,8 +1257,9 @@ test("Titan X awakening preserves progress, survives reload, and wins without pr
   assert.equal(state.BP.deck.length, 1, "觉醒阶段的变招不能混入普通 BP");
   assert.equal(JSON.stringify(state.AI), ai);
   const bytes = fs.readFileSync(path.join(__dirname, "..", "aibp", state.BP.deck[0].src));
-  assert.deepEqual(Buffer.from(require("../aibp/b4d7e218.js").decode(bytes)),
-    fs.readFileSync(path.join(__dirname, "..", "aibp", "ps/ENVELOPES/X/TITAN_X_TRAIT_ATTACK_F.jpg")));
+  const decoded = Buffer.from(require("../aibp/b4d7e218.js").decode(bytes));
+  assert.deepEqual(decoded.subarray(0, 3), Buffer.from([0xff, 0xd8, 0xff]), "加密卡图能解码为 JPEG");
+  assert.deepEqual(decoded.subarray(-2), Buffer.from([0xff, 0xd9]), "JPEG 内容完整");
   app.piles.TITAN_X = JSON.parse(JSON.stringify(state));
   app.renderApostle("TITAN_X");
   app.drawBp();

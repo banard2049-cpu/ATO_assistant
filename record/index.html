@@ -1533,7 +1533,7 @@
                 <input data-cycle-bind="oxygenLimit" type="number" min="0" aria-label="氧气上限">
               </span>
             </label>
-            <label data-cycle-field="c5">偏执<input data-cycle-bind="paranoia" type="number" min="0"></label>
+            <label data-cycle-field="c5">猜忌<input data-cycle-bind="paranoia" type="number" min="0"></label>
             <label data-cycle-field="c5">补给<input data-cycle-bind="supply" type="number" min="0"></label>
             <div class="identity-mark-row" data-cycle-field="c4">
               <div class="identity-mark-field">
@@ -2028,7 +2028,7 @@
           ["cloudThieves", "云贼", "Cloud Thieves · 结盟读0008", -10, 10],
         ],
         resources: [
-          ["cursedDerelict", "诅咒船骸", "Cursed Derelict"],
+          ["cursedDerelict", "诅咒船骇", "Cursed Derelict"],
           ["imperialScroll", "帝国卷轴", "Imperial Scroll"],
           ["babylonianContraption", "巴比伦装置", "Babylonian Contraption"],
           ["mutableAmbrosia", "易变神浆", "Mutable Ambrosia"],
@@ -2039,7 +2039,7 @@
           ["wishEmbryo", "愿望胚胎", "Wish Embryo"],
           ["oldIremFragment", "旧伊雷姆碎片", "Old Irem Fragment"],
           ["blackTaintedStepfinger", "染黑阶梯指", "Black-tainted Stepfinger"],
-          ["promisedFuturesCarcass", "未来承诺残骸", "Promised Future’s Carcass"],
+          ["promisedFuturesCarcass", "未来承诺残躯", "Promised Future’s Carcass"],
           ["onyxDust", "缟玛瑙粉尘", "Onyx Dust"],
           ["ireEssence", "愤怒精华", "Ire Essence"],
           ["core", "核心", "Core"],
@@ -2061,7 +2061,7 @@
       c5: {
         label: "循环 V",
         subtitle: "真相诉说者 / Truthsayer",
-        fateWarning: "命运 >= 10 或船体、船员 <= 0 读 4213；偏执 >= 12 结算“Like Moths to a Flame”特殊事件",
+        fateWarning: "命运 >= 10 或船体、船员 <= 0 读 4213；猜忌 >= 12 结算“Like Moths to a Flame”特殊事件",
         hull: [6, 5, 4, 3, 2, 1, 0],
         crew: [6, 5, 4, 3, 2, 1, 0],
         enemies: [
@@ -2083,7 +2083,7 @@
           },
           {
             key: "meduketos",
-            zh: "须目塞特斯",
+            zh: "须目刻托斯",
             en: "Meduketos",
             stages: [
               { id: "1a", label: "I" },
@@ -2106,30 +2106,30 @@
           ["你所不选之人", "The One You Don’t", "five"],
           ["大义", "The Greater Good", "five"],
           ["不惜一切代价", "Whatever the Cost"],
-          ["肉体虚弱", "The Flesh Is Weak"],
-          ["真理的半衰期", "Half-lives of Truths"],
+          ["血肉之躯的软弱", "The Flesh Is Weak"],
+          ["真相的半衰期", "Half-lives of Truths"],
           ["浅滩布道", "Sermons on the Shoals", "ten-thousand"],
         ],
         diplomacy: [
           ["followersOfArete", "阿瑞特追随者", "Followers of Areté · 结盟读8382", -10, 10],
-          ["cycladeanProtectorate", "基克拉泽斯保护国", "Cycladean Protectorate · 结盟读8383", -10, 10],
+          ["cycladeanProtectorate", "保护国", "Cycladean Protectorate · 结盟读8383", -10, 10],
           ["outcastVanguard", "弃民先锋", "Outcast Vanguard · 结盟读8381", -10, 10],
         ],
         resources: [
-          ["atlanteanTekne", "亚特兰蒂斯技艺", "Atlantean Tekne"],
+          ["atlanteanTekne", "亚特兰提斯仪器", "Atlantean Tekne"],
           ["orichalcumChunk", "山铜块", "Orichalcum Chunk"],
           ["liquidAether", "液态以太", "Liquid Aether"],
           ["oxidizedAmbrosia", "氧化神浆", "Oxidized Ambrosia"],
-          ["promisedFuturesCarcass", "未来承诺残骸", "Promised Future’s Carcass"],
+          ["promisedFuturesCarcass", "未来承诺残躯", "Promised Future’s Carcass"],
           ["blackTaintedStepfinger", "染黑阶梯指", "Black-tainted Stepfinger"],
-          ["hydradynamicScales", "流体力学鳞片", "Hydradynamic Scales"],
-          ["amygdalanExtract", "杏仁体萃取物", "Amygdalan Extract"],
-          ["photophobicFlesh", "畏光血肉", "Photophobic Flesh"],
+          ["hydradynamicScales", "流线鳞片", "Hydradynamic Scales"],
+          ["amygdalanExtract", "杏仁体提取物", "Amygdalan Extract"],
+          ["photophobicFlesh", "畏光怪肉", "Photophobic Flesh"],
           ["microwaveCell", "微波细胞", "Microwave Cell"],
-          ["blackWoolStrand", "黑羊毛丝", "Black Wool Strand"],
-          ["fadingLightConstruct", "消逝之光构造体", "Fading Light Construct"],
+          ["blackWoolStrand", "黑羊毛线", "Black Wool Strand"],
+          ["fadingLightConstruct", "渐熄光源", "Fading Light Construct"],
           ["orichalcumAlloy", "山铜合金", "Orichalcum Alloy"],
-          ["slaveMetal", "奴隶金属", "Slave Metal"],
+          ["slaveMetal", "从属金属", "Slave Metal"],
           ["core", "核心", "Core"],
           ["rare", "稀有资源", "Rare Resources"],
           ["priests", "祭司", "Priests"],
@@ -3808,7 +3808,8 @@
           item.className = "diplomacy-marker";
           item.style.gridColumn = String(marker.value - min + 1);
           const bonus = bonuses[marker.label];
-          const markerText = bonus != null ? `${marker.label}(${bonus})` : marker.label;
+          const displayLabel = state.cycle === "c5" && marker.label === "开战" ? "归顺涅墨西斯号" : marker.label;
+          const markerText = bonus != null ? `${displayLabel}(${bonus})` : displayLabel;
           if (bonus === "+2" && diplomacyTitle.allianceRead) {
             item.classList.add("with-read");
             item.textContent = `${markerText} ${diplomacyTitle.allianceRead}`;
@@ -4028,7 +4029,7 @@
       mutableAmbrosia: "./assets/resource-icons/mutableAmbrosia.png",
       oldIremFragment: "./assets/resource-icons/oldIremFragment.png",
       onyxDust: "./assets/resource-icons/onyxDust.png",
-      orichalcumAlloy: "./assets/resource-icons/orichalcumAlloy.png",
+      orichalcumAlloy: "./assets/resource-icons/orichalcumAlloy.png?v=20260926-c5-pdf1",
       orichalcumChunk: "./assets/resource-icons/orichalcumChunk.png",
       oxidizedAmbrosia: "./assets/resource-icons/oxidizedAmbrosia.png",
       photophobicFlesh: "./assets/resource-icons/photophobicFlesh.png",
@@ -4045,7 +4046,7 @@
       sirenshell: "./assets/resource-icons/sirenshell.png",
       sisyphusTears: "./assets/resource-icons/sisyphusTears.png",
       skinOfMalice: "./assets/resource-icons/skinOfMalice.png",
-      slaveMetal: "./assets/resource-icons/slaveMetal.png",
+      slaveMetal: "./assets/resource-icons/slaveMetal.png?v=20260926-c5-pdf1",
       sunburnedSkull: "./assets/resource-icons/sunburnedSkull.png",
       supersolidRelief: "./assets/resource-icons/supersolidRelief.png",
       trireme: "./assets/resource-icons/trireme.png",
