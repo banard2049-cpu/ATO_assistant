@@ -8072,6 +8072,10 @@
       ],
     };
 
+    // C4/C5 use the same signed diplomacy track as C1 in the record sheet.
+    diplomacyMarkersByCycle.c4 = diplomacyMarkersByCycle.c1;
+    diplomacyMarkersByCycle.c5 = diplomacyMarkersByCycle.c1;
+
     function formatSignedNumber(value) {
       return value > 0 ? `+${value}` : String(value);
     }
@@ -8110,9 +8114,11 @@
 
     function diplomacyStatus(cycleId, value) {
       const markers = diplomacyMarkersByCycle[cycleId] || [];
-      let status = markers[0] || { label: "未分级", bonus: 0 };
+      const negativeStatus = markers.find((marker) => marker.value < 0 && value < marker.value);
+      if (negativeStatus) return negativeStatus;
+      let status = markers.find((marker) => marker.value === 0) || { label: "未分级", bonus: 0 };
       markers.forEach((marker) => {
-        if (value >= marker.value) status = marker;
+        if (marker.value >= 0 && value >= marker.value) status = marker;
       });
       return status;
     }
