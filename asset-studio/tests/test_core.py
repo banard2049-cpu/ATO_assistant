@@ -20,7 +20,6 @@ from app.catalog import (
     HERO_PORTRAIT_LABELS,
     MAP_TOKEN_LABELS,
     RECORD_RESOURCE_LABELS,
-    STATUS_CARD_LABELS,
     SUMMON_CARD_LABELS,
     CatalogBuilder,
     CatalogItem,
@@ -180,13 +179,32 @@ class CoreTests(unittest.TestCase):
         row = self.db.one("SELECT * FROM catalog_items WHERE id=?", ("c2:exploration:cards:13642",))
         self.assertEqual({"front": "assets/exploration-cards/c2/13642.png"}, json.loads(row["faces_json"]))
 
+    def test_fixed_catalog_removes_retired_conditions_with_assets(self):
+        payload = fixed_catalog_payload()
+        retired = CatalogItem(
+            id="retired-condition", cycle="c4+c5", module="状态卡",
+            subgroup="C4/C5 状态", name="强欲", number="001", sort_order=1,
+            faces={"front": "assets/retired-condition.jpg"},
+        )
+        apply_catalog(self.db, [CatalogItem(**item) for item in payload["items"]] + [retired], payload["source"])
+        store_image(self.db, self.library, self.image(), retired.id, "front", "photo.png", "image/png")
+        with self.db.connect() as conn:
+            conn.execute("INSERT INTO skipped_faces(item_id, face) VALUES(?, ?)", (retired.id, "back"))
+
+        ensure_fixed_catalog(self.db)
+        ensure_fixed_catalog(self.db)
+        self.assertIsNone(self.db.one("SELECT id FROM catalog_items WHERE id=?", (retired.id,)))
+        self.assertEqual([], self.db.all("SELECT id FROM asset_revisions WHERE item_id=?", (retired.id,)))
+        self.assertEqual([], self.db.all("SELECT face FROM skipped_faces WHERE item_id=?", (retired.id,)))
+        self.assertEqual(len(payload["items"]), self.db.one("SELECT COUNT(*) n FROM catalog_items")["n"])
+
     def test_fixed_catalog_initializes_without_apk(self):
         empty = Database(self.root / "empty.sqlite3")
         result = ensure_fixed_catalog(empty)
         payload = fixed_catalog_payload()
-        # 2758 张固定素材（含 5 个循环图标）+ 19 首主控台 BGM
+        # 2745 张固定素材（含 5 个循环图标）+ 19 首主控台 BGM
         # （登记为「无需拍摄」，见 test_bgm_resources）。
-        self.assertEqual(2777, result["items"])
+        self.assertEqual(2764, result["items"])
         self.assertEqual(19, result["aibp_enemies"])
         self.assertEqual({"c1", "c1.5", "c2", "c2.5", "c3", "c4", "c5"}, {book["id"] for book in payload["source"]["stories"]})
         self.assertNotIn("apk", payload["source"])
@@ -233,9 +251,9 @@ class CoreTests(unittest.TestCase):
         # 4280 张固定素材（含 5 个循环图标）+ 19 首主控台 BGM
         # （音频不进图片清单，随 bgmFiles 段分发）。
         bgm_paths = {path for path in fixed_paths if path.startswith("assets/bgm/")}
-        self.assertEqual(4280, len(fixed_paths - bgm_paths))
+        self.assertEqual(4267, len(fixed_paths - bgm_paths))
         self.assertEqual(19, len(bgm_paths))
-        self.assertEqual(4299, len(fixed_paths))
+        self.assertEqual(4286, len(fixed_paths))
         self.assertIn("map/images/c5-face-a.png", fixed_paths)
         self.assertIn("map/images/c5-face-b.png", fixed_paths)
         self.assertIn("aibp/ps/other/SW.jpg", fixed_paths)
@@ -278,10 +296,10 @@ class CoreTests(unittest.TestCase):
             {item["name"] for item in record_resources},
         )
         status_cards = [item for item in payload["items"] if item["module"] == "状态卡"]
-        self.assertEqual(set(STATUS_CARD_LABELS.values()), {item["name"] for item in status_cards})
+        self.assertEqual([], status_cards)
         detailed_components = [
             item for item in payload["items"]
-            if item["module"] in {"通用标记", "资源标记", "状态卡"}
+            if item["module"] in {"通用标记", "资源标记"}
         ]
         self.assertFalse(any(item["name"].strip() == item["number"].strip() for item in detailed_components))
         self.assertEqual(

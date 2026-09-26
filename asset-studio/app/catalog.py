@@ -133,21 +133,6 @@ MAP_TOKEN_LABELS = {
     "night_nymph": "夜之宁芙地图标记（Night Nymph）",
 }
 
-STATUS_CARD_LABELS = {
-    "C45_STATUS_001": "强欲 / COVETOUS（C4/C5 状态卡 001）",
-    "C45_STATUS_002": "满足 / ENRICHED（C4/C5 状态卡 002）",
-    "C45_STATUS_003": "登临者 / LANDER（C4/C5 状态卡 003）",
-    "C45_STATUS_004": "恐怖 / TERROR（C4/C5 状态卡 004）",
-    "C45_STATUS_005": "贪婪 / GREED-CRAZED（C4/C5 状态卡 005）",
-    "C45_STATUS_006": "开悟 / ENLIGHTENED（C4/C5 状态卡 006）",
-    "C45_STATUS_007": "决意 / RESOLVE（C4/C5 状态卡 007）",
-    "C45_STATUS_008": "大恐怖 / HOLY TERROR（C4/C5 状态卡 008）",
-    "C45_STATUS_009": "愿望热情 / WISHKEEN（C4/C5 状态卡 009）",
-    "C45_STATUS_010": "浮空（上）/ FLOAT (UP)（C4/C5 状态卡 010）",
-    "C45_STATUS_011": "英勇 / BRAVERY（C4/C5 状态卡 011）",
-    "C45_STATUS_012": "愿望狂热 / WISHAGOG（C4/C5 状态卡 012）",
-    "C45_STATUS_013": "浮空（下）/ FLOAT (DOWN)（C4/C5 状态卡 013）",
-}
 
 RECORD_RESOURCE_LABELS = {
     "amygdalanExtract": "杏仁体萃取物", "armament": "军备", "atlanteanTekne": "亚特兰蒂斯技艺",
@@ -275,8 +260,6 @@ def component_display_name(path: str, stem: str | None = None) -> str:
         return f"{label}资源图标（{raw_stem}）"
     if path.startswith("map/tokens/"):
         return MAP_TOKEN_LABELS.get(raw_stem, f"地图标记（{raw_stem}）")
-    if path.startswith("aibp/ps/other/status/"):
-        return STATUS_CARD_LABELS.get(raw_stem, f"C4/C5 状态卡（{raw_stem}）")
     if path.startswith("hero/assets/argonaut_"):
         return HERO_PORTRAIT_LABELS.get(raw_stem, f"英雄头像（{raw_stem}）")
     if path.startswith("record/assets/ally/"):
@@ -500,7 +483,6 @@ class CatalogBuilder:
         rules = (
             ("aibp/ps/other/token/", "common", "通用标记", "AIBP 标记"),
             ("aibp/ps/other/resouce/", "common", "资源标记", "AIBP 资源"),
-            ("aibp/ps/other/status/", "c4+c5", "状态卡", "C4/C5 状态"),
             ("map/tokens/", "common", "通用标记", "地图标记"),
             ("record/assets/ally/", "common", "英雄/盟友", "盟友"),
             ("record/assets/godforms-nymphs/", "common", "英雄/盟友", "神形/宁芙"),

@@ -150,28 +150,6 @@ B12_REFERENCE_SIZE = (2480, 3508)
 TITAN_FEINT_DECK_KEY = 109
 TITAN_X_OVERSTEP_KEYS = {("I", 1), ("II", 4)}
 
-# The localized condition sheet contains thirteen general conditions. Fearful
-# Hospitality is the fourteenth C4-C5 status and is extracted separately as a
-# double-sided Dahaka card.
-HD_CONDITION_PAGE_INDEX = 5
-HD_CONDITION_X = (270, 755, 1239, 1724, 2209)
-HD_CONDITION_Y = (333, 1078, 1823, 2568, 3313)
-HD_CONDITIONS = (
-    ("COVETOUS", "强欲 / Covetous", 0, 0),
-    ("ENRICHED", "满足 / Enriched", 0, 1),
-    ("LANDER", "登陆者 / Lander", 0, 2),
-    ("TERROR", "恐怖 / Terror", 0, 3),
-    ("GREED_CRAZED", "贪婪 / Greed-Crazed", 1, 0),
-    ("ENLIGHTENED", "开悟 / Enlightened", 1, 1),
-    ("RESOLVE", "决意 / Resolve", 1, 2),
-    ("HOLY_TERROR", "大恐怖 / Holy Terror", 1, 3),
-    ("WISHKEEN", "愿望热情 / Wishkeen", 2, 0),
-    ("FLOAT_UP", "浮空（上）/ Float (Up)", 2, 1),
-    ("BRAVERY", "英勇 / Bravery", 2, 2),
-    ("WISHAGOG", "愿望狂热 / Wishagog", 3, 0),
-    ("FLOAT_DOWN", "浮空（下）/ Float (Down)", 3, 1),
-)
-
 GLOBAL_WISH_FACE_URL = (
     "https://steamusercontent-a.akamaihd.net/ugc/"
     "13482598190652728050/8A1000C7FBC6F8E68CB6E8BDFFD08B5FC744945F/"
@@ -705,48 +683,6 @@ def extract_hd_cards(code, card_root, output_root):
     return report
 
 
-def extract_hd_conditions(card_root, output_root):
-    pages = sorted(card_root.glob("*.png"))
-    if len(pages) <= HD_CONDITION_PAGE_INDEX:
-        raise FileNotFoundError(
-            f"Missing B12 condition page {HD_CONDITION_PAGE_INDEX}"
-        )
-    page_path = pages[HD_CONDITION_PAGE_INDEX]
-    page = Image.open(page_path).convert("RGB")
-    x_edges = scaled_bounds(
-        HD_CONDITION_X, B12_REFERENCE_SIZE[0], page.width
-    )
-    y_edges = scaled_bounds(
-        HD_CONDITION_Y, B12_REFERENCE_SIZE[1], page.height
-    )
-    destination_root = output_root / "other" / "status"
-    report = []
-    for index, (key, title, row, column) in enumerate(HD_CONDITIONS, 1):
-        card = page.crop(
-            (
-                x_edges[column] + 1,
-                y_edges[row] + 1,
-                x_edges[column + 1],
-                y_edges[row + 1],
-            )
-        )
-        destination = destination_root / f"C45_STATUS_{index:03d}.jpg"
-        save_jpeg(card, destination, quality=97)
-        report.append(
-            {
-                "kind": "STATUS",
-                "key": key,
-                "title": title,
-                "page": str(page_path),
-                "grid": {"row": row, "column": column},
-                "output": str(destination),
-                "size": card.size,
-                "source": "B12 HD",
-            }
-        )
-    return report
-
-
 def extract_global_wishes(output_root, cache_root):
     face, face_cache = load_remote_image(GLOBAL_WISH_FACE_URL, cache_root)
     back, back_cache = load_remote_image(GLOBAL_WISH_BACK_URL, cache_root)
@@ -917,13 +853,6 @@ def validate_generated_assets(output_root):
         else:
             checked_files += 1
 
-    for index, *_ in enumerate(HD_CONDITIONS, 1):
-        path = output_root / "other" / "status" / f"C45_STATUS_{index:03d}.jpg"
-        if not path.exists():
-            errors.append(f"missing HD condition: {path.name}")
-        else:
-            checked_files += 1
-
     for level in ("I", "II", "III", "IV"):
         front = output_root / "DEMIDJINN" / f"DEMIDJINN_WISH_{level}_001.jpg"
         back = front.with_name(f"{front.stem}_BACK.jpg")
@@ -1033,9 +962,6 @@ def main():
                 f"HD cards={len(hd_cards)}"
             )
 
-    result["shared"]["conditions"] = extract_hd_conditions(
-        args.card_root, args.output
-    )
     result["shared"]["globalWishes"] = extract_global_wishes(
         args.output, args.cache
     )
