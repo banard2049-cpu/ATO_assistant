@@ -8,6 +8,7 @@ import re
 import shutil
 import socket
 import tempfile
+import threading
 import time
 import urllib.parse
 import urllib.request
@@ -455,7 +456,25 @@ def get_catalog(cycle: str = "", module: str = "") -> dict:
     return result
 
 
-@app.post("/api/assets/upload", dependencies=[Depends(require_auth)])
+MAX_CONCURRENT_UPLOADS_PER_USER = 2
+_upload_slots: dict[str, int] = {}
+_upload_slots_lock = threading.Lock()
+
+
+def limit_uploads(request: Request, ato_session: str | None = Cookie(default=None)):
+    key = ato_session or (request.client.host if request.client else "unknown")
+    with _upload_slots_lock:
+        if _upload_slots.get(key, 0) >= MAX_CONCURRENT_UPLOADS_PER_USER:
+            raise HTTPException(status_code=429, detail="上传过于频繁，请稍后再试")
+        _upload_slots[key] = _upload_slots.get(key, 0) + 1
+    try:
+        yield
+    finally:
+        with _upload_slots_lock:
+            _upload_slots[key] = max(0, _upload_slots.get(key, 0) - 1)
+
+
+@app.post("/api/assets/upload", dependencies=[Depends(require_auth), Depends(limit_uploads)])
 def upload_asset(
     file: UploadFile = File(...), item_id: str = Form(...), face: str = Form(...),
     rotation: int = Form(0), crop: str = Form(""),
@@ -471,7 +490,7 @@ def upload_asset(
         raise
 
 
-@app.post("/api/uploads/start", dependencies=[Depends(require_auth)])
+@app.post("/api/uploads/start", dependencies=[Depends(require_auth), Depends(limit_uploads)])
 def upload_start(payload: UploadStartPayload) -> dict:
     library, db = library_and_db()
     if payload.total_size <= 0 or payload.total_size > 512 * 1024 * 1024:
