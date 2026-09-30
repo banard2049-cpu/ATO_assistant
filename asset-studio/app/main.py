@@ -32,6 +32,7 @@ from .packages import export_compat, export_package, import_package, inspect_pac
 from .security import make_token, valid_token
 from .storage import ensure_preview, new_temp_file, store_image, transform_revision, write_upload
 from .stories import import_story, merge_next_segment, split_segment, story_books, story_segments, update_segment
+from .upload_limits import UploadLimitMiddleware
 
 
 STATIC_DIR = PROJECT_DIR / "static"
@@ -138,6 +139,20 @@ MAX_ASSET_UPLOAD_BYTES = 512 * 1024 * 1024
 MAX_BATCH_UPLOAD_BYTES = 8 * 1024 * 1024 * 1024
 MAX_PACKAGE_UPLOAD_BYTES = 8 * 1024 * 1024 * 1024
 MAX_STORY_UPLOAD_BYTES = 256 * 1024 * 1024
+
+# Multipart headers/fields need room in addition to the existing file limits.
+# JSON control requests stay small; chunk bodies keep their exact 4MB limit.
+UPLOAD_BODY_LIMITS = {
+    ("POST", "/api/assets/upload"): MAX_ASSET_UPLOAD_BYTES + 1024 * 1024,
+    ("POST", "/api/batch/upload"): MAX_BATCH_UPLOAD_BYTES + 16 * 1024 * 1024,
+    ("POST", "/api/packages/inspect"): MAX_PACKAGE_UPLOAD_BYTES + 1024 * 1024,
+    ("POST", "/api/stories/import"): MAX_STORY_UPLOAD_BYTES + 1024 * 1024,
+    ("POST", "/api/uploads/start"): 64 * 1024,
+    ("PUT", "/api/uploads/{upload_id}"): CHUNK_LIMIT,
+    ("POST", "/api/uploads/{upload_id}/finish"): 64 * 1024,
+    ("POST", "/api/packages/import"): 64 * 1024,
+}
+app.add_middleware(UploadLimitMiddleware, require_auth=require_auth, body_limits=UPLOAD_BODY_LIMITS)
 
 
 def require_content_length(request: Request, limit: int, message: str) -> None:
