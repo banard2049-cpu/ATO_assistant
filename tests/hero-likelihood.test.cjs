@@ -66,7 +66,7 @@ function extractConst(name) {
   return match[1];
 }
 
-const FUNCTIONS = ['mnemosTrackLength', 'heroMnemosCardCount', 'heroMnemosTrackCount', 'heroMnemosRankCompare', 'computeLikelihood'];
+const FUNCTIONS = ['mnemosTrackLength', 'fatedSkills', 'heroMnemosCardCount', 'heroMnemosTrackCount', 'heroMnemosRankCompare', 'computeLikelihood'];
 const CONSTANTS = { MNEMOS_TRACK_LENGTH: extractConst('MNEMOS_TRACK_LENGTH') };
 
 function makeEnv(heroes) {
@@ -374,8 +374,29 @@ test('hero 页的卡组列表 = CYCLES + EXTRA_CYCLES，且例外组里那张宿
   const sowed = (fated.count || []).find(card => card.id === 'fm_sowed');
   assert.ok(sowed, 'FATED_MNEMOS.count 里缺 fm_sowed');
   assert.equal(sowed.card, 'CF1269', 'fm_sowed 的卡号应为官方表里的 CF1269');
-  assert.equal(sowed.skill, 'will', 'fm_sowed 应为意志 −1');
+  // 实体卡面 CF1269「播下种子 / SOWED」：WILL −1 与 WISDOM −1 两项，
+  // 卡面关键词是 FAMILY - HERITAGE - CURSE。
+  assert.deepEqual([...sowed.skills], ['will', 'wisdom'], 'fm_sowed 应扣意志与智慧各 1');
+  assert.deepEqual([...sowed.tags], ['family', 'heritage', 'curse'], 'fm_sowed 的卡面关键词');
   for (const cycleId of EXTRA_CYCLES) {
     assert.ok(!CYCLES.includes(cycleId), `${cycleId} 不该混进 CYCLES（那是战役循环）`);
   }
+});
+
+// 宿命回忆扣的技能：单项 `skill`（45 张）与多项 `skills`（CF1269）都要能读。
+test('宿命回忆技能：单项 skill 与多项 skills 都归一成数组', () => {
+  const env = makeEnv([hero('a', {})]);
+  assert.deepEqual([...env.fatedSkills({ skill: 'will' })], ['will'], '单项写法');
+  assert.deepEqual([...env.fatedSkills({ skills: ['will', 'wisdom'] })], ['will', 'wisdom'], '多项写法');
+  assert.deepEqual([...env.fatedSkills({})], [], '两项都没有时返回空数组');
+
+  const fated = vm.runInNewContext(`(${extractLiteral('FATED_MNEMOS')})`, {});
+  const multi = [];
+  for (const [cycle, cards] of Object.entries(fated)) {
+    for (const card of cards) {
+      const skills = env.fatedSkills(card);
+      if (skills.length !== 1) multi.push(`${cycle}/${card.id}: ${JSON.stringify(skills)}`);
+    }
+  }
+  assert.deepEqual(multi, ['count/fm_sowed: ["will","wisdom"]'], `扣两项的宿命回忆应该只有 CF1269：\n  ${multi.join('\n  ')}`);
 });
