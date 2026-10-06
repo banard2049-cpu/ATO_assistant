@@ -1,4 +1,4 @@
-﻿[CmdletBinding()]
+[CmdletBinding()]
 param(
   [Parameter(Mandatory = $true)]
   [ValidatePattern('^[0-9]+\.[0-9]+\.[0-9]+(?:[-.][0-9A-Za-z.-]+)?$')]
@@ -20,7 +20,10 @@ $releaseTag = if ($Tag) { $Tag } else { "v$versionText" }
 # 更新公告随仓库发布：release-notes/<标签>.md 存在就用它，否则退回 GitHub 自动生成的提交列表。
 $notesFile = Join-Path $projectRoot "release-notes\$releaseTag.md"
 $hasNotes = Test-Path -LiteralPath $notesFile -PathType Leaf
-$portableTargets = @('windows-x64', 'macos-arm64', 'macos-x64', 'docker')
+# Docker 只作为镜像发布：`docker-package.yml` 自己构建上下文并推
+# ghcr.io/banard2049-cpu/ato_assistant（它只有 packages: write，不碰 Release）。
+# 这里不再构建 Docker 分发包，也不把它挂进 Release。
+$portableTargets = @('windows-x64', 'macos-arm64', 'macos-x64')
 
 function Invoke-Checked {
   param(
@@ -121,8 +124,7 @@ try {
   $artifacts = @(
     (Join-Path $exportRoot "ATO-Assistant-Portable-$versionText-windows-x64.zip"),
     (Join-Path $exportRoot "ATO-Assistant-Portable-$versionText-macos-arm64.zip"),
-    (Join-Path $exportRoot "ATO-Assistant-Portable-$versionText-macos-x64.zip"),
-    (Join-Path $exportRoot "ATO-Assistant-Docker-$versionText.zip")
+    (Join-Path $exportRoot "ATO-Assistant-Portable-$versionText-macos-x64.zip")
   )
   foreach ($artifact in $artifacts) {
     if (-not (Test-Path -LiteralPath $artifact -PathType Leaf)) {

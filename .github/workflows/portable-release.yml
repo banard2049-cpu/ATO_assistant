@@ -97,5 +97,4 @@ jobs:
             export/ATO-Assistant-Portable-${{ steps.release.outputs.version }}-windows-x64.zip
             export/ATO-Assistant-Portable-${{ steps.release.outputs.version }}-macos-arm64.zip
             export/ATO-Assistant-Portable-${{ steps.release.outputs.version }}-macos-x64.zip
-            export/ATO-Assistant-Docker-${{ steps.release.outputs.version }}.zip
           if-no-files-found: error
