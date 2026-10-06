@@ -1192,6 +1192,14 @@
       return Math.max(MNEMOS_TRACK_LENGTH, ...points);
     }
 
+    // 宿命回忆要扣的技能：绝大多数卡是单项（`skill`），
+    // 但《Sowed 被播种》(CF1269) 的实体卡面写的是 WILL −1 与 WISDOM −1 两项，
+    // 所以这里统一读成数组，单项写法继续兼容。
+    function fatedSkills(card) {
+      if (Array.isArray(card?.skills)) return card.skills.filter(Boolean);
+      return card?.skill ? [card.skill] : [];
+    }
+
     const FATED_MNEMOS = {
       c1: [
         { id: "fm_c1_01", en: "Memory of Death", zh: "死亡的记忆", keyword: "Memory of Death", skill: "will", card: "AF0125", tags: ["heritage","gods","fate"] },
@@ -1252,7 +1260,7 @@
       // 只有这一张：它由 C2 冒险枢纽 07《真相映照弱点》的冒险《播种 (Sowing)》这条线派出，
       // 在 C2 特殊事件《死于收割 Reaped》里被永久移出游戏（标记 G6），之后不再回到牌堆。
       count: [
-        { id: "fm_sowed", en: "Sowed", zh: "被播种", keyword: "Sowed", skill: "will", card: "CF1269", tags: ["crime","fate","tragedy"] },
+        { id: "fm_sowed", en: "Sowed", zh: "被播种", keyword: "Sowed", skills: ["will","wisdom"], card: "CF1269", tags: ["family","heritage","curse"] },
       ],
     };
 
@@ -2093,7 +2101,7 @@
         return `<div class="mnemos-card">
           <div class="mnemos-title-row">
             <div class="mnemos-title">${escHtml(fm.zh)} <span class="mnemos-title-en">${escHtml(fm.en)}</span> <span class="mnemos-cycle">${escHtml(CYCLE_LABELS[fm.cycleId] || "")}</span> ${tagsHtml}</div>
-            <div class="mnemos-badges"><img class="mnemos-skill-icon fated" src="${escHtml(assetSrc(`skill_${fm.skill}.png`))}" alt="${skillZhMap[fm.skill] || fm.skill}" title="${skillZhMap[fm.skill] || fm.skill} −1"></div>
+            <div class="mnemos-badges">${fatedSkills(fm).map(skill => `<img class="mnemos-skill-icon fated" src="${escHtml(assetSrc(`skill_${skill}.png`))}" alt="${escHtml(skillZhMap[skill] || skill)}" title="${escHtml(skillZhMap[skill] || skill)} −1">`).join("")}</div>
           </div>
           ${renderTrack3(fm, progress, hero.id)}
         </div>`;
@@ -2156,14 +2164,17 @@
           }
         });
       });
-      // Fated mnemos: -1 to skill
+      // Fated mnemos: -1 to each of the card's skills（多数卡只有一项）
       const fated = hero.fatedMnemos || {};
       MNEMOS_GROUPS.forEach(cycleId => {
         const selected = fated[cycleId] || [];
         const items = FATED_MNEMOS[cycleId] || [];
         selected.forEach(fId => {
           const m = items.find(x => x.id === fId);
-          if (m && m.skill && bonus[m.skill] !== undefined) bonus[m.skill]--;
+          if (!m) return;
+          fatedSkills(m).forEach(skill => {
+            if (bonus[skill] !== undefined) bonus[skill]--;
+          });
         });
       });
       return bonus;
@@ -2277,13 +2288,13 @@
       }
 
       panel.innerHTML = allSelected.map(m => {
-        const skillLabel = skillZhMap[m.skill] || m.skill;
+        const skillsHtml = fatedSkills(m).map(skill => `<span class="mnemos-skill-badge fated-skill">${skillZhMap[skill] || skill} −1</span>`).join(" ");
         const progress = hero.fatedProgress[m.id] || 0;
         return `<div class="mnemos-item fated-item active">
           <div>
             <div class="mnemos-title-row">
               <div class="mnemos-title"><span class="fated-keyword">${escHtml(m.keyword)}</span>${escHtml(m.zh)} <span class="mnemos-title-en">${escHtml(m.en)}</span> <span class="mnemos-cycle">${escHtml(CYCLE_LABELS[m.cycleId] || "")}</span></div>
-              <div class="mnemos-badges"><span class="mnemos-skill-badge fated-skill">${skillLabel} −1</span></div>
+              <div class="mnemos-badges">${skillsHtml}</div>
             </div>
             ${renderTrack3(m, progress, hero.id)}
           </div>
@@ -2372,10 +2383,10 @@
         html += `<details><summary style="cursor:pointer;font-weight:900;font-size:14px;margin-bottom:6px;">${CYCLE_LABELS[cycleId]}</summary><div class="mnemos-list" style="margin-bottom:12px">`;
         items.forEach(m => {
           const active = heroFated.includes(m.id);
-          const skillLabel = skillZhMap[m.skill];
+          const skillsHtml = fatedSkills(m).map(skill => `<span class="mnemos-skill-badge fated-skill">${skillZhMap[skill] || skill} −1</span>`).join(" ");
           html += `<div class="mnemos-item fated-item${active ? " active" : ""}">
             <div><span class="fated-keyword">${m.keyword}</span> <strong>${m.zh}</strong><br>
-            <span class="mnemos-skill-badge fated-skill">${skillLabel} −1</span></div>
+            ${skillsHtml}</div>
             <button class="mnemos-toggle ${active ? "danger" : ""}" onclick="toggleFated('${cycleId}','${m.id}');openFatedPicker()">${active ? "移除" : "获得"}</button>
           </div>`;
         });
@@ -2406,7 +2417,7 @@
           count++;
           html += `<div class="mnemos-item fated-item active">
             <div><span class="fated-keyword">${escHtml(m.keyword)}</span> <strong>${escHtml(m.zh)}</strong> <span style="color:var(--muted);font-size:12px">${escHtml(m.en)}</span><br>
-            <span class="mnemos-skill-badge fated-skill">${skillZhMap[m.skill] || m.skill} −1</span></div>
+            ${fatedSkills(m).map(skill => `<span class="mnemos-skill-badge fated-skill">${skillZhMap[skill] || skill} −1</span>`).join(" ")}</div>
             <button class="mnemos-toggle danger" onclick="removeFatedFromPicker('${cycleId}','${m.id}')">删除</button>
           </div>`;
         });
