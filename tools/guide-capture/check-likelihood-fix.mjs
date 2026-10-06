@@ -26,11 +26,17 @@ const cardsFirst = cardIdx >= 0 && trackIdx > cardIdx;
 console.log(`${cardsFirst ? 'ok  ' : 'FAIL'} computeLikelihood 先卡后轨道: ${cardsFirst}`);
 if (!cardsFirst) ok = false;
 
-// 次判据必须逐格累加 mnemosProgress，且不能再按 thresholds 长度当轨道长度。
+// 次判据必须逐格累加 mnemosProgress。轨道长度按每张卡自己的 break point 取
+// （标准卡 10 格；C5 的 c5_07 官方给 5/9/14 → 14 格），
+// 绝不能再把 thresholds 数组的长度当轨道长度。
 const trackFn = src.match(/const MNEMOS_TRACK_LENGTH = (\d+);/);
 const hasTrackConst = !!trackFn;
-console.log(`${hasTrackConst ? 'ok  ' : 'FAIL'} 轨道长度常量存在（固定 10 格）: ${hasTrackConst ? trackFn[1] : 'missing'}`);
+console.log(`${hasTrackConst ? 'ok  ' : 'FAIL'} 标准轨道长度常量存在（${hasTrackConst ? trackFn[1] : 'missing'} 格；例外卡按 break point 取）: ${hasTrackConst}`);
 if (!hasTrackConst) ok = false;
+
+const perCardFn = /function mnemosTrackLength\(card\)/.test(src);
+console.log(`${perCardFn ? 'ok  ' : 'FAIL'} 按卡取轨道长度的 mnemosTrackLength(): ${perCardFn}`);
+if (!perCardFn) ok = false;
 
 const misread = /thresholds \|\| \[\]\)\.length/.test(src);
 console.log(`${misread ? 'FAIL' : 'ok  '} 没有再把 thresholds 数组长度当轨道长度: ${!misread}`);

@@ -12,9 +12,10 @@
  *   - 数的格数曾把记忆节点所在的格子跳过（节点固定在第 3/7/10 格），
  *     所以推到第 10 格只算 7 格。
  *
- * 沙箱里刻意不提供 MNEMOS：判据只需要「回忆卡张数」和「轨道推进值」，
- * 如果实现又去查卡表取轨道长度（曾经把 thresholds 的数组长度误当轨道长度，
- * 导致上限变成 3），这些用例就会暴露出来。
+ * 轨道长度按每张卡自己的最后一个 break point 取：标准卡 3/7/10 → 10 格，
+ * C5 的 EG2647《他道出了真相》官方给的是 5/9/14 → 14 格，所以沙箱要提供 MNEMOS。
+ * 历史上的坑仍然被盯住：实现曾经把 thresholds 的数组长度误当轨道长度（上限变成 3），
+ * 因此下面既断言标准卡推到第 10 格算 10 格，也断言 c5_07 推到第 14 格算 14 格。
  */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -51,6 +52,10 @@ function extractLiteral(name) {
 }
 
 const CYCLES = vm.runInNewContext(`(${extractLiteral('CYCLES')})`, {});
+// 卡组列表 = CYCLES + EXTRA_CYCLES（宿命回忆里有一张不属于任何循环的 CF1269 被播种，
+// 归在「隐藏」组）。判据函数遍历的就是这个列表，沙箱必须跟着建一份。
+const EXTRA_CYCLES = vm.runInNewContext(`(${extractLiteral('EXTRA_CYCLES')})`, {});
+const MNEMOS_GROUPS = CYCLES.concat(EXTRA_CYCLES);
 const MNEMOS = vm.runInNewContext(`(${extractLiteral('MNEMOS')})`, {});
 const TRACK_LENGTH = 10;   // 轨道固定 1–10 格
 
@@ -61,12 +66,14 @@ function extractConst(name) {
   return match[1];
 }
 
-const FUNCTIONS = ['heroMnemosCardCount', 'heroMnemosTrackCount', 'heroMnemosRankCompare', 'computeLikelihood'];
+const FUNCTIONS = ['mnemosTrackLength', 'heroMnemosCardCount', 'heroMnemosTrackCount', 'heroMnemosRankCompare', 'computeLikelihood'];
 const CONSTANTS = { MNEMOS_TRACK_LENGTH: extractConst('MNEMOS_TRACK_LENGTH') };
 
 function makeEnv(heroes) {
   const sandbox = {
     CYCLES,
+    MNEMOS_GROUPS,
+    MNEMOS,
     state: { heroes, activeHeroId: heroes.length ? heroes[0].id : '', graveyard: [] },
   };
   vm.createContext(sandbox);
@@ -199,7 +206,7 @@ test('判据函数本身：卡数跨循环累加；轨道格数逐卡累加且�
   assert.equal(env.heroMnemosTrackCount(h), 20, '10 + 3 + 7，节点格不跳过');
 });
 
-test('轨道格数对进度做上限保护，不会超过 10 格', () => {
+test('轨道格数对进度做上限保护，标准卡不会超过 10 格', () => {
   const env = makeEnv([hero('a', { cards: [{ cycle: 'c1', progress: 99 }] })]);
   assert.equal(env.heroMnemosTrackCount(env.state.heroes[0]), TRACK_LENGTH, `进度异常时最多算 ${TRACK_LENGTH} 格`);
 });
@@ -260,29 +267,55 @@ test('复合排序：先比卡数，卡数相同才用轨道格数细分', () =>
   assert.equal(compare({ cards: 2, track: 7 }, { cards: 2, track: 7 }), 0, '两项都相同即同分');
 });
 
-// 数据侧的一致性：所有回忆卡的节点都固定落在第 3/7/10 格，轨道因此统一是 10 格。
-// c5_07 曾经写成 [5,9,14]，是全表唯一的异类（会让它的节点画到轨道外）。
-test('所有回忆卡的 thresholds 都是 [3,7,10]', () => {
-  const expected = '[3,7,10]';
+// 数据侧的一致性：节点位置照抄官方 fmnemos 表的三个 break point。
+// 全表标准是 3/7/10（轨道因此是 10 格），唯一例外是 C5 的 EG2647《他道出了真相》：
+// 官方给的是 5/9/14，所以它的轨道是 14 格。除它之外任何一张卡偏离标准都要报出来。
+const TRACK_EXCEPTIONS = { c5_07: [5, 9, 14] };
+
+test('回忆卡节点位置：标准卡 [3,7,10]，唯一例外 c5_07 是 [5,9,14]', () => {
   const offenders = [];
+  const seen = new Set();
   let total = 0;
   for (const [cycle, cards] of Object.entries(MNEMOS)) {
     for (const card of cards) {
       total += 1;
+      seen.add(card.id);
+      const wantShape = JSON.stringify(TRACK_EXCEPTIONS[card.id] || [3, 7, 10]);
       const shape = JSON.stringify(card.thresholds);
-      // 节点数与 thresholds 必须一一对应，否则 renderTrack10 会取到 undefined
-      if (shape !== expected || (card.nodes || []).length !== card.thresholds.length) {
-        offenders.push(`${cycle}/${card.id}: thresholds=${shape} nodes=${(card.nodes || []).length}`);
+      // 节点数与 thresholds 必须一一对应，否则轨道渲染会取到 undefined
+      if (shape !== wantShape || (card.nodes || []).length !== card.thresholds.length) {
+        offenders.push(`${cycle}/${card.id}: thresholds=${shape} 期望=${wantShape} nodes=${(card.nodes || []).length}`);
       }
+      // 节点格必须严格递增
+      const ascending = Array.isArray(card.thresholds)
+        && card.thresholds.every((t, i) => Number.isInteger(t) && (i === 0 || t > card.thresholds[i - 1]));
+      if (!ascending) offenders.push(`${cycle}/${card.id}: 节点格不是严格递增的 ${shape}`);
     }
   }
   assert.ok(total >= 40, `回忆卡总数看起来不对：${total}`);
+  for (const id of Object.keys(TRACK_EXCEPTIONS)) {
+    assert.ok(seen.has(id), `例外表里的 ${id} 已经不在 MNEMOS 里了，请同步更新这张表`);
+  }
   assert.deepEqual(offenders, [], `这些回忆卡的轨道规格不一致：\n  ${offenders.join('\n  ')}`);
 });
 
-// hero 页与主控台各存了一份回忆卡节点表（hero: MNEMOS，主控台: MNEMOS_CARD_NODES）。
-// 两份表曾经只改了一处：c5_07 在 hero 页是 [3,7,10]、主控台还是 [5,9,14]，
-// 于是主控台「回忆突破」提醒要到第 5 格才出现，而 hero 页第 3 格就亮。
+// 轨道格数上限按卡算：标准卡 10 格，c5_07 是 14 格。记到超出轨道的值也只按轨道长度计。
+test('轨道格数上限按卡算：标准卡 10 格、c5_07 是 14 格', () => {
+  const env = makeEnv([
+    hero('a', { cards: [{ cycle: 'c5', mId: 'c5_07', progress: 14 }] }),
+    hero('b', { cards: [{ cycle: 'c1', mId: 'c1_00', progress: 14 }] }),
+  ]);
+  assert.equal(env.mnemosTrackLength(MNEMOS.c5.find(card => card.id === 'c5_07')), 14, 'c5_07 轨道应是 14 格');
+  assert.equal(env.mnemosTrackLength(MNEMOS.c1.find(card => card.id === 'c1_00')), 10, '标准卡轨道应是 10 格');
+  const a = env.heroMnemosTrackCount(env.state.heroes[0]);
+  const b = env.heroMnemosTrackCount(env.state.heroes[1]);
+  assert.equal(a, 14, `c5_07 推到第 14 格应计 14 格 —— 实际 ${a}`);
+  assert.equal(b, 10, `标准卡即使记录了 14 也只计 10 格 —— 实际 ${b}`);
+});
+
+// hero 页与主控台各存了一份回忆卡节点表（hero: MNEMOS，主控台: MNEMOS_CARD_NODES），
+// 必须逐卡一致。历史上两份表曾经只改了一处（c5_07 一边 [3,7,10]、另一边 [5,9,14]），
+// 主控台的「回忆突破」提醒和 hero 页的亮灯格数就对不上了。
 test('hero 页与主控台的回忆卡节点表完全一致', () => {
   const dashboardSource = fs.readFileSync(path.join(root, 'index.html'), 'utf8').replace(/\r\n/g, '\n');
   const dashboardStart = dashboardSource.indexOf('const MNEMOS_CARD_NODES = ');
@@ -324,4 +357,25 @@ test('hero 页与主控台的回忆卡节点表完全一致', () => {
 
   assert.ok(heroCards.size >= 40, `hero 页回忆卡总数看起来不对：${heroCards.size}`);
   assert.deepEqual(mismatches, [], `两份表不一致：\n  ${mismatches.join('\n  ')}`);
+});
+
+// 宿命回忆里有一张不属于任何循环的卡：官方 fmnemos 表里的 fmnem_sowed
+// （cycle 字段写作 COUNT，IL2CPP 中与 ATOEnums.CampaignCycle.MNESTIS 同值 7）。
+// 它必须能被选到，所以 hero 页把它放在 CYCLES 之外的「隐藏」组里。
+test('hero 页的卡组列表 = CYCLES + EXTRA_CYCLES，且例外组里那张宿命回忆在表内', () => {
+  assert.match(
+    heroSource,
+    /^ *const MNEMOS_GROUPS = CYCLES\.concat\(EXTRA_CYCLES\);$/m,
+    'hero 页应把 MNEMOS_GROUPS 定义为 CYCLES.concat(EXTRA_CYCLES)',
+  );
+  assert.deepEqual([...EXTRA_CYCLES], ['count'], 'EXTRA_CYCLES 目前只应有「count」组');
+
+  const fated = vm.runInNewContext(`(${extractLiteral('FATED_MNEMOS')})`, {});
+  const sowed = (fated.count || []).find(card => card.id === 'fm_sowed');
+  assert.ok(sowed, 'FATED_MNEMOS.count 里缺 fm_sowed');
+  assert.equal(sowed.card, 'CF1269', 'fm_sowed 的卡号应为官方表里的 CF1269');
+  assert.equal(sowed.skill, 'will', 'fm_sowed 应为意志 −1');
+  for (const cycleId of EXTRA_CYCLES) {
+    assert.ok(!CYCLES.includes(cycleId), `${cycleId} 不该混进 CYCLES（那是战役循环）`);
+  }
 });

@@ -1,5 +1,5 @@
 // Inspect the MNEMOS track data: for every 回忆卡, where do its memory nodes sit
-// on the 1..10 track, and are all of them M-prefixed?
+// on the track (标准 10 格；c5_07 官方给 5/9/14，是 14 格), and are all of them M-prefixed?
 import fs from 'node:fs';
 import vm from 'node:vm';
 

@@ -1,7 +1,12 @@
 // 主控台的 MNEMOS_CARD_NODES 与 hero 页的 MNEMOS 必须描述同一批回忆卡：
-// 逐卡比较 nodes / thresholds，并列出所有 thresholds 不统一（非 [3,7,10]）的条目。
+// 逐卡比较 nodes / thresholds，并列出偏离官方节点位置的条目。
+// 官方 fmnemos 表里标准卡是 3/7/10（10 格轨道），唯一例外是 c5_07：官方给 5/9/14（14 格）。
 import fs from 'node:fs';
 import vm from 'node:vm';
+
+const STANDARD = '[3,7,10]';
+const EXCEPTIONS = { c5_07: '[5,9,14]' };
+const expectedShape = id => EXCEPTIONS[id] || STANDARD;
 
 function literalFrom(source, name) {
   const start = source.indexOf(`const ${name} = `);
@@ -40,11 +45,11 @@ for (const [, card] of heroCards) {
 }
 console.log('hero thresholds 分布:', [...shapes].map(([k, v]) => `${k}×${v}`).join('  '));
 
-const badShapes = [...heroCards].filter(([, c]) => JSON.stringify(c.thresholds) !== '[3,7,10]');
-console.log(`hero 非 [3,7,10] 的卡: ${badShapes.length}` + (badShapes.length ? ' → ' + badShapes.map(([id]) => id).join(', ') : ''));
+const badShapes = [...heroCards].filter(([id, c]) => JSON.stringify(c.thresholds) !== expectedShape(id));
+console.log(`hero 偏离官方节点位置的卡: ${badShapes.length}` + (badShapes.length ? ' → ' + badShapes.map(([id, c]) => `${id}:${JSON.stringify(c.thresholds)}`).join(', ') : ''));
 
-const dashBad = Object.entries(dashNodes).filter(([, c]) => JSON.stringify(c.thresholds) !== '[3,7,10]');
-console.log(`主控台非 [3,7,10] 的卡: ${dashBad.length}` + (dashBad.length ? ' → ' + dashBad.map(([id, c]) => `${id}:${JSON.stringify(c.thresholds)}`).join(', ') : ''));
+const dashBad = Object.entries(dashNodes).filter(([id, c]) => JSON.stringify(c.thresholds) !== expectedShape(id));
+console.log(`主控台偏离官方节点位置的卡: ${dashBad.length}` + (dashBad.length ? ' → ' + dashBad.map(([id, c]) => `${id}:${JSON.stringify(c.thresholds)}`).join(', ') : ''));
 
 const mismatches = [];
 for (const [id, heroCard] of heroCards) {
