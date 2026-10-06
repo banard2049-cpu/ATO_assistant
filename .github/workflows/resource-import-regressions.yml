@@ -37,6 +37,8 @@ jobs:
         # 页面引用的代码必须在仓库里（renderer.js / styles.css / story-tables.js 曾整批漏提交，
         # 导致干净检出构建的 APK、镜像与便携包都缺这些文件）；私有素材则必须不进仓库。
         run: python tools/test_story_code_in_git.py
+      - name: Test C5 headings and story rendering without private resources
+        run: node --test story/tests/c5-heading-compat.test.cjs story/tests/mixed-media.test.cjs story/tests/story-pipe-tables.test.cjs
       - name: Test hidden exploration and music playback
         run: |
           node tests/hidden-exploration.test.cjs
