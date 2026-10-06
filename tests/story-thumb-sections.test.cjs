@@ -62,19 +62,24 @@ test('书里用拇指图标标出的段落都自己成段，标记留在正文�
       split.push(`${book.id} ${entry.id}`);
     }
   }
-  assert.deepEqual(split, ['c4 0010', 'c4 1095', 'c4 1355', 'c4 1359']);
+  assert.deepEqual(split, ['c4 0010', 'c4 1095', 'c4 1355', 'c4 1359', 'c4 4172']);
 });
 
 test('拇指段落的正文不会在别的段落里再出现一份', () => {
   const context = storyContext();
   const entries = context.data.books.flatMap((book) => book.entries.map((entry) => ({ book, entry })));
   const thumbs = entries.filter(({ entry }) => /^[（(]\s*拇指\s*[)）]/.test(String(entry.text || '')));
-  assert.equal(thumbs.length, 4);
+  assert.equal(thumbs.length, 5);
 
+  // 「获得 +N (…资源…)」这类通用奖励句在全书本来就是复用的模板（例如
+  // 「获得 +1 (进展指示物 (ProgressToken))。」出现在 80 个其它条目里），
+  // 它出现在拇指段落里并不说明这段正文被并回了上一段。这里只把叙述句当作重复证据。
+  const SHARED_REWARD_LINE = /^获得\s*[+＋]\s*\d/;
   const duplicates = [];
   for (const { book, entry } of thumbs) {
     const lines = new Set(
-      String(entry.text || '').split('\n').map((line) => line.trim()).filter((line) => line.length >= 12),
+      String(entry.text || '').split('\n').map((line) => line.trim())
+        .filter((line) => line.length >= 12 && !SHARED_REWARD_LINE.test(line)),
     );
     for (const other of entries) {
       if (other.entry === entry) continue;
@@ -98,6 +103,7 @@ test('阅读器能按编号跳到拇指段落，相邻段号也还在', () => {
     ['1095', '0403', '1112'],
     ['1355', '1354', '1356'],
     ['1359', '1356', '1360'],
+    ['4172', '4155', '4456'],
   ]) {
     const entry = context.preferredEntry(book, id, { chapterKey: 'main' });
     assert.ok(entry, `c4 主线解析不到 ${id}`);

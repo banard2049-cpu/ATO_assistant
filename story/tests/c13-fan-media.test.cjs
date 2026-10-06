@@ -115,7 +115,7 @@ test('C1-C3 fan placements resolve on the current fan text without issues', { sk
       officialPlaced += result.count;
     }
   }
-  assert.equal(officialPlaced, 3008);
+  assert.equal(officialPlaced, 5432); // 3008（C1–C3）+ 2424 条 2026-10-06 新增的 C4/C5 official 行
 });
 
 /* The five C2 battles had no fan text at all (the fan data only had the entry skeletons),

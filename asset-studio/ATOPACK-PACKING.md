@@ -74,9 +74,10 @@ python asset-studio/tools/build_official_pack.py \
    **板块** `ss/terrain/<name>.jpg` 是两种卡面，只按文件名兜底会把板块图换成卡图。
 2. **故事书 js**：`story/data/storybook-data.js` 由 `story/data/storybook-official-data.js`
    生成——条目 `id`/`key` 与官方数据一致，标题与正文一律取 `officialTitle` /
-   `officialText`，**没有官方正文的条目直接不要**（实测丢掉 53 条），官方数据里独有的
-   条目补进来（3 条）；章节、order、links 等骨架元数据仍取民间版，保证故事页的章节树和
-   排序正常。**民间正文一个字都不进包**。加 `--story-source project` 可以改回民间正文。
+   `officialText`，**没有官方正文的条目直接不要**（2026-10-06 实测丢掉 21 条：C1–C3 5 条、
+   C4/C5 各 8 条只有标题的「回忆突破」条目），官方数据里独有的条目补进来（3 条）；
+   章节、order、links 等骨架元数据仍取民间版，保证故事页的章节树和排序正常。
+   **民间正文一个字都不进包**。加 `--story-source project` 可以改回民间正文。
 3. **官方故事书图**：`story/data/ato-storybook-key-scans/*` 原书扫描图**默认全部打包**
    （实测 2195 张，约 0.79 GiB），与官方正文数据一起写进 `resourceFiles` 段；缺一张就停下
    报错，不会打出一个坏包。加 `--no-official-scans` 只带正文数据。
@@ -86,6 +87,8 @@ python asset-studio/tools/build_official_pack.py \
 
 实测规模（2026-09-19，官方版）：6499 个成员 / 4279 张图 / 2195 段官方正文 /
 2196 个官方资料（正文数据 + 2195 张原书图）/ 19 首 BGM，约 4.12 GiB。
+（2026-10-06 官方正文并入 C4/C5 后重跑 `--dry-run`：7059 个成员 / 4288 张图 /
+**4202 段**官方正文 / 2196 个官方资料 / 4.50 GiB；差值还含这期间新加的素材与图标。）
 
 ## 唯一比原路径强的地方：不会留下打不开的包
 
@@ -166,8 +169,11 @@ python asset-studio/tools/build_official_pack.py \
 齐全，缺一张就停下——这是提交里的校验规则（`app/official_resources.collect`），
 不想打包扫描图就加 `--no-official-scans`。
 
-**官方版的故事条目数比民间版少。** 正常：官方数据只覆盖 C1–C3，且只保留有官方正文的条目
-（另有 3 条官方独有条目会补进来）。
+**官方版的故事条目数比民间版少。** 正常：官方数据里那些没有官方正文的条目在官方版里就是
+不存在的（`build_official_story` 的 `dropped`）。官方正文自 2026-10-06 起覆盖 **C1–C5**，
+所以现在只丢 21 条（C1–C3 5 条官方未覆盖/不在官方版，C4/C5 各 8 条只有标题的「回忆突破」
+条目），另有 3 条官方独有条目会补进来。C4/C5 没有原书扫描图，官方版看这两个循环时第二屏会
+提示没有原书页、只显示官方正文；包体里的 `resourceFiles` 仍只有 C1–C3 的 2195 张扫描图。
 
 **`export/` 目录写不进去。** 某些受限环境（沙箱）会拦这个目录；换个输出目录，或先写到
 `tmp/` 再自己搬到 `export/`。

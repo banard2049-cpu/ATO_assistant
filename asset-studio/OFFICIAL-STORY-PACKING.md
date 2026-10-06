@@ -7,6 +7,18 @@
 官方文件作为独立的 `resourceFiles` 条目保存，保持项目相对路径和原始字节，逐文件记录 SHA-256。
 不包含备份文件、扫描制作清单或 QA 图片。民间故事仍使用原有 `stories` 数据。
 
+## 官方正文的覆盖范围（2026-10-06 起）
+
+`storybook-official-data.js` 里 C1–C3 是逐条对着原书 PDF 与官方卡面校过的（每条带
+`officialSource` / `officialStatus` 等溯源字段）；**C4/C5 的官方正文是 2026-10-06 随交付件
+整体并入的**，条目键与民间骨架一一对应，只带 `officialTitle` / `officialText`，没有溯源字段，
+也没有原书扫描图——记录在 `officialVersion.officialTextImports` 里。所以：
+
+- 官方版现在五个循环都有正文（官方版故事书 js 4202 段）；
+- 原书扫描图仍然只有 C1–C3（2195 张），C4/C5 在官方版下第二屏提示没有原书页、显示官方正文；
+- C4/C5 的行内图与战斗版图是按**民间正文**锚定的（`mapping.js` 只有 C4/C5 的 `fan` 变体），
+  官方版这两个循环按纯正文渲染。
+
 ## 民间版资源包不带任何官方内容
 
 民间版资源包默认不带官方故事书正文数据（`story/data/storybook-official-data.js`），

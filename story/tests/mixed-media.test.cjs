@@ -29,7 +29,7 @@ function mainPage(h, api, book, variant = 'fan') {
   const page = vm.createContext({
     window: { ATO_MIXED_MEDIA: api }, storyVersion: variant === 'official' ? '官方版' : '民间版',
     currentBook: () => book, storyText: h.container, mixedMediaRender: null,
-    supportsOfficialVersion: () => /^c[1-3]$/.test(book.id),
+    supportsOfficialVersion: () => /^c[1-5]$/.test(book.id),
     linkify: escape, escapeHtml: escape, getDisplayEntry: entry => entry,
     renderBattleImages: () => '', envelopeAibpLink: () => '', renderOfficialScan: () => '',
     entryBookId: () => book.id, annotateEntityTextNodes() {},
@@ -201,7 +201,7 @@ test('all local mappings match exact source and immutable asset hashes', { skip:
     assert.deepEqual(p.issues, [], identity);
     assert.equal(p.tokens.map(t => t.type === 'text' ? t.text : t.original).join(''), text);
   }
-  assert.equal(rows.length, 8390); // 5434 official-anchored rows + 2956 C1-C3 fan rows
+  assert.equal(rows.length, 10814); // 8390 + 2026-10-06 的 2424 条 C4/C5 official 行
   assert.equal(checked.size, 434);
 });
 
@@ -238,6 +238,6 @@ test('all mapped entries use real main and second-screen branches without droppi
     }
     tested++;
   }
-  assert.equal(mainCount, 8390); assert.equal(secondCount, 8390);
+  assert.equal(mainCount, 10814); assert.equal(secondCount, 10814);
   console.log(`Mixed-media branch audit: ${tested} entry variants, main ${mainCount}, second ${secondCount}`);
 });

@@ -142,7 +142,7 @@ test('both screens use the same revised renderer and local mapping cache version
   for (const page of ['story/index.html', 'ss/index.html']) {
     const html = fs.readFileSync(path.join(root, page), 'utf8');
     assert.match(html, /mixed-media\/renderer\.js\?v=c4c5-20261006-r3-compat1/);
-    assert.match(html, /mixed-media\/mapping\.js\?v=c4c5-20261006-r3/);
+    assert.match(html, /mixed-media\/mapping\.js\?v=c4c5-20261006-official-c45-1/);
     assert.match(html, /story-tables\.js\?v=20261005-pipetables1/);
   }
 });
