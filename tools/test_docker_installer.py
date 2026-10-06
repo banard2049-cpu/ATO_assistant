@@ -157,8 +157,17 @@ esac
                 failures.append("Docker Compose 未应用本地镜像/拉取策略覆盖")
     release = (ROOT / "tools/release_portable.ps1").read_text(encoding="utf-8")
     workflow = (ROOT / ".github/workflows/portable-release.yml").read_text(encoding="utf-8")
-    if not re.search(r"\$portableTargets\s*=\s*@\([^\n]*'docker'", release) or "ATO-Assistant-Docker-$versionText.zip" not in release or "ATO-Assistant-Docker-${{ steps.release.outputs.version }}.zip" not in workflow:
-        failures.append("Release 必须构建并上传包含 README-DOCKER.txt 的 Docker 分发包")
+    docker_workflow = (ROOT / ".github/workflows/docker-package.yml").read_text(encoding="utf-8")
+    # Docker 只以镜像形式发布：由 docker-package.yml 推 GHCR，Release 里不再挂分发包，
+    # Portable 发布链路也不再构建或归档它。
+    if re.search(r"\$portableTargets\s*=\s*@\([^\n]*'docker'", release) or "ATO-Assistant-Docker-$versionText.zip" in release:
+        failures.append("Portable 发布脚本不得再构建 Docker 分发包")
+    if "ATO-Assistant-Docker-${{ steps.release.outputs.version }}.zip" in workflow:
+        failures.append("Portable workflow 不得再归档 Docker 分发包")
+    if "docker/build-push-action" not in docker_workflow or "ghcr.io/banard2049-cpu/ato_assistant" not in docker_workflow:
+        failures.append("Docker 镜像仍必须由 docker-package.yml 推送到 GHCR")
+    if "ATO-Assistant-Docker-${{ steps.release.outputs.version }}.zip" not in docker_workflow:
+        failures.append("Docker 工作流仍应归档构建上下文 zip")
     return failures
 
 
