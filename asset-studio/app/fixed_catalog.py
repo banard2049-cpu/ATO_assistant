@@ -602,8 +602,8 @@ MIXED_MEDIA_BOOK_CROPS: dict[str, tuple[str, ...]] = {
         "c5-supplement-7-occ1-p158.svg",
         "c5-supplement-7-occ2-p158.svg",
         "c5-supplement-7-occ3-p158.svg",
-        "c5-supplement-86-occ1-p164.png",
-        "c5-supplement-90-occ1-p165.png",
+        "c5-inward-86-user-20261006.png",
+        "c5-inward-90-user-20261006.png",
         "c5-supplement-97-occ1-p166.png",
         "icon-adversary-activation-flame.svg",
         "icon-adversary-activation-silhouette.svg",
@@ -1851,7 +1851,7 @@ def fixed_catalog_payload() -> dict[str, Any]:
         "+hypertime-trait-v+ur-fleece-panel-2-remove-trii-002+custom-token-cm+custom-trait-blank"
         "+remove-tech-tree-backgrounds+cryptic-glyph-files+c5-battle-boards"
         "+mixed-media-crops+drop-c2-c5-battle-boards+drop-c5-supplement-pages"
-        "+drop-story-battle-boards"
+        "+drop-story-battle-boards+c5-inward-86-90-user-images"
     )
     return payload
 

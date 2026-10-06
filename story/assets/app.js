@@ -3069,9 +3069,9 @@
   function mixedMediaContext(entry) {
     const bookId = currentBook()?.id || "";
     const variant = storyVersion === "官方版" && supportsOfficialVersion() ? "official" : "fan";
-    // Mappings are audited per source variant: C1-C3 on the official text, C4-C5 on
-    // the fan text. C1-C3 also carries fan-variant rows (re-anchored 2026-10-05), so
-    // both variants are allowed here; an entry without rows simply stays plain text.
+    // Mappings are audited per source variant: C1-C3 and C4-C5 all carry both variants now
+    // (C4-C5 official rows were re-anchored on the 2026-10-06 官方正文). An entry without
+    // rows for the current variant simply stays plain text.
     if (!/^c[1-5]$/.test(bookId)) return null;
     if (/^(?:story-card|doom-card|rules?)$/.test(entry.chapterKey || "")) return null;
     return { schema: 1, bookId, entryKey: entry.key, variant };
@@ -3213,8 +3213,11 @@
     return true;
   }
 
+  // 官方正文覆盖到哪几册，这里就认哪几册：C1-C5 都有官方正文（C4/C5 于 2026-10-06 并入），
+  // 行内图/战斗版图也都有对应的 official 行（同时按官方正文重新锚定）。
+  // C4/C5 仍然没有原书扫描图，所以第二屏在官方版下只能显示官方正文。
   function supportsOfficialVersion(book = currentBook()) {
-    return ["c1", "c2", "c3"].includes(book?.id);
+    return ["c1", "c2", "c3", "c4", "c5"].includes(book?.id);
   }
 
   function getDisplayEntry(entry) {

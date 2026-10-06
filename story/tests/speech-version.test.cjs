@@ -44,13 +44,29 @@ test("朗读跟随官方和民间切换，官方版不复用民间离线音频",
   assert.equal(context.spoken, "民间正文");
 });
 
-test("官方正文缺失时不回退到民间；不支持官方版的书保留原文", async () => {
+test("官方正文缺失时不回退到民间；没有官方版的书保留原文", async () => {
   const context = setup({ storyVersion: "官方版", officialEntries: new Map() });
   await context.speakEntry(entry);
   assert.equal(context.spoken, undefined);
   assert.match(context.status, /暂无可朗读正文/);
-  context.currentBook = () => ({ id: "c4" });
+  // 番外 c1.5 / c2.5 不在官方正文覆盖范围内，官方版下仍读民间正文。
+  context.currentBook = () => ({ id: "c1.5" });
   assert.equal(context.getSpeechEntryText(entry), "民间正文");
+  // C4/C5 自 2026-10-06 起也有官方正文，官方版下不再回退民间正文。
+  context.currentBook = () => ({ id: "c4" });
+  assert.equal(context.getSpeechEntryText(entry), "");
+});
+
+test("官方版覆盖 C1–C5，番外 c1.5 / c2.5 不参与", () => {
+  const context = setup();
+  for (const id of ["c1", "c2", "c3", "c4", "c5"]) {
+    context.currentBook = () => ({ id });
+    assert.equal(context.supportsOfficialVersion(), true, id);
+  }
+  for (const id of ["c1.5", "c2.5"]) {
+    context.currentBook = () => ({ id });
+    assert.equal(context.supportsOfficialVersion(), false, id);
+  }
 });
 
 test("切换版本取消等待中的旧朗读请求", async () => {
