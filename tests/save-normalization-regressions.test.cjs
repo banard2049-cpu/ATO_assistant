@@ -98,6 +98,8 @@ test('hero legacy default fields merge with remote memories without a false prom
     state: null, heroServerBaseline: { heroes: [{ id: 'h1', notes: '' }], activeHeroId: 'h1', graveyard: [] },
     SKILLS: ['courage', 'wisdom', 'will', 'endurance', 'cunning', 'fury'].map(id => ({ id })),
     CYCLES: ['c1', 'c2', 'c3', 'c4', 'c5'], window: { confirm: () => { prompts++; return true; } },
+    // hero 页遍历卡组用的是 CYCLES + EXTRA_CYCLES（例外组里是 CF1269 被播种）。
+    MNEMOS_GROUPS: ['c1', 'c2', 'c3', 'c4', 'c5', 'count'],
   });
   c.state = clone(c.heroServerBaseline);
   c.normalizeState();

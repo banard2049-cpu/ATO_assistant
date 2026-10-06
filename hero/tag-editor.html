@@ -255,10 +255,15 @@
         { id: "fm_c5_08", en: "Godfearing", zh: "畏神" },
         { id: "fm_c5_09", en: "Messianic", zh: "弥赛亚" },
       ],
+      // 不属于任何循环的宿命回忆（官方 fmnemos 表的 cycle = COUNT，卡号 CF1269）：
+      // C2《播种 (Sowing)》这条线派出，C2 特殊事件《死于收割》里永久移出游戏。
+      count: [
+        { id: "fm_sowed", en: "Sowed", zh: "被播种" },
+      ],
     };
 
-    const CYCLES = ["c1", "c2", "c3", "c4", "c5"];
-    const CYCLE_LABELS = { c1: "循环 I", c2: "循环 II", c3: "循环 III", c4: "循环 IV", c5: "循环 V" };
+    const CYCLES = ["c1", "c2", "c3", "c4", "c5", "count"];
+    const CYCLE_LABELS = { c1: "循环 I", c2: "循环 II", c3: "循环 III", c4: "循环 IV", c5: "循环 V", count: "隐藏" };
     const SECTIONS = ["mnemos", "fated"];
     const SECTION_LABELS = { mnemos: "回忆卡", fated: "宿命回忆" };
     let activeCycle = "c1";

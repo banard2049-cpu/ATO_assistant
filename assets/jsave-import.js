@@ -1636,6 +1636,11 @@
     var fated = {};
     var fatedProgress = {};
     CYCLE_IDS.forEach(function (cycle) { fated[cycle] = []; });
+    // 官方 APP 的宿命回忆表里有一张不属于任何循环的卡：CF1269 Sowed 被播种。
+    // 它的 cycle 字段写作 COUNT（IL2CPP 里 ATOEnums.CampaignCycle 的 COUNT 与 MNESTIS 同值 7，
+    // C1–C5 是 0–4），所以键里没有 c1–c5 段，形如 fmnem_sowed；
+    // 映射到 hero 页的 count 组（标签「隐藏」），不要报成无法解析。
+    var EXTRA_FATED_KEYS = { fmnem_sowed: { cycle: "count", id: "fm_sowed" } };
     var fatedKeys = entry.fmnemos_keys || [];
     var fatedVals = entry.fmnemos_vals || [];
     fatedKeys.forEach(function (key, index) {
@@ -1643,11 +1648,17 @@
       var value = fatedVals[index];
       var split = splitKey(key);
       var cycle = split[0], suffix = split[1];
-      if (!cycle) {
+      var short;
+      var extra = EXTRA_FATED_KEYS[String(key).trim()];
+      if (extra) {
+        cycle = extra.cycle;
+        short = extra.id;
+      } else if (cycle) {
+        short = "fm_" + cycle + "_" + suffix;
+      } else {
         if (String(key).trim()) this.warnings.push("无法解析宿命记忆键：" + String(key));
         return;
       }
-      var short = "fm_" + cycle + "_" + suffix;
       if (!fated[cycle]) fated[cycle] = [];
       fated[cycle].push(short);
       fatedProgress[short] = pyInt(value);

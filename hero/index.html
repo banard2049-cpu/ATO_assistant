@@ -1169,13 +1169,28 @@
         { id: "c5_04", en: "Last Crusader", zh: "最后的十字军", skill1: "endurance", skill2: "wisdom", nodes: ["M002","M012","M022"], thresholds: [3,7,10], card: "EG2644", tags: ["deed","voyage","crime"] },
         { id: "c5_05", en: "Words and Deeds", zh: "言行合一", skill1: "courage", skill2: "will", nodes: ["M001","M011","M021"], thresholds: [3,7,10], card: "EG2645", tags: ["family","heritage","gods"] },
         { id: "c5_06", en: "Twilight", zh: "暮光之刻", skill1: "endurance", skill2: "fury", nodes: ["M007","M017","M027"], thresholds: [3,7,10], card: "EG2646", tags: ["supernatural","tragedy","curse"] },
-        { id: "c5_07", en: "He Spoke Truth", zh: "他说出了真相", skill1: "courage", skill2: "wisdom", nodes: ["M008","M018","M028"], thresholds: [3,7,10], card: "EG2647", tags: ["deed","curse","voyage"] },
+        // 全表唯一的例外：官方 fmnemos 表里 mnemos_c5_07 的三项 break point 是 5 / 9 / 14，
+        // 不是标准的 3 / 7 / 10。按官方数据照抄，所以这张卡的轨道是 14 格（见 mnemosTrackLength）。
+        { id: "c5_07", en: "He Spoke Truth", zh: "他说出了真相", skill1: "courage", skill2: "wisdom", nodes: ["M008","M018","M028"], thresholds: [5,9,14], card: "EG2647", tags: ["deed","curse","voyage"] },
       ],
     };
 
-    // 回忆卡轨道的格数固定是 10（节点落在第 3/7/10 格，见上面每张卡的 thresholds）。
-    // 似然判定里按「1–10 已推进的格数」比较，所以上限就是它。
+    // 回忆卡轨道的标准格数：10 格，节点落在第 3/7/10 格。
+    // 唯一例外是 C5 的 EG2647《他道出了真相》，官方给的是 5/9/14 → 14 格；
+    // 所以轨道长度按每张卡自己的最后一个 break point 取（见 mnemosTrackLength），
+    // 这个常量只是标准长度与兜底下限。
     const MNEMOS_TRACK_LENGTH = 10;
+
+    // 这张卡的轨道有几格：官方表里三项 break point 就是节点所在的格，
+    // 最后一格即轨道末尾（标准卡 3/7/10 → 10 格；c5_07 的 5/9/14 → 14 格）。
+    // 注意：是取「最后一个 break point」，不是取 thresholds 数组的长度
+    // （历史上把长度当轨道长度，导致上限变成 3）。
+    function mnemosTrackLength(card) {
+      const points = Array.isArray(card?.thresholds)
+        ? card.thresholds.map(Number).filter(Number.isFinite)
+        : [];
+      return Math.max(MNEMOS_TRACK_LENGTH, ...points);
+    }
 
     const FATED_MNEMOS = {
       c1: [
@@ -1233,10 +1248,25 @@
         { id: "fm_c5_08", en: "Godfearing", zh: "畏神", keyword: "Godfearing", skill: "courage", card: "EF2655", tags: ["family","gods","fate"] },
         { id: "fm_c5_09", en: "Messianic", zh: "弥赛亚", keyword: "Messianic", skill: "fury", card: "EF2656", tags: ["supernatural","heritage","curse"] },
       ],
+      // 不属于任何循环的宿命回忆（官方 fmnemos 表里 cycle = COUNT，卡号 CF1269）。
+      // 只有这一张：它由 C2 冒险枢纽 07《真相映照弱点》的冒险《播种 (Sowing)》这条线派出，
+      // 在 C2 特殊事件《死于收割 Reaped》里被永久移出游戏（标记 G6），之后不再回到牌堆。
+      count: [
+        { id: "fm_sowed", en: "Sowed", zh: "被播种", keyword: "Sowed", skill: "will", card: "CF1269", tags: ["crime","fate","tragedy"] },
+      ],
     };
 
     const CYCLES = ["c1", "c2", "c3", "c4", "c5"];
-    const CYCLE_LABELS = { c1: "C1", c2: "C2", c3: "C3", c4: "C4", c5: "C5" };
+    const CYCLE_LABELS = { c1: "C1", c2: "C2", c3: "C3", c4: "C4", c5: "C5", count: "隐藏" };
+    // 宿命回忆里有一张不属于任何循环的卡：CF1269 Sowed 被播种。
+    // 官方 APP 的 fmnemos 表把它的 cycle 写成 COUNT，在 IL2CPP 里
+    // ATOEnums.CampaignCycle 的 COUNT 与 MNESTIS 同值 7（C1–C5 是 0–4），
+    // 所以它永远不落在循环牌堆里；C2 特殊事件《死于收割》也明说
+    // 「永久性地从游戏中移除播撒宿命回忆卡（不要将其放入宿命回忆卡组中）」。
+    // 因此这里给它一个独立的「隐藏」组，既不混进 C1–C5，又能在选择器里选到。
+    const EXTRA_CYCLES = ["count"];
+    // 回忆卡 / 宿命回忆的遍历都走这个列表；EXTRA_CYCLES 目前只有宿命回忆有卡。
+    const MNEMOS_GROUPS = CYCLES.concat(EXTRA_CYCLES);
     let titleCycle = CYCLES.includes(new URLSearchParams(window.location.search).get("cycle"))
       ? new URLSearchParams(window.location.search).get("cycle")
       : "c1";
@@ -1326,7 +1356,7 @@
         h.triskelion.fury = Math.max(0, parseInt(h.triskelion.fury, 10) || 0);
         h.triskelion.fate = Math.max(0, parseInt(h.triskelion.fate, 10) || 0);
         h.triskelion.danger = Math.max(0, parseInt(h.triskelion.danger, 10) || 0);
-        CYCLES.forEach(c => {
+        MNEMOS_GROUPS.forEach(c => {
           if (!Array.isArray(h.mnemos[c])) h.mnemos[c] = [];
           if (!Array.isArray(h.fatedMnemos[c])) h.fatedMnemos[c] = [];
         });
@@ -1598,19 +1628,21 @@
     //      所以某张卡推到第 10 格就是 10 格）。
     // 曾经这里直接拿「已推进格数」当唯一判据，会把「卡少但推得深」的英雄误判成最大似然。
     function heroMnemosCardCount(hero) {
-      return CYCLES.reduce((sum, cycleId) => sum + (hero.mnemos?.[cycleId] || []).length, 0);
+      return MNEMOS_GROUPS.reduce((sum, cycleId) => sum + (hero.mnemos?.[cycleId] || []).length, 0);
     }
 
-    // 轨道已推进的格数：每张回忆卡记的是 mnemosProgress[id]（1–10 的推进位置），
+    // 轨道已推进的格数：每张回忆卡记的是 mnemosProgress[id]（1..轨道末尾 的推进位置），
     // 逐格累加，节点格同样计入（对比上一版：它把节点格跳过了，第 10 格只算 7 格）。
+    // 上限按每张卡自己的轨道格数算：标准卡 10 格，c5_07 是 14 格（官方 5/9/14）。
     function heroMnemosTrackCount(hero) {
       const progressByCard = hero.mnemosProgress || {};
       let count = 0;
-      CYCLES.forEach(cycleId => {
+      MNEMOS_GROUPS.forEach(cycleId => {
         (hero.mnemos?.[cycleId] || []).forEach(mId => {
           const progress = Number(progressByCard[mId]) || 0;
           if (progress <= 0) return;
-          count += Math.min(progress, MNEMOS_TRACK_LENGTH);
+          const card = (MNEMOS[cycleId] || []).find(item => item.id === mId);
+          count += Math.min(progress, card ? mnemosTrackLength(card) : MNEMOS_TRACK_LENGTH);
         });
       });
       return count;
@@ -1687,8 +1719,8 @@
       const arg = ARGONAUTS.find(a => a.id === hero.argonaut);
       const portraitSrc = arg ? argonautPortraitSrc(arg.id) : "";
       const { total } = getHeroSkills(hero);
-      const mnemosCount = CYCLES.reduce((sum, c) => sum + (hero.mnemos[c] || []).length, 0);
-      const fatedCount = CYCLES.reduce((sum, c) => sum + (hero.fatedMnemos?.[c] || []).length, 0);
+      const mnemosCount = MNEMOS_GROUPS.reduce((sum, c) => sum + (hero.mnemos[c] || []).length, 0);
+      const fatedCount = MNEMOS_GROUPS.reduce((sum, c) => sum + (hero.fatedMnemos?.[c] || []).length, 0);
       const likelihoodHtml = likelihoodType === "most"
         ? `<span class="likelihood-badge most"><img src="${escHtml(assetSrc("ico_most_likely.png"))}" alt="最大似然">最大似然</span>`
         : likelihoodType === "least"
@@ -2021,7 +2053,7 @@
       const skillZhMap = {};
       SKILLS.forEach(s => { skillZhMap[s.id] = s.zh; });
       const allSelected = [];
-      CYCLES.forEach(cycleId => {
+      MNEMOS_GROUPS.forEach(cycleId => {
         (hero.mnemos[cycleId] || []).forEach(mId => {
           const m = (MNEMOS[cycleId] || []).find(x => x.id === mId);
           if (m) allSelected.push({ ...m, cycleId });
@@ -2037,7 +2069,7 @@
             <div class="mnemos-title">${escHtml(m.zh)} <span class="mnemos-title-en">${escHtml(m.en)}</span> <span class="mnemos-cycle">${escHtml(CYCLE_LABELS[m.cycleId] || "")}</span> ${tagsHtml}</div>
             <div class="mnemos-badges"><img class="mnemos-skill-icon" src="${escHtml(assetSrc(`skill_${m.skill1}.png`))}" alt="${skillZhMap[m.skill1]}" title="${skillZhMap[m.skill1]} +1"><img class="mnemos-skill-icon skill2" src="${escHtml(assetSrc(`skill_${m.skill2}.png`))}" alt="${skillZhMap[m.skill2]}" title="${skillZhMap[m.skill2]} +1"></div>
           </div>
-          ${renderTrack10(m, progress, hero.id, hero)}
+          ${renderMnemosTrack(m, progress, hero.id, hero)}
         </div>`;
       }).join("");
     }
@@ -2048,7 +2080,7 @@
       const skillZhMap = {};
       SKILLS.forEach(s => { skillZhMap[s.id] = s.zh; });
       const allSelected = [];
-      CYCLES.forEach(cycleId => {
+      MNEMOS_GROUPS.forEach(cycleId => {
         (hero.fatedMnemos[cycleId] || []).forEach(fmId => {
           const fm = (FATED_MNEMOS[cycleId] || []).find(x => x.id === fmId);
           if (fm) allSelected.push({ ...fm, cycleId });
@@ -2113,7 +2145,7 @@
     function computeMnemosBonus(hero) {
       const bonus = { courage: 0, wisdom: 0, will: 0, endurance: 0, cunning: 0, fury: 0 };
       // Regular mnemos: +1 to each of two skills
-      CYCLES.forEach(cycleId => {
+      MNEMOS_GROUPS.forEach(cycleId => {
         const selected = hero.mnemos[cycleId] || [];
         const items = MNEMOS[cycleId] || [];
         selected.forEach(mId => {
@@ -2126,7 +2158,7 @@
       });
       // Fated mnemos: -1 to skill
       const fated = hero.fatedMnemos || {};
-      CYCLES.forEach(cycleId => {
+      MNEMOS_GROUPS.forEach(cycleId => {
         const selected = fated[cycleId] || [];
         const items = FATED_MNEMOS[cycleId] || [];
         selected.forEach(fId => {
@@ -2184,7 +2216,7 @@
       hero.mnemosProgress = hero.mnemosProgress || {};
 
       const allSelected = [];
-      CYCLES.forEach(cycleId => {
+      MNEMOS_GROUPS.forEach(cycleId => {
         (hero.mnemos[cycleId] || []).forEach(mId => {
           const m = (MNEMOS[cycleId] || []).find(x => x.id === mId);
           if (m) allSelected.push({ ...m, cycleId });
@@ -2216,7 +2248,7 @@
               <div class="mnemos-badges"><span class="mnemos-skill-badge">${s1} +1</span><span class="mnemos-skill-badge skill2">${s2} +1</span></div>
             </div>
             <div class="mnemos-tags-row">${tagSelects}</div>
-            ${renderTrack10(m, progress, hero.id, hero)}
+            ${renderMnemosTrack(m, progress, hero.id, hero)}
           </div>
           <button class="mnemos-toggle danger" onclick="confirmRemoveMnemos('${m.cycleId}','${m.id}')">移除</button>
         </div>`;
@@ -2232,7 +2264,7 @@
       hero.fatedProgress = hero.fatedProgress || {};
 
       const allSelected = [];
-      CYCLES.forEach(cycleId => {
+      MNEMOS_GROUPS.forEach(cycleId => {
         (hero.fatedMnemos[cycleId] || []).forEach(fId => {
           const m = (FATED_MNEMOS[cycleId] || []).find(x => x.id === fId);
           if (m) allSelected.push({ ...m, cycleId });
@@ -2270,8 +2302,9 @@
       html += '<div class="picker-dialog">';
       html += '<div class="picker-head"><h2>添加回忆</h2><button onclick="closePicker()">关闭</button></div>';
       html += '<div class="picker-body">';
-      CYCLES.forEach(cycleId => {
+      MNEMOS_GROUPS.forEach(cycleId => {
         const items = MNEMOS[cycleId] || [];
+        if (!items.length) return;
         const heroMnemos = hero.mnemos[cycleId] || [];
         html += `<details><summary style="cursor:pointer;font-weight:900;font-size:14px;margin-bottom:6px;">${CYCLE_LABELS[cycleId]}</summary><div class="mnemos-list" style="margin-bottom:12px">`;
         items.forEach(m => {
@@ -2300,7 +2333,7 @@
       html += '<div class="picker-head"><h2>删除回忆</h2><button onclick="closePicker()">关闭</button></div>';
       html += '<div class="picker-body">';
       let count = 0;
-      CYCLES.forEach(cycleId => {
+      MNEMOS_GROUPS.forEach(cycleId => {
         const selected = hero.mnemos[cycleId] || [];
         if (!selected.length) return;
         html += `<details open><summary style="cursor:pointer;font-weight:900;font-size:14px;margin-bottom:6px;">${CYCLE_LABELS[cycleId]}</summary><div class="mnemos-list" style="margin-bottom:12px">`;
@@ -2333,7 +2366,7 @@
       html += '<div class="picker-dialog">';
       html += '<div class="picker-head"><h2>添加宿命回忆</h2><button onclick="closePicker()">关闭</button></div>';
       html += '<div class="picker-body">';
-      CYCLES.forEach(cycleId => {
+      MNEMOS_GROUPS.forEach(cycleId => {
         const items = FATED_MNEMOS[cycleId] || [];
         const heroFated = hero.fatedMnemos[cycleId] || [];
         html += `<details><summary style="cursor:pointer;font-weight:900;font-size:14px;margin-bottom:6px;">${CYCLE_LABELS[cycleId]}</summary><div class="mnemos-list" style="margin-bottom:12px">`;
@@ -2363,7 +2396,7 @@
       html += '<div class="picker-head"><h2>删除宿命回忆</h2><button onclick="closePicker()">关闭</button></div>';
       html += '<div class="picker-body">';
       let count = 0;
-      CYCLES.forEach(cycleId => {
+      MNEMOS_GROUPS.forEach(cycleId => {
         const selected = hero.fatedMnemos[cycleId] || [];
         if (!selected.length) return;
         html += `<details open><summary style="cursor:pointer;font-weight:900;font-size:14px;margin-bottom:6px;">${CYCLE_LABELS[cycleId]}</summary><div class="mnemos-list" style="margin-bottom:12px">`;
@@ -2390,12 +2423,13 @@
       renderAll();
     }
 
-    function renderTrack10(m, progress, heroId, hero) {
+    function renderMnemosTrack(m, progress, heroId, hero) {
       const storyAt = {};
       const nodeProgress = hero?.mnemosNodeProgress?.[m.id] || {};
       m.thresholds.forEach((t, i) => { storyAt[t] = m.nodes[i]; });
+      const total = mnemosTrackLength(m);
       let html = '<div class="track-bar">';
-      for (let i = 1; i <= 10; i++) {
+      for (let i = 1; i <= total; i++) {
         const filled = progress >= i;
         const story = storyAt[i] || "";
         if (story) {
@@ -2417,8 +2451,8 @@
     function setMnemosProgress(mnemosId, level, heroId) {
       const hero = heroId
         ? state.heroes.find(h => h.id === heroId)
-        : state.heroes.find(h => h.id === state.activeHeroId && CYCLES.some(cycleId => (h.mnemos?.[cycleId] || []).includes(mnemosId)))
-          || state.heroes.find(h => CYCLES.some(cycleId => (h.mnemos?.[cycleId] || []).includes(mnemosId)));
+        : state.heroes.find(h => h.id === state.activeHeroId && MNEMOS_GROUPS.some(cycleId => (h.mnemos?.[cycleId] || []).includes(mnemosId)))
+          || state.heroes.find(h => MNEMOS_GROUPS.some(cycleId => (h.mnemos?.[cycleId] || []).includes(mnemosId)));
       if (!hero) return;
       hero.mnemosProgress = hero.mnemosProgress || {};
       hero.mnemosProgress[mnemosId] = hero.mnemosProgress[mnemosId] === level ? level - 1 : level;
@@ -2429,8 +2463,8 @@
     function toggleMnemosNode(mnemosId, nodeId, heroId) {
       const hero = heroId
         ? state.heroes.find(h => h.id === heroId)
-        : state.heroes.find(h => h.id === state.activeHeroId && CYCLES.some(cycleId => (h.mnemos?.[cycleId] || []).includes(mnemosId)))
-          || state.heroes.find(h => CYCLES.some(cycleId => (h.mnemos?.[cycleId] || []).includes(mnemosId)));
+        : state.heroes.find(h => h.id === state.activeHeroId && MNEMOS_GROUPS.some(cycleId => (h.mnemos?.[cycleId] || []).includes(mnemosId)))
+          || state.heroes.find(h => MNEMOS_GROUPS.some(cycleId => (h.mnemos?.[cycleId] || []).includes(mnemosId)));
       if (!hero) return;
       hero.mnemosNodeProgress = hero.mnemosNodeProgress || {};
       hero.mnemosNodeProgress[mnemosId] = hero.mnemosNodeProgress[mnemosId] || {};
@@ -2450,14 +2484,14 @@
 
     function countHeroMnemos(hero) {
       let count = 0;
-      CYCLES.forEach(cycleId => { count += (hero.mnemos[cycleId] || []).length; });
+      MNEMOS_GROUPS.forEach(cycleId => { count += (hero.mnemos[cycleId] || []).length; });
       return count;
     }
 
     function countHeroFated(hero) {
       let count = 0;
       hero.fatedMnemos = hero.fatedMnemos || {};
-      CYCLES.forEach(cycleId => { count += (hero.fatedMnemos[cycleId] || []).length; });
+      MNEMOS_GROUPS.forEach(cycleId => { count += (hero.fatedMnemos[cycleId] || []).length; });
       return count;
     }
 
@@ -2514,8 +2548,8 @@
     function setFatedProgress(fatedId, level, heroId) {
       const hero = heroId
         ? state.heroes.find(h => h.id === heroId)
-        : state.heroes.find(h => h.id === state.activeHeroId && CYCLES.some(cycleId => (h.fatedMnemos?.[cycleId] || []).includes(fatedId)))
-          || state.heroes.find(h => CYCLES.some(cycleId => (h.fatedMnemos?.[cycleId] || []).includes(fatedId)));
+        : state.heroes.find(h => h.id === state.activeHeroId && MNEMOS_GROUPS.some(cycleId => (h.fatedMnemos?.[cycleId] || []).includes(fatedId)))
+          || state.heroes.find(h => MNEMOS_GROUPS.some(cycleId => (h.fatedMnemos?.[cycleId] || []).includes(fatedId)));
       if (!hero) return;
       hero.fatedProgress = hero.fatedProgress || {};
       hero.fatedProgress[fatedId] = hero.fatedProgress[fatedId] === level ? level - 1 : level;
@@ -2646,7 +2680,7 @@
           // Mnemos list (read-only)
           const mnemosHtml = (() => {
             const allSelected = [];
-            CYCLES.forEach(cycleId => {
+            MNEMOS_GROUPS.forEach(cycleId => {
               (hero.mnemos[cycleId] || []).forEach(mId => {
                 const m = (MNEMOS[cycleId] || []).find(x => x.id === mId);
                 if (m) allSelected.push({ ...m, cycleId });
@@ -2655,14 +2689,14 @@
             if (!allSelected.length) return '<span style="color:var(--muted);font-size:12px">无</span>';
             return allSelected.map(m => {
               const progress = hero.mnemosProgress[m.id] || 0;
-              return `<div class="mnemos-card">${escHtml(m.zh)} <span style="color:var(--muted);font-size:11px">${escHtml(m.en)}</span> <span style="font-size:11px;font-weight:900">[${progress}/10]</span></div>`;
+              return `<div class="mnemos-card">${escHtml(m.zh)} <span style="color:var(--muted);font-size:11px">${escHtml(m.en)}</span> <span style="font-size:11px;font-weight:900">[${progress}/${mnemosTrackLength(m)}]</span></div>`;
             }).join("");
           })();
 
           // Fated list (read-only)
           const fatedHtml = (() => {
             const allSelected = [];
-            CYCLES.forEach(cycleId => {
+            MNEMOS_GROUPS.forEach(cycleId => {
               (hero.fatedMnemos[cycleId] || []).forEach(fmId => {
                 const fm = (FATED_MNEMOS[cycleId] || []).find(x => x.id === fmId);
                 if (fm) allSelected.push({ ...fm, cycleId });
