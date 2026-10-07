@@ -3,6 +3,7 @@
   "use strict";
   const storageKey = "ato-theme-v1";
   const cycleStorageKey = "ato-theme-cycle-v1";
+  const navigationModeKey = "ato-page-navigation-mode-v1";
   const cycles = {
     c1: ["#f6f0eb", "#fffdfb", "#e3d4c8", "#7f4b26", "#5f341b", "#f0e3d7", "#9a682c"],
     c2: ["#fbefed", "#fffdfc", "#ead1cc", "#a52206", "#7f1c08", "#f8ded8", "#9b6722"],
@@ -66,6 +67,7 @@
   const channel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-theme-v1") : null;
   const cycleChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-dashboard-cycle-v1") : null;
   const modeSelect = document.querySelector("#themeModeSelect");
+  const navigationModeToggle = document.querySelector("#pageNavigationModeToggle");
   const customControls = document.querySelector("#themeCustomControls");
   const colorInput = document.querySelector("#themeColorInput");
   const rgbInputs = [...document.querySelectorAll("[data-theme-rgb]")];
@@ -74,6 +76,32 @@
     const own = document.body.dataset.cycle || new URLSearchParams(window.location.search).get("cycle");
     return Object.hasOwn(cycles, own) ? own : dashboardCycle;
   }
+  function getNavigationMode() {
+    const routerMode = window.ATO_PAGE_ROUTER?.getNavigationMode?.();
+    if (routerMode === "single" || routerMode === "multi") return routerMode;
+    try {
+      return localStorage.getItem(navigationModeKey) === "single" ? "single" : "multi";
+    } catch {
+      return "multi";
+    }
+  }
+  function renderNavigationMode() {
+    if (!navigationModeToggle) return;
+    const mode = getNavigationMode();
+    navigationModeToggle.textContent = mode === "single" ? "单页跳转" : "多页跳转";
+    navigationModeToggle.setAttribute("aria-pressed", String(mode === "single"));
+    const canChange = window.ATO_PAGE_ROUTER?.canChangeNavigationMode?.() ?? true;
+    navigationModeToggle.disabled = !canChange;
+    navigationModeToggle.title = canChange ? "" : "Android 应用固定使用单页跳转";
+  }
+  navigationModeToggle?.addEventListener("click", () => {
+    const nextMode = getNavigationMode() === "single" ? "multi" : "single";
+    const routerMode = window.ATO_PAGE_ROUTER?.setNavigationMode?.(nextMode);
+    if (routerMode !== "single" && routerMode !== "multi") {
+      try { localStorage.setItem(navigationModeKey, nextMode); } catch {}
+    }
+    renderNavigationMode();
+  });
   function apply() {
     const cycle = currentCycle();
     const colors = palette(settings, cycle);
@@ -131,6 +159,7 @@
   window.addEventListener("storage", event => {
     if (event.key === storageKey || event.key === null) { settings = parse(read(storageKey)); apply(); }
     if (event.key === cycleStorageKey) setCycle(read(cycleStorageKey));
+    if (event.key === navigationModeKey || event.key === null) renderNavigationMode();
   });
   new MutationObserver(() => {
     if (dashboard && Object.hasOwn(cycles, document.body.dataset.cycle)) dashboardCycle = document.body.dataset.cycle;
@@ -139,5 +168,6 @@
   }).observe(document.body, { attributes: true, attributeFilter: ["data-cycle"] });
   if (dashboard && Object.hasOwn(cycles, document.body.dataset.cycle)) dashboardCycle = document.body.dataset.cycle;
   if (dashboard) write(cycleStorageKey, dashboardCycle);
+  renderNavigationMode();
   apply();
 })();

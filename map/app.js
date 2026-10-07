@@ -2199,7 +2199,8 @@ async function saveAndReturnToDashboard() {
   saveState();
   const dashboardUrl = new URL("../index.html", window.location.href).href;
   const dashboardModule = window.ATO_PAGE_ROUTER?.moduleFromUrl?.(dashboardUrl) || "dashboard";
-  const dashboardWindow = window.ATO_PAGE_ROUTER?.isModuleRecentlyOpen?.(dashboardModule)
+  const singlePageMode = window.ATO_PAGE_ROUTER?.isSinglePageMode?.() === true;
+  const dashboardWindow = !singlePageMode && window.ATO_PAGE_ROUTER?.isModuleRecentlyOpen?.(dashboardModule)
     ? window.ATO_PAGE_ROUTER.focusNamedModule?.(dashboardUrl, dashboardModule)
     : null;
   if (!await flushCampaignMapSave()) {

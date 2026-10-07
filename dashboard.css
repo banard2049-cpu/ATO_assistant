@@ -184,8 +184,8 @@ button {
 
 .archive-actions {
   display: grid;
-  /* 四个格子：导出状态、导入状态、切换为官方翻译，末尾是「战役简报」入口（链接，样式同按钮）。 */
-  grid-template-columns: max-content max-content minmax(0, 1fr) max-content;
+  /* 导出和导入略宽，战役简报略窄；整行与上方账号操作行同宽。 */
+  grid-template-columns: 1.1fr 1.1fr 0.8fr;
   align-items: center;
   gap: 6px;
 }
@@ -193,9 +193,10 @@ button {
 .app .archive-actions :is(button, a) {
   min-width: 0;
   padding-inline: 8px;
-  font-size: 12px;
   white-space: nowrap;
 }
+
+.app .archive-actions :is(button, a) { width: 100%; }
 
 .dashboard-navigation {
   display: flex;
@@ -888,7 +889,6 @@ button {
   }
 
   .app .archive-actions button {
-    font-size: 11px;
     padding-inline: 6px;
   }
 }

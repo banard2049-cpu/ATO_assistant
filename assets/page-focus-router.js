@@ -13,12 +13,40 @@
   const channel = createChannel();
   const pageId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
   const openModulesKey = "ato-page-focus-open-modules-v1";
+  const navigationModeKey = "ato-page-navigation-mode-v1";
   const openModuleTtl = 15000;
   const heartbeatInterval = 4000;
   const focusAckTimeout = 300;
   const isTopLevelPage = window.top === window;
-  const singleWindow = Boolean(window.ATO_ANDROID_SINGLE_WINDOW || window.ATOAndroid);
+  const nativeSingleWindow = Boolean(window.ATO_ANDROID_SINGLE_WINDOW || window.ATOAndroid);
+  let preferredNavigationMode = "multi";
+  try {
+    const savedMode = localStorage.getItem(navigationModeKey);
+    if (savedMode === "single" || savedMode === "multi") preferredNavigationMode = savedMode;
+  } catch {}
   let pageActive = true;
+
+  function getNavigationMode() {
+    if (nativeSingleWindow) return "single";
+    try {
+      const savedMode = localStorage.getItem(navigationModeKey);
+      if (savedMode === "single" || savedMode === "multi") preferredNavigationMode = savedMode;
+    } catch {}
+    return preferredNavigationMode;
+  }
+
+  function setNavigationMode(mode) {
+    if (nativeSingleWindow) return "single";
+    preferredNavigationMode = mode === "single" ? "single" : "multi";
+    try {
+      localStorage.setItem(navigationModeKey, preferredNavigationMode);
+    } catch {}
+    return preferredNavigationMode;
+  }
+
+  function isSingleWindowMode() {
+    return getNavigationMode() === "single";
+  }
 
   function moduleFromUrl(value = window.location.href) {
     const url = new URL(value, window.location.href);
@@ -94,7 +122,7 @@
   // showing this module? Driven purely by the localStorage heartbeat, which every
   // tab writes regardless of how it was opened — so manual tabs count too.
   function isModuleRecentlyOpen(module) {
-    if (singleWindow) return false;
+    if (isSingleWindowMode()) return false;
     if (module === currentModule) return true;
     const modules = readOpenModules();
     const record = modules[module];
@@ -179,7 +207,7 @@
   async function focusOrNavigate(url, options = {}) {
     const module = moduleFromUrl(url);
     const absolute = new URL(url, window.location.href).href;
-    if (singleWindow) {
+    if (isSingleWindowMode()) {
       window.location.href = absolute;
       return false;
     }
@@ -220,6 +248,10 @@
 
   window.ATO_PAGE_ROUTER = {
     currentModule,
+    getNavigationMode,
+    setNavigationMode,
+    isSinglePageMode: isSingleWindowMode,
+    canChangeNavigationMode: () => !nativeSingleWindow,
     focusNamedModule,
     openModuleTab,
     focusOrNavigate,
@@ -234,7 +266,7 @@
       const anchor = event.target.closest("a[href]");
       if (!anchor || anchor.hasAttribute("download") || anchor.dataset.pageRouterIgnore === "true") return;
       const target = (anchor.getAttribute("target") || "").trim().toLowerCase();
-      if (target && target !== "_self" && !singleWindow) return;
+      if (target && target !== "_self" && !isSingleWindowMode()) return;
       const url = new URL(anchor.href, window.location.href);
       if (url.origin !== window.location.origin) return;
       const targetModule = moduleFromUrl(url.href);

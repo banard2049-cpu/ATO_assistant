@@ -2192,9 +2192,9 @@
       }
     }
   </style>
-  <link rel="stylesheet" href="./dashboard.css?v=20261003-c4-endless">
-  <link rel="stylesheet" href="./assets/theme.css?v=20261001">
-  <script src="./assets/theme.js?v=20261001" defer></script>
+  <link rel="stylesheet" href="./dashboard.css?v=20261007-second-screen-heading3">
+  <link rel="stylesheet" href="./assets/theme.css?v=20261007-misc-settings11">
+  <script src="./assets/theme.js?v=20261007-page-navigation1" defer></script>
   <link rel="stylesheet" href="./assets/update/update-check.css?v=2">
 </head>
 <body data-theme-dashboard>
@@ -2312,45 +2312,9 @@
               <button id="logoutButton" type="button" class="secondary" data-dashboard-readonly-allowed>登出</button>
               <button id="previousDayButton" type="button" class="secondary" data-dashboard-readonly-allowed>回到前一天</button>
             </div>
-            <div class="second-screen-card">
-              <label class="second-screen-toggle">
-                <input id="secondScreenToggle" type="checkbox">
-                开启第二屏幕
-              </label>
-              <div id="secondScreenAddress" class="second-screen-address" hidden>
-                <input id="secondScreenUrl" type="text" readonly aria-label="第二屏幕网址">
-                <button id="copySecondScreenButton" type="button" class="secondary" data-dashboard-readonly-allowed>复制网址</button>
-                <a id="openSecondScreenLink" class="record-card-link" href="./ss/" target="_blank" rel="noopener">打开</a>
-              </div>
-              <!-- 安卓版把整个应用也开放到局域网（不只是第二屏），可以读也可以写：这里给出主控台
-                   地址（其它部署或没检测到局域网地址时整行隐藏）。登录/退出仍在这台设备上做。 -->
-              <div id="lanConsoleRow" class="second-screen-address" hidden>
-                <input id="lanConsoleUrl" type="text" readonly aria-label="局域网主控台网址">
-                <button id="copyLanConsoleButton" type="button" class="secondary" data-dashboard-readonly-allowed>复制网址</button>
-                <a id="openLanConsoleLink" class="record-card-link" href="./" target="_blank" rel="noopener">打开</a>
-              </div>
-              <label id="secondScreenBattleBoardToggleRow" class="second-screen-toggle second-screen-subtoggle" hidden>
-                <input id="secondScreenBattleBoardToggle" type="checkbox" checked>
-                显示决战版图
-              </label>
-              <label id="secondScreenScaleRow" class="second-screen-scale" hidden>
-                地图显示大小
-                <input id="secondScreenScale" type="range" min="60" max="200" step="10" value="100">
-                <output id="secondScreenScaleValue">100%</output>
-              </label>
-              <div id="secondScreenBattleScaleRow" class="second-screen-scale with-rotation" hidden>
-                <span>决战版图显示大小</span>
-                <input id="secondScreenBattleScale" type="range" min="60" max="200" step="10" value="100" aria-label="决战版图显示大小">
-                <output id="secondScreenBattleScaleValue">100%</output>
-                <button id="secondScreenRotateButton" type="button" class="secondary second-screen-icon-button" aria-label="逆时针旋转第二屏幕左侧区域，当前 0 度" title="当前 0°，点击逆时针旋转 90°">↺</button>
-                <button id="secondScreenSwapButton" type="button" class="secondary second-screen-icon-button" aria-label="交换第二屏幕左右区域" title="交换 Boss/AIBP 与决战版图的位置">⇄</button>
-              </div>
-              <p id="secondScreenHint" class="second-screen-hint">打开后，同一局域网设备可通过专用网址查看地图或决战版图。</p>
-            </div>
             <div class="archive-actions">
-              <button id="exportButton" type="button" class="secondary" data-dashboard-readonly-allowed>导出状态</button>
-              <button id="importButton" type="button" class="secondary" title="可导入 ATO 状态包（.json）或官方 App 存档（.jsave）">导入状态</button>
-              <button id="termLanguageToggle" class="secondary" type="button" aria-pressed="false" title="切换为官方翻译" data-dashboard-readonly-allowed>切换为官方翻译</button>
+              <button id="exportButton" type="button" class="secondary" data-dashboard-readonly-allowed>导出存档</button>
+              <button id="importButton" type="button" class="secondary" title="可导入 ATO 存档包（.json）或官方 App 存档（.jsave）">导入存档</button>
               <!-- 简报读的是每日存档备份，所以入口放在存档控制这一块（不再放在顶部工具条）；
                    它是链接但用 secondary 按钮样式，和旁边三个按钮长得一致。 -->
               <a class="secondary briefing-card-link" href="./briefing/index.html">战役简报</a>
@@ -2366,38 +2330,86 @@
           </div>
         </section>
 
-        <section class="panel">
-          <div class="panel-head">
-            <h2>背景音乐</h2>
-          </div>
-          <div class="panel-body">
-            <div id="bgmControls" class="bgm-controls" data-term-ignore></div>
-          </div>
-        </section>
-
-        <section class="panel theme-panel" aria-label="主题设置">
-          <div class="panel-head"><h2>主题</h2></div>
-          <div class="panel-body theme-controls">
-            <label for="themeModeSelect">界面配色
-              <select id="themeModeSelect" data-dashboard-readonly-allowed>
-                <option value="auto">自动（跟随当前循环）</option>
-                <option value="c1">固定循环 I</option>
-                <option value="c2">固定循环 II</option>
-                <option value="c3">固定循环 III</option>
-                <option value="c4">固定循环 IV</option>
-                <option value="c5">固定循环 V</option>
-                <option value="custom">自定义 RGB</option>
-              </select>
-            </label>
-            <div id="themeCustomControls" class="theme-custom-controls" hidden>
-              <label for="themeColorInput">颜色<input id="themeColorInput" type="color" value="#7f4b26" data-dashboard-readonly-allowed></label>
-              <div class="theme-rgb">
-                <label>R<input type="number" data-theme-rgb min="0" max="255" step="1" value="127" aria-label="R 红色" data-dashboard-readonly-allowed></label>
-                <label>G<input type="number" data-theme-rgb min="0" max="255" step="1" value="75" aria-label="G 绿色" data-dashboard-readonly-allowed></label>
-                <label>B<input type="number" data-theme-rgb min="0" max="255" step="1" value="38" aria-label="B 蓝色" data-dashboard-readonly-allowed></label>
+        <section class="panel misc-settings-panel" aria-label="杂项设置">
+          <div class="panel-head"><h2>杂项设置</h2></div>
+          <div class="panel-body misc-settings-controls">
+            <div class="theme-controls">
+              <div class="theme-mode-row">
+                <label for="themeModeSelect">界面配色</label>
+                <select id="themeModeSelect" data-dashboard-readonly-allowed>
+                  <option value="auto">自动</option>
+                  <option value="c1">固定循环 I</option>
+                  <option value="c2">固定循环 II</option>
+                  <option value="c3">固定循环 III</option>
+                  <option value="c4">固定循环 IV</option>
+                  <option value="c5">固定循环 V</option>
+                  <option value="custom">自定义 RGB</option>
+                </select>
+              </div>
+              <div id="themeCustomControls" class="theme-custom-controls" hidden>
+                <label for="themeColorInput">颜色<input id="themeColorInput" type="color" value="#7f4b26" data-dashboard-readonly-allowed></label>
+                <div class="theme-rgb">
+                  <label>R<input type="number" data-theme-rgb min="0" max="255" step="1" value="127" aria-label="R 红色" data-dashboard-readonly-allowed></label>
+                  <label>G<input type="number" data-theme-rgb min="0" max="255" step="1" value="75" aria-label="G 绿色" data-dashboard-readonly-allowed></label>
+                  <label>B<input type="number" data-theme-rgb min="0" max="255" step="1" value="38" aria-label="B 蓝色" data-dashboard-readonly-allowed></label>
+                </div>
+              </div>
+              <p class="theme-note">同步当前浏览器中的所有模块。自定义颜色会自动生成背景、边框和按钮配色。</p>
+              <div class="page-navigation-control">
+                <span>页面跳转</span>
+                <button id="pageNavigationModeToggle" type="button" class="secondary settings-toggle-button" aria-pressed="false" data-dashboard-readonly-allowed>多页跳转</button>
+              </div>
+              <p class="theme-note">多页模式按模块打开或复用独立网页；单页模式在当前网页中切换模块。</p>
+            </div>
+            <div class="misc-setting-group">
+              <div class="misc-setting-heading second-screen-heading">
+                <h3>第二屏幕</h3>
+                <button id="secondScreenToggle" type="button" class="secondary settings-toggle-button" aria-pressed="false" data-dashboard-readonly-allowed>开启</button>
+              </div>
+              <div class="second-screen-card">
+                <div id="secondScreenAddress" class="second-screen-address" hidden>
+                  <input id="secondScreenUrl" type="text" readonly aria-label="第二屏幕网址">
+                  <button id="copySecondScreenButton" type="button" class="secondary" data-dashboard-readonly-allowed>复制网址</button>
+                  <a id="openSecondScreenLink" class="record-card-link" href="./ss/" target="_blank" rel="noopener">打开</a>
+                </div>
+                <!-- 安卓版把整个应用也开放到局域网（不只是第二屏），可以读也可以写：这里给出主控台
+                     地址（其它部署或没检测到局域网地址时整行隐藏）。登录/退出仍在这台设备上做。 -->
+                <div id="lanConsoleRow" class="second-screen-address" hidden>
+                  <input id="lanConsoleUrl" type="text" readonly aria-label="局域网主控台网址">
+                  <button id="copyLanConsoleButton" type="button" class="secondary" data-dashboard-readonly-allowed>复制网址</button>
+                  <a id="openLanConsoleLink" class="record-card-link" href="./" target="_blank" rel="noopener">打开</a>
+                </div>
+                <label id="secondScreenBattleBoardToggleRow" class="second-screen-toggle second-screen-subtoggle" hidden>
+                  <input id="secondScreenBattleBoardToggle" type="checkbox" checked>
+                  显示决战版图
+                </label>
+                <label id="secondScreenScaleRow" class="second-screen-scale" hidden>
+                  地图显示大小
+                  <input id="secondScreenScale" type="range" min="60" max="200" step="10" value="100">
+                  <output id="secondScreenScaleValue">100%</output>
+                </label>
+                <div id="secondScreenBattleScaleRow" class="second-screen-scale with-rotation" hidden>
+                  <span>决战版图显示大小</span>
+                  <input id="secondScreenBattleScale" type="range" min="60" max="200" step="10" value="100" aria-label="决战版图显示大小">
+                  <output id="secondScreenBattleScaleValue">100%</output>
+                  <button id="secondScreenRotateButton" type="button" class="secondary second-screen-icon-button" aria-label="逆时针旋转第二屏幕左侧区域，当前 0 度" title="当前 0°，点击逆时针旋转 90°">↺</button>
+                  <button id="secondScreenSwapButton" type="button" class="secondary second-screen-icon-button" aria-label="交换第二屏幕左右区域" title="交换 Boss/AIBP 与决战版图的位置">⇄</button>
+                </div>
+                <p id="secondScreenHint" class="second-screen-hint">打开后，同一局域网设备可通过专用网址查看地图或决战版图。</p>
               </div>
             </div>
-            <p class="theme-note">同步当前浏览器中的所有模块。自定义颜色会自动生成背景、边框和按钮配色。</p>
+            <div class="misc-setting-group">
+              <div class="misc-setting-heading">
+                <h3>翻译</h3>
+                <button id="termLanguageToggle" class="secondary settings-toggle-button" type="button" aria-pressed="false" title="民间翻译" data-dashboard-readonly-allowed>民间翻译</button>
+              </div>
+            </div>
+            <div class="misc-setting-group">
+              <div id="bgmHeading" class="misc-setting-heading">
+                <h3>背景音乐</h3>
+              </div>
+              <div id="bgmControls" class="bgm-controls" data-term-ignore></div>
+            </div>
           </div>
         </section>
 
@@ -2442,7 +2454,7 @@
     </div>
   </dialog>
 
-  <script src="./assets/page-focus-router.js?v=20260813-no-screen-focus1"></script>
+  <script src="./assets/page-focus-router.js?v=20261007-page-navigation1"></script>
   <script src="./assets/story-doom-card-data.js?v=20261002-cache1"></script>
   <script src="./assets/exploration-card-tags.js?v=20261002-cache1"></script>
   <script src="./assets/exploration-card-rules.js?v=20261002-cache1"></script>
@@ -2453,14 +2465,14 @@
   <script src="./map/nemesis-path.js?v=20260924-shared"></script>
   <script src="./map/nemesis-battle.js?v=20261003-record"></script>
   <script src="./assets/cycle-symbols.js?v=20260918"></script>
-  <!-- 官方 App 存档（.jsave）→ ATO sections 的转换器；「导入状态」按内容判定后走它。
+  <!-- 官方 App 存档（.jsave）→ ATO sections 的转换器；「导入存档」按内容判定后走它。
        jsave-tables.js 是官方枚举/卡名数据表，必须在转换器之前加载；
        map/map-data.js 也要在前（转换器用 window.ATO_MAP_DATA 落地图瓦片）。 -->
   <script src="./assets/jsave-tables.js?v=20261004-import1"></script>
   <script src="./assets/jsave-import.js?v=20261004-import1"></script>
   <script>window.ATO_BGM_CONFIG = { expect: "bgm18" };</script>
   <script src="./assets/bgm/manifest.js?v=20261005-bgm18"></script>
-  <script src="./assets/bgm/bgm.js?v=20261005-bgm18"></script>
+  <script src="./assets/bgm/bgm.js?v=20261007-bgm-toggle-header1"></script>
   <script>
     const legacyStorageKey = "ato-campaign-dashboard-v1";
     const storageKey = "ato-campaign-dashboard-profiles-v1";
@@ -4238,7 +4250,8 @@
         : currentHostIsLoopback
           ? (lanUrl || sameHostUrl || currentShortUrl)
           : (sameHostUrl || lanUrl || currentShortUrl);
-      elements.secondScreenToggle.checked = enabled;
+      elements.secondScreenToggle.setAttribute("aria-pressed", String(enabled));
+      elements.secondScreenToggle.textContent = enabled ? "关闭" : "开启";
       if (secondScreenEnabled !== enabled) {
         secondScreenEnabled = enabled;
         renderFlow();
@@ -4369,7 +4382,8 @@
         if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
         renderSecondScreenStatus(payload);
       } catch (error) {
-        elements.secondScreenToggle.checked = !enabled;
+        elements.secondScreenToggle.setAttribute("aria-pressed", String(!enabled));
+        elements.secondScreenToggle.textContent = enabled ? "开启" : "关闭";
         elements.secondScreenHint.textContent = `第二屏幕设置失败：${String(error.message || error)}`;
       } finally {
         secondScreenBusy = false;
@@ -9140,7 +9154,7 @@
         // 没有 catch 时上一版会把按钮文字永远留在「正在导出...」且不告诉用户原因。
         console.error(error);
         elements.exportButton.textContent = previousText;
-        window.alert(`导出状态失败：${String(error?.message || error)}`);
+        window.alert(`导出存档失败：${String(error?.message || error)}`);
       } finally {
         elements.exportButton.disabled = false;
       }
@@ -9180,7 +9194,7 @@
       if ((sections !== null && sections !== undefined && !isPlainObject(sections)) || !isDashboardArchive(dashboardImport)) {
         throw new Error("文件不是有效的 ATO 存档：缺少完整的主控台档案或战役状态。");
       }
-      // 「导入状态」是整份替换 record 分区（用户已选定：保持这个合并语义），所以目标战役里
+    // 「导入存档」是整份替换 record 分区（用户已选定：保持这个合并语义），所以目标战役里
       // 手写的记录表笔记会被这次导入带进来的内容整段取代，而且没有自动恢复的入口。写之前
       // 先把两边摊平比一次，只有「两边都有笔记、且内容不同」才拦一下：空档没什么可丢的，
       // 重复导入同一份存档也不该打扰用户。
@@ -9228,7 +9242,7 @@
           "导入会覆盖「记录表笔记」！",
           "",
           "这次导入带进来的笔记（官方存档的战役备注 + 矩阵残留 + 未导入项区块）会整段替换当前战役里已有的记录表笔记，覆盖以后原有笔记无法自动恢复。",
-          "建议先点「导出状态」把当前存档备份一份，再继续导入。",
+          "建议先点「导出存档」把当前存档备份一份，再继续导入。",
           "",
           "（官方存档里的战役备注与「未导入项」区块会保留下来，不是全部丢光。）",
           "",
@@ -9259,7 +9273,7 @@
         ? ""
         : notesOverwriteWarning(importedRecord, await loadFullCampaign());
       if (notesWarning && !window.confirm(notesWarning)) {
-        window.alert("已取消导入：没有写入任何分区，服务器仍是导入前的状态。\n建议先点「导出状态」备份当前存档，再重试导入。");
+        window.alert("已取消导入：没有写入任何分区，服务器仍是导入前的状态。\n建议先点「导出存档」备份当前存档，再重试导入。");
         return;
       }
       // 先等这次防抖保存落盘：否则它的定时器会在导入之后触发，把导入前的内存状态
@@ -9482,7 +9496,7 @@
         Number(counterButton.dataset.delta || 0)
       );
     });
-    elements.secondScreenToggle.addEventListener("change", () => setSecondScreenEnabled(elements.secondScreenToggle.checked));
+    elements.secondScreenToggle.addEventListener("click", () => setSecondScreenEnabled(!secondScreenEnabled));
     elements.secondScreenBattleBoardToggle.addEventListener("change", () => {
       setSecondScreenBattleBoardVisible(elements.secondScreenBattleBoardToggle.checked);
     });
@@ -9576,7 +9590,7 @@
     initAuth();
   </script>
   <script src="./assets/ato-terms.js?v=20261004-official-title"></script>
-  <script src="./assets/term-language.js?v=20260923-nocascade"></script>
+  <script src="./assets/term-language.js?v=20261007-label1"></script>
   <script src="./assets/update/app-version.js?v=2.2.1-rc.1"></script>
   <script src="./assets/update/update-check.js?v=3"></script>
 </body>

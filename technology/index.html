@@ -1068,7 +1068,7 @@ button.gear-group-name:hover {
     </div>
   </div>
 </div>
-  <script src="../assets/page-focus-router.js?v=20260813-no-screen-focus1"></script>
+  <script src="../assets/page-focus-router.js?v=20261007-page-navigation1"></script>
   <script src="../assets/campaign-session.js?v=20260917"></script>
   <script src="../assets/cycle-symbols.js?v=20260918"></script>
   <script src="tech-page-layout.js?v=20261003-hekaton-row1"></script>
@@ -3727,7 +3727,8 @@ async function saveAndReturnMain() {
   const previousText = returnMain.textContent;
   const dashboardUrl = new URL('../index.html', window.location.href).href;
   const dashboardModule = window.ATO_PAGE_ROUTER?.moduleFromUrl?.(dashboardUrl) || 'dashboard';
-  const singleWindow = Boolean(window.ATO_ANDROID_SINGLE_WINDOW || window.ATOAndroid);
+  const singleWindow = Boolean(window.ATO_ANDROID_SINGLE_WINDOW || window.ATOAndroid)
+    || window.ATO_PAGE_ROUTER?.isSinglePageMode?.() === true;
   const dashboardWindow = singleWindow
     ? null
     : window.ATO_PAGE_ROUTER?.openModuleTab?.(dashboardUrl, dashboardModule)
@@ -4626,6 +4627,6 @@ loadDictionaryData().then(async (appData) => {
 }).catch(showLoadError);
 </script>
   <script src="../assets/ato-terms.js?v=20260912f"></script>
-  <script src="../assets/term-language.js?v=20260923-nocascade"></script>
+  <script src="../assets/term-language.js?v=20261007-label1"></script>
 </body>
 </html>
