@@ -907,6 +907,11 @@
     }
     ui.panel = panel;
     ui.toggle = panel.querySelector("#atoBgmToggle");
+    const heading = container && document.getElementById("bgmHeading");
+    if (heading && ui.toggle) {
+      ui.toggle.classList.add("secondary", "settings-toggle-button");
+      heading.appendChild(ui.toggle);
+    }
     ui.select = panel.querySelector("#atoBgmStage");
     ui.auto = panel.querySelector("#atoBgmAuto");
     ui.volume = panel.querySelector("#atoBgmVolume");

@@ -1,6 +1,16 @@
 .theme-controls { display: grid; gap: 12px; }
+.page-navigation-control { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 13px; font-weight: 600; }
+.settings-toggle-button { min-width: 112px; font-size: 13px; }
+.misc-settings-controls { display: grid; gap: 18px; }
+.misc-setting-group { display: grid; gap: 8px; }
+.misc-setting-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.misc-setting-group h3 { margin: 0; font-size: 14px; }
 .theme-controls label { display: grid; gap: 6px; font-size: 13px; font-weight: 600; }
-.theme-controls select { width: 100%; min-height: 40px; padding: 0 10px; border: 1px solid var(--line); }
+#themeModeSelect { width: 112px; min-width: 112px; min-height: 38px; padding: 0 10px; border: 1px solid var(--line); color: var(--accent); font-size: 13px; font-weight: 600; text-align: center; text-align-last: center; }
+#themeModeSelect option { color: var(--accent); font-size: 13px; font-weight: 600; text-align: center; }
+.theme-mode-row { display: grid; grid-template-columns: max-content 112px; justify-content: space-between; gap: 12px; align-items: center; }
+.theme-controls .theme-mode-row label { display: block; white-space: nowrap; }
+.theme-controls .theme-mode-row select { width: 100%; }
 .theme-custom-controls { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 12px; align-items: end; }
 .theme-custom-controls[hidden] { display: none; }
 .theme-controls input[type="color"] { width: 44px; height: 40px; padding: 3px; cursor: pointer; }

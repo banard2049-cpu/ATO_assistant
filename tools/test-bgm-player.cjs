@@ -56,8 +56,8 @@ test("主控台：引入播放器、提供容器并按步骤同步", () => {
   assert.match(consoleSource, /function syncBgmStage\(\)/);
   assert.match(consoleSource, /syncBgmStage\(\);\s*\n\s*\}/);
 
-  // 控制条是主控台里独立的一块，位于「用户与存档」下方，不再挤在顶栏日期卡里
-  assert.match(consoleSource, /<h2>背景音乐<\/h2>/);
+  // 控制条位于「杂项设置」中，开关放在背景音乐标题行，不再挤在顶栏日期卡里
+  assert.match(consoleSource, /<h3>背景音乐<\/h3>/);
   assert.equal((consoleSource.match(/id="bgmControls"/g) || []).length, 1, "控制条容器只应出现一次");
   const bgmPos = consoleSource.indexOf('id="bgmControls"');
   assert.ok(bgmPos > consoleSource.indexOf("<h2>用户与存档</h2>"), "背景音乐控制条应排在「用户与存档」之后");
