@@ -67,11 +67,12 @@ ROOT_WEB_ROOT = "/var/www/html"
 # 持久化目录，不是页面资源。
 ROOT_APP_PATHS = (
     "index.html",     # 主控台入口
-    "dashboard.css",  # 主控台提醒与布局样式
-    "cycle-theme.css", # 主控台与各模块共用的循环配色
     "router.php",     # 内置服务器的私有目录拦截脚本（发布包与便携版都靠它启动）
     ".htaccess",      # Apache/NAS 一边的私有目录拒绝规则
-    "api",            # 存档 / 账号 API
+    # 主控台的 dashboard.css 与全站共用的 cycle-theme.css 放在 api/ 里（dashboard.css
+    # 用 @import "./cycle-theme.css" 引同目录的配色），由这条整目录挂载一起带进容器，
+    # 所以不再各自占一条根级挂载；根 index.html 引用的是 ./api/dashboard.css。
+    "api",            # 存档 / 账号 API + 主控台样式表
     "assets",         # 主控台脚本样式、登录守卫、BGM 程序
     "aibp",           # AIBP（ps/ 里的程序数据与使用者卡图同级，必须整棵挂）
     "briefing",       # 战役简报（按每日备份回放地图与科技树）

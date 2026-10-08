@@ -103,6 +103,40 @@ body .trait-dialog { max-height: min(760px, calc(100dvh - 32px)); overflow: hidd
   .trait-dialog .trait-dialog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .scry-dialog .scry-cards { grid-template-columns: minmax(0, 1fr); }
 }
+/* 放大卡牌时右侧的提醒框（状态提示、附带的特性卡图）也跟纸张风格走：
+ * 内联样式里那套暗底 + 金色描边 + 圆角 + 大阴影是旧主题的遗留。 */
+.image-zoom-notice-text {
+  width: min(42vw, 320px);
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--panel);
+  box-shadow: none;
+  color: var(--ink);
+  text-align: left;
+}
+.image-zoom-notice-text-title {
+  font-family: "Songti SC", "Noto Serif CJK SC", SimSun, Georgia, serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--accent-strong);
+}
+.image-zoom-notice-text-value {
+  margin-top: 6px;
+  font-size: 13.5px;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.65;
+  color: var(--ink);
+}
+.image-zoom-notice-text .chimera-term { color: var(--accent-strong); font-weight: 700; }
+.image-zoom-notice img {
+  border: 1px solid var(--line);
+  border-radius: 0;
+  box-shadow: none;
+}
+
 @media (max-width: 760px) {
   body:not(.sidebar-collapsed) .sidebar-toggle { left: auto; right: 16px; }
   .title-row { flex-wrap: wrap; overflow: visible; }
