@@ -18,7 +18,7 @@
   const CONTAINER_ID = "bgmControls";
   const AUTO_LABEL = "自动（跟随今日流程）";
   // 改动本文件时同步更新 BUILD 与主控台的 ?v= 标签。
-  const BUILD = "bgm18";
+  const BUILD = "bgm19";
 
   if (!manifest || !manifest.stages || !Object.keys(manifest.stages).length) {
     window.ATO_BGM = createDisabledApi("缺少 assets/bgm/manifest.js");
@@ -137,6 +137,11 @@
 
   function ensureGraph() {
     if (ctx) return ctx;
+    // Android WebView can report HTMLAudioElement as playing while audio routed
+    // through MediaElementAudioSourceNode remains silent. Keep Android on the
+    // direct media-element output path; fadeSlot already provides volume ramps
+    // when no Web Audio gain node is attached.
+    if (window.ATOAndroid) return null;
     const Ctor = window.AudioContext || window.webkitAudioContext;
     if (!Ctor) return null;
     try {
