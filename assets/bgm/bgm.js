@@ -137,6 +137,11 @@
 
   function ensureGraph() {
     if (ctx) return ctx;
+    // Android WebView can report HTMLAudioElement as playing while audio routed
+    // through MediaElementAudioSourceNode remains silent. Keep Android on the
+    // direct media-element output path; fadeSlot already provides volume ramps
+    // when no Web Audio gain node is attached.
+    if (window.ATOAndroid) return null;
     const Ctor = window.AudioContext || window.webkitAudioContext;
     if (!Ctor) return null;
     try {
