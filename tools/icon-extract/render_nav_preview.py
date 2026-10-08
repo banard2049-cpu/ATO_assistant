@@ -29,7 +29,7 @@ HARNESS = """<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<link rel="stylesheet" href="../../dashboard.css">
+<link rel="stylesheet" href="../../api/dashboard.css">
 <link rel="stylesheet" href="../../assets/theme.css">
 <style>
   body {{ margin: 0; padding: 26px 40px; background: var(--page-bg, #faf6ec); }}

@@ -80,7 +80,7 @@ test('custom themes produce readable text and distinct paper, borders and select
 
 test('fixed cycle colors match the shared stylesheet and every main module loads the theme', () => {
   const root = path.join(__dirname, '..');
-  const css = fs.readFileSync(path.join(root, 'cycle-theme.css'), 'utf8');
+  const css = fs.readFileSync(path.join(root, 'api/cycle-theme.css'), 'utf8');
   for (const cycle of ['c1', 'c2', 'c3', 'c4', 'c5']) {
     const block = css.match(new RegExp(`body\\[data-cycle="${cycle}"\\] \\{([^}]+)`))[1];
     const colors = palette({ mode: cycle, rgb: [] });

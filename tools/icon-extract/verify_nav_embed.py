@@ -13,7 +13,7 @@ sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 ROOT = Path(__file__).resolve().parents[2]
 INDEX = ROOT / "index.html"
-CSS = ROOT / "dashboard.css"
+CSS = ROOT / "api" / "dashboard.css"
 
 EXPECTED = {
     "./record/index.html": "argo",
