@@ -83,6 +83,8 @@
   let activeSpeechToken = 0;
   let activeAudio = null;
   let activeAudioUrl = "";
+  let activeNativeTts = false;
+  let nativeTtsPending = null;
   let isSpeaking = false;
   let isSpeechPaused = false;
   let statusEntries = [];
@@ -1208,6 +1210,9 @@
       else activeAudio.play().catch((error) => {
         pushTtsStatus(`继续朗读失败：${String(error.message || error)}`, "error");
       });
+    } else if (activeNativeTts && window.ATOAndroid) {
+      if (isSpeechPaused) window.ATOAndroid.pauseStoryTts();
+      else window.ATOAndroid.resumeStoryTts();
     } else if (window.speechSynthesis) {
       if (isSpeechPaused) window.speechSynthesis.pause();
       else window.speechSynthesis.resume();
@@ -1360,6 +1365,8 @@
 
   function stopSpeech() {
     activeSpeechToken += 1;
+    if (activeNativeTts && window.ATOAndroid) window.ATOAndroid.stopStoryTts();
+    activeNativeTts = false;
     stopActiveAudio();
     if (window.speechSynthesis) window.speechSynthesis.cancel();
     currentUtterance = null;
@@ -2096,6 +2103,71 @@
   }
 
   function speakWithBrowser(text, token, options = {}) {
+    const android = window.ATOAndroid;
+    if (android && typeof android.speakStoryText === "function" && android.storyTtsReady()) {
+      return speakWithAndroidTts(text, token, options).then((started) => {
+        if (started) {
+          finishSpeech(token, options.keepActive);
+          return;
+        }
+        if (token !== activeSpeechToken) return;
+        return speakWithWebSpeech(text, token, options);
+      });
+    }
+    return speakWithWebSpeech(text, token, options);
+  }
+
+  function speakWithAndroidTts(text, token, options = {}) {
+    if (token !== activeSpeechToken || !window.ATOAndroid || nativeTtsPending) return Promise.resolve(false);
+    const utteranceId = `ato-story-${token}-${Date.now()}`;
+    pushTtsStatus("Android 系统语音朗读中。", "info");
+    activeNativeTts = true;
+    currentUtterance = { nativeAndroid: true, utteranceId };
+    return new Promise((resolve) => {
+      const timeout = window.setTimeout(() => {
+        if (!nativeTtsPending || nativeTtsPending.utteranceId !== utteranceId) return;
+        nativeTtsPending = null;
+        activeNativeTts = false;
+        if (window.ATOAndroid) window.ATOAndroid.stopStoryTts();
+        resolve(false);
+      }, Math.max(30000, text.length * 1000 / Math.max(ttsConfig.rate || 1, 0.1)));
+      nativeTtsPending = { utteranceId, token, options, timeout, resolve };
+      try {
+        if (!window.ATOAndroid.speakStoryText(text, utteranceId, currentTtsRate())) {
+          window.clearTimeout(timeout);
+          nativeTtsPending = null;
+          activeNativeTts = false;
+          resolve(false);
+        }
+      } catch (error) {
+        window.clearTimeout(timeout);
+        nativeTtsPending = null;
+        activeNativeTts = false;
+        resolve(false);
+      }
+    });
+  }
+
+  window.ATOAndroidTtsResult = (utteranceId, success, error) => {
+    const pending = nativeTtsPending;
+    if (!pending || pending.utteranceId !== utteranceId) return;
+    window.clearTimeout(pending.timeout);
+    nativeTtsPending = null;
+    activeNativeTts = false;
+    if (pending.token === activeSpeechToken && !success && error) {
+      pushTtsStatus(`${error}，尝试浏览器语音。`, "warn");
+    }
+    pending.resolve(success === true);
+  };
+
+  window.ATOAndroidTtsReady = () => {
+    if (ttsConfig.activeEngine === "browser") {
+      ttsButton.disabled = false;
+      syncVoiceSelect();
+    }
+  };
+
+  function speakWithWebSpeech(text, token, options = {}) {
     if (!window.speechSynthesis) return Promise.reject(new Error("当前浏览器不支持原生语音"));
     const cleanText = text.replace(/<[^>]+>/g, "").trim();
     if (!cleanText) return Promise.resolve();
@@ -4084,6 +4156,15 @@
     ttsVoice.disabled = false;
 
     if (engine === "browser") {
+      if (window.ATOAndroid && typeof window.ATOAndroid.speakStoryText === "function") {
+        voices = [];
+        const option = document.createElement("option");
+        option.value = "android-default";
+        option.textContent = "Android 系统中文语音";
+        option.selected = true;
+        ttsVoice.appendChild(option);
+        return;
+      }
       if (!window.speechSynthesis) {
         ttsVoice.disabled = true;
         return;
@@ -4172,7 +4253,8 @@
   }
 
   function loadVoices() {
-    ttsButton.disabled = ttsConfig.activeEngine === "browser" && !window.speechSynthesis;
+    ttsButton.disabled = ttsConfig.activeEngine === "browser" && !window.speechSynthesis
+      && !(window.ATOAndroid && typeof window.ATOAndroid.speakStoryText === "function");
     syncVoiceSelect();
     if (window.speechSynthesis) {
       window.speechSynthesis.onvoiceschanged = () => {
@@ -4375,7 +4457,8 @@
   ttsUi.configButton.addEventListener("click", openTtsConfigModal);
   ttsUi.engineSelect.addEventListener("change", (event) => {
     ttsConfig.activeEngine = event.target.value;
-    ttsButton.disabled = ttsConfig.activeEngine === "browser" && !window.speechSynthesis;
+    ttsButton.disabled = ttsConfig.activeEngine === "browser" && !window.speechSynthesis
+      && !(window.ATOAndroid && typeof window.ATOAndroid.speakStoryText === "function");
     syncVoiceSelect();
     saveTtsConfig();
     renderTtsStatus();
