@@ -21,6 +21,8 @@
   const goButton = document.querySelector("#goButton");
   const backButton = document.querySelector("#backButton");
   const rememberButton = document.querySelector("#rememberButton");
+  const copyParagraphButton = document.querySelector("#copyParagraphButton");
+  const copyParagraphStatus = document.querySelector("#copyParagraphStatus");
   const resultList = document.querySelector("#resultList");
   const memoryList = document.querySelector("#memoryList");
   const chapterSummary = document.querySelector("#chapterSummary");
@@ -50,6 +52,7 @@
 
   let activeBook = null;
   let activeEntry = null;
+  let copyParagraphStatusTimer = null;
   const decodedPharosTitleKeys = new Set();
   let storyVersion = localStorage.getItem("ato-term-language-v1") === "official" ? "官方版" : "民间版";
   data = buildVersionData(storyVersion === "官方版");
@@ -3638,6 +3641,7 @@
 
     activeBook = currentBook();
     activeEntry = entry;
+    copyParagraphButton.disabled = false;
     syncSelectorsToEntry(entry);
 
     sectionLabel.textContent = entry.encounter ? `${entry.chapter} / ${entry.encounter}` : entry.chapter || "未命名模块";
@@ -3832,6 +3836,88 @@
 
     saveMemories();
     renderMemories();
+  }
+
+  function getCurrentParagraphCopyText() {
+    if (!activeEntry) return "";
+    const displayEntry = getDisplayEntry(activeEntry);
+    const sourceText = String(displayEntry.text || "").trim();
+    if (sourceText) return sourceText;
+
+    const content = storyText.cloneNode(true);
+    content.querySelectorAll("button, a, img, picture, script, style, .battle-gallery, .official-scan").forEach((node) => node.remove());
+    return String(content.innerText || content.textContent || "").trim();
+  }
+
+  function setCopyParagraphStatus(message) {
+    copyParagraphStatus.textContent = message;
+    window.clearTimeout(copyParagraphStatusTimer);
+    if (message) {
+      copyParagraphStatusTimer = window.setTimeout(() => {
+        copyParagraphStatus.textContent = "";
+      }, 2400);
+    }
+  }
+
+  function copyWithSelection(text) {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.readOnly = true;
+    textarea.setAttribute("aria-hidden", "true");
+    textarea.style.position = "fixed";
+    textarea.style.top = "0";
+    textarea.style.left = "0";
+    textarea.style.width = "1px";
+    textarea.style.height = "1px";
+    textarea.style.padding = "0";
+    textarea.style.opacity = "0.01";
+    textarea.style.fontSize = "16px";
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    textarea.setSelectionRange(0, textarea.value.length);
+    let copied = false;
+    try {
+      copied = document.execCommand("copy");
+    } catch {
+      copied = false;
+    }
+    textarea.remove();
+    return copied;
+  }
+
+  async function copyCurrentParagraph() {
+    const text = getCurrentParagraphCopyText();
+    if (!text) {
+      setCopyParagraphStatus("当前没有可复制的段落全文。");
+      return;
+    }
+
+    try {
+      if (window.ATOAndroid && typeof window.ATOAndroid.copyStoryTextToClipboard === "function"
+        && window.ATOAndroid.copyStoryTextToClipboard(text)) {
+        setCopyParagraphStatus("已复制当前段落全文。");
+        return;
+      }
+    } catch {
+      // Older Android builds may not expose the native clipboard bridge.
+    }
+
+    try {
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+        await navigator.clipboard.writeText(text);
+        setCopyParagraphStatus("已复制当前段落全文。");
+        return;
+      }
+    } catch {
+      // file:// pages and embedded WebViews may deny Clipboard API access.
+    }
+
+    if (copyWithSelection(text)) {
+      setCopyParagraphStatus("已复制当前段落全文。");
+    } else {
+      setCopyParagraphStatus("复制失败，请长按正文后手动复制。");
+    }
   }
 
   function updateTtsControls() {
@@ -4359,6 +4445,7 @@
   bookSelect.addEventListener("change", () => {
     activeBook = currentBook();
     activeEntry = null;
+    copyParagraphButton.disabled = true;
     historyStack = [];
     searchInput.value = "";
     populateChapters(activeBook);
@@ -4367,6 +4454,7 @@
 
   chapterSelect.addEventListener("change", () => {
     activeEntry = null;
+    copyParagraphButton.disabled = true;
     historyStack = [];
     searchInput.value = "";
     populateEncounters(currentBook());
@@ -4376,6 +4464,7 @@
 
   encounterSelect.addEventListener("change", () => {
     activeEntry = null;
+    copyParagraphButton.disabled = true;
     historyStack = [];
     searchInput.value = "";
     updateChapterSummary();
@@ -4411,6 +4500,7 @@
   secondScreenStoryModeToggle?.addEventListener("change", toggleSecondScreenStoryMode);
   secondScreenStoryContentToggle?.addEventListener("change", toggleSecondScreenStoryContent);
   rememberButton.addEventListener("click", rememberParagraph);
+  copyParagraphButton.addEventListener("click", copyCurrentParagraph);
   ttsButton.addEventListener("click", toggleSpeech);
   ttsPauseButton?.addEventListener("click", toggleSpeechPause);
   function syncStoryLanguage(official) {
@@ -4431,6 +4521,7 @@
     }
     if (activeEntry && !activeBook.entries.some((entry) => entry.key === activeEntry.key)) {
       activeEntry = null;
+      copyParagraphButton.disabled = true;
       entryTitle.textContent = "当前版本没有此条目";
       if (pharosTitleDecodeButton) pharosTitleDecodeButton.hidden = true;
       entryBadge.textContent = "----";

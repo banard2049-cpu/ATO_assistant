@@ -278,11 +278,28 @@ button:hover {
 }
 
 .memory-tools {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
   margin-bottom: 12px;
 }
 
 .memory-tools button {
   width: 100%;
+  min-width: 0;
+  padding-inline: 8px;
+}
+
+.copy-paragraph-status {
+  grid-column: 1 / -1;
+  min-height: 0;
+  color: var(--cycle-sidebar-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.copy-paragraph-status:empty {
+  display: none;
 }
 
 #backButton {
