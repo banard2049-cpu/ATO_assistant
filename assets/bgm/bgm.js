@@ -1056,6 +1056,10 @@
       return prefs.enabled;
     }
     ensureGraph();
+    // Resume synchronously while the toggle click still has transient user
+    // activation. Android WebView may allow HTMLAudio.play() while keeping an
+    // AudioContext suspended; the element then reports playing but stays silent.
+    resumeGraphFromGesture(false);
     applyStage({ force: true, stopWhenDisabled: false });
     return prefs.enabled;
   }
@@ -1068,6 +1072,7 @@
     prefs.stage = next;
     savePrefs();
     if (ui.select) ui.select.value = next;
+    resumeGraphFromGesture(false);
     return applyStage({ stopWhenDisabled: false });
   }
 
@@ -1077,6 +1082,7 @@
     prefs.stage = "";
     savePrefs();
     if (ui.select) ui.select.value = "";
+    resumeGraphFromGesture(false);
     return applyStage({ stopWhenDisabled: false });
   }
 
@@ -1130,6 +1136,37 @@
       setStatus();
       return true;
     }).catch(function () {
+      return false;
+    });
+  }
+
+  function resumeGraphFromGesture(retryPlayback) {
+    if (!prefs.enabled || !pageConfig.play) return Promise.resolve(false);
+    const graph = ensureGraph();
+    if (!graph) return Promise.resolve(false);
+    if (graph.state !== "suspended") return Promise.resolve(true);
+
+    // Calling resume() itself must happen before returning from the click or
+    // key event. Waiting for custom-track IndexedDB first loses WebView's
+    // transient activation and can leave the whole Web Audio graph silent.
+    let resumed;
+    try {
+      resumed = graph.resume();
+    } catch (error) {
+      state.needGesture = true;
+      setStatus();
+      return Promise.resolve(false);
+    }
+    return Promise.resolve(resumed).then(function () {
+      state.needGesture = false;
+      if (retryPlayback && !state.currentUrl) {
+        return applyStage({ force: true, stopWhenDisabled: false }).then(function () { return true; });
+      }
+      setStatus();
+      return true;
+    }).catch(function () {
+      state.needGesture = true;
+      setStatus();
       return false;
     });
   }
@@ -1204,8 +1241,8 @@
   }
 
   function unlockListener() {
-    if (!state.needGesture) return;
-    resume().then(function (ok) {
+    if (!prefs.enabled || !pageConfig.play) return;
+    resumeGraphFromGesture(true).then(function (ok) {
       if (!ok) return;
       window.removeEventListener("pointerdown", unlockListener, { capture: true });
       window.removeEventListener("keydown", unlockListener, { capture: true });

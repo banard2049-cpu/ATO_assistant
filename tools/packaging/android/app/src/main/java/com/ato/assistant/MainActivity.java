@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
@@ -16,6 +18,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 public final class MainActivity extends Activity {
   private static final String ROOT = "file:///android_asset/web/";
@@ -28,6 +31,16 @@ public final class MainActivity extends Activity {
   private AtopackStore atopackStore;
   private LocalSecondScreenServer secondScreenServer;
   private String pendingExportJson;
+  private TextToSpeech storyTts;
+  private volatile boolean storyTtsReady;
+  private String storyTtsText = "";
+  private String storyTtsId = "";
+  private float storyTtsRate = 1f;
+  private int storyTtsOffset;
+  private int storyTtsSegmentStart;
+  private String storyTtsSegmentId = "";
+  private int storyTtsSegmentNumber;
+  private boolean storyTtsPaused;
 
   @Override public void onCreate(Bundle state) {
     super.onCreate(state);
@@ -71,6 +84,38 @@ public final class MainActivity extends Activity {
       }
     });
 
+    storyTts = new TextToSpeech(this, status -> {
+      if (status != TextToSpeech.SUCCESS || storyTts == null) return;
+      storyTts.setLanguage(Locale.SIMPLIFIED_CHINESE);
+      storyTts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+        @Override public void onStart(String utteranceId) { }
+
+        @Override public void onDone(String utteranceId) {
+          if (utteranceId.equals(storyTtsSegmentId)) finishStoryTts(storyTtsId, true, "");
+        }
+
+        @Override public void onError(String utteranceId) {
+          if (utteranceId.equals(storyTtsSegmentId)) finishStoryTts(storyTtsId, false, "Android 系统语音合成失败");
+        }
+
+        @Override public void onError(String utteranceId, int errorCode) {
+          if (utteranceId.equals(storyTtsSegmentId)) finishStoryTts(storyTtsId, false, "Android 系统语音合成失败（" + errorCode + "）");
+        }
+
+        @Override public void onStop(String utteranceId, boolean interrupted) {
+          if (utteranceId.equals(storyTtsSegmentId) && !storyTtsPaused) finishStoryTts(storyTtsId, false, "朗读已停止");
+        }
+
+        @Override public void onRangeStart(String utteranceId, int start, int end, int frame) {
+          if (utteranceId.equals(storyTtsSegmentId)) storyTtsOffset = Math.max(storyTtsOffset, storyTtsSegmentStart + start);
+        }
+      });
+      storyTtsReady = true;
+      runOnUiThread(() -> {
+        if (webView != null) webView.evaluateJavascript("window.ATOAndroidTtsReady&&window.ATOAndroidTtsReady()", null);
+      });
+    });
+
     webView.loadUrl(ROOT + "index.html");
   }
 
@@ -80,6 +125,11 @@ public final class MainActivity extends Activity {
 
   @Override protected void onDestroy() {
     if (secondScreenServer != null) secondScreenServer.stop();
+    if (storyTts != null) {
+      storyTts.stop();
+      storyTts.shutdown();
+      storyTts = null;
+    }
     if (webView != null) webView.destroy();
     super.onDestroy();
   }
@@ -142,6 +192,56 @@ public final class MainActivity extends Activity {
       return atopackStore.status().toString();
     }
 
+    @android.webkit.JavascriptInterface public boolean storyTtsReady() {
+      return storyTtsReady;
+    }
+
+    @android.webkit.JavascriptInterface public boolean speakStoryText(String text, String utteranceId, float rate) {
+      if (!storyTtsReady || text == null || text.isEmpty() || utteranceId == null || utteranceId.isEmpty()) return false;
+      runOnUiThread(() -> {
+        if (storyTts == null || !storyTtsReady) {
+          finishStoryTts(utteranceId, false, "Android 系统语音尚未就绪");
+          return;
+        }
+        storyTtsText = text;
+        storyTtsId = utteranceId;
+        storyTtsRate = Math.max(0.5f, Math.min(2f, rate));
+        storyTtsOffset = 0;
+        storyTtsSegmentNumber = 0;
+        storyTtsPaused = false;
+        speakStoryTtsFromOffset();
+      });
+      return true;
+    }
+
+    @android.webkit.JavascriptInterface public void pauseStoryTts() {
+      runOnUiThread(() -> {
+        if (storyTts == null || storyTtsId.isEmpty() || storyTtsPaused) return;
+        storyTtsPaused = true;
+        storyTts.stop();
+      });
+    }
+
+    @android.webkit.JavascriptInterface public void resumeStoryTts() {
+      runOnUiThread(() -> {
+        if (storyTts == null || storyTtsId.isEmpty() || !storyTtsPaused) return;
+        storyTtsPaused = false;
+        speakStoryTtsFromOffset();
+      });
+    }
+
+    @android.webkit.JavascriptInterface public void stopStoryTts() {
+      runOnUiThread(() -> {
+        if (storyTts == null || storyTtsId.isEmpty()) return;
+        String id = storyTtsId;
+        storyTtsPaused = false;
+        storyTtsId = "";
+        storyTtsText = "";
+        storyTts.stop();
+        notifyStoryTtsResult(id, false, "朗读已停止");
+      });
+    }
+
     @android.webkit.JavascriptInterface public String readBundledJson(String relative) {
       if (relative == null || !relative.toLowerCase(java.util.Locale.ROOT).endsWith(".json")) return "";
       String normalized = relative.replace('\\', '/');
@@ -193,6 +293,39 @@ public final class MainActivity extends Activity {
         }
       });
     }
+  }
+
+  private void speakStoryTtsFromOffset() {
+    if (storyTts == null || storyTtsId.isEmpty()) return;
+    storyTts.setSpeechRate(storyTtsRate);
+    int start = Math.max(0, Math.min(storyTtsOffset, storyTtsText.length()));
+    String remaining = storyTtsText.substring(start);
+    if (remaining.isEmpty()) {
+      finishStoryTts(storyTtsId, true, "");
+      return;
+    }
+    storyTtsSegmentStart = start;
+    storyTtsSegmentId = storyTtsId + "-segment-" + (++storyTtsSegmentNumber);
+    Bundle params = new Bundle();
+    params.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, storyTtsSegmentId);
+    if (storyTts.speak(remaining, TextToSpeech.QUEUE_FLUSH, params, storyTtsSegmentId) == TextToSpeech.ERROR) {
+      finishStoryTts(storyTtsId, false, "Android 系统语音无法开始朗读");
+    }
+  }
+
+  private void finishStoryTts(String utteranceId, boolean success, String error) {
+    runOnUiThread(() -> {
+      if (!utteranceId.equals(storyTtsId) || storyTtsPaused) return;
+      storyTtsId = "";
+      storyTtsText = "";
+      notifyStoryTtsResult(utteranceId, success, error);
+    });
+  }
+
+  private void notifyStoryTtsResult(String utteranceId, boolean success, String error) {
+    if (webView == null) return;
+    webView.evaluateJavascript("window.ATOAndroidTtsResult&&window.ATOAndroidTtsResult(" +
+      org.json.JSONObject.quote(utteranceId) + "," + success + "," + org.json.JSONObject.quote(error) + ")", null);
   }
 
   private org.json.JSONObject errorResult(String message) {
