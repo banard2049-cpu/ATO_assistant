@@ -1,6 +1,8 @@
 package com.ato.assistant;
 
 import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -184,6 +186,15 @@ public final class MainActivity extends Activity {
   }
 
   private final class LocalApiBridge {
+    @android.webkit.JavascriptInterface public boolean copyStoryTextToClipboard(String text) {
+      if (text == null || text.isEmpty()) return false;
+      runOnUiThread(() -> {
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+        if (clipboard != null) clipboard.setPrimaryClip(ClipData.newPlainText("故事段落", text));
+      });
+      return true;
+    }
+
     @android.webkit.JavascriptInterface public String request(String url, String method, String body) {
       return localApi.handleForJavascript(Uri.parse(url), method, body == null ? "" : body);
     }
