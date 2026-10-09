@@ -103,6 +103,11 @@
       const response = await fetch(`${API}${query.toString() ? `?${query}` : ''}`, { cache: 'no-store', signal: controller.signal });
       payload = await response.json();
       if (!response.ok && !payload.code) throw new Error(`HTTP ${response.status}`);
+      if (payload.ok && payload.source === 'android-daily-backups') {
+        const dictionaryResponse = await fetch('../technology/tech_card_dictionary.min.json', { cache: 'no-store', signal: controller.signal });
+        if (!dictionaryResponse.ok) throw new Error(`科技字典 HTTP ${dictionaryResponse.status}`);
+        payload = window.ATO_BRIEFING_LOCAL.build(payload, window.ATO_MAP_DATA, await dictionaryResponse.json());
+      }
     } catch (error) {
       // 被更新的请求取代（含 abort）时，连错误提示也不要弹。
       if (token !== loadToken) return;

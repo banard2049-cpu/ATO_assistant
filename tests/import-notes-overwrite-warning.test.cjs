@@ -164,7 +164,7 @@ test("两边都有笔记且内容不同 → 弹 confirm，点取消则一个写�
   assert.match(warning, /记录表笔记/, "重点必须点名「记录表笔记」");
   assert.match(warning, /覆盖/);
   assert.match(warning, /无法自动恢复/, "必须说明覆盖后无法自动恢复");
-  assert.match(warning, /导出状态/, "必须建议先导出状态备份");
+  assert.match(warning, /导出(?:状态|存档)/, "必须建议先导出存档备份");
   assert.match(warning, /战役备注/);
   assert.match(warning, /未导入项/, "要让用户知道官方备注与未导入项区块会保留");
 

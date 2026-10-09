@@ -27,7 +27,8 @@
         headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
       });
     }
-    if (url.includes("/api/campaign-state.php")) {
+    const path = new URL(url).pathname;
+    if (path.endsWith("/api/campaign-state.php") || path.endsWith("/briefing/api.php")) {
       let body = typeof options.body === "string" ? options.body : "";
       if (!body && request && method !== "GET" && method !== "HEAD") {
         body = await request.clone().text();

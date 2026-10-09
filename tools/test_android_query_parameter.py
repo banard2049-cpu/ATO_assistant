@@ -132,6 +132,8 @@ for action in sorted(BLOCKED_ACTIONS):
         failures.append(f"Java 里没有被拦的 action={action}")
 if "allowedApiAction" not in source:
     failures.append("Java 侧缺少 allowedApiAction()")
+if '"/briefing/api.php".equals(uri.getPath())' not in source:
+    failures.append("局域网简报接口必须转发给本机 API，不能作为静态 PHP 文件返回")
 if "handleForJavascript(android.net.Uri.parse(\"http://127.0.0.1\" + target), method, body)" not in source:
     failures.append("Java 侧必须把方法和请求体一起转给本机 API（否则写不进去）")
 if "readBody(" not in source:

@@ -14,6 +14,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import os
 import shutil
 import socket
@@ -553,3 +554,68 @@ def test_card_progress_comes_from_each_daily_backup(server):
     }
     assert timeline["5"]["cardTracksVersion"] == 2
     assert timeline["5"]["cardCounters"] == {"story": "10", "doomCount": 11}
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="Android briefing parity needs Node.js")
+def test_android_briefing_matches_php_daily_replay(server):
+    """Run identical archives through PHP and the Android JS converter."""
+    user = "androidbriefing"
+    client = Client(server["client"].base)
+    status, _ = client.request("/api/campaign-state.php?action=register", method="POST",
+                               payload={"username": user, "password": TEST_PASS})
+    assert status == 200
+    snapshots = [
+        campaign_snapshot(day="T1/00", explored=["005"], unlocked=["trireme armor"],
+                          current_tile="005", notes="第一条", heroes=["odys"]),
+        campaign_snapshot(day="3", explored=["005", "006"], unlocked=["trireme armor", "argo works"],
+                          current_tile="006", notes="第一条\n第二条", heroes=["odys", "new"],
+                          story_section="主线", story_title="0003", card_tracks={
+                              "story": {"position": 1, "progress": 2, "doom": False},
+                              "doom": {"position": 2, "private": 99},
+                          }, card_tracks_version=2, card_counters={"storyCount": "", "doom": 0}),
+    ]
+    state = snapshots[1]["sections"]["dashboard"]["profiles"]["default"]["cycles"][CYCLE]["state"]
+    state["surveyConstants"] = {"hubs": {"hub": {"1": True, "2": False, "invalid": {}}},
+                                "activeHub": {"itemId": "hub", "boxId": "1"}}
+    for index, snapshot in enumerate(snapshots):
+        day = snapshot["sections"]["dashboard"]["profiles"]["default"]["cycles"][CYCLE]["state"]["day"]
+        directory_day = day if "/" not in day else day.replace("/", "-") + "-" + hashlib.sha256(day.encode()).hexdigest()[:8]
+        write_daily_backup(server["data_dir"], user, CYCLE,
+                           directory_day,
+                           snapshot, f"20261009T00000{index}Z")
+    current = campaign_snapshot(day="9", explored=["999"], unlocked=["today-only"])
+    write_campaign_file(server["data_dir"], user, current)
+    status, expected = client.request("/briefing/api.php")
+    assert status == 200
+    source = {"ok": True, "source": "android-daily-backups", "user": {"id": user},
+              "campaign": current, "profileId": "default", "cycleId": CYCLE, "snapshots": snapshots}
+    script = """
+const fs = require('node:fs');
+const vm = require('node:vm');
+const { build } = require('./briefing/briefing-local.js');
+const sandbox = { window: {} };
+vm.runInNewContext(fs.readFileSync('./map/map-data.js', 'utf8'), sandbox);
+process.stdout.write(JSON.stringify(build(JSON.parse(fs.readFileSync(0, 'utf8')),
+  sandbox.window.ATO_MAP_DATA, JSON.parse(fs.readFileSync('./technology/tech_card_dictionary.min.json', 'utf8')))));
+"""
+    result = subprocess.run([shutil.which("node"), "-e", script], cwd=ROOT,
+                            input=json.dumps(source, ensure_ascii=False), encoding="utf-8",
+                            capture_output=True, check=True)
+    actual = json.loads(result.stdout)
+    # Native storage has no filesystem backupDir; timestamps use the phone's timezone.
+    for payload in (actual, expected):
+        payload["cycle"].pop("backupDir")
+        for entry in payload["timeline"]:
+            entry.pop("savedAtLocal", None)
+    def compare(left, right, path="payload"):
+        if isinstance(left, dict) and isinstance(right, dict):
+            assert left.keys() == right.keys(), path
+            for key in left:
+                compare(left[key], right[key], f"{path}.{key}")
+        elif isinstance(left, list) and isinstance(right, list):
+            assert len(left) == len(right), path
+            for index, (a, b) in enumerate(zip(left, right)):
+                compare(a, b, f"{path}[{index}]")
+        else:
+            assert left == right, f"{path}: Android={left!r}, PHP={right!r}"
+    compare(actual, expected)

@@ -29,6 +29,7 @@ public final class MainActivity extends Activity {
   private static final int EXPORT_CHOOSER_REQUEST = 1003;
   private WebView webView;
   private ValueCallback<Uri[]> filePathCallback;
+  private Uri pendingCameraUri;
   private LocalCampaignApi localApi;
   private AtopackStore atopackStore;
   private LocalSecondScreenServer secondScreenServer;
@@ -81,7 +82,41 @@ public final class MainActivity extends Activity {
       @Override public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) {
         if (filePathCallback != null) filePathCallback.onReceiveValue(null);
         filePathCallback = callback;
-        startActivityForResult(params.createIntent(), FILE_CHOOSER_REQUEST);
+        pendingCameraUri = null;
+        try {
+          if (params.isCaptureEnabled()) {
+            java.io.File directory = new java.io.File(getCacheDir(), "note-camera");
+            if (!directory.isDirectory() && !directory.mkdirs()) throw new java.io.IOException("无法创建拍照目录");
+            // A URI unique to this capture avoids handing the camera a previous photo.
+            for (java.io.File old : directory.listFiles() == null ? new java.io.File[0] : directory.listFiles()) old.delete();
+            java.io.File file = java.io.File.createTempFile("capture-", ".jpg", directory);
+            pendingCameraUri = new Uri.Builder().scheme("content").authority(getPackageName() + ".note-camera").appendPath(file.getName()).build();
+            Intent camera = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+            camera.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, pendingCameraUri);
+            camera.setClipData(ClipData.newRawUri("拍摄照片", pendingCameraUri));
+            camera.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            startActivityForResult(camera, FILE_CHOOSER_REQUEST);
+          } else {
+            Intent picker;
+            boolean image = false;
+            for (String type : params.getAcceptTypes()) if (type.startsWith("image/")) image = true;
+            if (image) {
+              boolean album = params.getAcceptTypes().length == 1 && "image/*".equals(params.getAcceptTypes()[0]);
+              picker = new Intent(album ? Intent.ACTION_GET_CONTENT : Intent.ACTION_OPEN_DOCUMENT);
+              picker.addCategory(Intent.CATEGORY_OPENABLE);
+              picker.setType("image/*");
+              picker.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, params.getMode() == FileChooserParams.MODE_OPEN_MULTIPLE);
+            } else {
+              picker = params.createIntent();
+            }
+            startActivityForResult(picker, FILE_CHOOSER_REQUEST);
+          }
+        } catch (Exception error) {
+          pendingCameraUri = null;
+          filePathCallback.onReceiveValue(null);
+          filePathCallback = null;
+          android.widget.Toast.makeText(MainActivity.this, "无法打开相机或文件选择器，请使用其他选择方式。", android.widget.Toast.LENGTH_LONG).show();
+        }
         return true;
       }
     });
@@ -181,8 +216,11 @@ public final class MainActivity extends Activity {
       return;
     }
     if (requestCode != FILE_CHOOSER_REQUEST || filePathCallback == null) return;
-    filePathCallback.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data));
+    Uri[] selected = resultCode == RESULT_OK && pendingCameraUri != null
+        ? new Uri[] { pendingCameraUri } : WebChromeClient.FileChooserParams.parseResult(resultCode, data);
+    filePathCallback.onReceiveValue(selected);
     filePathCallback = null;
+    pendingCameraUri = null;
   }
 
   private final class LocalApiBridge {
