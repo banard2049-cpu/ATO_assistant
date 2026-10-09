@@ -64,6 +64,7 @@
 !/assets/exploration-card-tags.js
 !/assets/page-focus-router.js
 !/assets/campaign-session.js
+!/assets/record-attachments.js
 # 五个页面共用的循环图标注入模块（主控台 ./、子页面 ../），随源码发布
 !/assets/cycle-symbols.js
 # Shared application appearance controls and cross-module theme synchronization.

@@ -2470,6 +2470,7 @@
        map/map-data.js 也要在前（转换器用 window.ATO_MAP_DATA 落地图瓦片）。 -->
   <script src="./assets/jsave-tables.js?v=20261004-import1"></script>
   <script src="./assets/jsave-import.js?v=20261004-import1"></script>
+  <script src="./assets/record-attachments.js?v=20261009"></script>
   <script>window.ATO_BGM_CONFIG = { expect: "bgm19" };</script>
   <script src="./assets/bgm/manifest.js?v=20261008-android-direct-audio-bgm19"></script>
   <script src="./assets/bgm/bgm.js?v=20261008-android-direct-audio-bgm19"></script>
@@ -9145,6 +9146,9 @@
             profiles: dashboardSnapshot?.profiles ?? archive.profiles,
           },
         };
+        payload.recordAttachmentBlobs = await window.ATO_RECORD_ATTACHMENTS
+          .createClient("./api/campaign-state.php", () => sessionUser?.id || "")
+          .exportBlobs(sections.record);
         await downloadJsonPayload(payload);
         elements.exportButton.textContent = flushed ? "已下载" : "已下载（含未同步修改）";
         window.setTimeout(() => {
@@ -9164,7 +9168,7 @@
     // 官方 .jsave 只转换得出 dashboard/map/record/technology/heroes 五个分区，
     // `isFullBackup` 为 false 时 null/undefined 的分区会被过滤掉 —— 与状态包之外的
     // 局部导入语义一致，不会把没转换的分区清空。
-    async function applyImportedSections({ sections, dashboardImport, isFullBackup }) {
+    async function applyImportedSections({ sections, dashboardImport, isFullBackup, recordAttachmentBlobs }) {
       // 校验先于归一化和任何服务端读写，避免 {} / 无关 JSON 被补成空档后覆盖现有档案。
       function isLegacyDashboardState(value) {
         if (!isPlainObject(value)) return false;
@@ -9283,6 +9287,10 @@
       await flushCampaignSave();
       const currentCampaign = await loadFullCampaign();
       const currentRevisions = currentCampaign?.sectionRevisions || {};
+      if (window.ATO_RECORD_ATTACHMENTS?.references(importedRecord).length) {
+        await window.ATO_RECORD_ATTACHMENTS.createClient("./api/campaign-state.php", () => sessionUser?.id || "")
+          .restoreBlobs(importedRecord, recordAttachmentBlobs);
+      }
       const result = await importCampaignSections(
         Object.fromEntries(importEntries),
         Object.fromEntries(importEntries.map(([section]) => [
@@ -9344,7 +9352,7 @@
           const isFullBackup = imported.app === "ATO Campaign Save Package" && Number(imported.version) >= 3;
           const sections = imported.sections || imported.campaign?.sections || null;
           const dashboardImport = sections?.dashboard || imported.legacyDashboard || imported;
-          return await applyImportedSections({ sections, dashboardImport, isFullBackup });
+          return await applyImportedSections({ sections, dashboardImport, isFullBackup, recordAttachmentBlobs: imported.recordAttachmentBlobs });
         } catch (error) {
           if (error?.code === "SAVE_CONFLICT" && error.sections) {
             const detail = Object.entries(error.sections)

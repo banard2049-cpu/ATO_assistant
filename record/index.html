@@ -1479,7 +1479,7 @@
     }
   </style>
   <link rel="stylesheet" href="../api/cycle-theme.css">
-  <link rel="stylesheet" href="./record.css?v=20261003-nemesis-right">
+  <link rel="stylesheet" href="./record.css?v=20261009-note-attachments4">
   <script src="../assets/theme.js?v=20261001" defer></script>
 </head>
 <body>
@@ -1744,6 +1744,26 @@
               战役笔记
               <textarea data-bind="notes" placeholder="故事选择、待办事项、下次开局提醒"></textarea>
             </label>
+            <div id="noteAttachments" class="wide note-attachments" aria-label="战役笔记图片附件">
+              <div class="note-attachment-heading">
+                <span>图片附件</span>
+                <div class="note-attachment-actions">
+                  <button type="button" class="note-attachment-add" aria-label="添加图片附件" aria-haspopup="menu" aria-expanded="false" aria-controls="noteAttachmentMenu"></button>
+                  <div id="noteAttachmentMenu" class="note-attachment-menu" role="menu" aria-label="选择图片添加方式" hidden>
+                    <button type="button" role="menuitem" data-attachment-pick="noteAlbumInput">从相册选择</button>
+                    <button type="button" role="menuitem" data-attachment-pick="noteFileInput">从文件选择</button>
+                    <button type="button" role="menuitem" data-attachment-pick="noteCameraInput">拍照</button>
+                  </div>
+                </div>
+              </div>
+              <input id="noteAlbumInput" type="file" accept="image/*" multiple hidden>
+              <input id="noteFileInput" type="file" accept=".jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.bmp" multiple hidden>
+              <input id="noteCameraInput" type="file" accept="image/*" capture="environment" hidden>
+              <p class="note-attachment-hint">支持拖入图片或在战役笔记中粘贴截图</p>
+              <p class="note-attachment-empty">还没有图片附件</p>
+              <ul class="note-attachment-list"></ul>
+              <p class="note-attachment-status" role="status" aria-live="polite"></p>
+            </div>
             <label class="wide">
               同步日志
               <textarea data-bind="syncLog" placeholder="主控台跳转、定数写入等自动记录会出现在这里"></textarea>
@@ -1754,6 +1774,15 @@
       </aside>
     </div>
   </main>
+  <dialog id="noteAttachmentPreview" class="note-attachment-preview" aria-label="查看图片附件">
+    <div class="note-preview-heading"><span class="note-preview-title"></span><button type="button">关闭</button></div>
+    <img alt="战役笔记图片附件">
+  </dialog>
+  <dialog id="noteCameraDialog" class="note-attachment-preview" aria-label="拍摄图片附件">
+    <div class="note-preview-heading"><span>拍摄图片</span><button type="button" data-camera-close>取消</button></div>
+    <video autoplay playsinline muted></video>
+    <button type="button" data-camera-shoot>拍摄并添加</button>
+  </dialog>
 
   <script src="../assets/page-focus-router.js?v=20261007-page-navigation1"></script>
   <script src="./mark-notes.js"></script>
@@ -1761,6 +1790,8 @@
   <script src="./matrix-summaries.js"></script>
   <script src="../assets/cycle-symbols.js?v=20260918"></script>
   <script src="../assets/campaign-session.js?v=20260917"></script>
+  <script src="../assets/record-attachments.js?v=20261009"></script>
+  <script src="./note-attachments.js?v=20261009-rename3"></script>
   <script>
     const storageKey = "ato-argo-record-sheet-v1";
     const serverStorageUrl = "../api/campaign-state.php";
@@ -2407,6 +2438,28 @@
     const cycleScopedBindKeys = new Set(["boons", "afflictions", "counters", "notes", "syncLog"]);
     const requestedCycleFromUrl = getRequestedCycleFromUrl();
     const requestedDashboardSurveyNote = getDashboardSurveyNoteFromUrl();
+    const noteAttachmentUI = window.ATO_NOTE_ATTACHMENTS.setup({
+      client: window.ATO_RECORD_ATTACHMENTS.createClient(serverStorageUrl, () => campaignSession.accountId, (payload) => campaignSession.accept(payload)),
+      getContext: () => ({ account: campaignSession.changed ? "" : campaignSession.accountId, cycle: state.cycle }),
+      ready: () => recordProfileLoaded && serverStorageAvailable && !campaignSession.changed,
+      getItems: ({ cycle }) => state.cycleStats?.[cycle]?.noteAttachments || {},
+      addItem: ({ cycle }, id, item) => {
+        state.cycleStats[cycle] ||= {};
+        state.cycleStats[cycle].noteAttachments ||= {};
+        state.cycleStats[cycle].noteAttachments[id] = item;
+        queueSave();
+      },
+      removeItem: ({ cycle }, id) => {
+        delete state.cycleStats[cycle]?.noteAttachments?.[id];
+        queueSave();
+      },
+      renameItem: ({ cycle }, id, name) => {
+        const item = state.cycleStats?.[cycle]?.noteAttachments?.[id];
+        if (!item) return;
+        item.name = name;
+        queueSave();
+      },
+    });
 
     function getRequestedCycleFromUrl() {
       const params = new URLSearchParams(window.location.search || "");
@@ -3530,6 +3583,7 @@
       renderTitans();
       renderResources();
       renderMatrix();
+      noteAttachmentUI.render();
     }
 
     function renderCycleFields() {
@@ -6168,28 +6222,59 @@
       });
     }
 
-    function exportState() {
+    async function exportState() {
       saveState();
-      const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      anchor.download = `${state.profileName || "argo-record"}.json`;
-      document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
-      URL.revokeObjectURL(url);
+      const button = document.querySelector("#exportButton");
+      button.disabled = true;
+      try {
+        const snapshot = cloneJson(state);
+        snapshot.recordAttachmentBlobs = await window.ATO_RECORD_ATTACHMENTS
+          .createClient(serverStorageUrl, () => campaignSession.accountId, (payload) => campaignSession.accept(payload))
+          .exportBlobs(snapshot);
+        const text = JSON.stringify(snapshot, null, 2);
+        const filename = `${snapshot.profileName || "argo-record"}.json`;
+        if (window.ATOAndroid && typeof window.ATOAndroid.exportStateJson === "function") {
+          await new Promise((resolve, reject) => {
+            window.ATOAndroidExportResult = (result) => {
+              delete window.ATOAndroidExportResult;
+              if (result?.ok) resolve(); else reject(new Error(result?.error || "文件写入失败"));
+            };
+            try { window.ATOAndroid.exportStateJson(filename, text); }
+            catch (error) { delete window.ATOAndroidExportResult; reject(error); }
+          });
+        } else {
+          const blob = new Blob([text], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+          const anchor = document.createElement("a");
+          anchor.href = url;
+          anchor.download = filename;
+          document.body.appendChild(anchor);
+          anchor.click();
+          anchor.remove();
+          URL.revokeObjectURL(url);
+        }
+      } catch (error) {
+        alert(`导出失败：${error.message || error}`);
+      } finally { button.disabled = false; }
     }
 
     function importState(file) {
       const reader = new FileReader();
-      reader.addEventListener("load", () => {
+      reader.addEventListener("load", async () => {
         try {
-          state = normalizeState(JSON.parse(reader.result));
+          const imported = JSON.parse(reader.result);
+          if (!isPlainObject(imported)) throw new Error("不是有效的记录 JSON。");
+          const { recordAttachmentBlobs, ...storedState } = imported;
+          const next = normalizeState(storedState);
+          await window.ATO_RECORD_ATTACHMENTS
+            .createClient(serverStorageUrl, () => campaignSession.accountId, (payload) => campaignSession.accept(payload))
+            .restoreBlobs(next, recordAttachmentBlobs);
+          campaignSession.assertCurrent();
+          state = next;
           renderAll();
           saveState();
         } catch (error) {
-          alert("导入失败：不是有效的记录 JSON。");
+          alert(`导入失败：${error.message || error}`);
         }
       });
       reader.readAsText(file);

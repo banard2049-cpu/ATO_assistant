@@ -8,18 +8,22 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.UUID;
 
 final class LocalCampaignApi {
   private static final String[] SECTIONS = {"dashboard", "map", "record", "technology", "heroes", "aibp", "story"};
   private static final int BACKUP_COUNT = 10;
   private final SharedPreferences store;
+  private final java.io.File attachmentRoot;
   private final Object lock = new Object();
   private String currentUser;
   private LocalSecondScreenServer secondScreenServer;
 
   LocalCampaignApi(Context context) {
     store = context.getSharedPreferences("ato-local-store", Context.MODE_PRIVATE);
+    attachmentRoot = new java.io.File(context.getFilesDir(), "record-attachments");
     currentUser = store.getString("currentUser", "");
   }
 
@@ -51,6 +55,11 @@ final class LocalCampaignApi {
 
   private JSONObject dispatch(Uri uri, String method, String requestBody) throws Exception {
     String path = uri.getPath() == null ? "" : uri.getPath();
+    if (path.endsWith("/briefing/api.php")) {
+      if (!"GET".equalsIgnoreCase(method)) throw new ApiException(405, error("This endpoint requires GET."));
+      if (currentUser.isEmpty()) throw new ApiException(401, authRequired());
+      return briefingSource(uri);
+    }
     if (!path.endsWith("/api/campaign-state.php")) throw new ApiException(404, error("Unknown local endpoint."));
 
     String action = uri.getQueryParameter("action");
@@ -70,6 +79,7 @@ final class LocalCampaignApi {
 
     if (currentUser.isEmpty()) throw new ApiException(401, authRequired());
 
+    if ("record-attachment".equals(action)) return recordAttachment(uri, method, requestBody);
     if ("second-screen-status".equals(action)) return secondScreenStatus(method, requestBody);
     if ("second-screen-mode".equals(action)) return secondScreenMode(method, requestBody);
     if ("restore-previous-day".equals(action)) return restorePreviousDay(method, requestBody);
@@ -542,6 +552,142 @@ final class LocalCampaignApi {
     String raw = store.getString(campaignKey(), "");
     if (!raw.isEmpty()) return normalizeCampaign(new JSONObject(raw));
     return normalizeCampaign(new JSONObject());
+  }
+
+  private JSONObject recordAttachment(Uri uri, String method, String requestBody) throws Exception {
+    boolean uploading = "POST".equalsIgnoreCase(method);
+    if (!uploading && !"GET".equalsIgnoreCase(method)) throw new ApiException(405, error("Unsupported method."));
+    if (requestBody.length() > 768 * 1024 * 4 / 3 + 1024) throw new ApiException(413, error("图片附件过大。"));
+    JSONObject payload = uploading ? new JSONObject(requestBody) : new JSONObject();
+    String account = uploading ? payload.optString("expectedAccountId", "") : uri.getQueryParameter("expectedAccountId");
+    if (!currentUser.equals(account)) {
+      JSONObject mismatch = error("登录账号已切换，请刷新后重试。");
+      mismatch.put("code", "ACCOUNT_MISMATCH");
+      throw new ApiException(409, mismatch);
+    }
+    java.io.File directory = new java.io.File(attachmentRoot, currentUser);
+    JSONObject response = ok();
+    response.put("user", user());
+    if (!uploading) {
+      String id = uri.getQueryParameter("id");
+      if (id == null || !id.matches("[a-f0-9]{64}")) throw new ApiException(400, error("图片附件引用无效。"));
+      java.io.File file = new java.io.File(directory, id + ".json");
+      if (!file.isFile()) throw new ApiException(404, error("图片附件不存在，请从完整备份恢复。"));
+      java.io.ByteArrayOutputStream buffer = new java.io.ByteArrayOutputStream();
+      try (java.io.FileInputStream input = new java.io.FileInputStream(file)) {
+        byte[] chunk = new byte[8192];
+        for (int count; (count = input.read(chunk)) != -1;) buffer.write(chunk, 0, count);
+      }
+      byte[] raw = buffer.toByteArray();
+      response.put("dataUrl", new JSONObject(new String(raw, java.nio.charset.StandardCharsets.UTF_8)).getString("dataUrl"));
+      return response;
+    }
+    String dataUrl = payload.optString("dataUrl", "");
+    if (dataUrl.length() > 768 * 1024 * 4 / 3 + 64
+        || !dataUrl.matches("data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}")) {
+      throw new ApiException(400, error("请选择压缩后不超过 768 KB 的 JPG、PNG 或 WebP 图片。"));
+    }
+    byte[] bytes;
+    try { bytes = android.util.Base64.decode(dataUrl.substring(dataUrl.indexOf(',') + 1), android.util.Base64.DEFAULT); }
+    catch (IllegalArgumentException invalid) { throw new ApiException(400, error("图片内容无效。")); }
+    android.graphics.BitmapFactory.Options bounds = new android.graphics.BitmapFactory.Options();
+    bounds.inJustDecodeBounds = true;
+    android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length, bounds);
+    String mime = dataUrl.substring(5, dataUrl.indexOf(';'));
+    if (bytes.length > 768 * 1024 || !mime.equals(bounds.outMimeType)
+        || bounds.outWidth <= 0 || bounds.outHeight <= 0 || bounds.outWidth > 4096 || bounds.outHeight > 4096) {
+      throw new ApiException(400, error("图片内容或尺寸无效。"));
+    }
+    byte[] digest = java.security.MessageDigest.getInstance("SHA-256").digest(bytes);
+    StringBuilder hash = new StringBuilder();
+    for (byte value : digest) hash.append(String.format(java.util.Locale.ROOT, "%02x", value & 0xff));
+    String id = hash.toString();
+    if (!directory.isDirectory() && !directory.mkdirs() && !directory.isDirectory()) throw new java.io.IOException("无法创建图片附件目录。");
+    java.io.File file = new java.io.File(directory, id + ".json");
+    if (!file.isFile()) {
+      java.io.File temporary = java.io.File.createTempFile("upload-", ".tmp", directory);
+      try {
+        JSONObject blob = new JSONObject();
+        blob.put("dataUrl", "data:" + mime + ";base64," + android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP));
+        try (java.io.FileOutputStream output = new java.io.FileOutputStream(temporary)) {
+          output.write(blob.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+          output.getFD().sync();
+        }
+        if (!temporary.renameTo(file)) throw new java.io.IOException("无法保存图片附件。");
+      } finally { if (temporary.exists()) temporary.delete(); }
+    }
+    JSONObject attachment = new JSONObject();
+    attachment.put("blobId", id);
+    attachment.put("width", bounds.outWidth);
+    attachment.put("height", bounds.outHeight);
+    attachment.put("bytes", bytes.length);
+    response.put("attachment", attachment);
+    return response;
+  }
+
+  // Android has no PHP runtime. Return the daily archives to the pure JS briefing
+  // builder, using the same revision/key ordering as restorePreviousDay. Reading
+  // a briefing must never save, normalize on disk, or create a backup.
+  private JSONObject briefingSource(Uri uri) throws Exception {
+    JSONObject campaign = loadCampaign();
+    JSONObject dashboard = campaign.getJSONObject("sections").optJSONObject("dashboard");
+    if (dashboard == null) dashboard = new JSONObject();
+    JSONObject profiles = dashboard.optJSONObject("profiles");
+    if (profiles == null) profiles = new JSONObject();
+    String profileId = uri.getQueryParameter("profile");
+    if (profileId == null || profiles.optJSONObject(profileId) == null) {
+      profileId = dashboard.optString("activeProfileId", "default");
+    }
+    if (profiles.optJSONObject(profileId) == null && profiles.keys().hasNext()) profileId = profiles.keys().next();
+    JSONObject profile = profiles.optJSONObject(profileId);
+    JSONObject cycles = profile == null ? null : profile.optJSONObject("cycles");
+    if (cycles == null) cycles = new JSONObject();
+    String cycleId = uri.getQueryParameter("cycle");
+    if (cycleId == null || cycles.optJSONObject(cycleId) == null) {
+      cycleId = profile == null ? "c1" : profile.optString("activeCycleId", "c1");
+      if (cycles.optJSONObject(cycleId) == null) cycleId = cycles.keys().hasNext() ? cycles.keys().next() : "c1";
+    }
+    String prefix = campaignKey() + "::daily::" + Uri.encode(profileId) + "::" + Uri.encode(cycleId) + "::";
+    Map<String, JSONObject> latest = new TreeMap<>();
+    Map<String, String> latestKeys = new TreeMap<>();
+    for (Map.Entry<String, ?> entry : store.getAll().entrySet()) {
+      String key = entry.getKey();
+      if (!key.startsWith(prefix) || !(entry.getValue() instanceof String)) continue;
+      try {
+        JSONObject candidate = new JSONObject((String) entry.getValue());
+        String dayKey = gameDayKey(candidate);
+        String expectedPrefix = Uri.encode(profileId) + "::" + Uri.encode(cycleId) + "::";
+        if (!dayKey.startsWith(expectedPrefix) || !key.startsWith(campaignKey() + "::daily::" + dayKey + "::")) continue;
+        JSONObject previous = latest.get(dayKey);
+        int revision = candidate.optJSONObject("sectionRevisions") == null ? 0
+          : candidate.getJSONObject("sectionRevisions").optInt("dashboard", 0);
+        int previousRevision = previous == null || previous.optJSONObject("sectionRevisions") == null ? -1
+          : previous.getJSONObject("sectionRevisions").optInt("dashboard", 0);
+        if (previous == null || revision > previousRevision || (revision == previousRevision && key.compareTo(latestKeys.get(dayKey)) > 0)) {
+          latest.put(dayKey, candidate);
+          latestKeys.put(dayKey, key);
+        }
+      } catch (JSONException ignored) {
+        // Keep reading when an individual archive is corrupt.
+      }
+    }
+    JSONArray snapshots = new JSONArray();
+    for (JSONObject snapshot : latest.values()) {
+      // A briefing only needs this profile/cycle's dashboard state plus heroes
+      // and story. Do not send inventory or unrelated profiles for every day.
+      JSONObject sourceSections = snapshot.getJSONObject("sections");
+      JSONObject sourceProfile = sourceSections.getJSONObject("dashboard").getJSONObject("profiles").getJSONObject(profileId);
+      JSONObject slimProfile = new JSONObject().put("activeCycleId", cycleId)
+        .put("cycles", new JSONObject().put(cycleId, sourceProfile.getJSONObject("cycles").getJSONObject(cycleId)));
+      JSONObject sections = new JSONObject().put("dashboard", new JSONObject().put("activeProfileId", profileId)
+        .put("profiles", new JSONObject().put(profileId, slimProfile)));
+      sections.put("heroes", userSectionState(sourceSections.opt("heroes"), profileId));
+      sections.put("story", userSectionState(sourceSections.opt("story"), profileId));
+      snapshots.put(new JSONObject().put("sections", sections));
+    }
+    return ok().put("source", "android-daily-backups").put("user", user())
+      .put("campaign", new JSONObject().put("sections", new JSONObject().put("dashboard", dashboard)))
+      .put("profileId", profileId).put("cycleId", cycleId).put("snapshots", snapshots);
   }
 
   private String campaignKey() {

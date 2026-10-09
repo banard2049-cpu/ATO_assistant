@@ -930,6 +930,48 @@ if ($section !== null && !in_array($section, $allowedSections, true)) {
 
 $saveFile = user_campaign_file($dataDir, $user['id']);
 
+// Immutable image blobs live outside campaign JSON. Removing a note reference
+// keeps the blob available to daily backups and previous-day restores.
+if ($action === 'record-attachment') {
+  if ($method !== 'GET' && $method !== 'POST') respond(405, ['ok' => false, 'error' => 'Unsupported method.']);
+  $payload = $method === 'POST' ? json_decode((string) file_get_contents('php://input'), true) : $_GET;
+  if (!is_array($payload)) respond(400, ['ok' => false, 'error' => 'Request body must be JSON.']);
+  if (($payload['expectedAccountId'] ?? '') !== (string) $user['id']) {
+    respond(409, ['ok' => false, 'code' => 'ACCOUNT_MISMATCH', 'error' => '登录账号已切换，请刷新后重试。']);
+  }
+  $attachmentDir = $dataDir . DIRECTORY_SEPARATOR . 'record-attachments' . DIRECTORY_SEPARATOR . $user['id'];
+  if ($method === 'GET') {
+    $id = $payload['id'] ?? '';
+    if (!is_string($id) || !preg_match('/^[a-f0-9]{64}$/D', $id)) respond(400, ['ok' => false, 'error' => '图片附件引用无效。']);
+    $file = $attachmentDir . DIRECTORY_SEPARATOR . $id . '.json';
+    if (!is_file($file)) respond(404, ['ok' => false, 'error' => '图片附件不存在，请从完整备份恢复。']);
+    $blob = read_json_file($file, []);
+    respond(200, ['ok' => true, 'dataUrl' => $blob['dataUrl'] ?? '', 'user' => public_user($user)]);
+  }
+  $dataUrl = $payload['dataUrl'] ?? '';
+  if (!is_string($dataUrl) || strlen($dataUrl) > 768 * 1024 * 4 / 3 + 64
+      || !preg_match('#^data:image/(jpeg|png|webp);base64,([A-Za-z0-9+/]+={0,2})$#D', $dataUrl, $match)) {
+    respond(400, ['ok' => false, 'error' => '请选择压缩后不超过 768 KB 的 JPG、PNG 或 WebP 图片。']);
+  }
+  $bytes = base64_decode($match[2], true);
+  $image = $bytes !== false ? @getimagesizefromstring($bytes) : false;
+  if ($bytes === false || strlen($bytes) > 768 * 1024 || !$image
+      || ($image['mime'] ?? '') !== 'image/' . $match[1]
+      || $image[0] <= 0 || $image[1] <= 0 || $image[0] > 4096 || $image[1] > 4096) {
+    respond(400, ['ok' => false, 'error' => '图片内容或尺寸无效。']);
+  }
+  $id = hash('sha256', $bytes);
+  if (!is_dir($attachmentDir) && !mkdir($attachmentDir, 0770, true) && !is_dir($attachmentDir)) {
+    respond(500, ['ok' => false, 'error' => '无法创建图片附件目录。']);
+  }
+  $file = $attachmentDir . DIRECTORY_SEPARATOR . $id . '.json';
+  lock_store($file, 'Could not lock the attachment file.');
+  if (!is_file($file)) write_json_file($file, ['dataUrl' => 'data:image/' . $match[1] . ';base64,' . base64_encode($bytes)]);
+  respond(200, ['ok' => true, 'attachment' => [
+    'blobId' => $id, 'width' => $image[0], 'height' => $image[1], 'bytes' => strlen($bytes),
+  ], 'user' => public_user($user)]);
+}
+
 // 整份存档导入：客户端一次交出多个模块，服务端在同一把写锁里「全部校验通过才全部写入」。
 // 以前客户端是逐个模块 POST 的：七个请求里只要有一个失败（版本冲突 / 网络中断 / 500），
 // 已经成功的模块就留在服务器上，界面却只报「导入失败」，于是地图、英雄、资源可能分别

@@ -1,7 +1,8 @@
 """Compile and exercise the real Android local API with in-memory platform stubs.
 
 Run: python tools/test_android_campaign_import.py
-Uses the Android packager's cached JDK and a pinned JSON library; no SDK is needed.
+Uses the Android packager's cached JDK, a pinned JSON library, and Node.js for
+the briefing replay integration tests; no Android SDK is needed.
 """
 from __future__ import annotations
 
@@ -31,6 +32,19 @@ def main() -> None:
         subprocess.run([
             str(java), "-cp", os.pathsep.join((directory, str(json_jar))),
             "com.ato.assistant.CampaignImportHarness",
+        ], check=True)
+        subprocess.run([
+            str(java), "-Dato.test.files=" + str(Path(directory) / "attachments"),
+            "-cp", os.pathsep.join((directory, str(json_jar))),
+            "com.ato.assistant.RecordAttachmentHarness",
+        ], check=True)
+        briefing_fixture = Path(directory) / "briefing.json"
+        subprocess.run([
+            str(java), "-cp", os.pathsep.join((directory, str(json_jar))),
+            "com.ato.assistant.BriefingHarness", str(briefing_fixture),
+        ], check=True)
+        subprocess.run([
+            "node", str(PROJECT_ROOT / "tests/briefing-android.test.cjs"), str(briefing_fixture),
         ], check=True)
 
 

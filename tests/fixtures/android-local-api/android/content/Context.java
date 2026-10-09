@@ -8,6 +8,7 @@ public class Context {
   public final MemoryStore store = new MemoryStore();
 
   public SharedPreferences getSharedPreferences(String name, int mode) { return store; }
+  public java.io.File getFilesDir() { return new java.io.File(System.getProperty("ato.test.files", System.getProperty("java.io.tmpdir") + "/ato-local-api-test")); }
 
   public static class MemoryStore implements SharedPreferences {
     private final Map<String, String> values = new HashMap<>();
