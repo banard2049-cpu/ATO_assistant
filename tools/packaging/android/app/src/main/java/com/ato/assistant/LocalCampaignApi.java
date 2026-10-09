@@ -68,8 +68,8 @@ final class LocalCampaignApi {
     if ("logout".equals(action)) {
       if (!"POST".equalsIgnoreCase(method)) throw new ApiException(405, error("This action requires POST."));
       if (secondScreenServer != null) secondScreenServer.stop();
+      commitPreferences(store.edit().remove("currentUser"));
       currentUser = "";
-      store.edit().remove("currentUser").apply();
       return ok();
     }
     if ("login".equals(action) || "register".equals(action)) {
@@ -95,8 +95,8 @@ final class LocalCampaignApi {
     JSONObject payload = requestBody.isEmpty() ? new JSONObject() : new JSONObject(requestBody);
     String username = payload.optString("username", "local").trim().toLowerCase();
     if (!username.matches("[a-z0-9][a-z0-9_-]{2,31}")) username = "local";
+    commitPreferences(store.edit().putString("currentUser", username));
     currentUser = username;
-    store.edit().putString("currentUser", currentUser).apply();
     JSONObject response = ok();
     put(response, "user", user());
     return response;
@@ -293,8 +293,8 @@ final class LocalCampaignApi {
     return settings;
   }
 
-  private void saveSecondScreenSettings(JSONObject settings) {
-    store.edit().putString(secondScreenKey(), settings.toString()).apply();
+  private void saveSecondScreenSettings(JSONObject settings) throws java.io.IOException {
+    commitPreferences(store.edit().putString(secondScreenKey(), settings.toString()));
   }
 
   private String secondScreenKey() {
@@ -694,7 +694,7 @@ final class LocalCampaignApi {
     return "campaign::" + currentUser;
   }
 
-  private void saveCampaign(JSONObject campaign) {
+  private void saveCampaign(JSONObject campaign) throws java.io.IOException {
     String key = campaignKey();
     String currentRaw = store.getString(key, "");
     String currentDay = gameDayKey(currentRaw);
@@ -731,7 +731,14 @@ final class LocalCampaignApi {
     editor.putString(markerKey, nextDay);
     if (currentDay.equals(nextDay) && !archiveId.isEmpty()) editor.putString(archiveMarkerKey, archiveId);
     else editor.remove(archiveMarkerKey);
-    editor.putString(key, campaign.toString()).apply();
+    // A successful API response must mean the save and its backups reached
+    // disk. apply() only queues the write; an immediate process stop can lose
+    // the last acknowledged revision (and even a recently switched account).
+    commitPreferences(editor.putString(key, campaign.toString()));
+  }
+
+  private void commitPreferences(SharedPreferences.Editor editor) throws java.io.IOException {
+    if (!editor.commit()) throw new java.io.IOException("本地存档写入失败，请检查可用空间后重试。");
   }
 
   private void clearRecentBackups(SharedPreferences.Editor editor, String key) {

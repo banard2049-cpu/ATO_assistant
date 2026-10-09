@@ -340,8 +340,9 @@
       if (path) {
         const src = '../' + path.replace(/^\.\//, '');
         if (!imageCache.has(src)) {
-          const promise = options.loadImage
-            ? Promise.resolve().then(() => options.loadImage(src))
+          const loadImage = options.loadImage || window.ATO_BRIEFING_GIF?.loadImage;
+          const promise = loadImage
+            ? Promise.resolve().then(() => loadImage(src, writer.doc))
             : new Promise((resolve) => {
               const node = new Image();
               node.onload = () => resolve(node);
@@ -477,7 +478,33 @@
     return new Date().toISOString().slice(0, 10).replace(/-/g, '');
   }
 
-  function download(bytes, filename, type, doc) {
+  async function download(bytes, filename, type, doc) {
+    if (window.ATOAndroid) {
+      if (typeof window.ATOAndroid.exportBriefingZip !== 'function') {
+        throw new Error('当前安卓版尚不支持简报文件保存，请更新 APK 后重试。');
+      }
+      if (window.ATOAndroidExportResult) throw new Error('已有导出正在进行');
+      // Each block is divisible by three so concatenating its base64 does not
+      // introduce padding mid-file. Small blocks also avoid argument limits.
+      const encoded = [];
+      for (let offset = 0; offset < bytes.length; offset += 24576) {
+        encoded.push(window.btoa(String.fromCharCode(...bytes.subarray(offset, offset + 24576))));
+      }
+      await new Promise((resolve, reject) => {
+        window.ATOAndroidExportResult = (result) => {
+          delete window.ATOAndroidExportResult;
+          if (result && result.ok) resolve();
+          else reject(new Error(result && result.error || '文件写入失败'));
+        };
+        try {
+          window.ATOAndroid.exportBriefingZip(filename, encoded.join(''));
+        } catch (error) {
+          delete window.ATOAndroidExportResult;
+          reject(error);
+        }
+      });
+      return;
+    }
     const target = doc || document;
     const blob = new Blob([bytes], { type });
     const url = URL.createObjectURL(blob);
@@ -504,6 +531,9 @@
     const mapApi = window.ATO_BRIEFING_MAP || {};
     const gifApi = window.ATO_BRIEFING_GIF;
     if (!gifApi) throw new Error('GIF 导出模块没有加载');
+    if (window.ATOAndroid && typeof window.ATOAndroid.readExportImageData !== 'function') {
+      throw new Error('当前安卓版尚不支持简报图片导出，请更新 APK 后重试。');
+    }
     const map = options.map;
     if (!map || typeof map.geometry !== 'function') throw new Error('地图还没准备好，稍后再试');
     const geometry = map.geometry();
@@ -570,7 +600,8 @@
     onStatus('正在打包 zip…');
     const zip = createZip(entries);
     const filename = 'ATO-简报-' + cycleId + '-' + fileStamp + '.zip';
-    download(zip, filename, 'application/zip', doc);
+    onStatus(window.ATOAndroid ? '请选择简报 ZIP 的保存位置…' : '正在下载 ZIP…');
+    await download(zip, filename, 'application/zip', doc);
     onStatus('已导出 ' + filename + '（' + Math.round(zip.length / 1024) + ' KB）');
     return { zip, filename, entries };
   }
@@ -582,5 +613,6 @@
     buildDailyPdf,
     crc32,
     canvasToJpeg,
+    download,
   };
 })();

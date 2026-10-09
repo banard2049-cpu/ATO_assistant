@@ -149,7 +149,7 @@ def ensure_gradle() -> Path:
     return executable
 
 
-def ensure_android_sdk(java: Path) -> Path:
+def ensure_android_sdk(java: Path, sdkmanager_options: tuple[str, ...] = ()) -> Path:
     for variable in ("ANDROID_SDK_ROOT", "ANDROID_HOME"):
         candidate = os.environ.get(variable)
         if candidate:
@@ -186,9 +186,9 @@ def ensure_android_sdk(java: Path) -> Path:
     env["ANDROID_SDK_ROOT"] = str(sdk_root)
     env["ANDROID_HOME"] = str(sdk_root)
     yes_input = ("y\n" * 50).encode()
-    subprocess.run([str(sdkmanager), "--licenses"], input=yes_input, env=env, check=True)
+    subprocess.run([str(sdkmanager), *sdkmanager_options, "--licenses"], input=yes_input, env=env, check=True)
     subprocess.run(
-        [str(sdkmanager), f"platforms;android-{ANDROID_API}", f"build-tools;{ANDROID_API}.0.0", "platform-tools"],
+        [str(sdkmanager), *sdkmanager_options, f"platforms;android-{ANDROID_API}", f"build-tools;{ANDROID_API}.0.0", "platform-tools"],
         env=env,
         check=True,
     )

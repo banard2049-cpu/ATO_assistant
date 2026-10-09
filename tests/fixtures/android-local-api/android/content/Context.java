@@ -12,7 +12,10 @@ public class Context {
 
   public static class MemoryStore implements SharedPreferences {
     private final Map<String, String> values = new HashMap<>();
+    private final Map<String, String> durable = new HashMap<>();
     public int commits;
+    public boolean failNextCommit;
+    public void crash() { values.clear(); values.putAll(durable); }
     public String getString(String key, String fallback) { return values.getOrDefault(key, fallback); }
     public boolean contains(String key) { return values.containsKey(key); }
     public Map<String, ?> getAll() { return new HashMap<>(values); }
@@ -27,6 +30,13 @@ public class Context {
             else values.put(entry.getKey(), entry.getValue());
           }
           commits++;
+        }
+        public boolean commit() {
+          apply();
+          if (failNextCommit) { failNextCommit = false; return false; }
+          durable.clear();
+          durable.putAll(values);
+          return true;
         }
       };
     }

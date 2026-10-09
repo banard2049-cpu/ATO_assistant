@@ -2790,13 +2790,34 @@
     }
 
     // Export / Import
-    document.getElementById("exportButton").onclick = () => {
-      const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "ato-hero-record.json";
-      a.click();
-      URL.revokeObjectURL(a.href);
+    document.getElementById("exportButton").onclick = async () => {
+      const button = document.getElementById("exportButton");
+      button.disabled = true;
+      try {
+        const text = JSON.stringify(state, null, 2);
+        const filename = "ato-hero-record.json";
+        if (window.ATOAndroid) {
+          if (typeof window.ATOAndroid.exportStateJson !== "function") throw new Error("请更新 APK 后重试导出。");
+          if (window.ATOAndroidExportResult) throw new Error("已有导出正在进行");
+          await new Promise((resolve, reject) => {
+            window.ATOAndroidExportResult = (result) => {
+              delete window.ATOAndroidExportResult;
+              if (result?.ok) resolve(); else reject(new Error(result?.error || "文件写入失败"));
+            };
+            try { window.ATOAndroid.exportStateJson(filename, text); }
+            catch (error) { delete window.ATOAndroidExportResult; reject(error); }
+          });
+        } else {
+          const blob = new Blob([text], { type: "application/json" });
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = filename;
+          a.click();
+          URL.revokeObjectURL(a.href);
+        }
+      } catch (error) {
+        window.alert(`导出失败：${error.message || error}`);
+      } finally { button.disabled = false; }
     };
 
     document.getElementById("importButton").onclick = () => {

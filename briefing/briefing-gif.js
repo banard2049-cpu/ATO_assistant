@@ -46,6 +46,19 @@
       const image = doc.createElement('img');
       image.onload = () => resolve(image);
       image.onerror = () => reject(new Error('图片加载失败：' + src));
+      // file:// images can taint an Android WebView canvas even though they
+      // display normally. Read installed/bundled raster bytes through the native
+      // resource store, then decode a self-contained data URL for export only.
+      if (window.ATOAndroid) {
+        const url = new URL(src, doc.baseURI || window.location.href);
+        const prefix = '/android_asset/web/';
+        if (url.protocol === 'file:') {
+          if (!url.pathname.startsWith(prefix)) throw new Error('无法导出应用外的本地图片。');
+          if (typeof window.ATOAndroid.readExportImageData !== 'function') throw new Error('请更新 APK 后再导出简报图片。');
+          src = window.ATOAndroid.readExportImageData(decodeURIComponent(url.pathname.slice(prefix.length)));
+          if (!/^data:image\/(?:png|jpeg|webp|gif|bmp);base64,/.test(src)) throw new Error('本地导出图片不可用。');
+        }
+      }
       image.src = src;
     });
   }
@@ -378,13 +391,16 @@
       const svgWidth = Number(svg.getAttribute('width')) || 1000;
       const svgHeight = Number(svg.getAttribute('height')) || 700;
       const text = serializeSvg(svg, css, svgWidth, svgHeight);
-      const blob = new Blob([text], { type: 'image/svg+xml;charset=utf-8' });
-      const url = urlApi.createObjectURL(blob);
+      // The generated SVG contains only inline shapes/text. A data URL avoids
+      // carrying the file page's opaque origin into the offscreen canvas.
+      const local = Boolean(window.ATOAndroid);
+      const url = local ? 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(text)
+        : urlApi.createObjectURL(new Blob([text], { type: 'image/svg+xml;charset=utf-8' }));
       let image = null;
       try {
         image = await loadImage(url, doc);
       } finally {
-        urlApi.revokeObjectURL(url);
+        if (!local) urlApi.revokeObjectURL(url);
       }
       frames.push({
         day,
@@ -446,5 +462,6 @@
     collectTechCss,
     framePlan,
     FRAME_DELAY_MS,
+    loadImage: defaultLoadImage,
   };
 })();
