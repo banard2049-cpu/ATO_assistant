@@ -33,7 +33,7 @@ public final class MainActivity extends Activity {
   private LocalCampaignApi localApi;
   private AtopackStore atopackStore;
   private LocalSecondScreenServer secondScreenServer;
-  private String pendingExportJson;
+  private LocalExportFile pendingExportFile;
   private TextToSpeech storyTts;
   private volatile boolean storyTtsReady;
   private String storyTtsText = "";
@@ -52,6 +52,10 @@ public final class MainActivity extends Activity {
     secondScreenServer = new LocalSecondScreenServer(this, atopackStore, localApi);
     localApi.attachSecondScreenServer(secondScreenServer);
     webView = new WebView(this);
+    // Only debug APKs expose their WebView to adb/Chrome inspection.
+    if ((getApplicationInfo().flags & android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
+      WebView.setWebContentsDebuggingEnabled(true);
+    }
     setContentView(webView);
 
     WebSettings settings = webView.getSettings();
@@ -174,28 +178,31 @@ public final class MainActivity extends Activity {
   @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     super.onActivityResult(requestCode, resultCode, data);
     if (requestCode == EXPORT_CHOOSER_REQUEST) {
-      String json = pendingExportJson;
-      pendingExportJson = null;
+      LocalExportFile file = pendingExportFile;
       if (resultCode != RESULT_OK || data == null || data.getData() == null) {
+        pendingExportFile = null;
         notifyExportResult(errorResult("已取消导出"));
+        return;
+      }
+      if (file == null) {
+        notifyExportResult(errorResult("没有待保存的导出文件。"));
         return;
       }
       Uri destination = data.getData();
       new Thread(() -> {
         try (OutputStream output = getContentResolver().openOutputStream(destination, "wt")) {
           if (output == null) throw new java.io.IOException("无法打开所选文件");
-          output.write(json.getBytes(StandardCharsets.UTF_8));
-          output.flush();
+          file.writeTo(output);
         } catch (Exception error) {
-          notifyExportResult(errorResult(error.getMessage() == null ? error.toString() : error.getMessage()));
+          finishFileExport(errorResult(error.getMessage() == null ? error.toString() : error.getMessage()));
           return;
         }
         try {
           org.json.JSONObject result = new org.json.JSONObject();
           result.put("ok", true);
-          notifyExportResult(result);
+          finishFileExport(result);
         } catch (org.json.JSONException ignored) {
-          notifyExportResult(errorResult("无法确认导出结果"));
+          finishFileExport(errorResult("无法确认导出结果"));
         }
       }, "state-export").start();
       return;
@@ -313,6 +320,10 @@ public final class MainActivity extends Activity {
       }
     }
 
+    @android.webkit.JavascriptInterface public String readExportImageData(String relative) {
+      return atopackStore.readExportImageData(relative);
+    }
+
     @android.webkit.JavascriptInterface public void importAtopack() {
       runOnUiThread(() -> {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -324,24 +335,46 @@ public final class MainActivity extends Activity {
     }
 
     @android.webkit.JavascriptInterface public void exportStateJson(String filename, String json) {
-      runOnUiThread(() -> {
-        if (pendingExportJson != null) {
-          notifyExportResult(errorResult("已有导出正在进行"));
-          return;
-        }
-        pendingExportJson = json;
-        try {
-          Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-          intent.addCategory(Intent.CATEGORY_OPENABLE);
-          intent.setType("application/json");
-          intent.putExtra(Intent.EXTRA_TITLE, filename);
-          startActivityForResult(intent, EXPORT_CHOOSER_REQUEST);
-        } catch (Exception error) {
-          pendingExportJson = null;
-          notifyExportResult(errorResult(error.getMessage() == null ? error.toString() : error.getMessage()));
-        }
-      });
+      try {
+        showFileExport(LocalExportFile.json(filename, json));
+      } catch (Exception error) {
+        notifyExportResult(errorResult(error.getMessage() == null ? error.toString() : error.getMessage()));
+      }
     }
+
+    @android.webkit.JavascriptInterface public void exportBriefingZip(String filename, String base64) {
+      try {
+        showFileExport(LocalExportFile.briefingZip(filename, base64));
+      } catch (Exception error) {
+        notifyExportResult(errorResult(error.getMessage() == null ? error.toString() : error.getMessage()));
+      }
+    }
+  }
+
+  private void showFileExport(LocalExportFile file) {
+    runOnUiThread(() -> {
+      if (pendingExportFile != null) {
+        notifyExportResult(errorResult("已有导出正在进行"));
+        return;
+      }
+      pendingExportFile = file;
+      try {
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType(file.mimeType);
+        intent.putExtra(Intent.EXTRA_TITLE, file.filename);
+        startActivityForResult(intent, EXPORT_CHOOSER_REQUEST);
+      } catch (Exception error) {
+        finishFileExport(errorResult(error.getMessage() == null ? error.toString() : error.getMessage()));
+      }
+    });
+  }
+
+  private void finishFileExport(org.json.JSONObject result) {
+    runOnUiThread(() -> {
+      pendingExportFile = null;
+      notifyExportResult(result);
+    });
   }
 
   private void speakStoryTtsFromOffset() {

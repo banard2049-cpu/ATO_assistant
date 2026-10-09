@@ -24,10 +24,11 @@ def main() -> None:
     )
     fixtures = PROJECT_ROOT / "tests" / "fixtures" / "android-local-api"
     api = PROJECT_ROOT / "tools/packaging/android/app/src/main/java/com/ato/assistant/LocalCampaignApi.java"
+    export_file = api.with_name("LocalExportFile.java")
     with tempfile.TemporaryDirectory() as directory:
         subprocess.run([
             str(javac), "-encoding", "UTF-8", "-cp", str(json_jar), "-d", directory,
-            str(api), *(str(path) for path in sorted(fixtures.rglob("*.java"))),
+            str(api), str(export_file), *(str(path) for path in sorted(fixtures.rglob("*.java"))),
         ], check=True)
         subprocess.run([
             str(java), "-cp", os.pathsep.join((directory, str(json_jar))),
@@ -44,7 +45,18 @@ def main() -> None:
             "com.ato.assistant.BriefingHarness", str(briefing_fixture),
         ], check=True)
         subprocess.run([
+            str(java), "-cp", os.pathsep.join((directory, str(json_jar))),
+            "com.ato.assistant.ExportFileHarness",
+        ], check=True)
+        subprocess.run([
+            str(java), "-cp", os.pathsep.join((directory, str(json_jar))),
+            "com.ato.assistant.PersistenceHarness",
+        ], check=True)
+        subprocess.run([
             "node", str(PROJECT_ROOT / "tests/briefing-android.test.cjs"), str(briefing_fixture),
+        ], check=True)
+        subprocess.run([
+            "node", str(PROJECT_ROOT / "tests/briefing-export-files.test.cjs"),
         ], check=True)
 
 

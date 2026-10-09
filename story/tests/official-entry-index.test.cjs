@@ -110,6 +110,8 @@ test('切换版本重建索引和目录，并清除民间版不存在的当前�
     secondScreenStoryModeToggle: { checked: false },
     renderResults() {}, searchInput: { value: '' }, bookSelect: { options: [] },
     entryTitle: {}, entryBadge: {}, storyText: {}, linkPanel: {},
+    copyParagraphButton: { disabled: false },
+    copyParagraphButton: { disabled: false },
     pharosTitleDecodeButton: { hidden: true },
     currentBook: () => ctx.data.books.find(book => book.id === 'c3'),
     currentScopedEntries: () => ctx.currentBook().entries,
@@ -119,6 +121,8 @@ test('切换版本重建索引和目录，并清除民间版不存在的当前�
   assert.ok(ctx.activeEntry);
   ctx.syncStoryLanguage(false);
   assert.equal(ctx.activeEntry, null);
+  assert.equal(ctx.copyParagraphButton.disabled, true);
+  assert.equal(ctx.copyParagraphButton.disabled, true);
   assert.match(ctx.storyText.textContent, /官方版独有/);
   assert.ok(!ctx.currentBook().entries.some(entry => entry.key === 'c3-7-official-0027'));
   ctx.syncStoryLanguage(true);

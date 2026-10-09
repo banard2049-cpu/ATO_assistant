@@ -43,6 +43,7 @@ function setup({ audio = null } = {}) {
     isSpeaking: false,
     isSpeechPaused: false,
     activeAudio: audio,
+    activeNativeTts: false,
     ttsButton: { textContent: "朗读" },
     ttsPauseButton: button,
     window: { speechSynthesis: synthesis },

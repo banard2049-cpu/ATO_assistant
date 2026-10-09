@@ -501,6 +501,35 @@ textarea { background: var(--bg); }
   width: 0;
   height: 0;
 }
+.named-counters { min-width: 0; }
+.counter-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+.counter-add-toggle { position: relative; display: block; width: 24px; height: 24px; min-height: 24px; padding: 0; border: 1px solid var(--line); background: transparent; color: var(--accent); font-size: 0; line-height: 0; }
+.counter-add-toggle::before, .counter-add-toggle::after { content: ""; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: currentColor; }
+.counter-add-toggle::before { width: 10px; height: 2px; }
+.counter-add-toggle::after { width: 2px; height: 10px; }
+.counter-add-toggle[aria-expanded="true"] { background: var(--accent-soft); }
+.counter-empty { color: var(--muted); font-size: 12px; padding: 9px 0; }
+.counter-empty[hidden] { display: none; }
+.counter-list { list-style: none; padding: 0; margin: 0; }
+.counter-list li { display: grid; grid-template-columns: minmax(0, 1fr) auto 24px; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.counter-list input, .counter-add-form input { min-width: 0; width: 100%; min-height: 28px; padding: 4px 6px; font-size: 13px; }
+.counter-list li > input { padding-left: 0; border-color: transparent; background: transparent; font-weight: 500; }
+.counter-list li > input:hover, .counter-list li > input:focus { border-bottom-color: var(--accent); }
+.counter-controls { display: grid; grid-template-columns: 24px 44px 24px; align-items: center; gap: 2px; }
+.counter-controls input { text-align: center; padding-inline: 2px; border: 0; background: transparent; font-variant-numeric: tabular-nums; appearance: textfield; -moz-appearance: textfield; }
+.counter-controls input::-webkit-inner-spin-button, .counter-controls input::-webkit-outer-spin-button { appearance: none; margin: 0; }
+.counter-controls button, .counter-list .counter-remove { width: 24px; height: 24px; min-height: 24px; padding: 0; border: 1px solid var(--line); background: transparent; color: var(--muted); font-size: 14px; font-weight: 500; }
+.counter-controls .counter-step { position: relative; font-size: 0; line-height: 0; }
+.counter-step::before, .counter-step-add::after { content: ""; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: currentColor; }
+.counter-step::before { width: 8px; height: 1px; }
+.counter-step-add::after { width: 1px; height: 8px; }
+.counter-controls button:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.counter-controls button:disabled { opacity: .35; cursor: default; }
+.counter-list .counter-remove { border-color: transparent; font-size: 18px; }
+.counter-list .counter-remove:hover { color: var(--danger, #a03832); border-color: currentColor; background: transparent; }
+.counter-add-form { display: grid; grid-template-columns: minmax(0, 1fr) 52px auto; gap: 6px; margin-top: 8px; }
+.counter-add-form[hidden] { display: none; }
+.counter-add-form button { min-height: 28px; padding: 0 10px; font-size: 12px; }
 .note-attachments { min-width: 0; }
 .note-attachment-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 12px; font-weight: 800; margin-bottom: 6px; }
 .note-attachment-actions { position: relative; }

@@ -1479,7 +1479,7 @@
     }
   </style>
   <link rel="stylesheet" href="../api/cycle-theme.css">
-  <link rel="stylesheet" href="./record.css?v=20261009-note-attachments4">
+  <link rel="stylesheet" href="./record.css?v=20261009-named-counters3">
   <script src="../assets/theme.js?v=20261001" defer></script>
 </head>
 <body>
@@ -1736,10 +1736,19 @@
               苦痛
               <textarea data-bind="afflictions" placeholder="负面状态、未结算灾祸、代价"></textarea>
             </label>
-            <label>
-              计数标记
-              <textarea data-bind="counters" placeholder="需要随时擦写的标记、倒计时"></textarea>
-            </label>
+            <div class="named-counters" aria-labelledby="counterHeading">
+              <div class="counter-heading">
+                <span id="counterHeading">计数标记</span>
+                <button id="counterAddToggle" class="counter-add-toggle" type="button" aria-label="添加计数标记" aria-expanded="false" aria-controls="counterAddForm">＋</button>
+              </div>
+              <p id="counterEmpty" class="counter-empty">点击 ＋ 添加计数标记</p>
+              <ul id="counterList" class="counter-list"></ul>
+              <form id="counterAddForm" class="counter-add-form" hidden>
+                <input id="counterName" type="text" placeholder="标记名称" aria-label="新计数标记名称" required>
+                <input id="counterCount" type="number" min="0" step="1" value="0" aria-label="新计数标记数量">
+                <button type="submit">添加</button>
+              </form>
+            </div>
             <label class="wide">
               战役笔记
               <textarea data-bind="notes" placeholder="故事选择、待办事项、下次开局提醒"></textarea>
@@ -2414,6 +2423,12 @@
       deadTitansInput: document.querySelector("#deadTitansInput"),
       titanCrippledInput: document.querySelector("#titanCrippledInput"),
       addTitanButton: document.querySelector("#addTitanButton"),
+      counterList: document.querySelector("#counterList"),
+      counterEmpty: document.querySelector("#counterEmpty"),
+      counterAddForm: document.querySelector("#counterAddForm"),
+      counterAddToggle: document.querySelector("#counterAddToggle"),
+      counterName: document.querySelector("#counterName"),
+      counterCount: document.querySelector("#counterCount"),
     };
 
     let state = loadState();
@@ -2595,10 +2610,13 @@
       }
       const recordSection = campaign?.sections?.record;
       const userState = recordSection?.users?.[userId] || (recordSection?.users ? null : recordSection);
+      const countersMigrated = (typeof userState?.counters === "string" && userState.counters.trim() !== "")
+        || Object.values(userState?.cycleStats || {}).some((stats) => typeof stats?.counters === "string" && stats.counters.trim() !== "");
       return {
         userId,
         state: normalizeState(userState || defaultState),
         revision: Math.max(0, Number(campaign?.sectionRevisions?.record || 0)),
+        countersMigrated,
       };
     }
 
@@ -2637,6 +2655,7 @@
           state = latest.state;
           renderAll();
           setSaveStatus("已自动载入其他页面的最新修改");
+          if (latest.countersMigrated) queueServerSave();
           return;
         }
 
@@ -2791,6 +2810,9 @@
         deadTitans: normalizeDeadTitans(value?.deadTitans),
         titan: undefined,
       };
+      // counters now lives only in cycleStats; removing the legacy alias prevents
+      // its old text from being migrated again when the active cycle changes.
+      delete normalized.counters;
       // Compare the same values that the page displays, including legacy aliases
       // and counters derived from the selected cards. Rendering is not an edit.
       cycleIdentityKeys.forEach((key) => {
@@ -2809,6 +2831,11 @@
 
     function normalizeCycleStats(value) {
       const stats = isPlainObject(value?.cycleStats) ? cloneJson(value.cycleStats) : {};
+      // PHP encodes an empty object as []; properties added to that array would
+      // disappear on JSON.stringify. Restore object buckets before editing.
+      Object.keys(stats).forEach((cycleId) => {
+        if (!isPlainObject(stats[cycleId])) stats[cycleId] = {};
+      });
       const activeCycle = cycleData[value?.cycle] ? value.cycle : defaultState.cycle;
       stats[activeCycle] ||= {};
       [
@@ -2819,8 +2846,26 @@
           stats[activeCycle][key] = value?.[key] ?? defaultState[key] ?? "";
         }
       });
+      // Some older saves have a different top-level text alias. Keep that text
+      // too, unless a cycle already contains it and will migrate it below.
+      if (typeof value?.counters === "string" && value.counters.trim()
+        && !Object.values(stats).some((cycleStats) => cycleStats?.counters === value.counters)) {
+        stats[activeCycle].notes = [`【原计数标记】\n${value.counters}`, stats[activeCycle].notes].filter(Boolean).join("\n\n");
+      }
       Object.values(stats).forEach((cycleStats) => {
-        if (isPlainObject(cycleStats)) delete cycleStats.knowledge;
+        if (!isPlainObject(cycleStats)) return;
+        delete cycleStats.knowledge;
+        if (typeof cycleStats.counters === "string" && cycleStats.counters.trim()) {
+          const notes = typeof cycleStats.notes === "string" ? cycleStats.notes : "";
+          cycleStats.notes = [`【原计数标记】\n${cycleStats.counters}`, notes].filter(Boolean).join("\n\n");
+        }
+        const entries = isPlainObject(cycleStats.counters) ? cycleStats.counters : {};
+        cycleStats.counters = Object.fromEntries(Object.entries(entries)
+          .filter(([, entry]) => isPlainObject(entry))
+          .map(([id, entry]) => [id, {
+            name: String(entry.name ?? ""),
+            count: Number.isFinite(Number(entry.count)) ? Math.min(Number.MAX_SAFE_INTEGER, Math.max(0, Math.floor(Number(entry.count)))) : 0,
+          }]));
       });
       if (stats.c5) {
         const legacyOxygen = stats.c5.oxygenLimit;
@@ -3026,7 +3071,7 @@
           clearDashboardSurveyNoteFromUrl();
           setSaveStatus("NAS 存档已启用，当前账号首次修改时会创建记录表存档");
         }
-        if (importedDashboardSurveyNote || flushQueuedSave) queueServerSave();
+        if (importedDashboardSurveyNote || flushQueuedSave || latest.countersMigrated) queueServerSave();
       } catch (error) {
         serverStorageAvailable = false;
         console.warn(error);
@@ -3215,7 +3260,7 @@
 
     function currentCycleStats() {
       state.cycleStats ||= {};
-      state.cycleStats[state.cycle] ||= {};
+      if (!isPlainObject(state.cycleStats[state.cycle])) state.cycleStats[state.cycle] = {};
       return state.cycleStats[state.cycle];
     }
 
@@ -3581,9 +3626,106 @@
       renderDiplomacy();
       renderSummons();
       renderTitans();
+      renderNamedCounters();
       renderResources();
       renderMatrix();
       noteAttachmentUI.render();
+    }
+
+    function renderNamedCounters() {
+      const entries = getCycleStat("counters") || {};
+      elements.counterList.textContent = "";
+      elements.counterEmpty.hidden = Object.keys(entries).length > 0;
+      Object.entries(entries).forEach(([id, entry]) => {
+        const row = document.createElement("li");
+        const name = document.createElement("input");
+        name.type = "text";
+        name.value = entry.name;
+        name.placeholder = "标记名称";
+        name.setAttribute("aria-label", "计数标记名称");
+        const controls = document.createElement("div");
+        controls.className = "counter-controls";
+        const minus = document.createElement("button");
+        minus.type = "button";
+        minus.className = "counter-step";
+        minus.textContent = "−";
+        const count = document.createElement("input");
+        count.type = "number";
+        count.min = "0";
+        count.step = "1";
+        count.value = String(entry.count);
+        const plus = document.createElement("button");
+        plus.type = "button";
+        plus.className = "counter-step counter-step-add";
+        plus.textContent = "+";
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "secondary counter-remove";
+        remove.textContent = "×";
+        remove.title = "删除计数标记";
+
+        function refresh() {
+          const label = entry.name || "计数标记";
+          minus.disabled = entry.count <= 0;
+          plus.disabled = entry.count >= Number.MAX_SAFE_INTEGER;
+          minus.setAttribute("aria-label", `${label} 减少 1`);
+          plus.setAttribute("aria-label", `${label} 增加 1`);
+          count.setAttribute("aria-label", `${label} 数量`);
+          remove.setAttribute("aria-label", `删除 ${label}`);
+        }
+        function commitCount(value, updateDisplay = true) {
+          entry.count = Number.isFinite(Number(value)) ? Math.min(Number.MAX_SAFE_INTEGER, Math.max(0, Math.floor(Number(value)))) : 0;
+          if (updateDisplay) count.value = String(entry.count);
+          refresh();
+          setCycleStat("counters", entries);
+          queueSave();
+        }
+        name.addEventListener("input", () => {
+          entry.name = name.value;
+          refresh();
+          setCycleStat("counters", entries);
+          queueSave();
+        });
+        count.addEventListener("input", () => commitCount(count.value, false));
+        count.addEventListener("change", () => commitCount(count.value));
+        minus.addEventListener("click", () => commitCount(entry.count - 1));
+        plus.addEventListener("click", () => commitCount(entry.count + 1));
+        remove.addEventListener("click", () => {
+          delete entries[id];
+          setCycleStat("counters", entries);
+          renderNamedCounters();
+          queueSave();
+        });
+        refresh();
+        controls.append(minus, count, plus);
+        row.append(name, controls, remove);
+        elements.counterList.appendChild(row);
+      });
+    }
+
+    function addNamedCounter(event) {
+      event.preventDefault();
+      const name = elements.counterName.value.trim();
+      if (!name) return;
+      const entries = getCycleStat("counters") || {};
+      const value = Number(elements.counterCount.value);
+      entries[`counter-${Date.now()}-${Math.random().toString(16).slice(2)}`] = {
+        name,
+        count: Number.isFinite(value) ? Math.min(Number.MAX_SAFE_INTEGER, Math.max(0, Math.floor(value))) : 0,
+      };
+      setCycleStat("counters", entries);
+      elements.counterName.value = "";
+      elements.counterCount.value = "0";
+      renderNamedCounters();
+      elements.counterName.focus();
+      queueSave();
+    }
+
+    function toggleNamedCounterForm() {
+      const open = elements.counterAddForm.hidden;
+      elements.counterAddForm.hidden = !open;
+      elements.counterAddToggle.setAttribute("aria-expanded", String(open));
+      if (open) elements.counterName.focus();
     }
 
     function renderCycleFields() {
@@ -6303,6 +6445,8 @@
     elements.addGodformButton.addEventListener("click", () => toggleSummonCard("godforms", elements.godformSelect, summonCards.godforms));
     elements.addNymphButton.addEventListener("click", () => toggleSummonCard("nymphCards", elements.nymphSelect, summonCards.nymphs));
     elements.addTitanButton.addEventListener("click", addTitan);
+    elements.counterAddForm.addEventListener("submit", addNamedCounter);
+    elements.counterAddToggle.addEventListener("click", toggleNamedCounterForm);
     elements.titanLimitInput.addEventListener("input", () => {
       state.titanLimit = normalizeTitanLimit(elements.titanLimitInput.value);
       updateTitanListCount();

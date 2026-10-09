@@ -128,6 +128,40 @@ final class AtopackStore {
     return null;
   }
 
+  // Export canvases must decode raster bytes from a data URL rather than use
+  // file:// images. Prefer the installed pack, exactly as WebView interception
+  // does, then fall back to APK assets. Never expose arbitrary app-private files.
+  String readExportImageData(String relative) {
+    try {
+      String normalized = safePath(relative, "导出图片路径");
+      String extension = normalized.substring(normalized.lastIndexOf('.') + 1).toLowerCase(Locale.ROOT);
+      String mime;
+      switch (extension) {
+        case "png": mime = "image/png"; break;
+        case "jpg": case "jpeg": mime = "image/jpeg"; break;
+        case "webp": mime = "image/webp"; break;
+        case "gif": mime = "image/gif"; break;
+        case "bmp": mime = "image/bmp"; break;
+        default: return "";
+      }
+      OpenedResource resource = open(normalized);
+      try (InputStream input = resource == null ? context.getAssets().open("web/" + normalized) : resource.input;
+           ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+        byte[] buffer = new byte[64 * 1024];
+        int total = 0;
+        for (int count; (count = input.read(buffer)) != -1;) {
+          total += count;
+          if (total > MAX_MEMBER_BYTES) return "";
+          output.write(buffer, 0, count);
+        }
+        if (total == 0) return "";
+        return "data:" + mime + ";base64," + android.util.Base64.encodeToString(output.toByteArray(), android.util.Base64.NO_WRAP);
+      }
+    } catch (Exception ignored) {
+      return "";
+    }
+  }
+
   JSONObject status() {
     JSONObject result = new JSONObject();
     try {

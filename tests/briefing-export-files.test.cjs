@@ -122,6 +122,7 @@ function loadModules(options = {}) {
   vm.runInNewContext(gifSource, sandbox, { filename: 'briefing-gif.js' });
   vm.runInNewContext(reportSource, sandbox, { filename: 'briefing-report.js' });
   return {
+    sandbox,
     doc,
     gifenc: sandbox.window.ATO_GIFENC,
     mapApi: sandbox.window.ATO_BRIEFING_MAP,
@@ -380,6 +381,161 @@ test('逐日简报按「封面+索引」加每天一页排版', async () => {
 });
 
 // ---------- 导出面与入口 ----------
+
+test('安卓保存 ZIP 传递完整二进制，等待系统写入确认后才完成', async () => {
+  const { reportApi, sandbox } = loadModules();
+  const bytes = Uint8Array.from({ length: 65539 }, (_, index) => index % 256);
+  let captured, complete = false;
+  sandbox.window.btoa = (value) => Buffer.from(value, 'latin1').toString('base64');
+  sandbox.window.ATOAndroid = { exportBriefingZip(filename, base64) { captured = { filename, base64 }; } };
+  sandbox.URL.createObjectURL = () => { throw new Error('Android must use the system picker'); };
+  const saving = reportApi.download(bytes, 'ATO-简报-c1.zip', 'application/zip').then(() => { complete = true; });
+  await Promise.resolve();
+  assert.equal(complete, false, 'Opening the picker is not a successful save');
+  assert.equal(captured.filename, 'ATO-简报-c1.zip');
+  assert.deepEqual(Buffer.from(captured.base64, 'base64'), Buffer.from(bytes), 'No padding or UTF-8 corruption between blocks');
+  sandbox.window.ATOAndroidExportResult({ ok: true });
+  await saving;
+  assert.equal(complete, true);
+  assert.equal(sandbox.window.ATOAndroidExportResult, undefined);
+});
+
+test('整套简报 ZIP 包含两个 GIF 和 PDF，系统保存完成前不显示已导出', async () => {
+  const { reportApi, sandbox } = loadModules();
+  const statuses = [];
+  let captured, signalPicker;
+  const atPicker = new Promise((resolve) => { signalPicker = resolve; });
+  sandbox.window.btoa = (value) => Buffer.from(value, 'latin1').toString('base64');
+  sandbox.window.ATO_BRIEFING_GIF = {
+    encodeMap: async () => new Uint8Array([71, 73, 70, 56, 57, 97]),
+    encodeTech: async () => new Uint8Array([71, 73, 70, 56, 57, 97]),
+  };
+  sandbox.window.ATOAndroid = { readExportImageData() { return ''; }, exportBriefingZip(filename, base64) { captured = { filename, base64 }; signalPicker(); } };
+  const exporting = reportApi.run({
+    payload: { cycle: { cycleId: 'c1', label: '循环 I' }, tech: { pages: [], unlocked: [] }, summary: { recordedDays: 1 } },
+    days: [{ present: true, day: '1', title: '第 1 天' }],
+    map: { geometry: () => ({}), tiles: () => [] },
+    toJpeg: async () => new Uint8Array([255, 216, 255, 217]),
+    onStatus: (message) => statuses.push(message),
+  });
+  await atPicker;
+  assert.match(captured.filename, /^ATO-简报-c1-\d{8}\.zip$/);
+  const entries = readZip(Buffer.from(captured.base64, 'base64'));
+  assert.deepEqual(entries.map((entry) => entry.name), ['map-replay-c1.gif', 'tech-replay-c1.gif', 'daily-briefing-c1.pdf']);
+  assert.match(new TextDecoder().decode(entries[2].data), /^%PDF-1\.4/);
+  assert.ok(statuses.at(-1).includes('保存位置'));
+  assert.ok(!statuses.some((message) => message.startsWith('已导出')));
+  sandbox.window.ATOAndroidExportResult({ ok: true });
+  const result = await exporting;
+  assert.equal(result.filename, captured.filename);
+  assert.match(statuses.at(-1), /^已导出/);
+});
+
+test('安卓取消和写入失败向页面报告，清理回调后可重试', async () => {
+  const { reportApi, sandbox } = loadModules();
+  sandbox.window.btoa = (value) => Buffer.from(value, 'latin1').toString('base64');
+  sandbox.window.ATOAndroid = { exportBriefingZip() {} };
+  for (const error of ['已取消导出', '磁盘空间不足']) {
+    const saving = reportApi.download(new Uint8Array([1, 2, 3]), 'test.zip', 'application/zip');
+    sandbox.window.ATOAndroidExportResult({ ok: false, error });
+    await assert.rejects(saving, new RegExp(error));
+    assert.equal(sandbox.window.ATOAndroidExportResult, undefined);
+  }
+  sandbox.window.ATOAndroid.exportBriefingZip = () => { throw new Error('bridge failed'); };
+  await assert.rejects(reportApi.download(new Uint8Array([1]), 'test.zip', 'application/zip'), /bridge failed/);
+  assert.equal(sandbox.window.ATOAndroidExportResult, undefined);
+});
+
+test('安卓导出图片从原生读取为 data URL；本地 file 图片不会直接进入 Canvas', async () => {
+  const { gifApi, sandbox, doc } = loadModules();
+  const calls = [], images = [];
+  sandbox.URL = URL;
+  sandbox.window.location = { href: 'file:///android_asset/web/briefing/index.html' };
+  sandbox.window.ATOAndroid = { readExportImageData(path) { calls.push(path); return 'data:image/jpeg;base64,/9j/2Q=='; } };
+  doc.createElement = () => {
+    const image = { set src(value) { image.url = value; queueMicrotask(() => image.onload()); } };
+    images.push(image);
+    return image;
+  };
+  await gifApi.loadImage('../assets/故事图.jpg?v=1', doc);
+  assert.deepEqual(calls, ['assets/故事图.jpg']);
+  assert.equal(images[0].url, 'data:image/jpeg;base64,/9j/2Q==');
+  await assert.rejects(gifApi.loadImage('file:///data/private.png', doc), /应用外/);
+  sandbox.window.ATOAndroid.readExportImageData = () => '';
+  await assert.rejects(gifApi.loadImage('../assets/missing.jpg', doc), /不可用/);
+});
+
+test('逐日 PDF 卡图与缩略图保持可导出，复现 file 图片污染时的 toBlob 检查', async () => {
+  const { reportApi, sandbox, doc } = loadModules();
+  const calls = [];
+  sandbox.URL = URL;
+  sandbox.window.location = { href: 'file:///android_asset/web/briefing/index.html' };
+  sandbox.window.ATOAndroid = { readExportImageData(path) { calls.push(path); return 'data:image/jpeg;base64,/9j/2Q=='; } };
+  const createElement = doc.createElement;
+  doc.createElement = (tag) => {
+    if (tag === 'img') {
+      const image = { naturalWidth: 4807, naturalHeight: 3296,
+        set src(value) { image.tainted = value.startsWith('file:') || value.startsWith('../'); queueMicrotask(() => image.onload()); } };
+      return image;
+    }
+    const canvas = createElement(tag);
+    const ctx = canvas.getContext('2d'), drawImage = ctx.drawImage;
+    ctx.drawImage = (...args) => { canvas.tainted ||= Boolean(args[0].tainted); drawImage(...args); };
+    canvas.toBlob = (callback) => {
+      if (canvas.tainted) throw new Error("Tainted canvases may not be exported.");
+      callback(new Blob([new Uint8Array([255, 216, 255, 217])]));
+    };
+    return canvas;
+  };
+  const track = (name) => ({ known: true, progress: 1, doom: 0, card: { name, label: '1A', image: './assets/' + name + '.jpg' } });
+  const pages = await reportApi.buildDailyPdf({ document: doc,
+    days: [{ present: true, title: '第 1 天', cards: { story: track('故事图'), doom: track('灾祸图') } }] });
+  assert.equal(pages.length, 2);
+  assert.deepEqual(calls.sort(), ['assets/故事图.jpg', 'assets/灾祸图.jpg'].sort());
+  assert.equal(doc.canvases[1]._ctx.draws.length, 2, '卡图必须保留，不能靠省略图片来绕过错误');
+  assert.ok(doc.canvases.every((canvas) => !canvas.tainted));
+});
+
+test('安卓科技树 SVG 以独立 data URL 栅格化，避免 file 页面 blob 来源', async () => {
+  const { gifApi, sandbox, doc } = loadModules();
+  const attributes = new Map();
+  doc.createElementNS = () => ({ setAttribute(key, value) { attributes.set(key, value); }, getAttribute(key) { return attributes.get(key); } });
+  sandbox.window.ATOAndroid = {};
+  sandbox.window.ATO_BRIEFING_TECH = { create({ svg }) {
+    svg.setAttribute('width', '1000'); svg.setAttribute('height', '20');
+    return { render: () => ({ unlocked: 1, total: 1 }) };
+  } };
+  const urls = [];
+  const bytes = await gifApi.encodeTech({ days: [{ present: true, day: '1', tech: { unlocked: ['x'], new: ['x'] } }], document: doc,
+    urlApi: { createObjectURL() { throw new Error('Android should not create an opaque blob'); }, revokeObjectURL() { throw new Error('Data URL should not be revoked'); } },
+    loadImage: async (src) => { urls.push(src); return { width: 1000, height: 20 }; } });
+  assert.match(urls[0], /^data:image\/svg\+xml;charset=utf-8,/);
+  assert.match(new TextDecoder().decode(bytes.subarray(0, 6)), /^GIF89a$/);
+});
+
+test('旧 APK 明确提示更新；已有导出时保留原回调', async () => {
+  const { reportApi, sandbox } = loadModules();
+  sandbox.window.ATOAndroid = { exportStateJson() {} };
+  await assert.rejects(reportApi.download(new Uint8Array([1]), 'test.zip', 'application/zip'), /更新 APK/);
+  const previous = () => {};
+  sandbox.window.ATOAndroid.exportBriefingZip = () => { throw new Error('should not start'); };
+  sandbox.window.ATOAndroidExportResult = previous;
+  await assert.rejects(reportApi.download(new Uint8Array([1]), 'test.zip', 'application/zip'), /已有导出/);
+  assert.equal(sandbox.window.ATOAndroidExportResult, previous);
+});
+
+test('桌面浏览器仍通过带 download 属性的 ZIP 链接下载', async () => {
+  const { reportApi, sandbox, doc } = loadModules();
+  let clicked = false, removed = false, revoked = false;
+  const anchor = { click() { clicked = true; }, remove() { removed = true; } };
+  doc.createElement = () => anchor;
+  sandbox.window.setTimeout = (fn) => fn();
+  sandbox.URL.revokeObjectURL = () => { revoked = true; };
+  await reportApi.download(new Uint8Array([1, 2, 3]), 'test.zip', 'application/zip', doc);
+  assert.equal(anchor.download, 'test.zip');
+  assert.equal(anchor.href, 'blob:stub');
+  assert.ok(clicked && removed && revoked);
+});
 
 test('逐日 PDF 包含两张卡面及其数量，并容忍图片缺失', async () => {
   const makeTrack = (name, progress, doom) => ({ known: true, progress, doom, preview: false, card: { label: '1B', name, image: './assets/' + name + '.jpg' } });

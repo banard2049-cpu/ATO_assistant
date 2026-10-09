@@ -134,6 +134,20 @@ public final class AtopackImportHarness {
         .put("stories", stories("first"));
     check(install(pack(first, new Member(ASSET, old))).assets == 1, "Baseline asset not installed");
     check("old-card".equals(open(ASSET)), "Baseline resource unreadable");
+    context.getAssets().files.put("web/" + ASSET, bytes("bundled-card"));
+    String imageData = store.readExportImageData(ASSET);
+    check(imageData.startsWith("data:image/png;base64,"), "Export image must be a raster data URL");
+    check(Arrays.equals(old, java.util.Base64.getDecoder().decode(imageData.substring(imageData.indexOf(',') + 1))),
+      "Export must prefer installed pack bytes over bundled image");
+    byte[] bundled = new byte[]{0, 1, (byte) 255, (byte) 128};
+    context.getAssets().files.put("web/assets/cards/bundled.jpg", bundled);
+    imageData = store.readExportImageData("assets/cards/bundled.jpg");
+    check(imageData.startsWith("data:image/jpeg;base64,"), "Bundled JPEG has wrong MIME");
+    check(Arrays.equals(bundled, java.util.Base64.getDecoder().decode(imageData.substring(imageData.indexOf(',') + 1))),
+      "Bundled raster bytes changed during export");
+    for (String invalid : new String[]{null, "", "../private.png", "/private.png", "file:///private.png", "assets/cards/missing.png", "story/data/storybook-data.js", "assets/cards/external.svg"}) {
+      check(store.readExportImageData(invalid).isEmpty(), "Export image reader accepted missing or non-raster/private path: " + invalid);
+    }
     check(open("story/data/storybook-data.js").contains("first"), "Baseline story missing");
     check(!new File(root(), "stories.json").exists(), "Stories must commit inside index, not a second mutable file");
     File cachedBlob = new File(root(), "blobs/" + sha(old));
