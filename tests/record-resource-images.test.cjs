@@ -11,7 +11,7 @@ function harness() {
   let timerId = 0;
   function element() {
     return {
-      children: [], listeners: {}, isConnected: true,
+      children: [], listeners: {}, dataset: {}, isConnected: true,
       set innerHTML(value) { this.children = []; },
       append(...children) { this.children.push(...children); },
       appendChild(child) { this.children.push(child); },

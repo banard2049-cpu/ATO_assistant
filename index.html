@@ -664,6 +664,11 @@
       font-weight: 800;
     }
 
+    .app .settings-language-menu button[aria-checked="true"] {
+      background: var(--accent-strong);
+      border-color: var(--accent-strong);
+      color: #fff;
+    }
     .step-desc {
       color: var(--muted);
       font-size: 14px;
@@ -1873,6 +1878,18 @@
       gap: 8px;
     }
 
+    html[data-ato-language="en"] .session-card {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    html[data-ato-language="en"] .session-card label {
+      grid-column: 1 / -1;
+    }
+
+    html[data-ato-language="en"] .app .archive-actions :is(button, a) {
+      white-space: normal;
+    }
+
     .second-screen-card {
       display: grid;
       gap: 10px;
@@ -2194,6 +2211,7 @@
   </style>
   <link rel="stylesheet" href="./api/dashboard.css?v=20261009-nav-icon-urlfix">
   <link rel="stylesheet" href="./assets/theme.css?v=20261007-misc-settings11">
+  <script src="./story/data/english-source-data.js?v=20261011-english4"></script>
   <script src="./assets/theme.js?v=20261007-page-navigation1" defer></script>
   <link rel="stylesheet" href="./assets/update/update-check.css?v=2">
 </head>
@@ -2401,21 +2419,28 @@
             <div class="misc-setting-group">
               <div class="misc-setting-heading">
                 <h3>翻译</h3>
-                <button id="termLanguageToggle" class="secondary settings-toggle-button" type="button" aria-pressed="false" title="民间翻译" data-dashboard-readonly-allowed>民间翻译</button>
+                <div class="settings-language-picker" data-language-ignore>
+                  <button id="termLanguageToggle" class="secondary settings-toggle-button" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="界面语言" title="界面语言" data-term-toggle data-dashboard-readonly-allowed>民间翻译</button>
+                  <div id="termLanguageMenu" class="settings-language-menu" role="menu" aria-label="界面语言" hidden>
+                    <button type="button" role="menuitemradio" aria-checked="false" class="secondary" data-term-language-option="fan" data-dashboard-readonly-allowed>民间翻译</button>
+                    <button type="button" role="menuitemradio" aria-checked="false" class="secondary" data-term-language-option="official" data-dashboard-readonly-allowed>官方翻译</button>
+                    <button type="button" role="menuitemradio" aria-checked="false" class="secondary" data-term-language-option="en" data-dashboard-readonly-allowed>English</button>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="misc-setting-group">
               <div id="bgmHeading" class="misc-setting-heading">
                 <h3>背景音乐</h3>
               </div>
-              <div id="bgmControls" class="bgm-controls" data-term-ignore></div>
+              <div id="bgmControls" class="bgm-controls" data-term-ignore data-english-ui></div>
             </div>
           </div>
         </section>
 
       </div>
     </div>
-    <section class="app-updates" aria-label="版本更新与版权信息" data-term-ignore>
+    <section class="app-updates" aria-label="版本更新与版权信息" data-term-ignore data-english-ui>
       <div class="update-controls">
         <span id="appVersionLabel"></span>
         <button id="checkUpdateButton" type="button" class="secondary" data-dashboard-readonly-allowed>检查更新</button>
@@ -2712,7 +2737,7 @@
         label: "Cycle V 航行时间表",
         entries: Array.from({ length: 81 }, (_, index) => ({ day: index })),
         events: {
-          0: "时间线步骤开始时若没有空白格可标记，读 3749",
+          80: "时间线步骤开始时若没有空白格可标记，读 3749",
           6: "Painful Awakening Special Event",
           18: "Acclimation 1",
           36: "Acclimation 2",
@@ -3872,7 +3897,7 @@
         // so a re-render must never copy the stored profile value back over the
         // local choice (a read-only second console used to reset it to 民间版).
         window.dispatchEvent(new CustomEvent("ato-term-language-changed", {
-          detail: { official: storedTermLanguage() === "official" },
+          detail: { language: storedTermLanguage() || window.ATOGetTermLanguage(), official: storedTermLanguage() === "official" },
         }));
       }
       syncInputs();
@@ -4130,7 +4155,7 @@
     function storedTermLanguage() {
       try {
         const value = localStorage.getItem(termLanguageStorageKey);
-        return value === "official" || value === "fan" ? value : null;
+        return ["fan", "official", "en"].includes(value) ? value : null;
       } catch {
         return null;
       }
@@ -4153,7 +4178,7 @@
       return {
         id: profile.id,
         name: profile.name || "未命名用户",
-        termLanguage: storedTermLanguage() || (profile.termLanguage === "official" ? "official" : "fan"),
+        termLanguage: storedTermLanguage() || (["fan", "official", "en"].includes(profile.termLanguage) ? profile.termLanguage : "fan"),
         activeCycleId,
         cycles,
       };
@@ -5404,7 +5429,7 @@
       queueCampaignSave();
     }
     window.ATOSetTermLanguage = (language) => {
-      const value = language === "official" ? "official" : "fan";
+      const value = ["fan", "official", "en"].includes(language) ? language : "fan";
       let warn = "";
       try {
         localStorage.setItem(termLanguageStorageKey, value);
@@ -5423,7 +5448,7 @@
       return warn;
     };
     window.ATOGetTermLanguage = () => storedTermLanguage()
-      || (currentProfile()?.termLanguage === "official" ? "official" : "fan");
+      || (["fan", "official", "en"].includes(currentProfile()?.termLanguage) ? currentProfile().termLanguage : "fan");
 
     function mapCycleDefinition(cycleId = currentCycleConfig().id) {
       return (window.ATO_MAP_DATA?.cycles || []).find((cycle) => cycle.id === cycleId) || null;
@@ -7311,6 +7336,7 @@
       const group = document.createElement("section");
       group.className = "survey-constant-group";
       group.innerHTML = `<div class="survey-constant-heading">${escapeHtml(data.title)}</div>`;
+      if (data.subtitle) group.firstElementChild.dataset.englishText = data.subtitle;
       const grid = document.createElement("div");
       grid.className = "survey-constant-grid";
       const card = document.createElement("article");
@@ -7319,6 +7345,7 @@
       const title = document.createElement("div");
       title.className = "survey-constant-title";
       title.innerHTML = `${escapeHtml(data.title)}${options.subtitle ? ` <span>${escapeHtml(options.subtitle)}</span>` : ""}`;
+      if (data.subtitle || options.subtitle) title.dataset.englishText = data.subtitle || options.subtitle;
       const boxes = document.createElement("div");
       boxes.className = "survey-constant-boxes";
       data.boxes.forEach((item) => {
@@ -7345,10 +7372,15 @@
           rollText.textContent = roll;
           const labelText = document.createElement("span");
           labelText.textContent = label;
+          if (/[A-Za-z]/.test(roll) && /[\u3400-\u9fff]/.test(label)) {
+            rollText.dataset.englishCaption = "true";
+            labelText.dataset.englishText = roll;
+          }
           row.append(slotWrap.firstChild, rollText, labelText);
         } else {
           const text = document.createElement("span");
-          text.innerHTML = `<span class="survey-constant-roll">${escapeHtml(roll)}</span> ${escapeHtml(label)}`;
+          const bilingual = /[A-Za-z]/.test(roll) && /[\u3400-\u9fff]/.test(label);
+          text.innerHTML = `<span class="survey-constant-roll" ${bilingual ? 'data-english-caption' : ''}>${escapeHtml(roll)}</span> <span ${bilingual ? `data-english-text="${escapeHtml(roll)}"` : ''}>${escapeHtml(label)}</span>`;
           row.append(slotWrap, text);
         }
         boxes.appendChild(row);
@@ -7578,7 +7610,7 @@
             ${titleText}
             <span class="step-kind">${escapeHtml(step.kind)}</span>
           </div>
-          <p class="step-desc">${renderStepDesc(step.desc)}</p>
+          <p class="step-desc" data-english-source="${({ move: "lbl_MOVEMENT_desc", explore: "lbl_EXPLORATION_desc", survey: "lbl_EXPEDITION_desc", encounter: "lbl_ENCOUNTER_desc", development: "lbl_ADVANCEMENT_desc", story: "lbl_STORY_desc", doom: "lbl_DOOM_desc" })[step.id]}">${renderStepDesc(step.desc)}</p>
           ${renderStepTrackReminders(trackReminders)}
         `;
         const actions = document.createElement("div");
@@ -8857,6 +8889,7 @@
         const isCurrentDay = entry.day != null && String(entry.day) === String(state.day);
         const item = document.createElement("div");
         item.className = `date-track-item${isCurrentDay ? " current" : ""}${eventText ? " event" : ""}${noteText ? " noted" : ""}${entry.day == null ? " disabled" : ""}${entry.beyondTrack ? " beyond-track" : ""}`;
+        if (noteText) item.dataset.userTitle = "true";
         item.title = noteText
           ? `Day ${formatTrackDay(entry)}：${noteText}`
           : entry.beyondTrack
@@ -8871,7 +8904,7 @@
           <span class="date-track-day">${escapeHtml(formatTrackDay(entry))}</span>
           ${icons.length ? `<span class="date-track-icons">${icons.map((icon) => `<span class="date-track-icon ${icon.className}">${escapeHtml(icon.label)}</span>`).join("")}</span>` : ""}
           ${eventText ? `<span class="date-track-event">${escapeHtml(eventText)}</span>` : ""}
-          ${noteText ? `<span class="date-track-note" data-term-ignore>${escapeHtml(noteText)}</span>` : ""}
+          ${noteText ? `<span class="date-track-note" data-term-ignore data-user-content>${escapeHtml(noteText)}</span>` : ""}
         `;
         if (entry.day != null) {
           item.addEventListener("click", (event) => {
@@ -9599,7 +9632,10 @@
     initAuth();
   </script>
   <script src="./assets/ato-terms.js?v=20261004-official-title"></script>
-  <script src="./assets/term-language.js?v=20261009-label2"></script>
+  <script src="./assets/english-terms.js?v=20261011-english4"></script>
+  <script src="./assets/english-ui.js?v=20261011-english4"></script>
+  <script src="./assets/english-language.js?v=20261011-english4"></script>
+  <script src="./assets/term-language.js?v=20261011-english4"></script>
   <script src="./assets/update/app-version.js?v=3.5.10-rc.2"></script>
   <script src="./assets/update/update-check.js?v=3"></script>
 </body>

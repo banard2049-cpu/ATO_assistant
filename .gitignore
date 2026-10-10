@@ -72,6 +72,9 @@
 !/assets/theme.css
 !/assets/story-doom-card-data.js
 !/assets/term-language.js
+!/assets/english-terms.js
+!/assets/english-ui.js
+!/assets/english-language.js
 # 应用自身的更新检测脚本，不是版权素材，随源码发布
 !/assets/update/
 # 第三方 GIF 编码器（MIT，gifenc 1.0.3）：浏览器不能自己生成 GIF，

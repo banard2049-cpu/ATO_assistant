@@ -2300,6 +2300,7 @@
   <link rel="stylesheet" href="c45_specials.css?v=20260926-titan-group-layout1">
   <link rel="stylesheet" href="battle_map_control.css?v=20260819-c5-light1">
   <link rel="stylesheet" href="../api/cycle-theme.css">
+  <script src="../story/data/english-source-data.js?v=20261011-english4"></script>
   <script src="../assets/theme.js?v=20261001" defer></script>
   <link rel="stylesheet" href="editorial.css?v=20261010-traits-dialog2">
 </head>
@@ -7881,7 +7882,7 @@
       const level = currentApostleLevel();
       return [{
         title: state.label,
-        html: `<span data-term-variant="fan" data-term-ignore>${typeof state.effect === "function" ? state.effect(level) : (state.effect || state.label)}</span><span data-term-variant="official" data-term-ignore hidden>${typeof state.officialEffect === "function" ? state.officialEffect(level) : state.officialEffect}</span>`
+        html: `<span data-term-variant="fan" data-term-ignore>${typeof state.effect === "function" ? state.effect(level) : (state.effect || state.label)}</span><span data-term-variant="official" data-term-ignore hidden>${typeof state.officialEffect === "function" ? state.officialEffect(level) : state.officialEffect}</span><span data-term-variant="en" hidden>Refer to the original English Primordial card for this form.</span>`
       }];
     }
 
@@ -8935,6 +8936,9 @@
   <script src="c45_specials.js?v=20261010-feint-resume-deathblow1"></script>
   <script src="bp_loot_calculator_addon.js?v=20261010-loot-number-buttons1"></script>
   <script src="../assets/ato-terms.js?v=20260919-chimera"></script>
-  <script src="../assets/term-language.js?v=20261009-label2"></script>
+  <script src="../assets/english-terms.js?v=20261011-english4"></script>
+  <script src="../assets/english-ui.js?v=20261011-english4"></script>
+  <script src="../assets/english-language.js?v=20261011-english4"></script>
+  <script src="../assets/term-language.js?v=20261011-english4"></script>
 </body>
 </html>
