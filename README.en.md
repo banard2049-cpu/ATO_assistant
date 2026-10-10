@@ -2,7 +2,7 @@
 
 [中文](README.md) | **English**
 
-ATO Assistant is a local web tool for running an ATO campaign. It contains the campaign dashboard, AIBP, story, map, the Argo record sheet, technology/gear, the campaign briefing and the second screen.
+ATO Assistant is a local web tool for running an Aeon Trespass: Odyssey (ATO) campaign. It contains the campaign dashboard, AIBP, story, map, the Argo record sheet, technology/gear, the campaign briefing and the second screen.
 
 The repository publishes only the program and public placeholder data. Images, audio, complete story text and personal saves have to be supplied by you and never go into the Git repository.
 

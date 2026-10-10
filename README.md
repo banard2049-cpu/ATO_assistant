@@ -2,7 +2,7 @@
 
 **中文** | [English](README.en.md)
 
-ATO Assistant 是一个用于 ATO 战役流程的本地 Web 工具，包含战役主控台、AIBP、故事、地图、阿尔戈号记录表、科技/装备、战役简报和第二屏幕。
+ATO Assistant 是一个用于《Aeon Trespass: Odyssey》（简称 ATO）战役流程的本地 Web 工具，包含战役主控台、AIBP、故事、地图、阿尔戈号记录表、科技/装备、战役简报和第二屏幕。
 
 仓库只发布程序和公开占位数据。图片、音频、完整故事文本以及个人存档需要自行准备，不会放进 Git 仓库。
 
