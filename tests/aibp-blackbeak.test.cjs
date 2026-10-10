@@ -241,6 +241,7 @@ test("刷新后 Trait 等待解密，切换隐藏 Boss 不会误用其他资源�
   const api = assetWindow.HeliosAssets;
   const context = {
     currentApostle: "BLACKBEAK", window: assetWindow,
+    aibpImageIndex: null,
     HIDDEN_BOSS: { BLACKBEAK: { granted: () => true, config: () => windowStub.BlackbeakConfig,
       extraConfigs: () => [blackbeak] } },
     ensurePiles: () => { throw new Error("不应在解密前渲染 Trait"); },

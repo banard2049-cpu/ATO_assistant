@@ -7,7 +7,9 @@ from __future__ import annotations
 
 import base64
 import gzip
+import hashlib
 import json
+from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
@@ -122,6 +124,19 @@ CYCLE_TRAIT_CARDS = (
     ("c5", "C5 Trait", "C5_TR_002", "Oxygen and Aether"),
     ("c4+c5", "C4/C5 通用 Trait", "C45_COMMON_TR_001", "Smother"),
     ("c4+c5", "C4/C5 通用 Trait", "C45_COMMON_TR_002", "Amongst the Bleached Bones"),
+)
+
+# Boss 大卡的等级反面；半灯神和达哈卡的 O_001 是其他卡，等级面用 O_002。
+BOSS_LEVEL_BACK_CARDS = (
+    ("MIDASCORE", "MIDASCORE_TR_O_001"),
+    ("DEMIDJINN", "DEMIDJINN_TR_O_002"),
+    ("THE_BABELIAN_LUNACY", "THE_BABELIAN_LUNACY_TR_O_001"),
+    ("DAHAKA", "DAHAKA_TR_O_002"),
+    ("DRAGON_OF_PHOBOS", "DRAGON_OF_PHOBOS_TR_O_001"),
+    ("MEDUKETOS", "MEDUKETOS_TR_O_001"),
+    ("TITAN_X", "TITAN_X_TR_O_001"),
+    ("UR_FLEECE", "UR_FLEECE_TR_O_001"),
+    ("HYPERTIME_ORACLE", "HYPERTIME_ORACLE_TR_IV_001"),
 )
 
 TERRAIN_CARD_STEMS = (
@@ -1376,10 +1391,8 @@ def fixed_catalog_payload() -> dict[str, Any]:
         corrected_oracle_items.append(item)
     payload["items"] = corrected_oracle_items
 
-    # 超时光先知的特性卡印的是 V 级：工程里的 HYPERTIME_ORACLE_TR_IV_001.jpg 已改名
-    # HYPERTIME_ORACLE_TR_V_001.jpg，官中覆盖图与打包豁免名单同名跟进（见
-    # tests/aibp-panel-cards.test.cjs）。清单来自旧 APK，仍写着 IV，导出资料包会因为
-    # 那一面在工程目录里找不到文件而直接失败，所以在这里把整条条目挪到 V。
+    # 旧 APK 中标成 IV 的那张特性卡印的是 V 级，已改名 TR_V_001；保留迁移后的
+    # 条目 ID 与官中覆盖路径。2026-10-10 补录的 TR_IV_001 是另一张等级面，下面另登记。
     for item in payload["items"]:
         if item.get("number") != "HYPERTIME_ORACLE_TR_IV_001":
             continue
@@ -1539,6 +1552,17 @@ def fixed_catalog_payload() -> dict[str, Any]:
 
     additions: list[CatalogItem] = []
 
+    # 2026-10-10 按用户提供的 ps 目录补录；仅登记运行时素材，PSD 编辑源不进资料包。
+    for order, (enemy, stem) in enumerate(BOSS_LEVEL_BACK_CARDS):
+        subgroup = f"{enemy} / Trait"
+        additions.append(CatalogItem(
+            id=make_id(AIBP_CYCLES[enemy], "aibp", subgroup, stem, stem),
+            cycle=AIBP_CYCLES[enemy], module="AIBP", subgroup=subgroup,
+            name=f"{AIBP_NAMES[enemy]}等级属性反面", number=stem,
+            sort_order=50_030 + order,
+            faces={"front": f"aibp/ps/{enemy}/{stem}.jpg"},
+        ))
+
     cycle_symbol_files = {
         "c1": ("c1-brown.png", "循环 I 图标"),
         "c2": ("c2-red.png", "循环 II 图标"),
@@ -1596,6 +1620,13 @@ def fixed_catalog_payload() -> dict[str, Any]:
             cycle="common", module="AIBP", subgroup="通用 Trait",
             name="自定义特性卡底", number="CUSTOM_TRAIT_BLANK", sort_order=50_098,
             faces={"front": "aibp/ps/other/trait/custom_trait_blank.jpg"},
+            capture_required=0,
+        ),
+        CatalogItem(
+            id=make_id("common", "AIBP", "通用 Trait", "CUSTOM_TRAIT_BLANK_PNG", "自定义特性卡底（PNG）"),
+            cycle="common", module="AIBP", subgroup="通用 Trait",
+            name="自定义特性卡底（PNG）", number="CUSTOM_TRAIT_BLANK_PNG", sort_order=50_097,
+            faces={"front": "aibp/ps/other/trait/custom_trait_blank.png"},
             capture_required=0,
         ),
         CatalogItem(
@@ -1852,6 +1883,7 @@ def fixed_catalog_payload() -> dict[str, Any]:
         "+remove-tech-tree-backgrounds+cryptic-glyph-files+c5-battle-boards"
         "+mixed-media-crops+drop-c2-c5-battle-boards+drop-c5-supplement-pages"
         "+drop-story-battle-boards+c5-inward-86-90-user-images"
+        "+boss-level-backs+custom-trait-png-20261010"
     )
     return payload
 
@@ -1913,7 +1945,7 @@ def collect_supplemental_resources(ato_root: Path) -> tuple[list[CatalogItem], s
     return items, paths
 
 
-def ensure_fixed_catalog(db: Database) -> dict[str, int]:
+def ensure_fixed_catalog(db: Database, ato_root: Path | None = None) -> dict[str, int]:
     # Retire these unused entries even when the old library already has images.
     # Foreign-key cascades remove their revisions and skipped-face records.
     with db.connect() as conn:
@@ -1928,6 +1960,13 @@ def ensure_fixed_catalog(db: Database) -> dict[str, int]:
             ("科技树总览", "%technology/images/tech_tree_pages/%"),
         )
     payload = fixed_catalog_payload()
+    if ato_root is not None:
+        supplemental, paths = collect_supplemental_resources(ato_root)
+        payload["items"].extend(asdict(item) for item in supplemental)
+        payload["source"]["catalog_items"] = len(payload["items"])
+        # 路径名单变动也要刷新已有库；即使没有私有 bin，干净检出仍能登记这些条目。
+        fingerprint = hashlib.sha256("\n".join(sorted(paths)).encode("utf-8")).hexdigest()[:12]
+        payload["source"]["catalog_version"] += f"+supplemental-{fingerprint}"
     source = payload["source"]
     current = db.get_meta("catalog_source", {})
     existing = db.one("SELECT COUNT(*) AS n FROM catalog_items")["n"]

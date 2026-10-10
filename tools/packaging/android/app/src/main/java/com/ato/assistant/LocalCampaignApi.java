@@ -20,6 +20,7 @@ final class LocalCampaignApi {
   private final Object lock = new Object();
   private String currentUser;
   private LocalSecondScreenServer secondScreenServer;
+  private java.util.concurrent.Callable<JSONObject> imageIndex;
 
   LocalCampaignApi(Context context) {
     store = context.getSharedPreferences("ato-local-store", Context.MODE_PRIVATE);
@@ -29,6 +30,10 @@ final class LocalCampaignApi {
 
   void attachSecondScreenServer(LocalSecondScreenServer server) {
     secondScreenServer = server;
+  }
+
+  void attachImageIndex(java.util.concurrent.Callable<JSONObject> provider) {
+    imageIndex = provider;
   }
 
   String handleForJavascript(Uri uri, String method, String requestBody) {
@@ -55,6 +60,11 @@ final class LocalCampaignApi {
 
   private JSONObject dispatch(Uri uri, String method, String requestBody) throws Exception {
     String path = uri.getPath() == null ? "" : uri.getPath();
+    if (path.endsWith("/api/aibp-image-index.php")) {
+      if (!"GET".equalsIgnoreCase(method)) throw new ApiException(405, error("This endpoint requires GET."));
+      if (imageIndex == null) throw new ApiException(503, error("Image index unavailable."));
+      return imageIndex.call();
+    }
     if (path.endsWith("/briefing/api.php")) {
       if (!"GET".equalsIgnoreCase(method)) throw new ApiException(405, error("This endpoint requires GET."));
       if (currentUser.isEmpty()) throw new ApiException(401, authRequired());

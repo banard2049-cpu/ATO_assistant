@@ -123,6 +123,8 @@ def build_project(root: Path) -> None:
         "assets/bgm/LB_Armory.m4a": "audio",
         "bgm/LB_Armory.mp3": "legacy audio",
         "map/images/tile.png": "image",
+        "aibp/boss-levels-data.js": "// generated Boss levels\n",
+        "aibp/boss-levels-data.json": "{\"format\":\"ato-boss-levels\"}\n",
         # aibp/ps 里程序数据（.js/.json）与自备卡图同级：程序数据必须进包，Dockerfile
         # 才有东西可以拷到 /opt/ato/aibp-ps-program 做还原（compose 整棵挂 aibp/ps，
         # 会遮住镜像里的原件）。
@@ -281,6 +283,8 @@ def main() -> int:
     # aibp/ps 的程序数据必须进包：compose 把整棵 ps 挂进容器遮住镜像原件，
     # 还原用的原版只可能来自打包进镜像的这份拷贝（少一个文件，容器里那个脚本就缺失）。
     for expected in (
+        "aibp/boss-levels-data.js",
+        "aibp/boss-levels-data.json",
         "aibp/ps/CHIMERA_METASTASIOS/bp_status_map.js",
         "aibp/ps/CHIMERA_METASTASIOS/bp_status_map.json",
         "aibp/ps/other/token/token_manifest.js",

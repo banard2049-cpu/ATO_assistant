@@ -49,6 +49,7 @@ public final class MainActivity extends Activity {
     super.onCreate(state);
     atopackStore = new AtopackStore(this);
     localApi = new LocalCampaignApi(this);
+    localApi.attachImageIndex(atopackStore::aibpImageIndex);
     secondScreenServer = new LocalSecondScreenServer(this, atopackStore, localApi);
     localApi.attachSecondScreenServer(secondScreenServer);
     webView = new WebView(this);

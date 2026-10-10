@@ -180,12 +180,13 @@ test('level changes preserve exhausted per-hit bonuses even when they share a st
   const { ctx, state } = harness();
   ctx.addAiExhaustedBonusTokens(1);
   ctx.currentApostleLevel = () => 5;
-  ctx.syncAutomaticLevelBonusToken('danger', 'DA+.png', 2);
-  ctx.syncAutomaticLevelBonusToken('danger', 'DA+.png', 2);
+  ctx.syncAutomaticLevelBonusToken('dangerPerHit', 'DA+.png', 2, { perHit: true });
+  ctx.syncAutomaticLevelBonusToken('dangerPerHit', 'DA+.png', 2, { perHit: true });
   assert.equal(state.tokens.length, 1);
   assert.equal(state.tokens[0].count, 3);
   ctx.currentApostleLevel = () => 4;
-  ctx.syncAutomaticLevelBonusToken('danger', 'DA+.png', 1);
+  ctx.syncAutomaticLevelBonusToken('dangerPerHit', 'DA+.png', 0, { perHit: true });
+  ctx.syncAutomaticLevelBonusToken('dangerPerAttack', 'DA+.png', 1);
   assert.equal(state.tokens.find((value) => value.perHit).count, 1);
   assert.equal(state.tokens.find((value) => !value.perHit).count, 1);
 });

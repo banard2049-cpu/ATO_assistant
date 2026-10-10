@@ -349,7 +349,13 @@
     /* 空闲时不占位，标题栏布局和以前完全一致。 */
     .title-actions .second-screen-sync-status:empty { display: none; }
 
-    .title-actions .second-screen-sync-status[data-state="failed"] { color: #ff9d9d; }
+    .title-actions .second-screen-sync-status[data-state="failed"] {
+      color: #ff9d9d;
+      max-width: 360px;
+      white-space: normal;
+      overflow: visible;
+      overflow-wrap: anywhere;
+    }
 
     .title-actions .return-main-link {
       border: 1px solid rgba(199, 173, 114, 0.42);
@@ -2295,7 +2301,7 @@
   <link rel="stylesheet" href="battle_map_control.css?v=20260819-c5-light1">
   <link rel="stylesheet" href="../api/cycle-theme.css">
   <script src="../assets/theme.js?v=20261001" defer></script>
-  <link rel="stylesheet" href="editorial.css?v=20261008-notice-paper1">
+  <link rel="stylesheet" href="editorial.css?v=20261010-loot-number-buttons1">
 </head>
 <body>
   <button type="button" class="sidebar-toggle" id="sidebarToggle" aria-label="折叠左侧边栏" title="展开/折叠左侧边栏">×</button>
@@ -2320,6 +2326,7 @@
           <div class="map-faction-status" id="mapFactionStatus"></div>
           <select class="apostle-level-select" id="apostleLevelSelect" aria-label="始徒当前等级">
             <option value="">跟随记录表</option>
+            <option value="0" hidden disabled>等级 0</option>
             <option value="1">等级 I</option>
             <option value="2">等级 II</option>
             <option value="3">等级 III</option>
@@ -2412,6 +2419,7 @@
                 <button type="button" id="discardBpButton" disabled>弃置</button>
                 <button type="button" id="defeatBpButton" disabled>击败</button>
                 <button type="button" id="criticalBpButton" disabled>暴击</button>
+                <button type="button" id="deathblowBpButton" disabled title="先结算致死一击，再按规则补齐剩余损伤。">秒杀 Boss</button>
                 <button type="button" id="returnBpTopButton" hidden disabled>放回牌堆顶</button>
                 <button type="button" id="healBpButton" disabled title="将损伤堆顶部的一张卡从本场战斗中暂时移除；不再计入损伤，也不提供战后资源。">回生（heal）</button>
                 <label class="damage-target" id="chimeraDamageTarget">
@@ -2432,6 +2440,7 @@
                 <button type="button" id="scryBpButton">观星 BP</button>
               </div>
               <div class="draw-preview" id="bpDrawPreview">未抽取 BP</div>
+              <div class="deck-info" id="deathblowBpStatus" role="status" hidden></div>
             </div>
             <div class="babelian-bp-control" id="babelianFusionControl" hidden></div>
             <div class="bp-combined-counter" id="bpCombinedControl" hidden>
@@ -2636,7 +2645,7 @@
   </dialog>
 
 
-  <dialog class="spoiler-dialog" id="heliosSpoilerDialog" aria-labelledby="heliosSpoilerTitle">
+  <dialog class="spoiler-dialog" id="heliosSpoilerDialog" aria-labelledby="heliosSpoilerTitle" aria-describedby="heliosSpoilerMessage">
     <h2 id="heliosSpoilerTitle">剧透警告</h2>
     <p id="heliosSpoilerMessage"></p>
     <div class="spoiler-actions">
@@ -2696,6 +2705,7 @@
   <script src="7c2e9a40.js?v=20260926-group-trait1"></script>
   <script src="boss-search.js?v=20260926-titan-x-group2"></script>
   <script src="custom_traits.js?v=20260930-custom-trait4-lisu-simhei"></script>
+  <script src="boss-levels-data.js?v=20261010-boss-levels1"></script>
   <script>
     const apostles = [
       "HEKATON",
@@ -2723,9 +2733,6 @@
     const aiViews = ["当前", "弃牌", "移除", "II", "III"];
     const bpViews = ["当前", "弃牌", "损伤", "移除", "II", "III"];
     const traitLevels = ["O", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
-    const traitProbeMaxIndex = 12;
-    const traitProbeExtensions = ["jpg", "png", "jpeg"];
-    const defaultTraitProbeMaxIndex = 12;
     const commonTraitTitles = {
       2: "逆行动量"
     };
@@ -2841,69 +2848,6 @@
       "UR_FLEECE",
       "TITAN_X"
     ]);
-    const apostleLevelBonusConfig = {
-      HEKATON: {
-        3: { promotions: 1, danger: 1, at: 0 },
-        4: { promotions: 2, danger: 1, at: 1 },
-        5: { promotions: 2, danger: 1, at: 2 }
-      },
-      LABYRINTHAUROS: {
-        3: { promotions: 1, danger: 1, at: 0 },
-        4: { promotions: 2, danger: 1, at: 1 },
-        5: { promotions: 2, danger: 1, at: 2 }
-      },
-      CHIMERA_METASTASIOS: {
-        3: { promotions: 1, danger: 1, at: 0 },
-        4: { promotions: 2, danger: 1, at: 1 },
-        5: { promotions: 2, danger: 1, at: 2 }
-      },
-      CYCLONUS: {
-        3: { promotions: 1, danger: 1, at: 0 },
-        4: { promotions: 2, danger: 1, at: 1 },
-        5: { promotions: 2, danger: 1, at: 2 }
-      },
-      ICARIAN_HARPY: {
-        3: { promotions: 1, danger: 1, at: 0 },
-        4: { promotions: 2, danger: 1, at: 1 },
-        5: { promotions: 2, danger: 1, at: 2 }
-      },
-      HYPERTIME_ORACLE: {
-        3: { promotions: 1, danger: 1, at: 0 },
-        4: { promotions: 2, danger: 1, at: 1 },
-        5: { promotions: 2, danger: 1, at: 2 }
-      },
-      MIDASCORE: {
-        3: { promotions: 1, danger: 1, at: 0 },
-        4: { promotions: 2, danger: 1, at: 1 }
-      },
-      DEMIDJINN: {
-        3: { promotions: 1, danger: 1, at: 0 },
-        4: { promotions: 2, danger: 1, at: 1 }
-      },
-      THE_BABELIAN_LUNACY: {
-        1: { promotions: 1, danger: 0, at: 0 }
-      },
-      DAHAKA: {
-        1: { promotions: 1, danger: 0, at: 0 }
-      },
-      DRAGON_OF_PHOBOS: {
-        2: { promotions: 1, danger: 0, at: 0 },
-        3: { promotions: 1, danger: 1, at: 0 },
-        4: { promotions: 2, danger: 1, at: 1 }
-      },
-      MEDUKETOS: {
-        2: { promotions: 1, danger: 0, at: 0 },
-        3: { promotions: 1, danger: 1, at: 0 },
-        4: { promotions: 2, danger: 1, at: 1 }
-      },
-      UR_FLEECE: {},
-      TITAN_X: {
-        1: { promotions: 1, danger: 0, at: 0 }
-      },
-      HELIOS: {
-        1: { promotions: 1, danger: 0, at: 0 }
-      }
-    };
     const c45LevelBonusApostles = new Set([
       "MIDASCORE",
       "DEMIDJINN",
@@ -3187,6 +3131,8 @@
     const discardBpButton = document.getElementById("discardBpButton");
     const defeatBpButton = document.getElementById("defeatBpButton");
     const criticalBpButton = document.getElementById("criticalBpButton");
+    const deathblowBpButton = document.getElementById("deathblowBpButton");
+    const deathblowBpStatus = document.getElementById("deathblowBpStatus");
     const healBpButton = document.getElementById("healBpButton");
     const addSwButton = document.getElementById("addSwButton");
     const addDwButton = document.getElementById("addDwButton");
@@ -3277,6 +3223,10 @@
     let activeTokenContext = null;
     let activeScry = null;
     let traitLoadToken = 0;
+    const optionalImageChecks = new Map();
+    const optionalImageCheckQueue = [];
+    let aibpImageIndex;
+    let aibpImageIndexPromise = null;
 
     if (viewDeckOrderToggle) {
       viewDeckOrderToggle.checked = false;
@@ -3457,13 +3407,17 @@
       const damageSummary = currentBpDamageSummary();
       const renderedExtraCards = Array.from(extraGrid.querySelectorAll("img"))
         .filter((image) => image.complete && image.naturalWidth > 0)
-        .map((image) => image.dataset.customTraitId
-          ? publicTraitSnapshot(currentApostle, state.traits.find((card) => card.scope === "custom" && card.id === image.dataset.customTraitId))
-          : ({
-          src: image.getAttribute("src") || "",
-          label: image.alt || "Trait / 特殊卡",
-          large: image.classList.contains("panel-image"),
-        }));
+        .map((image) => {
+          if (image.dataset.customTraitId) {
+            const card = state.traits.find((card) => card.scope === "custom" && card.id === image.dataset.customTraitId);
+            return card ? publicTraitSnapshot(currentApostle, card) : null;
+          }
+          return {
+            src: image.getAttribute("src") || "",
+            label: image.alt || "Trait / 特殊卡",
+            large: image.classList.contains("panel-image"),
+          };
+        }).filter(Boolean);
       return {
         version: 1,
         apostle: currentApostle,
@@ -3506,7 +3460,7 @@
         aiDiscardCount: (state.AI.discard || []).length,
         bpDiscardCount: (state.BP.discard || []).length,
         damage: damage.map(publicCardSnapshot).filter(Boolean),
-        damageSummary,
+        damageSummary: { ...damageSummary, wounds: currentBossWounds() },
         tokens: (state.tokens || []).map((token) => {
           const isCriticalMass = token.criticalMass === true || token.chimeraCriticalMass === true;
           const panelCounterKind = c45PanelCounterKind();
@@ -3602,6 +3556,7 @@
           : state === "failed"
             ? `同步失败（${detail}）`
             : "";
+        syncStatus.title = state === "failed" ? detail : "";
       };
       const maxAttempts = 3;
       const retryDelays = [1000, 3000];
@@ -3630,7 +3585,7 @@
           } catch (error) {
             const status = Number(error?.status || 0);
             const code = String(error?.code || "");
-            const reason = String(error?.message || error || "未知错误").replace(/\s+/g, " ").slice(0, 60) || "未知错误";
+            const reason = String(error?.message || error || "未知错误").replace(/\s+/g, " ") || "未知错误";
             if (code === "ACCOUNT_MISMATCH" || code === "AUTH_REQUIRED" || status === 401 || status === 403) {
               // 登录失效重试没有意义：如实显示失败并让用户刷新页面。
               reportSyncStatus("failed", "登录已失效，请刷新页面");
@@ -3647,7 +3602,8 @@
               continue;
             }
             // 网络错误、HTTP 5xx、响应里没有 JSON 都算临时故障：最多 3 次尝试，退避 1s → 3s。
-            const transient = error?.noJson === true || status >= 500 || (!status && !code);
+            const localDataError = error?.name === "TypeError" && /Cannot read properties|undefined|null/.test(reason);
+            const transient = !localDataError && (error?.noJson === true || status >= 500 || (!status && !code));
             if (!transient || transientFailures >= maxAttempts - 1) {
               reportSyncStatus("failed", reason);
               return;
@@ -3824,20 +3780,145 @@
 
     function imageOrMessage(src, alt, className = "") {
       const img = document.createElement("img");
-      img.src = window.HeliosAssets.resolve(src);
+      img.decoding = "async";
+      img.fetchPriority = "high";
       img.alt = alt;
       img.className = className;
       img.onerror = () => {
         const fallback = document.createElement("div");
         fallback.className = "missing";
-        fallback.textContent = `未找到图片：${src}`;
+        fallback.textContent = `图片加载失败：${src}`;
+        const retry = document.createElement("button");
+        retry.type = "button";
+        retry.textContent = "重试加载";
+        retry.addEventListener("click", (event) => {
+          event.stopPropagation();
+          fallback.replaceWith(img);
+          const resolved = window.HeliosAssets.resolve(src);
+          img.src = /^(data|blob):/.test(resolved) ? resolved
+            : `${resolved}${resolved.includes("?") ? "&" : "?"}retry=${Date.now()}`;
+        });
+        fallback.appendChild(retry);
         img.replaceWith(fallback);
       };
+      img.src = window.HeliosAssets.resolve(src);
       return img;
+    }
+
+    function loadAibpImageIndex() {
+      if (aibpImageIndexPromise) return aibpImageIndexPromise;
+      const controller = new AbortController();
+      const timer = window.setTimeout(() => controller.abort(), 10000);
+      aibpImageIndexPromise = fetch("../api/aibp-image-index.php", { signal: controller.signal, cache: "no-store" })
+        .then(async (response) => {
+          if (!response.ok) throw new Error("Image index unavailable");
+          const payload = await response.json();
+          if (payload?.ok !== true || !Array.isArray(payload.images)) throw new Error("Invalid image index");
+          aibpImageIndex = new Set(payload.images.filter((src) => typeof src === "string"));
+        }).catch(() => {
+          aibpImageIndex = null;
+        }).finally(() => {
+          window.clearTimeout(timer);
+          flushOptionalImageChecks();
+        });
+      return aibpImageIndexPromise;
+    }
+
+    function resolveOptionalImagePresence(src, isNeeded = () => true) {
+      const cached = optionalImageChecks.get(src);
+      if (cached && cached.expiresAt > Date.now()) {
+        cached.needs?.push(isNeeded);
+        return cached.promise;
+      }
+      const needs = [isNeeded];
+      const result = new Promise((resolve) => {
+        optionalImageCheckQueue.push({ src, resolve, needs });
+      });
+      optionalImageChecks.set(src, { promise: result, expiresAt: Infinity, needs });
+      flushOptionalImageChecks();
+      return result;
+    }
+
+    function flushOptionalImageChecks() {
+      if (aibpImageIndex === undefined) {
+        void loadAibpImageIndex();
+        return;
+      }
+      // Inventory lookups are local; let each image load at its browser priority.
+      while (optionalImageCheckQueue.length) {
+        const { src, resolve, needs } = optionalImageCheckQueue.shift();
+        if (!needs.some((needed) => needed())) {
+          optionalImageChecks.delete(src);
+          resolve(false);
+          continue;
+        }
+        // Encrypted configuration assets are already decoded to in-memory URLs.
+        const resolved = window.HeliosAssets.resolve(src);
+        const exists = !!aibpImageIndex?.has(src) || /^(?:blob:|data:image\/)/.test(resolved);
+        const cached = optionalImageChecks.get(src);
+        cached.expiresAt = exists ? Infinity : Date.now() + 30000;
+        cached.needs = null;
+        resolve(exists);
+      }
+    }
+
+    function showImageIndexFailure(container) {
+      const notice = document.createElement("div");
+      notice.className = "missing";
+      notice.textContent = "图片清单读取失败，部分特性卡暂未显示。";
+      const retry = document.createElement("button");
+      retry.type = "button";
+      retry.textContent = "重试读取清单";
+      retry.addEventListener("click", () => {
+        retry.disabled = true;
+        aibpImageIndex = undefined;
+        aibpImageIndexPromise = null;
+        optionalImageCheckQueue.splice(0).forEach((job) => job.resolve(false));
+        optionalImageChecks.clear();
+        void loadAibpImageIndex().then(() => {
+          renderExtraCards();
+          if (traitDialog.open) renderTraitCandidates();
+        });
+      });
+      notice.appendChild(retry);
+      container.appendChild(notice);
     }
 
     function numberedName(name, type, level, index) {
       return `${name}_${type}_${level}_${String(index).padStart(3, "0")}.jpg`;
+    }
+
+    function indexedAibpCards(name) {
+      if (!aibpImageIndex) return [];
+      const prefix = `ps/${name}/${name}_`;
+      return [...aibpImageIndex].flatMap((src) => {
+        if (!src.startsWith(prefix)) return [];
+        const match = src.slice(prefix.length).match(/^(TR|AI|BP)_([A-Z]+)_(\d+)\.(jpg|png|jpeg)$/i);
+        return match ? [{ src, type: match[1].toUpperCase(), level: match[2].toUpperCase(),
+          index: Number(match[3]), ext: match[4] }] : [];
+      });
+    }
+
+    function traitImageCandidates(name) {
+      return indexedAibpCards(name).filter((card) => card.type === "TR");
+    }
+
+    function commonTraitImageCandidates(name) {
+      return [...(aibpImageIndex || [])].flatMap((src) => {
+        const match = src.match(/^ps\/other\/trait\/COMMON_TR_(\d+)\.(jpg|png|jpeg)$/i);
+        return match && isCommonTraitAvailable(Number(match[1]), name)
+          ? [{ src, index: Number(match[1]), ext: match[2] }] : [];
+      });
+    }
+
+    function loadOptionalImage(img, src, isNeeded) {
+      img.decoding = "async";
+      img.fetchPriority = "low";
+      void resolveOptionalImagePresence(src, isNeeded).then((exists) => {
+        if (!isNeeded()) return;
+        if (exists) img.src = window.HeliosAssets.resolve(src);
+        else img.onerror?.();
+      });
     }
 
     function cardFileName(card, name = currentApostle) {
@@ -3932,7 +4013,7 @@
         chimeraPhase: "",
         traits: [],
         // 特性区默认显示的卡不写进 traits：取消勾选后把它们的 key 记在这里，
-        // 自动探测与 setup 补卡都不再显示（见 hiddenTraitKeySet / isDefaultShownTrait）。
+        // 资源清单与 setup 补卡都不再显示（见 hiddenTraitKeySet / isDefaultShownTrait）。
         hiddenTraits: [],
         // 特性区里一并显示的额外卡（AI/BP 的 O/X、泰坦X 组特性、黑喙固定卡）按 src 记录。
         hiddenExtraCards: [],
@@ -4482,6 +4563,8 @@
     function apostleLevelFor(name) {
       const override = Number(apostleLevelOverrides[name]);
       const upperLevel = name === "HELIOS" ? 10 : maxApostleLevel;
+      if (override === 0 && apostleLevelOverrides[name] !== undefined
+        && window.AIBP_BOSS_LEVEL_DATA?.bosses?.[name]?.levels?.["0"]) return 0;
       if (override >= 1 && override <= upperLevel) return override;
       if (fixedLevelOneApostles.has(name)) return 1;
       const recordLevel = Number(recordApostleLevels[name]);
@@ -4548,6 +4631,7 @@
         let visible;
         if (option.value === "c4") visible = isHelios && heliosAccessGranted;
         else if (blackbeak) visible = false;
+        else if (option.value === "0") visible = Boolean(window.AIBP_BOSS_LEVEL_DATA?.bosses?.[currentApostle]?.levels?.["0"]);
         else visible = isHelios || option.value !== "10";
         option.hidden = !visible;
         option.disabled = option.hidden;
@@ -4559,7 +4643,7 @@
       }
       apostleLevelSelect.value = currentApostle === "HELIOS" && heliosMode() === "c4"
         ? "c4"
-        : apostleLevelOverrides[currentApostle]
+        : apostleLevelOverrides[currentApostle] !== undefined
         && (currentApostle !== "HELIOS"
           || apostleLevelOverrides[currentApostle] === "c4"
           || Number(apostleLevelOverrides[currentApostle]) <= 10)
@@ -4593,6 +4677,83 @@
       if (!card) return 0;
       if (card.special === "DW" || (card.bpLevel || card.level) === "III") return 2;
       return Math.max(1, Math.floor(Number(card.damageValue) || 1));
+    }
+
+    function currentBossWounds() {
+      const specialWounds = window.C45Specials?.bossWounds?.();
+      const value = specialWounds ?? window.AIBP_BOSS_LEVEL_DATA?.bosses?.[currentApostle]
+        ?.levels?.[String(currentApostleLevel())]?.stats?.wounds;
+      return Number.isSafeInteger(value) && value > 0 ? value : null;
+    }
+
+    function bpDamageSummaryText(summary, wounds) {
+      const total = wounds == null ? "（总生命未记录）" : ` / ${wounds}`;
+      const split = summary.damage1 !== undefined ? `（${summary.damage1}+${summary.damage2}）` : "";
+      return `损伤：${summary.total}${total}${split}`;
+    }
+
+    function deathblowUnavailableReason() {
+      const state = piles[currentApostle];
+      const wounds = currentBossWounds();
+      if (wounds == null) return "当前 Boss 等级的总生命尚未记录";
+      const specialReason = window.C45Specials?.deathblowUnavailableReason?.();
+      if (specialReason) return specialReason;
+      if (activeScry) return "请先完成观星";
+      if (state.BP.pending) return "请先结算当前 BP 的致死一击，再补齐剩余损伤";
+      if (currentBpDamageSummary().total >= wounds) return "损伤已达到总生命";
+      if (!state.BP.deck.length && !state.BP.discard.length) return "BP 牌堆已空，无法继续补伤";
+      return "";
+    }
+
+    function renderDeathblowControl() {
+      if (!deathblowBpButton) return;
+      const reason = deathblowUnavailableReason();
+      deathblowBpButton.disabled = Boolean(reason);
+      deathblowBpButton.title = reason || "致死一击已结算：从 BP 牌堆顶部补伤；BP III 计双重损伤，未达到总生命时执行 BP 晋升。";
+      if (!deathblowBpStatus) return;
+      const result = piles[currentApostle].BP.deathblowResult;
+      deathblowBpStatus.hidden = !result;
+      deathblowBpStatus.textContent = result
+        ? `致死一击补伤：已加入 ${result.cards} 张卡，${result.wounds} 点损伤${result.complete ? "" : "；BP 牌堆已空，尚未达到总生命"}`
+        : "";
+    }
+
+    function resolveBossDeathblow() {
+      ensurePiles(currentApostle);
+      if (deathblowUnavailableReason()) return false;
+      const bp = piles[currentApostle].BP;
+      const wounds = currentBossWounds();
+      rememberUndo(currentApostle, "BP");
+      let addedCards = 0;
+      let addedWounds = 0;
+      // Rulebook p65: after the Deathblow was resolved, add one top BP at a time.
+      // Stop before escalation on the final wound; BP III contributes a DW instead.
+      while (currentBpDamageSummary().total < wounds) {
+        reshuffleDiscardIfDeckEmpty("BP");
+        const card = bp.deck.shift();
+        if (!card) break;
+        const level = card.bpLevel || card.level;
+        const damage = level === "III" ? { special: "DW" } : card;
+        bp[currentBpDamageKey()].push(damage);
+        addedCards += 1;
+        addedWounds += bpDamageValue(damage);
+        if (currentBpDamageSummary().total < wounds) {
+          // This is resource completion after battle: only the BP deck escalates.
+          reshuffleDiscardIfDeckEmpty("BP");
+          const handled = window.C45Specials?.promoteDeathblowBp?.(level) === true;
+          if (!handled) promoteBpDeckForDefeatedLevel(level);
+        }
+        if (level === "III") bp.deck.push(card);
+      }
+      bp.deathblowResult = {
+        cards: addedCards, wounds: addedWounds,
+        complete: currentBpDamageSummary().total >= wounds
+      };
+      delete bp.combinedAttack;
+      currentBpView = currentBpDamageView();
+      savePiles();
+      renderAibpCards();
+      return addedCards > 0;
     }
 
     function currentBpHealIndex() {
@@ -5589,6 +5750,11 @@
           id: item.id || createTokenStackId(),
           count: Math.max(1, clampTokenCount(item.count) || 1)
         };
+        if (normalized.autoLevelBonus && !isPlainObject(normalized.autoLevelBonusContributions)) {
+          normalized.autoLevelBonusContributions = { [normalized.autoLevelBonus]: normalized.count };
+          if (normalized.autoLevelBonus === "danger") normalized.perHit = true;
+          delete normalized.autoLevelBonus;
+        }
         const key = tokenMergeKeyForItem(normalized);
         if (!key) {
           result.push(normalized);
@@ -6014,28 +6180,14 @@
     }
 
     function applyBurdenInitialLinkedPromotion() {
-      ensurePiles(currentApostle);
-      if (currentApostle !== burdenName) return false;
-      const state = piles[currentApostle];
-      state.initialSetupApplied ||= {};
-      if (state.initialSetupApplied.burdenLinkedPromotion) return false;
-      if (!isUnstartedAibpState(state)) return false;
-
-      const changed = performLinkedPromotion();
-      if (!changed) return false;
-      state.initialSetupApplied.burdenLinkedPromotion = true;
-      savePiles();
-      return true;
+      // Compatibility entry point: all level setup now reads the workbook data.
+      return currentApostle === burdenName && applyCurrentApostleLevelBonuses();
     }
 
     function levelBonusFor(apostle, level) {
-      const config = apostleLevelBonusConfig[apostle];
-      if (!config) return { promotions: 0, danger: 0, at: 0 };
-      let result = { promotions: 0, danger: 0, at: 0 };
-      Object.entries(config).forEach(([minimumLevel, bonus]) => {
-        if (level >= Number(minimumLevel)) result = { ...result, ...bonus };
-      });
-      return result;
+      const row = window.AIBP_BOSS_LEVEL_DATA?.bosses?.[apostle]?.levels?.[String(level)];
+      // Missing levels are not inferred from an earlier level or another Boss.
+      return row ? { ...row.bonuses } : null;
     }
 
     function automaticTokenContribution(item, kind) {
@@ -6053,81 +6205,75 @@
       );
     }
 
-    function syncAutomaticLevelBonusToken(kind, file, count) {
+    function syncAutomaticLevelBonusToken(kind, file, count, options = {}) {
       const tokens = piles[currentApostle].tokens;
-      const position = kind === "danger"
-        ? { x: 8, y: 8 }
-        : { x: 16, y: 8 };
       const normalizedCount = Math.max(0, Math.floor(Number(count) || 0));
-      const perHit = kind === "danger" && currentApostleLevel() >= 5;
-      const existingAuto = tokens.find((item) => automaticTokenContribution(item, kind) > 0);
-      const previousContribution = automaticTokenContribution(existingAuto, kind);
+      const perHit = options.perHit === true;
+      const owned = tokens.filter((item) => automaticTokenContribution(item, kind) > 0);
+      const matching = owned.length === 1 && owned[0].file === file
+        && isPerHitTokenStack(owned[0]) === perHit ? owned[0] : null;
 
-      if (existingAuto && previousContribution > 0) {
-        existingAuto.count = clampTokenCount((Number(existingAuto.count) || 0) - previousContribution);
-        if (isPlainObject(existingAuto.autoLevelBonusContributions)) {
-          delete existingAuto.autoLevelBonusContributions[kind];
-          if (!Object.keys(existingAuto.autoLevelBonusContributions).length) {
-            delete existingAuto.autoLevelBonusContributions;
-          }
-        }
-        if (existingAuto.autoLevelBonus === kind) {
-          delete existingAuto.autoLevelBonus;
-        }
-        if ((Number(existingAuto.count) || 0) <= 0) {
-          const index = tokens.indexOf(existingAuto);
-          if (index >= 0) tokens.splice(index, 1);
-        }
-      }
-
-      if (normalizedCount <= 0) return;
-
-      if (perHit) {
-        const perHitToken = addPanelToken(file, normalizedCount, { perHit: true });
-        perHitToken.file = file;
-        perHitToken.x = position.x;
-        perHitToken.y = position.y;
-        perHitToken.autoLevelBonusContributions ||= {};
-        perHitToken.autoLevelBonusContributions[kind] = normalizedCount;
-        perHitToken.perHit = true;
+      // Keep the stack ID, dragged position, and all manually added counts.
+      if (matching && normalizedCount > 0) {
+        const manualCount = Math.max(0, (Number(matching.count) || 0) - automaticTokenContribution(matching, kind));
+        matching.count = clampTokenCount(manualCount + normalizedCount);
+        matching.autoLevelBonusContributions ||= {};
+        matching.autoLevelBonusContributions[kind] = normalizedCount;
+        if (matching.autoLevelBonus === kind) delete matching.autoLevelBonus;
         return;
       }
 
-      const target = addPanelToken(file, normalizedCount);
+      owned.forEach((item) => {
+        item.count = clampTokenCount((Number(item.count) || 0) - automaticTokenContribution(item, kind));
+        if (isPlainObject(item.autoLevelBonusContributions)) {
+          delete item.autoLevelBonusContributions[kind];
+          if (!Object.keys(item.autoLevelBonusContributions).length) delete item.autoLevelBonusContributions;
+        }
+        if (item.autoLevelBonus === kind) delete item.autoLevelBonus;
+        if ((Number(item.count) || 0) <= 0) tokens.splice(tokens.indexOf(item), 1);
+      });
+      if (normalizedCount <= 0) return;
+
+      const existing = findMergeableToken(tokens, file, { perHit });
+      const target = addPanelToken(file, normalizedCount, { perHit });
       if (!target) return;
       target.autoLevelBonusContributions ||= {};
       target.autoLevelBonusContributions[kind] = normalizedCount;
-      if (previousContribution <= 0 && target.count === normalizedCount) {
-        target.x = position.x;
-        target.y = position.y;
+      if (!existing) {
+        target.x = kind === "at" ? 16 : kind === "evasionDice" ? 24 : 8;
+        target.y = 8;
       }
-    }
-
-    function levelDangerBonusTokenFile(apostle) {
-      return apostle === "HYPERTIME_ORACLE" ? "py+.png" : "DA+.png";
     }
 
     function applyCurrentApostleLevelBonuses() {
-      if (c45LevelBonusApostles.has(currentApostle) && window.C45SpecialsReady !== true) {
-        return false;
-      }
+      if (c45LevelBonusApostles.has(currentApostle) && window.C45SpecialsReady !== true) return false;
       ensurePiles(currentApostle);
       const target = levelBonusFor(currentApostle, currentApostleLevel());
       const state = piles[currentApostle].levelBonusState;
       let changed = false;
 
-      while (state.promotions < target.promotions) {
+      // Old Burden saves tracked their one setup promotion outside levelBonusState.
+      if (currentApostle === burdenName && piles[currentApostle].initialSetupApplied?.burdenLinkedPromotion
+        && state.promotions < 1) {
+        state.promotions = 1;
+        changed = true;
+      }
+      while (target && state.promotions < target.promotions) {
         if (!performLinkedPromotion()) break;
         state.promotions += 1;
         changed = true;
       }
 
       const beforeTokens = automaticTokenSnapshot();
-      syncAutomaticLevelBonusToken("danger", levelDangerBonusTokenFile(currentApostle), target.danger);
-      syncAutomaticLevelBonusToken("at", "AT+.png", target.at);
-      const afterTokens = automaticTokenSnapshot();
-      if (beforeTokens !== afterTokens) changed = true;
-
+      // Remove the old combined danger/fate contribution, preserving other counts.
+      syncAutomaticLevelBonusToken("danger", "DA+.png", 0);
+      syncAutomaticLevelBonusToken("dangerPerAttack", "DA+.png", target?.dangerPerAttack || 0);
+      syncAutomaticLevelBonusToken("dangerPerHit", "DA+.png", target?.dangerPerHit || 0, { perHit: true });
+      syncAutomaticLevelBonusToken("fatePerAttack", "py+.png", target?.fatePerAttack || 0);
+      syncAutomaticLevelBonusToken("fatePerHit", "py+.png", target?.fatePerHit || 0, { perHit: true });
+      syncAutomaticLevelBonusToken("at", target?.at < 0 ? "AT-.png" : "AT+.png", Math.abs(target?.at || 0));
+      syncAutomaticLevelBonusToken("evasionDice", "ED+.png", target?.evasionDice || 0);
+      if (beforeTokens !== automaticTokenSnapshot()) changed = true;
       if (changed) savePiles();
       return changed;
     }
@@ -6139,7 +6285,6 @@
       piles[currentApostle] = initialState();
       currentAiView = "弃牌";
       currentBpView = currentBpDamageView();
-      applyBurdenInitialLinkedPromotion();
       applyCurrentApostleLevelBonuses();
       savePiles();
       updateNietzscheStateUi(panelWrap.querySelector(".panel-state-marker"));
@@ -6156,9 +6301,9 @@
       aiBackInfo.textContent = deckBackDisplayText(aiCards);
       bpBackInfo.textContent = deckBackDisplayText(piles[currentApostle].BP.deck);
       const damageSummary = currentBpDamageSummary();
-      bpDamageSummary.textContent = isChimera()
-        ? `损伤：${damageSummary.total}（${damageSummary.damage1}+${damageSummary.damage2}）`
-        : `损伤：${damageSummary.total}`;
+      bpDamageSummary.textContent = bpDamageSummaryText(damageSummary, currentBossWounds());
+      bpDamageSummary.title = "当前损伤 / 总生命（击杀所需伤口数）";
+      renderDeathblowControl();
       healBpButton.disabled = currentBpHealIndex() < 0;
       renderNietzscheBreakLocks(damageSummary.total);
     }
@@ -6359,7 +6504,9 @@
     }
 
     function availableCycleTraitCards(name = currentApostle) {
-      const cycle = apostleRecordTracks[name]?.cycle || "";
+      const cycle = name === "HELIOS" ? "c4"
+        : name === "BLACKBEAK" ? "c5"
+          : apostleRecordTracks[name]?.cycle || "";
       return cycleTraitCards.filter((card) => card.cycle === cycle || card.cycles?.includes(cycle));
     }
 
@@ -6450,9 +6597,9 @@
     }
 
     // 特性区里不属于特性、却会一并显示的额外卡：AI/BP 的 O/X 卡图、泰坦X 组特性、黑喙固定卡。
-    // HELIOS 的额外卡由模式配置给出且没有 Trait 按钮，不在这里处理。
+    // HELIOS 的额外卡随模式切换，与其他默认卡一样可在 Trait 选择中取消。
     function traitAreaExtraCards(name = currentApostle) {
-      if (name === "HELIOS") return [];
+      if (name === "HELIOS") return window.HeliosConfig.extras(heliosMode());
       if (name === "BLACKBEAK") {
         return (window.BlackbeakCardList?.extraCards || []).map((card) => ({
           src: card.src,
@@ -6466,20 +6613,13 @@
       if (titanXGroupTrait?.src) {
         cards.push({ src: titanXGroupTrait.src, label: titanXGroupTrait.label || "泰坦X 组特性" });
       }
-      ["AI", "BP"].forEach((type) => {
-        ["O", "X"].forEach((level) => {
-          for (let index = 1; index <= traitProbeMaxIndex; index++) {
-            cards.push({
-              src: `ps/${name}/${numberedName(name, type, level, index)}`,
-              label: `${type} ${level} ${index}`
-            });
-          }
-        });
-      });
+      cards.push(...indexedAibpCards(name)
+        .filter((card) => ["AI", "BP"].includes(card.type) && ["O", "X"].includes(card.level))
+        .map((card) => ({ src: card.src, label: `${card.type} ${card.level} ${card.index}` })));
       return cards;
     }
 
-    // 「默认显示」的卡：不写进 traits，由特性区自动探测（或 setup 补卡）显示。
+    // 「默认显示」的卡：不写进 traits，由实际资源清单（或 setup 补卡）显示。
     // Trait 选择里它们默认勾选，取消勾选并保存后要记进 hiddenTraits 才能真的消失。
     function isDefaultShownTrait(card) {
       if (card?.scope) return false;
@@ -6488,6 +6628,14 @@
     }
 
     function renderTraitCandidates() {
+      traitSaveButton.disabled = !aibpImageIndex;
+      if (aibpImageIndex === undefined) {
+        const name = currentApostle;
+        void loadAibpImageIndex().then(() => {
+          if (currentApostle === name && traitDialog.open) renderTraitCandidates();
+        });
+        return;
+      }
       ensurePiles(currentApostle);
       const name = currentApostle;
       const selected = selectedTraitKeySet();
@@ -6497,9 +6645,10 @@
 
       traitDialogTitle.textContent = `${name.replaceAll("_", " ")} - Trait 选择`;
       traitDialogGrid.replaceChildren();
+      if (aibpImageIndex === null) showImageIndexFailure(traitDialogGrid);
       const loading = document.createElement("div");
       loading.className = "missing";
-      loading.textContent = "正在试探加载 TR 图片……";
+      loading.textContent = "正在加载特性图片……";
       traitDialogGrid.appendChild(loading);
 
       piles[name].customTraits.forEach((card) => {
@@ -6507,7 +6656,7 @@
         appendCustomTraitCandidate(card, checked);
       });
 
-      // Load shared cards before the large per-boss image probe queue.
+      // Add shared cards before the per-boss candidates.
       availableCycleTraitCards(name).forEach((card) => {
         const img = new Image();
         const option = document.createElement("label");
@@ -6530,10 +6679,10 @@
 
         option.append(checkbox, img, caption);
         traitDialogGrid.appendChild(option);
-        img.src = cycleTraitSrc(card);
+        loadOptionalImage(img, cycleTraitSrc(card), () => token === traitLoadToken);
       });
 
-      // 特性区的额外卡（AI/BP 的 O/X 等）同样由自动探测显示，这里给同样的勾选框。
+      // 特性区的额外卡（AI/BP 的 O/X 等）同样由实际资源清单显示，这里给同样的勾选框。
       const hiddenExtraCards = hiddenExtraCardKeySet();
       traitAreaExtraCards(name).forEach((card) => {
         const option = document.createElement("label");
@@ -6559,86 +6708,77 @@
 
         option.append(checkbox, img, caption);
         traitDialogGrid.appendChild(option);
-        img.src = window.HeliosAssets.resolve(card.src);
+        loadOptionalImage(img, card.src, () => token === traitLoadToken);
       });
 
-      traitLevels.forEach((level) => {
-        for (let index = 1; index <= traitProbeMaxIndex; index++) {
-          if (isNietzscheAllForOneLegacyTrait(name, level, index)) continue;
-          traitProbeExtensions.forEach((ext) => {
-            const src = traitSrc(name, level, index, ext);
-            const img = new Image();
-            img.onload = () => {
-              if (token !== traitLoadToken) return;
-              if (loading.isConnected) loading.remove();
-              loaded += 1;
+      traitImageCandidates(name).forEach(({ level, index, ext, src }) => {
+        if (isNietzscheAllForOneLegacyTrait(name, level, index)) return;
+        const img = new Image();
+        img.onload = () => {
+          if (token !== traitLoadToken) return;
+          if (loading.isConnected) loading.remove();
+          loaded += 1;
 
-              const option = document.createElement("label");
-              option.className = "trait-option";
+          const option = document.createElement("label");
+          option.className = "trait-option";
 
-              const checkbox = document.createElement("input");
-              checkbox.type = "checkbox";
-              checkbox.dataset.level = level;
-              checkbox.dataset.index = String(index);
-              checkbox.dataset.ext = ext;
-              checkbox.dataset.scope = "";
-              // 默认显示的卡按「已勾选」呈现，取消勾选并保存就会把它从特性区移除。
-              const cardKey = traitKey(level, index, ext, "");
-              const defaultShown = isDefaultShownTrait({ level, index, ext });
-              const explicitlySelected = selected.has(cardKey);
-              checkbox.checked = explicitlySelected || (defaultShown && !hidden.has(cardKey));
-              if (defaultShown) checkbox.dataset.defaultShown = "1";
-              if (explicitlySelected) checkbox.dataset.traitSelected = "1";
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.dataset.level = level;
+          checkbox.dataset.index = String(index);
+          checkbox.dataset.ext = ext;
+          checkbox.dataset.scope = "";
+          // 默认显示的卡按「已勾选」呈现，取消勾选并保存就会把它从特性区移除。
+          const cardKey = traitKey(level, index, ext, "");
+          const defaultShown = isDefaultShownTrait({ level, index, ext });
+          const explicitlySelected = selected.has(cardKey);
+          checkbox.checked = explicitlySelected || (defaultShown && !hidden.has(cardKey));
+          if (defaultShown) checkbox.dataset.defaultShown = "1";
+          if (explicitlySelected) checkbox.dataset.traitSelected = "1";
 
-              img.alt = traitCardLabel({ level, index, ext });
+          img.alt = traitCardLabel({ level, index, ext });
 
-              const caption = document.createElement("span");
-              caption.textContent = img.alt;
+          const caption = document.createElement("span");
+          caption.textContent = img.alt;
 
-              option.append(checkbox, img, caption);
-              if (defaultShown) option.title = "默认显示；取消勾选并保存后从特性区移除";
-              traitDialogGrid.appendChild(option);
-            };
-            img.onerror = () => {};
-            img.src = src;
-          });
-        }
+          option.append(checkbox, img, caption);
+          if (defaultShown) option.title = "默认显示；取消勾选并保存后从特性区移除";
+          traitDialogGrid.appendChild(option);
+        };
+        img.onerror = () => {};
+        loadOptionalImage(img, src, () => token === traitLoadToken);
       });
 
-      for (let index = 1; index <= traitProbeMaxIndex; index++) {
-        if (!isCommonTraitAvailable(index, name)) continue;
-        traitProbeExtensions.forEach((ext) => {
-          const src = commonTraitSrc(index, ext);
-          const img = new Image();
-          img.onload = () => {
-            if (token !== traitLoadToken) return;
-            if (loading.isConnected) loading.remove();
-            loaded += 1;
+      commonTraitImageCandidates(name).forEach(({ index, ext, src }) => {
+        const img = new Image();
+        img.onload = () => {
+          if (token !== traitLoadToken) return;
+          if (loading.isConnected) loading.remove();
+          loaded += 1;
 
-            const option = document.createElement("label");
-            option.className = "trait-option";
+          const option = document.createElement("label");
+          option.className = "trait-option";
 
-            const checkbox = document.createElement("input");
-            checkbox.type = "checkbox";
-            checkbox.dataset.level = "COMMON";
-            checkbox.dataset.index = String(index);
-            checkbox.dataset.ext = ext;
-            checkbox.dataset.scope = "common";
-            checkbox.checked = selected.has(traitKey("COMMON", index, ext, "common"));
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.dataset.level = "COMMON";
+          checkbox.dataset.index = String(index);
+          checkbox.dataset.ext = ext;
+          checkbox.dataset.scope = "common";
+          checkbox.checked = selected.has(traitKey("COMMON", index, ext, "common"));
 
-            const label = traitCardLabel({ scope: "common", index });
-            img.alt = label;
+          const label = traitCardLabel({ scope: "common", index });
+          img.alt = label;
 
-            const caption = document.createElement("span");
-            caption.textContent = label;
+          const caption = document.createElement("span");
+          caption.textContent = label;
 
-            option.append(checkbox, img, caption);
-            traitDialogGrid.appendChild(option);
-          };
-          img.onerror = () => {};
-          img.src = src;
-        });
-      }
+          option.append(checkbox, img, caption);
+          traitDialogGrid.appendChild(option);
+        };
+        img.onerror = () => {};
+        loadOptionalImage(img, src, () => token === traitLoadToken);
+      });
 
       window.setTimeout(() => {
         if (token !== traitLoadToken) return;
@@ -6658,6 +6798,7 @@
     }
 
     function saveTraitSelection() {
+      if (!aibpImageIndex) return;
       ensurePiles(currentApostle);
       const hidden = hiddenTraitKeySet();
       const hiddenExtra = hiddenExtraCardKeySet();
@@ -6679,7 +6820,7 @@
         }
         const key = traitKey(input.dataset.level, input.dataset.index, input.dataset.ext, input.dataset.scope);
         if (!input.checked) {
-          // 取消默认显示的卡要记下来，否则下次渲染会被自动探测重新加回特性区。
+          // 取消默认显示的卡要记下来，否则下次渲染会被资源清单重新加回特性区。
           if (input.dataset.defaultShown) hidden.add(key);
           return;
         }
@@ -6848,37 +6989,35 @@
       if (frontSrc.startsWith("data:")) return;
       const backSrc = cardBackImageSrc(card, frontSrc);
       if (backSrc === frontSrc) return;
-      const probe = new Image();
-      probe.onload = () => {
+      void resolveOptionalImagePresence(backSrc, () => img.isConnected).then((exists) => {
+        if (!exists || !img.isConnected) return;
         img.dataset.frontSrc = frontSrc;
         img.dataset.backSrc = backSrc;
         img.dataset.face = "front";
         img.title = "点击放大，放大后可翻面";
-      };
-      probe.onerror = () => {};
-      probe.src = backSrc;
+      });
     }
 
     function renderExtraCards() {
-      if (!hiddenBossImagesReady()) return;
-      ensurePiles(currentApostle);
-      const hiddenExtraCardSrcs = hiddenExtraCardKeySet();
-      if (currentApostle === "HELIOS") {
-        extraGrid.replaceChildren();
-        window.HeliosConfig.extras(heliosMode()).forEach((card) => {
-          const img = imageOrMessage(card.src, card.label);
-          img.dataset.frontSrc = window.HeliosAssets.resolve(card.src);
-          img.dataset.backSrc = window.HeliosAssets.resolve(card.backSrc);
-          img.dataset.face = "front";
-          img.title = `${card.label}；点击放大，放大后可翻面`;
-          extraGrid.appendChild(img);
+      if (aibpImageIndex === undefined) {
+        const name = currentApostle;
+        void loadAibpImageIndex().then(() => {
+          if (currentApostle === name) renderExtraCards();
         });
         return;
       }
-      // 黑喙：面板修改卡和专属特性作为 Trait 展示，以太吸取仍进入闪粉牌组。
-      if (currentApostle === "BLACKBEAK") {
+      if (!hiddenBossImagesReady()) return;
+      ensurePiles(currentApostle);
+      const hiddenExtraCardSrcs = hiddenExtraCardKeySet();
+      // 隐藏 BOSS 的模式/专属卡和玩家选择的循环 Trait 一起显示。
+      // 黑喙的以太吸取仍进入闪粉牌组。
+      if (currentApostle === "HELIOS" || currentApostle === "BLACKBEAK") {
         extraGrid.replaceChildren();
-        (window.BlackbeakCardList?.extraCards || []).forEach((card) => {
+        if (aibpImageIndex === null) showImageIndexFailure(extraGrid);
+        const extraCards = currentApostle === "HELIOS"
+          ? window.HeliosConfig.extras(heliosMode())
+          : window.BlackbeakCardList?.extraCards || [];
+        extraCards.forEach((card) => {
           if (hiddenExtraCardSrcs.has(card.src)) return;
           const img = imageOrMessage(card.src, card.label);
           img.dataset.frontSrc = window.HeliosAssets.resolve(card.src);
@@ -6900,11 +7039,11 @@
         reorderExtraGridForLargeCards();
         return;
       }
-      const base = `ps/${currentApostle}`;
       const candidates = [];
       let loaded = 0;
 
       extraGrid.replaceChildren();
+      if (aibpImageIndex === null) showImageIndexFailure(extraGrid);
 
       if (currentApostle === "TITAN_X" && piles.TITAN_X?.special?.titanX?.group
         && !hiddenExtraCardSrcs.has(window.TitanXGroupConfig.trait.src)) {
@@ -6935,37 +7074,23 @@
         loaded += 1;
       });
 
-      automaticTraitLevels().forEach((level) => {
-        for (let index = 1; index <= defaultTraitProbeMaxIndex; index++) {
-          if (isNietzscheAllForOneLegacyTrait(currentApostle, level, index)) continue;
-          traitProbeExtensions.forEach((ext) => {
-            if (selectedTraitKeys.has(traitKey(level, index, ext, ""))) return;
-            // 玩家取消过的默认特性不再自动显示。
-            if (hiddenTraitKeys.has(traitKey(level, index, ext, ""))) return;
-            const card = { level, index, ext };
-            candidates.push({
-              src: traitSrc(currentApostle, level, index, ext),
-              alt: `TR ${level} ${String(index).padStart(3, "0")}`,
-              className: isLargeTraitCard(currentApostle, card) ? "panel-image" : ""
-            });
-          });
+      indexedAibpCards(currentApostle).forEach((card) => {
+        if (card.type === "TR") {
+          if (!automaticTraitLevels().includes(card.level)
+            || isNietzscheAllForOneLegacyTrait(currentApostle, card.level, card.index)) return;
+          const key = traitKey(card.level, card.index, card.ext, "");
+          if (selectedTraitKeys.has(key) || hiddenTraitKeys.has(key)) return;
+          candidates.push({ src: card.src, alt: `TR ${card.level} ${String(card.index).padStart(3, "0")}`,
+            className: isLargeTraitCard(currentApostle, card) ? "panel-image" : "" });
+        } else if (["O", "X"].includes(card.level) && !hiddenExtraCardSrcs.has(card.src)) {
+          candidates.push({ src: card.src, alt: `${card.type} ${card.level} ${card.index}` });
         }
-      });
-
-      ["AI", "BP"].forEach((type) => {
-        ["O", "X"].forEach((level) => {
-          for (let i = 1; i <= 12; i++) {
-            const src = `${base}/${numberedName(currentApostle, type, level, i)}`;
-            // 玩家在 Trait 选择里取消过的额外卡不再自动显示。
-            if (hiddenExtraCardSrcs.has(src)) continue;
-            candidates.push({ src, alt: numberedName(currentApostle, type, level, i) });
-          }
-        });
       });
 
       candidates.forEach(({ src, alt, className = "" }) => {
         const img = document.createElement("img");
-        img.src = src;
+        img.decoding = "async";
+        img.fetchPriority = "low";
         img.alt = alt || src.split("/").pop();
         img.className = className;
         img.onload = () => {
@@ -6979,6 +7104,11 @@
           reorderExtraGridForLargeCards();
         };
         extraGrid.appendChild(img);
+        void resolveOptionalImagePresence(src, () => img.isConnected).then((exists) => {
+          if (!img.isConnected) return;
+          if (exists) img.src = src;
+          else img.onerror();
+        });
       });
 
       reorderExtraGridForLargeCards();
@@ -7516,6 +7646,7 @@
           file: item.file,
           count: Math.max(1, Math.floor(Number(item.count) || 1)),
           autoLevelBonus: item.autoLevelBonus || "",
+          autoLevelBonusContributions: { ...item.autoLevelBonusContributions },
           perHit: isPerHitTokenStack(item)
         }));
     }
@@ -7538,7 +7669,7 @@
           if (isPerHitTokenStack(item)) {
             tokenItem.classList.add("auto-level-danger-per-hit");
           }
-          tokenItem.title = `${item.file} ×${item.count}${isPerHitTokenStack(item) ? "（每命中）" : ""}`;
+          tokenItem.title = `${item.file} ×${item.count}${isPerHitTokenStack(item) ? "（每命中）" : ""}${automaticTokenContribution(item, "evasionDice") > 0 ? "（额外闪避骰）" : ""}`;
 
           const img = document.createElement("img");
           img.src = tokenSrc(item.file);
@@ -7567,6 +7698,8 @@
       }
       zoomCloseAction = typeof onClose === "function" ? onClose : null;
       imageZoomImg.parentElement.classList.toggle("rotated-card", options.rotation === -90);
+      imageZoomImg.decoding = "async";
+      imageZoomImg.fetchPriority = "high";
       imageZoomImg.src = window.HeliosAssets.resolve(src);
       imageZoomImg.alt = alt || "放大图片";
       const tokenContext = options.tokenContext;
@@ -7748,7 +7881,7 @@
           ? `${panelCounterLabel}通用标记 ×${item.count}${(Number(item.count) || 0) >= threshold ? "，立即处理" : "，点击增加"}`
           : isCriticalMass
             ? `临界质量通用标记 ×${item.count}${(Number(item.count) || 0) >= threshold ? "，立即处理" : ""}`
-            : `${item.text || item.file} ×${item.count}${isPerHitTokenStack(item) ? "（每命中）" : ""}，拖动可调整位置`;
+            : `${item.text || item.file} ×${item.count}${isPerHitTokenStack(item) ? "（每命中）" : ""}${automaticTokenContribution(item, "evasionDice") > 0 ? "（额外闪避骰）" : ""}，拖动可调整位置`;
 
         const img = document.createElement("img");
         img.src = item.text ? customTokenSrc(item.text) : tokenSrc(item.file);
@@ -8067,13 +8200,12 @@
       activateHeliosMode();
       ensurePiles(name);
       if (name === nietzscheName && syncNietzscheAllForOneTrait(piles[name], piles[name].battleMap?.setupId)) savePiles();
-      applyBurdenInitialLinkedPromotion();
       applyCurrentApostleLevelBonuses();
       updateAiViewTabs();
       updateBpViewTabs();
       const base = `ps/${name}`;
       renderApostleTitle();
-      traitButton.hidden = name === "HELIOS";
+      traitButton.hidden = false;
       if (window.location.hash !== `#${name}`) {
         history.replaceState(null, "", `#${name}`);
       }
@@ -8583,6 +8715,8 @@
       const level = Number(apostleLevelSelect.value);
       if (currentApostle === "HELIOS" && apostleLevelSelect.value === "c4") {
         apostleLevelOverrides[currentApostle] = apostleLevelSelect.value;
+      } else if (apostleLevelSelect.value === "0" && levelBonusFor(currentApostle, 0)) {
+        apostleLevelOverrides[currentApostle] = 0;
       } else if (level >= 1 && level <= (currentApostle === "HELIOS" ? 10 : maxApostleLevel)) {
         apostleLevelOverrides[currentApostle] = level;
       } else {
@@ -8651,6 +8785,7 @@
     customTokenCloseButton.addEventListener("click", () => customTokenDialog.close());
     customTokenText.addEventListener("input", () => customTokenText.setCustomValidity(""));
     traitCloseButton.addEventListener("click", () => traitDialog.close());
+    traitDialog.addEventListener("close", () => { traitLoadToken += 1; });
     traitRestoreButton.addEventListener("click", restoreDefaultTraits);
     traitSaveButton.addEventListener("click", saveTraitSelection);
     traitCustomButton.addEventListener("click", () => openCustomTraitDialog());
@@ -8705,6 +8840,7 @@
     });
     defeatBpButton.addEventListener("click", () => resolveBp("defeat"));
     criticalBpButton.addEventListener("click", () => resolveBp("critical"));
+    deathblowBpButton.addEventListener("click", resolveBossDeathblow);
     healBpButton.addEventListener("click", healBp);
     addSwButton.addEventListener("click", () => addBpSpecialDamage("SW"));
     addDwButton.addEventListener("click", () => addBpSpecialDamage("DW"));
@@ -8724,6 +8860,7 @@
     });
     window.addEventListener("focus", refreshSecondScreenModeToggle);
     loadSavedPiles();
+    void loadAibpImageIndex();
     renderApostle(currentApostle);
     restoreScrySession();
     refreshRecordApostleLevels();
@@ -8733,8 +8870,8 @@
   <script src="ps/other/resouce/bp_resource_map.js"></script>
   <script src="ps/other/resouce/bp_resource_map_c1_c3.js"></script>
   <script src="ps/other/resouce/bp_resource_map_c4_c5.js?v=20260730e"></script>
-  <script src="c45_specials.js?v=20260929-dahaka-levels1"></script>
-  <script src="bp_loot_calculator_addon.js?v=20261003-nemesis"></script>
+  <script src="c45_specials.js?v=20261010-feint-resume-deathblow1"></script>
+  <script src="bp_loot_calculator_addon.js?v=20261010-loot-number-buttons1"></script>
   <script src="../assets/ato-terms.js?v=20260919-chimera"></script>
   <script src="../assets/term-language.js?v=20261009-label2"></script>
 </body>

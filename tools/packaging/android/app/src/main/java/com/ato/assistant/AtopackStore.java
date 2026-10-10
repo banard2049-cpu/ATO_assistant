@@ -34,6 +34,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 final class AtopackStore {
   private static final int PACKAGE_VERSION = 3;
@@ -126,6 +127,43 @@ final class AtopackStore {
       }
     }
     return null;
+  }
+
+  JSONObject aibpImageIndex() throws IOException, JSONException {
+    Set<String> images = new TreeSet<>();
+    // The catalog lists possible resources; only installed blobs count as present.
+    for (Map.Entry<String, ResourceEntry> item : resources.entrySet()) {
+      String target = item.getKey();
+      if (isAibpImage(target) && new File(blobs, item.getValue().sha256).isFile()) {
+        images.add(target.substring("aibp/".length()));
+      }
+    }
+    // Include actual APK assets too, using the same public directories as PHP.
+    List<String> directories = new ArrayList<>();
+    directories.add("other");
+    directories.add("other/trait");
+    String[] rootNames = context.getAssets().list("web/aibp/ps");
+    if (rootNames != null) for (String name : rootNames) {
+      if (name.matches("[A-Z][A-Z0-9_]+")) directories.add(name);
+    }
+    for (String directory : directories) {
+      String[] names = context.getAssets().list("web/aibp/ps/" + directory);
+      if (names == null) continue;
+      for (String name : names) {
+        String target = "aibp/ps/" + directory + "/" + name;
+        if (!isAibpImage(target)) continue;
+        try (InputStream input = context.getAssets().open("web/" + target)) {
+          images.add(target.substring("aibp/".length()));
+        } catch (FileNotFoundException ignored) {
+          // A directory whose name ends in .jpg is not an image file.
+        }
+      }
+    }
+    return new JSONObject().put("ok", true).put("version", 1).put("images", new JSONArray(images));
+  }
+
+  private static boolean isAibpImage(String target) {
+    return target.matches("aibp/ps/(?:[A-Z][A-Z0-9_]+|other|other/trait)/[^/]+\\.(?i:jpg|jpeg|png)");
   }
 
   // Export canvases must decode raster bytes from a data URL rather than use

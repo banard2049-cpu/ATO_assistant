@@ -79,6 +79,9 @@ Add these script tags after the main viewer script:
     orichalcumAlloy: "山铜合金",
     slaveMetal: "奴隶金属",
     oxidizedAmbrosia: "氧化神浆",
+    sisyphusTears: "西西弗斯之泪",
+    pygmalionStones: "皮格马利翁之石",
+    echoes: "记忆之回响",
     core: "核心"
   };
   const APOSTLE_ZH_NAME = {
@@ -137,7 +140,8 @@ Add these script tags after the main viewer script:
     "atlanteanTekne", "orichalcumChunk", "liquidAether",
     "hydradynamicScales", "amygdalanExtract", "photophobicFlesh",
     "microwaveCell", "blackWoolStrand", "fadingLightConstruct",
-    "orichalcumAlloy", "slaveMetal", "oxidizedAmbrosia"
+    "orichalcumAlloy", "slaveMetal", "oxidizedAmbrosia",
+    "sisyphusTears", "pygmalionStones", "echoes"
   ]);
   const RESOURCE_ICON_KEYS = new Set([
     ...Object.keys(RECORD_RESOURCE_KEY_MAP),
@@ -147,6 +151,7 @@ Add these script tags after the main viewer script:
   const RECORD_SHARED_RESOURCE_KEYS = new Set([
     "blackTaintedStepfinger",
     "fearEssence",
+    "echoes",
     "grotesqueBeak",
     "livingAbyss",
     "mazeFragment",
@@ -332,6 +337,190 @@ Add these script tags after the main viewer script:
       { regular: (n) => n === 11, secondary: (n) => n <= 7, bp: { I: 0, II: 0, III: 0 }, core: 0, label: "11 / 7-" }
     ]
   };
+
+  // Storybook rewards are selected by encounter, not just by the enemy's name.
+  // Each row replaces the preceding row; card rewards are not cumulative.
+  const STORY_DAMAGE_REWARDS = {
+    ALPHA_TEMENOS: {
+      resource: "MF", choices: ["MC", "CKB", "IM", "FM"],
+      rows: [[4, 1, 0], [5, 2, 1], [6, 3, 1], [7, 4, 2, "迷宫宁芙召唤卡（秘密牌库 3，卡牌 30）"],
+        [8, 5, 2], [9, 6, 3, "金字塔尖装备卡（秘密牌库 5，卡牌 46）"]]
+    },
+    SUN_DESCENDANT: {
+      resource: "SK", choices: ["RC", "IF", "EC", "CL"],
+      rows: [[5, 1, 0], [6, 2, 1], [7, 3, 1], [8, 4, 2, "亚特兰提斯振荡器装备卡（秘密牌库 8，卡牌 91）"],
+        [9, 5, 2, "希望宁芙召唤卡（秘密牌库 9，卡牌 107）"], [10, 6, 3], [11, 7, 3, "代达罗斯之翼装备卡"]]
+    },
+    THE_BABELIAN_LUNACY: {
+      resource: "blackTaintedStepfinger", choices: ["burnedOutGrace", "livingGold", "oldIremFragment", "wishEmbryo"],
+      rows: [[5, 1, 0], [6, 2, 1], [7, 3, 1], [8, 4, 2, "硅宁芙召唤卡（秘密牌库 14，卡牌 249）"],
+        [9, 5, 2], [10, 6, 3], [11, 7, 3, "都城装备卡（秘密牌库 11，卡牌 202）"]]
+    },
+    UR_FLEECE: {
+      resource: "blackWoolStrand", choices: ["hydradynamicScales", "amygdalanExtract", "microwaveCell", "photophobicFlesh"],
+      rows: [[4, 1, 0], [5, 2, 1], [6, 3, 1], [7, 4, 2, "剧场生成装备卡 1 张"],
+        [8, 5, 2], [9, 6, 3], [10, 7, 3, "Strungstring 装备卡（秘密牌库 18，卡牌 292）"]]
+    }
+  };
+  const STORY_BATTLE_SCENES = {
+    HEKATON: [["normal", "百臂巨人之战"], ["ambush", "伏击战"]],
+    LABYRINTHAUROS: [["normal", "迷宫机牛之战"], ["ambush", "伏击战"]],
+    ALPHA_TEMENOS: [["normal", "吞域兽之战"], ["temenos-final", "没有迷宫之战"]],
+    HERMESIAN_PURSUER: [["normal", "追踪者战斗"], ["pursuers-end", "追踪的终结（0299）"]],
+    THE_BURDEN: [["normal", "重担之战"], ["burden-end", "最难承受的重担（0289）"]],
+    THE_NIETZSCJEAN: [["normal", "残酷说教之战"], ["nietzsche-final", "你是什么？之战"]],
+    SUN_DESCENDANT: [["normal", "忍受烈日之战"], ["sun-final", "与日竞赛之战"]],
+    THE_BABELIAN_LUNACY: [["normal", "潘多拉视界之战"], ["babel-final", "撞击之战"]],
+    DAHAKA: [["normal", "收割旋风之战"], ["dahaka-end", "扬谷之战（3278）"]],
+    TITAN_X: [["normal", "魔鬼本人之战"], ["titan-end", "血浓于水（5289）"], ["titan-group", "万事皆休（9299）"]],
+    UR_FLEECE: [["normal", "严酷真相之战"], ["ur-final", "善意谎言之战"]]
+  };
+  const STORY_KILL_APOSTLES = new Set(["ALPHA_TEMENOS", "HERMESIAN_PURSUER", "THE_BURDEN",
+    "THE_NIETZSCJEAN", "SUN_DESCENDANT", "THE_BABELIAN_LUNACY", "DAHAKA", "TITAN_X", "UR_FLEECE"]);
+  const STORY_END_SCENES = new Set(["pursuers-end", "burden-end", "dahaka-end", "titan-end"]);
+  const STORY_FINAL_SCENES = new Set(["temenos-final", "nietzsche-final", "sun-final", "babel-final", "ur-final"]);
+
+  function storySceneOptions(apostle) {
+    return STORY_BATTLE_SCENES[apostle] || [["normal", `${apostleZhName(apostle)}之战`]];
+  }
+
+  function storyOutcomeOptions(apostle, sceneId) {
+    const options = [["victory", "胜利"], ["defeat", "失败"]];
+    if (sceneId === "normal" && STORY_KILL_APOSTLES.has(apostle)) {
+      options[0][1] = apostle === "THE_BURDEN" ? "胜利：到达山顶" : "胜利：普通胜利";
+      options.splice(1, 0, ["kill", apostle === "TITAN_X" ? "胜利：伤及泰坦 X" : "胜利：击杀 Boss"]);
+    }
+    if ((sceneId === "normal" && !STORY_KILL_APOSTLES.has(apostle)) || sceneId === "ambush") {
+      if (sceneId !== "ambush") options.push(["retreat", "撤退"]);
+    }
+    return options;
+  }
+
+  function storyBattleContext(apostle, state, options) {
+    const automatic = apostle === "TITAN_X" && state.special?.titanX?.group ? "titan-group"
+      : apostle === "TITAN_X" && state.special?.titanX?.awakeningWon ? "titan-end" : "normal";
+    const scenes = storySceneOptions(apostle);
+    const sceneId = scenes.some(([id]) => id === options.sceneId) ? options.sceneId : automatic;
+    const outcomes = storyOutcomeOptions(apostle, sceneId);
+    const outcome = outcomes.some(([id]) => id === options.outcome) ? options.outcome : "victory";
+    const won = outcome === "victory" || outcome === "kill";
+    const ending = STORY_END_SCENES.has(sceneId) && won;
+    const firstVictoryEligible = sceneId === "normal" && outcome === "kill"
+      && ["HERMESIAN_PURSUER", "DAHAKA", "TITAN_X"].includes(apostle);
+    return {
+      sceneId, sceneLabel: scenes.find(([id]) => id === sceneId)[1], outcome, won, ending,
+      firstVictoryEligible, firstVictory: firstVictoryEligible && options.firstVictory === true,
+      firstReward: options.firstReward === "echoes" ? "echoes" : "sisyphusTears",
+      resourcePolicy: STORY_FINAL_SCENES.has(sceneId) ? "none"
+        : sceneId === "ambush" ? "coreOnly"
+        : apostle === "ALPHA_TEMENOS" && sceneId === "normal" ? "tableOnly" : "normal"
+    };
+  }
+
+  function applyStoryDamageBonus(apostle, damage, choices, totals, details, errors, reminders) {
+    const config = STORY_DAMAGE_REWARDS[apostle];
+    const row = config.rows.filter(([min]) => damage >= min).at(-1);
+    const count = row?.[2] || 0;
+    const selected = {};
+    let valid = true;
+    config.choices.forEach((key) => {
+      const amount = Number(choices?.[key] ?? 0);
+      if (!Number.isInteger(amount) || amount < 0) valid = false;
+      selected[key] = Number.isInteger(amount) && amount >= 0 ? amount : 0;
+    });
+    if (Object.keys(choices || {}).some((key) => !config.choices.includes(key) && Number(choices[key]) !== 0)) valid = false;
+    const selectedCount = Object.values(selected).reduce((sum, n) => sum + n, 0);
+    if (!valid || selectedCount !== count) {
+      errors.push(`伤害奖励需要选择 ${count} 个指定资源，当前选择 ${selectedCount} 个；数量须为非负整数。`);
+    }
+    const resource = row ? { [config.resource]: row[1] } : {};
+    if (valid && selectedCount === count) {
+      Object.entries(selected).forEach(([key, amount]) => { if (amount) resource[key] = amount; });
+    }
+    addResourceTotals(totals, resource, 1);
+    if (row) addDetailResource(details, `${apostleZhName(apostle)}：${damage} 损伤（${row[0]} 档）`, resource, 1);
+    if (row?.[3]) reminders.push(`额外获得：${row[3]}，请手动处理。`);
+    return { damage, threshold: row?.[0] || 0, choiceCount: count, choiceKeys: config.choices, selected };
+  }
+
+  function applyStoryBattleRewards(apostle, battle, totals, details, rareResources, reminders) {
+    const { sceneId, outcome, won, ending } = battle;
+    const c1 = APOSTLE_RECORD_CYCLE[apostle] === "c1";
+    if (battle.resourcePolicy !== "none") {
+      const fate = ending ? (sceneId === "pursuers-end" ? 3 : 4) : c1 ? 2 : 3;
+      // The normal Temenos encounter has only its special reward table.
+      if (battle.resourcePolicy !== "tableOnly") reminders.push(`战后：重置三曲盘；阿尔戈号命运减少 ${fate}；清点死亡泰坦并弃除状态和指示物（C5 普通战保留恐怖与大恐怖）。`);
+    }
+    const add = (source, resource) => {
+      addResourceTotals(totals, resource, 1);
+      addDetailResource(details, source, resource, 1);
+    };
+    if (battle.firstVictory) {
+      add("首次击杀奖励", { [apostle === "TITAN_X" ? battle.firstReward : "sisyphusTears"]: 1 });
+      reminders.push("首次击杀：阿尔戈号知识 +1，请手动记录。首次奖励仅领取一次，请确认以往未领取。");
+    }
+    if (sceneId === "titan-group" && won) {
+      add("万事皆休 9299 额外资源", { sisyphusTears: 1, pygmalionStones: 1, echoes: 1 });
+      reminders.push("阅读 C5 9299：阿尔戈号知识 +1；若 G6 已标记，获得解放者之钉忆识装备卡（一旦可用），请手动处理。");
+    }
+    if (ending) {
+      const endReminders = {
+        "pursuers-end": "阅读 C1 0299：标记 P8，阿尔戈号知识 +1，获得循环 II 青铜巢穴科技和回天者泰坦；按循环处理邪恶的觉醒事件。划掉追踪者名字及战斗轨标记。",
+        "burden-end": "阅读 C3 0289：阿尔戈号知识 +1，获得重担解剖科技、真相背负者泰坦和仇敌装药卡（秘密牌库 5，卡牌 45）；按条件添加 5 天后的破碎循环事件，处理内蕴奥德赛 60。划掉重担名字及战斗轨标记。",
+        "dahaka-end": "阅读 C4 3278：获得达哈卡解剖科技和不朽真相背负者泰坦，处理内蕴奥德赛 80：返乡。",
+        "titan-end": "阅读 C5 5289：解锁泰坦 X 调查科技，获得行刑者泰坦；5 天后添加万事皆休事件（7539），处理内蕴奥德赛 101，然后阅读 5424。"
+      };
+      reminders.push(endReminders[sceneId]);
+      if (sceneId === "pursuers-end") rareResources.push("损坏的密码筒");
+    }
+    if (STORY_FINAL_SCENES.has(sceneId)) {
+      const finalReminders = {
+        "temenos-final": "没有迷宫：胜利阅读 C1 0129；失败时游戏结束，按深不可测的万世特殊事件标记命运方框。",
+        "nietzsche-final": "你是什么？：按最终战故事结算；失败时游戏结束，阅读 C2 0246。",
+        "sun-final": "与日竞赛：胜利阅读 C3 0196；失败时游戏结束，阅读 0259。",
+        "babel-final": "撞击：胜利阅读 C4 3328并处理信封 R；失败时游戏结束，按贫瘠万世特殊事件标记定数框。",
+        "ur-final": "善意谎言：胜利按故事结局处理；失败时游戏结束，阅读 C5 4214。"
+      };
+      reminders.push(finalReminders[sceneId]);
+      return;
+    }
+    if (apostle === "TITAN_X" && !ending) reminders.push("从相应牌库移除 3 张标有 Titan X 的循环 V 特殊创伤卡；若首次与泰坦 X 战斗，加入泰坦 X 观察科技并获得阿尔戈号知识 +1。");
+    if (sceneId !== "normal") {
+      if (!won && STORY_END_SCENES.has(sceneId)) reminders.push("按对应普通战失败的后果结算，重新生成仇敌；特殊卡牌弃置与其他后果请查本场战斗介绍。");
+      return;
+    }
+    if (apostle === "ALPHA_TEMENOS") reminders.push(outcome === "kill" ? "击杀吞域兽：立即阅读 C1 0169。" : "获得特殊奖励后，阅读战前备注的特殊后果段落；若未备注，查看发起战斗的故事段落。");
+    if (["HERMESIAN_PURSUER", "THE_BURDEN", "DAHAKA", "TITAN_X"].includes(apostle)) {
+      const sighting = { HERMESIAN_PURSUER: "追踪者目击", THE_BURDEN: "重担观察", DAHAKA: "达哈卡目击", TITAN_X: "泰坦 X 观察" }[apostle];
+      reminders.push(`若首次与该 Boss 战斗：加入${sighting}科技并获得阿尔戈号知识 +1，请手动处理。`);
+    }
+    if (apostle === "THE_NIETZSCJEAN") reminders.push("首次战斗获得尼采观察科技；本场被消灭的泰坦记为伤残，按故事书处理。");
+    if (["THE_BABELIAN_LUNACY", "UR_FLEECE"].includes(apostle)) reminders.push("若首次与该 Boss 战斗：将对应观察／目击科技加入项目牌库。");
+    if (won && ["HERMESIAN_PURSUER", "THE_BURDEN", "DAHAKA", "TITAN_X"].includes(apostle)) {
+      const event = ["HERMESIAN_PURSUER", "THE_BURDEN"].includes(apostle) ? "法洛斯之梦"
+        : apostle === "DAHAKA" ? "一万个日夜" : "浅滩布道";
+      reminders.push(`在时间线上添加 2 天后的${event}事件／冒险。`);
+    } else if (apostle === "THE_BURDEN") reminders.push("在时间线上添加 2 天后的法洛斯之梦事件。");
+    if (outcome === "victory" && ["THE_NIETZSCJEAN", "SUN_DESCENDANT", "THE_BABELIAN_LUNACY", "UR_FLEECE"].includes(apostle)) {
+      reminders.push("意料之外的阿尔戈英雄获得 1 个回忆节点，请手动记录。");
+      if (apostle === "THE_BABELIAN_LUNACY") reminders.push("在时间线上添加 2 天后的一万个日夜冒险。");
+    }
+    if (outcome === "kill") {
+      const kills = {
+        HERMESIAN_PURSUER: "若 E1 已标记且阿尔戈号知识 15+，处理内蕴奥德赛 19；禁用玩弄特性并备注战斗轨。结算后阅读 C1 0201。",
+        THE_BURDEN: "若首次击杀，阿尔戈号知识 +1；忽略山顶资源，备注并启用后续特殊特性。阅读 C2 0259。",
+        THE_NIETZSCJEAN: "阅读 C2 0270：进展 +2、阿尔戈号知识 +1，后续尼采战斗改为等级 2，然后继续正常奖励与惩罚。",
+        SUN_DESCENDANT: "阅读 C3 0256：进展 +2、阿尔戈号知识 +1，后续坠落太阳战斗改为等级 2。",
+        THE_BABELIAN_LUNACY: "阅读 C4 4142：进展 +2、阿尔戈号知识 +1，后续战斗提高 Boss 等级，然后继续正常后果。",
+        DAHAKA: "禁用悔恨枷锁特性并备注战斗轨；结算后阅读 C4 0035。",
+        TITAN_X: "禁用戏弄特性并备注战斗轨；结算后阅读 C5 0946。",
+        UR_FLEECE: "阅读 C5 1316：进展 +2，后续战斗提高 Boss 等级，然后继续正常后果。"
+      };
+      if (kills[apostle]) reminders.push(kills[apostle]);
+      if (apostle === "UR_FLEECE") add("特殊击杀 1316", { echoes: 1 });
+    }
+    if (outcome === "defeat" || outcome === "retreat") reminders.push("请按本场战斗介绍处理灾祸、伤亡、未参战泰坦损失及特殊状态；这些后果需手动结算。");
+  }
 
   function safeGetCurrentApostle() {
     try {
@@ -876,7 +1065,10 @@ Add these script tags after the main viewer script:
   }
 
   function calculateBpLoot(options = {}) {
-    const { apostle, bp } = getCurrentApostleData();
+    const { apostle, bp, state } = getCurrentApostleData();
+    const battle = storyBattleContext(apostle, state, options);
+    const ordinary = battle.sceneId === "normal";
+    const grantBpResources = battle.resourcePolicy === "normal";
     const map = getResourceMap();
 
     if (!map || !map[apostle]) {
@@ -893,7 +1085,7 @@ Add these script tags after the main viewer script:
     const recordMultiplier = Number(options.recordMultiplier || 0);
     const manualMultiplier = Number(options.multiplier || 0);
     const multiplier = Math.max(1, Math.floor(manualMultiplier || selectedLevel || recordMultiplier || 1));
-    const resourceMultiplier = resourceMultiplierForApostle(apostle, multiplier);
+    const resourceMultiplier = battle.ending ? multiplier : resourceMultiplierForApostle(apostle, multiplier);
     const multiplierSource = manualMultiplier > 0
       ? "manual"
       : selectedLevel > 0
@@ -911,9 +1103,13 @@ Add these script tags after the main viewer script:
     const bonusDetails = [];
     const coreDetails = [];
     const warnings = [];
-    const levelResourceBonus = getApostleLevelResourceBonus(apostle, multiplier);
+    const levelResourceBonus = grantBpResources ? getApostleLevelResourceBonus(apostle, multiplier) : null;
     const burdenBonusDetails = [];
     const nietzscheBonusDetails = [];
+    const storyBonusDetails = [];
+    const validationErrors = [];
+    const reminders = [];
+    const rareResources = [];
 
     if (levelResourceBonus) {
       addResourceTotals(totals, levelResourceBonus, 1);
@@ -924,9 +1120,12 @@ Add these script tags after the main viewer script:
     const normalDamageCards = damageCards.filter((card) => card && !card.special);
     const woundedBpIIICount = woundedBpIIIInStacks(apostle, damageCards);
 
-    addBpIIICoreBonus(totals, coreDetails, woundedBpIIICount, "暴击 BP III 核心奖励");
+    if (grantBpResources || battle.resourcePolicy === "coreOnly") {
+      addBpIIICoreBonus(totals, coreDetails, woundedBpIIICount, "暴击 BP III 核心奖励");
+    }
 
     normalDamageCards.forEach((card) => {
+      if (!grantBpResources) return;
       const fileName = safeCardFileName(card, apostle);
       const res = getCardResource(apostle, fileName);
       if (!res) {
@@ -948,7 +1147,7 @@ Add these script tags after the main viewer script:
     const mixedPool = getBpDeckAndDiscardPool(bp);
     const grouped = groupPoolByLevel(mixedPool);
 
-    for (let i = 0; i < swCount; i++) {
+    for (let i = 0; grantBpResources && i < swCount; i++) {
       const drawn = drawLowestBpCard(grouped);
       if (!drawn) {
         warnings.push(`SW #${i + 1} 无法结算：BP卡组+弃牌堆中没有可抽取的BP卡。`);
@@ -973,7 +1172,7 @@ Add these script tags after the main viewer script:
       });
     }
 
-    for (let i = 0; i < dwCount; i++) {
+    for (let i = 0; grantBpResources && i < dwCount; i++) {
       const drawn = drawBpIII(grouped);
       if (!drawn) {
         warnings.push(`DW #${i + 1} 无法结算：BP卡组+弃牌堆中没有BP III。`);
@@ -998,7 +1197,7 @@ Add these script tags after the main viewer script:
       });
     }
 
-    const chimeraBonus = isChimera
+    const chimeraBonus = isChimera && grantBpResources
       ? applyChimeraBonusLoot({
           apostle,
           bp,
@@ -1012,15 +1211,34 @@ Add these script tags after the main viewer script:
           multiplier
         })
       : null;
-    const burdenBonus = isBurden
+    const burdenBonus = isBurden && ordinary && battle.outcome !== "kill"
       ? applyBurdenSummitBonus(totals, options.summitTitanCount, burdenBonusDetails)
       : null;
-    const nietzscheBonus = isNietzsche
+    const nietzscheBonus = isNietzsche && ordinary
       ? applyNietzscheDamageBonus(totals, regularDamageCount, options.nietzscheChoices, nietzscheBonusDetails, warnings)
       : null;
 
+    const storyBonus = ordinary && STORY_DAMAGE_REWARDS[apostle]
+      ? applyStoryDamageBonus(apostle, regularDamageCount, options.resourceChoices, totals,
+        storyBonusDetails, validationErrors, reminders) : null;
+    if (nietzscheBonus) {
+      const raw = options.nietzscheChoices || {};
+      if (Object.values(nietzscheBonus.selected).reduce((sum, n) => sum + n, 0) !== nietzscheBonus.choiceCount
+        || Object.entries(raw).some(([key, n]) => !NIETZSCHE_CHOICE_KEYS.includes(key) && Number(n) !== 0
+          || !Number.isInteger(Number(n)) || Number(n) < 0)) {
+        validationErrors.push(`尼采超人伤害奖励：请选择恰好 ${nietzscheBonus.choiceCount} 个指定资源，数量须为非负整数。`);
+      }
+      if (nietzscheBonus.specialReward) reminders.push(`额外获得：${nietzscheBonus.specialReward}${nietzscheBonus.specialReward.includes("尼采宁芙") ? "（随资源入账）" : "，请手动处理"}。`);
+    }
+    applyStoryBattleRewards(apostle, battle, totals, storyBonusDetails, rareResources, reminders);
+
     return {
       apostle,
+      battle,
+      storyBonus,
+      validationErrors,
+      reminders,
+      rareResources,
       multiplier,
       resourceMultiplier,
       ignoresLevelResourceMultiplier: resourceMultiplier === 1 && multiplier !== 1,
@@ -1037,6 +1255,7 @@ Add these script tags after the main viewer script:
       nietzscheBonus,
       totals,
       details: {
+        storyBonus: storyBonusDetails,
         direct: directDetails,
         sw: swDetails,
         dw: dwDetails,
@@ -1061,6 +1280,7 @@ Add these script tags after the main viewer script:
 
   function buildLootDialog() {
     const dialog = document.createElement("dialog");
+    dialog.id = "bpLootDialog";
     dialog.className = "loot-dialog";
     dialog.innerHTML = `
       <form method="dialog" class="loot-dialog-inner">
@@ -1071,6 +1291,12 @@ Add these script tags after the main viewer script:
 
         <div class="loot-dialog-body">
           <div class="loot-toolbar">
+            <label class="loot-multiplier-label">战斗场景 <select class="loot-scene-input"></select></label>
+            <label class="loot-multiplier-label">战斗结果 <select class="loot-outcome-input"></select></label>
+            <label class="loot-first-victory-label" hidden><input type="checkbox" class="loot-first-victory-input">首次击杀，领取首次资源奖励</label>
+            <label class="loot-multiplier-label loot-first-reward-label" hidden>首次资源 <select class="loot-first-reward-input">
+              <option value="sisyphusTears">西西弗斯之泪</option><option value="echoes">记忆之回响</option>
+            </select></label>
             <label class="loot-multiplier-label">
               始徒等级倍率
               <input type="number" min="1" max="10" step="1" class="loot-multiplier-input">
@@ -1086,6 +1312,7 @@ Add these script tags after the main viewer script:
               <label>黑色锁链 <input type="number" min="0" max="3" step="1" value="0" data-nietzsche-choice="BC"></label>
               <label>独眼巨人甲胄 <input type="number" min="0" max="3" step="1" value="0" data-nietzsche-choice="CM"></label>
             </div>
+            <div class="loot-story-choices" hidden></div>
             <button type="button" class="loot-recalc-button">重新随机计算</button>
           </div>
 
@@ -1265,6 +1492,7 @@ Add these script tags after the main viewer script:
 
   function applyLootResultToRecord(record, result, activeCycleOverride = "") {
     if (!result) throw new Error("没有可添加的战利品结果。");
+    if (result.validationErrors?.length) throw new Error(result.validationErrors.join("\n"));
 
     const updatedRecord = normalizeRecordCrewCounters(isPlainObject(record) ? { ...record } : {});
     updatedRecord.resources = isPlainObject(updatedRecord.resources) ? { ...updatedRecord.resources } : {};
@@ -1293,6 +1521,15 @@ Add these script tags after the main viewer script:
       added.push(`${resourceZhName(key)} +${amount}`);
     });
 
+    const rareKey = recordResourceStorageKey(cycle, "rare");
+    let rareText = String(updatedRecord.resources[rareKey] || "");
+    (result.rareResources || []).forEach((name) => {
+      if (rareText.includes(name) || name === "损坏的密码筒" && /damaged cryptex/i.test(rareText)) return;
+      rareText = [rareText, name].filter(Boolean).join("\n");
+      added.push(`稀有资源：${name}`);
+    });
+    if (result.rareResources?.length) updatedRecord.resources[rareKey] = rareText;
+
     if (result.nietzscheBonus?.specialReward?.includes("尼采宁芙召唤卡")) {
       updatedRecord.nymphCards = Array.isArray(updatedRecord.nymphCards) ? [...updatedRecord.nymphCards] : [];
       if (!updatedRecord.nymphCards.includes("nietzschean")) {
@@ -1306,7 +1543,7 @@ Add these script tags after the main viewer script:
       throw new Error(`没有可写入记录表的资源。${skipped.length ? `未映射：${skipped.join(", ")}` : ""}`);
     }
 
-    appendRecordSyncLog(updatedRecord, `AIBP ${result.apostle} 战利品写入：${added.join("，")}${skipped.length ? `；未映射：${skipped.join(", ")}` : ""}`);
+    appendRecordSyncLog(updatedRecord, `AIBP ${result.apostle}${result.battle ? ` · ${result.battle.sceneLabel}` : ""} 战利品写入：${added.join("，")}${skipped.length ? `；未映射：${skipped.join(", ")}` : ""}`);
 
     return { record: updatedRecord, added, skipped, cycle };
   }
@@ -1346,8 +1583,69 @@ Add these script tags after the main viewer script:
     throw new Error("记录表持续被其他页面修改，本次尚未入账，请稍后重试。");
   }
 
+  function renderStoryLootControls(dialog, result) {
+    const battle = result.battle;
+    const scene = dialog.querySelector(".loot-scene-input");
+    scene.innerHTML = storySceneOptions(result.apostle).map(([id, label]) => `<option value="${escapeAttr(id)}">${escapeHtml(label)}</option>`).join("");
+    scene.value = battle.sceneId;
+    const outcome = dialog.querySelector(".loot-outcome-input");
+    outcome.innerHTML = storyOutcomeOptions(result.apostle, battle.sceneId).map(([id, label]) => `<option value="${escapeAttr(id)}">${escapeHtml(label)}</option>`).join("");
+    outcome.value = battle.outcome;
+    dialog.querySelector(".loot-first-victory-label").hidden = !battle.firstVictoryEligible;
+    dialog.querySelector(".loot-first-victory-input").checked = battle.firstVictory;
+    dialog.querySelector(".loot-first-reward-label").hidden = !battle.firstVictory || result.apostle !== "TITAN_X";
+    dialog.querySelector(".loot-first-reward-input").value = battle.firstReward;
+    const choices = dialog.querySelector(".loot-story-choices");
+    choices.hidden = !result.storyBonus?.choiceCount;
+    choices.innerHTML = result.storyBonus ? `<span>额外任选资源：请选择 ${result.storyBonus.choiceCount} 个</span>`
+      + result.storyBonus.choiceKeys.map((key) => `<label>${escapeHtml(resourceZhName(key))} <input type="number" min="0" max="${result.storyBonus.choiceCount}" step="1" value="${result.storyBonus.selected[key] || 0}" data-story-choice="${escapeAttr(key)}"></label>`).join("") : "";
+  }
+
+  function syncLootNumberControls(dialog) {
+    dialog.querySelectorAll('.loot-toolbar input[type="number"]').forEach((input) => {
+      if (!input.parentElement.classList.contains("loot-number-control")) {
+        const label = input.closest("label")?.textContent.trim() || "数量";
+        input.setAttribute("aria-label", label);
+        const control = document.createElement("span");
+        control.className = "loot-number-control";
+        input.before(control);
+        const buttons = [-1, 1].map((direction) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "loot-number-step";
+          button.dataset.step = String(direction);
+          button.textContent = direction < 0 ? "−" : "+";
+          button.setAttribute("aria-label", `${direction < 0 ? "减少" : "增加"}${label}`);
+          return button;
+        });
+        control.append(buttons[0], input, buttons[1]);
+      }
+      const value = input.valueAsNumber;
+      input.parentElement.querySelector('[data-step="-1"]').disabled = input.disabled
+        || (input.min !== "" && value <= Number(input.min));
+      input.parentElement.querySelector('[data-step="1"]').disabled = input.disabled
+        || (input.max !== "" && value >= Number(input.max));
+    });
+  }
+
+  function readLootDialogOptions(dialog, resetScene = false) {
+    const readChoices = (attribute) => Object.fromEntries([...dialog.querySelectorAll(`[${attribute}]`)]
+      .map((input) => [input.getAttribute(attribute), Number(input.value)]));
+    return {
+      multiplier: Number(dialog.querySelector(".loot-multiplier-input").value || 1),
+      sceneId: dialog.querySelector(".loot-scene-input").value,
+      outcome: resetScene ? "victory" : dialog.querySelector(".loot-outcome-input").value,
+      firstVictory: !resetScene && dialog.querySelector(".loot-first-victory-input").checked,
+      firstReward: dialog.querySelector(".loot-first-reward-input").value,
+      summitTitanCount: Number(dialog.querySelector(".loot-burden-summit-input").value || 0),
+      nietzscheChoices: resetScene ? {} : readChoices("data-nietzsche-choice"),
+      resourceChoices: resetScene ? {} : readChoices("data-story-choice")
+    };
+  }
+
   function renderLootResult(dialog, result) {
     lastLootResult = result;
+    renderStoryLootControls(dialog, result);
 
     const multiplierInput = dialog.querySelector(".loot-multiplier-input");
     multiplierInput.value = String(result.multiplier);
@@ -1365,13 +1663,17 @@ Add these script tags after the main viewer script:
       });
     }
 
+    syncLootNumberControls(dialog);
+
     const summary = dialog.querySelector(".loot-summary");
     const warning = dialog.querySelector(".loot-warning");
     const details = dialog.querySelector(".loot-details");
     const recordButton = dialog.querySelector(".loot-record-button");
     if (recordButton) {
-      recordButton.disabled = false;
-      recordButton.textContent = "添加到记录表";
+      const hasResources = Object.values(result.totals || {}).some((amount) => Number(amount) > 0)
+        || result.rareResources?.length || result.nietzscheBonus?.specialReward?.includes("尼采宁芙召唤卡");
+      recordButton.disabled = !!result.validationErrors?.length || !hasResources;
+      recordButton.textContent = result.validationErrors?.length ? "请完成资源选择" : hasResources ? "添加到记录表" : "仅有提醒，无需入账";
     }
 
     const totalRows = Object.entries(result.totals)
@@ -1388,11 +1690,13 @@ Add these script tags after the main viewer script:
     summary.innerHTML = `
       <div class="loot-meta">
         <div>当前始徒：<strong>${escapeHtml(apostleZhName(result.apostle))}</strong></div>
+        <div>战斗场景：${escapeHtml(result.battle.sceneLabel)}</div>
+        <div>结算规则：${escapeHtml({ normal: "BP 资源与特殊奖励", coreOnly: "仅暴击 BP III 核心", tableOnly: "仅伤害档位奖励", none: "按故事结局处理" }[result.battle.resourcePolicy])}</div>
         <div>损伤堆卡数：${result.damageCount}</div>
         <div>普通BP损伤：${result.normalDamageCount}</div>
         <div>单重损伤：${result.swCount}</div>
         <div>双重损伤：${result.dwCount}</div>
-        <div>暴击 BP III：${result.woundedBpIIICount}（核心 +${result.woundedBpIIICount}）</div>
+        <div>暴击 BP III：${result.woundedBpIIICount}（核心 +${result.details.coreBonus.reduce((sum, item) => sum + Number(item.resource.core || 0), 0)}）</div>
         <div>倍率：×${result.multiplier}</div>
         ${result.ignoresLevelResourceMultiplier ? `<div>资源倍率：×${result.resourceMultiplier}（该始徒不按等级乘资源）</div>` : ""}
         <div>倍率来源：${result.multiplierSource === "record" ? "记录表" : result.multiplierSource === "manual" ? "手动输入" : result.multiplierSource === "aibp" ? "AIBP当前始徒等级" : "默认等级 1"}</div>
@@ -1408,8 +1712,9 @@ Add these script tags after the main viewer script:
       </div>
     `;
 
-    warning.innerHTML = result.warnings.length
-      ? `<div class="loot-warning-box">${result.warnings.map(escapeHtml).join("<br>")}</div>`
+    const notices = [...(result.validationErrors || []), ...result.warnings];
+    warning.innerHTML = notices.length
+      ? `<div class="loot-warning-box">${notices.map(escapeHtml).join("<br>")}</div>`
       : "";
 
     const directRows = result.details.direct.map((item) => detailRow(item)).join("");
@@ -1421,7 +1726,7 @@ Add these script tags after the main viewer script:
     const coreBonusRows = (result.details.coreBonus || []).map((item) => levelBonusRow(item)).join("");
     const levelBonusRows = (result.details.levelBonus || []).map((item) => levelBonusRow(item)).join("");
 
-    details.innerHTML = `
+    details.innerHTML = result.battle.resourcePolicy === "normal" ? `
       <section>
         <h4>普通 BP 损伤卡</h4>
         ${directRows || `<div class="loot-empty">无</div>`}
@@ -1434,7 +1739,7 @@ Add these script tags after the main viewer script:
         <h4>通用双重损伤结算</h4>
         ${dwRows || `<div class="loot-empty">无</div>`}
       </section>
-    `;
+    ` : "";
 
     if (levelBonusRows) {
       details.insertAdjacentHTML("beforeend", `
@@ -1491,6 +1796,16 @@ Add these script tags after the main viewer script:
           ${result.nietzscheBonus.specialReward ? `<div class="loot-empty">额外获得：${escapeHtml(result.nietzscheBonus.specialReward)}</div>` : ""}
         </section>
       `);
+    }
+
+    const storyRows = (result.details.storyBonus || []).map(levelBonusRow).join("");
+    if (storyRows || result.rareResources?.length) {
+      details.insertAdjacentHTML("beforeend", `<section><h4>故事书额外资源</h4>${storyRows}
+        ${(result.rareResources || []).map((name) => `<div class="loot-empty">稀有资源：${escapeHtml(name)}</div>`).join("")}</section>`);
+    }
+    if (result.reminders?.length) {
+      details.insertAdjacentHTML("beforeend", `<section><h4>其他奖励与后续处理（文字提醒）</h4>
+        ${result.reminders.map((text) => `<p class="loot-story-reminder">${escapeHtml(text)}</p>`).join("")}</section>`);
     }
 
     details.querySelectorAll("[data-loot-zoom-src]").forEach((img) => {
@@ -1550,6 +1865,9 @@ Add these script tags after the main viewer script:
   function resultToText(result) {
     const lines = [];
     lines.push(`始徒：${apostleZhName(result.apostle)}`);
+    if (result.battle) {
+      lines.push(`战斗：${result.battle.sceneLabel} · ${storyOutcomeOptions(result.apostle, result.battle.sceneId).find(([id]) => id === result.battle.outcome)?.[1] || result.battle.outcome}`);
+    }
     lines.push(`倍率：×${result.multiplier}`);
     if (result.ignoresLevelResourceMultiplier) {
       lines.push(`资源倍率：×${result.resourceMultiplier}（该始徒不按等级乘资源）`);
@@ -1592,6 +1910,12 @@ Add these script tags after the main viewer script:
       if (result.nietzscheBonus.specialReward) lines.push(`  尼采超人特殊奖励：${result.nietzscheBonus.specialReward}`);
     }
     (result.details.levelBonus || []).forEach((item) => lines.push(`  始徒等级奖励：${formatResource(item.resource)}`));
+    (result.details.storyBonus || []).forEach((item) => lines.push(`  ${item.source}：${formatResource(item.resource)}`));
+    (result.rareResources || []).forEach((name) => lines.push(`  稀有资源：${name}`));
+    if (result.reminders?.length) {
+      lines.push("", "其他奖励与后续处理（文字提醒）：", ...result.reminders.map((text) => `  ${text}`));
+    }
+    if (result.validationErrors?.length) lines.push("", "尚不能入账：", ...result.validationErrors.map((text) => `  ${text}`));
 
     if (result.warnings.length) {
       lines.push("");
@@ -1607,15 +1931,38 @@ Add these script tags after the main viewer script:
       if (!lootDialog) {
         lootDialog = buildLootDialog();
 
-        lootDialog.querySelector(".loot-recalc-button").addEventListener("click", () => {
-          const multiplier = Number(lootDialog.querySelector(".loot-multiplier-input").value || 1);
-          const summitTitanCount = Number(lootDialog.querySelector(".loot-burden-summit-input").value || 0);
-          const nietzscheChoices = {};
-          lootDialog.querySelectorAll("[data-nietzsche-choice]").forEach((input) => {
-            nietzscheChoices[input.dataset.nietzscheChoice] = Number(input.value || 0);
-          });
-          const result = calculateBpLoot({ multiplier, summitTitanCount, nietzscheChoices });
-          renderLootResult(lootDialog, result);
+        const recalculate = (resetScene = false) => {
+          try {
+            renderLootResult(lootDialog, calculateBpLoot(readLootDialogOptions(lootDialog, resetScene)));
+          } catch (error) {
+            lootDialog.querySelector(".loot-record-button").disabled = true;
+            window.alert(`战利品计算失败：${error.message || error}`);
+          }
+        };
+        lootDialog.querySelector(".loot-recalc-button").addEventListener("click", () => recalculate());
+        lootDialog.querySelector(".loot-toolbar").addEventListener("change", (event) => {
+          recalculate(event.target.classList.contains("loot-scene-input"));
+        });
+        lootDialog.querySelector(".loot-toolbar").addEventListener("click", (event) => {
+          const button = event.target.closest(".loot-number-step");
+          if (!button || button.disabled) return;
+          event.preventDefault();
+          const input = button.parentElement.querySelector('input[type="number"]');
+          if (input.disabled) return;
+          const direction = Number(button.dataset.step);
+          const selector = input.hasAttribute("data-story-choice")
+            ? `[data-story-choice="${input.dataset.storyChoice}"]`
+            : input.hasAttribute("data-nietzsche-choice")
+              ? `[data-nietzsche-choice="${input.dataset.nietzscheChoice}"]`
+              : `.${input.classList[0]}`;
+          if (direction < 0) input.stepDown();
+          else input.stepUp();
+          input.dispatchEvent(new Event("change", { bubbles: true }));
+          // Story choices are rebuilt when the result changes; retain keyboard focus.
+          const control = lootDialog.querySelector(selector)?.parentElement;
+          const nextButton = control?.querySelector(`[data-step="${direction}"]`);
+          if (nextButton && !nextButton.disabled) nextButton.focus();
+          else control?.querySelector("input")?.focus();
         });
 
         lootDialog.querySelector(".loot-copy-button").addEventListener("click", async () => {
@@ -1632,10 +1979,13 @@ Add these script tags after the main viewer script:
         lootDialog.querySelector(".loot-record-button").addEventListener("click", async () => {
           if (!lastLootResult) return;
           const button = lootDialog.querySelector(".loot-record-button");
+          const result = lastLootResult;
+          const controls = lootDialog.querySelectorAll(".loot-toolbar input, .loot-toolbar select, .loot-toolbar button");
+          controls.forEach((control) => { control.disabled = true; });
           button.disabled = true;
           button.textContent = "写入中...";
           try {
-            const { added, skipped, cycle } = await addLootResultToRecord(lastLootResult);
+            const { added, skipped, cycle } = await addLootResultToRecord(result);
             button.textContent = `已同步到 NAS (${cycle})`;
             window.alert([
               "已添加到阿尔戈号记录表：",
@@ -1647,6 +1997,9 @@ Add these script tags after the main viewer script:
             button.disabled = false;
             button.textContent = "添加到记录表";
             window.alert(`未确认入账：\n${err.message || err}\n\n当前战利品结果仍保留，可恢复连接后在本弹窗重试；同一结果重试不会重复加资源。`);
+          } finally {
+            controls.forEach((control) => { control.disabled = false; });
+            syncLootNumberControls(lootDialog);
           }
         });
       }

@@ -211,7 +211,8 @@ final class LocalSecondScreenServer {
       boolean head = "HEAD".equals(method);
       boolean get = "GET".equals(method);
       boolean post = "POST".equals(method);
-      boolean api = "/api/campaign-state.php".equals(uri.getPath()) || "/briefing/api.php".equals(uri.getPath());
+      boolean api = "/api/campaign-state.php".equals(uri.getPath()) || "/briefing/api.php".equals(uri.getPath())
+          || "/api/aibp-image-index.php".equals(uri.getPath());
       if (!get && !head && !post) {
         // 页面只用 GET 和 POST：其它方法按 HTTP 语义回 405（API 也用 JSON 说明一下）。
         if (api) sendText(connection.getOutputStream(), 405, "application/json; charset=utf-8", apiMethodNotAllowed(), head);

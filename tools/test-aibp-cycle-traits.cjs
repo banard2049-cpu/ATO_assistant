@@ -47,3 +47,98 @@ test("all cycle trait card images exist", () => {
     );
   });
 });
+
+function loadFunctions(context, names) {
+  for (const name of names) {
+    const match = source.replace(/\r\n/g, "\n").match(new RegExp(`^    function ${name}\\([^]*?^    }`, "m"));
+    assert.ok(match, name);
+    vm.runInContext(match[0], context);
+  }
+}
+
+test("hidden bosses receive their own cycle traits independently of the open campaign", () => {
+  for (const cycleId of ["c1", "c4", "c5"]) {
+    const context = vm.createContext({
+      currentApostle: "HELIOS", cycleTraitCards: cards,
+      campaignMapFactionState: { cycleId },
+      apostleRecordTracks: { MIDASCORE: { cycle: "c4" }, TITAN_X: { cycle: "c5" }, HEKATON: { cycle: "c1" } },
+    });
+    loadFunctions(context, ["availableCycleTraitCards"]);
+    for (const [name, cycle] of [["HELIOS", "c4"], ["BLACKBEAK", "c5"], ["MIDASCORE", "c4"], ["TITAN_X", "c5"], ["HEKATON", "c1"]]) {
+      assert.deepEqual(JSON.parse(JSON.stringify(context.availableCycleTraitCards(name))), availableFor(cycle));
+    }
+  }
+});
+
+class Element {
+  constructor() { this.children = []; this.dataset = {}; this.isConnected = true; }
+  append(...children) { this.children.push(...children); }
+  appendChild(child) { this.append(child); }
+  replaceChildren(...children) { this.children = children; }
+  addEventListener() {}
+  remove() { this.isConnected = false; }
+  querySelectorAll() { return this.children.flatMap(child => child.children.filter(item => item.type === "checkbox")); }
+}
+
+function hiddenBossHarness(name, mode = "c4") {
+  const state = { traits: [], customTraits: [], hiddenTraits: [], hiddenExtraCards: [] };
+  const fixed = { src: `sealed/${name}-${mode}.bin`, backSrc: `sealed/${name}-${mode}-back.bin`, label: "专属特性" };
+  const context = vm.createContext({
+    currentApostle: name, cycleTraitCards: cards, apostleRecordTracks: {},
+    aibpImageIndex: new Set(),
+    piles: { [name]: state }, traitLevels: [],
+    traitLoadToken: 0, nietzscheName: "THE_NIETZSCJEAN",
+    traitSaveButton: {}, traitDialogTitle: {}, traitDialogGrid: new Element(), extraGrid: new Element(),
+    traitDialog: { close() {} }, document: { createElement: () => new Element() }, Image: Element,
+    ensurePiles() {}, hiddenBossImagesReady: () => true, savePiles() {},
+    reorderExtraGridForLargeCards() {}, scheduleSecondScreenSnapshot() {},
+    heliosMode: () => mode,
+    imageOrMessage(src, alt) { return Object.assign(new Element(), { src, alt }); },
+    loadOptionalImage(image, src, isNeeded) {
+      if (!isNeeded()) return;
+      image.src = src;
+      image.onload?.();
+    },
+    window: {
+      setTimeout() {}, HeliosAssets: { resolve: src => src },
+      HeliosConfig: { extras: () => [fixed] }, BlackbeakCardList: { extraCards: [fixed] },
+    },
+  });
+  loadFunctions(context, ["availableCycleTraitCards", "cycleTraitDefinition", "cycleTraitSrc", "traitCardLabel",
+    "traitCardSrc", "traitKey", "selectedTraitKeySet", "hiddenTraitKeySet", "hiddenExtraCardKeySet",
+    "traitAreaExtraCards", "indexedAibpCards", "traitImageCandidates", "commonTraitImageCandidates",
+    "renderTraitCandidates", "saveTraitSelection", "renderExtraCards", "isLargeTraitCard"]);
+  return { context, state, fixed };
+}
+
+for (const [name, mode, count] of [["HELIOS", "c4", 8], ["HELIOS", "normal", 8], ["BLACKBEAK", "normal", 4]]) {
+  test(`${name}/${mode}: cycle traits can be selected, saved, rendered and removed alongside fixed cards`, () => {
+    const { context, state, fixed } = hiddenBossHarness(name, mode);
+    context.renderTraitCandidates();
+    let inputs = context.traitDialogGrid.querySelectorAll();
+    const cycleInputs = inputs.filter(input => input.dataset.scope);
+    assert.equal(cycleInputs.length, count);
+    const shared = cycleInputs.find(input => input.dataset.scope === "c45-common");
+    const exclusive = cycleInputs.find(input => input.dataset.scope !== "c45-common");
+    shared.checked = exclusive.checked = true;
+    context.saveTraitSelection();
+    assert.equal(state.traits.length, 2);
+    assert.equal(context.extraGrid.children.length, 3);
+    assert.equal(context.extraGrid.children[0].src, fixed.src);
+    assert.equal(context.extraGrid.children[0].dataset.backSrc, fixed.backSrc);
+    assert.ok(context.extraGrid.children.some(image => image.src.includes("C45_COMMON_TR_")));
+    assert.ok(context.extraGrid.children.some(image => image.src.includes(name === "BLACKBEAK" ? "C5_TR_" : "C4_CURSED_TR_")));
+
+    // Opening again must retain the saved choices; rerendering must not duplicate cards.
+    context.renderTraitCandidates();
+    inputs = context.traitDialogGrid.querySelectorAll();
+    assert.equal(inputs.filter(input => input.dataset.scope && input.checked).length, 2);
+    context.renderExtraCards();
+    assert.equal(context.extraGrid.children.length, 3);
+    inputs.forEach(input => input.checked = false);
+    context.saveTraitSelection();
+    assert.equal(state.traits.length, 0);
+    assert.equal(context.extraGrid.children.length, 0);
+    assert.deepEqual(Array.from(state.hiddenExtraCards), [fixed.src]);
+  });
+}

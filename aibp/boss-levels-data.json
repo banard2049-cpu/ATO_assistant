@@ -1,0 +1,5012 @@
+{
+  "format": "ato-boss-levels",
+  "schemaVersion": 1,
+  "source": {
+    "workbook": "Boss等级属性汇总.xlsx",
+    "sha256": "46e5f45f0d3ad0356919c84c23ecac2c403a7e6bdeb7b2070defda598c497617",
+    "sheet": "等级属性",
+    "bossCount": 21,
+    "levelCount": 182
+  },
+  "bonusSemantics": "Each level stores its printed totals; do not sum earlier levels.",
+  "definitions": {
+    "生命值": "按大卡 Wounds 图标记录，即击杀所需伤口数。乌尔-弗里斯卡面各级均印99。",
+    "命中与移动": "命中保留“数字+”；∞表示无限；巴别疯魔塔的横杠原样记录。带*的追击者及黑喙，另由展翅的末日规定实际移动∞。",
+    "开战晋升": "在该等级开始战斗时，执行相应次数的晋升。表中是每级印刷总量，不跨级累加。",
+    "AT力场": "作用于BP卡的AT力场加成。特质引起的条件变化放在备注，不并入固定加成。",
+    "危险与命运": "危险Λ对应攻击造成的危险增量；神谕的加成为命运Ψ。分别记录每次攻击、每次命中两种计法。",
+    "闪避骰": "菱形图标是泰坦闪避时追加的骰子数；与泰坦攻击骰不同。",
+    "特质继承": "列出该级新增或移除特质；先前特质默认继承。未印某项固定加成记0，不代表条件效果不存在。",
+    "版本与勘误": "百手巨魔反面中VI与VIII之间的等级也误印为VIII，按顺序记VII并保留备注；超时神谕另有不同措辞版式。",
+    "来源": "I级/低等级优先采用本项目中文卡图；C4/C5补充反面来自用户提供的Tabletop Simulator Mod，原图为英文。",
+    "隐藏Boss": "赫利俄斯有I–IX面板；黑喙替换面板只明确列I级，不推定其II–IX级属性或沿用追击者数值。",
+    "规则图标核对": "https://www.rulespal.com/aeon-trespass-odyssey/rulebook （规则书转录）；出版方资源页：https://intotheunknownstudio.com/resources",
+    "Mod来源": "D:\\files\\My Games\\Tabletop Simulator\\Mods\\Workshop\\3458296558.json"
+  },
+  "bosses": {
+    "HEKATON": {
+      "id": "HEKATON",
+      "name": "百手巨魔",
+      "cycle": "c1",
+      "sources": {
+        "front": "aibp/ps/HEKATON/HEKATON.jpg",
+        "back": "aibp/ps/HEKATON/HEKATON_TR_O_001.jpg"
+      },
+      "notes": "",
+      "levels": {
+        "0": {
+          "level": 0,
+          "label": "0",
+          "stats": {
+            "wounds": 6,
+            "movementPrinted": 6,
+            "movement": 6,
+            "hitRequirement": 7
+          },
+          "bonuses": {
+            "promotions": 0,
+            "at": -1,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "善意上门",
+          "notes": "所有击退−2",
+          "source": {
+            "card": "aibp/ps/HEKATON/HEKATON.jpg",
+            "sheet": "等级属性",
+            "row": 7
+          }
+        },
+        "1": {
+          "level": 1,
+          "label": "I",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": 6,
+            "movement": 6,
+            "hitRequirement": 7
+          },
+          "bonuses": {
+            "promotions": 0,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "继承善意上门",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/HEKATON/HEKATON.jpg",
+            "sheet": "等级属性",
+            "row": 8
+          }
+        },
+        "2": {
+          "level": 2,
+          "label": "II",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": 6,
+            "movement": 6,
+            "hitRequirement": 7
+          },
+          "bonuses": {
+            "promotions": 0,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "机灵；以牙还牙；移除善意上门",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/HEKATON/HEKATON.jpg",
+            "sheet": "等级属性",
+            "row": 9
+          }
+        },
+        "3": {
+          "level": 3,
+          "label": "III",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": 6,
+            "movement": 6,
+            "hitRequirement": 8
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 0,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "臂多手杂",
+          "notes": "击退+2，顶推+1",
+          "source": {
+            "card": "aibp/ps/HEKATON/HEKATON.jpg",
+            "sheet": "等级属性",
+            "row": 10
+          }
+        },
+        "4": {
+          "level": 4,
+          "label": "IV",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": 7,
+            "movement": 7,
+            "hitRequirement": 8
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 1,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "裂隙",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/HEKATON/HEKATON.jpg",
+            "sheet": "等级属性",
+            "row": 11
+          }
+        },
+        "5": {
+          "level": 5,
+          "label": "V",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": 7,
+            "movement": 7,
+            "hitRequirement": 9
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 2,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 1,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "滞星；希望终结；百臂巨人的天罚",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/HEKATON/HEKATON_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 12
+          }
+        },
+        "6": {
+          "level": 6,
+          "label": "VI",
+          "stats": {
+            "wounds": 11,
+            "movementPrinted": 8,
+            "movement": 8,
+            "hitRequirement": 9
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 3,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "百臂之墙",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/HEKATON/HEKATON_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 13
+          }
+        },
+        "7": {
+          "level": 7,
+          "label": "VII",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": 9,
+            "movement": 9,
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 4,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "百拳摧城",
+          "notes": "原图该行误印为 VIII，按位于 VI 与 VIII 之间记 VII",
+          "source": {
+            "card": "aibp/ps/HEKATON/HEKATON_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 14
+          }
+        },
+        "8": {
+          "level": 8,
+          "label": "VIII",
+          "stats": {
+            "wounds": 13,
+            "movementPrinted": 10,
+            "movement": 10,
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 5,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 1
+          },
+          "traitChanges": "超音速拳击",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/HEKATON/HEKATON_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 15
+          }
+        },
+        "9": {
+          "level": 9,
+          "label": "IX",
+          "stats": {
+            "wounds": 14,
+            "movementPrinted": 11,
+            "movement": 11,
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 5,
+            "at": 6,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 3,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 2
+          },
+          "traitChanges": "铁石心肠；百万吨级",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/HEKATON/HEKATON_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 16
+          }
+        }
+      }
+    },
+    "LABYRINTHAUROS": {
+      "id": "LABYRINTHAUROS",
+      "name": "迷宫机牛",
+      "cycle": "c1",
+      "sources": {
+        "front": "aibp/ps/LABYRINTHAUROS/LABYRINTHAUROS.jpg",
+        "back": "aibp/ps/LABYRINTHAUROS/LABYRINTHAUROS_TR_O_001.jpg"
+      },
+      "notes": "",
+      "levels": {
+        "1": {
+          "level": 1,
+          "label": "I",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": 6,
+            "movement": 6,
+            "hitRequirement": 7
+          },
+          "bonuses": {
+            "promotions": 0,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "大迷宫X；迷宫感应",
+          "notes": "I级忽略卡牌等要素上的践踏指示",
+          "source": {
+            "card": "aibp/ps/LABYRINTHAUROS/LABYRINTHAUROS.jpg",
+            "sheet": "等级属性",
+            "row": 17
+          }
+        },
+        "2": {
+          "level": 2,
+          "label": "II",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": 6,
+            "movement": 6,
+            "hitRequirement": 7
+          },
+          "bonuses": {
+            "promotions": 0,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "践踏",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/LABYRINTHAUROS/LABYRINTHAUROS.jpg",
+            "sheet": "等级属性",
+            "row": 18
+          }
+        },
+        "3": {
+          "level": 3,
+          "label": "III",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": 7,
+            "movement": 7,
+            "hitRequirement": 8
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 0,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "迷宫建造师",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/LABYRINTHAUROS/LABYRINTHAUROS.jpg",
+            "sheet": "等级属性",
+            "row": 19
+          }
+        },
+        "4": {
+          "level": 4,
+          "label": "IV",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": 7,
+            "movement": 7,
+            "hitRequirement": 8
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 1,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "迷宫反应装甲",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/LABYRINTHAUROS/LABYRINTHAUROS.jpg",
+            "sheet": "等级属性",
+            "row": 20
+          }
+        },
+        "5": {
+          "level": 5,
+          "label": "V",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": 7,
+            "movement": 7,
+            "hitRequirement": 9
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 2,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 1,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "希望终结；迷阵超活跃护甲；有利位置修正",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/LABYRINTHAUROS/LABYRINTHAUROS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 21
+          }
+        },
+        "6": {
+          "level": 6,
+          "label": "VI",
+          "stats": {
+            "wounds": 11,
+            "movementPrinted": 8,
+            "movement": 8,
+            "hitRequirement": 9
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 3,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "光速者",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/LABYRINTHAUROS/LABYRINTHAUROS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 22
+          }
+        },
+        "7": {
+          "level": 7,
+          "label": "VII",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": 8,
+            "movement": 8,
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 4,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "外次元践踏",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/LABYRINTHAUROS/LABYRINTHAUROS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 23
+          }
+        },
+        "8": {
+          "level": 8,
+          "label": "VIII",
+          "stats": {
+            "wounds": 13,
+            "movementPrinted": 8,
+            "movement": 8,
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 5,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 1
+          },
+          "traitChanges": "裂隙建造者",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/LABYRINTHAUROS/LABYRINTHAUROS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 24
+          }
+        },
+        "9": {
+          "level": 9,
+          "label": "IX",
+          "stats": {
+            "wounds": 14,
+            "movementPrinted": 9,
+            "movement": 9,
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 5,
+            "at": 6,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 3,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 2
+          },
+          "traitChanges": "铁石心肠；终结伊始",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/LABYRINTHAUROS/LABYRINTHAUROS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 25
+          }
+        }
+      }
+    },
+    "HERMESIAN_PURSUER": {
+      "id": "HERMESIAN_PURSUER",
+      "name": "赫尔墨斯追击者",
+      "cycle": "c1",
+      "sources": {
+        "front": "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER.jpg",
+        "back": "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_O_001.jpg"
+      },
+      "notes": "展翅的末日规定移动力为∞；保留面板的带星号数值。",
+      "levels": {
+        "1": {
+          "level": 1,
+          "label": "I",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": "6*",
+            "movement": "∞",
+            "hitRequirement": 8
+          },
+          "bonuses": {
+            "promotions": 0,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "玩弄；破坏趣味；展翅的末日；希望断绝；闪粉",
+          "notes": "玩弄激活时：闪避骰−1，每命中危险−1（最低1），禁用希望断绝",
+          "source": {
+            "card": "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER.jpg",
+            "sheet": "等级属性",
+            "row": 26
+          }
+        },
+        "2": {
+          "level": 2,
+          "label": "II",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": "6*",
+            "movement": "∞",
+            "hitRequirement": 8
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 1,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "迷幻蛾翅；移除玩弄",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 27
+          }
+        },
+        "3": {
+          "level": 3,
+          "label": "III",
+          "stats": {
+            "wounds": 11,
+            "movementPrinted": "7*",
+            "movement": "∞",
+            "hitRequirement": 9
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 2,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "鸟巢之战",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 28
+          }
+        },
+        "4": {
+          "level": 4,
+          "label": "IV",
+          "stats": {
+            "wounds": 11,
+            "movementPrinted": "7*",
+            "movement": "∞",
+            "hitRequirement": 9
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 3,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "黑暗同行",
+          "notes": "攻击前，对身后2行中的泰坦绝对击退7",
+          "source": {
+            "card": "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 29
+          }
+        },
+        "5": {
+          "level": 5,
+          "label": "V",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": "8*",
+            "movement": "∞",
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 4,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 1,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "终结伊始",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 30
+          }
+        },
+        "6": {
+          "level": 6,
+          "label": "VI",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": "8*",
+            "movement": "∞",
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 5,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "怪笑",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 31
+          }
+        },
+        "7": {
+          "level": 7,
+          "label": "VII",
+          "stats": {
+            "wounds": 13,
+            "movementPrinted": "8*",
+            "movement": "∞",
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 6,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "报应誓约",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 32
+          }
+        },
+        "8": {
+          "level": 8,
+          "label": "VIII",
+          "stats": {
+            "wounds": 13,
+            "movementPrinted": "9*",
+            "movement": "∞",
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 7,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 1
+          },
+          "traitChanges": "短兵相接",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 33
+          }
+        },
+        "9": {
+          "level": 9,
+          "label": "IX",
+          "stats": {
+            "wounds": 14,
+            "movementPrinted": "9*",
+            "movement": "∞",
+            "hitRequirement": 12
+          },
+          "bonuses": {
+            "promotions": 5,
+            "at": 8,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 3,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 2
+          },
+          "traitChanges": "铁石心肠；猎头者",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 34
+          }
+        }
+      }
+    },
+    "ALPHA_TEMENOS": {
+      "id": "ALPHA_TEMENOS",
+      "name": "领首卫域",
+      "cycle": "c1",
+      "sources": {
+        "front": "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS.jpg",
+        "back": "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_O_001.jpg"
+      },
+      "notes": " 其他核对来源：ALPHA_TEMENOS_TR_VI_001.jpg",
+      "levels": {
+        "1": {
+          "level": 1,
+          "label": "I",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": 6,
+            "movement": 6,
+            "hitRequirement": 8
+          },
+          "bonuses": {
+            "promotions": 0,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "大迷宫X；迷宫感应；迷宫重构；阿里阿德涅之解；希望断绝",
+          "notes": "来自大迷宫上的攻击者使其AT力场−1（条件加成）",
+          "source": {
+            "card": "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS.jpg",
+            "sheet": "等级属性",
+            "row": 35
+          }
+        },
+        "2": {
+          "level": 2,
+          "label": "II",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": 6,
+            "movement": 6,
+            "hitRequirement": 8
+          },
+          "bonuses": {
+            "promotions": 0,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "虚无蜗牛；有利位置修正",
+          "notes": "每伤口累积标记，下次AI攻击增加等量危险",
+          "source": {
+            "card": "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 36
+          }
+        },
+        "3": {
+          "level": 3,
+          "label": "III",
+          "stats": {
+            "wounds": 11,
+            "movementPrinted": 6,
+            "movement": 6,
+            "hitRequirement": 8
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 1,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "迷宫蠕虫",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 37
+          }
+        },
+        "4": {
+          "level": 4,
+          "label": "IV",
+          "stats": {
+            "wounds": 11,
+            "movementPrinted": 7,
+            "movement": 7,
+            "hitRequirement": 9
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 2,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "共赢独亡",
+          "notes": "泰坦回合开始无相邻泰坦时：获得2危险与2命运",
+          "source": {
+            "card": "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 38
+          }
+        },
+        "5": {
+          "level": 5,
+          "label": "V",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": 7,
+            "movement": 7,
+            "hitRequirement": 9
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 3,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 1,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "终结伊始",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 39
+          }
+        },
+        "6": {
+          "level": 6,
+          "label": "VI",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": 7,
+            "movement": 7,
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 4,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "无望之歌",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 40
+          }
+        },
+        "7": {
+          "level": 7,
+          "label": "VII",
+          "stats": {
+            "wounds": 13,
+            "movementPrinted": 8,
+            "movement": 8,
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 5,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "惧怕之歌",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 41
+          }
+        },
+        "8": {
+          "level": 8,
+          "label": "VIII",
+          "stats": {
+            "wounds": 13,
+            "movementPrinted": 8,
+            "movement": 8,
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 6,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 1
+          },
+          "traitChanges": "百臂巨人的末日",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 42
+          }
+        },
+        "9": {
+          "level": 9,
+          "label": "IX",
+          "stats": {
+            "wounds": 14,
+            "movementPrinted": 8,
+            "movement": 8,
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 5,
+            "at": 7,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 3,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 2
+          },
+          "traitChanges": "绝望交响曲；铁石心肠",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 43
+          }
+        }
+      }
+    },
+    "CHIMERA_METASTASIOS": {
+      "id": "CHIMERA_METASTASIOS",
+      "name": "扩散嵌合体",
+      "cycle": "c2",
+      "sources": {
+        "front": "aibp/ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS.jpg",
+        "back": "aibp/ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_O_001.jpg"
+      },
+      "notes": "",
+      "levels": {
+        "1": {
+          "level": 1,
+          "label": "I",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": 5,
+            "movement": 5,
+            "hitRequirement": 6
+          },
+          "bonuses": {
+            "promotions": 0,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "黏糊留痕；相态变化；来势汹汹；弱肉强食",
+          "notes": "相态与武器类别会改变AT力场；腐蚀液态可额外造成等同等级的危险",
+          "source": {
+            "card": "aibp/ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS.jpg",
+            "sheet": "等级属性",
+            "row": 44
+          }
+        },
+        "2": {
+          "level": 2,
+          "label": "II",
+          "stats": {
+            "wounds": 14,
+            "movementPrinted": 5,
+            "movement": 5,
+            "hitRequirement": 6
+          },
+          "bonuses": {
+            "promotions": 0,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "临界质量；剧毒",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS.jpg",
+            "sheet": "等级属性",
+            "row": 45
+          }
+        },
+        "3": {
+          "level": 3,
+          "label": "III",
+          "stats": {
+            "wounds": 16,
+            "movementPrinted": 5,
+            "movement": 5,
+            "hitRequirement": 7
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 0,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "消化酸液",
+          "notes": "轮结束每名泰坦获得等同神浆标记数的危险",
+          "source": {
+            "card": "aibp/ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS.jpg",
+            "sheet": "等级属性",
+            "row": 46
+          }
+        },
+        "4": {
+          "level": 4,
+          "label": "IV",
+          "stats": {
+            "wounds": 16,
+            "movementPrinted": 5,
+            "movement": 5,
+            "hitRequirement": 7
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 1,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "无底黑沼",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS.jpg",
+            "sheet": "等级属性",
+            "row": 47
+          }
+        },
+        "5": {
+          "level": 5,
+          "label": "V",
+          "stats": {
+            "wounds": 18,
+            "movementPrinted": 6,
+            "movement": 6,
+            "hitRequirement": 8
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 2,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 1,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "希望终结；黑色之雨；有利位置修正",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 48
+          }
+        },
+        "6": {
+          "level": 6,
+          "label": "VI",
+          "stats": {
+            "wounds": 18,
+            "movementPrinted": 6,
+            "movement": 6,
+            "hitRequirement": 8
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 3,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "贪食拖拽",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 49
+          }
+        },
+        "7": {
+          "level": 7,
+          "label": "VII",
+          "stats": {
+            "wounds": 20,
+            "movementPrinted": 7,
+            "movement": 7,
+            "hitRequirement": 9
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 4,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "原初等离子",
+          "notes": "满足其武器条件时另有AT力场+2",
+          "source": {
+            "card": "aibp/ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 50
+          }
+        },
+        "8": {
+          "level": 8,
+          "label": "VIII",
+          "stats": {
+            "wounds": 20,
+            "movementPrinted": 7,
+            "movement": 7,
+            "hitRequirement": 9
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 5,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 1
+          },
+          "traitChanges": "活体要塞",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 51
+          }
+        },
+        "9": {
+          "level": 9,
+          "label": "IX",
+          "stats": {
+            "wounds": 22,
+            "movementPrinted": 8,
+            "movement": 8,
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 5,
+            "at": 6,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 3,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 2
+          },
+          "traitChanges": "铁石心肠；三点六；终结伊始",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 52
+          }
+        }
+      }
+    },
+    "CYCLONUS": {
+      "id": "CYCLONUS",
+      "name": "无眼巨人",
+      "cycle": "c2",
+      "sources": {
+        "front": "aibp/ps/CYCLONUS/CYCLONUS.jpg",
+        "back": "aibp/ps/CYCLONUS/CYCLONUS_TR_O_001.jpg"
+      },
+      "notes": "",
+      "levels": {
+        "1": {
+          "level": 1,
+          "label": "I",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": 7,
+            "movement": 7,
+            "hitRequirement": 7
+          },
+          "bonuses": {
+            "promotions": 0,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "战争机器；弱肉强食",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/CYCLONUS/CYCLONUS.jpg",
+            "sheet": "等级属性",
+            "row": 53
+          }
+        },
+        "2": {
+          "level": 2,
+          "label": "II",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": 7,
+            "movement": 7,
+            "hitRequirement": 7
+          },
+          "bonuses": {
+            "promotions": 0,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "以眼还眼",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/CYCLONUS/CYCLONUS.jpg",
+            "sheet": "等级属性",
+            "row": 54
+          }
+        },
+        "3": {
+          "level": 3,
+          "label": "III",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": 7,
+            "movement": 7,
+            "hitRequirement": 8
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 0,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "无敌防守",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/CYCLONUS/CYCLONUS.jpg",
+            "sheet": "等级属性",
+            "row": 55
+          }
+        },
+        "4": {
+          "level": 4,
+          "label": "IV",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": 8,
+            "movement": 8,
+            "hitRequirement": 8
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 1,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "次级威胁感应",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/CYCLONUS/CYCLONUS.jpg",
+            "sheet": "等级属性",
+            "row": 56
+          }
+        },
+        "5": {
+          "level": 5,
+          "label": "V",
+          "stats": {
+            "wounds": 11,
+            "movementPrinted": 8,
+            "movement": 8,
+            "hitRequirement": 9
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 2,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 1,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "希望终结；超侵袭",
+          "notes": "希望终结；超侵袭",
+          "source": {
+            "card": "aibp/ps/CYCLONUS/CYCLONUS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 57
+          }
+        },
+        "6": {
+          "level": 6,
+          "label": "VI",
+          "stats": {
+            "wounds": 11,
+            "movementPrinted": 8,
+            "movement": 8,
+            "hitRequirement": 9
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 3,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "无眼巨人",
+          "notes": "无限巨人",
+          "source": {
+            "card": "aibp/ps/CYCLONUS/CYCLONUS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 58
+          }
+        },
+        "7": {
+          "level": 7,
+          "label": "VII",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": 9,
+            "movement": 9,
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 4,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "绯红潮汐",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/CYCLONUS/CYCLONUS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 59
+          }
+        },
+        "8": {
+          "level": 8,
+          "label": "VIII",
+          "stats": {
+            "wounds": 13,
+            "movementPrinted": 9,
+            "movement": 9,
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 5,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 1
+          },
+          "traitChanges": "终结伊始",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/CYCLONUS/CYCLONUS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 60
+          }
+        },
+        "9": {
+          "level": 9,
+          "label": "IX",
+          "stats": {
+            "wounds": 14,
+            "movementPrinted": 9,
+            "movement": 9,
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 5,
+            "at": 7,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 3,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 2
+          },
+          "traitChanges": "铁石心肠；鞭刑塔魔击",
+          "notes": "铁石心肠；IX级区域攻击特质（见卡图）",
+          "source": {
+            "card": "aibp/ps/CYCLONUS/CYCLONUS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 61
+          }
+        }
+      }
+    },
+    "THE_BURDEN": {
+      "id": "THE_BURDEN",
+      "name": "巨石",
+      "cycle": "c2",
+      "sources": {
+        "front": "aibp/ps/THE_BURDEN/THE_BURDEN.jpg",
+        "back": "aibp/ps/THE_BURDEN/THE_BURDEN_TR_O_001.jpg"
+      },
+      "notes": "",
+      "levels": {
+        "1": {
+          "level": 1,
+          "label": "I",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": 9,
+            "movement": 9,
+            "hitRequirement": 8
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "踢飞X；西西弗斯螺旋；希望断绝；神浆飞溅；摩伊赖仓库；还早……",
+          "notes": "同时出现在C2/C3",
+          "source": {
+            "card": "aibp/ps/THE_BURDEN/THE_BURDEN.jpg",
+            "sheet": "等级属性",
+            "row": 62
+          }
+        },
+        "2": {
+          "level": 2,
+          "label": "II",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": 9,
+            "movement": 9,
+            "hitRequirement": 8
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 1,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "难以推动的巨石",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/THE_BURDEN/THE_BURDEN_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 63
+          }
+        },
+        "3": {
+          "level": 3,
+          "label": "III",
+          "stats": {
+            "wounds": 13,
+            "movementPrinted": 10,
+            "movement": 10,
+            "hitRequirement": 9
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 2,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "我们的纽带",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/THE_BURDEN/THE_BURDEN_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 64
+          }
+        },
+        "4": {
+          "level": 4,
+          "label": "IV",
+          "stats": {
+            "wounds": 14,
+            "movementPrinted": 10,
+            "movement": 10,
+            "hitRequirement": 9
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 3,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "夏尔巴人克星",
+          "notes": "1–7列每命中另+2危险；8–15列每命中另+1危险",
+          "source": {
+            "card": "aibp/ps/THE_BURDEN/THE_BURDEN_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 65
+          }
+        },
+        "5": {
+          "level": 5,
+          "label": "V",
+          "stats": {
+            "wounds": 15,
+            "movementPrinted": 11,
+            "movement": 11,
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 4,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 1,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "白雪溜冰团；终结伊始",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/THE_BURDEN/THE_BURDEN_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 66
+          }
+        },
+        "6": {
+          "level": 6,
+          "label": "VI",
+          "stats": {
+            "wounds": 16,
+            "movementPrinted": 11,
+            "movement": 11,
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 5,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "滑坡",
+          "notes": "踢退+3",
+          "source": {
+            "card": "aibp/ps/THE_BURDEN/THE_BURDEN_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 67
+          }
+        },
+        "7": {
+          "level": 7,
+          "label": "VII",
+          "stats": {
+            "wounds": 17,
+            "movementPrinted": 12,
+            "movement": 12,
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 6,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "疯狂山脉",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/THE_BURDEN/THE_BURDEN_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 68
+          }
+        },
+        "8": {
+          "level": 8,
+          "label": "VIII",
+          "stats": {
+            "wounds": 18,
+            "movementPrinted": 12,
+            "movement": 12,
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 7,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 1
+          },
+          "traitChanges": "时间锋迫近",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/THE_BURDEN/THE_BURDEN_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 69
+          }
+        },
+        "9": {
+          "level": 9,
+          "label": "IX",
+          "stats": {
+            "wounds": 18,
+            "movementPrinted": 13,
+            "movement": 13,
+            "hitRequirement": 12
+          },
+          "bonuses": {
+            "promotions": 5,
+            "at": 8,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 3,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 2
+          },
+          "traitChanges": "铁石心肠；操控游戏",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/THE_BURDEN/THE_BURDEN_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 70
+          }
+        }
+      }
+    },
+    "THE_NIETZSCJEAN": {
+      "id": "THE_NIETZSCJEAN",
+      "name": "尼采",
+      "cycle": "c2",
+      "sources": {
+        "front": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN.jpg",
+        "back": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_O_001.jpg"
+      },
+      "notes": "",
+      "levels": {
+        "1": {
+          "level": 1,
+          "label": "I",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": 8,
+            "movement": 8,
+            "hitRequirement": 9
+          },
+          "bonuses": {
+            "promotions": 0,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "留一手；威胁感应；希望断绝；弱肉强食；武器大师",
+          "notes": "留一手：每次攻击危险−1",
+          "source": {
+            "card": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN.jpg",
+            "sheet": "等级属性",
+            "row": 71
+          }
+        },
+        "2": {
+          "level": 2,
+          "label": "II",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": 8,
+            "movement": 8,
+            "hitRequirement": 9
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 1,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "暗影烈焰；以众敌一；时不我待",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 72
+          }
+        },
+        "3": {
+          "level": 3,
+          "label": "III",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": 8,
+            "movement": 8,
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 2,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "无暇战技",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 73
+          }
+        },
+        "4": {
+          "level": 4,
+          "label": "IV",
+          "stats": {
+            "wounds": 13,
+            "movementPrinted": 9,
+            "movement": 9,
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 3,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "决裂姿态",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 74
+          }
+        },
+        "5": {
+          "level": 5,
+          "label": "V",
+          "stats": {
+            "wounds": 13,
+            "movementPrinted": 9,
+            "movement": 9,
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 4,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 1,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "懦夫的命运；终结伊始",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 75
+          }
+        },
+        "6": {
+          "level": 6,
+          "label": "VI",
+          "stats": {
+            "wounds": 14,
+            "movementPrinted": 10,
+            "movement": 10,
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 5,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "从不失手",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 76
+          }
+        },
+        "7": {
+          "level": 7,
+          "label": "VII",
+          "stats": {
+            "wounds": 14,
+            "movementPrinted": 10,
+            "movement": 10,
+            "hitRequirement": 12
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 6,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 1
+          },
+          "traitChanges": "格杀勿论",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 77
+          }
+        },
+        "8": {
+          "level": 8,
+          "label": "VIII",
+          "stats": {
+            "wounds": 15,
+            "movementPrinted": 11,
+            "movement": 11,
+            "hitRequirement": 12
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 7,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 3,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 2
+          },
+          "traitChanges": "铁石心肠",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 78
+          }
+        },
+        "9": {
+          "level": 9,
+          "label": "IX",
+          "stats": {
+            "wounds": 16,
+            "movementPrinted": 11,
+            "movement": 11,
+            "hitRequirement": 13
+          },
+          "bonuses": {
+            "promotions": 5,
+            "at": 9,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 4,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 3
+          },
+          "traitChanges": "凡间之神",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 79
+          }
+        }
+      }
+    },
+    "HYPERTIME_ORACLE": {
+      "id": "HYPERTIME_ORACLE",
+      "name": "超时间流神谕者",
+      "cycle": "c3",
+      "sources": {
+        "front": "aibp/ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE.jpg",
+        "back": "aibp/ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_TR_V_001.jpg"
+      },
+      "notes": "正面有两个版本。主大卡 I级含终端滞留；-1版本 I级为时光前线召唤，I–III基础数值相同。IV级记录来自主大卡。 其他核对来源：HYPERTIME_ORACLE-1.jpg",
+      "levels": {
+        "1": {
+          "level": 1,
+          "label": "I",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 8
+          },
+          "bonuses": {
+            "promotions": 0,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "时光前线召唤；扑灭可能；命引之死",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE.jpg",
+            "sheet": "等级属性",
+            "row": 80
+          }
+        },
+        "2": {
+          "level": 2,
+          "label": "II",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 8
+          },
+          "bonuses": {
+            "promotions": 0,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "寄生贪时；曾几何时",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE.jpg",
+            "sheet": "等级属性",
+            "row": 81
+          }
+        },
+        "3": {
+          "level": 3,
+          "label": "III",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 9
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 1,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "量子之眼；超时光前线",
+          "notes": "前线移动改为4格；其属性加成为命运而非危险",
+          "source": {
+            "card": "aibp/ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE.jpg",
+            "sheet": "等级属性",
+            "row": 82
+          }
+        },
+        "4": {
+          "level": 4,
+          "label": "IV",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 9
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 1,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 1,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "奥米加终端",
+          "notes": "前线移动改为5格",
+          "source": {
+            "card": "aibp/ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE.jpg",
+            "sheet": "等级属性",
+            "row": 83
+          }
+        },
+        "5": {
+          "level": 5,
+          "label": "V",
+          "stats": {
+            "wounds": 11,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 2,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 1,
+            "evasionDice": 0
+          },
+          "traitChanges": "希望断绝；超时光前线",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_TR_V_001.jpg",
+            "sheet": "等级属性",
+            "row": 84
+          }
+        },
+        "6": {
+          "level": 6,
+          "label": "VI",
+          "stats": {
+            "wounds": 11,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 3,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 2,
+            "evasionDice": 0
+          },
+          "traitChanges": "锁定",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_TR_V_001.jpg",
+            "sheet": "等级属性",
+            "row": 85
+          }
+        },
+        "7": {
+          "level": 7,
+          "label": "VII",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 4,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 2,
+            "evasionDice": 0
+          },
+          "traitChanges": "虚空凝视",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_TR_V_001.jpg",
+            "sheet": "等级属性",
+            "row": 86
+          }
+        },
+        "8": {
+          "level": 8,
+          "label": "VIII",
+          "stats": {
+            "wounds": 14,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 5,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 2,
+            "evasionDice": 1
+          },
+          "traitChanges": "量子前线",
+          "notes": "前线移动改为6格",
+          "source": {
+            "card": "aibp/ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_TR_V_001.jpg",
+            "sheet": "等级属性",
+            "row": 87
+          }
+        },
+        "9": {
+          "level": 9,
+          "label": "IX",
+          "stats": {
+            "wounds": 16,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 12
+          },
+          "bonuses": {
+            "promotions": 5,
+            "at": 6,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 3,
+            "evasionDice": 2
+          },
+          "traitChanges": "时光无情；结束的开始",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_TR_V_001.jpg",
+            "sheet": "等级属性",
+            "row": 88
+          }
+        }
+      }
+    },
+    "ICARIAN_HARPY": {
+      "id": "ICARIAN_HARPY",
+      "name": "伊卡洛斯鹰身妖",
+      "cycle": "c3",
+      "sources": {
+        "front": "aibp/ps/ICARIAN_HARPY/ICARIAN_HARPY.jpg",
+        "back": "aibp/ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_O_001.jpg"
+      },
+      "notes": "",
+      "levels": {
+        "1": {
+          "level": 1,
+          "label": "I",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 8
+          },
+          "bonuses": {
+            "promotions": 0,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "急速适应；舔血战士；反刍；命定之死",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/ICARIAN_HARPY/ICARIAN_HARPY.jpg",
+            "sheet": "等级属性",
+            "row": 89
+          }
+        },
+        "2": {
+          "level": 2,
+          "label": "II",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 8
+          },
+          "bonuses": {
+            "promotions": 0,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "无新增",
+          "notes": "所有神浆池视为黑色冰川",
+          "source": {
+            "card": "aibp/ps/ICARIAN_HARPY/ICARIAN_HARPY.jpg",
+            "sheet": "等级属性",
+            "row": 90
+          }
+        },
+        "3": {
+          "level": 3,
+          "label": "III",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 9
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 0,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "深切割伤",
+          "notes": "泰坦回合结束获得等同出血标记数的危险",
+          "source": {
+            "card": "aibp/ps/ICARIAN_HARPY/ICARIAN_HARPY.jpg",
+            "sheet": "等级属性",
+            "row": 91
+          }
+        },
+        "4": {
+          "level": 4,
+          "label": "IV",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 9
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 1,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "囫囵吞下",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/ICARIAN_HARPY/ICARIAN_HARPY.jpg",
+            "sheet": "等级属性",
+            "row": 92
+          }
+        },
+        "5": {
+          "level": 5,
+          "label": "V",
+          "stats": {
+            "wounds": 11,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 2,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 1,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "希望断绝；触手怪物",
+          "notes": "拉近+3",
+          "source": {
+            "card": "aibp/ps/ICARIAN_HARPY/ICARIAN_HARPY.jpg",
+            "sheet": "等级属性",
+            "row": 93
+          }
+        },
+        "6": {
+          "level": 6,
+          "label": "VI",
+          "stats": {
+            "wounds": 11,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 3,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "失血",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 94
+          }
+        },
+        "7": {
+          "level": 7,
+          "label": "VII",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 4,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "无新增",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 95
+          }
+        },
+        "8": {
+          "level": 8,
+          "label": "VIII",
+          "stats": {
+            "wounds": 13,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 12
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 5,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 1
+          },
+          "traitChanges": "铁石心肠；心脏滴血",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 96
+          }
+        },
+        "9": {
+          "level": 9,
+          "label": "IX",
+          "stats": {
+            "wounds": 14,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 13
+          },
+          "bonuses": {
+            "promotions": 5,
+            "at": 6,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 3,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 2
+          },
+          "traitChanges": "终结伊始；血管破裂；完蛋",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 97
+          }
+        }
+      }
+    },
+    "SUN_DESCENDANT": {
+      "id": "SUN_DESCENDANT",
+      "name": "烈日后裔",
+      "cycle": "c3",
+      "sources": {
+        "front": "aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT.jpg",
+        "back": "aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_O_001.jpg"
+      },
+      "notes": "",
+      "levels": {
+        "1": {
+          "level": 1,
+          "label": "I",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "无情太阳；扑灭可能；希望断绝；命引之死",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT.jpg",
+            "sheet": "等级属性",
+            "row": 98
+          }
+        },
+        "2": {
+          "level": 2,
+          "label": "II",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 2,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "神赐法则",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT.jpg",
+            "sheet": "等级属性",
+            "row": 99
+          }
+        },
+        "3": {
+          "level": 3,
+          "label": "III",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 3,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "阳光透镜",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT.jpg",
+            "sheet": "等级属性",
+            "row": 100
+          }
+        },
+        "4": {
+          "level": 4,
+          "label": "IV",
+          "stats": {
+            "wounds": 13,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 4,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "超频",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 101
+          }
+        },
+        "5": {
+          "level": 5,
+          "label": "V",
+          "stats": {
+            "wounds": 13,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 12
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 5,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 1,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "终结伊始；叫骂取乐",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 102
+          }
+        },
+        "6": {
+          "level": 6,
+          "label": "VI",
+          "stats": {
+            "wounds": 14,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 12
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 6,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "冰河时代",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 103
+          }
+        },
+        "7": {
+          "level": 7,
+          "label": "VII",
+          "stats": {
+            "wounds": 14,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 13
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 7,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 1
+          },
+          "traitChanges": "黑色烈日",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 104
+          }
+        },
+        "8": {
+          "level": 8,
+          "label": "VIII",
+          "stats": {
+            "wounds": 15,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 13
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 8,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 2
+          },
+          "traitChanges": "不跪则死",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 105
+          }
+        },
+        "9": {
+          "level": 9,
+          "label": "IX",
+          "stats": {
+            "wounds": 16,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 14
+          },
+          "bonuses": {
+            "promotions": 5,
+            "at": 9,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 3,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 3
+          },
+          "traitChanges": "铁石心肠；日全食",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 106
+          }
+        }
+      }
+    },
+    "MIDASCORE": {
+      "id": "MIDASCORE",
+      "name": "米达斯蝎狮",
+      "cycle": "c4",
+      "sources": {
+        "front": "aibp/ps/MIDASCORE/MIDASCORE.jpg",
+        "back": "aibp/ps/MIDASCORE/MIDASCORE_TR_O_001.jpg"
+      },
+      "notes": "高等级依据Mod大卡反面，英文特质名保留原文。",
+      "levels": {
+        "1": {
+          "level": 1,
+          "label": "I",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 9
+          },
+          "bonuses": {
+            "promotions": 0,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "黄金滋味；高空黑影；帝国冲击；疼痛增量",
+          "notes": "帝国冲击8格",
+          "source": {
+            "card": "aibp/ps/MIDASCORE/MIDASCORE.jpg",
+            "sheet": "等级属性",
+            "row": 107
+          }
+        },
+        "2": {
+          "level": 2,
+          "label": "II",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 9
+          },
+          "bonuses": {
+            "promotions": 0,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "黄金之城；累累白骨之间",
+          "notes": "帝国冲击9格",
+          "source": {
+            "card": "aibp/ps/MIDASCORE/MIDASCORE.jpg",
+            "sheet": "等级属性",
+            "row": 108
+          }
+        },
+        "3": {
+          "level": 3,
+          "label": "III",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 0,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "沉没成本",
+          "notes": "帝国冲击10格；轮结束另获得等同米达斯标记数的危险",
+          "source": {
+            "card": "aibp/ps/MIDASCORE/MIDASCORE.jpg",
+            "sheet": "等级属性",
+            "row": 109
+          }
+        },
+        "4": {
+          "level": 4,
+          "label": "IV",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 1,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "险恶通胀；贪婪之过",
+          "notes": "帝国冲击11格",
+          "source": {
+            "card": "aibp/ps/MIDASCORE/MIDASCORE.jpg",
+            "sheet": "等级属性",
+            "row": 110
+          }
+        },
+        "5": {
+          "level": 5,
+          "label": "V",
+          "stats": {
+            "wounds": 11,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 2,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 1,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "End of Hope；Aggressive Expansion",
+          "notes": "原生物轮开始执行 Airburst 3",
+          "source": {
+            "card": "aibp/ps/MIDASCORE/MIDASCORE_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 111
+          }
+        },
+        "6": {
+          "level": 6,
+          "label": "VI",
+          "stats": {
+            "wounds": 11,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 3,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Loss of Liquidity",
+          "notes": "每个非武器装备上的米达斯标记使移动与赫尔墨斯移动−1；本回合不移动则死亡",
+          "source": {
+            "card": "aibp/ps/MIDASCORE/MIDASCORE_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 112
+          }
+        },
+        "7": {
+          "level": 7,
+          "label": "VII",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 12
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 4,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Soundspeed Impetus",
+          "notes": "穿过或停在倒地/浮空泰坦上，该泰坦死亡",
+          "source": {
+            "card": "aibp/ps/MIDASCORE/MIDASCORE_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 113
+          }
+        },
+        "8": {
+          "level": 8,
+          "label": "VIII",
+          "stats": {
+            "wounds": 13,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 12
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 5,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 1
+          },
+          "traitChanges": "Beginning of the End；Debts of Succession",
+          "notes": "获得米达斯标记数量翻倍",
+          "source": {
+            "card": "aibp/ps/MIDASCORE/MIDASCORE_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 114
+          }
+        },
+        "9": {
+          "level": 9,
+          "label": "IX",
+          "stats": {
+            "wounds": 14,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 13
+          },
+          "bonuses": {
+            "promotions": 5,
+            "at": 6,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 3,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 2
+          },
+          "traitChanges": "Ruthless；Refuse Credit",
+          "notes": "禁用地形 Shifting；移动摧毁伊利昂塔",
+          "source": {
+            "card": "aibp/ps/MIDASCORE/MIDASCORE_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 115
+          }
+        }
+      }
+    },
+    "DEMIDJINN": {
+      "id": "DEMIDJINN",
+      "name": "半灯神",
+      "cycle": "c4",
+      "sources": {
+        "front": "aibp/ps/DEMIDJINN/DEMIDJINN.jpg",
+        "back": "aibp/ps/DEMIDJINN/DEMIDJINN_TR_O_002.jpg"
+      },
+      "notes": "高等级依据Mod大卡反面，英文特质名保留原文。",
+      "levels": {
+        "1": {
+          "level": 1,
+          "label": "I",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 9
+          },
+          "bonuses": {
+            "promotions": 0,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "全场愿望；活体龙卷风；许愿消失；沙尘螺旋；无尽阶梯；以怨还怨",
+          "notes": "许愿消失9；无尽阶梯5格",
+          "source": {
+            "card": "aibp/ps/DEMIDJINN/DEMIDJINN.jpg",
+            "sheet": "等级属性",
+            "row": 116
+          }
+        },
+        "2": {
+          "level": 2,
+          "label": "II",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 9
+          },
+          "bonuses": {
+            "promotions": 0,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "诅咒外壳",
+          "notes": "许愿消失10；无尽阶梯9格；每张符合条件的愿望状态卡另+1 AT",
+          "source": {
+            "card": "aibp/ps/DEMIDJINN/DEMIDJINN.jpg",
+            "sheet": "等级属性",
+            "row": 117
+          }
+        },
+        "3": {
+          "level": 3,
+          "label": "III",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 0,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "无限愿望；反馈回路",
+          "notes": "许愿消失11；无尽阶梯13格",
+          "source": {
+            "card": "aibp/ps/DEMIDJINN/DEMIDJINN.jpg",
+            "sheet": "等级属性",
+            "row": 118
+          }
+        },
+        "4": {
+          "level": 4,
+          "label": "IV",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 1,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "终极愿望",
+          "notes": "许愿消失12；无尽阶梯18格",
+          "source": {
+            "card": "aibp/ps/DEMIDJINN/DEMIDJINN.jpg",
+            "sheet": "等级属性",
+            "row": 119
+          }
+        },
+        "5": {
+          "level": 5,
+          "label": "V",
+          "stats": {
+            "wounds": 11,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 2,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 1,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "End of Hope；Djinnian Determination",
+          "notes": "执行许愿消失前，转向最近棋盘边缘",
+          "source": {
+            "card": "aibp/ps/DEMIDJINN/DEMIDJINN_TR_O_002.jpg",
+            "sheet": "等级属性",
+            "row": 120
+          }
+        },
+        "6": {
+          "level": 6,
+          "label": "VI",
+          "stats": {
+            "wounds": 11,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 3,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Endless Escalator；Imminent Destruction",
+          "notes": "无尽阶梯最底层泰坦死亡；泰坦本回合未攻击，回合结束解算顶层AI",
+          "source": {
+            "card": "aibp/ps/DEMIDJINN/DEMIDJINN_TR_O_002.jpg",
+            "sheet": "等级属性",
+            "row": 121
+          }
+        },
+        "7": {
+          "level": 7,
+          "label": "VII",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 12
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 4,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Wishtanglement",
+          "notes": "特定愿望状态传播给其他泰坦",
+          "source": {
+            "card": "aibp/ps/DEMIDJINN/DEMIDJINN_TR_O_002.jpg",
+            "sheet": "等级属性",
+            "row": 122
+          }
+        },
+        "8": {
+          "level": 8,
+          "label": "VIII",
+          "stats": {
+            "wounds": 13,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 12
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 5,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 1
+          },
+          "traitChanges": "Beginning of the End；Djinnian Precision",
+          "notes": "许愿消失必须针对距离恰为许愿消失值的伊利昂塔",
+          "source": {
+            "card": "aibp/ps/DEMIDJINN/DEMIDJINN_TR_O_002.jpg",
+            "sheet": "等级属性",
+            "row": 123
+          }
+        },
+        "9": {
+          "level": 9,
+          "label": "IX",
+          "stats": {
+            "wounds": 14,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 13
+          },
+          "bonuses": {
+            "promotions": 5,
+            "at": 6,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 3,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 2
+          },
+          "traitChanges": "Ruthless；Flickering Wishes",
+          "notes": "每次双方攻击后触发全场愿望",
+          "source": {
+            "card": "aibp/ps/DEMIDJINN/DEMIDJINN_TR_O_002.jpg",
+            "sheet": "等级属性",
+            "row": 124
+          }
+        }
+      }
+    },
+    "THE_BABELIAN_LUNACY": {
+      "id": "THE_BABELIAN_LUNACY",
+      "name": "巴别疯魔塔",
+      "cycle": "c4",
+      "sources": {
+        "front": "aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY.jpg",
+        "back": "aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_O_001.jpg"
+      },
+      "notes": "高等级依据Mod大卡反面，英文特质名保留原文。 其他核对来源：THE_BABELIAN_LUNACY_TR_II_001.jpg；THE_BABELIAN_LUNACY_TR_VIII_001.jpg；THE_BABELIAN_LUNACY_TR_IX_001.jpg",
+      "levels": {
+        "1": {
+          "level": 1,
+          "label": "I",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": "—",
+            "movement": "—",
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "希望断绝；疯狂高塔；许愿消失；云端塔林",
+          "notes": "移动力栏印为横杠；许愿消失9",
+          "source": {
+            "card": "aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY.jpg",
+            "sheet": "等级属性",
+            "row": 125
+          }
+        },
+        "2": {
+          "level": 2,
+          "label": "II",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": "—",
+            "movement": "—",
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 2,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Moon Call；Amongst the Bleached Bones；Built for Eternity；True Babylon",
+          "notes": "无尽阶梯18格；使用非自选语言说话每词+1命运",
+          "source": {
+            "card": "aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 126
+          }
+        },
+        "3": {
+          "level": 3,
+          "label": "III",
+          "stats": {
+            "wounds": 13,
+            "movementPrinted": "—",
+            "movement": "—",
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 3,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "One Fool at a Time",
+          "notes": "泰坦进入无尽阶梯后，阶梯入口消失",
+          "source": {
+            "card": "aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 127
+          }
+        },
+        "4": {
+          "level": 4,
+          "label": "IV",
+          "stats": {
+            "wounds": 14,
+            "movementPrinted": "—",
+            "movement": "—",
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 4,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Thread Lightly",
+          "notes": "攀升检定失败抽奥波尔",
+          "source": {
+            "card": "aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 128
+          }
+        },
+        "5": {
+          "level": 5,
+          "label": "V",
+          "stats": {
+            "wounds": 14,
+            "movementPrinted": "—",
+            "movement": "—",
+            "hitRequirement": 12
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 5,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 1,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Beginning of the End",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 129
+          }
+        },
+        "6": {
+          "level": 6,
+          "label": "VI",
+          "stats": {
+            "wounds": 15,
+            "movementPrinted": "—",
+            "movement": "—",
+            "hitRequirement": 12
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 6,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Endless Escalator",
+          "notes": "无尽阶梯最底层泰坦死亡",
+          "source": {
+            "card": "aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 130
+          }
+        },
+        "7": {
+          "level": 7,
+          "label": "VII",
+          "stats": {
+            "wounds": 15,
+            "movementPrinted": "—",
+            "movement": "—",
+            "hitRequirement": 13
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 7,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 1
+          },
+          "traitChanges": "Fate of a Debtor",
+          "notes": "一名泰坦获得米达斯标记，其他泰坦获得相同数量",
+          "source": {
+            "card": "aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 131
+          }
+        },
+        "8": {
+          "level": 8,
+          "label": "VIII",
+          "stats": {
+            "wounds": 16,
+            "movementPrinted": "—",
+            "movement": "—",
+            "hitRequirement": 13
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 8,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 2
+          },
+          "traitChanges": "Built to Be Broken；Total Eclipse",
+          "notes": "造成伤口失败，锁住最高未锁阶梯层，该层泰坦死亡",
+          "source": {
+            "card": "aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 132
+          }
+        },
+        "9": {
+          "level": 9,
+          "label": "IX",
+          "stats": {
+            "wounds": 17,
+            "movementPrinted": "—",
+            "movement": "—",
+            "hitRequirement": 14
+          },
+          "bonuses": {
+            "promotions": 5,
+            "at": 9,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 3,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 3
+          },
+          "traitChanges": "God’s Breath；Ruthless",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 133
+          }
+        }
+      }
+    },
+    "DAHAKA": {
+      "id": "DAHAKA",
+      "name": "达哈卡",
+      "cycle": "c4",
+      "sources": {
+        "front": "aibp/ps/DAHAKA/DAHAKA.jpg",
+        "back": "aibp/ps/DAHAKA/DAHAKA_TR_O_002.jpg"
+      },
+      "notes": "高等级依据Mod大卡反面，英文特质名保留原文。",
+      "levels": {
+        "1": {
+          "level": 1,
+          "label": "I",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "悔恨的镣铐；大漠的飘渺烟雾；希望断绝；灵魂撕裂；半虚体的恶灵；暗影步X",
+          "notes": "悔恨的镣铐激活时：闪避骰−1、每命中危险−1（最低1），禁用希望断绝",
+          "source": {
+            "card": "aibp/ps/DAHAKA/DAHAKA.jpg",
+            "sheet": "等级属性",
+            "row": 134
+          }
+        },
+        "2": {
+          "level": 2,
+          "label": "II",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 1,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Winnowing；移除 Shackles of Regret",
+          "notes": "移除恐惧的款待，加入 Trojan Ire 与 The Oar",
+          "source": {
+            "card": "aibp/ps/DAHAKA/DAHAKA_TR_O_002.jpg",
+            "sheet": "等级属性",
+            "row": 135
+          }
+        },
+        "3": {
+          "level": 3,
+          "label": "III",
+          "stats": {
+            "wounds": 13,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 2,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Land That Knows Nothing of the Sea",
+          "notes": "获得 The Oar 后立即翻面",
+          "source": {
+            "card": "aibp/ps/DAHAKA/DAHAKA_TR_O_002.jpg",
+            "sheet": "等级属性",
+            "row": 136
+          }
+        },
+        "4": {
+          "level": 4,
+          "label": "IV",
+          "stats": {
+            "wounds": 13,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 3,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Forbidden Alchemy",
+          "notes": "获得神浆标记数量翻倍",
+          "source": {
+            "card": "aibp/ps/DAHAKA/DAHAKA_TR_O_002.jpg",
+            "sheet": "等级属性",
+            "row": 137
+          }
+        },
+        "5": {
+          "level": 5,
+          "label": "V",
+          "stats": {
+            "wounds": 14,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 12
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 4,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 1,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Beginning of the End；Bane of Odysseus",
+          "notes": "未通过 Trojan Ire 卡的条件则死亡",
+          "source": {
+            "card": "aibp/ps/DAHAKA/DAHAKA_TR_O_002.jpg",
+            "sheet": "等级属性",
+            "row": 138
+          }
+        },
+        "6": {
+          "level": 6,
+          "label": "VI",
+          "stats": {
+            "wounds": 14,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 12
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 5,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Contaminated Cuts",
+          "notes": "泰坦回合结束获得等同神浆标记数的危险",
+          "source": {
+            "card": "aibp/ps/DAHAKA/DAHAKA_TR_O_002.jpg",
+            "sheet": "等级属性",
+            "row": 139
+          }
+        },
+        "7": {
+          "level": 7,
+          "label": "VII",
+          "stats": {
+            "wounds": 15,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 13
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 6,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Shadow Backstep",
+          "notes": "暗影步穿过棋盘边缘，治疗1",
+          "source": {
+            "card": "aibp/ps/DAHAKA/DAHAKA_TR_O_002.jpg",
+            "sheet": "等级属性",
+            "row": 140
+          }
+        },
+        "8": {
+          "level": 8,
+          "label": "VIII",
+          "stats": {
+            "wounds": 15,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 13
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 7,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 1
+          },
+          "traitChanges": "The Dragon Does Not Sleep",
+          "notes": "增加连击轨道；除非破坏连击，否则AI不能被打断攻击",
+          "source": {
+            "card": "aibp/ps/DAHAKA/DAHAKA_TR_O_002.jpg",
+            "sheet": "等级属性",
+            "row": 141
+          }
+        },
+        "9": {
+          "level": 9,
+          "label": "IX",
+          "stats": {
+            "wounds": 17,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 14
+          },
+          "bonuses": {
+            "promotions": 5,
+            "at": 8,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 3,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 2
+          },
+          "traitChanges": "Ruthless；Incorporeal Wraith",
+          "notes": "只能通过打断攻击造成伤口；BP使用较高的AT值",
+          "source": {
+            "card": "aibp/ps/DAHAKA/DAHAKA_TR_O_002.jpg",
+            "sheet": "等级属性",
+            "row": 142
+          }
+        }
+      }
+    },
+    "DRAGON_OF_PHOBOS": {
+      "id": "DRAGON_OF_PHOBOS",
+      "name": "骇神巨龙",
+      "cycle": "c5",
+      "sources": {
+        "front": "aibp/ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS.jpg",
+        "back": "aibp/ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_TR_O_001.jpg"
+      },
+      "notes": "高等级依据Mod大卡反面，英文特质名保留原文。",
+      "levels": {
+        "1": {
+          "level": 1,
+          "label": "I",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 0,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "消逝X；恐惧的层次；噩运的隐约笑面；食恐而肥；以真还真",
+          "notes": "身后攻击忽略闪避投掷并全部自动命中",
+          "source": {
+            "card": "aibp/ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS.jpg",
+            "sheet": "等级属性",
+            "row": 143
+          }
+        },
+        "2": {
+          "level": 2,
+          "label": "II",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "恐惧常在",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS.jpg",
+            "sheet": "等级属性",
+            "row": 144
+          }
+        },
+        "3": {
+          "level": 3,
+          "label": "III",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 0,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "比黑夜更黑；死亡的隐约笑面",
+          "notes": "身后攻击改为立即吞噬（死亡）",
+          "source": {
+            "card": "aibp/ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS.jpg",
+            "sheet": "等级属性",
+            "row": 145
+          }
+        },
+        "4": {
+          "level": 4,
+          "label": "IV",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 1,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "黑灯瞎火；以假还真",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS.jpg",
+            "sheet": "等级属性",
+            "row": 146
+          }
+        },
+        "5": {
+          "level": 5,
+          "label": "V",
+          "stats": {
+            "wounds": 11,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 12
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 2,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 1,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Psychosomatic Poisoning；End of Hope",
+          "notes": "获得状态卡、带状态卡开始回合时获得1神浆标记",
+          "source": {
+            "card": "aibp/ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 147
+          }
+        },
+        "6": {
+          "level": 6,
+          "label": "VI",
+          "stats": {
+            "wounds": 11,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 12
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 3,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Relentless Anxiety；Deeper Depths",
+          "notes": "消逝后立刻抽AI；开战氧气标记−1",
+          "source": {
+            "card": "aibp/ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 148
+          }
+        },
+        "7": {
+          "level": 7,
+          "label": "VII",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 13
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 4,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Original Trench",
+          "notes": "普通棋盘格具有裂隙；其他地形视为高地",
+          "source": {
+            "card": "aibp/ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 149
+          }
+        },
+        "8": {
+          "level": 8,
+          "label": "VIII",
+          "stats": {
+            "wounds": 13,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 13
+          },
+          "bonuses": {
+            "promotions": 5,
+            "at": 5,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 1
+          },
+          "traitChanges": "Beginning of the End",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 150
+          }
+        },
+        "9": {
+          "level": 9,
+          "label": "IX",
+          "stats": {
+            "wounds": 14,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 14
+          },
+          "bonuses": {
+            "promotions": 6,
+            "at": 6,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 3,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 2
+          },
+          "traitChanges": "Dragon of the Lightless Void；Ruthless",
+          "notes": "使用开/闭及破/火/黑/希望标记数量受 Light X 限制",
+          "source": {
+            "card": "aibp/ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 151
+          }
+        }
+      }
+    },
+    "MEDUKETOS": {
+      "id": "MEDUKETOS",
+      "name": "美杜莎刻托",
+      "cycle": "c5",
+      "sources": {
+        "front": "aibp/ps/MEDUKETOS/MEDUKETOS.jpg",
+        "back": "aibp/ps/MEDUKETOS/MEDUKETOS_TR_O_001.jpg"
+      },
+      "notes": "高等级依据Mod大卡反面，英文特质名保留原文。",
+      "levels": {
+        "1": {
+          "level": 1,
+          "label": "I",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 0,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "超视距作战；隐蔽与热追踪；高温致死；微波护盾；慢炖；食光而肥",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/MEDUKETOS/MEDUKETOS.jpg",
+            "sheet": "等级属性",
+            "row": 152
+          }
+        },
+        "2": {
+          "level": 2,
+          "label": "II",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "死或是",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/MEDUKETOS/MEDUKETOS.jpg",
+            "sheet": "等级属性",
+            "row": 153
+          }
+        },
+        "3": {
+          "level": 3,
+          "label": "III",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 0,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "无形黑炎",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/MEDUKETOS/MEDUKETOS.jpg",
+            "sheet": "等级属性",
+            "row": 154
+          }
+        },
+        "4": {
+          "level": 4,
+          "label": "IV",
+          "stats": {
+            "wounds": 10,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 1,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "烟囱客满；骑虎难下",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/MEDUKETOS/MEDUKETOS.jpg",
+            "sheet": "等级属性",
+            "row": 155
+          }
+        },
+        "5": {
+          "level": 5,
+          "label": "V",
+          "stats": {
+            "wounds": 11,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 12
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 2,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 1,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Candle in the Dark；End of Hope",
+          "notes": "光照X小于等级一半向上取整时，Skitter失去特殊标记",
+          "source": {
+            "card": "aibp/ps/MEDUKETOS/MEDUKETOS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 156
+          }
+        },
+        "6": {
+          "level": 6,
+          "label": "VI",
+          "stats": {
+            "wounds": 11,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 12
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 3,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Black Soup；Deeper Depths",
+          "notes": "泰坦轮未找到美杜莎刻托，所有泰坦死亡；开战氧气标记−1",
+          "source": {
+            "card": "aibp/ps/MEDUKETOS/MEDUKETOS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 157
+          }
+        },
+        "7": {
+          "level": 7,
+          "label": "VII",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 13
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 4,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Original Trench",
+          "notes": "普通棋盘格具有裂隙；其他地形视为高地",
+          "source": {
+            "card": "aibp/ps/MEDUKETOS/MEDUKETOS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 158
+          }
+        },
+        "8": {
+          "level": 8,
+          "label": "VIII",
+          "stats": {
+            "wounds": 13,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 14
+          },
+          "bonuses": {
+            "promotions": 5,
+            "at": 5,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 1
+          },
+          "traitChanges": "Beginning of the End",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/MEDUKETOS/MEDUKETOS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 159
+          }
+        },
+        "9": {
+          "level": 9,
+          "label": "IX",
+          "stats": {
+            "wounds": 14,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 15
+          },
+          "bonuses": {
+            "promotions": 6,
+            "at": 6,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 3,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 2
+          },
+          "traitChanges": "Three Seconds；Ruthless",
+          "notes": "忽略微波攻击前的特殊标记",
+          "source": {
+            "card": "aibp/ps/MEDUKETOS/MEDUKETOS_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 160
+          }
+        }
+      }
+    },
+    "UR_FLEECE": {
+      "id": "UR_FLEECE",
+      "name": "乌尔-弗里斯",
+      "cycle": "c5",
+      "sources": {
+        "front": "aibp/ps/UR_FLEECE/UR_FLEECE.jpg",
+        "back": "aibp/ps/UR_FLEECE/UR_FLEECE_TR_O_001.jpg"
+      },
+      "notes": "I级两张正面版式数值一致，II–IX级依据Mod独立卡背；全等级生命值99。 其他核对来源：UR_FLEECE_2.jpg",
+      "levels": {
+        "1": {
+          "level": 1,
+          "label": "I",
+          "stats": {
+            "wounds": 99,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 0,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "只是一段回忆；希望断绝；深海竞速；延绵暗渊；绝无摆脱；除了我之外不可有别的神；微波护盾；凡性柴薪",
+          "notes": "两张大卡的I级数值一致；生命值按图记录99；黑暗深渊移动5格",
+          "source": {
+            "card": "aibp/ps/UR_FLEECE/UR_FLEECE.jpg",
+            "sheet": "等级属性",
+            "row": 161
+          }
+        },
+        "2": {
+          "level": 2,
+          "label": "II",
+          "stats": {
+            "wounds": 99,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 2,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Psychosomatic Poisoning；Argo’s Parting Gift；All for All；移除 Just a Memory",
+          "notes": "新增内容参见秘密牌堆15、卡309及322",
+          "source": {
+            "card": "aibp/ps/UR_FLEECE/UR_FLEECE_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 162
+          }
+        },
+        "3": {
+          "level": 3,
+          "label": "III",
+          "stats": {
+            "wounds": 99,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 12
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 3,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Mortal Embers",
+          "notes": "禁用凡性柴薪特质",
+          "source": {
+            "card": "aibp/ps/UR_FLEECE/UR_FLEECE_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 163
+          }
+        },
+        "4": {
+          "level": 4,
+          "label": "IV",
+          "stats": {
+            "wounds": 99,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 12
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 4,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Darkest Before Dawn",
+          "notes": "每4个伤口生成额外黑暗深渊地块，双重伤口计2",
+          "source": {
+            "card": "aibp/ps/UR_FLEECE/UR_FLEECE_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 164
+          }
+        },
+        "5": {
+          "level": 5,
+          "label": "V",
+          "stats": {
+            "wounds": 99,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 13
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 5,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 1,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Beginning of the End",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/UR_FLEECE/UR_FLEECE_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 165
+          }
+        },
+        "6": {
+          "level": 6,
+          "label": "VI",
+          "stats": {
+            "wounds": 99,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 14
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 6,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Deeper Depths",
+          "notes": "开战氧气标记−1",
+          "source": {
+            "card": "aibp/ps/UR_FLEECE/UR_FLEECE_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 166
+          }
+        },
+        "7": {
+          "level": 7,
+          "label": "VII",
+          "stats": {
+            "wounds": 99,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 15
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 7,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 1
+          },
+          "traitChanges": "Contagious Fear",
+          "notes": "一名泰坦获得负面状态，其他泰坦获得同一状态",
+          "source": {
+            "card": "aibp/ps/UR_FLEECE/UR_FLEECE_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 167
+          }
+        },
+        "8": {
+          "level": 8,
+          "label": "VIII",
+          "stats": {
+            "wounds": 99,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 16
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 8,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 2
+          },
+          "traitChanges": "Unfathomable Depths；移除 Deeper Depths",
+          "notes": "开战氧气标记−2（替代此前−1）",
+          "source": {
+            "card": "aibp/ps/UR_FLEECE/UR_FLEECE_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 168
+          }
+        },
+        "9": {
+          "level": 9,
+          "label": "IX",
+          "stats": {
+            "wounds": 99,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 17
+          },
+          "bonuses": {
+            "promotions": 5,
+            "at": 9,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 3,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 3
+          },
+          "traitChanges": "End of an Age；Ruthless",
+          "notes": "不能觉醒",
+          "source": {
+            "card": "aibp/ps/UR_FLEECE/UR_FLEECE_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 169
+          }
+        }
+      }
+    },
+    "TITAN_X": {
+      "id": "TITAN_X",
+      "name": "泰坦X",
+      "cycle": "c5",
+      "sources": {
+        "front": "aibp/ps/TITAN_X/TITAN_X.jpg",
+        "back": "aibp/ps/TITAN_X/TITAN_X_TR_O_001.jpg"
+      },
+      "notes": "高等级依据Mod大卡反面，英文特质名保留原文。",
+      "levels": {
+        "1": {
+          "level": 1,
+          "label": "I",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "玩弄；破坏趣味；希望灭绝；羊群中的牧人；比念头更快；不洁光环；瞬步；变招；关键一击；无视阻碍",
+          "notes": "瞬步穿过目标后继续8格；玩弄激活时闪避骰−1、每命中危险−1（最低1）；觉醒卡AT20是特殊BP力场值，不是生命值",
+          "source": {
+            "card": "aibp/ps/TITAN_X/TITAN_X.jpg",
+            "sheet": "等级属性",
+            "row": 170
+          }
+        },
+        "2": {
+          "level": 2,
+          "label": "II",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 1,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Dazzling Speed；移除 Toying",
+          "notes": "位于正面时不能重掷攻击骰或闪避骰",
+          "source": {
+            "card": "aibp/ps/TITAN_X/TITAN_X_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 171
+          }
+        },
+        "3": {
+          "level": 3,
+          "label": "III",
+          "stats": {
+            "wounds": 13,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 12
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 2,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Nemesis Vow",
+          "notes": "佯攻卡揭示前，每名泰坦获得1神浆标记",
+          "source": {
+            "card": "aibp/ps/TITAN_X/TITAN_X_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 172
+          }
+        },
+        "4": {
+          "level": 4,
+          "label": "IV",
+          "stats": {
+            "wounds": 13,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 12
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 3,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Truth of the Shoals",
+          "notes": "获得疼痛标记数量翻倍",
+          "source": {
+            "card": "aibp/ps/TITAN_X/TITAN_X_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 173
+          }
+        },
+        "5": {
+          "level": 5,
+          "label": "V",
+          "stats": {
+            "wounds": 14,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 13
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 4,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 1,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Beginning of the End；Play for Keeps",
+          "notes": "使用半个战斗棋盘，14×10格",
+          "source": {
+            "card": "aibp/ps/TITAN_X/TITAN_X_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 174
+          }
+        },
+        "6": {
+          "level": 6,
+          "label": "VI",
+          "stats": {
+            "wounds": 15,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 14
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 5,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "You Cannot Advance",
+          "notes": "选目标时若无平局，AI/招牌同时针对所有泰坦",
+          "source": {
+            "card": "aibp/ps/TITAN_X/TITAN_X_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 175
+          }
+        },
+        "7": {
+          "level": 7,
+          "label": "VII",
+          "stats": {
+            "wounds": 15,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 15
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 6,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Flawless Form",
+          "notes": "仅自然10闪避成功",
+          "source": {
+            "card": "aibp/ps/TITAN_X/TITAN_X_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 176
+          }
+        },
+        "8": {
+          "level": 8,
+          "label": "VIII",
+          "stats": {
+            "wounds": 16,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 16
+          },
+          "bonuses": {
+            "promotions": 5,
+            "at": 7,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 1
+          },
+          "traitChanges": "Just Fold",
+          "notes": "使用四分之一战斗棋盘，7×10格（替代半个棋盘）",
+          "source": {
+            "card": "aibp/ps/TITAN_X/TITAN_X_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 177
+          }
+        },
+        "9": {
+          "level": 9,
+          "label": "IX",
+          "stats": {
+            "wounds": 17,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 17
+          },
+          "bonuses": {
+            "promotions": 6,
+            "at": 8,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 3,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 2
+          },
+          "traitChanges": "End of an Age；Ruthless",
+          "notes": "不能觉醒",
+          "source": {
+            "card": "aibp/ps/TITAN_X/TITAN_X_TR_O_001.jpg",
+            "sheet": "等级属性",
+            "row": 178
+          }
+        }
+      }
+    },
+    "HELIOS": {
+      "id": "HELIOS",
+      "name": "赫利俄斯（旧日幽魂）",
+      "cycle": "c4",
+      "sources": {
+        "front": "aibp/ps/other/3b6e9d20/9ed0d98c.bin",
+        "back": "aibp/ps/other/3b6e9d20/b6354455.bin"
+      },
+      "notes": "隐藏Boss；I–IX移动均为∞。另有C4场景卡，未标等级，数值为命中9+、移动∞、生命12、晋升1。 其他核对来源：aibp/ps/other/3b6e9d20/06e090bf.bin",
+      "levels": {
+        "1": {
+          "level": 1,
+          "label": "I",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 9
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Son of Dusk；Pitiless Sun；God Among Men；Glass it All",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/other/3b6e9d20/9ed0d98c.bin",
+            "sheet": "等级属性",
+            "row": 179
+          }
+        },
+        "2": {
+          "level": 2,
+          "label": "II",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 10
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 1,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "End of Hope；Ruthless",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/other/3b6e9d20/9ed0d98c.bin",
+            "sheet": "等级属性",
+            "row": 180
+          }
+        },
+        "3": {
+          "level": 3,
+          "label": "III",
+          "stats": {
+            "wounds": 13,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 2,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "God Given Law；Magnifying Glass",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/other/3b6e9d20/9ed0d98c.bin",
+            "sheet": "等级属性",
+            "row": 181
+          }
+        },
+        "4": {
+          "level": 4,
+          "label": "IV",
+          "stats": {
+            "wounds": 13,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 2,
+            "at": 3,
+            "dangerPerAttack": 1,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Blinding Shine",
+          "notes": "不能从正面造成伤口",
+          "source": {
+            "card": "aibp/ps/other/3b6e9d20/9ed0d98c.bin",
+            "sheet": "等级属性",
+            "row": 182
+          }
+        },
+        "5": {
+          "level": 5,
+          "label": "V",
+          "stats": {
+            "wounds": 14,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 12
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 4,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 1,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Beginning of the End",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/other/3b6e9d20/b6354455.bin",
+            "sheet": "等级属性",
+            "row": 183
+          }
+        },
+        "6": {
+          "level": 6,
+          "label": "VI",
+          "stats": {
+            "wounds": 14,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 12
+          },
+          "bonuses": {
+            "promotions": 3,
+            "at": 5,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Unworthy Will Die",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/other/3b6e9d20/b6354455.bin",
+            "sheet": "等级属性",
+            "row": 184
+          }
+        },
+        "7": {
+          "level": 7,
+          "label": "VII",
+          "stats": {
+            "wounds": 15,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 13
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 6,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "Cannot Hide From the Sun",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/other/3b6e9d20/b6354455.bin",
+            "sheet": "等级属性",
+            "row": 185
+          }
+        },
+        "8": {
+          "level": 8,
+          "label": "VIII",
+          "stats": {
+            "wounds": 15,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 13
+          },
+          "bonuses": {
+            "promotions": 4,
+            "at": 7,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 2,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 1
+          },
+          "traitChanges": "God Taken Law；Make the Sun Move and the Earth Stand Still",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/other/3b6e9d20/b6354455.bin",
+            "sheet": "等级属性",
+            "row": 186
+          }
+        },
+        "9": {
+          "level": 9,
+          "label": "IX",
+          "stats": {
+            "wounds": 17,
+            "movementPrinted": "∞",
+            "movement": "∞",
+            "hitRequirement": 14
+          },
+          "bonuses": {
+            "promotions": 5,
+            "at": 8,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 3,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 2
+          },
+          "traitChanges": "Spontaneous Supernova",
+          "notes": "",
+          "source": {
+            "card": "aibp/ps/other/3b6e9d20/b6354455.bin",
+            "sheet": "等级属性",
+            "row": 187
+          }
+        }
+      }
+    },
+    "BLACKBEAK": {
+      "id": "BLACKBEAK",
+      "name": "黑喙",
+      "cycle": "c5",
+      "sources": {
+        "front": "aibp/ps/other/3b6e9d20/ba368d37.bin",
+        "back": null
+      },
+      "notes": "隐藏Boss，属性以黑喙替换面板为准。Winged Doom规定实际移动∞。面板只列I级；不沿用追击者的高等级基础数值。 其他核对来源：aibp/ps/other/3b6e9d20/25cea863.bin；aibp/ps/other/3b6e9d20/259ca0d9.bin；aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER.jpg",
+      "levels": {
+        "1": {
+          "level": 1,
+          "label": "I",
+          "stats": {
+            "wounds": 12,
+            "movementPrinted": "6*",
+            "movement": "∞",
+            "hitRequirement": 11
+          },
+          "bonuses": {
+            "promotions": 1,
+            "at": 0,
+            "dangerPerAttack": 0,
+            "dangerPerHit": 0,
+            "fatePerAttack": 0,
+            "fatePerHit": 0,
+            "evasionDice": 0
+          },
+          "traitChanges": "By Any Other Name；Mimetic Darkness；Bloody Dalliance；Goes for the Head；Killjoy；Winged Doom；End of Hope；Flares",
+          "notes": "禁用Toying与Tease；永久移除Black-blood Cryptex BP；新增以太吸取闪粉；从AI底抽牌",
+          "source": {
+            "card": "aibp/ps/other/3b6e9d20/ba368d37.bin",
+            "sheet": "等级属性",
+            "row": 188
+          }
+        }
+      }
+    }
+  }
+}
