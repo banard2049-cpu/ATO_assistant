@@ -36,6 +36,18 @@ public final class CampaignImportHarness {
   }
 
   private void run() throws Exception {
+    JSONObject missingIndex = new JSONObject(api.handleForJavascript(Uri.parse("file:///android_asset/web/api/aibp-image-index.php"), "GET", ""));
+    check(missingIndex.getInt("status") == 503, "Unavailable index must report failure");
+    api.attachImageIndex(() -> new JSONObject().put("ok", true).put("version", 1)
+        .put("images", new org.json.JSONArray().put("ps/TITAN_X/TITAN_X.jpg")));
+    for (String base : new String[]{"file:///android_asset/web", "http://127.0.0.1"}) {
+      JSONObject index = new JSONObject(api.handleForJavascript(Uri.parse(base + "/api/aibp-image-index.php"), "GET", ""));
+      check(index.getInt("status") == 200, "Public index requires no login");
+      check(new JSONObject(index.getString("body")).getJSONArray("images").length() == 1, "Index response contract mismatch");
+    }
+    check(context.store.commits == 0, "Image inventory must not change saves");
+    JSONObject badMethod = new JSONObject(api.handleForJavascript(Uri.parse("http://localhost/api/aibp-image-index.php"), "POST", "{}"));
+    check(badMethod.getInt("status") == 405, "Image inventory is read-only");
     request("?action=import-sections", "POST", "{}", 401);
     request("?action=login", "POST", "{\"username\":\"local\"}", 200);
 

@@ -26,6 +26,7 @@ function harness() {
   let rendered = 0;
   let closed = 0;
   const context = vm.createContext({
+    aibpImageIndex: new Set(),
     currentApostle: 'HEKATON', customTraitEditorApostle: 'HEKATON', customTraitEditingId: '',
     piles: { HEKATON: state, ICARIAN_HARPY: { traits: [], customTraits: [] } },
     traitLevels: ['O', 'I', 'II', 'III', 'X'],

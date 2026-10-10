@@ -56,8 +56,70 @@ body dialog { border-radius: 0; border-color: var(--line); background: var(--pan
 .c45-roster-row label, .c45-toggle, .c45-status-card { color: var(--ink); }
 .c45-derived.warning { color: #a23e20; }
 body .titan-group-target.is-selected { background: var(--accent-soft); border-color: var(--accent); }
-body .loot-dialog { background: var(--panel); color: var(--ink); box-shadow: none; }
-body :is(.loot-dialog-head, .loot-dialog-actions, .loot-dialog-body) { background: var(--bg); }
+/* Loot styles are injected after this sheet; scoped selectors keep every surface on paper. */
+body .loot-dialog { max-height: min(860px, calc(100dvh - 28px)); overflow: hidden; border: 1px solid var(--line); border-radius: 0; background: var(--panel); color: var(--ink); box-shadow: 0 18px 60px rgb(36 33 29 / 18%); }
+.loot-dialog .loot-dialog-inner { max-height: calc(min(860px, 100dvh - 28px) - 2px); }
+body .loot-dialog::backdrop { background: rgb(36 33 29 / 40%); }
+.loot-dialog :is(.loot-dialog-head, .loot-dialog-actions) { padding: 18px 22px; background: var(--panel); border-color: var(--line); }
+.loot-dialog .loot-dialog-title { color: var(--accent-strong); font: 600 23px/1.4 "Songti SC", "Noto Serif CJK SC", SimSun, Georgia, serif; letter-spacing: .04em; }
+.loot-dialog .loot-dialog-body { padding: 22px; background: var(--bg); }
+.loot-dialog .loot-toolbar { gap: 12px; margin-bottom: 18px; }
+.loot-dialog .loot-toolbar select { max-width: 100%; min-height: 34px; padding: 5px 8px; background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 0; }
+.loot-dialog .loot-first-victory-label { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.loot-dialog .loot-story-choices { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; flex-basis: 100%; font-size: 13px; }
+.loot-dialog .loot-story-choices > span { flex-basis: 100%; }
+.loot-dialog .loot-story-choices label { display: flex; align-items: center; gap: 6px; }
+.loot-dialog .loot-story-choices input { width: 64px; }
+.loot-dialog .loot-toolbar input[type="number"] { box-sizing: border-box; height: 36px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 0; background: var(--panel); color: var(--ink); box-shadow: none; appearance: textfield; font: inherit; font-weight: 400; }
+.loot-dialog .loot-toolbar input[type="number"]::-webkit-inner-spin-button,
+.loot-dialog .loot-toolbar input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.loot-dialog .loot-number-control { display: inline-flex; align-items: center; flex-shrink: 0; border: 1px solid var(--line); background: var(--panel); }
+.loot-dialog .loot-toolbar .loot-number-control input[type="number"] { width: 48px; border: 0; text-align: center; }
+.loot-dialog .loot-number-control .loot-number-step { width: 32px; height: 36px; min-height: 36px; padding: 0; border: 0; border-radius: 0; box-shadow: none; background: transparent; color: var(--ink); font-family: inherit; font-size: 20px; font-weight: 400; line-height: 1; cursor: pointer; }
+.loot-dialog .loot-number-control .loot-number-step:first-child { border-right: 1px solid var(--line); }
+.loot-dialog .loot-number-control .loot-number-step:last-child { border-left: 1px solid var(--line); }
+.loot-dialog .loot-number-control .loot-number-step:not(:disabled):hover { background: var(--accent-soft); }
+.loot-dialog .loot-number-control .loot-number-step:disabled { opacity: .35; cursor: default; }
+.loot-dialog .loot-number-control:focus-within { outline: 1px solid var(--accent-strong); outline-offset: 1px; }
+.loot-dialog .loot-story-reminder { margin: 8px 0; line-height: 1.65; color: var(--ink); font-size: 13px; }
+.loot-dialog :is(input, button) { min-height: 36px; border-radius: 0; border-color: var(--line); background: var(--panel); color: var(--ink); }
+.loot-dialog .loot-dialog-actions { padding: 14px 22px; flex-wrap: wrap; gap: 10px; }
+body #bpLootDialog .loot-record-button { background: var(--accent-strong); border-color: var(--accent-strong); color: #fff; }
+body #bpLootDialog .loot-record-button:not(:disabled):hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+.loot-dialog .loot-meta { margin-bottom: 18px; line-height: 1.6; }
+.loot-dialog .loot-total-grid { gap: 10px; margin-bottom: 18px; }
+.loot-dialog .loot-total-row { padding: 12px; border-color: var(--line); border-radius: 0; background: var(--panel); }
+.loot-dialog :is(.loot-total-row strong, .loot-resource-pill strong, .loot-detail-source) { color: var(--accent-strong); }
+.loot-dialog .loot-total-row strong { font-size: 24px; }
+.loot-dialog .loot-resource-icon { border-radius: 0; background: transparent; }
+.loot-dialog .loot-resource-icon.record-resource-icon { background: var(--panel); box-shadow: inset 0 0 0 1px var(--line); }
+.loot-dialog .loot-resource-icon.text { color: var(--ink); background: var(--accent-soft); }
+.loot-dialog .loot-warning-box { padding: 12px 14px; border-color: #d7aaa0; border-radius: 0; background: #f7e1dc; color: #8e2b20; line-height: 1.7; }
+.loot-dialog .loot-details section { margin-top: 24px; }
+.loot-dialog .loot-details h4 { margin-bottom: 12px; color: var(--accent-strong); font: 600 18px/1.4 "Songti SC", "Noto Serif CJK SC", SimSun, Georgia, serif; }
+.loot-dialog .loot-detail-row { gap: 18px; padding: 16px; margin-bottom: 12px; border-color: var(--line); border-radius: 0; background: var(--panel); font-size: 13px; }
+.loot-dialog .loot-card-thumb { border-color: var(--line); border-radius: 0; background: transparent; }
+.loot-dialog .loot-resource-pill { gap: 7px; padding: 6px 10px; border-color: var(--line); border-radius: 0; background: var(--bg); color: var(--ink); }
+.loot-dialog .loot-empty { padding: 14px; border-color: var(--line); border-radius: 0; background: var(--panel); }
+body .loot-image-zoom-dialog { background: var(--bg); color: var(--ink); }
+body .loot-image-zoom-dialog::backdrop { background: rgb(36 33 29 / 40%); }
+.loot-image-zoom-dialog .loot-image-zoom-img { border-radius: 0; box-shadow: 0 18px 60px rgb(36 33 29 / 18%); }
+.loot-image-zoom-dialog .loot-image-zoom-close { border-radius: 0; border-color: var(--line); background: var(--panel); color: var(--ink); }
+@media (max-width: 600px) {
+  .loot-dialog :is(.loot-dialog-head, .loot-dialog-body, .loot-dialog-actions) { padding: 14px; }
+  .loot-dialog .loot-total-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .loot-dialog .loot-detail-row { gap: 12px; padding: 12px; }
+}
+
+/* Spoiler warnings share the paper surfaces and typography of the other dialogs. */
+body .spoiler-dialog { max-height: min(760px, calc(100dvh - 32px)); padding: 22px; border: 1px solid var(--line); border-radius: 0; background: var(--panel); color: var(--ink); box-shadow: 0 18px 60px rgb(36 33 29 / 18%); }
+.spoiler-dialog::backdrop { background: rgb(36 33 29 / 40%); }
+.spoiler-dialog h2 { margin: 0 0 14px; color: var(--accent-strong); font-size: 23px; line-height: 1.4; letter-spacing: .04em; }
+.spoiler-dialog p { margin: 0; color: var(--ink); font-size: 16px; line-height: 1.7; overflow-wrap: anywhere; }
+.spoiler-dialog .spoiler-actions { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--line); flex-wrap: wrap; }
+.spoiler-dialog .spoiler-actions button { min-height: 40px; }
+#heliosSpoilerContinue { background: var(--accent-strong); color: #fff; border-color: var(--accent-strong); }
+#heliosSpoilerContinue:hover { background: color-mix(in srgb, var(--accent-strong) 85%, var(--ink)); color: #fff; border-color: var(--accent-strong); }
 
 /* Selection and scry dialogs have their own legacy dark surfaces. */
 body .trait-dialog { max-height: min(760px, calc(100dvh - 32px)); overflow: hidden; border: 1px solid var(--line); box-shadow: 0 18px 60px rgb(36 33 29 / 18%); }

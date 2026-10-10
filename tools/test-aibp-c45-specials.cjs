@@ -283,7 +283,9 @@ function makeHarness(startApostle = "MIDASCORE", options = {}) {
     renderPanelTokens() {
       context.panelTokenRenders += 1;
     },
-    renderDeckInfo() {},
+    renderDeckInfo() {
+      context.deckInfoSpecialsReady = Boolean(context.C45Specials);
+    },
     renderDrawPreview() {},
     drawAi(remember = true) {
       const pile = context.piles[context.currentApostle].AI;
@@ -415,6 +417,85 @@ function makeHarness(startApostle = "MIDASCORE", options = {}) {
   context.timers = [];
   return context;
 }
+
+function loadDeathblowFunctions(app) {
+  const source = fs.readFileSync(path.join(__dirname, '../aibp/index.html'), 'utf8').replace(/\r\n/g, '\n');
+  app.AIBP_BOSS_LEVEL_DATA = JSON.parse(JSON.stringify(require('../aibp/boss-levels-data.js')));
+  app.activeScry = null;
+  app.isChimera = () => false;
+  app.currentBpView = '损伤';
+  app.promoteBpDeckForDefeatedLevel = () => { throw Error('Dahaka must use its physical shared BP promotion'); };
+  for (const name of ['currentBpDamageKey', 'currentBpDamageView', 'bpDamageValue', 'bpDamageTotalForKey',
+    'currentBpDamageSummary', 'currentBossWounds', 'deathblowUnavailableReason',
+    'reshuffleDiscardIfDeckEmpty', 'resolveBossDeathblow']) {
+    const match = source.match(new RegExp('^    function ' + name + '\\([^]*?^    }', 'm'));
+    assert.ok(match, name);
+    vm.runInContext(match[0], app);
+  }
+}
+
+test('Dahaka deathblow supplements and promotes by printed BP tier, preserving the shared pile', () => {
+  for (const tier of ['I', 'III']) {
+    const app = makeHarness('DAHAKA');
+    loadDeathblowFunctions(app);
+    const state = app.piles.DAHAKA;
+    const pile = state.aibp;
+    const drawn = tier === 'III' ? pile.supply.III.pop() : pile.deck[0];
+    drawn.level = tier === 'III' ? 'I' : 'III';
+    assert.equal(drawn.bpLevel, tier);
+    pile.deck = [drawn];
+    app.AIBP_BOSS_LEVEL_DATA.bosses.DAHAKA.levels['1'].stats.wounds = tier === 'III' ? 4 : 2;
+    const supplyII = pile.supply.II.length;
+    const supplyIII = pile.supply.III.length;
+    assert.equal(app.resolveBossDeathblow(), true);
+    assert.strictEqual(state.AI, state.BP);
+    assert.strictEqual(state.BP, state.aibp);
+    assert.equal(pile.deathblowResult.complete, true);
+    if (tier === 'III') {
+      assert.ok(pile.damage.every(value => value.special === 'DW'));
+      assert.equal(pile.supply.III.length, supplyIII - 1);
+      assert.equal(pile.deck[0].fileName, drawn.fileName);
+    } else {
+      assert.equal(pile.damage[0].bpLevel, 'I');
+      assert.equal(pile.damage[1].bpLevel, 'II');
+      assert.equal(pile.supply.II.length, supplyII - 1);
+      assert.equal(pile.supply.III.length, supplyIII, 'terminal BP II does not escalate');
+    }
+    app.undoLastAibp('BP');
+    assert.strictEqual(app.piles.DAHAKA.AI, app.piles.DAHAKA.BP);
+    assert.equal(app.piles.DAHAKA.BP.damage.length, 0);
+    assert.equal(app.piles.DAHAKA.BP.deck[0].fileName, drawn.fileName);
+  }
+});
+
+test('initial deck information is refreshed after the special health and deathblow hooks are ready', () => {
+  const app = makeHarness('TITAN_X');
+  assert.equal(app.deckInfoSpecialsReady, true);
+});
+
+test('All Good Things displays twelve wounds and disallows deathblow supplementation', () => {
+  const app = makeHarness('TITAN_X');
+  app.startTitanXGroup = app.C45Specials.startTitanXGroup;
+  app.startTitanXGroup();
+  loadDeathblowFunctions(app);
+  app.levels.TITAN_X = 9;
+  assert.equal(app.currentBossWounds(), 12);
+  const before = JSON.stringify(app.piles.TITAN_X);
+  assert.match(app.deathblowUnavailableReason(), /禁用致死一击/);
+  assert.equal(app.resolveBossDeathblow(), false);
+  assert.equal(JSON.stringify(app.piles.TITAN_X), before);
+});
+
+test('completed deathblow resource wounds do not awaken an already defeated Titan X', async () => {
+  const app = makeHarness('TITAN_X');
+  const state = app.piles.TITAN_X;
+  state.BP.damage = Array.from({ length: 7 }, () => ({ special: 'DW' }));
+  state.BP.deathblowResult = { cards: 7, wounds: 14, complete: true };
+  const deck = JSON.stringify(state.BP.deck);
+  await app.C45Specials.ensureTitanXAwakening();
+  assert.equal(state.special.titanX.awakened, false);
+  assert.equal(JSON.stringify(state.BP.deck), deck);
+});
 
 test("Dahaka uses one visible shared AI/BP pile and BP-only promotion", () => {
   const app = makeHarness();
@@ -944,6 +1025,25 @@ test("Babelian BP module records and clears its bonus without discard overwrites
   assert.equal(state.special.babelian.fusionBonus, 0);
 });
 
+test("Titan X effect Feints can resume after reloading without drawing another card", () => {
+  const app = makeHarness("TITAN_X");
+  const state = app.piles.TITAN_X;
+  state.feint.deck = [{ type: "FEINT", level: "X", index: 8 }];
+  app.drawFeint();
+  app.piles.TITAN_X = JSON.parse(JSON.stringify(state));
+  app.renderApostle("TITAN_X");
+  const restored = app.piles.TITAN_X;
+  assert.equal(app.drawFeintButton.disabled, false);
+  assert.equal(app.drawFeintButton.textContent, "继续结算变招");
+  app.drawFeint();
+  assert.equal(restored.special.titanX.pendingEffect.index, 8);
+  assert.equal(restored.feint.deck.length, 0);
+  app.lastZoom.onClose();
+  assert.equal(restored.special.titanX.pendingEffect, null);
+  assert.equal(restored.feint.removed.length, 1);
+  assert.equal(restored.feint.removed[0].index, 8);
+});
+
 test("Titan X setup, Feints, Overstep, and bottom draws share persistent state", () => {
   const app = makeHarness();
   app.renderApostle("TITAN_X");
@@ -961,7 +1061,8 @@ test("Titan X setup, Feints, Overstep, and bottom draws share persistent state",
   state.feint.deck = [{ type: "FEINT", level: "X", index: 8 }];
   app.drawFeint();
   assert.equal(state.special.titanX.pendingEffect.index, 8);
-  assert.equal(app.drawFeintButton.disabled, true);
+  assert.equal(app.drawFeintButton.disabled, false);
+  assert.equal(app.drawFeintButton.textContent, "继续结算变招");
   app.lastZoom.onClose();
   assert.equal(state.special.titanX.pendingEffect, null);
   assert.equal(state.feint.removed[0].index, 8);

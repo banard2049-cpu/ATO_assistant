@@ -124,7 +124,7 @@ def library_and_db() -> tuple[Path, Database]:
     except RuntimeError as exc:
         raise HTTPException(status_code=428, detail=str(exc)) from exc
     db = Database(library / "library.sqlite3")
-    ensure_fixed_catalog(db)
+    ensure_fixed_catalog(db, config.ato)
     return library, db
 
 
@@ -375,7 +375,7 @@ def setup(payload: SetupPayload, request: Request) -> dict:
     config.ato_path = str(Path(payload.ato_path).expanduser().resolve()) if payload.ato_path else ""
     save_config(config)
     ensure_library(config)
-    ensure_fixed_catalog(Database(library / "library.sqlite3"))
+    ensure_fixed_catalog(Database(library / "library.sqlite3"), config.ato)
     return {"ok": True, "library_path": config.library_path, "ato_path": config.ato_path}
 
 

@@ -116,6 +116,10 @@
 /log/
 /export/
 /output/
+/outputs/
+# Local audio-duration probe output and its one-off script.
+/durations.json
+/probe_durations.py
 php_errors.log
 error_log
 *.backup

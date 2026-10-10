@@ -46,6 +46,7 @@ ANDROID_PRERELEASE_RANKS = {
 ANDROID_VERSION_PATTERN = re.compile(r"^(\d+)\.(\d+)\.(\d+)(?:[-.]?([0-9A-Za-z][0-9A-Za-z.-]*))?$")
 ANDROID_RESOURCE_SUFFIXES = (
     ".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".tif", ".tiff", ".svg",
+    ".psd",
     ".pdf", ".mp3", ".wav", ".ogg", ".m4a", ".flac", ".mp4", ".webm", ".mov",
     ".zip", ".tar", ".tar.gz", ".7z", ".rar", ".ttf", ".otf", ".woff", ".woff2",
 )

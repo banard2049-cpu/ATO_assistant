@@ -224,11 +224,11 @@ class CoreTests(unittest.TestCase):
         empty = Database(self.root / "empty.sqlite3")
         result = ensure_fixed_catalog(empty)
         payload = fixed_catalog_payload()
-        # 3203 条：内置清单 2663 + 故事书配图 2（只剩后日奥德赛的两张章节配图，战斗版图
+        # 3213 条：内置清单 2673 + 故事书配图 2（只剩后日奥德赛的两张章节配图，战斗版图
         # 52 条——C1/C3/C4 的 21 张 + C2 的 23 张扫描件 + C5 的 8 张版图块——已全部随文件
         # 删除退场）+ 19 首主控台 BGM + 84 张密语字形 + 435 个混排素材（映射表 1 + 裁图 434）。
         # 后三类都登记为「无需拍摄」（见 test_bgm_resources / test_cryptic_resources）。
-        self.assertEqual(3203, result["items"])
+        self.assertEqual(3213, result["items"])
         self.assertEqual(19, result["aibp_enemies"])
         self.assertEqual({"c1", "c1.5", "c2", "c2.5", "c3", "c4", "c5"}, {book["id"] for book in payload["source"]["stories"]})
         self.assertNotIn("apk", payload["source"])
@@ -303,7 +303,7 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(45, len(terrain_cards))
         self.assertTrue(any(item["number"] == "CJ1475" for item in payload["items"]))
         fixed_paths = {path for item in payload["items"] for path in item["faces"].values()}
-        # 4187 张固定素材（含自定义 Token 和特性卡底，不含旧科技树底图；C1/C3/C4 的 21 张
+        # 4197 张固定素材（含新补录的 9 张等级面与 PNG 卡底，不含旧科技树底图；C1/C3/C4 的 21 张
         #   战斗版图、C2 的 23 张扫描件与 C5 的 8 张版图块都已随文件删除退场）
         # + 84 张密语字形（随 crypticFiles 段分发）
         # + 19 首主控台 BGM（随 bgmFiles 段分发）
@@ -313,11 +313,11 @@ class CoreTests(unittest.TestCase):
         mixed_media_paths = {
             path for path in fixed_paths if path.startswith("story/assets/mixed-media/")
         }
-        self.assertEqual(4187, len(fixed_paths - bgm_paths - cryptic_paths - mixed_media_paths))
+        self.assertEqual(4197, len(fixed_paths - bgm_paths - cryptic_paths - mixed_media_paths))
         self.assertEqual(19, len(bgm_paths))
         self.assertEqual(84, len(cryptic_paths))
         self.assertEqual(435, len(mixed_media_paths))
-        self.assertEqual(4725, len(fixed_paths))
+        self.assertEqual(4735, len(fixed_paths))
         # 已退场的故事书图片不能残留在清单里（story/images/battles/ 整个目录已删，
         # C5 补充页扫描在上一轮删除）。
         self.assertEqual([], [
@@ -391,6 +391,41 @@ class CoreTests(unittest.TestCase):
         self.assertTrue(any(item["number"] == "246_Godform_Dionysus" for item in summon_cards))
         self.assertTrue(any(item["number"] == "259_Nymph_Aether_Nymph" for item in summon_cards))
         self.assertTrue(any(item["number"] == "305_Godform_Hermes_Exalted" for item in summon_cards))
+
+    def test_boss_level_backs_upgrade_existing_catalog_and_keep_oracle_v(self):
+        from app.fixed_catalog import BOSS_LEVEL_BACK_CARDS
+        payload = fixed_catalog_payload()
+        new_paths = {f"aibp/ps/{enemy}/{stem}.jpg" for enemy, stem in BOSS_LEVEL_BACK_CARDS}
+        new_paths.add("aibp/ps/other/trait/custom_trait_blank.png")
+        additions = [item for item in payload["items"] if new_paths & set(item["faces"].values())]
+        self.assertEqual(10, len(additions))
+        old_items = [CatalogItem(**item) for item in payload["items"] if not new_paths & set(item["faces"].values())]
+        apply_catalog(self.db, old_items, {**payload["source"], "catalog_version": "before-boss-level-backs"})
+        oracle_v = next(item for item in old_items if item.number == "HYPERTIME_ORACLE_TR_V_001")
+        revision = store_image(self.db, self.library, self.image(), oracle_v.id, "front", "photo.png", "image/png")
+        ensure_fixed_catalog(self.db)
+        ensure_fixed_catalog(self.db)
+        for item in additions:
+            row = self.db.one("SELECT faces_json FROM catalog_items WHERE id=?", (item["id"],))
+            self.assertEqual(item["faces"], json.loads(row["faces_json"]))
+        saved = self.db.one("SELECT id FROM asset_revisions WHERE item_id=? AND is_current=1", (oracle_v.id,))
+        self.assertEqual(revision["id"], saved["id"])
+        self.assertFalse(any(item["module"] == "状态卡" for item in payload["items"]))
+
+    def test_fixed_catalog_registers_declared_binary_assets_without_private_files(self):
+        checkout = self.root / "checkout"
+        manifest = checkout / "aibp/ps/other/3b6e9d20/catalog.json"
+        manifest.parent.mkdir(parents=True)
+        manifest.write_text(json.dumps({"targets": ["3b6e9d20/07ca479b.bin"]}), encoding="utf-8")
+        ensure_fixed_catalog(self.db, checkout)
+        first_version = self.db.get_meta("catalog_source")["catalog_version"]
+        row = self.db.one("SELECT * FROM catalog_items WHERE number='07ca479b.bin'")
+        self.assertEqual({"front": "aibp/ps/other/3b6e9d20/07ca479b.bin"}, json.loads(row["faces_json"]))
+        self.assertFalse(row["capture_required"])
+        manifest.write_text(json.dumps({"targets": ["3b6e9d20/07ca479b.bin", "3b6e9d20/0a025c59.bin"]}), encoding="utf-8")
+        ensure_fixed_catalog(self.db, checkout)
+        self.assertNotEqual(first_version, self.db.get_meta("catalog_source")["catalog_version"])
+        self.assertEqual(2, self.db.one("SELECT COUNT(*) n FROM catalog_items WHERE number LIKE '%.bin'")["n"])
 
     def test_custom_trait_template_upgrades_existing_catalog_without_losing_images(self):
         payload = fixed_catalog_payload()

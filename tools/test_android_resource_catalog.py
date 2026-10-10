@@ -62,6 +62,7 @@ def check_exploration_catalog(targets: dict, source: str) -> tuple[int, int]:
 
 
 def check_catalog(catalog: dict) -> None:
+    sys.path.insert(0, str(ROOT / "asset-studio"))
     assert catalog["format"] == "ato-android-resource-catalog"
     targets = {}
     for item in catalog["items"]:
@@ -73,6 +74,13 @@ def check_catalog(catalog: dict) -> None:
     template_targets = [target for target in targets.values()
                         if target == "aibp/ps/other/trait/custom_trait_blank.jpg"]
     assert len(template_targets) == 1, "APK lacks the custom trait template import mapping"
+    from app.fixed_catalog import BOSS_LEVEL_BACK_CARDS
+    expected = {f"aibp/ps/{enemy}/{stem}.jpg" for enemy, stem in BOSS_LEVEL_BACK_CARDS}
+    expected.add("aibp/ps/other/trait/custom_trait_blank.png")
+    assert expected <= set(targets.values()), "APK lacks newly registered Boss/trait assets"
+    assert not any(target.startswith("aibp/ps/other/status/") for target in targets.values()), (
+        "APK still requests retired C4/C5 status cards"
+    )
     assert not any(target.startswith("technology/images/tech_tree_pages/")
                    for target in targets.values()), "APK still requests obsolete technology tree backgrounds"
     assert any(target.startswith("technology/images/titans/") for target in targets.values())
@@ -92,7 +100,6 @@ def check_catalog(catalog: dict) -> None:
     # 434 张裁图（渲染器 pathOK 同时收 PNG 与 SVG）。它们是私有素材，只随 .atopack 的
     # mixedMediaFiles 段分发，但安卓导入只认这份名单 —— 缺一项，资料包里对应的混排图
     # 就会被静默跳过。目标形状与 app/mixed_media_resources.py 的 allowed_target 同源。
-    sys.path.insert(0, str(ROOT / "asset-studio"))
     from app.mixed_media_resources import allowed_target as is_mixed_media_target
 
     mixed_media = sorted(
@@ -151,6 +158,10 @@ def check_catalog(catalog: dict) -> None:
     assert hidden_count, "No hidden exploration entries checked."
     declared = json.loads((ROOT / "aibp/ps/other/3b6e9d20/catalog.json").read_text(encoding="utf-8"))["targets"]
     assert declared, "Supplemental resource list is empty"
+    binaries = {path.relative_to(ROOT / "aibp/ps/other").as_posix()
+                for path in (ROOT / "aibp/ps/other/3b6e9d20").glob("*.bin")}
+    if binaries:
+        assert binaries == set(declared), "Declared binary import targets differ from local assets"
     # 模拟 GitHub 的干净检出：只有路径名单，没有任何 .bin 文件。
     from app.fixed_catalog import collect_supplemental_resources
     with tempfile.TemporaryDirectory(dir=ROOT) as directory:

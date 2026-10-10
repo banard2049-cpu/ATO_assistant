@@ -214,12 +214,12 @@
     ensurePiles("TITAN_X");
     const state = piles.TITAN_X;
     const data = state.special.titanX;
-    if (data.group || data.awakened || titanXDamageTotal(state) < 12) return;
+    if (data.group || data.awakened || state.BP.deathblowResult?.complete || titanXDamageTotal(state) < 12) return;
     awakeningSwitchInFlight = true;
     try {
       await window.HeliosAssets.ready(window.TitanXAwakeningConfig);
       if (currentApostle !== "TITAN_X" || piles.TITAN_X !== state
-        || data.group || data.awakened || titanXDamageTotal(state) < 12) return;
+        || data.group || data.awakened || state.BP.deathblowResult?.complete || titanXDamageTotal(state) < 12) return;
       data.beforeAwakeningBp = clonePileState(state.BP);
       data.beforeAwakeningBp.pending = null;
       state.BP = {
@@ -1068,7 +1068,12 @@
     ensurePiles("TITAN_X");
     const state = piles.TITAN_X;
     const feint = state.feint;
-    if (!feint.deck.length || state.special.titanX.pendingEffect) return;
+    const pending = state.special.titanX.pendingEffect;
+    if (pending) {
+      openImageZoom(cardSrc(pending), "效果变招", () => resolveTitanXFeint(pending));
+      return;
+    }
+    if (!feint.deck.length) return;
     rememberUndo("TITAN_X", "AI");
     const card = feint.deck.shift();
     const group = titanXGroup(state);
@@ -1356,9 +1361,9 @@
         promoteBpSingleButton.disabled = true;
         promoteBpButton.disabled = true;
       }
-      drawFeintButton.disabled = Boolean(
-        piles.TITAN_X.special.titanX.pendingEffect
-      ) || piles.TITAN_X.feint.deck.length === 0;
+      const pendingFeint = piles.TITAN_X.special.titanX.pendingEffect;
+      drawFeintButton.disabled = !pendingFeint && piles.TITAN_X.feint.deck.length === 0;
+      if (pendingFeint) drawFeintButton.textContent = "继续结算变招";
     }
   }
 
@@ -1843,6 +1848,33 @@
   window.C45Specials = {
     startTitanXGroup,
     ensureTitanXAwakening,
+    bossWounds() {
+      // All Good Things gives each enemy twelve wounds independently of level.
+      return currentApostle === "TITAN_X" && titanXGroup() ? 12 : null;
+    },
+    deathblowUnavailableReason() {
+      if (currentApostle !== "TITAN_X") return "";
+      if (titanXGroup()) return "万事皆休禁用致死一击";
+      return piles.TITAN_X?.special?.titanX?.awakened ? "觉醒阶段请按觉醒 BP 卡结算胜利" : "";
+    },
+    promoteDeathblowBp(level) {
+      if (currentApostle !== "DAHAKA") return false;
+      const pile = piles.DAHAKA.aibp;
+      if (level === "I" || level === "II") {
+        const promoted = pile.supply[level === "I" ? "II" : "III"].pop();
+        if (promoted) insertRandom(pile.deck, promoted);
+      } else if (level === "III") {
+        if (pile.supply.III.length) {
+          const lowest = lowestDahakaCard(pile);
+          if (lowest) moveDahakaCardToRemoved(pile, lowest);
+          insertRandom(pile.deck, pile.supply.III.pop());
+        } else {
+          pile.deck = shuffleCards(pile.deck.concat(pile.discard));
+          pile.discard = [];
+        }
+      }
+      return true;
+    },
     ensureState(name = currentApostle) {
       ensurePiles(name);
       return clonePileState(piles[name]);
@@ -1895,4 +1927,6 @@
       saveAndRender();
     }
   };
+  // Saved group/awakening modes need their health and Deathblow restrictions on first render.
+  renderDeckInfo();
 })();

@@ -66,3 +66,16 @@ test('登录失效只提示刷新页面，不重试', async () => {
   assert.equal(calls, 1, '登录失效不应重试');
   assert.equal(h.status.textContent, '同步失败（登录已失效，请刷新页面）');
 });
+
+test('本地数据错误保留完整字段名，且不反复重试生成快照', async () => {
+  let builds = 0;
+  let posts = 0;
+  const reason = "Cannot read properties of undefined (reading 'customTraitSnapshotScope')";
+  const h = harness(async () => { posts++; });
+  h.context.buildSecondScreenSnapshot = () => { builds++; throw new TypeError(reason); };
+  await h.context.sendSecondScreenSnapshot();
+  assert.equal(builds, 1);
+  assert.equal(posts, 0);
+  assert.equal(h.status.textContent, `同步失败（${reason}）`);
+  assert.equal(h.status.title, reason);
+});

@@ -1,5 +1,5 @@
 // 守护「特性区默认显示的 Trait 卡也能在 Trait 选择里取消」：
-// 这些卡不进存档的 traits，由特性区自动探测（尼采「人人为我」由 setup 补）显示；
+// 这些卡不进存档的 traits，由特性区实际资源清单（尼采「人人为我」由 setup 补）显示；
 // 取消勾选必须写进 hiddenTraits，否则下次渲染又会被加回来。
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -58,6 +58,7 @@ function saveHarness(apostle = 'HEKATON') {
   let inputs = [];
   const context = vm.createContext({
     currentApostle: apostle,
+    aibpImageIndex: new Set(),
     nietzscheName: 'THE_NIETZSCJEAN',
     piles: { [apostle]: state },
     traitLevels: ['O', 'I', 'II', 'III', 'X'],
@@ -137,7 +138,7 @@ test('「恢复默认」重新勾选默认卡、清掉显式选择与自定义�
   ]);
   h.restore();
   h.save();
-  assert.deepEqual(json(h.state.traits), [], '显式与自定义选择都清掉；默认卡由自动探测显示');
+  assert.deepEqual(json(h.state.traits), [], '显式与自定义选择都清掉；默认卡由实际资源清单显示');
   assert.deepEqual(json(h.state.hiddenTraits), [], '被隐藏的默认卡恢复显示');
 });
 
@@ -157,11 +158,12 @@ test('额外卡取消勾选后记进 hiddenExtraCards，「恢复默认」重新
 
 test('Trait 选择列出 AI/BP 的 O/X 额外卡（含奇美拉 AI_X 一类）', () => {
   const cards = json(extraCardsContext('HEKATON').traitAreaExtraCards('HEKATON'));
-  assert.equal(cards.length, 48, 'AI/BP × O/X × 12 编号');
+  assert.equal(cards.length, 2, '只列实际清单中的 AI/BP O/X 卡');
   assert.ok(cards.some((card) => card.src === 'ps/HEKATON/HEKATON_AI_O_001.jpg'));
   assert.ok(cards.some((card) => card.src === 'ps/HEKATON/HEKATON_BP_X_012.jpg'));
   assert.ok(!cards.some((card) => /_AI_I_|_BP_III_/.test(card.src)), '只列特性区会显示的 O/X 卡');
-  assert.deepEqual(json(extraCardsContext('HELIOS').traitAreaExtraCards('HELIOS')), []);
+  const helios = [{ src: 'sealed/helios-trait.bin', backSrc: 'sealed/helios-trait-back.bin', label: '无情之日' }];
+  assert.deepEqual(json(extraCardsContext('HELIOS', { helios }).traitAreaExtraCards('HELIOS')), helios);
 });
 
 test('黑喙固定特性卡与泰坦X 组特性也进可选列表', () => {
@@ -175,13 +177,16 @@ test('黑喙固定特性卡与泰坦X 组特性也进可选列表', () => {
   assert.ok(on.some((card) => card.src === 'ps/other/3b6e9d20/abc.bin'));
 });
 
-function extraCardsContext(apostle, { blackbeak = null, titanXGroup = false } = {}) {
+function extraCardsContext(apostle, { blackbeak = null, titanXGroup = false, helios = [] } = {}) {
   const context = vm.createContext({
     currentApostle: apostle,
-    traitProbeMaxIndex: 12,
+    heliosMode: () => 'c4',
+    indexedAibpCards: () => [{ src: `ps/${apostle}/${apostle}_AI_O_001.jpg`, type: 'AI', level: 'O', index: 1 },
+      { src: `ps/${apostle}/${apostle}_BP_X_012.jpg`, type: 'BP', level: 'X', index: 12 }],
     piles: { [apostle]: { special: titanXGroup ? { titanX: { group: { target: 'X' } } } : null } },
     numberedName: (name, type, level, index) => `${name}_${type}_${level}_${String(index).padStart(3, '0')}.jpg`,
     window: {
+      HeliosConfig: { extras(mode) { assert.equal(mode, 'c4'); return helios; } },
       BlackbeakCardList: blackbeak,
       TitanXGroupConfig: { trait: { src: 'ps/other/3b6e9d20/abc.bin', label: '特性：好事成三' } },
     },
@@ -190,11 +195,11 @@ function extraCardsContext(apostle, { blackbeak = null, titanXGroup = false } = 
   return context;
 }
 
-function renderHarness(hiddenTraits = [], hiddenExtraCards = []) {
+function renderHarness(hiddenTraits = [], hiddenExtraCards = [], indexedSources = null) {
   const existing = new Set(['ps/HEKATON/HEKATON_TR_I_003.jpg', 'ps/HEKATON/HEKATON_AI_O_001.jpg']);
   const makeImg = () => {
     const img = {
-      alt: '', className: '', dataset: {}, onload: null, onerror: null,
+      alt: '', className: '', dataset: {}, onload: null, onerror: null, isConnected: true,
       classList: { contains: () => false, add() {} },
       remove() {}, addEventListener() {}, replaceWith() {},
     };
@@ -223,17 +228,18 @@ function renderHarness(hiddenTraits = [], hiddenExtraCards = []) {
     Image: function Image() { return makeImg(); },
     window: { setTimeout: () => 0, HeliosAssets: { resolve: (src) => src } },
     hiddenBossImagesReady: () => true,
+    aibpImageIndex: new Set(indexedSources === null ? existing : indexedSources),
     ensurePiles() {},
     traitSrc: (name, level, index, ext) => `ps/${name}/${name}_TR_${level}_${String(index).padStart(3, '0')}.${ext}`,
     numberedName: (name, type, level, index) => `${name}_${type}_${level}_${String(index).padStart(3, '0')}.jpg`,
     traitCardSrc: () => '', traitCardLabel: () => '', isLargeTraitCard: () => false,
     imageOrMessage: (src) => { const img = makeImg(); img.src = src; return img; },
     enableOptionalCardBack() {}, reorderExtraGridForLargeCards() {}, scheduleSecondScreenSnapshot() {},
-    traitProbeExtensions: ['jpg', 'png', 'jpeg'], defaultTraitProbeMaxIndex: 12,
+    resolveOptionalImagePresence: (src) => ({ then: (callback) => callback(existing.has(src)) }),
     currentApostleLevel: () => 3,
   });
   load(context, ['traitKey', 'selectedTraitKeySet', 'hiddenTraitKeySet', 'hiddenExtraCardKeySet',
-    'automaticTraitLevels', 'isNietzscheAllForOneLegacyTrait', 'renderExtraCards']);
+    'automaticTraitLevels', 'isNietzscheAllForOneLegacyTrait', 'indexedAibpCards', 'renderExtraCards']);
   context.renderExtraCards();
   return extraGrid.children.map((child) => child.src).filter(Boolean);
 }
@@ -248,4 +254,13 @@ test('特性区不再自动显示被取消的 AI/BP 额外卡', () => {
   const aiSrc = 'ps/HEKATON/HEKATON_AI_O_001.jpg';
   assert.ok(renderHarness().includes(aiSrc), '默认应该自动显示 AI O 1');
   assert.ok(!renderHarness([], [aiSrc]).includes(aiSrc), '取消后不该再出现');
+});
+
+test('有实际文件清单时只显示清单中的图片，并继续遵守取消选择', () => {
+  const trait = 'ps/HEKATON/HEKATON_TR_I_003.jpg';
+  const extra = 'ps/HEKATON/HEKATON_AI_O_001.jpg';
+  assert.deepEqual(renderHarness([], [], [extra]), [extra]);
+  assert.deepEqual(renderHarness(['apostle-I-3-jpg'], [], [trait, extra]), [extra]);
+  assert.deepEqual(renderHarness([], [extra], [trait, extra]), [trait]);
+  assert.deepEqual(renderHarness([], [], []), []);
 });

@@ -128,7 +128,37 @@ public final class AtopackImportHarness {
     Files.write(file.toPath(), zip);
   }
 
+  private void imageIndex() throws Exception {
+    String front = "aibp/ps/TITAN_X/TITAN_X_AI_X_017.jpg";
+    String back = "aibp/ps/TITAN_X/TITAN_X_AI_X_017_BACK.jpg";
+    String absent = "aibp/ps/TITAN_X/TITAN_X_BP_X_006.jpg";
+    JSONObject catalog = new JSONObject().put("format", "ato-android-resource-catalog").put("items", new JSONArray()
+        .put(item("front", front)).put(item("back", back)).put(item("absent", absent)));
+    Context imageContext = new Context(new File(directory, "image-index"), catalog.toString());
+    AtopackStore imageStore = new AtopackStore(imageContext);
+    check(imageStore.aibpImageIndex().getJSONArray("images").isEmpty(), "Catalog entries are not installed images");
+    byte[] frontBytes = bytes("actual-front"), backBytes = bytes("actual-back");
+    JSONObject manifest = new JSONObject().put("format", "ato-asset-pack").put("version", 3)
+        .put("items", catalog.getJSONArray("items"))
+        .put("assets", new JSONArray().put(asset("front", front, frontBytes)).put(asset("back", back, backBytes)));
+    File packageFile = pack(manifest, new Member(front, frontBytes), new Member(back, backBytes));
+    imageStore.importPackage(new ContentResolver(), Uri.parse(packageFile.toURI().toString()));
+    imageContext.getAssets().files.put("web/aibp/ps/other/trait/COMMON_TR_025.png", bytes("common"));
+    imageContext.getAssets().files.put("web/" + front, frontBytes);
+    imageContext.getAssets().files.put("web/aibp/ps/other/private/index.json", bytes("private"));
+    imageContext.getAssets().files.put("web/aibp/ps/other/private/secret.jpg", bytes("private"));
+    imageContext.getAssets().files.put("web/aibp/ps/other/folder.jpg/child.txt", bytes("directory"));
+    JSONArray images = imageStore.aibpImageIndex().getJSONArray("images");
+    check(images.length() == 3, "Inventory must merge actual installed/bundled files and deduplicate");
+    check(images.toList().contains(front.substring(5)) && images.toList().contains(back.substring(5)), "Installed faces missing");
+    check(!images.toList().contains(absent.substring(5)), "Uninstalled catalog filename leaked");
+    check(images.toList().contains("ps/other/trait/COMMON_TR_025.png"), "Bundled traits missing");
+    Files.delete(new File(imageContext.getFilesDir(), "atopack/blobs/" + sha(backBytes)).toPath());
+    check(!imageStore.aibpImageIndex().getJSONArray("images").toList().contains(back.substring(5)), "Deleted blob must not be advertised");
+  }
+
   private void run() throws Exception {
+    imageIndex();
     byte[] old = bytes("old-card"), fresh = bytes("new-card"), glyph = bytes("original-glyph");
     JSONObject first = manifest().put("assets", new JSONArray().put(asset("test", ASSET, old)))
         .put("stories", stories("first"));

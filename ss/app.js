@@ -905,10 +905,14 @@ function openBattle(screen) {
   elements.bpBacks.textContent = `${state.bpBacks || "空"} · ${Number(state.bpDeckCount || 0)} 张`;
   elements.discardCounts.textContent = `AI ${Number(state.aiDiscardCount || 0)} / BP ${Number(state.bpDiscardCount || 0)}`;
   const damage = state.damageSummary || {};
-  elements.damageSummary.textContent = damage.damage1 == null
-    ? String(Number(damage.total || 0))
-    : `${Number(damage.total || 0)}（${Number(damage.damage1 || 0)} + ${Number(damage.damage2 || 0)}）`;
+  elements.damageSummary.textContent = aibpDamageSummaryText(damage);
   renderImageList(elements.damageCards, state.damage || [], "暂无损伤");
+}
+
+function aibpDamageSummaryText(damage = {}) {
+  const health = Number.isSafeInteger(damage.wounds) && damage.wounds > 0 ? ` / ${damage.wounds}` : "";
+  const split = damage.damage1 == null ? "" : `（${Number(damage.damage1 || 0)} + ${Number(damage.damage2 || 0)}）`;
+  return `${Number(damage.total || 0)}${health}${split}`;
 }
 
 // 外观跟着主控台走：主题偏好存在浏览器 localStorage 里，第二屏是另一台设备（手机/电视），
