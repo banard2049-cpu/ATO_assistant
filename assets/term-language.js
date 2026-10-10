@@ -156,8 +156,8 @@
     });
   }
   function updateButton(button) {
-    // Show the translation version a click switches to.
-    const label = state.official ? "民间翻译" : "官方翻译";
+    // Show the active translation version, consistent with aria-pressed.
+    const label = state.official ? "官方翻译" : "民间翻译";
     button.textContent = label;
     button.setAttribute("aria-pressed", String(state.official));
     button.setAttribute("aria-label", label);

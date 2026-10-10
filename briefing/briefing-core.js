@@ -103,7 +103,7 @@
     const legacy = source.cardCounters || {};
     const known = raw != null || legacy.inwardOdyssey != null || legacy.inwardOdysseyCount != null;
     const count = (value) => Number.isFinite(Number(value)) ? Math.max(0, Math.floor(Number(value))) : 0;
-    const start = { c1: 1, c2: 20, c3: 40, c4: 60, c5: 80 }[cycleId] || 0;
+    const start = { c1: 0, c2: 20, c3: 40, c4: 60, c5: 80 }[cycleId] || 0;
     const inward = { known, position: known ? count(raw?.position ?? legacy.inwardOdyssey ?? legacy.inwardOdysseyCount) || start : 0, progress: count(raw?.progress) };
     const data = source.adventureHubs;
     const rows = (hubs || []).map((hub) => {

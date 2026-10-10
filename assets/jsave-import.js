@@ -233,7 +233,7 @@
   };
 
   // 内蕴奥德赛轨道的 position 起点（index.html:4451 argoKnowledgeStart）
-  var ARGO_KNOWLEDGE_START = { c1: 1, c2: 20, c3: 40, c4: 60, c5: 80 };
+  var ARGO_KNOWLEDGE_START = { c1: 0, c2: 20, c3: 40, c4: 60, c5: 80 };
 
   // 稀有资源文本行的「名称/值」分隔符（用户指定小写 x；要换成 `×` 或 `*` 只改这里）
   var RARE_VALUE_SEP = "x";
