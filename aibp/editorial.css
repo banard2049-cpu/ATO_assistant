@@ -82,6 +82,13 @@ body .loot-dialog::backdrop { background: rgb(36 33 29 / 40%); }
 .loot-dialog .loot-number-control .loot-number-step:disabled { opacity: .35; cursor: default; }
 .loot-dialog .loot-number-control:focus-within { outline: 1px solid var(--accent-strong); outline-offset: 1px; }
 .loot-dialog .loot-story-reminder { margin: 8px 0; line-height: 1.65; color: var(--ink); font-size: 13px; }
+.trait-level-dialog { width: min(680px, calc(100vw - 28px)); }
+.trait-level-dialog form { grid-template-rows: auto minmax(0, 1fr); }
+.trait-level-summary { padding: 18px 22px; overflow-y: auto; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.7; }
+.trait-level-summary h3 { margin: 0 0 14px; color: var(--accent-strong); font-size: 16px; }
+.trait-level-summary p { margin: 8px 0 0; }
+.trait-dialog .trait-rule-option { min-height: 88px; align-content: center; }
+.trait-dialog .trait-option:has(input:disabled) { opacity: .5; }
 .loot-dialog :is(input, button) { min-height: 36px; border-radius: 0; border-color: var(--line); background: var(--panel); color: var(--ink); }
 .loot-dialog .loot-dialog-actions { padding: 14px 22px; flex-wrap: wrap; gap: 10px; }
 body #bpLootDialog .loot-record-button { background: var(--accent-strong); border-color: var(--accent-strong); color: #fff; }

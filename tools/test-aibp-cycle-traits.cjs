@@ -84,13 +84,13 @@ function hiddenBossHarness(name, mode = "c4") {
   const state = { traits: [], customTraits: [], hiddenTraits: [], hiddenExtraCards: [] };
   const fixed = { src: `sealed/${name}-${mode}.bin`, backSrc: `sealed/${name}-${mode}-back.bin`, label: "专属特性" };
   const context = vm.createContext({
-    currentApostle: name, cycleTraitCards: cards, apostleRecordTracks: {},
+    currentApostle: name, cycleTraitCards: cards, apostleRecordTracks: {}, currentApostleLevel: () => 1,
     aibpImageIndex: new Set(),
     piles: { [name]: state }, traitLevels: [],
     traitLoadToken: 0, nietzscheName: "THE_NIETZSCJEAN",
     traitSaveButton: {}, traitDialogTitle: {}, traitDialogGrid: new Element(), extraGrid: new Element(),
     traitDialog: { close() {} }, document: { createElement: () => new Element() }, Image: Element,
-    ensurePiles() {}, hiddenBossImagesReady: () => true, savePiles() {},
+    ensurePiles() {}, hiddenBossImagesReady: () => true, savePiles() {}, applyCurrentApostleLevelBonuses() {}, renderPanelTokens() {},
     reorderExtraGridForLargeCards() {}, scheduleSecondScreenSnapshot() {},
     heliosMode: () => mode,
     imageOrMessage(src, alt) { return Object.assign(new Element(), { src, alt }); },
@@ -100,6 +100,7 @@ function hiddenBossHarness(name, mode = "c4") {
       image.onload?.();
     },
     window: {
+      AIBP_BOSS_TRAIT_RULES: require('../aibp/boss-trait-rules.js'),
       setTimeout() {}, HeliosAssets: { resolve: src => src },
       HeliosConfig: { extras: () => [fixed] }, BlackbeakCardList: { extraCards: [fixed] },
     },
@@ -107,6 +108,7 @@ function hiddenBossHarness(name, mode = "c4") {
   loadFunctions(context, ["availableCycleTraitCards", "cycleTraitDefinition", "cycleTraitSrc", "traitCardLabel",
     "traitCardSrc", "traitKey", "selectedTraitKeySet", "hiddenTraitKeySet", "hiddenExtraCardKeySet",
     "traitAreaExtraCards", "indexedAibpCards", "traitImageCandidates", "commonTraitImageCandidates",
+    "isTraitRemovedByLevel", "isDefaultShownTrait", "automaticTraitLevels",
     "renderTraitCandidates", "saveTraitSelection", "renderExtraCards", "isLargeTraitCard"]);
   return { context, state, fixed };
 }

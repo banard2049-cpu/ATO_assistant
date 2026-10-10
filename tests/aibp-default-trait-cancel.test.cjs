@@ -18,6 +18,8 @@ function entryFunction(name) {
 }
 
 function load(context, names) {
+  context.window ||= {};
+  context.window.AIBP_BOSS_TRAIT_RULES = require('../aibp/boss-trait-rules.js');
   for (const name of names) vm.runInContext(entryFunction(name), context);
 }
 
@@ -32,7 +34,7 @@ function levelContext(apostle, level) {
     nietzscheName: 'THE_NIETZSCJEAN',
     currentApostleLevel: () => level,
   });
-  load(context, ['automaticTraitLevels', 'isDefaultShownTrait']);
+  load(context, ['isTraitRemovedByLevel', 'automaticTraitLevels', 'isDefaultShownTrait']);
   return context;
 }
 
@@ -62,7 +64,7 @@ function saveHarness(apostle = 'HEKATON') {
     nietzscheName: 'THE_NIETZSCJEAN',
     piles: { [apostle]: state },
     traitLevels: ['O', 'I', 'II', 'III', 'X'],
-    ensurePiles() {}, savePiles() {}, renderExtraCards() {}, traitDialog: { close() {} },
+    ensurePiles() {}, savePiles() {}, renderExtraCards() {}, applyCurrentApostleLevelBonuses() {}, renderPanelTokens() {}, traitDialog: { close() {} },
     traitDialogGrid: { querySelectorAll: () => inputs },
   });
   load(context, ['traitKey', 'hiddenTraitKeySet', 'hiddenExtraCardKeySet', 'restoreDefaultTraits',
@@ -195,8 +197,9 @@ function extraCardsContext(apostle, { blackbeak = null, titanXGroup = false, hel
   return context;
 }
 
-function renderHarness(hiddenTraits = [], hiddenExtraCards = [], indexedSources = null) {
+function renderHarness(hiddenTraits = [], hiddenExtraCards = [], indexedSources = null, { apostle = 'HEKATON', level = 3, traits = [] } = {}) {
   const existing = new Set(['ps/HEKATON/HEKATON_TR_I_003.jpg', 'ps/HEKATON/HEKATON_AI_O_001.jpg']);
+  if (apostle === 'UR_FLEECE') existing.add('ps/UR_FLEECE/UR_FLEECE_TR_I_002.jpg');
   const makeImg = () => {
     const img = {
       alt: '', className: '', dataset: {}, onload: null, onerror: null, isConnected: true,
@@ -218,11 +221,11 @@ function renderHarness(hiddenTraits = [], hiddenExtraCards = [], indexedSources 
     replaceChildren(...next) { this.children = next.slice(); },
     appendChild(child) { this.children.push(child); },
   };
-  const state = { traits: [], hiddenTraits, hiddenExtraCards, customTraits: [] };
+  const state = { traits, hiddenTraits, hiddenExtraCards, customTraits: [] };
   const context = vm.createContext({
-    currentApostle: 'HEKATON',
+    currentApostle: apostle,
     nietzscheName: 'THE_NIETZSCJEAN',
-    piles: { HEKATON: state },
+    piles: { [apostle]: state },
     extraGrid,
     document: { createElement: () => makeImg() },
     Image: function Image() { return makeImg(); },
@@ -232,14 +235,14 @@ function renderHarness(hiddenTraits = [], hiddenExtraCards = [], indexedSources 
     ensurePiles() {},
     traitSrc: (name, level, index, ext) => `ps/${name}/${name}_TR_${level}_${String(index).padStart(3, '0')}.${ext}`,
     numberedName: (name, type, level, index) => `${name}_${type}_${level}_${String(index).padStart(3, '0')}.jpg`,
-    traitCardSrc: () => '', traitCardLabel: () => '', isLargeTraitCard: () => false,
+    traitCardSrc: (name, card) => `ps/${name}/${name}_TR_${card.level}_${String(card.index).padStart(3, '0')}.${card.ext || 'jpg'}`, traitCardLabel: () => '', isLargeTraitCard: () => false,
     imageOrMessage: (src) => { const img = makeImg(); img.src = src; return img; },
     enableOptionalCardBack() {}, reorderExtraGridForLargeCards() {}, scheduleSecondScreenSnapshot() {},
     resolveOptionalImagePresence: (src) => ({ then: (callback) => callback(existing.has(src)) }),
-    currentApostleLevel: () => 3,
+    currentApostleLevel: () => level,
   });
   load(context, ['traitKey', 'selectedTraitKeySet', 'hiddenTraitKeySet', 'hiddenExtraCardKeySet',
-    'automaticTraitLevels', 'isNietzscheAllForOneLegacyTrait', 'indexedAibpCards', 'renderExtraCards']);
+    'isTraitRemovedByLevel', 'isDefaultShownTrait', 'automaticTraitLevels', 'isNietzscheAllForOneLegacyTrait', 'indexedAibpCards', 'renderExtraCards']);
   context.renderExtraCards();
   return extraGrid.children.map((child) => child.src).filter(Boolean);
 }
@@ -248,6 +251,18 @@ test('特性区不再自动显示被取消的默认特性卡', () => {
   const defaultSrc = 'ps/HEKATON/HEKATON_TR_I_003.jpg';
   assert.ok(renderHarness([]).includes(defaultSrc), '默认应该自动显示 I/3');
   assert.ok(!renderHarness(['apostle-I-3-jpg']).includes(defaultSrc), '取消后不该再出现');
+});
+
+test('UR memory is automatic at level one and removed at every higher level, including old explicit selections', () => {
+  const memory = 'ps/UR_FLEECE/UR_FLEECE_TR_I_002.jpg';
+  assert.ok(renderHarness([], [], null, { apostle: 'UR_FLEECE', level: 1 }).includes(memory));
+  assert.equal(levelContext('UR_FLEECE', 1).isDefaultShownTrait({ level: 'I', index: 2 }), true);
+  for (let level = 2; level <= 9; level++) {
+    assert.equal(levelContext('UR_FLEECE', level).isDefaultShownTrait({ level: 'I', index: 2 }), false);
+    assert.ok(!renderHarness([], [], null, { apostle: 'UR_FLEECE', level }).includes(memory));
+    assert.ok(!renderHarness([], [], null, { apostle: 'UR_FLEECE', level,
+      traits: [{ type: 'TR', level: 'I', index: 2, ext: 'jpg', scope: '' }] }).includes(memory));
+  }
 });
 
 test('特性区不再自动显示被取消的 AI/BP 额外卡', () => {

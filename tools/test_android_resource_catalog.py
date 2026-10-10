@@ -78,6 +78,12 @@ def check_catalog(catalog: dict) -> None:
     expected = {f"aibp/ps/{enemy}/{stem}.jpg" for enemy, stem in BOSS_LEVEL_BACK_CARDS}
     expected.add("aibp/ps/other/trait/custom_trait_blank.png")
     assert expected <= set(targets.values()), "APK lacks newly registered Boss/trait assets"
+    assert "aibp/ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_TR_IV_001.jpg" not in targets.values(), (
+        "APK still requests the retired Oracle TR IV card"
+    )
+    assert "aibp/ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_TR_V_001.jpg" in targets.values(), (
+        "APK must retain the Oracle TR V panel"
+    )
     assert not any(target.startswith("aibp/ps/other/status/") for target in targets.values()), (
         "APK still requests retired C4/C5 status cards"
     )

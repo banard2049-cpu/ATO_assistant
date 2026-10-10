@@ -136,7 +136,6 @@ BOSS_LEVEL_BACK_CARDS = (
     ("MEDUKETOS", "MEDUKETOS_TR_O_001"),
     ("TITAN_X", "TITAN_X_TR_O_001"),
     ("UR_FLEECE", "UR_FLEECE_TR_O_001"),
-    ("HYPERTIME_ORACLE", "HYPERTIME_ORACLE_TR_IV_001"),
 )
 
 TERRAIN_CARD_STEMS = (
@@ -1392,7 +1391,7 @@ def fixed_catalog_payload() -> dict[str, Any]:
     payload["items"] = corrected_oracle_items
 
     # 旧 APK 中标成 IV 的那张特性卡印的是 V 级，已改名 TR_V_001；保留迁移后的
-    # 条目 ID 与官中覆盖路径。2026-10-10 补录的 TR_IV_001 是另一张等级面，下面另登记。
+    # 条目 ID 与官中覆盖路径。后来补录的 TR_IV_001 等级面已取消，不再另登记。
     for item in payload["items"]:
         if item.get("number") != "HYPERTIME_ORACLE_TR_IV_001":
             continue

@@ -2301,7 +2301,7 @@
   <link rel="stylesheet" href="battle_map_control.css?v=20260819-c5-light1">
   <link rel="stylesheet" href="../api/cycle-theme.css">
   <script src="../assets/theme.js?v=20261001" defer></script>
-  <link rel="stylesheet" href="editorial.css?v=20261010-loot-number-buttons1">
+  <link rel="stylesheet" href="editorial.css?v=20261010-traits-dialog2">
 </head>
 <body>
   <button type="button" class="sidebar-toggle" id="sidebarToggle" aria-label="折叠左侧边栏" title="展开/折叠左侧边栏">×</button>
@@ -2398,6 +2398,7 @@
                 <button type="button" id="drawFeintButton" class="titan-x-only-action">抽取变招</button>
                 <button type="button" id="nietzscheStateButton" class="state-button hidden">状态 1</button>
                 <button type="button" id="scryAiButton">观星 AI</button>
+                <button type="button" id="traitLevelButton" aria-haspopup="dialog" aria-controls="traitLevelDialog">查看等级特性</button>
               </div>
               <div class="draw-preview" id="aiDrawPreview">未抽取 AI</div>
             </div>
@@ -2545,6 +2546,16 @@
       </section>
     </main>
   </div>
+
+  <dialog class="trait-dialog trait-level-dialog" id="traitLevelDialog" aria-labelledby="traitLevelDialogTitle">
+    <form method="dialog">
+      <div class="trait-dialog-head">
+        <div class="trait-dialog-title" id="traitLevelDialogTitle">等级特性</div>
+        <button type="submit">关闭</button>
+      </div>
+      <div id="traitLevelSummary" class="trait-level-summary"></div>
+    </form>
+  </dialog>
 
   <dialog class="trait-dialog" id="traitDialog" aria-labelledby="traitDialogTitle">
     <form method="dialog">
@@ -2706,6 +2717,7 @@
   <script src="boss-search.js?v=20260926-titan-x-group2"></script>
   <script src="custom_traits.js?v=20260930-custom-trait4-lisu-simhei"></script>
   <script src="boss-levels-data.js?v=20261010-boss-levels1"></script>
+  <script src="boss-trait-rules.js?v=20261010-traits-dialog2"></script>
   <script>
     const apostles = [
       "HEKATON",
@@ -3085,6 +3097,8 @@
     const bpDamageSummary = document.getElementById("bpDamageSummary");
     const newCampaignButton = document.getElementById("newCampaignButton");
     const traitButton = document.getElementById("traitButton");
+    const traitLevelButton = document.getElementById("traitLevelButton");
+    const traitLevelDialog = document.getElementById("traitLevelDialog");
     const tokenButton = document.getElementById("tokenButton");
     const customTokenDialog = document.getElementById("customTokenDialog");
     const customTokenForm = document.getElementById("customTokenForm");
@@ -3441,7 +3455,9 @@
           ? window.HeliosConfig.common.signature
           : currentApostle === "BLACKBEAK" ? window.BlackbeakCardList.signature.src
           : `ps/${currentApostle}/${currentApostle}_SIGNATURE_X_001.jpg`,
-        traits: (state.traits || []).map((card) => publicTraitSnapshot(currentApostle, card)),
+        traits: (state.traits || []).filter((card) => !isTraitRemovedByLevel(card))
+          .map((card) => publicTraitSnapshot(currentApostle, card)),
+        levelTraits: window.AIBP_BOSS_TRAIT_RULES?.stateFor(currentApostle, currentApostleLevel(), window.AIBP_BOSS_LEVEL_DATA, state),
         extraCards: renderedExtraCards,
         aiPending: publicCardSnapshot(state.AI.pending),
         bpPending: publicCardSnapshot(state.BP.pending),
@@ -4196,18 +4212,6 @@
         );
         if (!piles[name].initialSetupApplied || typeof piles[name].initialSetupApplied !== "object") {
           piles[name].initialSetupApplied = {};
-        }
-        if (name === nietzscheName && !piles[name].initialSetupApplied.nietzscheDangerMinus) {
-          piles[name].tokens.push({
-            id: createTokenStackId(),
-            file: "DA-.png",
-            count: 1,
-            x: 8,
-            y: 8,
-            initialSetup: "nietzscheDangerMinus"
-          });
-          piles[name].initialSetupApplied.nietzscheDangerMinus = true;
-          savePiles();
         }
         if (!Number.isInteger(piles[name].aiExhaustedBonusIndex)) {
           piles[name].aiExhaustedBonusIndex = 0;
@@ -5750,6 +5754,11 @@
           id: item.id || createTokenStackId(),
           count: Math.max(1, clampTokenCount(item.count) || 1)
         };
+        if (normalized.initialSetup === "nietzscheDangerMinus") {
+          normalized.autoLevelBonusContributions ||= {};
+          normalized.autoLevelBonusContributions.nietzscheStayYourHand = 1;
+          delete normalized.initialSetup;
+        }
         if (normalized.autoLevelBonus && !isPlainObject(normalized.autoLevelBonusContributions)) {
           normalized.autoLevelBonusContributions = { [normalized.autoLevelBonus]: normalized.count };
           if (normalized.autoLevelBonus === "danger") normalized.perHit = true;
@@ -6240,7 +6249,7 @@
       target.autoLevelBonusContributions ||= {};
       target.autoLevelBonusContributions[kind] = normalizedCount;
       if (!existing) {
-        target.x = kind === "at" ? 16 : kind === "evasionDice" ? 24 : 8;
+        target.x = ["at", "urJustAMemory"].includes(kind) ? 16 : file.startsWith("ED") ? 24 : 8;
         target.y = 8;
       }
     }
@@ -6251,6 +6260,11 @@
       const target = levelBonusFor(currentApostle, currentApostleLevel());
       const state = piles[currentApostle].levelBonusState;
       let changed = false;
+      if (currentApostle === "THE_NIETZSCJEAN" && piles[currentApostle].initialSetupApplied?.nietzscheDangerMinus
+        && !piles[currentApostle].initialSetupApplied.nietzscheStayYourHandMigrated) {
+        piles[currentApostle].initialSetupApplied.nietzscheStayYourHandMigrated = true;
+        changed = true;
+      }
 
       // Old Burden saves tracked their one setup promotion outside levelBonusState.
       if (currentApostle === burdenName && piles[currentApostle].initialSetupApplied?.burdenLinkedPromotion
@@ -6272,6 +6286,11 @@
       syncAutomaticLevelBonusToken("fatePerAttack", "py+.png", target?.fatePerAttack || 0);
       syncAutomaticLevelBonusToken("fatePerHit", "py+.png", target?.fatePerHit || 0, { perHit: true });
       syncAutomaticLevelBonusToken("at", target?.at < 0 ? "AT-.png" : "AT+.png", Math.abs(target?.at || 0));
+      // Trait effects have their own contribution, separate from printed level totals.
+      for (const effect of window.AIBP_BOSS_TRAIT_RULES.tokenEffects(currentApostle,
+        currentApostleLevel(), window.AIBP_BOSS_LEVEL_DATA, piles[currentApostle])) {
+        syncAutomaticLevelBonusToken(effect.kind, effect.file, effect.count, { perHit: effect.perHit });
+      }
       syncAutomaticLevelBonusToken("evasionDice", "ED+.png", target?.evasionDice || 0);
       if (beforeTokens !== automaticTokenSnapshot()) changed = true;
       if (changed) savePiles();
@@ -6529,9 +6548,10 @@
             : "C4/C5 通用 Trait";
         return `${group} · ${definition.title}`;
       }
+      const title = window.AIBP_BOSS_TRAIT_RULES?.titleForCard(currentApostle, card);
       return card.scope === "common"
         ? `${card.index === 2 ? "C3 特质" : "通用特质"} ${card.index}${commonTraitTitles[card.index] ? ` · ${commonTraitTitles[card.index]}` : ""}`
-        : `TR ${card.level} ${card.index}`;
+        : `TR ${card.level} ${card.index}${title ? ` · ${title}` : ""}`;
     }
 
     function traitCardSrc(name, card) {
@@ -6571,6 +6591,11 @@
       return (card.level === "O" && !isDahakaFearfulHospitality(apostle, card))
         || (apostle === "HYPERTIME_ORACLE" && card.level === "V")
         || (apostle === "ICARIAN_HARPY" && card.level === "X" && card.index === 2);
+    }
+
+    function isTraitRemovedByLevel(card) {
+      return window.AIBP_BOSS_TRAIT_RULES.isRemoved(currentApostle, currentApostleLevel(), card,
+        currentApostle === "TITAN_X" && !!piles[currentApostle]?.special?.titanX?.group);
     }
 
     function automaticTraitLevels() {
@@ -6622,6 +6647,9 @@
     // 「默认显示」的卡：不写进 traits，由实际资源清单（或 setup 补卡）显示。
     // Trait 选择里它们默认勾选，取消勾选并保存后要记进 hiddenTraits 才能真的消失。
     function isDefaultShownTrait(card) {
+      if (isTraitRemovedByLevel(card)) return false;
+      const override = window.AIBP_BOSS_TRAIT_RULES.defaultShown(currentApostle, currentApostleLevel(), card);
+      if (override !== null) return override;
       if (card?.scope) return false;
       if (currentApostle === nietzscheName && card.level === "O" && Number(card.index) === 2) return true;
       return automaticTraitLevels().includes(card.level);
@@ -6650,6 +6678,8 @@
       loading.className = "missing";
       loading.textContent = "正在加载特性图片……";
       traitDialogGrid.appendChild(loading);
+      window.AIBP_BOSS_TRAIT_RULES?.appendOptions(document, traitDialogGrid, name,
+        currentApostleLevel(), window.AIBP_BOSS_LEVEL_DATA, piles[name]);
 
       piles[name].customTraits.forEach((card) => {
         const checked = piles[name].traits.some((selectedCard) => selectedCard.scope === "custom" && selectedCard.id === card.id);
@@ -6668,7 +6698,11 @@
         checkbox.dataset.index = String(card.index);
         checkbox.dataset.ext = "jpg";
         checkbox.dataset.scope = card.scope;
-        checkbox.checked = selected.has(traitKey("COMMON", card.index, "jpg", card.scope));
+        const defaultShown = isDefaultShownTrait({ ...card, level: "COMMON", ext: "jpg" });
+        const key = traitKey("COMMON", card.index, "jpg", card.scope);
+        checkbox.checked = selected.has(key) || (defaultShown && !hidden.has(key));
+        if (defaultShown) checkbox.dataset.defaultShown = "1";
+        if (selected.has(key)) checkbox.dataset.traitSelected = "1";
 
         const label = traitCardLabel({ ...card, level: "COMMON", ext: "jpg" });
         img.alt = label;
@@ -6733,6 +6767,11 @@
           const defaultShown = isDefaultShownTrait({ level, index, ext });
           const explicitlySelected = selected.has(cardKey);
           checkbox.checked = explicitlySelected || (defaultShown && !hidden.has(cardKey));
+          if (isTraitRemovedByLevel({ level, index, ext })) {
+            checkbox.checked = false;
+            checkbox.disabled = true;
+            option.title = "当前等级已移除此特性";
+          }
           if (defaultShown) checkbox.dataset.defaultShown = "1";
           if (explicitlySelected) checkbox.dataset.traitSelected = "1";
 
@@ -6804,6 +6843,11 @@
       const hiddenExtra = hiddenExtraCardKeySet();
       const traits = [];
       traitDialogGrid.querySelectorAll("input[type='checkbox']").forEach((input) => {
+        if (input.dataset.levelTraitRule) {
+          if (input.checked) hidden.delete(input.dataset.levelTraitRule);
+          else if (input.dataset.defaultShown) hidden.add(input.dataset.levelTraitRule);
+          return;
+        }
         const extraCardSrc = input.dataset.extraCardSrc;
         if (extraCardSrc) {
           if (input.checked) hiddenExtra.delete(extraCardSrc);
@@ -6846,6 +6890,8 @@
         });
       piles[currentApostle].hiddenTraits = Array.from(hidden).sort();
       piles[currentApostle].hiddenExtraCards = Array.from(hiddenExtra).sort();
+      applyCurrentApostleLevelBonuses();
+      renderPanelTokens();
       savePiles();
       renderExtraCards();
       traitDialog.close();
@@ -7009,6 +7055,8 @@
       if (!hiddenBossImagesReady()) return;
       ensurePiles(currentApostle);
       const hiddenExtraCardSrcs = hiddenExtraCardKeySet();
+      window.AIBP_BOSS_TRAIT_RULES?.renderSummary(document, currentApostle, currentApostleLevel(),
+        window.AIBP_BOSS_LEVEL_DATA, piles[currentApostle]);
       // 隐藏 BOSS 的模式/专属卡和玩家选择的循环 Trait 一起显示。
       // 黑喙的以太吸取仍进入闪粉牌组。
       if (currentApostle === "HELIOS" || currentApostle === "BLACKBEAK") {
@@ -7059,8 +7107,15 @@
 
       const selectedTraitKeys = selectedTraitKeySet();
       const hiddenTraitKeys = hiddenTraitKeySet();
+      (window.AIBP_BOSS_TRAIT_RULES?.additionalCards(currentApostle, currentApostleLevel()) || []).forEach((card) => {
+        const key = traitKey(card.level, card.index, card.ext, card.scope);
+        if (selectedTraitKeys.has(key) || hiddenTraitKeys.has(key)) return;
+        extraGrid.appendChild(imageOrMessage(traitCardSrc(currentApostle, card), traitCardLabel(card)));
+        loaded += 1;
+      });
 
       piles[currentApostle].traits.forEach((card) => {
+        if (isTraitRemovedByLevel(card)) return;
         const imageClass = isLargeTraitCard(currentApostle, card) ? "panel-image" : "";
         const alt = traitCardLabel(card);
         const src = traitCardSrc(currentApostle, card);
@@ -7076,11 +7131,12 @@
 
       indexedAibpCards(currentApostle).forEach((card) => {
         if (card.type === "TR") {
-          if (!automaticTraitLevels().includes(card.level)
+          if (!isDefaultShownTrait(card)
+            || isTraitRemovedByLevel(card)
             || isNietzscheAllForOneLegacyTrait(currentApostle, card.level, card.index)) return;
           const key = traitKey(card.level, card.index, card.ext, "");
           if (selectedTraitKeys.has(key) || hiddenTraitKeys.has(key)) return;
-          candidates.push({ src: card.src, alt: `TR ${card.level} ${String(card.index).padStart(3, "0")}`,
+          candidates.push({ src: card.src, alt: traitCardLabel(card),
             className: isLargeTraitCard(currentApostle, card) ? "panel-image" : "" });
         } else if (["O", "X"].includes(card.level) && !hiddenExtraCardSrcs.has(card.src)) {
           candidates.push({ src: card.src, alt: `${card.type} ${card.level} ${card.index}` });
@@ -8767,6 +8823,12 @@
     });
     nietzscheStateButton.addEventListener("click", cycleNietzscheState);
     traitButton.addEventListener("click", openTraitDialog);
+    traitLevelButton.addEventListener("click", () => {
+      ensurePiles(currentApostle);
+      window.AIBP_BOSS_TRAIT_RULES.renderSummary(document, currentApostle, currentApostleLevel(),
+        window.AIBP_BOSS_LEVEL_DATA, piles[currentApostle]);
+      traitLevelDialog.showModal();
+    });
     extraGrid.addEventListener("wheel", (event) => {
       if (event.ctrlKey || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
       const maxScroll = extraGrid.scrollWidth - extraGrid.clientWidth;

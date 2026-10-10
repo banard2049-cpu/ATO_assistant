@@ -46,7 +46,7 @@ function harness() {
       options.push(option);
       return option;
     },
-    ensurePiles() {}, renderExtraCards() { rendered++; },
+    ensurePiles() {}, renderExtraCards() { rendered++; }, applyCurrentApostleLevelBonuses() {}, renderPanelTokens() {},
     savePiles() { saved = JSON.parse(JSON.stringify(context.piles)); },
     nietzscheName: 'THE_NIETZSCJEAN', cycleTraitDefinition() { return null; },
     traitSrc: (apostle, level, index, ext) => `ps/${apostle}/${apostle}_TR_${level}_${index}.${ext}`,
