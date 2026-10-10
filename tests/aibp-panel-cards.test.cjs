@@ -95,13 +95,12 @@ function panelScope(currentApostle) {
   return { api: context.__api, context, opened, button, panelImage };
 }
 
-test("超时光先知保留 V 级大卡，新增 IV 补充卡图不替代它", () => {
+test("超时光先知保留 V 级大卡，取消 IV 补充卡图", () => {
   const dir = path.join(root, "aibp", "ps", "HYPERTIME_ORACLE");
   const levelV = path.join(dir, "HYPERTIME_ORACLE_TR_V_001.jpg");
   const levelIV = path.join(dir, "HYPERTIME_ORACLE_TR_IV_001.jpg");
   assert.ok(fs.existsSync(levelV), "缺少 TR_V 卡图");
-  assert.ok(fs.existsSync(levelIV), "缺少从新版素材补充的 TR_IV 卡图");
-  assert.equal(fs.readFileSync(levelV).equals(fs.readFileSync(levelIV)), false, "补充卡图不能覆盖 V 级大卡");
+  assert.ok(!fs.existsSync(levelIV), "已取消的 TR_IV 卡图不能重新加入");
 });
 
 test("官中覆盖图跟着改名，否则覆盖不上改名后的目标", () => {

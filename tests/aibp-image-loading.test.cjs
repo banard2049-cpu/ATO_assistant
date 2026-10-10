@@ -6,6 +6,8 @@ const vm = require('node:vm');
 
 const source = fs.readFileSync(path.join(__dirname, '../aibp/index.html'), 'utf8').replace(/\r\n/g, '\n');
 function load(context, names) {
+  context.window ||= {};
+  context.window.AIBP_BOSS_TRAIT_RULES = require('../aibp/boss-trait-rules.js');
   for (const name of names) {
     const match = source.match(new RegExp(`^    function ${name}\\([^]*?^    }`, 'm'));
     assert.ok(match, name);
@@ -167,9 +169,13 @@ test('a stale custom trait image cannot break the second-screen snapshot', () =>
     window: { BattleTerrain: { normalizeBattleMap: () => ({}) } },
     battleMapControl: null, isLabyrinthTrackApostle: () => false,
   });
-  load(context, ['currentBossWounds', 'buildSecondScreenSnapshot']);
+  load(context, ['isTraitRemovedByLevel', 'currentBossWounds', 'buildSecondScreenSnapshot']);
   const snapshot = context.buildSecondScreenSnapshot();
   assert.deepEqual(JSON.parse(JSON.stringify(snapshot.extraCards)), [{ label: 'Active' }]);
+  context.currentApostle = 'UR_FLEECE';
+  context.currentApostleLevel = () => 2;
+  context.piles.UR_FLEECE = { ...state, traits: [active, { level: 'I', index: 2, name: 'Just a Memory' }] };
+  assert.deepEqual(JSON.parse(JSON.stringify(context.buildSecondScreenSnapshot().traits)), [{ label: 'Active' }]);
 });
 
 test('inventory retry recovers both views without probing or retaining obsolete jobs', async () => {
