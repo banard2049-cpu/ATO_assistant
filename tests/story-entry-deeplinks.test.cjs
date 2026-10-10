@@ -103,7 +103,7 @@ function hubChapterKey(hub, index) {
 function consoleStoryTargets(cycle, tables) {
   const targets = [];
   const range = tables.ranges[cycle];
-  const knowledgeStart = { c1: 1, c2: 20, c3: 40, c4: 60, c5: 80 }[cycle];
+  const knowledgeStart = { c1: 0, c2: 20, c3: 40, c4: 60, c5: 80 }[cycle];
 
   for (const raw of [knowledgeStart, range ? range.min : knowledgeStart, range ? Math.min(range.max, range.min + 4) : knowledgeStart + 4, range ? range.max : knowledgeStart + 20]) {
     const entry = range ? Math.min(range.max, Math.max(range.min, raw || range.min)) : raw;
@@ -263,6 +263,7 @@ function extractHtmlFunction(name) {
 test('主控台内蕴奥德赛入口把知识值夹到当循环可用段落', () => {
   const ranges = extractLiteral('inwardOdysseyStoryRanges');
   const cases = [
+    ['c1', 0, 'inward-odyssey', '1', true],
     ['c1', 1, 'inward-odyssey', '1', false],
     ['c1', 12, 'inward-odyssey', '12', false],
     ['c2', 25, 'inward-odyssey', '25', false],

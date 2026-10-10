@@ -2235,8 +2235,8 @@
           <input id="dayInput" type="text" inputmode="numeric" value="0" aria-label="当前天数">
         </label>
         <div class="day-actions">
-          <button id="nextDayButton" type="button">进入下一天</button>
           <button id="resetTodayButton" type="button" class="secondary">重置今日</button>
+          <button id="nextDayButton" type="button">进入下一天</button>
         </div>
       </section>
     </header>
@@ -2469,7 +2469,7 @@
        jsave-tables.js 是官方枚举/卡名数据表，必须在转换器之前加载；
        map/map-data.js 也要在前（转换器用 window.ATO_MAP_DATA 落地图瓦片）。 -->
   <script src="./assets/jsave-tables.js?v=20261004-import1"></script>
-  <script src="./assets/jsave-import.js?v=20261004-import1"></script>
+  <script src="./assets/jsave-import.js?v=20261010-inward0"></script>
   <script src="./assets/record-attachments.js?v=20261009"></script>
   <script>window.ATO_BGM_CONFIG = { expect: "bgm19" };</script>
   <script src="./assets/bgm/manifest.js?v=20261008-android-direct-audio-bgm19"></script>
@@ -4513,7 +4513,7 @@
     }
 
     function argoKnowledgeStart(cycleId = "c2") {
-      return { c1: 1, c2: 20, c3: 40, c4: 60, c5: 80 }[cycleId] || 0;
+      return { c1: 0, c2: 20, c3: 40, c4: 60, c5: 80 }[cycleId] || 0;
     }
 
     function normalizeCardTrackEntry(value = {}, legacyPosition = 0, physicalCardToStep = false) {
@@ -6621,7 +6621,7 @@
         label: "内蕴奥德赛",
         bgm: "inward",
         title: range && entry !== rawPosition
-          ? `当前内蕴奥德赛 ${rawPosition || "未设置"}，跳转到可用段落 ${entry}`
+          ? `当前内蕴奥德赛 ${rawPosition}，跳转到可用段落 ${entry}`
           : `当前内蕴奥德赛 ${entry || "未设置"}`,
         href: getStoryHref({
           chapter: "inward-odyssey",
@@ -8908,6 +8908,7 @@
     }
 
     function resetToday() {
+      if (!window.confirm("确定重置今日吗？今日流程和事件的完成标记将全部清除。")) return;
       bgmResetRevision += 1;
       state.completed = {};
       state.events = state.events.map((item) => ({ ...item, done: false }));
@@ -9598,8 +9599,8 @@
     initAuth();
   </script>
   <script src="./assets/ato-terms.js?v=20261004-official-title"></script>
-  <script src="./assets/term-language.js?v=20261007-label1"></script>
-  <script src="./assets/update/app-version.js?v=2.2.1-rc.1"></script>
+  <script src="./assets/term-language.js?v=20261009-label2"></script>
+  <script src="./assets/update/app-version.js?v=3.5.10-rc.2"></script>
   <script src="./assets/update/update-check.js?v=3"></script>
 </body>
 </html>
