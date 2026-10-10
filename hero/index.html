@@ -982,6 +982,7 @@
   </style>
   <link rel="stylesheet" href="../api/cycle-theme.css">
   <link rel="stylesheet" href="./hero.css?v=20261001-node-height">
+  <script src="../story/data/english-source-data.js?v=20261011-english4"></script>
   <script src="../assets/theme.js?v=20261001" defer></script>
 </head>
 <body>
@@ -1735,12 +1736,12 @@
           ? `<span class="likelihood-badge least"><img src="${escHtml(assetSrc("ico_least_likely.png"))}" alt="最小似然">最小似然</span>`
           : "";
       hero.triskelion = hero.triskelion || { fury: 0, fate: 0, danger: 0 };
-      const skillPreviewHtml = SKILLS.map(skill => `<span class="skill-preview-item" title="${escHtml(skill.zh)} ${escHtml(skill.en)}"><img src="${escHtml(assetSrc(`skill_${skill.id}.png`))}" alt=""><span class="skill-preview-abbr">${escHtml(skill.abbr)}</span>${total[skill.id]}</span>`).join("");
+      const skillPreviewHtml = SKILLS.map(skill => `<span class="skill-preview-item" title="${escHtml(skill.zh)} ${escHtml(skill.en)}"><img src="${escHtml(assetSrc(`skill_${skill.id}.png`))}" alt=""><span class="skill-preview-abbr" data-english-text="${escHtml(skill.en.slice(0, 3))}">${escHtml(skill.abbr)}</span>${total[skill.id]}</span>`).join("");
       const resetTriskelionHtml = `<button class="icon-button triskelion-reset" type="button" data-reset-triskelion="${escHtml(hid)}" title="重置三幅节" aria-label="重置三幅节"><img src="${escHtml(assetSrc("reset_triskelion_F4F4F4.png"))}" alt=""></button>`;
 
       return `<div class="hero-column" data-hero-id="${escHtml(hid)}">
         <section class="panel">
-          <div class="panel-heading hero-title-drag" data-hero-drag="${escHtml(hid)}" tabindex="0" title="长按标题行拖动排序，也可用方向键" aria-label="调整「${escHtml(heroDisplayName(hero))}」的位置"><h2>${escHtml(heroDisplayName(hero))}</h2><div class="hero-heading-tools">${likelihoodHtml}${resetTriskelionHtml}</div></div>
+          <div class="panel-heading hero-title-drag" data-hero-drag="${escHtml(hid)}" tabindex="0" title="长按标题行拖动排序，也可用方向键" aria-label="调整「${escHtml(heroDisplayName(hero))}」的位置"><h2 ${hero.customName ? 'data-user-content' : ''}>${escHtml(heroDisplayName(hero))}</h2><div class="hero-heading-tools">${likelihoodHtml}${resetTriskelionHtml}</div></div>
           <div class="panel-body">
             <div class="identity-grid">
               <div class="portrait-box" data-portrait="${escHtml(hid)}">
@@ -2733,7 +2734,7 @@
               ${hero.katharsisCode ? `<div class="graveyard-section"><strong>疏泄代码：</strong>${escHtml(hero.katharsisCode)}</div>` : ""}
               <div class="graveyard-section"><strong>回忆：</strong>${mnemosHtml}</div>
               <div class="graveyard-section"><strong>宿命：</strong>${fatedHtml}</div>
-              ${hero.notes ? `<div class="graveyard-section"><strong>笔记：</strong><span style="white-space:pre-wrap">${escHtml(hero.notes)}</span></div>` : ""}
+              ${hero.notes ? `<div class="graveyard-section"><strong>笔记：</strong><span data-user-content style="white-space:pre-wrap">${escHtml(hero.notes)}</span></div>` : ""}
               <div style="margin-top:10px"><button class="secondary" style="min-height:30px;font-size:12px" data-revive-idx="${idx}">复活</button></div>
             </div>
           </details>`;
@@ -2887,6 +2888,9 @@
   <script src="../assets/page-focus-router.js?v=20261007-page-navigation1"></script>
 
   <script src="../assets/ato-terms.js?v=20260922-official-terms"></script>
-  <script src="../assets/term-language.js?v=20261009-label2"></script>
+  <script src="../assets/english-terms.js?v=20261011-english4"></script>
+  <script src="../assets/english-ui.js?v=20261011-english4"></script>
+  <script src="../assets/english-language.js?v=20261011-english4"></script>
+  <script src="../assets/term-language.js?v=20261011-english4"></script>
 </body>
 </html>

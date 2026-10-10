@@ -54,7 +54,8 @@
   let activeEntry = null;
   let copyParagraphStatusTimer = null;
   const decodedPharosTitleKeys = new Set();
-  let storyVersion = localStorage.getItem("ato-term-language-v1") === "official" ? "官方版" : "民间版";
+  let storyVersion = localStorage.getItem("ato-term-language-v1") === "en" ? "English"
+    : localStorage.getItem("ato-term-language-v1") === "official" ? "官方版" : "民间版";
   data = buildVersionData(storyVersion === "官方版");
   const storyLanguageChannel = "BroadcastChannel" in window ? new BroadcastChannel("ato-term-language") : null;
   const secondScreenSnapshotUrl = "../api/campaign-state.php?section=story";
@@ -414,7 +415,13 @@
     return value.trim().toLowerCase();
   }
 
+  function englishEntryTitle(entry) {
+    if (entry.englishTitle) return entry.englishTitle;
+    if (entry.title && !/[\u3400-\u9fff]/.test(entry.title)) return entry.title;
+    return window.ATO_ENGLISH?.exact(entry.title || "") || "Story paragraph";
+  }
   function searchEntryContent(entry, book) {
+    if (storyVersion === "English") return { title: englishEntryTitle(entry), text: entry.englishText || entry.originalText || "" };
     if (storyVersion === "官方版" && supportsOfficialVersion(book)) {
       const official = officialEntries.get(`${book.id}:${entry.key}`);
       return { title: official?.officialTitle || entry.title, text: official?.officialText || "" };
@@ -1277,6 +1284,7 @@
   }
 
   function cachedAudioForEntry(entry) {
+    if (storyVersion === "English" && storyAudioManifest?.language !== "en") return null;
     // 民间离线包不能用于官方正文；讯飞聆伯松包按官方版生成，清单里带 official 标记，官方版可用。
     if (storyVersion === "官方版" && supportsOfficialVersion()) {
       const packs = typeof offlineAudioPacks === "undefined" ? [] : offlineAudioPacks;
@@ -2084,12 +2092,13 @@
   }
 
   function configureUtterance(utterance) {
+    const language = storyVersion === "English" ? "en" : "zh";
     const preferredVoice = voices.find((voice) => voice.name === ttsConfig.nativeVoice)
       || voices[Number(ttsVoice.value || 0)]
-      || voices.find((voice) => voice.lang.toLowerCase().includes("zh-cn"))
+      || voices.find((voice) => voice.lang.toLowerCase().startsWith(language))
       || null;
 
-    utterance.lang = "zh-CN";
+    utterance.lang = storyVersion === "English" ? "en-US" : "zh-CN";
     utterance.rate = ttsConfig.rate || Number(ttsSpeed.value || 1);
     utterance.volume = ttsConfig.volume || 1;
     utterance.voice = preferredVoice;
@@ -3168,7 +3177,7 @@
     mixedMediaRuntime()?.dispose?.(storyText);
     mixedMediaRender = null;
     const displayEntry = getDisplayEntry(entry);
-    const isTranslatedSupplement = Boolean(displayEntry.originalText);
+    const isTranslatedSupplement = storyVersion !== "English" && Boolean(displayEntry.originalText);
     // C5 的 AI 翻译条目按普通条目排版：没有「AI 翻译」标题、提醒、英文原文，也不挂原书图片；
     // 战斗条目的 AIBP 入口照旧保留。其它册若以后出现翻译条目，仍走 renderAiTranslatedSupplement。
     const plainLayoutSupplement = isTranslatedSupplement && translatedSupplementUsesPlainLayout(displayEntry);
@@ -3296,6 +3305,13 @@
   }
 
   function getDisplayEntry(entry) {
+    if (storyVersion === "English") {
+      const text = entry.englishText || entry.originalText || "";
+      return {
+        ...entry, html: null, title: englishEntryTitle(entry),
+        text: text || "The English original for this paragraph is not available in the supplied local sources. Please refer to your English storybook.",
+      };
+    }
     if (storyVersion !== "官方版" || !supportsOfficialVersion()) return entry;
     const official = officialEntries.get(`${currentBook()?.id}:${entry.key}`) || {};
     if (!official.officialText?.trim()) {
@@ -4246,7 +4262,7 @@
         voices = [];
         const option = document.createElement("option");
         option.value = "android-default";
-        option.textContent = "Android 系统中文语音";
+        option.textContent = storyVersion === "English" ? "Android system voice (English)" : "Android 系统中文语音";
         option.selected = true;
         ttsVoice.appendChild(option);
         return;
@@ -4256,7 +4272,7 @@
         return;
       }
       const allVoices = window.speechSynthesis.getVoices();
-      const preferred = allVoices.filter((v) => v.lang.toLowerCase().startsWith("zh"));
+      const preferred = allVoices.filter((v) => v.lang.toLowerCase().startsWith(storyVersion === "English" ? "en" : "zh"));
       voices = preferred.length ? preferred : allVoices;
       voices.forEach((voice, index) => {
         const option = document.createElement("option");
@@ -4397,6 +4413,7 @@
   }
 
   function getSpeechEntryText(entry) {
+    if (storyVersion === "English") return entry.englishText || entry.originalText || "";
     if (storyVersion === "官方版" && supportsOfficialVersion()) {
       return officialEntries.get(`${currentBook()?.id}:${entry.key}`)?.officialText || "";
     }
@@ -4503,15 +4520,16 @@
   copyParagraphButton.addEventListener("click", copyCurrentParagraph);
   ttsButton.addEventListener("click", toggleSpeech);
   ttsPauseButton?.addEventListener("click", toggleSpeechPause);
-  function syncStoryLanguage(official) {
-    const nextVersion = official ? "官方版" : "民间版";
+  function syncStoryLanguage(language) {
+    const nextVersion = language === "en" ? "English" : language === "official" || language === true ? "官方版" : "民间版";
     if (storyVersion === nextVersion) return;
     stopSpeech();
     storyVersion = nextVersion;
+    syncVoiceSelect();
     refreshSecondScreenStoryContentToggle(Boolean(secondScreenStoryModeToggle?.checked));
     const chapterKey = selectedChapterKey();
     const encounterKey = selectedEncounterKey();
-    data = buildVersionData(official);
+    data = buildVersionData(nextVersion === "官方版");
     activeBook = currentBook();
     populateChapters(activeBook, chapterKey);
     populateEncounters(activeBook, encounterKey);
@@ -4537,13 +4555,14 @@
     renderResults(searchEntries(searchInput.value));
   }
   window.addEventListener("storage", (event) => {
-    if (event.key === "ato-term-language-v1") syncStoryLanguage(event.newValue === "official");
+    if (event.key === "ato-term-language-v1") syncStoryLanguage(event.newValue);
   });
   window.addEventListener("ato-term-language-changed", (event) => {
-    if (typeof event.detail?.official === "boolean") syncStoryLanguage(event.detail.official);
+    if (event.detail?.language || typeof event.detail?.official === "boolean") syncStoryLanguage(event.detail.language || event.detail.official);
   });
+  window.addEventListener("ato-language-changed", (event) => syncStoryLanguage(event.detail?.language));
   storyLanguageChannel?.addEventListener("message", (event) => {
-    if (typeof event.data?.official === "boolean") syncStoryLanguage(event.data.official);
+    if (event.data?.language || typeof event.data?.official === "boolean") syncStoryLanguage(event.data.language || event.data.official);
   });
   ttsUi.configButton.addEventListener("click", openTtsConfigModal);
   ttsUi.engineSelect.addEventListener("change", (event) => {

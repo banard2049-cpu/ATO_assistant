@@ -1493,6 +1493,7 @@
   </style>
   <link rel="stylesheet" href="../api/cycle-theme.css">
   <link rel="stylesheet" href="./record.css?v=20261009-named-counters3">
+  <script src="../story/data/english-source-data.js?v=20261011-english4"></script>
   <script src="../assets/theme.js?v=20261001" defer></script>
 </head>
 <body>
@@ -2253,7 +2254,7 @@
           ["pygmalionStones", "皮格马利翁之石", "Pygmalion Stones"],
         ],
         events: {
-          0: "时间线步骤开始时若没有空白格可标记，读 3749",
+          80: "时间线步骤开始时若没有空白格可标记，读 3749",
           6: "Painful Awakening Special Event",
           18: "Acclimation 1",
           36: "Acclimation 2",
@@ -3793,6 +3794,7 @@
       }
       const text = document.createElement("div");
       text.className = "track-name-text";
+      if (en) text.dataset.englishText = en;
       text.innerHTML = `<strong>${escapeHtml(zh)}</strong><span>${escapeHtml(en || "")}</span>`;
       title.appendChild(text);
       return title;
@@ -4823,6 +4825,7 @@
       loadResourceImage(image, retry, resourceImageMap[icon] || createResourceCardImage(zh, en, key));
       const name = document.createElement("div");
       name.className = "resource-name";
+      name.dataset.englishText = en;
       name.innerHTML = `${escapeHtml(zh)}<span>${escapeHtml(en)}</span>`;
       heading.append(face, name);
       resourceHeadingCache.set(cacheKey, heading);
@@ -6575,6 +6578,9 @@
     loadServerState();
   </script>
   <script src="../assets/ato-terms.js?v=20260912f"></script>
-  <script src="../assets/term-language.js?v=20261009-label2"></script>
+  <script src="../assets/english-terms.js?v=20261011-english4"></script>
+  <script src="../assets/english-ui.js?v=20261011-english4"></script>
+  <script src="../assets/english-language.js?v=20261011-english4"></script>
+  <script src="../assets/term-language.js?v=20261011-english4"></script>
 </body>
 </html>

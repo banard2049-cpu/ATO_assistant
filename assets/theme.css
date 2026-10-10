@@ -1,6 +1,14 @@
 .theme-controls { display: grid; gap: 12px; }
 .page-navigation-control { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 13px; font-weight: 600; }
 .settings-toggle-button { min-width: 112px; font-size: 13px; }
+/* One button shows the active language; the other choices live in a popup. */
+.settings-language-picker { position: relative; display: inline-flex; }
+.settings-language-picker > button::after { content: "\25be"; margin-left: 6px; font-size: 11px; }
+.settings-language-picker > button[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); }
+.settings-language-menu { position: absolute; top: calc(100% + 4px); right: 0; z-index: 40; display: grid; gap: 4px; padding: 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); box-shadow: 0 10px 24px rgb(0 0 0 / 18%); }
+.settings-language-menu[hidden] { display: none; }
+.settings-language-menu button { min-width: 132px; justify-content: flex-start; text-align: left; white-space: nowrap; }
+.settings-language-menu button[aria-checked="true"] { border-color: var(--accent-strong); background: var(--accent-strong); color: #fff; }
 .misc-settings-controls { display: grid; gap: 18px; }
 .misc-setting-group { display: grid; gap: 8px; }
 .misc-setting-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }

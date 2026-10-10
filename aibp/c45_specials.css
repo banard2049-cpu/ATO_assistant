@@ -253,6 +253,10 @@
 
 .c45-control.c45-wish-control {
   padding-top: 0;
+  border-color: var(--line);
+  border-radius: 0;
+  background: var(--panel);
+  color: var(--ink);
 }
 
 .c45-wish-head {
@@ -271,6 +275,9 @@
 
 .c45-wish-view {
   grid-area: view;
+  border-color: var(--line);
+  border-radius: 0;
+  background: var(--bg);
   position: relative;
   min-height: 58px;
   display: grid;
@@ -297,9 +304,9 @@
   align-items: start;
   padding: 7px 9px;
   overflow-y: auto;
-  border-left: 1px solid rgba(199, 173, 114, 0.24);
-  background: rgba(255, 255, 255, 0.015);
-  color: #bfc5c1;
+  border-left: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
   font-size: 10px;
   line-height: 1.3;
   scrollbar-width: thin;
@@ -312,14 +319,14 @@
 
 .c45-wish-copy-label {
   margin-bottom: 2px;
-  color: #d9c28f;
+  color: var(--accent-strong);
   font-size: 10px;
   font-weight: 800;
 }
 
 .c45-wish-name {
   padding: 12px 16px;
-  color: #f2e7cc;
+  color: var(--accent-strong);
   font-size: 16px;
   font-weight: 800;
   line-height: 1.35;
@@ -327,10 +334,19 @@
 }
 
 .c45-wish-empty {
-  padding: 18px;
-  color: #8d9490;
+  padding: 6px 8px;
+  color: var(--muted);
   text-align: center;
   font-size: 12px;
+  line-height: 1.4;
+}
+
+.c45-wish-view:has(.c45-wish-empty) {
+  width: fit-content;
+  max-width: 100%;
+  min-height: 34px;
+  box-sizing: border-box;
+  align-self: center;
 }
 
 .c45-active-feint {
@@ -685,7 +701,7 @@
   .c45-wish-copy {
     height: 72px;
     border-left: 0;
-    border-top: 1px solid rgba(199, 173, 114, 0.24);
+    border-top: 1px solid var(--line);
   }
 
   .c45-wish-view {

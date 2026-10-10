@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><title>Language regression fixture</title></head>
+<body>
+  <div class="settings-language-picker" data-language-ignore>
+    <button id="termLanguageToggle" type="button" aria-haspopup="menu" aria-expanded="false" data-term-toggle>民间翻译</button>
+    <div id="termLanguageMenu" class="settings-language-menu" role="menu" hidden>
+      <button type="button" role="menuitemradio" aria-checked="false" data-term-language-option="fan">民间翻译</button>
+      <button type="button" role="menuitemradio" aria-checked="false" data-term-language-option="official">官方翻译</button>
+      <button type="button" role="menuitemradio" aria-checked="false" data-term-language-option="en">English</button>
+    </div>
+  </div>
+  <p id="label">船体</p><p id="status">正在保存</p>
+  <p id="attribute" title="正在保存">Status</p>
+  <textarea id="notes" placeholder="保存">船体与船员是我的笔记</textarea>
+  <span data-user-content>船体</span>
+  <p id="rule" data-english-source="movement">中文规则</p>
+  <div><span data-term-variant="fan">民间说明</span><span data-term-variant="official">官方说明</span><span data-term-variant="en">Original English</span></div>
+  <button id="run">Run regressions</button><ol id="results" data-language-ignore></ol>
+  <span id="explicitTitle" data-english-text="Ten Thousand Nights and Days">一百万日夜 <b>原副标题</b></span>
+  <span id="connectors">船体或船员</span>
+  <script>
+    const originalPreference = localStorage.getItem('ato-term-language-v1');
+    const originalChinese = localStorage.getItem('ato-term-chinese-language-v1');
+    window.ATO_TERMS = [{from:'船体',to:'船壳'}];
+    window.ATO_ENGLISH_TERMS = {terms:[['船体','Hull']]};
+    window.ATO_ENGLISH_SOURCE = {labels:{movement:'Move the Argo to an adjacent Map tile.'}};
+  </script>
+  <script src="../../assets/english-ui.js"></script>
+  <script src="../../assets/english-language.js"></script>
+  <script src="../../assets/term-language.js"></script>
+  <script>
+    // requestAnimationFrame never fires in some headless runs, so the timer is
+    // a fallback that keeps the fixture runnable outside a visible window.
+    const tick = () => new Promise(resolve => {
+      if (typeof requestAnimationFrame !== 'function') return setTimeout(resolve, 32);
+      const timer = setTimeout(resolve, 250);
+      requestAnimationFrame(() => requestAnimationFrame(() => { clearTimeout(timer); resolve(); }));
+    });
+    // The controller re-applies late changes on an animation frame, which can
+    // land after the timer fallback above, so wait for the result itself.
+    const until = async (condition, attempts = 40) => {
+      for (let attempt = 0; attempt < attempts && !condition(); attempt++) {
+        await new Promise(resolve => setTimeout(resolve, 25));
+        await tick();
+      }
+      return condition();
+    };
+    const runRegressions = async () => {
+      const results = document.querySelector('#results'); results.textContent = '';
+      const verify = (name, condition) => { const item = document.createElement('li'); item.textContent = (condition ? 'PASS: ' : 'FAIL: ') + name; results.appendChild(item); };
+      const api = window.ATO_LANGUAGE;
+      const trigger = document.querySelector('#termLanguageToggle');
+      const menu = document.querySelector('#termLanguageMenu');
+      const option = language => document.querySelector('[data-term-language-option="' + language + '"]');
+      const pick = language => { if (menu.hidden) trigger.click(); option(language).click(); };
+      api.set('fan');
+      verify('fan source', document.querySelector('#label').textContent === '船体');
+      verify('picker shows the active language', trigger.textContent === '民间翻译');
+      verify('popup starts closed', menu.hidden && trigger.getAttribute('aria-expanded') === 'false');
+      trigger.click();
+      verify('clicking the picker opens the popup', !menu.hidden && trigger.getAttribute('aria-expanded') === 'true');
+      verify('every choice is offered with the active one marked',
+        menu.querySelectorAll('[data-term-language-option]').length === 3
+        && menu.querySelectorAll('[data-term-language-option][aria-checked="true"]').length === 1
+        && option('fan').getAttribute('aria-checked') === 'true');
+      trigger.click();
+      verify('clicking the picker again closes the popup', menu.hidden && trigger.getAttribute('aria-expanded') === 'false');
+      pick('official');
+      verify('choosing an option applies it and closes the popup', api.get() === 'official' && menu.hidden);
+      verify('choosing an option marks it as the active one', option('official').getAttribute('aria-checked') === 'true' && option('fan').getAttribute('aria-checked') === 'false');
+      verify('official source', document.querySelector('#label').textContent === '船壳');
+      pick('en');
+      verify('English choice persists selection', localStorage.getItem('ato-term-language-v1') === 'en' && document.documentElement.lang === 'en');
+      verify('picker label follows the active language', trigger.textContent === 'English');
+      verify('source English rule', document.querySelector('#rule').textContent === 'Move the Argo to an adjacent Map tile.');
+      verify('explicit original-English heading', document.querySelector('#explicitTitle').textContent === 'Ten Thousand Nights and Days');
+      verify('single-character conjunction in a live UI label', document.querySelector('#connectors').textContent === 'Hull or Crew');
+      verify('English variant', !document.querySelector('[data-term-variant="en"]').hidden && document.querySelector('[data-term-variant="fan"]').hidden);
+      verify('user notes remain unchanged', document.querySelector('#notes').value === '船体与船员是我的笔记' && document.querySelector('[data-user-content]').textContent === '船体');
+      document.querySelector('#status').firstChild.nodeValue = '加载失败';
+      document.querySelector('#attribute').title = '加载失败';
+      const text = document.createTextNode('保存'); document.body.appendChild(text);
+      await until(() => document.querySelector('#status').textContent === 'Load failed'
+        && document.querySelector('#attribute').title === 'Load failed'
+        && text.nodeValue === 'Save');
+      verify('reused text node', document.querySelector('#status').textContent === 'Load failed');
+      verify('changed attribute', document.querySelector('#attribute').title === 'Load failed');
+      verify('added bare text node', text.nodeValue === 'Save');
+      pick('en');
+      verify('choosing the already-active language keeps English', api.get() === 'en');
+      pick('official');
+      verify('choosing the official Chinese edition applies it', api.get() === 'official' && document.querySelector('#label').textContent === '船壳' && option('official').getAttribute('aria-checked') === 'true');
+      verify('latest dynamic source is restored', document.querySelector('#status').textContent === '加载失败');
+      pick('fan');
+      verify('source rule restores without losing Chinese', document.querySelector('#rule').textContent === '中文规则');
+      verify('choosing the fan Chinese edition applies it', api.get() === 'fan' && option('fan').getAttribute('aria-checked') === 'true');
+      verify('original heading markup restores', document.querySelector('#explicitTitle b').textContent === '原副标题');
+      window.dispatchEvent(new StorageEvent('storage',{key:'ato-term-language-v1',newValue:'en'}));
+      verify('storage sync accepts English', api.get() === 'en');
+      const channel = new BroadcastChannel('ato-term-language'); channel.postMessage({language:'official',official:true});
+      // Cross-context delivery is a browser task, not a fixed delay.
+      verify('open module accepts broadcast', await until(() => api.get() === 'official')); channel.close();
+      window.dispatchEvent(new CustomEvent('ato-term-language-changed',{detail:{official:false}}));
+      verify('legacy Chinese event remains supported', api.get() === 'fan');
+      api.set(originalPreference || 'fan');
+      if (originalPreference === null) localStorage.removeItem('ato-term-language-v1');
+      if (originalChinese === null) localStorage.removeItem('ato-term-chinese-language-v1');
+      else localStorage.setItem('ato-term-chinese-language-v1',originalChinese);
+    };
+    document.querySelector('#run').onclick = runRegressions;
+    // Adding ?autorun to the URL reports the verdict by itself, so a headless
+    // browser can run the fixture without a click. It waits for load because
+    // the language controller initialises on DOMContentLoaded.
+    if (location.search.includes('autorun')) {
+      window.addEventListener('load', () => {
+        runRegressions().then(() => {
+          const items = [...document.querySelectorAll('#results li')];
+          const failed = items.filter((item) => item.textContent.startsWith('FAIL:')).length;
+          const summary = document.createElement('p');
+          summary.id = 'summary';
+          summary.setAttribute('data-language-ignore', '');
+          summary.textContent = failed ? 'FIXTURE FAIL ' + failed + '/' + items.length : 'FIXTURE PASS ' + items.length;
+          document.body.appendChild(summary);
+          document.title = summary.textContent;
+        });
+      }, { once: true });
+    }
+  </script>
+  <!--
+    Headless run (reports "FIXTURE PASS n" / "FIXTURE FAIL n" plus every check):
+      chrome --headless=new --run-all-compositor-stages-before-draw --no-sandbox
+        --allow-file-access-from-files --virtual-time-budget=25000 --dump-dom
+        "file:///<repo>/tests/fixtures/english-language.html?autorun=1"
+    --run-all-compositor-stages-before-draw matters: the controller applies late
+    mutations on an animation frame, which otherwise may not run at all.
+    The BroadcastChannel check needs a message round-trip through the browser
+    process, which virtual time can starve; confirm that one in a normal window.
+  -->
+</body></html>
