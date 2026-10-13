@@ -434,7 +434,11 @@ class HardeningTest(unittest.TestCase):
             ' "notes": "", "updatedAt": "2026-01-01T00:00:00.000Z", "factions": ["cyclopes"],'
             ' "factionUpdatedAt": "2026-01-02T00:00:00.000Z"},\n'
             '        "c1:002": {"cycleId": "c1", "tileId": "002", "reviewed": false, "tags": [],'
-            ' "notes": "", "updatedAt": "2026-01-01T00:00:00.000Z", "factions": []}\n'
+            ' "notes": "", "updatedAt": "2026-01-01T00:00:00.000Z", "factions": []},\n'
+            '        "c5:008": {"cycleId": "c5", "tileId": "008", "tags": [], "factions": ["cycladeanProtectorate"]},\n'
+            '        "c5:008:A": {"cycleId": "c5", "tileId": "008", "face": "A", "tags": ["progress"], "factions": ["cycladeanProtectorate"]},\n'
+            '        "c5:008:B": {"cycleId": "c5", "tileId": "008", "face": "B", "tags": ["calamity"], "factions": ["followersOfArete"]},\n'
+            '        "c5:009:B": {"tags": [], "factions": ["outcastVanguard"]}\n'
             '    }\n'
             '};\n'
         )
@@ -466,6 +470,15 @@ class HardeningTest(unittest.TestCase):
         self.assertEqual(data['tagDefinitions'][0]['cycles'], ['c1'], 'definition cycles must survive')
         self.assertEqual(data['tiles']['c1:001']['factions'], ['cyclopes'], 'tile factions must survive')
         self.assertEqual(data['tiles']['c1:001']['factionUpdatedAt'], '2026-01-02T00:00:00.000Z')
+        self.assertEqual(len(data['tiles']), 6, 'base and face entries must not collapse during GET')
+        self.assertEqual(data['tiles']['c5:008']['tags'], [])
+        self.assertEqual(data['tiles']['c5:008:A']['tags'], ['progress'])
+        self.assertEqual(data['tiles']['c5:008:B']['tags'], ['calamity'])
+        self.assertEqual(data['tiles']['c5:008:B']['factions'], ['followersOfArete'])
+        self.assertEqual(data['tiles']['c5:009:B']['cycleId'], 'c5')
+        self.assertEqual(data['tiles']['c5:009:B']['tileId'], '009')
+        self.assertEqual(data['tiles']['c5:009:B']['face'], 'B')
+        face_entries = {key: value for key, value in data['tiles'].items() if key.startswith('c5:')}
 
         # First save based on revision 0 succeeds and bumps the revision.
         data['tiles']['c1:001']['notes'] = 'A'
@@ -474,6 +487,8 @@ class HardeningTest(unittest.TestCase):
         self.assertEqual(status, 200, saved)
         self.assertEqual(saved['revision'], 1)
         self.assertEqual(saved['data']['tiles']['c1:001']['factions'], ['cyclopes'])
+        self.assertEqual({key: value for key, value in saved['data']['tiles'].items() if key.startswith('c5:')},
+                         face_entries, 'face entries must survive POST without merging')
         self.assertEqual(saved['data']['version'], 2, 'an old client must not downgrade version')
 
         # A second page that read revision 0 must be refused, and nothing may be written.
@@ -499,6 +514,8 @@ class HardeningTest(unittest.TestCase):
         self.assertEqual(body['revision'], 2)
         self.assertEqual(body['data']['tiles']['c1:001']['notes'], 'A', 'the earlier edit must still be there')
         self.assertEqual(body['data']['tiles']['c1:001']['factions'], ['cyclopes'])
+        self.assertEqual({key: value for key, value in body['data']['tiles'].items() if key.startswith('c5:')},
+                         face_entries, 'face entries must survive repeated saves')
         on_disk = (self.root / 'map' / 'map-tile-tags.js').read_text(encoding='utf-8')
         self.assertIn('"factions"', on_disk)
         self.assertIn('"cyclopes"', on_disk)

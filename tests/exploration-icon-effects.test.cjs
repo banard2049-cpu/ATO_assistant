@@ -67,3 +67,24 @@ test('newly completed mixed glyph rows expose old partial receipts but preserve 
   assert.equal(effects.describe(card,context,resources)[0].receiptMismatch,true);
   assert.equal(effects.describe(card,{...context,manualEffects:{'manual:0':true}},resources)[0].receiptMismatch,undefined);
 });
+
+test('paragraph grouping keeps the shared Allied condition and Resolve uses Nemesis without changing Titan gains',()=>{
+  const dataContext={window:{}};
+  require('node:vm').runInNewContext(require('node:fs').readFileSync(require('node:path').join(__dirname,'../assets/exploration-card-resources.js'),'utf8'),dataContext);
+  const cards=dataContext.window.ATO_EXPLORATION_CARD_RESOURCES.cards;
+  for(const key of ['c1:6435','c2:13641','c3:13539','c4:9335']){
+    const card=cards[key];
+    for(const bonus of [0,2]){
+      const context={cycleId:card.cycleId,conditionRules:conditions,diplomacy:[{id:'test',bonus}]};
+      const rows=effects.combineManualReminders(card,effects.describe(card,context,resources),context);
+      const paragraph=rows.find(row=>row.id==='manual-group:1-2');
+      assert.ok(paragraph,key);assert.equal(paragraph.conditionState,bonus===2,key);
+      assert.match(paragraph.text,/Roll a d10.*On 8\+/);
+    }
+  }
+  for(const key of ['c2:13637','c3:13533','c4:9336','c4:9344','c4:9346','c5:10304','c5:10305','c5:10311','c5:10318']){
+    const card=cards[key],text=card.manual.find(row=>/resolve.*ICON\(/i.test(row.text)).text;
+    assert.match(effects.displayIcons(text,card.cycleId,card.cardId),/宿敌标记/,key);
+  }
+  assert.deepEqual(effects.parse('Gain +1 ICON(black disc with a white beast-head emblem).','c4','9344').effects,[{type:'titan',amount:1}]);
+});

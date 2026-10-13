@@ -762,3 +762,99 @@ window.ATO_STORY_DOOM_DATA = {
     })
   }
 };
+
+// These thresholds were checked against each printed A/B card face. They are
+// advisory: callers may remind at or beyond a threshold, but must not clamp a
+// token counter. Empty limits mean the face allows tokens without a fixed cap.
+(function attachStoryDoomTokenRules(data) {
+  const progressByCycle = {
+    c1: { "1A": [6], "2A": [2, 9], "3A": [2, 5, 9], "4A": [5, 12] },
+    c2: { "1A": [7], "2A": [6], "2B": [10, 15, 20], "4A": [10] },
+    c3: { "1A": [6], "1B": [2, 5], "2A": [1, 3, 5], "2B": [9], "3A": [2, 5, 9], "3B": [2, 5, 9] },
+    c4: { "1A": [5], "1B": [2, 5, 7], "2A": [2, 4, 7], "3A": [5], "4A": [9] },
+    c5: { "1A": [4], "1B": [3], "2A": [4], "2B": [], "3A": [3, 5], "3B": [] },
+  };
+  // Positions follow the printed order: 1A, 1B, 2A, 2B, 3A, 3B.
+  const doomByCycle = {
+    c1: [[5], [6], [5], [6], [5], [6]],
+    c2: [[5], [5], [5], [6], [1, 5], [6]],
+    c3: [[7], [7], [7], [7], [7], [7]],
+    c4: [[5], [6], [7], [7], [6], [5]],
+    c5: [[5], [5], [5], [4], [4], [6]],
+  };
+  const progressNotes = {
+    c2: {
+      "3B": "获得进展时改为抽取身份线索卡，进展不留在此卡面。",
+    },
+    c5: {
+      "1A": "揭示时放置4枚进展；之后获得进展时改为移除1枚，且仅在最后访问城市可移除。",
+      "1B": "揭示时放置3枚进展；之后获得进展时改为移除1枚，且仅在最后访问城市可移除。",
+      "2B": "允许放置额外进展研究未知提洛岛，卡面没有固定数量上限。",
+      "3B": "允许放置额外进展研究未知提洛岛，卡面没有固定数量上限。",
+    },
+  };
+  const makeRule = (allowed, limits = [], note = "", behavior = {}) => ({ allowed, limits: [...limits], note, ...behavior });
+  const noProgressNote = "当前卡面不累积进展，可将进展放置到内蕴奥德赛。";
+  const missingRule = () => makeRule(false, [], "请先选择当前卡面。");
+
+  data.tokenRules = {};
+  for (const [cycleId, cycle] of Object.entries(data.cycles)) {
+    const rules = { story: {}, doom: {}, inwardOdyssey: {} };
+    for (const step of cycle.storySteps) {
+      const allowed = Object.prototype.hasOwnProperty.call(progressByCycle[cycleId], step.label);
+      const note = progressNotes[cycleId]?.[step.label] || (allowed ? "" : noProgressNote);
+      step.tokenRules = {
+        progress: makeRule(allowed, progressByCycle[cycleId][step.label] || [], note,
+          cycleId === "c5" && ["1A", "1B"].includes(step.label)
+            ? { gainMode: "remove", gainCondition: "lastVisitedCity" } : {}),
+        doom: makeRule(false, [], "故事卡面没有放置灾祸的规则。"),
+      };
+      rules.story[step.label] = step.tokenRules;
+    }
+    for (const [index, step] of cycle.doomSteps.entries()) {
+      step.tokenRules = {
+        progress: cycleId === "c4"
+          ? makeRule(true, [index + 3], "可将进展投入疯狂投资；达到阈值时结算卡面效果，翻面会丢失此卡面所有进展。")
+          : makeRule(false, [], "该灾祸卡面没有放置进展的规则。"),
+        doom: makeRule(true, doomByCycle[cycleId][index]),
+      };
+      rules.doom[step.label] = step.tokenRules;
+    }
+    cycle.inwardOdyssey.tokenRules = {
+      progress: makeRule(true, [1], "内蕴奥德赛上限为1；卡面规定每2枚进展兑换1点阿尔戈号知识。"),
+      doom: makeRule(false, [], "内蕴奥德赛没有放置灾祸的规则。"),
+    };
+    rules.inwardOdyssey = cycle.inwardOdyssey.tokenRules;
+    data.tokenRules[cycleId] = rules;
+  }
+
+  // Numeric positions use the dashboard's one-based convention; 0 is inactive.
+  // Prefer a step object when available, so printed side and source front/back
+  // ordering cannot be confused (cycles IV and V use the source back as side A).
+  data.tokenRule = function tokenRule(cycleId, key, cardOrPosition, field) {
+    const cycle = data.cycles[cycleId];
+    const normalizedKey = key === "inward" || key === "inward-odyssey" ? "inwardOdyssey" : key;
+    if (!cycle || !["story", "doom", "inwardOdyssey"].includes(normalizedKey) || !["progress", "doom"].includes(field)) {
+      return missingRule();
+    }
+    let card;
+    if (normalizedKey === "inwardOdyssey") {
+      card = cycle.inwardOdyssey;
+    } else {
+      const steps = cycle[`${normalizedKey}Steps`];
+      if (typeof cardOrPosition === "number") {
+        card = Number.isInteger(cardOrPosition) && cardOrPosition > 0 ? steps[cardOrPosition - 1] : undefined;
+      } else if (typeof cardOrPosition === "string") {
+        card = steps.find(step => step.id === cardOrPosition || step.label === cardOrPosition.toUpperCase());
+      } else if (cardOrPosition && typeof cardOrPosition === "object") {
+        card = steps.find(step => step.id === cardOrPosition.id)
+          || steps.find(step => step.label === cardOrPosition.label)
+          || steps.find(step => step.cardId === cardOrPosition.cardId && step.side === cardOrPosition.side)
+          || steps.find(step => step.physicalCardId === cardOrPosition.id && step.side === cardOrPosition.side);
+      }
+    }
+    const rule = card?.tokenRules?.[field];
+    return rule ? makeRule(rule.allowed, rule.limits, rule.note,
+      rule.gainMode ? { gainMode: rule.gainMode, gainCondition: rule.gainCondition } : {}) : missingRule();
+  };
+})(window.ATO_STORY_DOOM_DATA);

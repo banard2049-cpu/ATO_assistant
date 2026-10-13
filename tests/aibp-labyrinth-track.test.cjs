@@ -90,6 +90,7 @@ function trackScope({ currentApostle = "LABYRINTHAUROS", stored = {} } = {}) {
     functionSource("hasPanelState"),
     functionSource("hasManualPanelState"),
     functionSource("currentPanelState"),
+    functionSource("panelMarkerStateForArtwork"),
     functionSource("updateNietzscheStateUi"),
     functionSource("cycleNietzscheState"),
     `globalThis.__api = {
@@ -101,8 +102,9 @@ function trackScope({ currentApostle = "LABYRINTHAUROS", stored = {} } = {}) {
       storage: __storage,
     };`
   ].join("\n");
-  const context = { __storage: storage, __marker: marker, __button: button, __storageRef: storage, __snapshots: 0 };
+  const context = { window: {}, __storage: storage, __marker: marker, __button: button, __storageRef: storage, __snapshots: 0 };
   vm.createContext(context);
+  vm.runInContext(readText("aibp/panel-overlay.js"), context);
   vm.runInContext(script, context);
   return { api: context.__api, marker, button, toggles, values, storage };
 }
@@ -192,7 +194,7 @@ test("控制台把轨道格画在面板上并写进第二屏快照", () => {
   assert.match(panelRender, /isLabyrinthTrackApostle\(name\)/, "renderPanelImage 要为这两个始徒建圈");
   assert.match(panelRender, /className = "panel-state-marker"/);
   const snapshot = functionSource("buildSecondScreenSnapshot");
-  assert.match(snapshot, /labyrinthTrack: isLabyrinthTrackApostle\(\) \? labyrinthTrackState\(\) : null/);
+  assert.match(snapshot, /labyrinthTrack: isLabyrinthTrackApostle\(\) \? currentPanelState\(\) : null/);
   const ui = functionSource("updateNietzscheStateUi");
   assert.match(ui, /classList\.toggle\("labyrinth-track-marker", isLabyrinthTrackApostle\(\)\)/);
   assert.match(ui, /state\.buttonLabel \|\| `切换状态：\$\{state\.label\}`/);

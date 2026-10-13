@@ -68,7 +68,7 @@ function map_tags_version(array $data): int {
 // 阵营数据从整份文件里删掉，而且没有任何地方能再生成它们。
 function normalize_entry($entry, string $fallbackKey): ?array {
   if (!is_array($entry)) return null;
-  $parts = explode(':', $fallbackKey, 2);
+  $parts = explode(':', $fallbackKey, 3);
   $cycleId = trim((string) ($entry['cycleId'] ?? ($parts[0] ?? '')));
   $tileId = trim((string) ($entry['tileId'] ?? ($parts[1] ?? '')));
   if ($cycleId === '' || $tileId === '') return null;
@@ -84,6 +84,8 @@ function normalize_entry($entry, string $fallbackKey): ?array {
   $normalized = $entry;
   $normalized['cycleId'] = $cycleId;
   $normalized['tileId'] = $tileId;
+  $face = trim((string) ($entry['face'] ?? ($parts[2] ?? '')));
+  if ($face === 'A' || $face === 'B') $normalized['face'] = $face;
   $normalized['reviewed'] = (bool) ($entry['reviewed'] ?? false);
   $normalized['tags'] = $tags;
   $normalized['notes'] = (string) ($entry['notes'] ?? '');
@@ -114,7 +116,10 @@ function normalize_payload(array $data): array {
     foreach ($data['tiles'] as $key => $entry) {
       $normalizedEntry = normalize_entry($entry, (string) $key);
       if (!$normalizedEntry) continue;
-      $normalized['tiles'][$normalizedEntry['cycleId'] . ':' . $normalizedEntry['tileId']] = $normalizedEntry;
+      $entryKey = $normalizedEntry['cycleId'] . ':' . $normalizedEntry['tileId'];
+      $face = $normalizedEntry['face'] ?? '';
+      if ($face === 'A' || $face === 'B') $entryKey .= ':' . $face;
+      $normalized['tiles'][$entryKey] = $normalizedEntry;
     }
   }
 

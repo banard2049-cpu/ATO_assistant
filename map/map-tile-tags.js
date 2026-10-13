@@ -1,7 +1,7 @@
 window.ATO_MAP_TILE_TAGS = {
     "version": 2,
     "source": "map/map-data.js",
-    "updatedAt": "2026-07-29T18:04:29.000Z",
+    "updatedAt": "2026-10-13T11:27:53.944Z",
     "tagDefinitions": [
         {
             "id": "progress",
@@ -297,11 +297,12 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:03:53.757Z",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
             "factions": [
-                "helots"
+                "helots",
+                "cyclopes"
             ],
-            "factionUpdatedAt": "2026-06-26T14:41:55.116Z"
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
         },
         "c2:020": {
             "cycleId": "c2",
@@ -312,11 +313,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:03:58.130Z",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
             "factions": [
-                "cyclopes"
+                "helots"
             ],
-            "factionUpdatedAt": "2026-06-26T14:41:55.449Z"
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
         },
         "c2:021": {
             "cycleId": "c2",
@@ -326,11 +327,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:04:01.446Z",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
             "factions": [
-                "cyclopes"
+                "helots"
             ],
-            "factionUpdatedAt": "2026-06-26T14:41:56.122Z"
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
         },
         "c2:022": {
             "cycleId": "c2",
@@ -340,11 +341,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:04:09.950Z",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
             "factions": [
-                "helots"
+                "symmachy"
             ],
-            "factionUpdatedAt": "2026-06-26T14:41:56.569Z"
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
         },
         "c2:023": {
             "cycleId": "c2",
@@ -3819,11 +3820,9 @@ window.ATO_MAP_TILE_TAGS = {
             "cycleId": "c4",
             "tileId": "001",
             "reviewed": true,
-            "tags": [
-                "calamity"
-            ],
+            "tags": [],
             "notes": "",
-            "updatedAt": "2026-07-29T17:21:40.017Z",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
             "factions": [
                 "aristotelians"
             ],
@@ -4952,11 +4951,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "progress"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:37:17.714Z",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
             "factions": [
-                "wasters"
+                "cloudThieves"
             ],
-            "factionUpdatedAt": "2026-07-29T16:54:26Z"
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
         },
         "c4:081": {
             "cycleId": "c4",
@@ -5996,7 +5995,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:48:16.070Z"
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "followersOfArete"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
         },
         "c5:004:A": {
             "cycleId": "c5",
@@ -6119,7 +6122,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:56:45.892Z"
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "followersOfArete"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
         },
         "c5:011:A": {
             "cycleId": "c5",
@@ -6221,7 +6228,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:59:46.763Z"
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "outcastVanguard"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
         },
         "c5:019:A": {
             "cycleId": "c5",
@@ -6255,7 +6266,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:59:57.423Z"
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "outcastVanguard"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
         },
         "c5:021:A": {
             "cycleId": "c5",
@@ -6411,10 +6426,16 @@ window.ATO_MAP_TILE_TAGS = {
             "cycleId": "c5",
             "tileId": "030",
             "face": "B",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "progress"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T18:00:43.215Z"
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "outcastVanguard"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
         },
         "c5:031:A": {
             "cycleId": "c5",
@@ -6880,7 +6901,11 @@ window.ATO_MAP_TILE_TAGS = {
                 "city"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T18:03:17.894Z"
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "followersOfArete"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
         },
         "c5:065:A": {
             "cycleId": "c5",
@@ -7085,6 +7110,518 @@ window.ATO_MAP_TILE_TAGS = {
             ],
             "notes": "",
             "updatedAt": "2026-07-29T18:04:20.952Z"
+        },
+        "c5:006:B": {
+            "cycleId": "c5",
+            "tileId": "006",
+            "face": "B",
+            "reviewed": true,
+            "tags": [
+                "calamity"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "cycladeanProtectorate"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:008:B": {
+            "cycleId": "c5",
+            "tileId": "008",
+            "face": "B",
+            "reviewed": true,
+            "tags": [
+                "progress"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "followersOfArete"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:012:B": {
+            "cycleId": "c5",
+            "tileId": "012",
+            "face": "B",
+            "reviewed": true,
+            "tags": [
+                "calamity"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "followersOfArete"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:013:B": {
+            "cycleId": "c5",
+            "tileId": "013",
+            "face": "B",
+            "reviewed": true,
+            "tags": [
+                "progress"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "followersOfArete"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:015:B": {
+            "cycleId": "c5",
+            "tileId": "015",
+            "face": "B",
+            "reviewed": true,
+            "tags": [
+                "calamity"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "followersOfArete"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:016:B": {
+            "cycleId": "c5",
+            "tileId": "016",
+            "face": "B",
+            "reviewed": true,
+            "tags": [
+                "progress"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "cycladeanProtectorate"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:017:B": {
+            "cycleId": "c5",
+            "tileId": "017",
+            "face": "B",
+            "reviewed": true,
+            "tags": [],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "outcastVanguard"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:019:B": {
+            "cycleId": "c5",
+            "tileId": "019",
+            "face": "B",
+            "reviewed": true,
+            "tags": [],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "followersOfArete"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:024:B": {
+            "cycleId": "c5",
+            "tileId": "024",
+            "face": "B",
+            "reviewed": true,
+            "tags": [
+                "calamity"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "outcastVanguard"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:026:B": {
+            "cycleId": "c5",
+            "tileId": "026",
+            "face": "B",
+            "reviewed": true,
+            "tags": [
+                "calamity"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "cycladeanProtectorate"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:028:B": {
+            "cycleId": "c5",
+            "tileId": "028",
+            "face": "B",
+            "reviewed": true,
+            "tags": [
+                "progress"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "outcastVanguard"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:029:B": {
+            "cycleId": "c5",
+            "tileId": "029",
+            "face": "B",
+            "reviewed": true,
+            "tags": [
+                "calamity"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "followersOfArete"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:041:B": {
+            "cycleId": "c5",
+            "tileId": "041",
+            "face": "B",
+            "reviewed": true,
+            "tags": [
+                "calamity"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "followersOfArete"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:042:B": {
+            "cycleId": "c5",
+            "tileId": "042",
+            "face": "B",
+            "reviewed": true,
+            "tags": [
+                "progress"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "followersOfArete"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:046:B": {
+            "cycleId": "c5",
+            "tileId": "046",
+            "face": "B",
+            "reviewed": true,
+            "tags": [
+                "calamity"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "cycladeanProtectorate"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:048:B": {
+            "cycleId": "c5",
+            "tileId": "048",
+            "face": "B",
+            "reviewed": true,
+            "tags": [],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "outcastVanguard"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:049:B": {
+            "cycleId": "c5",
+            "tileId": "049",
+            "face": "B",
+            "reviewed": true,
+            "tags": [
+                "calamity"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "outcastVanguard"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:050:B": {
+            "cycleId": "c5",
+            "tileId": "050",
+            "face": "B",
+            "reviewed": true,
+            "tags": [
+                "progress"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "outcastVanguard"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:053:B": {
+            "cycleId": "c5",
+            "tileId": "053",
+            "face": "B",
+            "reviewed": true,
+            "tags": [
+                "progress"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "followersOfArete"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:056:B": {
+            "cycleId": "c5",
+            "tileId": "056",
+            "face": "B",
+            "reviewed": true,
+            "tags": [
+                "progress"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "outcastVanguard"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:057:B": {
+            "cycleId": "c5",
+            "tileId": "057",
+            "face": "B",
+            "reviewed": true,
+            "tags": [
+                "calamity"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "cycladeanProtectorate"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:060:B": {
+            "cycleId": "c5",
+            "tileId": "060",
+            "face": "B",
+            "reviewed": true,
+            "tags": [
+                "calamity"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "cycladeanProtectorate"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:061:B": {
+            "cycleId": "c5",
+            "tileId": "061",
+            "face": "B",
+            "reviewed": true,
+            "tags": [
+                "calamity"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "outcastVanguard"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:065:B": {
+            "cycleId": "c5",
+            "tileId": "065",
+            "face": "B",
+            "reviewed": true,
+            "tags": [
+                "progress"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "followersOfArete"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:067:B": {
+            "cycleId": "c5",
+            "tileId": "067",
+            "face": "B",
+            "reviewed": true,
+            "tags": [],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "outcastVanguard"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:068:B": {
+            "cycleId": "c5",
+            "tileId": "068",
+            "face": "B",
+            "reviewed": true,
+            "tags": [
+                "calamity"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "cycladeanProtectorate"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:069:B": {
+            "cycleId": "c5",
+            "tileId": "069",
+            "face": "B",
+            "reviewed": true,
+            "tags": [
+                "progress"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "cycladeanProtectorate"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:071:B": {
+            "cycleId": "c5",
+            "tileId": "071",
+            "face": "B",
+            "reviewed": true,
+            "tags": [
+                "progress"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "outcastVanguard"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:072:B": {
+            "cycleId": "c5",
+            "tileId": "072",
+            "face": "B",
+            "reviewed": true,
+            "tags": [],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "outcastVanguard"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:073:B": {
+            "cycleId": "c5",
+            "tileId": "073",
+            "face": "B",
+            "reviewed": true,
+            "tags": [],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "followersOfArete"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:074:B": {
+            "cycleId": "c5",
+            "tileId": "074",
+            "face": "B",
+            "reviewed": true,
+            "tags": [
+                "calamity"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "followersOfArete"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:075:B": {
+            "cycleId": "c5",
+            "tileId": "075",
+            "face": "B",
+            "reviewed": true,
+            "tags": [
+                "progress"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "followersOfArete"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:076:B": {
+            "cycleId": "c5",
+            "tileId": "076",
+            "face": "B",
+            "reviewed": true,
+            "tags": [],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "followersOfArete"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:077:B": {
+            "cycleId": "c5",
+            "tileId": "077",
+            "face": "B",
+            "reviewed": true,
+            "tags": [
+                "calamity"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "followersOfArete"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:078:B": {
+            "cycleId": "c5",
+            "tileId": "078",
+            "face": "B",
+            "reviewed": true,
+            "tags": [
+                "progress"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "factions": [
+                "followersOfArete"
+            ],
+            "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
         }
-    }
+    },
+    "revision": 1
 };

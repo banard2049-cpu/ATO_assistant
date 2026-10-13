@@ -39,6 +39,53 @@ test('Sabotage resolves Refugee branches and the printed return/remove threshold
   }
 });
 
+test('Sabotage manual cards resolve only their independent removal footer', () => {
+  for (const [key, fateThreshold, refugeeThreshold, id] of [
+    ['c2:13631', 5, 2, 'conditional:propylon-removal'],
+    ['c2:13633', 7, 4, 'conditional:titan-armory-removal'],
+  ]) {
+    const value = record('c2', { fate: fateThreshold - 1, crewCounters: { refugees: refugeeThreshold - 1 } });
+    const before = JSON.stringify(value);
+    const keep = plan(key, value);
+    assert.equal(keep.id, id);
+    assert.equal(keep.removal, 'keep');
+    assert.equal(keep.automaticOperation, true);
+    assert.deepEqual(keep.effects, [], 'the AA-disable and Armory-card loss stay manual');
+    assert.deepEqual(keep.manualIndexes, [], 'the footer must not consume the upper manual reminders');
+    assert.match(keep.summary, /洗回破坏卡组/);
+    assert.equal(JSON.stringify(value), before, 'planning never changes the upper ability or its tracks');
+    value.cycleStats.c2.fate = fateThreshold;
+    assert.equal(plan(key, value).removal, 'remove', 'Fate alone activates the printed OR footer');
+    value.cycleStats.c2.fate = fateThreshold - 1;
+    value.cycleStats.c2.crewCounters.refugees = refugeeThreshold;
+    assert.equal(plan(key, value).removal, 'remove', 'Refugees alone activate the printed OR footer');
+    value.cycleStats.c2.fate = '';
+    assert.equal(plan(key, value).removal, 'remove', 'a known true Refugee branch needs no guessed Fate value');
+    value.cycleStats.c2.crewCounters.refugees = refugeeThreshold - 1;
+    assert.equal(plan(key, value).conditionState, null, 'an unknown OR branch cannot be treated as false');
+    assert.equal(plan(key, value).removal, undefined);
+  }
+});
+
+test('Time Shift removal uses the selected branch and the Paradox after its loss', () => {
+  for (const [key, loss, fateThreshold, paradoxThreshold] of [
+    ['c3:13536', 2, 6, 4], ['c3:13538', 1, 5, 5],
+  ]) {
+    const fallback = plan(key, record('c3', { paradox: 2, fate: '' }));
+    assert.equal(fallback.removal, 'remove');
+    assert.deepEqual(fallback.effects, [{ type: 'paradox', amount: 1 }]);
+    const low = plan(key, record('c3', { paradox: 3, fate: 0 }));
+    assert.equal(low.removal, 'permanent');
+    assert.deepEqual(low.effects, [{ type: 'paradox', amount: -loss }, ...(key === 'c3:13536' ? [{ type: 'doom', amount: 1 }] : [])]);
+    if (key === 'c3:13538') assert.ok(low.remainder, 'the physical map movement stays visible');
+    assert.equal(plan(key, record('c3', { paradox: paradoxThreshold + loss - 1, fate: 0 })).removal, 'permanent');
+    assert.equal(plan(key, record('c3', { paradox: paradoxThreshold + loss, fate: '' })).removal, 'remove');
+    assert.equal(plan(key, record('c3', { paradox: 3, fate: fateThreshold })).removal, 'remove');
+    assert.equal(plan(key, record('c3', { paradox: 3, fate: '' })).conditionState, null);
+    assert.deepEqual(low.manualIndexes, [0, 1, 2], 'fallback and footer do not become separate delayed return tasks');
+  }
+});
+
 test('Ambrosia Spill keeps the tier boundaries, independent Doom and rounded remaining stock', () => {
   for (const [stock, effect, remaining] of [
     [0, [], 0], [15, [], 15], [16, [{ type: 'crew', amount: -1 }], 16],

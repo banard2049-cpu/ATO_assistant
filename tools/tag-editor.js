@@ -77,8 +77,8 @@ function getCurrentCycle() {
 }
 
 function entryKeyParts(key) {
-  const [cycleId = "", tileId = ""] = String(key || "").split(":");
-  return { cycleId, tileId };
+  const [cycleId = "", tileId = "", face = ""] = String(key || "").split(":");
+  return { cycleId, tileId, face };
 }
 
 function getEntry(cycleId, tileId) {
@@ -134,11 +134,16 @@ function normalizeData(data) {
     const cycleId = String(entry.cycleId || parts.cycleId || "").trim();
     const tileId = String(entry.tileId || parts.tileId || "").trim();
     if (!cycleId || !tileId) return;
+    const face = String(entry.face || parts.face || "").trim();
+    const hasFace = face === "A" || face === "B";
     const tags = Array.isArray(entry.tags) ? [...new Set(entry.tags.map((tag) => String(tag).trim()).filter(Boolean))] : [];
-    normalized.tiles[tileKey(cycleId, tileId)] = {
+    // 双面记录必须保留独立的键，否则 A / B 会覆盖基础记录和彼此。
+    const keyWithFace = tileKey(cycleId, tileId) + (hasFace ? `:${face}` : "");
+    normalized.tiles[keyWithFace] = {
       ...entry,
       cycleId,
       tileId,
+      ...(hasFace ? { face } : {}),
       reviewed: Boolean(entry.reviewed),
       tags,
       notes: String(entry.notes || ""),
