@@ -1,4 +1,5 @@
 window.ATO_TERMS = [
+  { "from": "阿尔戈英雄储备", "to": "阿尔戈英雄补给", "scope": "#identityGridPanel" },
   { "from": "腐蚀液态", "to": "腐蚀态" },
 
   // 尼采 / 无眼巨人的连击轨道与武器类型，按官方中文大卡卡面用词。

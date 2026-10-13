@@ -941,32 +941,60 @@
     }
 
     .diplomacy-markers {
-      margin-bottom: 4px;
+      margin-bottom: 2px;
       color: var(--muted);
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 900;
       line-height: 1.1;
     }
 
     .diplomacy-marker {
-      display: grid;
-      justify-items: center;
-      gap: 2px;
-      min-width: 34px;
+      display: flex;
+      position: relative;
+      box-sizing: border-box;
+      justify-content: center;
+      align-items: center;
+      gap: 3px;
+      min-width: 0;
+      padding: 0 2px;
       text-align: center;
       white-space: nowrap;
     }
 
-    .diplomacy-marker.with-read {
-      justify-items: start;
-      text-align: left;
+    .diplomacy-marker::before,
+    .diplomacy-marker:last-child::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: var(--line-strong);
     }
 
-    .diplomacy-marker::after {
-      content: "";
-      width: 1px;
-      height: 10px;
-      background: var(--line-strong);
+    .diplomacy-marker::before {
+      left: -3.5px;
+    }
+
+    .diplomacy-marker:first-child::before {
+      content: none;
+    }
+
+    .diplomacy-marker[data-range-start="-10"] {
+      padding: 0;
+    }
+
+    .diplomacy-marker[data-range-start="-10"] > span {
+      font-size: 9px;
+      white-space: nowrap;
+    }
+
+    .diplomacy-marker:last-child::after {
+      right: 0;
+    }
+
+    .diplomacy-marker > span {
+      min-width: 0;
+      max-width: 100%;
     }
 
     .diplomacy-chips {
@@ -1492,7 +1520,7 @@
     }
   </style>
   <link rel="stylesheet" href="../api/cycle-theme.css">
-  <link rel="stylesheet" href="./record.css?v=20261009-named-counters3">
+  <link rel="stylesheet" href="./record.css?v=20261014-diplomacy-compact1">
   <script src="../story/data/english-source-data.js?v=20261011-english4"></script>
   <script src="../assets/theme.js?v=20261001" defer></script>
 </head>
@@ -1596,6 +1624,7 @@
               </span>
             </label>
             <label data-cycle-field="c5"><span class="item-label"><span class="item-icon" aria-hidden="true" style="--item-icon-w:13px;--item-icon-h:13px;--icon-src:url(../assets/icons/paranoia.svg)"></span>猜忌</span><input data-cycle-bind="paranoia" type="number" min="0"></label>
+            <label data-cycle-field="c5"><span class="item-label">阿尔戈英雄储备</span><input data-cycle-bind="supply" type="number" min="0" step="1"></label>
           </div>
         </section>
 
@@ -1827,6 +1856,8 @@
         fateWarning: "命运 >= 10 读 0981；船体 <= 0 读 0415；船员 <= 0 读 0562",
         hull: [5, 4, 3, 2, 1, 0],
         crew: [6, 5, 4, 3, 2, 1, 0],
+        initialHull: "4",
+        initialCrew: "5",
         enemies: [
           {
             key: "hekaton",
@@ -1908,21 +1939,23 @@
         fateWarning: "命运 >= 10 读 0251；船体 <= 0 读 0248；船员 <= 0 读 0249",
         hull: [6, 5, 4, 3, 2, 1, 0],
         crew: [9, 8, 7, 6, 5, 4, 3, 2, 1, 0],
+        initialHull: "5",
+        initialCrew: "5",
         enemies: [
           {
             key: "cyclonus",
             zh: "独眼巨人",
             en: "Cyclonus",
             stages: [
-              { id: "1a", label: "1" },
-              { id: "1b", label: "1", sharedWith: ["cyclonus", "chimera"] },
-              { id: "2a", label: "2" },
-              { id: "2b", label: "2", sharedWith: ["cyclonus", "chimera"] },
-              { id: "3a", label: "3", sharedWith: ["cyclonus", "chimera"] },
-              { id: "3b", label: "3" },
-              { id: "4a", label: "4" },
-              { id: "4b", label: "4" },
-              { id: "4c", label: "4", sharedWith: ["cyclonus", "chimera"] },
+              { id: "1a", label: "I" },
+              { id: "1b", label: "I", sharedWith: ["cyclonus", "chimera"] },
+              { id: "2a", label: "II" },
+              { id: "2b", label: "II", sharedWith: ["cyclonus", "chimera"] },
+              { id: "3a", label: "III", sharedWith: ["cyclonus", "chimera"] },
+              { id: "3b", label: "III" },
+              { id: "4a", label: "IV" },
+              { id: "4b", label: "IV" },
+              { id: "4c", label: "IV", sharedWith: ["cyclonus", "chimera"] },
             ],
           },
           {
@@ -1930,15 +1963,15 @@
             zh: "蠕变奇美拉",
             en: "Chimera Metastasios",
             stages: [
-              { id: "1a", label: "1" },
-              { id: "1b", label: "1", sharedWith: ["cyclonus", "chimera"] },
-              { id: "2a", label: "2" },
-              { id: "2b", label: "2", sharedWith: ["cyclonus", "chimera"] },
-              { id: "3a", label: "3", sharedWith: ["cyclonus", "chimera"] },
-              { id: "3b", label: "3" },
-              { id: "4a", label: "4" },
-              { id: "4b", label: "4" },
-              { id: "4c", label: "4", sharedWith: ["cyclonus", "chimera"] },
+              { id: "1a", label: "I" },
+              { id: "1b", label: "I", sharedWith: ["cyclonus", "chimera"] },
+              { id: "2a", label: "II" },
+              { id: "2b", label: "II", sharedWith: ["cyclonus", "chimera"] },
+              { id: "3a", label: "III", sharedWith: ["cyclonus", "chimera"] },
+              { id: "3b", label: "III" },
+              { id: "4a", label: "IV" },
+              { id: "4b", label: "IV" },
+              { id: "4c", label: "IV", sharedWith: ["cyclonus", "chimera"] },
             ],
           },
           { key: "nietzschean", zh: "尼采超人", en: "Nietzschean", stages: ["1", "2", "3", "4"] },
@@ -1991,6 +2024,8 @@
         fateWarning: "命运 >= 10 读 0273；悖论 >= 12 读 Homefront 特殊事件；船体 <= 0 读 0271；船员 <= 0 读 0272",
         hull: [7, 6, 5, 4, 3, 2, 1, 0],
         crew: [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0],
+        initialHull: "5",
+        initialCrew: "5",
         enemies: [
           {
             key: "oracle",
@@ -2082,6 +2117,8 @@
         fateWarning: "命运 >= 10 读 4141；巴比伦债务 >= 12 读“泡腾临界”特殊事件；船体或船员 <= 0 读 0080",
         hull: [5, 4, 3, 2, 1, 0],
         crew: [6, 5, 4, 3, 2, 1, 0],
+        initialHull: "5",
+        initialCrew: "6",
         enemies: [
           {
             key: "midascore",
@@ -2180,6 +2217,8 @@
         fateWarning: "命运 >= 10 或船体、船员 <= 0 读 4213；猜忌 >= 12 结算“Like Moths to a Flame”特殊事件",
         hull: [6, 5, 4, 3, 2, 1, 0],
         crew: [6, 5, 4, 3, 2, 1, 0],
+        initialHull: "6",
+        initialCrew: "4",
         enemies: [
           {
             key: "dragonOfPhobos",
@@ -2346,7 +2385,7 @@
     const cycleIdentityKeys = [
       "storyCard", "doomCard", "mapTiles", "fate", "aaLimit", "strangers", "humanity", "renegade",
       "loopLength", "frozenTime", "paradox", "babelianDebt", "oxygenCurrent", "oxygenLimit",
-      "reapMarkNotes", "sowMarkNotes", "paranoia",
+      "reapMarkNotes", "sowMarkNotes", "paranoia", "supply",
     ];
 
     const defaultState = {
@@ -2374,8 +2413,7 @@
       oxygenCurrent: "",
       oxygenLimit: "",
       paranoia: "",
-      hull: "5",
-      crew: "5",
+      supply: "",
       crewBoxes: {},
       cycleStats: {},
       cycleDays: {},
@@ -2628,7 +2666,7 @@
         || Object.values(userState?.cycleStats || {}).some((stats) => typeof stats?.counters === "string" && stats.counters.trim() !== "");
       return {
         userId,
-        state: normalizeState(userState || defaultState),
+        state: normalizeState(userState || {}),
         revision: Math.max(0, Number(campaign?.sectionRevisions?.record || 0)),
         countersMigrated,
       };
@@ -2697,7 +2735,7 @@
     }
 
     function loadState() {
-      return normalizeState(cloneJson(defaultState));
+      return normalizeState({});
     }
 
     function defaultDayForCycle(cycleId) {
@@ -2799,8 +2837,6 @@
         godformUsed: normalizeCount(value?.godformUsed),
         nymphUsed: normalizeCount(value?.nymphUsed),
         nymphCharges: normalizeCount(value?.nymphCharges),
-        hull: value?.hull === "" || value?.hull === null || value?.hull === undefined ? defaultState.hull : String(value.hull),
-        crew: value?.crew === "" || value?.crew === null || value?.crew === undefined ? defaultState.crew : String(value.crew),
         enemies: migrateNemesisProgress(migrateEnemyStages(value?.enemies)),
         nemesisSelections,
         nemesisResourceHistory: normalizeNemesisResourceHistory(value?.nemesisResourceHistory, nemesisSelections, resources),
@@ -2832,6 +2868,8 @@
       cycleIdentityKeys.forEach((key) => {
         normalized[key] = normalized.cycleStats[normalized.cycle]?.[key] ?? "";
       });
+      normalized.hull = normalized.cycleStats[normalized.cycle].hull;
+      normalized.crew = normalized.cycleStats[normalized.cycle].crew;
       normalized.day = String(normalized.cycleDays[normalized.cycle] ?? defaultDayForCycle(normalized.cycle));
       normalized.godformUsedCards = normalized.godformUsedCards.filter((id) => normalized.godforms.includes(id));
       normalized.nymphUsedCards = normalized.nymphUsedCards.filter((id) => normalized.nymphCards.includes(id));
@@ -2852,14 +2890,30 @@
       });
       const activeCycle = cycleData[value?.cycle] ? value.cycle : defaultState.cycle;
       stats[activeCycle] ||= {};
+      // Supply belongs to C5 even when a legacy top-level alias survived a cycle switch.
+      if (value?.supply !== undefined && value.supply !== null && value.supply !== "" && (!stats.c5 || stats.c5.supply === undefined)) {
+        stats.c5 ||= {};
+        stats.c5.supply = value.supply;
+      }
       [
-        ...cycleIdentityKeys, "hull", "crew",
+        ...cycleIdentityKeys.filter((key) => key !== "supply"),
         "boons", "afflictions", "counters", "notes", "syncLog",
       ].forEach((key) => {
         if (stats[activeCycle][key] === undefined) {
           stats[activeCycle][key] = value?.[key] ?? defaultState[key] ?? "";
         }
       });
+      for (const key of ["hull", "crew"]) {
+        if (stats[activeCycle][key] == null) {
+          stats[activeCycle][key] = value?.[key] ?? cycleData[activeCycle][key === "hull" ? "initialHull" : "initialCrew"];
+        }
+        stats[activeCycle][key] = String(stats[activeCycle][key]);
+      }
+      if (stats.c5) {
+        const supply = stats.c5.supply;
+        stats.c5.supply = supply == null || supply === "" ? ""
+          : String(Number.isFinite(Number(supply)) ? Math.max(0, Math.floor(Number(supply))) : 0);
+      }
       // Some older saves have a different top-level text alias. Keep that text
       // too, unless a cycle already contains it and will migrate it below.
       if (typeof value?.counters === "string" && value.counters.trim()
@@ -2907,7 +2961,8 @@
         if (normalized === "captive") legacy.captives += 1;
       });
 
-      const legacyTotal = Math.max(0, Math.floor(Number(c2.crew ?? value?.crew ?? defaultState.crew) || 0));
+      const legacyAlias = !value?.cycle || value.cycle === "c2" ? value?.crew : undefined;
+      const legacyTotal = Math.max(0, Math.floor(Number(c2.crew ?? legacyAlias ?? cycleData.c2.initialCrew) || 0));
       const refugees = Math.max(0, Math.floor(Number(existing?.refugees ?? legacy.refugees) || 0));
       const captives = Math.max(0, Math.floor(Number(existing?.captives ?? legacy.captives) || 0));
       const counters = existing
@@ -2932,7 +2987,7 @@
         });
       }
       c2.crewCounters = counters;
-      c2.crew = String(counters.crew);
+      if (c2.crew !== "") c2.crew = String(counters.crew);
     }
 
     function normalizeResources(value) {
@@ -3275,7 +3330,13 @@
     function currentCycleStats() {
       state.cycleStats ||= {};
       if (!isPlainObject(state.cycleStats[state.cycle])) state.cycleStats[state.cycle] = {};
-      return state.cycleStats[state.cycle];
+      const stats = state.cycleStats[state.cycle];
+      const cycle = cycleData[state.cycle];
+      stats.hull ??= cycle.initialHull;
+      stats.crew ??= cycle.initialCrew;
+      state.hull = stats.hull;
+      state.crew = stats.crew;
+      return stats;
     }
 
     function getCycleStat(key) {
@@ -3314,6 +3375,7 @@
         paradox: { min: 0, max: 12 },
         babelianDebt: { min: 0, max: null },
         paranoia: { min: 0, max: null },
+        supply: { min: 0, max: null },
       };
 
       Object.entries(config).forEach(([bindKey, limits]) => {
@@ -3368,13 +3430,14 @@
         const clamp = (value) => {
           let next = Number(value || 0);
           if (!Number.isFinite(next)) next = 0;
+          if (bindKey === "supply") next = Math.floor(next);
           if (limits.min !== null) next = Math.max(limits.min, next);
           if (limits.max !== null) next = Math.min(limits.max, next);
           return next;
         };
 
         const sync = (value) => {
-          const next = clamp(value);
+          const next = bindKey === "supply" && value === "" ? "" : clamp(value);
           input.value = String(next);
           setCycleStat(bindKey, String(next));
           queueSave();
@@ -3448,6 +3511,7 @@
       document.querySelectorAll("[data-cycle-bind]").forEach((input) => {
         input.value = getCycleStat(input.dataset.cycleBind);
         input.addEventListener("input", () => {
+          if (input.dataset.stepBound === "1") return;
           setCycleStat(input.dataset.cycleBind, input.value);
           queueSave();
         });
@@ -3927,14 +3991,14 @@
       const stats = currentCycleStats();
       stats.crewCounters = isPlainObject(stats.crewCounters)
         ? stats.crewCounters
-        : { crew: Number(getCycleStat("crew") || defaultState.crew) || 0, refugees: 0, captives: 0 };
+        : { crew: Number(getCycleStat("crew")) || 0, refugees: 0, captives: 0 };
       const counters = stats.crewCounters;
       counters.crew = Math.max(0, Math.floor(Number(counters.crew) || 0));
       counters.refugees = Math.max(0, Math.floor(Number(counters.refugees) || 0));
       counters.captives = Math.max(0, Math.floor(Number(counters.captives) || 0));
       // 旧版把上限当成解锁值（9），锁定存档里可能留下 9 人，这里按当前上限收回。
       trimC2CrewCounters(counters);
-      stats.crew = String(counters.crew);
+      if (stats.crew !== "") stats.crew = String(counters.crew);
       return counters;
     }
 
@@ -3979,7 +4043,7 @@
       minus.addEventListener("click", () => changeC2CrewCounter(kind, -1));
       const value = document.createElement("div");
       value.className = "crew-counter-value";
-      value.textContent = String(counters[kind]);
+      value.textContent = kind === "crew" && getCycleStat("crew") === "" ? "" : String(counters[kind]);
       const plus = document.createElement("button");
       plus.type = "button";
       plus.textContent = "+";
@@ -4416,8 +4480,8 @@
         const markers = min < 0
           ? [
               { value: -10, label: "开战" },
-              { value: -5, label: "恶劣" },
-              { value: -2, label: "交恶" },
+              { value: -9, label: "恶劣" },
+              { value: -4, label: "交恶" },
               { value: 0, label: "中立" },
               { value: 4, label: "友善" },
               { value: 8, label: "结盟" },
@@ -4436,18 +4500,25 @@
         const markerRow = document.createElement("div");
         markerRow.className = "diplomacy-markers";
         markerRow.style.gridTemplateColumns = `repeat(${max - min + 1}, 34px)`;
-        markers.forEach((marker) => {
+        markers.forEach((marker, index) => {
           const item = document.createElement("span");
           item.className = "diplomacy-marker";
-          item.style.gridColumn = String(marker.value - min + 1);
+          const end = markers[index + 1] ? markers[index + 1].value - 1 : max;
+          item.style.gridColumn = `${marker.value - min + 1} / span ${end - marker.value + 1}`;
+          item.dataset.rangeStart = String(marker.value);
+          item.dataset.rangeEnd = String(end);
           const bonus = bonuses[marker.label];
-          const displayLabel = state.cycle === "c5" && marker.label === "开战" ? "归顺涅墨西斯号" : marker.label;
-          const markerText = bonus != null ? `${displayLabel}(${bonus})` : displayLabel;
+          const displayLabel = state.cycle === "c5" && marker.label === "开战" ? "归顺" : marker.label;
+          const label = document.createElement("span");
+          label.textContent = bonus != null ? `${displayLabel}(${bonus})` : displayLabel;
+          item.appendChild(label);
+          if (state.cycle === "c5" && marker.value === -10) item.title = "归顺涅墨西斯号";
+          item.setAttribute("aria-label", `${marker.value} 至 ${end}：${displayLabel} (${bonus})`);
           if (bonus === "+2" && diplomacyTitle.allianceRead) {
             item.classList.add("with-read");
-            item.textContent = `${markerText} ${diplomacyTitle.allianceRead}`;
-          } else {
-            item.textContent = markerText;
+            const read = document.createElement("span");
+            read.textContent = diplomacyTitle.allianceRead;
+            item.appendChild(read);
           }
           markerRow.appendChild(item);
         });
@@ -6577,9 +6648,9 @@
     serverStateBaseline = cloneJson(state);
     loadServerState();
   </script>
-  <script src="../assets/ato-terms.js?v=20260912f"></script>
+  <script src="../assets/ato-terms.js?v=20261014-record-tracks1"></script>
   <script src="../assets/english-terms.js?v=20261011-english4"></script>
-  <script src="../assets/english-ui.js?v=20261011-english4"></script>
+  <script src="../assets/english-ui.js?v=20261014-record-tracks2"></script>
   <script src="../assets/english-language.js?v=20261011-english4"></script>
   <script src="../assets/term-language.js?v=20261011-english4"></script>
 </body>

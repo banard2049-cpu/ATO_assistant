@@ -155,7 +155,7 @@ test('whole UI templates retain live values and localize recovered game names', 
 test('dashboard fated-event titles retain the English titles from their source rows', () => {
   for (const [from, expected] of [
     ['粗暴的觉醒', 'Rude Awakening'], ['深不可测的永恒', 'Unfathomable Aeons'],
-    ['一百万日夜', 'Ten Thousand Nights and Days'], ['浅滩寓言', 'Parable of the Shallows'],
+    ['一万个日夜', 'Ten Thousand Nights and Days'], ['浅滩寓言', 'Parable of the Shallows'],
     ['希望是什么？', 'What Is Hope?'],
   ]) assert.equal(english.translate(from), expected);
 });

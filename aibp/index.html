@@ -4394,8 +4394,8 @@
     const diplomacyMarkersByCycle = {
       c1: [
         { value: -10, label: "开战", bonus: -3 },
-        { value: -5, label: "恶劣", bonus: -2 },
-        { value: -2, label: "交恶", bonus: -1 },
+        { value: -9, label: "恶劣", bonus: -2 },
+        { value: -4, label: "交恶", bonus: -1 },
         { value: 0, label: "中立", bonus: 0 },
         { value: 4, label: "友善", bonus: 1 },
         { value: 8, label: "结盟", bonus: 2 },
@@ -4408,17 +4408,18 @@
       ],
       c3: [
         { value: -10, label: "开战", bonus: -3 },
-        { value: -5, label: "恶劣", bonus: -2 },
-        { value: -2, label: "交恶", bonus: -1 },
+        { value: -9, label: "恶劣", bonus: -2 },
+        { value: -4, label: "交恶", bonus: -1 },
         { value: 0, label: "中立", bonus: 0 },
         { value: 4, label: "友善", bonus: 1 },
         { value: 8, label: "结盟", bonus: 2 },
       ],
     };
 
-    // C4/C5 use the same signed diplomacy track as C1 in the record sheet.
-    diplomacyMarkersByCycle.c4 = diplomacyMarkersByCycle.c1;
-    diplomacyMarkersByCycle.c5 = diplomacyMarkersByCycle.c1;
+    // Signed cycles share the printed ranges; C5 names its lowest relation differently.
+    diplomacyMarkersByCycle.c4 = diplomacyMarkersByCycle.c3;
+    diplomacyMarkersByCycle.c5 = diplomacyMarkersByCycle.c3.map((marker) =>
+      marker.value === -10 ? { ...marker, label: "归顺" } : { ...marker });
 
     function formatSignedNumber(value) {
       return value > 0 ? `+${value}` : String(value);
@@ -4442,11 +4443,9 @@
 
     function diplomacyStatus(cycleId, value) {
       const markers = diplomacyMarkersByCycle[cycleId] || [];
-      const negativeStatus = markers.find((marker) => marker.value < 0 && value < marker.value);
-      if (negativeStatus) return negativeStatus;
-      let status = markers.find((marker) => marker.value === 0) || { label: "未分级", bonus: 0 };
+      let status = markers[0] || { label: "未分级", bonus: 0 };
       markers.forEach((marker) => {
-        if (marker.value >= 0 && value >= marker.value) status = marker;
+        if (value >= marker.value) status = marker;
       });
       return status;
     }
@@ -9230,9 +9229,9 @@
   <script src="c45_specials.js?v=20261012-aibp-fixes" defer></script>
   <script src="bp_loot_calculator_addon.js?v=20261010-loot-number-buttons1" defer></script>
   <script src="../story/data/english-source-data.js?v=20261011-english4" defer></script>
-  <script src="../assets/ato-terms.js?v=20261011-ai-combo-terms1" defer></script>
+  <script src="../assets/ato-terms.js?v=20261014-record-tracks1" defer></script>
   <script src="../assets/english-terms.js?v=20261011-english4" defer></script>
-  <script src="../assets/english-ui.js?v=20261011-aibp-state1" defer></script>
+  <script src="../assets/english-ui.js?v=20261014-record-tracks2" defer></script>
   <script src="../assets/english-language.js?v=20261011-aibp-state1" defer></script>
   <script src="../assets/term-language.js?v=20261011-english4" defer></script>
 </body>

@@ -27,16 +27,83 @@ function recordContext() {
     'normalizeResources', 'migrateSharedResourceKey', 'normalizeCount', 'normalizeSummonSelection',
     'normalizeTitanList', 'normalizeTitanLimit', 'normalizeDeadTitans', 'migrateTitanLimit', 'normalizeMatrix', 'normalizeMatrixKey',
     'defaultDayForCycle', 'normalizeCycleDay', 'renderCycleFields', 'currentCycle', 'currentCycleStats',
-    'getCycleStat', 'syncSummonUsedCounts', 'getNymphCharges', 'hasNymphLimit', 'getNymphLimit',
+    'getCycleStat', 'setCycleStat', 'syncSummonUsedCounts', 'getNymphCharges', 'hasNymphLimit', 'getNymphLimit',
     'mergeRecordChanges', 'mergeLogText',
   ], {
     state: null, elements: { cycleTitle: {}, cycleWarning: {} },
     document: { querySelectorAll: selector => selector === '[data-cycle-bind]' ? inputs : [], querySelector: () => ({}) },
     atomicMergePaths: new Set(['crewBoxes', 'maxUnlocked']),
+    cycleScopedBindKeys: new Set(['boons', 'afflictions', 'counters', 'notes', 'syncLog']),
   });
   vm.runInContext(source.slice(source.indexOf('    const cycleData = '), source.indexOf('    const elements = ')), c);
   return c;
 }
+test('printed initial tracks only fill missing data, including first cycle visits', () => {
+  const initial = { c1: ['4', '5'], c2: ['5', '5'], c3: ['5', '5'], c4: ['5', '6'], c5: ['6', '4'] };
+  for (const [cycle, values] of Object.entries(initial)) {
+    const c = recordContext();
+    const normalized = c.normalizeState({ cycle });
+    assert.deepEqual([normalized.hull, normalized.crew], values);
+    assert.deepEqual(clone(c.normalizeState(normalized)), clone(normalized));
+    c.state = c.normalizeState({ cycle: 'c2', hull: '3', crew: '2' });
+    c.state.cycle = cycle;
+    if (cycle !== 'c2') assert.deepEqual([c.getCycleStat('hull'), c.getCycleStat('crew')], values);
+    c.state.cycle = 'c2';
+    assert.deepEqual([c.getCycleStat('hull'), c.getCycleStat('crew')], ['3', '2']);
+    for (const value of ['0', 0, '', '5']) {
+      const old = { cycle, cycleStats: { [cycle]: { hull: value, crew: value } } };
+      c.state = c.normalizeState(old);
+      assert.equal(c.state.hull, String(value));
+      assert.equal(c.state.crew, String(value));
+      c.renderCycleFields();
+      assert.equal(c.state.crew, String(value));
+      assert.deepEqual(old.cycleStats[cycle], { hull: value, crew: value });
+    }
+    const legacy = c.normalizeState({ cycle, hull: '2', crew: '3' });
+    assert.deepEqual([legacy.hull, legacy.crew], ['2', '3']);
+    const scoped = c.normalizeState({ cycle, hull: '1', crew: '1', cycleStats: { [cycle]: { hull: '0' } } });
+    assert.equal(scoped.hull, '0');
+  }
+});
+
+test('C5 supply migration, cycle isolation and official import keep the same value', () => {
+  const c = recordContext();
+  c.state = c.normalizeState({ cycle: 'c4', supply: '7' });
+  assert.equal(c.state.supply, '');
+  assert.equal(c.state.cycleStats.c5.supply, '7');
+  for (const saved of ['0', 0, '', '9']) {
+    const normalized = c.normalizeState({ cycle: 'c4', supply: '7', cycleStats: { c5: { supply: saved } } });
+    assert.equal(normalized.cycleStats.c5.supply, String(saved));
+    assert.deepEqual(clone(c.normalizeState(normalized)), clone(normalized));
+  }
+  c.state.cycle = 'c5'; c.renderCycleFields();
+  assert.equal(c.state.supply, '7');
+  c.setCycleStat('supply', '8');
+  c.state.cycle = 'c1'; c.renderCycleFields();
+  c.state = c.normalizeState(clone(c.state));
+  c.state.cycle = 'c5'; c.renderCycleFields();
+  assert.equal(c.state.supply, '8');
+  const stats = Array(21).fill(0); stats[20] = 11;
+  const imported = require('../assets/jsave-import.js').convert({ campaign_cycle: 4, argo_stats_vals: stats }).record.users.default;
+  assert.equal(c.normalizeState(imported).cycleStats.c5.supply, '11');
+});
+
+test('supply controls preserve blank and clamp counts to nonnegative integers', () => {
+  const c = recordContext(); c.state = c.normalizeState({ cycle: 'c5' });
+  const node = () => ({ dataset: {}, children: [], handlers: {}, append(...items) { this.children.push(...items); },
+    addEventListener(type, handler) { this.handlers[type] = handler; }, removeAttribute() {} });
+  const input = node(); input.value = ''; const label = node();
+  input.closest = () => label; input.replaceWith = wrapper => { label.wrapper = wrapper; };
+  c.document = { querySelector: selector => selector.includes('"supply"') ? input : null, createElement: node };
+  c.queueSave = () => {};
+  vm.runInContext(extract('record/index.html', 'setupIdentityNumberFields'), c);
+  c.setupIdentityNumberFields();
+  for (const [raw, expected] of [['3.8', '3'], ['-2', '0'], ['', '']]) {
+    input.value = raw; input.handlers.input(); assert.equal(c.getCycleStat('supply'), expected);
+  }
+  label.wrapper.children[2].handlers.click(); assert.equal(c.getCycleStat('supply'), '1');
+  label.wrapper.children[0].handlers.click(); assert.equal(c.getCycleStat('supply'), '0');
+});
 for (const cycle of ['c1', 'c2', 'c3', 'c4', 'c5']) test(`record ${cycle}: displaying a server snapshot does not change its merge values`, () => {
   const c = recordContext();
   const saved = {

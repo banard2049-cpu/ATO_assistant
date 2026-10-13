@@ -77,7 +77,7 @@ const expectedC5Entries = [
   "希望是什么-what-is-hope",
 ];
 
-assert(constants.c4.title === "一百万日夜", "C4 story shortcut title is incorrect.");
+assert(constants.c4.title === "一万个日夜", "C4 story shortcut title is incorrect.");
 assert(constants.c4.module === "ten-thousand-nights-and-days", "C4 story chapter is incorrect.");
 assert(constants.c4.adventure === "Ten Thousand Nights and Days", "C4 record adventure title is incorrect.");
 assert(constants.c4.boxes.map((row) => row[0]).join() === expectedSlots.join(), "C4 constant slots are incorrect.");

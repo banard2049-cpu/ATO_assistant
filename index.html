@@ -2611,7 +2611,7 @@
   <script src="./assets/exploration-card-tags.js?v=20261002-cache1"></script>
   <script src="./assets/exploration-card-rules.js?v=20261002-cache1"></script>
   <script src="./assets/exploration-card-resource-rules.js?v=20261013-automation5"></script>
-  <script src="./assets/exploration-card-effects.js?v=20261014-card-face-audit2"></script>
+  <script src="./assets/exploration-card-effects.js?v=20261014-record-tracks1"></script>
   <script src="./assets/exploration-card-conditions.js?v=20261014-card-face-audit2"></script>
   <script src="./assets/exploration-card-options.js?v=20261013-next-options12"></script>
   <script src="./assets/exploration-card-choices.js?v=20261013-next-choices12"></script>
@@ -2626,7 +2626,7 @@
        jsave-tables.js 是官方枚举/卡名数据表，必须在转换器之前加载；
        map/map-data.js 也要在前（转换器用 window.ATO_MAP_DATA 落地图瓦片）。 -->
   <script src="./assets/jsave-tables.js?v=20261004-import1"></script>
-  <script src="./assets/jsave-import.js?v=20261010-inward0"></script>
+  <script src="./assets/jsave-import.js?v=20261014-record-tracks1"></script>
   <script src="./assets/record-attachments.js?v=20261009"></script>
   <script>window.ATO_BGM_CONFIG = { expect: "bgm19" };</script>
   <script src="./assets/bgm/manifest.js?v=20261008-android-direct-audio-bgm19"></script>
@@ -2846,7 +2846,7 @@
         },
         structureTechDays: [1, 4, 7, 10, 13, 16, 19, 22, 26, 30, 34, 38, 42, 46, 50, 54, 58, 62, 66, 70, 74, 78, 82, 86],
         battleTechDays: [0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51, 55, 59, 63, 67, 71, 75, 79, 83],
-        battleDays: [6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 90],
+        battleDays: [1, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 90],
       },
       c4: {
         label: "Cycle IV 航行时间表",
@@ -3405,7 +3405,7 @@
         ],
       },
       c4: {
-        title: "一百万日夜",
+        title: "一万个日夜",
         subtitle: "Ten Thousand Nights and Days",
         module: "ten-thousand-nights-and-days",
         adventure: "Ten Thousand Nights and Days",
@@ -10777,8 +10777,8 @@
     const diplomacyMarkersByCycle = {
       c1: [
         { value: -10, label: "开战", bonus: -3 },
-        { value: -5, label: "恶劣", bonus: -2 },
-        { value: -2, label: "交恶", bonus: -1 },
+        { value: -9, label: "恶劣", bonus: -2 },
+        { value: -4, label: "交恶", bonus: -1 },
         { value: 0, label: "中立", bonus: 0 },
         { value: 4, label: "友善", bonus: 1 },
         { value: 8, label: "结盟", bonus: 2 },
@@ -10791,17 +10791,18 @@
       ],
       c3: [
         { value: -10, label: "开战", bonus: -3 },
-        { value: -5, label: "恶劣", bonus: -2 },
-        { value: -2, label: "交恶", bonus: -1 },
+        { value: -9, label: "恶劣", bonus: -2 },
+        { value: -4, label: "交恶", bonus: -1 },
         { value: 0, label: "中立", bonus: 0 },
         { value: 4, label: "友善", bonus: 1 },
         { value: 8, label: "结盟", bonus: 2 },
       ],
     };
 
-    // C4/C5 use the same signed diplomacy track as C1 in the record sheet.
-    diplomacyMarkersByCycle.c4 = diplomacyMarkersByCycle.c1;
-    diplomacyMarkersByCycle.c5 = diplomacyMarkersByCycle.c1;
+    // Signed cycles share the printed ranges; C5 names its lowest relation differently.
+    diplomacyMarkersByCycle.c4 = diplomacyMarkersByCycle.c3;
+    diplomacyMarkersByCycle.c5 = diplomacyMarkersByCycle.c3.map((marker) =>
+      marker.value === -10 ? { ...marker, label: "归顺" } : { ...marker });
 
     function formatSignedNumber(value) {
       return value > 0 ? `+${value}` : String(value);
@@ -10850,11 +10851,9 @@
 
     function diplomacyStatus(cycleId, value) {
       const markers = diplomacyMarkersByCycle[cycleId] || [];
-      const negativeStatus = markers.find((marker) => marker.value < 0 && value < marker.value);
-      if (negativeStatus) return negativeStatus;
-      let status = markers.find((marker) => marker.value === 0) || { label: "未分级", bonus: 0 };
+      let status = markers[0] || { label: "未分级", bonus: 0 };
       markers.forEach((marker) => {
-        if (marker.value >= 0 && value >= marker.value) status = marker;
+        if (value >= marker.value) status = marker;
       });
       return status;
     }
@@ -11953,9 +11952,9 @@
     setAuthMode("login");
     initAuth();
   </script>
-  <script src="./assets/ato-terms.js?v=20261004-official-title"></script>
+  <script src="./assets/ato-terms.js?v=20261014-record-tracks1"></script>
   <script src="./assets/english-terms.js?v=20261011-english4"></script>
-  <script src="./assets/english-ui.js?v=20261013-token-ui2"></script>
+  <script src="./assets/english-ui.js?v=20261014-record-tracks2"></script>
   <script src="./assets/english-language.js?v=20261011-english4"></script>
   <script src="./assets/term-language.js?v=20261011-english4"></script>
   <script src="./assets/update/app-version.js?v=3.5.10-rc.2"></script>

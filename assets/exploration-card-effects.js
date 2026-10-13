@@ -5,6 +5,10 @@
 })(typeof window !== "undefined" ? window : typeof globalThis !== "undefined" ? globalThis : this, function () {
   const CREW_MAX = { c1: 6, c2: 9, c3: 10, c4: 6, c5: 6 };
   const HULL_MAX = { c1: 5, c2: 6, c3: 7, c4: 5, c5: 6 };
+  const INITIAL_TRACKS = {
+    c1: { hull: 4, crew: 5 }, c2: { hull: 5, crew: 5 }, c3: { hull: 5, crew: 5 },
+    c4: { hull: 5, crew: 6 }, c5: { hull: 6, crew: 4 },
+  };
   const LABELS = { crew: "船员", hull: "船体", fate: "阿尔戈号命运", strangers: "陌生人", titan: "泰坦",
     humanity: "人性", renegade: "变节者", paradox: "悖论", frozenTime: "凝固时光", babelianDebt: "巴比伦债务",
     paranoia: "猜忌", priests: "祭司", progress: "进展", doom: "灾祸", knowledge: "阿尔戈号知识", refugees: "难民", nymphCharges: "宁芙召唤充能", loopLength: "轮回长度" };
@@ -320,11 +324,10 @@
     const scoped = record.cycleStats?.[cycleId]?.[key];
     if (scoped !== undefined) return key === "humanity" ? Math.trunc(Number(scoped) || 0) : count(scoped);
     if (!activeCycle(record, cycleId)) return 0;
-    // record.normalizeCycleStats seeds an absent active crew track from the
-    // legacy alias, then from defaultState.crew (5). An explicit zero or blank
-    // is retained; another cycle's alias is never an initialization source.
+    // Use the printed initial value only for a missing active-cycle track.
+    // Explicit zero/blank and other cycles' aliases keep their existing semantics.
     const legacy = record[key];
-    return ["crew", "hull"].includes(key) && (legacy === undefined || legacy === null) ? 5 : key === "humanity" ? Math.trunc(Number(legacy) || 0) : count(legacy);
+    return ["crew", "hull"].includes(key) && (legacy === undefined || legacy === null) ? INITIAL_TRACKS[cycleId][key] : key === "humanity" ? Math.trunc(Number(legacy) || 0) : count(legacy);
   }
 
   function crewMax(record, cycleId) {
