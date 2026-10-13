@@ -324,7 +324,7 @@
   var CYCLE_IDENTITY_KEYS = [
     "storyCard", "doomCard", "mapTiles", "fate", "aaLimit", "strangers", "humanity",
     "renegade", "loopLength", "frozenTime", "paradox", "babelianDebt", "oxygenCurrent",
-    "oxygenLimit", "reapMarkNotes", "sowMarkNotes", "paranoia"
+    "oxygenLimit", "reapMarkNotes", "sowMarkNotes", "paranoia", "supply"
   ];
 
   // ---------------------------------------------------------------- 官方数据表（内嵌）

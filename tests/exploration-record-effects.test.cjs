@@ -109,10 +109,13 @@ test('crew gains honor printed and unlocked maxima in every cycle', () => {
 
 test('an unsaved active crew track starts at the record sheet default and explicit zeros stay zero', () => {
   for (const cycle of ['c1', 'c2', 'c3', 'c4', 'c5']) {
+    const initialCrew = { c1: 5, c2: 5, c3: 5, c4: 6, c5: 4 }[cycle];
     const result = rules.apply({ cycle }, cycle, [{ type: 'crew', amount: -1 }]);
-    assert.equal(result.record.cycleStats[cycle].crew, '4', cycle);
+    assert.equal(result.record.cycleStats[cycle].crew, String(initialCrew - 1), cycle);
     assert.equal(result.changes[0].amount, -1);
-    assert.equal(rules.revert(result.record, result.changes).cycleStats[cycle].crew, '5');
+    assert.equal(rules.revert(result.record, result.changes).cycleStats[cycle].crew, String(initialCrew));
+    const hull = rules.apply({ cycle }, cycle, [{ type: 'hull', amount: -1 }]);
+    assert.equal(hull.record.cycleStats[cycle].hull, String({ c1: 4, c2: 5, c3: 5, c4: 5, c5: 6 }[cycle] - 1));
     const zero = rules.apply({ cycle, crew: '0' }, cycle, [{ type: 'crew', amount: -1 }]);
     assert.deepEqual(zero.changes, [], cycle);
     assert.equal(zero.record.crew, '0');

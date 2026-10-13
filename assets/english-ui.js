@@ -219,6 +219,7 @@
     "墓园": "Graveyard", "添加英雄": "Add Argonaut", "添加泰坦": "Add Titan", "泰坦列表": "Titans", "泰坦名称": "Titan name",
     "泰坦数量": "Titan count", "泰坦总上限": "Titan limit", "已死亡泰坦累计": "Total Titans lost", "已死亡": "Lost",
     "当前数量": "Current count", "总上限": "Total limit", "AA 上限": "Argo Ability limit", "当前氧气": "Current oxygen", "氧气上限": "Oxygen limit",
+    "阿尔戈英雄储备": "Argonaut Supply", "归顺涅墨西斯号": "Aligned with Nemesis", "归顺": "Aligned with Nemesis",
     "神之形态与宁芙": "Godforms & Nymphs", "神之形态已用": "Godform used", "神之形态": "Godforms", "神化形态": "Godforms",
     "已添加神之形态": "Added Godforms", "添加神之形态": "Add Godform", "已添加宁芙": "Added Nymphs", "添加宁芙": "Add Nymph",
     "宁芙充能": "Nymph charges", "宁芙上限": "Nymph limit", "船体与船员": "Hull & Crew", "抉择矩阵": "Choice Matrix",

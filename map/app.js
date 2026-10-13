@@ -1339,6 +1339,7 @@ function renderTiles() {
   tiles.forEach((tile) => {
     const explored = Boolean(cycleState.explored[tile.id]);
     const previewRevealed = tilePreviewRevealedByMarker(tile.id, cycleState);
+    const revealedUnexplored = !explored && previewRevealed;
     const previewRevealLabels = tilePreviewRevealLabels(tile.id, cycleState);
     const current = effectiveArgoTileId === tile.id;
     const tileTokens = getTileTokens(tile.id, cycleState);
@@ -1346,7 +1347,7 @@ function renderTiles() {
     const isSpawnCandidate = pendingAdversarySpawnCandidates.has(tile.id);
     const hasNote = Boolean((cycleState.tileNotes?.[tile.id] || "").trim());
     const article = document.createElement("article");
-    article.className = `tile-card${current ? " current" : ""}${explored ? " explored" : ""}${hasNote ? " has-note" : ""}${isSpawnCandidate ? " ad-spawn-candidate" : ""}${state.showAdjacency ? " show-adjacency" : ""}`;
+    article.className = `tile-card${current ? " current" : ""}${explored ? " explored" : ""}${revealedUnexplored ? " revealed-unexplored" : ""}${hasNote ? " has-note" : ""}${isSpawnCandidate ? " ad-spawn-candidate" : ""}${state.showAdjacency ? " show-adjacency" : ""}`;
     article.dataset.id = tile.id;
     const position = layout.position(tile);
     article.style.left = `${((position.x || 0) / mapWidth) * 100}%`;
@@ -1365,6 +1366,7 @@ function renderTiles() {
       <div class="tile-image">
         ${imageMarkup}
       </div>
+      ${revealedUnexplored ? '<span class="tile-unexplored-marker" title="未探索" aria-label="未探索"></span>' : ""}
       ${renderVariantToggle(tile, cycleState, !c5Covered)}
       ${renderTileNoteMarker(hasNote)}
       ${renderTileTokens(tileTokens)}
@@ -1443,7 +1445,7 @@ function tileTooltip(tile, current, explored, hasNote = false, previewRevealLabe
   return [
     tile.label,
     current ? "当前位置" : "",
-    explored ? "已探索" : "",
+    explored ? "已探索" : previewRevealLabels.length ? "未探索" : "",
     !explored ? previewRevealLabels.join(" / ") : "",
     hasNote ? "有地图笔记" : "",
     `上 ${neighbors.up || "-"}`,

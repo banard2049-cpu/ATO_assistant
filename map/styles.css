@@ -647,21 +647,19 @@ h1 {
   filter: saturate(1.22) brightness(1.14);
 }
 
-.tile-card.explored::before {
-  content: "";
+.tile-unexplored-marker {
   position: absolute;
   top: 6px;
   right: 6px;
-  z-index: 2;
+  z-index: 7;
   width: 10px;
   height: 10px;
   border-radius: 999px;
-  background: var(--done);
+  background: #348fe2;
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.72);
-  pointer-events: none;
 }
 
-.tile-card.has-note.explored::before {
+.tile-card.has-note .tile-unexplored-marker {
   right: 24px;
 }
 
@@ -863,7 +861,7 @@ body.second-screen-map .tile-grid {
   color: rgba(240, 184, 50, 0.94);
 }
 
-.tile-card.has-note.explored .tile-variant-toggle {
+.tile-card.has-note.revealed-unexplored .tile-variant-toggle {
   right: 40px;
 }
 
