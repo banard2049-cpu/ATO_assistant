@@ -197,6 +197,28 @@ async function main() {
     assert.equal(data.revision, undefined, 'revision 单独放在 state，不混进提交数据');
   });
 
+  await check('C5 双面标签在载入和保存后保持独立', async () => {
+    const fixture = sampleData();
+    fixture.tiles['c5:008'] = { cycleId: 'c5', tileId: '008', reviewed: true, tags: [], factions: ['cycladeanProtectorate'] };
+    fixture.tiles['c5:008:A'] = { cycleId: 'c5', tileId: '008', face: 'A', reviewed: true, tags: ['progress'], factions: ['cycladeanProtectorate'] };
+    fixture.tiles['c5:008:B'] = { cycleId: 'c5', tileId: '008', face: 'B', reviewed: true, tags: ['calamity'], factions: ['followersOfArete'] };
+    fixture.tiles['c5:009:B'] = { tags: [], factions: ['outcastVanguard'] };
+    const h = harness(() => okResponse(1, fixture));
+    h.state.tagData = h.ctx.normalizeData(fixture);
+    await h.ctx.saveTagData();
+    for (const rawData of [h.requests[0].body.data, h.state.tagData]) {
+      const data = JSON.parse(JSON.stringify(rawData));
+      assert.equal(Object.keys(data.tiles).length, 5, '基础记录和两面记录不能合并');
+      assert.deepEqual(data.tiles['c5:008'].tags, []);
+      assert.deepEqual(data.tiles['c5:008:A'].tags, ['progress']);
+      assert.deepEqual(data.tiles['c5:008:B'].tags, ['calamity']);
+      assert.deepEqual(data.tiles['c5:008:B'].factions, ['followersOfArete']);
+      assert.equal(data.tiles['c5:009:B'].cycleId, 'c5');
+      assert.equal(data.tiles['c5:009:B'].tileId, '009');
+      assert.equal(data.tiles['c5:009:B'].face, 'B');
+    }
+  });
+
   if (failures.length) {
     console.error('地图打标编辑器冲突回归失败：');
     failures.forEach((item) => console.error('  ' + item));

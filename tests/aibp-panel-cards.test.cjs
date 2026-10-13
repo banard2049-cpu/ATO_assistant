@@ -274,9 +274,9 @@ test("主题的全局控件外观不再覆盖面板浮层与地形板块", () =>
   }
   // 浮层自己的外观仍在 index.html 里，且是透明底 + 描边。
   assert.match(indexSource, /\.panel-state-marker \{[\s\S]*?background: rgba\(255, 88, 82, 0\.04\);/);
-  assert.match(indexSource, /\.panel-state-marker \{[\s\S]*?border: 3px solid rgba\(255, 88, 82, 0\.88\);/);
+  assert.match(indexSource, /\.panel-state-marker \{[\s\S]*?border: calc\(3 \* var\(--panel-overlay-unit, 1px\)\) solid rgba\(255, 88, 82, 0\.88\);/);
   assert.match(indexSource, /\.critical-mass-slot \{[\s\S]*?background: rgba\(18, 80, 126, 0\.2\);/);
-  assert.match(indexSource, /\.critical-mass-slot \{[\s\S]*?border: 2px dashed rgba\(51, 150, 225, 0\.78\);/);
+  assert.match(indexSource, /\.critical-mass-slot \{[\s\S]*?border: calc\(2 \* var\(--panel-overlay-unit, 1px\)\) dashed rgba\(51, 150, 225, 0\.78\);/);
   // 地形板块保持透明底（版图纹理要透出来），别被主题改成纸色。
   const mapCss = fs.readFileSync(path.join(root, "aibp", "battle_map_control.css"), "utf8");
   assert.match(mapCss, /\.battle-map-terrain \{[\s\S]*?background: transparent;/);

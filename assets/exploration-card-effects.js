@@ -45,6 +45,12 @@
   // Some visual transcriptions reused one vague label for unrelated symbols.
   // These identities were checked on each card face; never apply them globally.
   const CARD_ICONS = {
+    "c1:6401": { "disc-with-emblem glyph": "hull" },
+    "c1:6421": { "robed figure - priest": "strangers" },
+    "c1:6425": { "robed figure - priest": "strangers" },
+    "c1:6429": { "disc-with-emblem glyph": "hull" },
+    "c2:13623": { "large dark inverted-triangle glyph with pale inner marks": "progress" },
+    "c3:13514": { "black disc-with-emblem glyph": "hull" },
     "c3:13515": { "black emblem glyph": "progress" },
     "c3:13532": { "pale outlined inverted-triangle glyph with a small inner emblem": "doom", "black disc with white emblem": "hull",
       "outlined slanted angular glyph with white bars": { "Friendly": "progress" } },
@@ -52,12 +58,20 @@
     "c4:9329": { "small dark round resource glyph": { "ICON(white trident-like glyph on dark lozenge)/7+": "hull" } },
     "c3:13517": { "black emblem glyph": "doom" },
     "c3:13519": { "black emblem glyph": "fate" },
-    "c3:13520": { "black emblem glyph": "fate" },
+    "c3:13520": { "black emblem glyph": "progress" },
+    "c3:13530": { "black disc with white emblem": "hull" },
     "c4:9300": { "dark round glyph with a pale inner mark": "hull" },
-    "c4:9335": { "small dark resource glyph": "fate" },
+    "c4:9335": { "small dark resource glyph": "progress" },
     "c4:9337": { "small dark resource glyph": "babelianDebt" },
-    "c4:9338": { "small dark resource glyph": "fate" },
+    "c4:9338": { "small dark resource glyph": "progress" },
     "c4:9340": { "small dark resource glyph": "babelianDebt" },
+    "c4:9343": { "dark round glyph with a white inner curve": "hull" },
+    "c5:10301": { "dark glyph with a white v-notch": { Allied: "progress" } },
+    "c5:10302": { "small dark hand-like glyph": { Friendly: "hull", "Aligned with Nemesis": "hull" } },
+    "c5:10308": { "small dark hand-like glyph": "fate" },
+    "c5:10312": { "small dark hand-like glyph": "doom" },
+    "c5:10315": { "small dark hand-like glyph": "hull" },
+    "c5:10317": { "dark glyph with a white v-notch": "progress" },
     "c5:10322": { "dark round glyph with a pale inner emblem": "fate" },
     "c5:10323": { "dark round glyph with a pale inner emblem": "hull" },
     "c5:10324": { "dark round glyph with a pale inner emblem": "fate" },
@@ -80,6 +94,70 @@
     c5: { "dark irregular sludge-like token glyph": { kind: "map-token", label: "神浆标记" },
       "dark round glyph with a pale inner emblem": { kind: "nemesis", label: "宿敌标记", badge: "Allied" } },
   };
+  // The beast-head disc in these Resolve instructions is the Nemesis symbol.
+  // Gain/Lose transcriptions can use the same vague glyph name for real Titans.
+  const RESOLVE_NEMESIS_CARDS = new Set([
+    "c2:13637", "c3:13533", "c4:9336", "c4:9344", "c4:9346",
+    "c5:10304", "c5:10305", "c5:10311", "c5:10318",
+  ]);
+  // Printed paragraphs split into sentence-level OCR rows. Only manual rows
+  // are combined; structured choices, delays and numeric operations retain
+  // their existing settlement handlers.
+  const MANUAL_PARAGRAPHS = {
+    "c1:6435": [[1, 2]], "c2:13641": [[1, 2]], "c3:13539": [[1, 2]], "c4:9335": [[1, 2]],
+    "c2:13634": [[0, 1, 2, 3, 4]], "c2:13636": [[0, 1, 2]],
+    "c3:13506": [[0, 1]], "c3:13534": [[2, 3]], "c3:13535": [[0, 1]],
+    "c4:9331": [[0, 1, 2, 3]], "c4:9344": [[0, 1, 2]], "c5:10313": [[0, 1, 2]],
+  };
+  function combineManualReminders(card, items, context = {}) {
+    const key = card?.key || `${card?.cycleId}:${card?.cardId}`;
+    let result = [...items];
+    if (key === "c4:9332") {
+      const base = result.find(item => item.id === "manual:1");
+      const replacement = result.find(item => item.id === "manual:3");
+      if (base && replacement) {
+        const ids = [base.id, replacement.id];
+        const id = "manual-group:1-3";
+        const chosen = replacement.conditionState === true ? replacement
+          : replacement.conditionState === false ? base : null;
+        const text = chosen === replacement ? "Every Argonaut without a Curse Affliction gains a Curse Affliction."
+          : chosen === base ? base.text
+          : "A random Argonaut without a Curse Affliction gains a Curse Affliction; at War, every Argonaut without one gains it instead.";
+        const merged = { ...base, id, text, displayText: text, remainder: text, effects: [],
+          badge: chosen === replacement ? replacement.badge : "", conditionState: chosen ? true : null,
+          groupedManualIds: ids, manualIndexes: [1, 3],
+          manualComplete: Boolean(context.manualEffects?.[id] || (chosen && context.manualEffects?.[chosen.id])),
+          skippedComplete: Boolean(context.skippedEffects?.[id]),
+        };
+        result = result.flatMap(item => item.id === base.id ? [merged] : item.id === replacement.id ? [] : [item]);
+      }
+    }
+    // Ambush prose accompanies the registered battle, rather than another task.
+    if (["c1:6440", "c4:9327"].includes(key) && context.excludedIndexes?.includes(1)) {
+      result = result.filter(item => item.id !== "manual:0");
+    }
+    for (const indexes of MANUAL_PARAGRAPHS[key] || []) {
+      const ids = indexes.map(index => `manual:${index}`);
+      const members = ids.map(id => result.find(item => item.id === id));
+      if (members.some(item => !item || item.effects?.length || item.resourceChanges?.length || item.removal
+        || item.manualPlacements?.length || context.appliedEffects?.[item.id])) continue;
+      const qualified = members.filter(item => item.badge?.trim());
+      if (new Set(qualified.map(item => item.badge)).size > 1) continue;
+      const conditions = qualified.length ? qualified : members;
+      const id = `manual-group:${indexes.join("-")}`;
+      const text = members.map(item => item.text).join(" ");
+      const displayText = members.map(item => item.displayText || item.text).join(" ");
+      const merged = { ...members[0], id, text, displayText, remainder: displayText, effects: [],
+        badge: qualified[0]?.badge || "", groupedManualIds: ids, manualIndexes: indexes,
+        conditionState: conditions.some(item => item.conditionState === false) ? false
+          : conditions.some(item => item.conditionState === null) ? null : true,
+        manualComplete: Boolean(context.manualEffects?.[id] || ids.every(source => context.manualEffects?.[source])),
+        skippedComplete: Boolean(context.skippedEffects?.[id] || ids.every(source => context.skippedEffects?.[source])),
+      };
+      result = result.flatMap(item => item.id === ids[0] ? [merged] : ids.includes(item.id) ? [] : [item]);
+    }
+    return result;
+  }
   function iconIdentity(name, cycleId, cardId = "", badge = "") {
     const type = iconType(name, cycleId, cardId, badge);
     if (type) return { kind: "stat", type, label: LABELS[type] };
@@ -88,7 +166,11 @@
     return other && (!other.badge || other.badge === badge) ? { ...other } : null;
   }
   function displayIcons(text, cycleId, cardId = "", badge = "") {
-    return String(text || "").replace(/ICON\(([^)]*)\)/gi, (raw, name) => iconIdentity(name, cycleId, cardId, badge)?.label || raw);
+    const original = String(text || "");
+    const key = `${cycleId}:${String(cardId).split(":").pop()}`;
+    return original.replace(/ICON\(([^)]*)\)/gi, (raw, name, offset) =>
+      RESOLVE_NEMESIS_CARDS.has(key) && /\bresolve\s+(?:an?\s+additional\s+)?$/i.test(original.slice(0, offset))
+        && iconType(name, cycleId, cardId, badge) === "titan" ? "宿敌标记" : iconIdentity(name, cycleId, cardId, badge)?.label || raw);
   }
   function iconType(name, cycleId, cardId = "", badge = "") {
     const normalized = String(name).trim().toLowerCase().replace(/\s+/g, " ");
@@ -445,5 +527,5 @@
     return next;
   }
 
-  return { parse, describe, apply, revert, iconType, iconIdentity, displayIcons, dreamwalkerLosses, automaticTitanLosses, version: 2 };
+  return { parse, describe, combineManualReminders, apply, revert, iconType, iconIdentity, displayIcons, dreamwalkerLosses, automaticTitanLosses, version: 2 };
 });

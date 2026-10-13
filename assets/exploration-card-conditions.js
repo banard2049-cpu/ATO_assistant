@@ -166,9 +166,10 @@
   }
   function simpleConditionalEffects(card, context = {}) {
     const effective = context.stats ? context : { ...context, ...contextForRecord(context.record || {}, card?.cycleId || context.cycleId) };
+    if (isCard(card, effective, "c4", "9331")) return stormWorsens(card, effective);
     const descriptor = dogDays(card, effective) || weightOfObligations(card, effective)
-      || sabotageTrackEffect(card, effective) || ambrosiaSpill(card, effective)
-      || tighteningTheLoop(card, effective) || imperialDues(card, effective)
+      || sabotageTrackEffect(card, effective) || sabotageManualFooter(card, effective) || ambrosiaSpill(card, effective)
+      || timeShift(card, effective) || tighteningTheLoop(card, effective) || imperialDues(card, effective)
       || mapBranchEffect(card, effective) || paranoiaCardEffect(card, effective)
       || blackSludgeDoom(card, effective);
     return descriptor ? [descriptor] : [];
@@ -269,6 +270,25 @@
     const removal = fate >= (engines ? 8 : 6) || afterRefugees >= (engines ? 4 : 3) ? "remove" : "keep";
     return resolvedConditional(base, effects, removal);
   }
+  function sabotageManualFooter(card, context) {
+    const propylon = isCard(card, context, "c2", "13631");
+    const armory = isCard(card, context, "c2", "13633");
+    if (!propylon && !armory) return null;
+    // Keep the AA-disable and random Armory loss as their existing manual tasks.
+    // The footer alone decides the destination, with its own receipt so a later
+    // track change cannot rewrite this draw's resolved removal branch.
+    const base = conditionalBase(propylon ? "propylon-removal" : "titan-armory-removal",
+      propylon ? "山门：判断洗回破坏卡组或暂时移出" : "泰坦兵工厂：判断洗回破坏卡组或暂时移出", []);
+    const state = conditionMet({ type: "or", conditions: [
+      { type: "track", key: "fate", threshold: propylon ? 5 : 7, mode: "atLeast", cycleId: "c2" },
+      { type: "track", key: "refugees", threshold: propylon ? 2 : 4, mode: "atLeast", cycleId: "c2" },
+    ] }, context);
+    if (state === null) return manualConditional(base, ["fate", "refugees"]);
+    // A non-triggered upper ability only gains one Refugee: 0→1 on Propylon,
+    // or at most 1→2 on Titan Armory. Neither can cross its footer threshold.
+    return resolvedConditional(base, [], state ? "remove" : "keep", [],
+      state ? "暂时移出直到下次定时战斗" : "洗回破坏卡组");
+  }
   function ambrosiaSpill(card, context) {
     if (!isCard(card, context, "c2", "13635")) return null;
     const base = conditionalBase("ambrosia-spill", "神浆泄漏：按不稳定神浆库存分档结算", [0, 1, 2, 3, 4, 5, 6]);
@@ -310,6 +330,40 @@
     if (afterParadox < 7 && fate === null) return manualConditional(base, ["fate"]);
     return resolvedConditional(base, [{ type: "paradox", amount: -2 }, { type: "loopLength", amount: -1 }],
       fate !== null && fate >= 7 || afterParadox >= 7 ? "remove" : "permanent");
+  }
+  function timeShift(card, context) {
+    const forward = isCard(card, context, "c3", "13536");
+    const rewound = isCard(card, context, "c3", "13538");
+    if (!forward && !rewound) return null;
+    const base = conditionalBase(forward ? "fast-forwarded" : "rewound",
+      forward ? "快进：按悖论结算并判断移出类型" : "倒带：按悖论结算并判断移出类型", [0, 1, 2]);
+    const paradox = recordedNumber(context.stats?.paradox);
+    if (paradox === null) return manualConditional(base, ["paradox"]);
+    if (paradox < 3) return resolvedConditional(base, [{ type: "paradox", amount: 1 }], "remove");
+    const afterParadox = paradox - (forward ? 2 : 1);
+    const fate = recordedNumber(context.stats?.fate);
+    if (afterParadox < (forward ? 4 : 5) && fate === null) return manualConditional(base, ["fate"]);
+    const result = resolvedConditional(base, [{ type: "paradox", amount: forward ? -2 : -1 },
+      ...(forward ? [{ type: "doom", amount: 1 }] : [])],
+      fate !== null && fate >= (forward ? 6 : 5) || afterParadox >= (forward ? 4 : 5) ? "remove" : "permanent");
+    if (!forward) result.remainder = "返回上一个地图板块，并视该板块为已探索。";
+    return result;
+  }
+  function stormWorsens(card, context) {
+    const core = conditionalBase("storm-worsens", "风暴加剧：按债务处理沙暴或未触发分支", [0, 1, 2, 3, 4]);
+    const footer = conditionalBase("storm-removal", "风暴加剧：结算后债务为 0 则永久移出，否则暂时移出", [5]);
+    footer.requiresEffect = core.id;
+    const saved = context.appliedEffects?.[core.id]?.descriptor;
+    const debt = recordedNumber(context.stats?.babelianDebt);
+    const main = debt === null ? manualConditional(core, ["babelianDebt"])
+      : resolvedConditional(core, [{ type: "babelianDebt", amount: debt >= 3 ? -1 : 1 }]);
+    if (debt !== null && debt >= 3) main.remainder = "随机确定可航行方向，在当前地图板块对应侧放置沙暴并封锁该方向；下次移动步骤让阿尔戈号向随机方向移动。";
+    if (saved?.remainder || (!saved && main.remainder)) footer.requiresManual = core.id;
+    // This footer is evaluated only after the core (including its manual map
+    // actions), against the current record; an initial zero first gains Debt.
+    const removal = debt === null ? manualConditional(footer, ["babelianDebt"])
+      : resolvedConditional(footer, [], debt === 0 ? "permanent" : "remove");
+    return [main, removal];
   }
   function imperialDues(card, context) {
     if (!isCard(card, context, "c4", "9330")) return null;

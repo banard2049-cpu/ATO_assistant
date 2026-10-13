@@ -67,6 +67,10 @@ const elements = {
   unavailableMessage: document.querySelector("#unavailableMessage"),
 };
 
+let latestLabyrinthTrack = null;
+window.AibpPanelOverlay?.observe(elements.bossPanel, elements.bossPanel?.parentElement,
+  [elements.bossTokens, elements.bossLabyrinthTrack], () => renderLabyrinthTrack(latestLabyrinthTrack));
+
 let retryTimer = null;
 let battleRenderKey = "";
 let storyRenderKey = "";
@@ -626,6 +630,8 @@ function renderImageList(target, cards, emptyText) {
 // 大迷宫轨道红圈（迷宫机牛 / 吞域兽）：控制台把当前那一格的百分比坐标随快照送来，
 // 这里照同一份坐标画在大卡上；点击仍然只在控制台做，第二屏是只读的。
 function renderLabyrinthTrack(track) {
+  latestLabyrinthTrack = track;
+  track = window.AibpPanelOverlay?.stateForArtwork(elements.battleView.dataset.apostle, track, elements.bossPanel) || track;
   const layer = elements.bossLabyrinthTrack;
   if (!layer) return;
   layer.replaceChildren();

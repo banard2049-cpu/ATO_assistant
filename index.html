@@ -733,6 +733,17 @@
       line-height: 1.45;
     }
 
+    .card-token-placement-tools { display: flex; flex-wrap: wrap; gap: 6px 10px; margin-top: 6px; }
+    .card-token-placement-group { display: flex; flex-wrap: wrap; gap: 6px 10px; font-size: 12px; }
+    .card-token-placement-target { display: inline-flex; gap: 6px; align-items: center; padding: 2px 6px; border: 1px solid #0002; border-radius: 0; background: #ffffff70; }
+    .app .step-track-reminder .step-track-tag { border-radius: 0; }
+    .card-token-placement-target button { padding: 2px 7px; min-height: 24px; font-size: 12px; line-height: 1.2; }
+    .card-token-placement-target.unavailable { color: var(--muted); }
+    .card-token-limit-warning { color: #9d4b13; font-weight: 800; }
+    .card-track-counter-label.card-token-limit-warning { color: #9d4b13; }
+    .card-token-note { flex-basis: 100%; color: var(--muted); font-size: 11px; }
+    .exploration-token-placement-tools { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+
     .mnemos-node-link {
       display: inline-block;
       padding: 5px 10px;
@@ -1708,7 +1719,7 @@
 
     .card-track-counter-row {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 10px;
       align-items: center;
     }
@@ -2596,17 +2607,17 @@
   </dialog>
 
   <script src="./assets/page-focus-router.js?v=20261007-page-navigation1"></script>
-  <script src="./assets/story-doom-card-data.js?v=20261002-cache1"></script>
+  <script src="./assets/story-doom-card-data.js?v=20261014-card-face-audit2"></script>
   <script src="./assets/exploration-card-tags.js?v=20261002-cache1"></script>
   <script src="./assets/exploration-card-rules.js?v=20261002-cache1"></script>
   <script src="./assets/exploration-card-resource-rules.js?v=20261013-automation5"></script>
-  <script src="./assets/exploration-card-effects.js?v=20261013-next-effects12"></script>
-  <script src="./assets/exploration-card-conditions.js?v=20261013-four-conditions13"></script>
+  <script src="./assets/exploration-card-effects.js?v=20261014-card-face-audit2"></script>
+  <script src="./assets/exploration-card-conditions.js?v=20261014-card-face-audit2"></script>
   <script src="./assets/exploration-card-options.js?v=20261013-next-options12"></script>
   <script src="./assets/exploration-card-choices.js?v=20261013-next-choices12"></script>
   <script src="./assets/exploration-card-delays.js?v=20261013-automation5"></script>
-  <script src="./assets/exploration-card-resources.js?v=20261013-automation5"></script>
-  <script src="./map/map-tile-tags.js?v=20260730-c4-oasis-tag"></script>
+  <script src="./assets/exploration-card-resources.js?v=20261014-card-face-audit2"></script>
+  <script src="./map/map-tile-tags.js?v=20261013-corner-audit"></script>
   <script src="./map/map-data.js?v=20260730-cycle-labels"></script>
   <script src="./map/nemesis-path.js?v=20260924-shared"></script>
   <script src="./map/nemesis-battle.js?v=20261003-record"></script>
@@ -4767,6 +4778,7 @@
         effectStateByCycle: isPlainObject(value?.effectStateByCycle) ? value.effectStateByCycle : {},
         lastSettlementByCycle: isPlainObject(value?.lastSettlementByCycle) ? value.lastSettlementByCycle : {},
         trackReceiptsByCycle: isPlainObject(value?.trackReceiptsByCycle) ? value.trackReceiptsByCycle : {},
+        tokenPlacementQueueByCycle: isPlainObject(value?.tokenPlacementQueueByCycle) ? value.tokenPlacementQueueByCycle : {},
       };
     }
 
@@ -5327,6 +5339,7 @@
       drawState.activePiles = result.piles;
       drawState.history = result.piles.flat();
       drawState.current = drawState.history[drawState.history.length - 1] || null;
+      syncExplorationTokenPlacementQueue();
       saveState();
       renderFlow();
       if (result.incompletePiles) {
@@ -5344,18 +5357,25 @@
       const drawState = ensureExplorationDrawState();
       const drawn = drawState.activePiles.flat();
       if (!drawn.length) return;
-      const pending = pendingExplorationEffects();
+      syncExplorationTokenPlacementQueue();
+      const pending = pendingExplorationEffects(false);
       if (options.skipPendingConfirm !== true && pending.length
         && !window.confirm(`还有 ${pending.length} 项效果未处理：\n${pending.slice(0, 8).join("\n")}\n\n确认已在游戏中处理，继续结束探索？`)) return;
       const result = explorationRules().settlePiles(drawState.activePiles);
       drawState.temporaryRemoved.push(...result.temporaryRemoved);
-      if (result.permanentIds.length) {
-        const permanentIds = new Set(result.permanentIds);
-        const cycleId = currentCycleConfig().id;
+      const cycleId = currentCycleConfig().id;
+      const destructionIds = new Set(getDestructionCardIds());
+      const returnedDestructionIds = result.returnIds.filter(id => destructionIds.has(id));
+      const removedIds = new Set([...result.permanentIds, ...returnedDestructionIds]);
+      const destructionPile = getDestructionPileIds();
+      if (removedIds.size) {
         state.exploration.selectedByCycle[cycleId] = getSelectedExplorationIds()
-          .filter((id) => !permanentIds.has(id));
+          .filter((id) => !removedIds.has(id));
       }
-      drawState.drawPile = shuffleList([...drawState.drawPile, ...result.returnIds]);
+      if (returnedDestructionIds.length) {
+        state.exploration.destructionByCycle[cycleId] = [...new Set([...destructionPile, ...returnedDestructionIds])];
+      }
+      drawState.drawPile = shuffleList([...drawState.drawPile, ...result.returnIds.filter(id => !destructionIds.has(id))]);
       drawState.activePiles = [[], []];
       drawState.history = [];
       drawState.discardPile = [];
@@ -6265,23 +6285,105 @@
 
     function cardTrackMeta(def, track, cycleData, card) {
       if (def.fixed) {
-        return `当前阿尔戈号知识 ${track.position}；已放进展 ${track.progress}`;
+        return `当前阿尔戈号知识 ${track.position}；${cardTrackTokenState(def.key, "progress").statusText}`;
       }
       const deck = Array.isArray(cycleData[def.source]) ? cycleData[def.source] : [];
       if (!track.position) return deck[0]
         ? `未开始；当前预览 ${deck[0].label} ${deck[0].name}。点击推进后正式进入 ${deck[0].label}。`
         : `mod 中找到 ${deck.length} 个 A/B 步骤。点击推进进入 1A。`;
-      const counters = `已放进展 ${track.progress}${def.key === "doom" ? `；已放灾祸 ${track.doom}` : ""}`;
+      const fields = def.key === "doom" ? ["doom", "progress"] : ["progress"];
+      const counters = fields.map(field => cardTrackTokenState(def.key, field)).filter(value => value.allowed)
+        .map(value => `${value.field === "doom" ? "灾祸" : "进展"}：${value.statusText}`).join("；") || "当前卡面不累积进展";
       if (!card) return `第 ${track.position} 步无对应卡面；${counters}`;
       return `${card.label} ${card.name}；${counters}`;
+    }
+
+    function cardTokenLimitText(count, limits) {
+      if (!limits.length) return "无固定上限";
+      const reached = limits.filter(limit => count === limit);
+      const exceeded = limits.filter(limit => count > limit);
+      return [`上限 ${limits.join(" / ")}`, reached.length ? `已达到 ${reached.join(" / ")}` : "",
+        exceeded.length ? `已超过 ${exceeded.join(" / ")}` : ""].filter(Boolean).join("；");
+    }
+
+    function cardTrackTokenState(key, field) {
+      const tracks = ensureCardTracks();
+      const def = [...cardTrackGroups.story.tracks, ...cardTrackGroups.doom.tracks].find(value => value.key === key);
+      const track = tracks[key] || { position: 0, progress: 0, doom: 0 };
+      const cycleData = activeStoryDoomData();
+      const card = def ? cardTrackCard(def, track, cycleData) : null;
+      const preview = def ? cardTrackPreviewCard(def, track, cycleData) : null;
+      const rule = storyDoomData.tokenRule?.(currentCycleConfig().id, key, card || preview, field)
+        || { allowed: false, limits: [], note: "卡面规则未加载" };
+      const active = Boolean(def && (def.fixed || card));
+      const allowed = active && rule.allowed;
+      const count = normalizeCounterValue(track[field]);
+      const limits = rule.limits || [];
+      const label = def ? `${def.label}${def.fixed ? ` · 知识 ${normalizeCounterValue(track.position)}` : card ? ` ${card.label}` : "（未开始）"}` : key;
+      const note = active ? rule.note || "" : "请先推进进入当前卡面。";
+      const gainMode = rule.gainMode || "place";
+      const gainCondition = rule.gainCondition || "";
+      const statusText = `${allowed ? gainMode === "remove" ? "获得进展时移除；仅最后访问城市" : "可以放置" : "当前不可放置"}；已放 ${count}；${cardTokenLimitText(count, limits)}`;
+      return { key, field, allowed, limits, note, count, label, statusText, gainMode, gainCondition };
+    }
+
+    function cardTokenPlacementTargets(field) {
+      return (field === "progress" ? ["story", "inwardOdyssey", "doom"] : field === "doom" ? ["doom"] : [])
+        .map(key => cardTrackTokenState(key, field));
+    }
+
+    function renderCardTokenPlacementTools(effects) {
+      const amounts = {};
+      for (const effect of effects || []) {
+        if (["progress", "doom"].includes(effect.type) && effect.amount > 0) {
+          const id = `${effect.type}:${effect.target || ""}`;
+          amounts[id] ||= { field: effect.type, amount: 0, target: effect.target || "" };
+          amounts[id].amount += normalizeCounterValue(effect.amount);
+        }
+      }
+      return `<div class="card-token-placement-tools">${Object.values(amounts).map(({ field, amount, target: requiredTarget }) => `
+        <div class="card-token-placement-group" role="group" aria-label="放置${field === "doom" ? "灾祸" : "进展"} +${amount}">
+          ${cardTokenPlacementTargets(field).filter(target => (!requiredTarget || target.key === requiredTarget)
+            && (field !== "progress" || target.key !== "doom" || target.allowed)).map(target => `
+            <div class="card-token-placement-target${target.allowed ? "" : " unavailable"}" title="${escapeHtml([target.statusText, target.note].filter(Boolean).join("；"))}">
+              <span class="${target.limits.some(limit => target.count >= limit) ? "card-token-limit-warning" : ""}">${escapeHtml(target.label)} · ${target.allowed ? "" : "不可放 · "}已放 ${target.count}${target.allowed ? ` / 上限 ${target.limits.length ? target.limits.join("/") : "不限"}` : ""}${target.limits.some(limit => target.count > limit) ? " · 超出" : target.limits.some(limit => target.count === limit) ? " · 已达" : ""}${target.gainMode === "remove" ? " · 仅最后访问城市" : ""}</span>
+              ${target.allowed ? `<button type="button" data-card-token-place="${escapeHtml(target.key)}" data-card-token-field="${field}" data-amount="${amount}"${target.gainMode === "remove" && !target.count ? " disabled" : ""} aria-label="${target.gainMode === "remove" ? "从" : "向"}${escapeHtml(target.label)}${target.gainMode === "remove" ? "移除" : "放置"} ${amount} 枚${field === "doom" ? "灾祸" : "进展"}">${target.gainMode === "remove" ? "−" : "+"}${amount}</button>` : ""}
+            </div>`).join("")}
+        </div>`).join("")}</div>`;
+    }
+
+    function refreshCardTokenViews() {
+      saveState();
+      renderCardTrackDialog();
+      renderFlow();
+    }
+
+    function placeCardTrackToken(key, field, amount, refresh = true) {
+      if (typeof ownsDashboardWriteLease === "function" && !ownsDashboardWriteLease()) return false;
+      if (!["progress", "doom"].includes(field) || !Number.isSafeInteger(amount) || amount <= 0) return false;
+      const target = cardTrackTokenState(key, field);
+      if (!target.allowed) return false;
+      const remove = target.gainMode === "remove";
+      if (remove && !target.count) return false;
+      if (remove && target.gainCondition === "lastVisitedCity"
+        && !window.confirm(`确认当前板块是“最后访问城市”标记所在的城市？确认后从${target.label}移除 ${amount} 枚进展（最低为 0）。`)) return false;
+      const next = remove ? Math.max(0, target.count - amount) : target.count + amount;
+      if (!Number.isSafeInteger(next)) return false;
+      ensureCardTracks()[key][field] = next;
+      // Limits are reminders, never clamps or automatic story/knowledge settlement.
+      if (refresh) refreshCardTokenViews();
+      return true;
     }
 
     function setCardTrackProgress(key, value) {
       const tracks = ensureCardTracks();
       if (!tracks[key]) return;
-      tracks[key].progress = normalizeCounterValue(value);
+      const next = normalizeCounterValue(value);
+      if (next > tracks[key].progress && !cardTrackTokenState(key, "progress").allowed) return;
+      ensureCardTracks()[key].progress = next;
       saveState();
       renderCardTrackDialog();
+      renderFlow();
     }
 
     function stepCardTrackProgress(key, delta) {
@@ -6293,9 +6395,12 @@
     function setCardTrackCounter(key, field, value) {
       const tracks = ensureCardTracks();
       if (!tracks[key] || field !== "doom") return;
-      tracks[key][field] = normalizeCounterValue(value);
+      const next = normalizeCounterValue(value);
+      if (next > tracks[key][field] && !cardTrackTokenState(key, field).allowed) return;
+      ensureCardTracks()[key][field] = next;
       saveState();
       renderCardTrackDialog();
+      renderFlow();
     }
 
     function stepCardTrackCounter(key, field, delta) {
@@ -6311,6 +6416,7 @@
       tracks[key].progress = 0;
       saveState();
       renderCardTrackDialog();
+      if (typeof renderFlow === "function") renderFlow();
     }
 
     function retreatCardTrack(key) {
@@ -6321,6 +6427,7 @@
       tracks[key].progress = 0;
       saveState();
       renderCardTrackDialog();
+      if (typeof renderFlow === "function") renderFlow();
     }
 
     function renderCardTrackDialog(groupId = elements.cardTrackDialog?.dataset.group) {
@@ -6335,11 +6442,15 @@
         const card = cardTrackCard(def, track, cycleData);
         const previewCard = cardTrackPreviewCard(def, track, cycleData);
         const displayedCard = card || previewCard;
+        const progressState = cardTrackTokenState(def.key, "progress");
+        const doomState = cardTrackTokenState(def.key, "doom");
+        const showProgress = progressState.allowed;
+        const badge = [showProgress ? `进展 ${track.progress}` : "", def.key === "doom" ? `灾祸 ${track.doom}` : ""].filter(Boolean).join(" · ");
         const previewBadge = !def.fixed && !track.position && displayedCard ? '<span class="card-track-preview-badge">下张预览</span>' : "";
         const face = def.fixed
           ? `<div class="card-track-knowledge"><div class="card-track-knowledge-value"><span class="card-track-knowledge-icon" aria-hidden="true" style="--icon-src:url(./assets/icons/argo-knowledge.svg)"></span><span>${track.position}</span></div><div class="card-track-knowledge-label">当前阿尔戈号知识</div></div>`
           : (displayedCard?.image
-            ? `<div class="card-track-face"><img src="${escapeHtml(displayedCard.image)}" alt="${escapeHtml(`${displayedCard.label} ${displayedCard.name}`)}"><span class="card-track-side-badge">${escapeHtml(displayedCard.label)}</span><span class="card-track-progress-badge">进展 ${track.progress}${def.key === "doom" ? ` · 灾祸 ${track.doom}` : ""}</span>${previewBadge}</div>`
+            ? `<div class="card-track-face"><img src="${escapeHtml(displayedCard.image)}" alt="${escapeHtml(`${displayedCard.label} ${displayedCard.name}`)}"><span class="card-track-side-badge">${escapeHtml(displayedCard.label)}</span>${badge ? `<span class="card-track-progress-badge">${badge}</span>` : ""}${previewBadge}</div>`
             : '<div class="card-track-empty">无对应卡面</div>');
         return `
           <article class="card-track-item">
@@ -6352,18 +6463,18 @@
               <div class="${def.key === "doom" ? "card-track-counter-row" : ""}">
               ${def.key === "doom" ? `
                 <div class="card-track-counter">
-                  <span class="card-track-counter-label">灾祸</span>
+                  <span class="card-track-counter-label${doomState.limits.some(limit => track.doom >= limit) ? " card-token-limit-warning" : ""}" title="${escapeHtml(doomState.statusText)}">灾祸<br><small>${escapeHtml(doomState.limits.length ? `上限 ${doomState.limits.join(" / ")}` : "无固定上限")}</small></span>
                   <button type="button" data-card-counter="${escapeHtml(def.key)}" data-card-counter-field="doom" data-delta="-1" aria-label="灾祸减一">-</button>
                   <input type="number" min="0" step="1" value="${track.doom}" data-card-counter-input="${escapeHtml(def.key)}" data-card-counter-field="doom" aria-label="灾祸">
                   <button type="button" data-card-counter="${escapeHtml(def.key)}" data-card-counter-field="doom" data-delta="1" aria-label="灾祸加一">+</button>
                 </div>
               ` : ""}
-                <div class="card-track-progress">
-                  <span class="card-track-counter-label">进展</span>
+                ${showProgress ? `<div class="card-track-progress">
+                  <span class="card-track-counter-label${progressState.limits.some(limit => track.progress >= limit) ? " card-token-limit-warning" : ""}" title="${escapeHtml(progressState.statusText)}">进展<br><small>${escapeHtml(progressState.limits.length ? `上限 ${progressState.limits.join(" / ")}` : "无固定上限")}</small></span>
                   <button type="button" data-card-progress="${escapeHtml(def.key)}" data-delta="-1" aria-label="${escapeHtml(def.label)}进展减一">-</button>
                   <input type="number" min="0" step="1" value="${track.progress}" data-card-progress-input="${escapeHtml(def.key)}" aria-label="${escapeHtml(def.label)}进展">
                   <button type="button" data-card-progress="${escapeHtml(def.key)}" data-delta="1" aria-label="${escapeHtml(def.label)}进展加一">+</button>
-                </div>
+                </div>` : ""}
               </div>
               <div class="card-track-step-actions">
                 <button type="button" class="card-track-retreat" data-card-retreat="${escapeHtml(def.key)}">回退</button>
@@ -7781,13 +7892,10 @@
         checkbox.setAttribute("data-term-scope", "step-name");
         checkbox.addEventListener("change", () => {
           state.completed[step.id] = checkbox.checked;
-          if (step.id === "encounter" && checkbox.checked) {
-            state.nextBattleTerrain = null;
-          }
           saveState();
           renderFlow();
           if (step.id === "development" && checkbox.checked) void processExplorationDelays("development");
-          // 遭遇步骤打勾 = 今天的定时战斗已经打完：结算「下次定时战斗结束时…」的延迟效果，
+          // 当天有定时战斗时，遭遇步骤打勾 = 战斗已经打完：结算「下次定时战斗结束时…」的延迟效果，
           // 并把暂时移出的探索卡放回牌堆（原先靠区块里的两个按钮，已移除）。
           if (step.id === "encounter" && checkbox.checked) void completeTimelineBattle();
         });
@@ -7806,6 +7914,12 @@
           <p class="step-desc" data-english-source="${({ move: "lbl_MOVEMENT_desc", explore: "lbl_EXPLORATION_desc", survey: "lbl_EXPEDITION_desc", encounter: "lbl_ENCOUNTER_desc", development: "lbl_ADVANCEMENT_desc", story: "lbl_STORY_desc", doom: "lbl_DOOM_desc" })[step.id]}">${renderStepDesc(step.desc)}</p>
           ${renderStepTrackReminders(trackReminders)}
         `;
+        trackReminders.forEach((reminder, reminderIndex) => {
+          if (!reminder.explorationToken) return;
+          const { entry, item, field } = reminder.explorationToken;
+          text.querySelector(`[data-exploration-token-reminder="${reminderIndex}"]`)
+            ?.appendChild(createExplorationTokenPlacementTools(entry, item, field));
+        });
         const actions = document.createElement("div");
         actions.className = "step-actions";
         getStepLinks(step).forEach((link) => {
@@ -8060,10 +8174,17 @@
           card, descriptors, context, sourceKey: explorationRoundId(entry), ...options,
         });
         const ledger = explorationBatchReceipt(result.record, entry);
-        result.receipts.forEach((receipt) => { ledger.delays[receipt.id] = receipt.receiptId; });
+        result.receipts.forEach((receipt) => {
+          ledger.delays[receipt.id] = receipt.receiptId;
+          if (receipt.kind === "return-exploration-card") {
+            ledger.applied[`delay-removal:${receipt.id}`] ||= { changes: [],
+              removal: { before: entry.removal || "keep", after: "remove" } };
+          }
+        });
         ledger.context ||= explorationContextSnapshot(context);
-        return result;
+        return { ...result, ledger: JSON.parse(JSON.stringify(ledger)) };
       }, `登记探索卡延迟效果 D${entry.day} ${entry.name} #${entry.id}`);
+      syncExplorationBatchReceipt(entry, result.ledger);
       effects.delays ||= {};
       result.receipts.forEach((receipt) => { effects.delays[receipt.id] = receipt.receiptId; });
       effects.context ||= explorationContextSnapshot(context);
@@ -8081,7 +8202,8 @@
           const context = explorationCardContext(entry, card);
           const effects = explorationEffectState(entry);
           const descriptors = rules.delayed(card, context).filter((item) => item.conditionState === true
-            && item.kind !== "tech-disable" && !item.once && !effects.delays?.[item.id]);
+            && item.kind !== "tech-disable" && !item.once && !effects.delays?.[item.id]
+            && !explorationDelayManaged(entry, card, context, item));
           if (descriptors.length) await scheduleExplorationDelay(entry, card, descriptors, context);
         }
       } catch (error) {
@@ -8124,7 +8246,7 @@
     }
 
     // 今天的定时战斗打完了 —— 由「遭遇」步骤打勾触发（战斗本身在故事书战斗模块完成）。
-    // 只有「今天的时间表真的标了战斗」或「确实还挂着定时战斗相关效果」时才结算：否则随便
+    // 只有「今天的时间表真的标了战斗」时才结算：否则随便
     // 勾一下遭遇步骤就会推进纪元，把「下次定时战斗结束时」的效果给提前清掉。
     // 先结算「战斗开始时」的效果（登记/展示），再结算「战斗结束时」的效果，顺序与原按钮
     // 一致。事件编号按「循环+日期」取值是刻意的：同一天重复勾选会被 rules.process 认成
@@ -8132,14 +8254,10 @@
     async function completeTimelineBattle() {
       if (!ownsDashboardWriteLease()) return false;
       const cycleId = currentCycleConfig().id;
-      const queue = explorationDelayRules()?.getQueue(cachedArgoRecord || {}, cycleId, ["waiting", "ready"]) || [];
-      const hasTimelineEffect = queue.some((item) => item.trigger === "timeline-battle-start"
-        || item.trigger === "timeline-battle-end");
       const battleToday = typeof todayTrackIcons === "function"
         && todayTrackIcons().some((icon) => icon.className === "battle");
-      // 「暂时移出」的探索卡写着「直到下一次定时战斗」，所以有卡待放回时也必须在这次结算。
-      const hasTemporary = (state.exploration?.drawStateByCycle?.[cycleId]?.temporaryRemoved?.length || 0) > 0;
-      if (!hasTimelineEffect && !battleToday && !hasTemporary) return false;
+      // 待放回卡和延迟效果本身不代表今天发生了战斗；无战斗日保留地形和探索卡。
+      if (!battleToday) return false;
       const day = explorationDayNumber(state.day, cycleId);
       const eventId = `${cycleId}:D${day}:timeline`;
       const started = await processExplorationDelays("timeline-battle-start", { timelineBattle: true, eventId });
@@ -8148,20 +8266,24 @@
         window.alert("定时战斗结算失败，请重试。");
         return false;
       }
+      state.nextBattleTerrain = null;
+      saveState();
+      renderFlow();
       return true;
     }
 
     function createExplorationDelayCardTools(entry, card, context) {
       const rules = explorationDelayRules();
-      const descriptors = rules?.delayed(card, { ...context, resourceRules: explorationResourceRules() })
-        .filter((item) => item.conditionState !== false && !explorationDelayManaged(entry, card, context, item)
-          && !explorationNumericOnce(item, context, entry)) || [];
-      if (!descriptors.length) return null;
       const effects = explorationEffectState(entry);
       const cycleId = currentCycleConfig().id;
+      const queue = rules?.getQueue(cachedArgoRecord || {}, cycleId) || [];
+      const descriptors = rules?.delayed(card, { ...context, resourceRules: explorationResourceRules() })
+        .filter((item) => (item.conditionState !== false || queue.some(receipt => receipt.receiptId === effects.delays?.[item.id]
+          && ["waiting", "ready"].includes(receipt.status))) && !explorationDelayManaged(entry, card, context, item)
+          && !explorationNumericOnce(item, context, entry)) || [];
+      if (!descriptors.length) return null;
       const box = document.createElement("div");
       box.className = "exploration-delay-tools";
-      const queue = rules.getQueue(cachedArgoRecord || {}, cycleId);
       const action = (parent, label, callback) => {
         const button = document.createElement("button");
         button.type = "button";
@@ -8181,21 +8303,26 @@
           || (item.once && value.onceKey === `${cycleId}:${entry.id}:${item.id}` && !["done", "cancelled", "expired"].includes(value.status)));
         const effectText = explorationEffectRules()?.displayIcons(item.once ? item.text : item.label, cycleId, entry.id, item.badge) || item.label;
         text.textContent = `${item.badge ? `[${item.badge}] ` : ""}${effectText}${receipt && receipt.status !== "cancelled" ? ` · 已登记：${receipt.label || item.label}` : ""}`;
+        if (card.key === "c4:9327" && item.id === "manual:2" && receipt?.badge !== undefined && receipt.badge !== item.badge
+          && ["waiting", "ready"].includes(receipt.status)) text.textContent += " · 旧登记条件已更正为命运 ≥8，请核对或撤销此安排";
         const placements = item.once ? explorationEffectRules()?.parse(item.text, cycleId, entry.id, item.badge).effects.filter(explorationNeedsPlacement) || [] : [];
-        if (placements.length && !receipt) text.textContent += ` · ${explorationPlacementText(placements)}`;
+        if (placements.length && !receipt) text.textContent += " · 登记收益后，在故事或灾祸模块放置指示物";
         row.appendChild(text);
         if (effects.skipped[item.id]) {
           text.textContent += " · 已确认未触发";
           action(row, "恢复待办", () => { if (!ownsDashboardWriteLease()) return; delete effects.skipped[item.id]; saveState(); renderFlow(); });
         } else if (receipt && !["cancelled", "expired"].includes(receipt.status)) {
           if (["waiting", "ready"].includes(receipt.status)) action(row, "撤销延迟安排", async () => {
-            await mutateExplorationRecord((record) => {
+            const cancelled = await mutateExplorationRecord((record) => {
               explorationBatchReceipt(record, entry);
               const current = rules.getQueue(record, cycleId).find((value) => value.receiptId === receipt.receiptId);
               const result = current?.status === "cancelled" ? { record } : rules.cancel(record, receipt.receiptId);
-              delete explorationBatchReceipt(result.record, entry).delays[item.id];
-              return result;
+              const ledger = explorationBatchReceipt(result.record, entry);
+              delete ledger.delays[item.id];
+              delete ledger.applied[`delay-removal:${item.id}`];
+              return { ...result, ledger: JSON.parse(JSON.stringify(ledger)) };
             }, "撤销探索卡延迟安排");
+            syncExplorationBatchReceipt(entry, cancelled.ledger);
             delete effects.delays[item.id]; saveState(); renderFlow();
           });
         } else {
@@ -8224,7 +8351,7 @@
             }
             row.appendChild(picker);
           }
-          action(row, item.kind === "tech-disable" ? "确认条件成立，随机禁用 AA" : (item.once ? placements.length ? "已手动放置，登记次数限制" : "已结算本次收益，登记次数限制" : (item.conditionState === null ? "确认条件成立并登记" : "登记延迟效果")), async () => {
+          action(row, item.kind === "tech-disable" ? "确认条件成立，随机禁用 AA" : (item.once ? placements.length ? "确认收益，登记次数限制" : "已结算本次收益，登记次数限制" : (item.conditionState === null ? "确认条件成立并登记" : "登记延迟效果")), async () => {
             const techCandidates = candidateInputs.filter(({ input }) => input.checked).map(({ tech }) => ({
               key: tech.key, label: tech.displayName || tech.nameZh || tech.name, aa: true, unlocked: true,
             }));
@@ -8272,6 +8399,15 @@
         const text = document.createElement("span");
         text.textContent = `${item.cardName} · ${item.label || item.text}${item.status === "ready" ? " · 到期待处理" : ""}`;
         row.appendChild(text);
+        if (item.cycleId === "c4" && item.cardId === "9327" && item.id === "manual:2" && /\/3\+$/.test(item.badge || "")) {
+          text.textContent += " · 旧登记条件已更正为命运 ≥8，请核对此安排";
+          button(row, "撤销旧安排", async () => {
+            try {
+              await mutateExplorationRecord(record => rules.cancel(record, item.receiptId), "撤销旧版探索卡条件安排");
+              renderFlow();
+            } catch (error) { window.alert(error.message); }
+          });
+        }
         if (item.status === "ready") {
           if (item.kind === "end-step-battle") {
             const link = document.createElement("a");
@@ -8475,7 +8611,8 @@
         const result = await mutateExplorationRecord(record => applyAutomaticExploration(record, current, { singleEffectOnly: true }),
           `抽牌自动结算单项效果 D${state.day}：${current.map(entry => entry.name).join("、")}`);
         result.updates.forEach(({ entry, receipt }) => syncExplorationBatchReceipt(entry, receipt));
-        const pending = pendingExplorationEffects();
+        syncExplorationTokenPlacementQueue();
+        const pending = pendingExplorationEffects(false);
         const previous = state.exploration.lastSettlementByCycle[cycleId]?.completed || [];
         state.exploration.lastSettlementByCycle[cycleId] = { at: Date.now(), completed: [...previous, ...result.completed], pending };
         saveState();
@@ -8511,18 +8648,128 @@
     }
 
     function explorationPlacementText(effects) {
-      return `请手动选择放置位置并放置：${effects.map(effect => `${effect.type === "progress" ? "进展" : "灾祸"} +${effect.amount}`).join("，")}`;
+      return `请在${[...new Set(effects.map(effect => effect.type === "progress" ? "故事" : "灾祸"))].join("和")}模块选择位置并放置：${effects.map(effect => `${effect.type === "progress" ? "进展" : "灾祸"} +${effect.amount}`).join("，")}`;
+    }
+
+    function explorationTokenPlacementQueue() {
+      state.exploration ||= {};
+      const byCycle = state.exploration.tokenPlacementQueueByCycle ||= {};
+      return byCycle[currentCycleConfig().id] ||= {};
+    }
+
+    function queuedExplorationTokenTask(entry, item) {
+      return explorationTokenPlacementQueue()[`${explorationRoundId(entry)}:${item.id}`] || null;
+    }
+
+    function explorationTokenPlacementState(entry, item) {
+      const active = state.exploration?.drawStateByCycle?.[currentCycleConfig().id]?.activePiles?.flat() || [];
+      const queued = queuedExplorationTokenTask(entry, item);
+      return queued && !active.some(value => explorationRoundId(value) === explorationRoundId(entry))
+        ? queued.local : explorationEffectState(entry);
+    }
+
+    function updateExplorationTokenTask(entry, item, local) {
+      const queued = queuedExplorationTokenTask(entry, item);
+      if (!queued) return;
+      queued.local = JSON.parse(JSON.stringify(local));
+      if (!remainingExplorationTokenPlacements(entry, item).length) queued.done = true;
+    }
+
+    function remainingExplorationTokenPlacements(entry, item) {
+      const placed = explorationTokenPlacementState(entry, item).tokenPlacements?.[item.id] || {};
+      const amounts = {};
+      for (const effect of item.manualPlacements || []) {
+        if (explorationNeedsPlacement(effect)) amounts[effect.type] = (amounts[effect.type] || 0) + normalizeCounterValue(effect.amount);
+      }
+      return Object.entries(amounts).map(([type, amount]) => ({ type, amount: Math.max(0, amount - normalizeCounterValue(placed[type])),
+        ...(item.manualPlacements.find(effect => effect.type === type && effect.target)?.target
+          ? { target: item.manualPlacements.find(effect => effect.type === type && effect.target).target } : {}) }))
+        .filter(effect => effect.amount > 0);
+    }
+
+    function explorationTokenPlacementBlocked(entry, item) {
+      const local = explorationTokenPlacementState(entry, item);
+      if (local.skipped[item.id] || local.manual[item.id]) return "本项已处理";
+      if (item.onceSourceId && local.skipped[item.onceSourceId]) return "本项已处理";
+      if (item.receiptMismatch) return "请先更正旧版结算";
+      if (item.conditionState !== true && !(item.conditionState === null && local.tokenPlacementConditions?.[item.id])) return "请先确认本项条件成立";
+      if (item.onceSourceId && !local.delays?.[item.onceSourceId] && !queuedExplorationTokenTask(entry, item)?.onceRegistered) return "请先在探索步骤登记次数限制";
+      if (item.requiresResource && !queuedExplorationTokenTask(entry, item)?.resourceSettled && !getExplorationSettlement(entry)) return "请先结算本卡资源";
+      if (item.requiresEffect && !local.applied[item.requiresEffect] && !local.manual[item.requiresEffect]) return "请先结算前序效果";
+      if (item.requiresManual && !local.manual[item.requiresManual]) return "请先处理前序事件";
+      if (explorationHasRecordOperation(item) && !local.applied[item.id]) return "请先结算本项其他效果";
+      return "";
+    }
+
+    function placeExplorationCardToken(entry, item, key, field) {
+      if (mutateExplorationRecord.busy || !ownsDashboardWriteLease() || explorationTokenPlacementBlocked(entry, item)) return false;
+      const active = state.exploration?.drawStateByCycle?.[currentCycleConfig().id]?.activePiles?.flat() || [];
+      const queued = queuedExplorationTokenTask(entry, item);
+      if (queued?.done || !queued && !active.some(value => explorationRoundId(value) === explorationRoundId(entry))) return false;
+      const remaining = remainingExplorationTokenPlacements(entry, item).find(effect => effect.type === field);
+      if (!remaining || remaining.target && remaining.target !== key || !placeCardTrackToken(key, field, remaining.amount, false)) return false;
+      const local = explorationTokenPlacementState(entry, item);
+      local.tokenPlacements ||= {};
+      const placed = local.tokenPlacements[item.id] ||= {};
+      placed[field] = normalizeCounterValue(placed[field]) + remaining.amount;
+      if (!remainingExplorationTokenPlacements(entry, item).length && item.placementOnly) local.manual[item.id] = true;
+      updateExplorationTokenTask(entry, item, local);
+      refreshCardTokenViews();
+      return true;
+    }
+
+    function createExplorationTokenPlacementTools(entry, item, field = "") {
+      const remaining = remainingExplorationTokenPlacements(entry, item).filter(effect => !field || effect.type === field);
+      const box = document.createElement("div");
+      box.className = "exploration-token-placement-tools";
+      if (!remaining.length) {
+        box.className = "exploration-settle-status";
+        box.textContent = "本项指示物已快捷放置";
+        return box;
+      }
+      const blocked = explorationTokenPlacementBlocked(entry, item);
+      box.innerHTML = renderCardTokenPlacementTools(remaining);
+      if (blocked) {
+        const note = document.createElement("div");
+        note.className = "card-token-note";
+        note.textContent = blocked;
+        box.prepend(note);
+        box.querySelectorAll("[data-card-token-place]").forEach(button => { button.disabled = true; });
+      }
+      if (blocked === "请先确认本项条件成立" && item.conditionState === null) {
+        const confirm = document.createElement("button");
+        confirm.type = "button";
+        confirm.textContent = "确认条件成立，选择放置";
+        confirm.addEventListener("click", () => {
+          if (!ownsDashboardWriteLease() || mutateExplorationRecord.busy) return;
+          const local = explorationTokenPlacementState(entry, item);
+          (local.tokenPlacementConditions ||= {})[item.id] = true;
+          updateExplorationTokenTask(entry, item, local);
+          saveState(); renderFlow();
+        });
+        box.appendChild(confirm);
+      }
+      box.addEventListener("click", event => {
+        const button = event.target.closest("[data-card-token-place]");
+        if (!button) return;
+        // This row also records completion; don't let the generic flow handler add twice.
+        event.stopPropagation();
+        if (!button.disabled) placeExplorationCardToken(entry, item, button.dataset.cardTokenPlace, button.dataset.cardTokenField);
+      });
+      return box;
     }
 
     function explorationManualPlacement(item, applied = null) {
-      const placements = item.manualPlacements?.length ? item.manualPlacements : (item.effects || []).filter(explorationNeedsPlacement);
+      const placements = (item.manualPlacements?.length ? item.manualPlacements : (item.effects || []).filter(explorationNeedsPlacement))
+        .map(effect => /(?:on\s+Inward Odyssey|放置.*内蕴奥德赛)/i.test(item.text || "") && effect.type === "progress"
+          ? { ...effect, target: "inwardOdyssey" } : effect);
       if (!placements.length) return item;
       const effects = (item.effects || []).filter(effect => !explorationNeedsPlacement(effect));
       // Historical gains remain undoable; never silently undo or ask to place them again.
       const alreadyWritten = placements.every(placement => applied?.changes?.some(change => change.type === placement.type && change.amount > 0));
       const hint = explorationPlacementText(placements);
       const remainder = alreadyWritten ? item.remainder || "" : [item.remainder, item.remainder?.includes(hint) ? "" : hint].filter(Boolean).join("；");
-      return { ...item, effects, remainder, manualPlacements: alreadyWritten ? [] : placements,
+      return { ...item, effects, remainder, placementOnly: item.placementOnly ?? !item.remainder, manualPlacements: alreadyWritten ? [] : placements,
         ...(!alreadyWritten && !effects.length && !item.resourceChanges?.length && !item.removal
           ? { displayText: item.dynamic ? `${item.text}；${hint}` : hint } : {}),
         automaticOperation: Boolean(item.automaticOperation && (effects.length || item.resourceChanges?.length || item.removal)) };
@@ -8587,9 +8834,10 @@
       }
       const parts = [applied.changes.length ? applied.summary : "", resources.length ? explorationResourceRules().describeChanges(resources) : "",
         item.duesPlan?.fallback ? "三种资源均不足" : "", !applied.changes.length && !resources.length ? item.manualPlacements?.length ? "已记录结算要求" : item.choiceLabel || "" : "",
-        removal ? ({ keep: "洗回牌堆", remove: "暂时移出", permanent: "永久移出" })[removal] : ""].filter(Boolean);
+        removal ? ({ keep: getDestructionCardIds().includes(entry.id) ? "洗回破坏卡组" : "洗回牌堆",
+          remove: "暂时移出", permanent: "永久移出" })[removal] : ""].filter(Boolean);
       const descriptor = {};
-      for (const key of ["id", "text", "displayText", "summary", "effects", "resourceChanges", "removal", "remainder", "manualPlacements", "manualIndexes", "dynamic", "automaticOperation", "blockedManualIndexes", "requiresEffect", "requiresManual", "badge"]) {
+      for (const key of ["id", "text", "displayText", "summary", "effects", "resourceChanges", "removal", "remainder", "manualPlacements", "placementOnly", "manualIndexes", "dynamic", "automaticOperation", "blockedManualIndexes", "requiresEffect", "requiresManual", "badge"]) {
         if (item[key] !== undefined) descriptor[key] = JSON.parse(JSON.stringify(item[key]));
       }
       return { record, receipt: { at: Date.now(), ruleVersion: rules.version, batchRoundId: explorationRoundId(entry),
@@ -8777,7 +9025,8 @@
         const result = await mutateExplorationRecord((record) => applyAutomaticExploration(record, entries),
           `一键结算探索卡 D${state.day}：${entries.map((entry) => entry.name).join("、")}`);
         result.updates.forEach(({ entry, receipt }) => syncExplorationBatchReceipt(entry, receipt));
-        const pending = pendingExplorationEffects();
+        syncExplorationTokenPlacementQueue();
+        const pending = pendingExplorationEffects(false);
         const previous = state.exploration.lastSettlementByCycle[cycleId]?.completed || [];
         state.exploration.lastSettlementByCycle[cycleId] = { at: Date.now(), completed: [...previous, ...result.completed], pending };
         saveState();
@@ -8865,7 +9114,15 @@
       const legacyRows = new Set(partialDogDays.map(item => item.id));
       for (const item of [...conditional, ...managedChoices]) {
         const saved = context.appliedEffects?.[item.id];
-        if (item.dynamic && saved?.descriptor && !saved.choiceId) Object.assign(item, saved.descriptor, { conditionState: true });
+        if (item.dynamic && saved?.descriptor && !saved.choiceId) {
+          Object.assign(item, saved.descriptor, { conditionState: true });
+          if (item.id === "conditional:fast-forwarded" && /Α/.test(saved.descriptor.remainder || "")
+            && !saved.descriptor.effects?.some(effect => effect.type === "doom")) {
+            const warning = "快进：旧版漏识别灾祸 +1，请撤销旧结算后重新结算";
+            Object.assign(item, { receiptMismatch: true, effects: [], automaticOperation: false,
+              displayText: warning, summary: warning, remainder: warning });
+          }
+        }
         const legacyIds = explorationLegacyGroupIds(entry, item, context);
         if (!legacyIds.length) continue;
         if (conditional.includes(item)) {
@@ -8906,16 +9163,24 @@
         id: `unresolved:${index}`, text: `资源需手动处理：${item.text}`, badge: item.badge || "", effects: [], remainder: item.text,
         conditionState: item.condition ? rules.conditionMet(item.condition, context) : true,
       }));
-      return [...descriptors.filter((item) => !customIndexes.has(Number(item.id.split(":")[1]))), ...partialDogDays,
+      const visible = [...descriptors.filter((item) => !customIndexes.has(Number(item.id.split(":")[1]))), ...partialDogDays,
         ...conditional.filter(item => !context.appliedEffects?.[item.id]?.choiceId).map((item) => ({ ...item,
-          text: context.appliedEffects?.[item.id]?.descriptor ? item.text : `${item.text}：${item.summary || ""}`, badge: "", remainder: item.remainder || "" }))].map((item) => ({ ...item,
+          text: context.appliedEffects?.[item.id]?.descriptor ? item.text : `${item.text}：${item.summary || ""}`, badge: "", remainder: item.remainder || "" }))];
+      const local = explorationEffectState(entry);
+      const combined = effects?.combineManualReminders?.(card, visible, { ...context, excludedIndexes: [...customIndexes],
+        manualEffects: local.manual, skippedEffects: local.skipped }) || visible;
+      for (const item of combined) {
+        if (item.groupedManualIds && item.manualComplete) local.manual[item.id] = true;
+        if (item.groupedManualIds && item.skippedComplete) local.skipped[item.id] = true;
+      }
+      return combined.map((item) => ({ ...item,
         badge: context.conditionRules?.conditionFromBadge(item.badge, context.cycleId)?.label || item.badge,
         automatic: item.onceBlocked || (card.key === "c4:9326" && item.text === "Do not gain any resources or Titans from this stack."),
       })).map(item => explorationManualPlacement(item, context.appliedEffects?.[item.id])).filter((item) => (item.conditionState !== false || context.appliedEffects?.[item.id]) && !wish
         && !(card.diplomacyMenu && !item.badge && /(?:外交关系结算一项效果|Resolve an effect based on your Diplomacy)/i.test(item.text)));
     }
 
-    function pendingExplorationEffects() {
+    function pendingExplorationEffects(includeTokenPlacements = true) {
       const cycleId = currentCycleConfig().id;
       const piles = state.exploration?.drawStateByCycle?.[cycleId]?.activePiles || [];
       const pending = [];
@@ -8942,7 +9207,8 @@
             return;
           }
           const pendingRecord = explorationHasRecordOperation(item) && !effects.applied[item.id] && !((item.dynamic || !item.remainder) && effects.manual[item.id]);
-          const pendingManual = item.remainder && !effects.manual[item.id];
+          const pendingManual = item.remainder && !effects.manual[item.id]
+            && (includeTokenPlacements || !item.manualPlacements?.length || !item.placementOnly);
           if (pendingRecord || pendingManual) pending.push(`${entry.name}：${item.badge ? `[${item.badge}] ` : ""}${item.displayText || item.text}`);
         });
         for (const item of explorationManagedChoices(entry, card, context)) {
@@ -8950,7 +9216,7 @@
           if (item.conditionState !== false && !effects.applied[item.id] && !effects.manual[item.id] && !effects.skipped[item.id]) {
             pending.push(`${entry.name}：${item.legacyIds.length ? "请先更正旧版分项结算" : item.conditionState === null ? "条件数值需补齐" : item.text}`);
           }
-          if (effects.applied[item.id]?.manualPlacements?.length && !effects.manual[item.id]) pending.push(`${entry.name}：${explorationPlacementText(effects.applied[item.id].manualPlacements)}`);
+          if (includeTokenPlacements && effects.applied[item.id]?.manualPlacements?.length && !effects.manual[item.id]) pending.push(`${entry.name}：${explorationPlacementText(effects.applied[item.id].manualPlacements)}`);
         }
         const options = explorationOptionRules();
         if (options?.merchant(card) && !context.blockResourceGains && !effects.merchantDone) pending.push(`${entry.name}：请选择交易方案与次数，或结束交易`);
@@ -8967,6 +9233,86 @@
         });
       });
       return pending;
+    }
+
+    function pendingExplorationTokenReminders() {
+      const entries = state.exploration?.drawStateByCycle?.[currentCycleConfig().id]?.activePiles?.flat() || [];
+      const reminders = [];
+      for (const entry of entries) {
+        const card = explorationCardResources(entry.id);
+        if (!card) continue;
+        const context = explorationCardContext(entry, card);
+        const local = explorationEffectState(entry);
+        const core = explorationEffectDescriptors(entry, card, context);
+        const items = [...core];
+        for (const choice of explorationManagedChoices(entry, card, context)) {
+          const applied = local.applied[choice.id];
+          if (applied?.manualPlacements?.length && !core.some(item => item.id === choice.id && item.manualPlacements?.length)) {
+            items.push({ ...choice, effects: [], automaticOperation: false, manualPlacements: applied.manualPlacements,
+              conditionState: true, placementOnly: true });
+          }
+        }
+        const delayRules = explorationDelayRules();
+        for (const once of delayRules?.delayed(card, context) || []) {
+          if (!once.once || explorationNumericOnce(once, context, entry) || explorationDelayManaged(entry, card, context, once) || local.skipped[once.id]) continue;
+          const registered = delayRules.getQueue?.(cachedArgoRecord || {}, context.cycleId || currentCycleConfig().id).find(receipt =>
+            receipt.onceKey === `${currentCycleConfig().id}:${entry.id}:${once.id}` && ["waiting", "ready"].includes(receipt.status));
+          if (registered && registered.sourceKey !== explorationRoundId(entry)) continue;
+          const parsed = explorationEffectRules()?.parse(once.text, currentCycleConfig().id, entry.id, once.badge);
+          const placement = explorationManualPlacement({ ...once, effects: parsed?.effects || [] });
+          if (placement.manualPlacements?.length) items.push({ ...placement, id: `delay:${once.id}`, onceSourceId: once.id,
+            conditionState: local.delays?.[once.id] ? true : once.conditionState, placementOnly: true });
+        }
+        for (const item of items) {
+          if (item.manualPlacements?.length && !local.manual[item.id] && !local.skipped[item.id]
+            && item.conditionState !== false && remainingExplorationTokenPlacements(entry, item).length) reminders.push({ entry, item });
+        }
+      }
+      return reminders;
+    }
+
+    function syncExplorationTokenPlacementQueue() {
+      const queue = explorationTokenPlacementQueue();
+      const previous = JSON.stringify(queue);
+      const live = pendingExplorationTokenReminders();
+      const liveKeys = new Set(live.map(({ entry, item }) => `${explorationRoundId(entry)}:${item.id}`));
+      const active = new Set((state.exploration?.drawStateByCycle?.[currentCycleConfig().id]?.activePiles?.flat() || []).map(explorationRoundId));
+      for (const [id, task] of Object.entries(queue)) {
+        if (task.done || !active.has(explorationRoundId(task.entry)) || liveKeys.has(id)) continue;
+        const local = explorationEffectState(task.entry);
+        if (local.manual[task.item.id] || local.skipped[task.item.id] || !remainingExplorationTokenPlacements(task.entry, task.item).length) {
+          task.local = JSON.parse(JSON.stringify(local));
+          task.done = true;
+        } else delete queue[id]; // A branch that became inapplicable before placement.
+      }
+      for (const { entry, item } of live) {
+        const id = `${explorationRoundId(entry)}:${item.id}`;
+        if (queue[id]?.done) continue;
+        queue[id] = {
+          entry: JSON.parse(JSON.stringify(entry)), item: JSON.parse(JSON.stringify(item)),
+          local: JSON.parse(JSON.stringify(explorationEffectState(entry))),
+          resourceSettled: Boolean(getExplorationSettlement(entry)),
+          onceRegistered: Boolean(item.onceSourceId && explorationEffectState(entry).delays?.[item.onceSourceId]),
+          done: false,
+        };
+      }
+      if (JSON.stringify(queue) !== previous && ownsDashboardWriteLease()) saveState();
+      return queue;
+    }
+
+    function getExplorationStepTokenReminders(stepId) {
+      const field = stepId === "story" ? "progress" : stepId === "doom" ? "doom" : "";
+      if (!field) return [];
+      return Object.values(syncExplorationTokenPlacementQueue()).filter(task => !task.done).flatMap(task => {
+        const effect = remainingExplorationTokenPlacements(task.entry, task.item).find(value => value.type === field);
+        if (!effect) return [];
+        const type = field === "progress" ? "进展" : "灾祸";
+        return [{ title: `探索卡 · ${task.entry.name} · ${type} +${effect.amount}`, hint: [task.item.badge, task.item.text].filter(Boolean).join(" · "),
+          tag: { label: type, className: field === "progress" ? "structure-tech advance" : "battle" },
+          desc: "", className: field === "progress" ? "tech story-progress advance" : "important calamity",
+          explorationToken: { entry: task.entry, item: task.item, field },
+        }];
+      });
     }
 
     async function mutateExplorationRecord(mutator, logMessage) {
@@ -9080,6 +9426,7 @@
     }
 
     async function writeExplorationResourceChanges(changes, logMessage, mode = "apply", settlement = null) {
+      const cycleId = currentCycleConfig().id;
       const rules = explorationResourceRules();
       if (!rules) throw new Error("资源结算模块未加载，请刷新页面。");
       if (!Array.isArray(changes) || !changes.length) return null;
@@ -9357,8 +9704,11 @@
       const mark = (field, id, value) => {
         if (mutateExplorationRecord.busy) return;
         if (typeof ownsDashboardWriteLease === "function" && !ownsDashboardWriteLease()) return;
-        if (value) effectState[field][id] = true;
-        else delete effectState[field][id];
+        const ids = [id, ...(items.find(item => item.id === id)?.groupedManualIds || [])];
+        for (const source of ids) {
+          if (value) effectState[field][source] = true;
+          else delete effectState[field][source];
+        }
         effectState.context ||= explorationContextSnapshot(context);
         refresh();
       };
@@ -10661,6 +11011,7 @@
           title: "新探索板块放置进展",
           tag: { label: "进展", className: "structure-tech advance" },
           desc: `${currentMapTileLabel()} 是最新揭示的板块，且带有进展指示物标记。请在故事步骤放置 1 个进展。`,
+          placements: [{ type: "progress", amount: 1 }],
           className: "tech story-progress advance",
         });
       }
@@ -10730,6 +11081,7 @@
         title: "当前板块放置灾祸指示物",
         tag: { label: "灾祸", className: "battle" },
         desc: `${currentMapTileLabel()} 带有灾祸标记。请在灾祸步骤放置 1 个灾祸指示物。`,
+        placements: [{ type: "doom", amount: 1 }],
         className: "important calamity",
       }];
     }
@@ -10761,11 +11113,11 @@
       }
 
       if (stepId === "story") {
-        return getStoryMapReminders();
+        return [...getStoryMapReminders(), ...getExplorationStepTokenReminders(stepId)];
       }
 
       if (stepId === "doom") {
-        return getDoomMapReminders();
+        return [...getDoomMapReminders(), ...getExplorationStepTokenReminders(stepId)];
       }
 
       if (stepId === "encounter") {
@@ -10799,14 +11151,16 @@
       if (!reminders.length) return "";
       return `
         <div class="step-track-reminders">
-          ${reminders.map((reminder) => `
+          ${reminders.map((reminder, reminderIndex) => `
             <div class="step-track-reminder ${reminder.className}">
               <div class="step-track-title">
                 <span class="step-track-tag ${reminder.tag.className}">${escapeHtml(reminder.tag.label)}</span>
-                <span>${escapeHtml(reminder.title)}</span>
+                <span${reminder.hint ? ` title="${escapeHtml(reminder.hint)}"` : ""}>${escapeHtml(reminder.title)}</span>
                 ${reminder.html ? `<span class="step-track-action">${reminder.html}</span>` : ""}
               </div>
-              <p class="step-track-desc"${reminder.scope ? ` data-term-scope="${reminder.scope}"` : ""}>${escapeHtml(reminder.desc)}</p>
+              ${reminder.desc ? `<p class="step-track-desc"${reminder.scope ? ` data-term-scope="${reminder.scope}"` : ""}>${escapeHtml(reminder.desc)}</p>` : ""}
+              ${reminder.placements?.length ? renderCardTokenPlacementTools(reminder.placements) : ""}
+              ${reminder.explorationToken ? `<div data-exploration-token-reminder="${reminderIndex}"></div>` : ""}
             </div>
           `).join("")}
         </div>
@@ -11395,6 +11749,11 @@
       renderDateTrack();
     });
     elements.flowList.addEventListener("click", (event) => {
+      const placementButton = event.target.closest("[data-card-token-place]");
+      if (placementButton) {
+        placeCardTrackToken(placementButton.dataset.cardTokenPlace, placementButton.dataset.cardTokenField, Number(placementButton.dataset.amount));
+        return;
+      }
       const directionButton = event.target.closest("[data-map-direction]");
       if (directionButton) {
         runMapCommand("move-argo", directionButton.dataset.mapDirection);
@@ -11596,7 +11955,7 @@
   </script>
   <script src="./assets/ato-terms.js?v=20261004-official-title"></script>
   <script src="./assets/english-terms.js?v=20261011-english4"></script>
-  <script src="./assets/english-ui.js?v=20261013-merchant8"></script>
+  <script src="./assets/english-ui.js?v=20261013-token-ui2"></script>
   <script src="./assets/english-language.js?v=20261011-english4"></script>
   <script src="./assets/term-language.js?v=20261011-english4"></script>
   <script src="./assets/update/app-version.js?v=3.5.10-rc.2"></script>

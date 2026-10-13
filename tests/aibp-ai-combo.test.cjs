@@ -89,7 +89,7 @@ function harness(name, storage = new Map()) {
     titanXGroup: () => null, titanXDrawsFromBottom: () => false,
   });
   for (const name of ['initialState', 'hasAiCombo', 'sameCard', 'isNietzsche', 'isCyclonus',
-    'hasPanelState', 'hasManualPanelState', 'currentPanelState', 'updateNietzscheStateUi', 'cycleNietzscheState',
+    'hasPanelState', 'hasManualPanelState', 'currentPanelState', 'panelMarkerStateForArtwork', 'updateNietzscheStateUi', 'cycleNietzscheState',
     'bpDamageValue', 'bpDamageTotalForKey', 'currentBpDamageSummary', 'currentAiComboBreakInfo',
     'isPlainObject', 'clonePileState', 'migrateLegacyHealedPiles', 'loadSavedPiles', 'savePiles',
     'rememberUndo', 'trimUndoStack', 'undoSharedState', 'captureUndoEffects', 'undoEntryIndex',
@@ -98,6 +98,7 @@ function harness(name, storage = new Map()) {
     'renderDrawPreview', 'setImageZoomAiComboActions', 'openImageZoom', 'closeImageZoom', 'openZoomForImage']) {
     vm.runInContext(fn(name), ctx);
   }
+  vm.runInContext(fs.readFileSync(path.join(__dirname, '../aibp/panel-overlay.js'), 'utf8'), ctx);
   ctx.piles[name] = ctx.initialState();
   ctx.loadSavedPiles();
   ctx.renderAibpCards = () => { ctx.renderDrawPreview(); ctx.updateUndoButtons(); };

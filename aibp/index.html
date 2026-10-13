@@ -470,6 +470,12 @@
       line-height: 0;
     }
 
+    .panel-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
     .nav button[hidden] {
       display: none;
     }
@@ -570,12 +576,13 @@
       left: var(--marker-left, 50%);
       top: var(--marker-top, 50%);
       transform: translate(-50%, -50%);
-      width: 64px;
-      height: 64px;
+      width: var(--marker-width, 6.4%);
+      height: auto;
+      aspect-ratio: 1 / 1;
       display: none;
       place-items: center;
       padding: 0;
-      border: 3px solid rgba(255, 88, 82, 0.88);
+      border: calc(3 * var(--panel-overlay-unit, 1px)) solid rgba(255, 88, 82, 0.88);
       border-radius: 999px;
       background: rgba(255, 88, 82, 0.04);
       color: transparent;
@@ -585,10 +592,11 @@
       letter-spacing: 0;
       text-shadow: none;
       box-shadow:
-        0 0 0 1px rgba(20, 8, 6, 0.62),
-        0 0 10px rgba(255, 72, 66, 0.22),
-        inset 0 0 8px rgba(255, 72, 66, 0.12);
+        0 0 0 var(--panel-overlay-unit, 1px) rgba(20, 8, 6, 0.62),
+        0 0 calc(10 * var(--panel-overlay-unit, 1px)) rgba(255, 72, 66, 0.22),
+        inset 0 0 calc(8 * var(--panel-overlay-unit, 1px)) rgba(255, 72, 66, 0.12);
       cursor: pointer;
+      pointer-events: auto;
       user-select: none;
       z-index: 3;
     }
@@ -600,21 +608,19 @@
     .panel-state-marker.chimera-state-marker {
       width: var(--marker-width, 14%);
       height: var(--marker-height, 5%);
-      border-width: 3px;
-      border-radius: 8px !important;
+      border-radius: calc(8 * var(--panel-overlay-unit, 1px)) !important;
       box-shadow:
-        0 0 0 1px rgba(20, 8, 6, 0.62),
-        0 0 12px rgba(255, 72, 66, 0.2),
-        inset 0 0 8px rgba(255, 72, 66, 0.1);
+        0 0 0 var(--panel-overlay-unit, 1px) rgba(20, 8, 6, 0.62),
+        0 0 calc(12 * var(--panel-overlay-unit, 1px)) rgba(255, 72, 66, 0.2),
+        inset 0 0 calc(8 * var(--panel-overlay-unit, 1px)) rgba(255, 72, 66, 0.1);
     }
 
     /* 大迷宫轨道（迷宫机牛 / 吞域兽）：红圈套住指示物当前所在的那一格。宽度按面板宽度的
        百分比给（和印出来的轨道格同宽），高度由 aspect-ratio 顶出来，所以换显示尺寸也贴得住。 */
     .panel-state-marker.labyrinth-track-marker {
-      width: clamp(14px, var(--marker-width, 5.6%), 140px);
+      width: var(--marker-width, 5.6%);
       height: auto;
       aspect-ratio: 1 / 1;
-      border-width: 3px;
       border-radius: 999px;
     }
 
@@ -623,14 +629,14 @@
       left: var(--lock-left, 50%);
       top: var(--lock-top, 50%);
       transform: translate(-50%, -50%);
-      width: 54px;
-      height: 54px;
-      border: 3px solid rgba(255, 88, 82, 0.94);
+      width: 5.4%;
+      aspect-ratio: 1 / 1;
+      border: calc(3 * var(--panel-overlay-unit, 1px)) solid rgba(255, 88, 82, 0.94);
       border-radius: 999px;
       background: rgba(20, 8, 6, 0.2);
       box-shadow:
-        0 0 0 1px rgba(20, 8, 6, 0.72),
-        0 0 14px rgba(255, 72, 66, 0.34);
+        0 0 0 var(--panel-overlay-unit, 1px) rgba(20, 8, 6, 0.72),
+        0 0 calc(14 * var(--panel-overlay-unit, 1px)) rgba(255, 72, 66, 0.34);
       pointer-events: none;
       z-index: 4;
     }
@@ -641,11 +647,11 @@
       position: absolute;
       left: 50%;
       top: 50%;
-      width: 38px;
-      height: 5px;
+      width: 70.4%;
+      height: 9.3%;
       border-radius: 999px;
       background: rgba(255, 88, 82, 0.96);
-      box-shadow: 0 0 8px rgba(255, 72, 66, 0.32);
+      box-shadow: 0 0 calc(8 * var(--panel-overlay-unit, 1px)) rgba(255, 72, 66, 0.32);
     }
 
     .nietzsche-break-lock::before {
@@ -1655,8 +1661,7 @@
       left: var(--token-left, 6%);
       top: var(--token-top, 6%);
       transform: translate(-50%, -50%);
-      width: clamp(34px, 7.2%, 68px);
-      min-width: 34px;
+      width: 7.2%;
       aspect-ratio: 1 / 1;
       display: grid;
       place-items: center;
@@ -1664,7 +1669,7 @@
       cursor: grab;
       user-select: none;
       touch-action: none;
-      filter: drop-shadow(0 8px 13px rgba(0, 0, 0, 0.62));
+      filter: drop-shadow(0 calc(8 * var(--panel-overlay-unit, 1px)) calc(13 * var(--panel-overlay-unit, 1px)) rgba(0, 0, 0, 0.62));
     }
 
     .panel-token-item:active {
@@ -1680,18 +1685,18 @@
 
     .panel-token-count {
       position: absolute;
-      right: -8px;
-      bottom: -7px;
-      min-width: 24px;
-      height: 24px;
+      right: calc(-8 * var(--panel-overlay-unit, 1px));
+      bottom: calc(-7 * var(--panel-overlay-unit, 1px));
+      min-width: calc(24 * var(--panel-overlay-unit, 1px));
+      height: calc(24 * var(--panel-overlay-unit, 1px));
       display: grid;
       place-items: center;
-      padding: 0 5px;
-      border: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 0 calc(5 * var(--panel-overlay-unit, 1px));
+      border: var(--panel-overlay-unit, 1px) solid rgba(255, 255, 255, 0.25);
       border-radius: 999px;
       background: rgba(180, 52, 44, 0.94);
       color: #fff;
-      font-size: 13px;
+      font-size: calc(13 * var(--panel-overlay-unit, 1px));
       font-weight: 900;
       line-height: 1;
     }
@@ -1704,12 +1709,12 @@
       top: 100%;
       left: 50%;
       transform: translateX(-50%);
-      margin-top: 4px;
-      padding: 2px 5px;
-      border-radius: 4px;
+      margin-top: calc(4 * var(--panel-overlay-unit, 1px));
+      padding: calc(2 * var(--panel-overlay-unit, 1px)) calc(5 * var(--panel-overlay-unit, 1px));
+      border-radius: calc(4 * var(--panel-overlay-unit, 1px));
       background: rgba(0, 0, 0, 0.8);
       color: #fff;
-      font-size: 12px;
+      font-size: calc(12 * var(--panel-overlay-unit, 1px));
       font-weight: 700;
       line-height: 1.3;
       white-space: nowrap;
@@ -1722,14 +1727,14 @@
     }
 
     .panel-token-item.custom-token .panel-token-count {
-      right: -4px;
-      bottom: -3px;
-      min-width: 17px;
-      height: 17px;
-      padding: 0 4px;
+      right: calc(-4 * var(--panel-overlay-unit, 1px));
+      bottom: calc(-3 * var(--panel-overlay-unit, 1px));
+      min-width: calc(17 * var(--panel-overlay-unit, 1px));
+      height: calc(17 * var(--panel-overlay-unit, 1px));
+      padding: 0 calc(4 * var(--panel-overlay-unit, 1px));
       border-color: rgba(240, 238, 229, 0.55);
       background: #454542;
-      font-size: 10px;
+      font-size: calc(10 * var(--panel-overlay-unit, 1px));
       font-weight: 700;
     }
 
@@ -1740,19 +1745,20 @@
       transform: translate(-50%, -50%);
       z-index: 2;
       display: none;
-      width: clamp(42px, 7.2%, 72px);
+      width: 7.2%;
       aspect-ratio: 1 / 1;
       place-items: center;
       padding: 0;
-      border: 2px dashed rgba(51, 150, 225, 0.78);
+      border: calc(2 * var(--panel-overlay-unit, 1px)) dashed rgba(51, 150, 225, 0.78);
       border-radius: 999px;
       background: rgba(18, 80, 126, 0.2);
       color: #9bd7ff;
-      font-size: clamp(22px, 3vw, 36px);
+      font-size: calc(32 * var(--panel-overlay-unit, 1px));
       font-weight: 900;
       line-height: 1;
       cursor: pointer;
-      box-shadow: 0 0 18px rgba(41, 147, 226, 0.36);
+      pointer-events: auto;
+      box-shadow: 0 0 calc(18 * var(--panel-overlay-unit, 1px)) rgba(41, 147, 226, 0.36);
     }
 
     .critical-mass-slot.show {
@@ -1788,14 +1794,14 @@
     }
 
     .panel-token-item.critical-mass-token {
-      width: clamp(44px, 7.6%, 76px);
+      width: 7.6%;
       cursor: pointer;
     }
 
     .panel-token-item.critical-mass-token.must-resolve {
       filter:
-        drop-shadow(0 0 8px rgba(255, 42, 42, 1))
-        drop-shadow(0 0 18px rgba(255, 42, 42, 0.9));
+        drop-shadow(0 0 calc(8 * var(--panel-overlay-unit, 1px)) rgba(255, 42, 42, 1))
+        drop-shadow(0 0 calc(18 * var(--panel-overlay-unit, 1px)) rgba(255, 42, 42, 0.9));
       animation: chimera-critical-mass-pulse 780ms ease-in-out infinite alternate;
     }
 
@@ -2718,6 +2724,7 @@
   <script src="boss-search.js?v=20261011-boss-language1"></script>
   <script src="custom_traits.js?v=20260930-custom-trait4-lisu-simhei"></script>
   <script src="boss-trait-rules.js?v=20261010-traits-dialog2"></script>
+  <script src="panel-overlay.js?v=20261013-panel-overlay1"></script>
   <script>
     const apostles = [
       "HEKATON",
@@ -3512,7 +3519,7 @@
         // 视线/射程/距离标注：只传参数，第二屏用同一个引擎重算，两屏逐格一致。
         los: battleMapControl?.getLosSnapshot() || { active: false },
         // 大迷宫轨道红圈：第二屏照同一份百分比坐标画在 boss 大卡上。
-        labyrinthTrack: isLabyrinthTrackApostle() ? labyrinthTrackState() : null,
+        labyrinthTrack: isLabyrinthTrackApostle() ? currentPanelState() : null,
         updatedAt: new Date().toISOString(),
       };
     }
@@ -7403,18 +7410,23 @@
 
     function currentPanelState() {
       if (isLabyrinthTrackApostle()) {
-        return labyrinthTrackState();
+        return panelMarkerStateForArtwork(labyrinthTrackState());
       }
       if (isChimera()) {
-        return chimeraPhaseStates[piles[currentApostle]?.chimeraPhase] || null;
+        return panelMarkerStateForArtwork(chimeraPhaseStates[piles[currentApostle]?.chimeraPhase] || null);
       }
       if (isCyclonus()) {
-        return cyclonusStates[piles[currentApostle]?.AI?.comboTrackIndex ?? cyclonusStateIndex];
+        return panelMarkerStateForArtwork(cyclonusStates[piles[currentApostle]?.AI?.comboTrackIndex ?? cyclonusStateIndex]);
       }
       if (isNietzsche()) {
-        return nietzscheStates[piles[currentApostle]?.AI?.comboTrackIndex ?? nietzscheStateIndex];
+        return panelMarkerStateForArtwork(nietzscheStates[piles[currentApostle]?.AI?.comboTrackIndex ?? nietzscheStateIndex]);
       }
       return null;
+    }
+
+    function panelMarkerStateForArtwork(state) {
+      if (!state) return null;
+      return window.AibpPanelOverlay.stateForArtwork(currentApostle, state, panelWrap.querySelector("img.panel-image"));
     }
 
     function updateNietzscheStateUi(marker = null) {
@@ -7433,8 +7445,8 @@
         }
         marker.style.setProperty("--marker-left", state.left);
         marker.style.setProperty("--marker-top", state.top);
-        marker.style.setProperty("--marker-width", state.width || "64px");
-        marker.style.setProperty("--marker-height", state.height || "64px");
+        marker.style.setProperty("--marker-width", state.width || "6.4%");
+        marker.style.setProperty("--marker-height", state.height || "auto");
         marker.textContent = "";
         marker.dataset.label = state.label;
         marker.title = state.hint || `${state.label}，点击切换到下个状态`;
@@ -7444,12 +7456,13 @@
 
     function appendNietzscheBreakLock(frame, state, label) {
       if (!frame || !state) return;
+      state = panelMarkerStateForArtwork(state);
       const lock = document.createElement("div");
       lock.className = "nietzsche-break-lock";
       lock.style.setProperty("--lock-left", state.left);
       lock.style.setProperty("--lock-top", state.top);
       lock.title = `损伤已达到阈值：不能打破${label}`;
-      frame.appendChild(lock);
+      (frame.querySelector(".panel-overlay") || frame).appendChild(lock);
     }
 
     function renderNietzscheBreakLocks(damageTotal = null) {
@@ -8235,7 +8248,7 @@
     function makePanelTokenDraggable(tokenItem) {
       tokenItem.addEventListener("pointerdown", (event) => {
         event.preventDefault();
-        const frame = panelWrap.querySelector(".panel-frame");
+        const frame = panelWrap.querySelector(".panel-overlay");
         if (!frame) return;
         tokenItem.setPointerCapture(event.pointerId);
         const startX = event.clientX;
@@ -8315,7 +8328,10 @@
       applyPanelCardIndex();
     }
 
+    let panelOverlayCleanup = null;
+
     function renderPanelImage(base, name) {
+      panelOverlayCleanup?.();
       let panelSrc;
       if (name === "HELIOS") {
         panelSrc = window.HeliosConfig.panelFor(heliosMode());
@@ -8328,6 +8344,9 @@
       try { localStorage.setItem("aibp-first-panel-v1", JSON.stringify({ name, src: panelSrc })); } catch {}
       const frame = document.createElement("div");
       frame.className = "panel-frame";
+      const overlay = document.createElement("div");
+      overlay.className = "panel-overlay";
+      frame.append(img, overlay);
 
       const tokenLayer = document.createElement("div");
       tokenLayer.className = "panel-token-layer";
@@ -8344,9 +8363,9 @@
           criticalMassSlot.className = "critical-mass-slot";
           criticalMassSlot.textContent = "+";
           criticalMassSlot.addEventListener("click", addCriticalMassFromSlot);
-          frame.append(img, tokenLayer, marker, criticalMassSlot);
+          overlay.append(tokenLayer, marker, criticalMassSlot);
         } else {
-          frame.append(img, tokenLayer, marker);
+          overlay.append(tokenLayer, marker);
         }
         panelWrap.replaceChildren(frame);
         updateNietzscheStateUi(marker);
@@ -8357,9 +8376,9 @@
           criticalMassSlot.className = "critical-mass-slot";
           criticalMassSlot.textContent = "+";
           criticalMassSlot.addEventListener("click", addCriticalMassFromSlot);
-          frame.append(img, tokenLayer, criticalMassSlot);
+          overlay.append(tokenLayer, criticalMassSlot);
         } else {
-          frame.append(img, tokenLayer);
+          overlay.append(tokenLayer);
         }
         panelWrap.replaceChildren(frame);
         updateNietzscheStateUi();
@@ -8376,6 +8395,12 @@
         frame.appendChild(cardSwitch);
       }
       updatePanelCardSwitchButton();
+
+      panelOverlayCleanup = window.AibpPanelOverlay.observe(img, frame, [overlay], () => {
+        updateNietzscheStateUi(overlay.querySelector(".panel-state-marker"));
+        renderNietzscheBreakLocks();
+        scheduleSecondScreenSnapshot();
+      });
 
       renderPanelTokens();
       renderNietzscheBreakLocks();

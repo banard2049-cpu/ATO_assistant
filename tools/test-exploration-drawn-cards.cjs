@@ -140,6 +140,7 @@ const context = vm.createContext({
   get explorationSettlePrepared() { return searcher.settlePrepared === true; },
   completeExplorationDraw() { toolbarCalls.push('complete'); },
   pendingExplorationEffects: () => ['Trade Post：请选择首次获得的资源'],
+  pendingExplorationTokenReminders: () => [],
   createExplorationDestructionTools: () => null,
   createHiddenExplorationMenu: () => createElement("details"),
   createExplorationSettleBlock: (entry) => {

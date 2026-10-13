@@ -185,6 +185,7 @@ function settleHarness(options = {}) {
     recordSyncChannel: null,
     saveState: () => {},
     renderFlow: () => {},
+    renderCardTrackDialog: () => {},
     ownsDashboardWriteLease: () => true,
     ensureExplorationDrawState: () => drawState,
     explorationRules: () => deckRules,
@@ -209,7 +210,23 @@ function settleHarness(options = {}) {
     settleExplorationDraw: () => {},
     completeExplorationDraw: () => {},
   });
+  // Placement reminders use the actual card-face rules and dashboard helpers.
+  // Dialog rendering stays outside this resource-settlement DOM harness.
+  vm.runInContext(fs.readFileSync(path.join(root, 'assets/story-doom-card-data.js'), 'utf8'), ctx);
   vm.runInContext([
+    'const storyDoomData = window.ATO_STORY_DOOM_DATA;',
+    constant('cardTrackGroups'),
+    ...[
+      'normalizeCounterValue', 'argoKnowledgeStart', 'normalizeCardTrackEntry', 'normalizeCardTracks',
+      'activeStoryDoomData', 'ensureCardTracks', 'cardTrackCard', 'cardTrackPreviewCard',
+      'cardTokenLimitText', 'cardTrackTokenState', 'cardTokenPlacementTargets',
+      'renderCardTokenPlacementTools', 'refreshCardTokenViews', 'placeCardTrackToken',
+      'remainingExplorationTokenPlacements', 'explorationTokenPlacementBlocked',
+      'placeExplorationCardToken', 'createExplorationTokenPlacementTools',
+      'explorationTokenPlacementQueue', 'queuedExplorationTokenTask', 'explorationTokenPlacementState',
+      'pendingExplorationTokenReminders', 'syncExplorationTokenPlacementQueue', 'getExplorationStepTokenReminders',
+      'updateExplorationTokenTask',
+    ].map(fn),
     fn('explorationResourceRules'),
     fn('explorationResourceDataset'),
     fn('explorationCardResources'),
@@ -276,6 +293,7 @@ function settleHarness(options = {}) {
     constant('defaultExplorationSelections'),
     fn('getExplorationLibrary'),
     fn('getExplorationSpecialRule'),
+    fn('getDestructionCardIds'),
     fn('getDestructionPileIds'),
     fn('applyExplorationSelection'),
     fn('restoreDefaultExplorationSelection'),
@@ -447,7 +465,7 @@ test('four requested Black Sludge uses Fate OR real Refugees and requires manual
     assert.equal(h.ctx.explorationDashboardTracks(h.record).doom, 0);
     assert.ok(h.ctx.pendingExplorationEffects().some(text => /方向|地图|水路/.test(text)), 'physical map tasks remain pending');
     if (expected === true) {
-      assert.match(textOf(block), /手动选择放置位置.*灾祸 \+1/);
+      assert.match(textOf(block), /灾祸模块选择位置并放置.*灾祸 \+1/);
       await clickAndWait(buttonNamed(h.ctx.createExplorationSettleBlock(entry), '已手动处理完整效果'));
       assert.ok(!h.ctx.pendingExplorationEffects().some(text => /灾祸/.test(text)));
       assert.equal(h.ctx.explorationDashboardTracks(h.record).doom, 0);
@@ -462,7 +480,7 @@ test('four requested Black Sludge uses Fate OR real Refugees and requires manual
   assert.equal(h.record.cycleStats.c5.paranoia, '', 'unknown core stats also block later bonuses');
 });
 
-test('manual placement Progress once-only gains register their limit after placement without writing the track', async () => {
+test('manual placement Progress once-only gains register their limit before story placement without writing the track', async () => {
   const entry = { ...drawnEntry('13515', 'Once-only Progress'), drawnAt: 'first' };
   const h = settleHarness({ cycle: 'c3', diplomacyBonus: 2, activePiles: [[entry], []], fullRecord: nextRecord('c3') });
   h.ctx.state.cardTracks = { story: { progress: 2 }, doom: { doom: 3 }, inwardOdyssey: { position: 4 } };
@@ -470,18 +488,28 @@ test('manual placement Progress once-only gains register their limit after place
   assert.equal(h.ctx.explorationDashboardTracks(h.record).progress, 2);
   assert.ok(h.ctx.pendingExplorationEffects().some(text => /收益.*限制/.test(text)));
   const block = h.ctx.createExplorationSettleBlock(entry);
-  assert.match(textOf(block), /手动选择放置位置.*进展 \+1/);
-  await clickAndWait(buttonNamed(block, '已手动放置，登记次数限制'));
+  assert.match(textOf(block), /登记收益后，在故事或灾祸模块放置指示物/);
+  await clickAndWait(buttonNamed(block, '确认收益，登记次数限制'));
   assert.deepEqual(h.alerts, []);
   assert.equal(h.ctx.explorationDashboardTracks(h.record).progress, 2);
   assert.equal(h.record.explorationDelays.queue.filter(item => item.onceKey && item.status === 'waiting').length, 1);
-  assert.equal(h.ctx.pendingExplorationEffects().length, 0);
+  assert.equal(h.ctx.pendingExplorationEffects(false).length, 0);
+  const reminders = h.ctx.getExplorationStepTokenReminders('story');
+  assert.equal(reminders.length, 1);
+  assert.match(reminders[0].title, /进展 \+1/);
+  const queued = reminders[0].explorationToken;
+  assert.equal(queued.item.manualPlacements[0].target, 'inwardOdyssey');
+  assert.equal(h.ctx.explorationTokenPlacementBlocked(queued.entry, queued.item), '');
   const repeated = { ...drawnEntry('13515', 'Once-only Progress'), drawnAt: 'second', day: 13 };
   h.drawState.activePiles = [[repeated], []];
-  assert.ok(!h.ctx.createExplorationSettleBlock(repeated).buttons.some(button => button.textContent === '已手动放置，登记次数限制'));
+  assert.ok(!h.ctx.createExplorationSettleBlock(repeated).buttons.some(button => button.textContent === '确认收益，登记次数限制'));
   await h.ctx.settleExplorationCard(repeated);
   assert.equal(h.ctx.explorationDashboardTracks(h.record).progress, 2);
   assert.equal(h.ctx.pendingExplorationEffects().length, 0);
+  assert.equal(h.ctx.getExplorationStepTokenReminders('story').length, 1, 'the repeated draw must not add another once-only reward');
+  assert.equal(h.ctx.placeExplorationCardToken(queued.entry, queued.item, 'inwardOdyssey', 'progress'), true);
+  assert.equal(h.ctx.state.cardTracks.inwardOdyssey.progress, 1);
+  assert.equal(h.ctx.getExplorationStepTokenReminders('story').length, 0);
 });
 
 test('manual placement a chosen Doom branch records the decision but still waits for a placement location', async () => {
@@ -490,7 +518,7 @@ test('manual placement a chosen Doom branch records the decision but still waits
   h.ctx.createExplorationSettleBlock(entry);
   await h.ctx.writeExplorationChoice(entry, 'choice:moral-erosion', 'doom');
   assert.equal(h.ctx.explorationDashboardTracks(h.record).doom, 0);
-  assert.match(h.ctx.pendingExplorationEffects().join(' '), /手动选择放置位置.*灾祸 \+1/);
+  assert.match(h.ctx.pendingExplorationEffects().join(' '), /灾祸模块选择位置并放置.*灾祸 \+1/);
   await h.ctx.settleExplorationCard(entry);
   assert.equal(h.ctx.explorationDashboardTracks(h.record).doom, 0);
   await clickAndWait(buttonNamed(h.ctx.createExplorationSettleBlock(entry), '已手动放置'));
@@ -515,7 +543,7 @@ test('manual placement old Progress receipts remain undoable and are never grant
   assert.equal(h.ctx.explorationDashboardTracks(h.record).progress, 2);
   await h.ctx.settleExplorationCard(entry);
   assert.equal(h.ctx.explorationDashboardTracks(h.record).progress, 2);
-  assert.match(h.ctx.pendingExplorationEffects().join(' '), /手动选择放置位置.*进展 \+1/);
+  assert.match(h.ctx.pendingExplorationEffects().join(' '), /故事模块选择位置并放置.*进展 \+1/);
 });
 
 test('next exploration numeric branches write once and undo both tracks and removal', async () => {
@@ -559,7 +587,7 @@ test('next exploration Ambrosia uses latest stock rounded up and delta undo pres
   assert.equal(h.record.resources['c2-violentAmbrosia'], 18);
   assert.equal(h.record.cycleStats.c2.hull, '3');
   assert.equal(h.ctx.explorationDashboardTracks(h.record).doom, 0);
-  assert.match(textOf(h.ctx.createExplorationSettleBlock(entry)), /手动选择放置位置.*灾祸 \+1/);
+  assert.match(textOf(h.ctx.createExplorationSettleBlock(entry)), /灾祸模块选择位置并放置.*灾祸 \+1/);
   assert.equal(entry.removal, 'remove');
   await h.ctx.settleExplorationCard(entry);
   assert.equal(h.record.resources['c2-violentAmbrosia'], 18);
@@ -660,7 +688,7 @@ test('next exploration Dues shows affordable stocks and pays inventory plus trac
   assert.deepEqual(poor.alerts, []);
   assert.equal(poor.record.cycleStats.c4.hull, '3');
   assert.equal(poor.ctx.explorationDashboardTracks(poor.record).doom, 0);
-  assert.match(textOf(poor.ctx.createExplorationSettleBlock(fallback)), /手动选择放置位置.*灾祸 \+1/);
+  assert.match(textOf(poor.ctx.createExplorationSettleBlock(fallback)), /灾祸模块选择位置并放置.*灾祸 \+1/);
   await clickAndWait(buttonNamed(poor.ctx.createExplorationSettleBlock(fallback), '已处理其余效果'));
   assert.equal(poor.ctx.pendingExplorationEffects().length, 0);
 });
@@ -793,8 +821,9 @@ test('confirmed icon cards use real fields and once-only gains share the numeric
   for(const [cycle,id,type] of [['c4','9339','knowledge']]) {
     const entry={...drawnEntry(id,'Once-only icon'),drawnAt:'first'};
     const once=settleHarness({cycle,diplomacyBonus:2,activePiles:[[entry],[]],fullRecord:{cycle,resources:{},fate:'0'}});
-    once.ctx.state.cardTracks={story:{progress:2},inwardOdyssey:{position:3}};
-    const initial=type==='progress'?2:3;
+    const initialKnowledge=once.ctx.argoKnowledgeStart(cycle)+3;
+    once.ctx.state.cardTracks={story:{progress:2},inwardOdyssey:{position:initialKnowledge}};
+    const initial=type==='progress'?2:initialKnowledge;
     await clickAndWait(buttonNamed(once.ctx.createExplorationSettleBlock(entry),'自动结算'));
     assert.deepEqual(once.alerts,[]);
     assert.equal(once.ctx.explorationDashboardTracks(once.record)[type],initial+1);
@@ -1011,7 +1040,7 @@ test('single-effect auto resolution does not write from a read-only window',asyn
 });
 
 test('all named diplomacy tables show only the current relation and exclude their preamble', () => {
-  const cards=Object.values(dataset.cards).filter(card=>card.diplomacyFaction);
+  const cards=Object.values(dataset.cards).filter(card=>card.diplomacyFaction && card.diplomacyMenu);
   assert.equal(cards.length,12);
   const badges={2:'Allied',1:'Friendly',0:'Neutral','-1':'Unfriendly','-2':'Denounced','-3':'At War'};
   for(const card of cards) for(const bonus of [2,1,0,-1,-2,-3]) {
@@ -1041,7 +1070,7 @@ test('Waster Caravan applies its active relation but keeps Progress and Doom for
     const placement=['progress','doom'].includes(type);
     assert.equal(applied.length,placement?0:1,bonus);
     if(!placement)assert.deepEqual(applied[0].changes.map(x=>[x.type,x.amount]),[[type,amount]],bonus);
-    else assert.match(textOf(h.ctx.createExplorationSettleBlock(entry)),/手动选择放置位置/);
+    else assert.match(textOf(h.ctx.createExplorationSettleBlock(entry)),/(?:故事|灾祸)模块选择位置并放置/);
     assert.equal(h.ctx.state.cardTracks.story.progress,3);
     assert.equal(h.ctx.state.cardTracks.doom.doom,4);
     const changed=type==='progress'||type==='doom'?h.ctx.state.cardTracks: h.record.cycleStats.c4;
@@ -1052,15 +1081,16 @@ test('Waster Caravan applies its active relation but keeps Progress and Doom for
 test('Knowledge receipts recover lost responses, undo and repeat without replacing manual edits',async()=>{
   const entry=drawnEntry('9339','True Light');
   const h=settleHarness({cycle:'c4',diplomacyBonus:2,activePiles:[[entry],[]],fullRecord:{cycle:'c4',fate:'8',cycleStats:{c4:{fate:'8'}},resources:{}}});
-  h.ctx.state.cardTracks={story:{progress:3},doom:{doom:2},inwardOdyssey:{position:4}};
+  const initialKnowledge=h.ctx.argoKnowledgeStart('c4')+4;
+  h.ctx.state.cardTracks={story:{progress:3},doom:{doom:2},inwardOdyssey:{position:initialKnowledge}};
   const write=h.ctx.writeServerArgoRecord;
   let lost=true;
   h.ctx.writeServerArgoRecord=async(...args)=>{const result=await write(...args);if(lost){lost=false;throw new Error('response lost');}return result;};
   await assert.rejects(()=>h.ctx.settleExplorationCard(entry),/response lost/);
-  assert.equal(h.ctx.state.cardTracks.inwardOdyssey.position,4);
+  assert.equal(h.ctx.state.cardTracks.inwardOdyssey.position,initialKnowledge);
   assert.equal(h.record.explorationTrackTransactions.length,1);
   await h.ctx.settleExplorationCard(entry);
-  assert.equal(h.ctx.state.cardTracks.inwardOdyssey.position,5);
+  assert.equal(h.ctx.state.cardTracks.inwardOdyssey.position,initialKnowledge+1);
   assert.equal(h.record.explorationTrackTransactions.length,1);
   h.ctx.state.cardTracks.inwardOdyssey.position+=2;
   const card=dataset.cards['c4:9339'];
@@ -1068,12 +1098,12 @@ test('Knowledge receipts recover lost responses, undo and repeat without replaci
   const item=h.ctx.explorationEffectDescriptors(entry,card,context).find(row=>row.effects.some(effect=>effect.type==='knowledge'));
   lost=true;
   await assert.rejects(()=>h.ctx.writeExplorationRecordEffects(entry,[item],context,[],true),/response lost/);
-  assert.equal(h.ctx.state.cardTracks.inwardOdyssey.position,7);
+  assert.equal(h.ctx.state.cardTracks.inwardOdyssey.position,initialKnowledge+3);
   await h.ctx.settleExplorationCard(entry);
-  assert.equal(h.ctx.state.cardTracks.inwardOdyssey.position,7,'undo and reapply should cancel, preserving the independent +2');
+  assert.equal(h.ctx.state.cardTracks.inwardOdyssey.position,initialKnowledge+3,'undo and reapply should cancel, preserving the independent +2');
   assert.deepEqual(h.record.explorationTrackTransactions.map(tx=>tx.amount),[1,-1,1]);
   await h.ctx.settleExplorationCard(entry);
-  assert.equal(h.ctx.state.cardTracks.inwardOdyssey.position,7);
+  assert.equal(h.ctx.state.cardTracks.inwardOdyssey.position,initialKnowledge+3);
 });
 
 test('conditional Doom replacements show only the applicable manual placement quantity',async()=>{
@@ -1085,7 +1115,7 @@ test('conditional Doom replacements show only the applicable manual placement qu
     assert.equal(h.alerts.length,0);
     assert.equal(h.ctx.state.cardTracks.doom.doom,2);
     assert.equal((h.record.explorationTrackTransactions||[]).length,0);
-    const pending=h.ctx.pendingExplorationEffects().join(' ');
+    const pending=h.ctx.getExplorationStepTokenReminders('doom').map(reminder=>reminder.title).join(' ');
     assert.match(pending,new RegExp(`灾祸 \\+${fate>=7?2:1}`));
   }
 });
@@ -1507,6 +1537,33 @@ test('a Titan-loss row keeps its own controls instead of joining the one-click b
 });
 
 // ---- 延迟效果与定时战斗 ---------------------------------------------------------
+test('checking encounter without a scheduled battle preserves terrain and temporary cards', async () => {
+  const harness = settleHarness();
+  harness.ctx.state.completed = {};
+  harness.ctx.state.nextBattleTerrain = { terrain: '特殊地形' };
+  harness.drawState.drawPile.push('6401');
+  harness.drawState.temporaryRemoved.push(drawnEntry('6403', 'Labyrinthian Vessel'));
+  harness.ctx.step = { id: 'encounter' };
+  harness.ctx.checkbox = { checked: true };
+  const listener = source.match(/checkbox\.addEventListener\("change", (\(\) => \{[^]*?)\n        \}\);/);
+  assert.ok(listener, 'the encounter checkbox handler exists');
+  vm.runInContext(`(${listener[1]}\n})()`, harness.ctx);
+  assert.equal(harness.ctx.state.completed.encounter, true);
+  await flushAsync();
+  assert.equal(harness.ctx.state.nextBattleTerrain.terrain, '特殊地形');
+  assert.equal(harness.drawState.temporaryRemoved.length, 1);
+  assert.deepEqual([...harness.drawState.drawPile], ['6401']);
+  assert.equal(harness.written.length, 0, 'checking a non-battle day never resets the battle period');
+});
+
+test('terrain-only encounter on a non-battle day retains its reminder', async () => {
+  const harness = settleHarness();
+  harness.ctx.state.nextBattleTerrain = { terrain: '特殊地形' };
+  await harness.ctx.completeTimelineBattle();
+  assert.equal(harness.ctx.state.nextBattleTerrain.terrain, '特殊地形');
+  assert.equal(harness.written.length, 0, 'an empty encounter does not create a battle record');
+});
+
 test('the encounter step completes the Timeline Battle instead of showing buttons', async () => {
   const entry = drawnEntry('6403', 'Labyrinthian Vessel');
   const harness = settleHarness({
@@ -1524,7 +1581,16 @@ test('the encounter step completes the Timeline Battle instead of showing button
   assert.deepEqual(tools.buttons, []);
 
   await harness.ctx.completeTimelineBattle();
+  assert.equal(harness.record.explorationDelays.queue[0].status, 'waiting', 'pending effects alone do not imply a battle');
+  assert.equal(harness.record.explorationDelays.timelineEpochs.c1 || 0, 0);
+  harness.ctx.todayTrackIcons = () => [{ className: 'battle' }];
+  harness.ctx.state.nextBattleTerrain = { terrain: '特殊地形' };
+  harness.drawState.temporaryRemoved.push(drawnEntry('6401', 'Temporary card'));
+  await harness.ctx.completeTimelineBattle();
   await flushAsync();
+  assert.equal(harness.ctx.state.nextBattleTerrain, null);
+  assert.equal(harness.drawState.temporaryRemoved.length, 0);
+  assert.ok(harness.drawState.drawPile.includes('6401'));
   assert.equal(harness.record.explorationDelays.timelineEpochs.c1, 1, '战斗结束推进纪元');
   assert.notEqual(harness.record.explorationDelays.queue[0].status, 'waiting', '战斗开始效果不再挂着等待');
   // 同一天重复结算不会把纪元推上去（事件编号按循环+日期去重）。
@@ -1775,4 +1841,197 @@ test('a stack prohibition blocks positive grants but keeps the rest', () => {
   const plain = settleHarness({ cycle: 'c4' });
   const plainBlock = plain.ctx.createExplorationSettleBlock(entry);
   assert.ok(!/禁止资源收益/.test(textOf(plainBlock)));
+});
+
+test('paragraph reminders combine manual tasks, preserve partial saves and restore every original row', async () => {
+  const entry = drawnEntry('9344', 'Wrath of the Anemoi');
+  const h = settleHarness({ cycle: 'c4', activePiles: [[entry], []],
+    fullRecord: nextRecord('c4', { fate: '6' }) });
+  const local = h.ctx.explorationEffectState(entry);
+  local.manual['manual:2'] = true;
+  const card = dataset.cards['c4:9344'];
+  const rows = () => h.ctx.explorationEffectDescriptors(entry, card, h.ctx.explorationCardContext(entry, card));
+  assert.equal(rows().length, 2, 'direction, marker and blockage form one reminder plus the independent Nemesis condition');
+  assert.equal(local.manual['manual-group:0-1-2'], undefined, 'one completed old sentence does not complete the whole paragraph');
+  assert.match(rows()[1].displayText, /宿敌标记/);
+  await clickAndWait(buttonNamed(h.ctx.createExplorationSettleBlock(entry), '已手动处理'));
+  for (const id of ['manual-group:0-1-2', 'manual:0', 'manual:1', 'manual:2']) assert.equal(local.manual[id], true);
+  assert.equal(h.ctx.pendingExplorationEffects().length, 1);
+  await clickAndWait(buttonNamed(h.ctx.createExplorationSettleBlock(entry), '恢复手动待办'));
+  for (const id of ['manual-group:0-1-2', 'manual:0', 'manual:1', 'manual:2']) assert.equal(local.manual[id], undefined);
+  assert.equal(h.ctx.pendingExplorationEffects().length, 2);
+  Object.assign(local.manual, { 'manual:0': true, 'manual:1': true, 'manual:2': true });
+  rows();
+  assert.equal(local.manual['manual-group:0-1-2'], true, 'fully completed legacy paragraphs stay completed');
+});
+
+test('Sabotage destinations follow all four removal footers and temporary cards return after the Timeline Battle', async () => {
+  for (const [id, fateThreshold] of [['13630', 8], ['13631', 5], ['13632', 6], ['13633', 7]]) {
+    for (const removed of [false, true]) {
+      const entry = drawnEntry(id, 'Sabotage');
+      const h = settleHarness({ cycle: 'c2', activePiles: [[entry], []],
+        fullRecord: nextRecord('c2', { fate: String(removed ? fateThreshold : 0) }) });
+      h.ctx.state.exploration.selectedByCycle = { c2: [id] };
+      h.ctx.getSelectedExplorationIds = () => h.ctx.state.exploration.selectedByCycle.c2;
+      await h.ctx.settleExplorationCard(entry);
+      assert.equal(entry.removal, removed ? 'remove' : 'keep', id);
+      h.ctx.endExplorationDraw({ skipPendingConfirm: true });
+      if (removed) {
+        assert.equal(h.drawState.temporaryRemoved[0].id, id);
+        assert.ok(!h.ctx.getDestructionPileIds().includes(id));
+        await h.ctx.processExplorationDelays('timeline-battle-end', { eventId: 'test-battle' });
+        assert.ok(h.drawState.drawPile.includes(id), 'after the temporary period the card returns to Exploration');
+        assert.equal(h.drawState.temporaryRemoved.length, 0);
+      } else {
+        assert.ok(h.ctx.getDestructionPileIds().includes(id), 'the untriggered footer returns the card to Sabotage');
+        assert.ok(!h.drawState.drawPile.includes(id));
+        assert.ok(!h.ctx.getSelectedExplorationIds().includes(id));
+      }
+      assert.deepEqual(h.alerts, []);
+    }
+  }
+});
+
+test('conditional return-card delays change removal and cancelling them restores the original destination', async () => {
+  const entry = drawnEntry('9344', 'Conditional delay');
+  const h = settleHarness({ cycle: 'c4', activePiles: [[entry], []], fullRecord: nextRecord('c4') });
+  const card = { key: 'c4:9344', cycleId: 'c4', cardId: '9344', grants: [], manual: [
+    { text: 'If the condition holds, remove this card until the next Timeline Battle.', badge: '' },
+  ] };
+  const context = h.ctx.explorationCardContext(entry, card);
+  const items = delayRules.delayed(card, { ...context, resourceRules: rules });
+  assert.equal(entry.removal, 'keep');
+  await h.ctx.scheduleExplorationDelay(entry, card, items, context, { confirmed: true });
+  assert.equal(entry.removal, 'remove');
+  await clickAndWait(buttonNamed(h.ctx.createExplorationDelayCardTools(entry, card, context), '撤销延迟安排'));
+  assert.equal(entry.removal, 'keep');
+  assert.deepEqual(h.alerts, []);
+});
+
+test('Storm Worsens resolves the Debt branch before its final removal check', async () => {
+  for (const debt of ['0', '3']) {
+    const entry = drawnEntry('9331', 'The Storm Worsens');
+    const h = settleHarness({ cycle: 'c4', activePiles: [[entry], []], fullRecord: nextRecord('c4', { babelianDebt: debt }) });
+    await h.ctx.settleExplorationCard(entry);
+    assert.equal(h.record.cycleStats.c4.babelianDebt, debt === '0' ? '1' : '2');
+    const local = h.ctx.explorationEffectState(entry);
+    if (debt === '0') assert.equal(local.applied['conditional:storm-removal'].removal.after, 'remove', 'initial zero is no longer zero after the fallback');
+    else {
+      assert.equal(local.applied['conditional:storm-removal'], undefined, 'the footer waits for the combined map actions');
+      await clickAndWait(buttonNamed(h.ctx.createExplorationSettleBlock(entry), '已处理其余效果'));
+      const modified = JSON.parse(JSON.stringify(h.record));
+      modified.cycleStats.c4.babelianDebt = '0';
+      h.updateServerRecord(modified);
+      await h.ctx.settleExplorationCard(entry);
+      assert.equal(entry.removal, 'permanent', 'the final footer uses the record after manual resolution');
+    }
+    assert.deepEqual(h.alerts, []);
+  }
+});
+
+test('Time Shift destinations stay resolved after tracks change and are restored on undo', async () => {
+  for (const id of ['13536', '13538']) {
+    for (const fate of ['0', '6']) {
+      const entry = drawnEntry(id, 'Time Shift');
+      const h = settleHarness({ cycle: 'c3', activePiles: [[entry], []],
+        fullRecord: nextRecord('c3', { paradox: '3', fate }) });
+      await h.ctx.settleExplorationCard(entry);
+      const idCore = id === '13536' ? 'conditional:fast-forwarded' : 'conditional:rewound';
+      assert.equal(entry.removal, fate === '0' ? 'permanent' : 'remove');
+      const after = h.record.cycleStats.c3.paradox;
+      await h.ctx.settleExplorationCard(entry);
+      assert.equal(h.record.cycleStats.c3.paradox, after, 'the lower live Paradox does not start the fallback branch');
+      assert.equal(h.ctx.createExplorationDelayCardTools(entry, dataset.cards[`c3:${id}`],
+        h.ctx.explorationCardContext(entry, dataset.cards[`c3:${id}`])), null, 'managed conditional returns do not offer a second delay');
+      const card = dataset.cards[`c3:${id}`], context = h.ctx.explorationCardContext(entry, card);
+      const core = h.ctx.explorationEffectDescriptors(entry, card, context).find(item => item.id === idCore);
+      await h.ctx.writeExplorationRecordEffects(entry, [core], context, [], true);
+      assert.equal(entry.removal, 'keep');
+      assert.equal(h.record.cycleStats.c3.paradox, '3');
+      assert.deepEqual(h.alerts, []);
+    }
+  }
+});
+
+test('card-face audit writes Strangers and Hull while corrected Progress remains a placement task', async () => {
+  for (const [cycle, id, bonus, field, before, after] of [
+    ['c1', '6421', -2, 'strangers', '0', '1'],
+    ['c1', '6401', 2, 'hull', '3', '4'],
+    ['c3', '13514', -3, 'hull', '3', '2'],
+    ['c5', '10302', 1, 'hull', '3', '4'],
+    ['c5', '10308', 2, 'fate', '3', '2'],
+  ]) {
+    const entry = drawnEntry(id, 'Corrected icon');
+    const value = nextRecord(cycle, { [field]: before });
+    value.resources.priests = 2;
+    value.titans = [{ id: 'keep', name: 'Existing Titan', count: 1 }];
+    const h = settleHarness({ cycle, diplomacyBonus: bonus, activePiles: [[entry], []], fullRecord: value });
+    await h.ctx.settleExplorationCard(entry);
+    assert.equal(h.record.cycleStats[cycle][field], after, `${cycle}:${id}`);
+    assert.equal(h.record.resources.priests, 2);
+    assert.deepEqual(h.record.titans, value.titans);
+    assert.deepEqual(h.alerts, []);
+  }
+  const entry = drawnEntry('6431', 'Grand Temple Ruins');
+  const value = nextRecord('c1');
+  value.titans = [{ id: 'keep', name: 'Existing Titan', count: 1 }];
+  const h = settleHarness({ cycle: 'c1', diplomacyBonus: 2, activePiles: [[entry], []], fullRecord: value });
+  await h.ctx.settleExplorationCard(entry);
+  assert.deepEqual(h.record.titans, value.titans, 'a misread Progress symbol must not create a Titan');
+  assert.equal(h.ctx.pendingExplorationTokenReminders()[0].item.manualPlacements[0].type, 'progress');
+});
+
+test('card-face audit Fast Forward Doom uses the Doom module and exposes old missed glyph receipts', async () => {
+  const entry = drawnEntry('13536', 'Fast-Forwarded');
+  const h = settleHarness({ cycle: 'c3', activePiles: [[entry], []], fullRecord: nextRecord('c3', { paradox: '3', fate: '6' }) });
+  h.ctx.state.cardTracksVersion = 2;
+  h.ctx.state.cardTracks = { doom: { started: true, position: 1, doom: 0 }, story: { started: true, position: 1, progress: 0 } };
+  await h.ctx.settleExplorationCard(entry);
+  assert.equal(h.record.cycleStats.c3.paradox, '1');
+  const reminders = h.ctx.getExplorationStepTokenReminders('doom');
+  assert.equal(reminders.length, 1);
+  assert.ok(!h.ctx.getExplorationStepTokenReminders('story').length);
+  assert.equal(h.ctx.placeExplorationCardToken(entry, reminders[0].explorationToken.item, 'doom', 'doom'), true);
+  assert.equal(h.ctx.state.cardTracks.doom.doom, 1);
+
+  const oldEntry = drawnEntry('13536', 'Old Fast-Forwarded');
+  const old = settleHarness({ cycle: 'c3', activePiles: [[oldEntry], []], fullRecord: nextRecord('c3', { paradox: '1', fate: '6' }) });
+  const receipt = { applied: { 'conditional:fast-forwarded': { ruleVersion: 2, changes: [{ type: 'paradox', cycleId: 'c3', amount: -2 }],
+    removal: { before: 'keep', after: 'remove' }, summary: '悖论 -2', descriptor: {
+      id: 'conditional:fast-forwarded', text: '快进', effects: [{ type: 'paradox', amount: -2 }],
+      dynamic: true, manualIndexes: [0, 1, 2], removal: 'remove', remainder: '按卡面处理其余增益：gain +1 Α。',
+    } } } };
+  const value = JSON.parse(JSON.stringify(old.record));
+  value.explorationBatchReceipts = { [old.ctx.explorationRoundId(oldEntry)]: receipt };
+  old.updateServerRecord(value);
+  old.ctx.cachedArgoRecord = value;
+  old.ctx.syncExplorationBatchReceipt(oldEntry, receipt);
+  const card = dataset.cards['c3:13536'];
+  const context = old.ctx.explorationCardContext(oldEntry, card);
+  const descriptor = old.ctx.explorationEffectDescriptors(oldEntry, card, context)[0];
+  assert.equal(descriptor.receiptMismatch, true);
+  assert.match(textOf(old.ctx.createExplorationSettleBlock(oldEntry)), /旧版漏识别灾祸/);
+  await old.ctx.writeExplorationRecordEffects(oldEntry, [descriptor], context, [], true);
+  assert.equal(old.record.cycleStats.c3.paradox, '3');
+  await old.ctx.settleExplorationCard(oldEntry);
+  assert.equal(old.ctx.getExplorationStepTokenReminders('doom').length, 1);
+  assert.deepEqual(old.alerts, []);
+});
+
+test('card-face audit old Escalate arrangements remain visible for cancellation below the corrected threshold', async () => {
+  const entry = drawnEntry('9327', 'Babelian Fata Morgana');
+  const h = settleHarness({ cycle: 'c4', activePiles: [[entry], []], fullRecord: nextRecord('c4', { fate: '3' }) });
+  const card = JSON.parse(JSON.stringify(dataset.cards['c4:9327']));
+  card.manual[2].badge = 'ICON(white trident-like glyph on dark lozenge)/3+';
+  const context = h.ctx.explorationCardContext(entry, card);
+  const items = delayRules.delayed(card, { ...context, resourceRules: rules }).filter(item => item.modifier === 'escalate');
+  await h.ctx.scheduleExplorationDelay(entry, card, items, context);
+  const active = h.ctx.createExplorationDelayCardTools(entry, dataset.cards['c4:9327'], context);
+  assert.match(textOf(active), /已更正为命运 ≥8/);
+  assert.ok(buttonNamed(active, '撤销延迟安排'));
+  const step = h.ctx.createDelayedExplorationStepTools('encounter');
+  assert.match(textOf(step), /旧登记条件已更正/);
+  await clickAndWait(buttonNamed(step, '撤销旧安排'));
+  assert.equal(h.record.explorationDelays.queue[0].status, 'cancelled');
+  assert.deepEqual(h.alerts, []);
 });
