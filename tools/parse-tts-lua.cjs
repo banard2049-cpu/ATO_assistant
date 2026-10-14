@@ -45,8 +45,8 @@ function parseFunction(fnBody) {
     const posList = positions[varName] || [];
     const boxMatch = part.match(/takeTile\(\s*([A-Za-z_][A-Za-z0-9_]*)\s*,\s*terrainTileInfo\.index/);
     const box = boxMatch ? boxMatch[1] : "";
-    if (!hasKey) {
-      // 无 key：所有位置同一旋转（通常一个 takeTile）
+    if (!hasKey || !/\b(?:if|elseif)\s+key\s*==/.test(part)) {
+      // 无索引分支时，所有位置共用 takeTile 的旋转；声明 key 本身不代表有分支。
       const take = part.match(/takeTile\([^,]+,\s*terrainTileInfo\.index\s*,\s*terrainPosition\s*,\s*(\{[^}]*\}|rotation)\s*\)/);
       const rot = take ? parseRot(take[1], positions) : [0, 180, 0];
       groups.push({ ttsName: nameMatch[1], box, entries: posList.map((p) => ({ pos: p, rot })) });
