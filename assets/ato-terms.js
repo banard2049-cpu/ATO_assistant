@@ -1,4 +1,27 @@
 window.ATO_TERMS = [
+  // 用户提供的官方记录表照片：外交关系 -3～+2 的六个档位。
+  // 限于外交记录和探索结算，避免改写正文中一般意义的「开战」「恶劣」。
+  // C2 官方记录表：隐匿(-1)、猜忌(0)、友好(+1)、结盟(+2)。
+  { "from": "隐藏", "to": "隐匿", "scope": ".diplomacy-row, .exploration-faction-status, .exploration-settle" },
+  { "from": "怀疑", "to": "猜忌", "scope": ".diplomacy-row, .exploration-faction-status, .exploration-settle" },
+  { "from": "开战", "to": "交战", "scope": ".diplomacy-row, .exploration-faction-status, .exploration-settle" },
+  { "from": "恶劣", "to": "敌对", "scope": ".diplomacy-row, .exploration-faction-status, .exploration-settle" },
+  { "from": "谴责", "to": "敌对", "scope": ".diplomacy-row, .exploration-faction-status, .exploration-settle" },
+  { "from": "交恶", "to": "不和", "scope": ".diplomacy-row, .exploration-faction-status, .exploration-settle" },
+  { "from": "不友善", "to": "不和", "scope": ".diplomacy-row, .exploration-faction-status, .exploration-settle" },
+  { "from": "友善", "to": "友好", "scope": ".diplomacy-row, .exploration-faction-status, .exploration-settle" },
+  { "from": "At War · 开战", "to": "交战", "scope": ".diplomacy-row, .exploration-faction-status, .exploration-settle" },
+  { "from": "Denounced · 谴责", "to": "敌对", "scope": ".diplomacy-row, .exploration-faction-status, .exploration-settle" },
+  { "from": "Unfriendly · 不友善", "to": "不和", "scope": ".diplomacy-row, .exploration-faction-status, .exploration-settle" },
+  { "from": "Neutral · 中立", "to": "中立", "scope": ".diplomacy-row, .exploration-faction-status, .exploration-settle" },
+  { "from": "Friendly · 友善", "to": "友好", "scope": ".diplomacy-row, .exploration-faction-status, .exploration-settle" },
+  { "from": "Allied · 结盟", "to": "结盟", "scope": ".diplomacy-row, .exploration-faction-status, .exploration-settle" },
+  { "from": "At War", "to": "交战", "scope": ".diplomacy-row, .exploration-faction-status, .exploration-settle" },
+  { "from": "Denounced", "to": "敌对", "scope": ".diplomacy-row, .exploration-faction-status, .exploration-settle" },
+  { "from": "Unfriendly", "to": "不和", "scope": ".diplomacy-row, .exploration-faction-status, .exploration-settle" },
+  { "from": "Neutral", "to": "中立", "scope": ".diplomacy-row, .exploration-faction-status, .exploration-settle" },
+  { "from": "Friendly", "to": "友好", "scope": ".diplomacy-row, .exploration-faction-status, .exploration-settle" },
+  { "from": "Allied", "to": "结盟", "scope": ".diplomacy-row, .exploration-faction-status, .exploration-settle" },
   { "from": "阿尔戈英雄储备", "to": "阿尔戈英雄补给", "scope": "#identityGridPanel" },
   { "from": "腐蚀液态", "to": "腐蚀态" },
 
