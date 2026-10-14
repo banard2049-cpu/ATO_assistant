@@ -391,7 +391,7 @@
     "NAS 存档接口不可用，当前修改只保留在页面内存中": "NAS save API unavailable. Edits are held in this page's memory.",
     "NAS 暂时不可用，正在等待重连；修改保留在本页，刷新或关闭会丢失": "NAS temporarily unavailable. Edits are held here; reloading or closing will discard them.",
     "NAS 同步失败，修改只保留在页面内存中，连接恢复后会自动重试": "NAS sync failed. Edits are held here and will be retried when the connection returns.",
-    "该泰坦死亡：从列表移除，并把数量累加到「已死亡」": "Mark Titan as lost: remove it from this list and add it to the lost total",
+    "一个泰坦死亡：数量减 1，已死亡加 1；数量归零时移除该行": "Mark one Titan as lost: decrease quantity by 1 and increase the lost total by 1; remove the row when none remain",
     "尚未添加神之形态": "No Godforms added", "尚未添加宁芙": "No Nymphs added", "尚未添加泰坦": "No Titans added",
     "锁回最大值": "Lock maximum", "解锁最大值": "Unlock maximum", "最大值需先解锁": "Unlock the maximum first",
     "普通": "Standard", "未用": "Unused", "宁芙召唤已达上限": "Nymph summon limit reached", "计数": "Count", "合计": "Total",
