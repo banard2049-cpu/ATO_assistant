@@ -27,6 +27,24 @@ const surveyScope = '[data-term-scope~="survey-record"]';
 const stepScope = '[data-term-scope~="step-constants"]';
 const engine = createEngine(terms);
 
+test('官方外交关系采用记录表卡面译名且只影响外交显示', () => {
+  const scope='.diplomacy-row, .exploration-faction-status, .exploration-settle';
+  const fan=createEngine(terms,false);
+  for(const [source,official] of [
+    ['开战(-3)','交战(-3)'],['恶劣(-2)','敌对(-2)'],['交恶(-1)','不和(-1)'],
+    ['中立(0)','中立(0)'],['友善(+1)','友好(+1)'],['结盟(+2)','结盟(+2)'],
+    ['At War · 开战','交战'],['Denounced · 谴责','敌对'],['Unfriendly · 不友善','不和'],
+    ['Neutral · 中立','中立'],['Friendly · 友善','友好'],['Allied · 结盟','结盟'],
+    ['隐藏(-1)','隐匿(-1)'],['怀疑(0)','猜忌(0)'],
+  ]) {
+    assert.equal(engine.translate(source,[scope]),official);
+    assert.equal(fan.translate(source,[scope]),source);
+  }
+  assert.equal(engine.translate('恶劣天气下开战'), '恶劣天气下开战');
+  assert.equal(engine.translate('归顺(-3)',[scope]),'归顺(-3)');
+  assert.equal(engine.translate('隐藏线索，怀疑动机'),'隐藏线索，怀疑动机');
+});
+
 test('译文不会被别的条目二次改写', () => {
   assert.equal(engine.translate('Market Forces', [surveyScope]), '市场力量');
   assert.equal(engine.translate('Cyclops Trap', [surveyScope]), '独眼巨人陷阱');
