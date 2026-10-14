@@ -1361,7 +1361,7 @@
 
     .survey-constant-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr));
       gap: 8px;
     }
 
@@ -1417,6 +1417,38 @@
       gap: 4px;
       align-items: center;
       min-width: max-content;
+    }
+
+    [data-term-scope="step-constants"] .survey-constant-boxes > label {
+      grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr);
+    }
+
+    [data-term-scope="step-constants"] .survey-constant-row-item.multi-slot {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    [data-term-scope="step-constants"] .simple-constant-slots {
+      flex-wrap: wrap;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    [data-term-scope="step-constants"] .simple-constant-slots input {
+      flex: 0 0 15px;
+    }
+
+    [data-term-scope="step-constants"] .multi-slot > span:last-child {
+      flex: 1 1 140px;
+    }
+
+    [data-term-scope="step-constants"] .survey-constant-boxes span {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    [data-term-scope="step-constants"] .survey-constant-roll {
+      white-space: normal;
     }
 
     .survey-constant-boxes input {
