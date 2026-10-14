@@ -18,7 +18,7 @@
   const CONTAINER_ID = "bgmControls";
   const AUTO_LABEL = "自动（跟随今日流程）";
   // 改动本文件时同步更新 BUILD 与主控台的 ?v= 标签。
-  const BUILD = "bgm19";
+  const BUILD = "bgm20";
 
   if (!manifest || !manifest.stages || !Object.keys(manifest.stages).length) {
     window.ATO_BGM = createDisabledApi("缺少 assets/bgm/manifest.js");
@@ -27,12 +27,14 @@
 
   const defaults = manifest.defaults || {};
   const baseDir = String(manifest.baseDir || "./");
-  // 备用音频目录（manifest.audioDir）：Docker / NAS 只把 assets/bgm/audio 挂进容器，
-  // 播放器代码由镜像提供，所以音频在那里；其它平台音频就在本目录。两处都会试。
+  // Docker / NAS 将手动音频挂到 audio/，资料包平铺音频挂到 media/，
+  // 播放器代码由镜像提供；其它平台音频就在本目录。三个目录都会试。
   // 清单没写这个字段时按默认值走（老的自定义清单也能用上 Docker 部署）；
   // 想彻底关掉回退，在清单里写 audioDir: ""。
   const audioDir = normalizeAudioDir(manifest.audioDir === undefined ? "audio/" : manifest.audioDir);
-  const packDir = normalizeAudioDir(manifest.packDir);
+  // 旧的自定义清单可能没有 packDir；缺省时也要尝试 Docker 资料包挂载。
+  // 显式写空字符串仍然关闭这一回退目录。
+  const packDir = normalizeAudioDir(manifest.packDir === undefined ? "media/" : manifest.packDir);
   const scriptDir = resolveScriptDir();
   const assetBase = resolveAssetBase();
 
@@ -532,7 +534,7 @@
     return String(url).split("/").pop() || "";
   }
 
-  async function urlUsable(url) {
+  async function urlUsable(url, token) {
     if (missingUrls.has(url)) return false;
     // 自选曲目是内存里的 blob URL，不需要探测。
     if (/^(blob:|data:)/.test(url)) return true;
@@ -542,7 +544,8 @@
       if (!response) return true;
       if (response.ok) return true;
       if (response.status === 403 || response.status === 404 || response.status === 410) {
-        missingUrls.add(url);
+        // 旧探测可能在关开音乐或切换阶段后才返回，不能污染新播放的缓存。
+        if (token === state.playToken) missingUrls.add(url);
         return false;
       }
       return true;
@@ -606,7 +609,7 @@
     for (let index = 0; index < files.length; index += 1) {
       if (token !== state.playToken) return "";
       const url = files[index];
-      if (!(await urlUsable(url))) continue;
+      if (!(await urlUsable(url, token))) continue;
       if (token !== state.playToken) return "";
       try {
         await playUrl(slot, url, loop);
@@ -1053,6 +1056,7 @@
   /* ---------- 对外接口 ---------- */
 
   function setEnabled(on) {
+    const wasEnabled = prefs.enabled;
     prefs.enabled = on === true;
     savePrefs();
     if (!prefs.enabled) {
@@ -1060,6 +1064,9 @@
       setStatus();
       return prefs.enabled;
     }
+    // 音频可能在页面打开后才挂入；重新开启时重新检查之前缺失的路径。
+    // 已开启时的重复调用保留缓存，避免正在播放的回退音频从头重播。
+    if (!wasEnabled) missingUrls.clear();
     ensureGraph();
     // Resume synchronously while the toggle click still has transient user
     // activation. Android WebView may allow HTMLAudio.play() while keeping an

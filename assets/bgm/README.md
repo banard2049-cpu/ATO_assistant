@@ -81,8 +81,9 @@ for %f in ("D:\desktop\mp3\*.ogg") do ffmpeg -y -i "%f" -map_metadata -1 -codec:
 音频目录分别挂到容器的 `assets/bgm/audio/` 和 `assets/bgm/media/`，播放器自身的目录仍由镜像提供，`docker compose pull` 可以更新播放器。
 
 - 播放器依次查找 `assets/bgm/`、`assets/bgm/audio/`、`assets/bgm/media/`。Docker 中同名音频优先用宿主机 `audio/` 中的版本；其它平台继续直接放在 `assets/bgm/`。
-- 清单里 `audioDir` 和 `packDir` 控制两个回退目录，都写 `""` 才只认本目录。
-- 安装后再把资料包复制到宿主机 `app/`，平铺音频也会实时可见，不需要重跑脚本或搬文件。正在打开的页面刷新后会重新检查音频。
+- 清单里 `audioDir` 和 `packDir` 控制两个回退目录，都写 `""` 才只认本目录。旧的自定义清单省略这些字段时，默认也会尝试 `audio/` 和 `media/`。
+- 安装后再把资料包复制到宿主机 `app/`，平铺音频也会实时可见，不需要重跑脚本或搬文件。如果页面此前已提示缺少音频，关开音乐或刷新页面会重新检查。
+- 升级镜像后也要核对宿主机 Compose 的两条 BGM 挂载：`./app/assets/bgm/audio:/app/assets/bgm/audio:ro` 和 `./app/assets/bgm:/app/assets/bgm/media:ro`。只拉镜像不会自动补上旧 Compose 缺少的挂载；修改后需要重建容器。
 - 想改阶段 / 文件名 / 淡入淡出，改的是容器里那份 `manifest.js`，所以要在宿主机覆盖它：在 `compose.yaml` 里加一行
   `- ./app/assets/bgm/manifest.js:/app/assets/bgm/manifest.js:ro`（默认不加，保持 `pull` 能更新它）。
 

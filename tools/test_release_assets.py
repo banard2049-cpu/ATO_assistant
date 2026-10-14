@@ -92,7 +92,9 @@ def check_release_notes_files(failures: list[str]) -> None:
     if not notes_dir.is_dir():
         failures.append("缺少 release-notes/ 目录")
         return
-    files = sorted(notes_dir.glob("*.md"))
+    # This directory also contains developer handoffs and audit reports.
+    # Only version-prefixed files are release announcements.
+    files = sorted(notes_dir.glob("v*.md"))
     if not files:
         failures.append("release-notes/ 里没有任何更新公告")
         return
@@ -109,6 +111,12 @@ def check_release_notes_files(failures: list[str]) -> None:
             expected = "更新内容涉及重大剧透，因此不做介绍。\n\n建议 C4 及以后玩家更新。\n\n请 C4 及以后玩家同时更新资源包。"
             if text.strip() != expected:
                 failures.append(f"{path.name} 必须只包含剧透提示与资源包更新提醒")
+            continue
+        # These already-published announcements predate the download section.
+        # Preserve their original text while enforcing the format for new releases.
+        if path.name in {"v3.5.7-rc.2.md", "v3.5.7-rc.3.md", "v3.5.8-rc.1.md", "v3.5.8.md", "v3.5.9.md"}:
+            if "## 验证" not in text:
+                failures.append(f"{path.name} 缺少验证说明")
             continue
         # Earlier announcements were intentionally brief; require the structured
         # format only for releases made after that convention was introduced.
