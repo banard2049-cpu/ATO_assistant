@@ -88,6 +88,9 @@ jobs:
           PYTHONIOENCODING: utf-8
         run: python tools/test_android_campaign_import.py
 
+      - name: Test Android LAN preferred port and fallback
+        run: python tools/test_android_lan_port.py
+
       - name: Test Android resource catalog
         env:
           PYTHONUTF8: "1"

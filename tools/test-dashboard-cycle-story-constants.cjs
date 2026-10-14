@@ -1,6 +1,8 @@
 const fs = require("fs");
 const vm = require("vm");
 
+async function main() {
+
 const dashboardSource = fs.readFileSync("index.html", "utf8");
 const mapSource = fs.readFileSync("map/app.js", "utf8");
 const recordSource = fs.readFileSync("record/index.html", "utf8");
@@ -52,7 +54,8 @@ function extractFunction(source, name) {
   const start = source.indexOf(marker);
   if (start < 0) throw new Error(`Missing function ${name}.`);
   const body = extractBalanced(source, start, "{", "}");
-  return source.slice(start, source.indexOf("{", start)) + body;
+  const definitionStart = source.slice(start - 6, start) === "async " ? start - 6 : start;
+  return source.slice(definitionStart, source.indexOf("{", start)) + body;
 }
 
 function assert(condition, message) {
@@ -91,10 +94,14 @@ assert(constants.c5.boxes.map((row) => row[3].entry).join() === expectedC5Entrie
 
 const adversaryBattles = extractObject(dashboardSource, "adversaryBattleByCycle");
 const mapAdversaryBattles = extractObject(mapSource, "adversaryBattleByCycle");
-const adversaryBattleHarness = new Function("adversaryBattleByCycle", `
+const battleContext = { window: {} };
+vm.runInNewContext(fs.readFileSync("map/nemesis-battle.js", "utf8"), battleContext);
+const adversaryBattleHarness = new Function("adversaryBattleByCycle", "window", `
+  const archive = { activeProfileId: "test-profile" };
+  async function readServerArgoRecord() { return { available: true, record: {} }; }
   ${extractFunction(dashboardSource, "adversaryBattleHref")}
   return adversaryBattleHref;
-`)(adversaryBattles);
+`)(adversaryBattles, battleContext.window);
 const expectedAdversaryBattles = {
   c1: { book: "c1", encounter: "赫尔墨斯追踪者战斗-pursuer-battle", entry: "赫尔墨斯追踪者战斗-pursuer-battle" },
   c2: { book: "c2", encounter: "重担之战-burden-battle", entry: "重担之战-burden-battle" },
@@ -104,16 +111,16 @@ const expectedAdversaryBattles = {
 };
 assert(JSON.stringify(mapAdversaryBattles) === JSON.stringify(adversaryBattles),
   "Dashboard and standalone map adversary battle mappings differ.");
-Object.entries(expectedAdversaryBattles).forEach(([cycleId, expected]) => {
-  const link = new URL(adversaryBattleHarness(cycleId), "https://example.test/");
+for (const [cycleId, expected] of Object.entries(expectedAdversaryBattles)) {
+  const link = new URL(await adversaryBattleHarness(cycleId), "https://example.test/");
   assert(link.searchParams.get("book") === expected.book, `${cycleId} adversary battle opens the wrong story book.`);
   assert(link.searchParams.get("chapter") === "battle", `${cycleId} adversary battle opens the wrong chapter.`);
   assert(link.searchParams.get("encounter") === expected.encounter, `${cycleId} adversary battle opens the wrong encounter.`);
   assert(link.searchParams.get("entry") === expected.entry, `${cycleId} adversary battle opens the wrong entry.`);
-});
+}
 
 const runMapCommandSource = extractFunction(dashboardSource, "runMapCommand");
-assert((runMapCommandSource.match(/battleHref = adversaryBattleHref\(cycleId\)/g) || []).length === 3,
+assert((runMapCommandSource.match(/battleHref = await adversaryBattleHref\(cycleId, commandState\.profileId\)/g) || []).length === 3,
   "Not every dashboard adversary collision path opens the configured battle.");
 const saveCommandIndex = runMapCommandSource.indexOf("await saveMapCommandState(commandState");
 const battleNavigationIndex = runMapCommandSource.indexOf("if (battleHref)");
@@ -208,3 +215,10 @@ assert(/state = nextState;[\s\S]{0,240}consumeDashboardSurveyNote\(\)/.test(reco
 assert(/首次修改时会创建记录表存档[\s\S]{0,160}importedDashboardSurveyNote \|\| flushQueuedSave[\s\S]{0,60}queueServerSave/.test(recordSource), "A first-time record does not save the imported dashboard action.");
 
 console.log("C4/C5 story constants and record autofill regression tests passed.");
+
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

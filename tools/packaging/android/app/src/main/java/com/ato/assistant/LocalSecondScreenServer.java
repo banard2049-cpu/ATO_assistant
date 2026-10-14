@@ -18,6 +18,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Inet4Address;
+import java.net.BindException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
@@ -58,6 +59,7 @@ final class LocalSecondScreenServer {
     "login", "register", "logout"));
   // 请求体上限：够放得下整份存档，又不至于让一次请求把内存吃光。
   private static final int MAX_BODY_BYTES = 32 * 1024 * 1024;
+  private static final int PREFERRED_PORT = 37403;
 
   private final Object lock = new Object();
   private volatile ServerSocket serverSocket;
@@ -72,13 +74,28 @@ final class LocalSecondScreenServer {
   List<String> start() throws IOException {
     synchronized (lock) {
       if (serverSocket != null && !serverSocket.isClosed()) return urls();
-      ServerSocket next = new ServerSocket();
-      next.setReuseAddress(true);
-      next.bind(new InetSocketAddress("0.0.0.0", 0));
+      ServerSocket next;
+      try {
+        next = bindSocket(PREFERRED_PORT);
+      } catch (BindException occupied) {
+        next = bindSocket(0);
+      }
       serverSocket = next;
       executor = Executors.newCachedThreadPool();
       executor.execute(this::acceptLoop);
       return urls();
+    }
+  }
+
+  private static ServerSocket bindSocket(int port) throws IOException {
+    ServerSocket socket = new ServerSocket();
+    try {
+      socket.setReuseAddress(true);
+      socket.bind(new InetSocketAddress("0.0.0.0", port));
+      return socket;
+    } catch (IOException error) {
+      try { socket.close(); } catch (IOException ignored) {}
+      throw error;
     }
   }
 

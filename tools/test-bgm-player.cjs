@@ -176,6 +176,76 @@ test("Docker 安装后导入平铺资料包音频即可播放；手动 audio/ �
   }
 });
 
+test("旧曲目清单没有 packDir 时仍能播放 Docker 资料包音频", async (t) => {
+  const harness = createHarness({
+    exists: (url) => url.includes("/assets/bgm/media/") && url.endsWith(".mp3"),
+    manifest: { packDir: undefined },
+  });
+  t.after(() => harness.close());
+  harness.api.setEnabled(true);
+  await harness.api.setStage("hub");
+  assert.equal(harness.api.state().url, "http://ato.local/assets/bgm/media/LB_Grand_Agora.mp3");
+});
+
+test("清单显式关闭 packDir 后不播放 media/ 中的音频", async (t) => {
+  const harness = createHarness({
+    exists: (url) => url.includes("/assets/bgm/media/"),
+    manifest: { packDir: "" },
+  });
+  t.after(() => harness.close());
+  harness.api.setEnabled(true);
+  await harness.api.setStage("hub");
+  assert.equal(harness.api.state().url, "");
+  assert.ok(harness.api.state().missing.length > 0);
+  assert.ok(harness.api.state().missing.every((url) => !url.includes("/media/")));
+});
+
+test("MP3 在首次缺失后挂入，关开音乐即可重新检查并播放", async (t) => {
+  let available = false;
+  const harness = createHarness({
+    exists: (url) => available && url.includes("/assets/bgm/media/") && url.endsWith(".mp3"),
+  });
+  t.after(() => harness.close());
+  harness.api.setEnabled(true);
+  await harness.api.setStage("armory");
+  assert.equal(harness.api.state().url, "");
+  assert.match(harness.panel().querySelector("#atoBgmStatus").textContent, /缺少音频文件/);
+  available = true;
+  harness.api.setEnabled(false);
+  harness.api.setEnabled(true);
+  await waitFor(() => harness.loudest() === "LB_Armory.mp3", "重新挂入的 MP3");
+  assert.equal(harness.api.state().url, "http://ato.local/assets/bgm/media/LB_Armory.mp3");
+});
+
+test("重新开启后旧的 404 探测不能把已播放的 MP3 再标为缺失", async (t) => {
+  const harness = createHarness({ exists: () => false });
+  t.after(() => harness.close());
+  const track = "http://ato.local/assets/bgm/media/LB_Grand_Agora.mp3";
+  let release;
+  harness.sandbox.fetch = (url) => url === track
+    ? new Promise((resolve) => { release = () => resolve({ ok: false, status: 404 }); })
+    : Promise.resolve({ ok: false, status: 404 });
+  harness.api.setEnabled(true);
+  const pending = harness.api.setStage("hub");
+  await waitFor(() => release, "旧探测等待中");
+  harness.api.setEnabled(false);
+  harness.sandbox.fetch = async (url) => ({ ok: url === track, status: url === track ? 200 : 404 });
+  harness.api.setEnabled(true);
+  await waitFor(() => harness.loudest() === "LB_Grand_Agora.mp3", "新探测成功播放");
+  release();
+  await pending;
+  assert.equal(harness.api.state().url, track);
+  assert.ok(!harness.api.state().missing.includes(track));
+  const active = harness.audios.find((audio) => !audio.paused);
+  active.currentTime = 42;
+  const before = harness.audios.reduce((sum, audio) => sum + audio.playCalls, 0);
+  harness.api.setEnabled(true);
+  await new Promise((resolve) => setImmediate(resolve));
+  await waitFor(() => !harness.api.state().loading && harness.api.state().url === track, "重复开启完成");
+  assert.equal(harness.audios.reduce((sum, audio) => sum + audio.playCalls, 0), before);
+  assert.equal(active.currentTime, 42);
+});
+
 test("本目录优先于 audio/；清单把 audioDir 写成空字符串后只认本目录", async () => {
   // 两处都有文件时用本目录：便携版 / Android / 桌面的既有行为不变
   const both = createHarness();
