@@ -1200,21 +1200,21 @@
    "name": "Cliff O",
    "row": 8.5,
    "column": 8.5,
-   "rotation": 180,
+   "rotation": 0,
    "flipped": false
   },
   {
    "name": "Cliff O",
    "row": 8.5,
    "column": 14.5,
-   "rotation": 180,
+   "rotation": 0,
    "flipped": false
   },
   {
    "name": "Cliff O",
    "row": 7.5,
    "column": 17.5,
-   "rotation": 180,
+   "rotation": 0,
    "flipped": false
   }
  ],
@@ -1265,21 +1265,21 @@
    "name": "Spartan River Works 1x1 Corner",
    "row": 1,
    "column": 16,
-   "rotation": 180,
+   "rotation": 0,
    "flipped": false
   },
   {
    "name": "Spartan River Works 1x4",
    "row": 12.5,
    "column": 16,
-   "rotation": 180,
+   "rotation": 90,
    "flipped": false
   },
   {
    "name": "Spartan River Works 1x4",
    "row": 3.5,
    "column": 16,
-   "rotation": 180,
+   "rotation": 90,
    "flipped": false
   },
   {
@@ -1975,21 +1975,21 @@
    "name": "Cliff O",
    "row": 12.5,
    "column": 11.5,
-   "rotation": 180,
+   "rotation": 0,
    "flipped": false
   },
   {
    "name": "Cliff O",
    "row": 7.5,
    "column": 17.5,
-   "rotation": 180,
+   "rotation": 0,
    "flipped": false
   },
   {
    "name": "Cliff O",
    "row": 4.5,
    "column": 4.5,
-   "rotation": 180,
+   "rotation": 0,
    "flipped": false
   }
  ],
@@ -3273,7 +3273,7 @@
    "row": 1,
    "column": 11,
    "rotation": 180,
-   "flipped": false
+   "flipped": true
   },
   {
    "name": "Trench 1x4",
@@ -3286,7 +3286,7 @@
    "name": "Trench 1x5",
    "row": 10,
    "column": 1,
-   "rotation": 180,
+   "rotation": 90,
    "flipped": false
   }
  ],
@@ -3414,7 +3414,7 @@
    "name": "Trench 1x5",
    "row": 10,
    "column": 1,
-   "rotation": 180,
+   "rotation": 90,
    "flipped": false
   }
  ],
@@ -3577,8 +3577,8 @@
    "name": "Lightwall 1x5",
    "row": 10,
    "column": 15,
-   "rotation": 180,
-   "flipped": false
+   "rotation": 270,
+   "flipped": true
   },
   {
    "name": "Trench 1x4",

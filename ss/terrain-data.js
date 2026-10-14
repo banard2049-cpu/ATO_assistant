@@ -589,7 +589,7 @@ const BattleTerrain = (() => {
         terrain("Cliff L", [tile(13.5, 9, 0, true), tile(4, 1.5, 270, true), tile(1.5, 10, 180)]),
         terrain("Cliff Z", [tile(12.5, 12, 180, true), tile(11.5, 19, 180, true), tile(11, 3.5, 270), tile(2.5, 12), tile(3.5, 19)]),
         terrain("Cliff I", [tile(12, 15.5), tile(3, 15.5), tile(6.5, 5, 90), tile(2.5, 7, 90)]),
-        terrain("Cliff O", [tile(8.5, 8.5), tile(8.5, 14.5), tile(7.5, 17.5)]),
+        terrain("Cliff O", [tile(8.5, 8.5, 0), tile(8.5, 14.5, 0), tile(7.5, 17.5, 0)]),
       ] },
       { id: "burden-battle", label: "Burden Battle", levels: [5], terrains: [
         terrain("Column", [tile(14, 7), tile(11, 8), tile(10, 15), tile(9, 1), tile(6, 11), tile(5, 16), tile(4, 10), tile(1, 4)]),
@@ -606,7 +606,7 @@ const BattleTerrain = (() => {
         terrain("Cliff L", [tile(13.5, 5, 180), tile(1.5, 7, 0, true)]),
         terrain("Cliff Z", [tile(12.5, 2), tile(2.5, 19, 0), tile(12.5, 19, 180, true), tile(2.5, 2, 180, true)]),
         terrain("Cliff I", [tile(14, 16.5), tile(1, 16.5), tile(11.5, 9, 90), tile(3.5, 12, 90)]),
-        terrain("Cliff O", [tile(12.5, 11.5), tile(7.5, 17.5), tile(4.5, 4.5)]),
+        terrain("Cliff O", [tile(12.5, 11.5, 0), tile(7.5, 17.5, 0), tile(4.5, 4.5, 0)]),
       ] },
     ],
     THE_NIETZSCJEAN: [
@@ -702,7 +702,7 @@ const BattleTerrain = (() => {
         terrain("Arcology", [tile(13, 14), tile(3, 3)]),
         terrain("Black Abyss", [tile(4, 19)]),
         terrain("Lightwall 1x4", [tile(5, 2.5)]),
-        terrain("Lightwall 1x5", [tile(1, 11)]),
+        terrain("Lightwall 1x5", [tile(1, 11, 180, true)]),
         terrain("Trench 1x4", [tile(14, 4.5)]),
         terrain("Trench 1x5", [tile(10, 1, 90)]),
       ] },
@@ -717,7 +717,7 @@ const BattleTerrain = (() => {
       { levels: [1, 2, 3, 4], terrains: [
         terrain("Petrified Vent", [tile(13, 2), tile(13, 5), tile(13, 10), tile(13, 17), tile(12, 8), tile(12, 19), tile(11, 6), tile(10, 3), tile(10, 18), tile(9, 5), tile(7, 18), tile(6, 2), tile(6, 14), tile(5, 9), tile(5, 17), tile(4, 12), tile(3, 15), tile(2, 3), tile(2, 11), tile(2, 19)]),
         terrain("Arcology", [tile(10, 12), tile(6, 6)]),
-        terrain("Lightwall 1x5", [tile(10, 15)]),
+        terrain("Lightwall 1x5", [tile(10, 15, 270, true)]),
         terrain("Trench 1x4", [tile(3, 5.5)]),
       ] },
     ],
@@ -1065,6 +1065,27 @@ const BattleTerrain = (() => {
         flipped: placement.flipped === true,
       }];
     });
+    // Upgrade untouched presets saved with the old importer rotations.
+    // Require the complete preset to match, so custom layouts remain intact.
+    const correctedName = normalizedApostle === "MEDUKETOS" ? "Lightwall 1x5"
+      : normalizedApostle === "DRAGON_OF_PHOBOS" && levelNumber(level) <= 2 ? "Lightwall 1x5"
+      : normalizedApostle === "THE_BURDEN" && levelNumber(level) <= 4 ? "Cliff O" : null;
+    if (correctedName && value.setupKey === expectedKey) {
+      const preset = getTiles(apostle, level, setup?.id);
+      const key = (p) => [p.name, p.row, p.column, p.rotation, p.flipped === true].join("|");
+      const allowed = new Set(preset.flatMap((p) => [key(p), ...(p.name === correctedName
+        ? [key({ ...p, rotation: 180, flipped: false })] : [])]));
+      if (terrain.length === preset.length && new Set(terrain.map(key)).size === preset.length
+        && new Set(terrain.map((p) => [p.name, p.row, p.column].join("|"))).size === preset.length
+        && terrain.every((p) => allowed.has(key(p)))) {
+        terrain.forEach((p) => {
+          const expected = preset.find((candidate) => candidate.name === p.name
+            && candidate.row === p.row && candidate.column === p.column);
+          p.rotation = expected.rotation;
+          p.flipped = expected.flipped === true;
+        });
+      }
+    }
     const startLevel = levelNumber(value.startLevel ?? level);
     const startPositionId = normalizeStartPositionId(apostle, startLevel, setup?.id, value.startPositionId);
     const apostleFacing = getInitialFacing(apostle, value.apostleFacing, setup?.id, startLevel, startPositionId);
