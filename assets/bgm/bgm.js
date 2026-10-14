@@ -18,7 +18,7 @@
   const CONTAINER_ID = "bgmControls";
   const AUTO_LABEL = "自动（跟随今日流程）";
   // 改动本文件时同步更新 BUILD 与主控台的 ?v= 标签。
-  const BUILD = "bgm20";
+  const BUILD = "bgm21";
 
   if (!manifest || !manifest.stages || !Object.keys(manifest.stages).length) {
     window.ATO_BGM = createDisabledApi("缺少 assets/bgm/manifest.js");
@@ -1037,7 +1037,8 @@
       ".ato-bgm-bar button.on{border-color:#3f8f6f;color:#3f8f6f}",
       ".ato-bgm-field{display:flex;gap:4px;align-items:center;white-space:nowrap}",
       ".ato-bgm-bar select{font:inherit;padding:3px 6px;border-radius:6px;border:1px solid rgba(127,127,127,.5);background:transparent;color:inherit;max-width:190px}",
-      ".ato-bgm-volume input{width:90px}",
+      // Range controls must not inherit the dashboard's text-input padding.
+      ".ato-bgm-volume input[type=range]{width:90px;min-width:0;margin:0;padding:0;border:0;border-radius:0;background:transparent;cursor:pointer}",
       ".ato-bgm-status{flex:1 1 auto;min-width:0;white-space:normal;overflow-wrap:anywhere;opacity:.75}",
       ".ato-bgm-import{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:6px;border:1px dashed rgba(127,127,127,.6);cursor:pointer}",
       ".ato-bgm-import:hover{border-color:#3f8f6f}",
