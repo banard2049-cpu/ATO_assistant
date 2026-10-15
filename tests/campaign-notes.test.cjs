@@ -72,10 +72,41 @@ test('AIBP records card draws, wounds and counters, and ignores dragging and ref
   const before = { apostle: 'HEKATON', title: '百臂巨人', level: 'I', aiPending: null, damageSummary: { wounds: 1 }, damage: [], tokens: [{ file: 'rage.png', count: 1, x: 0 }] };
   const after = { ...before, aiPending: { id: 'AI1', label: '重击' }, damageSummary: { wounds: 2 }, tokens: [{ file: 'rage.png', count: 2, x: 50 }] };
   const events = description('aibp', before, after);
+  assert.equal(events.length, 1);
   assert.match(text(events), /AI 抽牌：重击/);
   assert.match(text(events), /伤口：1 → 2/);
   assert.match(text(events), /rage.png：1 → 2/);
   assert.deepEqual(description('aibp', after, { ...after, tokens: [{ file: 'rage.png', count: 2, x: 99 }], updatedAt: 'now', extraCards: ['image'] }), []);
+});
+
+test('AIBP setup and opponent switches record only one concise setup entry', () => {
+  const after = { apostle: 'HEKATON', title: '百臂巨人', level: 'I', aiDeckCount: 20, bpDeckCount: 20,
+    damageSummary: { wounds: 0 }, traits: [{ label: '初始特性' }], tokens: [{ file: 'rage.png', count: 5 }] };
+  for (const before of [null, { apostle: 'OTHER' }, { ...after, level: 'II' }]) {
+    assert.deepEqual(description('aibp', before, after, { cycleId: 'c1' }),
+      [{ cycleId: 'c1', source: 'AIBP', text: '战斗对象：百臂巨人 I' }]);
+  }
+});
+
+test('AIBP draws omit redundant deck counts and large edits stay within one short entry', () => {
+  const before = { apostle: 'HEKATON', title: '百臂巨人', level: 'I', aiDeckCount: 20, aiDiscardCount: 0 };
+  const draw = { ...before, aiPending: { id: 'AI1', label: '重击' }, aiDeckCount: 19, aiDiscardCount: 1 };
+  assert.equal(text(description('aibp', before, draw)), '百臂巨人 I / AI 抽牌：重击');
+  const large = { ...draw, tokens: Array.from({ length: 100 }, (_, i) => ({ text: `标记${i}${'甲'.repeat(80)}`, count: 2 })) };
+  const entries = description('aibp', before, large);
+  assert.equal(entries.length, 1);
+  assert.ok(entries[0].text.length < 600);
+  assert.match(entries[0].text, /AI 抽牌：重击/);
+  assert.match(entries[0].text, /另 \d+ 项变化/);
+  assert.equal(entries[0].source, 'AIBP');
+});
+
+test('AIBP damage card rendering metadata does not expand the campaign log', () => {
+  const before = { apostle: 'HEKATON', level: 'I', damage: [{ id: 'BP1', label: '损伤一', src: 'old.jpg', x: 1 }] };
+  const after = { ...before, damage: [{ ...before.damage[0], src: 'new.jpg', x: 2 }] };
+  assert.deepEqual(description('aibp', before, after), []);
+  after.damage.push({ id: 'BP2', label: '损伤二', src: 'second.jpg' });
+  assert.match(text(description('aibp', before, after)), /损伤卡：添加 损伤二/);
 });
 
 function campaign() {

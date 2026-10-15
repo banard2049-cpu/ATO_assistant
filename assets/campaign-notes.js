@@ -102,26 +102,44 @@
       }
     } else if (section === "aibp") {
       if (!after) return events;
-      const boss = `${after.title || after.apostle || "敌人"} ${after.level || ""}`.trim();
-      if (!before || before.apostle !== after.apostle || before.level !== after.level) add(cycleId, `战斗对象：${boss}`);
+      const boss = preview(`${after.title || after.apostle || "敌人"} ${after.level || ""}`);
+      // A new opponent is setup, not a change to every card and counter.
+      if (!before || before.apostle !== after.apostle || before.level !== after.level) {
+        add(cycleId, `战斗对象：${boss}`);
+        return events;
+      }
       const old = before?.apostle === after.apostle ? before : {};
       for (const [key, title] of [["aiPending", "AI 抽牌"], ["bpPending", "BP 抽牌"]]) {
         const card = after[key];
-        if (card && !equal(old?.[key], card)) add(cycleId, `${boss} / ${title}：${preview(card.label || card.id || card.src)}`);
+        if (card && !equal(old?.[key], card)) add(cycleId, `${title}：${preview(card.label || card.id || card.src)}`);
       }
-      walk(old?.damageSummary || {}, after.damageSummary || {}, [], `${boss} / 损伤`);
-      walk(old?.damage || [], after.damage || [], ["damage"], `${boss} / 损伤卡`);
+      walk(old?.damageSummary || {}, after.damageSummary || {}, [], "损伤");
+      const damageCards = snapshot => (snapshot?.damage || []).map(card => ({ id: card.id || card.src, label: card.label || card.id || card.src }));
+      walk(damageCards(old), damageCards(after), ["damage"], "损伤卡");
       for (const [key, title] of [["aiDeckCount", "AI 牌堆"], ["aiDiscardCount", "AI 弃牌"], ["bpDeckCount", "BP 牌堆"], ["bpDiscardCount", "BP 弃牌"]]) {
-        walk(old?.[key], after[key], [key], `${boss} / ${title}`);
+        // A draw already explains the accompanying deck/discard count changes.
+        const pending = key.startsWith("ai") ? "aiPending" : "bpPending";
+        if (!after[pending] || equal(old[pending], after[pending])) walk(old?.[key], after[key], [key], title);
       }
       const traits = snapshot => (snapshot?.traits || []).map(card => ({ id: card.label || card.src, label: card.label || card.src }));
-      walk(traits(old), traits(after), ["traits"], `${boss} / 特性`);
+      walk(traits(old), traits(after), ["traits"], "特性");
       // Counters are aggregated by identity; dragging them never writes notes.
       const tokens = snapshot => (snapshot?.tokens || []).reduce((result, token) => {
         const key = token.text || token.label || String(token.file || "").split("/").pop();
         result[key] = (result[key] || 0) + Number(token.count || 1); return result;
       }, {});
-      walk(tokens(old), tokens(after), ["tokens"], `${boss} / 标记`);
+      walk(tokens(old), tokens(after), ["tokens"], "标记");
+      if (!events.length) return [];
+      // One bounded summary per save, even when a reset changes many cards.
+      let summary = boss;
+      let included = 0;
+      for (const event of events) {
+        if (summary.length + event.text.length + 1 > 560) break;
+        summary += `${included ? "；" : " / "}${event.text}`;
+        included++;
+      }
+      if (included < events.length) summary += `；另 ${events.length - included} 项变化`;
+      return [{ ...events[0], text: summary }];
     } else if (section === "record") walk(recordView(before || {}), recordView(after || {}));
     else if (section === "technology") {
       for (const key of ["unlocked", "conditions", "unimportant"]) walk(before?.[key], after?.[key], [key], fields[key]);
