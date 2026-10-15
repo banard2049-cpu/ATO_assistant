@@ -158,7 +158,7 @@
       const readUrl = new URL(url); readUrl.search = "";
       const response = await transport(readUrl.href, { cache: "no-store", signal: init.signal });
       const latest = await response.json();
-      if (!response.ok || !latest?.ok) throw new Error(latest?.error || "读取战役笔记上下文失败");
+      if (!response.ok || !latest?.ok) throw new Error(latest?.error || "读取战役日志上下文失败");
       if (payload.expectedAccountId && payload.expectedAccountId !== latest.user?.id) {
         const error = new Error("登录账号已切换，请刷新页面。"); error.code = "ACCOUNT_MISMATCH"; throw error;
       }
