@@ -132,7 +132,8 @@
     const session = win.ATO_CAMPAIGN_SESSION.create();
     const panels = [];
     let timer;
-    const store = create({ ...workspace, session, request: options => win.fetch("../api/campaign-state.php", { cache: "no-store", ...options }),
+    const campaignFetch = win.ATO_CAMPAIGN_NOTES.createFetch(win.fetch.bind(win), { source: "故事" });
+    const store = create({ ...workspace, session, request: options => campaignFetch("../api/campaign-state.php", { cache: "no-store", ...options }),
       onUpdate: info => {
         fields.disabled = !info.ready || session.changed;
         status.textContent = info.message;

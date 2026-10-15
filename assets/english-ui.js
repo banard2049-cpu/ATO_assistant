@@ -149,7 +149,7 @@
     "今日流程": "Today's steps", "日期轨": "Timeline", "当前天数": "Current day", "当前 Cycle": "Current cycle",
     "当前循环": "Current cycle", "循环记录": "Cycle records", "存档名称": "Save name", "战役工具": "Campaign tools",
     "战役简报": "Campaign report", "战役回放": "Campaign replay", "回放 · 记录 · 导出": "Replay · Records · Export",
-    "战役笔记": "Campaign notes", "接管编辑": "Take over editing", "导出存档": "Export save", "导入存档": "Import save",
+    "战役笔记": "Campaign notes", "战役日志": "Campaign log", "自动记录各模块的战役变化，也可手动补充": "Automatically logs campaign changes; you can also add entries", "接管编辑": "Take over editing", "导出存档": "Export save", "导入存档": "Import save",
     "Android 资源包": "Android resource packs", "杂项设置": "Settings", "界面配色": "Color theme", "自动": "Automatic",
     "固定循环": "Fixed cycle", "自定义 RGB": "Custom RGB", "颜色": "Color", "R 红色": "R Red", "G 绿色": "G Green", "B 蓝色": "B Blue",
     "页面跳转": "Navigation", "多页跳转": "Multiple tabs", "单页跳转": "Single tab", "第二屏幕": "Second screen",

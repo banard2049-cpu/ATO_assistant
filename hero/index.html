@@ -269,17 +269,16 @@
     .hero-column .skill-number input { width: 30px; min-height: 22px; font-size: 12px; }
 
     .likelihood-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 11px;
-      font-weight: 900;
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      background: currentColor;
+      -webkit-mask: var(--likelihood-icon) center / contain no-repeat;
+      mask: var(--likelihood-icon) center / contain no-repeat;
     }
-    .likelihood-badge img { width: 18px; height: 18px; }
-    .likelihood-badge.most { background: rgba(39, 114, 76, 0.12); color: var(--green); }
-    .likelihood-badge.least { background: rgba(160, 56, 50, 0.12); color: var(--red); }
+    .likelihood-badge.most { --likelihood-icon: url("./assets/ico_most_likely.png"); color: var(--green); }
+    .likelihood-badge.least { --likelihood-icon: url("./assets/ico_least_likely.png"); color: var(--red); }
 
     .triskelion-row {
       display: grid;
@@ -981,7 +980,7 @@
     }
   </style>
   <link rel="stylesheet" href="../api/cycle-theme.css">
-  <link rel="stylesheet" href="./hero.css?v=20261001-node-height">
+  <link rel="stylesheet" href="./hero.css?v=20261015-hero-name">
   <script src="../story/data/english-source-data.js?v=20261011-english4"></script>
   <script src="../assets/theme.js?v=20261001" defer></script>
 </head>
@@ -1017,7 +1016,14 @@
   </main>
 <!-- PLACEHOLDER_SCRIPT -->
   <script src="../assets/cycle-symbols.js?v=20260918"></script>
+  <script src="../assets/campaign-notes.js?v=20261015"></script>
   <script>
+    const fetch = window.ATO_CAMPAIGN_NOTES.createFetch(window.fetch.bind(window), {
+      source: "英雄",
+      label: (section, key, path, value) => value && typeof value === "object" && "argonaut" in value
+        ? heroDisplayName(value) : ARGONAUTS.find(item => item.id === key)?.zh
+          || [...Object.values(MNEMOS).flat(), ...Object.values(FATED_MNEMOS).flat()].find(item => item.id === key)?.zh,
+    });
     const storageKey = "ato-hero-record-v1";
     const serverStorageUrl = "../api/campaign-state.php";
     const serverStorageSection = "heroes";
@@ -1731,9 +1737,9 @@
       const mnemosCount = MNEMOS_GROUPS.reduce((sum, c) => sum + (hero.mnemos[c] || []).length, 0);
       const fatedCount = MNEMOS_GROUPS.reduce((sum, c) => sum + (hero.fatedMnemos?.[c] || []).length, 0);
       const likelihoodHtml = likelihoodType === "most"
-        ? `<span class="likelihood-badge most"><img src="${escHtml(assetSrc("ico_most_likely.png"))}" alt="最大似然">最大似然</span>`
+        ? `<span class="likelihood-badge most" role="img" aria-label="最大似然"></span>`
         : likelihoodType === "least"
-          ? `<span class="likelihood-badge least"><img src="${escHtml(assetSrc("ico_least_likely.png"))}" alt="最小似然">最小似然</span>`
+          ? `<span class="likelihood-badge least" role="img" aria-label="最小似然"></span>`
           : "";
       hero.triskelion = hero.triskelion || { fury: 0, fate: 0, danger: 0 };
       const skillPreviewHtml = SKILLS.map(skill => `<span class="skill-preview-item" title="${escHtml(skill.zh)} ${escHtml(skill.en)}"><img src="${escHtml(assetSrc(`skill_${skill.id}.png`))}" alt=""><span class="skill-preview-abbr" data-english-text="${escHtml(skill.en.slice(0, 3))}">${escHtml(skill.abbr)}</span>${total[skill.id]}</span>`).join("");

@@ -1083,6 +1083,7 @@ button.gear-group-name:hover {
 </div>
   <script src="../assets/page-focus-router.js?v=20261007-page-navigation1"></script>
   <script src="../assets/campaign-session.js?v=20260917"></script>
+  <script src="../assets/campaign-notes.js?v=20261015"></script>
   <script src="../assets/cycle-symbols.js?v=20260918"></script>
   <script src="tech-page-layout.js?v=20261003-hekaton-row1"></script>
   <script src="tech-tree.js?v=20261001-c4-gutters"></script>
@@ -1090,6 +1091,20 @@ button.gear-group-name:hover {
 <script src="gear-inventory.js?v=20261002"></script>
 <script>
 const TECH_DICTIONARY_URL = 'tech_card_dictionary.min.json';
+const fetch = window.ATO_CAMPAIGN_NOTES.createFetch(window.fetch.bind(window), {
+  source: '科技',
+  context: () => ({ profileId: activeAccountId, cycleId: requestedMainCycleId() }),
+  label: (section, key, path) => {
+    if (section === 'technology') {
+      for (const page of data.pages) {
+        const node = page.nodes.find(node => nodeKey(page.key, node) === key || key.startsWith(nodeKey(page.key, node) + ':'));
+        if (node) return `${displayTechName(node)}${key.slice(nodeKey(page.key, node).length)}`;
+      }
+    }
+    if (path.includes('arsenal') && window.ATO_GEAR_INVENTORY.gearKey(key)) return getGearName(key);
+    if (path.includes('resources')) return RECORD_RESOURCE_LABELS[key.replace(/^c[1-5]-/, '')];
+  },
+});
 const GEAR_PRODUCTION_URL = 'ato_gear_production.json';
 const GEAR_CARD_IMAGES_URL = 'gear_card_images.json';
 const GEAR_PART_LABELS_URL = 'gear_part_labels.json';

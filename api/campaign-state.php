@@ -645,6 +645,51 @@ function update_campaign_section(array $campaign, string $section, $state, ?stri
   return $campaign;
 }
 
+// Optional events are committed with their module, under the same lock and
+// revision check. Never replace a dashboard snapshot supplied by another page.
+function append_campaign_notes(array $campaign, array $payload): array {
+  if (!array_key_exists('campaignNotes', $payload)) return $campaign;
+  $notes = $payload['campaignNotes'];
+  if (!in_array($payload['section'] ?? '', ['record', 'technology', 'heroes', 'aibp', 'story'], true)
+      || !is_array($notes) || !is_string($notes['profileId'] ?? null)
+      || !is_array($notes['entries'] ?? null) || count($notes['entries']) > 512
+      || !isset($payload['expectedRevision']) || payload_expected_account_id($payload) === null) {
+    respond(400, ['ok' => false, 'error' => 'Invalid campaign notes.']);
+  }
+  $profileId = $notes['profileId'];
+  $userId = payload_user_id($payload);
+  if ($userId !== null && $userId !== $profileId) respond(400, ['ok' => false, 'error' => 'Campaign notes profile mismatch.']);
+  if (!is_array($campaign['sections']['dashboard']['profiles'][$profileId] ?? null)) {
+    respond(409, ['ok' => false, 'code' => 'CAMPAIGN_CONTEXT_CHANGED', 'error' => '原战役档案已不存在，请返回主控台后重试。']);
+  }
+  foreach ($notes['entries'] as $entry) {
+    if (!is_array($entry) || !in_array($entry['cycleId'] ?? null, ['c1', 'c2', 'c3', 'c4', 'c5'], true)
+        || !is_string($entry['source'] ?? null) || strlen($entry['source']) > 100 || trim($entry['source']) === ''
+        || !is_string($entry['text'] ?? null) || strlen($entry['text']) > 16000 || trim($entry['text']) === '') {
+      respond(400, ['ok' => false, 'error' => 'Invalid campaign note entry.']);
+    }
+  }
+  if (!$notes['entries']) return $campaign;
+  $stamp = gmdate('Y-m-d\TH:i:s\Z');
+  foreach ($notes['entries'] as $entry) {
+    $cycleId = $entry['cycleId'];
+    $profile =& $campaign['sections']['dashboard']['profiles'][$profileId];
+    if (!is_array($profile['cycles'] ?? null)) $profile['cycles'] = [];
+    if (!is_array($profile['cycles'][$cycleId] ?? null)) $profile['cycles'][$cycleId] = ['id' => $cycleId, 'state' => []];
+    $state =& $profile['cycles'][$cycleId]['state'];
+    if (!is_array($state)) $state = [];
+    $day = $state['day'] ?? null;
+    $dayLabel = is_numeric($day) ? ' 第' . $day . '天' : '';
+    $line = '[' . $stamp . ' ' . strtoupper($cycleId) . $dayLabel . ' · ' . $entry['source'] . '] '
+      . preg_replace('/[\r\n]+/u', ' ', $entry['text']);
+    $existing = is_string($state['notes'] ?? null) ? $state['notes'] : '';
+    $state['notes'] = $existing . ($existing !== '' && substr($existing, -1) !== "\n" ? "\n" : '') . $line;
+    unset($state, $profile);
+  }
+  $campaign['sectionRevisions']['dashboard'] = (int) ($campaign['sectionRevisions']['dashboard'] ?? 0) + 1;
+  return $campaign;
+}
+
 if (!is_dir($dataDir) && !mkdir($dataDir, 0770, true)) {
   respond(500, ['ok' => false, 'error' => 'Could not create the data directory.']);
 }
@@ -1182,6 +1227,7 @@ if ($method === 'POST') {
     ]);
   }
   $currentCampaign = $campaign;
+  $campaign = append_campaign_notes($campaign, $payload);
   $campaign = update_campaign_section($campaign, $payloadSection, $payload['state'], payload_user_id($payload));
   $campaign['sectionRevisions'][$payloadSection] = $currentRevision + 1;
   prepare_campaign_backups($saveFile, $currentCampaign, $campaign, $backupCount);

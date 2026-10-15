@@ -1842,9 +1842,39 @@
   <script src="./matrix-summaries.js"></script>
   <script src="../assets/cycle-symbols.js?v=20260918"></script>
   <script src="../assets/campaign-session.js?v=20260917"></script>
+  <script src="../assets/campaign-notes.js?v=20261015"></script>
   <script src="../assets/record-attachments.js?v=20261009"></script>
   <script src="./note-attachments.js?v=20261009-rename3"></script>
   <script>
+    const fetch = window.ATO_CAMPAIGN_NOTES.createFetch(window.fetch.bind(window), {
+      source: "记录表",
+      context: () => ({ profileId: campaignUserId, cycleId: state.cycle }),
+      normalize: (section, value) => section === "record" ? normalizeState(value || {}) : value,
+      label: campaignNoteLabel,
+    });
+    function campaignNoteLabel(section, key, path) {
+      const parts = key.replace(/^c[1-5]-/, "").split("-");
+      const cycleId = key.match(/^(c[1-5])-/)?.[1];
+      const configs = cycleId ? [cycleData[cycleId]] : Object.values(cycleData);
+      for (const config of configs.filter(Boolean)) {
+        if (path.includes("resources") || path.includes("maxUnlocked")) {
+          const row = config.resources.find(row => row[0] === parts.join("-"));
+          if (row) return row[1];
+        }
+        if (path.includes("diplomacy")) {
+          const row = config.diplomacy.find(row => row[0] === parts[0]);
+          if (row) return row[1];
+        }
+        if (path.includes("enemies")) {
+          const enemy = config.enemies.find(row => row.key === parts[0]);
+          if (enemy) return `${enemy.zh} ${parts.slice(1).join("-")}`.trim();
+        }
+        if (path.includes("adventures") && config.adventures[Number(parts[0])]) return `${config.adventures[Number(parts[0])][0]} ${parts.slice(1).join("-")}`;
+      }
+      if (["godforms", "godformUsedCards", "nymphCards", "nymphUsedCards"].some(field => path.includes(field))) {
+        return [...summonCards.godforms, ...summonCards.nymphs].find(card => card.id === key)?.zh;
+      }
+    }
     const storageKey = "ato-argo-record-sheet-v1";
     const serverStorageUrl = "../api/campaign-state.php";
     const serverStorageSection = "record";

@@ -71,6 +71,7 @@ NEGATIVE_RULES = (
 REQUIRED_ENTRY_FILES = (
     "router.php",
     "assets/campaign-session.js",
+    "assets/campaign-notes.js",
     "assets/cycle-symbols.js",
 )
 LAUNCHER_FILES = (
@@ -140,6 +141,7 @@ def build_project(root: Path) -> None:
         # 启动入口、账号守卫与循环图标模块：必须随包发布（见 REQUIRED_ENTRY_FILES）。
         "router.php": "<?php\nreturn false;\n",
         "assets/campaign-session.js": "// session guard\n",
+        "assets/campaign-notes.js": "// campaign journal\n",
         "assets/cycle-symbols.js": "// cycle symbols\n",
         # 科技卡分类编辑器是本机工具（在 tools/ 下），不随包发布；这里放一份真实科技页与
         # 编辑器页面，好让下面的检查真的走一遍「入口隐藏 + 编辑器不进包」。

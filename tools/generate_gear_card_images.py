@@ -14,6 +14,28 @@ OUTPUT_DIR = ROOT / "technology" / "images" / "gear_cards"
 MANIFEST_PATH = ROOT / "technology" / "gear_card_images.json"
 
 
+# These C2/C3 secret sheets put the numbered spoiler cover on FaceURL.
+# Their playable gear faces use the same grid positions on BackURL. Other
+# secret sheets (including C1) already have the playable side on FaceURL.
+SECRET_GEAR_COVER_SHEETS = frozenset({
+    "0108AC862A7C0C3D5939C0AD9EE0399E70DF6F1F",
+    "5B7BB5989D143164EC958EB6C5C8DAC585996370",
+})
+
+
+def gear_face_url(deck, card_id):
+    face_url = deck.get("FaceURL", "")
+    # Four double-sided C2 cards have playable faces on both sheets. Keep
+    # their original first side instead of switching to the alternate gear.
+    if ("0108ac862a7c0c3d5939c0ad9ee0399e70df6f1f" in face_url.casefold()
+            and card_id % 100 in {14, 20, 26, 28}):
+        return face_url
+    if any(sheet.casefold() in face_url.casefold() for sheet in SECRET_GEAR_COVER_SHEETS):
+        # Never silently export the spoiler cover when its reverse is missing.
+        return deck.get("BackURL", "") if deck.get("UniqueBack") else ""
+    return face_url
+
+
 def english_name(full_name):
     return re.sub(r"[\u3400-\u9fff].*", "", full_name).strip()
 
@@ -144,9 +166,10 @@ def main():
         deck = custom_deck.get(str(deck_id))
         if not isinstance(deck, dict):
             continue
-        face_path = cache_name_for_url(deck.get("FaceURL", ""))
+        face_url = gear_face_url(deck, card_id)
+        face_path = cache_name_for_url(face_url)
         if not face_path:
-            missing_images.append((gear_id, nickname, deck.get("FaceURL", "")))
+            missing_images.append((gear_id, nickname, face_url))
             continue
 
         columns = int(deck.get("NumWidth") or 1)
@@ -155,6 +178,7 @@ def main():
         if not position:
             continue
 
+        # Keep stable targets for asset packs and installed Android catalogs.
         out_name = f"{gear_id.lower()}.jpg"
         out_path = OUTPUT_DIR / out_name
         crop_card(face_path, out_path, position[0], position[1], columns, rows)

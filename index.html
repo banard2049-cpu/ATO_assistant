@@ -2469,10 +2469,10 @@
 
         <section class="panel">
           <div class="panel-head">
-            <h2>战役笔记</h2>
+            <h2>战役日志</h2>
           </div>
           <div class="panel-body">
-            <textarea id="notesInput" placeholder="记录资源变化、故事选择、未完成事项或下一天计划"></textarea>
+            <textarea id="notesInput" placeholder="自动记录各模块的战役变化，也可手动补充"></textarea>
           </div>
         </section>
 
@@ -4000,6 +4000,14 @@
       if (jsonEqual(local, remote)) return { value: cloneJson(local), conflicts: [] };
       if (jsonEqual(local, base)) return { value: cloneJson(remote), conflicts: [] };
       if (jsonEqual(remote, base)) return { value: cloneJson(local), conflicts: [] };
+
+      // A module may append events while this page edits the same notes. Keep
+      // the user's edit and the committed suffix instead of dropping either.
+      if (path.endsWith(".notes") && [base, local, remote].every(value => typeof value === "string")) {
+        const append = (value, suffix) => value + (value && suffix && !value.endsWith("\n") && !suffix.startsWith("\n") ? "\n" : "") + suffix;
+        if (remote.startsWith(base) && (base || remote.startsWith("["))) return { value: append(local, remote.slice(base.length)), conflicts: [] };
+        if (local.startsWith(base) && (base || local.startsWith("["))) return { value: append(remote, local.slice(base.length)), conflicts: [] };
+      }
 
       if (isPlainObject(base) || isPlainObject(local) || isPlainObject(remote)) {
         const baseObject = isPlainObject(base) ? base : {};
@@ -6529,9 +6537,22 @@
       }
     }
 
+    function syncCampaignLog() {
+      const input = elements.notesInput;
+      const value = typeof state.notes === "string" ? state.notes : "";
+      if (input.value === value) return;
+      input.value = value;
+      input.scrollTop = input.scrollHeight;
+      // The first render can precede layout; follow the latest entry once the
+      // textarea is visible, without resetting selection on unrelated renders.
+      window.requestAnimationFrame(() => {
+        if (input.value === value) input.scrollTop = input.scrollHeight;
+      });
+    }
+
     function syncInputs() {
       elements.dayInput.value = state.day;
-      elements.notesInput.value = state.notes;
+      syncCampaignLog();
       renderCurrentDateNote();
     }
 
@@ -11986,7 +12007,7 @@
   </script>
   <script src="./assets/ato-terms.js?v=20261015-diplomacy2"></script>
   <script src="./assets/english-terms.js?v=20261011-english4"></script>
-  <script src="./assets/english-ui.js?v=20261014-record-tracks2"></script>
+  <script src="./assets/english-ui.js?v=20261015-campaign-log"></script>
   <script src="./assets/english-language.js?v=20261011-english4"></script>
   <script src="./assets/term-language.js?v=20261011-english4"></script>
   <script src="./assets/update/app-version.js?v=3.5.10-rc.2"></script>
