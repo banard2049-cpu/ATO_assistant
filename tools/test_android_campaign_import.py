@@ -53,6 +53,10 @@ def main() -> None:
             "com.ato.assistant.PersistenceHarness",
         ], check=True)
         subprocess.run([
+            str(java), "-cp", os.pathsep.join((directory, str(json_jar))),
+            "com.ato.assistant.CampaignNotesHarness",
+        ], check=True)
+        subprocess.run([
             "node", str(PROJECT_ROOT / "tests/briefing-android.test.cjs"), str(briefing_fixture),
         ], check=True)
         subprocess.run([

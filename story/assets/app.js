@@ -1,4 +1,5 @@
 (function () {
+  const fetch = window.ATO_CAMPAIGN_NOTES.createFetch(window.fetch.bind(window), { source: "故事" });
   // Optional renderer/materials never become a prerequisite for reading source.
   function mixedMediaRuntime() {
     const api = window.ATO_MIXED_MEDIA;
@@ -3364,6 +3365,8 @@
       // 不再重复存一遍。
       fallbackText: imagesOnly ? displayEntry.text || storyText.textContent || "" : "",
       bookTitle: currentBook()?.title || "故事书",
+      bookId: currentBook()?.id || "",
+      entryKey: activeEntry.key || "",
       section: sectionLabel.textContent || activeEntry.chapter || "",
       id: activeEntry.id || "",
       title: storyTitleText(activeEntry, displayEntry),

@@ -1,5 +1,7 @@
 # ATO Assistant
 
+The dashboard's Campaign notes automatically record changes to record-sheet resources, choices, adventures and diplomacy; technology and equipment; heroes and memories; AIBP card draws, damage and counters; and story reading. Entries include their source, cycle and available campaign day, and save atomically with the module. Display preferences and token dragging do not add entries. Existing handwritten notes remain editable.
+
 [中文](README.md) | **English**
 
 ATO Assistant is a local web tool for running an Aeon Trespass: Odyssey (ATO) campaign. It contains the campaign dashboard, AIBP, story, map, the Argo record sheet, technology/gear, the campaign briefing and the second screen.

@@ -45,6 +45,7 @@ $allowedPaths = @(
   'assets/bgm/bgm.js',
   'assets/bgm/manifest.js',
   'assets/campaign-session.js',
+  'assets/campaign-notes.js',
   'assets/record-attachments.js',
   'assets/cycle-symbols.js',
   'assets/english-language.js',

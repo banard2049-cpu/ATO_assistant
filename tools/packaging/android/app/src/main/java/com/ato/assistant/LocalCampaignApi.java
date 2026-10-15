@@ -372,6 +372,7 @@ final class LocalCampaignApi {
       throw new ApiException(409, conflict);
     }
 
+    appendCampaignNotes(campaign, payload);
     updateSection(campaign, section, payload.opt("state"), payload.optString("userId", "").trim());
     revisions.put(section, revision + 1);
     campaign.put("updatedAt", System.currentTimeMillis());
@@ -383,6 +384,58 @@ final class LocalCampaignApi {
     put(response, "updatedAt", campaign.opt("updatedAt"));
     put(response, "user", user());
     return response;
+  }
+
+  private void appendCampaignNotes(JSONObject campaign, JSONObject payload) throws Exception {
+    if (!payload.has("campaignNotes")) return;
+    JSONObject notes = payload.optJSONObject("campaignNotes");
+    JSONArray entries = notes == null ? null : notes.optJSONArray("entries");
+    if (!java.util.Arrays.asList("record", "technology", "heroes", "aibp", "story").contains(payload.optString("section"))
+        || notes == null || !(notes.opt("profileId") instanceof String) || entries == null || entries.length() > 512
+        || !payload.has("expectedRevision") || payload.optString("expectedAccountId", "").trim().isEmpty()) {
+      throw new ApiException(400, error("Invalid campaign notes."));
+    }
+    String profileId = notes.getString("profileId");
+    String userId = payload.optString("userId", "").trim();
+    if (!userId.isEmpty() && !userId.equals(profileId)) throw new ApiException(400, error("Campaign notes profile mismatch."));
+    JSONObject dashboard = campaign.getJSONObject("sections").optJSONObject("dashboard");
+    JSONObject profiles = dashboard == null ? null : dashboard.optJSONObject("profiles");
+    JSONObject profile = profiles == null ? null : profiles.optJSONObject(profileId);
+    if (profile == null) {
+      JSONObject failure = error("原战役档案已不存在，请返回主控台后重试。");
+      failure.put("code", "CAMPAIGN_CONTEXT_CHANGED");
+      throw new ApiException(409, failure);
+    }
+    for (int i = 0; i < entries.length(); i++) {
+      JSONObject entry = entries.optJSONObject(i);
+      if (entry == null || !entry.optString("cycleId", "").matches("c[1-5]")
+          || !(entry.opt("source") instanceof String) || entry.getString("source").getBytes("UTF-8").length > 100
+          || entry.getString("source").trim().isEmpty() || !(entry.opt("text") instanceof String)
+          || entry.getString("text").getBytes("UTF-8").length > 16000 || entry.getString("text").trim().isEmpty()) {
+        throw new ApiException(400, error("Invalid campaign note entry."));
+      }
+    }
+    if (entries.length() == 0) return;
+    java.text.SimpleDateFormat format = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.ROOT);
+    format.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+    String stamp = format.format(new java.util.Date());
+    JSONObject profileCycles = profile.optJSONObject("cycles");
+    if (profileCycles == null) { profileCycles = new JSONObject(); profile.put("cycles", profileCycles); }
+    for (int i = 0; i < entries.length(); i++) {
+      JSONObject entry = entries.getJSONObject(i);
+      String cycleId = entry.getString("cycleId");
+      JSONObject cycle = profileCycles.optJSONObject(cycleId);
+      if (cycle == null) { cycle = new JSONObject().put("id", cycleId); profileCycles.put(cycleId, cycle); }
+      JSONObject state = cycle.optJSONObject("state");
+      if (state == null) { state = new JSONObject(); cycle.put("state", state); }
+      String day = state.has("day") && !state.isNull("day") ? " 第" + state.optString("day") + "天" : "";
+      String line = "[" + stamp + " " + cycleId.toUpperCase(java.util.Locale.ROOT) + day + " · " + entry.getString("source") + "] "
+          + entry.getString("text").replaceAll("[\\r\\n]+", " ");
+      String existing = state.optString("notes", "");
+      state.put("notes", existing + (!existing.isEmpty() && !existing.endsWith("\n") ? "\n" : "") + line);
+    }
+    JSONObject revisions = campaign.getJSONObject("sectionRevisions");
+    revisions.put("dashboard", revisions.optInt("dashboard", 0) + 1);
   }
 
   private JSONObject importSections(String method, String requestBody) throws Exception {

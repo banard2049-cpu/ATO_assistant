@@ -1016,7 +1016,14 @@
   </main>
 <!-- PLACEHOLDER_SCRIPT -->
   <script src="../assets/cycle-symbols.js?v=20260918"></script>
+  <script src="../assets/campaign-notes.js?v=20261015"></script>
   <script>
+    const fetch = window.ATO_CAMPAIGN_NOTES.createFetch(window.fetch.bind(window), {
+      source: "英雄",
+      label: (section, key, path, value) => value && typeof value === "object" && "argonaut" in value
+        ? heroDisplayName(value) : ARGONAUTS.find(item => item.id === key)?.zh
+          || [...Object.values(MNEMOS).flat(), ...Object.values(FATED_MNEMOS).flat()].find(item => item.id === key)?.zh,
+    });
     const storageKey = "ato-hero-record-v1";
     const serverStorageUrl = "../api/campaign-state.php";
     const serverStorageSection = "heroes";

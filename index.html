@@ -4001,6 +4001,14 @@
       if (jsonEqual(local, base)) return { value: cloneJson(remote), conflicts: [] };
       if (jsonEqual(remote, base)) return { value: cloneJson(local), conflicts: [] };
 
+      // A module may append events while this page edits the same notes. Keep
+      // the user's edit and the committed suffix instead of dropping either.
+      if (path.endsWith(".notes") && [base, local, remote].every(value => typeof value === "string")) {
+        const append = (value, suffix) => value + (value && suffix && !value.endsWith("\n") && !suffix.startsWith("\n") ? "\n" : "") + suffix;
+        if (remote.startsWith(base) && (base || remote.startsWith("["))) return { value: append(local, remote.slice(base.length)), conflicts: [] };
+        if (local.startsWith(base) && (base || local.startsWith("["))) return { value: append(remote, local.slice(base.length)), conflicts: [] };
+      }
+
       if (isPlainObject(base) || isPlainObject(local) || isPlainObject(remote)) {
         const baseObject = isPlainObject(base) ? base : {};
         const localObject = isPlainObject(local) ? local : {};
