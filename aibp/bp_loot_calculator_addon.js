@@ -103,7 +103,8 @@ Add these script tags after the main viewer script:
     DRAGON_OF_PHOBOS: "深海惧龙",
     MEDUKETOS: "须目塞特斯",
     UR_FLEECE: "乌尔-弗里斯",
-    TITAN_X: "泰坦 X"
+    TITAN_X: "泰坦 X",
+    BLACKBEAK: "黑喙"
   };
   const RECORD_RESOURCE_KEY_MAP = {
     BC: "blackChain",
@@ -169,14 +170,14 @@ Add these script tags after the main viewer script:
     HEKATON: "core-hekaton",
     LABYRINTHAUROS: "core-labyrinthauros",
     HERMESIAN_PURSUER: "core-pursuer",
-    ALPHA_TEMENOS: "core-alpha-temenos",
+    ALPHA_TEMENOS: "core-temenos",
     CHIMERA_METASTASIOS: "core-chimera",
     CYCLONUS: "core-cyclonus",
     THE_BURDEN: "core-adversary",
     THE_NIETZSCJEAN: "core-nietzschean",
-    HYPERTIME_ORACLE: "core-hypertime-oracle",
-    ICARIAN_HARPY: "core-icarian-harpy",
-    SUN_DESCENDANT: "core-sun-descendant",
+    HYPERTIME_ORACLE: "core-oracle",
+    ICARIAN_HARPY: "core-harpy",
+    SUN_DESCENDANT: "core-sunDescendant",
     MIDASCORE: "core-midascore",
     DEMIDJINN: "core-demidjinn",
     THE_BABELIAN_LUNACY: "core-babelianLunacy",
@@ -184,7 +185,8 @@ Add these script tags after the main viewer script:
     DRAGON_OF_PHOBOS: "core-dragonOfPhobos",
     MEDUKETOS: "core-meduketos",
     UR_FLEECE: "core-urFleece",
-    TITAN_X: "core-titanX"
+    TITAN_X: "core-titanX",
+    BLACKBEAK: "core-pursuer"
   };
   const APOSTLE_RECORD_CYCLE = {
     HEKATON: "c1",
@@ -205,7 +207,8 @@ Add these script tags after the main viewer script:
     DRAGON_OF_PHOBOS: "c5",
     MEDUKETOS: "c5",
     UR_FLEECE: "c5",
-    TITAN_X: "c5"
+    TITAN_X: "c5",
+    BLACKBEAK: "c5"
   };
   const APOSTLE_RECORD_ENEMY = {
     HEKATON: { cycle: "c1", key: "hekaton" },
@@ -412,8 +415,7 @@ Add these script tags after the main viewer script:
       firstVictoryEligible, firstVictory: firstVictoryEligible && options.firstVictory === true,
       firstReward: options.firstReward === "echoes" ? "echoes" : "sisyphusTears",
       resourcePolicy: STORY_FINAL_SCENES.has(sceneId) ? "none"
-        : sceneId === "ambush" ? "coreOnly"
-        : apostle === "ALPHA_TEMENOS" && sceneId === "normal" ? "tableOnly" : "normal"
+        : sceneId === "ambush" ? "coreOnly" : "normal"
     };
   }
 
@@ -448,8 +450,8 @@ Add these script tags after the main viewer script:
     const c1 = APOSTLE_RECORD_CYCLE[apostle] === "c1";
     if (battle.resourcePolicy !== "none") {
       const fate = ending ? (sceneId === "pursuers-end" ? 3 : 4) : c1 ? 2 : 3;
-      // The normal Temenos encounter has only its special reward table.
-      if (battle.resourcePolicy !== "tableOnly") reminders.push(`战后：重置三曲盘；阿尔戈号命运减少 ${fate}；清点死亡泰坦并弃除状态和指示物（C5 普通战保留恐怖与大恐怖）。`);
+      // Temenos has encounter-specific aftermath instructions below.
+      if (apostle !== "ALPHA_TEMENOS") reminders.push(`战后：重置三曲盘；阿尔戈号命运减少 ${fate}；清点死亡泰坦并弃除状态和指示物（C5 普通战保留恐怖与大恐怖）。`);
     }
     const add = (source, resource) => {
       addResourceTotals(totals, resource, 1);
@@ -496,6 +498,9 @@ Add these script tags after the main viewer script:
     }
     if (apostle === "THE_NIETZSCJEAN") reminders.push("首次战斗获得尼采观察科技；本场被消灭的泰坦记为伤残，按故事书处理。");
     if (["THE_BABELIAN_LUNACY", "UR_FLEECE"].includes(apostle)) reminders.push("若首次与该 Boss 战斗：将对应观察／目击科技加入项目牌库。");
+    if (apostle === "UR_FLEECE" && outcome === "defeat") {
+      reminders.push("乌尔-生成：落败仍获得 1 张随机的剧场生成装备卡，请手动抽取。");
+    }
     if (won && ["HERMESIAN_PURSUER", "THE_BURDEN", "DAHAKA", "TITAN_X"].includes(apostle)) {
       const event = ["HERMESIAN_PURSUER", "THE_BURDEN"].includes(apostle) ? "法洛斯之梦"
         : apostle === "DAHAKA" ? "一万个日夜" : "浅滩布道";
@@ -720,16 +725,16 @@ Add these script tags after the main viewer script:
       .length;
   }
 
-  function getBpDeckAndDiscardPool(bp) {
+  function getBpDeckAndDiscardPool(apostle, bp) {
     const pool = [];
     if (Array.isArray(bp.deck)) {
       bp.deck.forEach((card) => {
-        if (card && !card.special && card.type === "BP") pool.push(cloneCard(card));
+        if (isBpResourceCard(apostle, card)) pool.push(cloneCard(card));
       });
     }
     if (Array.isArray(bp.discard)) {
       bp.discard.forEach((card) => {
-        if (card && !card.special && card.type === "BP") pool.push(cloneCard(card));
+        if (isBpResourceCard(apostle, card)) pool.push(cloneCard(card));
       });
     }
     return shuffle(pool);
@@ -753,7 +758,7 @@ Add these script tags after the main viewer script:
     });
 
     pool.forEach((card) => {
-      const level = String(card.level || "").toUpperCase();
+      const level = String(card.bpLevel || card.level || "").toUpperCase();
       if (!grouped[level]) grouped[level] = [];
       grouped[level].push(card);
     });
@@ -1144,8 +1149,25 @@ Add these script tags after the main viewer script:
       });
     });
 
-    const mixedPool = getBpDeckAndDiscardPool(bp);
+    const mixedPool = getBpDeckAndDiscardPool(apostle, bp);
     const grouped = groupPoolByLevel(mixedPool);
+
+    // Chimera's table adds BP cards to the resource wounds before the normal
+    // SW/DW resource draws, which must use the remaining deck/discard cards.
+    const chimeraBonus = isChimera && grantBpResources
+      ? applyChimeraBonusLoot({
+          apostle,
+          bp,
+          battleLevel: multiplier,
+          regularCount: regularDamageCount,
+          secondaryCount: secondaryDamageCount,
+          deckGrouped: grouped,
+          totals,
+          details: { chimeraBonus: bonusDetails },
+          warnings,
+          multiplier
+        })
+      : null;
 
     for (let i = 0; grantBpResources && i < swCount; i++) {
       const drawn = drawLowestBpCard(grouped);
@@ -1197,20 +1219,6 @@ Add these script tags after the main viewer script:
       });
     }
 
-    const chimeraBonus = isChimera && grantBpResources
-      ? applyChimeraBonusLoot({
-          apostle,
-          bp,
-          battleLevel: multiplier,
-          regularCount: regularDamageCount,
-          secondaryCount: secondaryDamageCount,
-          deckGrouped: grouped,
-          totals,
-          details: { chimeraBonus: bonusDetails },
-          warnings,
-          multiplier
-        })
-      : null;
     const burdenBonus = isBurden && ordinary && battle.outcome !== "kill"
       ? applyBurdenSummitBonus(totals, options.summitTitanCount, burdenBonusDetails)
       : null;
@@ -1361,8 +1369,26 @@ Add these script tags after the main viewer script:
   }
 
   function migrateSharedRecordResources(resources) {
+    // These unused fields contain loot previously awarded by AIBP, separate
+    // from the visible record counters. Move each balance once before adding.
+    const legacyCores = {
+      "core-alpha-temenos": "core-temenos",
+      "core-hypertime-oracle": "core-oracle",
+      "core-icarian-harpy": "core-harpy",
+      "core-sun-descendant": "core-sunDescendant"
+    };
+    ["c1", "c2", "c3", "c4", "c5"].forEach((cycle) => {
+      Object.entries(legacyCores).forEach(([legacy, current]) => {
+        const legacyKey = `${cycle}-${legacy}`;
+        if (resources[legacyKey] === undefined) return;
+        const key = `${cycle}-${current}`;
+        resources[key] = Math.max(0, Number(resources[key]) || 0)
+          + Math.max(0, Number(resources[legacyKey]) || 0);
+        delete resources[legacyKey];
+      });
+    });
     RECORD_SHARED_RESOURCE_KEYS.forEach((key) => {
-      const values = ["c1", "c2", "c3"]
+      const values = ["c1", "c2", "c3", "c4", "c5"]
         .map((cycleId) => resources[`${cycleId}-${key}`])
         .filter((value) => value !== undefined && value !== null && value !== "");
       if (resources[key] !== undefined && resources[key] !== null && resources[key] !== "") {
@@ -1375,7 +1401,7 @@ Add these script tags after the main viewer script:
       resources[key] = numericValues.length === values.length
         ? Math.max(...numericValues)
         : values.map(String).filter(Boolean).join("\n");
-      ["c1", "c2", "c3"].forEach((cycleId) => {
+      ["c1", "c2", "c3", "c4", "c5"].forEach((cycleId) => {
         delete resources[`${cycleId}-${key}`];
       });
     });
@@ -1520,6 +1546,12 @@ Add these script tags after the main viewer script:
       updatedRecord.resources[fullKey] = Math.max(0, current + amount);
       added.push(`${resourceZhName(key)} +${amount}`);
     });
+
+    // Blackbeak reuses Pursuer resources in C5. Keep a zero core balance as
+    // history too, so its resource fields remain visible without a III wound.
+    if (result.apostle === "BLACKBEAK") {
+      updatedRecord.resources[`${cycle}-core-pursuer`] ??= 0;
+    }
 
     const rareKey = recordResourceStorageKey(cycle, "rare");
     let rareText = String(updatedRecord.resources[rareKey] || "");
@@ -1691,7 +1723,7 @@ Add these script tags after the main viewer script:
       <div class="loot-meta">
         <div>当前始徒：<strong>${escapeHtml(apostleZhName(result.apostle))}</strong></div>
         <div>战斗场景：${escapeHtml(result.battle.sceneLabel)}</div>
-        <div>结算规则：${escapeHtml({ normal: "BP 资源与特殊奖励", coreOnly: "仅暴击 BP III 核心", tableOnly: "仅伤害档位奖励", none: "按故事结局处理" }[result.battle.resourcePolicy])}</div>
+        <div>结算规则：${escapeHtml({ normal: "BP 资源与特殊奖励", coreOnly: "仅暴击 BP III 核心", none: "按故事结局处理" }[result.battle.resourcePolicy])}</div>
         <div>损伤堆卡数：${result.damageCount}</div>
         <div>普通BP损伤：${result.normalDamageCount}</div>
         <div>单重损伤：${result.swCount}</div>

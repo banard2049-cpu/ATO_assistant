@@ -5,6 +5,9 @@
 })(typeof window !== "undefined" ? window : typeof globalThis !== "undefined" ? globalThis : this, function () {
   const CREW_MAX = { c1: 6, c2: 9, c3: 10, c4: 6, c5: 6 };
   const HULL_MAX = { c1: 5, c2: 6, c3: 7, c4: 5, c5: 6 };
+  // 阿尔戈号命运轨道上限 9；悖论另有自己的上限 12（记录表的失败提示按「命运 ≥ 10」读段落）。
+  const FATE_MAX = 9;
+  const PARADOX_MAX = 12;
   const INITIAL_TRACKS = {
     c1: { hull: 4, crew: 5 }, c2: { hull: 5, crew: 5 }, c3: { hull: 5, crew: 5 },
     c4: { hull: 5, crew: 6 }, c5: { hull: 6, crew: 4 },
@@ -367,7 +370,7 @@
   function changeStat(record, cycleId, type, delta, minimums = {}) {
     const counters = ["crew", "refugees"].includes(type) && cycleId === "c2" ? c2Counters(record) : null;
     const before = counters ? counters[type] : readStat(record, cycleId, type);
-    const maximum = type === "fate" || type === "paradox" ? 12 : type === "crew"
+    const maximum = type === "fate" ? FATE_MAX : type === "paradox" ? PARADOX_MAX : type === "crew"
       ? Math.max(0, crewMax(record, cycleId) - (counters ? counters.refugees + counters.captives : 0))
       : type === "refugees" && counters ? Math.max(0, crewMax(record, cycleId) - counters.crew - counters.captives)
       : type === "nymphCharges" && record.nymphLimit !== undefined && record.nymphLimit !== null && record.nymphLimit !== "" ? count(record.nymphLimit)

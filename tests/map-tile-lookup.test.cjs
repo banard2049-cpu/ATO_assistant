@@ -67,3 +67,32 @@ test('invalid and explored IDs preserve the input and existing search', () => {
     assert.equal(calls.alerts.length, 1);
   }
 });
+
+test('Cycle V reveal buttons choose underwater or surface and preserve exploration state', () => {
+  const { context, cycleState, calls } = harness();
+  context.state.activeCycleId = 'c5';
+  for (const face of ['surface', 'underwater']) {
+    context.elements.searchInput.value = 'T03';
+    context.revealTilePreviewById(face);
+    assert.equal(cycleState.tileVariants.T03, face === 'surface' ? 'alternate' : undefined);
+    assert.equal(cycleState.previewRevealed.T03, true);
+    assert.equal(cycleState.explored.T03, undefined);
+    assert.equal(context.elements.searchInput.value, '');
+  }
+  assert.equal(calls.undo, 2);
+  assert.equal(calls.saves, 2);
+
+  context.elements.searchInput.value = '001';
+  context.revealTilePreviewById('surface');
+  assert.equal(cycleState.tileVariants['001'], undefined);
+  assert.equal(calls.undo, 2);
+});
+
+test('explicit reveal face leaves other cycles unchanged', () => {
+  const { context, cycleState } = harness();
+  context.state.activeCycleId = 'c4';
+  context.elements.searchInput.value = 'T03';
+  context.revealTilePreviewById('surface');
+  assert.equal(cycleState.tileVariants, undefined);
+  assert.equal(cycleState.previewRevealed.T03, true);
+});

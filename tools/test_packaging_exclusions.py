@@ -34,6 +34,8 @@ from packaging import package_common as pc  # noqa: E402
 # 本地私有产物：被 .gitignore 留在工作目录里，打包必须独立排除（CODE_REVIEW 07）。
 # 键名同时用作审计复核与负向验证的夹具清单。
 LOCAL_ONLY_FILES = {
+    "docs/card-reference.docx": "local illustrated reference document",
+    "docs/CARD-REFERENCE.DOCX": "local illustrated reference document",
     "api/.ato-update-fixture.php": "temporary update executor",
     "api/.ato-update-fixture.php.done": "finished update executor marker",
     "personal.atopack": "private asset pack",
@@ -57,6 +59,7 @@ LOCAL_ONLY_FILES = {
 
 # 负向验证：摘掉一条规则后，对应的文件必须真的进包、并被审计报错。
 NEGATIVE_RULES = (
+    (".docx", "suffix", "docs/card-reference.docx"),
     (".atopack", "suffix", "personal.atopack"),
     ("tmp", "top", "tmp/private-note.txt"),
     ("outputs", "top", "outputs/import-test/library.sqlite3"),

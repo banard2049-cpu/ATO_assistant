@@ -33,7 +33,7 @@ function mapContext(extra={}) {
     campaignSavePending:false,campaignSaveQueuedBeforeReady:false,campaignReconnectDelay:2000,mapSaveConflict:false,
     campaignStorageUrl:'/api',mapStateProfileId:'A',mapStateLoadedFromServer:true,mapSectionRevision:1,
     mapStateBaseline:{position:0,hideUnknown:true},state:{position:1,hideUnknown:true},
-    focusArgoAfterNextRender:noop,render:noop,...extra,
+    focusArgoAfterNextRender:noop,render:noop,scoutMapSyncChannel:null,...extra,
   });
 }
 test('session guard rejects a changed login on reads, errors and subsequent writes', ()=>{

@@ -155,8 +155,8 @@ h1 {
 }
 
 .control-panel {
-  display: grid;
-  grid-template-columns: minmax(130px, 160px) minmax(240px, 270px) minmax(160px, 180px) minmax(0, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   align-items: end;
   margin-bottom: 14px;
@@ -172,6 +172,7 @@ h1 {
   top: 0;
   z-index: 20;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
   margin-bottom: 14px;
   padding-top: 8px;
@@ -505,6 +506,10 @@ h1 {
   font-weight: 800;
 }
 
+.control-panel label[hidden] {
+  display: none;
+}
+
 #searchInput {
   max-width: 150px;
 }
@@ -516,16 +521,15 @@ h1 {
 }
 
 .tile-lookup-row {
-  display: grid;
-  grid-template-columns: minmax(0, 150px) max-content;
-  justify-content: start;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 6px;
 }
 
 .tile-lookup-actions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 6px;
 }
 
@@ -562,6 +566,7 @@ h1 {
 
 .zoom-control {
   min-width: 0;
+  flex: 0 1 180px;
   max-width: 180px;
 }
 
@@ -1053,14 +1058,13 @@ button.danger {
   }
 
   .control-panel {
-    grid-template-columns: minmax(130px, 160px) minmax(240px, 270px) minmax(160px, 180px);
     gap: 8px;
     margin-bottom: 8px;
     padding: 10px;
   }
 
   .toggle-row {
-    grid-column: 1 / -1;
+    flex-basis: 100%;
   }
 
   input,
@@ -1118,7 +1122,7 @@ button.danger {
   }
 
   .token-panel {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
       "status"
       "tokens"
@@ -1131,6 +1135,11 @@ button.danger {
 
   .token-palette {
     flex-wrap: wrap;
+  }
+
+  .action-group {
+    flex-wrap: wrap;
+    max-width: 100%;
   }
 
   .token-submenu {

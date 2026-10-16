@@ -72,6 +72,36 @@ body {
 .campaign-save-status[data-state="saving"] { color: var(--accent-2); }
 .campaign-save-status[data-state="offline"] { color: var(--accent); }
 .campaign-save-status[data-state="saved"] { color: #16794a; }
+#structureTechActions:empty { display: none; }
+.structure-tech-actions { margin: 12px 0; font-size: 13px; }
+.structure-tech-action { border: 1px solid var(--line); border-left: 3px solid var(--accent-2); padding: 10px; margin: 8px 0; }
+.structure-tech-action-title { min-height: 0; padding: 0 1px 1px; border: 0; border-bottom: 2px solid rgba(22, 103, 91, 0.35); border-radius: 0; background: transparent; color: var(--accent); font: inherit; font-weight: 600; text-align: left; cursor: pointer; }
+.structure-tech-action-title strong { font-weight: inherit; }
+.structure-tech-action-title:hover { background: transparent; border-color: var(--accent); color: var(--accent-strong); }
+.structure-tech-card-dialog { width: max-content; max-width: min(960px, 94vw); max-height: 90vh; margin: auto; padding: 16px; overflow: auto; border: 1px solid var(--line); background: var(--panel); color: var(--ink); }
+.structure-tech-card-dialog::backdrop { background: #0009; }
+.structure-tech-card-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
+.structure-tech-card-header h3 { margin: 0; font-size: 16px; }
+.structure-tech-card-close { flex-shrink: 0; padding: 5px 10px; font: inherit; }
+.structure-tech-card-images { display: flex; flex-wrap: wrap; gap: 12px; }
+.structure-tech-card-images figure { flex: 0 1 420px; min-width: 0; max-width: 100%; margin: 0; }
+.structure-tech-card-images figcaption { margin-bottom: 6px; font-size: 13px; font-weight: 600; }
+.structure-tech-card-images img { display: block; width: auto; height: auto; max-width: 100%; max-height: 72vh; object-fit: contain; }
+.structure-tech-action-choice { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; }
+.structure-tech-action-choice select, .structure-tech-action-choice input[type="text"], .structure-tech-action-choice input[type="number"] { max-width: 100%; min-width: 0; padding: 5px; font: inherit; }
+.structure-tech-action-choice input[type="number"] { width: 5em; }
+.structure-tech-negotiation-cards { display: flex; flex-wrap: wrap; gap: 12px; }
+.structure-tech-negotiation-card { display: flex; flex-direction: column; gap: 5px; max-width: 220px; }
+.structure-tech-trade-lines { display: grid; gap: 8px; margin-top: 8px; }
+.structure-tech-trade-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; }
+.structure-tech-trade-line select { flex: 1 1 220px; max-width: 100%; min-width: 0; padding: 5px; font: inherit; }
+.structure-tech-trade-line input[type="number"] { width: 4em; padding: 5px; font: inherit; }
+.structure-tech-action-preview, .structure-tech-action-status { white-space: pre-line; overflow-wrap: anywhere; }
+.structure-tech-action-cost { color: var(--ink); font-weight: 700; }
+.structure-tech-action-status:empty { display: none; }
+.structure-tech-action-status[data-state="error"] { color: var(--accent); }
+.structure-tech-action-use { padding: 7px 10px; border: 1px solid var(--accent-2); background: var(--accent-2); color: white; font: inherit; cursor: pointer; }
+.structure-tech-action-use:disabled { opacity: .55; cursor: default; }
 .tool-btn {
   border: 1px solid var(--line);
   background: #fff;
@@ -1071,6 +1101,7 @@ button.gear-group-name:hover {
     <div class="unlocked-modal-panel">
       <div class="unlocked-modal-title" id="unlockedModalTitle"></div>
       <div class="unlocked-modal-meta" id="unlockedModalMeta"></div>
+      <div id="structureTechActions" aria-live="polite"></div>
       <div class="modal-tech-links" id="modalTechLinks"></div>
       <div class="modal-actions">
         <button class="modal-btn primary" id="modalViewTree" type="button">在科技树查看</button>
@@ -1088,6 +1119,18 @@ button.gear-group-name:hover {
   <script src="tech-page-layout.js?v=20261003-hekaton-row1"></script>
   <script src="tech-tree.js?v=20261001-c4-gutters"></script>
   <script src="structure-card-types.js?v=20261004-large"></script>
+  <script src="../assets/exploration-card-effects.js?v=20261014-record-tracks1"></script>
+  <script src="../assets/exploration-card-resource-rules.js?v=20261013-automation5"></script>
+  <script src="../assets/exploration-card-conditions.js?v=20261014-card-face-audit2"></script>
+  <script src="../assets/exploration-card-tags.js?v=20261002-cache1"></script>
+  <script src="../assets/exploration-card-resources.js?v=20261014-card-face-audit2"></script>
+  <script src="../map/map-tile-tags.js?v=20261013-corner-audit"></script>
+  <script src="../map/map-data.js?v=20260730-cycle-labels"></script>
+  <script src="negotiation-rules.js?v=20261016-automation-audit2"></script>
+  <script src="voyage-action-rules.js?v=20261016-voyage3"></script>
+  <script src="exploration-tech-rules.js?v=20261016-automation-audit3"></script>
+  <script src="structure-tech-rules.js?v=20261016-automation-audit3"></script>
+  <script src="structure-tech-client.js?v=20261016-automation-audit3"></script>
 <script src="gear-inventory.js?v=20261002"></script>
 <script>
 const TECH_DICTIONARY_URL = 'tech_card_dictionary.min.json';
@@ -2909,6 +2952,7 @@ let gearRecordLoadInFlight = false;
 let gearRecordError = '';
 let gearCraftPlans = new Map();
 const gearRecordSyncChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('ato-record-sync-v1') : null;
+const structureTechMapSyncChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('ato-map-sync-v1') : null;
 let gearOnlyCurrentCycle = true;
 let gearOnlyCraftable = false;
 let gearGroupByPart = false;
@@ -3041,6 +3085,7 @@ function refreshExplorationTechLockDisplay() {
     const { page, node } = activeUnlockedRecord;
     const lock = explorationTechLock(page.key, node);
     unlockedModalMeta.textContent = `${page.label} · ${technologyMetaLabel(page.key, node)}${lock ? ` · ${lock.displayLabel}` : ''}`;
+    if (typeof renderStructureTechActions === 'function') void renderStructureTechActions(page, node);
   }
 }
 function isAutoUnlockedNode(pageKey, node) {
@@ -3761,8 +3806,8 @@ function unlockedTechSnapshot() {
     }),
   };
 }
-async function writeSnapshotToMainArchive(snapshot) {
-  const cycleId = requestedMainCycleId();
+async function writeSnapshotToMainArchive(snapshot, targetCycleId = requestedMainCycleId()) {
+  const cycleId = targetCycleId;
   await mutateCampaignDashboardArchive((current) => {
     let archive = current;
     if (!isPlainObject(archive) || !isPlainObject(archive.profiles)) {
@@ -4042,6 +4087,7 @@ function showUnlockedModal(pageKey, nodeId) {
   modalToggleUnimportant.textContent = isUnimportantNode(page.key, node) ? '移出不重要' : '设置为不重要';
   unlockedModal.classList.add('open');
   unlockedModal.setAttribute('aria-hidden', 'false');
+  if (typeof renderStructureTechActions === 'function') void renderStructureTechActions(page, node);
 }
 function showNodeModal(node) {
   const page = pageByKey(viewPage);
@@ -4066,6 +4112,65 @@ function showNodeModal(node) {
   updateModalUnlockButton(page.key, node);
   unlockedModal.classList.add('open');
   unlockedModal.setAttribute('aria-hidden', 'false');
+  if (typeof renderStructureTechActions === 'function') void renderStructureTechActions(page, node);
+}
+let structureTechActionClient = null;
+let structureTechPanelGeneration = 0;
+function technologyActionClient() {
+  if (!structureTechActionClient && window.ATO_STRUCTURE_TECH_CLIENT) {
+    structureTechActionClient = window.ATO_STRUCTURE_TECH_CLIENT.create({
+      session: campaignSession, fetch: window.fetch.bind(window),
+      apiUrl: CAMPAIGN_STORAGE_URL, dictionaryUrl: TECH_DICTIONARY_URL,
+    });
+  }
+  return structureTechActionClient;
+}
+async function renderStructureTechActions(page, node) {
+  const container = document.getElementById('structureTechActions');
+  if (!container) return;
+  const generation = ++structureTechPanelGeneration;
+  container.replaceChildren();
+  const client = technologyActionClient();
+  if (!client || !isStructureNode(node)) return;
+  const rules = window.ATO_STRUCTURE_TECH_RULES;
+  const cards = cardsForNode(node).filter(card => [...(rules?.catalog || []), ...(rules?.negotiationCatalog || []),
+    ...(rules?.voyageCatalog || []), ...(rules?.explorationCatalog || [])].some(rule => rule.key === card.key));
+  if (!cards.length) return;
+  const profileId = activeAccountId;
+  // The selected campaign cycle controls use, even when viewing an older tree.
+  const cycleId = MAIN_CYCLE_BY_TECH_CYCLE[currentCycle];
+  const current = () => generation === structureTechPanelGeneration && activeAccountId === profileId
+    && MAIN_CYCLE_BY_TECH_CYCLE[currentCycle] === cycleId && activeUnlockedRecord?.node === node;
+  try {
+    if (campaignSaveTimer || campaignSaveInFlight || campaignSavePending || campaignSaveQueuedBeforeReady) {
+      if (!await flushCampaignTechnologySave()) throw new Error('科技修改尚未保存，请连接恢复后重试。');
+    }
+    if (!current()) return;
+    for (const card of cards) {
+      const panel = client.createActionPanel({ profileId, cycleId, techKey: card.key,
+        assertContext: () => {
+          if (!current()) throw new Error('当前科技或档案已切换，请重新打开详情。');
+        },
+        beforeSubmit: async () => {
+          if (!current()) throw new Error('当前科技或档案已切换，请重新打开详情。');
+          if (!await flushCampaignTechnologySave()) throw new Error('科技修改尚未保存，未执行本次操作。');
+          await writeSnapshotToMainArchive(unlockedTechSnapshot(), cycleId);
+          if (!current()) throw new Error('当前档案已切换，请重新操作。');
+        },
+        onCommitted: async (result) => {
+          if (!current()) return;
+          const latest = recordStateFromCampaign(result.campaign);
+          gearRecordState = latest.state;
+          gearRecordUserId = profileId;
+          gearRecordRevision = latest.revision;
+          refreshExplorationTechLockDisplay();
+        },
+      });
+      container.appendChild(panel);
+    }
+  } catch (error) {
+    if (current()) container.textContent = String(error.message || error);
+  }
 }
 function updateModalUnlockButton(pageKey, node) {
   if (isAutoUnlockedNode(pageKey, node)) {
@@ -4163,6 +4268,10 @@ function refreshUnlockState() {
   else if (currentTab === 'gear-production') renderGearProductionPage();
   else if (currentTab === 'arsenal') renderArsenalPage();
   else renderTree({ preserveViewport: true, announce: true });
+  if (typeof renderStructureTechActions === 'function' && typeof activeUnlockedRecord !== 'undefined'
+    && activeUnlockedRecord && unlockedModal.classList.contains('open')) {
+    void renderStructureTechActions(activeUnlockedRecord.page, activeUnlockedRecord.node);
+  }
 }
 function cardPreview(card, side = 'front') {
   const imageFile = side === 'back' ? card.back_image_file : card.face_image_file;
@@ -4582,6 +4691,9 @@ document.addEventListener('keydown', event => {
 });
 gearRecordSyncChannel?.addEventListener('message', () => {
   void loadGearRecordState();
+});
+structureTechMapSyncChannel?.addEventListener('message', () => {
+  if (activeUnlockedRecord) void renderStructureTechActions(activeUnlockedRecord.page, activeUnlockedRecord.node);
 });
 window.addEventListener('focus', () => {
   void loadGearRecordState();

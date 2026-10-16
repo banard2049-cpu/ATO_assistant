@@ -544,6 +544,31 @@ class HardeningTest(unittest.TestCase):
                          f'exactly one concurrent save may win, got {results}')
 
     # 9 ---------------------------------------------------------------------
+    def test_import_checks_read_only_dependencies_without_writing_them(self):
+        client = self.opener()
+        self.assertEqual(self.register('techread' + uuid.uuid4().hex[:6], opener=client)[0], 200)
+        _, before = self.json_request(self.ports[0], '', opener=client)
+        account_id = before['user']['id']
+        payload = {
+            'sections': {'dashboard': {'v': 'scheduled'}, 'record': {'resources': {'c2-wood': 3}}},
+            'expectedRevisions': {'dashboard': 0, 'record': 0, 'technology': 1},
+            'expectedAccountId': account_id,
+        }
+        status, rejected = self.json_request(self.ports[0], '?action=import-sections', payload, opener=client)
+        self.assertEqual((status, rejected['code']), (409, 'SAVE_CONFLICT'))
+        self.assertEqual(rejected['sections'], {'technology': {'expected': 1, 'revision': 0}})
+        _, after = self.json_request(self.ports[0], '', opener=client)
+        self.assertEqual(after['campaign'], before['campaign'], 'read dependency conflict must not write anything')
+
+        payload['expectedRevisions']['technology'] = 0
+        status, written = self.json_request(self.ports[0], '?action=import-sections', payload, opener=client)
+        self.assertEqual(status, 200, written)
+        self.assertEqual(written['sections'], {'dashboard': 1, 'record': 1})
+        _, after = self.json_request(self.ports[0], '', opener=client)
+        self.assertEqual(after['campaign']['sectionRevisions']['technology'], 0)
+        self.assertIsNone(after['campaign']['sections']['technology'])
+        self.assertEqual(after['campaign']['sections']['dashboard']['v'], 'scheduled')
+
     def test_full_import_is_all_or_nothing(self):
         account = 'import' + uuid.uuid4().hex[:6]
         client = self.opener()

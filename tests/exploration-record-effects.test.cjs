@@ -157,16 +157,16 @@ test('crew and fate writes are scoped to the selected cycle without changing ano
   assert.deepEqual(rules.revert(result.record, result.changes), record);
 });
 
-test('fate clamps at 0–12 and undo removes only the actual delta from a newer record', () => {
-  const result = rules.apply({ cycle: 'c1', fate: '11', resources: { trireme: 3 } }, 'c1', [{ type: 'fate', amount: 5 }]);
-  assert.equal(result.record.fate, '12');
+test('fate clamps at 0–9 and undo removes only the actual delta from a newer record', () => {
+  const result = rules.apply({ cycle: 'c1', fate: '8', resources: { trireme: 3 } }, 'c1', [{ type: 'fate', amount: 5 }]);
+  assert.equal(result.record.fate, '9');
   assert.equal(result.changes[0].amount, 1);
-  result.record.fate = '9';
-  result.record.cycleStats.c1.fate = '9';
+  result.record.fate = '6';
+  result.record.cycleStats.c1.fate = '6';
   result.record.resources.trireme = 5;
   result.record.notes = 'changed elsewhere';
   const undo = rules.revert(result.record, result.changes);
-  assert.equal(undo.fate, '8');
+  assert.equal(undo.fate, '5');
   assert.equal(undo.resources.trireme, 5);
   assert.equal(undo.notes, 'changed elsewhere');
   const loss = rules.apply({ cycle: 'c1', fate: '1' }, 'c1', [{ type: 'fate', amount: -3 }]);

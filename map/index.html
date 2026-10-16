@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ATO 地图模块</title>
-  <link rel="stylesheet" href="./styles.css?v=20261014-unexplored-marker">
+  <link rel="stylesheet" href="./styles.css?v=20261016-toolbar-layout2">
   <link rel="stylesheet" href="../api/cycle-theme.css">
   <link rel="stylesheet" href="./map.css?v=20261001-square-selection">
   <script src="../story/data/english-source-data.js?v=20261011-english4"></script>
@@ -29,7 +29,7 @@
 
     <div class="sticky-actions">
     <section class="control-panel">
-      <label>
+      <label hidden>
         当前板块
         <select id="currentTileSelect"></select>
       </label>
@@ -40,6 +40,8 @@
           <div class="tile-lookup-actions">
             <button id="searchTileButton" type="button" class="secondary">搜索</button>
             <button id="revealTileButton" type="button">揭示</button>
+            <button id="revealUnderwaterTileButton" type="button" hidden>揭示水下</button>
+            <button id="revealSurfaceTileButton" type="button" hidden>揭示水上</button>
           </div>
         </div>
       </div>
@@ -54,10 +56,6 @@
         <label class="check-label">
           <input id="showBackToggle" type="checkbox">
           显示背面
-        </label>
-        <label class="check-label">
-          <input id="onlyExploredToggle" type="checkbox">
-          只看已探索
         </label>
         <label class="check-label">
           <input id="hideUnknownToggle" type="checkbox">
@@ -145,7 +143,7 @@
   <script src="../assets/campaign-session.js?v=20260917"></script>
   <script src="./nemesis-path.js?v=20260924-shared"></script>
   <script src="./nemesis-battle.js?v=20261003-record"></script>
-  <script src="./app.js?v=20261014-unexplored-marker"></script>
+  <script src="./app.js?v=20261016-toolbar-layout2"></script>
   <script src="../assets/ato-terms.js?v=20261015-diplomacy2"></script>
   <script src="../assets/english-terms.js?v=20261011-english4"></script>
   <script src="../assets/english-ui.js?v=20261011-english4"></script>

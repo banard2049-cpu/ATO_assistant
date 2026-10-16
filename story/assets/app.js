@@ -1686,6 +1686,13 @@
       rowPattern = (left) => /^(?:[1-4]|3\+|5\+)$/u.test(left);
     } else if (headerLeft === "损伤" && headerRight === "所需资源") {
       rowPattern = (left) => /^(?:[5-9]|1[01])$/u.test(left);
+    } else if (headerLeft === "方框" && headerRight === "损伤") {
+      // 吞域兽、赫尔墨斯追踪者民间版将两列拆成独立段落；保留原方框范围和行顺序。
+      rowPattern = (left) => /^(?:1-2|[1-5])$/u.test(left);
+    } else if (headerLeft === "方框" && headerRight === "失败") {
+      rowPattern = (left) => /^[1-4]$/u.test(left);
+    } else if (headerLeft === "损伤" && headerRight === "奖励") {
+      rowPattern = (left) => /^(?:[4-8]|9\s*或更多)$/u.test(left);
     } else {
       return null;
     }
@@ -1727,7 +1734,7 @@
 
 
   // 正文里的「管道表格」渲染（实现与约束见 assets/story-tables.js）：把原书排版遗留的
-  // `a | b` + `--- | ---` 块显示成表格，其余文字仍走 linkify。模块缺失时退回原来的 linkify。
+  // 带分隔行的表格及省略分隔行的数量表显示成表格，其余文字仍走 linkify。模块缺失时退回 linkify。
   function storyTablesRender(text) {
     const tables = window.ATO_STORY_TABLES;
     if (!tables || typeof tables.renderText !== "function") return linkify(text, currentBook());

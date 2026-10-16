@@ -105,7 +105,7 @@ test('切换版本重建索引和目录，并清除民间版不存在的当前�
   const ctx = setup();
   Object.assign(ctx, {
     storyVersion: '民间版', data: ctx.fanData,
-    stopSpeech() {}, populateChapters() {}, populateEncounters() {},
+    syncVoiceSelect() {}, stopSpeech() {}, populateChapters() {}, populateEncounters() {},
     refreshSecondScreenStoryContentToggle() {},
     secondScreenStoryModeToggle: { checked: false },
     renderResults() {}, searchInput: { value: '' }, bookSelect: { options: [] },

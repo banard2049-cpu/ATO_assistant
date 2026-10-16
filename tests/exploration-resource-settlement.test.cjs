@@ -261,6 +261,11 @@ function settleHarness(options = {}) {
     fn('explorationContextSnapshot'),
     fn('explorationCardContext'),
     fn('explorationBatchContext'),
+    fn('structureSaveReminders'),
+    fn('structureSaveHandledManually'),
+    fn('prepareStructureSaveSettlement'),
+    fn('createStructureSaveTools'),
+    fn('structureWishSaveItem'),
     fn('explorationAutomaticTitanLosses'),
     fn('explorationSingleAutomaticEffect'),
     fn('settleSingleExplorationEffects'),
@@ -457,7 +462,8 @@ test('four requested Black Sludge uses Fate OR real Refugees and requires manual
     const h = settleHarness({ cycle: 'c2', activePiles: [[entry], []], fullRecord:
       nextRecord('c2', { fate: String(fate), renegade: '9', crewCounters: { refugees } }) });
     const block = h.ctx.createExplorationSettleBlock(entry);
-    const green = block.buttons.find(button => button.textContent === '自动结算');
+    const delayButtons = block.descendants().find(node => node.className === 'exploration-delay-tools')?.buttons || [];
+    const green = block.buttons.find(button => button.textContent === '自动结算' && !delayButtons.includes(button));
     assert.equal(Boolean(green), false);
     await h.ctx.settleExplorationCard(entry);
     assert.equal(h.ctx.explorationDashboardTracks(h.record).doom, 0);
@@ -1489,6 +1495,38 @@ test('a lost Labyrinthian choice response never adds either selected resource or
   assert.equal(h.record.resources['c1-fleshyMantle'],1);assert.equal(h.record.strangers,'1');
 });
 
+test('saved resource receipts recover missing dashboard marks without paying the same draw twice', async () => {
+  for (const [id, name, resource, amount] of [
+    ['13601', 'Pre-Eschaton Armory', 'c2-warMachine', 3],
+    ['13600', 'Temenos Fear Aquifer', 'fearEssence', 2],
+    ['13612', 'Temenos Fear Aquifer', 'fearEssence', 2],
+  ]) {
+    const entry = { ...drawnEntry(id, name), drawnAt: 'resource-recovery-round' };
+    const h = settleHarness({ cycle: 'c2', diplomacyBonus: 1, activePiles: [[entry], []], fullRecord: nextRecord('c2') });
+    await h.ctx.settleExplorationDraw();
+    assert.equal(h.record.resources[resource], amount);
+    h.drawState.activePiles = [[entry], []];
+    h.ctx.state.exploration.settledByCycle.c2 = {};
+    assert.ok(h.ctx.getExplorationSettlement(entry), 'the saved record receipt remains authoritative when the dashboard mark is missing');
+    assert.ok(!h.ctx.pendingExplorationEffects().some(text => /资源未结算|资源分支需选择/.test(text)));
+    await h.ctx.settleExplorationDraw();
+    assert.equal(h.record.resources[resource], amount, 'retry must not issue the resources again');
+    const next = { ...entry, drawnAt: 'another-draw-on-the-same-day' };
+    assert.equal(h.ctx.getExplorationSettlement(next), null, 'a previous draw cannot settle a different draw today');
+  }
+});
+
+test('an undone server resource receipt overrides stale dashboard settlement marks', async () => {
+  const entry = { ...drawnEntry('13601', 'Pre-Eschaton Armory'), drawnAt: 'undone-resource-round' };
+  const h = settleHarness({ cycle: 'c2', diplomacyBonus: 1, activePiles: [[entry], []], fullRecord: nextRecord('c2') });
+  await h.ctx.settleExplorationDraw();
+  const updated = JSON.parse(JSON.stringify(h.record));
+  delete updated.explorationBatchReceipts[h.ctx.explorationRoundId(entry)].resource;
+  updated.resources['c2-warMachine'] = 0;
+  h.ctx.cachedArgoRecord = updated;
+  assert.equal(h.ctx.getExplorationSettlement(entry), null, 'undo in another page must not keep a stale settled badge');
+});
+
 test('a legacy local resource settlement also migrates and recovers its missing attached Stranger',async()=>{
   const entry=drawnEntry('6403','Labyrinthian Vessel');
   const h=settleHarness({diplomacyBonus:1,activePiles:[[entry],[]],fullRecord:{cycle:'c1',resources:{'c1-calcifiedKnuckle':1},fate:'0',strangers:'2',cycleStats:{c1:{fate:'0',strangers:'2'}}}});
@@ -1579,6 +1617,7 @@ test('the encounter step completes the Timeline Battle instead of showing button
   const tools = harness.ctx.createDelayedExplorationStepTools('encounter');
   assert.ok(tools);
   assert.deepEqual(tools.buttons, []);
+  assert.ok(tools.descendants().some(node => node.className === 'step-track-tag exploration-card' && node.textContent === '探索卡'));
 
   await harness.ctx.completeTimelineBattle();
   assert.equal(harness.record.explorationDelays.queue[0].status, 'waiting', 'pending effects alone do not imply a battle');
@@ -1586,17 +1625,29 @@ test('the encounter step completes the Timeline Battle instead of showing button
   harness.ctx.todayTrackIcons = () => [{ className: 'battle' }];
   harness.ctx.state.nextBattleTerrain = { terrain: '特殊地形' };
   harness.drawState.temporaryRemoved.push(drawnEntry('6401', 'Temporary card'));
-  await harness.ctx.completeTimelineBattle();
+  await harness.ctx.processExplorationDelays('timeline-battle-start', { timelineBattle: true, eventId: 'c1:D12:timeline' });
+  assert.equal(harness.record.explorationDelays.queue[0].status, 'ready');
+  assert.deepEqual(harness.ctx.createDelayedExplorationStepTools('encounter').buttons, [], '已到期的提醒也没有单独确认按钮');
+  harness.ctx.state.completed = {};
+  harness.ctx.step = { id: 'encounter' };
+  harness.ctx.checkbox = { checked: true };
+  const checkboxListener = source.match(/checkbox\.addEventListener\("change", (\(\) => \{[^]*?)\n        \}\);/);
+  assert.ok(checkboxListener);
+  vm.runInContext(`(${checkboxListener[1]}\n})()`, harness.ctx);
   await flushAsync();
+  assert.equal(harness.ctx.state.completed.encounter, true);
   assert.equal(harness.ctx.state.nextBattleTerrain, null);
   assert.equal(harness.drawState.temporaryRemoved.length, 0);
   assert.ok(harness.drawState.drawPile.includes('6401'));
   assert.equal(harness.record.explorationDelays.timelineEpochs.c1, 1, '战斗结束推进纪元');
-  assert.notEqual(harness.record.explorationDelays.queue[0].status, 'waiting', '战斗开始效果不再挂着等待');
+  assert.equal(harness.record.explorationDelays.queue[0].status, 'done', '勾选遭遇后确认提醒已处理');
+  assert.equal(harness.ctx.createDelayedExplorationStepTools('encounter'), null, '提醒和特殊板块一起消失');
   // 同一天重复结算不会把纪元推上去（事件编号按循环+日期去重）。
   await harness.ctx.completeTimelineBattle();
   await flushAsync();
   assert.equal(harness.record.explorationDelays.timelineEpochs.c1, 1);
+  harness.ctx.cachedArgoRecord = JSON.parse(JSON.stringify(harness.record));
+  assert.equal(harness.ctx.createDelayedExplorationStepTools('encounter'), null, '重新载入已保存记录不恢复提醒');
 });
 
 test('a Timeline battle day no longer renders duplicate battle buttons in the encounter step', () => {
@@ -1691,7 +1742,11 @@ test('a card with a delayed effect can register and withdraw it', async () => {
   const harness = settleHarness({ diplomacyBonus: -2 });
   const entry = { id: '6403', name: 'Labyrinthian Vessel', day: 12 };
   const block = harness.ctx.createExplorationSettleBlock(entry);
-  await clickAndWait(buttonNamed(block, '登记延迟效果'));
+  const automatic = buttonNamed(block, '自动结算');
+  assert.equal(automatic.parentNode.className, 'exploration-settle-actions');
+  assert.ok(automatic.parentNode.parentNode.children.some(node => node.tag === 'strong'));
+  assert.ok(!block.buttons.some(button => button.textContent === '登记延迟效果'));
+  await clickAndWait(automatic);
   assert.equal(harness.record.explorationDelays.queue.length, 1);
   assert.equal(harness.record.explorationDelays.queue[0].trigger, 'timeline-battle-start');
   assert.equal(harness.record.explorationDelays.queue[0].modifier, 'escalate');
@@ -1900,6 +1955,9 @@ test('conditional return-card delays change removal and cancelling them restores
   ] };
   const context = h.ctx.explorationCardContext(entry, card);
   const items = delayRules.delayed(card, { ...context, resourceRules: rules });
+  const pending = h.ctx.createExplorationDelayCardTools(entry, card, context);
+  assert.ok(buttonNamed(pending, '确认条件成立并登记'));
+  assert.ok(!pending.buttons.some(button => button.textContent === '自动结算'), '未知条件保留手动确认');
   assert.equal(entry.removal, 'keep');
   await h.ctx.scheduleExplorationDelay(entry, card, items, context, { confirmed: true });
   assert.equal(entry.removal, 'remove');
@@ -2031,7 +2089,177 @@ test('card-face audit old Escalate arrangements remain visible for cancellation 
   assert.ok(buttonNamed(active, '撤销延迟安排'));
   const step = h.ctx.createDelayedExplorationStepTools('encounter');
   assert.match(textOf(step), /旧登记条件已更正/);
-  await clickAndWait(buttonNamed(step, '撤销旧安排'));
+  assert.deepEqual(step.buttons, [], '遭遇提醒只展示来源与内容');
+  await clickAndWait(buttonNamed(active, '撤销延迟安排'));
   assert.equal(h.record.explorationDelays.queue[0].status, 'cancelled');
   assert.deepEqual(h.alerts, []);
+});
+
+function enableStructureSaves(h, cycle, techKeys) {
+  const engine = require('../technology/structure-tech-rules.js');
+  const dictionary = JSON.parse(fs.readFileSync(path.join(root, 'technology/tech_card_dictionary.min.json'), 'utf8'));
+  h.ctx.window.ATO_STRUCTURE_TECH_RULES = engine;
+  h.ctx.getStructureTechContext = () => ({ dictionary, technology: { unlocked: techKeys },
+    cycleId: cycle, day: h.ctx.state.day, record: h.cachedRecord, automation: { events: {} } });
+  h.ctx.refreshStructureTechContext = async () => h.ctx.getStructureTechContext();
+}
+
+test('an unselected structural Save does not block automatic settlement or pay its cost', async () => {
+  const entry = drawnEntry('6402', 'Hornsworn Fleet');
+  const h = settleHarness({ cycle: 'c1', diplomacyBonus: -3, activePiles: [[entry], []], fullRecord: nextRecord('c1') });
+  enableStructureSaves(h, 'c1', ['advanced crew expansion']);
+  const card = dataset.cards['c1:6402'];
+  const context = h.ctx.explorationCardContext(entry, card);
+  const item = h.ctx.explorationEffectDescriptors(entry, card, context).find(value => value.effects?.some(effect => effect.type === 'crew'));
+  const tools = h.ctx.createStructureSaveTools(entry, item);
+  assert.match(textOf(tools), /外交 7\+/);
+  assert.match(textOf(tools), /命运/);
+  assert.match(textOf(tools), /默认不豁免/);
+  assert.equal(tools.buttons.filter(button => button.textContent === '继续原效果').length, 0);
+  await h.ctx.settleSingleExplorationEffects([entry]);
+  await h.ctx.settleExplorationDraw();
+  assert.equal(h.record.cycleStats.c1.crew, '2');
+  assert.equal(h.record.cycleStats.c1.fate, '0', 'a reminder does not pay for or execute a Save');
+  await h.ctx.settleExplorationDraw();
+  assert.equal(h.record.cycleStats.c1.crew, '2', 'the original effect remains receipt-idempotent');
+});
+
+test('draw-time single-effect settlement applies Debt without selecting an available Save', async () => {
+  const entry = drawnEntry('9341', 'Waster Caravan');
+  const h = settleHarness({ cycle: 'c4', diplomacyBonus: -1, activePiles: [[entry], []],
+    fullRecord: nextRecord('c4', { babelianDebt: '2', fate: '0' }) });
+  enableStructureSaves(h, 'c4', ['law mora']);
+  h.ctx.refreshStructureTechContext = async () => { throw new Error('optional lookup must not block settlement'); };
+  await h.ctx.settleSingleExplorationEffects([entry]);
+  assert.equal(h.record.cycleStats.c4.babelianDebt, '3');
+  assert.equal(h.record.cycleStats.c4.fate, '0');
+  await h.ctx.settleSingleExplorationEffects([entry]);
+  assert.equal(h.record.cycleStats.c4.babelianDebt, '3');
+  assert.deepEqual(h.alerts, []);
+});
+
+test('manual Save handling skips the entire effect and can restore its original pending state', async () => {
+  const entry = drawnEntry('6421', 'Desecrated Temple');
+  const h = settleHarness({ cycle: 'c1', diplomacyBonus: -2, activePiles: [[entry], []], fullRecord: nextRecord('c1') });
+  enableStructureSaves(h, 'c1', ['rhetoric']);
+  const item = h.ctx.explorationEffectDescriptors(entry, dataset.cards['c1:6421'],
+    h.ctx.explorationCardContext(entry, dataset.cards['c1:6421']))[0];
+  const tools = h.ctx.createStructureSaveTools(entry, item);
+  await clickAndWait(buttonNamed(tools, '豁免'));
+  await h.ctx.settleExplorationCard(entry);
+  assert.equal(h.record.cycleStats.c1.strangers, '0');
+  assert.equal(h.record.resources['c1-monument'], 2, 'independent resource gains still settle');
+  assert.equal(h.record.cycleStats.c1.fate, '0');
+  const restored = h.ctx.createStructureSaveTools(entry, item);
+  await clickAndWait(buttonNamed(restored, '恢复本项待办'));
+  await h.ctx.settleExplorationCard(entry);
+  assert.equal(h.record.cycleStats.c1.strangers, '1');
+});
+
+test('missing optional Save context does not block an explicit batch or resource gains', async () => {
+  const entry = drawnEntry('6421', 'Desecrated Temple');
+  const value = nextRecord('c1');
+  const h = settleHarness({ cycle: 'c1', diplomacyBonus: -2, activePiles: [[entry], []], fullRecord: value });
+  enableStructureSaves(h, 'c1', ['rhetoric']);
+  h.ctx.getStructureTechContext = () => null;
+  h.ctx.refreshStructureTechContext = async () => { throw new Error('offline Save context'); };
+  await h.ctx.settleExplorationDraw();
+  assert.ok(h.written.length > 0);
+  assert.equal(h.record.cycleStats.c1.strangers, '1');
+  assert.equal(h.record.resources['c1-monument'], 2);
+  assert.deepEqual(h.alerts, []);
+});
+
+test('explicit manual Save completion suppresses both parts of a compound Doom effect', async () => {
+  const entry = drawnEntry('13536', 'Fast-Forwarded');
+  const h = settleHarness({ cycle: 'c3', activePiles: [[entry], []], fullRecord: nextRecord('c3', { paradox: '3', fate: '6' }) });
+  enableStructureSaves(h, 'c3', ['sun shielding']);
+  h.ctx.state.cardTracksVersion = 2;
+  h.ctx.state.cardTracks = { doom: { started: true, position: 1, doom: 0 }, story: { started: true, position: 1, progress: 0 } };
+  const card = dataset.cards['c3:13536'];
+  const item = h.ctx.explorationEffectDescriptors(entry, card, h.ctx.explorationCardContext(entry, card))[0];
+  assert.match(textOf(h.ctx.createStructureSaveTools(entry, item)), /凝固时光/);
+  await clickAndWait(buttonNamed(h.ctx.createStructureSaveTools(entry, item), '豁免'));
+  await h.ctx.settleExplorationDraw();
+  assert.equal(h.record.cycleStats.c3.paradox, '3', 'manual completion skips the compound row');
+  assert.equal(h.ctx.state.cardTracks.doom.doom, 0);
+  assert.equal(h.ctx.pendingExplorationTokenReminders().length, 0);
+});
+
+test('an existing Doom placement defaults to the original gain while optional Save context is missing', () => {
+  const entry = drawnEntry('13536', 'Fast-Forwarded');
+  const h = settleHarness({ cycle:'c3', activePiles:[[entry],[]], fullRecord:nextRecord('c3') });
+  h.ctx.window.ATO_STRUCTURE_TECH_RULES = require('../technology/structure-tech-rules.js');
+  h.ctx.getStructureTechContext = () => null;
+  const item = {id:'pending-doom', effects:[], conditionState:true, manualPlacements:[{type:'doom',amount:1}], placementOnly:true};
+  h.ctx.state.cardTracksVersion = 2;
+  h.ctx.state.cardTracks = { doom: { started: true, position: 1, doom: 0 } };
+  assert.equal(h.ctx.explorationTokenPlacementBlocked(entry,item),'');
+  assert.ok(buttonNamed(h.ctx.createExplorationTokenPlacementTools(entry,item),'读取豁免提醒'));
+  assert.equal(h.ctx.placeExplorationCardToken(entry,item,'doom','doom'),true);
+  assert.equal(h.ctx.state.cardTracks.doom.doom,1);
+});
+
+test('manual Dues Save skips the whole choice and restoring it permits the original cost and Hull loss', async () => {
+  const key=resource=>dataset.cycles.c4.resources[resource].storageKey;
+  const entry=drawnEntry('9329','Diminishing Returns');
+  const initial=nextRecord('c4',{fate:'7'},{[key('cursedDerelict')]:3,[key('imperialScroll')]:1,[key('babylonianContraption')]:1});
+  const h=settleHarness({cycle:'c4',activePiles:[[entry],[]],fullRecord:initial});
+  enableStructureSaves(h,'c4',['argo onboarding']);
+  const plan=optionRules.duesPlan(h.record,'c4',dataset);
+  assert.equal(h.record.resources[key('babylonianContraption')],1);
+  assert.equal(h.record.cycleStats.c4.hull,'4');
+  const card=dataset.cards['c4:9329'];
+  let tools=h.ctx.createExplorationChoiceTools(entry,card,h.ctx.explorationCardContext(entry,card));
+  assert.match(textOf(tools),/船体/);
+  await clickAndWait(buttonNamed(tools,'豁免'));
+  await assert.rejects(h.ctx.writeExplorationChoice(entry,'choice:dues','babylonianContraption',plan),/手动处理/);
+  tools=h.ctx.createExplorationChoiceTools(entry,card,h.ctx.explorationCardContext(entry,card));
+  assert.equal(tools.buttons.filter(button=>button.textContent==='恢复待办').length,0,'only the complete Save restore is exposed');
+  await clickAndWait(buttonNamed(tools,'恢复本项待办'));
+  await h.ctx.writeExplorationChoice(entry,'choice:dues','babylonianContraption',plan);
+  assert.equal(h.record.resources[key('babylonianContraption')],0);
+  assert.equal(h.record.cycleStats.c4.hull,'3');
+});
+
+test('unselected String Wish Save defaults to the original debt in both batch and direct repayment', async () => {
+  const entry=drawnEntry('9333','String Wish');
+  const value=nextRecord('c4',{babelianDebt:'0',fate:'0'},{[dataset.cycles.c4.resources.cursedDerelict.storageKey]:0});
+  value.explorationPersistentEffects={c4:{stringWish:{resource:'cursedDerelict',remaining:2}}};
+  const h=settleHarness({cycle:'c4',activePiles:[[entry],[]],fullRecord:value});
+  enableStructureSaves(h,'c4',['law mora']);
+  const block=h.ctx.createExplorationSettleBlock(entry);
+  assert.match(textOf(block),/巴比伦债务/);
+  await clickAndWait(buttonNamed(block,'自动还款'));
+  assert.equal(h.record.cycleStats.c4.babelianDebt,'1');
+  assert.deepEqual(h.alerts,[]);
+  await h.ctx.settleExplorationCard(entry);
+  assert.equal(h.record.cycleStats.c4.babelianDebt,'1');
+  assert.equal(h.record.explorationPersistentEffects.c4.stringWish.remaining,1);
+  const automatic=settleHarness({cycle:'c4',activePiles:[[entry],[]],fullRecord:value});
+  enableStructureSaves(automatic,'c4',['law mora']);
+  await automatic.ctx.settleExplorationCard(entry);
+  assert.equal(automatic.record.cycleStats.c4.babelianDebt,'1');
+  assert.equal(automatic.record.explorationPersistentEffects.c4.stringWish.remaining,1);
+});
+
+test('identical Save abilities render one reminder while retaining every source card', () => {
+  const entry=drawnEntry('10301','Save sources');
+  const h=settleHarness({cycle:'c5',activePiles:[[entry],[]],fullRecord:nextRecord('c5')});
+  const keys=['advanced crew expansion','argo security','argo timeline security','argo philosophy'];
+  enableStructureSaves(h,'c5',keys);
+  const context=h.ctx.getStructureTechContext();
+  context.dictionary={cards:copySaveCards()};
+  function copySaveCards() {
+    const dictionary=JSON.parse(fs.readFileSync(path.join(root,'technology/tech_card_dictionary.min.json'),'utf8'));
+    return dictionary.cards.filter(card=>keys.includes(card.key)).map(card=>({...card,type:{...card.type,loop_limited:false}}));
+  }
+  h.ctx.getStructureTechContext=()=>context;
+  const tools=h.ctx.createStructureSaveTools(entry,{id:'crew-loss',effects:[{type:'crew',amount:-1}]});
+  assert.equal(tools.children.filter(node=>node.tag==='details').length,1,'same effect has one outer reminder');
+  const images=tools.descendants().filter(node=>node.tag==='img');
+  assert.equal(images.length,4);
+  assert.equal(new Set(images.map(node=>node.src)).size,4);
+  assert.equal(tools.buttons.filter(node=>node.textContent==='豁免').length,1);
+  for (const name of ['高级船员扩招','阿尔戈号安保','阿尔戈号时光安保','阿尔戈号哲学']) assert.ok(textOf(tools).includes(name));
 });

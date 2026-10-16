@@ -18,6 +18,7 @@
 *.tiff
 *.svg
 *.pdf
+*.docx
 *.mp3
 *.wav
 *.ogg
@@ -65,6 +66,7 @@
 !/assets/exploration-card-choices.js
 !/assets/exploration-card-delays.js
 !/assets/exploration-card-conditions.js
+!/assets/exploration-pursuit.js
 !/assets/exploration-card-resources.js
 !/assets/exploration-card-tags.js
 !/assets/page-focus-router.js

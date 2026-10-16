@@ -103,6 +103,7 @@ function recordStartupContext({ remote, fetch, keepLocal = true, cycle = 'c1', s
   const activity = { prompts: 0, saves: 0 };
   const c = recordContext({
     state: clone(initialState), defaultState: clone(initialState), serverStateBaseline: clone(initialState),
+    normalizeState: value => ({ ...clone(initialState), ...clone(value) }),
     elements: { cycleTitle: {}, cycleWarning: {} },
     document: { querySelectorAll: selector => selector === '[data-cycle-bind]' ? inputs : [] },
     currentCycle: () => ({ label: 'cycle', fateWarning: '' }),
@@ -110,7 +111,8 @@ function recordStartupContext({ remote, fetch, keepLocal = true, cycle = 'c1', s
     renderAll: () => c.renderCycleFields(),
     queueServerSave: () => activity.saves++,
     requestedDashboardSurveyNote: surveyNote,
-    cycleData: { c1: {}, c2: {}, c3: {}, c4: {}, c5: {} },
+    cycleData: { c1: { initialHull: '4', initialCrew: '5' }, c2: { initialHull: '5', initialCrew: '5' },
+      c3: { initialHull: '5', initialCrew: '5' }, c4: { initialHull: '5', initialCrew: '6' }, c5: { initialHull: '6', initialCrew: '4' } },
     markAdventureFromSurvey: (cycleId, adventure, box) => {
       c.state.adventures ||= {};
       c.state.adventures[`${cycleId}-0-${box}`] = true;
