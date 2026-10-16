@@ -168,3 +168,6 @@ desktop.ini
 
 # 官方存档导入的地图/探针工作目录（临时脚本与 dump，报告留在工作区但不进仓库）
 /map-import-work/
+
+# Local reference documents and generated audit materials
+/docs/

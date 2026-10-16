@@ -12,6 +12,7 @@ $mediaExtensions = @(
 
 $blockedPaths = @(
   'data/',
+  'docs/',
   'logs/',
   'log/',
   'tmp/',
