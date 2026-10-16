@@ -63,7 +63,8 @@ function dashboard(cycle = 'c1', positions = {}) {
     'normalizeCounterValue', 'activeStoryDoomData', 'cardTrackCard', 'cardTrackPreviewCard',
     'cardTrackStatus', 'cardTrackMeta', 'cardTrackTokenState', 'cardTokenLimitText',
     'cardTokenPlacementTargets', 'renderCardTokenPlacementTools', 'refreshCardTokenViews', 'placeCardTrackToken',
-    'getStoryMapReminders', 'getDoomMapReminders', 'renderStepTrackReminders',
+    'getMapProgressTechReminders', 'getStoryMapReminders', 'getDoomMapReminders', 'renderStepTrackReminders',
+    'doomSaveFateSources',
   ]) vm.runInContext(dashboardFunction(name), context);
   context.calls = calls;
   context.loadDialog = () => vm.runInContext(dashboardFunction('renderCardTrackDialog'), context);
@@ -134,6 +135,20 @@ function explorationDashboard(cycle = 'c1') {
   ]) vm.runInContext(dashboardFunction(name), app);
   app.entry = entry;
   app.local = local;
+  return app;
+}
+
+function mapReminderDashboard(cycle = 'c1', unlocked = ['hope logic']) {
+  const app = dashboard(cycle);
+  app.cachedArgoRecord = { fate: '2' };
+  app.state.mapSnapshot = { cycleId: cycle, currentTileId: 'tile-a', exploredIds: ['tile-a'] };
+  app.state.mapCurrentTileTags = ['progress', 'calamity'];
+  app.currentMapTagSet = () => new Set(app.state.mapCurrentTileTags);
+  app.window.ATO_STRUCTURE_TECH_RULES = require('../technology/structure-tech-rules.js');
+  app.saveContext = { dictionary: require('../technology/tech_card_dictionary.min.json'),
+    technology: { unlocked }, cycleId: cycle, record: app.cachedArgoRecord };
+  app.getStructureTechContext = () => app.saveContext;
+  vm.runInContext(dashboardFunction('structureSaveReminders'), app);
   return app;
 }
 
@@ -428,8 +443,8 @@ test('doom dialogs hide progress controls outside cycle IV and retain doom contr
   assert.match(storyTitles[1][0], /上限 1/);
 });
 
-test('map progress and doom reminders include live target tools and quick placement', () => {
-  const app = dashboard();
+test('map progress and doom reminders retain normal quick placement', () => {
+  const app = mapReminderDashboard();
   app.state.cardTracks.story.progress = 3;
   const progress = app.renderStepTrackReminders(app.getStoryMapReminders());
   const doom = app.renderStepTrackReminders(app.getDoomMapReminders());
@@ -440,6 +455,172 @@ test('map progress and doom reminders include live target tools and quick placem
   assert.equal(hasPlacement(progress, 'inwardOdyssey', 'progress', 1), true);
   assert.equal(hasPlacement(doom, 'doom', 'doom', 1), true);
   assert.match(doom, /title="[^"]*上限/);
+});
+
+test('map Doom appends the Save cost, check and effect to the tile description without blocking placement', () => {
+  for (const [cycle, key, name, expected] of [
+    ['c1', 'hope logic', '希望之解', /\+1 命运.*检定 8\+.*成功时本次灾祸增加量降低 1。/],
+    ['c3', 'sun shielding', '太阳防护', /失去 1 凝固时光.*掷 1d10.*4\+ 忽略本次灾祸增加/],
+  ]) {
+    const app = mapReminderDashboard(cycle, [key]);
+    const markup = app.renderStepTrackReminders(app.getDoomMapReminders());
+    const hint = markup.match(/<p class="step-track-desc">([^]*?)<\/p>/);
+    assert.ok(hint);
+    assert.match(hint[1], new RegExp(`带有灾祸标记。请在灾祸步骤放置 1 个灾祸指示物。 ${name}：`));
+    assert.match(hint[1], expected);
+    assert.doesNotMatch(hint[1], /X|当前灾祸卡编号/);
+    assert.ok(markup.indexOf(hint[0]) < markup.indexOf('data-card-token-place='));
+    assert.doesNotMatch(markup, /如需使用请按卡面手动结算/);
+    assert.doesNotMatch(markup, /可用豁免|（最低\s*0）|step-track-save-hint/);
+    assert.doesNotMatch(markup, /<img|<details|继续原效果|本项已手动处理|\bdisabled\b/);
+    assert.equal(hasPlacement(markup, 'doom', 'doom', 1), true);
+    // 「+1 命运」的豁免带一键加命运按钮（样式同已探索板块进展）；凝固时光那类代价不配这个按钮。
+    if (key === 'hope logic') {
+      assert.match(markup, /data-doom-save-fate="hope logic"[^>]*>命运 \+1<\/button>/);
+    } else {
+      assert.doesNotMatch(markup, /data-doom-save-fate/);
+    }
+    assert.equal(app.placeCardTrackToken('doom', 'doom', 1), true);
+    assert.equal(app.state.cardTracks.doom.doom, 1);
+    assert.equal(app.cachedArgoRecord.fate, '2');
+  }
+});
+
+test('map Doom Save records Fate +1 from the latest record and stops at the Fate cap', async () => {
+  const app = mapReminderDashboard('c1', ['hope logic']);
+  const alerts = [];
+  app.window.alert = message => alerts.push(message);
+  app.structureTechTarget = () => ({ cycleId: 'c1' });
+  app.assertStructureTechTarget = () => {};
+  app.explorationEffectRules = () => require('../assets/exploration-card-effects.js');
+  app.refreshStructureTechContext = async () => {};
+  let saved;
+  app.mutateExplorationRecord = async mutate => {
+    saved = mutate({ cycle: 'c1', fate: '6', cycleStats: { c1: { fate: '6' } }, resources: { untouched: 9 } }).record;
+  };
+  vm.runInContext(dashboardFunction('addDoomSaveTechFate'), app);
+  await app.addDoomSaveTechFate('hope logic');
+  assert.equal(saved.cycleStats.c1.fate, '7');
+  assert.equal(saved.fate, '7');
+  assert.equal(saved.resources.untouched, 9);
+  assert.deepEqual(alerts, []);
+  saved = undefined;
+  app.mutateExplorationRecord = async mutate => { saved = mutate({ cycle: 'c1', fate: '11' }).record; };
+  await app.addDoomSaveTechFate('hope logic');
+  assert.equal(saved, undefined, 'a Save that would pass the Fate cap must not partially apply');
+  assert.match(alerts[0], /超过上限/);
+});
+
+test('Hope Logic uses the current printed Doom card number across A/B sides and updates after advancement', () => {
+  const app = mapReminderDashboard('c1', ['hope logic']);
+  for (const [position, threshold] of [[1, 8], [2, 8], [3, 7], [4, 7], [5, 6], [6, 6]]) {
+    app.state.cardTracks.doom.position = position;
+    const hint = app.getDoomMapReminders()[0].desc;
+    assert.ok(hint.includes(`检定 ${threshold}+`), `Doom position ${position}: ${hint}`);
+    assert.doesNotMatch(hint, /X|当前灾祸卡编号/);
+  }
+  app.state.cardTracks.doom.position = 0;
+  const pending = app.getDoomMapReminders()[0].desc;
+  assert.match(pending, /选择当前灾祸卡/);
+  assert.doesNotMatch(pending, /检定 \d+\+|X|NaN/, 'an unstarted track must not borrow the preview card number');
+});
+
+test('map Doom omits unavailable Save hints without blocking placement', () => {
+  const app = mapReminderDashboard('c1', []);
+  assert.doesNotMatch(app.renderStepTrackReminders(app.getDoomMapReminders()), /希望之解/);
+  app.saveContext = null;
+  assert.doesNotMatch(app.renderStepTrackReminders(app.getDoomMapReminders()), /希望之解/);
+  assert.equal(app.placeCardTrackToken('doom', 'doom', 1), true);
+  app.state.mapCurrentTileTags = ['progress'];
+  assert.equal(app.getDoomMapReminders().length, 0);
+});
+
+test('all five explored-tile technologies remind their printed cost and reward in the story step without applying them', () => {
+  for (const [cycle, key, name, fate] of [
+    ['c1', 'deeply embedded spies', '敌后密探', 2],
+    ['c2', 'grassroot support', '基层支持', 1],
+    ['c3', "delphi peoples' support", '德尔菲人民支援', 1],
+    ['c4', 'archeohistorians', '考古历史学家', 2],
+    ['c5', 'pattern deciphering', '模式破译', 1],
+  ]) {
+    const app = mapReminderDashboard(cycle, [key]);
+    app.state.mapCurrentTileIsLatestRevealed = false;
+    const before = JSON.stringify(app.state);
+    const reminders = app.getStoryMapReminders();
+    assert.equal(reminders.length, 1);
+    assert.match(reminders[0].title, new RegExp(name));
+    assert.ok(reminders[0].desc.includes(`+${fate} 命运`));
+    assert.match(reminders[0].desc, /外交（7\+）.*成功时获得 1 进展/);
+    if (cycle === 'c4') assert.match(reminders[0].desc, /或在内蕴奥德赛上放置 1 个进展指示物/);
+    assert.match(reminders[0].desc, /失败时不增加进展/);
+    const markup = app.renderStepTrackReminders(reminders);
+    assert.equal(hasPlacement(markup, 'story', 'progress', 1), true);
+    assert.equal(hasPlacement(markup, 'inwardOdyssey', 'progress', 1), true);
+    assert.ok(markup.includes(`data-map-progress-fate="${key}"`));
+    assert.ok(markup.includes(`>命运 +${fate}</button>`));
+    assert.equal(JSON.stringify(app.state), before);
+    assert.equal(app.cachedArgoRecord.fate, '2');
+  }
+});
+
+test('map progress technology Fate uses the latest record and leaves progress for a separate click', async () => {
+  for (const [cycle, key, amount] of [
+    ['c1', 'deeply embedded spies', 2], ['c2', 'grassroot support', 1],
+    ['c3', "delphi peoples' support", 1], ['c4', 'archeohistorians', 2], ['c5', 'pattern deciphering', 1],
+  ]) {
+    const app = mapReminderDashboard(cycle, [key]);
+    const alerts = [];
+    app.window.alert = message => alerts.push(message);
+    app.structureTechTarget = () => ({ cycleId: cycle });
+    app.assertStructureTechTarget = () => {};
+    app.explorationEffectRules = () => require('../assets/exploration-card-effects.js');
+    let saved;
+    app.mutateExplorationRecord = async mutate => {
+      saved = mutate({ cycle, fate: '6', cycleStats: { [cycle]: { fate: '6' } }, resources: { untouched: 9 } }).record;
+    };
+    app.refreshStructureTechContext = async () => {};
+    vm.runInContext(dashboardFunction('addMapProgressTechFate'), app);
+    await app.addMapProgressTechFate(key);
+    assert.equal(saved.cycleStats[cycle].fate, String(6 + amount));
+    assert.equal(saved.fate, String(6 + amount));
+    assert.equal(saved.resources.untouched, 9);
+    assert.equal(app.state.cardTracks.story.progress, 0);
+    assert.deepEqual(alerts, []);
+    saved = undefined;
+    app.mutateExplorationRecord = async mutate => { saved = mutate({ cycle, fate: '12' }).record; };
+    await app.addMapProgressTechFate(key);
+    assert.equal(saved, undefined, 'over-limit payment must not partially apply');
+    assert.match(alerts[0], /超过上限/);
+  }
+});
+
+test('explored-tile progress reminders exclude preview-only, untagged, stale-cycle and missing map data', () => {
+  const app = mapReminderDashboard('c1', ['deeply embedded spies']);
+  app.state.mapCurrentTileIsLatestRevealed = false;
+  app.state.mapSnapshot.exploredIds = [];
+  assert.equal(app.getMapProgressTechReminders().length, 0, 'revealing a scout preview does not explore the tile');
+  app.state.mapSnapshot.exploredIds = ['tile-a'];
+  app.state.mapCurrentTileTags = ['city'];
+  assert.equal(app.getMapProgressTechReminders().length, 0);
+  app.state.mapCurrentTileTags = ['progress'];
+  app.state.mapSnapshot.cycleId = 'c2';
+  assert.equal(app.getMapProgressTechReminders().length, 0);
+  app.state.mapSnapshot = null;
+  assert.equal(app.getMapProgressTechReminders().length, 0);
+});
+
+test('explored-tile progress reminders follow unlocks, cycle scope, unimportant preferences and temporary disablement', () => {
+  const app = mapReminderDashboard('c1', ['deeply embedded spies']);
+  assert.equal(app.getMapProgressTechReminders().length, 1);
+  app.saveContext.technology.unlocked = [];
+  assert.equal(app.getMapProgressTechReminders().length, 0);
+  app.saveContext.technology = { unlocked: ['deeply embedded spies'], unimportant: ['deeply embedded spies'] };
+  assert.equal(app.getMapProgressTechReminders().length, 0);
+  app.saveContext.technology.unimportant = [];
+  app.saveContext.record.explorationDelays = { disabledTechs: { c1: { 'deeply embedded spies': {} } } };
+  assert.equal(app.getMapProgressTechReminders().length, 0);
+  const wrongCycle = mapReminderDashboard('c2', ['deeply embedded spies']);
+  assert.equal(wrongCycle.getMapProgressTechReminders().length, 0);
 });
 
 test('an exploration shortcut places once, marks a pure placement complete, and clears its pending task', () => {

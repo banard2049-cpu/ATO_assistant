@@ -1563,7 +1563,7 @@
             <span id="cycleTag" class="hidden"></span>
             <label data-cycle-field="c1 c2 c3 c4 c5">
               <span class="item-label"><span class="item-icon" aria-hidden="true" style="--item-icon-w:14px;--item-icon-h:12px;--icon-src:url(../assets/icons/argo-fate.svg)"></span>阿尔戈号命运</span>
-              <input data-cycle-bind="fate" type="number" min="0" max="12">
+              <input data-cycle-bind="fate" type="number" min="0" max="9">
             </label>
             <label data-cycle-field="c4"><span class="item-label"><span class="item-icon" aria-hidden="true" style="--item-icon-w:13px;--item-icon-h:13px;--icon-src:url(../assets/icons/babelian-debt.svg)"></span>巴比伦债务</span><input data-cycle-bind="babelianDebt" type="number" min="0"></label>
             <div class="identity-mark-field" data-cycle-field="c4">
@@ -3022,7 +3022,23 @@
 
     function normalizeResources(value) {
       const resources = isPlainObject(value) ? cloneJson(value) : {};
+      const legacyAibpCores = {
+        "core-alpha-temenos": "core-temenos",
+        "core-hypertime-oracle": "core-oracle",
+        "core-icarian-harpy": "core-harpy",
+        "core-sun-descendant": "core-sunDescendant",
+      };
       Object.keys(cycleData).forEach((cycleId) => {
+        // Old AIBP awards used hidden counters; preserve them alongside any
+        // balance already recorded in the visible fields, then remove aliases.
+        Object.entries(legacyAibpCores).forEach(([legacy, current]) => {
+          const legacyCoreKey = `${cycleId}-${legacy}`;
+          if (resources[legacyCoreKey] === undefined) return;
+          const coreKey = `${cycleId}-${current}`;
+          resources[coreKey] = Math.max(0, Number(resources[coreKey]) || 0)
+            + Math.max(0, Number(resources[legacyCoreKey]) || 0);
+          delete resources[legacyCoreKey];
+        });
         const legacyKey = `${cycleId}-core-hermesian-pursuer`;
         if (resources[legacyKey] === undefined) return;
         const key = `${cycleId}-core-pursuer`;
@@ -3396,7 +3412,7 @@
 
     function setupIdentityNumberFields() {
       const config = {
-        fate: { min: 0, max: 12 },
+        fate: { min: 0, max: 9 },
         humanity: { min: null, max: null },
         renegade: { min: 0, max: null },
         strangers: { min: 0, max: null },
@@ -4876,8 +4892,11 @@
       });
       const seen = new Set(resources.map(({ key }) => key));
       const catalog = new Map(Object.values(cycleData).flatMap((item) => item.resources).map((item) => [item[0], item]));
-      nemesisOptionsByCycle[state.cycle].forEach((key) => {
-        if (key !== currentNemesis().key && !state.nemesisResourceHistory?.[`${state.cycle}:${key}`]) return;
+      const hasBlackbeakLoot = state.cycle === "c5" && state.resources?.["c5-core-pursuer"] !== undefined;
+      const resourceNemeses = [...nemesisOptionsByCycle[state.cycle], ...(hasBlackbeakLoot ? ["pursuer"] : [])];
+      resourceNemeses.forEach((key) => {
+        if (key !== currentNemesis().key && !state.nemesisResourceHistory?.[`${state.cycle}:${key}`]
+          && !(hasBlackbeakLoot && key === "pursuer")) return;
         const enemy = nemesisByKey[key];
         const coreKey = `core-${key}`;
         if (!seen.has(coreKey)) {

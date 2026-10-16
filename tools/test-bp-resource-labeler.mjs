@@ -172,9 +172,10 @@ function sourceSet(source, name) {
 
 const directRecordKeys = sourceSet(lootSource, "DIRECT_RECORD_RESOURCE_KEYS");
 assert.deepEqual(
-  new Set(manifest.resourceKeys),
+  // Story rewards also use these shared record fields, outside printed BP loot.
+  new Set([...manifest.resourceKeys, "sisyphusTears", "pygmalionStones", "echoes"]),
   directRecordKeys,
-  "C4-C5 label keys must write directly to record resource fields"
+  "C4-C5 BP and story reward keys must write directly to record resource fields"
 );
 
 const apostleCycles = sourceObject(lootSource, "APOSTLE_RECORD_CYCLE");

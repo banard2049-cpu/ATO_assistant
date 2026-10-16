@@ -1062,11 +1062,13 @@ if ($action === 'import-sections') {
 
   // 校验放在写入之前：只要有一个模块的版本对不上，就整份拒绝，绝不留下一半新一半旧。
   $conflicts = [];
-  foreach (array_keys($incoming) as $name) {
-    if (!array_key_exists($name, $expectedRevisions)) continue; // 没给期望版本 = 明确要求覆盖
+  // Expected revisions also describe read dependencies. A transaction can read
+  // technology to validate an action while writing only dashboard + record;
+  // changing that dependency must refuse the entire transaction as well.
+  foreach ($expectedRevisions as $name => $expectedRevision) {
     $currentRevision = (int) ($campaign['sectionRevisions'][$name] ?? 0);
-    if ((int) $expectedRevisions[$name] !== $currentRevision) {
-      $conflicts[$name] = ['expected' => (int) $expectedRevisions[$name], 'revision' => $currentRevision];
+    if ((int) $expectedRevision !== $currentRevision) {
+      $conflicts[$name] = ['expected' => (int) $expectedRevision, 'revision' => $currentRevision];
     }
   }
   if ($conflicts) {

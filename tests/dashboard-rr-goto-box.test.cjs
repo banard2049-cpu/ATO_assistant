@@ -32,6 +32,13 @@ function declaration(name) {
   return source.slice(start, end);
 }
 
+// 单行常量（如 SURVEY_STORY_ROMANS）按第一个分号截断即可。
+function constantLine(name) {
+  const start = source.indexOf(`    const ${name} = `);
+  assert.ok(start >= 0, `index.html 缺少常量 ${name}`);
+  return source.slice(start, source.indexOf(';', start) + 1);
+}
+
 const surveyConstantData = vm.runInNewContext(
   `(${declaration('surveyConstantData').replace(/^ {4}const surveyConstantData = /, '').replace(/;$/, '')})`,
 );
@@ -79,10 +86,12 @@ function harness(cycle) {
   const names = ['normalizeSurveyConstants', 'surveyConstantsDayKey', 'ensureTodaySurveyConstants',
     'getCurrentSurveyConstantData', 'firstCheckedSurveyHubTarget', 'firstCheckedSurveyRrTarget',
     'surveyRrBoxKey', 'surveyConstantChecked', 'setSurveyConstant', 'createSurveyConstantCard',
-    'createSurveyConstantTools'];
+    'createSurveyConstantTools',
+    // 分支卡标题后的点数（当前故事卡 + 分支总表）——这里没有故事卡追踪条，取不到就退回空括号。
+    'surveyStoryColumnHeaders', 'currentStoryCardLabel', 'surveyStoryColumnIndex', 'surveyHubPointsText'];
   c.rememberConstantDetailsOpen = () => {};
   c.createSurveyHubSummary = () => null;
-  vm.runInContext(declaration('surveyConstantData') + '\n'
+  vm.runInContext(declaration('surveyConstantData') + '\n' + constantLine('SURVEY_STORY_ROMANS') + '\n'
     + names.map((name) => extract(source, name)).join('\n'), c);
   return { c, activity };
 }

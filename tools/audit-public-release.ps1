@@ -6,7 +6,7 @@ $ErrorActionPreference = 'Stop'
 
 $mediaExtensions = @(
   '.png', '.jpg', '.jpeg', '.webp', '.gif', '.bmp', '.tif', '.tiff', '.svg',
-  '.pdf', '.mp3', '.wav', '.ogg', '.m4a', '.flac', '.mp4', '.webm', '.mov',
+  '.pdf', '.docx', '.mp3', '.wav', '.ogg', '.m4a', '.flac', '.mp4', '.webm', '.mov',
   '.zip', '.7z', '.rar', '.ttf', '.otf', '.woff', '.woff2'
 )
 
@@ -58,6 +58,7 @@ $allowedPaths = @(
   'assets/exploration-card-choices.js',
   'assets/exploration-card-delays.js',
   'assets/exploration-card-conditions.js',
+  'assets/exploration-pursuit.js',
   'assets/exploration-card-resources.js',
   'assets/exploration-card-tags.js',
   'assets/jsave-import.js',

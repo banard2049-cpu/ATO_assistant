@@ -467,20 +467,22 @@ button {
   padding: 10px 0 0;
 }
 
-.app .survey-constants {
+.app :is(.survey-constants, .structure-tech-tools) {
   border: 1px solid var(--line);
   border-left: 2px solid var(--accent);
   background: var(--accent-soft);
   padding: 0;
 }
 
-.survey-constants summary {
+.survey-constants summary,
+.app .structure-tech-tools > summary {
   padding: 9px 10px;
   color: var(--accent-strong);
   font-weight: 600;
 }
 
-.survey-constants[open] > summary {
+.survey-constants[open] > summary,
+.app .structure-tech-tools[open] > summary {
   border-bottom: 1px solid var(--line);
 }
 
@@ -574,7 +576,7 @@ button {
   background: #dcefe3;
 }
 
-/* 整条提醒的配色：跟着标签的类型走（R&R 紫、板块砖橙、回忆突破紫蓝、谈判深青、
+/* 整条提醒的配色：跟着标签的类型走（R&R 紫、板块砖橙、回忆突破紫蓝、谈判绿、
    进展赭金），而不是只有标签本身变色。 */
 .app .step-track-reminder.rr {
   border: 1px solid #b9a9d6;
@@ -588,6 +590,17 @@ button {
   background: #f8e9dc;
 }
 
+.app .step-track-reminder.exploration-card {
+  border: 1px solid #b5b5b5;
+  border-left: 4px solid #222;
+  background: #f1f1f1;
+  color: #111;
+}
+
+.app .step-track-reminder.exploration-card .step-track-desc {
+  color: #222;
+}
+
 .app .step-track-reminder.milestone {
   border: 1px solid #a8b1dd;
   border-left: 4px solid #3f55a5;
@@ -595,10 +608,45 @@ button {
 }
 
 .app .step-track-reminder.negotiation {
-  border: 1px solid #9dc4bd;
-  border-left: 4px solid #16675b;
-  background: #e0f0ec;
+  --bg: #eef7f0;
+  --panel: #f8fcf9;
+  --muted: #486653;
+  --line: #a4c9b0;
+  --accent: #2f8056;
+  --accent-strong: #216849;
+  --accent-soft: #e8f5eb;
+  border: 1px solid #7fb69f;
+  border-left: 4px solid #216849;
+  background: #dcefe3;
+  padding: 8px 0;
 }
+
+.app .step-track-reminder.negotiation > :is(.step-track-title, .step-track-desc) {
+  padding-inline: 12px;
+}
+
+.app .step-track-reminder.negotiation .step-track-title {
+  color: var(--accent-strong);
+}
+
+.app .step-track-reminder.negotiation .step-track-title > .step-track-tag + span {
+  color: #000;
+}
+
+.app .step-track-reminder.negotiation > summary {
+  margin-bottom: 0;
+  cursor: pointer;
+  list-style: none;
+}
+.app .step-track-reminder.negotiation > summary::-webkit-details-marker { display: none; }
+.app .step-track-reminder.negotiation > summary::before {
+  content: "";
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-left: 5px solid currentColor;
+  transition: transform 140ms ease;
+}
+.app .step-track-reminder.negotiation[open] > summary::before { transform: rotate(90deg); }
 
 .app .step-track-reminder.advance {
   border: 1px solid #d8c48f;
@@ -641,8 +689,13 @@ button {
   color: #fff;
 }
 
+.app .step-track-tag.exploration-card {
+  background: #222;
+  color: #fff;
+}
+
 .app :is(.date-track-icon, .step-track-tag).negotiation {
-  background: #16675b;
+  background: #216849;
   color: #fff;
 }
 
@@ -722,6 +775,139 @@ button {
 .date-track-meta {
   font-size: 12px;
   font-weight: 500;
+}
+
+.app .structure-tech-tools {
+  margin-top: 12px;
+  width: 100%;
+  min-width: 0;
+}
+
+/* 标题行里的文字与命运徽章装在一层 flex 里，summary 自己保持 list-item 时原生三角会被块级
+   flex 挤到单独一行；这里跟折叠提醒一样改成 flex 行 + 自绘三角，三角、标题、徽章同排。 */
+.app .structure-tech-tools > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent-strong);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+.app .structure-tech-tools > summary::-webkit-details-marker { display: none; }
+.app .structure-tech-tools > summary::before {
+  content: "";
+  flex: 0 0 auto;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-left: 5px solid currentColor;
+  transition: transform 140ms ease;
+}
+.app .structure-tech-tools[open] > summary::before { transform: rotate(90deg); }
+
+.app .step-track-reminder.negotiation > .structure-tech-tools {
+  margin-top: 8px;
+  border: 0;
+  background: transparent;
+}
+.app .step-track-reminder.negotiation .structure-tech-actions { padding: 0; background: transparent; }
+.app .step-track-reminder.negotiation .structure-tech-actions > div { display: grid; gap: 0; }
+.app .step-track-reminder.negotiation .structure-tech-action {
+  padding: 10px;
+  border: 0;
+  background: #f3faf5;
+}
+.app .step-track-reminder.negotiation .structure-tech-action + .structure-tech-action {
+  border-top: 1px solid #c4ddca;
+}
+.app .step-track-reminder.negotiation .structure-tech-action-status:not(:empty) {
+  padding: 8px 10px;
+  background: #f3faf5;
+}
+
+.app .structure-tech-actions { min-width: 0; padding: 0 10px 8px; background: var(--bg); font-size: 13px; }
+.app .structure-tech-action { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; min-width: 0; padding: 9px 0; border-top: 1px solid var(--line); }
+.app .structure-tech-action:first-child { border-top: 0; }
+.app .structure-tech-action-title { flex: 0 1 auto; min-width: 0; text-align: left; }
+.app .structure-tech-action-title strong { font-weight: inherit; }
+.app .structure-tech-card-dialog { width: max-content; max-width: min(960px, 94vw); max-height: 90vh; margin: auto; padding: 16px; overflow: auto; border: 1px solid var(--line); background: var(--panel); color: var(--ink); }
+.app .structure-tech-card-dialog::backdrop { background: #0009; }
+.app .structure-tech-card-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
+.app .structure-tech-card-header h3 { margin: 0; font-size: 16px; }
+.app .structure-tech-card-close { flex-shrink: 0; padding: 5px 10px; font: inherit; }
+.app .structure-tech-card-images { display: flex; flex-wrap: wrap; gap: 12px; }
+.app .structure-tech-card-images figure { flex: 0 1 420px; min-width: 0; max-width: 100%; margin: 0; }
+.app .structure-tech-card-images figcaption { margin-bottom: 6px; font-size: 13px; font-weight: 600; }
+.app .structure-tech-card-images img { display: block; width: auto; height: auto; max-width: 100%; max-height: 72vh; object-fit: contain; }
+/* The containers retain the form's logical groups without forcing new rows. */
+.app :is(.structure-tech-action-mode, .structure-tech-action-fields) { display: contents; }
+.app .structure-tech-action-choice { display: inline-flex; flex: 0 1 auto; flex-wrap: nowrap; align-items: center; gap: 4px; min-width: 0; max-width: 100%; margin: 0; }
+.app .structure-tech-action-choice :is(select, input[type="text"], input[type="number"]) { width: auto; max-width: 18em; min-width: 0; min-height: 30px; padding: 4px; font: inherit; }
+.app .structure-tech-action-choice input[type="checkbox"] { flex: 0 0 auto; width: 15px; height: 15px; margin: 0; }
+.app .structure-tech-action-choice input[type="number"] { width: 4.5em; }
+.app .structure-tech-negotiation-cards { display: flex; flex-wrap: wrap; gap: 12px; width: 100%; }
+.app .structure-tech-negotiation-card { display: flex; flex: 0 1 220px; flex-wrap: wrap; align-items: center; gap: 5px; cursor: pointer; }
+.app .structure-tech-negotiation-card img { width: 100%; height: auto; max-height: 300px; object-fit: contain; }
+.app .exploration-pursuit { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px; margin: 8px 0; border-left: 3px solid var(--accent); background: var(--panel); font-size: 12px; }
+.app .exploration-pursuit-count { display: inline-flex; align-items: center; gap: 6px; }
+.app .exploration-pursuit-count img { width: 22px; height: 22px; object-fit: contain; }
+.app .exploration-pursuit > span { flex: 1 1 240px; min-width: 0; }
+.app .exploration-pursuit :is(select, button) { max-width: 100%; }
+.app .exploration-pursuit details img { display: block; width: 240px; max-width: 100%; height: auto; }
+.app .structure-tech-trade-lines { display: flex; flex: 1 0 100%; flex-wrap: wrap; gap: 6px 10px; min-width: 0; }
+.app .structure-tech-trade-hint { flex: 1 0 100%; margin: 0; color: var(--muted); font-size: 12px; }
+.app .structure-tech-trade-line { display: flex; flex: 1 1 220px; align-items: center; gap: 6px; min-width: 0; max-width: 100%; }
+.app .structure-tech-trade-line > label:first-child { flex: 1 1 0; }
+.app .structure-tech-trade-line select { flex: 1 1 0; width: 100%; max-width: 100%; min-width: 0; }
+.app .structure-tech-trade-line input[type="number"] { width: 3.5em; }
+.app :is(.structure-tech-action-preview, .structure-tech-action-status) { margin: 0; white-space: pre-line; overflow-wrap: anywhere; }
+.app .structure-tech-action-preview { flex: 1 0 max-content; min-width: 0; max-width: 100%; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.app .structure-tech-action-cost { color: var(--ink); font-weight: 700; }
+.app .structure-tech-action-preview[data-wrap="true"] { flex-basis: 100%; order: 1; }
+.app .structure-tech-action-status:not(:empty) { margin: 6px 0; }
+.app .structure-tech-action-status:empty { display: none; }
+.app .structure-tech-action-status[data-state="error"] { color: #a33627; }
+.app .structure-tech-action-use { flex: 0 0 auto; min-height: 30px; margin-left: auto; padding: 5px 8px; font: inherit; }
+.app .structure-tech-action-use:disabled { opacity: .55; cursor: default; }
+.app .structure-save-reminder { margin: 8px 0; padding: 8px; font-size: 10px; line-height: 1.55; }
+.app .structure-save-reminder .exploration-settle-actions button { min-width: calc(4em + 18px); }
+.app .structure-save-reminder details { margin: 6px 0; }
+.app .structure-save-reminder p { margin: 6px 0; }
+
+.app .exploration-delay-tools {
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.app .exploration-delay-tools :is(button, select, input) {
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.app .structure-tech-due { display: grid; gap: 8px; margin-bottom: 16px; }
+.app .structure-tech-due[hidden] { display: none; }
+.app .structure-tech-due-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid var(--line); border-left: 3px solid var(--accent); padding: 10px 12px; background: var(--accent-soft); font-size: 13px; }
+.app .structure-tech-due-item.overdue { border-left-color: #a33627; }
+.app .structure-tech-due-status { margin: 0; padding: 2px 2px 0; color: var(--accent-strong); font-size: 13px; overflow-wrap: anywhere; }
+.app :is(.structure-tech-due-item, .date-track-tech-event) > span { min-width: 0; overflow-wrap: anywhere; }
+.app :is(.structure-tech-due-item, .date-track-tech-event) button { flex-shrink: 0; padding: 6px 9px; font-size: 12px; }
+.app .structure-tech-due-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px; margin-left: auto; flex-shrink: 0; max-width: 100%; }
+.app .structure-tech-due-actions > :is(button, a) { display: inline-flex; align-items: center; justify-content: center; min-height: 38px; border: 0; border-radius: 0; padding: 6px 9px; background: var(--accent-strong); color: #fff; font: inherit; font-size: 12px; font-weight: 600; text-decoration: none; white-space: nowrap; cursor: pointer; transition: background-color 140ms ease, color 140ms ease; }
+.app .structure-tech-due-actions > :is(button, a):hover { background: var(--accent-strong); }
+
+.app .date-track-tech-events { grid-column: 1 / -1; display: grid; gap: 6px; padding: 5px 0 3px; }
+.app .date-track-tech-event { display: flex; align-items: center; justify-content: space-between; gap: 8px; border-left: 2px solid var(--accent); padding-left: 8px; color: var(--accent-strong); font-size: 12px; }
+.app .date-track-tech-event:is(.cooldown, .completed) { border-left-color: var(--line); color: var(--muted); }
+
+@media (max-width: 600px) {
+  .app :is(.structure-tech-due-item, .date-track-tech-event) { align-items: flex-start; flex-direction: column; }
+  .app .structure-tech-action { gap: 7px 8px; }
+  .app .structure-tech-action-title { flex-basis: 100%; }
+  .app .structure-tech-action-choice { flex-wrap: wrap; }
+  .app .structure-tech-action-choice :is(select, input[type="text"]) { max-width: 100%; }
+  .app .structure-tech-trade-line .structure-tech-action-choice { flex-wrap: nowrap; }
+  .app .structure-tech-action .structure-tech-action-preview { flex-basis: 100%; }
 }
 
 .app .second-screen-card {
@@ -998,4 +1184,52 @@ button {
   .progress-fill {
     transition: none;
   }
+}
+
+.app .map-titan-reminder {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 20px;
+  align-items: center;
+  margin-top: 10px;
+  padding: 12px 14px;
+}
+.map-titan-reminder > :not(.map-titan-actions) { grid-column: 1; }
+.app .map-titan-reminder .map-titan-award {
+  font-weight: 700;
+  color: #174e35;
+  margin-top: 7px;
+}
+.map-titan-actions {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 176px;
+  padding-left: 16px;
+  border-left: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+}
+.app .map-titan-actions button {
+  width: 100%;
+  min-height: 40px;
+  padding: 9px 10px;
+  border: 1px solid #75a58a;
+  background: #f4faf6;
+  color: #216849;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+  text-align: center;
+  transition: background .15s, border-color .15s;
+}
+.app .map-titan-actions button[data-map-titan-result="success"] { background: #216849; border-color: #216849; color: #fff; }
+.app .map-titan-actions button:hover { background: #e1efe6; border-color: #216849; }
+.app .map-titan-actions button[data-map-titan-result="success"]:hover { background: #174e35; border-color: #174e35; }
+.app .map-titan-actions button:disabled { opacity: .55; cursor: default; }
+@media (max-width: 600px) {
+  .app .map-titan-reminder { column-gap: 10px; padding: 10px; }
+  .map-titan-reminder > .step-track-title, .map-titan-reminder > .map-titan-award { grid-column: 1 / -1; }
+  .map-titan-actions { grid-row: 3; align-self: start; width: 116px; padding-left: 10px; margin-top: 6px; }
+  .app .map-titan-actions button { padding: 8px 6px; font-size: 12px; }
 }

@@ -711,6 +711,43 @@
       margin-left: auto;
     }
 
+    /* 「科技航行能力 · 使用与时间线」「当前地点可谈判」这两个标题行最右侧的当前阿尔戈号命运。
+       字形是 assets/icons/argo-fate.svg（和别的内联图标一样用遮罩取 currentColor，见下面
+       .card-track-knowledge-icon），数字取当前循环的记录值。
+
+       两处标题行都是 flex 容器（.step-track-title 和 .structure-tech-tools-head），徽章靠
+       auto 外边距贴右。科技面板的 summary 自己也是 flex 行（自绘三角见 api/dashboard.css），
+       这样块级 flex 不会把展开三角挤到单独一行。 */
+    .argo-fate-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-left: auto;
+      font-variant-numeric: tabular-nums;
+    }
+    .structure-tech-tools-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      min-width: 0;
+    }
+    .argo-fate-chip-icon {
+      flex: none;
+      width: 14px;
+      height: 12px;
+      background-color: currentColor;
+      -webkit-mask-image: var(--icon-src);
+      mask-image: var(--icon-src);
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      -webkit-mask-position: center;
+      mask-position: center;
+      -webkit-mask-size: contain;
+      mask-size: contain;
+    }
+
     /* 提醒标签的配色统一放在 api/dashboard.css 的 `.app :is(.date-track-icon, .step-track-tag)`
        规则里 —— 那里是按「日期图标 + 提醒标签共用一套色」组织的，且能压过同文件里的通用
        规则；这里只保留标签的排版。 */
@@ -738,6 +775,7 @@
     .card-token-placement-target { display: inline-flex; gap: 6px; align-items: center; padding: 2px 6px; border: 1px solid #0002; border-radius: 0; background: #ffffff70; }
     .app .step-track-reminder .step-track-tag { border-radius: 0; }
     .card-token-placement-target button { padding: 2px 7px; min-height: 24px; font-size: 12px; line-height: 1.2; }
+    .app .card-token-placement-tools > .map-progress-fate { margin-left: auto; align-self: stretch; min-height: 30px; padding: 2px 7px; border: 0; font-size: 12px; line-height: 1.2; }
     .card-token-placement-target.unavailable { color: var(--muted); }
     .card-token-limit-warning { color: #9d4b13; font-weight: 800; }
     .card-track-counter-label.card-token-limit-warning { color: #9d4b13; }
@@ -801,6 +839,7 @@
     }
 
     /* 派系标签（方形细环、无底色）的环与当前项样式在 api/dashboard.css 的
+
        `.app .exploration-faction-chip` / `.current` 里；这里只留排版尺寸。 */
     .exploration-faction-chip {
       display: inline-flex;
@@ -841,9 +880,12 @@
 
     /* 探索区的折叠入口（暂时移出牌堆 / 隐藏探索卡 / 选择探索卡库）统一成同一套外观：
        一样的字号、字重、行高、内边距、分隔线与自定义三角，不再混用浏览器默认 <details>，
+
        也不再各自往容器上加边框/底色（api/dashboard.css 会把这些容器清成透明无边框，
        本页就顺着这个扁平方向走，只把标题行做成一致的"折叠条"）。
+
        连 #appShell 一起限定，是为了压过 api/dashboard.css 里 `.app :is(...)` 的同名规则
+
        —— 本页 <style> 在它之前加载，光靠标签类名赢不了。 */
     #appShell :is(.exploration-removed-pile, .exploration-hidden, .exploration-builder, .exploration-destruction),
     .exploration-removed-pile,
@@ -921,6 +963,7 @@
     }
 
     /* 「暂时移出牌堆」与「选择探索卡库」横向并排两栏（包裹层用 display: contents 让两个
+
        折叠区直接成为网格项）。同时只允许打开一个：打开时跨两列占满整行，另一个折叠回
        标题行、落到下一行左侧；两个都收起时就是并排的两条标题。 */
     .exploration-removed-piles {
@@ -943,6 +986,7 @@
     }
 
     /* dashboard.css 给卡库内容留过 14px 缩进（原来它单独占一行）。并排/展开时内容直接
+
        从栏边开始，和其它折叠区一致。 */
     .exploration-builder-body {
       padding: 0 0 11px;
@@ -1150,6 +1194,7 @@
     }
 
     /* 破坏卡组沿用「隐藏探索卡」那套（.exploration-hidden* 的折叠条 / body / 卡片行），
+
        这里只留它自己的两处：说明行下面那个按钮，以及"破坏卡 · 探索中"小标。 */
     .exploration-destruction-card button {
       min-height: 22px;
@@ -1171,9 +1216,11 @@
     }
 
     /* 卡库的牌面尺寸与「暂时移出牌堆」（.exploration-drawn-grid：118px 列 + 8px 间距）
+
        逐像素对齐。关键是**两边的列轨道完全相同**：卡库每张外面本来套着带边框和内边距的
        卡片盒（14+2px），同样的列宽算出来的牌面就会小一圈，而且两边的列数会随宽度错开
        —— 实测最差差过 18px。所以列定义、间距、以及 label 的内边距全部按牌堆那边来，
+
        卡片盒的边框/底色改画在牌面自己身上（视觉不变，宽度不再被吃掉）。 */
     .exploration-library {
       max-height: 620px;
@@ -1223,6 +1270,7 @@
     }
 
     /* 折叠条本身的外观（边框/三角/内边距）由上面那组统一的 .exploration-* 折叠样式负责，
+
        这里只管展开后的排版：内容与其它折叠区一样从 14px 开始。 */
     .exploration-hidden-body {
       display: grid;
@@ -1357,6 +1405,22 @@
 
     .survey-hub-title {
       font-weight: 950;
+    }
+
+    .survey-investigation-reminders {
+      display: grid;
+      gap: 5px;
+      border-left: 3px solid var(--accent);
+      border-radius: 4px;
+      padding: 7px 9px;
+      background: #f1f8f5;
+      color: var(--ink);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .survey-investigation-reminders p {
+      margin: 0;
     }
 
     .survey-constant-grid {
@@ -1578,10 +1642,13 @@
     }
 
     /* 灾祸卡面按窗口高度缩放，弹窗里不留上下滚动条。
+
        高度预算（从 dvh 里扣掉）：弹窗外边距 28 + 标题栏约 61 + 正文内边距 28 +
        卡片自身（内边距 20 + 边框 2 + 标题行 22 + 两处 10 间距 + 灾祸/进展与回退/推进
        两行控件约 118）≈ 299px；卡面 aspect-ratio 是 1.4，所以宽度上限
+
        = 1.4 × (dvh - 299)，再留约 60px 余量写成 140dvh - 500px（仍在 1040px 以内）。
+
        和故事卡同宽：灾难卡面不能比故事卡小。容器留够 1px 边框 + 10px 内边距。 */
     .card-track-dialog[data-group="doom"] .card-track-face,
     .card-track-dialog[data-group="doom"] .card-track-empty {
@@ -1720,7 +1787,9 @@
     }
 
     /* 阿尔戈号知识图标，排在知识数字前面。
+
        字形是 assets/icons/argo-knowledge.svg，由 .atopack 的 iconFiles 段随包安装
+
        （程序包不带这些提取自原 App 的素材）；用遮罩取 currentColor 上色。 */
     .card-track-knowledge-icon {
       flex: none;
@@ -1880,8 +1949,11 @@
 
     /* 步骤内的紧凑操作按钮：步骤标题行里的入口按钮（宿敌、进入下一天…）
        和探索卡工具区的按钮共用，保证同一屏里按钮尺寸一致。
+
        探索卡工具区新增按钮时记得挂上这个 class；破坏卡组的「移回」
+
        （.exploration-destruction-card button）和探索卡库的「加入破坏」
+
        （.exploration-library button）是更小的内联控件，故意不参与统一。 */
     .step-action-button {
       min-height: 30px;
@@ -2368,7 +2440,7 @@
       }
     }
   </style>
-  <link rel="stylesheet" href="./api/dashboard.css?v=20261012-exploration-fold1">
+  <link rel="stylesheet" href="./api/dashboard.css?v=20261016-exploration-delay-type1">
   <link rel="stylesheet" href="./assets/theme.css?v=20261007-misc-settings11">
   <script src="./story/data/english-source-data.js?v=20261011-english4"></script>
   <script src="./assets/theme.js?v=20261007-page-navigation1" defer></script>
@@ -2452,6 +2524,7 @@
           </div>
         </div>
         <div class="panel-body">
+          <div id="structureTechDue" class="structure-tech-due" aria-live="polite" hidden></div>
           <div id="flowList" class="flow-list"></div>
         </div>
       </section>
@@ -2493,6 +2566,7 @@
               <button id="exportButton" type="button" class="secondary" data-dashboard-readonly-allowed>导出存档</button>
               <button id="importButton" type="button" class="secondary" title="可导入 ATO 存档包（.json）或官方 App 存档（.jsave）">导入存档</button>
               <!-- 简报读的是每日存档备份，所以入口放在存档控制这一块（不再放在顶部工具条）；
+
                    它是链接但用 secondary 按钮样式，和旁边三个按钮长得一致。 -->
               <a class="secondary briefing-card-link" href="./briefing/index.html">战役简报</a>
               <!-- accept 同时放行官方 App 的 .jsave（导入时会按内容再判一次，不看扩展名） -->
@@ -2649,13 +2723,24 @@
   <script src="./assets/exploration-card-choices.js?v=20261013-next-choices12"></script>
   <script src="./assets/exploration-card-delays.js?v=20261013-automation5"></script>
   <script src="./assets/exploration-card-resources.js?v=20261014-card-face-audit2"></script>
+  <script src="./technology/negotiation-rules.js?v=20261016-automation-audit2"></script>
+  <script src="./technology/voyage-action-rules.js?v=20261016-voyage3"></script>
+  <script src="./technology/exploration-tech-rules.js?v=20261016-automation-audit3"></script>
+  <script src="./technology/structure-tech-rules.js?v=20261016-automation-audit3"></script>
+  <script src="./technology/investigation-rules.js?v=20261016-voyage1"></script>
+  <script src="./technology/structure-tech-client.js?v=20261016-automation-audit3"></script>
+  <script src="./map/titan-markers.js?v=20261016-map-titan1"></script>
+  <script src="./map/titan-capture-rules.js?v=20261016-map-titan1"></script>
   <script src="./map/map-tile-tags.js?v=20261013-corner-audit"></script>
   <script src="./map/map-data.js?v=20260730-cycle-labels"></script>
   <script src="./map/nemesis-path.js?v=20260924-shared"></script>
   <script src="./map/nemesis-battle.js?v=20261003-record"></script>
+  <script src="./assets/exploration-pursuit.js?v=20261016-voyage3"></script>
   <script src="./assets/cycle-symbols.js?v=20260918"></script>
   <!-- 官方 App 存档（.jsave）→ ATO sections 的转换器；「导入存档」按内容判定后走它。
+
        jsave-tables.js 是官方枚举/卡名数据表，必须在转换器之前加载；
+
        map/map-data.js 也要在前（转换器用 window.ATO_MAP_DATA 落地图瓦片）。 -->
   <script src="./assets/jsave-tables.js?v=20261004-import1"></script>
   <script src="./assets/jsave-import.js?v=20261014-record-tracks1"></script>
@@ -2718,6 +2803,7 @@
       },
       c3: {
         // 循环 3 的宿敌战斗读的仍是 C2 故事书里的重担之战，不是笔误。
+
         book: "c2",
         chapter: "battle",
         encounter: "重担之战-burden-battle",
@@ -2738,6 +2824,7 @@
     };
     // 内蕴奥德赛按「阿尔戈号知识」结算，条目号就是知识等级；
     // 每个循环只覆盖自己那 20 段，区间外的知识值夹到当循环可用段落。
+
     const inwardOdysseyStoryRanges = {
       c1: { min: 1, max: 20 },
       c2: { min: 21, max: 40 },
@@ -2757,7 +2844,7 @@
         id: "explore",
         title: "探索",
         kind: "总是执行",
-        desc: "触发探索图标，**抽取并结算探索卡**；大部分探索卡可自动结算，注意仇敌需手动结算。",
+        desc: "触发探索图标，**抽取并结算探索卡**；一键结算会按追踪标记自动生成或移动宿敌，默认不使用追踪者对策。",
       },
       {
         id: "survey",
@@ -2798,10 +2885,14 @@
     ];
 
     // 背景音乐跟随「今日流程」。曲目表在 assets/bgm/manifest.js，播放器在 assets/bgm/bgm.js。
+
     // 判定规则：
+
     //   1. 从**最后一个已勾选**的步骤往后找（不是从第一个没勾的找），所以跳着点也不会卡住；
+
     //   2. 没有提醒不代表已完成，考察/遭遇等条件步骤也等待用户勾选确认；
     //   3. 最后一步完成后进入休整。
+
     function bgmFlowStepId(steps = flowSteps, completed = state.completed) {
       const list = steps || [];
       if (!list.length) return "rest";
@@ -2817,6 +2908,7 @@
       const api = window.ATO_BGM;
       if (!api || typeof api.setFlowStage !== "function") return;
       // 普通重绘保持临时曲；换用户/存档/Cycle/日期、勾选或重置今日才撤销。
+
       const context = JSON.stringify([
         sessionUser?.id || "", archive.activeProfileId, currentCycleConfig().id, state.day,
         flowSteps.map((step) => Boolean(state.completed[step.id])), bgmResetRevision,
@@ -2884,7 +2976,9 @@
         label: "Cycle IV 航行时间表",
         entries: Array.from({ length: 201 }, (_, index) => ({ day: index })),
         // 按循环 IV 记录表：93 天及以前只在列出的日期战斗；94 天起每天战斗。
+
         // 日期轨扩展至 200 天；新增日期与 200 天之后的续推日均为每日战斗。
+
         battleDays: [1, 7, 13, 19, 25, 31, 37, 43, 49, 55, 61, 67, 73, 79, 84, 88, 91, 93],
         battleEveryDayFrom: 94,
         events: {
@@ -3019,6 +3113,7 @@
             // C2 补录卡：实体卡号 BB1241「招募活动 / RECRUITMENT DRIVE」，
             // 原牌组列表跳过了 BB1239–BB1241，这里按 C2 段的下一号 13642 追加在末尾，
             // 免得改动既有卡号（卡号同时是牌库键、标签键和图片文件名）。
+
             { id: "13642", name: "Recruitment Drive" },
           ],
         },
@@ -3284,6 +3379,7 @@
         ],
         rr: [
           // 后一项 goTo 是追踪标上带 * 的第二个框：若已标记该 R&R，再标第二格并前往该段号。
+
           ["1", "Catch of the Day", { goTo: "11" }], ["2", "Clothes Make the Argonaut", { goTo: "22" }], ["3", "The One with the Goats"], ["4", "Eschaton Deniers"], ["5", "Fete for the Aeons"], ["6", "Secret Admirer"], ["7", "Lysistrata"], ["8", "The Stray"], ["9", "The Burden", { goTo: "99" }], ["10", "Drunken Odyssey"],
         ],
       },
@@ -3556,6 +3652,7 @@
 
     // 回忆突破没有每日可勾的「定数框」，但每个循环都要给出自己的章节键：
     // c2 的故事书用的是单数 mnemos-breakthrough，c1/c3/c4/c5 是复数。
+
     // （没有这张表时按钮只能写死章节名，c2 会解析不到章节、落到主线。）
     const mnemosBreakthroughConstants = {
       c1: { title: "回忆突破", chapter: "mnemos-breakthroughs", boxes: [] },
@@ -3627,6 +3724,7 @@
       mapCurrentTileHasLastOasisMarker: false,
       mapCurrentTileIsLatestRevealed: false,
       dateNotes: {},
+      techAutomation: { version: 1, events: {} },
       surveyConstants: null,
       surveyConstantsDay: null,
       surveyConstantsTouchedDay: null,
@@ -3753,6 +3851,7 @@
     let dashboardWriterLeaseTimer = null;
     const dashboardPageId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
     const campaignSyncChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-dashboard-sync-v1") : null;
+    const structureTechMapSyncChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-map-sync-v1") : null;
     const dashboardCycleChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-dashboard-cycle-v1") : null;
     const dashboardWriterChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-dashboard-writer-v1") : null;
     const recordSyncChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-record-sync-v1") : null;
@@ -3761,6 +3860,23 @@
     let authMode = "login";
     let sessionUser = null;
     let cachedArgoRecord = {};
+    let structureTechConnection = null;
+    let structureTechConnectionEpoch = -1;
+    let structureTechContext = null;
+    let structureTechContextRevision = -1;
+    let structureTechContextRequest = null;
+    let structureTechContextError = "";
+    let structureTechActionPanel = null;
+    let negotiationTechActionPanel = null;
+    let explorationTechActionPanel = null;
+    let structureTechCompletionBusy = false;
+    let structureTechAutoMessage = null;
+    const structureTechAutomaticAttempts = new Set();
+    let mapTitanConnection = null;
+    let mapTitanConnectionEpoch = -1;
+    let mapTitanCaptureBusy = false;
+    let mapTitanCaptureMessage = null;
+    const mapTitanAutomaticAttempts = new Set();
     let argoRecordRefreshInFlight = false;
     let secondScreenBusy = false;
     let secondScreenEnabled = false;
@@ -4082,6 +4198,9 @@
         // Rebase only those changes, so actual edits in nextArchive stay dirty.
         campaignSectionBaseline = mergeDashboardChanges(beforeRender, campaignSectionBaseline, archive).value;
       }
+      if (typeof refreshStructureTechContext === "function" && campaignSectionBaseline) {
+        void refreshStructureTechContext(false).catch(() => {});
+      }
     }
 
     function dashboardArchiveFromServer(value) {
@@ -4103,8 +4222,11 @@
       if (!payload.ok) throw new Error(payload.error || "读取失败");
       // 服务端每次读取都会带上这份存档属于哪个账号。局域网里另一个标签以别人
       // 的身份登录后，这个 GET 仍然成功，但返回的是别人的存档；不校验就会把它
+
       // 合并进本页渲染出来，随后的保存再被服务端以 409 拒绝，于是陷入「保存
+
       // 失败，等待重试」的无限重连。这里就地停下。
+
       const serverAccountId = payload.user?.id;
       if (serverAccountId && sessionUser?.id && serverAccountId !== sessionUser.id) {
         throw accountMismatchError();
@@ -4125,10 +4247,15 @@
     }
 
     // 收到账号不一致（本地校验或服务端 409 ACCOUNT_MISMATCH）后的统一收尾：清掉
+
     // sessionUser、抬高 epoch、放弃写租约并停掉定时器。既有闸门会自然接管后续：
+
     // ownsDashboardWriteLease() 变 false 让所有保存路径早退，!sessionUser 让
+
     // scheduleCampaignReconnect()/reconnectCampaignNow() 不再重连，epoch 让在途
+
     // 回调失效 —— 于是不会再往别人的档案里写东西，只留一条提示等用户刷新。
+
     function stopForAccountMismatch() {
       if (!sessionUser) return;
       sessionUser = null;
@@ -4418,8 +4545,11 @@
 
     // 第二屏地址去掉 /ss/ 就是主控台地址：安卓把整个应用（主控台 + 各模块 + 第二屏）
     // 开在同一个端口上，所以这两个地址只差一个路径。带 token 的部署（便携版/Docker）
+
     // 也顺手把查询串去掉，免得把第二屏的 token 带到主控台地址里。
+
     // 认不出 /ss/ 时返回空串，调用方据此隐藏整行。
+
     function lanConsoleUrlFrom(secondScreenUrl) {
       const value = String(secondScreenUrl || "");
       if (!value) return "";
@@ -4434,8 +4564,11 @@
       const currentHostIsLoopback = /^(?:127(?:\.\d+){3}|localhost|\[?::1\]?)$/i.test(window.location.hostname);
       const lanUrl = urls.find((url) => !/\/\/(?:127(?:\.\d+){3}|localhost|\[?::1\]?)(?::|\/)/i.test(url)) || "";
       // 服务端生成的地址现在带 ?token=…，第二屏幕缺 token 会 403。主控台本身可能是
+
       // 从局域网 IP 打开的，那时 ./ss/ 这个短地址不带 token，别的设备打开只会被拒，
+
       // 所以优先选「与当前地址同主机」的那条服务端地址（它带 token）。
+
       const sameHostUrl = urls.find((url) => {
         try {
           return new URL(url).host === window.location.host;
@@ -4475,6 +4608,7 @@
       elements.secondScreenSwapButton.title = battleSwapped ? "当前已交换，点击恢复左右位置" : "交换 Boss/AIBP 与决战版图的位置";
       elements.secondScreenSwapButton.setAttribute("aria-label", battleSwapped ? "恢复第二屏幕左右区域位置" : "交换第二屏幕左右区域位置");
       // 服务端那份主题就是第二屏现在用的外观：记下来，本地没改就不用再写一遍。
+
       pushedSecondScreenTheme = payload.theme?.mode
         ? JSON.stringify({ mode: payload.theme.mode, rgb: payload.theme.rgb })
         : "";
@@ -4485,7 +4619,9 @@
       elements.openSecondScreenLink.href = preferred || "#";
 
       // 安卓版把整个应用都开放到局域网（不只是第二屏）：第二屏地址去掉 /ss/ 就是主控台地址，
+
       // 同一网段的设备打开它就能用主控台和各模块（和这台手机共用登录态，登录/退出仍在手机上做）。
+
       const lanConsoleUrl = lanConsoleUrlFrom(preferred);
       const hasLanConsole = Boolean(enabled && lanConsoleUrl);
       elements.lanConsoleRow.hidden = !hasLanConsole;
@@ -4506,7 +4642,9 @@
             : "第二屏幕已开启。战斗期间显示 AIBP 镜像和当前地形卡，决战版图状态仍会保留。"
         : "打开后，同一局域网设备可通过专用网址查看地图、决战版图或故事文本。";
       // 安卓版把整个应用都开放给局域网，且和这台手机共用登录态（可读可写，登录/退出只在本机）；
+
       // 便携版 / Docker 的局域网入口本来就是完整站点，别的设备要自己登录后才能用。
+
       const lanHint = lanConsoleUrl
         ? payload.lanSharedAccount
           ? " 同一局域网的设备也可以打开主控台地址浏览和修改主控台与各模块（登录态跟着这台手机走，登录/退出仍在本机操作）。"
@@ -4528,8 +4666,11 @@
     }
 
     // 第二屏通常在另一台设备上（手机/电视），那边读不到本站 localStorage 里的主题偏好，
+
     // 所以本机的外观改了就写进第二屏设置，第二屏每次轮询自己应用（ss/app.js 的
+
     // applySecondScreenTheme）。取色器会连着触发多次 input，这里攒 400ms 再发一次。
+
     let pushedSecondScreenTheme = "";
     let secondScreenThemeTimer = null;
     function currentThemeSetting() {
@@ -4570,6 +4711,7 @@
       elements.secondScreenHint.textContent = enabled ? "正在生成局域网访问网址…" : "正在关闭第二屏幕…";
       try {
         // 开启时把当前主题一起写进去：第二屏是另一台设备，开局就得是这台机器的外观。
+
         const theme = enabled ? currentThemeSetting() : null;
         const response = await fetch(`${authUrl}?action=second-screen-status`, {
           method: "POST",
@@ -4757,6 +4899,7 @@
         ...normalizedValue,
         day,
         dateNotes: isPlainObject(value.dateNotes) ? cloneJson(value.dateNotes) : {},
+        techAutomation: normalizeStructureTechAutomation(value.techAutomation),
         mapCurrentTileTags: Array.isArray(value.mapCurrentTileTags)
           ? value.mapCurrentTileTags
           : (Array.isArray(value.mapSnapshot?.currentTileTags) ? value.mapSnapshot.currentTileTags : []),
@@ -5123,12 +5266,17 @@
 
     // 探索卡规则模块（assets/exploration-card-rules.js）是通过普通 <script> 加载的全局
     // 对象：只要那一次页面加载没有把它执行成功（便携包 php -S 不读 .htaccess、静态响应
+
     // 没有缓存校验头，浏览器可能一直复用一份坏副本；请求被中断也一样），它就不存在。
+
     // 而登录后的整页渲染要逐张取探索卡标签，缺了它就是整页渲染失败，异常还会显示在
     // 登录框里（提交处理把错误写进 authMessage），于是看起来像「一登录就报错」。
+
     // 这里保留一份语义完全一致的本地实现兜底：模块缺失时探索面板退化成默认标签，而不是
+
     // 让整页渲染崩掉。改 assets/exploration-card-rules.js 时这两份要同步；
     // tests/exploration-rules-fallback.test.cjs 会逐项比对它们的行为。
+
     // #region exploration-rules-fallback
     const explorationRulesFallback = (function () {
       function normalizeTag(entry = {}) {
@@ -5247,6 +5395,9 @@
       }
 
       const validIds = new Set(selectedIds);
+      const reservedNegotiationIds = new Set(Object.values(state.techAutomation?.events || {})
+        .filter(event => event.cycleId === cycleId && event.negotiationDraw && !event.negotiationDraw.selectedCard && event.status !== "completed")
+        .flatMap(event => event.negotiationDraw.cards || []));
       if (!Array.isArray(existing.discardPile)) existing.discardPile = [];
       if (!Array.isArray(existing.temporaryRemoved)) existing.temporaryRemoved = [];
       if (!Array.isArray(existing.activePiles)) {
@@ -5270,13 +5421,14 @@
       const legacyDiscardIds = existing.discardPile
         .map((entry) => typeof entry === "string" ? entry : entry?.id)
         .filter((id) => validIds.has(id));
-      existing.drawPile = existing.drawPile.filter((id) => validIds.has(id));
+      existing.drawPile = existing.drawPile.filter((id) => validIds.has(id) && !reservedNegotiationIds.has(id));
       existing.drawPile.push(...legacyDiscardIds);
       existing.discardPile = [];
       existing.history = existing.activePiles.flat();
       existing.current = existing.history[existing.history.length - 1] || null;
 
       const knownIds = new Set([
+        ...reservedNegotiationIds,
         ...existing.drawPile,
         ...existing.activePiles.flat().map((entry) => entry.id),
         ...existing.temporaryRemoved.map((entry) => entry.id),
@@ -5334,6 +5486,7 @@
     }
 
     function drawExplorationCard() {
+      if (typeof settleExplorationPursuit === "function" && settleExplorationPursuit.busy) return;
       const library = getExplorationLibrary();
       if (!library.length) {
         window.alert("当前 Cycle 暂无探索卡组数据。");
@@ -5377,6 +5530,8 @@
       );
       drawState.drawPile = result.drawPile;
       drawState.activePiles = result.piles;
+      drawState.pursuitRoundId = `pursuit-${currentCycleConfig().id}-${window.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`}`;
+      drawState.pursuitChoices = {};
       drawState.history = result.piles.flat();
       drawState.current = drawState.history[drawState.history.length - 1] || null;
       syncExplorationTokenPlacementQueue();
@@ -5389,7 +5544,9 @@
 
     // options.skipPendingConfirm：调用方刚刚已经把「还有 N 项未处理」的事告诉过玩家
     // （例如点「结算完毕」那一下），就不要再弹一次确认。
+
     function endExplorationDraw(options = {}) {
+      if (typeof settleExplorationPursuit === "function" && settleExplorationPursuit.busy) return;
       if (mutateExplorationRecord.busy) {
         window.alert("正在写入探索效果，请稍候再结束探索。");
         return;
@@ -5421,6 +5578,7 @@
       drawState.discardPile = [];
       drawState.current = null;
       // 本轮结束，「结算完毕」那一步的临时状态跟着复位。
+
       explorationSettlePrepared = false;
       saveState();
       renderFlow();
@@ -5544,8 +5702,10 @@
       let populated = false;
 
       // 和「隐藏探索卡」完全同一套：折叠条 + 剧透/说明 + 每张卡一行，卡图点「展开卡图」
+
       // 才去拉。区别只在按钮：隐藏卡是勾选后统一「应用选择」，破坏卡组是「随机加入」，
       // 已经在探索牌组里的那张给一个「移回」。
+
       summary.addEventListener("click", (event) => {
         event.preventDefault();
         if (section.open) {
@@ -5562,7 +5722,9 @@
         if (populated) return;
         populated = true;
         // 破坏卡也画牌面：只写名字和黑底编号的话，这一块跟上面的卡库一比就像"没有卡图"。
+
         // 用和卡库/隐藏探索卡一样的缩略图写法，不额外加载任何资源。
+
         const destructionCard = (cardId) => {
           const item = document.createElement("article");
           item.className = "exploration-hidden-card";
@@ -5574,11 +5736,13 @@
           checkbox.disabled = true;
           const name = document.createElement("span");
           // 只写卡名：黑底编号本来就印在牌面上，这里再写一遍会在缩略图下面重复。
+
           name.textContent = getExplorationCard(cardId)?.name || getExplorationCardLabel(cardId);
           label.append(checkbox, name);
           const inDeck = selectedDestructionIds.includes(cardId);
           if (inDeck) {
             // 小标放在名字旁边（不塞进名字里），避免"名字 + 子元素"这种混排。
+
             const badge = document.createElement("span");
             badge.className = "exploration-destruction-badge";
             badge.textContent = "破坏卡 · 探索中";
@@ -5619,6 +5783,7 @@
         body.appendChild(hint);
 
         // 先列破坏卡组本身的牌，再补上"已在探索牌组里但已不在破坏卡组"的那些。
+
         const listed = new Set();
         destructionPileIds.forEach((cardId) => {
           if (listed.has(cardId)) return;
@@ -5748,7 +5913,9 @@
       const payload = await response.json().catch(() => null);
       if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
       // 与 readLatestDashboardSection 同理：换账号后这次 GET 会返回别人的存档，
+
       // 地图命令必须停下来，否则会把命令作用到别人的档案上。
+
       const serverAccountId = payload.user?.id;
       if (serverAccountId && sessionUser?.id && serverAccountId !== sessionUser.id) {
         stopForAccountMismatch();
@@ -5785,7 +5952,9 @@
           if (!mergeBase) throw new Error("地图状态在保存时被其他页面更新，请重试。");
           // 重读必须仍然针对这条命令原本所属的档案。主控台在这笔 POST 在途时
           // 切换了档案的话，用新档案去重读会把旧档案的编辑合并进新档案并写回去
+
           // （曾经会静默把别人的档案改掉）。
+
           const fresh = await loadMapCommandState(commandState.profileId);
           const merged = mergeCampaignSections(mergeBase, commandState.state, fresh.state);
           if (merged.conflicts.length) {
@@ -5901,6 +6070,7 @@
     }
 
     async function runMapCommand(command, value = "") {
+      if (typeof settleExplorationPursuit === "function" && settleExplorationPursuit.busy) return;
       if (mapCommandBusy) return;
       mapCommandBusy = true;
       document.querySelectorAll("[data-map-command], [data-map-direction]").forEach((button) => { button.disabled = true; });
@@ -6078,6 +6248,7 @@
         // 这次读取属于哪个账号？局域网里 cookie 换人之后，这个 GET 会返回别人的
         // 存档。写路径已经被 stopForAccountMismatch 拦住，读路径同样不能把别人的
         // 档案渲染出来（否则屏幕上是别人的进度，用户以为自己的存档丢了）。
+
         const serverAccountId = payload.user?.id;
         if (serverAccountId && sessionUser?.id && serverAccountId !== sessionUser.id) {
           throw accountMismatchError();
@@ -6201,6 +6372,7 @@
         }
         const payload = await response.json().catch(() => null);
         // 服务端明确回答「这份存档属于另一个账号」：写进去就是串档案，立即停手。
+
         if (response.status === 409 && payload?.code === "ACCOUNT_MISMATCH") {
           stopForAccountMismatch();
           return false;
@@ -6372,7 +6544,7 @@
         .map(key => cardTrackTokenState(key, field));
     }
 
-    function renderCardTokenPlacementTools(effects) {
+    function renderCardTokenPlacementTools(effects, extraHtml = "") {
       const amounts = {};
       for (const effect of effects || []) {
         if (["progress", "doom"].includes(effect.type) && effect.amount > 0) {
@@ -6389,7 +6561,7 @@
               <span class="${target.limits.some(limit => target.count >= limit) ? "card-token-limit-warning" : ""}">${escapeHtml(target.label)} · ${target.allowed ? "" : "不可放 · "}已放 ${target.count}${target.allowed ? ` / 上限 ${target.limits.length ? target.limits.join("/") : "不限"}` : ""}${target.limits.some(limit => target.count > limit) ? " · 超出" : target.limits.some(limit => target.count === limit) ? " · 已达" : ""}${target.gainMode === "remove" ? " · 仅最后访问城市" : ""}</span>
               ${target.allowed ? `<button type="button" data-card-token-place="${escapeHtml(target.key)}" data-card-token-field="${field}" data-amount="${amount}"${target.gainMode === "remove" && !target.count ? " disabled" : ""} aria-label="${target.gainMode === "remove" ? "从" : "向"}${escapeHtml(target.label)}${target.gainMode === "remove" ? "移除" : "放置"} ${amount} 枚${field === "doom" ? "灾祸" : "进展"}">${target.gainMode === "remove" ? "−" : "+"}${amount}</button>` : ""}
             </div>`).join("")}
-        </div>`).join("")}</div>`;
+        </div>`).join("")}${extraHtml}</div>`;
     }
 
     function refreshCardTokenViews() {
@@ -6615,6 +6787,52 @@
       return hub?.boxes?.find(([id]) => id === boxId) || null;
     }
 
+    // 分支卡标题后面括号里的「点数」：按当前故事卡去上面的分支总表里取这一格的数字。
+    // 总表的每一列都是一张故事卡（循环 I–III 一张卡一列，循环 IV/V 拆到 A/B 面），
+    // 每一列的区间合起来正好是 1-10，所以同一个中枢在不同故事卡上点数不同。
+
+    const SURVEY_STORY_ROMANS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"];
+
+    function surveyStoryColumnHeaders(data) {
+      if (data?.summaryHeaders?.length) return data.summaryHeaders;
+      return (data?.summary?.[0]?.story || []).map((_, index) => `Story ${SURVEY_STORY_ROMANS[index] || index + 1}`);
+    }
+
+    function currentStoryCardLabel() {
+      // 定数框的单测会把渲染函数单独抽出来跑，这里对故事卡追踪条保持可选。
+      if (typeof cardTrackGroups === "undefined" || typeof ensureCardTracks !== "function"
+        || typeof cardTrackCard !== "function" || typeof activeStoryDoomData !== "function") return "";
+      const def = cardTrackGroups.story?.tracks?.find((track) => track.key === "story");
+      if (!def) return "";
+      const tracks = ensureCardTracks() || {};
+      const card = cardTrackCard(def, tracks.story || { position: 0, progress: 0 }, activeStoryDoomData());
+      return card?.label || "";
+    }
+
+    function surveyStoryColumnIndex(data, label) {
+      const match = /^(\d+)\s*([A-Za-z])?$/.exec(String(label || "").trim());
+      if (!match) return -1;
+      const roman = SURVEY_STORY_ROMANS[Number(match[1]) - 1];
+      if (!roman) return -1;
+      const side = (match[2] || "").toUpperCase();
+      return surveyStoryColumnHeaders(data).findIndex((header) => {
+        const tokens = String(header || "").toUpperCase().replace(/^STORY\s*/, "").split("/");
+        return tokens.some((token) => {
+          const parsed = /^([IVX]+)\s*([AB])?$/.exec(token.trim());
+          if (!parsed || parsed[1] !== roman) return false;
+          const headerSide = parsed[2] || "";
+          return headerSide ? headerSide === side : true;
+        });
+      });
+    }
+
+    function surveyHubPointsText(data, hubId) {
+      const index = surveyStoryColumnIndex(data, currentStoryCardLabel());
+      if (index < 0) return "";
+      const row = data?.summary?.find((entry) => entry.hubId === hubId);
+      return row?.story?.[index] || "";
+    }
+
     const HERO_STORAGE_KEY = "ato-hero-record-v1";
     const MNEMOS_TAG_ZH = { curse: "诅咒", fate: "命运", family: "家庭", tragedy: "悲剧", supernatural: "超自然", heritage: "传承", dream: "梦境", voyage: "航程", deed: "事迹", crime: "犯罪", gods: "众神" };
     // Mnemos card tags: { cardId: [tag1, tag2, tag3] }
@@ -6623,14 +6841,18 @@
     const HERO_CYCLES = ["c1", "c2", "c3", "c4", "c5"];
     // 宿命回忆里有一张不属于任何循环的卡（官方 fmnemos 表的 cycle 写作 COUNT）：
     // CF1269 Sowed 被播种，归在 hero 页的「隐藏」组里，见 hero/index.html 的 EXTRA_CYCLES。
+
     const HERO_MNEMOS_GROUPS = HERO_CYCLES.concat(["count"]);
     const MNEMOS_CARD_NAMES = {"c1_00":"塞壬幸存者","c1_01":"有人在等待","c1_02":"你所持有的梦","c1_03":"家族世仇","c1_04":"监禁","c1_05":"萦绕心头","c1_06":"破碎的承诺","c1_07":"难忘之夜","c1_08":"死神追随","c1_09":"米诺斯传承","c1_10":"沾满鲜血的双手","c1_11":"熟悉的诅咒","c1_12":"神明的诅咒","c2_00":"窝里最弱的","c2_01":"错配","c2_02":"被弃为死","c2_03":"深渊吐出","c2_04":"懦夫之道","c2_05":"弃物","c2_06":"死亡先行","c2_07":"禁忌之恋","c2_08":"被蔑视的冠军","c3_00":"伊甸园的坠落","c3_01":"不劳而获的生活","c3_02":"充满遗憾的人生","c3_03":"时空交错的爱人","c3_04":"时间守护者的孩子","c3_05":"耻辱的父母","c3_06":"无心插柳的英雄","c3_07":"回归者","c4_00":"天堂之种","c4_01":"第三个愿望","c4_02":"乞丐与王子","c4_03":"风起云涌","c4_04":"苦难掮客","c4_05":"大而不倒","c4_06":"千零一夜","c4_07":"负重之骡","c5_00":"消失之点","c5_01":"神之形象","c5_02":"庇护之所","c5_03":"信条","c5_04":"最后的十字军","c5_05":"言行合一","c5_06":"暮光之刻","c5_07":"他说出了真相"};
     const FATED_CARD_NAMES = {"fm_c1_01":"死亡的记忆","fm_c1_02":"背叛","fm_c1_03":"孤独","fm_c1_04":"被遗弃","fm_c1_05":"全然不知","fm_c1_06":"真嗣","fm_c1_07":"荣誉盲","fm_c1_08":"利己主义者","fm_c1_09":"自私","fm_c2_01":"不幸","fm_c2_02":"虚弱","fm_c2_03":"懦夫","fm_c2_04":"不情愿","fm_c2_05":"替罪羊","fm_c2_06":"焦躁不安","fm_c2_07":"神浆成瘾","fm_c2_08":"嗜血","fm_c2_09":"笨拙","fm_c3_01":"心理生理障碍","fm_c3_02":"冷漠","fm_c3_03":"命运诅咒","fm_c3_04":"胆怯","fm_c3_05":"精力耗弱","fm_c3_06":"迷信","fm_c3_07":"恶心","fm_c3_08":"迟到","fm_c3_09":"贬低","fm_c4_01":"被诅咒","fm_c4_02":"双重诅咒","fm_c4_03":"三重诅咒","fm_c4_04":"恐高","fm_c4_05":"一厢情愿","fm_c4_06":"被剥夺","fm_c4_07":"囤积者","fm_c4_08":"负债","fm_c4_09":"可牺牲的","fm_c5_01":"伪善","fm_c5_02":"妄想","fm_c5_03":"教条","fm_c5_04":"受辱","fm_c5_05":"沮丧","fm_c5_06":"溺水的记忆","fm_c5_07":"幻痛","fm_c5_08":"畏神","fm_c5_09":"弥赛亚","fm_sowed":"被播种"};
     const MNEMOS_CARD_NODES = {"c1_00":{"nodes":["M003","M013","M023"],"thresholds":[3,7,10]},"c1_01":{"nodes":["M005","M015","M025"],"thresholds":[3,7,10]},"c1_02":{"nodes":["M001","M011","M021"],"thresholds":[3,7,10]},"c1_03":{"nodes":["M008","M018","M028"],"thresholds":[3,7,10]},"c1_04":{"nodes":["M002","M012","M022"],"thresholds":[3,7,10]},"c1_05":{"nodes":["M009","M019","M029"],"thresholds":[3,7,10]},"c1_06":{"nodes":["M006","M016","M026"],"thresholds":[3,7,10]},"c1_07":{"nodes":["M010","M020","M030"],"thresholds":[3,7,10]},"c1_08":{"nodes":["M031","M041","M037"],"thresholds":[3,7,10]},"c1_09":{"nodes":["M004","M014","M024"],"thresholds":[3,7,10]},"c1_10":{"nodes":["M007","M017","M027"],"thresholds":[3,7,10]},"c1_11":{"nodes":["M032","M043","M034"],"thresholds":[3,7,10]},"c1_12":{"nodes":["M033","M036","M038"],"thresholds":[3,7,10]},"c2_00":{"nodes":["M007","M017","M027"],"thresholds":[3,7,10]},"c2_01":{"nodes":["M002","M012","M022"],"thresholds":[3,7,10]},"c2_02":{"nodes":["M008","M018","M028"],"thresholds":[3,7,10]},"c2_03":{"nodes":["M004","M014","M024"],"thresholds":[3,7,10]},"c2_04":{"nodes":["M003","M013","M023"],"thresholds":[3,7,10]},"c2_05":{"nodes":["M009","M019","M029"],"thresholds":[3,7,10]},"c2_06":{"nodes":["M005","M015","M025"],"thresholds":[3,7,10]},"c2_07":{"nodes":["M001","M011","M021"],"thresholds":[3,7,10]},"c2_08":{"nodes":["M006","M016","M026"],"thresholds":[3,7,10]},"c3_00":{"nodes":["M007","M017","M027"],"thresholds":[3,7,10]},"c3_01":{"nodes":["M002","M012","M022"],"thresholds":[3,7,10]},"c3_02":{"nodes":["M008","M018","M028"],"thresholds":[3,7,10]},"c3_03":{"nodes":["M004","M014","M024"],"thresholds":[3,7,10]},"c3_04":{"nodes":["M003","M013","M023"],"thresholds":[3,7,10]},"c3_05":{"nodes":["M005","M015","M025"],"thresholds":[3,7,10]},"c3_06":{"nodes":["M001","M011","M021"],"thresholds":[3,7,10]},"c3_07":{"nodes":["M006","M016","M026"],"thresholds":[3,7,10]},"c4_00":{"nodes":["M008","M018","M028"],"thresholds":[3,7,10]},"c4_01":{"nodes":["M003","M013","M023"],"thresholds":[3,7,10]},"c4_02":{"nodes":["M002","M012","M022"],"thresholds":[3,7,10]},"c4_03":{"nodes":["M004","M014","M024"],"thresholds":[3,7,10]},"c4_04":{"nodes":["M005","M015","M025"],"thresholds":[3,7,10]},"c4_05":{"nodes":["M001","M011","M021"],"thresholds":[3,7,10]},"c4_06":{"nodes":["M007","M017","M027"],"thresholds":[3,7,10]},"c4_07":{"nodes":["M006","M016","M026"],"thresholds":[3,7,10]},"c5_00":{"nodes":["M005","M015","M025"],"thresholds":[3,7,10]},"c5_01":{"nodes":["M006","M016","M026"],"thresholds":[3,7,10]},"c5_02":{"nodes":["M003","M013","M023"],"thresholds":[3,7,10]},"c5_03":{"nodes":["M004","M014","M024"],"thresholds":[3,7,10]},"c5_04":{"nodes":["M002","M012","M022"],"thresholds":[3,7,10]},"c5_05":{"nodes":["M001","M011","M021"],"thresholds":[3,7,10]},"c5_06":{"nodes":["M007","M017","M027"],"thresholds":[3,7,10]},"c5_07":{"nodes":["M008","M018","M028"],"thresholds":[5,9,14]}};
 
     // 回忆卡轨道格数：官方 fmnemos 表的三项 break point 就是节点格，最后一格即轨道末尾。
+
     // 标准卡是 3/7/10 → 10 格；唯一的例外是 C5 的 EG2647《他道出了真相》（官方 5/9/14）→ 14 格。
+
     // hero 页同名叫 mnemosTrackLength()，两处必须一致。
+
     const MNEMOS_TRACK_LENGTH = 10;
     function mnemosTrackLength(cardId) {
       const def = MNEMOS_CARD_NODES[cardId];
@@ -7182,6 +7404,7 @@
       const payload = await response.json();
       if (!payload.ok) throw new Error(payload.error || "read failed");
       // 换账号后这个 GET 会返回别人的记录表：既不能渲染，也不能被之后的保存带回去。
+
       const serverAccountId = payload.user?.id;
       if (serverAccountId && sessionUser?.id && serverAccountId !== sessionUser.id) {
         stopForAccountMismatch();
@@ -7394,6 +7617,7 @@
 
     function recordAdventureMiddleSlots(cycleId, adventureIndex) {
       // 对照循环 I-IV 中文记录表的冒险轨；保留格子 ID 以兼容已有存档。
+
       if (cycleId === "c1" && adventureIndex === 7) return ["mid1"];
       const usesFiveSlots = (cycleId === "c1" && [0, 1, 2, 3, 6].includes(adventureIndex))
         || (cycleId === "c3" && [0, 1, 2, 6].includes(adventureIndex))
@@ -7405,9 +7629,7 @@
     function createSurveyHubSummary(data) {
       if (!data?.summary?.length) return null;
       const activeTarget = getActiveSurveyHubTarget();
-      const storyHeaders = data.summaryHeaders?.length
-        ? data.summaryHeaders
-        : data.summary[0].story.map((_, index) => `Story ${["I", "II", "III", "IV", "V", "VI"][index] || index + 1}`);
+      const storyHeaders = surveyStoryColumnHeaders(data);
       const summary = document.createElement("section");
       summary.className = "survey-constant-group";
       const heading = document.createElement("div");
@@ -7444,12 +7666,34 @@
         table.appendChild(item);
       });
 
-      summary.append(heading, table);
+      summary.appendChild(heading);
+      const investigationReminders = createSurveyInvestigationReminders();
+      if (investigationReminders) summary.appendChild(investigationReminders);
+      summary.appendChild(table);
       return summary;
+    }
+
+    function createSurveyInvestigationReminders() {
+      const context = getStructureTechContext();
+      const reminders = context ? window.ATO_INVESTIGATION_RULES?.reminders(context) || [] : [];
+      if (!reminders.length) return null;
+      const wrapper = document.createElement("div");
+      wrapper.className = "survey-investigation-reminders";
+      reminders.forEach(reminder => {
+        const row = document.createElement("p");
+        const title = document.createElement("strong");
+        title.textContent = `${reminder.title}：`;
+        const effect = document.createElement("span");
+        effect.textContent = reminder.text;
+        row.append(title, effect);
+        wrapper.appendChild(row);
+      });
+      return wrapper;
     }
 
     // R&R 的第二格（追踪标上带 * 与段号的框）和第一格共用 rr 表，键用 `<编号>-goto`
     // 区分，这样按 id 统计「已勾 R&R」和当前 R&R 目标的逻辑都不受影响。
+
     function surveyRrBoxKey(itemId, boxId) {
       return boxId && boxId !== itemId ? boxId : itemId;
     }
@@ -7472,6 +7716,7 @@
           delete state.surveyConstants.rr[key];
           if (key === itemId) {
             // 追踪标写的是「若已标记，标记第二个框」：取消第一格时第二格不再成立，一并清掉。
+
             delete state.surveyConstants.rr[`${itemId}-goto`];
             if (state.surveyConstants.activeRr?.itemId === itemId) {
               state.surveyConstants.activeRr = firstCheckedSurveyRrTarget(getCurrentSurveyConstantData());
@@ -7524,9 +7769,13 @@
       const card = document.createElement("article");
       card.className = "survey-constant-card";
 
+      // 分支卡标题后的括号写的是「当前故事卡 + 上面的总表」定出的点数，不再是故事书页码；
+      // R&R 卡没有总表这一格，保持原有标题。
+      const badge = groupId === "hubs" ? surveyHubPointsText(getCurrentSurveyConstantData(), item.id) : (item.passage || "");
+
       const title = document.createElement("div");
       title.className = "survey-constant-title";
-      title.innerHTML = `${escapeHtml(item.title)}${item.passage ? ` <span>(${escapeHtml(item.passage)})</span>` : ""}`;
+      title.innerHTML = `${escapeHtml(item.title)}${badge ? ` <span>(${escapeHtml(badge)})</span>` : ""}`;
 
       const boxes = document.createElement("div");
       boxes.className = "survey-constant-boxes";
@@ -7538,6 +7787,7 @@
         if (boxOptions?.requiresFirst) {
           // 追踪标的第二个框里写着跳转段号，段号本身就是剧透：第一格没勾（这一格也没勾过）
           // 时整行不渲染，勾上第一格重新绘制后这一格才出现。
+
           const firstBoxId = item.boxes[0]?.[0];
           if (!surveyConstantChecked(groupId, item.id, firstBoxId) && !input.checked) return;
         }
@@ -7569,7 +7819,9 @@
       const wrapper = document.createElement("details");
       wrapper.className = "survey-constants";
       // 只标在勘察步骤的定数框上：官方翻译用这些术语把分支总表 / 分支卡 / R&R 卡里的
+
       // 英文换成故事书官方标题（见 assets/ato-terms.js 的 survey-record 一段）。
+
       wrapper.setAttribute("data-term-scope", "survey-record");
       rememberConstantDetailsOpen(wrapper, "survey");
       const summary = document.createElement("summary");
@@ -7595,6 +7847,7 @@
       data.rr.forEach(([id, title, extra]) => {
         const rrBoxes = [[id, id, title]];
         // 追踪标上这几条 R&R 还有第二个框（框内是跳转段号）：勾了第一格才出现，避免剧透。
+
         if (extra?.goTo) rrBoxes.push([`${id}-goto`, "*", `前往 ${extra.goTo}`, null, { requiresFirst: true }]);
         rrGrid.appendChild(createSurveyConstantCard({
           id,
@@ -7679,6 +7932,7 @@
       wrapper.className = "survey-constants";
       // 故事步骤的三个定数框（法洛斯之梦 / 主线故事 / 特殊事件）都建在这里。官方翻译下
       // 用 step-constants 一段术语把它们里面的英文与民间译名换成官方说法。
+
       wrapper.setAttribute("data-term-scope", "step-constants");
       rememberConstantDetailsOpen(wrapper, options.openKey);
       const summary = document.createElement("summary");
@@ -7785,6 +8039,7 @@
     }
 
     // 宿敌控制按钮挂在探索步骤的 Map 按钮后面，不跟随第二屏幕开关。
+
     function createNemesisStepTools(stepId) {
       if (stepId !== "explore" || !currentCycleConfig().map) return null;
       const group = document.createElement("div");
@@ -7816,6 +8071,7 @@
     }
 
     // 第七步（灾祸 / 末日）在特殊事件后面补一个进入下一天，省得再回到顶部日期区。
+
     function createNextDayStepButton(stepId) {
       if (stepId !== "doom") return null;
       const button = document.createElement("button");
@@ -7832,8 +8088,10 @@
 
     // 进入下一天会把勾选清空，接下来要从第一步（移动和时间表）重新开始，
     // 所以一律把页面带回最顶端，不做可见性判断。
+
     function scrollPageToTopAfterNextDay() {
       // 等这一天渲染完、页面高度稳定后再滚，免得滚完又被新布局拉回去。
+
       window.requestAnimationFrame(() => {
         window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
       });
@@ -7845,6 +8103,7 @@
         ? "map-command-status nemesis-step-status"
         : "map-command-status";
       // 探索步骤不显示静态提示，这里只作为宿敌命令结果的反馈区（空着时不占位）。
+
       status.textContent = stepId === "move"
         ? "移动到未揭示目标时，会自动标记为已探索。"
         : "";
@@ -7949,7 +8208,9 @@
           renderFlow();
           if (step.id === "development" && checkbox.checked) void processExplorationDelays("development");
           // 当天有定时战斗时，遭遇步骤打勾 = 战斗已经打完：结算「下次定时战斗结束时…」的延迟效果，
+
           // 并把暂时移出的探索卡放回牌堆（原先靠区块里的两个按钮，已移除）。
+
           if (step.id === "encounter" && checkbox.checked) void completeTimelineBattle();
         });
 
@@ -7981,7 +8242,9 @@
           anchor.textContent = link.label;
           if (link.title) anchor.title = link.title;
           // 带 bgm 的入口（冒险中枢 / R&R / 回忆突破 / 内蕴奥德赛 / 法洛斯之梦 / 主线 / 特殊事件 / 战斗）
+
           // 自动模式下临时切曲；新开标签让主控台继续播放。
+
           if (link.bgm) {
             anchor.target = "_blank";
             anchor.rel = "noopener";
@@ -7995,17 +8258,35 @@
           actions.appendChild(anchor);
         });
         // 宿敌控制按钮排在 Map 按钮右边，两者同处标题行的操作区。
+
         const nemesisTools = createNemesisStepTools(step.id);
         if (nemesisTools) actions.appendChild(nemesisTools);
         // 第七步（灾祸 / 末日）的进入下一天排在特殊事件右边。
+
         const stepNextDayButton = createNextDayStepButton(step.id);
         if (stepNextDayButton) actions.appendChild(stepNextDayButton);
         if (actions.children.length) text.querySelector(".step-title")?.appendChild(actions);
         const mapTools = createMapStepTools(step.id);
         if (mapTools) text.appendChild(mapTools);
+        if (step.id === "move") {
+          const titanReminder = createMapTitanReminder();
+          if (titanReminder) text.appendChild(titanReminder);
+        }
         if (nemesisTools) text.appendChild(createMapStepStatus(step.id));
         if (step.id === "explore") {
           text.appendChild(createExplorationTools());
+          const explorationTechTools = createStructureTechActionTools("exploration");
+          if (explorationTechTools) text.appendChild(explorationTechTools);
+          const negotiationReminder = text.querySelector(".step-track-reminder.negotiation");
+          if (negotiationReminder) {
+            const negotiationTools = createStructureTechActionTools("negotiation");
+            if (negotiationTools) {
+              negotiationReminder.appendChild(negotiationTools);
+              const panelState = negotiationTechActionPanel;
+              negotiationReminder.open = panelState.open;
+              negotiationReminder.addEventListener("toggle", () => { panelState.open = negotiationReminder.open; });
+            }
+          }
         }
         const delayedTools = createDelayedExplorationStepTools(step.id);
         if (delayedTools) text.appendChild(delayedTools);
@@ -8013,6 +8294,7 @@
           const surveyTools = createSurveyConstantTools();
           if (surveyTools) text.appendChild(surveyTools);
         }
+        if (step.id === "development") text.appendChild(createStructureTechActionTools());
         if (step.id === "story") {
           const constantRow = document.createElement("div");
           constantRow.className = "simple-constant-row";
@@ -8032,6 +8314,7 @@
       });
 
       elements.flowList.appendChild(fragment);
+      renderStructureTechDue();
       renderProgress();
       updateRecordLinks();
       syncBgmStage();
@@ -8186,7 +8469,14 @@
 
     function getExplorationSettlement(entry) {
       const { store, key } = explorationSettlementStore(entry);
-      return isPlainObject(store[key]) ? store[key] : null;
+      const roundId = explorationRoundId(entry);
+      const receipt = typeof cachedArgoRecord !== "undefined" ? cachedArgoRecord?.explorationBatchReceipts?.[roundId] : null;
+      // Resource writes and their receipts commit together in the record section.
+      // A dashboard save can lag behind that write, or retain marks after an undo.
+      if (isPlainObject(receipt)) return isPlainObject(receipt.resource) ? receipt.resource : null;
+      const local = store[key];
+      if (!isPlainObject(local) || local.batchRoundId && local.batchRoundId !== roundId) return null;
+      return local;
     }
 
     function clearExplorationSettlements(cycleId) {
@@ -8250,6 +8540,7 @@
       if (!rules || mutateExplorationRecord.busy || !ownsDashboardWriteLease()) return;
       try {
         for (const entry of entries) {
+          if (entry.salvageQualificationPending || entry.technologyIgnored || cachedArgoRecord?.explorationBatchReceipts?.[explorationRoundId(entry)]?.technologyIgnored) continue;
           const card = explorationCardResources(entry.id);
           if (!card) continue;
           const context = explorationCardContext(entry, card);
@@ -8272,15 +8563,26 @@
       const timelineEnd = phase === "timeline-battle-end";
       // 定时战斗的结束结算不要求「本局已经登记过延迟效果」：它还要把暂时移出的探索卡
       // 放回牌堆，而那张卡可能根本没带延迟效果。
+
       if (!cachedArgoRecord?.explorationDelays && !phase.startsWith("timeline-battle-")) return false;
       const targetState = state;
       try {
-        const result = await mutateExplorationRecord((record) => rules.process(record, cycleId,
-          explorationDayNumber(state.day, cycleId), phase, options), `处理探索卡延迟效果 D${state.day} · ${phase}`);
+        const result = await mutateExplorationRecord((record) => {
+          const result = rules.process(record, cycleId, explorationDayNumber(state.day, cycleId), phase, options);
+          if (timelineEnd && options.completeReady === true) {
+            for (const receipt of rules.getQueue(result.record, cycleId, ["ready"])) {
+              if (["tech-disable", "return-exploration-card"].includes(receipt.kind)) continue;
+              result.record = rules.complete(result.record, receipt.receiptId).record;
+              result.changed = true;
+            }
+          }
+          return result;
+        }, `处理探索卡延迟效果 D${state.day} · ${phase}`);
         if (state !== targetState || currentCycleConfig().id !== cycleId) return true;
         // 定时战斗结束：一次性期限重置、「下次定时战斗后放回」的卡回牌堆。「暂时移出」的
         // 探索卡一律跟着这次结束放回（哪怕这一级没有任何延迟效果到期），它本来就写着
         // 「直到下一次定时战斗」。
+
         if (timelineEnd) {
           returnTemporaryExplorationCards();
           for (const action of result.actions.filter((item) => item.type === "return-exploration-card")) {
@@ -8299,23 +8601,32 @@
     }
 
     // 今天的定时战斗打完了 —— 由「遭遇」步骤打勾触发（战斗本身在故事书战斗模块完成）。
+
     // 只有「今天的时间表真的标了战斗」时才结算：否则随便
     // 勾一下遭遇步骤就会推进纪元，把「下次定时战斗结束时」的效果给提前清掉。
+
     // 先结算「战斗开始时」的效果（登记/展示），再结算「战斗结束时」的效果，顺序与原按钮
+
     // 一致。事件编号按「循环+日期」取值是刻意的：同一天重复勾选会被 rules.process 认成
     // 同一场战斗，纪元不会连加，一次性效果也不会重复重置。
+
     async function completeTimelineBattle() {
       if (!ownsDashboardWriteLease()) return false;
       const cycleId = currentCycleConfig().id;
       const battleToday = typeof todayTrackIcons === "function"
         && todayTrackIcons().some((icon) => icon.className === "battle");
       // 待放回卡和延迟效果本身不代表今天发生了战斗；无战斗日保留地形和探索卡。
+
       if (!battleToday) return false;
       const day = explorationDayNumber(state.day, cycleId);
       const eventId = `${cycleId}:D${day}:timeline`;
       const started = await processExplorationDelays("timeline-battle-start", { timelineBattle: true, eventId });
-      const ended = await processExplorationDelays("timeline-battle-end", { timelineBattle: true, eventId });
-      if (started === false || ended === false) {
+      if (started === false) {
+        window.alert("定时战斗结算失败，请重试。");
+        return false;
+      }
+      const ended = await processExplorationDelays("timeline-battle-end", { timelineBattle: true, eventId, completeReady: true });
+      if (ended === false) {
         window.alert("定时战斗结算失败，请重试。");
         return false;
       }
@@ -8349,23 +8660,33 @@
         parent.appendChild(button);
       };
       descriptors.forEach((item) => {
+        const automatic = item.conditionState === true && item.kind !== "tech-disable" && !item.once;
         const row = document.createElement("div");
-        row.className = "exploration-effect-controls";
-        const text = document.createElement("span");
+        row.className = automatic ? "exploration-settle-status" : "exploration-effect-controls";
+        const text = document.createElement(automatic ? "strong" : "span");
         const receipt = queue.find((value) => value.receiptId === effects.delays?.[item.id]
           || (item.once && value.onceKey === `${cycleId}:${entry.id}:${item.id}` && !["done", "cancelled", "expired"].includes(value.status)));
         const effectText = explorationEffectRules()?.displayIcons(item.once ? item.text : item.label, cycleId, entry.id, item.badge) || item.label;
-        text.textContent = `${item.badge ? `[${item.badge}] ` : ""}${effectText}${receipt && receipt.status !== "cancelled" ? ` · 已登记：${receipt.label || item.label}` : ""}`;
+        if (automatic && item.badge) {
+          const condition = document.createElement("div");
+          condition.textContent = `[${item.badge}]`;
+          row.appendChild(condition);
+        }
+        text.textContent = automatic
+          ? `${receipt && !["cancelled", "expired"].includes(receipt.status) ? receipt.status === "done" ? "已处理：" : "已登记：" : ""}${effectText}`
+          : `${item.badge ? `[${item.badge}] ` : ""}${effectText}${receipt && receipt.status !== "cancelled" ? ` · 已登记：${receipt.label || item.label}` : ""}`;
         if (card.key === "c4:9327" && item.id === "manual:2" && receipt?.badge !== undefined && receipt.badge !== item.badge
           && ["waiting", "ready"].includes(receipt.status)) text.textContent += " · 旧登记条件已更正为命运 ≥8，请核对或撤销此安排";
         const placements = item.once ? explorationEffectRules()?.parse(item.text, cycleId, entry.id, item.badge).effects.filter(explorationNeedsPlacement) || [] : [];
         if (placements.length && !receipt) text.textContent += " · 登记收益后，在故事或灾祸模块放置指示物";
         row.appendChild(text);
+        const actions = automatic ? document.createElement("div") : row;
+        if (automatic) actions.className = "exploration-settle-actions";
         if (effects.skipped[item.id]) {
           text.textContent += " · 已确认未触发";
-          action(row, "恢复待办", () => { if (!ownsDashboardWriteLease()) return; delete effects.skipped[item.id]; saveState(); renderFlow(); });
+          action(actions, "恢复待办", () => { if (!ownsDashboardWriteLease()) return; delete effects.skipped[item.id]; saveState(); renderFlow(); });
         } else if (receipt && !["cancelled", "expired"].includes(receipt.status)) {
-          if (["waiting", "ready"].includes(receipt.status)) action(row, "撤销延迟安排", async () => {
+          if (["waiting", "ready"].includes(receipt.status)) action(actions, "撤销延迟安排", async () => {
             const cancelled = await mutateExplorationRecord((record) => {
               explorationBatchReceipt(record, entry);
               const current = rules.getQueue(record, cycleId).find((value) => value.receiptId === receipt.receiptId);
@@ -8404,7 +8725,7 @@
             }
             row.appendChild(picker);
           }
-          action(row, item.kind === "tech-disable" ? "确认条件成立，随机禁用 AA" : (item.once ? placements.length ? "确认收益，登记次数限制" : "已结算本次收益，登记次数限制" : (item.conditionState === null ? "确认条件成立并登记" : "登记延迟效果")), async () => {
+          action(actions, automatic ? "自动结算" : item.kind === "tech-disable" ? "确认条件成立，随机禁用 AA" : (item.once ? placements.length ? "确认收益，登记次数限制" : "已结算本次收益，登记次数限制" : (item.conditionState === null ? "确认条件成立并登记" : "登记延迟效果")), async () => {
             const techCandidates = candidateInputs.filter(({ input }) => input.checked).map(({ tech }) => ({
               key: tech.key, label: tech.displayName || tech.nameZh || tech.name, aa: true, unlocked: true,
             }));
@@ -8412,11 +8733,12 @@
               ...(item.kind === "tech-disable" ? { techCandidates } : {}),
             });
           });
-          if (item.conditionState === null) action(row, "条件未触发", () => {
+          if (item.conditionState === null) action(actions, "条件未触发", () => {
             if (!ownsDashboardWriteLease()) return;
             effects.skipped[item.id] = true; saveState(); renderFlow();
           });
         }
+        if (automatic && actions.children.length) row.appendChild(actions);
         box.appendChild(row);
       });
       return box;
@@ -8431,50 +8753,29 @@
       const temporary = state.exploration?.drawStateByCycle?.[cycleId]?.temporaryRemoved?.length || 0;
       // 遭遇步骤没有「开始定时战斗 / 定时战斗已完成」按钮了，所以这里只在真的有延迟效果
       // 或暂时移出的卡时出现；战斗当天的提醒走 getStepTrackReminders 的「今日战斗」。
+
       if (!relevant.length && (stepId === "development" || !temporary)) return null;
       const box = document.createElement("div");
-      box.className = "exploration-delay-tools";
-      const button = (parent, label, callback) => {
-        const node = document.createElement("button");
-        node.type = "button";
-        node.textContent = label;
-        node.addEventListener("click", () => void callback());
-        parent.appendChild(node);
-      };
-      if (stepId === "development") button(box, "处理本日到期修复", () => processExplorationDelays("development"));
-      // 遭遇步骤不再放「开始定时战斗 / 定时战斗已完成」两个按钮：战斗本身在故事书战斗
-      // 模块打，这两个按钮并不能开战或结算战斗，只会让人以为要在这里点。定时战斗的
-      // 结束结算改由「勾选遭遇步骤」触发（见 completeTimelineBattle），过渡期里的
-      // 「下次定时战斗开始时…」效果仍以本区块的文字形式提醒玩家。
+      box.className = "step-track-reminders";
+      // 和特殊板块一样只展示来源与内容；勾选对应步骤时统一处理并移除提醒。
+
       relevant.forEach((item) => {
         const row = document.createElement("div");
-        row.className = "exploration-effect-controls";
-        const text = document.createElement("span");
-        text.textContent = `${item.cardName} · ${item.label || item.text}${item.status === "ready" ? " · 到期待处理" : ""}`;
-        row.appendChild(text);
+        row.className = "step-track-reminder exploration-card";
+        const title = document.createElement("div");
+        title.className = "step-track-title";
+        const tag = document.createElement("span");
+        tag.className = "step-track-tag exploration-card";
+        tag.textContent = "探索卡";
+        const name = document.createElement("span");
+        name.textContent = item.cardName;
+        title.append(tag, name);
+        const text = document.createElement("p");
+        text.className = "step-track-desc";
+        text.textContent = `${item.label || item.text}${item.status === "ready" ? " · 到期待处理" : ""}`;
+        row.append(title, text);
         if (item.cycleId === "c4" && item.cardId === "9327" && item.id === "manual:2" && /\/3\+$/.test(item.badge || "")) {
           text.textContent += " · 旧登记条件已更正为命运 ≥8，请核对此安排";
-          button(row, "撤销旧安排", async () => {
-            try {
-              await mutateExplorationRecord(record => rules.cancel(record, item.receiptId), "撤销旧版探索卡条件安排");
-              renderFlow();
-            } catch (error) { window.alert(error.message); }
-          });
-        }
-        if (item.status === "ready") {
-          if (item.kind === "end-step-battle") {
-            const link = document.createElement("a");
-            link.textContent = `进入 ${item.battle}`;
-            link.href = getStoryHref({ module: "battle", battle: item.battle });
-            link.addEventListener("click", () => void processExplorationDelays("card-battle-start", { battle: item.battle }));
-            row.appendChild(link);
-          }
-          button(row, "延迟效果已处理", async () => {
-            try {
-              await mutateExplorationRecord((record) => rules.complete(record, item.receiptId), "确认探索卡延迟效果已处理");
-              renderFlow();
-            } catch (error) { window.alert(error.message); }
-          });
         }
         box.appendChild(row);
       });
@@ -8504,6 +8805,7 @@
     }
 
     function explorationBatchReceipt(record, entry) {
+      if (entry.salvageQualificationPending) throw new Error("请先确认本次打捞卡是否实际获得资源或泰坦。");
       record.explorationBatchReceipts = isPlainObject(record.explorationBatchReceipts) ? record.explorationBatchReceipts : {};
       const roundId = explorationRoundId(entry);
       if (!record.explorationBatchReceipts[roundId]) {
@@ -8516,6 +8818,7 @@
         }));
       }
       const receipt = record.explorationBatchReceipts[roundId];
+      if (receipt.technologyIgnored) throw new Error("本张探索卡已由科技忽略，不能再次结算其效果。");
       receipt.applied ||= {};
       receipt.delays ||= {};
       if (receipt.context && !explorationResourceRules().diplomacyItems(receipt.context).length) delete receipt.context;
@@ -8587,7 +8890,7 @@
       const saved = getExplorationSettlement(entry);
       const effects = explorationEffectState(entry);
       const live = explorationSettlementContext(card, selectedFaction || effects.choices.diplomacyFaction || "", entry);
-      const stored = effects.context || saved?.context;
+      const stored = effects.context || saved?.context || entry.technologyDiplomacyContext;
       const frozen = stored && explorationResourceRules().diplomacyItems(stored).length ? stored : {};
       const context = { ...live, ...frozen, stats: live.stats, record: live.record };
       context.appliedEffects = effects.applied;
@@ -8606,7 +8909,7 @@
 
     function explorationBatchContext(entry, card, record, receipt) {
       const context = explorationCardContext(entry, card);
-      const frozen = receipt.context;
+      const frozen = receipt.context || entry.technologyDiplomacyContext;
       context.diplomacy = frozen?.diplomacy?.length ? frozen.diplomacy : currentExplorationDiplomacy(card, record);
       if (frozen?.diplomacyFaction) context.diplomacyFaction = frozen.diplomacyFaction;
       if (frozen?.diplomacyFactions) context.diplomacyFactions = frozen.diplomacyFactions;
@@ -8622,12 +8925,116 @@
       return context;
     }
 
+    function structureSaveReminders(effects, record = cachedArgoRecord) {
+      const rules = window.ATO_STRUCTURE_TECH_RULES;
+      const context = typeof getStructureTechContext === "function" ? getStructureTechContext() : null;
+      if (!rules || !context) return [];
+      const doomTrack = ensureCardTracks().doom;
+      const doomDef = cardTrackGroups.doom.tracks.find(track => track.key === "doom");
+      const doomCard = doomDef && cardTrackCard(doomDef, doomTrack, activeStoryDoomData());
+      const doomCardNumber = Number(doomCard?.label?.match(/^(\d+)[AB]$/)?.[1]) || null;
+      return rules.saveReminders({ ...context, record: record || {}, cycleId: currentCycleConfig().id,
+        day: state.day, automation: state.techAutomation, doomCardNumber }, effects || []);
+    }
+
+    function structureSaveHandledManually(entry, item) {
+      const local = typeof explorationTokenPlacementState === "function" ? explorationTokenPlacementState(entry, item) : explorationEffectState(entry);
+      return Boolean(local.choices?.saveManual?.[item.id]);
+    }
+
+    async function prepareStructureSaveSettlement() {
+      if (!window.ATO_STRUCTURE_TECH_RULES) return;
+      if (typeof refreshStructureTechContext === "function") await refreshStructureTechContext();
+      if (typeof getStructureTechContext !== "function" || !getStructureTechContext()) {
+        throw new Error("可用豁免尚未读取，请连接恢复后重试，或按卡面手动处理。");
+      }
+    }
+
+    function createStructureSaveTools(entry, item, placement = false) {
+      const local = placement ? explorationTokenPlacementState(entry, item) : explorationEffectState(entry);
+      local.choices ||= {};
+      const reminders = structureSaveReminders(placement ? item.manualPlacements || []
+        : [...(item.effects || []), ...(item.manualPlacements || []), ...(item.duesPlan?.effects || [])]);
+      if (!reminders.length && !local.choices.saveManual?.[item.id]) return null;
+      if (!placement && local.applied[item.id]) return null;
+      const box = document.createElement("div");
+      box.className = "structure-save-reminder exploration-settle-manual";
+      const heading = document.createElement("strong");
+      heading.textContent = "本项可用豁免（按卡面手动检定）";
+      box.appendChild(heading);
+      for (const reminder of reminders) {
+        const details = document.createElement("details");
+        const summary = document.createElement("summary");
+        summary.textContent = reminder.title;
+        const desc = document.createElement("p");
+        desc.textContent = reminder.text || [reminder.condition, reminder.costLabel, reminder.check, reminder.effect].filter(Boolean).join("；");
+        details.append(summary, desc);
+        const sources = reminder.sources?.length ? reminder.sources : [reminder];
+        for (const source of sources) {
+          if (!source.image) continue;
+          const imageContainer = sources.length > 1 ? document.createElement("details") : details;
+          if (sources.length > 1) {
+            const sourceTitle = document.createElement("summary");
+            sourceTitle.textContent = `来源：${source.title}`;
+            imageContainer.appendChild(sourceTitle);
+            details.appendChild(imageContainer);
+          }
+          const img = document.createElement("img");
+          img.src = `./technology/${source.image}`;
+          img.alt = source.title; img.loading = "lazy";
+          img.style.cssText = "max-width:240px;width:100%;height:auto";
+          imageContainer.appendChild(img);
+        }
+        box.appendChild(details);
+      }
+      const actions = document.createElement("div");
+      actions.className = "exploration-settle-actions";
+      const add = (label, fn) => {
+        const button = document.createElement("button");
+        button.type = "button"; button.className = "secondary"; button.textContent = label;
+        button.addEventListener("click", () => {
+          if (mutateExplorationRecord.busy || !ownsDashboardWriteLease()) return;
+          fn();
+          if (placement) updateExplorationTokenTask(entry, item, local);
+          saveState(); renderFlow();
+        });
+        actions.appendChild(button);
+      };
+      const manual = Boolean(local.choices.saveManual?.[item.id]);
+      if (manual) {
+        add("恢复本项待办", () => {
+          for (const id of [item.id, ...(item.groupedManualIds || [])]) {
+            delete local.choices.saveManual[id]; delete local.manual[id]; delete local.skipped[id];
+            delete local.choices.saveReviewed?.[id];
+          }
+        });
+      } else {
+        add("豁免", () => {
+          for (const id of [item.id, ...(item.groupedManualIds || [])]) {
+            (local.choices.saveManual ||= {})[id] = true;
+            local.manual[id] = true; local.skipped[id] = true;
+          }
+        });
+      }
+      const note = document.createElement("div");
+      note.textContent = manual ? "本项已手动处理，不再自动应用。"
+        : "默认不豁免";
+      box.append(actions, note);
+      return box;
+    }
+
+    function structureWishSaveItem(plan) {
+      return { id: "option:string-wish", effects: (plan?.changes || []).filter(change => change.type === "stat")
+        .map(change => ({ type: change.key, amount: change.amount })) };
+    }
+
     function explorationAutomaticTitanLosses(record, item) {
       const requested = -item.effects.filter((effect) => effect.type === "titan" && effect.amount < 0).reduce((sum, effect) => sum + effect.amount, 0);
       return explorationEffectRules().automaticTitanLosses(record, requested);
     }
 
     function explorationSingleAutomaticEffect(entry, card, record, receipt) {
+      if (entry.salvageQualificationPending || entry.technologyIgnored || receipt?.technologyIgnored) return null;
       const context = explorationBatchContext(entry, card, record, receipt);
       const rules = explorationResourceRules();
       if (card.diplomacyMenu && !rules.diplomacyItems(context).length) return null;
@@ -8782,12 +9189,28 @@
       }
       const blocked = explorationTokenPlacementBlocked(entry, item);
       box.innerHTML = renderCardTokenPlacementTools(remaining);
+      if (typeof createStructureSaveTools === "function") {
+        const saveTools = createStructureSaveTools(entry, item, true);
+        if (saveTools) box.appendChild(saveTools);
+      }
       if (blocked) {
         const note = document.createElement("div");
         note.className = "card-token-note";
         note.textContent = blocked;
         box.prepend(note);
         box.querySelectorAll("[data-card-token-place]").forEach(button => { button.disabled = true; });
+      }
+      if (typeof window !== "undefined" && window.ATO_STRUCTURE_TECH_RULES
+        && (typeof getStructureTechContext !== "function" || !getStructureTechContext())) {
+        const retry = document.createElement("button");
+        retry.type = "button"; retry.textContent = "读取豁免提醒";
+        retry.addEventListener("click", async () => {
+          retry.disabled = true;
+          try { await prepareStructureSaveSettlement(); renderFlow(); }
+          catch (error) { window.alert(String(error.message || error)); }
+          finally { retry.disabled = false; }
+        });
+        box.appendChild(retry);
       }
       if (blocked === "请先确认本项条件成立" && item.conditionState === null) {
         const confirm = document.createElement("button");
@@ -8802,12 +9225,16 @@
         });
         box.appendChild(confirm);
       }
-      box.addEventListener("click", event => {
+      box.addEventListener("click", async event => {
         const button = event.target.closest("[data-card-token-place]");
         if (!button) return;
         // This row also records completion; don't let the generic flow handler add twice.
         event.stopPropagation();
-        if (!button.disabled) placeExplorationCardToken(entry, item, button.dataset.cardTokenPlace, button.dataset.cardTokenField);
+        if (!button.disabled) {
+          try {
+            if (!placeExplorationCardToken(entry, item, button.dataset.cardTokenPlace, button.dataset.cardTokenField)) renderFlow();
+          } catch (error) { window.alert(String(error.message || error)); }
+        }
       });
       return box;
     }
@@ -8859,6 +9286,9 @@
     }
 
     function applyExplorationOperation(record, entry, item, context, titanLosses = []) {
+      if (typeof structureSaveHandledManually === "function" && structureSaveHandledManually(entry, item)) {
+        throw new Error("本项已按豁免手动处理，请先恢复待办。");
+      }
       const rules = explorationEffectRules();
       let effects = item.effects || [];
       let duesReceipt = null;
@@ -8942,6 +9372,7 @@
       const updates = [];
       const completed = [];
       for (const entry of entries) {
+        if (entry.salvageQualificationPending || entry.technologyIgnored || record.explorationBatchReceipts?.[explorationRoundId(entry)]?.technologyIgnored) continue;
         const card = explorationCardResources(entry.id);
         if (!card) continue;
         const local = explorationEffectState(entry);
@@ -9014,16 +9445,19 @@
         context = explorationBatchContext(entry, card, record, liveReceipt);
         const optionRules = explorationOptionRules();
         if (card.key === "c4:9333" && optionRules && !liveReceipt.wishReceipt
+          && !local.manual["option:string-wish"] && !local.skipped["option:string-wish"]
           && Number(record.explorationPersistentEffects?.c4?.stringWish?.remaining || 0) > 0) {
           const badge = card.manual.find((item) => /^Lose 5 Cursed Derelict/.test(item.text))?.badge;
           const penalty = context.conditionRules?.conditionMet({ type: "icon", badge }, context);
           if (penalty === true || penalty === false) {
             const plan = optionRules.wishPlan(record, context.cycleId, "", penalty, explorationResourceDataset(), { blockGains: context.blockGains });
-            const applied = optionRules.applyWish(record, plan);
-            record = applied.record;
-            explorationBatchReceipt(record, entry).wishReceipt = { ...applied.receipt, summary: applied.summary };
-            explorationBatchReceipt(record, entry).context ||= explorationContextSnapshot(context);
-            completed.push(`${entry.name}：${applied.summary}`);
+            if (typeof structureSaveHandledManually !== "function" || !structureSaveHandledManually(entry, structureWishSaveItem(plan))) {
+              const applied = optionRules.applyWish(record, plan);
+              record = applied.record;
+              explorationBatchReceipt(record, entry).wishReceipt = { ...applied.receipt, summary: applied.summary };
+              explorationBatchReceipt(record, entry).context ||= explorationContextSnapshot(context);
+              completed.push(`${entry.name}：${applied.summary}`);
+            }
           }
         }
         const delayRules = explorationDelayRules();
@@ -9057,7 +9491,9 @@
     }
 
     // 「一键结算」已经跑过自动部分、正等玩家点「结算完毕」结束本轮探索。
+
     // 不落盘：本轮一旦结束就复位，属于一次结算交互里的临时状态。
+
     let explorationSettlePrepared = false;
     function markExplorationSettlePrepared(value) {
       if (explorationSettlePrepared === value) return;
@@ -9079,6 +9515,7 @@
           `一键结算探索卡 D${state.day}：${entries.map((entry) => entry.name).join("、")}`);
         result.updates.forEach(({ entry, receipt }) => syncExplorationBatchReceipt(entry, receipt));
         syncExplorationTokenPlacementQueue();
+        if (typeof settleExplorationPursuit === "function") await settleExplorationPursuit(false, document.querySelector(".exploration-pursuit [name='pursuitSpawnTile']")?.value || "");
         const pending = pendingExplorationEffects(false);
         const previous = state.exploration.lastSettlementByCycle[cycleId]?.completed || [];
         state.exploration.lastSettlementByCycle[cycleId] = { at: Date.now(), completed: [...previous, ...result.completed], pending };
@@ -9087,7 +9524,9 @@
           endExplorationDraw();
         } else {
           // 还有手工活：不弹窗打断（待办就列在下面的结算明细里），只把按钮改成
+
           // 「结算完毕」，让玩家自己决定什么时候点它结束本轮探索。
+
           markExplorationSettlePrepared(true);
         }
       } catch (error) {
@@ -9099,7 +9538,9 @@
     }
 
     // 「结算完毕」这一下：上一步的按钮文本已经把「还剩手工项」告诉过玩家，这里不再弹窗
+
     // 二次提醒（endExplorationDraw 也不再问一次），直接结束本轮探索。
+
     async function completeExplorationDraw() {
       if (settleExplorationDraw.busy || mutateExplorationRecord.busy) {
         window.alert("正在结算探索效果，请稍候。");
@@ -9209,7 +9650,8 @@
         if (descriptor && used && !applied) Object.assign(descriptor, { effects: [], remainder: "", onceBlocked: true,
           automaticStatus: "下次定时战斗前已经触发，本次不重复获得收益" });
       }
-      const customIndexes = new Set([...(merchant?.manualIndexes || []), ...(merchant?.rewards || []).map(item => item.manualIndex), ...delays.filter(item => !numericOnce.includes(item)).flatMap((item) => item.manualIndexes || []), ...conditional.flatMap((item) => item.manualIndexes || []), ...managedChoices.flatMap(item => item.manualIndexes || [])]);
+      const pursuitIndexes = !entry.negotiationId ? window.ATO_EXPLORATION_PURSUIT?.manualIndexes(card) || [] : [];
+      const customIndexes = new Set([...pursuitIndexes, ...(merchant?.manualIndexes || []), ...(merchant?.rewards || []).map(item => item.manualIndex), ...delays.filter(item => !numericOnce.includes(item)).flatMap((item) => item.manualIndexes || []), ...conditional.flatMap((item) => item.manualIndexes || []), ...managedChoices.flatMap(item => item.manualIndexes || [])]);
       const unresolved = wish ? [] : Array.isArray(card.unresolvedEffects) ? card.unresolvedEffects
         : (card.unresolved || []).map(text=>({text,condition:null,badge:""}));
       unresolved.forEach((item, index) => descriptors.push({
@@ -9238,6 +9680,8 @@
       const piles = state.exploration?.drawStateByCycle?.[cycleId]?.activePiles || [];
       const pending = [];
       piles.flat().forEach((entry) => {
+        if (entry.salvageQualificationPending) { pending.push(`${entry.name}：请先确认本次打捞是否实际获得资源或泰坦`); return; }
+        if (entry.technologyIgnored || typeof cachedArgoRecord !== "undefined" && cachedArgoRecord?.explorationBatchReceipts?.[explorationRoundId(entry)]?.technologyIgnored) return;
         const card = explorationCardResources(entry.id);
         if (!card) {
           if (!explorationEffectState(entry).manual["missing-data"]) pending.push(`${entry.name}：暂无效果数据，请按卡面处理`);
@@ -9279,7 +9723,7 @@
             pending.push(`${entry.name}：[${reward.badge}] 请选择商人奖励资源${condition === null ? "（条件需确认）" : ""}`);
           }
         }
-        if (options && card.key === "c4:9333" && !effects.wishReceipt) pending.push(`${entry.name}：${cachedArgoRecord?.explorationPersistentEffects?.c4?.stringWish?.remaining > 0 ? "还款条件数值未记录，需确认分支" : "请选择首次获得的资源并登记持续标记"}`);
+        if (options && card.key === "c4:9333" && !effects.wishReceipt && !effects.manual["option:string-wish"] && !effects.skipped["option:string-wish"]) pending.push(`${entry.name}：${cachedArgoRecord?.explorationPersistentEffects?.c4?.stringWish?.remaining > 0 ? "还款条件数值未记录，需确认分支" : "请选择首次获得的资源并登记持续标记"}`);
         (explorationDelayRules()?.delayed(card, context) || []).forEach((item) => {
           if (explorationDelayManaged(entry, card, context, item)) return;
           if (item.conditionState !== false && !effects.delays?.[item.id] && !effects.skipped[item.id]) pending.push(`${entry.name}：${item.once ? "请处理本次收益并登记次数限制" : (item.kind === "tech-disable" ? "需确认禁用条件及已解锁 AA 科技" : "需确认延迟效果的触发条件")} · ${item.once ? item.text : item.label}`);
@@ -9292,6 +9736,8 @@
       const entries = state.exploration?.drawStateByCycle?.[currentCycleConfig().id]?.activePiles?.flat() || [];
       const reminders = [];
       for (const entry of entries) {
+        if (entry.salvageQualificationPending) continue;
+        if (entry.technologyIgnored || typeof cachedArgoRecord !== "undefined" && cachedArgoRecord?.explorationBatchReceipts?.[explorationRoundId(entry)]?.technologyIgnored) continue;
         const card = explorationCardResources(entry.id);
         if (!card) continue;
         const context = explorationCardContext(entry, card);
@@ -9715,6 +10161,16 @@
         controls.appendChild(select);
         const penaltyBadge = card.manual.find((item) => /^Lose 5 Cursed Derelict/.test(item.text))?.badge;
         const penaltyState = context.conditionRules?.conditionMet({ type: "icon", badge: penaltyBadge }, context) ?? null;
+        const savePlan = rules.wishPlan(cachedArgoRecord || {}, cycleId, select.value, penaltyState === true,
+          explorationResourceDataset(), { blockGains: context.blockResourceGains });
+        if (typeof createStructureSaveTools === "function") {
+          const saveTools = createStructureSaveTools(entry, structureWishSaveItem(savePlan));
+          if (saveTools) box.appendChild(saveTools);
+        }
+        if (effects.manual["option:string-wish"] || effects.skipped["option:string-wish"]) {
+          status.textContent += " · 本次已手动处理";
+          return box;
+        }
         if (current?.remaining > 0 && penaltyState === null) {
           const penalty = button("按高阈值分支还款", () => settleWish(true));
           penalty.title = "卡面命运 8+ 或另一图标 4+ 条件成立时使用加重扣费。";
@@ -9726,6 +10182,9 @@
           const livePenalty = context.conditionRules?.conditionMet({ type: "icon", badge: penaltyBadge }, liveContext);
           if (penaltyState !== null && (livePenalty === null || livePenalty === undefined)) throw new Error("还款条件数值已变化，请核对记录表后重试。");
           const plan = rules.wishPlan(record, cycleId, select.value, livePenalty ?? penalty, explorationResourceDataset(), { blockGains: context.blockResourceGains });
+          if (typeof structureSaveHandledManually === "function" && structureSaveHandledManually(entry, structureWishSaveItem(plan))) {
+            throw new Error("本项已按豁免手动处理，请先恢复待办。");
+          }
           const result = rules.applyWish(record, plan);
           explorationBatchReceipt(result.record, entry).wishReceipt = { ...result.receipt, summary: result.summary };
           explorationBatchReceipt(result.record, entry).context ||= explorationContextSnapshot(context);
@@ -9766,6 +10225,7 @@
         refresh();
       };
       // 已知且无需玩家选择的部分用绿色按钮；未知条件和手动部分才进入黄色待办。
+
       const automaticItem = (item) => !item.receiptMismatch && (item.automatic
         || (explorationHasRecordOperation(item) && (item.conditionState === true || effectState.applied[item.id])
           && explorationAutomaticTitanLosses(cachedArgoRecord || {}, item) !== null));
@@ -9774,7 +10234,8 @@
         && (!item.requiresEffect || effectState.applied[item.requiresEffect] || effectState.manual[item.requiresEffect])
         && (!item.requiresManual || effectState.manual[item.requiresManual])
         && !effectState.applied[item.id] && !effectState.skipped[item.id]
-        && !((item.dynamic || !item.remainder) && effectState.manual[item.id]);
+        && !((item.dynamic || !item.remainder) && effectState.manual[item.id])
+        && !(typeof structureSaveHandledManually === "function" && structureSaveHandledManually(entry, item));
       const direct = items.filter(directItem);
       const automatic = items.filter(automaticItem);
       automatic.forEach((item) => {
@@ -9789,12 +10250,18 @@
         }
         const result = document.createElement("strong");
         result.textContent = item.automatic ? item.automaticStatus || "已应用整堆限制" : applied ? `已结算：${applied.summary || "数值未变化"}`
+          : effectState.choices.saveManual?.[item.id] ? "已按豁免手动处理本项"
           : effectState.skipped[item.id] ? "已确认不适用" : effectState.manual[item.id] && !item.remainder ? "已手动处理"
           : item.requiresEffect && !effectState.applied[item.requiresEffect] && !effectState.manual[item.requiresEffect] ? `先结算前序效果：${summary}`
           : item.requiresManual && !effectState.manual[item.requiresManual] ? `先处理前序事件：${summary}`
           : item.requiresResource && !getExplorationSettlement(entry) ? `选择资源时一并结算：${summary}` : summary;
         row.appendChild(result);
-        if (applied || effectState.skipped[item.id] || (effectState.manual[item.id] && !item.remainder)) {
+        if (typeof createStructureSaveTools === "function") {
+          const saveTools = createStructureSaveTools(entry, item);
+          if (saveTools) row.appendChild(saveTools);
+        }
+        if ((applied || effectState.skipped[item.id] || (effectState.manual[item.id] && !item.remainder))
+          && !effectState.choices.saveManual?.[item.id]) {
           const actions = document.createElement("div");
           actions.className = "exploration-settle-actions";
           const button = document.createElement("button");
@@ -9833,6 +10300,7 @@
         const applied = effectState.applied[item.id];
         const manualDynamic = Boolean((item.dynamic || !item.remainder) && effectState.manual[item.id]);
         // 已经并进「结算记录表效果」的条目不再给单个按钮。
+
         const inDirectBatch = automaticItem(item);
         if (item.automatic) status.textContent = "已应用整堆限制";
         else if (effectState.skipped[item.id]) status.textContent = "已确认不适用";
@@ -9843,6 +10311,10 @@
         else if (item.blocked && !item.effects.length) status.textContent = "本堆禁止该项收益";
         else status.textContent = item.requiresResource && !getExplorationSettlement(entry) ? "选择资源时一并结算" : item.conditionState === null ? "条件需确认" : "待处理";
         controls.appendChild(status);
+        if (!automaticItem(item) && typeof createStructureSaveTools === "function") {
+          const saveTools = createStructureSaveTools(entry, item);
+          if (saveTools) row.appendChild(saveTools);
+        }
         const addButton = (text, callback) => {
           const button = document.createElement("button");
           button.type = "button";
@@ -9852,7 +10324,7 @@
           controls.appendChild(button);
         };
         if (effectState.skipped[item.id]) {
-          addButton("恢复待办", () => mark("skipped", item.id, false));
+          if (!effectState.choices.saveManual?.[item.id]) addButton("恢复待办", () => mark("skipped", item.id, false));
         } else if (!item.automatic) {
           if (applied && !automaticItem(item)) addButton("撤销记录表效果", () => void run([item], [], true));
           else if (item.effects.length && !manualDynamic && !inDirectBatch && (!item.requiresResource || getExplorationSettlement(entry))) {
@@ -9896,7 +10368,7 @@
               void run([item], selectors.map((select) => ({ id: select.value, count: 1 })));
             });
           }
-          if (item.remainder) {
+          if (item.remainder && !effectState.choices.saveManual?.[item.id]) {
             if (applied && !automaticItem(item)) {
               const remainder = document.createElement("span");
               remainder.textContent = `其余效果：${item.remainder}`;
@@ -9910,7 +10382,7 @@
               controls.appendChild(done);
             }
           }
-          if (manualDynamic && !item.remainder) addButton("恢复手动待办", () => mark("manual", item.id, false));
+          if (manualDynamic && !item.remainder && !effectState.choices.saveManual?.[item.id]) addButton("恢复手动待办", () => mark("manual", item.id, false));
           if (item.conditionState === null && !applied && !effectState.manual[item.id]) {
             addButton("不适用", () => mark("skipped", item.id, true));
           }
@@ -9944,6 +10416,18 @@
         row.appendChild(text);
         const controls = document.createElement("div");
         controls.className = applied ? "exploration-settle-actions" : "exploration-effect-controls";
+        if (!applied && typeof createStructureSaveTools === "function") {
+          const possibleEffects = [];
+          for (const choice of item.choices || []) {
+            if (choice.disabled || choice.blocked) continue;
+            try {
+              const resolved = item.duesPlan ? item : explorationChoiceRules().resolve(card, context, item.id, choice.id);
+              possibleEffects.push(...(resolved.effects || []));
+            } catch { /* Unknown branches remain manual until their conditions are known. */ }
+          }
+          const saveTools = createStructureSaveTools(entry, { ...item, effects: possibleEffects });
+          if (saveTools) row.appendChild(saveTools);
+        }
         const addButton = (label, action) => {
           const button = document.createElement("button");
           button.type = "button"; button.className = "secondary"; button.textContent = label;
@@ -9965,7 +10449,9 @@
             addButton(local.manual[item.id] ? "恢复放置待办" : "已手动放置", () => mark(item.id, !local.manual[item.id]));
           }
         }
-        else if (local.manual[item.id]) addButton("恢复待办", () => mark(item.id, false));
+        else if (local.manual[item.id]) {
+          if (!local.choices.saveManual?.[item.id]) addButton("恢复待办", () => mark(item.id, false));
+        }
         else if (item.legacyIds.length) {
           const hint = document.createElement("div");
           hint.textContent = "旧版分项已有处理记录，请先撤销或恢复旧分项，再使用这些选项。";
@@ -10017,6 +10503,19 @@
     }
 
     function createExplorationSettleBlock(entry, selectedFaction = "", selectedDiplomacy = null) {
+      if (entry.salvageQualificationPending) {
+        const block = document.createElement("div");
+        block.className = "exploration-settle";
+        block.textContent = "打捞奖励条件尚未确认，请先在探索科技能力中核实。确认前不结算本卡效果。";
+        return block;
+      }
+      const ignored = entry.technologyIgnored || cachedArgoRecord?.explorationBatchReceipts?.[explorationRoundId(entry)]?.technologyIgnored;
+      if (ignored) {
+        const block = document.createElement("div");
+        block.className = "exploration-settle";
+        block.textContent = `已使用科技忽略本卡 · ${ignored.summary || "无需结算本卡效果"}`;
+        return block;
+      }
       const rules = explorationResourceRules();
       const card = explorationCardResources(entry.id);
       if (!rules) return null;
@@ -10077,7 +10576,8 @@
           if (localFactions.includes(select.value)) {
             savedEffects.choices.diplomacyFaction = select.value;
             saveState();
-            block.replaceWith(createExplorationSettleBlock(entry, select.value));
+            if (window.ATO_EXPLORATION_PURSUIT?.ignores?.[card.key]) renderFlow();
+            else block.replaceWith(createExplorationSettleBlock(entry, select.value));
           }
         });
         actions.appendChild(select);
@@ -10263,6 +10763,133 @@
       return block;
     }
 
+    async function settleExplorationPursuit(waive = false, spawnTileId = "") {
+      if (settleExplorationPursuit.busy || mapCommandBusy || mutateExplorationRecord.busy) throw new Error("地图或探索正在结算，请稍候。");
+      const rules = window.ATO_EXPLORATION_PURSUIT;
+      if (!rules) throw new Error("追踪结算规则未加载，请刷新页面。");
+      const target = structureTechTarget();
+      settleExplorationPursuit.busy = true;
+      try {
+        await beforeStructureTechSubmit(target);
+        const context = await structureTechClient().load(target);
+        assertStructureTechTarget(target);
+        const preview = rules.plan(context);
+        if (preview.code === "NO_EXPLORATION_ROUND") return null;
+        if (!preview.ok) throw new Error(preview.message);
+        if (preview.settled) {
+          await applyStructureTechCommit({ campaign: context.campaign }, target);
+          return preview.operation;
+        }
+        const result = await structureTechClient().submit({ ...target, expectedDay: target.day,
+          techKey: "pursuer problem", actionId: "exploration-pursuit", operationId: preview.roundId,
+          selection: { roundId: preview.roundId, waive: Boolean(waive), spawnTileId: spawnTileId || "" },
+          assertContext: () => assertStructureTechTarget(target),
+        });
+        await applyStructureTechCommit(result, target);
+        setMapCommandStatus(result.operation.rewardLabel);
+        return result.operation;
+      } finally { settleExplorationPursuit.busy = false; }
+    }
+
+    function createExplorationPursuitTools() {
+      const rules = window.ATO_EXPLORATION_PURSUIT;
+      const context = getStructureTechContext();
+      const live = context || { cycleId: currentCycleConfig().id, state, record: cachedArgoRecord || {}, automation: state.techAutomation };
+      const round = rules?.roundId(live);
+      if (!round) return null;
+      const box = document.createElement("div");
+      box.className = "exploration-pursuit";
+      const preview = rules.plan(live);
+      const title = document.createElement("strong");
+      const count = rules.countMarkers(live);
+      const total = preview.settled ? preview.total : count.ok ? count.total : "?";
+      title.className = "exploration-pursuit-count";
+      title.setAttribute("aria-label", `宿敌标记 ${total}`);
+      const icon = document.createElement("img");
+      icon.src = "./map/tokens/adversary.png";
+      icon.alt = "";
+      title.append(icon, document.createTextNode(String(total)));
+      if (!preview.settled && count.unresolved?.length) title.append("（另有条件待确认）");
+      box.appendChild(title);
+      const note = document.createElement("span");
+      if (preview.settled) {
+        note.textContent = `已结算：${preview.operation.rewardLabel}`;
+        box.appendChild(note);
+        if (preview.operation.pursuit?.battle && preview.operation.status !== "completed") {
+          const target = window.ATO_NEMESIS_BATTLE.targetFor(currentCycleConfig().id, live.record, adversaryBattleByCycle);
+          if (target) {
+            const link = document.createElement("a");
+            link.href = `./story/index.html?${new URLSearchParams(target).toString()}`;
+            link.textContent = "进入宿敌战斗";
+            box.appendChild(link);
+          }
+        }
+        return box;
+      }
+      for (const entry of rules.choiceCards(live)) {
+        const select = document.createElement("select"); select.name = `pursuitCardChoice-${entry.id}`;
+        select.setAttribute("aria-label", `${entry.name || entry.id} 的命运或追踪分支`);
+        for (const [value, text] of [["", "请选择：命运或追踪…"], ["fate", "命运 +1"], ["pursuit", "结算 1 个追踪标记"]]) {
+          const option = document.createElement("option"); option.value = value; option.textContent = text; select.appendChild(option);
+        }
+        select.value = state.exploration.drawStateByCycle[currentCycleConfig().id].pursuitChoices?.[entry.id] || "";
+        select.disabled = Boolean(settleExplorationPursuit.busy || settleExplorationDraw.busy);
+        select.addEventListener("change", () => {
+          const draw = ensureExplorationDrawState();
+          (draw.pursuitChoices ||= {})[entry.id] = select.value;
+          saveState(); renderFlow();
+        });
+        box.appendChild(select);
+      }
+      if (count.ok && count.cards.some(card => card.count || card.condition)) {
+        const details = document.createElement("details"), summary = document.createElement("summary");
+        summary.textContent = "追踪统计明细"; details.appendChild(summary);
+        for (const card of count.cards.filter(card => card.count || card.condition)) {
+          const line = document.createElement("p");
+          line.textContent = `${card.name} #${card.cardId}：固定 ${card.printed} + 条件／选择 ${card.extra}${card.ignored ? ` - 外交忽略 ${card.ignored}` : ''} = ${card.count}`
+            + (card.condition ? `：${card.condition}${card.conditionStatus ? `（${card.conditionStatus}）` : card.cardId === '10304' ? '' : `（当前命运 ${card.fate ?? '未填写'}${card.condition.includes('债务') ? `、债务 ${card.debt ?? '未填写'}` : ''}）`}` : '');
+          details.appendChild(line);
+        }
+        box.appendChild(details);
+      }
+      note.textContent = !preview.ok ? preview.message : preview.mode === "spawn" ? "地图无宿敌，本轮达到 2 个标记，将生成宿敌（本次不再移动）。"
+        : preview.mode === "move" ? `宿敌将移动 ${preview.steps} 格；一键结算默认不豁免。`
+        : "无事发生。一键结算会记录本轮已处理。";
+      box.appendChild(note);
+      if (!preview.ok || !context) return box;
+      let location;
+      if (preview.candidates?.length > 1) {
+        location = document.createElement("select"); location.name = "pursuitSpawnTile";
+        location.setAttribute("aria-label", "宿敌生成位置");
+        for (const tile of preview.candidates) {
+          const option = document.createElement("option"); option.value = tile.id; option.textContent = `生成位置 ${tile.label}`; location.appendChild(option);
+        }
+        box.appendChild(location);
+      }
+      function button(text, waive) {
+        const node = document.createElement("button"); node.type = "button"; node.className = "secondary step-action-button"; node.textContent = text;
+        node.disabled = Boolean(settleExplorationPursuit.busy || settleExplorationDraw.busy || mutateExplorationRecord.busy || mapCommandBusy);
+        node.addEventListener("click", async () => {
+          node.disabled = true;
+          try { await settleExplorationPursuit(waive, location?.value || ""); }
+          catch (error) { window.alert(`追踪结算失败：${error.message || error}`); }
+          finally { renderFlow(); }
+        });
+        box.appendChild(node);
+        return node;
+      }
+      if (preview.mode !== "none") button(preview.mode === "spawn" ? "生成宿敌" : "结算追踪（不豁免）", false);
+      if (preview.mode === "move" && window.ATO_STRUCTURE_TECH_RULES.canUsePursuerProblem(live).ok) {
+        const action = { ...live, techKey: "pursuer problem", actionId: "exploration-pursuit", operationId: round,
+          selection: { roundId: round, waive: true, spawnTileId: "" } };
+        const checked = window.ATO_STRUCTURE_TECH_RULES.prepareOperation(action);
+        const waive = button(`豁免：命运 +1，少移动 1 格（移 ${Math.max(0, preview.steps - 1)} 格）`, true);
+        waive.disabled ||= !checked.ok;
+        if (!checked.ok) waive.title = checked.message;
+      }
+      return box;
+    }
+
     function createExplorationTools() {
       const library = getExplorationLibrary();
       const selectedIds = getSelectedExplorationIds();
@@ -10284,12 +10911,14 @@
       const status = document.createElement("div");
       status.className = "exploration-status";
       // 派系外交状态常驻显示（当前所在派系会加底色突出），探索中随时能对照。
+
       status.appendChild(createExplorationFactionStatus());
 
       const buttons = document.createElement("div");
       buttons.className = "exploration-buttons";
       // 有牌在结算时：先点一次「一键结算」跑自动部分；如果还剩需要手动处理的项，按钮文本
       // 立刻变成「结算完毕」（不弹窗，待办就列在下面的结算明细里），再点一次才真的结束本轮。
+
       const settleButtonText = hasActiveExplorationDraw
         ? (explorationSettlePrepared ? "结算完毕" : "一键结算")
         : "抽探索卡";
@@ -10317,13 +10946,17 @@
 
       buttons.append(drawButton, returnButton);
       toolbar.append(status, buttons);
+      const pursuitTools = typeof createExplorationPursuitTools === "function" ? createExplorationPursuitTools() : null;
 
       // 这里原先还有一行「牌堆 N / 当前牌组 N，待结算 N，暂时移出 N」的统计。删掉：
       // 「放回暂时移出（N）」按钮已经写着暂存张数，抽出的牌就在下面列着，剩下两个数字
+
       // 每次探索都挂在步骤上没什么用。
+
 
       // 抽出的牌只显示牌面本身：天数/卡名/黑底编号和移出·连抽标签都不再重复印在卡下面，
       // 卡面上本来就有这些信息；抽出的张数由上方状态行负责说明，不再单独加标题。
+
       const createDrawnCard = (entry, options = {}) => {
         const drawnCard = document.createElement("article");
         drawnCard.className = "exploration-drawn-card";
@@ -10358,6 +10991,7 @@
 
       // 「放回暂时移出」按钮只负责放回，不再悬停弹出卡牌预览：暂时移出的牌在下方的
       // 「暂时移出牌堆」折叠区里本来就能看到，鼠标扫过按钮就弹窗反而会挡住牌面。
+
       const drawnCards = document.createElement("section");
       drawnCards.className = "exploration-drawn";
       const activeCards = drawState.activePiles.flat();
@@ -10369,6 +11003,7 @@
       }
 
       // 「选择探索卡库」折叠区：横向与「暂时移出牌堆」并排，同时只允许打开一个。
+
       const builder = document.createElement("details");
       builder.className = "exploration-builder";
       builder.open = false;
@@ -10394,6 +11029,7 @@
       restoreDefaultButton.addEventListener("click", restoreDefaultExplorationSelection);
 
       // 卡库内容只建一次，哪个折叠区打开就挂到哪个里面（见下面的 onPaneToggle）。
+
       const libraryList = document.createElement("div");
       libraryList.className = "exploration-library";
       const selectedSet = new Set(selectedIds);
@@ -10443,12 +11079,15 @@
       applyButton.addEventListener("click", () => applyExplorationSelection(getCheckedIds()));
 
       // 「选择探索卡库」的工具栏 + 隐藏卡菜单 + 卡库列表，默认挂在自己的折叠区里。
+
       builderActions.append(applyButton, restoreDefaultButton);
       // 破坏卡组（只有带 destructionIds 的循环才有）跟卡库放在同一层子菜单里，
       // 排在卡库列表**上面**：先处理破坏卡组，再往下才是那一大片卡库列表。
+
       const destructionTools = createExplorationDestructionTools(selectedIds, destructionPileIds);
       builderBody.append(builderActions, hiddenMenu, ...(destructionTools ? [destructionTools] : []), libraryList);
       // 选择数量属于卡库内容，随卡库一起折叠。
+
       const selectedCount = document.createElement("div");
       selectedCount.className = "exploration-count";
       selectedCount.textContent = `已选 ${selectedIds.length} / ${library.length} 张`;
@@ -10456,7 +11095,9 @@
       builder.appendChild(builderBody);
 
       // 两个折叠区横向并排，同时只允许打开一个；打开后占满整个宽度（跨两列），另一个
+
       // 折叠回标题行、落在下一行左侧。所以两处都不适合再套一层自己的网格布局。
+
       const temporarySection = document.createElement("details");
       temporarySection.className = "exploration-removed-pile";
       temporarySection.open = false;
@@ -10476,17 +11117,23 @@
       }
 
       // 卡库内容永远跟着"当前打开的那个折叠区"走；谁都没打开时回到卡库自己的折叠区。
+
       // 注意不能只按"刚收起的那一个"来搬：收起暂时移出牌堆会被程序性地触发一次 toggle，
+
       // 而那时卡库可能已经被别的操作重新打开了，按收起方判断会把内容搬错地方。
+
       const attachLibraryBody = (container) => {
         if (!container.contains(builderBody)) container.appendChild(builderBody);
       };
       // 收起方要记下来：toggle 事件是异步派发的，等它到达时 open 属性可能已经被别的操作
       // 改回去了，光看"谁现在开着"会把刚收起的那个又当成打开的那个。
+
       let closingPane = null;
       const onPaneOpen = (pane) => {
         // 用 closePane 走"程序性收起"，这样另一个折叠区异步派发来的 toggle 也能被
+
         // closingPane 认出来，不会把卡库内容又搬回去。
+
         if (pane === temporarySection) closePane(builder);
         else closePane(temporarySection);
         if (pane === temporarySection) attachLibraryBody(temporarySection);
@@ -10495,6 +11142,7 @@
       const onPaneClose = (pane) => {
         if (pane === closingPane) closingPane = null;
         // 空牌堆也保留入口，卡库内容仍跟随当前打开的折叠区。
+
         if (builder.open) attachLibraryBody(builder);
         else if (temporarySection.open && temporarySection !== closingPane && !temporarySection.hidden) {
           attachLibraryBody(temporarySection);
@@ -10517,11 +11165,13 @@
       });
 
       // 两个入口在所有循环常驻，空的暂时移出牌堆展示说明。
+
       const removedPiles = document.createElement("section");
       removedPiles.className = "exploration-removed-piles";
       removedPiles.append(temporarySection, builder);
 
       wrapper.append(toolbar);
+      if (pursuitTools) wrapper.appendChild(pursuitTools);
       const lastSettlement = state.exploration.lastSettlementByCycle?.[currentCycleConfig().id];
       if (lastSettlement) {
         const report = document.createElement("div");
@@ -10530,7 +11180,9 @@
         const pending = hasActiveExplorationDraw ? pendingExplorationEffects() : lastSettlement.pending || [];
         const count = (lastSettlement.completed || []).length;
         // 「查看自动结算明细」折叠区已按需求整块删除（不再逐条列自动处理了什么），只留
+
         // 一句概括 + 还需要玩家手动处理的清单。
+
         const result = document.createElement("div");
         result.className = "exploration-batch-result";
         result.textContent = `本次自动处理 ${count} 项。${pending.length
@@ -10552,6 +11204,7 @@
       if (drawState.activePiles.flat().length) wrapper.appendChild(drawnCards);
       wrapper.appendChild(removedPiles);
       // 破坏卡组不在这里挂：它已经并入上面「选择探索卡库」折叠区的 body。
+
       return wrapper;
     }
 
@@ -10607,6 +11260,465 @@
     function getTechnologyHref() {
       const config = currentCycleConfig();
       return `./technology/index.html?cycle=${encodeURIComponent(config.id)}`;
+    }
+
+    function normalizeStructureTechAutomation(value) {
+      const rules = window.ATO_STRUCTURE_TECH_RULES;
+      return rules?.normalizeAutomation ? rules.normalizeAutomation(value)
+        : { version: 1, events: isPlainObject(value?.events) ? cloneJson(value.events) : {} };
+    }
+
+    function structureTechSession() {
+      if (!sessionUser?.id) throw new Error("请先登录再使用科技能力。");
+      const epoch = campaignSessionEpoch;
+      const accountId = sessionUser.id;
+      return {
+        accountId,
+        get changed() { return epoch !== campaignSessionEpoch || sessionUser?.id !== accountId; },
+        assertCurrent() { if (this.changed) throw accountMismatchError(); },
+        accept(payload) {
+          this.assertCurrent();
+          if (payload?.code === "ACCOUNT_MISMATCH" || (payload?.user?.id && payload.user.id !== accountId)) {
+            stopForAccountMismatch();
+            throw accountMismatchError();
+          }
+          return payload;
+        },
+      };
+    }
+
+    function structureTechClient() {
+      if (!sessionUser?.id) throw new Error("请先登录再使用科技能力。");
+      if (!structureTechConnection || structureTechConnectionEpoch !== campaignSessionEpoch) {
+        const epoch = campaignSessionEpoch;
+        const accountId = sessionUser.id;
+        const session = structureTechSession();
+        if (!window.ATO_STRUCTURE_TECH_CLIENT) throw new Error("科技自动化模块未加载，请刷新页面。");
+        structureTechConnection = window.ATO_STRUCTURE_TECH_CLIENT.create({ session, expectedAccountId: accountId });
+        structureTechConnectionEpoch = epoch;
+        structureTechContext = null;
+        structureTechContextRevision = -1;
+        structureTechActionPanel = null;
+        negotiationTechActionPanel = null;
+        explorationTechActionPanel = null;
+      }
+      return structureTechConnection;
+    }
+
+    function mapTitanClient() {
+      if (!mapTitanConnection || mapTitanConnectionEpoch !== campaignSessionEpoch) {
+        mapTitanConnection = window.ATO_STRUCTURE_TECH_CLIENT.create({ session: structureTechSession(),
+          rules: window.ATO_MAP_TITAN_RULES.createEngine() });
+        mapTitanConnectionEpoch = campaignSessionEpoch;
+      }
+      return mapTitanConnection;
+    }
+
+    async function settleMapTitanCapture(target, tileId, checkResult = "") {
+      if (mapTitanCaptureBusy) return;
+      mapTitanCaptureBusy = true;
+      const key = `${target.sessionEpoch}:${target.profileId}:${target.cycleId}:${tileId}`;
+      mapTitanCaptureMessage = { key, text: "正在将捕获结果写入记录表…" };
+      renderFlow();
+      let committed = false;
+      try {
+        await beforeStructureTechSubmit(target);
+        const rules = window.ATO_MAP_TITAN_RULES;
+        const hunt = Boolean(checkResult);
+        const result = await mapTitanClient().submit({ ...target, expectedDay: target.day,
+          techKey: hunt ? "titan hunting" : "map-titan", actionId: hunt ? "map-hunt" : "map-collect",
+          operationId: hunt ? rules.huntId(target.cycleId, target.day) : rules.baseId(target.cycleId, tileId),
+          selection: { tileId, ...(hunt ? { checkResult } : {}) }, assertContext: () => assertStructureTechTarget(target) });
+        committed = true;
+        mapTitanCaptureMessage = { key, text: `${result.operation.rewardLabel}${hunt ? "；命运 +1" : "，已自动写入记录表"}。` };
+        await applyStructureTechCommit(result, target);
+      } catch (error) {
+        mapTitanCaptureMessage = { key, text: committed ? `捕获已保存，界面同步失败：${error.message || error}。请刷新核对。`
+          : `捕获登记未完成：${error.message || error}。可点击下方按钮重试核对。` };
+        if (error?.code === "ACCOUNT_MISMATCH") stopForAccountMismatch();
+      } finally {
+        mapTitanCaptureBusy = false;
+        renderFlow();
+      }
+    }
+
+    function createMapTitanReminder() {
+      const rules = window.ATO_MAP_TITAN_RULES;
+      const context = getStructureTechContext();
+      if (!rules || !context) return null;
+      const cycleId = currentCycleConfig().id;
+      const saved = context.map?.cycles?.[cycleId] || {};
+      const tileId = saved.currentTile || saved.tokens?.AG;
+      const info = rules.createEngine().status(context, tileId);
+      if (!info.marker || !info.current || !info.explored) return null;
+      const target = structureTechTarget();
+      const key = `${target.sessionEpoch}:${target.profileId}:${cycleId}:${tileId}`;
+      const box = document.createElement("div");
+      box.className = "step-track-reminder structure-tech map-titan-reminder";
+      box.dataset.mapTitanTile = tileId;
+      box.innerHTML = `<div class="step-track-title"><span class="step-track-tag structure-tech">泰坦</span>当前板块 ${escapeHtml(tileId)} 有泰坦标记</div>`;
+      const status = document.createElement("p");
+      status.className = "step-track-desc map-titan-award";
+      status.setAttribute("role", "status");
+      status.textContent = mapTitanCaptureMessage?.key === key ? mapTitanCaptureMessage.text
+        : info.collected ? "首次探索奖励已领取：1 架梦行者。" : info.newlyExplored
+          ? "首次探索此板块，自动获得 1 架梦行者，正在登记记录表。" : "基础奖励仅在首次探索时获得；若尚未领取，可在下方登记。";
+      box.appendChild(status);
+      const actions = document.createElement("div");
+      actions.className = "map-titan-actions";
+      const addButton = (label, run, result = "") => {
+        const button = document.createElement("button");
+        button.type = "button"; button.className = "secondary"; button.textContent = label;
+        if (result) button.dataset.mapTitanResult = result;
+        button.disabled = mapTitanCaptureBusy || !ownsDashboardWriteLease();
+        button.addEventListener("click", run); actions.appendChild(button);
+      };
+      if (!info.collected) addButton("领取 1 架梦行者", () => void settleMapTitanCapture(target, tileId));
+      if (info.canHunt) {
+        const hint = document.createElement("p"); hint.className = "step-track-desc";
+        hint.textContent = info.hunted ? `「泰坦捕获」：本日额外捕获已处理（${info.hunted.gained ? "成功，获得 1 架梦行者" : "失败"}；命运 +1）。`
+          : "「泰坦捕获」：本日探索阶段可额外捕获一次。增加 1 命运，进行外交检定（7+）；成功额外获得 1 架梦行者，失败仍增加命运。";
+        box.appendChild(hint);
+        if (!info.hunted) {
+          addButton("额外捕获：检定成功", () => void settleMapTitanCapture(target, tileId, "success"), "success");
+          addButton("额外捕获：检定失败", () => void settleMapTitanCapture(target, tileId, "failure"), "failure");
+        }
+      }
+      if (actions.children.length) box.appendChild(actions);
+      const attempt = `${key}:${rules.baseId(cycleId, tileId)}`;
+      if (info.newlyExplored && !info.collected && !mapTitanCaptureBusy && ownsDashboardWriteLease()
+          && structureTechContextRevision === campaignSectionRevision && !mapTitanAutomaticAttempts.has(attempt)) {
+        mapTitanAutomaticAttempts.add(attempt);
+        window.setTimeout(() => void settleMapTitanCapture(target, tileId), 0);
+      }
+      return box;
+    }
+
+    function getStructureTechContext() {
+      if (!structureTechContext || structureTechContext.epoch !== campaignSessionEpoch
+        || structureTechContext.profileId !== archive.activeProfileId
+        || structureTechContext.cycleId !== currentCycleConfig().id) return null;
+      const automationsByCycle = Object.fromEntries(Object.entries(archive.profiles?.[archive.activeProfileId]?.cycles || {})
+        .map(([cycle, saved]) => [cycle, saved?.state?.techAutomation]));
+      return { ...structureTechContext, day: state.day, state: cloneJson(state), automation: state.techAutomation, automationsByCycle,
+        record: cachedArgoRecord || structureTechContext.record };
+    }
+
+    async function refreshStructureTechContext(force = true) {
+      if (!sessionUser?.id || !campaignSectionBaseline) return null;
+      const profileId = archive.activeProfileId;
+      const cycleId = currentCycleConfig().id;
+      const epoch = campaignSessionEpoch;
+      const revision = campaignSectionRevision;
+      const key = `${epoch}:${profileId}:${cycleId}:${revision}`;
+      if (!force && getStructureTechContext() && structureTechContextRevision === revision) return getStructureTechContext();
+      if (structureTechContextRequest?.key === key) return structureTechContextRequest.promise;
+      const promise = (async () => {
+        try {
+          const context = await structureTechClient().load({ profileId, cycleId });
+          if (epoch !== campaignSessionEpoch || profileId !== archive.activeProfileId || cycleId !== currentCycleConfig().id) {
+            throw new Error("活动档案或循环已切换，请重试。");
+          }
+          const before = getStructureTechContext();
+          structureTechContext = { ...context, epoch };
+          structureTechContextRevision = revision;
+          structureTechContextError = "";
+          cachedArgoRecord = context.record;
+          if (!jsonEqual(before, getStructureTechContext())) renderFlow();
+          return getStructureTechContext();
+        } catch (error) {
+          if (epoch === campaignSessionEpoch && profileId === archive.activeProfileId && cycleId === currentCycleConfig().id) {
+            structureTechContextError = String(error?.message || error);
+          }
+          throw error;
+        } finally {
+          if (structureTechContextRequest?.key === key) structureTechContextRequest = null;
+        }
+      })();
+      structureTechContextRequest = { key, promise };
+      return promise;
+    }
+
+    function structureTechTarget() {
+      return { profileId: archive.activeProfileId, cycleId: currentCycleConfig().id, day: state.day,
+        sessionEpoch: campaignSessionEpoch, accountId: sessionUser?.id || "" };
+    }
+
+    function assertStructureTechTarget(target) {
+      if (target.sessionEpoch !== campaignSessionEpoch || target.accountId !== sessionUser?.id) throw accountMismatchError();
+      if (!ownsDashboardWriteLease()) throw new Error("请先接管编辑再使用科技能力。");
+      if (target.profileId !== archive.activeProfileId || target.cycleId !== currentCycleConfig().id
+        || String(target.day) !== String(state.day)) throw new Error("当前档案、循环或日期已变化，请重新选择科技能力。");
+    }
+
+    async function beforeStructureTechSubmit(target) {
+      assertStructureTechTarget(target);
+      saveState();
+      if (!await flushCampaignSave()) throw new Error("当前进度尚未保存，请连接存档后重试。");
+      assertStructureTechTarget(target);
+    }
+
+    async function applyStructureTechCommit(result, target) {
+      const epoch = target?.sessionEpoch ?? campaignSessionEpoch;
+      const accountId = target?.accountId ?? sessionUser?.id;
+      const assertSession = () => {
+        if (epoch !== campaignSessionEpoch || accountId !== sessionUser?.id) throw accountMismatchError();
+      };
+      assertSession();
+      let campaign = result?.campaign;
+      if (!campaign?.sections?.dashboard) throw new Error("科技已提交，但无法读取最新时间线，请刷新页面确认。");
+      // A debounced note save may have committed after the technology response.
+      // Do not roll the section revision back to that older response.
+      if (Number(campaign.sectionRevisions?.dashboard || 0) < campaignSectionRevision) {
+        campaign = (await structureTechClient().load({ profileId: archive.activeProfileId, cycleId: currentCycleConfig().id })).campaign;
+        assertSession();
+      }
+      const serverArchive = normalizeArchive(campaign.sections.dashboard);
+      const remote = dashboardArchiveFromServer(serverArchive);
+      // A player can edit a note while the operation is in flight. Rebase the
+      // committed section onto those edits, rather than replacing the console.
+      const merged = mergeDashboardChanges(campaignSectionBaseline || defaultArchive, archive, remote);
+      campaignSectionRevision = Math.max(0, Number(campaign.sectionRevisions?.dashboard || 0));
+      campaignSectionExists = true;
+      campaignSectionBaseline = cloneJson(remote);
+      campaignServerBaseline = cloneJson(serverArchive);
+      const profileId = archive.activeProfileId;
+      const cycleId = currentCycleConfig().id;
+      const sectionForProfile = window.ATO_STRUCTURE_TECH_CLIENT.profileSection;
+      cachedArgoRecord = sectionForProfile(campaign.sections.record, profileId);
+      if (structureTechContext?.profileId === profileId && structureTechContext.cycleId === cycleId) {
+        structureTechContext = { ...structureTechContext, campaign,
+          technology: sectionForProfile(campaign.sections.technology, profileId),
+          heroes: sectionForProfile(campaign.sections.heroes, profileId), record: cachedArgoRecord,
+          map: sectionForProfile(campaign.sections.map, profileId), mapState: sectionForProfile(campaign.sections.map, profileId) };
+        structureTechContextRevision = campaignSectionRevision;
+      }
+      renderDashboardArchive(merged.value);
+      if (campaignHasUnsavedChanges()) queueCampaignSave();
+      else setCampaignSaveStatus("科技安排已保存", "saved");
+    }
+
+    function createStructureTechActionTools(scope = "voyage") {
+      const context = getStructureTechContext();
+      if (scope === "negotiation") {
+        const available = context && window.ATO_STRUCTURE_TECH_RULES?.canNegotiate(context);
+        if (!available) return null;
+      }
+      if (scope === "exploration" && (!context || !window.ATO_STRUCTURE_TECH_RULES?.listActions({ ...context, scope }).length)) return null;
+      const target = structureTechTarget();
+      const key = `${campaignSessionEpoch}:${target.profileId}:${target.cycleId}`;
+      const cached = scope === "negotiation" ? negotiationTechActionPanel : scope === "exploration" ? explorationTechActionPanel : structureTechActionPanel;
+      const signature = JSON.stringify(context && [context.day, context.automation, context.automationsByCycle,
+        context.technology, context.heroes, context.record, context.map,
+        [context.state.mapSnapshot, context.state.exploration, context.mapState]]);
+      if (cached?.key === key && cached.signature === signature) return cached.element;
+      const element = document.createElement(scope === "negotiation" ? "div" : "details");
+      element.className = "structure-tech-tools";
+      element.dataset.techScope = scope;
+      if (scope !== "negotiation") {
+        if (cached?.key === key) element.open = cached.element.open;
+        const summary = document.createElement("summary");
+        // 标题行最右侧跟当前阿尔戈号命运（图标 + 数字），见 argoFateChipHtml()。
+        // 文字和徽章装进一层 flex；summary 自己也是 flex 行并自绘三角（api/dashboard.css），
+        // 所以原生三角不会把标题顶到第二行。
+        summary.innerHTML = '<span class="structure-tech-tools-head">'
+          + `<span>${escapeHtml(scope === "exploration" ? "探索科技能力" : "科技航行能力 · 使用与时间线")}</span>`
+          + (scope === "exploration" ? "" : argoFateChipHtml())
+          + "</span>";
+        element.appendChild(summary);
+      }
+      if (context) {
+        const panel = structureTechClient().createActionPanel({ ...target, context, scope,
+          explorationCardPreview: cardId => {
+            const image = document.createElement("img");
+            image.src = `./assets/exploration-cards/${target.cycleId}/${cardId}.png`;
+            image.alt = `探索卡 ${cardId}`;
+            return image;
+          },
+          beforeSubmit: () => beforeStructureTechSubmit(target), assertContext: () => assertStructureTechTarget(target),
+          onCommitted: result => applyStructureTechCommit(result, target),
+          onError: error => { if (error?.code === "ACCOUNT_MISMATCH") stopForAccountMismatch(); },
+        });
+        element.appendChild(panel);
+      } else {
+        const note = document.createElement("p");
+        note.className = "field-note";
+        note.textContent = structureTechContextError || "正在读取科技能力…";
+        element.appendChild(note);
+        const retry = document.createElement("button");
+        retry.type = "button";
+        retry.textContent = "刷新科技能力";
+        retry.addEventListener("click", async () => {
+          retry.disabled = true;
+          try { await refreshStructureTechContext(); }
+          catch (error) { note.textContent = String(error?.message || error); }
+          finally { retry.disabled = false; }
+        });
+        element.appendChild(retry);
+        if (sessionUser?.id && campaignSectionBaseline) {
+          void refreshStructureTechContext(false).catch(error => { note.textContent = String(error?.message || error); });
+        }
+      }
+      if (scope === "negotiation") negotiationTechActionPanel = { key, signature, element, open: cached?.key === key && cached.open === true };
+      else if (scope === "exploration") explorationTechActionPanel = { key, signature, element };
+      else structureTechActionPanel = { key, signature, element };
+      return element;
+    }
+
+    function structureTechEvents() {
+      const rules = window.ATO_STRUCTURE_TECH_RULES;
+      if (!rules?.getEvents) return [];
+      return rules.getEvents(getStructureTechContext() || { cycleId: currentCycleConfig().id,
+        day: state.day, automation: state.techAutomation });
+    }
+
+    function structureTechTimelineItems(day) {
+      const items = [];
+      for (const event of structureTechEvents()) {
+        if (event.skipTimeline) continue;
+        if (String(event.dueDay) === String(day)) {
+          const completed = event.status === "completed";
+          items.push({ event, type: event.kind === "cooldown" ? "cooldown" : "event",
+            text: `${event.label}${event.targetLabel ? ` · 目标：${event.targetLabel}` : ""} · ${event.kind === "cooldown" ? (event.cooldownActive ? "冷却中" : "恢复可用")
+              : `${event.rewardLabel || "处理时间线事件"} · ${completed ? "已完成" : event.overdue ? "逾期待办" : event.due ? "今日待办" : "待到期"}`}` });
+        }
+        if (Number(event.cooldownUntilDay) > Number(event.createdDay) && event.cooldownUntilDay !== event.dueDay
+          && String(event.cooldownUntilDay) === String(day)) {
+          items.push({ event, type: "cooldown", text: `${event.label} · ${event.cooldownActive ? "冷却结束" : "恢复可用"}` });
+        }
+      }
+      return items;
+    }
+
+    async function completeStructureTechEvent(operationId, button, selection = {}) {
+      if (structureTechCompletionBusy) return;
+      structureTechCompletionBusy = true;
+      if (button) button.disabled = true;
+      const target = structureTechTarget();
+      try {
+        await beforeStructureTechSubmit(target);
+        const result = await structureTechClient().complete({ ...target, expectedDay: target.day, operationId, selection,
+          assertContext: () => assertStructureTechTarget(target) });
+        await applyStructureTechCommit(result, target);
+      } catch (error) {
+        if (error?.code === "ACCOUNT_MISMATCH") stopForAccountMismatch();
+        window.alert(`科技事件完成登记失败：${error?.message || error}`);
+      } finally {
+        structureTechCompletionBusy = false;
+        if (button) button.disabled = false;
+        renderStructureTechDue();
+        renderDateTrack();
+      }
+    }
+
+    function structureTechAutoKey(target) {
+      return `${target.sessionEpoch}:${target.profileId}:${target.cycleId}:${target.day}`;
+    }
+
+    function structureTechAutoLabel(operation) {
+      const grant = operation?.grant;
+      if (!grant) return operation?.rewardLabel || "已结算";
+      if (grant.skipped) return `未能自动结算，${grant.skipped}`;
+      const name = grant.name || "所选泰坦";
+      return grant.type === "repair" ? `${name} 解除残废` : `获得 1 架${name}泰坦，已写入记录表`;
+    }
+
+    // Breeding and repair rewards name their own result, so their due date can
+    // settle without a prompt. Everything else keeps the manual button.
+    async function autoCompleteStructureTechEvents() {
+      if (structureTechCompletionBusy) return;
+      const context = getStructureTechContext();
+      if (!context || !ownsDashboardWriteLease() || structureTechContextRevision !== campaignSectionRevision) return;
+      const target = structureTechTarget();
+      const pending = structureTechEvents().find((event) => event.auto && event.due
+        && !structureTechAutomaticAttempts.has(`${target.sessionEpoch}:${target.profileId}:${event.id}:${event.dueDay}`));
+      if (!pending) return;
+      const attempt = `${target.sessionEpoch}:${target.profileId}:${pending.id}:${pending.dueDay}`;
+      structureTechAutomaticAttempts.add(attempt);
+      structureTechCompletionBusy = true;
+      structureTechAutoMessage = { key: structureTechAutoKey(target), text: `${pending.label}：正在自动结算…` };
+      try {
+        await beforeStructureTechSubmit(target);
+        const result = await structureTechClient().complete({ ...target, expectedDay: target.day, operationId: pending.id,
+          assertContext: () => assertStructureTechTarget(target) });
+        await applyStructureTechCommit(result, target);
+        structureTechAutoMessage = { key: structureTechAutoKey(target), text: `${pending.label}：${structureTechAutoLabel(result.operation)}` };
+      } catch (error) {
+        if (error?.code === "ACCOUNT_MISMATCH") stopForAccountMismatch();
+        structureTechAutoMessage = { key: structureTechAutoKey(target),
+          text: `${pending.label} 自动结算未完成：${error?.message || error}。可在下方手动登记。` };
+      } finally {
+        structureTechCompletionBusy = false;
+        renderStructureTechDue();
+        renderDateTrack();
+      }
+    }
+
+    function renderStructureTechDue() {
+      const container = document.querySelector("#structureTechDue");
+      if (!container) return;
+      container.replaceChildren();
+      const events = structureTechEvents().filter(event => event.kind !== "cooldown" && event.status !== "completed" && event.due);
+      const automatic = events.filter(event => event.auto);
+      const target = structureTechTarget();
+      const message = structureTechAutoMessage?.key === structureTechAutoKey(target) ? structureTechAutoMessage.text : "";
+      if (message) {
+        const status = document.createElement("p");
+        status.className = "structure-tech-due-status";
+        status.setAttribute("role", "status");
+        status.textContent = message;
+        container.appendChild(status);
+      }
+      container.hidden = !events.length && !message;
+      for (const event of events) {
+        const row = document.createElement("div");
+        row.className = `structure-tech-due-item${event.overdue ? " overdue" : ""}`;
+        const label = document.createElement("span");
+        label.textContent = `${event.overdue ? "逾期" : "今日"} · Day ${event.dueDay} · ${event.label}${event.targetLabel ? ` · 目标：${event.targetLabel}` : ""}：${event.rewardLabel || "请按卡面处理时间线事件"}`;
+        const complete = document.createElement("button");
+        complete.type = "button";
+        const rebuildScout = event.techKey?.split("@@")[0] === "canal reconnaissance" && event.actionId === "rebuild";
+        complete.textContent = rebuildScout ? "完成重建" : event.auto ? "手动登记" : "已手动结算";
+        complete.title = rebuildScout ? "完成重建并恢复 1 艘地图侦察船。"
+          : event.auto ? "到期后自动写入记录表；如未生效可在此手动登记。" : "完成卡面结算后点击，仅登记完成状态。";
+        complete.disabled = structureTechCompletionBusy || !ownsDashboardWriteLease();
+        const actions = document.createElement("div");
+        actions.className = "structure-tech-due-actions";
+        const confirmations = [];
+        for (const spec of event.completionConfirmations || []) {
+          const label = document.createElement("label");
+          const input = document.createElement("input");
+          input.type = "checkbox";
+          input.name = spec.id;
+          label.append(input, document.createTextNode(spec.label));
+          actions.appendChild(label);
+          confirmations.push({ id: spec.id, input });
+        }
+        if (confirmations.length) {
+          complete.textContent = "确认并结算";
+          complete.title = "勾选实际完成的条件后，按科技效果结算。";
+          complete.disabled = true;
+          for (const { input } of confirmations) input.addEventListener("change", () => {
+            complete.disabled = structureTechCompletionBusy || !ownsDashboardWriteLease() || confirmations.some(item => !item.input.checked);
+          });
+        }
+        complete.addEventListener("click", () => void completeStructureTechEvent(event.id, complete,
+          Object.fromEntries(confirmations.map(item => [item.id, item.input.checked]))));
+        actions.appendChild(complete);
+        if (event.pursuit?.battle) {
+          const target = window.ATO_NEMESIS_BATTLE?.targetFor(currentCycleConfig().id, cachedArgoRecord || {}, adversaryBattleByCycle);
+          if (target) {
+            const battle = document.createElement("a");
+            battle.className = "structure-tech-due-battle";
+            battle.href = `./story/index.html?${new URLSearchParams(target).toString()}`;
+            battle.textContent = "进入宿敌战斗";
+            actions.appendChild(battle);
+          }
+        }
+        row.append(label, actions);
+        container.appendChild(row);
+      }
+      if (automatic.length) window.setTimeout(() => void autoCompleteStructureTechEvents(), 0);
     }
 
     function getBriefingHref() {
@@ -10710,8 +11822,11 @@
     }
 
     // 只滚动日期轨自己的列表把当天居中，绝不动整个页面：
+
     // 日期轨在顶部 header 里，第七步的「进入下一天」在页面底部，
+
     // 之前的 scrollIntoView 会把整页拽回顶部，用户点了以后就找不着原来的位置了。
+
     function keepCurrentDateVisible() {
       const list = elements.dateTrackList;
       if (currentCycleConfig().id === "c1" && state.day === "T0") {
@@ -10736,7 +11851,9 @@
     }
 
     // C4 在指定日期战斗，并从 battleEveryDayFrom 起每天战斗（包括续推日）。
+
     // 其它循环仍按各自的 battleDays 逐日标记。
+
     function isTrackBattleDay(day, track) {
       if (day == null) return false;
       if (Number.isInteger(day) && Number.isInteger(track?.battleEveryDayFrom)
@@ -10764,20 +11881,23 @@
       return dateTrackIcons(entry || { day: state.day }, track);
     }
 
-    // C4 可以一直点「进入下一天」，没有上限（也可以在顶部 day 输入框直接填）。当前天数
-    // 超出时间表最后一行时补一行（标记 beyondTrack），否则日期轨里没有「当前」那一行，
-    // 看不出推到哪儿了，当天备注也点不开。只补当天一行，避免一次填大数字就生成上万行。
+    // 只为当天及科技安排的日期补行，不铺满中间的空白日期。这里返回的展示行不会
+    // 写回官方 entries，因此未来科技排期不会让「进入下一天」跳过原有日期。
     function trackEntriesForRender(track) {
       const entries = track?.entries || [];
-      const day = state.day;
-      if (day == null || entries.some((entry) => String(entry.day) === String(day))) return entries;
-      if (!Number.isFinite(Number(day))) return entries;
       const lastNumericDay = [...entries]
         .reverse()
+        .filter((entry) => entry.day != null)
         .map((entry) => Number(entry.day))
         .find((value) => Number.isFinite(value));
-      if (lastNumericDay === undefined || Number(day) <= lastNumericDay) return entries;
-      return [...entries, { day: Number(day), beyondTrack: true }];
+      if (lastNumericDay === undefined) return entries;
+      const technologyEvents = typeof structureTechEvents === "function" ? structureTechEvents().filter(event => !event.skipTimeline) : [];
+      const extraDays = new Set([state.day, ...technologyEvents.flatMap((event) => [event.dueDay,
+        Number(event.cooldownUntilDay) > Number(event.createdDay) ? event.cooldownUntilDay : null])]
+        .filter((day) => day !== null && day !== "" && Number.isSafeInteger(Number(day)) && Number(day) > lastNumericDay)
+        .map(Number));
+      if (!extraDays.size) return entries;
+      return [...entries, ...[...extraDays].sort((a, b) => a - b).map((day) => ({ day, beyondTrack: true }))];
     }
 
     function currentMapTagSet() {
@@ -10813,6 +11933,7 @@
       },
       // 中文名取自记录表的 diplomacy 表（record/index.html），三处保持一致：
       // 记录表、故事实体索引、地图派系标签。
+
       c4: {
         wasters: "浪费者",
         aristotelians: "亚里士多德远征军",
@@ -10912,8 +12033,11 @@
     }
 
     // 三个派系全部列出，并把 AG 当前格所在的那个标成 current（界面上加粗）。
+
     // 当前派系取 currentMapFactions()：它可能给出多个（板块同时属于两个派系），所以
+
     // 命中任意一个就算 current；「无阵营」不算派系，不会加粗任何一行。
+
     function currentMapFactionStatusItems() {
       const cycleId = currentCycleConfig().id;
       const labels = mapFactionLabelsByCycle[cycleId] || {};
@@ -11034,25 +12158,117 @@
 
       return reminders;
     }
+    // 阿尔戈号命运取当前循环的记录值，口径与结构科技规则的 readStat() 一致：先看
+    // cycleStats[当前循环]，没有再退回顶层的 fate（且只在记录表停在当前循环时）。
+    // 记录表还没填或填了非整数时给「—」，不猜数值 —— 与 addMapProgressTechFate() 相同。
+    function currentArgoFateValue(record = cachedArgoRecord) {
+      const cycleId = currentCycleConfig().id;
+      const scoped = record?.cycleStats?.[cycleId]?.fate;
+      const raw = scoped !== undefined ? scoped : !record?.cycle || record.cycle === cycleId ? record?.fate : undefined;
+      const text = String(raw ?? "").trim();
+      return /^\d+$/.test(text) ? text : "—";
+    }
+
+    // 标题行最右侧的「图标 + 数字」。手写字符串是因为提醒标题行是拼 HTML 出来的；
+    // createStructureTechActionTools() 里的 <summary> 复用同一个函数，两边不会写岔。
+    function argoFateChipHtml() {
+      const value = escapeHtml(currentArgoFateValue());
+      return `<span class="argo-fate-chip" title="当前阿尔戈号命运：${value}">`
+        + '<span class="argo-fate-chip-icon" aria-hidden="true" style="--icon-src:url(./assets/icons/argo-fate.svg)"></span>'
+        + `<span>${value}</span></span>`;
+    }
+
     function getExploreMapReminders() {
-      const tags = currentMapTagSet();
-      if (!tags.has("city") || state.mapCurrentTileHasLastCityMarker) return [];
-      const techs = unlockedNegotiationTechs();
-      const negotiationTechText = techs.length
-        ? ` 已解锁谈判科技：${techs.map((t) => t.nameZh || t.nameEn).join("、")}。`
-        : " 暂无已解锁谈判科技。";
-      const cardImages = techs
-        .filter((t) => t.backImage)
-        .map((t) => `<img class="negotiation-card-back" src="./technology/${t.backImage}" alt="${t.nameZh || t.nameEn}" title="${t.nameZh || t.nameEn}">`)
-        .join("");
+      const context = getStructureTechContext();
+      if (!context || !window.ATO_STRUCTURE_TECH_RULES?.canNegotiate(context)) return [];
 
       return [{
-        title: "当前城市可谈判",
+        title: "当前地点可谈判",
         tag: { label: "谈判", className: "structure-tech negotiation" },
-        desc: `${currentMapTileLabel()} 可谈判。${negotiationTechText}`,
-        html: cardImages || "",
+        desc: `${currentMapTileLabel()} 可谈判。选择下方科技能力并结算；点击科技名称可查看卡图。`,
         className: "negotiation",
+        collapsible: true,
+        argoFate: true,
       }];
+    }
+
+    function getMapProgressTechReminders() {
+      const rules = window.ATO_STRUCTURE_TECH_RULES;
+      const context = typeof getStructureTechContext === "function" ? getStructureTechContext() : null;
+      if (!rules?.mapProgressReminders || !context) return [];
+      const snapshot = state.mapSnapshot;
+      const explored = Boolean(snapshot?.currentTileId && Array.isArray(snapshot.exploredIds)
+        && snapshot.exploredIds.includes(snapshot.currentTileId)
+        && (!snapshot.cycleId || snapshot.cycleId === currentCycleConfig().id));
+      return rules.mapProgressReminders({ ...context, cycleId: currentCycleConfig().id,
+        map: { explored, tags: [...currentMapTagSet()] } }).map(reminder => ({
+        techKey: reminder.techKey,
+        fate: reminder.fate,
+        title: `${reminder.title} · 已探索板块进展`,
+        tag: { label: "结构科技", className: "structure-tech" },
+        desc: `${currentMapTileLabel()} 已探索且带有进展图标；使用时增加 +${reminder.fate} 命运，再手动检定外交（7+），${reminder.effect}。失败时不增加进展。`,
+        placementHtml: `<button type="button" class="map-progress-fate" data-map-progress-fate="${escapeHtml(reminder.techKey)}">命运 +${reminder.fate}</button>`,
+        placements: [{ type: "progress", amount: 1 }],
+        className: "tech story-progress advance",
+      }));
+    }
+
+    async function addMapProgressTechFate(techKey) {
+      if (addMapProgressTechFate.busy || mutateExplorationRecord.busy || !ownsDashboardWriteLease()) return;
+      const reminder = getMapProgressTechReminders().find(item => item.techKey === techKey);
+      const engine = explorationEffectRules();
+      if (!reminder || !engine) return;
+      const target = structureTechTarget();
+      addMapProgressTechFate.busy = true;
+      try {
+        await mutateExplorationRecord(record => {
+          assertStructureTechTarget(target);
+          if (!getMapProgressTechReminders().some(item => item.techKey === techKey)) throw new Error("当前地点或科技状态已变化，请重新确认能力。");
+          const raw = record.cycleStats?.[target.cycleId]?.fate ?? record.fate ?? 0;
+          // 阿尔戈号命运轨道上限 9（记录表按「命运 ≥ 10」读失败段落，这里只挡住越界的记录）。
+          if (!/^\d+$/.test(String(raw)) || Number(raw) + reminder.fate > 9) throw new Error("命运数值无效或增加后超过上限，未结算。");
+          return engine.apply(record, target.cycleId, [{ type: "fate", amount: reminder.fate }]);
+        }, `${reminder.title}：命运 +${reminder.fate}（检定及进展另行处理）`);
+        await refreshStructureTechContext();
+      } catch (error) {
+        window.alert(error.message || "命运未保存，请重试。");
+      } finally {
+        addMapProgressTechFate.busy = false;
+        renderFlow();
+      }
+    }
+
+    // 灾祸豁免里只有「+1 命运」这一档能一键加命运：凝固时光、巴比伦债务之类的代价不一样，
+    // 点一下只加命运会记错账。按钮样式沿用「考古历史学家 · 已探索板块进展」的 .map-progress-fate。
+    function doomSaveFateSources() {
+      const saves = typeof structureSaveReminders === "function" ? structureSaveReminders([{ type: "doom", amount: 1 }]) : [];
+      return saves.filter(reminder => reminder.costLabel === "+1 命运")
+        .flatMap(reminder => reminder.sources?.length ? reminder.sources : [{ techKey: reminder.techKey, title: reminder.title }]);
+    }
+
+    async function addDoomSaveTechFate(techKey) {
+      if (addDoomSaveTechFate.busy || mutateExplorationRecord.busy || !ownsDashboardWriteLease()) return;
+      const engine = explorationEffectRules();
+      const source = doomSaveFateSources().find(item => item.techKey === techKey);
+      if (!engine || !source) return;
+      const target = structureTechTarget();
+      addDoomSaveTechFate.busy = true;
+      try {
+        await mutateExplorationRecord(record => {
+          assertStructureTechTarget(target);
+          if (!doomSaveFateSources().some(item => item.techKey === techKey)) throw new Error("当前板块或科技状态已变化，请重新确认豁免。");
+          const raw = record.cycleStats?.[target.cycleId]?.fate ?? record.fate ?? 0;
+          // 阿尔戈号命运轨道上限 9（记录表按「命运 ≥ 10」读失败段落，这里只挡住越界的记录）。
+          if (!/^\d+$/.test(String(raw)) || Number(raw) + 1 > 9) throw new Error("命运数值无效或增加后超过上限，未结算。");
+          return engine.apply(record, target.cycleId, [{ type: "fate", amount: 1 }]);
+        }, `${source.title}：命运 +1（豁免检定与灾祸结算按卡面手动处理）`);
+        await refreshStructureTechContext();
+      } catch (error) {
+        window.alert(error.message || "命运未保存，请重试。");
+      } finally {
+        addDoomSaveTechFate.busy = false;
+        renderFlow();
+      }
     }
 
     function getStoryMapReminders() {
@@ -11067,6 +12283,7 @@
           className: "tech story-progress advance",
         });
       }
+      reminders.push(...getMapProgressTechReminders());
       // Check hero mnemos nodes pending settlement
       const mnemosPending = getMnemosPendingReminders();
       reminders.push(...mnemosPending);
@@ -11128,12 +12345,23 @@
     function getDoomMapReminders() {
       const tags = currentMapTagSet();
       if (!tags.has("calamity")) return [];
+      const saves = typeof structureSaveReminders === "function" ? structureSaveReminders([{ type: "doom", amount: 1 }]) : [];
+      const saveHint = saves.map(reminder => {
+        const effect = reminder.text.replace(`${reminder.condition}：`, "")
+          .replace("本次增减量", "本次灾祸增加量").replace("本次失去或获得", "本次灾祸增加")
+          .replace(/（最低\s*0）/g, "");
+        return `${reminder.title}：${effect}。`;
+      }).join(" ");
+      // 「+1 命运」的那几档各配一个一键按钮；检定成败与灾祸最终增减仍按卡面手动结算。
+      const saveFateButtons = doomSaveFateSources().map(source =>
+        `<button type="button" class="map-progress-fate" data-doom-save-fate="${escapeHtml(source.techKey)}">命运 +1</button>`).join("");
 
       return [{
         title: "当前板块放置灾祸指示物",
         tag: { label: "灾祸", className: "battle" },
-        desc: `${currentMapTileLabel()} 带有灾祸标记。请在灾祸步骤放置 1 个灾祸指示物。`,
+        desc: `${currentMapTileLabel()} 带有灾祸标记。请在灾祸步骤放置 1 个灾祸指示物。${saveHint ? ` ${saveHint}` : ""}`,
         placements: [{ type: "doom", amount: 1 }],
+        placementHtml: saveFateButtons,
         className: "important calamity",
       }];
     }
@@ -11150,6 +12378,7 @@
         desc: `${terrain.terrain}${source ? `，来源：${source}` : ""}。`,
         className: "tile",
         // 地形与分支名都出自勘察步骤的定数框，官方翻译沿用同一段术语（survey-record）。
+
         scope: "survey-record",
       }];
     }
@@ -11175,7 +12404,7 @@
       if (stepId === "encounter") {
         const reminders = getNextBattleTerrainReminder();
         if (icons.some((icon) => icon.className === "battle")) {
-          reminders.push({
+          reminders.unshift({
             title: "今日战斗",
             tag: { label: "战斗", className: "battle" },
             desc: "时间表标记了今日战斗，请进入故事书战斗模块处理。",
@@ -11204,16 +12433,17 @@
       return `
         <div class="step-track-reminders">
           ${reminders.map((reminder, reminderIndex) => `
-            <div class="step-track-reminder ${reminder.className}">
-              <div class="step-track-title">
+            <${reminder.collapsible ? "details" : "div"} class="step-track-reminder ${reminder.className}">
+              <${reminder.collapsible ? "summary" : "div"} class="step-track-title">
                 <span class="step-track-tag ${reminder.tag.className}">${escapeHtml(reminder.tag.label)}</span>
                 <span${reminder.hint ? ` title="${escapeHtml(reminder.hint)}"` : ""}>${escapeHtml(reminder.title)}</span>
                 ${reminder.html ? `<span class="step-track-action">${reminder.html}</span>` : ""}
-              </div>
+                ${reminder.argoFate ? argoFateChipHtml() : ""}
+              </${reminder.collapsible ? "summary" : "div"}>
               ${reminder.desc ? `<p class="step-track-desc"${reminder.scope ? ` data-term-scope="${reminder.scope}"` : ""}>${escapeHtml(reminder.desc)}</p>` : ""}
-              ${reminder.placements?.length ? renderCardTokenPlacementTools(reminder.placements) : ""}
+              ${reminder.placements?.length ? renderCardTokenPlacementTools(reminder.placements, reminder.placementHtml || "") : ""}
               ${reminder.explorationToken ? `<div data-exploration-token-reminder="${reminderIndex}"></div>` : ""}
-            </div>
+            </${reminder.collapsible ? "details" : "div"}>
           `).join("")}
         </div>
       `;
@@ -11254,10 +12484,11 @@
       trackEntriesForRender(track).forEach((entry) => {
         const eventText = entry.day == null ? "" : track.events[entry.day];
         const noteText = entry.day == null ? "" : state.dateNotes?.[dateNoteKey(entry.day)] || "";
+        const technologyItems = entry.day == null || typeof structureTechTimelineItems !== "function" ? [] : structureTechTimelineItems(entry.day);
         const icons = dateTrackIcons(entry, track);
         const isCurrentDay = entry.day != null && String(entry.day) === String(state.day);
         const item = document.createElement("div");
-        item.className = `date-track-item${isCurrentDay ? " current" : ""}${eventText ? " event" : ""}${noteText ? " noted" : ""}${entry.day == null ? " disabled" : ""}${entry.beyondTrack ? " beyond-track" : ""}`;
+        item.className = `date-track-item${isCurrentDay ? " current" : ""}${eventText ? " event" : ""}${noteText ? " noted" : ""}${entry.day == null ? " disabled" : ""}${entry.beyondTrack ? " beyond-track" : ""}${technologyItems.length ? " tech-scheduled" : ""}`;
         if (noteText) item.dataset.userTitle = "true";
         item.title = noteText
           ? `Day ${formatTrackDay(entry)}：${noteText}`
@@ -11275,12 +12506,39 @@
           ${eventText ? `<span class="date-track-event">${escapeHtml(eventText)}</span>` : ""}
           ${noteText ? `<span class="date-track-note" data-term-ignore data-user-content>${escapeHtml(noteText)}</span>` : ""}
         `;
+        if (technologyItems.length) {
+          const schedule = document.createElement("div");
+          schedule.className = "date-track-tech-events";
+          for (const technologyItem of technologyItems) {
+            const row = document.createElement("div");
+            row.className = `date-track-tech-event ${technologyItem.type}${technologyItem.event.status === "completed" ? " completed" : ""}`;
+            const label = document.createElement("span");
+            label.textContent = technologyItem.text;
+            row.appendChild(label);
+            if (technologyItem.type !== "cooldown" && technologyItem.event.status !== "completed" && technologyItem.event.due
+                && !technologyItem.event.completionConfirmations?.length) {
+              const complete = document.createElement("button");
+              complete.type = "button";
+              complete.className = "secondary";
+              complete.textContent = "已手动结算";
+              complete.disabled = structureTechCompletionBusy || !ownsDashboardWriteLease();
+              complete.addEventListener("click", (event) => {
+                event.stopPropagation();
+                void completeStructureTechEvent(technologyItem.event.id, complete);
+              });
+              row.appendChild(complete);
+            }
+            schedule.appendChild(row);
+          }
+          item.appendChild(schedule);
+        }
         if (entry.day != null) {
           item.addEventListener("click", (event) => {
             if (event.target.closest("button, a, input, select, textarea")) return;
             editDateNote(entry.day);
           });
           item.addEventListener("keydown", (event) => {
+            if (event.target.closest("button, a, input, select, textarea")) return;
             if (event.key !== "Enter" && event.key !== " ") return;
             event.preventDefault();
             editDateNote(entry.day);
@@ -11325,6 +12583,7 @@
       const currentIndex = entries.findIndex((entry) => String(entry.day) === String(state.day));
       // 日期轨里还有下一行就跟着走；走到最后一行之后按数字 +1 继续推（C4 就是这样
       // 一直往后打，没有上限），日期轨用 trackEntriesForRender() 把当天补出来。
+
       state.day = currentIndex >= 0 && currentIndex < entries.length - 1
         ? entries[currentIndex + 1].day
         : Math.max(0, Math.floor(Number(state.day) || 0) + 1);
@@ -11350,13 +12609,16 @@
       if (campaignRestoreInFlight) return;
       if (!sessionUser?.id) {
         // 服务端的 restore-previous-day 把 expectedAccountId 当成必填并硬校验，
+
         // 发空串只会换来一个语焉不详的 409。这里先讲清楚。
+
         window.alert("尚未登录或登录信息已失效，请刷新页面后重新登录。");
         return;
       }
       if (!ownsDashboardWriteLease()) {
         // 这个按钮带 data-dashboard-readonly-allowed，只读时仍然可点，所以不能像
         // 以前那样静默返回 —— 用户会以为按钮坏了。
+
         window.alert("本页当前是只读模式（另一个主控制台正在编辑）。请先点「接管编辑」，再回到前一天。");
         return;
       }
@@ -11419,7 +12681,9 @@
         const payload = await response.json();
         if (!payload.ok) throw new Error(payload.error || "读取失败");
         // 导出会把服务端各 section 与本页内存合到一起；读到别人的存档就等于把
+
         // 别人的战役数据导出成本地文件。宁可不导出服务端部分。
+
         const serverAccountId = payload.user?.id;
         if (serverAccountId && sessionUser?.id && serverAccountId !== sessionUser.id) {
           stopForAccountMismatch();
@@ -11448,7 +12712,9 @@
 
     // 整份存档导入：所有模块在一次请求里交给服务端，服务端在同一把写锁里「全部校验通过
     // 才全部写入」。逐个模块 POST 时，任何一个失败（版本冲突 / 网络中断 / 500）都会在服务器
+
     // 上留下「一半来自导入存档、一半还是原来」的组合，而界面只能报一句「导入失败」。
+
     async function importCampaignSections(sections, expectedRevisions) {
       const response = await fetch(`${authUrl}?action=import-sections`, {
         method: "POST",
@@ -11559,6 +12825,7 @@
         }, 1200);
       } catch (error) {
         // 没有 catch 时上一版会把按钮文字永远留在「正在导出...」且不告诉用户原因。
+
         console.error(error);
         elements.exportButton.textContent = previousText;
         window.alert(`导出存档失败：${String(error?.message || error)}`);
@@ -11569,10 +12836,14 @@
 
     // 把「已经是 ATO sections 形状」的内容整份写进服务端（导入状态包与官方 .jsave 共用）。
     // 官方 .jsave 只转换得出 dashboard/map/record/technology/heroes 五个分区，
+
     // `isFullBackup` 为 false 时 null/undefined 的分区会被过滤掉 —— 与状态包之外的
+
     // 局部导入语义一致，不会把没转换的分区清空。
+
     async function applyImportedSections({ sections, dashboardImport, isFullBackup, recordAttachmentBlobs }) {
       // 校验先于归一化和任何服务端读写，避免 {} / 无关 JSON 被补成空档后覆盖现有档案。
+
       function isLegacyDashboardState(value) {
         if (!isPlainObject(value)) return false;
         const day = value.day;
@@ -11604,9 +12875,12 @@
     // 「导入存档」是整份替换 record 分区（用户已选定：保持这个合并语义），所以目标战役里
       // 手写的记录表笔记会被这次导入带进来的内容整段取代，而且没有自动恢复的入口。写之前
       // 先把两边摊平比一次，只有「两边都有笔记、且内容不同」才拦一下：空档没什么可丢的，
+
       // 重复导入同一份存档也不该打扰用户。
+
       // 记录表按用户分桶，桶的 key 不一定是 default（官方存档写 default，页面按账号 id 分桶），
       // 旧存档还可能把 notes 直接放在 record 顶层，所以两种形状都要认、每个桶都要收。
+
       function collectRecordNotes(recordSection) {
         const collected = new Set();
         const push = (value) => {
@@ -11615,6 +12889,7 @@
         // 一个用户桶里的笔记：顶层 notes 只是「当前循环的视图」，记录表页面改笔记时写的是
         // cycleStats.<cycle>.notes 并把顶层那份删掉（record/index.html setCycleStat），
         // 所以两处都收 —— 漏掉 cycleStats 等于对真实存档永远不报警。
+
         const pushUserRecord = (user) => {
           if (!isPlainObject(user)) return;
           push(user.notes);
@@ -11630,20 +12905,24 @@
         if (buckets) {
           Object.keys(buckets).forEach((id) => pushUserRecord(buckets[id]));
           // 桶外还留着一份顶层 notes 的存档也要算上（旧形状 record.notes）。
+
           push(recordSection.notes);
         } else {
           pushUserRecord(recordSection);
         }
         // 比的是「有哪些不同文本」，同一段文字在顶层与 cycleStats 里各存一份不算两份。
+
         return Array.from(collected).sort();
       }
 
       // 返回空串 = 不用打扰用户；返回文案 = 这次导入会覆盖既有笔记。
+
       function notesOverwriteWarning(importedRecord, currentCampaign) {
         const imported = collectRecordNotes(importedRecord);
         const current = collectRecordNotes(currentCampaign?.sections?.record);
         if (!imported.length || !current.length) return "";
         // 重复导入同一份存档时两边逐条相同 → 不弹窗。
+
         if (JSON.stringify(imported) === JSON.stringify(current)) return "";
         return [
           "导入会覆盖「记录表笔记」！",
@@ -11674,7 +12953,9 @@
         .map((section) => [section, section === "dashboard" ? nextArchive : sections?.[section]])
         .filter(([, sectionState]) => sectionState !== undefined && (isFullBackup || sectionState !== null));
       // 覆盖警告必须在 flushCampaignSave() 之前：那一步会真的往服务端写。这里只读一次
+
       // 服务端存档，用户点「取消」时整段返回，连待写入的防抖保存都不会发生。
+
       const importedRecord = importEntries.find(([section]) => section === "record")?.[1];
       const notesWarning = importedRecord === undefined
         ? ""
@@ -11684,7 +12965,9 @@
         return;
       }
       // 先等这次防抖保存落盘：否则它的定时器会在导入之后触发，把导入前的内存状态
+
       // 又写回 dashboard，覆盖刚导入的存档。
+
       clearTimeout(campaignSaveTimer);
       campaignSaveTimer = null;
       await flushCampaignSave();
@@ -11702,6 +12985,7 @@
         ]))
       );
       // 服务器已经整份写入，这一页这时才切到导入后的状态：失败时本页与服务器都保持原样。
+
       archive = nextArchive;
       state = currentCycle().state;
       campaignSectionRevision = Math.max(0, Number(result.sections?.dashboard ?? campaignSectionRevision));
@@ -11742,6 +13026,7 @@
               throw new Error("官方存档转换不出对应的循环（campaign_cycle 超出 c1..c5）");
             }
             // 转换器按官方存档写 activeCycleId；这里再确保一次，免得导入后停在别的循环。
+
             profile.activeCycleId = cycleId;
             return await applyImportedSections({
               sections,
@@ -11770,6 +13055,7 @@
         }
       };
       // 读成字节：官方 .jsave 的前 3 字节是不透明头，必须按内容判定而不是按扩展名。
+
       reader.readAsArrayBuffer(file);
     }
 
@@ -11801,6 +13087,18 @@
       renderDateTrack();
     });
     elements.flowList.addEventListener("click", (event) => {
+      const fateButton = event.target.closest("[data-map-progress-fate]");
+      if (fateButton) {
+        fateButton.disabled = true;
+        addMapProgressTechFate(fateButton.dataset.mapProgressFate).finally(() => { fateButton.disabled = false; });
+        return;
+      }
+      const saveFateButton = event.target.closest("[data-doom-save-fate]");
+      if (saveFateButton) {
+        saveFateButton.disabled = true;
+        addDoomSaveTechFate(saveFateButton.dataset.doomSaveFate).finally(() => { saveFateButton.disabled = false; });
+        return;
+      }
       const placementButton = event.target.closest("[data-card-token-place]");
       if (placementButton) {
         placeCardTrackToken(placementButton.dataset.cardTokenPlace, placementButton.dataset.cardTokenField, Number(placementButton.dataset.amount));
@@ -11974,6 +13272,7 @@
     dashboardControlObserver.observe(elements.appShell, { childList: true, subtree: true });
     dashboardControlObserver.observe(elements.cardTrackDialog, { childList: true, subtree: true });
     campaignSyncChannel?.addEventListener("message", () => void syncDashboardFromExternalUpdate());
+    structureTechMapSyncChannel?.addEventListener("message", () => void refreshStructureTechContext().catch(() => {}));
     dashboardWriterChannel?.addEventListener("message", (event) => {
       const message = event.data || {};
       if (message.pageId === dashboardPageId) return;
@@ -11997,9 +13296,11 @@
       if (sessionUser) beginDashboardWriteLease();
     });
     window.addEventListener("focus", () => void refreshCachedArgoRecord());
+    window.addEventListener("focus", () => void refreshStructureTechContext().catch(() => {}));
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) void syncDashboardFromExternalUpdate();
       if (!document.hidden) void refreshCachedArgoRecord();
+      if (!document.hidden) void refreshStructureTechContext().catch(() => {});
     });
 
     setAuthMode("login");

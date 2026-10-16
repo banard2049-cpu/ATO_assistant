@@ -55,7 +55,7 @@ BLOCKED_LEAVES = {
 } | LOCAL_SCRATCH_LEAVES
 BLOCKED_SUFFIXES = (
     ".backup", ".bak", ".tmp", ".log", ".lock", ".atoback",
-    ".atoback.partial",
+    ".atoback.partial", ".docx",
 ) + PRIVATE_PACK_SUFFIXES
 
 # 主控台 BGM：程序（assets/bgm/*.js）随包发布，音频文件由使用者自备，
@@ -264,6 +264,8 @@ def audit_export_tree(root: Path) -> None:
             raise RuntimeError(f"导出内容包含本地临时文件：{relative}")
         if parts[-1].startswith('.ato-update-'):
             raise RuntimeError(f"导出内容包含更新执行副本：{relative}")
+        if path.is_file() and path.suffix.lower() == ".docx":
+            raise RuntimeError(f"Local reference document in export: {relative}")
         if path.is_file() and any(parts[-1].endswith(suffix) for suffix in PRIVATE_PACK_SUFFIXES):
             raise RuntimeError(f"导出内容包含私有资料包：{relative}")
 

@@ -56,7 +56,7 @@ function plain(value) {
 function harness(cycleId) {
   const context = vm.createContext({
     mapTagData: tagData,
-    tokenAssetById: { last_city: {}, last_oasis: {}, last_silver_ruin: {} },
+    tokenAssetById: { last_city: {}, last_oasis: {}, last_silver_ruin: {}, c5_last_visited_underwater_city: {} },
   });
   return vm.runInContext(`(function () {
     ${exclusionConstSource}
@@ -129,4 +129,17 @@ test('移动标记时旧格上的 last_city 会被清掉', () => {
   game.cycleState.currentTile = '017';
   game.syncDepartedLandmarkMarkers(game.cycleState, '016');
   assert.deepEqual(plain(game.cycleState.tokens.markers), { '017': { last_city: true } });
+});
+
+test('循环 V 的水下城市与水面城市各自移动最后到访指示物', () => {
+  const game = harness('c5');
+  game.cycleState.currentTile = '003';
+  game.syncDepartedLandmarkMarkers(game.cycleState, '004');
+  assert.equal(game.cycleState.tokens.markers['003'].c5_last_visited_underwater_city, true);
+  assert.equal(game.cycleState.tokens.markers['003'].last_city, undefined);
+  game.cycleState.currentTile = '007';
+  game.cycleState.tileVariants = { '007': 'alternate' };
+  game.syncDepartedLandmarkMarkers(game.cycleState, '008');
+  assert.equal(game.cycleState.tokens.markers['007'].last_city, true);
+  assert.equal(game.cycleState.tokens.markers['003'].c5_last_visited_underwater_city, true);
 });

@@ -69,14 +69,17 @@ for (const [apostle, resource, choice, start, rows, cards] of tables) {
   });
 }
 
-test('single and double wounds count toward thresholds; Temenos grants no ordinary BP resources or cores', () => {
+test('Temenos keeps BP resources and cores alongside its damage threshold rewards', () => {
   const ctx = harness();
   const r = ctx.calculate('ALPHA_TEMENOS', [bp('III'), { special: 'DW' }, ...sw(2)] , { resourceChoices: { MC: 1 } });
   assert.equal(r.regularDamageCount, 5);
   assert.equal(r.totals.MF, 2);
   assert.equal(r.totals.MC, 1);
-  assert.equal(r.totals.core || 0, 0);
-  assert.equal(r.details.direct.length + r.details.sw.length + r.details.dw.length, 0);
+  assert.equal(r.totals.FE, 1);
+  assert.equal(r.totals.RA, 2);
+  assert.equal(r.totals.core, 1);
+  assert.equal(r.details.direct.length, 1);
+  assert.equal(r.battle.resourcePolicy, 'normal');
 });
 
 test('choice counts reject missing, excess, fractional, negative and ineligible resources before writing', () => {
@@ -184,6 +187,15 @@ test('rare resource text is preserved and deduplicated; numeric rewards use exis
   const sunRecord = ctx.applyLoot({}, sun).record;
   assert.equal(sunRecord.resources['c3-sunburnedSkull'], 1);
   assert.equal(sunRecord.resources.sunburnedSkull, undefined);
+});
+
+test('Ur defeat includes its random equipment reward as well as damage resources', () => {
+  const ctx = harness();
+  const defeat = ctx.calculate('UR_FLEECE', sw(4), { outcome: 'defeat' });
+  assert.equal(defeat.totals.blackWoolStrand, 1);
+  assert.ok(ctx.copyLoot(defeat).includes('乌尔-生成：落败仍获得 1 张随机的剧场生成装备卡'));
+  assert.ok(!ctx.copyLoot(ctx.calculate('UR_FLEECE', sw(4))).includes('乌尔-生成'));
+  assert.ok(!ctx.copyLoot(ctx.calculate('UR_FLEECE', sw(4), { sceneId: 'ur-final', outcome: 'defeat' })).includes('乌尔-生成'));
 });
 
 test('Nietzsche nymph stays automatic; choice validation and equipment reminders remain separate', () => {

@@ -38,7 +38,8 @@ function session() {
 
 const mergeHelpers = ['isPlainObject', 'cloneValue', 'deepEqualValue', 'mergeValues', 'mergeMapStates', 'noteMapMergeConflict'];
 function context(extra = {}) {
-  const ctx = vm.createContext({ console, campaignSession: session(), mapSaveConflict: false, ...extra });
+  const ctx = vm.createContext({ console, campaignSession: session(), mapSaveConflict: false,
+    scoutMapSyncChannel: null, updateScoutRebuildStatus() {}, ...extra });
   vm.runInContext(mergeHelpers.map(extract).join('\n'), ctx);
   return ctx;
 }

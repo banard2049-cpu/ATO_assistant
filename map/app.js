@@ -147,7 +147,6 @@ const elements = {
   mapZoomInput: document.querySelector("#mapZoomInput"),
   mapZoomValue: document.querySelector("#mapZoomValue"),
   showBackToggle: document.querySelector("#showBackToggle"),
-  onlyExploredToggle: document.querySelector("#onlyExploredToggle"),
   hideUnknownToggle: document.querySelector("#hideUnknownToggle"),
   showAdjacencyToggle: document.querySelector("#showAdjacencyToggle"),
   cycleTitle: document.querySelector("#cycleTitle"),
@@ -168,6 +167,8 @@ const elements = {
   titanXRetreatButton: document.querySelector("#titanXRetreatButton"),
   titanXTrackStatus: document.querySelector("#titanXTrackStatus"),
   revealTileButton: document.querySelector("#revealTileButton"),
+  revealUnderwaterTileButton: document.querySelector("#revealUnderwaterTileButton"),
+  revealSurfaceTileButton: document.querySelector("#revealSurfaceTileButton"),
   undoButton: document.querySelector("#undoButton"),
   saveReturnButton: document.querySelector("#saveReturnButton"),
   headerSaveReturnButton: document.querySelector("#headerSaveReturnButton"),
@@ -195,6 +196,10 @@ let campaignReconnectInFlight = false;
 let campaignReconnectDelay = 2000;
 let mapSectionRevision = 0;
 let dashboardSectionRevision = 0;
+const scoutMapSyncChannel = !secondScreenMode && typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-map-sync-v1") : null;
+let scoutRebuildByCycle = {};
+let scoutMapRefreshBusy = false;
+let scoutMapRefreshPending = false;
 // The profile the in-memory map state belongs to. Saves always target this
 // profile, so another page switching the active profile cannot redirect this
 // page's edits into a different campaign.
@@ -316,7 +321,6 @@ function createDefaultState() {
   return {
     activeCycleId,
     showBack: false,
-    onlyExplored: false,
     hideUnknown: true,
     showAdjacency: false,
     mapZoom: 100,
@@ -378,7 +382,6 @@ function normalizeState(saved) {
     activeCycleId,
     cycles,
     showBack: Boolean(saved.showBack),
-    onlyExplored: Boolean(saved.onlyExplored),
     hideUnknown: saved.hideUnknown == null ? defaults.hideUnknown : Boolean(saved.hideUnknown),
     showAdjacency: Boolean(saved.showAdjacency),
     mapZoom: normalizeMapZoom(saved.mapZoom),
@@ -537,6 +540,7 @@ function tileHasTag(cycleId, tileId, tagId) {
 // 但 `lastCityExcludedTileIds` 里的格子是例外（例如 c1 的 027）。
 function isLastVisitedCityTile(cycleId, tileId) {
   if (!tileHasTag(cycleId, tileId, "city")) return false;
+  if (cycleId === "c5" && tileFaceId(cycleId, tileId) === "A") return false;
   return !(lastCityExcludedTileIds[cycleId] || []).includes(tileId);
 }
 
@@ -600,6 +604,7 @@ function recallScout() {
 function produceScout() {
   clearPendingAdversarySpawn();
   const cycleState = activeCycleState();
+  if (cycleState.tokens.hsCount > 0 || scoutRebuildByCycle[state.activeCycleId]) return;
   pushUndo();
   cycleState.tokens.hsCount = Math.max(0, Math.floor(Number(cycleState.tokens.hsCount || 0))) + 1;
   saveState();
@@ -643,6 +648,9 @@ function syncDepartedLandmarkMarkers(cycleState, nextTileId) {
   if (!departedTileId || departedTileId === nextTileId) return;
   if (isLastVisitedCityTile(state.activeCycleId, departedTileId)) {
     moveMarkerToTile(cycleState, "last_city", departedTileId);
+  }
+  if (state.activeCycleId === "c5" && tileHasTag("c5", departedTileId, "city") && tileFaceId("c5", departedTileId, cycleState) === "A") {
+    moveMarkerToTile(cycleState, "c5_last_visited_underwater_city", departedTileId);
   }
   if (
     state.activeCycleId === "c4"
@@ -762,6 +770,32 @@ async function loadCampaignMapSectionState(profileId) {
   return { state: pickServerMapState(payload.state, profileId) || normalizeState({}), revision: Number(payload.revision || 0) };
 }
 
+function updateScoutRebuildStatus(campaign) {
+  const profileId = mapStateLoadedFromServer ? mapStateProfileId : campaignUserId;
+  const cycles = campaign.sections?.dashboard?.profiles?.[profileId]?.cycles || {};
+  scoutRebuildByCycle = Object.fromEntries(Object.entries(cycles).flatMap(([cycleId, cycle]) => {
+    const event = Object.values(cycle.state?.techAutomation?.events || {}).find(event => event
+      && event.techKey?.split("@@")[0] === "canal reconnaissance" && event.actionId === "rebuild" && event.status !== "completed");
+    return event ? [[cycleId, event]] : [];
+  }));
+  renderScoutControls();
+}
+
+async function refreshMapAfterTechnology() {
+  if (secondScreenMode || !mapStateLoadedFromServer || campaignSession.changed || mapSaveConflict || !campaignStorageAvailable || campaignReconnectInFlight) return;
+  if (scoutMapRefreshBusy) { scoutMapRefreshPending = true; return; }
+  scoutMapRefreshBusy = true;
+  try {
+    do {
+      scoutMapRefreshPending = false;
+      if (campaignSaveTimer || campaignSaveInFlight || campaignSaveQueuedBeforeReady || !deepEqualValue(state, mapStateBaseline)) {
+        if (!await flushCampaignMapSave()) return;
+      }
+      await loadCampaignMapSection();
+    } while (scoutMapRefreshPending);
+  } finally { scoutMapRefreshBusy = false; }
+}
+
 async function loadCampaignMapSection() {
   if (secondScreenMode) {
     await loadSecondScreenMapState();
@@ -780,11 +814,20 @@ async function loadCampaignMapSection() {
     const campaign = payload.campaign || {};
     const dashboard = campaign.sections?.dashboard;
     campaignUserId = dashboard?.activeProfileId || "default";
-    mapSectionRevision = campaign.sectionRevisions?.map || 0;
+    const incomingMapRevision = campaign.sectionRevisions?.map || 0;
+    // A map save may finish while this read is in flight. Never replace that
+    // newer saved map with the older read response.
+    if (mapStateLoadedFromServer && incomingMapRevision < mapSectionRevision) {
+      updateScoutRebuildStatus(campaign);
+      return;
+    }
+    mapSectionRevision = incomingMapRevision;
     dashboardSectionRevision = campaign.sectionRevisions?.dashboard || 0;
-    const applied = applyServerMapState(campaign.sections?.map, campaignUserId, flushQueuedSave);
+    const hasLocalEdits = flushQueuedSave || (mapStateLoadedFromServer && !deepEqualValue(state, mapStateBaseline));
+    const applied = applyServerMapState(campaign.sections?.map, campaignUserId, hasLocalEdits);
+    updateScoutRebuildStatus(campaign);
     if (applied.conflict) return;
-    if (flushQueuedSave) queueCampaignSave();
+    if (hasLocalEdits) queueCampaignSave();
     else if (applied.switched) setCampaignSaveStatus("主控台已切换到其他档案，本页仍保存原档案", "saved");
     else setCampaignSaveStatus("已同步", "saved");
   } catch (error) {
@@ -824,6 +867,7 @@ async function probeCampaignReconnect() {
     dashboardSectionRevision = campaign.sectionRevisions?.dashboard || 0;
     const hadQueued = campaignSaveQueuedBeforeReady;
     const applied = applyServerMapState(campaign.sections?.map, campaignUserId, hadQueued);
+    updateScoutRebuildStatus(campaign);
     campaignStorageAvailable = true;
     campaignReconnectDelay = 2000;
     campaignSaveQueuedBeforeReady = false;
@@ -928,6 +972,7 @@ async function saveCampaignMapSection() {
     campaignSaveQueuedBeforeReady = false;
     campaignReconnectDelay = 2000;
     setCampaignSaveStatus("已保存", "saved");
+    scoutMapSyncChannel?.postMessage({ revision: mapSectionRevision, source: "map", profileId: mapStateProfileId });
     return true;
   } catch (error) {
     campaignStorageAvailable = false;
@@ -1228,10 +1273,12 @@ function renderControls() {
 
   elements.currentTileSelect.value = cycleState.currentTile;
   elements.searchInput.value = state.query;
+  elements.revealTileButton.hidden = state.activeCycleId === "c5";
+  elements.revealUnderwaterTileButton.hidden = state.activeCycleId !== "c5";
+  elements.revealSurfaceTileButton.hidden = state.activeCycleId !== "c5";
   elements.mapZoomInput.value = String(state.mapZoom);
   elements.mapZoomValue.textContent = `${state.mapZoom}%`;
   elements.showBackToggle.checked = state.showBack;
-  elements.onlyExploredToggle.checked = state.onlyExplored;
   if (elements.hideUnknownToggle) elements.hideUnknownToggle.checked = state.hideUnknown;
   elements.showAdjacencyToggle.checked = state.showAdjacency;
   if (elements.markCurrentButton) elements.markCurrentButton.disabled = !cycleState.currentTile;
@@ -1270,7 +1317,9 @@ function renderTitanXTrack(cycleState) {
 
 function renderScoutControls(cycleState = activeCycleState()) {
   const scoutTileId = scoutPlacedTileId(cycleState);
-  elements.scoutCount.textContent = cycleState.tokens.hsCount;
+  const rebuild = scoutRebuildByCycle[state.activeCycleId];
+  elements.scoutCount.textContent = `${cycleState.tokens.hsCount}${rebuild ? ` · 重建中，D${rebuild.dueDay} 到期` : ""}`;
+  elements.hsProduceButton.disabled = cycleState.tokens.hsCount > 0 || Boolean(rebuild);
   elements.hsRecallButton.disabled = !scoutTileId;
   elements.hsDestroyButton.disabled = cycleState.tokens.hsCount <= 0;
 }
@@ -1313,7 +1362,6 @@ function renderTiles() {
   const visibleUnknownTileIds = state.hideUnknown ? visibleTileIdsForUnknownFilter(cycle, cycleState) : null;
 
   const tiles = cycle.tiles.filter((tile) => {
-    const explored = Boolean(cycleState.explored[tile.id]);
     const isSpawnCandidate = pendingAdversarySpawnCandidates.has(tile.id);
     const isAdversaryTile = cycleState.tokens.AD === tile.id;
     const isArgoTile = tile.id === effectiveArgoTileId;
@@ -1324,8 +1372,7 @@ function renderTiles() {
     });
     const matchesUnknownFilter = !visibleUnknownTileIds || visibleUnknownTileIds.has(tile.id) || isSpawnCandidate || isArgoTile || isAdversaryTile || hasNote || previewRevealed;
     return (matchesQuery || isSpawnCandidate || isArgoTile || isAdversaryTile)
-      && matchesUnknownFilter
-      && (!state.onlyExplored || explored || isSpawnCandidate || isArgoTile || isAdversaryTile);
+      && matchesUnknownFilter;
   });
 
   elements.tileGrid.innerHTML = "";
@@ -1795,7 +1842,7 @@ function searchTilesById() {
   renderTiles();
 }
 
-function revealTilePreviewById() {
+function revealTilePreviewById(face) {
   clearPendingAdversarySpawn();
   const tileId = String(elements.searchInput.value || "").trim().toUpperCase();
   if (!tileId) {
@@ -1814,6 +1861,11 @@ function revealTilePreviewById() {
   }
   pushUndo();
   cycleState.previewRevealed ||= {};
+  if (state.activeCycleId === "c5" && (face === "underwater" || face === "surface")) {
+    cycleState.tileVariants ||= {};
+    if (face === "surface") cycleState.tileVariants[tile.id] = "alternate";
+    else delete cycleState.tileVariants[tile.id];
+  }
   cycleState.previewRevealed[tile.id] = true;
   state.query = "";
   elements.searchInput.value = "";
@@ -2316,11 +2368,6 @@ elements.showBackToggle.addEventListener("change", () => {
   saveState();
   renderTiles();
 });
-elements.onlyExploredToggle.addEventListener("change", () => {
-  state.onlyExplored = elements.onlyExploredToggle.checked;
-  saveState();
-  renderTiles();
-});
 if (elements.hideUnknownToggle) {
   elements.hideUnknownToggle.addEventListener("change", () => {
     state.hideUnknown = elements.hideUnknownToggle.checked;
@@ -2354,6 +2401,8 @@ elements.titanXRetreatButton.addEventListener("click", () => {
   if (position != null) setTitanXTrackPosition(position + 1);
 });
 if (elements.revealTileButton) elements.revealTileButton.addEventListener("click", revealTilePreviewById);
+if (elements.revealUnderwaterTileButton) elements.revealUnderwaterTileButton.addEventListener("click", () => revealTilePreviewById("underwater"));
+if (elements.revealSurfaceTileButton) elements.revealSurfaceTileButton.addEventListener("click", () => revealTilePreviewById("surface"));
 elements.undoButton.addEventListener("click", undoLastChange);
 elements.saveReturnButton.addEventListener("click", saveAndReturnToDashboard);
 elements.headerSaveReturnButton.addEventListener("click", saveAndReturnToDashboard);
@@ -2426,6 +2475,8 @@ window.addEventListener("resize", () => {
 });
 window.addEventListener("online", reconnectCampaignNow);
 window.addEventListener("focus", reconnectCampaignNow);
+scoutMapSyncChannel?.addEventListener("message", () => void refreshMapAfterTechnology());
+window.addEventListener("focus", () => void refreshMapAfterTechnology());
 
 if (secondScreenMode && elements.tileGridViewport) {
   const allowManualScroll = () => { secondScreenManualScroll = true; };
