@@ -31,7 +31,14 @@ function fixture(ids = ['6407', '6410'], { cycle = 'c1', adversary = '006', unlo
 const apply = (ctx, selection = {}) => rules.prepareOperation({ ...ctx, selection: { ...ctx.selection, ...selection } });
 
 test('marker inventory covers all 223 card faces, including all four double-marker cards', () => {
-  const files = ['c1','c2','c3','c4','c5'].flatMap(cycle => fs.readdirSync(`assets/exploration-cards/${cycle}`).filter(name => name.endsWith('.png')).map(name => `${cycle}:${name.slice(0,-4)}`));
+  const catalog = { window: {} };
+  vm.runInNewContext(fs.readFileSync(require.resolve('../assets/exploration-card-tags.js'), 'utf8'), catalog);
+  const files = Object.keys(catalog.window.ATO_EXPLORATION_CARD_TAGS.cards);
+  const cycles = ['c1','c2','c3','c4','c5'];
+  if (cycles.every(cycle => fs.existsSync(`assets/exploration-cards/${cycle}`))) {
+    const images = cycles.flatMap(cycle => fs.readdirSync(`assets/exploration-cards/${cycle}`).filter(name => name.endsWith('.png')).map(name => `${cycle}:${name.slice(0,-4)}`));
+    assert.deepEqual(files.slice().sort(), images.sort(), 'local card images match the public runtime catalog');
+  }
   assert.equal(files.length, 223);
   assert.deepEqual(Object.keys(pursuit.markers).sort(), files.sort());
   assert.deepEqual(Object.entries(pursuit.markers).filter(([, count]) => count === 2).map(([key]) => key).sort(), ['c1:6436','c2:13637','c3:13533','c4:9336']);

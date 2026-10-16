@@ -97,9 +97,9 @@ if (-not (Test-Path -LiteralPath '.git')) {
 }
 
 $files = if ($Staged) {
-  @(git diff --cached --name-only --diff-filter=ACMR)
+  @((git diff --cached --name-only --diff-filter=ACMR -z) -split "`0" | Where-Object { $_ })
 } else {
-  @(git ls-files)
+  @((git ls-files -z) -split "`0" | Where-Object { $_ })
 }
 
 $violations = foreach ($file in $files) {
