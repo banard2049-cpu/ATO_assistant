@@ -42,7 +42,7 @@ BLOCKED_TOP = {
     "asset-studio", "official-assets", "dist", "export", "release", "releases", "node_modules",
     # tests/ 是仓库根目录的开发测试（agent 回归测试同样住在这里），不是运行时要用的
     # 东西：它们既没有理由进便携版 ZIP / Docker 镜像，也没有理由进 APK。
-    "tests",
+    "tests", "docs",
 } | LOCAL_SCRATCH_TOP | ICON_SOURCE_TOP
 BLOCKED_LEAVES = {
     ".ds_store", ".gitattributes", ".gitignore", "dockerfile",
