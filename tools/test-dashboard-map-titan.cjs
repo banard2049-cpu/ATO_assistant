@@ -58,7 +58,9 @@ async function main() {
     page.on('dialog', dialog => dialog.accept());
     await page.goto('http://titan.test/map/index.html?cycle=c1');
     await page.waitForFunction(() => document.querySelector('#campaignSaveStatus').dataset.state === 'saved');
-    await page.locator('#currentTileSelect').selectOption('002');
+    await page.locator('#searchInput').fill('002');
+    await page.locator('#revealTileButton').click();
+    await page.locator('.tile-card[data-id="002"]').dblclick();
     assert.equal(await page.locator('[data-titan-tile]').count(), 0, 'map module has no new capture interaction');
     assert.equal(campaign.sections.record.users.chosen.titans.length, 0, 'map module does not mutate Titans');
     await page.locator('#headerSaveReturnButton').click();

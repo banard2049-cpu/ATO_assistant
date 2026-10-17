@@ -27,9 +27,9 @@ const tokenAssets = [
   { id: "c13", label: "C13", path: "./tokens/c13.jpg", group: "c1", cycles: ["c1"], square: true },
   { id: "ENGIN", label: "ENGIN", path: "./tokens/engine_nymph.png" },
   { id: "hs", label: "HS", path: "./tokens/hemolia_scout.png", unique: true },
-  { id: "last_city", label: "Last City", path: "./tokens/last_visited_city.png" },
+  { id: "last_city", label: "Last City", path: "./tokens/last_visited_city.png", unique: true },
   { id: "night_nymph", label: "Night Nymph", path: "./tokens/night_nymph.png", cycles: ["c3", "c4", "c5"] },
-  { id: "last_oasis", label: "最后到访的绿洲", path: "./tokens/last_visited_oasis.png", group: "c4", cycles: ["c4"] },
+  { id: "last_oasis", label: "最后到访的绿洲", path: "./tokens/last_visited_oasis.png", group: "c4", cycles: ["c4"], unique: true },
   { id: "c4_city_of_squalor", label: "City of Squalor", path: "./tokens/c4_city_of_squalor.png", group: "c4", cycles: ["c4"], square: true },
   { id: "c4_cloud_ship", label: "埃米尔云船 (Emir’s Cloud Ship)", path: "./tokens/c4_cloud_ship.png", group: "c4", cycles: ["c4"], square: true, unique: true },
   {
@@ -46,6 +46,7 @@ const tokenAssets = [
     path: "./tokens/silver_remnant.png",
     group: "c5",
     cycles: ["c5"],
+    unique: true,
   },
   { id: "c5_atlantean_capital", label: "Atlantean Capital", path: "./tokens/c5_atlantean_capital.png", group: "c5", cycles: ["c5"], square: true },
   { id: "c5_black_beak", label: "Black Beak", path: "./tokens/c5_black_beak.png", group: "c5", cycles: ["c5"], unique: true },
@@ -1711,6 +1712,10 @@ function placeToken(tileId) {
     cycleState.currentTile = tileId;
     cycleState.tokens.AG = tileId;
     markTileExplored(cycleState, tileId);
+    if (tileId && cycleState.tokens.AD === tileId) {
+      triggerAdversaryBattle();
+      return;
+    }
   } else if (tokenId === "AD") {
     pushUndo();
     cycleState.tokens.AD = cycleState.tokens.AD === tileId ? "" : tileId;

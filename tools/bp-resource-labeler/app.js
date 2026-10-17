@@ -37,10 +37,10 @@
     return Math.max(0, Math.min(99, count));
   }
 
-  function normalizeResources(value) {
+  function normalizeResources(value, cycle) {
     const normalized = {};
     if (!value || typeof value !== "object") return normalized;
-    resourceKeys.forEach((key) => {
+    resourcesForCycle(cycle).forEach(([key]) => {
       const count = clampCount(value[key]);
       if (count > 0) normalized[key] = count;
     });
@@ -85,11 +85,14 @@
   function loadInitialState() {
     const map = window.AIBP_BP_RESOURCE_MAP || {};
     const projectIsPrefill = window.AIBP_C45_BP_RESOURCE_PREFILL === true;
+    const projectReviewed = Array.isArray(window.AIBP_C45_BP_RESOURCE_REVIEWED)
+      ? new Set(window.AIBP_C45_BP_RESOURCE_REVIEWED)
+      : null;
     cards.forEach((card) => {
       const apostleMap = map[card.apostle];
       if (!apostleMap || !Object.prototype.hasOwnProperty.call(apostleMap, card.fileName)) return;
-      labels[card.fileName] = normalizeResources(apostleMap[card.fileName]);
-      if (!projectIsPrefill) reviewed.add(card.fileName);
+      labels[card.fileName] = normalizeResources(apostleMap[card.fileName], card.cycle);
+      if (projectReviewed ? projectReviewed.has(card.fileName) : !projectIsPrefill) reviewed.add(card.fileName);
     });
 
     try {
@@ -107,8 +110,9 @@
       }
       if (saved.labels && typeof saved.labels === "object") {
         Object.entries(saved.labels).forEach(([fileName, resources]) => {
-          if (cards.some((card) => card.fileName === fileName)) {
-            labels[fileName] = normalizeResources(resources);
+          const card = cards.find((card) => card.fileName === fileName);
+          if (card) {
+            labels[fileName] = normalizeResources(resources, card.cycle);
           }
         });
       }
@@ -323,7 +327,7 @@
   }
 
   function updateResource(key, delta) {
-    if (!currentCard() || !resourceKeys.includes(key)) return;
+    if (!resourcesForCycle(currentCard()?.cycle).some(([allowedKey]) => allowedKey === key)) return;
     const resources = currentResources();
     const next = clampCount(Number(resources[key] || 0) + delta);
     if (next > 0) resources[key] = next;
@@ -353,7 +357,7 @@
     const data = Object.fromEntries(manifest.apostles.map((apostle) => [apostle.id, {}]));
     cards.forEach((card) => {
       if (!Object.prototype.hasOwnProperty.call(labels, card.fileName)) return;
-      data[card.apostle][card.fileName] = normalizeResources(labels[card.fileName]);
+      data[card.apostle][card.fileName] = normalizeResources(labels[card.fileName], card.cycle);
     });
     return data;
   }
@@ -364,6 +368,8 @@
   "use strict";
 
   const target = window.AIBP_BP_RESOURCE_MAP ||= {};
+  window.AIBP_C45_BP_RESOURCE_PREFILL = true;
+  window.AIBP_C45_BP_RESOURCE_REVIEWED = ${JSON.stringify(Array.from(reviewed))};
   const data = ${JSON.stringify(data, null, 2)};
 
   Object.entries(data).forEach(([apostle, cards]) => {
@@ -394,6 +400,7 @@
     const payload = {
       version: 1,
       updatedAt: new Date().toISOString(),
+      reviewed: Array.from(reviewed),
       apostles: buildApostleData()
     };
     download(
@@ -440,26 +447,37 @@
     if (fileName.toLowerCase().endsWith(".json")) {
       parsed = JSON.parse(text.replace(/^\uFEFF/, ""));
     } else {
+      if (/function\s+addLevel\s*\(/.test(text)) {
+        throw new Error("该 JS 构造格式不支持，请在工具中导出 JSON 后导入。");
+      }
       parsed = extractJsonObject(text, [
         "const data =",
         "window.AIBP_BP_RESOURCE_MAP ="
       ]);
+      const reviewArray = text.match(/window\.AIBP_C45_BP_RESOURCE_REVIEWED\s*=\s*(\[[\s\S]*?\])\s*;/);
+      if (reviewArray) return { data: parsed, reviewed: JSON.parse(reviewArray[1]) };
+      if (/window\.AIBP_C45_BP_RESOURCE_PREFILL\s*=\s*true\s*;/.test(text)) {
+        return { data: parsed, reviewed: [] };
+      }
     }
-    return parsed.apostles || parsed.data || parsed;
+    return { data: parsed.apostles || parsed.data || parsed, reviewed: parsed.reviewed };
   }
 
   async function importFile(file) {
     if (!file) return;
     try {
       const imported = importedApostleData(await file.text(), file.name);
+      const importedReviewed = Array.isArray(imported.reviewed) ? new Set(imported.reviewed) : null;
       let importedCount = 0;
       cards.forEach((card) => {
-        const apostleMap = imported?.[card.apostle];
+        const apostleMap = imported.data?.[card.apostle];
         if (!apostleMap || !Object.prototype.hasOwnProperty.call(apostleMap, card.fileName)) return;
-        labels[card.fileName] = normalizeResources(apostleMap[card.fileName]);
-        reviewed.add(card.fileName);
+        labels[card.fileName] = normalizeResources(apostleMap[card.fileName], card.cycle);
+        if (!importedReviewed || importedReviewed.has(card.fileName)) reviewed.add(card.fileName);
+        else reviewed.delete(card.fileName);
         importedCount += 1;
       });
+      if (!importedCount) throw new Error("文件没有可识别的 C4-C5 BP 卡牌标注。");
       persist();
       applyFilters();
       showToast(`已导入 ${importedCount} 张卡牌标注。`);
@@ -477,7 +495,7 @@
       const response = await fetch(SAVE_API, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: buildApostleData() })
+        body: JSON.stringify({ data: buildApostleData(), reviewed: Array.from(reviewed) })
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) {

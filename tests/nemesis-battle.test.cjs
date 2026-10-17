@@ -175,12 +175,13 @@ for (const command of ['move-argo', 'move-special', 'chase-nemesis']) {
     const cycle = { id: cycleId };
     const ctx = vm.createContext({
       mapCommandBusy: false, document: { querySelectorAll: () => [] }, setMapCommandStatus: noop,
+      structureTechTarget: () => ({ profileId: 'original' }), assertStructureTechTarget: noop,
       loadMapCommandState: async () => commandState, cloneJson: clone,
       currentMapCommandCycle: () => ({ cycleId, cycle, cycleState }),
       mapDirectionalTarget: () => '002', currentC3SpecialTargets: () => ['002'],
       adversaryBattleHref: async (id, profile) => { activity.push(`read:${id}:${profile}`); return '/story?book=c4'; },
       saveMapCommandState: async () => { activity.push('save'); assert.equal(cycleState.tokens.AD, ''); },
-      syncDashboardMapSnapshot: noop, updateDashboardTitanXTrack: noop,
+      syncMapCommandLandmarks: noop, syncDashboardMapSnapshot: noop, updateDashboardTitanXTrack: noop,
       window: {
         ATO_NEMESIS_PATH: { shortestPath: () => ['002', '001'] },
         ATO_PAGE_ROUTER: { focusOrNavigate: async href => activity.push(href) },

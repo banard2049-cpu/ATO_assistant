@@ -96,6 +96,8 @@ jobs:
         run: >-
           node --test
           tests/aibp-card-loot-regression.test.cjs
+          tests/aibp-resource-labels.test.cjs
+          tests/bp-resource-labeler-state.test.cjs
           tests/aibp-story-loot.test.cjs
           tests/aibp-settlement-rules.test.cjs
           tests/exploration-resource-settlement.test.cjs
@@ -111,8 +113,13 @@ jobs:
           tests/investigation-rules.test.cjs
           tests/voyage-action-rules.test.cjs
           tests/map-titan-capture.test.cjs
+          tests/map-token-placement.test.cjs
+          tests/dashboard-map-tag-sync.test.cjs
+          tests/dashboard-battle-terrain.test.cjs
           tests/scout-map-link.test.cjs
           tests/dashboard-hub-points.test.cjs
           tests/dashboard-argo-fate-chip.test.cjs
+      - name: Test BP label review metadata persistence
+        run: python tests/test_bp_resource_labeler.py
       - name: Test local material exclusion from application packages
         run: python tools/test_packaging_exclusions.py

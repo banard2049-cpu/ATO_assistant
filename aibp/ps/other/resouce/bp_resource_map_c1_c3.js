@@ -41,7 +41,7 @@
     ],
     III: [
       { PW: 4 }, { PW: 4, GB: 2 }, { PW: 4 },
-      { PW: 2, GB: 2 }, { PW: 2, GB: 2 }, { GB: 2, PW: 4 }
+      { PW: 2, GB: 2 }, { PW: 2, GB: 2 }, { GB: 4, PW: 2 }
     ]
   });
 
@@ -77,16 +77,16 @@
 
   add("SUN_DESCENDANT", {
     I: [
-      { SM: 1 }, { WT: 2 }, { WT: 1, SM: 1 },
-      { WT: 1 }, { FA: 1, SM: 1 }, { FA: 1, WT: 1 }
+      { SK: 1 }, { WT: 2 }, { WT: 1, SK: 1 },
+      { WT: 1 }, { FA: 1, SK: 1 }, { FA: 1, WT: 1 }
     ],
     II: [
-      { FA: 2, SM: 1 }, { WT: 1, FA: 2 }, { WT: 1, SM: 1, FA: 1 },
-      { FA: 2, WT: 1 }, { WT: 1, SM: 1, FA: 1 }, { FA: 2, SM: 1 }
+      { FA: 2, SK: 1 }, { WT: 1, FA: 2 }, { WT: 1, SK: 1, FA: 1 },
+      { FA: 2, WT: 1 }, { WT: 1, SK: 1, FA: 1 }, { FA: 2, SK: 1 }
     ],
     III: [
-      { WT: 2, FA: 4 }, { WT: 2, FA: 4 }, { SM: 2, FA: 4 },
-      { SM: 2, FA: 4 }, { WT: 2, FA: 4 }, { SM: 2, FA: 4 }
+      { WT: 2, FA: 4 }, { WT: 2, FA: 4 }, { SK: 2, FA: 4 },
+      { SK: 2, FA: 4 }, { WT: 2, FA: 4 }, { SK: 2, FA: 4 }
     ]
   });
 })();

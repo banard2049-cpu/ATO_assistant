@@ -288,6 +288,35 @@ test('unknown salvage conditions hold the revealed card until a separate confirm
   assert.deepEqual(resolved.state.exploration.drawStateByCycle.c4.drawPile, ['9300', '9342']);
 });
 
+test('pending salvage keeps its original local factions when the Argo moves before qualification', () => {
+  const ctx = context('salvage operations');
+  ctx.explorationDataset = { cards: { 'c4:local-reward': { titleEn: 'Local Reward',
+    grants: [{ resource: 'imperialScroll', amount: 1, condition: { type: 'diplomacy', mode: 'atLeast', bonus: 1 } }], manual: [] } } };
+  ctx.mapState = { cycles: { c4: { currentTile: 'town' } } };
+  ctx.mapTags = { tiles: { 'c4:town': { factions: ['wasters'] }, 'c4:other': { factions: ['aristotelians'] } } };
+  ctx.record.diplomacy = { 'c4-aristotelians': '4' };
+  ctx.state.exploration.drawStateByCycle.c4.drawPile = ['local-reward', '9300'];
+  const drawn = prepare(ctx, 'tech-explore-salvage');
+  const pending = drawn.state.exploration.drawStateByCycle.c4.activePiles[0][0];
+  assert.equal(pending.salvageQualificationPending, true);
+  const moved = next(ctx, drawn, { operationId: 'resolve', mapState: { cycles: { c4: { currentTile: 'other' } } } });
+  const selection = { entryRoundId: rules.roundId(moved, pending), qualificationResult: 'automatic' };
+  assert.equal(prepare(moved, 'tech-explore-salvage-resolve', selection).code, 'QUALIFICATION_REQUIRED',
+    'moving to a friendly faction cannot satisfy the original unknown local relation');
+  moved.record.diplomacy['c4-wasters'] = '0';
+  const discarded = prepare(moved, 'tech-explore-salvage-resolve', selection);
+  assert.equal(discarded.ok, true, discarded.message);
+  assert.deepEqual(discarded.state.exploration.drawStateByCycle.c4.activePiles, [[], []]);
+  assert.equal(discarded.record.fate, '4', 'qualification does not charge the salvage fate again');
+  moved.record.diplomacy['c4-wasters'] = '4';
+  moved.record.diplomacy['c4-aristotelians'] = '0';
+  const qualified = prepare(moved, 'tech-explore-salvage-resolve', selection);
+  assert.equal(qualified.ok, true, qualified.message);
+  const kept = qualified.state.exploration.drawStateByCycle.c4.activePiles[0][0];
+  assert.equal(kept.technologyDiplomacyContext.diplomacy[0].id, 'wasters');
+  assert.equal(kept.salvageQualificationPending, undefined);
+});
+
 test('Argo Initiative preserves hand-selected cards, charges eight instruments and prevents every duplicate location', () => {
   const ctx = context('argo initiative', 'c5');
   ctx.state.exploration.selectedByCycle.c5 = ['10300', '10345'];

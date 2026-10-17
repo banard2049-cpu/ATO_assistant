@@ -2733,9 +2733,9 @@
   <script src="./assets/exploration-card-choices.js?v=20261013-next-choices12"></script>
   <script src="./assets/exploration-card-delays.js?v=20261013-automation5"></script>
   <script src="./assets/exploration-card-resources.js?v=20261014-card-face-audit2"></script>
-  <script src="./technology/negotiation-rules.js?v=20261016-automation-audit2"></script>
+  <script src="./technology/negotiation-rules.js?v=20261017-automation-audit4"></script>
   <script src="./technology/voyage-action-rules.js?v=20261016-voyage3"></script>
-  <script src="./technology/exploration-tech-rules.js?v=20261016-automation-audit3"></script>
+  <script src="./technology/exploration-tech-rules.js?v=20261017-automation-audit4"></script>
   <script src="./technology/structure-tech-rules.js?v=20261016-automation-audit3"></script>
   <script src="./technology/investigation-rules.js?v=20261016-voyage1"></script>
   <script src="./technology/structure-tech-client.js?v=20261016-automation-audit3"></script>
@@ -6007,10 +6007,59 @@
       return `./story/index.html?${params.toString()}`;
     }
 
+    function mapCommandTileEntry(cycleId, tileId, cycleState) {
+      if (!tileId) return {};
+      const entries = window.ATO_MAP_TILE_TAGS?.tiles || {};
+      const base = entries[`${cycleId}:${tileId}`] || {};
+      const face = cycleId === "c5" ? (cycleState.tileVariants?.[tileId] === "alternate" ? "B" : "A") : "";
+      const specific = face ? entries[`${cycleId}:${tileId}:${face}`] : null;
+      return specific ? { ...base, ...specific,
+        factions: Array.isArray(specific.factions) ? specific.factions : (base.factions || []) } : base;
+    }
+
+    function syncMapCommandLandmarks(cycleId, cycleState, nextTileId) {
+      const departedId = cycleState.currentTile;
+      if (!departedId || departedId === nextTileId) return;
+      const tags = new Set(mapCommandTileEntry(cycleId, departedId, cycleState).tags || []);
+      const underwater = cycleId === "c5" && cycleState.tileVariants?.[departedId] !== "alternate";
+      const markers = [];
+      if (tags.has("city") && !(cycleId === "c1" && departedId === "027")) {
+        markers.push(underwater ? "c5_last_visited_underwater_city" : "last_city");
+      }
+      if (cycleId === "c4" && tags.has("oasis")) markers.push("last_oasis");
+      if (cycleId === "c5" && tags.has("silver_ruin")) markers.push("last_silver_ruin");
+      cycleState.tokens.markers ||= {};
+      for (const marker of markers) {
+        for (const [tileId, saved] of Object.entries(cycleState.tokens.markers)) {
+          delete saved[marker];
+          if (!Object.keys(saved).length) delete cycleState.tokens.markers[tileId];
+        }
+        (cycleState.tokens.markers[departedId] ||= {})[marker] = true;
+      }
+    }
+
     function syncDashboardMapSnapshot(cycleId, cycle, cycleState) {
       const current = cycle.tiles.find((tile) => tile.id === cycleState.currentTile);
       const adversary = cycle.tiles.find((tile) => tile.id === cycleState.tokens.AD);
+      const latest = cycle.tiles.find((tile) => tile.id === cycleState.latestRevealedTile);
       const exploredIds = cycle.tiles.filter((tile) => cycleState.explored[tile.id]).map((tile) => tile.id);
+      const currentEntry = mapCommandTileEntry(cycleId, cycleState.currentTile, cycleState);
+      const latestEntry = mapCommandTileEntry(cycleId, cycleState.latestRevealedTile, cycleState);
+      const definitions = Object.fromEntries((window.ATO_MAP_TILE_TAGS?.tagDefinitions || []).map(tag => [tag.id, tag.label || tag.id]));
+      const factionLabels = mapFactionLabelsByCycle[cycleId] || {};
+      const currentTileTags = [...(currentEntry.tags || [])];
+      const latestRevealedTileTags = [...(latestEntry.tags || [])];
+      const currentTileFactions = [...(currentEntry.factions || [])];
+      const markers = cycleState.tokens.markers || {};
+      const lastMarkerId = marker => Object.keys(markers).find(tileId => markers[tileId]?.[marker]) || "";
+      const tileLabel = id => cycle.tiles.find(tile => tile.id === id)?.label || id;
+      const lastCityTileId = lastMarkerId("last_city");
+      const lastOasisTileId = lastMarkerId("last_oasis");
+      const lastSilverRuinTileId = lastMarkerId("last_silver_ruin");
+      const scoutTileId = lastMarkerId("hs");
+      const tileNotes = Object.entries(cycleState.tileNotes || {})
+        .filter(([, note]) => String(note || "").trim())
+        .map(([tileId, note]) => ({ tileId, tileLabel: tileLabel(tileId), note: String(note).trim() }));
       state.location = current?.label || cycleState.currentTile || "";
       state.mapSnapshot = {
         ...(isPlainObject(state.mapSnapshot) ? state.mapSnapshot : {}),
@@ -6025,14 +6074,50 @@
         adversaryTileId: cycleState.tokens.AD || "",
         adversaryTileLabel: adversary?.label || cycleState.tokens.AD || "",
         titanXTrackPosition: cycleId === "c5" ? cycleState.titanXTrackPosition : null,
+        latestRevealedTileId: cycleState.latestRevealedTile || "",
+        latestRevealedTileLabel: latest?.label || cycleState.latestRevealedTile || "",
         latestRevealedTileFace: cycleId === "c5" && cycleState.latestRevealedTile
           ? (cycleState.tileVariants?.[cycleState.latestRevealedTile] === "alternate" ? "B" : "A")
           : "",
+        currentTileTags,
+        currentTileTagLabels: currentTileTags.map(id => definitions[id] || id),
+        currentTileFactions,
+        currentTileFactionLabels: currentTileFactions.map(id => factionLabels[id] || id),
+        latestRevealedTileTags,
+        latestRevealedTileTagLabels: latestRevealedTileTags.map(id => definitions[id] || id),
+        currentTileIsLatestRevealed: Boolean(cycleState.currentTile && cycleState.currentTile === cycleState.latestRevealedTile),
+        currentTileHasLastCityMarker: Boolean(markers[cycleState.currentTile]?.last_city),
+        currentTileHasLastOasisMarker: Boolean(markers[cycleState.currentTile]?.last_oasis),
+        currentTileHasLastSilverRuinMarker: Boolean(markers[cycleState.currentTile]?.last_silver_ruin),
+        lastCityTileId,
+        lastCityTileLabel: tileLabel(lastCityTileId),
+        lastOasisTileId,
+        lastOasisTileLabel: tileLabel(lastOasisTileId),
+        lastSilverRuinTileId,
+        lastSilverRuinTileLabel: tileLabel(lastSilverRuinTileId),
+        scoutCount: cycleState.tokens.hsCount,
+        scoutTileId,
+        scoutTileLabel: tileLabel(scoutTileId),
+        tileNotes,
+        markers: [
+          ...Object.entries(markers).filter(([, saved]) => Object.values(saved).some(Boolean))
+            .map(([tileId, saved]) => `${tileId}:${Object.keys(saved).filter(id => saved[id]).join(",")}`),
+          ...Object.entries(cycleState.tokens.edgeMarkers || {}).flatMap(([tileId, saved]) =>
+            Object.entries(saved).flatMap(([tokenId, directions]) => (Array.isArray(directions) ? directions : [directions])
+              .filter(direction => ["up", "right", "down", "left"].includes(direction)).map(direction =>
+              `${tileId}:${tokenId}(${({ up: "上", right: "右", down: "下", left: "左" })[direction] || direction})`))),
+        ],
         exploredIds,
         exploredCount: exploredIds.length,
         totalTiles: cycle.tiles.length,
       };
+      for (const key of ["currentTileTags", "currentTileTagLabels", "currentTileFactions", "currentTileFactionLabels",
+        "latestRevealedTileTags", "latestRevealedTileTagLabels", "currentTileIsLatestRevealed",
+        "currentTileHasLastCityMarker", "currentTileHasLastOasisMarker", "currentTileHasLastSilverRuinMarker"]) {
+        state[`map${key[0].toUpperCase()}${key.slice(1)}`] = state.mapSnapshot[key];
+      }
       saveState();
+      renderFlow();
     }
 
     function mapDirectionalTarget(cycle, cycleState, direction) {
@@ -6093,7 +6178,9 @@
       document.querySelectorAll("[data-map-command], [data-map-direction]").forEach((button) => { button.disabled = true; });
       setMapCommandStatus("正在同步地图…");
       try {
-        const commandState = await loadMapCommandState();
+        const target = structureTechTarget();
+        const commandState = await loadMapCommandState(target.profileId);
+        assertStructureTechTarget(target);
         const commandBaseState = cloneJson(commandState.state);
         const { cycleId, cycle, cycleState } = currentMapCommandCycle(commandState);
         let message = "地图已更新。";
@@ -6103,6 +6190,7 @@
           const targetId = mapDirectionalTarget(cycle, cycleState, value);
           const newlyExplored = !cycleState.explored[targetId];
           if (cycleId === "c5") inheritCycleFiveMapCommandFace(cycleState, targetId);
+          syncMapCommandLandmarks(cycleId, cycleState, targetId);
           cycleState.currentTile = targetId;
           cycleState.tokens.AG = targetId;
           cycleState.explored[targetId] = true;
@@ -6127,6 +6215,7 @@
           const targets = currentC3SpecialTargets(cycle, cycleState);
           if (!targets.includes(value)) throw new Error("当前板块没有通向该板块的特殊连接。");
           const newlyExplored = !cycleState.explored[value];
+          syncMapCommandLandmarks(cycleId, cycleState, value);
           cycleState.currentTile = value;
           cycleState.tokens.AG = value;
           cycleState.explored[value] = true;
@@ -6230,15 +6319,21 @@
           message = `泰坦 X 追踪指示物退至 ${cycleState.titanXTrackPosition}。`;
         }
 
+        assertStructureTechTarget(target);
         await saveMapCommandState(commandState, commandBaseState);
+        assertStructureTechTarget(target);
         // A conflict retry may have rebased the command onto a newer state, so
         // re-read the cycle the snapshot must be built from.
         const savedCycle = currentMapCommandCycle(commandState);
+        const context = typeof getStructureTechContext === "function" ? getStructureTechContext() : null;
+        if (context?.profileId === commandState.profileId) {
+          const savedMap = cloneJson(commandState.state);
+          structureTechContext = { ...structureTechContext, map: savedMap, mapState: savedMap };
+        }
         syncDashboardMapSnapshot(savedCycle.cycleId, savedCycle.cycle, savedCycle.cycleState);
         updateDashboardTitanXTrack();
         setMapCommandStatus(message);
-        if (["move-argo", "move-special"].includes(command) && ["c2", "c3"].includes(cycleId)
-            && typeof refreshStructureTechContext === "function") {
+        if (typeof refreshStructureTechContext === "function") {
           void refreshStructureTechContext().catch(() => {});
         }
         if (battleHref) {
@@ -7305,6 +7400,8 @@
     }
 
     function setNextBattleTerrainFromHub(hubId, boxId) {
+      // 未结算的特殊地形保留到战斗结束，本次新地形直接跳过，不替换或排队。
+      if (normalizeNextBattleTerrain(state.nextBattleTerrain)) return;
       const data = getCurrentSurveyConstantData();
       const row = surveyHubSummaryRow(data, hubId);
       if (!row?.terrain) return;

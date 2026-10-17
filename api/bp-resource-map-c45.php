@@ -111,7 +111,19 @@ function normalize_data(
   return $normalized;
 }
 
-function map_content(array $data): string {
+function normalize_reviewed($value, array $data): array {
+  if (!is_array($value)) return [];
+  $cards = [];
+  foreach ($data as $entries) {
+    foreach ($entries as $fileName => $_resources) $cards[$fileName] = true;
+  }
+  return array_values(array_unique(array_filter(
+    $value,
+    static fn($fileName): bool => is_string($fileName) && isset($cards[$fileName])
+  )));
+}
+
+function map_content(array $data, array $reviewed = []): string {
   $json = json_encode(
     $data,
     JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT
@@ -121,6 +133,8 @@ function map_content(array $data): string {
     . "(function () {\n"
     . "  \"use strict\";\n\n"
     . "  const target = window.AIBP_BP_RESOURCE_MAP ||= {};\n"
+    . "  window.AIBP_C45_BP_RESOURCE_PREFILL = true;\n"
+    . "  window.AIBP_C45_BP_RESOURCE_REVIEWED = " . json_encode($reviewed) . ";\n"
     . "  const data = " . $json . ";\n\n"
     . "  Object.entries(data).forEach(([apostle, cards]) => {\n"
     . "    Object.assign(target[apostle] ||= {}, cards);\n"
@@ -163,12 +177,14 @@ if (!is_array($payload) || !is_array($payload['data'] ?? null)) {
 
 $allowedCards = allowed_cards($apostleCardCounts);
 $data = normalize_data($payload['data'], $apostleCardCounts, $allowedCards, $cycleResourceKeys);
+$reviewed = normalize_reviewed($payload['reviewed'] ?? [], $data);
 $cardCount = array_sum(array_map('count', $data));
-write_map($mapFile, $backupFile, map_content($data));
+write_map($mapFile, $backupFile, map_content($data, $reviewed));
 
 respond(200, [
   'ok' => true,
   'data' => $data,
+  'reviewed' => $reviewed,
   'cardCount' => $cardCount,
   'updatedAt' => gmdate('c'),
 ]);

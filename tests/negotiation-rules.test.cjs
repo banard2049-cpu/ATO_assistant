@@ -143,6 +143,29 @@ test('location visibility follows current tags and Last Visited markers, and val
   for (const [key, index] of [['sustainable oasis', 0], ['spiral theory', 0]]) assert.equal(rules.canNegotiate(fixture(key, index)), true);
 });
 
+test('map snapshots from another cycle cannot provide a negotiation location or visit markers', () => {
+  const ctx = fixture('crew expansion');
+  delete ctx.mapState;
+  ctx.state.mapSnapshot = { cycleId: 'c2', currentTileId: 'town', currentTileTags: ['city'],
+    currentTileFactions: ['helots'], markers: ['town:last_city'] };
+  ctx.state.mapCurrentTileTags = ['city'];
+  const before = copy(ctx);
+  const info = negotiation.mapInfo(ctx);
+  assert.equal(info.tileId, '');
+  assert.deepEqual(info.tags, []);
+  assert.deepEqual(info.local, []);
+  assert.deepEqual(info.markers, {});
+  assert.equal(rules.canNegotiate(ctx), false);
+  assert.equal(execute(ctx).code, 'INVALID_LOCATION');
+  assert.deepEqual(copy(ctx), before, 'refusing stale map context never pays or changes the campaign');
+
+  ctx.state.mapSnapshot.cycleId = 'c1';
+  ctx.state.mapSnapshot.markers = [];
+  assert.equal(execute(ctx).ok, true, 'a snapshot for this cycle remains usable');
+  delete ctx.state.mapSnapshot.cycleId;
+  assert.equal(execute(ctx).ok, true, 'legacy snapshots without a cycle keep their existing fallback');
+});
+
 test('negotiation scope only lists abilities matching the location and hides every Last Visited destination', () => {
   const ctx = fixture('sustainable oasis'), list = () => rules.listActions({ ...ctx, techKey: undefined, scope: 'negotiation' });
   assert.ok(list().some(action => action.techKey === 'sustainable oasis'));

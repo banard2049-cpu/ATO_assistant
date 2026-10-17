@@ -86,7 +86,9 @@
     return raw !== '' && raw != null && Number.isInteger(Number(raw)) ? Number(raw) : null;
   }
   function mapInfo(ctx) {
-    const cycle = cycleOf(ctx), saved = ctx.mapState?.cycles?.[cycle], snapshot = ctx.state?.mapSnapshot;
+    const cycle = cycleOf(ctx), saved = ctx.mapState?.cycles?.[cycle], rawSnapshot = ctx.state?.mapSnapshot;
+    const compatibleSnapshot = !rawSnapshot?.cycleId || rawSnapshot.cycleId === cycle;
+    const snapshot = compatibleSnapshot ? rawSnapshot : null;
     const tileId = saved?.currentTile || snapshot?.currentTileId || '';
     const metadata = ctx.mapTags || root.ATO_MAP_TILE_TAGS;
     const tile = id => {
@@ -96,7 +98,7 @@
       return { ...base, ...(face ? metadata?.tiles?.[`${cycle}:${id}:${face}`] : {}), underwater: cycle === 'c5' && face === 'A' };
     };
     const current = tile(tileId);
-    const fallback = !saved && (!snapshot?.cycleId || snapshot.cycleId === cycle);
+    const fallback = !saved && compatibleSnapshot;
     const tags = current.tags || (fallback ? ctx.state?.mapCurrentTileTags || snapshot?.currentTileTags : []) || [];
     const local = current.factions || (fallback ? ctx.state?.mapCurrentTileFactions || snapshot?.currentTileFactions : []) || [];
     const markers = copy(saved?.tokens?.markers || {});

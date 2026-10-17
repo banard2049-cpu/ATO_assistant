@@ -441,7 +441,7 @@ window.AIBP_BP_RESOURCE_MAP = {
                                                                           "EF":  0,
                                                                           "URM":  0,
                                                                           "LS":  0,
-                                                                          "CT":  2,
+                                                                          "CT":  1,
                                                                           "SM":  0,
                                                                           "RT":  0,
                                                                           "UA":  0
@@ -573,7 +573,7 @@ window.AIBP_BP_RESOURCE_MAP = {
                                                                           "EF":  0,
                                                                           "URM":  0,
                                                                           "LS":  0,
-                                                                          "CT":  2,
+                                                                          "CT":  1,
                                                                           "SM":  0,
                                                                           "RT":  0,
                                                                           "UA":  0
@@ -720,7 +720,7 @@ window.AIBP_BP_RESOURCE_MAP = {
                                                          "LS":  0,
                                                          "CT":  0,
                                                          "SM":  0,
-                                                         "RT":  4,
+                                                         "RT":  2,
                                                          "UA":  0
                                                      },
                        "THE_BURDEN_BP_III_004.jpg":  {

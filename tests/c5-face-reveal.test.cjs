@@ -99,5 +99,5 @@ test('dashboard direction command inherits before changing the current tile', ()
   delete saved.tileVariants.A;
   helper(saved, 'B');
   assert.equal(saved.tileVariants.B, 'alternate');
-  assert.match(dashboardSource, /if \(cycleId === "c5"\) inheritCycleFiveMapCommandFace\(cycleState, targetId\);\s*cycleState\.currentTile = targetId;/);
+  assert.match(dashboardSource, /if \(cycleId === "c5"\) inheritCycleFiveMapCommandFace\(cycleState, targetId\);\s*syncMapCommandLandmarks\(cycleId, cycleState, targetId\);\s*cycleState\.currentTile = targetId;/);
 });

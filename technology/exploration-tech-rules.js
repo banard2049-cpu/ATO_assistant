@@ -241,7 +241,8 @@
         const tag = ctx.explorationTags?.cards?.[`${cycle}:${cardId}`] || root.ATO_EXPLORATION_CARD_TAGS?.cards?.[`${cycle}:${cardId}`] || {};
         const entry = { id: cardId, name: card.titleZh || card.titleEn || cardId, day, drawnAt: `technology:${id}`,
           pile: 0, removal: ['remove', 'permanent'].includes(tag.removal) ? tag.removal : 'keep', draw: 'single',
-          negotiationId: id, salvageId: id, ...(snapshot ? { technologyDiplomacyContext: snapshot } : {}),
+          negotiationId: id, salvageId: id, technologyRewardFactions: copy(rewardContext.diplomacyFactions),
+          ...(snapshot ? { technologyDiplomacyContext: snapshot } : {}),
           ...(qualified === null ? { salvageQualificationPending: true } : {}) };
         draw.activePiles = [[entry], []]; draw.history = [copy(entry)]; draw.current = copy(entry);
         draw.pursuitRoundId = `salvage-${cycle}-${id}`; draw.pursuitChoices = {};
@@ -261,7 +262,10 @@
       if (!target) return fail('EXPLORATION_CHANGED', '待确认打捞卡已变化，请刷新后重新选择。');
       const card = dataset(ctx)?.cards?.[`${cycle}:${target.id}`];
       if (!card) return fail('CARD_DATA_REQUIRED', '探索卡资料尚未加载。');
-      const rewardContext = qualificationContext({ ...ctx, record }, card);
+      // An unresolved draw still belongs to its original location. Re-read the
+      // recorded relations, while preserving that location's faction choices.
+      const rewardContext = qualificationContext({ ...ctx, record,
+        rewardFactions: target.technologyRewardFactions || target.technologyDiplomacyContext?.diplomacyFactions }, card);
       let qualified = qualifies(card, cycle, target.id, rewardContext);
       if (qualified === null) {
         if (!['qualifies', 'none'].includes(selection.qualificationResult) || selection.qualificationConfirmed !== true) return fail('QUALIFICATION_REQUIRED', '条件仍不明确，请先补齐记录，或核对卡面后明确确认本次是否获得资源或泰坦。');
