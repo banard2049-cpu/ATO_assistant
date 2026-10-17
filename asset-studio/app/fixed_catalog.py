@@ -186,7 +186,6 @@ NEW_SUMMON_CARD_FILES = (
     "257_Godform_Zeus_Exalted.jpg",
     "258_Nymph_Ambrosia_Nymph.jpg",
     "259_Nymph_Aether_Nymph.jpg",
-    "305_Godform_Hermes_Exalted.jpg",
 )
 
 
@@ -1884,6 +1883,7 @@ def fixed_catalog_payload() -> dict[str, Any]:
         "+drop-story-battle-boards+c5-inward-86-90-user-images"
         "+boss-level-backs+custom-trait-png-20261010"
         "+battle-board-resource-directory-20261011"
+        "+drop-story-spoiler-card-20261017"
     )
     return payload
 

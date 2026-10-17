@@ -19,7 +19,7 @@
       zeus: '宙斯', poseidon: '波塞冬', demeter: '德墨忒尔', hephaestus: '赫菲斯托斯', hermes: '赫尔墨斯',
       ares: '阿瑞斯', artemis: '阿尔忒弥斯', athena: '雅典娜', hades: '哈迪斯', dionysus: '狄俄尼索斯',
       aphrodite: '阿佛洛狄忒', 'helios-apollonis-exalted': '赫利俄斯·阿波罗尼斯（至高）', hera: '赫拉',
-      'poseidon-exalted': '波塞冬（至高）', 'zeus-exalted': '宙斯（至高）', 'hermes-exalted': '赫尔墨斯（至高）',
+      'poseidon-exalted': '波塞冬（至高）', 'zeus-exalted': '宙斯（至高）',
     },
     summon: {
       engine: '引擎宁芙', solitude: '孤独宁芙', amalthean: '阿玛尔忒娅宁芙', labyrinth: '迷宫宁芙', depths: '深海宁芙',

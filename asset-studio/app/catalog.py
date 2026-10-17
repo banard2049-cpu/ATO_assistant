@@ -242,7 +242,6 @@ SUMMON_CARD_LABELS = {
     "257_Godform_Zeus_Exalted": "神形秘密卡 257：宙斯（至高） / Zeus Exalted",
     "258_Nymph_Ambrosia_Nymph": "宁芙秘密卡 258：神浆宁芙 / Ambrosia Nymph",
     "259_Nymph_Aether_Nymph": "宁芙秘密卡 259：以太宁芙 / Aether Nymph",
-    "305_Godform_Hermes_Exalted": "泰坦 X 神形秘密卡 305：赫尔墨斯（至高） / Hermes Exalted",
     **{f"token_{index:02d}": f"宁芙实体指示物 {index:02d}" for index in range(1, 15)},
 }
 
