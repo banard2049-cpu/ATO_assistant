@@ -168,8 +168,7 @@
     "helios-apollonis-exalted": "helios-apollonis-exalted",
     "poseidon-exalted": "poseidon-exalted",
     "poseidon ex": "poseidon-exalted",
-    "zeus-exalted": "zeus-exalted",
-    "hermes-exalted": "hermes-exalted"
+    "zeus-exalted": "zeus-exalted"
   };
 
   // ATO 神之形态 id 全集（用于反查）
