@@ -115,6 +115,7 @@ jobs:
           tests/map-titan-capture.test.cjs
           tests/map-token-placement.test.cjs
           tests/dashboard-map-tag-sync.test.cjs
+          tests/dashboard-battle-terrain.test.cjs
           tests/scout-map-link.test.cjs
           tests/dashboard-hub-points.test.cjs
           tests/dashboard-argo-fate-chip.test.cjs
