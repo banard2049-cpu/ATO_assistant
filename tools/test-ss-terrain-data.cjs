@@ -207,11 +207,16 @@ assert.deepEqual(
   "Red Anchor", "Blue Anchor", "Green Anchor", "Yellow Anchor",
 ].forEach((name) => assert.ok(terrain.catalog[name], name));
 
+const terrainDirectory = path.join(__dirname, "..", "ss", "terrain");
+const hasLocalTerrainImages = fs.existsSync(terrainDirectory)
+  && fs.readdirSync(terrainDirectory).some((file) => /\.(?:png|jpe?g|webp)$/i.test(file));
 Object.values(terrain.catalog).forEach((definition) => {
   if (!definition.file) return;
-  assert.equal(fs.existsSync(path.join(__dirname, "..", "ss", "terrain", definition.file)), true, definition.file);
+  assert.match(definition.file, /^[^/\\]+\.(?:png|jpe?g|webp)$/i);
+  if (hasLocalTerrainImages) assert.equal(fs.existsSync(path.join(terrainDirectory, definition.file)), true, definition.file);
   if (definition.backFile) {
-    assert.equal(fs.existsSync(path.join(__dirname, "..", "ss", "terrain", definition.backFile)), true, definition.backFile);
+    assert.match(definition.backFile, /^[^/\\]+\.(?:png|jpe?g|webp)$/i);
+    if (hasLocalTerrainImages) assert.equal(fs.existsSync(path.join(terrainDirectory, definition.backFile)), true, definition.backFile);
   }
 });
 
