@@ -104,7 +104,8 @@ def build_docker(version: str) -> Path:
     for relative in (
         "aibp/ps", "assets/exploration-cards", "assets/story-doom-cards",
         "assets/cycle-symbols", "assets/icons", "assets/bgm", "assets/bgm/audio",
-        "hero/assets", "map/images", "map/tokens", "record/assets", "ss/battle-board", "ss/terrain",
+        "hero/assets", "map/images", "map/images/hd1024/base", "map/images/hd1024/overlay",
+        "map/images/card-backs/numbers", "map/tokens", "record/assets", "ss/battle-board", "ss/terrain",
         "ss/terrain-cards", "story/images", "story/data",
         "story/assets/cryptic/glyphs", "story/assets/mixed-media/images",
         "story/assets/OO", "technology/images",

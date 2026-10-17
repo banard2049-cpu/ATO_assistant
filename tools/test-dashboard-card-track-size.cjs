@@ -96,8 +96,12 @@ assert.ok(sideMatch, `故事栏布局的右栏不是 minmax(Npx, Mpx) 形式：$
 const storySideMax = Number(sideMatch[1]);
 const storyCardColumn = dialogWidth - bodyPadding - columnGap - storySideMax;
 
-const ratio = Number(declared(".card-track-face", "aspect-ratio"));
-assert.ok(ratio > 1, `.card-track-face 的 aspect-ratio 异常：${ratio}`);
+assert.equal(declared(".card-track-face", "aspect-ratio"), "auto", "卡面容器须跟随图片高度，避免上下留白");
+assert.equal(declared(".card-track-face img", "height"), "auto", "卡图须保留原始比例");
+const imageHeightCap = declared(".card-track-face img", "max-height").match(/^calc\(100cqw\s*\/\s*([\d.]+)\)$/);
+assert.ok(imageHeightCap, "竖版卡须按卡面可用宽度限高");
+const ratio = Number(imageHeightCap[1]);
+assert.ok(ratio > 1, `卡面限高比例异常：${ratio}`);
 
 // .card-track-item 是 border-box：1px 边框 + 10px 内边距两边都要扣掉，
 // 剩下的才是卡面真正能用的宽度。

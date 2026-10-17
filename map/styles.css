@@ -579,6 +579,9 @@ h1 {
 
 .zoom-row input {
   width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
   accent-color: var(--done);
 }
 
@@ -788,6 +791,36 @@ h1 {
   display: block;
 }
 
+.tile-artwork-stack {
+  display: block;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+}
+
+.tile-image .tile-artwork-stack img {
+  position: absolute;
+  inset: 0;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.tile-image .tile-artwork-stack .tile-back-piece {
+  inset: auto;
+  object-fit: fill;
+}
+
+.tile-back-fallback {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  background: var(--accent-strong, #4b493e);
+  color: #fff;
+  font-size: clamp(14px, 2vw, 32px);
+  font-weight: 800;
+}
+
 body.second-screen-map {
   overflow: hidden;
   background: #151816;
@@ -866,17 +899,23 @@ body.second-screen-map .tile-grid {
   color: rgba(240, 184, 50, 0.94);
 }
 
-.tile-card.has-note.revealed-unexplored .tile-variant-toggle {
+.tile-card.has-note.revealed-unexplored .tile-variant-toggle:not(.c5-face-toggle) {
   right: 40px;
 }
 
+/* Official C5 APK toggle, scaled with the map tile at every zoom level. */
 .tile-variant-toggle.c5-face-toggle,
 .tile-variant-toggle.c5-face-toggle:hover,
 .tile-variant-toggle.c5-face-toggle.active {
-  top: 5px;
+  top: 5%;
+  right: 5%;
   bottom: auto;
+  width: 10%;
+  height: 10%;
+  min-height: 0;
+  padding: 0;
   overflow: hidden;
-  border-color: transparent;
+  border: 0;
   background: transparent;
 }
 
@@ -886,7 +925,8 @@ body.second-screen-map .tile-grid {
   height: 100%;
   border-radius: 2px;
   object-fit: contain;
-  opacity: 0.84;
+  opacity: 1;
+  pointer-events: none;
 }
 
 .c5-face-toggle:hover img {

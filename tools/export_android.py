@@ -57,6 +57,7 @@ def asset_studio_catalog() -> dict:
     sys.path.insert(0, str(studio_root))
     try:
         from app.fixed_catalog import collect_supplemental_resources, fixed_catalog_payload
+        from app.map_resources import expected_targets as map_layer_targets
 
         payload = fixed_catalog_payload()
         # 内置清单之外的补充素材（约定目录下的二进制素材等）也必须进 APK 名单：
@@ -71,6 +72,10 @@ def asset_studio_catalog() -> dict:
     items.extend(
         {"id": item.id, "faces": dict(item.faces)} for item in supplemental
     )
+    # Metadata comes from the tracked map registries, even in a clean checkout
+    # without private PNGs. Keep all legacy card IDs for older resource packs.
+    items.extend({'id':'map-layer:' + target, 'faces':{'layer':target}}
+                 for target in sorted(map_layer_targets()))
     source = dict(payload.get("source", {}))
     source["catalog_items"] = len(items)
     return {

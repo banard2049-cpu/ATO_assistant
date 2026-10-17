@@ -1645,7 +1645,7 @@
 
        高度预算（从 dvh 里扣掉）：弹窗外边距 28 + 标题栏约 61 + 正文内边距 28 +
        卡片自身（内边距 20 + 边框 2 + 标题行 22 + 两处 10 间距 + 灾祸/进展与回退/推进
-       两行控件约 118）≈ 299px；卡面 aspect-ratio 是 1.4，所以宽度上限
+       两行控件约 118）≈ 299px；卡面高度以 1.4 的宽高比保守限高，所以宽度上限
 
        = 1.4 × (dvh - 299)，再留约 60px 余量写成 140dvh - 500px（仍在 1040px 以内）。
 
@@ -1684,18 +1684,24 @@
     .card-track-face {
       width: min(100%, 1040px);
       justify-self: center;
-      aspect-ratio: 1.4;
+      align-self: start;
+      aspect-ratio: auto;
+      container-type: inline-size;
       overflow: hidden;
       position: relative;
-      border: 1px solid rgba(30, 38, 35, 0.22);
+      border: 0;
       border-radius: 7px;
       background: #edf1ee;
       box-shadow: 0 8px 18px rgba(28, 38, 34, 0.12);
     }
 
     .card-track-face img {
-      width: 100%;
-      height: 100%;
+      width: auto;
+      max-width: 100%;
+      height: auto;
+      /* Fit the holder to the image; keep portrait faces within the height budget. */
+      max-height: calc(100cqw / 1.4);
+      margin-inline: auto;
       display: block;
       object-fit: contain;
     }
@@ -2440,11 +2446,15 @@
       }
     }
   </style>
-  <link rel="stylesheet" href="./api/dashboard.css?v=20261016-exploration-delay-type1">
+  <link rel="stylesheet" href="./api/dashboard.css?v=20261017-exploration-corners2">
   <link rel="stylesheet" href="./assets/theme.css?v=20261007-misc-settings11">
   <script src="./story/data/english-source-data.js?v=20261011-english4"></script>
   <script src="./assets/theme.js?v=20261007-page-navigation1" defer></script>
   <link rel="stylesheet" href="./assets/update/update-check.css?v=2">
+  <link rel="stylesheet" href="./assets/card-art.css?v=20261017-fan-fringe5">
+  <script src="./assets/fan-card-trims-data.js?v=20261017-fan-fringe2" defer></script>
+  <script src="./assets/fan-card-trims.js?v=20261017-fan-fringe2" defer></script>
+  <script src="./assets/card-art.js?v=20261017-fan-fringe5" defer></script>
 </head>
 <body data-theme-dashboard>
   <section id="authGate" class="auth-gate" hidden>
@@ -2731,7 +2741,8 @@
   <script src="./technology/structure-tech-client.js?v=20261016-automation-audit3"></script>
   <script src="./map/titan-markers.js?v=20261016-map-titan1"></script>
   <script src="./map/titan-capture-rules.js?v=20261016-map-titan1"></script>
-  <script src="./map/map-tile-tags.js?v=20261013-corner-audit"></script>
+  <script src="./map/map-tile-tags.js?v=20261016-icon-scope"></script>
+  <script src="./map/frozen-time-rules.js?v=20261017-frozen-time1"></script>
   <script src="./map/map-data.js?v=20260730-cycle-labels"></script>
   <script src="./map/nemesis-path.js?v=20260924-shared"></script>
   <script src="./map/nemesis-battle.js?v=20261003-record"></script>
@@ -3877,6 +3888,11 @@
     let mapTitanCaptureBusy = false;
     let mapTitanCaptureMessage = null;
     const mapTitanAutomaticAttempts = new Set();
+    let mapFrozenTimeConnection = null;
+    let mapFrozenTimeConnectionEpoch = -1;
+    let mapFrozenTimeBusy = false;
+    let mapFrozenTimeMessage = null;
+    const mapFrozenTimeAutomaticAttempts = new Set();
     let argoRecordRefreshInFlight = false;
     let secondScreenBusy = false;
     let secondScreenEnabled = false;
@@ -5879,6 +5895,7 @@
           explored: isPlainObject(saved.explored) ? saved.explored : {},
           previewRevealed: isPlainObject(saved.previewRevealed) ? saved.previewRevealed : {},
           latestRevealedTile: saved.latestRevealedTile || "",
+          explorationEntries: isPlainObject(saved.explorationEntries) ? saved.explorationEntries : {},
           tileNotes: isPlainObject(saved.tileNotes) ? saved.tileNotes : {},
           tileVariants: isPlainObject(saved.tileVariants) ? saved.tileVariants : {},
           titanXTrackPosition: Number.isInteger(Number(saved.titanXTrackPosition))
@@ -6091,6 +6108,7 @@
           cycleState.explored[targetId] = true;
           if (cycleState.previewRevealed) delete cycleState.previewRevealed[targetId];
           if (newlyExplored) cycleState.latestRevealedTile = targetId;
+          if (newlyExplored && cycleId === "c3") (cycleState.explorationEntries ||= {})[targetId] = true;
           if (cycleState.tokens.AD === targetId) {
             cycleState.tokens.AD = "";
             if (cycleId === "c5") cycleState.titanXTrackPosition = null;
@@ -6114,6 +6132,7 @@
           cycleState.explored[value] = true;
           if (cycleState.previewRevealed) delete cycleState.previewRevealed[value];
           if (newlyExplored) cycleState.latestRevealedTile = value;
+          if (newlyExplored && cycleId === "c3") (cycleState.explorationEntries ||= {})[value] = true;
           if (cycleState.tokens.AD === value) {
             cycleState.tokens.AD = "";
             if (cycleId === "c5") cycleState.titanXTrackPosition = null;
@@ -6218,6 +6237,10 @@
         syncDashboardMapSnapshot(savedCycle.cycleId, savedCycle.cycle, savedCycle.cycleState);
         updateDashboardTitanXTrack();
         setMapCommandStatus(message);
+        if (["move-argo", "move-special"].includes(command) && ["c2", "c3"].includes(cycleId)
+            && typeof refreshStructureTechContext === "function") {
+          void refreshStructureTechContext().catch(() => {});
+        }
         if (battleHref) {
           if (window.ATO_PAGE_ROUTER?.focusOrNavigate) {
             await window.ATO_PAGE_ROUTER.focusOrNavigate(battleHref);
@@ -8271,6 +8294,8 @@
         if (step.id === "move") {
           const titanReminder = createMapTitanReminder();
           if (titanReminder) text.appendChild(titanReminder);
+          const frozenTimeReminder = createMapFrozenTimeReminder();
+          if (frozenTimeReminder) text.appendChild(frozenTimeReminder);
         }
         if (nemesisTools) text.appendChild(createMapStepStatus(step.id));
         if (step.id === "explore") {
@@ -11394,6 +11419,84 @@
       return box;
     }
 
+    function mapFrozenTimeClient() {
+      if (!mapFrozenTimeConnection || mapFrozenTimeConnectionEpoch !== campaignSessionEpoch) {
+        mapFrozenTimeConnection = window.ATO_STRUCTURE_TECH_CLIENT.create({ session: structureTechSession(),
+          rules: window.ATO_MAP_FROZEN_TIME_RULES.createEngine() });
+        mapFrozenTimeConnectionEpoch = campaignSessionEpoch;
+      }
+      return mapFrozenTimeConnection;
+    }
+
+    async function settleMapFrozenTime(target, tileId) {
+      if (mapFrozenTimeBusy) return;
+      mapFrozenTimeBusy = true;
+      const key = `${target.sessionEpoch}:${target.profileId}:${target.cycleId}:${tileId}`;
+      mapFrozenTimeMessage = { key, text: "正在登记本板块的凝固时光…" };
+      renderFlow();
+      let committed = false;
+      try {
+        await beforeStructureTechSubmit(target);
+        const result = await mapFrozenTimeClient().submit({ ...target, expectedDay: target.day,
+          techKey: "map-frozen-time", actionId: "map-collect-frozen-time",
+          operationId: window.ATO_MAP_FROZEN_TIME_RULES.receiptId(tileId), selection: { tileId },
+          assertContext: () => assertStructureTechTarget(target) });
+        committed = true;
+        mapFrozenTimeMessage = null;
+        await applyStructureTechCommit(result, target);
+      } catch (error) {
+        mapFrozenTimeMessage = { key, error: true, text: committed
+          ? `凝固时光已保存，界面同步失败：${error.message || error}。请刷新核对。`
+          : `凝固时光登记未完成：${error.message || error}。` };
+        if (error?.code === "ACCOUNT_MISMATCH") stopForAccountMismatch();
+      } finally {
+        mapFrozenTimeBusy = false;
+        renderFlow();
+      }
+    }
+
+    function createMapFrozenTimeReminder() {
+      const rules = window.ATO_MAP_FROZEN_TIME_RULES;
+      const context = getStructureTechContext();
+      if (!rules || !context || currentCycleConfig().id !== "c3") return null;
+      const saved = context.map?.cycles?.c3 || {};
+      const tileId = saved.currentTile || saved.tokens?.AG;
+      const info = rules.createEngine().status(context, tileId);
+      if (!info.marker || !info.current || !info.explored) return null;
+      const target = structureTechTarget();
+      const key = `${target.sessionEpoch}:${target.profileId}:${target.cycleId}:${tileId}`;
+      const box = document.createElement("div");
+      box.className = "step-track-reminder structure-tech map-frozen-time-reminder";
+      box.dataset.mapFrozenTimeTile = tileId;
+      box.innerHTML = `<div class="step-track-title"><span class="step-track-tag structure-tech">凝固时光</span>当前板块 ${escapeHtml(tileId)} 有凝固时光</div>`;
+      const status = document.createElement("p");
+      status.className = "step-track-desc";
+      status.setAttribute("role", "status");
+      const message = mapFrozenTimeMessage?.key === key ? mapFrozenTimeMessage : null;
+      status.textContent = message?.text || info.receipt?.rewardLabel || (info.newlyExplored
+        ? "首次探索此板块，正在按时间对策科技登记凝固时光。"
+        : "仅在探索未探索板块时获得凝固时光；已探索板块不重复获得。旧存档已探索的地点不会补领。");
+      box.appendChild(status);
+      const capacity = document.createElement("p");
+      capacity.className = "step-track-desc";
+      capacity.textContent = `当前凝固时光：${info.value ?? "—"} / ${info.capacity}。`
+        + (info.available?.ok ? "时间对策已解锁；高级时间对策可将容量从 3 提高到 5。" : "时间对策尚未解锁或暂时禁用，不能获得凝固时光。");
+      box.appendChild(capacity);
+      if (message?.error && !info.receipt && info.newlyExplored) {
+        const retry = document.createElement("button");
+        retry.type = "button"; retry.className = "secondary"; retry.textContent = "重试登记";
+        retry.disabled = mapFrozenTimeBusy || !ownsDashboardWriteLease();
+        retry.addEventListener("click", () => void settleMapFrozenTime(target, tileId));
+        box.appendChild(retry);
+      }
+      if (info.newlyExplored && !info.receipt && !mapFrozenTimeBusy && ownsDashboardWriteLease()
+          && structureTechContextRevision === campaignSectionRevision && !mapFrozenTimeAutomaticAttempts.has(key)) {
+        mapFrozenTimeAutomaticAttempts.add(key);
+        window.setTimeout(() => void settleMapFrozenTime(target, tileId), 0);
+      }
+      return box;
+    }
+
     function getStructureTechContext() {
       if (!structureTechContext || structureTechContext.epoch !== campaignSessionEpoch
         || structureTechContext.profileId !== archive.activeProfileId
@@ -12131,6 +12234,22 @@
       return state.mapSnapshot?.latestRevealedTileLabel || "本轮刚翻开的板块";
     }
 
+    function getMoveMapReminders() {
+      if (currentCycleConfig().id !== "c2") return [];
+      const context = getStructureTechContext();
+      const saved = context?.map?.cycles?.c2;
+      const tileId = saved?.currentTile || saved?.tokens?.AG;
+      const tags = tileId ? new Set(window.ATO_MAP_TILE_TAGS?.tiles?.[`c2:${tileId}`]?.tags || []) : currentMapTagSet();
+      if (!tags.has("spartan_stronghold")) return [];
+      const location = tileId || currentMapTileLabel();
+      return [{
+        title: "当前板块有斯巴达要塞",
+        tag: { label: "要塞", className: "important" },
+        desc: `${location} 含有斯巴达要塞。探索步骤需失去 1 船体或 1 船员（自行选择），即使板块已探索也要处理。请按卡面手动结算损失及科技豁免。`,
+        className: "important",
+      }];
+    }
+
     function getSurveyMapReminders() {
       const tags = currentMapTagSet();
       if (!state.mapCurrentTileIsLatestRevealed) return [];
@@ -12385,6 +12504,9 @@
 
     function getStepTrackReminders(stepId) {
       const icons = todayTrackIcons();
+      if (stepId === "move") {
+        return getMoveMapReminders();
+      }
       if (stepId === "explore") {
         return getExploreMapReminders();
       }

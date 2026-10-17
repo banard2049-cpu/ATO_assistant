@@ -46,6 +46,11 @@ final class AtopackStore {
   private static final int MAX_ICON_FILES = 256;
   private static final long MAX_CRYPTIC_BYTES = 128L * 1024;
   private static final int MAX_CRYPTIC_FILES = 256;
+  private static final int MAX_MAP_FILES = 2048;
+  private static final long MAX_MAP_BYTES = 8L * 1024 * 1024;
+  private static final String MAP_IMAGE_PATTERN =
+      "map/images/(?:hd1024/(?:base|overlay)/c[1-5]-tile-[A-Za-z0-9-]+\\.png"
+      + "|card-backs/(?:c[1-3]-base\\.png|numbers/c[1-3]-tile-[A-Za-z0-9-]+\\.png))";
   // 混合媒体（私有映射表 + 书籍裁图）：上限与 asset-studio/app/mixed_media_resources.py 一致——
   // mapping.js 单份 ≤ 32MB，单张裁图 ≤ 8MB，成员总数 ≤ 2048 + 1（映射表一份）。
   // 两个字节上限分开写：合成一个 32MB 会把裁图的上限放宽 4 倍，合成一个 8MB 又会拒掉
@@ -498,6 +503,51 @@ final class AtopackStore {
           try { installBlob(archive, entry, sha256, resource, maximum, transaction); }
           catch (InvalidPackEntry invalid) { stats.skipMixedMedia(target, invalid.getMessage()); continue; }
           next.put(target, new ResourceEntry(sha256, safeMime(resource.optString("mimeType"), target)));
+        }
+      }
+      // Layered maps are an optional, byte-preserving resource channel. Legacy
+      // card IDs above remain accepted. Reject incomplete/corrupt layer sets
+      // before committing so a base never loses its matching icon mask.
+      JSONArray mapFiles = manifest.optJSONArray("mapFiles");
+      if (manifest.has("mapFiles") && mapFiles == null) throw new IOException("地图图层清单无效");
+      if (mapFiles != null) {
+        if (mapFiles.length() > MAX_MAP_FILES) throw new IOException("地图图层数量超过限制");
+        Set<String> allowedMaps = new HashSet<>(knownTargets.values());
+        Set<String> declaredMaps = new HashSet<>();
+        for (int index = 0; index < mapFiles.length(); index++) {
+          JSONObject resource = mapFiles.optJSONObject(index);
+          if (resource == null) throw new IOException("地图图层条目无效");
+          String target = safePath(resource.optString("target"), "地图图层路径");
+          if (!target.matches(MAP_IMAGE_PATTERN) || !allowedMaps.contains(target)
+              || !target.equals(resource.optString("member")) || !declaredMaps.add(target)) {
+            throw new IOException("地图图层目标无效、重复或 APK 未支持：" + target);
+          }
+        }
+        for (String target : declaredMaps) {
+          String companion = null;
+          if (target.startsWith("map/images/hd1024/base/")) companion = target.replace("/base/", "/overlay/");
+          if (target.startsWith("map/images/hd1024/overlay/")) companion = target.replace("/overlay/", "/base/");
+          if (target.startsWith("map/images/card-backs/numbers/")) {
+            String cycle = target.substring("map/images/card-backs/numbers/".length(), "map/images/card-backs/numbers/".length() + 2);
+            companion = "map/images/card-backs/" + cycle + "-base.png";
+            String number = target.replace("-instruction.png", ".png");
+            String instruction = number.substring(0, number.length() - 4) + "-instruction.png";
+            for (String piece : new String[] {number, instruction}) {
+              if (allowedMaps.contains(piece) && !declaredMaps.contains(piece)) throw new IOException("地图卡背缺少数字或说明蒙版：" + piece);
+            }
+          }
+          if (companion != null && !declaredMaps.contains(companion)) throw new IOException("地图图层缺少配套文件：" + companion);
+        }
+        for (int index = 0; index < mapFiles.length(); index++) {
+          JSONObject resource = mapFiles.getJSONObject(index);
+          String target = resource.getString("target");
+          String sha256 = validSha256(resource.optString("sha256"));
+          ZipArchiveEntry entry = findEntry(archive, target, resource);
+          if (entry == null || entry.isDirectory() || entry.getSize() < 0 || entry.getSize() > MAX_MAP_BYTES
+              || resource.optLong("bytes", -1) != entry.getSize()) throw new IOException("地图图层缺失或大小不符：" + target);
+          installBlob(archive, entry, sha256, resource, MAX_MAP_BYTES, transaction);
+          next.put(target, new ResourceEntry(sha256, "image/png"));
+          importedAssets++;
         }
       }
       int importedBooks = mergeStories(incomingStories, next, stats, transaction);

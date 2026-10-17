@@ -28,7 +28,12 @@ jobs:
         run: python tools/test_docker_runtime.py
       - name: Test cryptic package exports and partial imports
         working-directory: asset-studio
-        run: python -m unittest tests.test_cryptic_resources tests.test_fan_pack tests.test_hostile_pack_safety tests.test_install_target_safety tests.test_bgm_resources tests.test_icon_resources
+        run: python -m unittest tests.test_cryptic_resources tests.test_fan_pack tests.test_hostile_pack_safety tests.test_install_target_safety tests.test_bgm_resources tests.test_icon_resources tests.test_map_resources tests.test_image_shrink
+      - name: Test layered maps, icon scope and card artwork
+        run: |
+          python -m pip install numpy==2.2.6
+          node --test tests/map-tile-artwork.test.cjs tests/map-layered-consumers.test.cjs tests/map-tile-icon-tags.test.cjs tests/map-frozen-time.test.cjs tests/c4-cloud-ship.test.cjs tests/card-art.test.cjs tests/fan-card-trims.test.cjs
+          python -m unittest discover -s tests -p test_fan_card_trims.py
       - name: Test Android resource catalog and coverage
         run: |
           python tools/test_android_resource_catalog.py

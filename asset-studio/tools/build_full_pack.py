@@ -34,6 +34,8 @@ from app.official_assets import resolve as resolve_official_asset  # noqa: E402
 from app.fixed_catalog import fixed_catalog_payload  # noqa: E402
 from app.card_previews import BOARD_SOURCE, LEGACY_BOARD_SOURCE, add_to_archive as add_card_preview, is_preview_source  # noqa: E402
 from app.packages import PACKAGE_VERSION, safe_member  # noqa: E402
+from app.map_resources import collect as collect_map_files, covered_targets as covered_map_targets
+from app.map_resources import add_to_archive as add_map_to_archive
 from app.story_extras import (  # noqa: E402
     ENTITY_INDEX_JSON_TARGET,
     ENTITY_INDEX_JS_TARGET,
@@ -102,6 +104,9 @@ def build(
         # 通过导出资料包时的 bgmFiles 段分发，见 app/bgm_resources.py。
         if not is_bgm_target(target)
     ]
+    map_files = collect_map_files(overlay_root, targets=[target for _, _, target in faces])
+    covered_maps = covered_map_targets(map_files, [target for _, _, target in faces])
+    faces = [(item, face, target) for item, face, target in faces if target not in covered_maps]
     destination.parent.mkdir(parents=True, exist_ok=True)
     partial = destination.with_suffix(destination.suffix + ".partial")
     partial.unlink(missing_ok=True)
@@ -240,6 +245,7 @@ def build(
             for member in sorted({asset["member"] for asset in assets if is_preview_source(asset["member"])}):
                 add_card_preview(output_zip, member, output_zip.read(member), preview_entries)
             manifest["cardPreviewFiles"] = preview_entries
+            add_map_to_archive(output_zip, manifest, files=map_files)
             output_zip.writestr(
                 "manifest.json",
                 json.dumps(manifest, ensure_ascii=False, separators=(",", ":")),
@@ -268,6 +274,7 @@ def build(
         "official_files": len(manifest.get("resourceFiles", [])),
         "cryptic_files": cryptic_count,
         "mixed_media_files": mixed_media_count,
+        "map_files": len(manifest.get('mapFiles', [])),
         "bytes": destination.stat().st_size,
     }
 

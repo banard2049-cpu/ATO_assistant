@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ATO 地图打标 GUI</title>
   <link rel="stylesheet" href="./styles.css?v=20260607-map-editor">
-  <link rel="stylesheet" href="./tag-editor.css?v=20261003-conflict-guard">
+  <link rel="stylesheet" href="./tag-editor.css?v=20261017-layered-fronts1">
 </head>
 <body>
   <main class="app tag-editor-app">
@@ -77,7 +77,7 @@
           </div>
 
           <div class="tile-preview">
-            <img id="tileImage" alt="板块预览" src="">
+            <div id="tileImage" role="img" aria-label="板块预览"></div>
           </div>
 
           <div class="tag-summary" id="tagSummary"></div>
@@ -106,7 +106,9 @@
     </section>
   </main>
 
-  <script src="./map-data.js"></script>
-  <script src="./tag-editor.js?v=20261013-preserve-faces"></script>
+  <script src="../map/map-data.js?v=20260730-cycle-labels"></script>
+  <script src="../map/tile-artwork-data.js?v=20261017-hd1024-merged1"></script>
+  <script src="../map/tile-artwork.js?v=20261017-archive-fronts1"></script>
+  <script src="./tag-editor.js?v=20261017-layered-fronts1"></script>
 </body>
 </html>

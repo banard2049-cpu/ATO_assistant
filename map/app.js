@@ -31,7 +31,7 @@ const tokenAssets = [
   { id: "night_nymph", label: "Night Nymph", path: "./tokens/night_nymph.png", cycles: ["c3", "c4", "c5"] },
   { id: "last_oasis", label: "最后到访的绿洲", path: "./tokens/last_visited_oasis.png", group: "c4", cycles: ["c4"] },
   { id: "c4_city_of_squalor", label: "City of Squalor", path: "./tokens/c4_city_of_squalor.png", group: "c4", cycles: ["c4"], square: true },
-  { id: "c4_cloud_ship", label: "Cloud Ship", path: "./tokens/c4_cloud_ship.png", group: "c4", cycles: ["c4"], square: true },
+  { id: "c4_cloud_ship", label: "埃米尔云船 (Emir’s Cloud Ship)", path: "./tokens/c4_cloud_ship.png", group: "c4", cycles: ["c4"], square: true, unique: true },
   {
     id: "sandstorm",
     label: "沙尘暴",
@@ -66,6 +66,7 @@ const tokenAssets = [
     path: "./tokens/adrianes_anchor.png",
     cycles: ["c3"],
     square: true,
+    unique: true,
   },
 ];
 const tokenAssetById = Object.fromEntries(tokenAssets.map((token) => [token.id, token]));
@@ -149,6 +150,7 @@ const elements = {
   showBackToggle: document.querySelector("#showBackToggle"),
   hideUnknownToggle: document.querySelector("#hideUnknownToggle"),
   showAdjacencyToggle: document.querySelector("#showAdjacencyToggle"),
+  showArtworkIcons: document.querySelector("#showArtworkIcons"),
   cycleTitle: document.querySelector("#cycleTitle"),
   cycleMeta: document.querySelector("#cycleMeta"),
   markCurrentButton: document.querySelector("#markCurrentButton"),
@@ -457,7 +459,7 @@ function normalizeMarkers(markers = {}) {
 function normalizeMapZoom(value) {
   const zoom = Math.round(Number(value) / 10) * 10;
   if (!Number.isFinite(zoom)) return 100;
-  return Math.max(60, Math.min(400, zoom));
+  return Math.max(50, Math.min(410, zoom));
 }
 
 function tileFaceId(cycleId, tileId, cycleState = activeCycleState()) {
@@ -628,6 +630,10 @@ function markTileExplored(cycleState, tileId) {
   cycleState.explored[tileId] = true;
   if (cycleState.previewRevealed) delete cycleState.previewRevealed[tileId];
   if (!wasExplored) cycleState.latestRevealedTile = tileId;
+  if (!wasExplored && state.activeCycleId === "c3") {
+    cycleState.explorationEntries ||= {};
+    cycleState.explorationEntries[tileId] = true;
+  }
   return !wasExplored;
 }
 
@@ -1408,7 +1414,9 @@ function renderTiles() {
     const imageSrc = (!state.showBack && (explored || previewRevealed)) || !assets.back ? assets.front : assets.back;
     const imageMarkup = c5Covered
       ? `<span class="tile-blue-cover" role="img" aria-label="未揭示地图 ${escapeHtml(tile.label)}">${escapeHtml(tile.label)}</span>`
-      : `<img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(tile.label)}">`;
+      : window.ATO_MAP_ARTWORK
+        ? window.ATO_MAP_ARTWORK.markup(imageSrc, tile.label)
+        : `<img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(tile.label)}">`;
     article.innerHTML = `
       <div class="tile-image">
         ${imageMarkup}
@@ -1462,8 +1470,9 @@ function renderVariantToggle(tile, cycleState = activeCycleState(), faceVisible 
   if (isC5DoubleSided) {
     const targetSide = alternate ? "A" : "B";
     const currentSide = alternate ? "B" : "A";
+    const action = alternate ? "下潜" : "上浮";
     const currentIcon = alternate ? "./images/c5-face-a.png" : "./images/c5-face-b.png";
-    return `<button class="tile-variant-toggle c5-face-toggle${alternate ? " active" : ""}" type="button" data-variant-tile="${escapeHtml(tile.id)}" title="切换到 ${targetSide} 面" aria-label="当前 ${currentSide} 面，切换到 ${targetSide} 面"><img src="${currentIcon}" alt="" aria-hidden="true"></button>`;
+    return `<button class="tile-variant-toggle c5-face-toggle${alternate ? " active" : ""}" type="button" data-variant-tile="${escapeHtml(tile.id)}" title="${action}（切换到 ${targetSide} 面）" aria-label="当前 ${currentSide} 面，${action}，切换到 ${targetSide} 面"><img src="${currentIcon}?v=c5-approved-320-20261017" alt="" aria-hidden="true"></button>`;
   }
   return `<button class="tile-variant-toggle${alternate ? " active" : ""}" type="button" data-variant-tile="${escapeHtml(tile.id)}" title="${alternate ? "切换为标准版" : "切换为替代版"}" aria-label="${alternate ? "切换为标准版" : "切换为替代版"}">替</button>`;
 }
@@ -2315,6 +2324,10 @@ function visibleTileIdsForUnknownFilter(cycle, cycleState) {
       visibleIds.add(tile.id);
       exploredIds.add(tile.id);
     }
+    // 云端追逐在背面朝上的地图上移动；保留云船位置，但不揭示该板块。
+    if (cycle.id === "c4" && cycleState.tokens?.markers?.[tile.id]?.c4_cloud_ship) {
+      visibleIds.add(tile.id);
+    }
   });
 
   if (!exploredIds.size) return visibleIds;
@@ -2486,6 +2499,11 @@ if (secondScreenMode && elements.tileGridViewport) {
   elements.tileGridViewport.tabIndex = 0;
 }
 
+window.ATO_MAP_ARTWORK?.bind(elements.tileGrid);
+window.ATO_MAP_ARTWORK?.attachControls({
+  icons: elements.showArtworkIcons,
+  onChange: renderTiles,
+});
 render();
 loadCampaignMapSection();
 if (!secondScreenMode) {

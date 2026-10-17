@@ -18,6 +18,7 @@ from .cryptic_resources import collect_library as collect_cryptic_library
 from .icon_resources import collect_library as collect_icon_library
 from .mixed_media_resources import allowed_target as is_mixed_media_target
 from .mixed_media_resources import collect_library as collect_mixed_media_library
+from .map_resources import collect_library as collect_map_library, covered_targets as covered_map_targets
 from .db import Database
 from .storage import sha256_file, write_compatible_image
 from .story_extras import (
@@ -348,6 +349,8 @@ def install_plan(db: Database, library: Path, root: Path, replace_books: set[str
     dedicated_cryptic_targets = {relative for relative, _ in cryptic_files}
     mixed_media_files = collect_mixed_media_library(library)
     dedicated_mixed_media_targets = {relative for relative, _ in mixed_media_files}
+    map_files = collect_map_library(library)
+    covered_maps = covered_map_targets(map_files, [target for row in rows for target in json.loads(row['faces_json']).values()])
 
     def add_file(entry: dict, digest_of: Callable[[], str]) -> bool:
         key = _plan_key(entry["target"])
@@ -365,6 +368,8 @@ def install_plan(db: Database, library: Path, root: Path, replace_books: set[str
     for row in rows:
         relative = json.loads(row["faces_json"]).get(row["face"])
         if not relative:
+            continue
+        if relative in covered_maps:
             continue
         # 旧包曾把同一字形同时写进 assets 与 crypticFiles；保留专用段的原始 PNG。
         if relative in dedicated_cryptic_targets:
@@ -483,6 +488,15 @@ def install_plan(db: Database, library: Path, root: Path, replace_books: set[str
                   "source": source.relative_to(library).as_posix(), "target": relative,
                   "status": status, "direct_copy": True},
                  lambda source=source: sha256_file(source))
+    for relative, source in map_files:
+        destination = safe_target(root, relative)
+        if destination.exists() and not destination.is_file():
+            raise ValueError(f'地图图层目标不是文件：{relative}')
+        digest = sha256_file(source)
+        status = 'add' if not destination.exists() else ('same' if sha256_file(destination) == digest else 'replace')
+        add_file({'item_id':'map-layers', 'name':f'地图底图／蒙版：{PurePosixPath(relative).name}',
+                  'face':'layer', 'source':source.relative_to(library).as_posix(), 'target':relative,
+                  'status':status, 'direct_copy':True}, lambda digest=digest: digest)
     return {"root": str(root), "summary": summary, "files": files}
 
 

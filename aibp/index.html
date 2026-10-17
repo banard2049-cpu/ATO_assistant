@@ -2299,6 +2299,10 @@
   <link rel="stylesheet" href="../api/cycle-theme.css">
   <script src="../assets/theme.js?v=20261001" defer></script>
   <link rel="stylesheet" href="editorial.css?v=20261010-traits-dialog2">
+  <link rel="stylesheet" href="../assets/card-art.css?v=20261017-fan-fringe5">
+  <script src="../assets/fan-card-trims-data.js?v=20261017-fan-fringe2" defer></script>
+  <script src="../assets/fan-card-trims.js?v=20261017-fan-fringe2" defer></script>
+  <script src="../assets/card-art.js?v=20261017-fan-fringe5" defer></script>
 </head>
 <body>
   <button type="button" class="sidebar-toggle" id="sidebarToggle" aria-label="折叠左侧边栏" title="展开/折叠左侧边栏">×</button>
@@ -7963,6 +7967,7 @@
       }
       zoomCloseAction = typeof onClose === "function" ? onClose : null;
       imageZoomImg.parentElement.classList.toggle("rotated-card", options.rotation === -90);
+      imageZoomImg.classList.toggle("card-art-panel", options.panelSwitch === true || options.panel === true);
       imageZoomImg.decoding = "async";
       imageZoomImg.fetchPriority = "high";
       imageZoomImg.src = window.HeliosAssets.resolve(src);
@@ -8062,6 +8067,7 @@
       const isBpImage = Boolean(img.closest("#bpGrid, #bpDrawPreview"));
       const cardTokenType = zoomCardTokenTypeFromImage(img);
       openImageZoom(img.dataset.fullSrc || img.currentSrc || img.src, img.alt, null, {
+        panel: img.classList.contains("panel-image"),
         aiComboActions: hasAiCombo() && Boolean(img.closest("#aiDrawPreview")),
         rotation: Number(img.dataset.rotate || 0),
         flipContext: flipContextFromImage(img),

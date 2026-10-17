@@ -956,8 +956,8 @@ button {
   border-radius: 0;
 }
 
-.app :is(.exploration-drawn-face, .exploration-library-preview,
-  .negotiation-card-back, .titan-x-step-track,
+/* Scanned card artwork keeps its own corners from assets/card-art.css. */
+.app :is(.titan-x-step-track,
   .titan-x-step-track [data-titan-x-space], .dashboard-writer-notice) {
   border-radius: 0;
 }

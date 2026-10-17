@@ -28,6 +28,9 @@ from .mixed_media_resources import add_to_archive as add_mixed_media_to_archive
 from .mixed_media_resources import checked_bytes as mixed_media_checked_bytes
 from .mixed_media_resources import import_resources as import_mixed_media_resources
 from .mixed_media_resources import MAX_FILES as MAX_MIXED_MEDIA_FILES
+from .map_resources import collect as collect_map_files, covered_targets as covered_map_targets
+from .map_resources import add_to_archive as add_map_to_archive, validate as validate_map_files
+from .map_resources import import_resources as import_map_resources
 from .official_assets import resolve as resolve_official_asset
 from .official_resources import LIBRARY, collect, add_to_archive, checked_bytes, import_resources
 from .db import Database
@@ -61,7 +64,7 @@ MAX_PACKAGE_ASSETS = 5000
 _SHA256 = re.compile(r"[a-f0-9]{64}")
 
 
-def _complete_item_ids(db: Database) -> set[str]:
+def _complete_item_ids(db: Database, covered_maps: set[str] | None = None) -> set[str]:
     """Ids of catalog items whose required faces all have a current revision.
 
     ``faces_json`` is a JSON object of face name to project path, so its keys are
@@ -80,7 +83,7 @@ def _complete_item_ids(db: Database) -> set[str]:
             continue
         if not isinstance(faces, dict):
             continue
-        required = set(faces)
+        required = {face for face, target in faces.items() if target not in (covered_maps or set())}
         if required <= captured.get(item["id"], set()):
             complete.add(item["id"])
     return complete
@@ -118,6 +121,14 @@ def _legacy_cryptic_files(rows: list[dict], library: Path, present: set[str]) ->
     return sorted(files.items())
 
 
+def _selected_map_files(db: Database, library: Path, ato_root: Path | None, cycles: set, modules: set):
+    targets = [target for item in db.all('SELECT cycle,module,faces_json FROM catalog_items')
+               if (not cycles or item['cycle'] in cycles) and (not modules or item['module'] in modules)
+               for target in json.loads(item['faces_json']).values()]
+    files = collect_map_files(ato_root, library, targets=targets)
+    return files, covered_map_targets(files, targets)
+
+
 def export_package(
     db: Database, library: Path, destination: Path, filters: dict | None = None,
     progress: Progress | None = None, ato_root: Path | None = None,
@@ -141,7 +152,9 @@ def export_package(
     rows = [row for row in rows if (not cycles or row["cycle"] in cycles) and (not modules or row["module"] in modules)]
     legacy_cryptic_rows = rows
     rows = [row for row in rows if not is_cryptic_target(json.loads(row["faces_json"]).get(row["face"]))]
-    complete_ids = _complete_item_ids(db) if filters.get("complete_only") else None
+    map_files, covered_maps = _selected_map_files(db, library, ato_root, cycles, modules)
+    rows = [row for row in rows if json.loads(row['faces_json']).get(row['face']) not in covered_maps]
+    complete_ids = _complete_item_ids(db, covered_maps) if filters.get("complete_only") else None
     if complete_ids is not None:
         rows = [row for row in rows if row["item_id"] in complete_ids]
     items = db.all("SELECT * FROM catalog_items ORDER BY cycle,module,sort_order")
@@ -238,6 +251,7 @@ def export_package(
         if filters.get("include_mixed_media", True):
             add_mixed_media_to_archive(archive, manifest, ato_root, fallback_library=library)
         manifest["cardPreviewFiles"] = preview_entries
+        add_map_to_archive(archive, manifest, files=map_files)
         archive.writestr("manifest.json", json.dumps(manifest, ensure_ascii=False, indent=2))
     return {
         "path": str(destination),
@@ -248,6 +262,7 @@ def export_package(
         "icon_files": len(manifest.get("iconFiles", [])),
         "cryptic_files": len(manifest.get("crypticFiles", [])),
         "mixed_media_files": len(manifest.get("mixedMediaFiles", [])),
+        "map_files": len(manifest.get("mapFiles", [])),
         "bytes": destination.stat().st_size,
     }
 
@@ -385,6 +400,12 @@ def inspect_package(
                 continue
             mixed_media_files.append(resource)
         entity_summary = _inspect_story_files(archive, manifest, names, verify_hashes, library)
+        map_files = validate_map_files(archive, manifest)
+        map_summary = {'add':0, 'same':0, 'replace':0}
+        for entry in map_files:
+            local = library / 'sources/map-layers' / entry['target']
+            status = 'add' if not local.is_file() else ('same' if sha256_file(local)==entry['sha256'] else 'replace')
+            map_summary[status] += 1
         if int(manifest.get("version", 0)) >= 2 and incoming_books and not entity_summary["included"]:
             raise ValueError("新版资料包含有故事，但没有人物小传索引")
     return {
@@ -403,6 +424,8 @@ def inspect_package(
         "mixed_media_skipped": len(mixed_media_warnings),
         "mixed_media_warnings": mixed_media_warnings,
         "valid_mixed_media_files": mixed_media_files,
+        "map_files": len(map_files),
+        "map_summary": map_summary,
         "manifest": manifest,
     }
 
@@ -570,6 +593,7 @@ def import_package(
                     if progress:
                         progress(index, total, f"正在恢复第 {index}/{len(assets)} 个图片")
                 import_resources(archive, manifest, library, replace)
+                map_imported = import_map_resources(archive, manifest, library, replace)
                 bgm_imported = import_bgm_resources(archive, manifest, library, replace)
                 icon_imported = import_icon_resources(archive, manifest, library, replace)
                 cryptic_imported = import_cryptic_resources(
@@ -625,6 +649,7 @@ def import_package(
         "cryptic_skipped": inspection["cryptic_skipped"],
         "cryptic_warnings": inspection["cryptic_warnings"],
         "mixed_media_imported": mixed_media_imported,
+        "map_imported": map_imported,
         "mixed_media_skipped": inspection["mixed_media_skipped"],
         "mixed_media_warnings": inspection["mixed_media_warnings"],
     }
@@ -746,8 +771,10 @@ def export_compat(
     rows = [row for row in rows if (not cycles or row["cycle"] in cycles) and (not modules or row["module"] in modules)]
     legacy_cryptic_rows = rows
     rows = [row for row in rows if not is_cryptic_target(json.loads(row["faces_json"]).get(row["face"]))]
+    map_files, covered_maps = _selected_map_files(db, library, ato_root, cycles, modules)
+    rows = [row for row in rows if json.loads(row['faces_json']).get(row['face']) not in covered_maps]
     if filters.get("complete_only"):
-        complete_ids = _complete_item_ids(db)
+        complete_ids = _complete_item_ids(db, covered_maps)
         rows = [row for row in rows if row["item_id"] in complete_ids]
     destination.parent.mkdir(parents=True, exist_ok=True)
     written = 0
@@ -823,6 +850,8 @@ def export_compat(
                 archive, mixed_media_manifest, ato_root, fallback_library=library
             )
             written += mixed_media_written
+        map_written = add_map_to_archive(archive, {}, files=map_files)
+        written += map_written
     return {
         "path": str(destination),
         "files": written + (3 if include_stories else 0),
@@ -832,5 +861,6 @@ def export_compat(
         "icon_files": icon_written,
         "cryptic_files": cryptic_written,
         "mixed_media_files": mixed_media_written,
+        "map_files": map_written,
         "bytes": destination.stat().st_size,
     }

@@ -45,6 +45,10 @@ def copy_stream(source, destination, digest) -> None:
         destination.write(chunk)
 
 
+from app.map_resources import collect as collect_map_files, covered_targets as covered_map_targets
+from app.map_resources import add_to_archive as add_map_to_archive, copy_from_archive as copy_map_from_archive
+
+
 def update_full_pack(
     base_pack: Path, destination: Path, overlay_root: Path,
     bgm_library: Path | None = None, include_official_scans: bool = False,
@@ -66,6 +70,7 @@ def update_full_pack(
         # BGM 音频由使用者自备，随资料包的 bgmFiles 段分发，不参与固定素材包。
         if not is_bgm_target(target)
     ]
+    map_files = collect_map_files(overlay_root, bgm_library, targets=[target for _, _, target in faces])
     destination.parent.mkdir(parents=True, exist_ok=True)
     partial = destination.with_suffix(destination.suffix + ".partial")
     partial.unlink(missing_ok=True)
@@ -85,6 +90,9 @@ def update_full_pack(
                 raise ValueError("输入文件不是有效的 ATO 素材包")
             if int(source_manifest.get("version", 0)) > PACKAGE_VERSION:
                 raise ValueError("输入素材包版本高于当前工具支持的版本")
+            map_coverage = map_files or [(entry['target'], Path()) for entry in source_manifest.get('mapFiles', [])]
+            covered_maps = covered_map_targets(map_coverage, [target for _, _, target in faces])
+            faces = [(item, face, target) for item, face, target in faces if target not in covered_maps]
 
             old_assets = {
                 (asset["itemId"], asset["face"]): asset
@@ -217,6 +225,10 @@ def update_full_pack(
                             "本包不含 mixedMediaFiles 段；需要时先用素材库导入带该段的 .atopack 再重跑。",
                             flush=True,
                         )
+                if map_files:
+                    add_map_to_archive(output_zip, manifest, files=map_files)
+                else:
+                    copy_map_from_archive(source_zip, output_zip, source_manifest, manifest)
                 manifest.setdefault("build", {})["audioIncluded"] = bool(bgm_count)
                 manifest["build"]["iconsIncluded"] = bool(icon_count)
                 manifest["build"]["crypticIncluded"] = bool(cryptic_count)

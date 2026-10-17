@@ -101,6 +101,7 @@ def check(path: Path, crc: bool, hash_check: bool) -> bool:
         icons = manifest.get("iconFiles") or []
         cryptic = manifest.get("crypticFiles") or []
         mixed_media = manifest.get("mixedMediaFiles") or []
+        map_files = manifest.get("mapFiles") or []
         print(f"  条目/图片 : {len(manifest.get('items') or [])} / {len(assets)}")
         print(f"  故事      : {len(books)} 本 / {sum(book.get('entryCount', 0) for book in books)} 段")
         story_files = manifest.get("storyFiles") or []
@@ -109,6 +110,7 @@ def check(path: Path, crc: bool, hash_check: bool) -> bool:
         print(f"  背景音乐  : {len(bgm)} 首")
         print(f"  界面图标  : {len(icons)} 个字形")
         print(f"  密语字形  : {len(cryptic)} 张（巴别语／塞壬语）")
+        print(f"  地图图层  : {len(map_files)} 个（底图／图标蒙版／数字蒙版）")
         if mixed_media:
             crops = sum(1 for item in mixed_media if str(item.get("target", "")).startswith("story/assets/mixed-media/images/"))
             print(f"  混合媒体  : {len(mixed_media)} 个文件（私有映射表 + {crops} 张书籍裁图）")
@@ -141,7 +143,7 @@ def check(path: Path, crc: bool, hash_check: bool) -> bool:
             else:
                 print(f"  ✓ {len(assets)} 张图的 SHA-256 全部与清单一致")
             # 附加素材段（密语字形／混合媒体等）同样带 sha256，一并核对：只在清单声明了才查。
-            for label, entries in (("密语字形", cryptic), ("混合媒体", mixed_media)):
+            for label, entries in (("密语字形", cryptic), ("混合媒体", mixed_media), ("地图图层", map_files)):
                 declared = [item for item in entries if item.get("member") and item.get("sha256")]
                 if not declared:
                     continue

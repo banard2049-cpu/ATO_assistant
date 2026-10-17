@@ -1,0 +1,2041 @@
+{
+  "reviewDate": "2026-10-16",
+  "sources": {
+    "coreRulesPdf": {
+      "file": "A3 ATO中文规则书  V1.4.pdf",
+      "pages": [
+        15,
+        82
+      ]
+    },
+    "c1c2c3": {
+      "file": "A5 循环I~Ⅲ 特别规则V1.22.pdf",
+      "pages": [
+        4,
+        9,
+        19,
+        21
+      ]
+    },
+    "c4": {
+      "file": "A6 循环Ⅳ 特别规则V0.99.pdf",
+      "pages": [
+        11,
+        12
+      ]
+    },
+    "c5": {
+      "file": "A7 循环V 特别规则V0.96.pdf",
+      "pages": [
+        11,
+        12,
+        13
+      ]
+    }
+  },
+  "alternateTileIds": [
+    "009",
+    "013",
+    "014",
+    "018",
+    "022",
+    "023",
+    "035"
+  ],
+  "notes": [
+    "Lists record printed non-corner symbols, independently of the progress/calamity/faction audit.",
+    "Unknown icons are named by shape only and have no inferred adventure/resource effect.",
+    "C5 A is underwater; B is the surface. Underwater cities retain city as a compatible superclass.",
+    "Only standalone river badges belong to the current tile. Cardinal exit icons describe the indicated neighboring tile or the travel connection and are stored as neighborHints, not current-tile tags."
+  ],
+  "tagGroups": {
+    "c1": {
+      "central_adventure": [
+        "004",
+        "005",
+        "007",
+        "008",
+        "010",
+        "011",
+        "012",
+        "015",
+        "020",
+        "024",
+        "026",
+        "029",
+        "035",
+        "036",
+        "038",
+        "041",
+        "044",
+        "047",
+        "049",
+        "050",
+        "054",
+        "057",
+        "058",
+        "060",
+        "061",
+        "063",
+        "064",
+        "066",
+        "070",
+        "073",
+        "075",
+        "076",
+        "078",
+        "T01",
+        "T02",
+        "T05",
+        "T06"
+      ],
+      "rr_adventure": [
+        "001",
+        "018",
+        "037",
+        "039",
+        "043",
+        "051",
+        "055",
+        "074"
+      ],
+      "city": [
+        "003",
+        "017",
+        "021",
+        "024",
+        "027",
+        "033",
+        "048",
+        "062",
+        "064",
+        "071",
+        "080",
+        "T04"
+      ],
+      "river": [
+        "020",
+        "023",
+        "024",
+        "025",
+        "056",
+        "057",
+        "058",
+        "061",
+        "062",
+        "063",
+        "067"
+      ],
+      "wild_titan": [
+        "002",
+        "004",
+        "010",
+        "016",
+        "019",
+        "023",
+        "030",
+        "034",
+        "036",
+        "042",
+        "045",
+        "054",
+        "061",
+        "063",
+        "065",
+        "069",
+        "077",
+        "079",
+        "T03"
+      ],
+      "hourglass_icon": [
+        "007",
+        "036",
+        "041",
+        "060",
+        "072"
+      ],
+      "staff_icon": [
+        "023",
+        "045",
+        "067"
+      ]
+    },
+    "c2": {
+      "central_adventure": [
+        "005",
+        "007",
+        "009",
+        "012",
+        "014",
+        "017",
+        "019",
+        "020",
+        "022",
+        "024",
+        "027",
+        "031",
+        "033",
+        "035",
+        "037",
+        "038",
+        "039",
+        "042",
+        "043",
+        "046",
+        "048",
+        "051",
+        "054",
+        "060",
+        "065",
+        "066",
+        "067",
+        "069",
+        "071",
+        "075",
+        "079"
+      ],
+      "rr_adventure": [
+        "002",
+        "006",
+        "008",
+        "023",
+        "034",
+        "044",
+        "057",
+        "063",
+        "083"
+      ],
+      "city": [
+        "001",
+        "007",
+        "021",
+        "031",
+        "036",
+        "037",
+        "043",
+        "056",
+        "067",
+        "081",
+        "084"
+      ],
+      "wild_titan": [
+        "001",
+        "005",
+        "013",
+        "017",
+        "019",
+        "027",
+        "028",
+        "030",
+        "036",
+        "037",
+        "038",
+        "040",
+        "049",
+        "050",
+        "053",
+        "059",
+        "062",
+        "064",
+        "068",
+        "072",
+        "074",
+        "076"
+      ],
+      "resistance_hideout": [
+        "001",
+        "007",
+        "021",
+        "031",
+        "036",
+        "037",
+        "043",
+        "056",
+        "067",
+        "081",
+        "084"
+      ],
+      "spartan_stronghold": [
+        "011",
+        "018",
+        "020",
+        "025",
+        "033",
+        "046",
+        "048",
+        "058",
+        "061"
+      ],
+      "restricted": [
+        "021",
+        "041",
+        "045",
+        "052",
+        "055",
+        "061"
+      ]
+    },
+    "c3": {
+      "central_adventure": [
+        "001",
+        "006",
+        "008",
+        "012",
+        "015",
+        "017",
+        "020",
+        "027",
+        "031",
+        "032",
+        "037",
+        "039",
+        "040",
+        "047",
+        "049",
+        "053",
+        "055",
+        "056",
+        "060",
+        "061",
+        "064",
+        "066",
+        "072",
+        "076",
+        "078",
+        "079",
+        "082",
+        "088",
+        "090"
+      ],
+      "rr_adventure": [
+        "002",
+        "025",
+        "028",
+        "034",
+        "035",
+        "059",
+        "063",
+        "075",
+        "091"
+      ],
+      "city": [
+        "004",
+        "007",
+        "019",
+        "030",
+        "036",
+        "042",
+        "048",
+        "054",
+        "064",
+        "073",
+        "086",
+        "087"
+      ],
+      "wild_titan": [
+        "001",
+        "003",
+        "016",
+        "017",
+        "019",
+        "021",
+        "029",
+        "031",
+        "032",
+        "034",
+        "041",
+        "044",
+        "051",
+        "059",
+        "060",
+        "061",
+        "068",
+        "070",
+        "076",
+        "082",
+        "084",
+        "086"
+      ],
+      "frozen_time": [
+        "007",
+        "016",
+        "018",
+        "020",
+        "025",
+        "033",
+        "044",
+        "047",
+        "048",
+        "055",
+        "060",
+        "063",
+        "066",
+        "071",
+        "079",
+        "080",
+        "085",
+        "087"
+      ],
+      "time_wound": [
+        "012",
+        "021",
+        "023",
+        "034",
+        "055",
+        "056",
+        "060",
+        "068",
+        "073",
+        "085",
+        "087",
+        "333"
+      ],
+      "time_portal": [
+        "003",
+        "010",
+        "027",
+        "036",
+        "038",
+        "042",
+        "043",
+        "056",
+        "057",
+        "058",
+        "069",
+        "072",
+        "083",
+        "090"
+      ],
+      "daedalus_lighthouse": [
+        "005",
+        "013",
+        "023",
+        "026",
+        "041",
+        "051",
+        "052",
+        "057",
+        "065",
+        "075",
+        "083",
+        "091"
+      ],
+      "wheel_icon": [
+        "062",
+        "071",
+        "079",
+        "089"
+      ],
+      "restricted": [
+        "003",
+        "010",
+        "012",
+        "021",
+        "023",
+        "027",
+        "034",
+        "036",
+        "038",
+        "042",
+        "043",
+        "055",
+        "056",
+        "057",
+        "058",
+        "060",
+        "068",
+        "069",
+        "072",
+        "073",
+        "083",
+        "085",
+        "087",
+        "090"
+      ]
+    },
+    "c4": {
+      "central_adventure": [
+        "001",
+        "004",
+        "007",
+        "012",
+        "016",
+        "020",
+        "022",
+        "024",
+        "027",
+        "028",
+        "030",
+        "032",
+        "034",
+        "039",
+        "041",
+        "043",
+        "045",
+        "046",
+        "047",
+        "049",
+        "051",
+        "053",
+        "057",
+        "060",
+        "063",
+        "067",
+        "068",
+        "071",
+        "073",
+        "075",
+        "079",
+        "081"
+      ],
+      "rr_adventure": [
+        "002",
+        "014",
+        "018",
+        "042",
+        "054",
+        "064",
+        "070",
+        "077"
+      ],
+      "city": [
+        "004",
+        "008",
+        "024",
+        "028",
+        "036",
+        "040",
+        "042",
+        "048",
+        "050",
+        "062",
+        "073",
+        "076"
+      ],
+      "oasis": [
+        "006",
+        "013",
+        "019",
+        "023",
+        "059",
+        "061",
+        "064",
+        "072"
+      ],
+      "wild_titan": [
+        "001",
+        "003",
+        "006",
+        "008",
+        "013",
+        "019",
+        "023",
+        "026",
+        "034",
+        "036",
+        "038",
+        "040",
+        "055",
+        "059",
+        "061",
+        "065",
+        "067",
+        "072",
+        "078"
+      ],
+      "smoking_bowl_icon": [
+        "003",
+        "027",
+        "055",
+        "079"
+      ]
+    },
+    "c5-A": {
+      "rr_adventure": [
+        "001",
+        "020",
+        "027",
+        "036",
+        "048",
+        "054",
+        "063",
+        "080"
+      ],
+      "central_adventure": [
+        "002",
+        "005",
+        "007",
+        "010",
+        "011",
+        "014",
+        "018",
+        "023",
+        "025",
+        "029",
+        "032",
+        "034",
+        "037",
+        "038",
+        "040",
+        "041",
+        "043",
+        "046",
+        "049",
+        "052",
+        "055",
+        "057",
+        "061",
+        "066",
+        "068",
+        "070",
+        "072",
+        "074",
+        "076",
+        "079"
+      ],
+      "wild_titan": [
+        "003",
+        "006",
+        "009",
+        "012",
+        "017",
+        "019",
+        "021",
+        "024",
+        "031",
+        "039",
+        "044",
+        "045",
+        "051",
+        "058",
+        "060",
+        "062",
+        "064",
+        "067",
+        "073",
+        "077"
+      ],
+      "underwater_city": [
+        "003",
+        "009",
+        "021",
+        "026",
+        "059",
+        "062",
+        "076"
+      ],
+      "city": [
+        "003",
+        "009",
+        "021",
+        "026",
+        "059",
+        "062",
+        "076"
+      ],
+      "silver_ruin": [
+        "004",
+        "019",
+        "034",
+        "047",
+        "051",
+        "067"
+      ]
+    },
+    "c5-B": {
+      "rr_adventure": [
+        "001",
+        "020",
+        "027",
+        "036",
+        "048",
+        "054",
+        "063",
+        "080"
+      ],
+      "central_adventure": [
+        "002",
+        "005",
+        "007",
+        "010",
+        "011",
+        "014",
+        "018",
+        "023",
+        "025",
+        "029",
+        "032",
+        "034",
+        "037",
+        "038",
+        "040",
+        "041",
+        "043",
+        "046",
+        "049",
+        "052",
+        "055",
+        "057",
+        "061",
+        "066",
+        "068",
+        "070",
+        "072",
+        "074",
+        "076",
+        "079"
+      ],
+      "wild_titan": [
+        "003",
+        "006",
+        "009",
+        "012",
+        "017",
+        "019",
+        "021",
+        "024",
+        "031",
+        "039",
+        "044",
+        "045",
+        "051",
+        "058",
+        "060",
+        "062",
+        "064",
+        "067",
+        "073",
+        "077"
+      ],
+      "silver_ruin": [
+        "004",
+        "019",
+        "022",
+        "034",
+        "047",
+        "051",
+        "067"
+      ],
+      "city": [
+        "007",
+        "020",
+        "023",
+        "033",
+        "037",
+        "039",
+        "051",
+        "064",
+        "066",
+        "079"
+      ]
+    },
+    "c1-alt": {
+      "central_adventure": [
+        "035"
+      ],
+      "rr_adventure": [
+        "018"
+      ],
+      "river": [
+        "023"
+      ],
+      "wild_titan": [
+        "023"
+      ],
+      "staff_icon": [
+        "023"
+      ]
+    }
+  },
+  "neighborHints": {
+    "c1:019": [
+      {
+        "direction": "down",
+        "targetTileId": "024",
+        "targetTileIds": [
+          "024"
+        ],
+        "region": null,
+        "tags": [
+          "river",
+          "restricted"
+        ]
+      }
+    ],
+    "c1:020": [
+      {
+        "direction": "right",
+        "targetTileId": "056",
+        "targetTileIds": [
+          "056"
+        ],
+        "region": null,
+        "tags": [
+          "river"
+        ]
+      },
+      {
+        "direction": "down",
+        "targetTileId": "025",
+        "targetTileIds": [
+          "025"
+        ],
+        "region": null,
+        "tags": [
+          "river"
+        ]
+      }
+    ],
+    "c1:022:alt": [
+      {
+        "direction": "right",
+        "targetTileId": "023",
+        "targetTileIds": [
+          "023"
+        ],
+        "region": null,
+        "tags": [
+          "river",
+          "restricted"
+        ]
+      }
+    ],
+    "c1:023": [
+      {
+        "direction": "right",
+        "targetTileId": "024",
+        "targetTileIds": [
+          "024"
+        ],
+        "region": null,
+        "tags": [
+          "river"
+        ]
+      }
+    ],
+    "c1:023:alt": [
+      {
+        "direction": "right",
+        "targetTileId": "024",
+        "targetTileIds": [
+          "024"
+        ],
+        "region": null,
+        "tags": [
+          "river"
+        ]
+      }
+    ],
+    "c1:024": [
+      {
+        "direction": "left",
+        "targetTileId": "023",
+        "targetTileIds": [
+          "023"
+        ],
+        "region": null,
+        "tags": [
+          "river"
+        ]
+      },
+      {
+        "direction": "right",
+        "targetTileId": "025",
+        "targetTileIds": [
+          "025"
+        ],
+        "region": null,
+        "tags": [
+          "river"
+        ]
+      }
+    ],
+    "c1:025": [
+      {
+        "direction": "left",
+        "targetTileId": "024",
+        "targetTileIds": [
+          "024"
+        ],
+        "region": null,
+        "tags": [
+          "river"
+        ]
+      },
+      {
+        "direction": "up",
+        "targetTileId": "020",
+        "targetTileIds": [
+          "020"
+        ],
+        "region": null,
+        "tags": [
+          "river"
+        ]
+      }
+    ],
+    "c1:030": [
+      {
+        "direction": "up",
+        "targetTileId": "025",
+        "targetTileIds": [
+          "025"
+        ],
+        "region": null,
+        "tags": [
+          "river",
+          "restricted"
+        ]
+      }
+    ],
+    "c1:053": [
+      {
+        "direction": "down",
+        "targetTileId": "058",
+        "targetTileIds": [
+          "058"
+        ],
+        "region": null,
+        "tags": [
+          "river",
+          "restricted"
+        ]
+      }
+    ],
+    "c1:056": [
+      {
+        "direction": "down",
+        "targetTileId": "061",
+        "targetTileIds": [
+          "061"
+        ],
+        "region": null,
+        "tags": [
+          "river"
+        ]
+      },
+      {
+        "direction": "left",
+        "targetTileId": "020",
+        "targetTileIds": [
+          "020"
+        ],
+        "region": null,
+        "tags": [
+          "river"
+        ]
+      }
+    ],
+    "c1:057": [
+      {
+        "direction": "down",
+        "targetTileId": "062",
+        "targetTileIds": [
+          "062"
+        ],
+        "region": null,
+        "tags": [
+          "river"
+        ]
+      },
+      {
+        "direction": "right",
+        "targetTileId": "058",
+        "targetTileIds": [
+          "058"
+        ],
+        "region": null,
+        "tags": [
+          "river"
+        ]
+      }
+    ],
+    "c1:058": [
+      {
+        "direction": "left",
+        "targetTileId": "057",
+        "targetTileIds": [
+          "057"
+        ],
+        "region": null,
+        "tags": [
+          "river"
+        ]
+      }
+    ],
+    "c1:061": [
+      {
+        "direction": "up",
+        "targetTileId": "056",
+        "targetTileIds": [
+          "056"
+        ],
+        "region": null,
+        "tags": [
+          "river"
+        ]
+      },
+      {
+        "direction": "right",
+        "targetTileId": "062",
+        "targetTileIds": [
+          "062"
+        ],
+        "region": null,
+        "tags": [
+          "river"
+        ]
+      }
+    ],
+    "c1:062": [
+      {
+        "direction": "up",
+        "targetTileId": "057",
+        "targetTileIds": [
+          "057"
+        ],
+        "region": null,
+        "tags": [
+          "river"
+        ]
+      },
+      {
+        "direction": "down",
+        "targetTileId": "067",
+        "targetTileIds": [
+          "067"
+        ],
+        "region": null,
+        "tags": [
+          "river"
+        ]
+      },
+      {
+        "direction": "right",
+        "targetTileId": "063",
+        "targetTileIds": [
+          "063"
+        ],
+        "region": null,
+        "tags": [
+          "river"
+        ]
+      },
+      {
+        "direction": "left",
+        "targetTileId": "061",
+        "targetTileIds": [
+          "061"
+        ],
+        "region": null,
+        "tags": [
+          "river"
+        ]
+      }
+    ],
+    "c1:063": [
+      {
+        "direction": "left",
+        "targetTileId": "062",
+        "targetTileIds": [
+          "062"
+        ],
+        "region": null,
+        "tags": [
+          "river"
+        ]
+      }
+    ],
+    "c1:067": [
+      {
+        "direction": "up",
+        "targetTileId": "062",
+        "targetTileIds": [
+          "062"
+        ],
+        "region": null,
+        "tags": [
+          "river"
+        ]
+      }
+    ],
+    "c1:068": [
+      {
+        "direction": "up",
+        "targetTileId": "063",
+        "targetTileIds": [
+          "063"
+        ],
+        "region": null,
+        "tags": [
+          "river",
+          "restricted"
+        ]
+      }
+    ],
+    "c2:007": [
+      {
+        "direction": "right",
+        "targetTileId": "008",
+        "targetTileIds": [
+          "008"
+        ],
+        "region": null,
+        "tags": [
+          "restricted"
+        ]
+      }
+    ],
+    "c2:008": [
+      {
+        "direction": "left",
+        "targetTileId": "007",
+        "targetTileIds": [
+          "007"
+        ],
+        "region": null,
+        "tags": [
+          "restricted"
+        ]
+      }
+    ],
+    "c2:011": [
+      {
+        "direction": "down",
+        "targetTileId": "018",
+        "targetTileIds": [
+          "018"
+        ],
+        "region": null,
+        "tags": [
+          "restricted"
+        ]
+      }
+    ],
+    "c2:013": [
+      {
+        "direction": "left",
+        "targetTileId": "012",
+        "targetTileIds": [
+          "012"
+        ],
+        "region": null,
+        "tags": [
+          "restricted"
+        ]
+      }
+    ],
+    "c2:017": [
+      {
+        "direction": "right",
+        "targetTileId": "018",
+        "targetTileIds": [
+          "018"
+        ],
+        "region": null,
+        "tags": [
+          "restricted"
+        ]
+      }
+    ],
+    "c2:019": [
+      {
+        "direction": "left",
+        "targetTileId": "018",
+        "targetTileIds": [
+          "018"
+        ],
+        "region": null,
+        "tags": [
+          "restricted"
+        ]
+      }
+    ],
+    "c2:021": [
+      {
+        "direction": "up",
+        "targetTileId": "014",
+        "targetTileIds": [
+          "014"
+        ],
+        "region": "α",
+        "tags": [
+          "restricted"
+        ]
+      }
+    ],
+    "c2:023": [
+      {
+        "direction": "up",
+        "targetTileId": "016",
+        "targetTileIds": [
+          "016"
+        ],
+        "region": null,
+        "tags": [
+          "restricted"
+        ]
+      },
+      {
+        "direction": "down",
+        "targetTileId": "030",
+        "targetTileIds": [
+          "030"
+        ],
+        "region": null,
+        "tags": [
+          "restricted"
+        ]
+      }
+    ],
+    "c2:024": [
+      {
+        "direction": "up",
+        "targetTileId": "017",
+        "targetTileIds": [
+          "017"
+        ],
+        "region": null,
+        "tags": [
+          "restricted"
+        ]
+      }
+    ],
+    "c2:027": [
+      {
+        "direction": "up",
+        "targetTileId": "020",
+        "targetTileIds": [
+          "020"
+        ],
+        "region": null,
+        "tags": [
+          "restricted"
+        ]
+      }
+    ],
+    "c2:028": [
+      {
+        "direction": "up",
+        "targetTileId": "021",
+        "targetTileIds": [
+          "021"
+        ],
+        "region": null,
+        "tags": [
+          "restricted"
+        ]
+      }
+    ],
+    "c2:030": [
+      {
+        "direction": "down",
+        "targetTileId": "037",
+        "targetTileIds": [
+          "037"
+        ],
+        "region": null,
+        "tags": [
+          "restricted"
+        ]
+      }
+    ],
+    "c2:032": [
+      {
+        "direction": "up",
+        "targetTileId": "025",
+        "targetTileIds": [
+          "025"
+        ],
+        "region": null,
+        "tags": [
+          "restricted"
+        ]
+      }
+    ],
+    "c2:034": [
+      {
+        "direction": "left",
+        "targetTileId": "033",
+        "targetTileIds": [
+          "033"
+        ],
+        "region": null,
+        "tags": [
+          "restricted"
+        ]
+      }
+    ],
+    "c2:050": [
+      {
+        "direction": "down",
+        "targetTileId": "057",
+        "targetTileIds": [
+          "057"
+        ],
+        "region": null,
+        "tags": [
+          "restricted"
+        ]
+      }
+    ],
+    "c2:051": [
+      {
+        "direction": "left",
+        "targetTileId": "050",
+        "targetTileIds": [
+          "050"
+        ],
+        "region": null,
+        "tags": [
+          "restricted"
+        ]
+      },
+      {
+        "direction": "up",
+        "targetTileId": "044",
+        "targetTileIds": [
+          "044"
+        ],
+        "region": null,
+        "tags": [
+          "restricted"
+        ]
+      }
+    ],
+    "c2:052": [
+      {
+        "direction": "up",
+        "targetTileId": "045",
+        "targetTileIds": [
+          "045"
+        ],
+        "region": "α",
+        "tags": [
+          "restricted"
+        ]
+      }
+    ],
+    "c2:054": [
+      {
+        "direction": "up",
+        "targetTileId": "047",
+        "targetTileIds": [
+          "047"
+        ],
+        "region": "α",
+        "tags": [
+          "restricted"
+        ]
+      }
+    ],
+    "c2:055": [
+      {
+        "direction": "up",
+        "targetTileId": "048",
+        "targetTileIds": [
+          "048"
+        ],
+        "region": "β",
+        "tags": [
+          "restricted"
+        ]
+      },
+      {
+        "direction": "up",
+        "targetTileId": "048",
+        "targetTileIds": [
+          "048"
+        ],
+        "region": "α",
+        "tags": [
+          "restricted"
+        ]
+      }
+    ],
+    "c2:057": [
+      {
+        "direction": "up",
+        "targetTileId": "050",
+        "targetTileIds": [
+          "050"
+        ],
+        "region": null,
+        "tags": [
+          "restricted"
+        ]
+      }
+    ],
+    "c2:071": [
+      {
+        "direction": "up",
+        "targetTileId": "064",
+        "targetTileIds": [
+          "064"
+        ],
+        "region": null,
+        "tags": [
+          "restricted"
+        ]
+      }
+    ],
+    "c5:027:A": [
+      {
+        "direction": "right",
+        "targetTileId": "028",
+        "targetTileIds": [
+          "028"
+        ],
+        "region": "α",
+        "tags": [
+          "restricted",
+          "helmet_icon"
+        ]
+      }
+    ],
+    "c5:030:A": [
+      {
+        "direction": "down",
+        "targetTileId": "040",
+        "targetTileIds": [
+          "040"
+        ],
+        "region": null,
+        "tags": [
+          "restricted",
+          "helmet_icon"
+        ]
+      }
+    ],
+    "c5:038:A": [
+      {
+        "direction": "up",
+        "targetTileId": "028",
+        "targetTileIds": [
+          "028"
+        ],
+        "region": null,
+        "tags": [
+          "restricted",
+          "helmet_icon"
+        ]
+      }
+    ],
+    "c5:044:A": [
+      {
+        "direction": "down",
+        "targetTileId": "054",
+        "targetTileIds": [
+          "054"
+        ],
+        "region": null,
+        "tags": [
+          "restricted",
+          "helmet_icon"
+        ]
+      }
+    ],
+    "c5:050:A": [
+      {
+        "direction": "up",
+        "targetTileId": "040",
+        "targetTileIds": [
+          "040"
+        ],
+        "region": null,
+        "tags": [
+          "restricted",
+          "helmet_icon"
+        ]
+      }
+    ],
+    "c5:052:A": [
+      {
+        "direction": "down",
+        "targetTileId": "062",
+        "targetTileIds": [
+          "062"
+        ],
+        "region": null,
+        "tags": [
+          "restricted",
+          "helmet_icon"
+        ]
+      }
+    ],
+    "c5:054:A": [
+      {
+        "direction": "down",
+        "targetTileId": "064",
+        "targetTileIds": [
+          "064"
+        ],
+        "region": null,
+        "tags": [
+          "helmet_icon"
+        ]
+      }
+    ],
+    "c5:055:A": [
+      {
+        "direction": "left",
+        "targetTileId": "054",
+        "targetTileIds": [
+          "054"
+        ],
+        "region": null,
+        "tags": [
+          "restricted",
+          "helmet_icon"
+        ]
+      }
+    ],
+    "c5:062:A": [
+      {
+        "direction": "up",
+        "targetTileId": "052",
+        "targetTileIds": [
+          "052"
+        ],
+        "region": null,
+        "tags": [
+          "restricted",
+          "helmet_icon"
+        ]
+      },
+      {
+        "direction": "right",
+        "targetTileId": "063",
+        "targetTileIds": [
+          "063"
+        ],
+        "region": null,
+        "tags": [
+          "restricted",
+          "helmet_icon"
+        ]
+      }
+    ],
+    "c5:063:A": [
+      {
+        "direction": "right",
+        "targetTileId": "064",
+        "targetTileIds": [
+          "064"
+        ],
+        "region": "α",
+        "tags": [
+          "helmet_icon"
+        ]
+      },
+      {
+        "direction": "left",
+        "targetTileId": "062",
+        "targetTileIds": [
+          "062"
+        ],
+        "region": "α",
+        "tags": [
+          "helmet_icon"
+        ]
+      }
+    ],
+    "c5:064:A": [
+      {
+        "direction": "up",
+        "targetTileId": "054",
+        "targetTileIds": [
+          "054"
+        ],
+        "region": "α",
+        "tags": [
+          "helmet_icon"
+        ]
+      },
+      {
+        "direction": "left",
+        "targetTileId": "063",
+        "targetTileIds": [
+          "063"
+        ],
+        "region": "α",
+        "tags": [
+          "helmet_icon"
+        ]
+      }
+    ]
+  },
+  "localRoutes": {
+    "c2:021": [
+      {
+        "direction": "down",
+        "targetTileId": "021",
+        "targetTileIds": [
+          "021"
+        ],
+        "region": "α→β",
+        "tags": [
+          "restricted"
+        ]
+      },
+      {
+        "direction": "up",
+        "targetTileId": "021",
+        "targetTileIds": [
+          "021"
+        ],
+        "region": "β→α",
+        "tags": [
+          "restricted"
+        ]
+      }
+    ],
+    "c2:041": [
+      {
+        "direction": "down",
+        "targetTileId": "041",
+        "targetTileIds": [
+          "041"
+        ],
+        "region": "α→β",
+        "tags": [
+          "restricted"
+        ]
+      },
+      {
+        "direction": "up",
+        "targetTileId": "041",
+        "targetTileIds": [
+          "041"
+        ],
+        "region": "β→α",
+        "tags": [
+          "restricted"
+        ]
+      }
+    ],
+    "c2:045": [
+      {
+        "direction": "up",
+        "targetTileId": "045",
+        "targetTileIds": [
+          "045"
+        ],
+        "region": "α→β",
+        "tags": [
+          "restricted"
+        ]
+      }
+    ],
+    "c2:052": [
+      {
+        "direction": "down",
+        "targetTileId": "052",
+        "targetTileIds": [
+          "052"
+        ],
+        "region": "α→β",
+        "tags": [
+          "restricted"
+        ]
+      },
+      {
+        "direction": "up",
+        "targetTileId": "052",
+        "targetTileIds": [
+          "052"
+        ],
+        "region": "β→α",
+        "tags": [
+          "restricted"
+        ]
+      }
+    ],
+    "c2:055": [
+      {
+        "direction": "left",
+        "targetTileId": "055",
+        "targetTileIds": [
+          "055"
+        ],
+        "region": "β→α",
+        "tags": [
+          "restricted"
+        ]
+      },
+      {
+        "direction": "right",
+        "targetTileId": "055",
+        "targetTileIds": [
+          "055"
+        ],
+        "region": "α→β",
+        "tags": [
+          "restricted"
+        ]
+      }
+    ],
+    "c2:061": [
+      {
+        "direction": "up",
+        "targetTileId": "061",
+        "targetTileIds": [
+          "061"
+        ],
+        "region": "β→α",
+        "tags": [
+          "restricted"
+        ]
+      }
+    ],
+    "c3:003": [
+      {
+        "direction": "special",
+        "targetTileId": "038",
+        "targetTileIds": [
+          "038"
+        ],
+        "region": "本板块特殊航路",
+        "tags": [
+          "restricted",
+          "time_portal"
+        ]
+      }
+    ],
+    "c3:010": [
+      {
+        "direction": "special",
+        "targetTileId": "043",
+        "targetTileIds": [
+          "043"
+        ],
+        "region": "本板块特殊航路",
+        "tags": [
+          "restricted",
+          "time_portal"
+        ]
+      }
+    ],
+    "c3:012": [
+      {
+        "direction": "special",
+        "targetTileId": "021,023",
+        "targetTileIds": [
+          "021",
+          "023"
+        ],
+        "region": "本板块特殊航路",
+        "tags": [
+          "restricted",
+          "time_wound"
+        ]
+      }
+    ],
+    "c3:021": [
+      {
+        "direction": "special",
+        "targetTileId": "012",
+        "targetTileIds": [
+          "012"
+        ],
+        "region": "本板块特殊航路",
+        "tags": [
+          "restricted",
+          "time_wound"
+        ]
+      }
+    ],
+    "c3:023": [
+      {
+        "direction": "special",
+        "targetTileId": "012",
+        "targetTileIds": [
+          "012"
+        ],
+        "region": "本板块特殊航路",
+        "tags": [
+          "restricted",
+          "time_wound"
+        ]
+      }
+    ],
+    "c3:027": [
+      {
+        "direction": "special",
+        "targetTileId": "057",
+        "targetTileIds": [
+          "057"
+        ],
+        "region": "本板块特殊航路",
+        "tags": [
+          "restricted",
+          "time_portal"
+        ]
+      }
+    ],
+    "c3:034": [
+      {
+        "direction": "special",
+        "targetTileId": "055",
+        "targetTileIds": [
+          "055"
+        ],
+        "region": "本板块特殊航路",
+        "tags": [
+          "restricted",
+          "time_wound"
+        ]
+      }
+    ],
+    "c3:036": [
+      {
+        "direction": "special",
+        "targetTileId": "069",
+        "targetTileIds": [
+          "069"
+        ],
+        "region": "本板块特殊航路",
+        "tags": [
+          "restricted",
+          "time_portal"
+        ]
+      }
+    ],
+    "c3:038": [
+      {
+        "direction": "special",
+        "targetTileId": "003",
+        "targetTileIds": [
+          "003"
+        ],
+        "region": "本板块特殊航路",
+        "tags": [
+          "restricted",
+          "time_portal"
+        ]
+      }
+    ],
+    "c3:042": [
+      {
+        "direction": "special",
+        "targetTileId": "072",
+        "targetTileIds": [
+          "072"
+        ],
+        "region": "本板块特殊航路",
+        "tags": [
+          "restricted",
+          "time_portal"
+        ]
+      }
+    ],
+    "c3:043": [
+      {
+        "direction": "special",
+        "targetTileId": "010",
+        "targetTileIds": [
+          "010"
+        ],
+        "region": "本板块特殊航路",
+        "tags": [
+          "restricted",
+          "time_portal"
+        ]
+      }
+    ],
+    "c3:055": [
+      {
+        "direction": "special",
+        "targetTileId": "034",
+        "targetTileIds": [
+          "034"
+        ],
+        "region": "本板块特殊航路",
+        "tags": [
+          "restricted",
+          "time_wound"
+        ]
+      }
+    ],
+    "c3:056": [
+      {
+        "direction": "special",
+        "targetTileId": "060",
+        "targetTileIds": [
+          "060"
+        ],
+        "region": "本板块特殊航路",
+        "tags": [
+          "restricted",
+          "time_wound"
+        ]
+      },
+      {
+        "direction": "special",
+        "targetTileId": "083",
+        "targetTileIds": [
+          "083"
+        ],
+        "region": "本板块特殊航路",
+        "tags": [
+          "restricted",
+          "time_portal"
+        ]
+      }
+    ],
+    "c3:057": [
+      {
+        "direction": "special",
+        "targetTileId": "027",
+        "targetTileIds": [
+          "027"
+        ],
+        "region": "本板块特殊航路",
+        "tags": [
+          "restricted",
+          "time_portal"
+        ]
+      }
+    ],
+    "c3:058": [
+      {
+        "direction": "special",
+        "targetTileId": "090",
+        "targetTileIds": [
+          "090"
+        ],
+        "region": "本板块特殊航路",
+        "tags": [
+          "restricted",
+          "time_portal"
+        ]
+      }
+    ],
+    "c3:060": [
+      {
+        "direction": "special",
+        "targetTileId": "056",
+        "targetTileIds": [
+          "056"
+        ],
+        "region": "本板块特殊航路",
+        "tags": [
+          "restricted",
+          "time_wound"
+        ]
+      }
+    ],
+    "c3:068": [
+      {
+        "direction": "special",
+        "targetTileId": "087",
+        "targetTileIds": [
+          "087"
+        ],
+        "region": "本板块特殊航路",
+        "tags": [
+          "restricted",
+          "time_wound"
+        ]
+      }
+    ],
+    "c3:069": [
+      {
+        "direction": "special",
+        "targetTileId": "036",
+        "targetTileIds": [
+          "036"
+        ],
+        "region": "本板块特殊航路",
+        "tags": [
+          "restricted",
+          "time_portal"
+        ]
+      }
+    ],
+    "c3:072": [
+      {
+        "direction": "special",
+        "targetTileId": "042",
+        "targetTileIds": [
+          "042"
+        ],
+        "region": "本板块特殊航路",
+        "tags": [
+          "restricted",
+          "time_portal"
+        ]
+      }
+    ],
+    "c3:073": [
+      {
+        "direction": "special",
+        "targetTileId": "085",
+        "targetTileIds": [
+          "085"
+        ],
+        "region": "本板块特殊航路",
+        "tags": [
+          "restricted",
+          "time_wound"
+        ]
+      }
+    ],
+    "c3:083": [
+      {
+        "direction": "special",
+        "targetTileId": "056",
+        "targetTileIds": [
+          "056"
+        ],
+        "region": "本板块特殊航路",
+        "tags": [
+          "restricted",
+          "time_portal"
+        ]
+      }
+    ],
+    "c3:085": [
+      {
+        "direction": "special",
+        "targetTileId": "073",
+        "targetTileIds": [
+          "073"
+        ],
+        "region": "本板块特殊航路",
+        "tags": [
+          "restricted",
+          "time_wound"
+        ]
+      }
+    ],
+    "c3:087": [
+      {
+        "direction": "special",
+        "targetTileId": "068",
+        "targetTileIds": [
+          "068"
+        ],
+        "region": "本板块特殊航路",
+        "tags": [
+          "restricted",
+          "time_wound"
+        ]
+      }
+    ],
+    "c3:090": [
+      {
+        "direction": "special",
+        "targetTileId": "058",
+        "targetTileIds": [
+          "058"
+        ],
+        "region": "本板块特殊航路",
+        "tags": [
+          "restricted",
+          "time_portal"
+        ]
+      }
+    ]
+  }
+}
