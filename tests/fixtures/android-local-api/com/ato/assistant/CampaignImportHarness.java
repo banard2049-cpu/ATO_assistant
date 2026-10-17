@@ -35,6 +35,55 @@ public final class CampaignImportHarness {
     return response;
   }
 
+  private void verifyReadDependencies() throws Exception {
+    for (String dependency : new String[]{"technology", "heroes", "map"}) {
+      JSONObject before = campaign();
+      JSONObject revisions = before.getJSONObject("sectionRevisions");
+      int expectedRevision = revisions.getInt(dependency);
+      JSONObject expected = new JSONObject()
+          .put("dashboard", revisions.getInt("dashboard"))
+          .put("record", revisions.getInt("record"))
+          .put(dependency, expectedRevision);
+      JSONObject payload = new JSONObject().put("expectedAccountId", "local")
+          .put("sections", new JSONObject()
+              .put("dashboard", before.getJSONObject("sections").get("dashboard"))
+              .put("record", new JSONObject().put("dependency", dependency)))
+          .put("expectedRevisions", expected);
+
+      // Another page changes a section used to validate the pending action,
+      // while its dashboard and record write revisions remain current.
+      request("?section=" + dependency, "POST", new JSONObject()
+          .put("state", new JSONObject().put("changedDependency", dependency))
+          .put("expectedRevision", expectedRevision)
+          .put("expectedAccountId", "local").toString(), 200);
+      JSONObject conflict = rejected("POST", payload.toString(), 409);
+      check("SAVE_CONFLICT".equals(conflict.getString("code")), "Read dependency must report a conflict");
+      JSONObject conflicts = conflict.getJSONObject("sections");
+      check(conflicts.length() == 1 && conflicts.has(dependency), "Conflict must identify only the stale read dependency");
+      check(conflicts.getJSONObject(dependency).getInt("expected") == expectedRevision
+          && conflicts.getJSONObject(dependency).getInt("revision") == expectedRevision + 1,
+          "Read dependency conflict must report both revisions");
+
+      expected.put(dependency, expectedRevision + 1);
+      JSONObject current = campaign();
+      int commits = context.store.commits;
+      request("?action=import-sections", "POST", payload.toString(), 200);
+      check(context.store.commits == commits + 1, "Current read dependency must allow one atomic commit");
+      JSONObject after = campaign();
+      check(dependency.equals(after.getJSONObject("sections").getJSONObject("record").getString("dependency")),
+          "Current read dependency did not commit the requested state");
+      for (String name : current.getJSONObject("sectionRevisions").keySet()) {
+        boolean written = "dashboard".equals(name) || "record".equals(name);
+        check(after.getJSONObject("sectionRevisions").getInt(name)
+            == current.getJSONObject("sectionRevisions").getInt(name) + (written ? 1 : 0),
+            "Read dependency transaction changed the wrong revision: " + name);
+        if (!written) check(after.getJSONObject("sections").get(name).toString()
+            .equals(current.getJSONObject("sections").get(name).toString()),
+            "Read dependency transaction changed an unrelated section: " + name);
+      }
+    }
+  }
+
   private void run() throws Exception {
     JSONObject missingIndex = new JSONObject(api.handleForJavascript(Uri.parse("file:///android_asset/web/api/aibp-image-index.php"), "GET", ""));
     check(missingIndex.getInt("status") == 503, "Unavailable index must report failure");
@@ -169,6 +218,7 @@ public final class CampaignImportHarness {
     check("auto".equals(kept.getJSONObject("theme").getString("mode"))
         && kept.getJSONObject("theme").getJSONArray("rgb").getInt(0) == 255,
         "A settings update without theme must keep the stored one");
+    verifyReadDependencies();
     System.out.println("Android campaign import passed: " + checks + " checks");
   }
 

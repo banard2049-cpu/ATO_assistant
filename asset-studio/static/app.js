@@ -32,11 +32,117 @@ async function assignPending(btn){const current=currentCapture();const item=btn.
 $("#assignSequence").addEventListener("click",async()=>{try{const pending=await api("/api/batch/pending");const cycle=$("#captureCycle").value,module=$("#captureModule").value;const filtered=state.catalog.items.filter(i=>(!cycle||i.cycle===cycle)&&(!module||i.module===module));const targets=filtered.flatMap(item=>item.missing.map(face=>({item_id:item.id,face})));if(!pending.length)return toast("没有待分配照片");if(pending.length>targets.length)return toast("待分配照片多于当前筛选的缺失卡面",true);if(!confirm(`将 ${pending.length} 张照片按当前清单顺序分配，继续？`))return;const result=await api("/api/batch/sequence",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({pending_ids:pending.map(p=>p.id),targets:targets.slice(0,pending.length)})});toast(`已按顺序分配 ${result.count} 张`);await Promise.all([loadPending(),loadCatalog()])}catch(e){toast(e.message,true)}});
 $("#storyForm").addEventListener("submit",async event=>{event.preventDefault();const data=new FormData();data.append("file",$("#storyFile").files[0]);for(const [name,id] of [["book_id","#storyBookId"],["title","#storyTitle"],["chapter_key","#chapterKey"],["chapter_title","#chapterTitle"],["page_start","#pageStart"],["page_end","#pageEnd"]]){if($(id).value)data.append(name,$(id).value)}try{const result=await api("/api/stories/import",{method:"POST",body:data});toast(`提取了 ${result.segments} 个段落，请校对`);await loadStories();openStory(result.book_id)}catch(e){toast(e.message,true)}});
 async function loadStories(){try{const books=await api("/api/stories");$("#storyBooks").innerHTML=books.length?books.map(book=>`<div class="book-row"><div><strong>${esc(book.title)}</strong><br><small>${book.segment_count} 段 · 已校对 ${book.reviewed_count||0}</small></div><button class="button ghost" data-book="${esc(book.id)}">校对</button></div>`).join(""):'<p class="muted">暂无故事</p>';$$('[data-book]').forEach(btn=>btn.onclick=()=>openStory(btn.dataset.book))}catch{}}
-async function openStory(bookId){try{const rows=await api(`/api/stories/${encodeURIComponent(bookId)}`);$("#storyEditor").dataset.book=bookId;$("#storyEditorTitle").textContent=`${bookId} · ${rows.length} 个段落`;$("#segmentList").innerHTML=rows.map(row=>`<article class="segment-card" data-segment="${row.id}"><input class="seg-number" value="${esc(row.entry_number)}" aria-label="段落编号"><input class="seg-title" value="${esc(row.title)}" aria-label="段落标题"><textarea class="seg-body" aria-label="段落正文">${esc(row.body)}</textarea><div class="segment-actions"><label><input class="seg-reviewed" type="checkbox" ${row.reviewed?"checked":""}> 已校对</label><button class="button text-button split-seg">在光标处拆分</button><button class="button text-button merge-seg">合并下一段</button></div></article>`).join("");show("#storyEditor");$$('[data-segment]').forEach(card=>{let timer;card.addEventListener("input",()=>{clearTimeout(timer);timer=setTimeout(()=>saveSegment(card),650)});card.querySelector('.split-seg').onclick=()=>splitSegment(card);card.querySelector('.merge-seg').onclick=()=>mergeSegment(card)});location.hash="stories"}catch(e){toast(e.message,true)}}
-async function saveSegment(card){try{await api(`/api/stories/segments/${card.dataset.segment}`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({entry_number:card.querySelector('.seg-number').value,title:card.querySelector('.seg-title').value,body:card.querySelector('.seg-body').value,reviewed:card.querySelector('.seg-reviewed').checked})})}catch(e){toast(e.message,true)}}
-async function splitSegment(card){const textarea=card.querySelector('.seg-body'),offset=textarea.selectionStart;if(!offset)return toast("请先把光标放在要拆分的位置",true);try{await api(`/api/stories/segments/${card.dataset.segment}/split`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({offset})});await openStory($("#storyEditor").dataset.book);toast("段落已拆分")}catch(e){toast(e.message,true)}}
-async function mergeSegment(card){if(!confirm("把下一段正文合并到当前段？"))return;try{await api(`/api/stories/segments/${card.dataset.segment}/merge-next`,{method:"POST"});await openStory($("#storyEditor").dataset.book);toast("段落已合并")}catch(e){toast(e.message,true)}}
-$("#closeStoryEditor").onclick=()=>hide("#storyEditor");
+const storySegmentSaves = new Map();
+let storyEditorBusy = false;
+
+function saveSegment(card) {
+  const save = storySegmentSaves.get(card);
+  if (!save) return Promise.resolve();
+  clearTimeout(save.timer);
+  save.timer = null;
+  // Serialize each segment's writes, including edits made during an upload.
+  save.pending = save.pending.catch(() => {}).then(async () => {
+    if (!save.dirty || !storySegmentSaves.has(card)) return;
+    const payload = {
+      entry_number: card.querySelector('.seg-number').value,
+      title: card.querySelector('.seg-title').value,
+      body: card.querySelector('.seg-body').value,
+      reviewed: card.querySelector('.seg-reviewed').checked,
+    };
+    save.dirty = false;
+    try {
+      await api(`/api/stories/segments/${card.dataset.segment}`, {
+        method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
+      });
+    } catch (error) {
+      save.dirty = true;
+      throw error;
+    }
+  });
+  return save.pending;
+}
+
+async function flushStoryEdits() {
+  const results = await Promise.allSettled([...storySegmentSaves.keys()].map(saveSegment));
+  const failed = results.find(result => result.status === 'rejected');
+  if (failed) throw failed.reason;
+}
+
+async function withStoryEditor(action) {
+  if (storyEditorBusy) return;
+  storyEditorBusy = true;
+  const editor = $("#storyEditor"), previousInert = editor.inert;
+  editor.inert = true;
+  try {
+    await flushStoryEdits();
+    await action();
+  } catch (error) {
+    toast(error.message, true);
+  } finally {
+    editor.inert = previousInert;
+    storyEditorBusy = false;
+  }
+}
+
+function clearStorySegmentSaves() {
+  for (const save of storySegmentSaves.values()) clearTimeout(save.timer);
+  storySegmentSaves.clear();
+}
+
+async function loadStoryEditor(bookId) {
+  const rows = await api(`/api/stories/${encodeURIComponent(bookId)}`);
+  clearStorySegmentSaves();
+  $("#storyEditor").dataset.book = bookId;
+  $("#storyEditorTitle").textContent = `${bookId} · ${rows.length} 个段落`;
+  $("#segmentList").innerHTML = rows.map(row=>`<article class="segment-card" data-segment="${row.id}"><input class="seg-number" value="${esc(row.entry_number)}" aria-label="段落编号"><input class="seg-title" value="${esc(row.title)}" aria-label="段落标题"><textarea class="seg-body" aria-label="段落正文">${esc(row.body)}</textarea><div class="segment-actions"><label><input class="seg-reviewed" type="checkbox" ${row.reviewed?"checked":""}> 已校对</label><button class="button text-button split-seg">在光标处拆分</button><button class="button text-button merge-seg">合并下一段</button></div></article>`).join("");
+  show("#storyEditor");
+  $$('[data-segment]').forEach(card => {
+    const save = { dirty: false, timer: null, pending: Promise.resolve() };
+    storySegmentSaves.set(card, save);
+    card.addEventListener("input", () => {
+      save.dirty = true;
+      clearTimeout(save.timer);
+      save.timer = setTimeout(() => saveSegment(card).catch(error => toast(error.message, true)), 650);
+    });
+    card.querySelector('.split-seg').onclick = () => splitSegment(card);
+    card.querySelector('.merge-seg').onclick = () => mergeSegment(card);
+  });
+  location.hash = "stories";
+}
+
+async function openStory(bookId) {
+  return withStoryEditor(() => loadStoryEditor(bookId));
+}
+
+async function splitSegment(card) {
+  if (!storySegmentSaves.has(card) || storyEditorBusy) return;
+  const offset = card.querySelector('.seg-body').selectionStart;
+  if (!offset) return toast("请先把光标放在要拆分的位置", true);
+  return withStoryEditor(async () => {
+    const bookId = $("#storyEditor").dataset.book;
+    await api(`/api/stories/segments/${card.dataset.segment}/split`, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ offset }),
+    });
+    clearStorySegmentSaves();
+    hide("#storyEditor");
+    await loadStoryEditor(bookId);
+    toast("段落已拆分");
+  });
+}
+
+async function mergeSegment(card) {
+  if (!storySegmentSaves.has(card) || storyEditorBusy || !confirm("把下一段正文合并到当前段？")) return;
+  return withStoryEditor(async () => {
+    const bookId = $("#storyEditor").dataset.book;
+    await api(`/api/stories/segments/${card.dataset.segment}/merge-next`, { method: "POST" });
+    clearStorySegmentSaves();
+    hide("#storyEditor");
+    await loadStoryEditor(bookId);
+    toast("段落已合并");
+  });
+}
+
+$("#closeStoryEditor").onclick = () => withStoryEditor(() => hide("#storyEditor"));
 async function waitJob(jobId){for(;;){const job=await api(`/api/jobs/${jobId}`);toast(`${job.message} · ${job.progress}%`);if(job.status==="complete")return job.result;if(job.status==="failed")throw new Error(job.error||"后台任务失败");await new Promise(resolve=>setTimeout(resolve,700))}}
 async function createExport(kind){try{const payload={kind,cycles:$("#exportCycle")?.value?[$("#exportCycle").value]:[],modules:$("#exportModule")?.value?[$("#exportModule").value]:[],complete_only:Boolean($("#exportComplete")?.checked),include_stories:Boolean($("#exportStories")?.checked),include_bgm:Boolean($("#exportBgm")?.checked),include_icons:Boolean($("#exportIcons")?.checked),include_cryptic:Boolean($("#exportCryptic")?.checked),include_mixed_media:Boolean($("#exportMixedMedia")?.checked),official_scans:Boolean($("#exportOfficialScans")?.checked),official_story:Boolean($("#exportOfficialStory")?.checked),official_assets:Boolean($("#exportOfficialAssets")?.checked)};const queued=await api("/api/packages/export",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});const result=await waitJob(queued.job_id);const filename=result.filename;const anchor=document.createElement("a");anchor.href=`/api/exports/${encodeURIComponent(filename)}`;anchor.download=filename;anchor.click();toast(`已生成 ${filename}${result.official_assets?` · 官中图片 ${result.official_assets} 张`:""}`)}catch(e){toast(e.message,true)}}
 $("#exportPack").onclick=()=>{if(confirm("请确认你有权使用和分享所选素材。继续生成资料包？"))createExport("atopack")};$("#exportCompat").onclick=()=>createExport("compat");

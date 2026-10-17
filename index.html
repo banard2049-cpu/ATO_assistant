@@ -13004,7 +13004,10 @@
         // in-memory edit with an older server snapshot.
         const flushed = await flushCampaignSave();
         const serverCampaign = await loadFullCampaign();
-        const serverSections = serverCampaign?.sections || {};
+        if (!isPlainObject(serverCampaign?.sections)) {
+          throw new Error("无法读取完整战役存档，请恢复连接后重试导出。");
+        }
+        const serverSections = serverCampaign.sections;
         const serverDashboard = isPlainObject(serverSections.dashboard) && isPlainObject(serverSections.dashboard.profiles)
           ? serverSections.dashboard
           : null;
@@ -13060,7 +13063,7 @@
 
     // 局部导入语义一致，不会把没转换的分区清空。
 
-    async function applyImportedSections({ sections, dashboardImport, isFullBackup, recordAttachmentBlobs }) {
+    async function applyImportedSections({ sections, dashboardImport, isFullBackup, recordAttachmentBlobs, incompleteBackup = false }) {
       // 校验先于归一化和任何服务端读写，避免 {} / 无关 JSON 被补成空档后覆盖现有档案。
 
       function isLegacyDashboardState(value) {
@@ -13213,7 +13216,9 @@
       campaignServerBaseline = cloneJson(archive);
       campaignSyncChannel?.postMessage({ revision: campaignSectionRevision });
       renderDashboardArchive(archive);
-      window.alert("导入完成。");
+      window.alert(incompleteBackup
+        ? "已恢复旧备份中包含的状态。该文件导出时未读取到完整存档，未包含的模块已保留当前数据。"
+        : "导入完成。");
     }
 
     function importStateFile(file) {
@@ -13256,10 +13261,14 @@
 
           const imported = JSON.parse(text || "{}");
           if (!isPlainObject(imported)) throw new Error("文件不是有效的 ATO 存档：根节点必须是存档对象。");
-          const isFullBackup = imported.app === "ATO Campaign Save Package" && Number(imported.version) >= 3;
+          // Older versions could label an offline dashboard-only export as a
+          // full backup. Its null sections mean unread data, not empty modules.
+          const incompleteBackup = imported.app === "ATO Campaign Save Package"
+            && Number(imported.version) >= 3 && imported.source?.serverIncluded === false;
+          const isFullBackup = imported.app === "ATO Campaign Save Package" && Number(imported.version) >= 3 && !incompleteBackup;
           const sections = imported.sections || imported.campaign?.sections || null;
           const dashboardImport = sections?.dashboard || imported.legacyDashboard || imported;
-          return await applyImportedSections({ sections, dashboardImport, isFullBackup, recordAttachmentBlobs: imported.recordAttachmentBlobs });
+          return await applyImportedSections({ sections, dashboardImport, isFullBackup, incompleteBackup, recordAttachmentBlobs: imported.recordAttachmentBlobs });
         } catch (error) {
           if (error?.code === "SAVE_CONFLICT" && error.sections) {
             const detail = Object.entries(error.sections)

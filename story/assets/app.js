@@ -4377,7 +4377,7 @@
 
   function toggleSpeech() {
     if (!activeEntry) return;
-    if (currentUtterance) {
+    if (isSpeaking) {
       stopSpeech();
       return;
     }

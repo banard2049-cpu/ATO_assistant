@@ -2834,17 +2834,25 @@
     document.getElementById("importInput").onchange = (e) => {
       const file = e.target.files[0];
       if (!file) return;
+      const sessionEpoch = heroSessionEpoch;
+      const ownerId = state._userId;
       const reader = new FileReader();
       reader.onload = () => {
+        if (sessionEpoch !== heroSessionEpoch || (ownerId && ownerId !== state._userId)) {
+          alert("读取文件期间登录账号已切换，请重新导入。");
+          return;
+        }
         try {
           const data = JSON.parse(reader.result);
           if (data && Array.isArray(data.heroes)) {
-            state = data;
+            // Exported sync metadata belongs to the source session. Keep this
+            // page's owner, revision and baseline, including any pending save.
+            state = { ...heroSnapshot(data), _userId: state._userId,
+              _lastSyncRevision: state._lastSyncRevision };
             normalizeState();
-            state.activeHeroId = state.heroes.length ? state.heroes[0].id : "";
-            persistLocal();
+            queueSave();
             renderAll();
-            setSaveStatus("已导入");
+            setSaveStatus("已导入，等待同步到 NAS");
           } else {
             alert("文件格式不正确");
           }

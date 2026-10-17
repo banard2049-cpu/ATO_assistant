@@ -92,6 +92,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Test save recovery, editor concurrency and pending card display
+        run: >-
+          node --test
+          tests/dashboard-backup-completeness.test.cjs
+          tests/hero-import.test.cjs
+          tests/asset-studio-story-editor.test.cjs
+          tests/aibp-special-pending.test.cjs
+          story/tests/tts-pause.test.cjs
       - name: Test campaign automation and settlement
         run: >-
           node --test
