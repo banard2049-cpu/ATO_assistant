@@ -355,7 +355,7 @@ test('Chimera draws its reward cards before converting normal SW and DW resource
   assert.equal(result.regularDamageCount, 6);
   assert.equal(result.secondaryDamageCount, 6);
   assert.deepEqual(clone(result.chimeraBonus.requested), { I: 1, II: 2, III: 1 });
-  assert.deepEqual(nonzero(result.totals), { UA: 4, URM: 1, CT: 5, core: 2 });
+  assert.deepEqual(nonzero(result.totals), { UA: 4, URM: 1, CT: 4, core: 2 });
   assert.equal(result.details.chimeraBonus.filter(item => item.card).length, 4);
   assert.equal(result.details.sw.length, 0, 'the bonus cards have already left the draw pool');
   assert.equal(result.details.dw.length, 0);

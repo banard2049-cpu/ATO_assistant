@@ -31,14 +31,14 @@
     { [MA]: 1 }, { [MA]: 1 }, { [MA]: 1 },
   ]);
   addLevel("MIDASCORE", "BP", "II", [
-    { burnedOutGrace: 1 }, { livingGold: 1 },
-    { burnedOutGrace: 1 }, { livingGold: 1 },
-    { burnedOutGrace: 1 }, { livingGold: 1 },
+    { cursedBloatsack: 1 }, { livingGold: 1 },
+    { cursedBloatsack: 1 }, { livingGold: 1 },
+    { cursedBloatsack: 1 }, { livingGold: 1 },
   ]);
   addLevel("MIDASCORE", "BP", "III", [
-    { [MA]: 1, burnedOutGrace: 1 },
-    { [MA]: 1, burnedOutGrace: 1 },
-    { [MA]: 1, burnedOutGrace: 1 },
+    { [MA]: 1, cursedBloatsack: 1 },
+    { [MA]: 1, cursedBloatsack: 1 },
+    { [MA]: 1, cursedBloatsack: 1 },
     { [MA]: 1, livingGold: 1 },
     { [MA]: 1, livingGold: 1 },
     { [MA]: 1, livingGold: 1 },

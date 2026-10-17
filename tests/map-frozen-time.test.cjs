@@ -174,10 +174,11 @@ test('both map movement entry points mark fresh exploration, while loading old e
   for (const command of ['move-argo', 'move-special']) {
     const savedCycle = { currentTile: '001', explored: {}, tokens: { AG: '001', AD: '' } };
     const ctx = vm.createContext({ mapCommandBusy: false, document: { querySelectorAll: () => [] },
+      structureTechTarget: () => ({ profileId: 'original' }), assertStructureTechTarget() {},
       setMapCommandStatus() {}, loadMapCommandState: async () => ({ state: {} }), cloneJson: clone,
       currentMapCommandCycle: () => ({ cycleId: 'c3', cycle: {}, cycleState: savedCycle }),
       mapDirectionalTarget: () => '007', currentC3SpecialTargets: () => ['007'],
-      saveMapCommandState: async () => {}, syncDashboardMapSnapshot() {}, updateDashboardTitanXTrack() {}, window: {} });
+      saveMapCommandState: async () => {}, syncMapCommandLandmarks() {}, syncDashboardMapSnapshot() {}, updateDashboardTitanXTrack() {}, window: {} });
     vm.runInContext(extract(html, 'runMapCommand'), ctx);
     await ctx.runMapCommand(command, '007');
     assert.equal(savedCycle.explorationEntries['007'], true, command);

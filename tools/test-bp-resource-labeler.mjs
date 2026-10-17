@@ -128,6 +128,19 @@ assert.equal(
   "C4-C5 labels should load as a pending review draft"
 );
 const dragonMap = mapContext.window.AIBP_BP_RESOURCE_MAP.DRAGON_OF_PHOBOS;
+// Original MIDASCORE artwork prints Cursed Bloatsack, the round sac icon.
+// Burned-out Grace has a different, flame-like icon and is not on these cards.
+const midasMap = mapContext.window.AIBP_BP_RESOURCE_MAP.MIDASCORE;
+for (const [level, indices, ambrosia] of [
+  ["II", [1, 3, 5], 0], ["III", [1, 2, 3], 1],
+]) {
+  for (const index of indices) {
+    const fileName = `MIDASCORE_BP_${level}_${String(index).padStart(3, "0")}.jpg`;
+    assert.deepEqual({ ...midasMap[fileName] }, {
+      ...(ambrosia ? { mutableAmbrosia: ambrosia } : {}), cursedBloatsack: 1,
+    }, `${fileName} must retain its printed Cursed Bloatsack resource`);
+  }
+}
 for (let index = 1; index <= 6; index += 1) {
   const suffix = String(index).padStart(3, "0");
   assert.deepEqual(
