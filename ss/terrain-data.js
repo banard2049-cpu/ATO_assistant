@@ -740,7 +740,7 @@ const BattleTerrain = (() => {
       { id: "the-devil-himself", label: "The Devil Himself", levels: [5, 6, 7], terrains: [] },
       { id: "the-devil-himself", label: "The Devil Himself", levels: [8], terrains: [] },
       { id: "thicker-than-water", label: "Thicker Than Water", levels: [1], terrains: [] },
-      { id: "all-good-things", label: "万事皆休 · 三台泰坦 X", levels: [1, 2, 3, 4, 5, 6, 7, 8, 9], terrains: [] },
+      { id: "all-good-things", label: "万事皆休 · 三台泰坦 X", hidden: true, levels: [1, 2, 3, 4, 5, 6, 7, 8, 9], terrains: [] },
     ],
     SUN_DESCENDANT: [
       { levels: [1, 2], terrains: [
@@ -1102,10 +1102,10 @@ const BattleTerrain = (() => {
     };
   }
 
-  function getSetupOptions(apostle) {
+  function getSetupOptions(apostle, activeSetupId) {
     const seen = new Set();
     return (setups[String(apostle || "").toUpperCase()] || []).flatMap((choice) => {
-      if (!choice.id || seen.has(choice.id)) return [];
+      if (!choice.id || seen.has(choice.id) || (choice.hidden && choice.id !== activeSetupId)) return [];
       seen.add(choice.id);
       return [{ id: choice.id, label: choice.label || choice.id }];
     });

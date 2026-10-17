@@ -3,6 +3,10 @@ const fs = require("node:fs");
 const path = require("node:path");
 const terrain = require("../ss/terrain-data.js");
 
+assert.ok(!terrain.getSetupOptions("TITAN_X").some((choice) => choice.id === "all-good-things"));
+assert.ok(terrain.getSetupOptions("TITAN_X", "all-good-things").some((choice) => choice.id === "all-good-things"));
+assert.ok(!terrain.getSetupOptions("TITAN_X", "the-devil-himself").some((choice) => choice.id === "all-good-things"));
+
 assert.equal(terrain.levelNumber("IV"), 4);
 assert.equal(terrain.levelNumber("5"), 5);
 const groupStarts = terrain.getInitialPositions("TITAN_X", 1, "all-good-things");

@@ -34,6 +34,11 @@ jobs:
           python -m pip install numpy==2.2.6
           node --test tests/map-tile-artwork.test.cjs tests/map-layered-consumers.test.cjs tests/map-tile-icon-tags.test.cjs tests/map-frozen-time.test.cjs tests/c4-cloud-ship.test.cjs tests/card-art.test.cjs tests/fan-card-trims.test.cjs
           python -m unittest discover -s tests -p test_fan_card_trims.py
+      - name: Test battle layout controls and second screen
+        run: |
+          node tools/test-ss-terrain-data.cjs
+          node tools/test-aibp-battle-map-control.cjs
+          node tools/test-second-screen-los-mirror.cjs
       - name: Test Android resource catalog and coverage
         run: |
           python tools/test_android_resource_catalog.py

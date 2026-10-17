@@ -166,8 +166,12 @@
       terrainSelect.value = names.includes(previous) ? previous : (names[0] || "");
     }
 
+    function availableSetupOptions() {
+      return window.BattleTerrain.getSetupOptions(options.getApostle(), options.getSpecialSetup?.());
+    }
+
     function renderSetupOptions(map) {
-      const choices = window.BattleTerrain.getSetupOptions(options.getApostle());
+      const choices = availableSetupOptions();
       setupControl.hidden = choices.length < 2;
       setupSelect.replaceChildren();
       choices.forEach((choice) => {
@@ -865,6 +869,10 @@
     });
 
     setupSelect.addEventListener("change", () => {
+      if (!availableSetupOptions().some((choice) => choice.id === setupSelect.value)) {
+        renderSetupOptions(ensureMap());
+        return;
+      }
       selectedId = "";
       commit(window.BattleTerrain.createBattleMap(
         options.getApostle(),

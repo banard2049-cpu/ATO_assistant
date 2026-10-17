@@ -107,6 +107,7 @@ require(path.join(__dirname, "..", "aibp", "battle_map_control.js"));
 
 let map = null;
 let activeApostle = "HEKATON";
+let specialSetup = null;
 let zoomedCard = null;
 const control = window.BattleMapControl.create({
   root: { querySelector: (selector) => elements[selector] },
@@ -115,6 +116,7 @@ const control = window.BattleMapControl.create({
   openImageZoom: (src, alt) => { zoomedCard = { src, alt }; },
   getApostle: () => activeApostle,
   getLevel: () => 1,
+  getSpecialSetup: () => specialSetup,
   getMap: () => map,
   setMap: (value) => { map = value; },
 });
@@ -296,5 +298,27 @@ control.render();
 assert.equal(map.terrain.length, 0);
 elements["[data-battle-map-reset]"].dispatch("click");
 assert.equal(map.terrain.length, 20);
+
+activeApostle = "TITAN_X";
+map = window.BattleTerrain.createBattleMap(activeApostle, 1);
+control.render();
+const setupSelect = elements["[data-battle-map-setup-select]"];
+const choices = () => setupSelect.children.map((option) => option.value);
+assert.ok(!choices().includes("all-good-things"));
+const ordinaryMap = JSON.stringify(map);
+setupSelect.value = "all-good-things";
+setupSelect.dispatch("change");
+assert.equal(JSON.stringify(map), ordinaryMap);
+specialSetup = "all-good-things";
+map = window.BattleTerrain.createBattleMap(activeApostle, 1, specialSetup);
+control.render();
+assert.ok(choices().includes(specialSetup));
+assert.equal(setupSelect.value, specialSetup);
+elements["[data-battle-map-reset]"].dispatch("click");
+assert.equal(map.setupId, specialSetup);
+specialSetup = null;
+map = window.BattleTerrain.createBattleMap(activeApostle, 1);
+control.render();
+assert.ok(!choices().includes("all-good-things"));
 
 console.log("battle-map control tests passed");
