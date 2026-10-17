@@ -8,7 +8,7 @@ const source = fs.readFileSync(path.join(__dirname, "../assets/app.js"), "utf8")
 const html = fs.readFileSync(path.join(__dirname, "../index.html"), "utf8");
 
 function functionSource(name) {
-  const start = source.search(new RegExp(`  function ${name}\\(`));
+  const start = source.search(new RegExp(`  (?:async )?function ${name}\\(`));
   assert.ok(start >= 0, `missing function ${name}`);
   let depth = 0;
   let opened = false;
@@ -111,4 +111,79 @@ test("请求期间点击暂停，音频开始播放后立即保持暂停", () =>
   context.isSpeechPaused = true;
   context.applyPendingSpeechPause();
   assert.equal(audio.pauseCalls, 1);
+});
+
+function speechToggleSetup() {
+  const h = setup();
+  const calls = { starts: 0, stops: 0, plays: 0 };
+  Object.assign(h.context, {
+    activeEntry: { key: 'story-entry' }, currentUtterance: null, activeSpeechToken: 10,
+    stopActiveAudio() { calls.stops += 1; },
+    speakEntry() { calls.starts += 1; h.context.beginSpeech(); },
+    ttsConfig: { activeEngine: 'cloud' },
+    createSpeechChunks: () => ['第一句', '第二句'],
+    console,
+  });
+  h.synthesis.cancel = () => {};
+  for (const name of ['stopSpeech', 'toggleSpeech', 'finishSpeech', 'speakText']) {
+    vm.runInContext(functionSource(name), h.context);
+  }
+  return { ...h, calls };
+}
+
+test('停止按钮在没有当前音频的合成等待与暂停状态下结束整次朗读', () => {
+  for (const paused of [false, true]) {
+    const { context, button, calls } = speechToggleSetup();
+    context.beginSpeech();
+    context.isSpeechPaused = paused;
+    context.toggleSpeech();
+    assert.equal(calls.stops, 1);
+    assert.equal(calls.starts, 0);
+    assert.equal(context.activeSpeechToken, 11);
+    assert.equal(context.isSpeaking, false);
+    assert.equal(context.isSpeechPaused, false);
+    assert.equal(button.hidden, true);
+    assert.equal(context.ttsButton.textContent, '朗读');
+  }
+});
+
+test('朗读按钮在空闲时开始，在音频播放时停止', () => {
+  const { context, calls } = speechToggleSetup();
+  context.toggleSpeech();
+  assert.equal(calls.starts, 1);
+  assert.equal(calls.stops, 0);
+  context.currentUtterance = { audio: true };
+  context.toggleSpeech();
+  assert.equal(calls.starts, 1);
+  assert.equal(calls.stops, 1);
+  assert.equal(context.currentUtterance, null);
+});
+
+test('在首句合成或句间等待时停止，迟到的合成结果不会继续播放', async () => {
+  for (const stoppedAfterFirst of [false, true]) {
+    const { context, calls } = speechToggleSetup();
+    const pending = [];
+    context.getExternalAudioJob = () => new Promise(resolve => pending.push(resolve));
+    let firstPlayed;
+    const firstPlayback = new Promise(resolve => { firstPlayed = resolve; });
+    context.playAudioBlob = async (_blob, token, keepActive) => {
+      calls.plays += 1;
+      context.finishSpeech(token, keepActive);
+      firstPlayed();
+    };
+    const speaking = context.speakText('需要合成的故事正文');
+    assert.equal(context.isSpeaking, true);
+    if (stoppedAfterFirst) {
+      pending[0]({ ok: 'first audio' });
+      await firstPlayback;
+      assert.equal(context.currentUtterance, null);
+      assert.equal(context.isSpeaking, true);
+    }
+    context.toggleSpeech();
+    pending.forEach(resolve => resolve({ ok: 'late audio' }));
+    await speaking;
+    assert.equal(calls.starts, 0);
+    assert.equal(calls.plays, stoppedAfterFirst ? 1 : 0);
+    assert.equal(context.isSpeaking, false);
+  }
 });

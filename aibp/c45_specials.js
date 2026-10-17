@@ -908,6 +908,7 @@
     }
     pile.pending = pile.deck[0] || null;
     pile.pendingMode = pile.pending ? mode : "";
+    if (pile.pending) piles.DAHAKA.lastPendingType = mode;
     savePiles();
     renderAibpCards();
     if (!pile.pending) return;
@@ -1026,6 +1027,7 @@
       reshuffleDemidjinnAfterAiO(ai, drawn);
       ai.pending = null;
     }
+    if (ai.pending) piles[currentApostle].lastPendingType = "AI";
     savePiles();
     renderAibpCards();
     if (!drawn) return;
@@ -1047,6 +1049,7 @@
       bp.discard = [];
     }
     bp.pending = bp.deck.at(-1) || null;
+    if (bp.pending) piles.TITAN_X.lastPendingType = "BP";
     savePiles();
     renderAibpCards();
     if (bp.pending) {

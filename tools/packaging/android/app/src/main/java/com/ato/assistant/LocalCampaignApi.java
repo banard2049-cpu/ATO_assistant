@@ -483,10 +483,11 @@ final class LocalCampaignApi {
 
     // dispatch 由同一把 lock 保护；全部校验通过后才更新内存并一次提交存档及备份。
     JSONObject conflicts = new JSONObject();
-    names = incoming.keys();
+    // Expected revisions include read dependencies as well as written sections.
+    // A stale dependency invalidates the entire transaction before any writes.
+    names = expectedRevisions.keys();
     while (names.hasNext()) {
       String name = names.next();
-      if (!expectedRevisions.has(name)) continue;
       long expected = Long.parseLong(String.valueOf(expectedRevisions.opt(name)));
       int revision = revisions.optInt(name, 0);
       if (expected != revision) {
