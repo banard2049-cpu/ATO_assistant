@@ -35,6 +35,9 @@ services:
       # 资料包的平铺 assets/bgm/*.mp3 也实时可用；放在额外子路径，避免盖住播放器代码。
       - ./app/assets/bgm:/app/assets/bgm/media:ro
       - ./app/hero/assets:/app/hero/assets
+      # Includes hd1024/base + overlay and shared card-backs/numbers. Mount the
+      # full image tree so both layered packs and legacy flat scans work.
+      # map/*.js stays in the image and updates independently of user assets.
       - ./app/map/images:/app/map/images
       - ./app/map/tokens:/app/map/tokens
       - ./app/record/assets:/app/record/assets

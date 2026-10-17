@@ -89,6 +89,8 @@ from app.cryptic_resources import mime_for as cryptic_mime  # noqa: E402
 from app.mixed_media_resources import collect as collect_mixed_media_files  # noqa: E402
 from app.mixed_media_resources import allowed_target as is_mixed_media_target  # noqa: E402
 from app.mixed_media_resources import mime_for as mixed_media_mime  # noqa: E402
+from app.map_resources import collect as collect_map_files, covered_targets as covered_map_targets
+from app.map_resources import add_to_archive as add_map_to_archive, validate as validate_map_files
 from app.fixed_catalog import collect_supplemental_resources  # noqa: E402
 from app.fixed_catalog import fixed_catalog_payload  # noqa: E402
 from app.official_assets import clear_cache as clear_official_cache  # noqa: E402
@@ -509,8 +511,14 @@ def plan_assets(
     planned: list[PlannedAsset] = []
     if official_assets:
         clear_official_cache()
+    map_files = collect_map_files(ato_root, library.root if library else None,
+                                  targets=[target for item in items for target in item.faces.values()])
+    covered_maps = covered_map_targets(map_files, [target for item in items for target in item.faces.values()],
+                                      root=ato_root if (ato_root/'map/tile-artwork-data.js').is_file() else Path(__file__).resolve().parents[2])
     for item in items:
         for face, target in item.faces.items():
+            if target in covered_maps:
+                continue
             if is_bgm_target(target) or is_cryptic_target(target) or is_mixed_media_target(target):
                 # 附加资源只走各自的段；字形与混合媒体裁图必须保留原字节，
                 # 不能再经图片重编码。
@@ -887,7 +895,7 @@ def load_incremental_index(previous: Path, reporter: Reporter) -> tuple[dict[str
         digest = str(asset.get("sha256") or "")
         if member and SHA256_RE.fullmatch(digest):
             remember(member, digest, int(asset.get("bytes") or 0), asset)
-    for section in ("resourceFiles", "bgmFiles", "iconFiles", "crypticFiles", "mixedMediaFiles"):
+    for section in ("resourceFiles", "bgmFiles", "iconFiles", "crypticFiles", "mixedMediaFiles", "mapFiles"):
         for entry in manifest.get(section, []) or []:
             member = str(entry.get("member") or entry.get("target") or "")
             digest = str(entry.get("sha256") or "")
@@ -933,6 +941,7 @@ def write_pack(
     image_quality: int | None = None,
     image_quality_keep: list[str] | None = None,
     incremental: tuple[Path, dict[str, str], dict, dict] | None = None,
+    map_files: list[tuple[str, Path]] | None = None,
 ) -> WriteOutcome:
     """先写 .partial；写入时顺手算真实哈希（清单哈希必须等于真实字节）。
 
@@ -1239,6 +1248,8 @@ def write_pack(
         )
         # Generate from the actual packed bytes, including official overrides and
         # optional re-encoding, so zoom and preview always show the same edition.
+        add_map_to_archive(archive, manifest, ato_root, files=map_files,
+                           targets=[target for item in items for target in item.faces.values()])
         preview_entries = []
         for member in sorted({asset.member for asset, _digest in written if is_preview_source(asset.member)}):
             add_card_preview(archive, member, archive.read(member), preview_entries)
@@ -1336,6 +1347,7 @@ def verify_partial(
             ("iconFiles", "界面图标"),
             ("crypticFiles", "密语字形"),
             ("mixedMediaFiles", "混合媒体"),
+            ("mapFiles", "地图底图与蒙版"),
             ("cardPreviewFiles", "AIBP 预览图"),
         ):
             for item in manifest.get(section, []) or []:
@@ -1346,6 +1358,7 @@ def verify_partial(
                 if digest != item.get("sha256"):
                     raise PackError(f"{label}校验失败：{target}")
 
+        validate_map_files(archive, manifest)
         checked = 0
         if mode != "none" and declared_lookup:
             members = list(declared_lookup)
@@ -1431,6 +1444,7 @@ class BuildResult:
     icon_files: int = 0
     cryptic_files: int = 0
     mixed_media_files: int = 0
+    map_files: int = 0
     edition: str = "fan"
     unsafe_targets: int = 0
     broken_items: int = 0
@@ -1497,20 +1511,23 @@ def build(
         if library is not None:
             library.close()
 
+    map_files = collect_map_files(ato_root, library_path,
+                                  targets=[target for item in items for target in item.faces.values()])
+    covered_maps = covered_map_targets(map_files, [target for item in items for target in item.faces.values()])
     if complete_only:
         have = {(asset.item_id, asset.face) for asset in planned}
         # BGM 目标由 bgmFiles 段分发，不算「缺图」，不该因为没拍摄音频就把条目整条丢掉。
         keep = {
             item.id
             for item in items
-            if {face for face, target in item.faces.items() if not is_bgm_target(target)}
+            if {face for face, target in item.faces.items() if not is_bgm_target(target) and target not in covered_maps}
             <= {face for item_id, face in have if item_id == item.id}
         }
         items = [item for item in items if item.id in keep]
         keep_ids = {item.id for item in items}
         planned = [asset for asset in planned if asset.item_id in keep_ids]
 
-    if not planned:
+    if not planned and not map_files:
         raise PackError("没有任何素材可以打包；检查 --cycle / --module / --complete-only 与工程目录")
 
     # 故事：民间版读工程里的 storybook-data.js；官方版用官方正文数据生成（见 --story-source）。
@@ -1568,10 +1585,11 @@ def build(
         + sum(path.stat().st_size for _, path in icons)
         + sum(path.stat().st_size for _, path in cryptic)
         + sum(path.stat().st_size for _, path in mixed_media)
+        + sum(path.stat().st_size for _, path in map_files)
     )
     story_member_count = 0 if entity_index is None else (4 if include_story_files else 1)
     member_count = (
-        len(planned) + len(official_files) + len(bgm) + len(icons) + len(cryptic) + len(mixed_media)
+        len(planned) + len(official_files) + len(bgm) + len(icons) + len(cryptic) + len(mixed_media) + len(map_files)
         + story_member_count + 1
     )
 
@@ -1611,6 +1629,7 @@ def build(
     reporter.say(f"界面图标  : {len(icons)} 个字形")
     reporter.say(f"密语字形  : {len(cryptic)} 张（巴别语／塞壬语）")
     reporter.say(f"混合媒体  : {len(mixed_media)} 个文件（私有映射表 + 书籍裁图）")
+    reporter.say(f"地图图层  : {len(map_files)} 个文件（原样保存底图、图标蒙版与数字蒙版）")
     reporter.say(f"成员/体积 : {member_count} / {human_bytes(total_bytes)}")
     if image_quality:
         reporter.say(f"图片重编码: 开（JPEG 质量 {image_quality}，不缩放；实际体积以写盘后为准）")
@@ -1646,6 +1665,7 @@ def build(
             icon_files=len(icons),
             cryptic_files=len(cryptic),
             mixed_media_files=len(mixed_media),
+            map_files=len(map_files),
             edition=edition,
             unsafe_targets=stats.unsafe_targets,
             broken_items=stats.broken_items,
@@ -1696,6 +1716,7 @@ def build(
             image_quality=image_quality,
             image_quality_keep=image_quality_keep,
             incremental=incremental,
+            map_files=map_files,
         )
         reporter.say("校验 .partial（改名之前）……")
         verification = verify_partial(
@@ -1747,6 +1768,7 @@ def build(
         icon_files=outcome.icon_count,
         cryptic_files=outcome.cryptic_count,
         mixed_media_files=outcome.mixed_media_count,
+        map_files=len(outcome.manifest.get('mapFiles', [])),
         edition=edition,
         unsafe_targets=stats.unsafe_targets,
         broken_items=stats.broken_items,
@@ -1796,6 +1818,7 @@ def report(result: BuildResult, reporter: Reporter) -> None:
     reporter.say(f"  界面图标  : {result.icon_files} 个字形")
     reporter.say(f"  密语字形  : {result.cryptic_files} 张（巴别语／塞壬语）")
     reporter.say(f"  混合媒体  : {result.mixed_media_files} 个文件（私有映射表 + 书籍裁图）")
+    reporter.say(f"  地图图层  : {result.map_files} 个文件（底图／图标蒙版／数字蒙版）")
     if result.reused_members:
         reporter.say(
             f"  增量复用  : {result.reused_members} 个成员直接取自底包（跳过读盘与重编码）"

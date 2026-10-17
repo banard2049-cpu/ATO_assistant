@@ -27,7 +27,7 @@
     night_nymph: { label: 'Night Nymph', path: './tokens/night_nymph.png' },
     last_oasis: { label: '最后到访的绿洲', path: './tokens/last_visited_oasis.png' },
     c4_city_of_squalor: { label: 'City of Squalor', path: './tokens/c4_city_of_squalor.png', square: true },
-    c4_cloud_ship: { label: 'Cloud Ship', path: './tokens/c4_cloud_ship.png', square: true },
+    c4_cloud_ship: { label: '埃米尔云船 (Emir’s Cloud Ship)', path: './tokens/c4_cloud_ship.png', square: true },
     sandstorm: { label: '沙尘暴', path: './tokens/sandstorm.jpg', edge: true },
     last_silver_ruin: { label: '最后到访的白银遗迹', path: './tokens/silver_remnant.png' },
     c5_atlantean_capital: { label: 'Atlantean Capital', path: './tokens/c5_atlantean_capital.png', square: true },
@@ -61,6 +61,11 @@
 
   // 存档里一天的地图标记形如 "027:last_city,hs" 与 "027:sandstorm(上)"（见 map/app.js 的
   // mapSnapshot）：同一个格子上可能同时有多个图标，画在板块边上的图标还带方向。
+  function artworkLayers(source) {
+    const artwork = window.ATO_MAP_ARTWORK?.resolve(source);
+    return artwork ? [assetPath(artwork.base), assetPath(artwork.overlay)] : [assetPath(source)];
+  }
+
   function parseMarkers(entries) {
     const byTile = new Map();
     (entries || []).forEach((entry) => {
@@ -156,7 +161,7 @@
       // 用背景图而不是 <img>：板块是绝对定位 + aspect-ratio 的方块，放 <img> 时
       // 图片高度拿不到已解析的包含块高度，会塌成 0×0（实测 rect 为 0），只剩背景色。
       const face = tile.front
-        ? `<span class="tile-face" style="background-image:url('${escapeAttribute(tile.front)}')"></span>`
+        ? `<span class="tile-face" style="background-image:${artworkLayers(tile.front).reverse().map(src => `url('${escapeAttribute(src)}')`).join(',')}"></span>`
         : `<span class="tile-fallback">${escapeText(tile.label || id)}</span>`;
       const revealDay = revealDays.get(id) || '';
       const badge = revealDay || tile.label || id;
@@ -323,6 +328,7 @@
     EDGE_DIRECTION_LABELS,
     parseMarkers,
     assetPath,
+    artworkLayers,
     markerLabel,
     dayLabel,
     collectRevealDays,

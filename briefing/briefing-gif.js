@@ -42,6 +42,19 @@
   }
 
   function defaultLoadImage(src, doc) {
+    // Runtime composition replaces retired scan fronts for GIF/PDF exports;
+    // no redundant flattened PNG is stored on disk.
+    const artwork = /(?:^|\/)images\/c[1-5]-tile-[^/]+\.(?:jpg|jpeg|png)(?:[?#].*)?$/i.test(src)
+      ? window.ATO_MAP_ARTWORK?.resolve(src) : null;
+    if (artwork) {
+      const paths = [artwork.base, artwork.overlay].map(path => `../map/${path.replace(/^\.\//, '')}`);
+      return Promise.all(paths.map(path => defaultLoadImage(path, doc))).then(images => {
+        const canvas = createCanvas(doc, images[0].naturalWidth || images[0].width, images[0].naturalHeight || images[0].height);
+        const ctx = canvas.getContext('2d');
+        images.forEach(image => ctx.drawImage(image, 0, 0, canvas.width, canvas.height));
+        return canvas;
+      });
+    }
     return new Promise((resolve, reject) => {
       const image = doc.createElement('img');
       image.onload = () => resolve(image);

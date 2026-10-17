@@ -1,0 +1,34 @@
+/* Scan corners belong to the artwork, including when object-fit leaves space
+   inside the image element. card-art.js measures that rectangle on load/resize.
+   Keep these rules after page themes, which flatten ordinary UI containers. */
+:root body [data-card-art="image"] {
+  border-radius: 0;
+  clip-path: var(--card-art-clip, inset(0 round 6%));
+  background-color: transparent;
+}
+
+:root body [data-card-art="background"] {
+  border-radius: var(--card-art-radius, 6% / 4%);
+  clip-path: var(--card-art-background-clip, none);
+  overflow: hidden;
+  background-color: transparent;
+}
+
+/* Do not draw another gray frame over a fan scan whose edge was just cleaned. */
+:root body [data-fan-card-trim] {
+  border-color: transparent;
+}
+
+/* Primordial panels have much tighter corners than the small playing cards. */
+.panel-image,
+.card-art-panel,
+#bossPanel {
+  --card-art-corner-ratio: .015;
+}
+
+/* These are card holders; their square fill must not show behind clipped scans. */
+.gear-card-thumb:not(.empty),
+.summon-card,
+.summon-card-face {
+  background-color: transparent;
+}

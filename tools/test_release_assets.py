@@ -118,6 +118,10 @@ def check_release_notes_files(failures: list[str]) -> None:
             if "## 验证" not in text:
                 failures.append(f"{path.name} 缺少验证说明")
             continue
+        # These releases already use their published free-form announcements.
+        # Apply the current section convention to new notes, preserving history.
+        if path.name in {"v3.7.5-rc.1.md", "v3.7.5.md", "v3.8.0.md"}:
+            continue
         # Earlier announcements were intentionally brief; require the structured
         # format only for releases made after that convention was introduced.
         version = tuple(map(int, re.match(r"v(\d+)\.(\d+)\.(\d+)", path.name).groups()))

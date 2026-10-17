@@ -1,43 +1,49 @@
 window.ATO_MAP_TILE_TAGS = {
-    "version": 2,
+    "version": 4,
     "source": "map/map-data.js",
-    "updatedAt": "2026-10-13T11:27:53.944Z",
+    "updatedAt": "2026-10-16T10:54:18.037Z",
     "tagDefinitions": [
         {
             "id": "progress",
             "label": "进展",
             "shortcut": "1",
-            "cycles": []
+            "cycles": [],
+            "scope": "tile"
         },
         {
             "id": "calamity",
             "label": "灾祸",
             "shortcut": "2",
-            "cycles": []
+            "cycles": [],
+            "scope": "tile"
         },
         {
             "id": "central_adventure",
             "label": "中枢冒险",
             "shortcut": "3",
-            "cycles": []
+            "cycles": [],
+            "scope": "tile"
         },
         {
             "id": "rr_adventure",
             "label": "RR冒险",
             "shortcut": "4",
-            "cycles": []
+            "cycles": [],
+            "scope": "tile"
         },
         {
             "id": "city",
             "label": "城市",
             "shortcut": "5",
-            "cycles": []
+            "cycles": [],
+            "scope": "tile"
         },
         {
-            "id": "adventure",
-            "label": "有冒险图标",
+            "id": "wild_titan",
+            "label": "野生泰坦",
             "shortcut": "6",
-            "cycles": []
+            "cycles": [],
+            "scope": "tile"
         },
         {
             "id": "oasis",
@@ -45,15 +51,141 @@ window.ATO_MAP_TILE_TAGS = {
             "shortcut": "7",
             "cycles": [
                 "c4"
-            ]
+            ],
+            "scope": "tile"
         },
         {
             "id": "silver_ruin",
-            "label": "白银遗迹",
+            "label": "白银种遗迹",
             "shortcut": "8",
             "cycles": [
                 "c5"
-            ]
+            ],
+            "scope": "tile"
+        },
+        {
+            "id": "river",
+            "label": "河流航道",
+            "shortcut": "",
+            "cycles": [
+                "c1"
+            ],
+            "scope": "tile"
+        },
+        {
+            "id": "restricted",
+            "label": "限行（内部航路）",
+            "shortcut": "",
+            "cycles": [],
+            "scope": "route"
+        },
+        {
+            "id": "resistance_hideout",
+            "label": "抵抗军据点",
+            "shortcut": "",
+            "cycles": [
+                "c2"
+            ],
+            "scope": "tile"
+        },
+        {
+            "id": "spartan_stronghold",
+            "label": "斯巴达要塞",
+            "shortcut": "",
+            "cycles": [
+                "c2"
+            ],
+            "scope": "tile"
+        },
+        {
+            "id": "frozen_time",
+            "label": "凝固时光",
+            "shortcut": "",
+            "cycles": [
+                "c3"
+            ],
+            "scope": "tile"
+        },
+        {
+            "id": "time_wound",
+            "label": "时光裂痕",
+            "shortcut": "",
+            "cycles": [
+                "c3"
+            ],
+            "scope": "route"
+        },
+        {
+            "id": "time_portal",
+            "label": "时光传送门",
+            "shortcut": "",
+            "cycles": [
+                "c3"
+            ],
+            "scope": "route"
+        },
+        {
+            "id": "daedalus_lighthouse",
+            "label": "代达罗斯灯塔",
+            "shortcut": "",
+            "cycles": [
+                "c3"
+            ],
+            "scope": "tile"
+        },
+        {
+            "id": "underwater_city",
+            "label": "水下城市",
+            "shortcut": "",
+            "cycles": [
+                "c5"
+            ],
+            "scope": "tile"
+        },
+        {
+            "id": "hourglass_icon",
+            "label": "沙漏形图标（待释义）",
+            "shortcut": "",
+            "cycles": [
+                "c1"
+            ],
+            "scope": "tile"
+        },
+        {
+            "id": "staff_icon",
+            "label": "杖形图标（待释义）",
+            "shortcut": "",
+            "cycles": [
+                "c1"
+            ],
+            "scope": "tile"
+        },
+        {
+            "id": "wheel_icon",
+            "label": "车轮图标（待释义）",
+            "shortcut": "",
+            "cycles": [
+                "c3"
+            ],
+            "scope": "tile"
+        },
+        {
+            "id": "smoking_bowl_icon",
+            "label": "烟雾碗图标（待释义）",
+            "shortcut": "",
+            "cycles": [
+                "c4"
+            ],
+            "scope": "tile"
+        },
+        {
+            "id": "helmet_icon",
+            "label": "头盔形图标（待释义）",
+            "shortcut": "",
+            "cycles": [
+                "c5"
+            ],
+            "scope": "adjacent"
         }
     ],
     "tiles": {
@@ -62,10 +194,12 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "001",
             "reviewed": true,
             "tags": [
-                "city"
+                "city",
+                "wild_titan",
+                "resistance_hideout"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:00:08.681Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cyclopes"
             ],
@@ -119,10 +253,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "005",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:00:28.110Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cyclopes"
             ],
@@ -148,10 +283,11 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "central_adventure",
-                "city"
+                "city",
+                "resistance_hideout"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:03:12.247Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "symmachy"
             ],
@@ -166,7 +302,7 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:03:15.219Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "symmachy"
             ],
@@ -265,10 +401,11 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "calamity",
-                "central_adventure"
+                "central_adventure",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:03:48.231Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "cyclopes"
             ],
@@ -280,10 +417,10 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "calamity",
-                "adventure"
+                "spartan_stronghold"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:30:51.810Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cyclopes"
             ],
@@ -294,10 +431,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "019",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "helots",
                 "cyclopes"
@@ -310,10 +448,11 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "progress",
-                "central_adventure"
+                "central_adventure",
+                "spartan_stronghold"
             ],
             "notes": "",
-            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "helots"
             ],
@@ -324,10 +463,12 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "021",
             "reviewed": true,
             "tags": [
-                "city"
+                "city",
+                "resistance_hideout",
+                "restricted"
             ],
             "notes": "",
-            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "updatedAt": "2026-10-16T10:54:18.037Z",
             "factions": [
                 "helots"
             ],
@@ -355,7 +496,7 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:04:15.269Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "cyclopes"
             ],
@@ -369,7 +510,7 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:04:17.708Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "helots",
                 "cyclopes"
@@ -396,10 +537,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "027",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:04:23.587Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "helots"
             ],
@@ -425,10 +567,11 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "central_adventure",
-                "city"
+                "city",
+                "resistance_hideout"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:04:34.366Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "helots",
                 "cyclopes"
@@ -443,7 +586,7 @@ window.ATO_MAP_TILE_TAGS = {
                 "progress"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:04:37.329Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "helots"
             ],
@@ -455,10 +598,11 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "calamity",
-                "central_adventure"
+                "central_adventure",
+                "spartan_stronghold"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:04:43.530Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "helots"
             ],
@@ -472,7 +616,7 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:04:47.769Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "helots"
             ],
@@ -497,10 +641,12 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "036",
             "reviewed": true,
             "tags": [
-                "city"
+                "city",
+                "wild_titan",
+                "resistance_hideout"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:04:51.685Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "symmachy"
             ],
@@ -513,10 +659,12 @@ window.ATO_MAP_TILE_TAGS = {
             "tags": [
                 "progress",
                 "central_adventure",
-                "city"
+                "city",
+                "wild_titan",
+                "resistance_hideout"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:04:55.464Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cyclopes"
             ],
@@ -527,10 +675,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "038",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:04:58.095Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "helots"
             ],
@@ -556,10 +705,10 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "progress",
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:32:09.252Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "helots",
                 "symmachy"
@@ -571,10 +720,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "041",
             "reviewed": true,
             "tags": [
-                "progress"
+                "progress",
+                "restricted"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:05:04.934Z",
+            "updatedAt": "2026-10-16T10:54:18.037Z",
             "factions": [
                 "symmachy"
             ],
@@ -600,10 +750,11 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "central_adventure",
-                "city"
+                "city",
+                "resistance_hideout"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:05:08.586Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cyclopes"
             ],
@@ -629,10 +780,11 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "progress",
-                "calamity"
+                "calamity",
+                "restricted"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:05:13.889Z",
+            "updatedAt": "2026-10-16T10:54:18.037Z",
             "factions": [
                 "cyclopes"
             ],
@@ -643,10 +795,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "046",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "spartan_stronghold"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:05:18.597Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "helots"
             ],
@@ -671,10 +824,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "048",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "spartan_stronghold"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:07:22.650Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "helots"
             ],
@@ -689,7 +843,7 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:07:28.526Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "cyclopes"
             ],
@@ -700,10 +854,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "052",
             "reviewed": true,
             "tags": [
-                "calamity"
+                "calamity",
+                "restricted"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:07:30.294Z",
+            "updatedAt": "2026-10-16T10:54:18.037Z",
             "factions": [
                 "helots"
             ],
@@ -715,10 +870,10 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "progress",
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:31:55.177Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "helots"
             ],
@@ -733,7 +888,7 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:07:42.847Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "helots"
             ],
@@ -744,10 +899,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "055",
             "reviewed": true,
             "tags": [
-                "calamity"
+                "calamity",
+                "restricted"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:07:45.156Z",
+            "updatedAt": "2026-10-16T10:54:18.037Z",
             "factions": [
                 "helots",
                 "symmachy"
@@ -759,10 +915,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "056",
             "reviewed": true,
             "tags": [
-                "city"
+                "city",
+                "resistance_hideout"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:07:47.888Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "symmachy"
             ],
@@ -777,7 +934,7 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:07:51.075Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "cyclopes"
             ],
@@ -789,10 +946,10 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "progress",
-                "adventure"
+                "spartan_stronghold"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:31:49.477Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cyclopes"
             ],
@@ -804,10 +961,10 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "progress",
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:31:46.951Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "helots"
             ],
@@ -877,10 +1034,11 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "central_adventure",
-                "city"
+                "city",
+                "resistance_hideout"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:08:20.065Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "helots",
                 "cyclopes"
@@ -893,10 +1051,10 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "calamity",
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:31:34.501Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "helots"
             ],
@@ -938,7 +1096,7 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:08:38.427Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "symmachy"
             ],
@@ -964,10 +1122,10 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "progress",
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:31:27.464Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "helots"
             ],
@@ -1034,10 +1192,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "081",
             "reviewed": true,
             "tags": [
-                "city"
+                "city",
+                "resistance_hideout"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:08:59.529Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "helots"
             ],
@@ -1077,10 +1236,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "084",
             "reviewed": true,
             "tags": [
-                "city"
+                "city",
+                "resistance_hideout"
             ],
             "notes": "",
-            "updatedAt": "2026-05-28T19:09:09.147Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "symmachy"
             ],
@@ -1105,10 +1265,10 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "002",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:27:27.326Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "hornsworn"
             ],
@@ -1134,10 +1294,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "004",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:18:39.172Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "hornsworn"
             ],
@@ -1163,10 +1324,11 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "calamity",
-                "central_adventure"
+                "central_adventure",
+                "hourglass_icon"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:19:17.760Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "hornsworn"
             ],
@@ -1220,10 +1382,11 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "calamity",
-                "central_adventure"
+                "central_adventure",
+                "hourglass_icon"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:19:46.011Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "hornsworn"
             ],
@@ -1276,10 +1439,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "010",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:19:56.175Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "labyrinthians"
             ],
@@ -1361,10 +1525,10 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "042",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:27:38.011Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "hornsworn"
             ],
@@ -1375,10 +1539,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "045",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan",
+                "staff_icon"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:27:40.638Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "hornsworn"
             ],
@@ -1506,7 +1671,7 @@ window.ATO_MAP_TILE_TAGS = {
                 "progress"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:21:22.833Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "labyrinthians"
             ],
@@ -1517,10 +1682,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "054",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:21:31.363Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "minoians"
             ],
@@ -1557,10 +1723,10 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "016",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:29:13.515Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "minoians"
             ],
@@ -1600,10 +1766,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "020",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "river"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:22:01.872Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "labyrinthians"
             ],
@@ -1614,10 +1781,10 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "019",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:29:20.541Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "labyrinthians"
             ],
@@ -1628,10 +1795,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "056",
             "reviewed": true,
             "tags": [
-                "progress"
+                "progress",
+                "river"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:22:16.339Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "labyrinthians"
             ],
@@ -1644,10 +1812,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tags": [
                 "progress",
                 "calamity",
-                "central_adventure"
+                "central_adventure",
+                "river"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:22:19.791Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "labyrinthians"
             ],
@@ -1658,10 +1827,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "058",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "river"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:22:21.452Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "labyrinthians"
             ],
@@ -1687,10 +1857,11 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "progress",
-                "central_adventure"
+                "central_adventure",
+                "hourglass_icon"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:22:26.486Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "minoians"
             ],
@@ -1799,10 +1970,10 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "T03",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:29:34.511Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "none"
             ],
@@ -1814,10 +1985,12 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "progress",
-                "adventure"
+                "wild_titan",
+                "river",
+                "staff_icon"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:30:15.880Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "labyrinthians"
             ],
@@ -1829,10 +2002,11 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "city",
-                "central_adventure"
+                "central_adventure",
+                "river"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:23:11.488Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "labyrinthians"
             ],
@@ -1843,10 +2017,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "025",
             "reviewed": true,
             "tags": [
-                "calamity"
+                "calamity",
+                "river"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:23:13.707Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "labyrinthians"
             ],
@@ -1858,10 +2033,12 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "calamity",
-                "central_adventure"
+                "central_adventure",
+                "wild_titan",
+                "river"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:23:16.024Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "labyrinthians"
             ],
@@ -1872,10 +2049,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "062",
             "reviewed": true,
             "tags": [
-                "city"
+                "city",
+                "river"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:23:18.001Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "labyrinthians"
             ],
@@ -1886,10 +2064,12 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "063",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "wild_titan",
+                "river"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:23:21.066Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "labyrinthians"
             ],
@@ -1945,10 +2125,10 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "065",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:30:12.897Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "minoians"
             ],
@@ -1987,10 +2167,10 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "030",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:30:09.898Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "labyrinthians"
             ],
@@ -2019,7 +2199,7 @@ window.ATO_MAP_TILE_TAGS = {
                 "progress"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:24:50.744Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "labyrinthians"
             ],
@@ -2031,10 +2211,10 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "calamity",
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:30:02.962Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "labyrinthians"
             ],
@@ -2045,10 +2225,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "067",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "river",
+                "staff_icon"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:30:07.645Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "labyrinthians"
             ],
@@ -2104,10 +2285,10 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "progress",
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:29:59.995Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "minoians"
             ],
@@ -2148,10 +2329,10 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "progress",
-                "adventure"
+                "hourglass_icon"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:29:57.974Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "minoians"
             ],
@@ -2205,10 +2386,12 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "036",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "wild_titan",
+                "hourglass_icon"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:25:40.910Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "hornsworn"
             ],
@@ -2289,10 +2472,12 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "079",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "frozen_time",
+                "wheel_icon"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:32:40.115Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "twilightWatch"
             ],
@@ -2303,10 +2488,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "082",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:28:04.585Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "twilightWatch"
             ],
@@ -2332,10 +2518,11 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "calamity",
-                "adventure"
+                "frozen_time",
+                "wheel_icon"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:32:40.677Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "twilightWatch"
             ],
@@ -2361,10 +2548,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "086",
             "reviewed": true,
             "tags": [
-                "city"
+                "city",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:28:12.473Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "twilightWatch"
             ],
@@ -2375,10 +2563,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "091",
             "reviewed": true,
             "tags": [
-                "rr_adventure"
+                "rr_adventure",
+                "daedalus_lighthouse"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:28:17.636Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "sunheirs"
             ],
@@ -2389,10 +2578,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "066",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "frozen_time"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:28:22.424Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "twilightWatch"
             ],
@@ -2419,10 +2609,12 @@ window.ATO_MAP_TILE_TAGS = {
             "tags": [
                 "city",
                 "progress",
-                "calamity"
+                "calamity",
+                "time_wound",
+                "restricted"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:28:32.334Z",
+            "updatedAt": "2026-10-16T10:54:18.037Z",
             "factions": [
                 "twilightWatch"
             ],
@@ -2434,10 +2626,12 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "progress",
-                "adventure"
+                "frozen_time",
+                "time_wound",
+                "restricted"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:32:45.746Z",
+            "updatedAt": "2026-10-16T10:54:18.037Z",
             "factions": [
                 "sunheirs"
             ],
@@ -2449,10 +2643,10 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "progress",
-                "adventure"
+                "daedalus_lighthouse"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:32:48.364Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "sunheirs"
             ],
@@ -2463,10 +2657,12 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "090",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "time_portal",
+                "restricted"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:28:40.635Z",
+            "updatedAt": "2026-10-16T10:54:18.037Z",
             "factions": [
                 "sunheirs"
             ],
@@ -2477,10 +2673,13 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "034",
             "reviewed": true,
             "tags": [
-                "rr_adventure"
+                "rr_adventure",
+                "wild_titan",
+                "time_wound",
+                "restricted"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:28:46.250Z",
+            "updatedAt": "2026-10-16T10:54:18.037Z",
             "factions": [
                 "twilightWatch"
             ],
@@ -2491,10 +2690,13 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "055",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "frozen_time",
+                "time_wound",
+                "restricted"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:28:48.715Z",
+            "updatedAt": "2026-10-16T10:54:18.037Z",
             "factions": [
                 "sunheirs"
             ],
@@ -2521,10 +2723,12 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "progress",
-                "adventure"
+                "time_portal",
+                "daedalus_lighthouse",
+                "restricted"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:32:56.919Z",
+            "updatedAt": "2026-10-16T10:54:18.037Z",
             "factions": [
                 "twilightWatch"
             ],
@@ -2535,10 +2739,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "007",
             "reviewed": true,
             "tags": [
-                "city"
+                "city",
+                "frozen_time"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:28:56.916Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "delphians"
             ],
@@ -2550,10 +2755,12 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "city",
-                "progress"
+                "progress",
+                "time_portal",
+                "restricted"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:29:02.232Z",
+            "updatedAt": "2026-10-16T10:54:18.037Z",
             "factions": [
                 "sunheirs"
             ],
@@ -2564,10 +2771,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "059",
             "reviewed": true,
             "tags": [
-                "rr_adventure"
+                "rr_adventure",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:29:05.461Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "twilightWatch"
             ],
@@ -2578,10 +2786,12 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "072",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "time_portal",
+                "restricted"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:29:08.155Z",
+            "updatedAt": "2026-10-16T10:54:18.037Z",
             "factions": [
                 "delphians"
             ],
@@ -2592,10 +2802,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "047",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "frozen_time"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:29:13.228Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "sunheirs"
             ],
@@ -2607,10 +2818,12 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "calamity",
-                "central_adventure"
+                "central_adventure",
+                "time_portal",
+                "restricted"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:29:21.880Z",
+            "updatedAt": "2026-10-16T10:54:18.037Z",
             "factions": [
                 "twilightWatch"
             ],
@@ -2622,10 +2835,10 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "progress",
-                "adventure"
+                "frozen_time"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:33:48.746Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "twilightWatch"
             ],
@@ -2683,10 +2896,12 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "progress",
-                "calamity"
+                "calamity",
+                "time_portal",
+                "restricted"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:36:21.286Z",
+            "updatedAt": "2026-10-16T10:54:18.037Z",
             "factions": [
                 "twilightWatch"
             ],
@@ -2753,10 +2968,10 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "026",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "daedalus_lighthouse"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:34:13.966Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "twilightWatch"
             ],
@@ -2795,10 +3010,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "031",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:30:11.900Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "delphians"
             ],
@@ -2853,10 +3069,10 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "calamity",
-                "adventure"
+                "wheel_icon"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:34:23.375Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "sunheirs"
             ],
@@ -2868,10 +3084,11 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "progress",
-                "adventure"
+                "wild_titan",
+                "daedalus_lighthouse"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:34:29.009Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "sunheirs"
             ],
@@ -2882,10 +3099,12 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "012",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "time_wound",
+                "restricted"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:30:28.289Z",
+            "updatedAt": "2026-10-16T10:54:18.037Z",
             "factions": [
                 "twilightWatch"
             ],
@@ -2897,10 +3116,12 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "progress",
-                "adventure"
+                "time_wound",
+                "daedalus_lighthouse",
+                "restricted"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:34:35.824Z",
+            "updatedAt": "2026-10-16T10:54:18.037Z",
             "factions": [
                 "twilightWatch"
             ],
@@ -2925,10 +3146,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "025",
             "reviewed": true,
             "tags": [
-                "rr_adventure"
+                "rr_adventure",
+                "frozen_time"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:30:38.630Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "delphians"
             ],
@@ -2982,10 +3204,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "032",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:34:49.099Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "delphians"
             ],
@@ -2997,10 +3220,10 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "progress",
-                "adventure"
+                "daedalus_lighthouse"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:34:50.565Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "twilightWatch"
             ],
@@ -3011,10 +3234,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "001",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:30:51.960Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "sunheirs"
             ],
@@ -3025,10 +3249,12 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "036",
             "reviewed": true,
             "tags": [
-                "city"
+                "city",
+                "time_portal",
+                "restricted"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:30:57.625Z",
+            "updatedAt": "2026-10-16T10:54:18.037Z",
             "factions": [
                 "sunheirs"
             ],
@@ -3039,10 +3265,12 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "069",
             "reviewed": true,
             "tags": [
-                "calamity"
+                "calamity",
+                "time_portal",
+                "restricted"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:30:59.501Z",
+            "updatedAt": "2026-10-16T10:54:18.037Z",
             "factions": [
                 "sunheirs"
             ],
@@ -3081,10 +3309,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "017",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:31:23.209Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "twilightWatch"
             ],
@@ -3110,10 +3339,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "020",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "frozen_time"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:35:13.713Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "sunheirs"
             ],
@@ -3138,10 +3368,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "076",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:31:37.439Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "delphians"
             ],
@@ -3153,10 +3384,10 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "progress",
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:36:15.940Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "delphians"
             ],
@@ -3169,10 +3400,10 @@ window.ATO_MAP_TILE_TAGS = {
             "tags": [
                 "progress",
                 "calamity",
-                "adventure"
+                "wheel_icon"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:36:08.034Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "twilightWatch"
             ],
@@ -3212,10 +3443,13 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "087",
             "reviewed": true,
             "tags": [
-                "city"
+                "city",
+                "frozen_time",
+                "time_wound",
+                "restricted"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:32:00.610Z",
+            "updatedAt": "2026-10-16T10:54:18.037Z",
             "factions": [
                 "twilightWatch"
             ],
@@ -3241,10 +3475,11 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "progress",
-                "city"
+                "city",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:32:07.759Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "delphians"
             ],
@@ -3255,10 +3490,12 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "043",
             "reviewed": true,
             "tags": [
-                "calamity"
+                "calamity",
+                "time_portal",
+                "restricted"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:32:10.063Z",
+            "updatedAt": "2026-10-16T10:54:18.037Z",
             "factions": [
                 "twilightWatch"
             ],
@@ -3269,10 +3506,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "048",
             "reviewed": true,
             "tags": [
-                "city"
+                "city",
+                "frozen_time"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:32:15.986Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "sunheirs"
             ],
@@ -3284,10 +3522,10 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "progress",
-                "adventure"
+                "daedalus_lighthouse"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:35:35.329Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "sunheirs"
             ],
@@ -3298,10 +3536,13 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "056",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "time_wound",
+                "time_portal",
+                "restricted"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:32:20.309Z",
+            "updatedAt": "2026-10-16T10:54:18.037Z",
             "factions": [
                 "twilightWatch"
             ],
@@ -3312,10 +3553,14 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "060",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "wild_titan",
+                "frozen_time",
+                "time_wound",
+                "restricted"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:32:22.741Z",
+            "updatedAt": "2026-10-16T10:54:18.037Z",
             "factions": [
                 "twilightWatch"
             ],
@@ -3327,10 +3572,12 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "progress",
-                "adventure"
+                "time_portal",
+                "daedalus_lighthouse",
+                "restricted"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:35:39.767Z",
+            "updatedAt": "2026-10-16T10:54:18.037Z",
             "factions": [
                 "delphians"
             ],
@@ -3341,10 +3588,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "061",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:32:27.340Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "twilightWatch"
             ],
@@ -3355,10 +3603,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "063",
             "reviewed": true,
             "tags": [
-                "rr_adventure"
+                "rr_adventure",
+                "frozen_time"
             ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:32:30.049Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "twilightWatch"
             ],
@@ -3397,10 +3646,10 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "070",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:32:43.481Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "sunheirs"
             ],
@@ -3411,10 +3660,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "016",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan",
+                "frozen_time"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:32:51.009Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "sunheirs"
             ],
@@ -3424,9 +3674,12 @@ window.ATO_MAP_TILE_TAGS = {
             "cycleId": "c3",
             "tileId": "010",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "time_portal",
+                "restricted"
+            ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:33:00.417Z",
+            "updatedAt": "2026-10-16T10:54:18.037Z",
             "factions": [
                 "twilightWatch"
             ],
@@ -3437,10 +3690,12 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "068",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan",
+                "time_wound",
+                "restricted"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:35:24.117Z",
+            "updatedAt": "2026-10-16T10:54:18.037Z",
             "factions": [
                 "sunheirs"
             ],
@@ -3451,10 +3706,10 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "080",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "frozen_time"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:35:19.204Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "delphians"
             ],
@@ -3465,10 +3720,10 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "029",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:35:18.112Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "sunheirs"
             ],
@@ -3479,10 +3734,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "044",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan",
+                "frozen_time"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:35:15.142Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "delphians"
             ],
@@ -3492,9 +3748,11 @@ window.ATO_MAP_TILE_TAGS = {
             "cycleId": "c3",
             "tileId": "333",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "time_wound"
+            ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:33:10.650Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "none"
             ],
@@ -3505,10 +3763,12 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "021",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan",
+                "time_wound",
+                "restricted"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:34:32.276Z",
+            "updatedAt": "2026-10-16T10:54:18.037Z",
             "factions": [
                 "twilightWatch"
             ],
@@ -3519,10 +3779,10 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "018",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "frozen_time"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:34:26.307Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "delphians"
             ],
@@ -3533,10 +3793,10 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "005",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "daedalus_lighthouse"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:34:24.752Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "delphians"
             ],
@@ -3547,10 +3807,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "051",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan",
+                "daedalus_lighthouse"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:34:18.641Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "delphians"
             ],
@@ -3560,9 +3821,12 @@ window.ATO_MAP_TILE_TAGS = {
             "cycleId": "c3",
             "tileId": "038",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "time_portal",
+                "restricted"
+            ],
             "notes": "",
-            "updatedAt": "2026-06-07T09:33:22.138Z",
+            "updatedAt": "2026-10-16T10:54:18.037Z",
             "factions": [
                 "twilightWatch"
             ],
@@ -3573,10 +3837,12 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "003",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan",
+                "time_portal",
+                "restricted"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:33:54.009Z",
+            "updatedAt": "2026-10-16T10:54:18.037Z",
             "factions": [
                 "twilightWatch"
             ],
@@ -3587,10 +3853,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "075",
             "reviewed": true,
             "tags": [
-                "rr_adventure"
+                "rr_adventure",
+                "daedalus_lighthouse"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:33:40.202Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "delphians"
             ],
@@ -3601,10 +3868,10 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "079",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:29:41.762Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "hornsworn"
             ],
@@ -3615,10 +3882,10 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "077",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:29:54.834Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "hornsworn"
             ],
@@ -3629,10 +3896,10 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "011",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "spartan_stronghold"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:30:41.858Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "cyclopes"
             ],
@@ -3643,10 +3910,10 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "013",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:30:47.487Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "helots"
             ],
@@ -3657,10 +3924,10 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "025",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "spartan_stronghold"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:30:54.664Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "helots"
             ],
@@ -3671,10 +3938,10 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "028",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:30:57.546Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "symmachy"
             ],
@@ -3685,10 +3952,10 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "030",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:31:00.419Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "cyclopes"
             ],
@@ -3699,10 +3966,10 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "049",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:31:14.478Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "symmachy"
             ],
@@ -3713,10 +3980,10 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "076",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:31:24.421Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "symmachy"
             ],
@@ -3727,10 +3994,10 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "072",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:31:30.673Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cyclopes"
             ],
@@ -3741,10 +4008,10 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "064",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:31:37.080Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cyclopes"
             ],
@@ -3755,10 +4022,10 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "062",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:31:41.285Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "symmachy"
             ],
@@ -3769,10 +4036,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "061",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "spartan_stronghold",
+                "restricted"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:31:43.740Z",
+            "updatedAt": "2026-10-16T10:54:18.037Z",
             "factions": [
                 "helots"
             ],
@@ -3783,10 +4051,10 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "050",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-06-26T05:32:00.148Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "cyclopes"
             ],
@@ -3820,9 +4088,12 @@ window.ATO_MAP_TILE_TAGS = {
             "cycleId": "c4",
             "tileId": "001",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "central_adventure",
+                "wild_titan"
+            ],
             "notes": "",
-            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "aristotelians"
             ],
@@ -3847,10 +4118,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "003",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan",
+                "smoking_bowl_icon"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:22:00.607Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "aristotelians"
             ],
@@ -3890,10 +4162,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "006",
             "reviewed": true,
             "tags": [
-                "oasis"
+                "oasis",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:22:11.512Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "aristotelians"
             ],
@@ -3918,10 +4191,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "008",
             "reviewed": true,
             "tags": [
-                "city"
+                "city",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:22:40.011Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cloudThieves"
             ],
@@ -3989,10 +4263,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "013",
             "reviewed": true,
             "tags": [
-                "oasis"
+                "oasis",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:22:56.575Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "aristotelians"
             ],
@@ -4075,10 +4350,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "019",
             "reviewed": true,
             "tags": [
-                "oasis"
+                "oasis",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:23:11.919Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "wasters"
             ],
@@ -4132,10 +4408,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "023",
             "reviewed": true,
             "tags": [
-                "oasis"
+                "oasis",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:23:23.579Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cloudThieves"
             ],
@@ -4176,10 +4453,10 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "calamity",
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:23:49.294Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cloudThieves"
             ],
@@ -4190,10 +4467,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "027",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "smoking_bowl_icon"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:23:52.205Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cloudThieves"
             ],
@@ -4291,10 +4569,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "034",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:24:12.710Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "aristotelians"
             ],
@@ -4319,10 +4598,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "036",
             "reviewed": true,
             "tags": [
-                "city"
+                "city",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:24:18.308Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "aristotelians"
             ],
@@ -4348,10 +4628,10 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "calamity",
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:24:22.981Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "aristotelians"
             ],
@@ -4376,10 +4656,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "040",
             "reviewed": true,
             "tags": [
-                "city"
+                "city",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:24:33.574Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "wasters"
             ],
@@ -4594,10 +4875,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "055",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan",
+                "smoking_bowl_icon"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:25:19.490Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "wasters"
             ],
@@ -4651,10 +4933,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "059",
             "reviewed": true,
             "tags": [
-                "oasis"
+                "oasis",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:32:17.508Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "wasters"
             ],
@@ -4680,10 +4963,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "061",
             "reviewed": true,
             "tags": [
-                "oasis"
+                "oasis",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:32:22.046Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cloudThieves"
             ],
@@ -4724,10 +5008,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "064",
             "reviewed": true,
             "tags": [
-                "oasis"
+                "oasis",
+                "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:32:29.858Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "wasters"
             ],
@@ -4736,10 +5021,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c4:065": {
             "cycleId": "c4",
             "tileId": "065",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "wild_titan"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "wasters"
             ],
@@ -4764,10 +5051,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "067",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:32:36.986Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "wasters"
             ],
@@ -4835,10 +5123,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "072",
             "reviewed": true,
             "tags": [
-                "oasis"
+                "oasis",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:32:49.074Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cloudThieves"
             ],
@@ -4849,10 +5138,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "073",
             "reviewed": true,
             "tags": [
-                "rr_adventure"
+                "central_adventure",
+                "city"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:32:51.590Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "wasters"
             ],
@@ -4920,10 +5210,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "078",
             "reviewed": true,
             "tags": [
-                "calamity"
+                "calamity",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:37:12.032Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "wasters"
             ],
@@ -4934,10 +5225,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "079",
             "reviewed": true,
             "tags": [
-                "central_adventure"
+                "central_adventure",
+                "smoking_bowl_icon"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:37:15.112Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "wasters"
             ],
@@ -4974,10 +5266,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:001": {
             "cycleId": "c5",
             "tileId": "001",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "rr_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "outcastVanguard"
             ],
@@ -4986,10 +5280,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:002": {
             "cycleId": "c5",
             "tileId": "002",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "outcastVanguard"
             ],
@@ -4998,10 +5294,14 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:003": {
             "cycleId": "c5",
             "tileId": "003",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "city",
+                "wild_titan",
+                "underwater_city"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "outcastVanguard"
             ],
@@ -5010,10 +5310,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:004": {
             "cycleId": "c5",
             "tileId": "004",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "silver_ruin"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "followersOfArete"
             ],
@@ -5022,10 +5324,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:005": {
             "cycleId": "c5",
             "tileId": "005",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "outcastVanguard"
             ],
@@ -5034,10 +5338,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:006": {
             "cycleId": "c5",
             "tileId": "006",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "wild_titan"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cycladeanProtectorate"
             ],
@@ -5046,10 +5352,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:007": {
             "cycleId": "c5",
             "tileId": "007",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "outcastVanguard"
             ],
@@ -5070,10 +5378,14 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:009": {
             "cycleId": "c5",
             "tileId": "009",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "city",
+                "wild_titan",
+                "underwater_city"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cycladeanProtectorate"
             ],
@@ -5082,10 +5394,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:010": {
             "cycleId": "c5",
             "tileId": "010",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "followersOfArete"
             ],
@@ -5094,10 +5408,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:011": {
             "cycleId": "c5",
             "tileId": "011",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "outcastVanguard"
             ],
@@ -5106,10 +5422,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:012": {
             "cycleId": "c5",
             "tileId": "012",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "wild_titan"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "outcastVanguard"
             ],
@@ -5130,10 +5448,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:014": {
             "cycleId": "c5",
             "tileId": "014",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "followersOfArete"
             ],
@@ -5166,10 +5486,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:017": {
             "cycleId": "c5",
             "tileId": "017",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "wild_titan"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "followersOfArete"
             ],
@@ -5178,10 +5500,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:018": {
             "cycleId": "c5",
             "tileId": "018",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "followersOfArete"
             ],
@@ -5190,10 +5514,13 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:019": {
             "cycleId": "c5",
             "tileId": "019",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "wild_titan",
+                "silver_ruin"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cycladeanProtectorate"
             ],
@@ -5202,10 +5529,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:020": {
             "cycleId": "c5",
             "tileId": "020",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "rr_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "followersOfArete"
             ],
@@ -5214,10 +5543,14 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:021": {
             "cycleId": "c5",
             "tileId": "021",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "city",
+                "wild_titan",
+                "underwater_city"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "followersOfArete"
             ],
@@ -5238,10 +5571,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:023": {
             "cycleId": "c5",
             "tileId": "023",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "outcastVanguard"
             ],
@@ -5250,10 +5585,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:024": {
             "cycleId": "c5",
             "tileId": "024",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "wild_titan"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "outcastVanguard"
             ],
@@ -5262,10 +5599,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:025": {
             "cycleId": "c5",
             "tileId": "025",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "outcastVanguard"
             ],
@@ -5274,10 +5613,13 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:026": {
             "cycleId": "c5",
             "tileId": "026",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "city",
+                "underwater_city"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cycladeanProtectorate"
             ],
@@ -5286,10 +5628,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:027": {
             "cycleId": "c5",
             "tileId": "027",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "rr_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "outcastVanguard"
             ],
@@ -5310,10 +5654,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:029": {
             "cycleId": "c5",
             "tileId": "029",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "followersOfArete"
             ],
@@ -5325,7 +5671,7 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": false,
             "tags": [],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "followersOfArete"
             ],
@@ -5334,10 +5680,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:031": {
             "cycleId": "c5",
             "tileId": "031",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "wild_titan"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "followersOfArete"
             ],
@@ -5346,10 +5694,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:032": {
             "cycleId": "c5",
             "tileId": "032",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "followersOfArete"
             ],
@@ -5370,10 +5720,13 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:034": {
             "cycleId": "c5",
             "tileId": "034",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure",
+                "silver_ruin"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cycladeanProtectorate"
             ],
@@ -5394,10 +5747,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:036": {
             "cycleId": "c5",
             "tileId": "036",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "rr_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cycladeanProtectorate"
             ],
@@ -5406,10 +5761,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:037": {
             "cycleId": "c5",
             "tileId": "037",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "outcastVanguard"
             ],
@@ -5418,10 +5775,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:038": {
             "cycleId": "c5",
             "tileId": "038",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "followersOfArete"
             ],
@@ -5430,10 +5789,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:039": {
             "cycleId": "c5",
             "tileId": "039",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "wild_titan"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "followersOfArete"
             ],
@@ -5442,10 +5803,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:040": {
             "cycleId": "c5",
             "tileId": "040",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "followersOfArete"
             ],
@@ -5454,10 +5817,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:041": {
             "cycleId": "c5",
             "tileId": "041",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "followersOfArete"
             ],
@@ -5478,10 +5843,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:043": {
             "cycleId": "c5",
             "tileId": "043",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "followersOfArete"
             ],
@@ -5490,10 +5857,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:044": {
             "cycleId": "c5",
             "tileId": "044",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "wild_titan"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "outcastVanguard"
             ],
@@ -5502,10 +5871,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:045": {
             "cycleId": "c5",
             "tileId": "045",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "wild_titan"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cycladeanProtectorate"
             ],
@@ -5514,10 +5885,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:046": {
             "cycleId": "c5",
             "tileId": "046",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cycladeanProtectorate"
             ],
@@ -5526,10 +5899,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:047": {
             "cycleId": "c5",
             "tileId": "047",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "silver_ruin"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cycladeanProtectorate"
             ],
@@ -5538,10 +5913,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:048": {
             "cycleId": "c5",
             "tileId": "048",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "rr_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cycladeanProtectorate"
             ],
@@ -5550,10 +5927,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:049": {
             "cycleId": "c5",
             "tileId": "049",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cycladeanProtectorate"
             ],
@@ -5565,7 +5944,7 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": false,
             "tags": [],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "outcastVanguard"
             ],
@@ -5574,10 +5953,13 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:051": {
             "cycleId": "c5",
             "tileId": "051",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "wild_titan",
+                "silver_ruin"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "followersOfArete"
             ],
@@ -5586,10 +5968,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:052": {
             "cycleId": "c5",
             "tileId": "052",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "outcastVanguard"
             ],
@@ -5610,10 +5994,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:054": {
             "cycleId": "c5",
             "tileId": "054",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "rr_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "outcastVanguard"
             ],
@@ -5622,10 +6008,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:055": {
             "cycleId": "c5",
             "tileId": "055",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "outcastVanguard"
             ],
@@ -5646,10 +6034,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:057": {
             "cycleId": "c5",
             "tileId": "057",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cycladeanProtectorate"
             ],
@@ -5658,10 +6048,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:058": {
             "cycleId": "c5",
             "tileId": "058",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "wild_titan"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cycladeanProtectorate"
             ],
@@ -5670,10 +6062,13 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:059": {
             "cycleId": "c5",
             "tileId": "059",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "city",
+                "underwater_city"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cycladeanProtectorate"
             ],
@@ -5682,10 +6077,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:060": {
             "cycleId": "c5",
             "tileId": "060",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "wild_titan"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cycladeanProtectorate"
             ],
@@ -5694,10 +6091,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:061": {
             "cycleId": "c5",
             "tileId": "061",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cycladeanProtectorate"
             ],
@@ -5706,10 +6105,14 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:062": {
             "cycleId": "c5",
             "tileId": "062",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "city",
+                "wild_titan",
+                "underwater_city"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "outcastVanguard"
             ],
@@ -5718,10 +6121,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:063": {
             "cycleId": "c5",
             "tileId": "063",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "rr_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "outcastVanguard"
             ],
@@ -5730,10 +6135,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:064": {
             "cycleId": "c5",
             "tileId": "064",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "wild_titan"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:50:03.505Z",
             "factions": [
                 "outcastVanguard"
             ],
@@ -5754,10 +6161,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:066": {
             "cycleId": "c5",
             "tileId": "066",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "outcastVanguard"
             ],
@@ -5766,10 +6175,13 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:067": {
             "cycleId": "c5",
             "tileId": "067",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "wild_titan",
+                "silver_ruin"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cycladeanProtectorate"
             ],
@@ -5778,10 +6190,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:068": {
             "cycleId": "c5",
             "tileId": "068",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cycladeanProtectorate"
             ],
@@ -5802,10 +6216,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:070": {
             "cycleId": "c5",
             "tileId": "070",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cycladeanProtectorate"
             ],
@@ -5826,10 +6242,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:072": {
             "cycleId": "c5",
             "tileId": "072",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cycladeanProtectorate"
             ],
@@ -5838,10 +6256,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:073": {
             "cycleId": "c5",
             "tileId": "073",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "wild_titan"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cycladeanProtectorate"
             ],
@@ -5850,10 +6270,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:074": {
             "cycleId": "c5",
             "tileId": "074",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cycladeanProtectorate"
             ],
@@ -5874,10 +6296,14 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:076": {
             "cycleId": "c5",
             "tileId": "076",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure",
+                "city",
+                "underwater_city"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "outcastVanguard"
             ],
@@ -5886,10 +6312,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:077": {
             "cycleId": "c5",
             "tileId": "077",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "wild_titan"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cycladeanProtectorate"
             ],
@@ -5910,10 +6338,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:079": {
             "cycleId": "c5",
             "tileId": "079",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cycladeanProtectorate"
             ],
@@ -5922,10 +6352,12 @@ window.ATO_MAP_TILE_TAGS = {
         "c5:080": {
             "cycleId": "c5",
             "tileId": "080",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "rr_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T16:54:26Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cycladeanProtectorate"
             ],
@@ -5981,10 +6413,12 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "A",
             "reviewed": true,
             "tags": [
-                "city"
+                "city",
+                "wild_titan",
+                "underwater_city"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:48:12.518Z"
+            "updatedAt": "2026-10-16T10:25:14.628Z"
         },
         "c5:003:B": {
             "cycleId": "c5",
@@ -5992,10 +6426,10 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "B",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "followersOfArete"
             ],
@@ -6029,10 +6463,12 @@ window.ATO_MAP_TILE_TAGS = {
             "cycleId": "c5",
             "tileId": "005",
             "face": "B",
-            "reviewed": false,
-            "tags": [],
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:48:52.965Z"
+            "updatedAt": "2026-10-16T10:25:14.628Z"
         },
         "c5:005:A": {
             "cycleId": "c5",
@@ -6052,10 +6488,10 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "calamity",
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:55:56.085Z"
+            "updatedAt": "2026-10-16T10:25:14.628Z"
         },
         "c5:007:A": {
             "cycleId": "c5",
@@ -6097,10 +6533,12 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "A",
             "reviewed": true,
             "tags": [
-                "city"
+                "city",
+                "wild_titan",
+                "underwater_city"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:56:14.592Z"
+            "updatedAt": "2026-10-16T10:25:14.628Z"
         },
         "c5:010:A": {
             "cycleId": "c5",
@@ -6119,10 +6557,10 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "B",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "followersOfArete"
             ],
@@ -6146,10 +6584,10 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "calamity",
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:59:17.751Z"
+            "updatedAt": "2026-10-16T10:25:14.628Z"
         },
         "c5:013:A": {
             "cycleId": "c5",
@@ -6201,10 +6639,10 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "A",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:59:40.464Z"
+            "updatedAt": "2026-10-16T10:25:14.628Z"
         },
         "c5:018:A": {
             "cycleId": "c5",
@@ -6240,10 +6678,11 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "A",
             "reviewed": true,
             "tags": [
-                "silver_ruin"
+                "silver_ruin",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:59:48.946Z"
+            "updatedAt": "2026-10-16T10:25:14.628Z"
         },
         "c5:020:A": {
             "cycleId": "c5",
@@ -6279,10 +6718,12 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "calamity",
-                "city"
+                "city",
+                "wild_titan",
+                "underwater_city"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T17:59:59.618Z"
+            "updatedAt": "2026-10-16T10:25:14.628Z"
         },
         "c5:021:B": {
             "cycleId": "c5",
@@ -6291,10 +6732,10 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "calamity",
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T18:00:02.141Z"
+            "updatedAt": "2026-10-16T10:25:14.628Z"
         },
         "c5:022:A": {
             "cycleId": "c5",
@@ -6349,10 +6790,10 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "calamity",
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T18:00:21.602Z"
+            "updatedAt": "2026-10-16T10:25:14.628Z"
         },
         "c5:025:A": {
             "cycleId": "c5",
@@ -6372,10 +6813,11 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "calamity",
-                "city"
+                "city",
+                "underwater_city"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T18:00:28.407Z"
+            "updatedAt": "2026-10-16T10:25:14.628Z"
         },
         "c5:027:A": {
             "cycleId": "c5",
@@ -6386,7 +6828,7 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T18:00:32.164Z"
+            "updatedAt": "2026-10-16T10:50:03.505Z"
         },
         "c5:028:A": {
             "cycleId": "c5",
@@ -6420,7 +6862,7 @@ window.ATO_MAP_TILE_TAGS = {
                 "progress"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T18:00:41.884Z"
+            "updatedAt": "2026-10-16T10:50:03.505Z"
         },
         "c5:030:B": {
             "cycleId": "c5",
@@ -6443,10 +6885,10 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "A",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T18:00:48.545Z"
+            "updatedAt": "2026-10-16T10:25:14.628Z"
         },
         "c5:032:A": {
             "cycleId": "c5",
@@ -6548,7 +6990,7 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T18:01:25.391Z"
+            "updatedAt": "2026-10-16T10:50:03.505Z"
         },
         "c5:039:A": {
             "cycleId": "c5",
@@ -6556,10 +6998,10 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "A",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T18:01:27.695Z"
+            "updatedAt": "2026-10-16T10:25:14.628Z"
         },
         "c5:039:B": {
             "cycleId": "c5",
@@ -6567,12 +7009,12 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "B",
             "reviewed": true,
             "tags": [
-                "adventure",
                 "city",
-                "calamity"
+                "calamity",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T18:01:29.808Z"
+            "updatedAt": "2026-10-16T10:25:14.628Z"
         },
         "c5:040:A": {
             "cycleId": "c5",
@@ -6638,10 +7080,10 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "A",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T18:01:50.291Z"
+            "updatedAt": "2026-10-16T10:50:03.505Z"
         },
         "c5:045:A": {
             "cycleId": "c5",
@@ -6649,10 +7091,10 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "A",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T18:01:53.392Z"
+            "updatedAt": "2026-10-16T10:25:14.628Z"
         },
         "c5:046:A": {
             "cycleId": "c5",
@@ -6709,7 +7151,7 @@ window.ATO_MAP_TILE_TAGS = {
                 "progress"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T18:02:15.332Z"
+            "updatedAt": "2026-10-16T10:50:03.505Z"
         },
         "c5:051:A": {
             "cycleId": "c5",
@@ -6717,10 +7159,11 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "A",
             "reviewed": true,
             "tags": [
-                "silver_ruin"
+                "silver_ruin",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T18:02:18.319Z"
+            "updatedAt": "2026-10-16T10:25:14.628Z"
         },
         "c5:051:B": {
             "cycleId": "c5",
@@ -6729,10 +7172,11 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "silver_ruin",
-                "city"
+                "city",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T18:02:20.886Z"
+            "updatedAt": "2026-10-16T10:25:14.628Z"
         },
         "c5:052:A": {
             "cycleId": "c5",
@@ -6743,7 +7187,7 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T18:02:23.332Z"
+            "updatedAt": "2026-10-16T10:50:03.505Z"
         },
         "c5:053:A": {
             "cycleId": "c5",
@@ -6765,7 +7209,7 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T18:02:30.238Z"
+            "updatedAt": "2026-10-16T10:50:03.505Z"
         },
         "c5:055:A": {
             "cycleId": "c5",
@@ -6776,7 +7220,7 @@ window.ATO_MAP_TILE_TAGS = {
                 "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T18:02:33.104Z"
+            "updatedAt": "2026-10-16T10:50:03.505Z"
         },
         "c5:056:A": {
             "cycleId": "c5",
@@ -6807,10 +7251,10 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "A",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T18:02:42.641Z"
+            "updatedAt": "2026-10-16T10:25:14.628Z"
         },
         "c5:059:A": {
             "cycleId": "c5",
@@ -6818,10 +7262,11 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "A",
             "reviewed": true,
             "tags": [
-                "city"
+                "city",
+                "underwater_city"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T18:02:45.193Z"
+            "updatedAt": "2026-10-16T10:25:14.628Z"
         },
         "c5:060:A": {
             "cycleId": "c5",
@@ -6830,10 +7275,10 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "calamity",
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T18:02:50.472Z"
+            "updatedAt": "2026-10-16T10:25:14.628Z"
         },
         "c5:061:A": {
             "cycleId": "c5",
@@ -6853,10 +7298,12 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "A",
             "reviewed": true,
             "tags": [
-                "city"
+                "city",
+                "wild_titan",
+                "underwater_city"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T18:02:59.493Z"
+            "updatedAt": "2026-10-16T10:50:03.505Z"
         },
         "c5:062:B": {
             "cycleId": "c5",
@@ -6864,10 +7311,10 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "B",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T18:03:03.411Z"
+            "updatedAt": "2026-10-16T10:25:14.628Z"
         },
         "c5:063:A": {
             "cycleId": "c5",
@@ -6878,7 +7325,7 @@ window.ATO_MAP_TILE_TAGS = {
                 "rr_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T18:03:05.716Z"
+            "updatedAt": "2026-10-16T10:50:03.505Z"
         },
         "c5:064:A": {
             "cycleId": "c5",
@@ -6886,10 +7333,10 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "A",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T18:03:13.913Z"
+            "updatedAt": "2026-10-16T10:50:03.505Z"
         },
         "c5:064:B": {
             "cycleId": "c5",
@@ -6897,11 +7344,11 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "B",
             "reviewed": true,
             "tags": [
-                "adventure",
-                "city"
+                "city",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "followersOfArete"
             ],
@@ -6947,10 +7394,11 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "A",
             "reviewed": true,
             "tags": [
-                "silver_ruin"
+                "silver_ruin",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T18:03:30.435Z"
+            "updatedAt": "2026-10-16T10:25:14.628Z"
         },
         "c5:068:A": {
             "cycleId": "c5",
@@ -7014,10 +7462,10 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "A",
             "reviewed": true,
             "tags": [
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T18:03:51.839Z"
+            "updatedAt": "2026-10-16T10:25:14.628Z"
         },
         "c5:074:A": {
             "cycleId": "c5",
@@ -7049,10 +7497,11 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "city",
-                "central_adventure"
+                "central_adventure",
+                "underwater_city"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T18:04:05.165Z"
+            "updatedAt": "2026-10-16T10:25:14.628Z"
         },
         "c5:077:A": {
             "cycleId": "c5",
@@ -7061,10 +7510,10 @@ window.ATO_MAP_TILE_TAGS = {
             "reviewed": true,
             "tags": [
                 "calamity",
-                "adventure"
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-07-29T18:04:09.419Z"
+            "updatedAt": "2026-10-16T10:25:14.628Z"
         },
         "c5:078:A": {
             "cycleId": "c5",
@@ -7117,10 +7566,11 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "B",
             "reviewed": true,
             "tags": [
-                "calamity"
+                "calamity",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cycladeanProtectorate"
             ],
@@ -7147,10 +7597,11 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "B",
             "reviewed": true,
             "tags": [
-                "calamity"
+                "calamity",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "followersOfArete"
             ],
@@ -7206,9 +7657,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "017",
             "face": "B",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "wild_titan"
+            ],
             "notes": "",
-            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "outcastVanguard"
             ],
@@ -7219,9 +7672,12 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "019",
             "face": "B",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "wild_titan",
+                "silver_ruin"
+            ],
             "notes": "",
-            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "followersOfArete"
             ],
@@ -7233,10 +7689,11 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "B",
             "reviewed": true,
             "tags": [
-                "calamity"
+                "calamity",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "outcastVanguard"
             ],
@@ -7278,10 +7735,11 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "B",
             "reviewed": true,
             "tags": [
-                "calamity"
+                "calamity",
+                "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "followersOfArete"
             ],
@@ -7293,10 +7751,11 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "B",
             "reviewed": true,
             "tags": [
-                "calamity"
+                "calamity",
+                "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "followersOfArete"
             ],
@@ -7323,10 +7782,11 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "B",
             "reviewed": true,
             "tags": [
-                "calamity"
+                "calamity",
+                "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cycladeanProtectorate"
             ],
@@ -7337,9 +7797,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "048",
             "face": "B",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "rr_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "outcastVanguard"
             ],
@@ -7351,10 +7813,11 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "B",
             "reviewed": true,
             "tags": [
-                "calamity"
+                "calamity",
+                "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "outcastVanguard"
             ],
@@ -7411,10 +7874,11 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "B",
             "reviewed": true,
             "tags": [
-                "calamity"
+                "calamity",
+                "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cycladeanProtectorate"
             ],
@@ -7426,10 +7890,11 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "B",
             "reviewed": true,
             "tags": [
-                "calamity"
+                "calamity",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cycladeanProtectorate"
             ],
@@ -7441,10 +7906,11 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "B",
             "reviewed": true,
             "tags": [
-                "calamity"
+                "calamity",
+                "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "outcastVanguard"
             ],
@@ -7470,9 +7936,12 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "067",
             "face": "B",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "wild_titan",
+                "silver_ruin"
+            ],
             "notes": "",
-            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "outcastVanguard"
             ],
@@ -7484,10 +7953,11 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "B",
             "reviewed": true,
             "tags": [
-                "calamity"
+                "calamity",
+                "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "cycladeanProtectorate"
             ],
@@ -7528,9 +7998,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "072",
             "face": "B",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "outcastVanguard"
             ],
@@ -7541,9 +8013,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "073",
             "face": "B",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "wild_titan"
+            ],
             "notes": "",
-            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "followersOfArete"
             ],
@@ -7555,10 +8029,11 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "B",
             "reviewed": true,
             "tags": [
-                "calamity"
+                "calamity",
+                "central_adventure"
             ],
             "notes": "",
-            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "followersOfArete"
             ],
@@ -7584,9 +8059,11 @@ window.ATO_MAP_TILE_TAGS = {
             "tileId": "076",
             "face": "B",
             "reviewed": true,
-            "tags": [],
+            "tags": [
+                "central_adventure"
+            ],
             "notes": "",
-            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "followersOfArete"
             ],
@@ -7598,10 +8075,11 @@ window.ATO_MAP_TILE_TAGS = {
             "face": "B",
             "reviewed": true,
             "tags": [
-                "calamity"
+                "calamity",
+                "wild_titan"
             ],
             "notes": "",
-            "updatedAt": "2026-10-13T11:27:53.944Z",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
             "factions": [
                 "followersOfArete"
             ],
@@ -7621,7 +8099,1640 @@ window.ATO_MAP_TILE_TAGS = {
                 "followersOfArete"
             ],
             "factionUpdatedAt": "2026-10-13T11:27:53.944Z"
+        },
+        "c5:033:A": {
+            "cycleId": "c5",
+            "tileId": "033",
+            "reviewed": false,
+            "tags": [],
+            "notes": "",
+            "updatedAt": "2026-07-29T16:54:26Z",
+            "factions": [
+                "cycladeanProtectorate"
+            ],
+            "factionUpdatedAt": "2026-07-29T16:54:26Z",
+            "face": "A"
+        },
+        "c5:010:B": {
+            "cycleId": "c5",
+            "tileId": "010",
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
+            "factions": [
+                "followersOfArete"
+            ],
+            "factionUpdatedAt": "2026-07-29T16:54:26Z",
+            "face": "B"
+        },
+        "c5:011:B": {
+            "cycleId": "c5",
+            "tileId": "011",
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
+            "factions": [
+                "outcastVanguard"
+            ],
+            "factionUpdatedAt": "2026-07-29T16:54:26Z",
+            "face": "B"
+        },
+        "c5:014:B": {
+            "cycleId": "c5",
+            "tileId": "014",
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
+            "factions": [
+                "followersOfArete"
+            ],
+            "factionUpdatedAt": "2026-07-29T16:54:26Z",
+            "face": "B"
+        },
+        "c5:025:B": {
+            "cycleId": "c5",
+            "tileId": "025",
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
+            "factions": [
+                "outcastVanguard"
+            ],
+            "factionUpdatedAt": "2026-07-29T16:54:26Z",
+            "face": "B"
+        },
+        "c5:027:B": {
+            "cycleId": "c5",
+            "tileId": "027",
+            "reviewed": true,
+            "tags": [
+                "rr_adventure"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
+            "factions": [
+                "outcastVanguard"
+            ],
+            "factionUpdatedAt": "2026-07-29T16:54:26Z",
+            "face": "B"
+        },
+        "c5:031:B": {
+            "cycleId": "c5",
+            "tileId": "031",
+            "reviewed": true,
+            "tags": [
+                "wild_titan"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
+            "factions": [
+                "followersOfArete"
+            ],
+            "factionUpdatedAt": "2026-07-29T16:54:26Z",
+            "face": "B"
+        },
+        "c5:032:B": {
+            "cycleId": "c5",
+            "tileId": "032",
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
+            "factions": [
+                "followersOfArete"
+            ],
+            "factionUpdatedAt": "2026-07-29T16:54:26Z",
+            "face": "B"
+        },
+        "c5:034:B": {
+            "cycleId": "c5",
+            "tileId": "034",
+            "reviewed": true,
+            "tags": [
+                "central_adventure",
+                "silver_ruin"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
+            "factions": [
+                "cycladeanProtectorate"
+            ],
+            "factionUpdatedAt": "2026-07-29T16:54:26Z",
+            "face": "B"
+        },
+        "c5:036:B": {
+            "cycleId": "c5",
+            "tileId": "036",
+            "reviewed": true,
+            "tags": [
+                "rr_adventure"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
+            "factions": [
+                "cycladeanProtectorate"
+            ],
+            "factionUpdatedAt": "2026-07-29T16:54:26Z",
+            "face": "B"
+        },
+        "c5:038:B": {
+            "cycleId": "c5",
+            "tileId": "038",
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
+            "factions": [
+                "followersOfArete"
+            ],
+            "factionUpdatedAt": "2026-07-29T16:54:26Z",
+            "face": "B"
+        },
+        "c5:040:B": {
+            "cycleId": "c5",
+            "tileId": "040",
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
+            "factions": [
+                "followersOfArete"
+            ],
+            "factionUpdatedAt": "2026-07-29T16:54:26Z",
+            "face": "B"
+        },
+        "c5:044:B": {
+            "cycleId": "c5",
+            "tileId": "044",
+            "reviewed": true,
+            "tags": [
+                "wild_titan"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
+            "factions": [
+                "outcastVanguard"
+            ],
+            "factionUpdatedAt": "2026-07-29T16:54:26Z",
+            "face": "B"
+        },
+        "c5:045:B": {
+            "cycleId": "c5",
+            "tileId": "045",
+            "reviewed": true,
+            "tags": [
+                "wild_titan"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
+            "factions": [
+                "cycladeanProtectorate"
+            ],
+            "factionUpdatedAt": "2026-07-29T16:54:26Z",
+            "face": "B"
+        },
+        "c5:047:B": {
+            "cycleId": "c5",
+            "tileId": "047",
+            "reviewed": true,
+            "tags": [
+                "silver_ruin"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
+            "factions": [
+                "cycladeanProtectorate"
+            ],
+            "factionUpdatedAt": "2026-07-29T16:54:26Z",
+            "face": "B"
+        },
+        "c5:052:B": {
+            "cycleId": "c5",
+            "tileId": "052",
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
+            "factions": [
+                "outcastVanguard"
+            ],
+            "factionUpdatedAt": "2026-07-29T16:54:26Z",
+            "face": "B"
+        },
+        "c5:054:B": {
+            "cycleId": "c5",
+            "tileId": "054",
+            "reviewed": true,
+            "tags": [
+                "rr_adventure"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
+            "factions": [
+                "outcastVanguard"
+            ],
+            "factionUpdatedAt": "2026-07-29T16:54:26Z",
+            "face": "B"
+        },
+        "c5:055:B": {
+            "cycleId": "c5",
+            "tileId": "055",
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
+            "factions": [
+                "outcastVanguard"
+            ],
+            "factionUpdatedAt": "2026-07-29T16:54:26Z",
+            "face": "B"
+        },
+        "c5:058:B": {
+            "cycleId": "c5",
+            "tileId": "058",
+            "reviewed": true,
+            "tags": [
+                "wild_titan"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
+            "factions": [
+                "cycladeanProtectorate"
+            ],
+            "factionUpdatedAt": "2026-07-29T16:54:26Z",
+            "face": "B"
+        },
+        "c5:059:B": {
+            "cycleId": "c5",
+            "tileId": "059",
+            "reviewed": false,
+            "tags": [],
+            "notes": "",
+            "updatedAt": "2026-07-29T16:54:26Z",
+            "factions": [
+                "cycladeanProtectorate"
+            ],
+            "factionUpdatedAt": "2026-07-29T16:54:26Z",
+            "face": "B"
+        },
+        "c5:063:B": {
+            "cycleId": "c5",
+            "tileId": "063",
+            "reviewed": true,
+            "tags": [
+                "rr_adventure"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
+            "factions": [
+                "outcastVanguard"
+            ],
+            "factionUpdatedAt": "2026-07-29T16:54:26Z",
+            "face": "B"
+        },
+        "c5:070:B": {
+            "cycleId": "c5",
+            "tileId": "070",
+            "reviewed": true,
+            "tags": [
+                "central_adventure"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
+            "factions": [
+                "cycladeanProtectorate"
+            ],
+            "factionUpdatedAt": "2026-07-29T16:54:26Z",
+            "face": "B"
+        },
+        "c5:080:B": {
+            "cycleId": "c5",
+            "tileId": "080",
+            "reviewed": true,
+            "tags": [
+                "rr_adventure"
+            ],
+            "notes": "",
+            "updatedAt": "2026-10-16T10:25:14.628Z",
+            "factions": [
+                "cycladeanProtectorate"
+            ],
+            "factionUpdatedAt": "2026-07-29T16:54:26Z",
+            "face": "B"
         }
     },
-    "revision": 1
+    "revision": 3,
+    "neighborHints": {
+        "c1:019": [
+            {
+                "direction": "down",
+                "targetTileId": "024",
+                "targetTileIds": [
+                    "024"
+                ],
+                "region": null,
+                "tags": [
+                    "river",
+                    "restricted"
+                ]
+            }
+        ],
+        "c1:020": [
+            {
+                "direction": "right",
+                "targetTileId": "056",
+                "targetTileIds": [
+                    "056"
+                ],
+                "region": null,
+                "tags": [
+                    "river"
+                ]
+            },
+            {
+                "direction": "down",
+                "targetTileId": "025",
+                "targetTileIds": [
+                    "025"
+                ],
+                "region": null,
+                "tags": [
+                    "river"
+                ]
+            }
+        ],
+        "c1:022:alt": [
+            {
+                "direction": "right",
+                "targetTileId": "023",
+                "targetTileIds": [
+                    "023"
+                ],
+                "region": null,
+                "tags": [
+                    "river",
+                    "restricted"
+                ]
+            }
+        ],
+        "c1:023": [
+            {
+                "direction": "right",
+                "targetTileId": "024",
+                "targetTileIds": [
+                    "024"
+                ],
+                "region": null,
+                "tags": [
+                    "river"
+                ]
+            }
+        ],
+        "c1:023:alt": [
+            {
+                "direction": "right",
+                "targetTileId": "024",
+                "targetTileIds": [
+                    "024"
+                ],
+                "region": null,
+                "tags": [
+                    "river"
+                ]
+            }
+        ],
+        "c1:024": [
+            {
+                "direction": "left",
+                "targetTileId": "023",
+                "targetTileIds": [
+                    "023"
+                ],
+                "region": null,
+                "tags": [
+                    "river"
+                ]
+            },
+            {
+                "direction": "right",
+                "targetTileId": "025",
+                "targetTileIds": [
+                    "025"
+                ],
+                "region": null,
+                "tags": [
+                    "river"
+                ]
+            }
+        ],
+        "c1:025": [
+            {
+                "direction": "left",
+                "targetTileId": "024",
+                "targetTileIds": [
+                    "024"
+                ],
+                "region": null,
+                "tags": [
+                    "river"
+                ]
+            },
+            {
+                "direction": "up",
+                "targetTileId": "020",
+                "targetTileIds": [
+                    "020"
+                ],
+                "region": null,
+                "tags": [
+                    "river"
+                ]
+            }
+        ],
+        "c1:030": [
+            {
+                "direction": "up",
+                "targetTileId": "025",
+                "targetTileIds": [
+                    "025"
+                ],
+                "region": null,
+                "tags": [
+                    "river",
+                    "restricted"
+                ]
+            }
+        ],
+        "c1:053": [
+            {
+                "direction": "down",
+                "targetTileId": "058",
+                "targetTileIds": [
+                    "058"
+                ],
+                "region": null,
+                "tags": [
+                    "river",
+                    "restricted"
+                ]
+            }
+        ],
+        "c1:056": [
+            {
+                "direction": "down",
+                "targetTileId": "061",
+                "targetTileIds": [
+                    "061"
+                ],
+                "region": null,
+                "tags": [
+                    "river"
+                ]
+            },
+            {
+                "direction": "left",
+                "targetTileId": "020",
+                "targetTileIds": [
+                    "020"
+                ],
+                "region": null,
+                "tags": [
+                    "river"
+                ]
+            }
+        ],
+        "c1:057": [
+            {
+                "direction": "down",
+                "targetTileId": "062",
+                "targetTileIds": [
+                    "062"
+                ],
+                "region": null,
+                "tags": [
+                    "river"
+                ]
+            },
+            {
+                "direction": "right",
+                "targetTileId": "058",
+                "targetTileIds": [
+                    "058"
+                ],
+                "region": null,
+                "tags": [
+                    "river"
+                ]
+            }
+        ],
+        "c1:058": [
+            {
+                "direction": "left",
+                "targetTileId": "057",
+                "targetTileIds": [
+                    "057"
+                ],
+                "region": null,
+                "tags": [
+                    "river"
+                ]
+            }
+        ],
+        "c1:061": [
+            {
+                "direction": "up",
+                "targetTileId": "056",
+                "targetTileIds": [
+                    "056"
+                ],
+                "region": null,
+                "tags": [
+                    "river"
+                ]
+            },
+            {
+                "direction": "right",
+                "targetTileId": "062",
+                "targetTileIds": [
+                    "062"
+                ],
+                "region": null,
+                "tags": [
+                    "river"
+                ]
+            }
+        ],
+        "c1:062": [
+            {
+                "direction": "up",
+                "targetTileId": "057",
+                "targetTileIds": [
+                    "057"
+                ],
+                "region": null,
+                "tags": [
+                    "river"
+                ]
+            },
+            {
+                "direction": "down",
+                "targetTileId": "067",
+                "targetTileIds": [
+                    "067"
+                ],
+                "region": null,
+                "tags": [
+                    "river"
+                ]
+            },
+            {
+                "direction": "right",
+                "targetTileId": "063",
+                "targetTileIds": [
+                    "063"
+                ],
+                "region": null,
+                "tags": [
+                    "river"
+                ]
+            },
+            {
+                "direction": "left",
+                "targetTileId": "061",
+                "targetTileIds": [
+                    "061"
+                ],
+                "region": null,
+                "tags": [
+                    "river"
+                ]
+            }
+        ],
+        "c1:063": [
+            {
+                "direction": "left",
+                "targetTileId": "062",
+                "targetTileIds": [
+                    "062"
+                ],
+                "region": null,
+                "tags": [
+                    "river"
+                ]
+            }
+        ],
+        "c1:067": [
+            {
+                "direction": "up",
+                "targetTileId": "062",
+                "targetTileIds": [
+                    "062"
+                ],
+                "region": null,
+                "tags": [
+                    "river"
+                ]
+            }
+        ],
+        "c1:068": [
+            {
+                "direction": "up",
+                "targetTileId": "063",
+                "targetTileIds": [
+                    "063"
+                ],
+                "region": null,
+                "tags": [
+                    "river",
+                    "restricted"
+                ]
+            }
+        ],
+        "c2:007": [
+            {
+                "direction": "right",
+                "targetTileId": "008",
+                "targetTileIds": [
+                    "008"
+                ],
+                "region": null,
+                "tags": [
+                    "restricted"
+                ]
+            }
+        ],
+        "c2:008": [
+            {
+                "direction": "left",
+                "targetTileId": "007",
+                "targetTileIds": [
+                    "007"
+                ],
+                "region": null,
+                "tags": [
+                    "restricted"
+                ]
+            }
+        ],
+        "c2:011": [
+            {
+                "direction": "down",
+                "targetTileId": "018",
+                "targetTileIds": [
+                    "018"
+                ],
+                "region": null,
+                "tags": [
+                    "restricted"
+                ]
+            }
+        ],
+        "c2:013": [
+            {
+                "direction": "left",
+                "targetTileId": "012",
+                "targetTileIds": [
+                    "012"
+                ],
+                "region": null,
+                "tags": [
+                    "restricted"
+                ]
+            }
+        ],
+        "c2:017": [
+            {
+                "direction": "right",
+                "targetTileId": "018",
+                "targetTileIds": [
+                    "018"
+                ],
+                "region": null,
+                "tags": [
+                    "restricted"
+                ]
+            }
+        ],
+        "c2:019": [
+            {
+                "direction": "left",
+                "targetTileId": "018",
+                "targetTileIds": [
+                    "018"
+                ],
+                "region": null,
+                "tags": [
+                    "restricted"
+                ]
+            }
+        ],
+        "c2:021": [
+            {
+                "direction": "up",
+                "targetTileId": "014",
+                "targetTileIds": [
+                    "014"
+                ],
+                "region": "α",
+                "tags": [
+                    "restricted"
+                ]
+            }
+        ],
+        "c2:023": [
+            {
+                "direction": "up",
+                "targetTileId": "016",
+                "targetTileIds": [
+                    "016"
+                ],
+                "region": null,
+                "tags": [
+                    "restricted"
+                ]
+            },
+            {
+                "direction": "down",
+                "targetTileId": "030",
+                "targetTileIds": [
+                    "030"
+                ],
+                "region": null,
+                "tags": [
+                    "restricted"
+                ]
+            }
+        ],
+        "c2:024": [
+            {
+                "direction": "up",
+                "targetTileId": "017",
+                "targetTileIds": [
+                    "017"
+                ],
+                "region": null,
+                "tags": [
+                    "restricted"
+                ]
+            }
+        ],
+        "c2:027": [
+            {
+                "direction": "up",
+                "targetTileId": "020",
+                "targetTileIds": [
+                    "020"
+                ],
+                "region": null,
+                "tags": [
+                    "restricted"
+                ]
+            }
+        ],
+        "c2:028": [
+            {
+                "direction": "up",
+                "targetTileId": "021",
+                "targetTileIds": [
+                    "021"
+                ],
+                "region": null,
+                "tags": [
+                    "restricted"
+                ]
+            }
+        ],
+        "c2:030": [
+            {
+                "direction": "down",
+                "targetTileId": "037",
+                "targetTileIds": [
+                    "037"
+                ],
+                "region": null,
+                "tags": [
+                    "restricted"
+                ]
+            }
+        ],
+        "c2:032": [
+            {
+                "direction": "up",
+                "targetTileId": "025",
+                "targetTileIds": [
+                    "025"
+                ],
+                "region": null,
+                "tags": [
+                    "restricted"
+                ]
+            }
+        ],
+        "c2:034": [
+            {
+                "direction": "left",
+                "targetTileId": "033",
+                "targetTileIds": [
+                    "033"
+                ],
+                "region": null,
+                "tags": [
+                    "restricted"
+                ]
+            }
+        ],
+        "c2:050": [
+            {
+                "direction": "down",
+                "targetTileId": "057",
+                "targetTileIds": [
+                    "057"
+                ],
+                "region": null,
+                "tags": [
+                    "restricted"
+                ]
+            }
+        ],
+        "c2:051": [
+            {
+                "direction": "left",
+                "targetTileId": "050",
+                "targetTileIds": [
+                    "050"
+                ],
+                "region": null,
+                "tags": [
+                    "restricted"
+                ]
+            },
+            {
+                "direction": "up",
+                "targetTileId": "044",
+                "targetTileIds": [
+                    "044"
+                ],
+                "region": null,
+                "tags": [
+                    "restricted"
+                ]
+            }
+        ],
+        "c2:052": [
+            {
+                "direction": "up",
+                "targetTileId": "045",
+                "targetTileIds": [
+                    "045"
+                ],
+                "region": "α",
+                "tags": [
+                    "restricted"
+                ]
+            }
+        ],
+        "c2:054": [
+            {
+                "direction": "up",
+                "targetTileId": "047",
+                "targetTileIds": [
+                    "047"
+                ],
+                "region": "α",
+                "tags": [
+                    "restricted"
+                ]
+            }
+        ],
+        "c2:055": [
+            {
+                "direction": "up",
+                "targetTileId": "048",
+                "targetTileIds": [
+                    "048"
+                ],
+                "region": "β",
+                "tags": [
+                    "restricted"
+                ]
+            },
+            {
+                "direction": "up",
+                "targetTileId": "048",
+                "targetTileIds": [
+                    "048"
+                ],
+                "region": "α",
+                "tags": [
+                    "restricted"
+                ]
+            }
+        ],
+        "c2:057": [
+            {
+                "direction": "up",
+                "targetTileId": "050",
+                "targetTileIds": [
+                    "050"
+                ],
+                "region": null,
+                "tags": [
+                    "restricted"
+                ]
+            }
+        ],
+        "c2:071": [
+            {
+                "direction": "up",
+                "targetTileId": "064",
+                "targetTileIds": [
+                    "064"
+                ],
+                "region": null,
+                "tags": [
+                    "restricted"
+                ]
+            }
+        ],
+        "c5:027:A": [
+            {
+                "direction": "right",
+                "targetTileId": "028",
+                "targetTileIds": [
+                    "028"
+                ],
+                "region": "α",
+                "tags": [
+                    "restricted",
+                    "helmet_icon"
+                ]
+            }
+        ],
+        "c5:030:A": [
+            {
+                "direction": "down",
+                "targetTileId": "040",
+                "targetTileIds": [
+                    "040"
+                ],
+                "region": null,
+                "tags": [
+                    "restricted",
+                    "helmet_icon"
+                ]
+            }
+        ],
+        "c5:038:A": [
+            {
+                "direction": "up",
+                "targetTileId": "028",
+                "targetTileIds": [
+                    "028"
+                ],
+                "region": null,
+                "tags": [
+                    "restricted",
+                    "helmet_icon"
+                ]
+            }
+        ],
+        "c5:044:A": [
+            {
+                "direction": "down",
+                "targetTileId": "054",
+                "targetTileIds": [
+                    "054"
+                ],
+                "region": null,
+                "tags": [
+                    "restricted",
+                    "helmet_icon"
+                ]
+            }
+        ],
+        "c5:050:A": [
+            {
+                "direction": "up",
+                "targetTileId": "040",
+                "targetTileIds": [
+                    "040"
+                ],
+                "region": null,
+                "tags": [
+                    "restricted",
+                    "helmet_icon"
+                ]
+            }
+        ],
+        "c5:052:A": [
+            {
+                "direction": "down",
+                "targetTileId": "062",
+                "targetTileIds": [
+                    "062"
+                ],
+                "region": null,
+                "tags": [
+                    "restricted",
+                    "helmet_icon"
+                ]
+            }
+        ],
+        "c5:054:A": [
+            {
+                "direction": "down",
+                "targetTileId": "064",
+                "targetTileIds": [
+                    "064"
+                ],
+                "region": null,
+                "tags": [
+                    "helmet_icon"
+                ]
+            }
+        ],
+        "c5:055:A": [
+            {
+                "direction": "left",
+                "targetTileId": "054",
+                "targetTileIds": [
+                    "054"
+                ],
+                "region": null,
+                "tags": [
+                    "restricted",
+                    "helmet_icon"
+                ]
+            }
+        ],
+        "c5:062:A": [
+            {
+                "direction": "up",
+                "targetTileId": "052",
+                "targetTileIds": [
+                    "052"
+                ],
+                "region": null,
+                "tags": [
+                    "restricted",
+                    "helmet_icon"
+                ]
+            },
+            {
+                "direction": "right",
+                "targetTileId": "063",
+                "targetTileIds": [
+                    "063"
+                ],
+                "region": null,
+                "tags": [
+                    "restricted",
+                    "helmet_icon"
+                ]
+            }
+        ],
+        "c5:063:A": [
+            {
+                "direction": "right",
+                "targetTileId": "064",
+                "targetTileIds": [
+                    "064"
+                ],
+                "region": "α",
+                "tags": [
+                    "helmet_icon"
+                ]
+            },
+            {
+                "direction": "left",
+                "targetTileId": "062",
+                "targetTileIds": [
+                    "062"
+                ],
+                "region": "α",
+                "tags": [
+                    "helmet_icon"
+                ]
+            }
+        ],
+        "c5:064:A": [
+            {
+                "direction": "up",
+                "targetTileId": "054",
+                "targetTileIds": [
+                    "054"
+                ],
+                "region": "α",
+                "tags": [
+                    "helmet_icon"
+                ]
+            },
+            {
+                "direction": "left",
+                "targetTileId": "063",
+                "targetTileIds": [
+                    "063"
+                ],
+                "region": "α",
+                "tags": [
+                    "helmet_icon"
+                ]
+            }
+        ]
+    },
+    "localRoutes": {
+        "c2:021": [
+            {
+                "direction": "down",
+                "targetTileId": "021",
+                "targetTileIds": [
+                    "021"
+                ],
+                "region": "α→β",
+                "tags": [
+                    "restricted"
+                ]
+            },
+            {
+                "direction": "up",
+                "targetTileId": "021",
+                "targetTileIds": [
+                    "021"
+                ],
+                "region": "β→α",
+                "tags": [
+                    "restricted"
+                ]
+            }
+        ],
+        "c2:041": [
+            {
+                "direction": "down",
+                "targetTileId": "041",
+                "targetTileIds": [
+                    "041"
+                ],
+                "region": "α→β",
+                "tags": [
+                    "restricted"
+                ]
+            },
+            {
+                "direction": "up",
+                "targetTileId": "041",
+                "targetTileIds": [
+                    "041"
+                ],
+                "region": "β→α",
+                "tags": [
+                    "restricted"
+                ]
+            }
+        ],
+        "c2:045": [
+            {
+                "direction": "up",
+                "targetTileId": "045",
+                "targetTileIds": [
+                    "045"
+                ],
+                "region": "α→β",
+                "tags": [
+                    "restricted"
+                ]
+            }
+        ],
+        "c2:052": [
+            {
+                "direction": "down",
+                "targetTileId": "052",
+                "targetTileIds": [
+                    "052"
+                ],
+                "region": "α→β",
+                "tags": [
+                    "restricted"
+                ]
+            },
+            {
+                "direction": "up",
+                "targetTileId": "052",
+                "targetTileIds": [
+                    "052"
+                ],
+                "region": "β→α",
+                "tags": [
+                    "restricted"
+                ]
+            }
+        ],
+        "c2:055": [
+            {
+                "direction": "left",
+                "targetTileId": "055",
+                "targetTileIds": [
+                    "055"
+                ],
+                "region": "β→α",
+                "tags": [
+                    "restricted"
+                ]
+            },
+            {
+                "direction": "right",
+                "targetTileId": "055",
+                "targetTileIds": [
+                    "055"
+                ],
+                "region": "α→β",
+                "tags": [
+                    "restricted"
+                ]
+            }
+        ],
+        "c2:061": [
+            {
+                "direction": "up",
+                "targetTileId": "061",
+                "targetTileIds": [
+                    "061"
+                ],
+                "region": "β→α",
+                "tags": [
+                    "restricted"
+                ]
+            }
+        ],
+        "c3:003": [
+            {
+                "direction": "special",
+                "targetTileId": "038",
+                "targetTileIds": [
+                    "038"
+                ],
+                "region": "本板块特殊航路",
+                "tags": [
+                    "restricted",
+                    "time_portal"
+                ]
+            }
+        ],
+        "c3:010": [
+            {
+                "direction": "special",
+                "targetTileId": "043",
+                "targetTileIds": [
+                    "043"
+                ],
+                "region": "本板块特殊航路",
+                "tags": [
+                    "restricted",
+                    "time_portal"
+                ]
+            }
+        ],
+        "c3:012": [
+            {
+                "direction": "special",
+                "targetTileId": "021,023",
+                "targetTileIds": [
+                    "021",
+                    "023"
+                ],
+                "region": "本板块特殊航路",
+                "tags": [
+                    "restricted",
+                    "time_wound"
+                ]
+            }
+        ],
+        "c3:021": [
+            {
+                "direction": "special",
+                "targetTileId": "012",
+                "targetTileIds": [
+                    "012"
+                ],
+                "region": "本板块特殊航路",
+                "tags": [
+                    "restricted",
+                    "time_wound"
+                ]
+            }
+        ],
+        "c3:023": [
+            {
+                "direction": "special",
+                "targetTileId": "012",
+                "targetTileIds": [
+                    "012"
+                ],
+                "region": "本板块特殊航路",
+                "tags": [
+                    "restricted",
+                    "time_wound"
+                ]
+            }
+        ],
+        "c3:027": [
+            {
+                "direction": "special",
+                "targetTileId": "057",
+                "targetTileIds": [
+                    "057"
+                ],
+                "region": "本板块特殊航路",
+                "tags": [
+                    "restricted",
+                    "time_portal"
+                ]
+            }
+        ],
+        "c3:034": [
+            {
+                "direction": "special",
+                "targetTileId": "055",
+                "targetTileIds": [
+                    "055"
+                ],
+                "region": "本板块特殊航路",
+                "tags": [
+                    "restricted",
+                    "time_wound"
+                ]
+            }
+        ],
+        "c3:036": [
+            {
+                "direction": "special",
+                "targetTileId": "069",
+                "targetTileIds": [
+                    "069"
+                ],
+                "region": "本板块特殊航路",
+                "tags": [
+                    "restricted",
+                    "time_portal"
+                ]
+            }
+        ],
+        "c3:038": [
+            {
+                "direction": "special",
+                "targetTileId": "003",
+                "targetTileIds": [
+                    "003"
+                ],
+                "region": "本板块特殊航路",
+                "tags": [
+                    "restricted",
+                    "time_portal"
+                ]
+            }
+        ],
+        "c3:042": [
+            {
+                "direction": "special",
+                "targetTileId": "072",
+                "targetTileIds": [
+                    "072"
+                ],
+                "region": "本板块特殊航路",
+                "tags": [
+                    "restricted",
+                    "time_portal"
+                ]
+            }
+        ],
+        "c3:043": [
+            {
+                "direction": "special",
+                "targetTileId": "010",
+                "targetTileIds": [
+                    "010"
+                ],
+                "region": "本板块特殊航路",
+                "tags": [
+                    "restricted",
+                    "time_portal"
+                ]
+            }
+        ],
+        "c3:055": [
+            {
+                "direction": "special",
+                "targetTileId": "034",
+                "targetTileIds": [
+                    "034"
+                ],
+                "region": "本板块特殊航路",
+                "tags": [
+                    "restricted",
+                    "time_wound"
+                ]
+            }
+        ],
+        "c3:056": [
+            {
+                "direction": "special",
+                "targetTileId": "060",
+                "targetTileIds": [
+                    "060"
+                ],
+                "region": "本板块特殊航路",
+                "tags": [
+                    "restricted",
+                    "time_wound"
+                ]
+            },
+            {
+                "direction": "special",
+                "targetTileId": "083",
+                "targetTileIds": [
+                    "083"
+                ],
+                "region": "本板块特殊航路",
+                "tags": [
+                    "restricted",
+                    "time_portal"
+                ]
+            }
+        ],
+        "c3:057": [
+            {
+                "direction": "special",
+                "targetTileId": "027",
+                "targetTileIds": [
+                    "027"
+                ],
+                "region": "本板块特殊航路",
+                "tags": [
+                    "restricted",
+                    "time_portal"
+                ]
+            }
+        ],
+        "c3:058": [
+            {
+                "direction": "special",
+                "targetTileId": "090",
+                "targetTileIds": [
+                    "090"
+                ],
+                "region": "本板块特殊航路",
+                "tags": [
+                    "restricted",
+                    "time_portal"
+                ]
+            }
+        ],
+        "c3:060": [
+            {
+                "direction": "special",
+                "targetTileId": "056",
+                "targetTileIds": [
+                    "056"
+                ],
+                "region": "本板块特殊航路",
+                "tags": [
+                    "restricted",
+                    "time_wound"
+                ]
+            }
+        ],
+        "c3:068": [
+            {
+                "direction": "special",
+                "targetTileId": "087",
+                "targetTileIds": [
+                    "087"
+                ],
+                "region": "本板块特殊航路",
+                "tags": [
+                    "restricted",
+                    "time_wound"
+                ]
+            }
+        ],
+        "c3:069": [
+            {
+                "direction": "special",
+                "targetTileId": "036",
+                "targetTileIds": [
+                    "036"
+                ],
+                "region": "本板块特殊航路",
+                "tags": [
+                    "restricted",
+                    "time_portal"
+                ]
+            }
+        ],
+        "c3:072": [
+            {
+                "direction": "special",
+                "targetTileId": "042",
+                "targetTileIds": [
+                    "042"
+                ],
+                "region": "本板块特殊航路",
+                "tags": [
+                    "restricted",
+                    "time_portal"
+                ]
+            }
+        ],
+        "c3:073": [
+            {
+                "direction": "special",
+                "targetTileId": "085",
+                "targetTileIds": [
+                    "085"
+                ],
+                "region": "本板块特殊航路",
+                "tags": [
+                    "restricted",
+                    "time_wound"
+                ]
+            }
+        ],
+        "c3:083": [
+            {
+                "direction": "special",
+                "targetTileId": "056",
+                "targetTileIds": [
+                    "056"
+                ],
+                "region": "本板块特殊航路",
+                "tags": [
+                    "restricted",
+                    "time_portal"
+                ]
+            }
+        ],
+        "c3:085": [
+            {
+                "direction": "special",
+                "targetTileId": "073",
+                "targetTileIds": [
+                    "073"
+                ],
+                "region": "本板块特殊航路",
+                "tags": [
+                    "restricted",
+                    "time_wound"
+                ]
+            }
+        ],
+        "c3:087": [
+            {
+                "direction": "special",
+                "targetTileId": "068",
+                "targetTileIds": [
+                    "068"
+                ],
+                "region": "本板块特殊航路",
+                "tags": [
+                    "restricted",
+                    "time_wound"
+                ]
+            }
+        ],
+        "c3:090": [
+            {
+                "direction": "special",
+                "targetTileId": "058",
+                "targetTileIds": [
+                    "058"
+                ],
+                "region": "本板块特殊航路",
+                "tags": [
+                    "restricted",
+                    "time_portal"
+                ]
+            }
+        ]
+    }
 };

@@ -27,7 +27,7 @@ PRIVATE_PACK_SUFFIXES = (".atopack", ".atopack.partial")
 # 顶层本地草稿 / 运行期目录：tmp/ 放一次性排查草稿（router.php 也把 tmp 当私有目录，
 # 直接拒绝访问），logs/ 与 log/ 放运行日志，.claude/ 是同类的本机工具残留目录
 # （与已在 BLOCKED_TOP 里的 .agents/.codex 同类）。
-LOCAL_SCRATCH_TOP = {".claude", "log", "logs", "tmp", "outputs"}
+LOCAL_SCRATCH_TOP = {".claude", "log", "logs", "tmp", "output", "outputs"}
 # 官中图片由 .atopack 导出器按需读取，不能随着便携版 / Docker / APK 的源码树发布。
 PRIVATE_ASSET_TOP = {"official-assets"}
 # 图标提取工作区：截图、灰度掩膜、位图变体与提取脚本都在这里，是从原 App 里提取界面

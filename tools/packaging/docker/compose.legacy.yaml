@@ -25,6 +25,7 @@ services:
       - ./app/assets/bgm/audio:/app/assets/bgm/audio:ro
       - ./app/assets/bgm:/app/assets/bgm/media:ro
       - ./app/hero/assets:/app/hero/assets
+      # Recursive: layered HD maps, shared card backs and legacy flat scans.
       - ./app/map/images:/app/map/images
       - ./app/map/tokens:/app/map/tokens
       - ./app/record/assets:/app/record/assets

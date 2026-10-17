@@ -52,7 +52,23 @@ const tagDefinitionDefaults = [
   { id: "central_adventure", label: "中枢冒险", shortcut: "3" },
   { id: "rr_adventure", label: "RR冒险", shortcut: "4" },
   { id: "city", label: "城市", shortcut: "5" },
-  { id: "adventure", label: "有冒险图标", shortcut: "6" },
+  { id: "wild_titan", label: "野生泰坦", shortcut: "6" },
+  { id: "oasis", label: "绿洲", shortcut: "7", cycles: ["c4"] },
+  { id: "silver_ruin", label: "白银种遗迹", shortcut: "8", cycles: ["c5"] },
+  { id: "river", label: "河流航道", cycles: ["c1"] },
+  { id: "restricted", label: "限行（内部航路）", cycles: [], scope: "route" },
+  { id: "resistance_hideout", label: "抵抗军据点", cycles: ["c2"] },
+  { id: "spartan_stronghold", label: "斯巴达要塞", cycles: ["c2"] },
+  { id: "frozen_time", label: "凝固时光", cycles: ["c3"] },
+  { id: "time_wound", label: "时光裂痕", cycles: ["c3"] },
+  { id: "time_portal", label: "时光传送门", cycles: ["c3"] },
+  { id: "daedalus_lighthouse", label: "代达罗斯灯塔", cycles: ["c3"] },
+  { id: "underwater_city", label: "水下城市", cycles: ["c5"] },
+  { id: "hourglass_icon", label: "沙漏形图标（待释义）", cycles: ["c1"] },
+  { id: "staff_icon", label: "杖形图标（待释义）", cycles: ["c1"] },
+  { id: "wheel_icon", label: "车轮图标（待释义）", cycles: ["c3"] },
+  { id: "smoking_bowl_icon", label: "烟雾碗图标（待释义）", cycles: ["c4"] },
+  { id: "helmet_icon", label: "头盔形图标（待释义）", cycles: ["c5"], scope: "adjacent" },
 ];
 const adventureTagIds = ["central_adventure", "rr_adventure", "adventure", "city"];
 
@@ -391,8 +407,10 @@ function renderStatus() {
   if (tile) {
     elements.tileTitle.textContent = `${tile.label} · ${cycle.label}`;
     elements.tileMeta.textContent = `来源 ${tile.source || "-"} · 坐标 ${tile.nx}, ${tile.ny}`;
-    elements.tileImage.src = tile.front;
-    elements.tileImage.alt = tile.label;
+    const artwork = window.ATO_MAP_ARTWORK?.resolve(tile.front);
+    const paths = artwork ? [artwork.overlay, artwork.base] : [tile.front];
+    elements.tileImage.style.backgroundImage = paths.map(path => `url("../map/${String(path).replace(/^\.\//, '').replace(/"/g, '%22')}")`).join(',');
+    elements.tileImage.setAttribute('aria-label', tile.label);
     elements.rawPreview.value = JSON.stringify(state.tagData, null, 2);
     elements.reviewedToggle.checked = Boolean(entry?.reviewed);
     elements.notesInput.value = entry?.notes || "";
@@ -402,8 +420,8 @@ function renderStatus() {
   } else {
     elements.tileTitle.textContent = "未选择";
     elements.tileMeta.textContent = "点击左侧板块开始打标。";
-    elements.tileImage.src = "";
-    elements.tileImage.alt = "板块预览";
+    elements.tileImage.style.backgroundImage = '';
+    elements.tileImage.setAttribute('aria-label', '板块预览');
     elements.rawPreview.value = JSON.stringify(state.tagData, null, 2);
     renderTagSummary(null);
     renderTagButtons(null);
@@ -428,6 +446,7 @@ function renderTagButtons(entry) {
   const selected = new Set(entry?.tags || []);
   elements.tagButtons.innerHTML = "";
   (state.tagData?.tagDefinitions || tagDefinitionDefaults).forEach((definition) => {
+    if (definition.scope === "adjacent") return;
     const button = document.createElement("button");
     button.type = "button";
     button.className = `secondary tag-chip${selected.has(definition.id) ? " active" : ""}`;

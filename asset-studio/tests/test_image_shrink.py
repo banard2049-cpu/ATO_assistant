@@ -205,12 +205,21 @@ class KeepPatternTests(unittest.TestCase):
             "aibp/ps/THE_BURDEN/THE_BURDEN_TR_O_001.jpg",
         ):
             self.assertTrue(matches_any(trait, patterns), trait)
+        for map_image in (
+            "map/images/c2-tile-062-front.png",
+            "map/images/hd1024/base/c1-tile-001-front.png",
+            "map/images/hd1024/overlay/c1-tile-001-front.png",
+            "map/images/card-backs/c1-base.png",
+            "map/images/card-backs/numbers/c1-tile-001-back.png",
+            "map/images/c5-face-b.png",
+            "map/tokens/marker.png",
+        ):
+            self.assertTrue(matches_any(map_image, patterns), map_image)
         # 普通卡不该被豁免，否则瘦身就白做了
         for card in (
             "aibp/ps/HEKATON/HEKATON_BP_I_001.jpg",
             "aibp/ps/CHIMERA_METASTASIOS/C.png",
             "technology/images/split_cards/9930e1d34c001d93_back.png",
-            "map/images/c2-tile-062-front.png",
         ):
             self.assertFalse(matches_any(card, patterns), card)
 

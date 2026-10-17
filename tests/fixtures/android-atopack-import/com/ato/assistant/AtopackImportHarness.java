@@ -27,6 +27,13 @@ import org.json.JSONObject;
 
 public final class AtopackImportHarness {
   private static final String ASSET = "assets/cards/test.png";
+  private static final String MAP_BASE = "map/images/hd1024/base/c1-tile-001-front.png";
+  private static final String MAP_MASK = "map/images/hd1024/overlay/c1-tile-001-front.png";
+  private static final String BACK_BASE = "map/images/card-backs/c1-base.png";
+  private static final String BACK_NUMBER = "map/images/card-backs/numbers/c1-tile-001-back.png";
+  private static final String ALT_NUMBER = "map/images/card-backs/numbers/c1-tile-009-alt-back.png";
+  private static final String ALT_INSTRUCTION = "map/images/card-backs/numbers/c1-tile-009-alt-back-instruction.png";
+  private static final String LEGACY_MAP = "map/images/c1-tile-001-front.jpg";
   private static final String GLYPH = "story/assets/cryptic/glyphs/babelian-1.png";
   private static final String MIXED_MAPPING = "story/assets/mixed-media/mapping.js";
   private static final String MIXED_PNG = "story/assets/mixed-media/images/c1/c1-p001-block.png";
@@ -42,7 +49,11 @@ public final class AtopackImportHarness {
   private AtopackImportHarness(File directory) {
     this.directory = directory;
     JSONObject catalog = new JSONObject().put("format", "ato-android-resource-catalog")
-        .put("items", new JSONArray().put(item("test", ASSET)).put(item("glyph", GLYPH)));
+        .put("items", new JSONArray().put(item("test", ASSET)).put(item("glyph", GLYPH))
+          .put(item("map-base", MAP_BASE)).put(item("map-mask", MAP_MASK))
+          .put(item("back-base", BACK_BASE)).put(item("back-number", BACK_NUMBER))
+          .put(item("alt-number", ALT_NUMBER)).put(item("alt-instruction", ALT_INSTRUCTION))
+          .put(item("legacy-map", LEGACY_MAP)));
     context = new Context(new File(directory, "app"), catalog.toString());
     store = new AtopackStore(context);
   }
@@ -215,6 +226,37 @@ public final class AtopackImportHarness {
       check(Arrays.equals(input.readAllBytes(), thumbnail), "Previously imported legacy thumbnail must survive app upgrade");
     }
     check(imageStore.open(legacyBoard) != null, "Legacy board requests must still read the migrated resource");
+  }
+
+  private void mapLayers() throws Exception {
+    byte[] base=bytes("original-base"), mask=bytes("original-transparent-mask"), number=bytes("printed-number");
+    JSONArray layers=new JSONArray().put(resource(MAP_BASE,base)).put(resource(MAP_MASK,mask))
+        .put(resource(BACK_BASE,base)).put(resource(BACK_NUMBER,number));
+    JSONObject good=manifest().put("mapFiles",layers);
+    Member[] members={new Member(MAP_BASE,base),new Member(MAP_MASK,mask),new Member(BACK_BASE,base),new Member(BACK_NUMBER,number)};
+    check(install(pack(good,members)).assets==4,"Layered map files not installed");
+    check("original-base".equals(open(MAP_BASE)),"Map base bytes changed");
+    check("original-transparent-mask".equals(open(MAP_MASK)),"Transparent mask bytes changed");
+    check("printed-number".equals(open(BACK_NUMBER)),"Shared-back number missing");
+    store=new AtopackStore(context);
+    check("printed-number".equals(open(BACK_NUMBER)),"Layered maps did not survive restart");
+    reject(pack(manifest().put("mapFiles",new JSONArray().put(resource(MAP_BASE,base))),new Member(MAP_BASE,base)));
+    reject(pack(manifest().put("mapFiles",new JSONArray().put(resource(BACK_NUMBER,number))),new Member(BACK_NUMBER,number)));
+    reject(pack(manifest().put("mapFiles",new JSONArray().put(resource(BACK_BASE,base)).put(resource(ALT_NUMBER,number))),
+        new Member(BACK_BASE,base),new Member(ALT_NUMBER,number)));
+    JSONObject broken=new JSONObject(good.toString());broken.getJSONArray("mapFiles").getJSONObject(0).put("sha256","0".repeat(64));
+    reject(pack(broken,members));
+    broken=new JSONObject(good.toString());broken.getJSONArray("mapFiles").getJSONObject(0).put("bytes",base.length+1);
+    reject(pack(broken,members));
+    broken=new JSONObject(good.toString());broken.getJSONArray("mapFiles").put(resource(MAP_BASE,base));
+    reject(pack(broken,members));
+    reject(pack(manifest().put("mapFiles",new JSONArray().put(resource("map/app.js",base))),new Member("map/app.js",base)));
+    reject(pack(manifest().put("mapFiles","not-an-array")));
+    JSONObject legacy=manifest().put("items",new JSONArray().put(item("legacy-map",LEGACY_MAP)))
+        .put("assets",new JSONArray().put(asset("legacy-map",LEGACY_MAP,number)));
+    check(install(pack(legacy,new Member(LEGACY_MAP,number))).assets==1,"Old flat map pack no longer imports");
+    check("printed-number".equals(open(LEGACY_MAP)),"Legacy map fallback resource unreadable");
+    System.out.println("Layered map import passed: "+checks+" behavioral checks.");
   }
 
   private void run() throws Exception {
@@ -451,5 +493,8 @@ public final class AtopackImportHarness {
     System.out.println("Android .atopack import passed: " + checks + " behavioral checks.");
   }
 
-  public static void main(String[] args) throws Exception { new AtopackImportHarness(new File(args[0])).run(); }
+  public static void main(String[] args) throws Exception {
+    new AtopackImportHarness(new File(args[0])).run();
+    new AtopackImportHarness(new File(args[0],"layered-maps")).mapLayers();
+  }
 }

@@ -72,6 +72,69 @@ const event = (id, values = {}) => ({ id, techKey: 'grand stoa', actionId: 'drea
   label: '巨型柱廊 · 培育梦行者', rewardLabel: '获得 1 架梦行者', createdDay: 1,
   dueDay: 10, cooldownUntilDay: 1, status: 'pending', kind: 'reward', ...values });
 
+test('凝固时光在移动区显示容量与处理结果，重绘只安排一次且只读页面不领取', () => {
+  const frozenRules = require('../map/frozen-time-rules.js');
+  const dictionary = require('../technology/tech_card_dictionary.min.json');
+  const tags = { tiles: { 'c3:007': { tags: ['frozen_time'] } } };
+  const engine = frozenRules.createEngine({ technologyRules: rules, tags });
+  const { context: c, calls } = harness(['getStructureTechContext', 'structureTechTarget', 'createMapFrozenTimeReminder'], {
+    mapFrozenTimeMessage: null, mapFrozenTimeBusy: false, mapFrozenTimeAutomaticAttempts: new Set(),
+    settleMapFrozenTime: async () => {},
+  });
+  c.cycleId = 'c3';
+  c.window.ATO_MAP_FROZEN_TIME_RULES = { ...frozenRules, createEngine: () => engine };
+  c.cachedArgoRecord = { cycle: 'c3', frozenTime: '2' };
+  c.structureTechContext = { epoch: 1, profileId: 'A', cycleId: 'c3', dictionary,
+    technology: { unlocked: ['time solutions'] },
+    map: { cycles: { c3: { currentTile: '007', latestRevealedTile: '007', explored: { '007': true }, explorationEntries: { '007': true } } } } };
+  c.structureTechContextRevision = c.campaignSectionRevision;
+  const reminder = c.createMapFrozenTimeReminder();
+  assert.equal(reminder.dataset.mapFrozenTimeTile, '007');
+  assert.match(reminder.children[1].textContent, /2 \/ 3/);
+  c.createMapFrozenTimeReminder();
+  assert.equal(calls.timeouts.length, 1);
+  c.structureTechContext.technology.unlocked.push('advanced time solutions');
+  assert.match(c.createMapFrozenTimeReminder().children[1].textContent, /2 \/ 5/);
+  c.mapFrozenTimeAutomaticAttempts.clear(); c.lease = false;
+  c.createMapFrozenTimeReminder();
+  assert.equal(calls.timeouts.length, 1, 'a read-only dashboard never schedules an award');
+  c.lease = true; c.structureTechContextRevision--;
+  c.createMapFrozenTimeReminder();
+  assert.equal(calls.timeouts.length, 1, 'stale contexts cannot schedule an award');
+  c.structureTechContextRevision = c.campaignSectionRevision;
+  const record = engine.prepareOperation({ ...c.getStructureTechContext(), techKey: 'map-frozen-time',
+    actionId: 'map-collect-frozen-time', operationId: frozenRules.receiptId('007'), selection: { tileId: '007' } }).record;
+  c.cachedArgoRecord = record;
+  assert.match(c.createMapFrozenTimeReminder().children[0].textContent, /凝固时光 \+1/);
+  assert.equal(calls.timeouts.length, 1, 'a receipt prevents another automatic award');
+  const moveBlock = source.slice(source.indexOf('if (step.id === "move") {\n          const titanReminder'), source.indexOf('if (nemesisTools) text.appendChild'));
+  assert.match(moveBlock, /createMapFrozenTimeReminder/);
+});
+
+test('斯巴达要塞只在移动步骤提醒，已探索也显示且不提供扣除按钮', () => {
+  const { context: c } = harness(['getMoveMapReminders', 'getStepTrackReminders'], {
+    todayTrackIcons: () => [], getStructureTechContext: () => null,
+    currentMapTagSet: () => new Set(['spartan_stronghold']), currentMapTileLabel: () => '018',
+    getExploreMapReminders: () => [], getSurveyMapReminders: () => [], getDoomMapReminders: () => [],
+    getStoryMapReminders: () => [], getExplorationStepTokenReminders: () => [], getNextBattleTerrainReminder: () => [],
+  });
+  const original = clone(c.state);
+  const reminders = c.getStepTrackReminders('move');
+  assert.equal(reminders.length, 1);
+  assert.match(reminders[0].desc, /1 船体或 1 船员.*已探索.*手动/);
+  assert.equal(reminders[0].placements, undefined);
+  assert.equal(reminders[0].html, undefined);
+  assert.deepEqual(clone(c.state), original);
+  for (const step of ['explore', 'survey', 'story', 'doom', 'encounter', 'development']) assert.equal(c.getStepTrackReminders(step).length, 0);
+  c.getStructureTechContext = () => ({ map: { cycles: { c2: { currentTile: '020', explored: { '020': true } } } } });
+  c.window.ATO_MAP_TILE_TAGS = { tiles: { 'c2:020': { tags: ['spartan_stronghold'] } } };
+  assert.match(c.getStepTrackReminders('move')[0].desc, /^020 /, 'the live map overrides a stale snapshot');
+  c.window.ATO_MAP_TILE_TAGS.tiles['c2:020'].tags = [];
+  assert.equal(c.getStepTrackReminders('move').length, 0);
+  c.cycleId = 'c3';
+  assert.equal(c.getStepTrackReminders('move').length, 0);
+});
+
 test('旧存档默认空科技日程，结构化记录独立于每日事件和日期备注', () => {
   const { context: c } = harness(['normalizeStructureTechAutomation', 'normalizeState'], {
     defaultState: { day: 1, events: [] }, normalizeCampaignDay: value => value ?? 1,

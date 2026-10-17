@@ -78,6 +78,10 @@
 # Shared application appearance controls and cross-module theme synchronization.
 !/assets/theme.js
 !/assets/theme.css
+!/assets/card-art.css
+!/assets/card-art.js
+!/assets/fan-card-trims.js
+!/assets/fan-card-trims-data.js
 !/assets/story-doom-card-data.js
 !/assets/term-language.js
 !/assets/english-terms.js
@@ -171,3 +175,6 @@ desktop.ini
 
 # Local reference documents and generated audit materials
 /docs/
+
+# Local Codex recovery scripts and conversation-specific prompts
+/tools/codex-resume/

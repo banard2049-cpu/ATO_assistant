@@ -1756,13 +1756,13 @@ def fixed_catalog_payload() -> dict[str, Any]:
         CatalogItem(
             id=make_id("c5", "地图模块图标", "地图状态图标", "surface", "水上"),
             cycle="c5", module="地图模块图标", subgroup="地图状态图标",
-            name="C5 水上地图状态 Logo", number="水上", sort_order=54_000,
+            name="C5 官方切换按钮：下潜", number="水上", sort_order=54_000,
             faces={"front": "map/images/c5-face-a.png"},
         ),
         CatalogItem(
             id=make_id("c5", "地图模块图标", "地图状态图标", "diving", "潜水"),
             cycle="c5", module="地图模块图标", subgroup="地图状态图标",
-            name="C5 潜水地图状态 Logo", number="潜水", sort_order=54_001,
+            name="C5 上浮切换按钮（船形与向上箭头）", number="潜水", sort_order=54_001,
             faces={"front": "map/images/c5-face-b.png"},
         ),
     ))
