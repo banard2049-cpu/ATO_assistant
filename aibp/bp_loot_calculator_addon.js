@@ -17,7 +17,8 @@ Add these script tags after the main viewer script:
   "use strict";
 
   const RESOURCE_MAP_NAME = "AIBP_BP_RESOURCE_MAP";
-  const RESOURCE_ICON_BASE = "ps/other/resouce";
+  const RESOURCE_ICON_BASE = "../record/assets/resource-icons";
+  const RESOURCE_ICON_VERSION = "20261018-apk117-black-white-fit3";
   const RECORD_STORAGE_KEY = "ato-argo-record-sheet-v1";
   const CAMPAIGN_STATE_URL = "../api/campaign-state.php";
   const RECORD_SECTION_URL = `${CAMPAIGN_STATE_URL}?section=record`;
@@ -576,11 +577,8 @@ Add these script tags after the main viewer script:
   }
 
   function resourceIconSrc(key) {
-    if (DIRECT_RECORD_RESOURCE_KEYS.has(key)) {
-      const version = key === "orichalcumAlloy" || key === "slaveMetal" ? "?v=20260926-c5-pdf1" : "";
-      return `../record/assets/resource-icons/${encodePathFileName(key)}.png${version}`;
-    }
-    return `${RESOURCE_ICON_BASE}/${encodePathFileName(key)}.png`;
+    const recordKey = RECORD_RESOURCE_KEY_MAP[key] || key;
+    return `${RESOURCE_ICON_BASE}/${encodePathFileName(recordKey)}.png?v=${RESOURCE_ICON_VERSION}`;
   }
 
   function resourceCode(key) {
@@ -597,7 +595,7 @@ Add these script tags after the main viewer script:
     const classes = [
       "loot-resource-icon",
       small ? "small" : "",
-      DIRECT_RECORD_RESOURCE_KEYS.has(key) ? "record-resource-icon" : ""
+      RESOURCE_ICON_KEYS.has(key) ? "record-resource-icon" : ""
     ].filter(Boolean).join(" ");
     if (RESOURCE_ICON_KEYS.has(key)) {
       return `<img class="${classes}" src="${escapeAttr(resourceIconSrc(key))}" alt="${escapeAttr(resourceZhName(key))}" title="${escapeAttr(resourceZhName(key))}">`;
@@ -2268,8 +2266,8 @@ Add these script tags after the main viewer script:
         width: 32px;
         height: 32px;
         object-fit: contain;
-        border-radius: 6px;
-        background: #080807;
+        border-radius: 0;
+        background: transparent;
       }
 
       .loot-resource-icon.small {
@@ -2278,9 +2276,9 @@ Add these script tags after the main viewer script:
       }
 
       .loot-resource-icon.record-resource-icon {
-        padding: 2px;
-        background: #eee7d3;
-        box-shadow: inset 0 0 0 1px rgba(23, 22, 19, 0.16);
+        padding: 0;
+        background: transparent;
+        box-shadow: none;
       }
 
       .loot-resource-icon.text {

@@ -2736,9 +2736,9 @@
   <script src="./technology/negotiation-rules.js?v=20261017-automation-audit4"></script>
   <script src="./technology/voyage-action-rules.js?v=20261016-voyage3"></script>
   <script src="./technology/exploration-tech-rules.js?v=20261017-automation-audit4"></script>
-  <script src="./technology/structure-tech-rules.js?v=20261016-automation-audit3"></script>
-  <script src="./technology/investigation-rules.js?v=20261016-voyage1"></script>
-  <script src="./technology/structure-tech-client.js?v=20261016-automation-audit3"></script>
+  <script src="./technology/structure-tech-rules.js?v=20261018-dark-names1"></script>
+  <script src="./technology/investigation-rules.js?v=20261018-dark-names1"></script>
+  <script src="./technology/structure-tech-client.js?v=20261018-dark-names1"></script>
   <script src="./map/titan-markers.js?v=20261016-map-titan1"></script>
   <script src="./map/titan-capture-rules.js?v=20261016-map-titan1"></script>
   <script src="./map/map-tile-tags.js?v=20261016-icon-scope"></script>
@@ -8790,7 +8790,7 @@
         }
         text.textContent = automatic
           ? `${receipt && !["cancelled", "expired"].includes(receipt.status) ? receipt.status === "done" ? "已处理：" : "已登记：" : ""}${effectText}`
-          : `${item.badge ? `[${item.badge}] ` : ""}${effectText}${receipt && receipt.status !== "cancelled" ? ` · 已登记：${receipt.label || item.label}` : ""}`;
+          : `${item.badge ? `[${item.badge}] ` : ""}${effectText}${receipt && receipt.status !== "cancelled" ? ` · 已登记：${technologyReferenceText(receipt.techKey, receipt.label || item.label)}` : ""}`;
         if (card.key === "c4:9327" && item.id === "manual:2" && receipt?.badge !== undefined && receipt.badge !== item.badge
           && ["waiting", "ready"].includes(receipt.status)) text.textContent += " · 旧登记条件已更正为命运 ≥8，请核对或撤销此安排";
         const placements = item.once ? explorationEffectRules()?.parse(item.text, cycleId, entry.id, item.badge).effects.filter(explorationNeedsPlacement) || [] : [];
@@ -8830,7 +8830,7 @@
               input.type = "checkbox";
               input.checked = saved.includes(tech.key);
               input.value = tech.key;
-              label.append(input, document.createTextNode(tech.displayName || tech.nameZh || tech.name || tech.key));
+              label.append(input, document.createTextNode(technologyReferenceName(tech)));
               picker.appendChild(label);
               candidateInputs.push({ input, tech });
             });
@@ -8843,7 +8843,7 @@
           }
           action(actions, automatic ? "自动结算" : item.kind === "tech-disable" ? "确认条件成立，随机禁用 AA" : (item.once ? placements.length ? "确认收益，登记次数限制" : "已结算本次收益，登记次数限制" : (item.conditionState === null ? "确认条件成立并登记" : "登记延迟效果")), async () => {
             const techCandidates = candidateInputs.filter(({ input }) => input.checked).map(({ tech }) => ({
-              key: tech.key, label: tech.displayName || tech.nameZh || tech.name, aa: true, unlocked: true,
+              key: tech.key, label: technologyReferenceName(tech), aa: true, unlocked: true,
             }));
             await scheduleExplorationDelay(entry, card, [item], context, { confirmed: true,
               ...(item.kind === "tech-disable" ? { techCandidates } : {}),
@@ -8888,7 +8888,7 @@
         title.append(tag, name);
         const text = document.createElement("p");
         text.className = "step-track-desc";
-        text.textContent = `${item.label || item.text}${item.status === "ready" ? " · 到期待处理" : ""}`;
+        text.textContent = `${technologyReferenceText(item.techKey, item.label || item.text)}${item.status === "ready" ? " · 到期待处理" : ""}`;
         row.append(title, text);
         if (item.cycleId === "c4" && item.cardId === "9327" && item.id === "manual:2" && /\/3\+$/.test(item.badge || "")) {
           text.textContent += " · 旧登记条件已更正为命运 ≥8，请核对此安排";
@@ -10976,6 +10976,7 @@
       let location;
       if (preview.candidates?.length > 1) {
         location = document.createElement("select"); location.name = "pursuitSpawnTile";
+        location.className = "step-action-button";
         location.setAttribute("aria-label", "宿敌生成位置");
         for (const tile of preview.candidates) {
           const option = document.createElement("option"); option.value = tile.id; option.textContent = `生成位置 ${tile.label}`; location.appendChild(option);
@@ -11766,6 +11767,18 @@
         day: state.day, automation: state.techAutomation });
     }
 
+    function technologyReferenceName(tech) {
+      const rules = window.ATO_STRUCTURE_TECH_RULES;
+      const context = getStructureTechContext();
+      return (context && rules?.referenceTitle?.(context, tech.key))
+        || tech.referenceName || tech.displayName || tech.nameZh || tech.name || tech.key;
+    }
+
+    function technologyReferenceText(techKey, text) {
+      const context = typeof getStructureTechContext === "function" ? getStructureTechContext() : null;
+      return (context && window.ATO_STRUCTURE_TECH_RULES?.referenceText?.(context, techKey, text)) ?? text;
+    }
+
     function structureTechTimelineItems(day) {
       const items = [];
       for (const event of structureTechEvents()) {
@@ -12283,8 +12296,8 @@
           if (!pages.length) return; // Skip cards not attached to any tree node.
           result.push({
             key,
-            nameZh: card.names?.zh || "",
-            nameEn: card.names?.en || key,
+            nameZh: card.backNames?.zh || card.names?.zh || "",
+            nameEn: card.backNames?.en || card.names?.en || key,
             pages,
             backImage: card.image?.back || "",
           });
@@ -13533,7 +13546,7 @@
   <script src="./assets/english-ui.js?v=20261015-campaign-log"></script>
   <script src="./assets/english-language.js?v=20261011-english4"></script>
   <script src="./assets/term-language.js?v=20261011-english4"></script>
-  <script src="./assets/update/app-version.js?v=3.5.10-rc.2"></script>
+  <script src="./assets/update/app-version.js?v=3.8.6-rc.1"></script>
   <script src="./assets/update/update-check.js?v=3"></script>
 </body>
 </html>

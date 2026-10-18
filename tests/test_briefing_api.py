@@ -432,6 +432,8 @@ def test_tech_payload_has_nodes_edges_and_first_day(logged_in):
     unlocked = {record["key"]: record for record in tech["unlocked"]}
     assert set(unlocked) == {"trireme armor", "argo works", "last tome"}
     assert [record["key"] for record in tech["unlocked"]][0] == "trireme armor"
+    assert unlocked["argo works"]["name"] == "巨型广场"
+    assert unlocked["last tome"]["name"] == "最后的学院"
 
 
 def test_summary_counts(logged_in):

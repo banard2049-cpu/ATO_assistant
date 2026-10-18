@@ -660,7 +660,7 @@ function realFixture(key, action, extra = {}) {
     const route = action.tradeRoutes[0];
     selection.trades = [{ routeId: route.id, count: 1 }];
     for (const cost of route.costs) f.state.campaign.sections.record.users.chosen.resources[cost.storageKey] ??= 8;
-    if (action.requiresDevelopment) Object.assign(selection, { story2aConfirmed: true, developmentConfirmed: true });
+    if (action.requiresDevelopment) Object.assign(selection, { story2aConfirmed: true });
   }
   if (action.rebuild) Object.assign(selection, { payment: 'c2-warTrireme' });
   f.target = { ...f.target, cycleId, techKey: card.key, actionId: action.id, selection };
@@ -948,9 +948,10 @@ test('development exchanges allow quantities above three without fate or cooldow
   assert.equal(count.max, undefined, 'the quantity input must not impose a three-exchange limit');
   assert.match(findNode(panel, node => node.className === 'structure-tech-trade-lines').children[0].textContent, /按下列顺序兑换/);
   change(control(panel, 'tradeRoute0'), route.id); change(count, '4');
-  for (const name of ['story2aConfirmed', 'developmentConfirmed']) {
-    control(panel, name).checked = true; control(panel, name).listeners.change();
-  }
+  assert.equal(control(panel, 'developmentConfirmed'), undefined);
+  assert.doesNotMatch(panel.textContent, /当前正在发展阶段/);
+  control(panel, 'story2aConfirmed').checked = true;
+  control(panel, 'story2aConfirmed').listeners.change();
   const preview = findNode(panel, node => node.className === 'structure-tech-action-preview');
   assert.match(preview.textContent, /舰材 -4.*×4/);
   assert.doesNotMatch(preview.textContent, /命运 \+1|到期：|恢复：|至多 3/);
@@ -1218,6 +1219,38 @@ test('ability titles open and close the real source card in a modal without usin
   assert.equal(f.state.posts.length, 0);
   assert.equal(f.state.reads, reads, 'viewing a card uses the cached source metadata');
 }));
+
+test('Argo Mission trade panel, source-card caption and saved use log all say Bridge Tholos', () => withPanelDocument(async () => {
+  const rule = realRules.catalog.find(rule => rule.key === "argo's mission");
+  const f = realFixture(rule.key, rule.actions[0]);
+  const panel = f.client.createActionPanel(f.target);
+  await panel.ready;
+  assert.match(panel.textContent, /圆桌舰桥/);
+  assert.doesNotMatch(panel.textContent, /阿尔戈号的任务/);
+  findNode(panel, node => node.className?.split(' ').includes('structure-tech-action-title')).listeners.click();
+  const dialog = findNode(panel, node => node.tagName === 'dialog');
+  assert.equal(findNode(dialog, node => node.tagName === 'figcaption').textContent, '圆桌舰桥');
+  assert.equal(findNode(dialog, node => node.tagName === 'img').src,
+    `/technology/${dictionary.cards.find(card => card.key === rule.key).image.back}`);
+  const result = await f.client.submit(f.target);
+  assert.equal(result.operation.techKey, "argo's mission");
+  const saved = f.state.campaign.sections.dashboard.profiles.chosen.cycles.c2.state;
+  assert.match(saved.notes, /圆桌舰桥 · 贸易与 7 天冷却/);
+  assert.doesNotMatch(saved.notes, /阿尔戈号的任务/);
+}));
+
+test('completing an old event uses its dark-side title in the new log while preserving hand-written notes', async () => {
+  const rule = realRules.catalog.find(rule => rule.key === 'mnestis thesis');
+  const f = realFixture(rule.key, rule.actions[0]);
+  const scheduled = await f.client.submit(f.target);
+  const saved = f.state.campaign.sections.dashboard.profiles.chosen.cycles.c1.state;
+  saved.notes = '玩家手写：记忆论题';
+  saved.techAutomation.events.one.label = '记忆论题';
+  saved.day = scheduled.operation.dueDay;
+  await f.client.complete(f.target);
+  assert.match(f.state.campaign.sections.dashboard.profiles.chosen.cycles.c1.state.notes,
+    /^玩家手写：记忆论题\n.*已手动处理；阿尔戈英雄寝园/);
+});
 
 test('the breeding title modal shows all sources before selection and the matching source after a model change', () => withPanelDocument(async () => {
   const f = breedingFixture();

@@ -331,8 +331,11 @@ function load_tech_dictionary(string $root): array {
     $name = trim((string) ($card['names']['zh'] ?? ''));
     if ($name === '') $name = trim((string) ($card['names']['en'] ?? $key));
     $nameEn = trim((string) ($card['names']['en'] ?? $rawKey));
+    $referenceName = trim((string) ($card['backNames']['zh'] ?? ''));
+    if ($referenceName === '') $referenceName = trim((string) ($card['backNames']['en'] ?? ''));
+    if ($referenceName === '') $referenceName = $name;
     if (!isset($cards[$key])) {
-      $cards[$key] = ['key' => $key, 'name' => $name, 'nameEn' => $nameEn, 'category' => (string) ($card['category'] ?? '')];
+      $cards[$key] = ['key' => $key, 'name' => $name, 'referenceName' => $referenceName, 'nameEn' => $nameEn, 'category' => (string) ($card['category'] ?? '')];
     }
     foreach (($card['nodes'] ?? []) as $node) {
       if (!is_array($node)) continue;
@@ -853,6 +856,7 @@ foreach (array_keys($usedPages) as $page) {
       'key' => $node['key'],
       'rawKey' => $node['rawKey'],
       'name' => (string) ($info['name'] ?? $node['key']),
+      'referenceName' => (string) ($info['referenceName'] ?? $node['key']),
       'nameEn' => (string) ($info['nameEn'] ?? $node['rawKey']),
       'category' => (string) ($info['category'] ?? ''),
       'box' => $node['box'],
@@ -877,7 +881,7 @@ foreach ($firstTechDay as $key => $day) {
   $info = $dictionary['cards'][$key] ?? null;
   $unlockedRecords[] = [
     'key' => $key,
-    'name' => (string) ($info['name'] ?? $key),
+    'name' => (string) ($info['referenceName'] ?? $key),
     'category' => (string) ($info['category'] ?? ''),
     'firstDay' => $day,
     'order' => $techOrder[$key] ?? 0,

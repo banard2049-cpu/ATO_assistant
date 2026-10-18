@@ -1131,8 +1131,8 @@ button.gear-group-name:hover {
   <script src="negotiation-rules.js?v=20261017-automation-audit4"></script>
   <script src="voyage-action-rules.js?v=20261016-voyage3"></script>
   <script src="exploration-tech-rules.js?v=20261017-automation-audit4"></script>
-  <script src="structure-tech-rules.js?v=20261016-automation-audit3"></script>
-  <script src="structure-tech-client.js?v=20261016-automation-audit3"></script>
+  <script src="structure-tech-rules.js?v=20261018-dark-names1"></script>
+  <script src="structure-tech-client.js?v=20261018-dark-names1"></script>
 <script src="gear-inventory.js?v=20261002"></script>
 <script>
 const TECH_DICTIONARY_URL = 'tech_card_dictionary.min.json';
@@ -1143,7 +1143,7 @@ const fetch = window.ATO_CAMPAIGN_NOTES.createFetch(window.fetch.bind(window), {
     if (section === 'technology') {
       for (const page of data.pages) {
         const node = page.nodes.find(node => nodeKey(page.key, node) === key || key.startsWith(nodeKey(page.key, node) + ':'));
-        if (node) return `${displayTechName(node)}${key.slice(nodeKey(page.key, node).length)}`;
+        if (node) return `${displayTechReferenceName(node)}${key.slice(nodeKey(page.key, node).length)}`;
       }
     }
     if (path.includes('arsenal') && window.ATO_GEAR_INVENTORY.gearKey(key)) return getGearName(key);
@@ -2553,6 +2553,8 @@ function dictionaryToAppData(dictionary) {
         guid: tabletop.guid,
         name: names.en || '',
         name_zh: names.zh || '',
+        reference_name: record.backNames?.zh || record.backNames?.en || names.zh || names.en || record.key || '',
+        reference_name_en: record.backNames?.en || names.en || record.key || '',
         tech_category: record.category || type.category || '',
         type: { ...type },
         card_id: tabletop.card_id,
@@ -3051,6 +3053,11 @@ function displayTechName(node) {
   if (!node) return '';
   return treeLanguage === 'zh' ? (node.name_zh || node.name) : node.name;
 }
+function displayTechReferenceName(node) {
+  const names = cardsForNode(node).map(card => treeLanguage === 'zh'
+    ? card.reference_name || card.name_zh || card.name : card.reference_name_en || card.name);
+  return [...new Set(names.filter(Boolean))].join(' / ') || displayTechName(node);
+}
 function displayCardName(card, fallback = '') {
   if (!card) return fallback;
   return treeLanguage === 'zh' ? (card.name_zh || card.name || fallback) : (card.name || fallback);
@@ -3221,7 +3228,7 @@ function matchesUnlockedFilters(record) {
   const types = structureTypesForNode(page.key, node);
   if (unlockedStructureType && (!isStructureNode(node) || (unlockedStructureType === 'unclassified' ? types.length > 0 : !types.includes(unlockedStructureType)))) return false;
   const query = search.value.trim().toLowerCase();
-  const text = [node.name, node.name_zh, displayTechName(node), ...window.ATO_STRUCTURE_CARD_TYPES.labels(types)].join(' ').toLowerCase();
+  const text = [node.name, node.name_zh, displayTechReferenceName(node), ...window.ATO_STRUCTURE_CARD_TYPES.labels(types)].join(' ').toLowerCase();
   return !query || text.includes(query);
 }
 function unlockedStructureFilterHtml(records) {
@@ -3796,6 +3803,7 @@ function unlockedTechSnapshot() {
       name: node.name || '',
       nameZh: node.name_zh || '',
       displayName: displayTechName(node),
+      referenceName: displayTechReferenceName(node),
       category: node.tech_category === 'battle' ? 'battle' : 'structure',
       categoryLabel: categoryLabel(node.tech_category),
       negotiation: isNegotiationNode(page.key, node),
@@ -4020,7 +4028,7 @@ function modalCardImage(card, side = 'back') {
 function unlockedItemHtml(record) {
   const { page, node, card } = record;
   const size = isLargeTechCard(card) ? 'big' : 'small';
-  const label = displayTechName(node);
+  const label = displayTechReferenceName(node);
   const types = structureTypesForNode(page.key, node);
   const typeText = window.ATO_STRUCTURE_CARD_TYPES.labels(types).join(' · ');
   const lock = typeof explorationTechLock === 'function' ? explorationTechLock(page.key, node) : null;
@@ -4078,7 +4086,7 @@ function showUnlockedModal(pageKey, nodeId) {
   if (!page || !node || !card) return;
   activeUnlockedRecord = { page, node, card };
   activeModalMode = 'unlocked';
-  unlockedModalTitle.textContent = displayTechName(node);
+  unlockedModalTitle.textContent = displayTechReferenceName(node);
   const lock = explorationTechLock(page.key, node);
   unlockedModalMeta.textContent = `${page.label} · ${technologyMetaLabel(page.key, node)}${lock ? ` · ${lock.displayLabel}` : ''}`;
   modalTechLinks.innerHTML = renderRequirementUnlockColumns(page.key, node);

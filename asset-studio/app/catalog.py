@@ -481,7 +481,6 @@ class CatalogBuilder:
     def _simple_groups(self, paths: Iterable[str]) -> list[CatalogItem]:
         rules = (
             ("aibp/ps/other/token/", "common", "通用标记", "AIBP 标记"),
-            ("aibp/ps/other/resouce/", "common", "资源标记", "AIBP 资源"),
             ("map/tokens/", "common", "通用标记", "地图标记"),
             ("record/assets/ally/", "common", "英雄/盟友", "盟友"),
             ("record/assets/godforms-nymphs/", "common", "英雄/盟友", "神形/宁芙"),
@@ -489,6 +488,8 @@ class CatalogBuilder:
         )
         result = []
         for order, path in enumerate(sorted(paths, key=natural_key)):
+            if path in {"aibp/ps/other/token/Ambrosia .png", "aibp/ps/other/token/GF.jpg"}:
+                continue
             if path.startswith("hero/assets/"):
                 filename = PurePosixPath(path).name
                 stem = PurePosixPath(path).stem

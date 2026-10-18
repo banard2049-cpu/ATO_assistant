@@ -1375,6 +1375,14 @@ CATALOG_B85 = (
 def fixed_catalog_payload() -> dict[str, Any]:
     compressed = base64.b85decode(CATALOG_B85.encode("ascii"))
     payload = json.loads(gzip.decompress(compressed).decode("utf-8"))
+    # AIBP shares record's normalized icons; do not request or package the
+    # obsolete independently cropped resource images from the old manifest.
+    payload["items"] = [item for item in payload["items"] if not any(
+        path.startswith("aibp/ps/other/resouce/") or path in {
+            "aibp/ps/other/token/Ambrosia .png", "aibp/ps/other/token/GF.jpg",
+        }
+        for path in item.get("faces", {}).values()
+    )]
 
     # The corrected Hypertime Oracle deck uses AI III 001–006. The original
     # 0.2.11 APK manifest had the front of 001 missing and still listed the
@@ -1516,6 +1524,8 @@ def fixed_catalog_payload() -> dict[str, Any]:
         for path in item.get("faces", {}).values()
     }
     for order, stem in enumerate(AIBP_TOKEN_LABELS):
+        if stem in {"Ambrosia", "GF"}:
+            continue  # Removed local token images are no longer offered or packaged.
         path = f"aibp/ps/other/token/{stem}.png"
         if stem == "Ambrosia":
             path = "aibp/ps/other/token/Ambrosia .png"
@@ -1852,7 +1862,6 @@ def fixed_catalog_payload() -> dict[str, Any]:
         path = next(iter(item.get("faces", {}).values()), "")
         if path.startswith((
             "aibp/ps/other/token/",
-            "aibp/ps/other/resouce/",
             "map/tokens/",
             "record/assets/resource-icons/",
             "hero/assets/argonaut_",
@@ -1884,6 +1893,8 @@ def fixed_catalog_payload() -> dict[str, Any]:
         "+boss-level-backs+custom-trait-png-20261010"
         "+battle-board-resource-directory-20261011"
         "+drop-story-spoiler-card-20261017"
+        "+shared-record-resource-icons-20261018"
+        "+drop-unused-ambrosia-gf-tokens-20261018"
     )
     return payload
 
@@ -1891,7 +1902,7 @@ def fixed_catalog_payload() -> dict[str, Any]:
 def collect_supplemental_resources(ato_root: Path) -> tuple[list[CatalogItem], set[str]]:
     """登记 ``aibp/ps/other/`` 里"不在内置清单、但必须随资源包分发"的**素材**。
 
-    内置清单只覆盖 ``token/``、``resouce/`` 图片两个前缀；这个目录下
+    内置清单覆盖 ``token/`` 图片前缀，资源图标统一使用 record；这个目录下
     另有由运行时脚本按固定路径取用的``二进制素材``（``.bin``），目录名不体现内容。
     它们不在内置清单里，打包器就不会带、素材库也不会提示，所以在这里按"目录里实际
     存在哪些文件"逐张登记；缺哪张就登记哪张。
@@ -1958,6 +1969,10 @@ def ensure_fixed_catalog(db: Database, ato_root: Path | None = None) -> dict[str
         conn.execute(
             "DELETE FROM catalog_items WHERE module=? OR faces_json LIKE ?",
             ("科技树总览", "%technology/images/tech_tree_pages/%"),
+        )
+        conn.execute(
+            "DELETE FROM catalog_items WHERE faces_json LIKE ? OR faces_json LIKE ? OR faces_json LIKE ?",
+            ("%aibp/ps/other/resouce/%", "%aibp/ps/other/token/Ambrosia .png%", "%aibp/ps/other/token/GF.jpg%"),
         )
     payload = fixed_catalog_payload()
     if ato_root is not None:

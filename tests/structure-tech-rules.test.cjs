@@ -29,7 +29,7 @@ function selectionFor(action) {
     ...(action.sacrifice ? { titanId: 'dream', resultTitan: action.models[0] } : {}),
     ...(action.rebuild ? { payment: 'c1-trireme' } : {}),
     ...(action.trade ? { trades: [{ routeId: action.tradeRoutes.at(-1).id, count: 1 }] } : {}),
-    ...(action.requiresDevelopment ? { story2aConfirmed: true, developmentConfirmed: true } : {}),
+    ...(action.requiresDevelopment ? { story2aConfirmed: true } : {}),
   };
 }
 function apply(ctx, actionId) {
@@ -38,6 +38,68 @@ function apply(ctx, actionId) {
   return rules.prepareOperation({ ...ctx, actionId, selection: selectionFor(action) });
 }
 function withResult(ctx, result, day = ctx.day) { return { ...ctx, day, record: result.record, automation: result.automation }; }
+
+test('card references use dark-side titles while dictionary keys and tree titles stay intact', () => {
+  const titles = {
+    "argo's mission": '圆桌舰桥', "argo's destiny": '圆桌舰桥', 'argo’s curse': '圆桌舰桥',
+    'voyage home': '损坏的圆桌舰桥', 'mnestis thesis': '阿尔戈英雄寝园',
+    'temenos project': '迷宫矿井', 'the work is never done': '最后的泪水',
+    'the last wish': '涅瑞伊得贝壳', 'last tome': '最后的学院',
+  };
+  const before = copy(dictionary);
+  for (const [techKey, title] of Object.entries(titles)) {
+    const ctx = context(techKey);
+    assert.equal(rules.referenceTitle(ctx, techKey), title);
+    const actions = rules.actionsFor(techKey, ctx);
+    for (const action of actions) {
+      assert.equal(action.title, title);
+      assert.equal(action.techKey, techKey);
+      if (action.trade) assert.equal(action.sourceLabel, title);
+    }
+    if (actions.length) {
+      const result = apply(ctx, actions[0].actionId);
+      assert.equal(result.ok, true, result.message);
+      assert.ok(result.operation.label.startsWith(title), result.operation.label);
+      assert.equal(result.operation.techKey, techKey);
+    }
+  }
+  assert.equal(dictionary.cards.find(card => card.key === "argo's mission").names.zh, '阿尔戈号的任务');
+  assert.equal(rules.titleFor({ key: 'custom', names: { zh: '自定义科技' } }), '自定义科技');
+  assert.equal(rules.titleFor({ key: 'custom', names: { zh: '浅色面' }, backNames: { en: 'Dark Side' } }), 'Dark Side');
+  assert.equal(rules.referenceTitle({ dictionary }, 'unknown'), '');
+  assert.deepEqual(dictionary, before);
+});
+
+test('saves, map progress, negotiations and investigation reminders share the dark-side title policy', () => {
+  const keys = ['hope logic', 'deeply embedded spies', 'rhetoric', 'minoan investigations'];
+  const local = { cards: copy(dictionary.cards.filter(card => keys.includes(card.key))) };
+  local.cards.forEach(card => { card.backNames = { zh: `深色面：${card.key}`, en: `Dark: ${card.key}` }; });
+  const ctx = context('rhetoric', { dictionary: local, cycle: 'c1', map: { explored: true, tags: ['progress'] } });
+  assert.equal(rules.saveReminders(ctx, [{ type: 'doom', amount: 1 }])[0].title, '深色面：hope logic');
+  assert.equal(rules.mapProgressReminders(ctx)[0].title, '深色面：deeply embedded spies');
+  const actions = rules.listActions({ ...ctx, scope: 'negotiation' });
+  assert.ok(actions.length);
+  assert.ok(actions.every(action => action.title === '深色面：rhetoric'));
+  const investigation = require('../technology/investigation-rules.js');
+  assert.equal(investigation.reminders(ctx, rules.getHelpers())[0].title, '深色面：minoan investigations');
+});
+
+test('legacy timeline labels and return instructions display dark-side titles without changing saved events', () => {
+  const ctx = context('the work is never done');
+  const result = apply(ctx, 'final-tear');
+  const saved = result.automation.events.one;
+  saved.label = '工作永无止境 · 最后之泪';
+  saved.rewardLabel = '取回「工作永无止境」科技卡';
+  const before = copy(result.automation);
+  const shown = rules.getEvents(withResult(ctx, result, 36))[0];
+  assert.equal(shown.label, '最后的泪水 · 最后之泪');
+  assert.equal(shown.rewardLabel, '取回「最后的泪水」科技卡');
+  assert.equal(shown.techKey, ctx.techKey);
+  assert.equal(shown.overdue, true);
+  assert.deepEqual(result.automation, before);
+  assert.equal(rules.referenceText(ctx, ctx.techKey, shown.label), shown.label);
+  assert.equal(rules.referenceText(ctx, 'unknown', '手写内容'), '手写内容');
+});
 
 test('automation families merge forms and prefer available higher-tier sources without merging their rules', () => {
   const ctx = context('ultimate titan breeding', { techKey: undefined, cycle: 'c5' });
@@ -187,13 +249,13 @@ test('three development-stage trade cards exchange either direction without fate
     assert.equal(action.maxTrades, null);
     assert.equal(action.tradeRoutes.length, 4);
     assert.match(action.label, new RegExp(spec.label));
-    assert.match(action.sourceLabel, new RegExp(spec.label));
+    assert.equal(action.sourceLabel, dictionary.cards.find(card => card.key === techKey).backNames.zh);
     for (const route of action.tradeRoutes) {
       const local = copy(ctx);
       for (const item of [...route.costs, ...route.gains]) local.record.resources[item.storageKey] = 100;
       assert.ok(route.costs[0].storageKey === spec.base || route.gains[0].storageKey === spec.base);
       assert.ok(spec.alternatives.includes(route.costs[0].storageKey) || spec.alternatives.includes(route.gains[0].storageKey));
-      const selection = { trades: [{ routeId: route.id, count: 17 }], story2aConfirmed: true, developmentConfirmed: true };
+      const selection = { trades: [{ routeId: route.id, count: 17 }], story2aConfirmed: true };
       const result = rules.prepareOperation({ ...local, actionId: 'trade', selection });
       assert.equal(result.ok, true, `${techKey}: ${result.message}`);
       assert.equal(result.record.resources[route.costs[0].storageKey], 83);
@@ -203,9 +265,8 @@ test('three development-stage trade cards exchange either direction without fate
       assert.equal(result.event.skipTimeline, true);
       assert.equal(result.event.status, 'completed');
       assert.equal(rules.getAvailability(withResult(local, result)).ok, true);
-      for (const missing of ['story2aConfirmed', 'developmentConfirmed']) {
-        assert.equal(rules.prepareOperation({ ...local, actionId: 'trade', selection: { ...selection, [missing]: false } }).code, 'CONFIRM_CONDITION');
-      }
+      assert.equal(action.confirmations.some(item => item.id === 'developmentConfirmed'), false);
+      assert.equal(rules.prepareOperation({ ...local, actionId: 'trade', selection: { ...selection, story2aConfirmed: false } }).code, 'CONFIRM_CONDITION');
     }
     const before = copy(ctx);
     assert.equal(rules.actionsFor(techKey, { ...ctx, cycle: 'c5' }).length, 0);

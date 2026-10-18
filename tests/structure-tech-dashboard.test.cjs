@@ -453,6 +453,23 @@ test('dashboard inline scripts parse with the shared automation modules', () => 
   for (const match of source.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)) if (match[1].trim()) new vm.Script(match[1]);
 });
 
+test('dashboard references and old timeline/repair labels use dark-side names from the dictionary or synced snapshot', () => {
+  const dictionary = require('../technology/tech_card_dictionary.min.json');
+  const { context: c } = harness(['getStructureTechContext', 'structureTechEvents', 'structureTechTimelineItems',
+    'technologyReferenceName', 'technologyReferenceText']);
+  c.structureTechContext = { epoch: 1, profileId: 'A', cycleId: 'c2', dictionary };
+  const tech = { key: "argo's mission", displayName: '阿尔戈号的任务', referenceName: '圆桌舰桥' };
+  c.state.techAutomation.events.trade = event('trade', { techKey: tech.key, kind: 'cooldown', dueDay: 12,
+    label: '阿尔戈号的任务 · 贸易与 7 天冷却' });
+  assert.equal(c.technologyReferenceName({ ...tech, referenceName: undefined }), '圆桌舰桥');
+  assert.match(c.structureTechTimelineItems(12)[0].text, /^圆桌舰桥 · 贸易与 7 天冷却/);
+  assert.equal(c.technologyReferenceText(tech.key, '阿尔戈号的任务 已禁用；D31 发展步骤修复'),
+    '圆桌舰桥 已禁用；D31 发展步骤修复');
+  assert.equal(c.state.techAutomation.events.trade.label, '阿尔戈号的任务 · 贸易与 7 天冷却');
+  c.structureTechContext = null;
+  assert.equal(c.technologyReferenceName(tech), '圆桌舰桥');
+});
+
 test('conditional technology completion forwards the explicit player confirmation', async () => {
   const { context: c } = harness([...targeting, ...dueList, 'completeStructureTechEvent']);
   let submitted;

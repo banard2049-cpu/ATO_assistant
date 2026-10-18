@@ -61,6 +61,7 @@ textarea { background: var(--bg); }
 .titan-list-head { color: var(--accent-strong); font-size: 14px; }
 .titan-list-head strong, .summon-group-head strong { font-weight: 600; }
 .titan-row { border: 0; border-bottom: 1px solid var(--line); padding: 10px 0; background: transparent; }
+.titan-row:last-child { border-bottom: 0; }
 .titan-empty, .summon-empty { border-radius: 0; background: var(--bg); }
 .track-row, .diplomacy-row { padding: 12px 0; border-bottom: 1px solid var(--line); }
 .diplomacy-row { padding: 8px 0; }

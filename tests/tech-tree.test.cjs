@@ -22,7 +22,7 @@ function context() {
   const names = ['dictionaryToAppData', 'computeDisambiguatedTechNames', 'techKey', 'nodeKey', 'isAutoUnlockedNode',
     'isUnlockedNode', 'isRequirementUnlocked', 'nodeRecordByName', 'areRequirementsMet', 'isDiscoveredNode', 'isConditionDiscoveryPending',
     'isUnlockableNode', 'isConditionSatisfied', 'hasPrintedConditionBox', 'conditionCells', 'isConditionTicked',
-    'isConditionCellTicked', 'conditionCellKey', 'cardsForNode', 'isCoreNode', 'displayTechName', 'esc',
+    'isConditionCellTicked', 'conditionCellKey', 'cardsForNode', 'isCoreNode', 'displayTechName', 'displayTechReferenceName', 'esc',
     'renderTechRefList', 'renderRequirementUnlockColumns', 'renderRequirementAnyGroups', 'renderConditionNotes', 'renderConditionToggle',
     'treeTextUnits', 'treeTextRows', 'treeModuleSize', 'treeModuleHtml', 'treeNodeStatus', 'conditionCellCaption', 'conditionCellDisplayText'];
   const declarations = ['PAGE_METADATA', 'PRINTED_CONDITION_BOXES', 'PRINTED_CONDITION_TEXT', 'CONDITION_TEXT_ZH'];
@@ -65,6 +65,20 @@ test('unlocking a real technology discovers just the next reachable nodes and ar
   assert.ok(!after.nodes.includes(superior));
   assert.ok(after.edges.some(edge => edge.source === trade.id && edge.target === advanced.id));
   assert.ok(after.edges.every(edge => after.nodes.some(node => node.id === edge.source) && after.nodes.some(node => node.id === edge.target)));
+});
+
+test('dictionary conversion keeps light-side names in the tree and dark-side names for external snapshots', () => {
+  const c = context();
+  const page = c.data.pages.find(page => page.key === 'cycle2');
+  const node = page.nodes.find(node => node.name === "Argo's Mission");
+  assert.equal(c.displayTechName(node), '阿尔戈号的任务');
+  const card = c.cardsForNode(node)[0];
+  assert.equal(card.name_zh, '阿尔戈号的任务');
+  assert.equal(card.reference_name, '圆桌舰桥');
+  assert.equal(c.displayTechReferenceName(node), '圆桌舰桥');
+  c.treeLanguage = 'en';
+  assert.equal(c.displayTechName(node), "Argo's Mission");
+  assert.equal(c.displayTechReferenceName(node), 'Bridge Tholos');
 });
 
 test('condition roots reveal only after all conditions while connected nodes keep their existing discovery rules', () => {

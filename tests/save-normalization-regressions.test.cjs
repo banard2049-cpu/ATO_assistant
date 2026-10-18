@@ -180,7 +180,7 @@ test('hero legacy default fields merge with remote memories without a false prom
 });
 test('technology snapshot generation is a read and unchanged snapshots do not write the dashboard', async () => {
   let saves = 0, writes = 0;
-  const c = context('technology/index.html', ['unlockedTechSnapshot', 'writeSnapshotToMainArchive', 'technologyStateValuesEqual'], {
+  const c = context('technology/index.html', ['unlockedTechSnapshot', 'displayTechReferenceName', 'writeSnapshotToMainArchive', 'technologyStateValuesEqual'], {
     saveAccounts: () => saves++, accounts: { A: { name: 'profile A' } }, activeAccountId: 'A', currentCycle: 'cycle1',
     unlocked: new Set(), unimportant: new Set(), conditionTicked: new Set(), unlockedRecords: () => [],
     pageByKey: () => ({ label: 'cycle 1' }), requestedMainCycleId: () => 'c1',

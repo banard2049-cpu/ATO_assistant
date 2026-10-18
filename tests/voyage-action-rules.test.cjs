@@ -305,14 +305,15 @@ test('the last wish adds only unlimited development trades after story 2A and no
   for (const route of action.tradeRoutes) {
     const local = copy(ctx);
     for (const entry of [...route.costs, ...route.gains]) local.record.resources[entry.storageKey] = 50;
-    const selection = { story2aConfirmed: true, developmentConfirmed: true, trades: [{ routeId: route.id, count: 20 }] };
+    const selection = { story2aConfirmed: true, trades: [{ routeId: route.id, count: 20 }] };
     const result = rules.prepareOperation({ ...local, actionId: 'trade', selection });
     assert.equal(result.ok, true, result.message);
     assert.equal(result.record.resources[route.costs[0].storageKey], 30);
     assert.equal(result.record.resources[route.gains[0].storageKey], 70);
     assert.equal(stat(result, 'fate'), '5');
     assert.equal(result.event.skipTimeline, true);
-    for (const field of ['story2aConfirmed', 'developmentConfirmed']) assert.equal(rules.prepareOperation({ ...local, actionId: 'trade', selection: { ...selection, [field]: false } }).code, 'CONFIRM_CONDITION');
+    assert.equal(action.confirmations.some(item => item.id === 'developmentConfirmed'), false);
+    assert.equal(rules.prepareOperation({ ...local, actionId: 'trade', selection: { ...selection, story2aConfirmed: false } }).code, 'CONFIRM_CONDITION');
     local.record.resources[route.costs[0].storageKey] = 19;
     assert.equal(rules.prepareOperation({ ...local, actionId: 'trade', selection }).code, 'INSUFFICIENT_RESOURCES');
   }

@@ -97,6 +97,7 @@
       const rawKey = text(card.key).trim(), key = normalize(rawKey);
       if (!key) continue;
       const info = { key, name: text(card.names?.zh).trim() || text(card.names?.en).trim() || key,
+        referenceName: text(card.backNames?.zh).trim() || text(card.backNames?.en).trim() || text(card.names?.zh).trim() || text(card.names?.en).trim() || key,
         nameEn: text(card.names?.en).trim() || rawKey, category: text(card.category) };
       if (!cards.has(key)) cards.set(key, info);
       for (const node of array(card.nodes)) {
@@ -230,7 +231,7 @@
       tech: { pages: [...usedPages].sort().map((page) => ({ page, cycleId: `c${page.replace(/\D/g, '')}`,
         nodes: (dict.pages.get(page) || []).map((node) => ({ ...node, ...dict.cards.get(node.key), unlocked: firstTechDay.has(node.key), firstDay: firstTechDay.get(node.key) || '', order: order.get(node.key) ?? null })),
         edges: dict.edges.get(page) || [] })),
-      unlocked: [...firstTechDay].map(([key, firstDay]) => ({ key, name: dict.cards.get(key)?.name || key,
+      unlocked: [...firstTechDay].map(([key, firstDay]) => ({ key, name: dict.cards.get(key)?.referenceName || key,
         category: dict.cards.get(key)?.category || '', firstDay, order: order.get(key) })) },
       summary: { days: timeline.length, recordedDays: snapshots.size, firstDay: presentDays[0], lastDay: presentDays[presentDays.length - 1],
         explored: firstTileDay.size, totalTiles: cycleDef.tiles.length, unlocked: firstTechDay.size } };

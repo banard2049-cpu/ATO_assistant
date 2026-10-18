@@ -19,7 +19,7 @@ function functions(text, names) {
 function context() {
   const c = vm.createContext({
     window: { ATO_STRUCTURE_CARD_TYPES: types, ATO_TECH_PAGE_LAYOUT: [{ key: 'cycle1', label: '循环 I' }] },
-    search: { value: '' }, unlockedStructureType: '', unimportant: new Set(),
+    search: { value: '' }, unlockedStructureType: '', unimportant: new Set(), treeLanguage: 'zh',
     accounts: { default: { name: '测试' } }, activeAccountId: 'default', currentCycle: 'cycle1',
     unlocked: new Set(), conditionTicked: new Set(),
     nodeKey: (_page, node) => node.key, techKey: value => value.toLowerCase(),
@@ -27,7 +27,7 @@ function context() {
     backThumb: card => `<span>${card.key}</span>`,
     pageByKey: () => ({ label: '循环 I' }),
   });
-  vm.runInContext(functions(source, ['dictionaryToAppData', 'cardsForNode', 'cardForNode', 'tagForNode',
+  vm.runInContext(functions(source, ['dictionaryToAppData', 'cardsForNode', 'cardForNode', 'displayTechReferenceName', 'tagForNode',
     'isStructureNode', 'isLargeTechCard', 'structureTypesForNode', 'structureTypeBadgesHtml', 'technologyMetaLabel',
     'matchesUnlockedFilters', 'unlockedStructureFilterHtml', 'isNegotiationNode', 'isUnimportantNode',
     'unlockedItemHtml', 'unlockedGroupsHtml', 'categoryLabel', 'esc', 'unlockedTechSnapshot']), c);

@@ -48,14 +48,14 @@
   }
   const trade = (key, cycle) => ({ key, actions: [{ id: "trade", label: "贸易与 7 天冷却", kind: "cooldown", days: 7,
     fate: 1, trade: true, resourceCycle: cycle, tradeRoutes: tradeRoutes(cycle), maxTrades: 3 }] });
-  function developmentTrade(key, cycle, base, alternatives, label, sourceLabel) {
+  function developmentTrade(key, cycle, base, alternatives, label) {
     const routes = [];
     for (const alternative of alternatives) for (const [from, to] of [[base, alternative], [alternative, base]]) {
       routes.push({ id: `${from[0]}-to-${to[0]}`, label: `1 ${from[1]} → 1 ${to[1]}`,
         costs: [{ resource: from[0].replace(/^c[1-5]-/, ""), storageKey: from[0], label: from[1], amount: 1 }],
         gains: [{ resource: to[0].replace(/^c[1-5]-/, ""), storageKey: to[0], label: to[1], amount: 1 }] });
     }
-    return { key, actions: [{ id: "trade", label, sourceLabel, kind: "cooldown", days: 0, fate: 0, trade: true,
+    return { key, actions: [{ id: "trade", label, kind: "cooldown", days: 0, fate: 0, trade: true,
       resourceCycle: cycle, tradeRoutes: routes, maxTrades: null, requiresDevelopment: true, skipTimeline: true }] };
   }
   // `effectLabel` is a permanent half-sentence shown right behind the price in
@@ -67,10 +67,10 @@
     { id: "breed-accelerated", label: "加速培育", kind: "reward", days: 5, cooldownDays: 12, fate: 1, models, sacrifice: true, titan: true },
   ] });
   const catalog = [
-    developmentTrade("temenos project", "c2", ["c2-warTrireme", "舰材"], [["mazeFragment", "迷宫碎片"], ["fearEssence", "恐惧精华"]], "迷宫矿井资源交换", "吞域兽项目（迷宫矿井）"),
-    developmentTrade("abyss expedition", "c3", ["c3-hyperboreanAlloy", "冻土合金"], [["livingAbyss", "活体深渊"], ["skinOfMalice", "怨恨之皮"]], "深渊灯塔资源交换", "深渊远征（深渊灯塔）"),
-    developmentTrade("mortal mapmakers", "c4", ["c4-cursedDerelict", "诅咒船骇"], [["c4-blackenedHalo", "黑化光环"], ["c4-burnedOutGrace", "燃尽恩典"]], "愚行之塔资源交换", "凡人地图绘制者（愚行之塔）"),
-    developmentTrade("the last wish", "c5", ["c5-atlanteanTekne", "亚特兰提斯仪器"], [["promisedFuturesCarcass", "未来承诺残躯"], ["blackTaintedStepfinger", "染黑阶梯指"]], "最后的愿望资源交换", "最后的愿望"),
+    developmentTrade("temenos project", "c2", ["c2-warTrireme", "舰材"], [["mazeFragment", "迷宫碎片"], ["fearEssence", "恐惧精华"]], "迷宫矿井资源交换"),
+    developmentTrade("abyss expedition", "c3", ["c3-hyperboreanAlloy", "冻土合金"], [["livingAbyss", "活体深渊"], ["skinOfMalice", "怨恨之皮"]], "深渊灯塔资源交换"),
+    developmentTrade("mortal mapmakers", "c4", ["c4-cursedDerelict", "诅咒船骇"], [["c4-blackenedHalo", "黑化光环"], ["c4-burnedOutGrace", "燃尽恩典"]], "愚行之塔资源交换"),
+    developmentTrade("the last wish", "c5", ["c5-atlanteanTekne", "亚特兰提斯仪器"], [["promisedFuturesCarcass", "未来承诺残躯"], ["blackTaintedStepfinger", "染黑阶梯指"]], "涅瑞伊得贝壳资源交换"),
     trade("superior trading solutions", "c1"),
     { key: "mnestis thesis", actions: [{ id: "reflect", label: "", kind: "reward", days: 7, fate: 1, target: "hero", effectLabel: "使其获得一个回忆节点", rewardLabel: "所选英雄任选一张回忆卡获得 +1 回忆节点" }] },
     trade("argo's destiny", "c3"),
@@ -84,7 +84,7 @@
     { key: "titan genetic memory", actions: [{ id: "genesium", label: "泰坦遗传记忆：移植", kind: "reward", days: 7, fate: 1, target: "titan", rewardLabel: "所选泰坦从练兵场获得一张带 Strain 特性的式样卡" }] },
     trade("argo’s curse", "c4"),
     breed("superior titan breeding", ["tt_returner", "tt_ascender", "tt_pdawnburner"]),
-    { key: "the work is never done", actions: [{ id: "final-tear", label: "最后之泪", kind: "reward", days: 30, tear: true, rewardLabel: "取回「工作永无止境」科技卡" }] },
+    { key: "the work is never done", actions: [{ id: "final-tear", label: "最后之泪", kind: "reward", days: 30, tear: true, rewardLabel: "取回「最后的泪水」科技卡" }] },
     trade("voyage home", "c5"),
     breed("ultimate titan breeding", ["tt_cloudsoarer", "tt_wishender", "tt_plunarlander", "tt_shadowdancer"]),
     { key: "mnestis training", actions: [{ id: "simulation", label: "记忆模拟战斗", kind: "battle", days: 1, cooldownDays: 12, fate: 1, rewardLabel: "进行 Mnestis Simulation Battle（循环 V 故事书第 11 页）" }] },
@@ -161,7 +161,9 @@
         const cooldownActive = day === null || day < (event.cooldownUntilDay || 0);
         const completed = event.status === "completed" || (event.kind === "cooldown" && due);
         const grant = eventGrant(event);
-        return { ...event, ...(grant ? { grant } : {}), auto: Boolean(grant) && !completed && event.kind === "reward",
+        return { ...event, label: referenceText(ctx, event.techKey, event.label),
+          rewardLabel: referenceText(ctx, event.techKey, event.rewardLabel),
+          ...(grant ? { grant } : {}), auto: Boolean(grant) && !completed && event.kind === "reward",
           status: completed ? "completed" : "pending", due, overdue: due && day > event.dueDay && !completed,
           cooldownActive, locked: !completed || cooldownActive };
       }).sort((a, b) => a.dueDay - b.dueDay || a.id.localeCompare(b.id));
@@ -185,9 +187,14 @@
     return { cards, groups: [...groups.values()] };
   }
   function dictionaryCards(ctx, techKey) {
-    const wanted = key(techKey), index = dictionaryIndex(ctx);
-    const direct = index.cards.filter(card => key(card.key) === wanted);
-    if (direct.length) return direct.filter(card => card.category === "structure");
+    const wanted = key(techKey), raw = ctx.dictionary?.cards;
+    // Stored events normally carry a canonical card key; do not rebuild the
+    // entire tree for every event label on every availability check.
+    const direct = (Array.isArray(raw) ? raw : object(raw) ? Object.values(raw) : [])
+      .filter(card => object(card) && key(card.key) === wanted);
+    if (direct.length) return direct.filter(card => card.category === "structure")
+      .sort((a, b) => Number(a.index ?? 0) - Number(b.index ?? 0));
+    const index = dictionaryIndex(ctx);
     return [...new Set(index.groups.filter(group => group.key === wanted).flatMap(group => group.cards))]
       .filter(card => card.category === "structure");
   }
@@ -267,7 +274,23 @@
     return (Array.isArray(ctx.record?.titans) ? ctx.record.titans : []).filter(titan => safeId(titan.id) && count(titan.count ?? 1) > 0 && (!crippled || titan.crippled === true));
   }
   function dreamwalkers(ctx) { return titanItems(ctx).filter(titan => /^(?:梦行者|dream\s*walker)$/i.test(String(titan.name || "").trim())); }
-  function titleFor(card) { return card.names?.zh || card.names?.en || card.key; }
+  // References use the printed rules (dark) side. Tree nodes keep card.names.
+  // Equal titles need no override; legacy/custom dictionaries also use names.
+  function titleFor(card) { return card.backNames?.zh || card.backNames?.en || card.names?.zh || card.names?.en || card.key; }
+  function referenceTitle(ctx, techKey) {
+    return [...new Set(dictionaryCards(ctx, techKey).map(titleFor))].join(" / ");
+  }
+  function referenceText(ctx, techKey, text) {
+    if (typeof text !== "string" || !ctx.dictionary) return text;
+    // Upgrade displayed legacy labels without rewriting saved events/receipts.
+    for (const card of dictionaryCards(ctx, techKey)) {
+      const title = titleFor(card);
+      for (const name of [card.names?.zh, card.names?.en]) {
+        if (name && name !== title) text = text.split(name).join(title);
+      }
+    }
+    return text;
+  }
   function actionChoices(action, ctx) {
     const choices = [], confirmations = [];
     if (action.target === "hero") {
@@ -289,7 +312,6 @@
     }
     if (action.requiresDevelopment) {
       confirmations.push({ id: "story2aConfirmed", label: "当前循环已到故事 2A 或之后" });
-      confirmations.push({ id: "developmentConfirmed", label: "当前正在发展阶段" });
     }
     return { choices, confirmations };
   }
@@ -400,6 +422,7 @@
         ...(actionFamilies[card.key] || (action.trade ? { groupKey: "trade", groupTitle: "贸易", tier: 1 }
           : { groupKey: card.key, groupTitle: titleFor(card), tier: 1 })),
         title: titleFor(card), image: card.image?.back || "", stepId: "timeline",
+        ...(action.trade ? { sourceLabel: titleFor(card) } : {}),
         ...(action.rebuild ? { scoutLabel: scoutStatus(ctx).label } : {}),
         available: check.ok, disabled: !check.ok, reason: check.message || "", dueDays: action.days,
         costLabel: [action.fate ? "+1 命运" : "", action.sacrifice ? "失去 1 架梦行者" : "", action.rebuild ? "失去 5 船材或 2 舰材" : "", action.tear ? "暂时弃置本卡" : ""].filter(Boolean).join("；") || "无代价" }));
@@ -715,7 +738,7 @@
   function canNegotiate(ctx = {}) { return Boolean(negotiationRules()?.canNegotiate(ctx, negotiationHelpers())); }
   function canUsePursuerProblem(ctx = {}) { return eligibility(ctx, "pursuer problem"); }
   return { version: 1, catalog: clone(catalog), voyageCatalog: voyageRules()?.catalog || [], explorationCatalog: explorationTechRules()?.catalog || [], negotiationCatalog: negotiationRules()?.catalog || [], saveCatalog: clone(saves), listActions, listActionGroups, actionsFor, getAvailability,
-    eligibility, getHelpers: negotiationHelpers,
+    eligibility, titleFor, referenceTitle, referenceText, getHelpers: negotiationHelpers,
     normalizeAutomation, getEvents, prepareOperation, previewOperation, completeOperation, saveReminders, mapProgressReminders, scoutStatus, canNegotiate, canUsePursuerProblem,
     eventGrant, autoSettleEvent };
 });
