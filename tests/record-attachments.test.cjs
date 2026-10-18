@@ -98,7 +98,7 @@ function recordBackupHarness({ failRestore = false } = {}) {
       return reader;
     },
   });
-  vm.runInContext(['exportState', 'importState'].map(extract).join('\n'), ctx);
+  vm.runInContext(['exportState', 'isRecordImport', 'importState'].map(extract).join('\n'), ctx);
   return { ctx, events, alerts, button, download: () => downloaded, reader: () => reader };
 }
 
@@ -122,5 +122,31 @@ test('record-only import restores blobs before saving references, and keeps old 
     assert.equal(h.ctx.state.profileName, failRestore ? '我的记录' : '导入记录');
     assert.equal('recordAttachmentBlobs' in h.ctx.state, false);
     assert.equal(h.alerts.length, failRestore ? 1 : 0);
+  }
+});
+
+test('record import rejects wrong-module and malformed backups before normalization or uploads', async () => {
+  for (const value of [{}, null, [], { heroes: [], graveyard: [] },
+    { app: 'ATO Campaign Save Package', sections: { record: { resources: { trireme: 99 } } } },
+    { profileName: 'bad', resources: [] }, { profileName: 'bad', resources: {}, titans: {} },
+    { profileName: 'bad', resources: {}, cycle: 'c9' }, { profileName: 'unrelated' }]) {
+    const h = recordBackupHarness();
+    const original = h.ctx.state;
+    h.ctx.normalizeState = () => { throw new Error('must reject before normalization'); };
+    h.ctx.importState({});
+    h.reader().result = JSON.stringify(value);
+    await h.reader().onload();
+    assert.equal(h.ctx.state, original);
+    assert.deepEqual(h.events, []);
+    assert.match(h.alerts[0], /不是有效的记录表备份/);
+  }
+});
+
+test('record import recognizes current and legacy record-only exports without an app marker', () => {
+  const h = recordBackupHarness();
+  for (const value of [{ profileName: '旧记录', resources: {}, matrix: {}, notes: '保留笔记' },
+    { cycle: 'c1', resources: {}, crewBoxes: {} },
+    { profileName: '新记录', cycle: 'c5', cycleStats: { c5: { notes: '航行笔记' } }, titans: [] }]) {
+    assert.equal(h.ctx.isRecordImport(value), true);
   }
 });

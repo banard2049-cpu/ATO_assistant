@@ -600,7 +600,9 @@
           const maxTrades = action.maxTrades === null ? null : action.maxTrades || 3;
           const hint = doc.createElement('p');
           hint.className = 'structure-tech-trade-hint';
-          hint.textContent = `${maxTrades === null ? '选择兑换项目和次数。' : `选择兑换项目和次数，本次合计至多 ${maxTrades} 次。`}按下列顺序兑换，任一笔不足则整次不生效。`;
+          hint.textContent = maxTrades === null
+            ? '选择兑换项目并填写次数；同一种置换可填写任意倍率。按下列顺序兑换，任一项不足则整次不生效。'
+            : `选择兑换项目并填写次数；同一种置换可填写任意倍率，只占用 1 类额度。本次最多选择 ${maxTrades} 类置换。按下列顺序兑换，任一项不足则整次不生效。`;
           lines.appendChild(hint);
           for (let index = 0; index < 3; index += 1) {
             const line = doc.createElement('div'); line.className = 'structure-tech-trade-line';
@@ -613,9 +615,18 @@
             }
             const countLabel = doc.createElement('label'); countLabel.className = 'structure-tech-action-choice';
             const count = doc.createElement('input'); count.type = 'number'; count.name = `tradeCount${index}`;
-            count.min = '0'; if (maxTrades !== null) count.max = String(maxTrades); count.step = '1';
+            count.min = '0'; count.step = '1';
             const prior = previous.trades?.[index]; route.value = prior?.routeId || ''; count.value = String(prior?.count ?? 0);
-            route.addEventListener('change', () => { if (route.value && Number(count.value) <= 0) count.value = '1'; if (!route.value) count.value = '0'; preview(); });
+            route.addEventListener('change', () => {
+              // One row per exchange category: choosing a route already used in
+              // another row moves it here instead of duplicating the category.
+              if (route.value) for (const other of tradeControls) {
+                if (other.route !== route && other.route.value === route.value) { other.route.value = ''; other.count.value = '0'; }
+              }
+              if (route.value && Number(count.value) <= 0) count.value = '1';
+              if (!route.value) count.value = '0';
+              preview();
+            });
             count.addEventListener('input', preview); count.addEventListener('change', preview);
             routeLabel.append(doc.createTextNode(`兑换 ${index + 1} `), route); countLabel.append(doc.createTextNode('次数 '), count);
             line.append(routeLabel, countLabel); lines.appendChild(line); tradeControls.push({ route, count });

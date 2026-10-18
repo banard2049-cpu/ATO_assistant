@@ -85,6 +85,49 @@
     return { cardId: String(card.cardId || card.id), cycleId: card.cycleId, trades, rewards, limit: 5, manualIndexes: manualIndexes.sort((a, b) => a - b) };
   }
 
+  // 商人兑换的次数上限按“类”计算：同一种兑换填任意倍率，仍只占 1 类额度。
+  function tradeIdOf(receipt, menu) {
+    if (!receipt) return null;
+    if (typeof receipt.tradeId === "string" && (!menu || menu.trades.some((trade) => trade.id === receipt.tradeId))) return receipt.tradeId;
+    if (!menu) return null;
+    // Receipts created before category accounting only saved the printed label.
+    const match = String(receipt.summary || "").match(/^(.*?) ×\d+/);
+    return match ? menu.trades.find((trade) => trade.label === match[1].trim())?.id || null : null;
+  }
+  function usedTrades(previous, menu, history) {
+    const used = {};
+    if (previous && previous.used !== undefined) {
+      if (!object(previous.used)) throw new Error("商人兑换类别记录无效");
+      for (const [id, value] of Object.entries(previous.used)) {
+        const count = integer(value, "兑换类别");
+        if (count > 0) used[id] = count;
+      }
+      return used;
+    }
+    if (!menu) return used;
+    // Rounds saved before this rule only stored a total quantity; the entry's
+    // receipts still name each printed exchange, so rebuild the categories.
+    for (const receipt of Array.isArray(history) ? history : []) {
+      const id = tradeIdOf(receipt, menu);
+      if (id) used[id] = (used[id] || 0) + 1;
+    }
+    return used;
+  }
+  function tradeUsage(record, cycleId, merchantId, roundId, history, dataset) {
+    try {
+      const cardId = String(merchantId).replace(`${cycleId}:`, "");
+      const menu = merchant(datasetOf(dataset)?.cards?.[`${cycleId}:${cardId}`]);
+      if (!menu) return null;
+      const rounds = object(record?.explorationTradeRounds) ? record.explorationTradeRounds : {};
+      const previous = rounds[safeKey(roundId)];
+      if (previous && (!object(previous) || previous.cycleId !== cycleId || previous.merchantId !== cardId)) return null;
+      const used = usedTrades(previous, menu, history);
+      return { limit: menu.limit, count: Object.keys(used).length, used: Object.keys(used), menu };
+    } catch {
+      return null;
+    }
+  }
+
   function resourceEntry(dataset, cycleId, resource) {
     const entry = datasetOf(dataset)?.cycles?.[cycleId]?.resources?.[resource];
     if (!entry || entry.named) throw new Error(`找不到可计数的资源：${resource}`);
@@ -154,7 +197,7 @@
     return next;
   }
 
-  function executeTrade(record, cycleId, merchantId, trade, times, roundId, dataset) {
+  function executeTrade(record, cycleId, merchantId, trade, times, roundId, dataset, history = []) {
     if (!object(record)) throw new Error("记录表数据无效");
     const cardId = String(merchantId).replace(`${cycleId}:`, "");
     const menu = merchant(datasetOf(dataset)?.cards?.[`${cycleId}:${cardId}`]);
@@ -166,25 +209,36 @@
     const rounds = object(record.explorationTradeRounds) ? record.explorationTradeRounds : {};
     const previous = rounds[roundKey];
     if (previous && (!object(previous) || previous.cycleId !== cycleId || previous.merchantId !== cardId)) throw new Error("兑换轮次不属于当前商人");
-    const used = integer(previous?.count, "已兑换次数");
-    if (used + count > menu.limit) throw new Error("本次商人最多兑换 5 次");
+    const used = usedTrades(previous, menu, history);
+    const existing = Boolean(used[selected.id]);
+    if (!existing && Object.keys(used).length >= menu.limit) throw new Error(`本次商人最多兑换 ${menu.limit} 类`);
     const changes = resourceChanges(record, cycleId, selected.costs, selected.gains, count, dataset);
     const next = clone(record);
     applyResourceChanges(next, changes);
     const id = receiptId();
-    next.explorationTradeRounds = { ...(object(next.explorationTradeRounds) ? next.explorationTradeRounds : {}), [roundKey]: { cycleId, merchantId: cardId, count: used + count, receiptIds: [...(previous?.receiptIds || []), id] } };
-    const summary = `${selected.label} ×${count}（本次已兑换 ${used + count}/5）`;
-    return { record: next, changes, summary, receipt: { kind: "trade", id, cycleId, merchantId: cardId, roundId: roundKey, times: count, changes: clone(changes), summary } };
+    const nextUsed = { ...used, [selected.id]: (used[selected.id] || 0) + 1 };
+    const categories = Object.keys(nextUsed).length;
+    next.explorationTradeRounds = { ...(object(next.explorationTradeRounds) ? next.explorationTradeRounds : {}),
+      [roundKey]: { cycleId, merchantId: cardId, count: categories, used: nextUsed, receiptIds: [...(previous?.receiptIds || []), id] } };
+    const summary = `${selected.label} ×${count}（已用 ${categories}/${menu.limit} 类${existing ? "，同类加量" : ""}）`;
+    return { record: next, changes, summary, receipt: { kind: "trade", id, cycleId, merchantId: cardId, roundId: roundKey, tradeId: selected.id,
+      times: count, changes: clone(changes), summary } };
   }
-  function undoTrade(record, receipt) {
+  function undoTrade(record, receipt, history = [], dataset) {
     const round = record.explorationTradeRounds?.[receipt?.roundId];
     if (receipt?.kind !== "trade" || !round?.receiptIds?.includes(receipt.id) || round.cycleId !== receipt.cycleId || round.merchantId !== receipt.merchantId) throw new Error("这笔兑换已撤销或轮次发生变化");
-    const count = integer(round.count, "已兑换次数") - integer(receipt.times, "兑换次数");
-    if (count < 0) throw new Error("兑换次数发生变化，无法撤销");
+    const menu = merchant(datasetOf(dataset)?.cards?.[`${receipt.cycleId}:${receipt.merchantId}`]);
+    const tradeId = tradeIdOf(receipt, menu);
+    if (!tradeId) throw new Error("找不到这笔兑换的类别，无法撤销");
+    const used = usedTrades(round, menu, history);
+    if (used[tradeId] > 1) used[tradeId] -= 1;
+    else delete used[tradeId];
+    const count = Object.keys(used).length;
     const next = clone(record);
     applyResourceChanges(next, receipt.changes, true);
-    next.explorationTradeRounds[receipt.roundId] = { ...round, count, receiptIds: round.receiptIds.filter((id) => id !== receipt.id) };
-    if (!count && !next.explorationTradeRounds[receipt.roundId].receiptIds.length) delete next.explorationTradeRounds[receipt.roundId];
+    const receiptIds = round.receiptIds.filter((id) => id !== receipt.id);
+    next.explorationTradeRounds[receipt.roundId] = { ...round, count, used, receiptIds };
+    if (!count && !receiptIds.length) delete next.explorationTradeRounds[receipt.roundId];
     return next;
   }
 
@@ -357,5 +411,5 @@
     return next;
   }
 
-  return { merchant, resourceStock, tradeLabel, claimMerchantReward, undoMerchantReward, executeTrade, undoTrade, duesPlan, applyDues, undoDues, wishPlan, applyWish, undoWish };
+  return { merchant, resourceStock, tradeLabel, tradeUsage, claimMerchantReward, undoMerchantReward, executeTrade, undoTrade, duesPlan, applyDues, undoDues, wishPlan, applyWish, undoWish };
 });

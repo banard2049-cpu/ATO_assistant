@@ -917,21 +917,25 @@ test('the actual trade panel previews all resource payments and performs mixed e
   assert.match(findNode(panel, node => node.className === 'structure-tech-action-status').textContent, /交易已完成.*冷却/);
 }));
 
-test('invalid trade totals and insufficient stocks disable execution before any payment or save', () => withPanelDocument(async () => {
+test('trade quantities multiply beyond three while stock still guards execution', () => withPanelDocument(async () => {
   const rule = realRules.catalog.find(item => item.key === 'superior trading solutions');
   const f = realFixture(rule.key, rule.actions[0]);
   const panel = f.client.createActionPanel(f.target);
   await panel.ready;
+  assert.equal(control(panel, 'tradeCount0').max, undefined, 'the quantity multiplier is not capped by the three-category limit');
+  assert.match(findNode(panel, node => node.className === 'structure-tech-trade-hint').textContent, /任意倍率.*最多选择 3 类/);
   change(control(panel, 'tradeRoute0'), 'trireme-to-monument');
-  change(control(panel, 'tradeCount0'), '3');
+  change(control(panel, 'tradeCount0'), '4');
   const button = findNode(panel, node => node.className === 'structure-tech-action-use');
+  const preview = findNode(panel, node => node.className === 'structure-tech-action-preview');
   assert.equal(button.disabled, true);
-  assert.match(findNode(panel, node => node.className === 'structure-tech-action-preview').textContent, /船材不足/);
+  assert.match(preview.textContent, /船材不足/);
+  assert.doesNotMatch(preview.textContent, /最多选择 3 类/, 'four of the same exchange are one category, not four');
   change(control(panel, 'tradeCount0'), '2');
   change(control(panel, 'tradeRoute1'), 'trireme-to-armament');
   change(control(panel, 'tradeCount1'), '2');
   assert.equal(button.disabled, true);
-  assert.match(findNode(panel, node => node.className === 'structure-tech-action-preview').textContent, /最多交换 3/);
+  assert.match(preview.textContent, /船材不足/);
   await button.listeners.click();
   assert.equal(f.state.posts.length, 0);
   assert.equal(f.state.campaign.sections.record.users.chosen.fate, '2');
@@ -974,6 +978,11 @@ test('ordered trade rows may spend the preceding exchange gain and still commit 
   await panel.ready;
   change(control(panel, 'tradeRoute0'), 'trireme-to-monument');
   change(control(panel, 'tradeRoute1'), 'monument-to-trireme');
+  // The same category cannot occupy two rows: choosing it again moves it.
+  change(control(panel, 'tradeRoute2'), 'monument-to-trireme');
+  assert.equal(control(panel, 'tradeRoute1').value, '');
+  assert.equal(control(panel, 'tradeCount1').value, '0');
+  assert.equal(control(panel, 'tradeCount2').value, '1');
   const button = findNode(panel, node => node.className === 'structure-tech-action-use');
   assert.equal(button.disabled, false);
   await button.listeners.click();

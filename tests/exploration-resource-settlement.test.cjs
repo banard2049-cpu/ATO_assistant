@@ -1865,6 +1865,51 @@ test('the merchant UI exchanges, counts up to the limit, and can be undone', asy
   assert.deepEqual(harness.alerts, []);
 });
 
+test('merchant trade multiplies one category and still allows repeats after five categories', async () => {
+  const resources = Object.fromEntries(Object.keys(dataset.cycles.c1.resources).map((resource) => [dataset.cycles.c1.resources[resource].storageKey, 1000]));
+  const harness = settleHarness({ fullRecord: { cycle: 'c1', resources, fate: '0', cycleStats: { c1: { fate: '0' } } } });
+  const entry = { id: '13400', name: 'Theban Trader', day: 12 };
+  const roundId = harness.ctx.explorationRoundId(entry);
+  const optionApi = harness.ctx.window.ATO_EXPLORATION_OPTION_RULES;
+  const menu = optionApi.merchant(dataset.cards['c1:13400']);
+  let block = harness.ctx.createExplorationSettleBlock(entry);
+  let select = block.descendants().find((node) => node.tag === 'select');
+  let times = block.descendants().find((node) => node.tag === 'input');
+  select.value = menu.trades[0].id;
+  times.value = '10';
+  await clickAndWait(buttonNamed(block, '执行兑换'));
+  assert.equal(harness.alerts.length, 0, `兑换不该报错：${harness.alerts.join(' | ')}`);
+  assert.equal(harness.record.explorationTradeRounds[roundId].count, 1);
+  block = harness.ctx.createExplorationSettleBlock(entry);
+  assert.match(textOf(block), /商人交易 1\/5 类/);
+  select = block.descendants().find((node) => node.tag === 'select');
+  times = block.descendants().find((node) => node.tag === 'input');
+  assert.equal(times.max, undefined, 'the quantity input must not cap one category at five');
+  select.value = menu.trades[0].id;
+  times.value = '12';
+  await clickAndWait(buttonNamed(block, '执行兑换'));
+  assert.equal(harness.record.explorationTradeRounds[roundId].count, 1, 'the same category adds no slot');
+  let record = harness.record;
+  for (const trade of menu.trades.slice(1, 5)) record = optionApi.executeTrade(record, 'c1', '13400', trade, 1, roundId, dataset).record;
+  harness.updateServerRecord(record);
+  harness.ctx.cachedArgoRecord = record;
+  block = harness.ctx.createExplorationSettleBlock(entry);
+  select = block.descendants().find((node) => node.tag === 'select');
+  times = block.descendants().find((node) => node.tag === 'input');
+  const exchange = buttonNamed(block, '执行兑换');
+  select.value = menu.trades[5].id;
+  select.listeners.change();
+  assert.equal(exchange.disabled, true, 'a sixth distinct category stays blocked');
+  select.value = menu.trades[0].id;
+  select.listeners.change();
+  assert.equal(exchange.disabled, false, 'an already-used category remains available');
+  times.value = '20';
+  await clickAndWait(exchange);
+  assert.equal(harness.alerts.length, 0, `加量兑换不该报错：${harness.alerts.join(' | ')}`);
+  assert.equal(harness.record.explorationTradeRounds[roundId].count, 5);
+  assert.equal(harness.record.resources['c1-monument'] > 0, true);
+});
+
 // ---- String Wish（c4:9333）-------------------------------------------------------
 test('String Wish registers its five marks and can be settled and undone', async () => {
   const harness = settleHarness({

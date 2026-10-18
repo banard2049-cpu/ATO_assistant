@@ -1128,11 +1128,11 @@ button.gear-group-name:hover {
   <script src="../assets/exploration-card-resources.js?v=20261014-card-face-audit2"></script>
   <script src="../map/map-tile-tags.js?v=20261013-corner-audit"></script>
   <script src="../map/map-data.js?v=20260730-cycle-labels"></script>
-  <script src="negotiation-rules.js?v=20261017-automation-audit4"></script>
+  <script src="negotiation-rules.js?v=20261018-trade-categories1"></script>
   <script src="voyage-action-rules.js?v=20261016-voyage3"></script>
   <script src="exploration-tech-rules.js?v=20261017-automation-audit4"></script>
-  <script src="structure-tech-rules.js?v=20261018-dark-names1"></script>
-  <script src="structure-tech-client.js?v=20261018-dark-names1"></script>
+  <script src="structure-tech-rules.js?v=20261018-trade-categories1"></script>
+  <script src="structure-tech-client.js?v=20261018-trade-categories1"></script>
 <script src="gear-inventory.js?v=20261002"></script>
 <script>
 const TECH_DICTIONARY_URL = 'tech_card_dictionary.min.json';
@@ -1515,7 +1515,8 @@ function renderCraftPanel(entry, gear) {
   const status = describeCraftPlan(plan);
   const disabled = gearMutationInFlight || (gearRecordLoadInFlight && !gearRecordState);
   const actionableOption = plan.options[plan.actionableIndex];
-  const buttonText = gearRecordLoadInFlight && !gearRecordState
+  const pending = gearCraftOperations.get(gearCraftOperationKey(plan.key));
+  const buttonText = pending ? '确认上次制造结果' : gearRecordLoadInFlight && !gearRecordState
     ? '检查材料中'
     : gearRecordError
       ? '无法读取记录表'
@@ -1527,7 +1528,7 @@ function renderCraftPanel(entry, gear) {
           ? '材料不足'
           : '需手动处理';
   return `<div class="gear-craft-panel">
-    <button type="button" class="gear-craft-btn" data-craft-key="${esc(plan.key)}" data-craft-option="${plan.actionableIndex}" ${disabled ? 'disabled' : ''}>${buttonText}</button>
+    <button type="button" class="gear-craft-btn" data-craft-key="${esc(plan.key)}" data-craft-option="${pending?.optionIndex ?? plan.actionableIndex}" ${disabled ? 'disabled' : ''}>${buttonText}</button>
     <div class="gear-craft-status ${esc(status.className)}">${esc(status.text)}</div>
   </div>`;
 }
@@ -1594,45 +1595,78 @@ async function loadGearRecordState() {
 function requestGearRecordState() {
   if (!gearRecordState && !gearRecordLoadInFlight && !gearRecordError) void loadGearRecordState();
 }
-async function mutateCampaignRecordState(mutator) {
-  const userId = activeAccountId;
+async function mutateCampaignRecordState(mutator, operation = null) {
+  const userId = operation?.userId || activeAccountId;
+  const accountId = operation?.accountId || campaignSession.accountId;
+  function assertTarget() {
+    if (activeAccountId !== userId || campaignSession.accountId !== accountId) throw new Error('当前档案或登录账号已切换，请重新操作');
+  }
+  function adopt(record, revision) {
+    assertTarget();
+    gearRecordUserId = userId;
+    gearRecordState = record;
+    gearRecordRevision = revision;
+    gearRecordSyncChannel?.postMessage({ revision });
+    return record;
+  }
   for (let attempt = 0; attempt < 5; attempt += 1) {
+    assertTarget();
     const latest = await readLatestRecordState();
-    if (activeAccountId !== userId || latest.userId !== userId) throw new Error('当前档案已切换，请重新操作');
+    assertTarget();
+    if (latest.userId !== userId) throw new Error('当前档案已切换，请重新操作');
+    if (operation && latest.state._gearCraftReceipts?.[operation.id]) return adopt(latest.state, latest.revision);
     const next = mutator(JSON.parse(JSON.stringify(latest.state)));
     if (next == null) return null;
-    const response = await fetch(CAMPAIGN_RECORD_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ section: 'record', userId: latest.userId, state: next, expectedRevision: latest.revision, expectedAccountId: campaignSession.accountId }),
-    });
-    const payload = campaignSession.accept(await response.json().catch(() => null));
-    if (response.status === 409 && payload?.code === 'SAVE_CONFLICT') continue;
-    if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
-    const revision = Math.max(0, Number(payload.revision || latest.revision + 1));
-    if (activeAccountId === userId) {
-      gearRecordUserId = latest.userId;
-      gearRecordState = next;
-      gearRecordRevision = revision;
+    if (operation) {
+      next._gearCraftReceipts ||= {};
+      next._gearCraftReceipts[operation.id] = { gearId: operation.gearId };
     }
-    gearRecordSyncChannel?.postMessage({ revision });
-    return next;
+    try {
+      const response = await fetch(CAMPAIGN_RECORD_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ section: 'record', userId, state: next, expectedRevision: latest.revision, expectedAccountId: accountId }),
+      });
+      const payload = campaignSession.accept(await response.json().catch(() => null));
+      if (response.status === 409 && payload?.code === 'SAVE_CONFLICT') continue;
+      if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+      return adopt(next, Math.max(0, Number(payload.revision || latest.revision + 1)));
+    } catch (error) {
+      // The write and its receipt are atomic. A missing response is not proof
+      // of failure; recover the receipt before charging this operation again.
+      assertTarget();
+      if (operation) {
+        try {
+          const recovered = await readLatestRecordState();
+          assertTarget();
+          if (recovered.userId === userId && recovered.state._gearCraftReceipts?.[operation.id]) {
+            return adopt(recovered.state, recovered.revision);
+          }
+        } catch { /* Keep the original error and the pending operation for retry. */ }
+      }
+      throw error;
+    }
   }
   throw new Error('保存记录表失败：并发冲突重试次数过多');
+}
+function gearCraftOperationKey(planKey) {
+  return JSON.stringify([campaignSession.accountId, activeAccountId, planKey]);
 }
 async function craftGear(planKey, optionIndex) {
   if (gearMutationInFlight) return;
   const plan = gearCraftPlans.get(planKey);
-  const option = plan?.options?.[Number(optionIndex)];
+  const operationKey = gearCraftOperationKey(planKey);
+  let operation = gearCraftOperations.get(operationKey);
+  const option = operation ? { parts: operation.parts } : plan?.options?.[Number(optionIndex)];
   if (!plan) {
     alert('制造方案已失效，请刷新装备制造页面后重试。');
     return;
   }
-  if (gearRecordError) {
+  if (!operation && gearRecordError) {
     alert(`暂时无法制造 ${plan.gearName}：无法读取记录表：${gearRecordError}`);
     return;
   }
-  if (!gearRecordState) {
+  if (!operation && !gearRecordState) {
     alert(`暂时无法制造 ${plan.gearName}：记录表尚未加载完成。`);
     return;
   }
@@ -1641,36 +1675,43 @@ async function craftGear(planKey, optionIndex) {
     return;
   }
   const initialCheck = evaluateCraftOption(option.parts, gearRecordState?.resources || {});
-  if (initialCheck.missing.length) {
+  if (!operation && initialCheck.missing.length) {
     const missingText = initialCheck.missing.map(part => `${part.label}，现有 ${part.available}`).join('；');
     alert(`暂时无法制造 ${plan.gearName}：材料不足：${missingText}`);
     return;
   }
-  if (initialCheck.unsupported.length) {
+  if (!operation && initialCheck.unsupported.length) {
     const manualText = initialCheck.unsupported.map(part => part.label).join('、');
     if (!confirm(`请确认已手动处理以下材料：${manualText}\n\n继续后只会从阿尔戈号记录表扣除其余材料。`)) return;
   }
   const buttons = mainView.querySelectorAll(`[data-craft-key="${CSS.escape(planKey)}"]`);
   buttons.forEach(btn => { btn.disabled = true; btn.textContent = '制造中...'; });
   gearMutationInFlight = true;
+  if (!operation) {
+    operation = { id: window.crypto?.randomUUID?.() || `craft-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      userId: activeAccountId, accountId: campaignSession.accountId, gearId: plan.gearId,
+      optionIndex: Number(optionIndex), parts: JSON.parse(JSON.stringify(option.parts)) };
+    gearCraftOperations.set(operationKey, operation);
+  }
   try {
     await mutateCampaignRecordState((recordState) => {
       if (!isPlainObject(recordState.resources)) recordState.resources = {};
-      const checked = evaluateCraftOption(option.parts, recordState.resources);
+      const checked = evaluateCraftOption(operation.parts, recordState.resources);
       if (checked.missing.length) {
         const missingText = checked.missing.map(part => `${part.label}，现有 ${part.available}`).join('；');
         throw new Error(`材料不足：${missingText}`);
       }
-      option.parts.filter(part => !part.unsupported).forEach(part => {
+      operation.parts.filter(part => !part.unsupported).forEach(part => {
         recordState.resources[part.storageKey] = resourceAmount(recordState.resources, part.storageKey) - part.amount;
       });
-      recordState.arsenal = window.ATO_GEAR_INVENTORY.adjust(recordState.arsenal, plan.gearId, 1, true);
+      recordState.arsenal = window.ATO_GEAR_INVENTORY.adjust(recordState.arsenal, operation.gearId, 1, true);
       return recordState;
-    });
+    }, operation);
+    gearCraftOperations.delete(operationKey);
     arsenalMessage = `${plan.gearName} 制造成功，已存入军械库。`;
     arsenalMessageError = false;
   } catch (error) {
-    alert(`制造 ${plan.gearName} 失败：${String(error.message || error)}`);
+    alert(`制造 ${plan.gearName} 未确认：${String(error.message || error)}。请点击「确认上次制造结果」重试，同一次制造不会重复扣料。`);
     await loadGearRecordState();
   } finally {
     gearMutationInFlight = false;
@@ -1923,7 +1964,9 @@ function renderGearProductionPage() {
   const productionCycle = currentProductionCycle();
   const visibleItems = allItems.filter(({ entry, gear }) => {
     if (gearOnlyCurrentCycle && !shouldShowProductionForCycle(entry, productionCycle)) return false;
-    if (gearOnlyCraftable && !gearRecordLoadInFlight && !craftPlanForGear(entry, gear).filterCraftable) return false;
+    if (gearOnlyCraftable && !gearRecordLoadInFlight
+      && !gearCraftOperations.has(gearCraftOperationKey(`${entry.techId}::${gear.gearId}`))
+      && !craftPlanForGear(entry, gear).filterCraftable) return false;
     return true;
   });
   if (!productions.length) {
@@ -2955,6 +2998,7 @@ let gearRecordUserId = 'default';
 let gearRecordLoadInFlight = false;
 let gearRecordError = '';
 let gearCraftPlans = new Map();
+const gearCraftOperations = new Map();
 const gearRecordSyncChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('ato-record-sync-v1') : null;
 const structureTechMapSyncChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('ato-map-sync-v1') : null;
 let gearOnlyCurrentCycle = true;

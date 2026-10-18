@@ -63,18 +63,21 @@ test('development lists retain voyage abilities while negotiations have their ow
   assert.equal(rules.listActions({ ...ctx, scope: 'negotiation', cycle: 'c2', cycleId: 'c2' }).length, 0);
 });
 
-test('town trade uses the printed better rates, live stock, one fate and at most three exchanges', () => {
+test('town trade uses the printed better rates, live stock, one fate and at most three exchange categories', () => {
   for (const key of ['trading solutions', 'mobile trade fleet hub', 'ultimate trading solutions', 'cyclades commerce']) {
     const ctx = fixture(key), { action } = choices(ctx);
     assert.equal(action.tradeRoutes.length, 12);
     assert.equal(action.tradeRoutes[0].costs[0].amount, 2);
     assert.equal(action.tradeRoutes[0].gains[0].amount, 1);
-    const result = execute(ctx, 0, { trades: [{ routeId: action.tradeRoutes[0].id, count: 3 }] });
+    const result = execute(ctx, 0, { trades: [{ routeId: action.tradeRoutes[0].id, count: 4 }] });
     assert.equal(result.record.cycleStats[ctx.cycle].fate, '4');
-    assert.equal(result.record.resources[action.tradeRoutes[0].costs[0].storageKey], 24);
+    assert.equal(result.record.resources[action.tradeRoutes[0].costs[0].storageKey], 22);
+    assert.equal(result.event.tradeCount, 1, 'four exchanges of one category spend one slot');
+    assert.equal(result.event.tradeExchanges, 4);
     assert.equal(result.event.skipTimeline, true);
     assert.equal(result.event.status, 'completed');
-    assert.equal(execute(ctx, 0, { trades: [{ routeId: action.tradeRoutes[0].id, count: 4 }] }).code, 'TRADE_LIMIT');
+    const four = { trades: action.tradeRoutes.slice(0, 4).map(route => ({ routeId: route.id, count: 1 })) };
+    assert.equal(execute(ctx, 0, four).code, 'TRADE_LIMIT');
     ctx.record.resources[action.tradeRoutes[0].costs[0].storageKey] = 0;
     assert.equal(execute(ctx).code, 'INSUFFICIENT_RESOURCES');
   }

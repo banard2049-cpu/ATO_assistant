@@ -6643,12 +6643,27 @@
       } finally { button.disabled = false; }
     }
 
+    function isRecordImport(value) {
+      if (!isPlainObject(value)) return false;
+      // A full campaign or another module's export must never be normalized
+      // into an empty record. Legacy record-only exports have no app marker.
+      if (["sections", "profiles", "users", "accounts", "heroes", "graveyard"].some(key => key in value)) return false;
+      if (value.cycle !== undefined && !/^c[1-5]$/.test(value.cycle)) return false;
+      if (value.profileName !== undefined && typeof value.profileName !== "string") return false;
+      if (typeof value.profileName !== "string" && value.cycle === undefined) return false;
+      const maps = ["resources", "matrix", "adventures", "diplomacy", "enemies", "crewBoxes", "cycleStats", "cycleDays", "noteAttachments"];
+      const lists = ["titans", "godforms", "nymphCards", "godformUsedCards", "nymphUsedCards"];
+      return maps.every(key => value[key] === undefined || isPlainObject(value[key]))
+        && lists.every(key => value[key] === undefined || Array.isArray(value[key]))
+        && [...maps, ...lists].some(key => Object.prototype.hasOwnProperty.call(value, key));
+    }
+
     function importState(file) {
       const reader = new FileReader();
       reader.addEventListener("load", async () => {
         try {
           const imported = JSON.parse(reader.result);
-          if (!isPlainObject(imported)) throw new Error("不是有效的记录 JSON。");
+          if (!isRecordImport(imported)) throw new Error("不是有效的记录表备份。请使用记录表导出的 JSON；完整战役备份请在主控台导入。");
           const { recordAttachmentBlobs, ...storedState } = imported;
           const next = normalizeState(storedState);
           await window.ATO_RECORD_ATTACHMENTS

@@ -36,20 +36,63 @@ test('implicit quantities on either alternative and output choices are independe
   assert.deepEqual(gains.map((item) => item.gains[0]), [{ resource: 'cyclopeanMetal', amount: 1 }, { resource: 'chimericTar', amount: 1 }]);
 });
 
-test('trades enforce full costs and persist the five-exchange limit across different options', () => {
+test('trades count exchange categories, allow unlimited quantities, and persist the five-category limit', () => {
   const menu = options.merchant(dataset.cards['c1:13400']);
-  const initial = { resources: { 'c1-trireme': 20 }, explorationPersistentEffects: { c4: { note: 'keep' } } };
+  const initial = { resources: Object.fromEntries(Object.keys(dataset.cycles.c1.resources).map((id) => [key('c1', id), 100])),
+    explorationPersistentEffects: { c4: { note: 'keep' } } };
   const first = options.executeTrade(initial, 'c1', '13400', menu.trades[0], 3, 'draw:one', dataset);
-  assert.equal(initial.resources['c1-trireme'], 20, 'input remains immutable');
-  assert.equal(first.record.resources['c1-trireme'], 11);
-  assert.equal(first.record.resources['c1-monument'], 3);
-  const second = options.executeTrade(first.record, 'c1', '13400', menu.trades[1], 2, 'draw:one', dataset);
-  assert.equal(second.record.explorationTradeRounds['draw:one'].count, 5);
-  assert.throws(() => options.executeTrade(second.record, 'c1', '13400', menu.trades[0], 1, 'draw:one', dataset), /最多兑换 5 次/);
+  assert.equal(initial.resources['c1-trireme'], 100, 'input remains immutable');
+  assert.equal(first.record.resources['c1-trireme'], 91);
+  assert.equal(first.record.resources['c1-monument'], 103);
+  assert.equal(first.record.explorationTradeRounds['draw:one'].count, 1);
+  const repeat = options.executeTrade(first.record, 'c1', '13400', menu.trades[0], 4, 'draw:one', dataset);
+  assert.equal(repeat.record.explorationTradeRounds['draw:one'].count, 1, 'the same category adds no slot');
+  assert.equal(repeat.record.explorationTradeRounds['draw:one'].used[menu.trades[0].id], 2);
+  const second = options.executeTrade(repeat.record, 'c1', '13400', menu.trades[1], 2, 'draw:one', dataset);
+  assert.equal(second.record.explorationTradeRounds['draw:one'].count, 2);
+  let record = second.record;
+  for (const index of [2, 3, 4]) record = options.executeTrade(record, 'c1', '13400', menu.trades[index], 1, 'draw:one', dataset).record;
+  assert.equal(record.explorationTradeRounds['draw:one'].count, 5, 'five distinct categories fill the limit');
+  assert.throws(() => options.executeTrade(record, 'c1', '13400', menu.trades[5], 1, 'draw:one', dataset), /最多兑换 5 类/);
+  assert.equal(options.executeTrade(record, 'c1', '13400', menu.trades[0], 10, 'draw:one', dataset)
+    .record.explorationTradeRounds['draw:one'].count, 5, 'a used category may still be multiplied when full');
   assert.throws(() => options.executeTrade({ resources: { 'c1-trireme': 8 } }, 'c1', '13400', menu.trades[0], 3, 'draw:two', dataset), /不足/);
   assert.throws(() => options.executeTrade(initial, 'c1', '13400', menu.trades[0], 0.5, 'draw:two', dataset), /非负整数/);
   assert.throws(() => options.executeTrade(first.record, 'c2', '13640', options.merchant(dataset.cards['c2:13640']).trades[0], 1, 'draw:one', dataset), /不属于/);
   assert.throws(() => options.executeTrade(initial, 'c1', '13400', { ...menu.trades[0], gains: [{ resource: 'monument', amount: 999 }] }, 1, 'draw:two', dataset), /无效/);
+});
+
+test('legacy quantity rounds rebuild their categories from the saved receipts', () => {
+  const menu = options.merchant(dataset.cards['c1:13400']);
+  const legacy = { resources: Object.fromEntries(Object.keys(dataset.cycles.c1.resources).map((id) => [key('c1', id), 100])),
+    explorationTradeRounds: { draw: { cycleId: 'c1', merchantId: '13400', count: 5, receiptIds: ['r1', 'r2'] } } };
+  const history = [
+    { kind: 'trade', id: 'r1', cycleId: 'c1', merchantId: '13400', roundId: 'draw', times: 3, changes: [], summary: `${menu.trades[0].label} ×3（本次已兑换 3/5）` },
+    { kind: 'trade', id: 'r2', cycleId: 'c1', merchantId: '13400', roundId: 'draw', times: 2, changes: [], summary: `${menu.trades[0].label} ×2（本次已兑换 5/5）` },
+  ];
+  const usage = options.tradeUsage(legacy, 'c1', '13400', 'draw', history, dataset);
+  assert.equal(usage.count, 1, 'the old total quantity is not mistaken for five categories');
+  assert.deepEqual(usage.used, [menu.trades[0].id]);
+  const undone = options.undoTrade(legacy, history[1], history, dataset);
+  assert.equal(undone.explorationTradeRounds.draw.count, 1, 'undoing one legacy receipt keeps its category');
+  assert.equal(undone.explorationTradeRounds.draw.used[menu.trades[0].id], 1);
+  const next = options.executeTrade(legacy, 'c1', '13400', menu.trades[0], 2, 'draw', dataset, history);
+  assert.equal(next.record.explorationTradeRounds.draw.count, 1);
+  assert.equal(next.record.explorationTradeRounds.draw.used[menu.trades[0].id], 3);
+  assert.equal(options.tradeUsage(next.record, 'c1', '13400', 'draw', [...history, next.receipt], dataset).count, 1);
+});
+
+test('undo keeps a category until its last receipt is reversed', () => {
+  const menu = options.merchant(dataset.cards['c1:13400']);
+  const initial = { resources: { 'c1-trireme': 100 } };
+  const first = options.executeTrade(initial, 'c1', '13400', menu.trades[0], 1, 'draw', dataset);
+  const second = options.executeTrade(first.record, 'c1', '13400', menu.trades[0], 2, 'draw', dataset);
+  assert.equal(second.record.explorationTradeRounds.draw.count, 1);
+  assert.deepEqual(second.record.explorationTradeRounds.draw.used, { [menu.trades[0].id]: 2 });
+  const undone = options.undoTrade(second.record, second.receipt);
+  assert.equal(undone.explorationTradeRounds.draw.count, 1);
+  assert.deepEqual(undone.explorationTradeRounds.draw.used, { [menu.trades[0].id]: 1 });
+  assert.equal(options.undoTrade(undone, first.receipt).explorationTradeRounds.draw, undefined);
 });
 
 test('undo refunds only its transaction and restores slots while preserving later changes', () => {
