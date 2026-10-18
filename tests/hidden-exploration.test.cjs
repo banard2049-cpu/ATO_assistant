@@ -97,7 +97,13 @@ test('secret exploration card follows its printed temporary removal rule', () =>
   vm.runInNewContext(fs.readFileSync(path.join(root, 'assets/exploration-card-tags.js'), 'utf8'), ctx);
   const tag = ctx.window.ATO_EXPLORATION_CARD_TAGS.cards['c1:8201'];
   assert.equal(tag.removal, 'remove');
-  assert.equal(tag.draw, 'chain');
+  assert.equal(tag.draw, 'single');
+  const rules = require('../assets/exploration-card-rules.js');
+  const result = rules.drawTwoPiles(['8201', 'ordinary', 'next'], id => id === '8201' ? tag : {},
+    (id, tag, pile) => ({ id, ...tag, pile }));
+  assert.deepEqual(result.piles.map(pile => pile.map(card => card.id)), [['8201'], ['ordinary']]);
+  assert.deepEqual(result.drawPile, ['next']);
+  assert.equal(rules.settlePiles(result.piles).temporaryRemoved[0].id, '8201');
 });
 
 test('spoiler consent gates names, images stay folded, and selections can be added and removed', () => {

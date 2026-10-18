@@ -131,6 +131,11 @@ jobs:
           tests/dashboard-argo-fate-chip.test.cjs
       - name: Test special battle promotions
         run: node tools/test-aibp-c45-specials.cjs
+      - name: Test exploration card faces, tags and regeneration
+        run: |
+          node --test tests/exploration-*.test.cjs tests/hidden-exploration.test.cjs
+          python tests/exploration-scanner-icons.test.py
+          python tests/test_exploration_card_tags.py
       - name: Test BP label review metadata persistence
         run: python tests/test_bp_resource_labeler.py
       - name: Test local material exclusion from application packages

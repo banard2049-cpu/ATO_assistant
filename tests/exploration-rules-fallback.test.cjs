@@ -110,3 +110,70 @@ test('兜底实现与 assets/exploration-card-rules.js 行为一致', () => {
     }
   }
 });
+
+test('printed chain symbols draw another card, while Theseus Cache stops its stack despite temporary removal', () => {
+  const vm = require('node:vm');
+  const ctx = { window: {} };
+  vm.runInNewContext(fs.readFileSync(path.join(root, 'assets/exploration-card-tags.js'), 'utf8'), ctx);
+  const tags = ctx.window.ATO_EXPLORATION_CARD_TAGS.cards;
+  for (const implementation of [rules, fallback]) {
+    assert.equal(implementation.normalizeTag(tags['c1:8201']).draw, 'single');
+    assert.equal(implementation.normalizeTag({ removal: 'remove' }).draw, 'chain', 'legacy tags retain their default');
+    for (const id of ['10305', '10310']) {
+      const result = implementation.drawTwoPiles([id, 'end', 'second', 'left'],
+        card => tags[`c5:${card}`] || {}, (id, tag, pile) => ({ id, ...tag, pile }));
+      assert.deepEqual(result.piles.map(pile => pile.map(card => card.id)), [[id, 'end'], ['second']]);
+      assert.equal(result.piles[0][0].removal, 'keep');
+      assert.deepEqual(result.drawPile, ['left']);
+    }
+  }
+});
+
+test('the tag editor preserves all five cycles, independent tags and sparse imports without restoring old drafts', async () => {
+  const vm = require('node:vm');
+  const editor = fs.readFileSync(path.join(root, 'tools/exploration-card-tag-editor.html'), 'utf8');
+  const stored = new Map();
+  const c = vm.createContext({ window: {}, saveDraft() {}, render() {}, dirty: false,
+    localStorage: { getItem: key => stored.get(key) || null, removeItem: key => stored.delete(key) } });
+  vm.runInContext(fs.readFileSync(path.join(root, 'assets/exploration-card-tags.js'), 'utf8'), c);
+  const start = editor.indexOf('    const cycleLabels = ');
+  const end = editor.indexOf('    let data = ', start);
+  vm.runInContext(editor.slice(start, end), c);
+  vm.runInContext(editor.match(/^    const STORAGE_KEY = .+;$/m)[0], c);
+  const extract = name => {
+    const match = editor.match(new RegExp('^    (?:async )?function ' + name + '\\([^]*?^    }', 'm'));
+    assert.ok(match, name);
+    return match[0];
+  };
+  vm.runInContext(['normalizeData', 'entryFor', 'updateEntry', 'loadDraft', 'importJson'].map(extract).join('\n'), c);
+  c.keyFor = card => `${card.cycleId}:${card.cardId}`;
+  c.data = c.normalizeData(c.window.ATO_EXPLORATION_CARD_TAGS);
+  assert.equal(Object.keys(c.data.cards).length, 223);
+  assert.deepEqual(Array.from(vm.runInContext('catalog.map(card => `${card.cycleId}:${card.cardId}`).sort()', c)),
+    Object.keys(c.data.cards).sort());
+  const card = { cycleId: 'c1', cardId: '8201' };
+  c.updateEntry(card, 'notes', 'checked against the printed footer');
+  assert.equal(c.data.cards['c1:8201'].removal, 'remove');
+  assert.equal(c.data.cards['c1:8201'].draw, 'single');
+  const reloaded = c.normalizeData(JSON.parse(JSON.stringify(c.data)));
+  assert.equal(reloaded.cards['c1:8201'].draw, 'single');
+  assert.equal(Object.keys(reloaded.cards).length, 223);
+
+  const legacyKey = 'ato-exploration-card-tags-draft-v1';
+  const legacyDraft = JSON.stringify({ cards: { 'c1:8201': { removal: 'remove', draw: 'chain' } } });
+  stored.set(legacyKey, legacyDraft);
+  c.loadDraft();
+  assert.equal(c.data.cards['c1:8201'].draw, 'single', 'an old draft must not silently restore the incorrect draw tag');
+  assert.equal(stored.get(legacyKey), legacyDraft, 'the old draft remains available for manual recovery');
+
+  await c.importJson({ text: async () => JSON.stringify({ cards: {
+    'c1:6400': { removal: 'permanent', draw: 'single', reviewed: true, notes: 'explicit partial import' },
+  } }) });
+  assert.equal(Object.keys(c.data.cards).length, 223);
+  assert.equal(c.data.cards['c1:6400'].removal, 'permanent', 'an explicit imported value takes precedence');
+  assert.equal(c.data.cards['c1:6400'].draw, 'single');
+  assert.equal(c.data.cards['c1:6400'].notes, 'explicit partial import');
+  for (const key of ['c4:9300', 'c5:10305', 'c5:10310']) {
+    assert.deepEqual(JSON.parse(JSON.stringify(c.data.cards[key])), JSON.parse(JSON.stringify(c.window.ATO_EXPLORATION_CARD_TAGS.cards[key])));
+  }
+});

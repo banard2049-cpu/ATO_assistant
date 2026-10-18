@@ -133,7 +133,7 @@ assert.deepEqual(spatialNeutral.grants.map((grant) => [grant.resource, grant.amo
 assert.deepEqual(spatialDenounced.grants.map((grant) => [grant.resource, grant.amount]), [["promisedFuturesCarcass", 2]]);
 assert.equal(spatialNeutral.manual.length, 0);
 assert.equal(spatialDenounced.manual.length, 1);
-assert.equal(spatialDenounced.manual[0].text, "Gain +3 A as a group.");
+assert.equal(spatialDenounced.manual[0].text, "Gain +3 Λ as a group.");
 
 // --- Cycle V's worst diplomacy status has its own printed badge ------------ //
 const c5NemesisAligned = { cycleId: "c5", diplomacy: [{ id: "followersOfArete", bonus: -3 }] };

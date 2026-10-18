@@ -405,6 +405,7 @@ test('four requested Panic Spreads prefers Dreamwalkers and never triggers from 
     assert.equal(h.record.titans[0].count, paranoia === 3 ? 1 : 2);
     assert.equal(h.record.titans[1].count, 1);
     assert.equal(h.record.cycleStats.c5.paranoia, '3');
+    assert.equal(entry.removal, 'keep', 'Panic Spreads has a chain icon but no removal instruction');
     await h.ctx.settleExplorationCard(entry);
     assert.equal(h.record.titans[0].count, paranoia === 3 ? 1 : 2);
     assert.equal(h.ctx.pendingExplorationEffects().length, 0);

@@ -16,6 +16,7 @@ test('card-face audit uses the verified counters instead of the reused OCR glyph
   // Titan variants of Ancient Repository and the mixed Vanguard glyph rows.
   for (const [key, index, type, amount] of [
     ['c1:6401', 1, 'hull', 1], ['c1:6401', 5, 'hull', -1],
+    ['c1:6402', 1, 'progress', 1], ['c1:6402', 4, 'fate', 1],
     ['c1:6421', 0, 'strangers', 1], ['c1:6425', 0, 'strangers', 1],
     ['c1:6429', 0, 'hull', -1], ['c1:6431', 0, 'progress', 1],
     ['c2:13623', 0, 'progress', 1],
@@ -34,6 +35,32 @@ test('card-face audit uses the verified counters instead of the reused OCR glyph
   assert.match(effects.displayIcons(cards['c5:10315'].manual[0].text, 'c5', '10315'), /Hull/);
   for (const key of ['c4:9323', 'c5:10342', 'c5:10345']) assert.match(cards[key].manual[0].text, /\+3 Λ as a group/);
   assert.match(cards['c1:6434'].manual[0].text, /p\. 112/);
+});
+
+test('Hornsworn Allied progress differs from Unfriendly Fate and exposes a prior wrong Fate receipt', () => {
+  const card = cards['c1:6402'];
+  const parsed = effects.parse('Gain +1 ICON(cup/urn glyph).', 'c1', '6402', 'Allied');
+  assert.deepEqual(parsed.effects, [{ type: 'progress', amount: 1 }]);
+  assert.deepEqual(effects.parse('Gain +1 ICON(cup/urn glyph).', 'c1', '6402', 'Unfriendly').effects,
+    [{ type: 'fate', amount: 1 }]);
+  const context = { cycleId: 'c1', conditionRules: conditions,
+    diplomacy: [{ id: 'hornsworn', bonus: 2 }],
+    appliedEffects: { 'manual:1': { ruleVersion: 2, changes: [{ type: 'fate', amount: 1 }] } } };
+  const row = effects.describe(card, context, resources).find(row => row.id === 'manual:1');
+  assert.equal(row.conditionState, true);
+  assert.equal(row.receiptMismatch, true, 'old settlements must remain available to undo before recalculating');
+  const applied = effects.apply({ cycle: 'c1', cycleStats: { c1: { progress: '0', fate: '3' } } }, 'c1', row.effects);
+  assert.equal(applied.record.cycleStats.c1.progress, '1');
+  assert.equal(applied.record.cycleStats.c1.fate, '3');
+});
+
+test('Curselenders distinguishes the Cloud Thieves map symbol from its Babelian Debt gains', () => {
+  const text = cards['c4:9334'].manual[0].text;
+  assert.match(text, /on a ICON\(Cloud Thieves faction symbol\) Map Tile/);
+  assert.equal(effects.iconIdentity('Cloud Thieves faction symbol', 'c4', '9334').kind, 'faction');
+  const displayed = effects.displayIcons(text, 'c4', '9334');
+  assert.match(displayed, /云贼派系标记.*Map Tile/);
+  assert.match(displayed, /巴比伦债务/);
 });
 
 test('card-face audit conditions use Cyclopes status and Babelian Escalate starts at Fate eight', () => {

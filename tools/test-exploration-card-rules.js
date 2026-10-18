@@ -2,10 +2,10 @@ const assert = require("node:assert/strict");
 const rules = require("../assets/exploration-card-rules.js");
 
 const tags = {
-  a: { removal: "remove", draw: "single" },
+  a: { removal: "remove" },
   b: { removal: "keep", draw: "chain" },
   c: { removal: "keep", draw: "single" },
-  d: { removal: "permanent", draw: "single" },
+  d: { removal: "permanent" },
   e: { removal: "keep", draw: "single" },
 };
 
@@ -21,8 +21,9 @@ assert.deepEqual(result.piles.map((pile) => pile.map((card) => card.id)), [
 ]);
 assert.equal(result.incompletePiles, 0);
 assert.deepEqual(result.drawPile, []);
-assert.equal(result.piles[0][0].draw, "chain", "移出牌必须自动连抽");
-assert.equal(result.piles[1][0].draw, "chain", "永久移出牌必须自动连抽");
+assert.equal(result.piles[0][0].draw, "chain", "旧移出标签未指定抽取类型时默认连抽");
+assert.equal(result.piles[1][0].draw, "chain", "旧永久移出标签未指定抽取类型时默认连抽");
+assert.deepEqual(rules.normalizeTag({ removal: "remove", draw: "single" }), { removal: "remove", draw: "single" });
 
 const settled = rules.settlePiles(result.piles);
 assert.deepEqual(settled.returnIds, ["b", "c", "e"]);

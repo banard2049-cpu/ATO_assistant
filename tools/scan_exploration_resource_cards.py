@@ -190,7 +190,17 @@ def resolve_resource(cycle_id: str, name: str, cycles: dict) -> tuple[str | None
 # --------------------------------------------------------------------------- #
 
 def split_sentences(text: str) -> list[str]:
-    parts = [part.strip() for part in re.split(r"(?<=[.!?])\s+", text)]
+    parts = []
+    start = 0
+    for match in re.finditer(r"(?<=[.!?])\s+", text):
+        prefix = text[:match.start()]
+        # Keep page references and icon descriptions intact, including the
+        # printed '(Cycle I Storybook, p. 112)' Ambush instruction.
+        if prefix.count("(") > prefix.count(")") or re.search(r"\b(?:p|pp)\.$", prefix, re.I):
+            continue
+        parts.append(text[start:match.start()].strip())
+        start = match.end()
+    parts.append(text[start:].strip())
     return [part for part in parts if part]
 
 
@@ -270,6 +280,8 @@ def scan_card(card: dict, cycles: dict) -> dict:
                 continue
             sentence_badge = badge if index in badge_map else ""
             condition = condition_from_badge(sentence_badge)
+            if condition is not None and line.get("conditionLabel"):
+                condition["label"] = line["conditionLabel"]
             parsed = parse_grant_sentence(sentence)
             if condition is None and sentence_badge and badge_is_icon and parsed:
                 # An unreadable picture badge only blocks automation when it
@@ -406,6 +418,7 @@ def scan_card(card: dict, cycles: dict) -> dict:
             else ("partial" if clean else "none")
         ),
         "diplomacyMenu": card["key"] in NAMED_DIPLOMACY_FACTIONS or has_diplomacy_menu(clean, manual),
+        "diplomacyFaction": card.get("diplomacyFaction") or NAMED_DIPLOMACY_FACTIONS.get(card["key"]),
         "grants": clean,
         "unresolvedGrants": [g for g in grants if not g.get("resource")],
         "manual": manual,
@@ -495,8 +508,7 @@ def serialize_card(card: dict) -> dict:
         "kind": card["kind"],
         "autoSettle": card["autoSettle"],
         "diplomacyMenu": card["diplomacyMenu"],
-        **({"diplomacyFaction": NAMED_DIPLOMACY_FACTIONS[card["key"]]}
-           if card["key"] in NAMED_DIPLOMACY_FACTIONS else {}),
+        **({"diplomacyFaction": card["diplomacyFaction"]} if card.get("diplomacyFaction") else {}),
         "grants": grants,
         "manual": [
             {"text": item["text"], "badge": item["badge"], "condition": item["condition"],
