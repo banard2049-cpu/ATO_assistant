@@ -7002,21 +7002,14 @@
       return readLocalHeroState();
     }
 
-    function applyHeroProgressChanges(baseState, changes, fallbackState = null) {
+    function applyHeroProgressChanges(baseState, changes) {
       const next = cloneJson(isPlainObject(baseState) ? baseState : { heroes: [], activeHeroId: "", graveyard: [] });
       if (!Array.isArray(next.heroes)) next.heroes = [];
-      const fallbackHeroes = new Map(
-        (Array.isArray(fallbackState?.heroes) ? fallbackState.heroes : [])
-          .filter((hero) => hero?.id)
-          .map((hero) => [hero.id, hero])
-      );
 
       changes.forEach((change) => {
-        let hero = next.heroes.find((candidate) => candidate?.id === change.heroId);
-        if (!hero && fallbackHeroes.has(change.heroId)) {
-          hero = cloneJson(fallbackHeroes.get(change.heroId));
-          next.heroes.push(hero);
-        }
+        // A hero retired or removed after the prompt must stay removed.
+        // Progress changes apply only to heroes still present in this snapshot.
+        const hero = next.heroes.find((candidate) => candidate?.id === change.heroId);
         if (!hero) return;
         const field = change.type === "fated" ? "fatedProgress" : "mnemosProgress";
         if (!isPlainObject(hero[field])) hero[field] = {};
@@ -7112,7 +7105,7 @@
         cardId: proposal.cardId,
         max: proposal.type === "mnemos" ? mnemosTrackLength(proposal.cardId) : 3,
       }));
-      const localHeroState = applyHeroProgressChanges(readLocalHeroState() || heroState, progressChanges, heroState);
+      const localHeroState = applyHeroProgressChanges(readLocalHeroState() || heroState, progressChanges);
 
       // Save back to localStorage
       try { localStorage.setItem(HERO_STORAGE_KEY, JSON.stringify(localHeroState)); } catch {}
@@ -7126,7 +7119,7 @@
       try {
         for (let attempt = 0; attempt < 5; attempt += 1) {
           const latest = await readServerHeroStateForUpdate();
-          const next = applyHeroProgressChanges(latest.state || baseHeroState, progressChanges, baseHeroState);
+          const next = applyHeroProgressChanges(latest.state || baseHeroState, progressChanges);
           const response = await fetch("./api/campaign-state.php?section=heroes", {
             method: "POST",
             headers: { "Content-Type": "application/json" },

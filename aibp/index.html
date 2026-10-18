@@ -6190,7 +6190,9 @@
 
     function promoteSinglePile(type) {
       ensurePiles(currentApostle);
-      const target = lowestLevelCard(type);
+      // P54: without a wound, the BP removed comes from the deck, not discard.
+      const target = type === "BP" && piles[currentApostle].BP.deck.length
+        ? lowestDeckCardWithIndex(type)?.card : lowestLevelCard(type);
       if (!target) return;
 
       const toLevel = higherLevel(target.level);
@@ -6200,7 +6202,12 @@
       }
 
       rememberUndo(currentApostle, type);
-      removeFirstMatchingToRemoved(type, (card) => card.level === target.level && card.index === target.index);
+      if (type === "BP") {
+        reshuffleDiscardIfDeckEmpty(type);
+        removeLowestCardFromDeckOnly(type);
+      } else {
+        removeFirstMatchingToRemoved(type, (card) => card.level === target.level && card.index === target.index);
+      }
       insertPromotedCard(type, toLevel);
 
       // 不再自动跳转到“当前”；保留用户当前正在查看的牌堆。
@@ -6221,8 +6228,9 @@
 
     function performLinkedPromotion() {
       ensurePiles(currentApostle);
-      const removed = removeLowestCardToRemoved("BP");
-      const removedCard = removed?.card;
+      // P54: non-wound escalation removes the lowest BP from its deck only.
+      reshuffleDiscardIfDeckEmpty("BP");
+      const removedCard = removeLowestCardFromDeckOnly("BP");
       if (!removedCard) return false;
 
       const bp = piles[currentApostle].BP;
@@ -9237,9 +9245,9 @@
   </script>
   <script src="ps/other/resouce/bp_resource_map.js?v=20261017a" defer></script>
   <script src="ps/other/resouce/bp_resource_map_c1_c3.js?v=20261017a" defer></script>
-  <script src="ps/other/resouce/bp_resource_map_c4_c5.js?v=20261017a" defer></script>
-  <script src="c45_specials.js?v=20261012-aibp-fixes" defer></script>
-  <script src="bp_loot_calculator_addon.js?v=20261016-bp-card-loot1" defer></script>
+  <script src="ps/other/resouce/bp_resource_map_c4_c5.js?v=20261018a" defer></script>
+  <script src="c45_specials.js?v=20261018-promotion-rules1" defer></script>
+  <script src="bp_loot_calculator_addon.js?v=20261018-record-loot-level1" defer></script>
   <script src="../story/data/english-source-data.js?v=20261011-english4" defer></script>
   <script src="../assets/ato-terms.js?v=20261015-diplomacy2" defer></script>
   <script src="../assets/english-terms.js?v=20261011-english4" defer></script>

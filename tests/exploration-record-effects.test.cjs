@@ -191,6 +191,24 @@ test('Titan gains form one grouped dreamwalker row even when the displayed limit
   assert.deepEqual(rules.apply(record, 'c1', [{ type: 'titan', amount: 1 }], { blockGains: true }).record, record);
 });
 
+test('gained dreamwalkers stay healthy when a crippled dreamwalker row already exists', () => {
+  for (const healthyCount of [0, 2]) {
+    const crippled = titan('crippled', 1, { name: '梦行者', crippled: true });
+    const healthy = titan('healthy', healthyCount, { name: '梦行者' });
+    const record = { titans: [crippled, ...(healthyCount ? [healthy] : [])] };
+    const before = JSON.parse(JSON.stringify(record));
+    const result = rules.apply(record, 'c5', [{ type: 'titan', amount: 2 }]);
+    assert.deepEqual(result.record.titans.find(item => item.id === crippled.id), crippled);
+    assert.equal(result.record.titans.length, 2);
+    const gained = result.record.titans.find(item => !item.crippled);
+    assert.equal(gained.name, '梦行者');
+    assert.equal(gained.count, healthyCount + 2);
+    if (healthyCount) assert.equal(gained.id, healthy.id);
+    assert.deepEqual(record, before, 'applying gains preserves the caller record');
+    assert.deepEqual(rules.revert(result.record, result.changes), record);
+  }
+});
+
 test('Titan losses require selected objects and decrement a grouped row without recording death', () => {
   const record = { titans: [titan('group', 3, { name: 'named group', crippled: true }), titan('other', 1)], deadTitans: '7', resources: { foo: 2 } };
   assert.throws(() => rules.apply(record, 'c1', [{ type: 'titan', amount: -1 }]), /请选择/);

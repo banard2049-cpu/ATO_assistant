@@ -107,7 +107,8 @@ result = calculate(
   6
 );
 assert.equal(result.resourceMultiplier, 6);
-assert.equal(result.totals.mutableAmbrosia, 18);
+assert.equal(result.totals.mutableAmbrosia, 6);
+assert.equal(result.details.levelBonus.length, 0, 'level VI has no printed additional ambrosia reward');
 
 result = calculate(
   "THE_BABELIAN_LUNACY",

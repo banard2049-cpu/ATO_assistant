@@ -475,7 +475,7 @@
       } else if (effect.amount > 0 && !options.blockGains) {
         if (!Array.isArray(next.titans)) next.titans = [];
         for (let index = 0; index < effect.amount; index += 1) {
-          let position = next.titans.findIndex(isDreamwalker);
+          let position = next.titans.findIndex(titan => isDreamwalker(titan) && !titan.crippled);
           let titan = next.titans[position];
           if (titan) titan.count = count(titan.count) + 1;
           else {

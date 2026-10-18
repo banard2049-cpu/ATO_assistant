@@ -98,7 +98,7 @@
   addLevel("DAHAKA", "AI", "III", [
     { onyxDust: 2, ireEssence: 1 },
     { onyxDust: 1, ireEssence: 2 },
-    { onyxDust: 1, ireEssence: 2 },
+    { onyxDust: 2, ireEssence: 1 },
     { ireEssence: 3 },
     { onyxDust: 2, ireEssence: 1 },
     { onyxDust: 3 },
