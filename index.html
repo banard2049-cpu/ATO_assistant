@@ -2729,16 +2729,16 @@
   <script src="./assets/exploration-card-resource-rules.js?v=20261013-automation5"></script>
   <script src="./assets/exploration-card-effects.js?v=20261018-card-audit1"></script>
   <script src="./assets/exploration-card-conditions.js?v=20261018-card-audit1"></script>
-  <script src="./assets/exploration-card-options.js?v=20261013-next-options12"></script>
+  <script src="./assets/exploration-card-options.js?v=20261018-trade-categories1"></script>
   <script src="./assets/exploration-card-choices.js?v=20261013-next-choices12"></script>
   <script src="./assets/exploration-card-delays.js?v=20261013-automation5"></script>
   <script src="./assets/exploration-card-resources.js?v=20261018-card-audit1"></script>
-  <script src="./technology/negotiation-rules.js?v=20261017-automation-audit4"></script>
+  <script src="./technology/negotiation-rules.js?v=20261018-trade-categories1"></script>
   <script src="./technology/voyage-action-rules.js?v=20261016-voyage3"></script>
   <script src="./technology/exploration-tech-rules.js?v=20261017-automation-audit4"></script>
-  <script src="./technology/structure-tech-rules.js?v=20261018-dark-names1"></script>
+  <script src="./technology/structure-tech-rules.js?v=20261018-trade-categories1"></script>
   <script src="./technology/investigation-rules.js?v=20261018-dark-names1"></script>
-  <script src="./technology/structure-tech-client.js?v=20261018-dark-names1"></script>
+  <script src="./technology/structure-tech-client.js?v=20261018-trade-categories1"></script>
   <script src="./map/titan-markers.js?v=20261016-map-titan1"></script>
   <script src="./map/titan-capture-rules.js?v=20261016-map-titan1"></script>
   <script src="./map/map-tile-tags.js?v=20261016-icon-scope"></script>
@@ -10127,8 +10127,9 @@
         }
       };
       if (merchant) {
-        const count = Number(cachedArgoRecord?.explorationTradeRounds?.[roundId]?.count || 0);
-        status.textContent = `商人交易 ${count}/${merchant.limit}${effects.merchantDone ? " · 已结束" : ""}`;
+        const usage = rules.tradeUsage(cachedArgoRecord || {}, cycleId, card.key, roundId, effects.trades || [], explorationResourceDataset());
+        const count = usage?.count || 0;
+        status.textContent = `商人交易 ${count}/${merchant.limit} 类${effects.merchantDone ? " · 已结束" : ""}`;
         if (context.blockResourceGains) {
           status.textContent = "本堆禁止获得资源，无法兑换资源。";
           return box;
@@ -10156,20 +10157,27 @@
         const times = document.createElement("input");
         times.type = "number";
         times.min = "1";
-        times.max = String(Math.max(1, merchant.limit - count));
         times.value = "1";
         times.setAttribute("aria-label", "兑换次数");
+        times.title = "同一种兑换可填写任意次数，仍只占 1 类额度";
         times.style.width = "55px";
         controls.append(select, times);
         const exchange = button("执行兑换", () => {
           const trade = merchant.trades.find((item) => item.id === select.value);
           const quantity = Number(times.value);
-          void run((record) => rules.executeTrade(record, cycleId, card.key, trade, quantity, roundId, explorationResourceDataset()), (result) => {
+          void run((record) => rules.executeTrade(record, cycleId, card.key, trade, quantity, roundId, explorationResourceDataset(), effects.trades || []), (result) => {
             (effects.trades ||= []).push(result.receipt);
             effects.merchantDone = Number(result.record.explorationTradeRounds[roundId].count) >= merchant.limit;
           }, "商人兑换");
         });
-        exchange.disabled = count >= merchant.limit || Boolean(effects.merchantDone);
+        // Repeating an already-used exchange stays available even when all five
+        // categories are taken; only a sixth distinct category is blocked.
+        const updateExchange = () => {
+          const full = count >= merchant.limit;
+          exchange.disabled = Boolean(effects.merchantDone) || (full && !(usage?.used || []).includes(select.value));
+        };
+        select.addEventListener("change", updateExchange);
+        updateExchange();
         button(effects.merchantDone ? "继续交易" : "结束交易", () => {
           if (mutateExplorationRecord.busy || !ownsDashboardWriteLease()) return;
           effects.merchantDone = !effects.merchantDone;
@@ -10178,7 +10186,7 @@
         if ((effects.trades || []).length) {
           button("撤销上次兑换", () => {
             const receipt = effects.trades[effects.trades.length - 1];
-            void run((record) => ({ record: rules.undoTrade(record, receipt) }), () => {
+            void run((record) => ({ record: rules.undoTrade(record, receipt, effects.trades, explorationResourceDataset()) }), () => {
               effects.trades.pop(); effects.merchantDone = false;
             }, "撤销商人兑换");
           });

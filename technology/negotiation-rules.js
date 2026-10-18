@@ -356,7 +356,7 @@
         manualEffects.length ? `已改为手动处理：${manualEffects.map(item => `${labels[item.type]} ${item.amount > 0 ? '+' : ''}${item.amount}`).join('、')}；请自行处理豁免检定、代价及最终变化` : '',
         negotiationDraw ? `已抽取 ${negotiationDraw.cards.join('、')}；请选择一张，若能获得资源或泰坦则转入探索区结算，其余弃置` : ''].filter(Boolean).join('；') || '谈判已结算',
       targetLabel, selection, payment, gains, ...(manualEffects.length ? { manualStatEffects: manualEffects } : {}), ...(negotiationDraw ? { negotiationDraw } : {}),
-      ...(trade ? { tradeSummary: trade.summary, tradeChanges: copy(trade.changes), tradeSteps: copy(trade.steps), tradeCount: trade.total } : {}) };
+      ...(trade ? { tradeSummary: trade.summary, tradeChanges: copy(trade.changes), tradeSteps: copy(trade.steps), tradeCount: trade.total, tradeExchanges: trade.exchanges } : {}) };
     if (record.titans) record.titan = String(record.titans.reduce((sum, titan) => sum + Number(titan.count ?? 1), 0));
     automation.events[id] = event;
     const receipt = { id, request: draft.shape, techKey: rule.key, actionId: action.id, cycleId: cycle, createdDay: day, status: event.status, payment: copy(payment) };

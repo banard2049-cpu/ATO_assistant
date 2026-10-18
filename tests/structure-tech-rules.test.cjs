@@ -203,16 +203,17 @@ test('all five technology trade menus execute every printed resource alternative
       const local = copy(ctx), before = copy(ctx);
       for (const item of [...route.costs, ...route.gains]) {
         assert.equal(item.storageKey, resources[ctx.cycle].resources[item.resource].storageKey, `${card.key}/${item.resource}`);
-        local.record.resources[item.storageKey] = 20;
+        local.record.resources[item.storageKey] = 60;
       }
-      const selection = { trades: [{ routeId: route.id, count: 3 }] };
+      const selection = { trades: [{ routeId: route.id, count: 5 }] };
       const result = rules.prepareOperation({ ...local, actionId: 'trade', selection });
       assert.equal(result.ok, true, `${card.key}/${route.id}: ${result.message}`);
-      assert.equal(result.record.resources[route.costs[0].storageKey], 20 - route.costs[0].amount * 3);
-      assert.equal(result.record.resources[route.gains[0].storageKey], 20 + route.gains[0].amount * 3);
+      assert.equal(result.record.resources[route.costs[0].storageKey], 60 - route.costs[0].amount * 5);
+      assert.equal(result.record.resources[route.gains[0].storageKey], 60 + route.gains[0].amount * 5);
       assert.equal(result.record.cycleStats[ctx.cycle].fate, '3', 'one fate per activation, not per exchange');
-      assert.equal(result.event.tradeCount, 3);
-      assert.equal(result.event.tradeSummary, `${route.label} ×3`);
+      assert.equal(result.event.tradeCount, 1, 'the same exchange category only spends one of the three slots');
+      assert.equal(result.event.tradeExchanges, 5);
+      assert.equal(result.event.tradeSummary, `${route.label} ×5`);
       assert.deepEqual(result.receipt.tradeChanges, result.event.tradeChanges);
       assert.equal(result.event.gains[0].label, route.gains[0].label);
       assert.deepEqual(ctx, before);
@@ -222,6 +223,28 @@ test('all five technology trade menus execute every printed resource alternative
     }
   }
   assert.equal(routes, 60);
+});
+
+test('trade slots count distinct exchange categories while quantities multiply freely', () => {
+  const ctx = context('superior trading solutions'), action = rules.actionsFor('superior trading solutions', ctx)[0];
+  const routes = action.tradeRoutes.slice(0, 4), stocks = new Set(routes.flatMap(route => [...route.costs, ...route.gains].map(item => item.storageKey)));
+  stocks.forEach(storageKey => { ctx.record.resources[storageKey] = 1000; });
+  const four = { trades: routes.map(route => ({ routeId: route.id, count: 1 })) };
+  assert.equal(rules.prepareOperation({ ...ctx, actionId: 'trade', selection: four }).code, 'TRADE_LIMIT');
+  const three = { trades: routes.slice(0, 3).map(route => ({ routeId: route.id, count: 100 })) };
+  const result = rules.prepareOperation({ ...ctx, actionId: 'trade', selection: three });
+  assert.equal(result.ok, true, result.message);
+  assert.equal(result.event.tradeCount, 3, 'three categories fill all three slots');
+  assert.equal(result.event.tradeExchanges, 300, 'the multiplier never consumes extra slots');
+  assert.equal(result.record.cycleStats.c1.fate, '3', 'still one fate for the whole activation');
+  const duplicate = { trades: [{ routeId: routes[0].id, count: 1 }, { routeId: routes[0].id, count: 2 }] };
+  assert.equal(rules.prepareOperation({ ...ctx, actionId: 'trade', selection: duplicate }).code, 'DUPLICATE_TRADE');
+  const huge = { trades: [{ routeId: routes[0].id, count: 300 }] };
+  const multiplied = rules.prepareOperation({ ...ctx, actionId: 'trade', selection: huge });
+  assert.equal(multiplied.ok, true, multiplied.message);
+  assert.equal(multiplied.event.tradeCount, 1, 'one row above three exchanges still spends a single slot');
+  assert.equal(multiplied.event.tradeExchanges, 300);
+  assert.equal(multiplied.record.resources[routes[0].costs[0].storageKey], 1000 - routes[0].costs[0].amount * 300);
 });
 
 test('trade rates distinguish the first-cycle cooldown menu and later-cycle cooldown menus', () => {
@@ -284,7 +307,8 @@ test('mixed trade routes execute in order and never leave partial payment if a l
   assert.equal(result.ok, true);
   assert.equal(result.record.resources['c1-trireme'], 1);
   assert.equal(result.record.resources['c1-monument'], 2);
-  assert.equal(result.event.tradeCount, 3);
+  assert.equal(result.event.tradeCount, 2);
+  assert.equal(result.event.tradeExchanges, 3);
   assert.equal(result.event.payment.find(item => item.storageKey === 'c1-monument').amount, -1);
   assert.equal(result.event.gains.find(item => item.storageKey === 'c1-monument').amount, 2);
   for (const change of [ { 'c1-trireme': 5 }, { 'c1-trireme': '' } ]) {

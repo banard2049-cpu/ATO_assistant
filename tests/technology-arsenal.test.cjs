@@ -38,12 +38,12 @@ test('inventory rejects invalid mutations and safely normalizes old or malformed
   assert.throws(() => inventory.adjust({}, 'AJ0160', -1, true));
 });
 
-function craftContext({ conflict = false, fail = false, remoteMissing = false } = {}) {
+function craftContext({ conflict = false, fail = false, remoteMissing = false, loseResponse = false, malformedResponse = false, offlineRecovery = false } = {}) {
   let server = { resources: { material: 10 }, arsenal: {} };
   let revision = 1;
   let posts = 0;
   const warnings = [];
-  const c = context(['recordStateFromCampaign', 'readLatestRecordState', 'mutateCampaignRecordState', 'resourceAmount', 'evaluateCraftOption', 'craftGear'], {
+  const c = context(['recordStateFromCampaign', 'readLatestRecordState', 'mutateCampaignRecordState', 'resourceAmount', 'evaluateCraftOption', 'gearCraftOperationKey', 'craftGear'], {
     window: { ATO_GEAR_INVENTORY: inventory },
     isPlainObject: value => !!value && typeof value === 'object' && !Array.isArray(value),
     normalizeCraftRecordResources: clone,
@@ -52,6 +52,7 @@ function craftContext({ conflict = false, fail = false, remoteMissing = false } 
     campaignSession: { accountId: 'login-A', accept: value => value },
     gearRecordState: clone(server), gearRecordError: '', gearRecordRevision: 1,
     gearMutationInFlight: false, gearRecordSyncChannel: { postMessage: noop },
+    gearCraftOperations: new Map(),
     gearCraftPlans: new Map([['recipe', { gearId: 'AJ0160', gearName: '装备', options: [{ parts: [{ storageKey: 'material', amount: 3, label: '3×材料', unsupported: false }] }] }]]),
     mainView: { querySelectorAll: () => [] }, CSS: { escape: value => value },
     arsenalMessage: '', arsenalMessageError: false,
@@ -59,6 +60,7 @@ function craftContext({ conflict = false, fail = false, remoteMissing = false } 
     loadGearRecordState: noop, renderGearInventoryView: noop,
     fetch: async (_url, options) => {
       if (!options?.method) {
+        if (offlineRecovery && posts > 0) throw new Error('offline');
         const state = clone(server);
         if (remoteMissing) state.resources.material = 0;
         return { ok: true, status: 200, json: async () => ({ ok: true, campaign: { sections: { dashboard: { activeProfileId: 'B' }, record: { users: { A: state, B: { resources: { material: 999 } } } } }, sectionRevisions: { record: revision } } }) };
@@ -77,10 +79,12 @@ function craftContext({ conflict = false, fail = false, remoteMissing = false } 
       assert.equal(payload.expectedRevision, revision);
       server = payload.state;
       revision++;
+      if (loseResponse) { loseResponse = false; throw new Error('response lost after commit'); }
+      if (malformedResponse) { malformedResponse = false; return { ok: true, status: 200, json: async () => { throw new Error('truncated JSON'); } }; }
       return { ok: true, status: 200, json: async () => ({ ok: true, revision }) };
     },
   });
-  return { c, warnings, server: () => server, posts: () => posts };
+  return { c, warnings, server: () => server, posts: () => posts, reconnect: () => { offlineRecovery = false; } };
 }
 
 test('manufacturing atomically deducts materials and records one finished item', async () => {
@@ -108,7 +112,7 @@ test('failed saves and newly missing materials do not record manufactured gear',
     assert.equal(server().resources.material, 10);
     assert.deepEqual(server().arsenal, {});
     assert.equal(c.gearMutationInFlight, false);
-    assert.match(warnings[0], /失败/);
+    assert.match(warnings[0], /未确认/);
   }
 });
 
@@ -125,8 +129,54 @@ test('switching profile during the read stops the stock write', async () => {
   const { c, posts } = craftContext();
   const fetch = c.fetch;
   c.fetch = async (...args) => { const response = await fetch(...args); c.activeAccountId = 'B'; return response; };
-  await assert.rejects(c.mutateCampaignRecordState(state => state), /档案已切换/);
+  await assert.rejects(c.mutateCampaignRecordState(state => state), /档案.*已切换/);
   assert.equal(posts(), 0);
+});
+
+test('lost or malformed manufacture responses recover the committed receipt without charging twice', async () => {
+  for (const options of [{ loseResponse: true }, { malformedResponse: true }]) {
+    const { c, server, posts, warnings } = craftContext(options);
+    await c.craftGear('recipe', 0);
+    assert.equal(posts(), 1);
+    assert.equal(server().resources.material, 7);
+    assert.equal(server().arsenal.AJ0160.quantity, 1);
+    assert.equal(Object.keys(server()._gearCraftReceipts).length, 1);
+    assert.equal(c.gearCraftOperations.size, 0);
+    assert.deepEqual(warnings, []);
+    // A confirmed success permits a genuinely new manufacture.
+    await c.craftGear('recipe', 0);
+    assert.equal(posts(), 2);
+    assert.equal(server().arsenal.AJ0160.quantity, 2);
+  }
+});
+
+test('offline receipt recovery retains the original operation even after stock is exhausted', async () => {
+  const { c, server, posts, reconnect, warnings } = craftContext({ loseResponse: true, offlineRecovery: true });
+  c.gearCraftPlans.get('recipe').options[0].parts[0].amount = 10;
+  await c.craftGear('recipe', 0);
+  assert.equal(c.gearCraftOperations.size, 1);
+  assert.equal(server().resources.material, 0);
+  assert.match(warnings[0], /确认上次制造结果/);
+  reconnect();
+  c.gearRecordState = clone(server());
+  await c.craftGear('recipe', -1);
+  assert.equal(posts(), 1);
+  assert.equal(server().arsenal.AJ0160.quantity, 1);
+  assert.equal(c.gearCraftOperations.size, 0);
+});
+
+test('pending manufacture button remains actionable after the saved stock is depleted', () => {
+  const c = context(['gearCraftOperationKey', 'renderCraftPanel'], {
+    activeAccountId: 'A', campaignSession: { accountId: 'login-A' }, gearCraftPlans: new Map(),
+    gearCraftOperations: new Map([[JSON.stringify(['login-A', 'A', 'recipe']), { optionIndex: 0 }]]),
+    craftPlanForGear: () => ({ key: 'recipe', actionableIndex: -1, options: [{ unsupported: [] }] }),
+    describeCraftPlan: () => ({ text: '材料不足', className: 'blocked' }), esc: String,
+    gearMutationInFlight: false, gearRecordLoadInFlight: false, gearRecordState: {}, gearRecordError: '',
+  });
+  const html = c.renderCraftPanel({}, {});
+  assert.match(html, /确认上次制造结果/);
+  assert.match(html, /data-craft-option="0"/);
+  assert.doesNotMatch(html, / disabled/);
 });
 
 function catalogContext() {

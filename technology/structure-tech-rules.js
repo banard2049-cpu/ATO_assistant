@@ -452,17 +452,26 @@
     return JSON.stringify(value);
   }
   function prepareTrades(action, selection, record) {
-    if (!Array.isArray(selection.trades) || !selection.trades.length || action.maxTrades !== null && selection.trades.length > action.maxTrades) {
-      return failure("INVALID_TRADE", action.maxTrades === null ? "请选择至少 1 笔资源交换。" : "请选择 1 至 3 笔资源交换。");
+    if (!Array.isArray(selection.trades) || !selection.trades.length) {
+      return failure("INVALID_TRADE", "请选择至少 1 类资源交换。");
     }
-    const amounts = new Map(), lines = [], steps = [];
-    let total = 0;
+    // 贸易次数按“类”计算：同一种置换可以填入任意倍率数量，仍只消耗 1 类额度。
+    const amounts = new Map(), lines = [], steps = [], chosen = new Set();
+    let categories = 0, exchanges = 0;
     for (const selected of selection.trades) {
       const route = object(selected) && action.tradeRoutes.find(item => item.id === selected.routeId);
       const times = count(selected?.count);
       if (!route || times === null || times < 1) return failure("INVALID_TRADE", "请选择卡面中的交换项目和有效的整数次数。");
-      total += times;
-      if (!Number.isSafeInteger(total) || action.maxTrades !== null && total > action.maxTrades) return failure("TRADE_LIMIT", action.maxTrades === null ? "交换次数过大，无法完成交换。" : "每次使用科技最多交换 3 笔。");
+      if (chosen.has(route.id)) {
+        return failure("DUPLICATE_TRADE", "同一种资源置换只需填写一行，请直接调高该行的次数倍率。");
+      }
+      chosen.add(route.id);
+      categories += 1;
+      exchanges += times;
+      if (!Number.isSafeInteger(exchanges)) return failure("TRADE_LIMIT", "交换数量过大，无法完成交换。");
+      if (action.maxTrades !== null && categories > action.maxTrades) {
+        return failure("TRADE_LIMIT", `每次使用最多选择 ${action.maxTrades} 类资源置换；同一类可以填写任意次数。`);
+      }
       lines.push(`${route.label} ×${times}`);
       const step = { routeId: route.id, count: times, changes: [] };
       // Match exploration trades: settle each selected line in order, checking
@@ -491,7 +500,7 @@
       steps.push(step);
     }
     const changes = [...amounts.values()].map(item => ({ ...item, amount: item.gainAmount - item.costAmount }));
-    return { ok: true, changes, steps, total, summary: lines.join("；"),
+    return { ok: true, changes, steps, total: categories, exchanges, summary: lines.join("；"),
       payment: changes.filter(item => item.costAmount > 0).map(item => ({ type: "resource", storageKey: item.storageKey,
         label: item.label, amount: -item.costAmount })),
       gains: changes.filter(item => item.gainAmount > 0).map(item => ({ type: "resource", storageKey: item.storageKey,
@@ -604,7 +613,7 @@
       kind: action.kind, rewardLabel, selection, targetLabel, status: action.skipTimeline ? "completed" : "pending", payment,
       ...(grant ? { grant } : {}),
       ...(action.skipTimeline ? { skipTimeline: true, completedDay: day } : {}),
-      ...(tradeResult ? { tradeSummary: tradeResult.summary, tradeCount: tradeResult.total, tradeChanges: clone(tradeResult.changes), tradeSteps: clone(tradeResult.steps), gains: clone(tradeResult.gains) } : {}),
+      ...(tradeResult ? { tradeSummary: tradeResult.summary, tradeCount: tradeResult.total, tradeExchanges: tradeResult.exchanges, tradeChanges: clone(tradeResult.changes), tradeSteps: clone(tradeResult.steps), gains: clone(tradeResult.gains) } : {}),
       ...(action.tear ? { temporarilyDiscarded: true } : {}) };
     // A reward's completion releases its event lock; a separate date lock may
     // still remain (accelerated breeding and Mnestis Simulation).
@@ -613,7 +622,7 @@
       createdDay: day, status: event.status, payment: clone(payment),
       ...(grant ? { grant } : {}),
       ...(action.skipTimeline ? { completedDay: day } : {}),
-      ...(tradeResult ? { tradeSummary: tradeResult.summary, tradeCount: tradeResult.total, tradeChanges: clone(tradeResult.changes), tradeSteps: clone(tradeResult.steps), gains: clone(tradeResult.gains) } : {}) };
+      ...(tradeResult ? { tradeSummary: tradeResult.summary, tradeCount: tradeResult.total, tradeExchanges: tradeResult.exchanges, tradeChanges: clone(tradeResult.changes), tradeSteps: clone(tradeResult.steps), gains: clone(tradeResult.gains) } : {}) };
     if (!object(record.technologyActionReceipts)) record.technologyActionReceipts = {};
     record.technologyActionReceipts[id] = receipt;
     return { ok: true, operation: clone(event), event: clone(event), automation, record, receipt: clone(receipt), duplicate: false };
