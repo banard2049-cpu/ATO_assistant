@@ -1,15 +1,15 @@
 window.ATO_EXPLORATION_CARD_TAGS = {
   "version": 1,
-  "updatedAt": "2026-07-30T06:30:00.000Z",
+  "updatedAt": "2026-10-18T05:01:20.029Z",
   "cards": {
     "c1:8201": {
       "cycleId": "c1",
       "cardId": "8201",
       "removal": "remove",
-      "draw": "chain",
+      "draw": "single",
       "reviewed": true,
       "notes": "移出卡组直到下一次定时战斗。",
-      "updatedAt": "2026-09-17T13:30:00.000Z"
+      "updatedAt": "2026-10-18T05:01:20.029Z"
     },
     "c1:13400": {
       "cycleId": "c1",
@@ -1617,10 +1617,10 @@ window.ATO_EXPLORATION_CARD_TAGS = {
       "cycleId": "c5",
       "cardId": "10305",
       "removal": "keep",
-      "draw": "single",
+      "draw": "chain",
       "reviewed": true,
       "notes": "",
-      "updatedAt": "2026-07-30T06:30:00.000Z"
+      "updatedAt": "2026-10-18T05:01:20.029Z"
     },
     "c5:10306": {
       "cycleId": "c5",
@@ -1662,10 +1662,10 @@ window.ATO_EXPLORATION_CARD_TAGS = {
       "cycleId": "c5",
       "cardId": "10310",
       "removal": "keep",
-      "draw": "single",
+      "draw": "chain",
       "reviewed": true,
       "notes": "",
-      "updatedAt": "2026-07-30T06:30:00.000Z"
+      "updatedAt": "2026-10-18T05:01:20.029Z"
     },
     "c5:10311": {
       "cycleId": "c5",

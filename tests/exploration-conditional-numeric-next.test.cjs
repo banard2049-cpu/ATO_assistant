@@ -155,6 +155,18 @@ test('Required missing values keep whole groups manual and another cycle or Defe
   assert.equal(plan('c3:13540', fallback).conditionState, true, 'unused tracks do not block a fully known fallback');
 });
 
+test('Panic Spreads never changes removal while the other two Paranoia cards still leave the deck', () => {
+  for (const paranoia of [0, 2, 3, 6]) {
+    const panic = plan('c5:10310', record('c5', { paranoia }));
+    assert.equal(panic.removal, undefined);
+    assert.deepEqual(panic.effects, paranoia >= 3
+      ? [{ type: 'titan', amount: -1 }, { type: 'paranoia', amount: -1 }] : []);
+    for (const key of ['c5:10306', 'c5:10314']) {
+      assert.equal(plan(key, record('c5', { paranoia })).removal, 'remove', key);
+    }
+  }
+});
+
 test('Map clauses use confirmed factions, keep post-event bonuses behind the core, and never apply the gain twice while planning', () => {
   function mapPlan(key, value, factions, mapKnown = true) {
     return rules.simpleConditionalEffects(cards[key], { ...rules.contextForRecord(value, key.split(':')[0]),

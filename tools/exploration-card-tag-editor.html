@@ -101,6 +101,8 @@
       <option value="c1">Cycle I</option>
       <option value="c2">Cycle II</option>
       <option value="c3">Cycle III</option>
+      <option value="c4">Cycle IV</option>
+      <option value="c5">Cycle V</option>
     </select>
     <select id="reviewFilter">
       <option value="">全部状态</option>
@@ -128,22 +130,24 @@
     </section>
   </main>
 
-  <script src="../assets/exploration-card-tags.js"></script>
+  <script src="../assets/exploration-card-tags.js?v=20261018-card-audit1"></script>
   <script>
     const API_URL = '../api/exploration-card-tags.php';
-    const STORAGE_KEY = 'ato-exploration-card-tags-draft-v1';
-    const cycleLabels = { c1: 'Cycle I', c2: 'Cycle II', c3: 'Cycle III' };
+    const STORAGE_KEY = 'ato-exploration-card-tags-draft-v2';
+    const cycleLabels = { c1: 'Cycle I', c2: 'Cycle II', c3: 'Cycle III', c4: 'Cycle IV', c5: 'Cycle V' };
     const c1Ids = [
       '13400', '6400', '6401', '6402', '6403', '6404', '6405', '6406', '6407', '6408',
       '6409', '6410', '6411', '6412', '6413', '6414', '6415', '6416', '6417', '6418',
       '6419', '6420', '6421', '6422', '6423', '6424', '6425', '6426', '6427', '6428',
-      '6429', '6430', '6431', '6433', '6434', '6435', '6436', '6437', '6438', '6439', '6440'
+      '6429', '6430', '6431', '6433', '6434', '6435', '6436', '6437', '6438', '6439', '6440', '8201'
     ];
     const range = (start, count) => Array.from({ length: count }, (_, index) => String(start + index));
     const catalog = [
       ...c1Ids.map(cardId => ({ cycleId: 'c1', cardId })),
-      ...range(13600, 42).map(cardId => ({ cycleId: 'c2', cardId })),
+      ...range(13600, 43).map(cardId => ({ cycleId: 'c2', cardId })),
       ...range(13500, 42).map(cardId => ({ cycleId: 'c3', cardId })),
+      ...range(9300, 47).map(cardId => ({ cycleId: 'c4', cardId })),
+      ...range(10300, 49).map(cardId => ({ cycleId: 'c5', cardId })),
     ];
 
     let data = normalizeData(window.ATO_EXPLORATION_CARD_TAGS || {});
@@ -155,7 +159,9 @@
 
     function normalizeData(value) {
       const cards = {};
-      Object.entries(value?.cards || {}).forEach(([key, entry]) => {
+      // Sparse imports retain the project's cards from every cycle.
+      const entries = { ...(window.ATO_EXPLORATION_CARD_TAGS?.cards || {}), ...(value?.cards || {}) };
+      Object.entries(entries).forEach(([key, entry]) => {
         if (!entry || typeof entry !== 'object') return;
         const cycleId = String(entry.cycleId || key.split(':')[0] || '').toLowerCase();
         const cardId = String(entry.cardId || key.split(':')[1] || '');
@@ -167,7 +173,8 @@
           cycleId,
           cardId,
           removal,
-          draw: removal !== 'keep' || entry.draw === 'chain' ? 'chain' : 'single',
+          draw: entry.draw === 'single' ? 'single'
+            : entry.draw === 'chain' || removal !== 'keep' ? 'chain' : 'single',
           reviewed: Boolean(entry.reviewed),
           notes: String(entry.notes || ''),
           updatedAt: entry.updatedAt || null,
@@ -266,7 +273,7 @@
               <legend>结算时是否继续抽卡</legend>
               <div class="choice-grid">
                 <label class="choice chain"><input type="radio" name="draw" value="chain" ${entry.draw === 'chain' ? 'checked' : ''}><span>连抽</span></label>
-                <label class="choice single"><input type="radio" name="draw" value="single" ${entry.draw === 'single' ? 'checked' : ''} ${entry.removal !== 'keep' ? 'disabled' : ''}><span>不连抽</span></label>
+                <label class="choice single"><input type="radio" name="draw" value="single" ${entry.draw === 'single' ? 'checked' : ''}><span>不连抽</span></label>
               </div>
             </fieldset>
             <label class="reviewed"><input id="reviewed" type="checkbox" ${entry.reviewed ? 'checked' : ''}>这张卡已确认打标</label>
@@ -291,7 +298,6 @@
     function updateEntry(card, field, value, rerender = true) {
       const entry = entryFor(card, true);
       entry[field] = value;
-      if (entry.removal !== 'keep') entry.draw = 'chain';
       if (field === 'removal' || field === 'draw') entry.reviewed = true;
       entry.updatedAt = new Date().toISOString();
       dirty = true;

@@ -2724,15 +2724,15 @@
 
   <script src="./assets/page-focus-router.js?v=20261007-page-navigation1"></script>
   <script src="./assets/story-doom-card-data.js?v=20261014-card-face-audit2"></script>
-  <script src="./assets/exploration-card-tags.js?v=20261002-cache1"></script>
-  <script src="./assets/exploration-card-rules.js?v=20261002-cache1"></script>
+  <script src="./assets/exploration-card-tags.js?v=20261018-card-audit1"></script>
+  <script src="./assets/exploration-card-rules.js?v=20261018-card-audit1"></script>
   <script src="./assets/exploration-card-resource-rules.js?v=20261013-automation5"></script>
-  <script src="./assets/exploration-card-effects.js?v=20261014-record-tracks1"></script>
-  <script src="./assets/exploration-card-conditions.js?v=20261014-card-face-audit2"></script>
+  <script src="./assets/exploration-card-effects.js?v=20261018-card-audit1"></script>
+  <script src="./assets/exploration-card-conditions.js?v=20261018-card-audit1"></script>
   <script src="./assets/exploration-card-options.js?v=20261013-next-options12"></script>
   <script src="./assets/exploration-card-choices.js?v=20261013-next-choices12"></script>
   <script src="./assets/exploration-card-delays.js?v=20261013-automation5"></script>
-  <script src="./assets/exploration-card-resources.js?v=20261014-card-face-audit2"></script>
+  <script src="./assets/exploration-card-resources.js?v=20261018-card-audit1"></script>
   <script src="./technology/negotiation-rules.js?v=20261017-automation-audit4"></script>
   <script src="./technology/voyage-action-rules.js?v=20261016-voyage3"></script>
   <script src="./technology/exploration-tech-rules.js?v=20261017-automation-audit4"></script>
@@ -3201,12 +3201,12 @@
           cards: [
             { id: "10300", name: "Followers of Areté Mission" },
             { id: "10301", name: "Protectorate Fleet" },
-            { id: "10302", name: "Vanguard Subreme" },
+            { id: "10302", name: "Vanguard Supreme" },
             { id: "10303", name: "Untamed Titan" },
             { id: "10304", name: "Its Hour Comes Round at Last" },
             { id: "10305", name: "Long Range Bombardment" },
             { id: "10306", name: "The Hidden Truth" },
-            { id: "10307", name: "Mnestic Glitch" },
+            { id: "10307", name: "Mnestis Glitch" },
             { id: "10308", name: "Cyclades Recruitment Drive" },
             { id: "10309", name: "Familiar Theban Trader" },
             { id: "10310", name: "Panic Spreads" },
@@ -3229,14 +3229,14 @@
             { id: "10327", name: "Aether Fissure" },
             { id: "10328", name: "Decrepit Outpost" },
             { id: "10329", name: "Abandoned Listening Post" },
-            { id: "10330", name: "Atlantean Extraction Subreme" },
+            { id: "10330", name: "Atlantean Extraction Supreme" },
             { id: "10331", name: "Abandoned Processing Plant" },
-            { id: "10332", name: "Research Subreme Wreck" },
+            { id: "10332", name: "Research Supreme Wreck" },
             { id: "10333", name: "Aether Fissure" },
             { id: "10334", name: "Abandoned Listening Post" },
             { id: "10335", name: "Titan" },
-            { id: "10336", name: "Atlantean Extraction Subreme" },
-            { id: "10337", name: "Atlantean Extraction Subreme" },
+            { id: "10336", name: "Atlantean Extraction Supreme" },
+            { id: "10337", name: "Atlantean Extraction Supreme" },
             { id: "10338", name: "Depleted Mine" },
             { id: "10339", name: "Depleted Mine" },
             { id: "10340", name: "Active Vent" },
@@ -5301,7 +5301,8 @@
           : (entry.removal === "remove" ? "remove" : "keep");
         return {
           removal,
-          draw: removal !== "keep" || entry.draw === "chain" ? "chain" : "single",
+          draw: entry.draw === "single" ? "single"
+            : entry.draw === "chain" || removal !== "keep" ? "chain" : "single",
         };
       }
 

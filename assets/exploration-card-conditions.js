@@ -226,7 +226,7 @@
         effects.push({ type: "paranoia", amount: -3 });
       } else effects.push({ type: "titan", amount: -1 }, { type: "paranoia", amount: -1 });
     }
-    const result = resolvedConditional(base, effects, "remove");
+    const result = resolvedConditional(base, effects, panic ? undefined : "remove");
     if (drown && paranoia + 1 >= 3) result.remainder = "基础猜忌结算后已达到 3：请处理 Fractures（裂痕）特殊事件，标记完成后再结算命运 5+ 的额外猜忌。";
     return result;
   }

@@ -53,6 +53,7 @@
   // These identities were checked on each card face; never apply them globally.
   const CARD_ICONS = {
     "c1:6401": { "disc-with-emblem glyph": "hull" },
+    "c1:6402": { "cup/urn glyph": { Allied: "progress" } },
     "c1:6421": { "robed figure - priest": "strangers" },
     "c1:6425": { "robed figure - priest": "strangers" },
     "c1:6429": { "disc-with-emblem glyph": "hull" },
@@ -97,7 +98,8 @@
     c1: { "labyrinth diamond": { kind: "faction", label: "迷宫徒派系标记" } },
     c2: { "small dark emblem": { kind: "equipment", label: "装备" }, "深色淤泥状指示物": { kind: "map-token", label: "神浆标记" } },
     c3: { "sun with rays": { kind: "faction", label: "太阳后裔派系标记" } },
-    c4: { "small black splatter-like card-type icon": { kind: "equipment", label: "装备" } },
+    c4: { "small black splatter-like card-type icon": { kind: "equipment", label: "装备" },
+      "cloud thieves faction symbol": { kind: "faction", label: "云贼派系标记" } },
     c5: { "dark irregular sludge-like token glyph": { kind: "map-token", label: "神浆标记" },
       "dark round glyph with a pale inner emblem": { kind: "nemesis", label: "宿敌标记", badge: "Allied" } },
   };

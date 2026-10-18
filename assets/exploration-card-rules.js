@@ -9,7 +9,11 @@
       : (entry.removal === "remove" ? "remove" : "keep");
     return {
       removal,
-      draw: removal !== "keep" || entry.draw === "chain" ? "chain" : "single",
+      // Removal and the printed draw icon are independent (e.g. Theseus's
+      // Cache is temporarily removed but ends its stack). Keep the old
+      // removal fallback only when a legacy record has no explicit draw tag.
+      draw: entry.draw === "single" ? "single"
+        : entry.draw === "chain" || removal !== "keep" ? "chain" : "single",
     };
   }
 

@@ -47,13 +47,14 @@ function normalize_tags(array $data): array {
     $parts = explode(':', (string) $key, 2);
     $cycleId = strtolower(trim((string) ($entry['cycleId'] ?? ($parts[0] ?? ''))));
     $cardId = trim((string) ($entry['cardId'] ?? ($parts[1] ?? '')));
-    if (!in_array($cycleId, ['c1', 'c2', 'c3'], true) || !preg_match('/^\d+$/', $cardId)) continue;
+    if (!in_array($cycleId, ['c1', 'c2', 'c3', 'c4', 'c5'], true) || !preg_match('/^\d+$/', $cardId)) continue;
 
     $removalValue = (string) ($entry['removal'] ?? '');
     $removal = $removalValue === 'permanent'
       ? 'permanent'
       : ($removalValue === 'remove' ? 'remove' : 'keep');
-    $draw = $removal !== 'keep' || ($entry['draw'] ?? '') === 'chain' ? 'chain' : 'single';
+    $draw = ($entry['draw'] ?? '') === 'single' ? 'single'
+      : ((($entry['draw'] ?? '') === 'chain' || $removal !== 'keep') ? 'chain' : 'single');
     $normalizedKey = $cycleId . ':' . $cardId;
     $cards[$normalizedKey] = [
       'cycleId' => $cycleId,

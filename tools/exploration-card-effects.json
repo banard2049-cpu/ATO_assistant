@@ -55,8 +55,9 @@
      "badge": ""
     },
     {
-     "text": "Gain +1 ICON(disc-with-emblem glyph).",
-     "badge": "Allied"
+     "text": "Gain +1 Hull.",
+     "badge": "Allied",
+     "correctedFrom": "Gain +1 ICON(disc-with-emblem glyph)."
     },
     {
      "text": "Gain 4 Trireme resources.",
@@ -75,8 +76,9 @@
      "badge": "Denounced"
     },
     {
-     "text": "Lose -1 ICON(disc-with-emblem glyph).",
-     "badge": "At War"
+     "text": "Lose -1 Hull.",
+     "badge": "At War",
+     "correctedFrom": "Lose -1 ICON(disc-with-emblem glyph)."
     },
     {
      "text": "随机一名阿尔戈英雄获得1枚绝望指示物。",
@@ -131,8 +133,9 @@
      "badge": ""
     },
     {
-     "text": "Gain +1 ICON(cup/urn glyph).",
-     "badge": "Allied"
+     "text": "Gain +1 Progress Token.",
+     "badge": "Allied",
+     "correctedFrom": "Gain +1 ICON(cup/urn glyph)."
     },
     {
      "text": "Chosen Argonaut gains 1 Mnemos node.",
@@ -853,8 +856,9 @@
      "badge": ""
     },
     {
-     "text": "Gain +1 ICON(robed figure - Priest).",
-     "badge": "Denounced-"
+     "text": "Gain +1 Strangers.",
+     "badge": "Denounced-",
+     "correctedFrom": "Gain +1 ICON(robed figure - Priest)."
     }
    ],
    "resourceGains": [
@@ -981,8 +985,9 @@
      "badge": ""
     },
     {
-     "text": "Gain +1 ICON(robed figure - Priest).",
-     "badge": "Denounced-"
+     "text": "Gain +1 Strangers.",
+     "badge": "Denounced-",
+     "correctedFrom": "Gain +1 ICON(robed figure - Priest)."
     }
    ],
    "resourceGains": [
@@ -1117,8 +1122,9 @@
      "badge": ""
     },
     {
-     "text": "Lose -1 ICON(disc-with-emblem glyph).",
-     "badge": "At War"
+     "text": "Lose -1 Hull.",
+     "badge": "At War",
+     "correctedFrom": "Lose -1 ICON(disc-with-emblem glyph)."
     }
    ],
    "resourceGains": [
@@ -1185,8 +1191,9 @@
      "badge": ""
     },
     {
-     "text": "Gain +1 Titan.",
-     "badge": "Allied"
+     "text": "Gain +1 Progress Token.",
+     "badge": "Allied",
+     "correctedFrom": "Gain +1 Titan."
     }
    ],
    "resourceGains": [
@@ -1238,7 +1245,8 @@
    "lines": [
     {
      "text": "At the end of this Exploration Step, resolve an Ambush Battle (Cycle I Storybook, p. 112).",
-     "badge": ""
+     "badge": "",
+     "correctedFrom": "At the end of this Exploration Step, resolve an Ambush Battle (Cycle I Storybook, p."
     },
     {
      "text": "At the start of this battle, Escalate 1.",
@@ -2134,7 +2142,8 @@
     },
     {
      "text": "Gain +1 ICON(book-with-flame glyph) (once until the next Timeline Battle).",
-     "badge": "ICON(figure)/Allied"
+     "badge": "Allied",
+     "conditionLabel": "独眼巨人：同盟（+2 或更好）"
     }
    ],
    "resourceGains": [
@@ -2156,7 +2165,8 @@
    ],
    "resourceOnly": false,
    "confidence": "medium",
-   "notes": "Badge = figure-pictogram lozenge joined to an 'Allied' lozenge. Glyph after '+1' unresolved: small dark shape with a pale flame, resembling c1:6430's book-with-flame icon. Disc 16, BB1232."
+   "notes": "Badge = figure-pictogram lozenge joined to an 'Allied' lozenge. Glyph after '+1' unresolved: small dark shape with a pale flame, resembling c1:6430's book-with-flame icon. Disc 16, BB1232.",
+   "diplomacyFaction": "cyclopes"
   },
   "c2:13616": {
    "key": "c2:13616",
@@ -2401,8 +2411,10 @@
      "badge": ""
     },
     {
-     "text": "Gain +1 ICON(large dark inverted-triangle glyph with pale inner marks).",
-     "badge": "ICON(figure)/Allied"
+     "text": "Gain +1 Progress Token.",
+     "badge": "Allied",
+     "correctedFrom": "Gain +1 ICON(large dark inverted-triangle glyph with pale inner marks).",
+     "conditionLabel": "独眼巨人：同盟（+2 或更好）"
     }
    ],
    "resourceGains": [
@@ -2418,7 +2430,8 @@
    ],
    "resourceOnly": false,
    "confidence": "medium",
-   "notes": "Trailing icon after '+1' (~30x26 px) not identified; OCR reads it as '&'/'ch'. Badge: small pale emblem lozenge + '/Allied'."
+   "notes": "Trailing icon after '+1' (~30x26 px) not identified; OCR reads it as '&'/'ch'. Badge: small pale emblem lozenge + '/Allied'.",
+   "diplomacyFaction": "cyclopes"
   },
   "c2:13624": {
    "key": "c2:13624",
@@ -3605,8 +3618,9 @@
      "badge": ""
     },
     {
-     "text": "Lose -1 ICON(black disc-with-emblem glyph).",
-     "badge": "At War"
+     "text": "Lose -1 Hull.",
+     "badge": "At War",
+     "correctedFrom": "Lose -1 ICON(black disc-with-emblem glyph)."
     }
    ],
    "resourceGains": [
@@ -3795,8 +3809,9 @@
      "badge": ""
     },
     {
-     "text": "Gain +1 ICON(black emblem glyph).",
-     "badge": "Allied"
+     "text": "Gain +1 Progress Token.",
+     "badge": "Allied",
+     "correctedFrom": "Gain +1 ICON(black emblem glyph)."
     }
    ],
    "resourceGains": [
@@ -4143,8 +4158,9 @@
      "badge": "Denounced"
     },
     {
-     "text": "Lose -1 ICON(black disc with white emblem).",
-     "badge": "At War"
+     "text": "Lose -1 Hull.",
+     "badge": "At War",
+     "correctedFrom": "Lose -1 ICON(black disc with white emblem)."
     },
     {
      "text": "Random Argonaut gains 1 Fated Mnemos card.",
@@ -4444,8 +4460,9 @@
    "cornerNumber": "",
    "lines": [
     {
-     "text": "Lose -2 ICON(outlined triangle glyph) and gain +1 Α.",
-     "badge": "ICON(white triangle glyph in dark hexagon) 3+"
+     "text": "Lose -2 Paradox and gain +1 Doom Token.",
+     "badge": "ICON(white triangle glyph in dark hexagon) 3+",
+     "correctedFrom": "Lose -2 ICON(outlined triangle glyph) and gain +1 Α."
     },
     {
      "text": "If this ability didn't trigger, gain +1 ICON(outlined triangle glyph) and remove this card until the next Timeline Battle.",
@@ -5104,8 +5121,9 @@
      "badge": ""
     },
     {
-     "text": "Gain +1 Ψ.",
-     "badge": "Denounced-"
+     "text": "Gain +1 Doom Token.",
+     "badge": "Denounced-",
+     "correctedFrom": "Gain +1 Ψ."
     }
    ],
    "resourceGains": [
@@ -5174,8 +5192,9 @@
      "badge": ""
     },
     {
-     "text": "Gain +1 Ψ.",
-     "badge": "Denounced-"
+     "text": "Gain +1 Argo Fate.",
+     "badge": "Denounced-",
+     "correctedFrom": "Gain +1 Ψ."
     }
    ],
    "resourceGains": [
@@ -5559,8 +5578,9 @@
      "badge": ""
     },
     {
-     "text": "Gain +3 ICON(dark upended-V resource glyph) as a group.",
-     "badge": "Denounced-"
+     "text": "Gain +3 Λ as a group.",
+     "badge": "Denounced-",
+     "correctedFrom": "Gain +3 ICON(dark upended-V resource glyph) as a group."
     }
    ],
    "resourceGains": [
@@ -5692,7 +5712,7 @@
     },
     {
      "text": "At the start of this Battle, Escalate 1.",
-     "badge": "ICON(white trident-like glyph on dark lozenge)/3+"
+     "badge": "ICON(white trident-like glyph on dark lozenge)/8+"
     }
    ],
    "resourceGains": [],
@@ -6072,7 +6092,7 @@
    "cornerNumber": "",
    "lines": [
     {
-     "text": "Gain +1 ICON(small dark round resource glyph) (if on a ICON(small dark round resource glyph) Map Tile, gain +2 ICON(small dark round resource glyph) instead).",
+     "text": "Gain +1 ICON(small dark round resource glyph) (if on a ICON(Cloud Thieves faction symbol) Map Tile, gain +2 ICON(small dark round resource glyph) instead).",
      "badge": ""
     },
     {
@@ -6125,7 +6145,7 @@
    ],
    "resourceOnly": false,
    "confidence": "medium",
-   "notes": "Resource and Map Tile both print the same small dark glyph (name unresolved). 'At War' lozenge clear; divider before the 7+ lozenge line."
+   "notes": "Original face distinguishes Babelian Debt money-bag gains from the Cloud Thieves faction symbol in the Map Tile clause. At War and Fate 7+ remain separate printed conditions."
   },
   "c4:9335": {
    "key": "c4:9335",
@@ -6135,8 +6155,9 @@
    "cornerNumber": "",
    "lines": [
     {
-     "text": "Gain +1 ICON(small dark resource glyph).",
-     "badge": ""
+     "text": "Gain +1 Progress Token.",
+     "badge": "",
+     "correctedFrom": "Gain +1 ICON(small dark resource glyph)."
     },
     {
      "text": "Roll a d10. On 8+ gain +1 ICON(book-with-flame resource glyph).",
@@ -6231,8 +6252,9 @@
      "badge": ""
     },
     {
-     "text": "Gain +1 ICON(small dark resource glyph).",
-     "badge": "Allied"
+     "text": "Gain +1 Progress Token.",
+     "badge": "Allied",
+     "correctedFrom": "Gain +1 ICON(small dark resource glyph)."
     }
    ],
    "resourceGains": [
@@ -6515,8 +6537,9 @@
      "badge": ""
     },
     {
-     "text": "Gain +1 ICON(dark round glyph with a white inner curve).",
-     "badge": "Allied"
+     "text": "Gain +1 Hull.",
+     "badge": "Allied",
+     "correctedFrom": "Gain +1 ICON(dark round glyph with a white inner curve)."
     },
     {
      "text": "Gain 4 Cursed Derelict resources.",
@@ -6535,8 +6558,9 @@
      "badge": "Denounced"
     },
     {
-     "text": "Lose -1 ICON(dark round glyph with a white inner curve).",
-     "badge": "At War"
+     "text": "Lose -1 Hull.",
+     "badge": "At War",
+     "correctedFrom": "Lose -1 ICON(dark round glyph with a white inner curve)."
     },
     {
      "text": "Random Argonaut gains a random Curse Affliction.",
@@ -6754,8 +6778,9 @@
      "badge": ""
     },
     {
-     "text": "Gain +1 ICON(dark glyph with a white V-notch).",
-     "badge": "Allied"
+     "text": "Gain +1 Progress Token.",
+     "badge": "Allied",
+     "correctedFrom": "Gain +1 ICON(dark glyph with a white V-notch)."
     },
     {
      "text": "Gain +1 Crew.",
@@ -6839,8 +6864,9 @@
      "badge": "Allied"
     },
     {
-     "text": "Gain +1 ICON(small dark hand-like glyph).",
-     "badge": "Friendly"
+     "text": "Gain +1 Hull.",
+     "badge": "Friendly",
+     "correctedFrom": "Gain +1 ICON(small dark hand-like glyph)."
     },
     {
      "text": "Each Argonaut gains +2 Λ.",
@@ -6855,8 +6881,9 @@
      "badge": "Denounced"
     },
     {
-     "text": "Lose -1 ICON(small dark hand-like glyph).",
-     "badge": "Aligned with Nemesis"
+     "text": "Lose -1 Hull.",
+     "badge": "Aligned with Nemesis",
+     "correctedFrom": "Lose -1 ICON(small dark hand-like glyph)."
     },
     {
      "text": "Random Argonaut gains a random Phobia Affliction.",
@@ -7063,8 +7090,9 @@
      "badge": ""
     },
     {
-     "text": "Lose -1 ICON(small dark hand-like glyph).",
-     "badge": "Allied"
+     "text": "Lose -1 Argo Fate.",
+     "badge": "Allied",
+     "correctedFrom": "Lose -1 ICON(small dark hand-like glyph)."
     }
    ],
    "resourceGains": [
@@ -7255,8 +7283,9 @@
    "cornerNumber": "",
    "lines": [
     {
-     "text": "Gain +1 ICON(small dark hand-like glyph).",
-     "badge": ""
+     "text": "Gain +1 Doom Token.",
+     "badge": "",
+     "correctedFrom": "Gain +1 ICON(small dark hand-like glyph)."
     },
     {
      "text": "Random Argonaut gains a random Phobia Affliction.",
@@ -7362,8 +7391,9 @@
    "cornerNumber": "",
    "lines": [
     {
-     "text": "Unless you are surfaced, immediately surface or lose -1 ICON(small dark hand-like glyph).",
-     "badge": ""
+     "text": "Unless you are surfaced, immediately surface or lose -1 Hull.",
+     "badge": "",
+     "correctedFrom": "Unless you are surfaced, immediately surface or lose -1 ICON(small dark hand-like glyph)."
     },
     {
      "text": "Lose -1 Titan.",
@@ -7424,8 +7454,9 @@
    "cornerNumber": "",
    "lines": [
     {
-     "text": "Gain +1 ICON(dark glyph with a white V-notch).",
-     "badge": ""
+     "text": "Gain +1 Progress Token.",
+     "badge": "",
+     "correctedFrom": "Gain +1 ICON(dark glyph with a white V-notch)."
     },
     {
      "text": "Lose -1 ICON(small dark hand-like glyph).",
@@ -8352,8 +8383,9 @@
      "badge": ""
     },
     {
-     "text": "Gain +3 A as a group.",
-     "badge": "Denounced"
+     "text": "Gain +3 Λ as a group.",
+     "badge": "Denounced",
+     "correctedFrom": "Gain +3 A as a group."
     }
    ],
    "resourceGains": [
@@ -8453,8 +8485,9 @@
      "badge": ""
     },
     {
-     "text": "Gain +3 A as a group.",
-     "badge": "Denounced-"
+     "text": "Gain +3 Λ as a group.",
+     "badge": "Denounced-",
+     "correctedFrom": "Gain +3 A as a group."
     }
    ],
    "resourceGains": [

@@ -25,9 +25,11 @@ body:not(.sidebar-collapsed) .sidebar-toggle { left: 212px; top: 24px; }
 .nav { gap: 0; }
 .nav button { border: 0; border-bottom: 1px solid var(--line); padding: 12px 10px; }
 .nav button.active, .nav button:hover { background: var(--accent-soft); border-color: var(--line); box-shadow: inset 3px 0 0 var(--accent); }
+#nav button.active { background: var(--accent-soft); border-color: var(--line); color: var(--accent-strong); box-shadow: inset 3px 0 0 var(--accent); }
 .boss-search-results button { border: 0; border-bottom: 1px solid var(--line); }
 .sidebar-boss-search label { color: var(--accent-strong); }
 .title-actions :is(.deck-order-toggle, .second-screen-mode-toggle), .map-faction-chip { border-radius: 0; background: transparent; color: var(--muted); border-color: var(--line); }
+.title-actions .second-screen-sync-status[data-state="failed"] { color: var(--danger); }
 .map-faction-chip { border: 0; padding-left: 0; }
 .cards-panel { width: 100%; max-width: 100%; border: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--panel); box-shadow: none; }
 .card-column { padding: 18px; }
@@ -41,13 +43,17 @@ body:not(.sidebar-collapsed) .sidebar-toggle { left: 212px; top: 24px; }
 #drawAiButton, #drawBpButton { min-height: 38px; padding: 8px 14px; border-radius: 0; background: var(--accent-strong); color: #fff; border-color: var(--accent-strong); box-shadow: none; }
 #drawAiButton:hover, #drawBpButton:hover { background: var(--accent); color: #fff; }
 .segmented button.active { background: var(--accent-soft); border-color: var(--accent); box-shadow: none; color: var(--accent-strong); }
+#aiViewTabs button.active, #bpViewTabs button.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-strong); }
 .draw-preview, .draw-preview:not(.has-card):hover { background: var(--bg); border-color: var(--line); border-radius: 0; }
 .card-grid img, .draw-preview img, .extra-grid img, .scry-card, .scry-card img { border-radius: 0; background: transparent; border-color: var(--line); box-shadow: none; }
 .bp-combined-counter { border-radius: 0; background: var(--accent-soft); border-color: var(--line); }
 body dialog { border-radius: 0; border-color: var(--line); background: var(--panel); color: var(--ink); }
 .trait-dialog-head, .trait-dialog-actions, .section-header, .scry-cards { background: var(--bg); border-color: var(--line); }
+.section-header, .cards-toolbar h3, .bp-combined-title { color: var(--accent-strong); }
 .trait-option, .custom-trait-preview, .custom-trait-preview img { border-radius: 0; box-shadow: none; background: var(--panel); border-color: var(--line); }
 .c45-specials, .babelian-bp-control, .battle-map-panel { border-color: var(--line); }
+.c45-control { background: var(--panel); color: var(--ink); border-color: var(--line); border-radius: 0; box-shadow: none; }
+.titan-x-awakening-note .c45-control-note { color: var(--ink); font-size: 13px; line-height: 1.65; }
 .c45-specials-title, .c45-counter-label, .c45-counter-value, .c45-section-title { color: var(--accent-strong); }
 .c45-counter-row, .c45-status-row, .c45-trait-row { color: var(--ink); }
 .c45-wish-view, .c45-stepper-output, .c45-wish-copy, .titan-group-stat, .titan-group-g6 { background: var(--bg); color: var(--ink); border-color: var(--line); border-radius: 0; }
@@ -55,7 +61,24 @@ body dialog { border-radius: 0; border-color: var(--line); background: var(--pan
 .c45-roster-source, .c45-derived, .c45-track-scale, .c45-wish-empty, .c45-control-note, .titan-group-target-state, .titan-group-wounds small, .titan-group-stat small, .titan-group-head .c45-control-title > span { color: var(--muted); }
 .c45-roster-row label, .c45-toggle, .c45-status-card { color: var(--ink); }
 .c45-derived.warning { color: #a23e20; }
-body .titan-group-target.is-selected { background: var(--accent-soft); border-color: var(--accent); }
+/* Keep selected controls distinct from the shared form-control defaults. */
+#c45Specials .titan-group-target.is-selected { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-strong); }
+.titan-group-target.is-selected .titan-group-target-state { color: var(--accent-strong); }
+.titan-group-turn { color: var(--ink); }
+.titan-group-rules { border-color: var(--line); color: var(--muted); }
+.titan-group-rules summary { color: var(--accent-strong); }
+.titan-group-progress i { background: var(--line); border-radius: 0; }
+.titan-group-progress i.is-filled { background: var(--accent); }
+#c45Specials .titan-group-g6.is-marked { background: var(--accent-soft); border-color: var(--accent); }
+.titan-group-g6.is-marked strong { color: var(--accent-strong); }
+/* Tool panels follow the page palette; board overlays keep their game colors. */
+.battle-map-board { border-color: var(--line); box-shadow: none; }
+.battle-map-side, .battle-map-selection, .battle-map-cards { border-color: var(--line); }
+.battle-map-head h3, .battle-map-cards-head h4 { color: var(--accent-strong); }
+.battle-map-los, .battle-map-los-stats, .battle-map-los-path-summary { background: var(--panel); color: var(--ink); border-color: var(--line); border-radius: 0; }
+.battle-map-los-stats, .battle-map-los-path-summary { background: var(--bg); }
+#battleMapControl button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-strong); }
+#battleMapControl .battle-map-toolbar button.danger { color: var(--danger); }
 /* Loot styles are injected after this sheet; scoped selectors keep every surface on paper. */
 body .loot-dialog { max-height: min(860px, calc(100dvh - 28px)); overflow: hidden; border: 1px solid var(--line); border-radius: 0; background: var(--panel); color: var(--ink); box-shadow: 0 18px 60px rgb(36 33 29 / 18%); }
 .loot-dialog .loot-dialog-inner { max-height: calc(min(860px, 100dvh - 28px) - 2px); }
@@ -129,7 +152,7 @@ body .spoiler-dialog { max-height: min(760px, calc(100dvh - 32px)); padding: 22p
 #heliosSpoilerContinue:hover { background: color-mix(in srgb, var(--accent-strong) 85%, var(--ink)); color: #fff; border-color: var(--accent-strong); }
 
 /* Selection and scry dialogs have their own legacy dark surfaces. */
-body .trait-dialog { max-height: min(760px, calc(100dvh - 32px)); overflow: hidden; border: 1px solid var(--line); box-shadow: 0 18px 60px rgb(36 33 29 / 18%); }
+body .trait-dialog { max-height: min(760px, calc(100dvh - 32px)); overflow: hidden; border: 1px solid var(--line); background: var(--panel); color: var(--ink); box-shadow: 0 18px 60px rgb(36 33 29 / 18%); }
 .trait-dialog form { max-height: calc(min(760px, 100dvh - 32px) - 2px); }
 .trait-dialog::backdrop { background: rgb(36 33 29 / 40%); }
 .trait-dialog [hidden] { display: none !important; }
@@ -205,6 +228,9 @@ body .trait-dialog { max-height: min(760px, calc(100dvh - 32px)); overflow: hidd
   border-radius: 0;
   box-shadow: none;
 }
+.image-zoom-card-stage > img:not(.custom-token) { border-radius: 0; background: transparent; box-shadow: 0 18px 60px rgb(36 33 29 / 18%); }
+#imageZoomCombinedNotice { padding: 14px 16px; border: 1px solid var(--line); border-radius: 0; background: var(--panel); color: var(--ink); box-shadow: none; font-size: 14px; }
+#imageZoomCombinedNotice strong { color: var(--accent-strong); font-size: 32px; }
 
 @media (max-width: 760px) {
   body:not(.sidebar-collapsed) .sidebar-toggle { left: auto; right: 16px; }
