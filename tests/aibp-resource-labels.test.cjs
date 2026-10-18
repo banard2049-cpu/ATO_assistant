@@ -26,9 +26,28 @@ function harness(apostle, level, index, type = 'BP') {
   }
   const source = fs.readFileSync(path.join(root, 'aibp/bp_loot_calculator_addon.js'), 'utf8');
   vm.runInContext(source.replace('window.AIBP_calculateBpLoot = calculateBpLoot;',
-    'window.AIBP_calculateBpLoot = calculateBpLoot; window.applyLoot = applyLootResultToRecord;'), ctx);
+    'window.AIBP_calculateBpLoot = calculateBpLoot; window.applyLoot = applyLootResultToRecord; window.resourceIconMarkup = resourceIconMarkup; window.resourceIconKeys = [...RESOURCE_ICON_KEYS];'), ctx);
   return ctx;
 }
+
+test('all BP resource icons, including abbreviations and core, use record image paths', () => {
+  const ctx = harness('HEKATON', 'I', 1);
+  const record = fs.readFileSync(path.join(root, 'record/index.html'), 'utf8');
+  const recordMap = record.split('const resourceImageMap = {')[1].split('\n    };')[0];
+  for (const key of ctx.resourceIconKeys) {
+    const markup = ctx.resourceIconMarkup(key);
+    const src = markup.match(/src="([^"]+)"/)[1];
+    assert.match(src, /^\.\.\/record\/assets\/resource-icons\/\w+\.png\?v=/, key);
+    const filename = src.match(/resource-icons\/(\w+)\.png/)[1];
+    assert.match(recordMap, new RegExp(`\\b${filename}:`), key);
+    assert.ok(markup.includes('record-resource-icon'), key);
+    assert.ok(ctx.resourceIconMarkup(key, true).includes('small'), key);
+  }
+  assert.match(ctx.resourceIconMarkup('RA'), /resource-icons\/rawAmbrosia\.png/);
+  assert.match(ctx.resourceIconMarkup('SK'), /resource-icons\/sunburnedSkull\.png/);
+  assert.match(ctx.resourceIconMarkup('core'), /resource-icons\/core\.png/);
+  assert.match(ctx.resourceIconMarkup('unrecognized'), /<span[^>]*text/);
+});
 
 // Counts transcribed from the local original artwork, independently of the maps.
 // This checks actual rewards too: reading the expected values back out of a map

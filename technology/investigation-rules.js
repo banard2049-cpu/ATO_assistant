@@ -17,6 +17,7 @@
   const key = value => String(value || "").trim().toLowerCase();
   function reminders(ctx = {}, helpers = {}) {
     const eligibility = helpers.eligibility || root.ATO_STRUCTURE_TECH_RULES?.eligibility;
+    const titleFor = helpers.titleFor || root.ATO_STRUCTURE_TECH_RULES?.titleFor;
     if (typeof eligibility !== "function") return [];
     const hidden = new Set((ctx.technology?.unimportant || ctx.technology?.unimportantKeys || [])
       .map(value => key(value && typeof value === "object" ? value.key : value)));
@@ -28,7 +29,7 @@
       // without changing whether the technology is owned or usable.
       if (hidden.has(rule.key) || hidden.has(key(card.key))
         || (card.tree_nodes || card.nodes || []).some(node => hidden.has(`${rule.key}@@${node.page}`))) return [];
-      return [{ techKey: rule.key, title: card.names?.zh || card.names?.en || rule.key,
+      return [{ techKey: rule.key, title: titleFor ? titleFor(card) : card.names?.zh || card.names?.en || rule.key,
         costLabel: rule.costLabel, text: rule.text }];
     });
   }

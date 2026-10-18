@@ -251,6 +251,8 @@ function settleHarness(options = {}) {
     fn('completeExplorationDraw'),
     fn('createExplorationDelayCardTools'),
     fn('createDelayedExplorationStepTools'),
+    fn('technologyReferenceName'),
+    fn('technologyReferenceText'),
     fn('createExplorationOptionTools'),
     ...[...source.matchAll(/^    (?:async )?function (explorationCondition\w*)\(/gm)].map((match) => fn(match[1])),
     fn('explorationEffectState'),

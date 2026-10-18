@@ -5,7 +5,6 @@ from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parent.parent
 PS_ROOT = ROOT / "aibp" / "ps"
-ICON_ROOT = PS_ROOT / "other" / "resouce"
 OUTPUT_ROOT = ROOT / "aibp" / "_bp_resource_contact_sheets"
 RECORD_ICON_ROOT = ROOT / "record" / "assets" / "resource-icons"
 C45_OUTPUT_ROOT = ROOT / "aibp" / "_bp_resource_contact_sheets_c45"
@@ -145,17 +144,19 @@ def fit(image, size):
 
 
 def make_legend():
-    icons = sorted(
-        path for path in ICON_ROOT.glob("*.png") if path.stem != "core"
-    )
+    # Use the runtime's existing abbreviation mapping and shared record images.
+    import re
+    source = (ROOT / 'aibp/bp_loot_calculator_addon.js').read_text(encoding='utf8')
+    block = source.split('const RECORD_RESOURCE_KEY_MAP = {', 1)[1].split('};', 1)[0]
+    icons = sorted(re.findall(r'(\w+): "([^"]+)"', block))
     legend = Image.new("RGB", (1500, 280), "white")
     draw = ImageDraw.Draw(legend)
-    for index, path in enumerate(icons):
+    for index, (code, key) in enumerate(icons):
         x = 10 + (index % 13) * 114
         y = 10 + (index // 13) * 135
-        icon = fit(Image.open(path).convert("RGB"), (90, 90))
-        legend.paste(icon, (x + (90 - icon.width) // 2, y))
-        draw.text((x + 32, y + 94), path.stem, fill="black")
+        icon = fit(Image.open(RECORD_ICON_ROOT / f'{key}.png').convert("RGBA"), (90, 90))
+        legend.paste(icon, (x + (90 - icon.width) // 2, y), icon)
+        draw.text((x + 32, y + 94), code, fill="black")
     return legend
 
 

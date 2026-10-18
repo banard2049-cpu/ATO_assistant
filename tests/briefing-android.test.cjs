@@ -65,6 +65,17 @@ test('撤销后再次点亮的科技不重复统计首次日期，缺失日不�
   assert.equal(result.tech.unlocked[0].firstDay, '0');
 });
 
+test('briefing lists use dark-side titles while replay tree nodes keep light-side titles and dependencies', () => {
+  const local = JSON.parse(JSON.stringify(dictionary));
+  local.cards[0].backNames = { zh: '深色面设施', en: 'Dark Facility' };
+  const result = build(source([snapshot('0', ['A'], ['first', 'second'])]), map, local);
+  assert.equal(result.tech.unlocked[0].name, '深色面设施');
+  assert.equal(result.tech.pages[0].nodes[0].name, '第一项');
+  assert.equal(result.tech.pages[0].nodes[0].nameEn, 'First');
+  assert.equal(result.tech.pages[0].edges[0].sourceKey, 'first');
+  assert.equal(result.tech.unlocked[1].name, '第二项');
+});
+
 test('安卓 fetch 桥接真实简报路径与内置字典，PHP 路径不落入原生 fetch', async () => {
   const calls = [];
   const sandbox = { URL, Request, Response, document: { addEventListener() {} }, window: {

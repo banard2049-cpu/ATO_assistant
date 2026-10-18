@@ -39,16 +39,17 @@
     const name = grant.name || '所选泰坦';
     return grant.type === 'repair' ? `${name} 解除残废` : `+${Math.max(1, Number(grant.count) || 1)} ${name}`;
   }
-  function appendOperationNote(state, operation, completing, context) {
+  function appendOperationNote(state, operation, completing, context, referenceText) {
     const day = context.day;
+    const label = text => referenceText?.(context, operation.techKey, text) ?? text;
     const applied = completing && Boolean(operation.grant?.applied);
-    const parts = [completing ? (operation.scoutRestored ? '重建完成' : applied ? '已自动结算' : '已手动处理') : '使用', operation.label || `${operation.techKey} · ${operation.actionId}`];
+    const parts = [completing ? (operation.scoutRestored ? '重建完成' : applied ? '已自动结算' : '已手动处理') : '使用', label(operation.label) || `${operation.techKey} · ${operation.actionId}`];
     if (completing && operation.scoutRestored) parts.push('地图侦察船已可用');
     if (operation.grant && !operation.skipTimeline) parts.push(`${applied ? '自动结算' : '到期自动结算'}：${grantLabel(operation.grant)}`);
     if (!completing) parts.push(`代价：${paymentLabel(operation)}`);
     if (!completing && operation.tradeSummary) parts.push(`兑换：${operation.tradeSummary}`);
     if (operation.targetLabel) parts.push(`目标：${operation.targetLabel}`);
-    if (operation.rewardLabel) parts.push(operation.rewardLabel);
+    if (operation.rewardLabel) parts.push(label(operation.rewardLabel));
     if (operation.dueDay != null && !operation.skipTimeline) parts.push(`到期：D${operation.dueDay}`);
     if (Number(operation.cooldownUntilDay) > Number(operation.createdDay ?? day)) parts.push(`恢复：D${operation.cooldownUntilDay}`);
     const line = `[${new Date().toISOString()} ${context.cycleId.toUpperCase()} 第${day}天 · ${operation.noteCategory || '结构科技'}] ${parts.join('；').replace(/[\r\n]+/g, ' ')}`;
@@ -208,7 +209,7 @@
           cycleState.mapSnapshot = { ...(cycleState.mapSnapshot || {}), scoutCount: scout.count, scoutTileId: scout.tileId,
             scoutTileLabel: scout.tileId ? cycleState.mapSnapshot?.scoutTileLabel || scout.tileId : "" };
         }
-        appendOperationNote(cycleState, result.operation || result.event, completing, current);
+        appendOperationNote(cycleState, result.operation || result.event, completing, current, engine.referenceText);
         const revisions = current.campaign.sectionRevisions || {};
         const request = { userId: current.profileId, expectedAccountId: accountId,
           sections: { dashboard, record: result.record },

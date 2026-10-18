@@ -29,7 +29,7 @@ function context() {
   const c = vm.createContext({
     node, page, other, otherPage,
     MAIN_CYCLE_BY_TECH_CYCLE: { cycle1: 'c1', cycle2: 'c2', cycle3: 'c3', cycle4: 'c4', cycle5: 'c5' },
-    currentCycle: 'cycle4', viewPage: 'cycle1', currentTab: 'unlocked',
+    currentCycle: 'cycle4', viewPage: 'cycle1', currentTab: 'unlocked', treeLanguage: 'zh',
     gearRecordState: { explorationDelays: { disabledTechs: {
       c4: { 'duplicate aa@@cycle1': { receiptId: 'mountain-gate', untilDay: 31, label: '山门' } },
       c1: { 'duplicate aa@@cycle1': { receiptId: 'older', untilDay: 22, label: '山门' } },
@@ -40,6 +40,7 @@ function context() {
     accounts: { A: { name: '档案 A' } }, unlockedRecords: () => [{ page, node }, { page: otherPage, node: other }],
     pageByKey: key => key === page.key ? page : otherPage,
     displayTechName: value => value.name_zh || value.name,
+    cardsForNode: () => [],
     categoryLabel: () => '结构科技', isNegotiationNode: () => false, structureTypesForNode: () => [],
     isUnimportantNode: () => false, isLargeTechCard: () => false, isStructureNode: () => true,
     structureTypeBadgesHtml: () => '', backThumb: () => '<img>',
@@ -57,7 +58,7 @@ function context() {
     isAutoUnlockedNode: () => false, nodeRecordByName: key => key === 'duplicate aa' ? { page, node } : null,
     isConditionSatisfied: () => true,
   });
-  vm.runInContext(['nodeKey', 'explorationTechLock', 'esc', 'unlockedTechSnapshot', 'unlockedItemHtml',
+  vm.runInContext(['nodeKey', 'explorationTechLock', 'esc', 'displayTechReferenceName', 'unlockedTechSnapshot', 'unlockedItemHtml',
     'showUnlockedModal', 'showNodeModal', 'isUnlockedNode', 'isRequirementUnlocked', 'areRequirementsMet', 'isUnlockableNode'].map(fn).join('\n'), c);
   return c;
 }
@@ -122,6 +123,15 @@ test('repair completion is driven by removing the stored lock rather than by mer
   assert.equal(c.explorationTechLock('cycle1', c.node), null);
   assert.equal(c.unlockedTechSnapshot().unlocked[0].disabled, false);
   assert.equal(c.unlocked.has('duplicate aa@@cycle1'), true);
+});
+
+test('the synced snapshot carries dark-side references separately from tree display names, including merged cards', () => {
+  const c = context();
+  c.cardsForNode = () => [{ reference_name: '圆桌舰桥' }, { reference_name: '圆桌舰桥' }, { reference_name: '迷宫矿井' }];
+  const saved = c.unlockedTechSnapshot().unlocked[0];
+  assert.equal(saved.displayName, '阿尔戈技能');
+  assert.equal(saved.referenceName, '圆桌舰桥 / 迷宫矿井');
+  assert.equal(saved.key, 'duplicate aa@@cycle1');
 });
 
 test('record refresh cannot adopt a pending response after profile changes', async () => {
