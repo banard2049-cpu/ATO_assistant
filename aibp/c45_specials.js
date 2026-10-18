@@ -1309,7 +1309,7 @@
           </ul></details>
         </div>`;
       }
-      return state.special.titanX.awakened ? `<div class="c45-control wide">
+      return state.special.titanX.awakened ? `<div class="c45-control wide titan-x-awakening-note">
         <div class="c45-control-note">${state.special.titanX.awakeningWon ? "觉醒 BP 已击伤：战斗胜利，阅读 5289。" : "仅攻击觉醒 BP，损伤阈值 20。每个泰坦回合后执行 AI；瞬步额外移动 4 格。"}</div></div>` : "";
     }
     switch (currentApostle) {
