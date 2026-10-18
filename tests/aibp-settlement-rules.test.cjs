@@ -44,6 +44,7 @@ function harness(BP = pile('BP'), AI = pile('AI')) {
     clampTokenCount: (value) => Math.max(0, Math.floor(Number(value) || 0)),
     createTokenStackId: () => `token-${++tokenId}`,
     currentApostleLevel: () => 1,
+    window: { alert() {} },
     document: { createElement: () => new Element() },
     panelWrap: { querySelector: () => layer }, imageZoomCardTokens: zoom,
     c45PanelCounterKind: () => '', criticalMassThreshold: () => 99,
@@ -53,6 +54,7 @@ function harness(BP = pile('BP'), AI = pile('AI')) {
     'shuffleCards', 'insertRandom', 'drawFromSupply', 'insertPromotedCard', 'hasSupply',
     'reshuffleDiscardIfDeckEmpty', 'removeFirstMatching', 'putIntoRemovedPile',
     'removeFirstMatchingToRemoved', 'lowestLevelCard', 'removeLowestCard', 'removeLowestCardToRemoved',
+    'lowestDeckCardWithIndex', 'removeLowestCardFromDeckOnly', 'promoteSinglePile',
     'higherLevel', 'isPlainObject', 'isCriticalMassStack', 'isPerHitTokenStack',
     'tokenMergeKey', 'tokenMergeKeyForItem', 'findMergeableToken', 'normalizeTokenStacks',
     'addPanelToken', 'addAiExhaustedBonusTokens', 'promoteAiFromLevel', 'promoteAiForBpIII',
@@ -140,6 +142,24 @@ test('Escalate removes one BP only and grants no wound bonuses when exhausted', 
   assert.equal(state.BP.deck.length, 2);
   assert.equal(state.AI.removed.length, 1);
   assert.equal(state.tokens.length, 0);
+});
+
+test('non-wound BP escalation removes the lowest deck card while keeping a lower discarded BP (P54)', () => {
+  for (const action of ['performLinkedPromotion', 'promoteSinglePile']) {
+    const { ctx, state } = harness(
+      pile('BP', [card('BP', 'II', 1), card('BP', 'III', 2)], [card('BP', 'I', 3)]),
+      pile('AI', [card('AI', 'I', 1)])
+    );
+    const supplyII = state.BP.supply.II.length;
+    const supplyIII = state.BP.supply.III.length;
+    if (action === 'performLinkedPromotion') ctx.performLinkedPromotion();
+    else ctx.promoteSinglePile('BP');
+    assert.deepEqual(clone(state.BP.removed), [card('BP', 'II', 1)], action);
+    assert.deepEqual(clone(state.BP.discard), [card('BP', 'I', 3)], action);
+    assert.equal(state.BP.supply.II.length, supplyII, action);
+    assert.equal(state.BP.supply.III.length, supplyIII - 1, action);
+    assert.equal(state.BP.damage.length, 0, action);
+  }
 });
 
 test('exhausted III supplies still remove lowest AI and grant one bonus per wound (P53)', () => {

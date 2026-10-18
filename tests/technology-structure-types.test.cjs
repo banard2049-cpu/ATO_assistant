@@ -161,6 +161,57 @@ test('every structural card is classified and permanent remains independent of c
   assert.equal(shallows.type.loop_limited, true);
 });
 
+test('printed structural types and cycle scope keep Titan Care and both core projects visible after unlock', () => {
+  const dictionary = JSON.parse(fs.readFileSync(path.join(__dirname, '../technology/tech_card_dictionary.min.json'), 'utf8'));
+  const c = context();
+  c.window.ATO_TECH_PAGE_LAYOUT = [
+    { key: 'cycle1', label: '循环 I' },
+    { key: 'cycle3', label: '循环 III' },
+    { key: 'cycle4', label: '循环 IV' },
+  ];
+  c.data = c.dictionaryToAppData(dictionary);
+  c.pageByKey = key => c.data.pages.find(page => page.key === key);
+  vm.runInContext(functions(source, ['shouldShowUnlockedNode']), c);
+  for (const [key, pageKey, labels, limited] of [
+    ['antikratos project', 'cycle1', ['permanent'], false],
+    ['argo works iii', 'cycle3', ['reference'], true],
+    ['titan care', 'cycle3', ['save'], false],
+  ]) {
+    const card = dictionary.cards.find(card => card.key === key);
+    assert.equal(card.category, 'structure', key);
+    assert.ok(card.nodes.every(node => node.category === 'structure'), key);
+    assert.equal(card.type.battle_card_type, undefined, key);
+    assert.equal(card.type.loop_limited, limited, key);
+    assert.deepEqual(types.forCard(card), labels, key);
+    const page = c.pageByKey(pageKey);
+    const node = page.nodes.find(node => node.card_indexes.includes(card.index));
+    assert.equal(node.tech_category, 'structure', key);
+    c.currentCycle = pageKey;
+    assert.equal(c.shouldShowUnlockedNode({ page, node }), true, `${key} is visible in its own cycle`);
+    c.currentCycle = 'cycle4';
+    assert.equal(c.shouldShowUnlockedNode({ page, node }), !limited, `${key} follows its printed cycle scope`);
+  }
+});
+
+test('standing trade and permanent negotiation support are not listed as negotiation abilities', () => {
+  const dictionary = JSON.parse(fs.readFileSync(path.join(__dirname, '../technology/tech_card_dictionary.min.json'), 'utf8'));
+  const c = context();
+  c.window.ATO_TECH_PAGE_LAYOUT = [
+    { key: 'cycle1', label: '循环 I' },
+    { key: 'cycle5', label: '循环 V' },
+  ];
+  c.data = c.dictionaryToAppData(dictionary);
+  for (const [index, labels] of [[41, ['active']], [311, ['permanent']], [315, ['permanent']]]) {
+    const card = dictionary.cards.find(card => card.index === index);
+    assert.equal(card.type.negotiation, undefined, card.key);
+    assert.deepEqual(types.forCard(card), labels, card.key);
+    const page = c.data.pages.find(page => page.key === card.nodes[0].page);
+    const node = page.nodes.find(node => node.card_indexes.includes(index));
+    assert.equal(c.isNegotiationNode(page.key, node), false, card.key);
+    assert.deepEqual(plain(c.structureTypesForNode(page.key, node)), labels, card.key);
+  }
+});
+
 test('all 30 structural large cards have labels, while large battle cards remain excluded', () => {
   const dictionary = JSON.parse(fs.readFileSync(path.join(__dirname, '../technology/tech_card_dictionary.min.json'), 'utf8'));
   const large = dictionary.cards.filter(card => card.category === 'structure' && types.isLargeCard(card));

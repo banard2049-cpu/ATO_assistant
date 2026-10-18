@@ -88,7 +88,7 @@ add_resources("HERMESIAN_PURSUER", {
     ],
     "III": [
         {"PW": 4}, {"PW": 4, "GB": 2}, {"PW": 4},
-        {"PW": 2, "GB": 2}, {"PW": 2, "GB": 2}, {"GB": 2, "PW": 4},
+        {"PW": 2, "GB": 2}, {"PW": 2, "GB": 2}, {"GB": 4, "PW": 2},
     ],
 })
 
@@ -99,7 +99,7 @@ add_resources("ALPHA_TEMENOS", {
         {"FE": 1, "MF": 1}, {"FE": 1}, {"RA": 2},
     ],
     "III": [
-        {"FE": 1, "RA": 2}, {"FE": 1, "MF": 2}, {"MF": 1, "RA": 2},
+        {"FE": 1, "RA": 2}, {"FE": 1, "MF": 1}, {"MF": 1, "RA": 2},
         {"MF": 1, "RA": 2}, {"FE": 1, "RA": 2}, {"FE": 1, "RA": 2},
     ],
 })
@@ -124,16 +124,16 @@ add_resources("ICARIAN_HARPY", {
 
 add_resources("SUN_DESCENDANT", {
     "I": [
-        {"SM": 1}, {"WT": 2}, {"WT": 1, "SM": 1},
-        {"WT": 1}, {"FA": 1, "SM": 1}, {"FA": 1, "WT": 1},
+        {"SK": 1}, {"WT": 2}, {"WT": 1, "SK": 1},
+        {"WT": 1}, {"FA": 1, "SK": 1}, {"FA": 1, "WT": 1},
     ],
     "II": [
-        {"FA": 2, "SM": 1}, {"WT": 1, "FA": 2}, {"WT": 1, "SM": 1, "FA": 1},
-        {"FA": 2, "WT": 1}, {"WT": 1, "SM": 1, "FA": 1}, {"FA": 2, "SM": 1},
+        {"FA": 2, "SK": 1}, {"WT": 1, "FA": 2}, {"WT": 1, "SK": 1, "FA": 1},
+        {"FA": 2, "WT": 1}, {"WT": 1, "SK": 1, "FA": 1}, {"FA": 2, "SK": 1},
     ],
     "III": [
-        {"WT": 2, "FA": 4}, {"WT": 2, "FA": 4}, {"SM": 2, "FA": 4},
-        {"SM": 2, "FA": 4}, {"WT": 2, "FA": 4}, {"SM": 2, "FA": 4},
+        {"WT": 2, "FA": 4}, {"WT": 2, "FA": 4}, {"SK": 2, "FA": 4},
+        {"SK": 2, "FA": 4}, {"WT": 2, "FA": 4}, {"SK": 2, "FA": 4},
     ],
 })
 
@@ -173,7 +173,15 @@ def make_c45_legend(cycle):
 
 
 def make_sheet(apostle):
-    cards = sorted((PS_ROOT / apostle).glob(f"{apostle}_BP_*.jpg"))
+    # Card backs also match *_BP_*.jpg and would push half the fronts off the
+    # three-row canvas. Include only numbered fronts, ordered by BP tier.
+    cards = sorted(
+        (PS_ROOT / apostle).glob(f"{apostle}_BP_[I]*_[0-9][0-9][0-9].jpg"),
+        key=lambda path: (
+            {"I": 1, "II": 2, "III": 3}[path.stem.split("_BP_")[1].split("_")[0]],
+            int(path.stem.rsplit("_", 1)[1]),
+        ),
+    )
     legend = make_legend()
     sheet = Image.new("RGB", (1500, 280 + 3 * 420), "#dddddd")
     sheet.paste(legend, (0, 0))

@@ -655,6 +655,58 @@ test("Dahaka linked promotion upgrades the shared pile only once", () => {
   assert.equal(pile.removed.length, 1);
 });
 
+test("Dahaka reshuffles discarded cards when a promoted BP is the sole deck card (P52)", () => {
+  for (const tier of ["I", "II"]) {
+    const app = makeHarness("DAHAKA");
+    const pile = app.piles.DAHAKA.aibp;
+    const drawn = tier === "I" ? pile.deck[0] : pile.supply.II.pop();
+    const discarded = pile.deck.slice(1, 3);
+    pile.deck = [drawn];
+    pile.discard = discarded;
+    app.drawBp();
+    app.resolveBp("defeat");
+    assert.equal(pile.discard.length, 0, tier);
+    assert.equal(pile.deck.length, discarded.length + 1, tier);
+    for (const card of discarded) assert.ok(pile.deck.some(value => value.fileName === card.fileName), tier);
+    assert.equal(pile.damage.length, 1, tier);
+  }
+});
+
+test("Dahaka BP III escalation reshuffles after removing its lowest card from discard (P53)", () => {
+  for (const mode of ["defeat", "critical"]) {
+    const app = makeHarness("DAHAKA");
+    const pile = app.piles.DAHAKA.aibp;
+    const drawn = pile.supply.III.pop();
+    const lowest = pile.deck[0];
+    const discarded = pile.supply.II.pop();
+    pile.deck = [drawn, pile.supply.II.pop()];
+    pile.discard = [lowest, discarded];
+    app.drawBp();
+    app.resolveBp(mode);
+    assert.equal(pile.discard.length, 0, mode);
+    assert.equal(pile.removed[0].fileName, lowest.fileName, mode);
+    assert.ok(pile.deck.some(value => value.fileName === discarded.fileName), mode);
+    if (mode === "defeat") assert.equal(pile.deck.at(-1).fileName, drawn.fileName);
+    else assert.ok(!pile.deck.some(value => value.fileName === drawn.fileName));
+  }
+});
+
+test("Dahaka non-wound promotion uses the lowest card in its shared deck (P54)", () => {
+  const app = makeHarness("DAHAKA");
+  const pile = app.piles.DAHAKA.aibp;
+  const discarded = pile.deck[0];
+  const lowestInDeck = pile.supply.II.pop();
+  pile.deck = [lowestInDeck, pile.supply.III.pop()];
+  pile.discard = [discarded];
+  const supplyII = pile.supply.II.length;
+  const supplyIII = pile.supply.III.length;
+  assert.equal(app.performLinkedPromotion(), true);
+  assert.equal(pile.removed[0].fileName, lowestInDeck.fileName);
+  assert.equal(pile.discard[0].fileName, discarded.fileName);
+  assert.equal(pile.supply.II.length, supplyII);
+  assert.equal(pile.supply.III.length, supplyIII - 1);
+});
+
 test("Dahaka migrates a legacy AI save without clearing other progress", () => {
   const app = makeHarness();
   const legacy = initialState();
@@ -1549,10 +1601,15 @@ test("Titan X awakening preserves progress, survives reload, and wins without pr
   app.lastZoom.onClose();
   assert.equal(state.BP.deck.length, 1, "觉醒阶段的变招不能混入普通 BP");
   assert.equal(JSON.stringify(state.AI), ai);
-  const bytes = fs.readFileSync(path.join(__dirname, "..", "aibp", state.BP.deck[0].src));
-  const decoded = Buffer.from(require("../aibp/b4d7e218.js").decode(bytes));
-  assert.deepEqual(decoded.subarray(0, 3), Buffer.from([0xff, 0xd8, 0xff]), "加密卡图能解码为 JPEG");
-  assert.deepEqual(decoded.subarray(-2), Buffer.from([0xff, 0xd9]), "JPEG 内容完整");
+  // Private image validation is optional; all gameplay assertions also run in
+  // a clean public checkout without an installed resource pack.
+  const imagePath = path.join(__dirname, "..", "aibp", state.BP.deck[0].src);
+  if (fs.existsSync(imagePath)) {
+    const bytes = fs.readFileSync(imagePath);
+    const decoded = Buffer.from(require("../aibp/b4d7e218.js").decode(bytes));
+    assert.deepEqual(decoded.subarray(0, 3), Buffer.from([0xff, 0xd8, 0xff]), "加密卡图能解码为 JPEG");
+    assert.deepEqual(decoded.subarray(-2), Buffer.from([0xff, 0xd9]), "JPEG 内容完整");
+  }
   app.piles.TITAN_X = JSON.parse(JSON.stringify(state));
   app.renderApostle("TITAN_X");
   app.drawBp();

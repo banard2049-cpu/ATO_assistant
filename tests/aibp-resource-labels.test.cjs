@@ -8,15 +8,17 @@ const root = path.resolve(__dirname, '..');
 const clone = value => JSON.parse(JSON.stringify(value));
 const nonzero = value => Object.fromEntries(Object.entries(clone(value)).filter(([, amount]) => amount));
 
-function harness(apostle, level, index) {
+function harness(apostle, level, index, type = 'BP') {
   const element = () => ({ style: {}, appendChild() {}, addEventListener() {} });
   const ctx = vm.createContext({
     console, currentApostle: apostle,
-    piles: { [apostle]: { BP: { damage: [{ type: 'BP', level, index }], deck: [], discard: [] }, special: {} } },
+    piles: { [apostle]: { BP: { damage: [{ type, level, index,
+      ...(type === 'AI' ? { combinedAibp: true, bpLevel: level } : {}),
+    }], deck: [], discard: [] }, special: {} } },
     localStorage: { getItem: () => null },
     document: { readyState: 'complete', head: element(), body: element(),
       createElement: element, getElementById: () => null, querySelector: () => null },
-    cardFileName: card => `${apostle}_BP_${card.level}_${String(card.index).padStart(3, '0')}.jpg`,
+    cardFileName: card => `${apostle}_${card.type}_${card.bpLevel || card.level}_${String(card.index).padStart(3, '0')}.jpg`,
   });
   ctx.window = ctx;
   for (const file of ['bp_resource_map.js', 'bp_resource_map_c1_c3.js', 'bp_resource_map_c4_c5.js']) {
@@ -43,12 +45,13 @@ const correctedCards = [
   ...[3, 4, 6].map(index => ['SUN_DESCENDANT', 'III', index, { SK: 2, FA: 4 }]),
   ...[2, 3].map(index => ['CHIMERA_METASTASIOS', 'II', index, { CT: 1 }]),
   ['THE_BURDEN', 'III', 3, { RT: 2, EF: 4 }],
+  ['DAHAKA', 'III', 3, { onyxDust: 2, ireEssence: 1 }, 'AI'],
 ];
 
-for (const [apostle, level, index, resources] of correctedCards) {
-  test(`${apostle} BP ${level}-${index}: printed icons reach loot totals and record fields`, () => {
-    const ctx = harness(apostle, level, index);
-    const file = `${apostle}_BP_${level}_${String(index).padStart(3, '0')}.jpg`;
+for (const [apostle, level, index, resources, type = 'BP'] of correctedCards) {
+  test(`${apostle} ${type} ${level}-${index}: printed icons reach loot totals and record fields`, () => {
+    const ctx = harness(apostle, level, index, type);
+    const file = `${apostle}_${type}_${level}_${String(index).padStart(3, '0')}.jpg`;
     assert.deepEqual(nonzero(ctx.AIBP_BP_RESOURCE_MAP[apostle][file]), resources);
     const result = ctx.AIBP_calculateBpLoot({ multiplier: 1 });
     assert.deepEqual(nonzero(result.totals), { ...resources, ...(level === 'III' ? { core: 1 } : {}) });
@@ -65,5 +68,22 @@ for (const [apostle, level, index, resources] of correctedCards) {
       assert.equal(saved.powderedMatter, 2);
       assert.equal(saved.grotesqueBeak, 4);
     }
+    if (apostle === 'DAHAKA') {
+      assert.equal(saved['c4-onyxDust'], 2);
+      assert.equal(saved['c4-ireEssence'], 1);
+      assert.equal(saved['c4-core-dahaka'], 1);
+    }
   });
 }
+
+test('Helios explains its encounter-specific rewards without opening generic settlement or altering piles', async () => {
+  const ctx = harness('HELIOS', 'III', 1);
+  const before = clone(ctx.piles);
+  const messages = [];
+  ctx.alert = message => messages.push(message);
+  await ctx.AIBP_showBpLootDialog();
+  assert.equal(messages.length, 1);
+  assert.match(messages[0], /赫利俄斯.*故事书/);
+  assert.doesNotMatch(messages[0], /计算失败|没有找到|资源标注/);
+  assert.deepEqual(clone(ctx.piles), before);
+});

@@ -260,9 +260,15 @@ Add these script tags after the main viewer script:
     IX: 9,
     X: 10
   };
+  // P55 and the panel's resource column: these are fixed rewards at the exact
+  // printed level, separate from BP resources multiplied by the battle level.
   const APOSTLE_LEVEL_RESOURCE_BONUS = {
+    HEKATON: { 3: { RA: 3 }, 4: { RA: 12 } },
+    LABYRINTHAUROS: { 3: { RA: 3 }, 4: { RA: 12 } },
     CHIMERA_METASTASIOS: { 3: { UA: 3 }, 4: { UA: 12 } },
     CYCLONUS: { 3: { UA: 3 }, 4: { UA: 12 } },
+    HYPERTIME_ORACLE: { 3: { FA: 3 }, 4: { FA: 12 } },
+    ICARIAN_HARPY: { 3: { FA: 3 }, 4: { FA: 12 } },
     MIDASCORE: {
       3: { mutableAmbrosia: 3 },
       4: { mutableAmbrosia: 12 }
@@ -836,9 +842,9 @@ Add these script tags after the main viewer script:
     });
   }
 
-  function selectedApostleLevel() {
+  function cachedRecordApostleLevel(apostle) {
     try {
-      const level = typeof currentApostleLevel === "function" ? Number(currentApostleLevel()) : 0;
+      const level = typeof recordApostleLevels === "undefined" ? 0 : Number(recordApostleLevels[apostle]);
       return Number.isFinite(level) && level >= 1 ? Math.floor(level) : 0;
     } catch {
       return 0;
@@ -893,23 +899,17 @@ Add these script tags after the main viewer script:
   async function recordMultiplierForApostle(apostle) {
     try {
       const server = await readServerRecordState();
-      const level = recordEnemyLevel(server.state || {}, apostle, server.activeCycle);
-      if (level > 0) return level;
+      if (server.available) return recordEnemyLevel(server.state || {}, apostle, server.activeCycle);
     } catch {}
 
     const localLevel = recordEnemyLevel(readLocalRecordState(), apostle);
-    return localLevel > 0 ? localLevel : 0;
+    return localLevel > 0 ? localLevel : cachedRecordApostleLevel(apostle);
   }
 
   function getApostleLevelResourceBonus(apostle, multiplier) {
     const level = Math.floor(Number(multiplier) || 0);
-    const table = APOSTLE_LEVEL_RESOURCE_BONUS[apostle];
-    if (!table) return null;
-    const threshold = Object.keys(table)
-      .map(Number)
-      .filter((candidate) => Number.isFinite(candidate) && level >= candidate)
-      .sort((a, b) => b - a)[0];
-    return threshold === undefined ? null : { ...table[threshold] };
+    const bonus = APOSTLE_LEVEL_RESOURCE_BONUS[apostle]?.[level];
+    return bonus ? { ...bonus } : null;
   }
 
   function resourceMultiplierForApostle(apostle, multiplier) {
@@ -1086,18 +1086,16 @@ Add these script tags after the main viewer script:
     const damageCards = isChimera ? getRegularDamageCards(apostle, bp) : getAllDamageCards(bp);
     const secondaryDamageCards = getSecondaryDamageCards(apostle, bp);
     const resourceKeys = collectResourceKeys(apostle, map);
-    const selectedLevel = selectedApostleLevel();
-    const recordMultiplier = Number(options.recordMultiplier || 0);
+    const recordMultiplier = options.recordMultiplier === undefined
+      ? cachedRecordApostleLevel(apostle) : Number(options.recordMultiplier || 0);
     const manualMultiplier = Number(options.multiplier || 0);
-    const multiplier = Math.max(1, Math.floor(manualMultiplier || selectedLevel || recordMultiplier || 1));
+    const multiplier = Math.max(1, Math.floor(manualMultiplier || recordMultiplier || 1));
     const resourceMultiplier = battle.ending ? multiplier : resourceMultiplierForApostle(apostle, multiplier);
     const multiplierSource = manualMultiplier > 0
       ? "manual"
-      : selectedLevel > 0
-        ? "aibp"
-        : recordMultiplier > 0
-          ? "record"
-          : "default";
+      : recordMultiplier > 0
+        ? "record"
+        : "default";
     const regularDamageCount = damageStackCount(damageCards);
     const secondaryDamageCount = damageStackCount(secondaryDamageCards);
 
@@ -1731,7 +1729,7 @@ Add these script tags after the main viewer script:
         <div>暴击 BP III：${result.woundedBpIIICount}（核心 +${result.details.coreBonus.reduce((sum, item) => sum + Number(item.resource.core || 0), 0)}）</div>
         <div>倍率：×${result.multiplier}</div>
         ${result.ignoresLevelResourceMultiplier ? `<div>资源倍率：×${result.resourceMultiplier}（该始徒不按等级乘资源）</div>` : ""}
-        <div>倍率来源：${result.multiplierSource === "record" ? "记录表" : result.multiplierSource === "manual" ? "手动输入" : result.multiplierSource === "aibp" ? "AIBP当前始徒等级" : "默认等级 1"}</div>
+        <div>倍率来源：${result.multiplierSource === "record" ? "记录表" : result.multiplierSource === "manual" ? "手动输入" : "默认等级 1"}</div>
         ${result.chimeraBonus ? `<div>奇美拉常规损伤：${escapeHtml(String(result.regularDamageCount))}</div>` : ""}
         ${result.chimeraBonus ? `<div>奇美拉第二损伤堆：${escapeHtml(String(result.secondaryDamageCount))}</div>` : ""}
         ${result.chimeraBonus ? `<div>奇美拉奖励条件：${escapeHtml(result.chimeraBonus.rowLabel || "无")}</div>` : ""}
@@ -1960,6 +1958,10 @@ Add these script tags after the main viewer script:
 
   async function showLootDialog() {
     try {
+      if (safeGetCurrentApostle() === "HELIOS") {
+        window.alert("赫利俄斯的 BP 卡没有普通资源图标，通用战利品计算不适用于此战斗。请按当前遭遇与故事书结算奖励。");
+        return;
+      }
       if (!lootDialog) {
         lootDialog = buildLootDialog();
 
@@ -2037,7 +2039,8 @@ Add these script tags after the main viewer script:
       }
 
       const { apostle } = getCurrentApostleData();
-      const recordMultiplier = selectedApostleLevel() ? 0 : await recordMultiplierForApostle(apostle);
+      const recordMultiplier = await recordMultiplierForApostle(apostle);
+      if (safeGetCurrentApostle() !== apostle) return;
       const result = calculateBpLoot({ recordMultiplier });
       renderLootResult(lootDialog, result);
       lootDialog.showModal();

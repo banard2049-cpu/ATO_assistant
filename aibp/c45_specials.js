@@ -937,16 +937,14 @@
     } else if (card.bpLevel === "I" || card.bpLevel === "II") {
       pile.damage.push(card);
       const nextLevel = card.bpLevel === "I" ? "II" : "III";
-      const promoted = pile.supply[nextLevel].pop();
-      if (promoted) insertRandom(pile.deck, promoted);
+      insertDahakaPromotedCard(pile, nextLevel);
     } else if (mode === "critical") {
       pile.damage.push({ ...card, damageValue: 2 });
       if (pile.supply.III.length > 0) {
         const lowest = lowestDahakaCard(pile);
         if (lowest) moveDahakaCardToRemoved(pile, lowest);
         for (let index = 0; index < 2; index += 1) {
-          const promoted = pile.supply.III.pop();
-          if (promoted) insertRandom(pile.deck, promoted);
+          insertDahakaPromotedCard(pile, "III");
         }
       } else {
         pile.deck = shuffleCards(pile.deck.concat(pile.discard));
@@ -957,8 +955,7 @@
       if (pile.supply.III.length > 0) {
         const lowest = lowestDahakaCard(pile);
         if (lowest) moveDahakaCardToRemoved(pile, lowest);
-        const promoted = pile.supply.III.pop();
-        if (promoted) insertRandom(pile.deck, promoted);
+        insertDahakaPromotedCard(pile, "III");
         pile.deck.push(card);
       } else {
         pile.deck = shuffleCards(pile.deck.concat(pile.discard));
@@ -970,10 +967,22 @@
     renderAibpCards();
   }
 
-  function lowestDahakaCard(pile) {
+  function insertDahakaPromotedCard(pile, level) {
+    const promoted = pile.supply[level].pop();
+    if (!promoted) return false;
+    insertRandom(pile.deck, promoted);
+    // P52: a sole newly introduced BP brings the discard back into the deck.
+    if (pile.deck.length === 1 && pile.discard.length) {
+      pile.deck = shuffleCards(pile.deck.concat(pile.discard));
+      pile.discard = [];
+    }
+    return true;
+  }
+
+  function lowestDahakaCard(pile, deckOnly = false) {
     for (const level of ["I", "II", "III"]) {
       const card = pile.deck.find((item) => item.bpLevel === level)
-        || pile.discard.find((item) => item.bpLevel === level);
+        || (!deckOnly && pile.discard.find((item) => item.bpLevel === level));
       if (card) return card;
     }
     return null;
@@ -985,6 +994,11 @@
       const index = pile[key].findIndex((card) => cardIdentity(card) === identity);
       if (index >= 0) {
         pile.removed.push(pile[key].splice(index, 1)[0]);
+        // P53: removing from discard also shuffles the remaining discard back.
+        if (key === "discard") {
+          pile.deck = shuffleCards(pile.deck.concat(pile.discard));
+          pile.discard = [];
+        }
         return true;
       }
     }
@@ -995,13 +1009,12 @@
     ensurePiles("DAHAKA");
     const pile = piles.DAHAKA.aibp;
     if (pile.pending) return false;
-    const lowest = lowestDahakaCard(pile);
+    const lowest = lowestDahakaCard(pile, pile.deck.length > 0);
     if (!lowest || lowest.bpLevel === "III") return false;
     if (options.remember !== false) rememberUndo("DAHAKA", "AIBP");
     const nextLevel = lowest.bpLevel === "I" ? "II" : "III";
     moveDahakaCardToRemoved(pile, lowest);
-    const promoted = pile.supply[nextLevel].pop();
-    if (promoted) insertRandom(pile.deck, promoted);
+    insertDahakaPromotedCard(pile, nextLevel);
     if (options.persist !== false) savePiles();
     if (options.render !== false) renderAibpCards();
     return true;
@@ -1916,13 +1929,12 @@
       if (currentApostle !== "DAHAKA") return false;
       const pile = piles.DAHAKA.aibp;
       if (level === "I" || level === "II") {
-        const promoted = pile.supply[level === "I" ? "II" : "III"].pop();
-        if (promoted) insertRandom(pile.deck, promoted);
+        insertDahakaPromotedCard(pile, level === "I" ? "II" : "III");
       } else if (level === "III") {
         if (pile.supply.III.length) {
           const lowest = lowestDahakaCard(pile);
           if (lowest) moveDahakaCardToRemoved(pile, lowest);
-          insertRandom(pile.deck, pile.supply.III.pop());
+          insertDahakaPromotedCard(pile, "III");
         } else {
           pile.deck = shuffleCards(pile.deck.concat(pile.discard));
           pile.discard = [];

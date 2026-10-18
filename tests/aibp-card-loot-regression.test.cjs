@@ -154,6 +154,32 @@ for (const apostle of [...apostles, 'BLACKBEAK']) {
   });
 }
 
+for (const [apostle, resource, recordKey] of [
+  ['HEKATON', 'RA', 'c1-rawAmbrosia'], ['LABYRINTHAUROS', 'RA', 'c1-rawAmbrosia'],
+  ['HYPERTIME_ORACLE', 'FA', 'c3-frozenAmbrosia'], ['ICARIAN_HARPY', 'FA', 'c3-frozenAmbrosia'],
+]) {
+  test(`${apostle}: III/IV panel ambrosia survives calculation, copy, display and record settlement`, () => {
+    const ctx = harness();
+    const base = ctx.AIBP_BP_RESOURCE_MAP[apostle][`${apostle}_BP_I_001.jpg`][resource] || 0;
+    for (const [level, extra] of [[3, 3], [4, 12]]) {
+      const result = ctx.calculate(apostle, [bp('I', 1)], { multiplier: level });
+      const expected = base * level + extra;
+      assert.equal(result.totals[resource], expected);
+      assert.equal(result.details.levelBonus[0].resource[resource], extra);
+      assert.ok(ctx.copyLoot(result).includes('始徒等级奖励'));
+      const dialog = new Element();
+      ctx.renderLoot(dialog, result);
+      assert.ok(dialog.querySelector('.loot-details').innerHTML.includes('始徒等级奖励'));
+      const record = { resources: { [recordKey]: 7, bone: 2 } };
+      const saved = ctx.applyLoot(record, result);
+      assert.equal(saved.record.resources[recordKey], 7 + expected);
+      assert.equal(saved.record.resources.bone, 2);
+      assert.equal(saved.skipped.length, 0);
+      assert.equal(record.resources[recordKey], 7, 'settlement preserves the original record');
+    }
+  });
+}
+
 test('Temenos direct, SW and DW loot, a wounded III core and story resources all survive calculation, copy, record and rendering', () => {
   const ctx = harness();
   const damage = [bp('III', 1), sw(), dw()];
@@ -249,7 +275,7 @@ test('Dahaka SW and DW use the combined AI/BP deck and discard, ordered by print
 test('ambush and finale encounters keep their explicit exceptions to ordinary card loot', () => {
   const ctx = harness();
   for (const apostle of ['HEKATON', 'LABYRINTHAUROS']) {
-    const result = ctx.calculate(apostle, [bp('III', 1), sw(), dw()], { sceneId: 'ambush' },
+    const result = ctx.calculate(apostle, [bp('III', 1), sw(), dw()], { sceneId: 'ambush', multiplier: 4 },
       { deck: [bp('I', 1), bp('III', 2)] });
     assert.equal(result.battle.resourcePolicy, 'coreOnly');
     assert.deepEqual(nonzero(result.totals), { core: 1 });

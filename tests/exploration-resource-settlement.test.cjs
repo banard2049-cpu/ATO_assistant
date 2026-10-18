@@ -775,13 +775,15 @@ test('next exploration legacy partial receipts block a new whole-group settlemen
   assert.ok(block.buttons.some(node => node.textContent === '撤销记录表效果'));
 });
 
-test('Dreamwalker gains stack on the existing row and automatic Titan losses prefer that row',async()=>{
+test('Dreamwalker gains stay healthy and automatic Titan losses still prefer existing Dreamwalkers',async()=>{
   const titans=[{id:'dream',name:'梦行者',count:2,limit:1,crippled:true},
     {id:'other',name:'Other',count:2},{id:'last',name:'Last',count:1}];
   const original={cycle:'c4',resources:{},titans};
   const gained=effectRules.apply(original,'c4',[{type:'titan',amount:2}]);
-  assert.equal(gained.record.titans.length,3);assert.equal(gained.record.titans[0].count,4);
-  assert.equal(gained.record.titans[0].id,'dream');assert.equal(gained.record.titans[0].crippled,true);
+  assert.equal(gained.record.titans.length,4);
+  assert.deepEqual(gained.record.titans.slice(0,3),titans,'existing states and quantities stay unchanged');
+  const healthy=gained.record.titans.find(item=>item.name==='梦行者'&&!item.crippled);
+  assert.equal(healthy.count,2);assert.equal(healthy.crippled,false);
   assert.deepEqual(effectRules.revert(gained.record,gained.changes),original);
   for (const amount of [1,2]) {
     const lost=effectRules.apply(original,'c4',[{type:'titan',amount:-amount}]);
@@ -796,7 +798,10 @@ test('Dreamwalker gains stack on the existing row and automatic Titan losses pre
   const gainEntry=drawnEntry('9313','Titan');
   const gain=settleHarness({cycle:'c4',diplomacyBonus:0,activePiles:[[gainEntry],[]],fullRecord:{...original,fate:'0'}});
   await clickAndWait(buttonNamed(gain.ctx.createExplorationSettleBlock(gainEntry),'自动结算'));
-  assert.equal(gain.record.titans.length,3);assert.equal(gain.record.titans[0].count,3);
+  assert.equal(gain.record.titans.length,4);
+  assert.deepEqual(gain.record.titans.slice(0,3),titans);
+  const awarded=gain.record.titans.find(item=>item.name==='梦行者'&&!item.crippled);
+  assert.equal(awarded.count,1);assert.equal(awarded.crippled,false);
   const lossEntry=drawnEntry('13624','Cyclopean Shrine');
   const loss=settleHarness({cycle:'c2',activePiles:[[lossEntry],[]],fullRecord:{cycle:'c2',resources:{},renegade:'0',cycleStats:{c2:{crewCounters:{crew:3,refugees:4,captives:0}}},titans}});
   const block=loss.ctx.createExplorationSettleBlock(lossEntry);
