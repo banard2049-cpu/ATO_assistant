@@ -28,6 +28,33 @@ for (const language of ['babelian', 'siren']) {
   current.mapping[7] = 'X'; current.words['word-hello'].meaning = 'changed';
   assert.deepEqual(current.records['crypt-hello'], snapshot, 'Saved glyphs, readings, meaning and spacing are immutable snapshots');
   assert.throws(() => manual.saveReading(current, language, {id: 'crypt-stale'}), /已变化/);
+  const savedView = manual.recordView(snapshot, language, current);
+  assert.deepEqual(savedView.readings, snapshot.readings, 'Readings recorded at save time are not rewritten by later mappings');
+  assert.equal(savedView.text, 'HELLO WORLD', 'Saved spacing and already-known readings stay in place');
+  assert.equal(savedView.wordReading, '【changed】WORLD', 'Phrase meanings follow the current word notes');
+  assert.equal(savedView.filled, 0);
+  // Records saved before the cipher was solved fill in as characters are learned.
+  let partial = manual.normalize({mapping: {0: 'A'}, draft: [0, 1, 0]}, language);
+  partial = manual.formatted(partial, language, 'A [?] A');
+  partial = manual.saveReading(partial, language, {id: 'crypt-partial', title: '补全', createdAt: '2026-10-20T00:00:00Z'});
+  assert.deepEqual(partial.records['crypt-partial'].readings, ['A', '', 'A']);
+  const filled = manual.recordView(partial.records['crypt-partial'], language, {mapping: {0: 'A', 1: 'B'}});
+  assert.deepEqual(filled.readings, ['A', 'B', 'A'], 'Unknown glyphs use the mapping learned after saving');
+  assert.equal(filled.text, 'A B A', 'Filled glyphs keep the saved spacing');
+  assert.equal(filled.wordReading, 'ABA');
+  assert.equal(filled.filled, 1);
+  const cleared = manual.recordView(partial.records['crypt-partial'], language, {mapping: {0: 'A'}});
+  assert.deepEqual(cleared.readings, ['A', '', 'A'], 'Clearing the mapping returns the unknown marker');
+  assert.equal(cleared.text, 'A [?] A');
+  assert.equal(cleared.filled, 0);
+  const phrase = manual.recordView(partial.records['crypt-partial'], language, {mapping: {0: 'A', 1: 'B'}, words: {preload: {glyphs: [0, 1], meaning: 'AB'}}});
+  assert.equal(phrase.wordReading, '【AB】A', 'Phrase notes learned later annotate old records');
+  const unformatted = manual.recordView({tokens: [0, 1, 0], readings: ['A', '', 'A'], text: 'A[?]A'}, language, {mapping: {0: 'A', 1: 'B'}});
+  assert.equal(unformatted.text, 'ABA', 'A record saved without segmentation joins its filled characters');
+  const mixed = manual.recordView({tokens: [0, 1, 2], readings: ['HE', 'L', ''], text: 'HE L [?]'}, language, {mapping: {0: 'HE', 1: 'L', 2: 'LO'}});
+  assert.equal(mixed.text, 'HE L LO', 'Multi-character readings keep their place in the saved segmentation');
+  const broken = manual.recordView({tokens: [0, 1], readings: ['A', ''], text: 'not the source'}, language, {mapping: {0: 'A', 1: 'B'}});
+  assert.equal(broken.text, 'AB', 'A saved text that no longer matches falls back to the live transcript');
   assert.deepEqual(manual.normalize(JSON.parse(JSON.stringify(current)), language), current, 'Campaign backup restores glyphs and word notes');
   let unknown = {...empty, draft: [0, 0, ' ', 1, '\n', 0], mapping: {0: '0'}};
   assert.equal(manual.transcript(unknown, language).text, '00 [?]\n0');
@@ -47,4 +74,4 @@ for (const language of ['babelian', 'siren']) for (const glyph of manual.catalog
   const file = path.join(__dirname, '../story', glyph.src);
   assert.equal(fs.readFileSync(file).subarray(1, 4).toString(), 'PNG', `Missing original glyph ${glyph.src}`);
 }
-console.log('PASS manual Babelian/Siren: original glyph assets, learned mappings, repeated/unknown glyphs, word groups, offline segmentation, immutable snapshots and backup recovery.');
+console.log('PASS manual Babelian/Siren: original glyph assets, learned mappings, repeated/unknown glyphs, word groups, offline segmentation, immutable snapshots, live fill-in of saved records and backup recovery.');

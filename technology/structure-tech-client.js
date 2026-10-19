@@ -39,6 +39,18 @@
     const name = grant.name || '所选泰坦';
     return grant.type === 'repair' ? `${name} 解除残废` : `+${Math.max(1, Number(grant.count) || 1)} ${name}`;
   }
+  // Payment-first choices in merged voyage groups: one box per cost resource.
+  const resourceChoices = {
+    priests: { label: '祭司', icon: 'record/assets/resource-icons/priests.png' },
+    crew: { label: '船员', icon: 'assets/icons/crew.svg' },
+    hull: { label: '船体', icon: 'assets/icons/hull.svg' },
+    fate: { label: '命运', icon: 'assets/icons/argo-fate.svg' },
+    babelianDebt: { label: '巴比伦债务', icon: 'assets/icons/babelian-debt.svg' },
+    frozenTime: { label: '凝固时光', icon: 'assets/icons/frozen-time.svg' },
+    paradox: { label: '悖论', icon: 'assets/icons/paradox.svg' },
+    refugees: { label: '难民', icon: 'assets/icons/refugees.svg' },
+    captives: { label: '俘虏', icon: 'assets/icons/captives.svg' },
+  };
   function appendOperationNote(state, operation, completing, context, referenceText) {
     const day = context.day;
     const label = text => referenceText?.(context, operation.techKey, text) ?? text;
@@ -71,7 +83,9 @@
     return { profileId: target.profileId, cycleId: target.cycleId };
   }
   function create(options = {}) {
-    const transport = options.fetch || root.fetch?.bind(root);
+    // Resolve fetch at call time: the dashboard may wrap window.fetch after this
+    // client is created (request logging, offline detection, tests).
+    const transport = options.fetch || (typeof root.fetch === 'function' ? ((url, init) => root.fetch(url, init)) : null);
     const session = options.session || root.ATO_CAMPAIGN_SESSION?.create();
     if (!transport || !session) throw fail('科技自动化连接模块未加载，请刷新页面。', 'CLIENT_UNAVAILABLE');
     const rules = () => options.rules || root.ATO_STRUCTURE_TECH_RULES;
@@ -148,7 +162,7 @@
         let channel;
         try {
           channel = typeof root.BroadcastChannel === 'function' ? new root.BroadcastChannel(name) : null;
-          channel?.postMessage({ revision: campaign.sectionRevisions?.[section] || 0, source: 'structure-tech' });
+          channel?.postMessage({ revision: campaign.sectionRevisions?.[section] || 0, source: 'structure-tech', pageId: options.pageId });
         } catch { /* Polling/focus sync also observes the new revisions. */ }
         finally { channel?.close(); }
       }
@@ -177,7 +191,7 @@
       return { campaign: context.campaign, operation: operation || receipt?.operation || receipt,
         receipt: receipt || operation, operationId, duplicate: true };
     }
-    async function transact(target, completing) {
+    async function transact(target, completing, options = {}) {
       // Bind mutable caller inputs before the first asynchronous read.
       target = { ...target, selection: copy(target.selection || {}) };
       contextTarget(target);
@@ -187,8 +201,13 @@
       }
       const engine = rules();
       if (!engine?.prepareOperation || !engine?.completeOperation) throw fail('科技自动化规则未加载，请刷新页面。', 'RULES_UNAVAILABLE');
-      let current = await load(target);
-      for (let attempt = 0; attempt < 3; attempt += 1) {
+      // Callers that already hold a fresh context can pass it in: the transaction
+      // then reuses it instead of re-reading the whole campaign. Such a caller
+      // supplies its own local dashboard/record draft, so a conflict must be
+      // surfaced instead of retrying with a possibly stale draft.
+      let current = options.current || await load(target);
+      const maxAttempts = options.current ? 1 : 3;
+      for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
         assertSession();
         const previous = existing(current, operationId, completing, target);
         if (previous) { broadcast(current.campaign); return previous; }
@@ -242,6 +261,7 @@
           throw fail(error.message || '连接中断，请恢复连接后重试。', error.code || 'NETWORK_ERROR');
         }
         if (response.status === 409 && payload?.code === 'SAVE_CONFLICT') {
+          if (options.current) throw fail('其他页面同时修改了存档，请重试。', 'SAVE_CONFLICT');
           current = await load(target);
           continue;
         }
@@ -270,7 +290,13 @@
         committed.sectionRevisions = { ...revisions, ...payload.sections };
         committed.updatedAt = payload.updatedAt || committed.updatedAt;
         let latest = committed;
-        try { latest = await readCampaign(); } catch (error) { if (error.code === 'ACCOUNT_MISMATCH') throw error; }
+        // The revision-checked POST already confirms this exact draft. A caller
+        // that immediately finishes a round can use it without downloading the
+        // whole campaign again. Uncertain responses still take the recovery
+        // path above, regardless of this option.
+        if (options.refreshAfterCommit !== false) {
+          try { latest = await readCampaign(); } catch (error) { if (error.code === 'ACCOUNT_MISMATCH') throw error; }
+        }
         broadcast(latest);
         return { campaign: latest, operation: result.operation || result.event, receipt: result.receipt, operationId };
       }
@@ -278,7 +304,8 @@
       if (committed) return committed;
       throw fail('其他页面持续修改存档，请稍后重试。', 'SAVE_CONFLICT');
     }
-    const client = { load, submit: target => transact(target, false), complete: target => transact(target, true),
+    const client = { load, submit: (target, options) => transact(target, false, options),
+      complete: (target, options) => transact(target, true, options),
       createActionPanel: panelOptions => createActionPanel({ rules: rules(), ...panelOptions, client }),
       getActionPanel: panelOptions => createActionPanel({ rules: rules(), ...panelOptions, client }) };
     return client;
@@ -290,7 +317,9 @@
     if (!client) throw fail('科技操作面板缺少连接。', 'CLIENT_UNAVAILABLE');
     const panel = doc.createElement('div');
     panel.className = 'structure-tech-actions';
-    const compactGroups = options.scope === 'voyage' && !options.techKey;
+    // Negotiation uses the same collapsible rows as the voyage technology list:
+    // the reminder itself stays a summary, and every ability becomes a details row.
+    const compactGroups = (options.scope === 'voyage' || options.scope === 'negotiation') && !options.techKey;
     const disclosures = new Map();
     const initiallyExpanded = new Set(options.expandedGroups || []);
     if (compactGroups) panel.dataset.layout = 'grouped';
@@ -383,7 +412,9 @@
         body.replaceChildren();
         status.textContent = groups.length ? '' : options.scope === 'negotiation' ? '当前循环没有已解锁的谈判能力。' : options.scope === 'exploration' ? '当前探索没有可用的科技能力。' : '当前没有可用的科技能力。';
         status.dataset.state = '';
-        if (compactGroups) {
+        if (compactGroups && options.scope === 'negotiation') {
+          for (const group of groups) renderActionGroup(group, engine, body, expanded);
+        } else if (compactGroups) {
           const categories = [
             { title: '泰坦与英雄', groups: [] },
             { title: '贸易与航行', groups: [] },
@@ -482,6 +513,19 @@
           'voyage:loop-effect': '立即结算轮回效果',
           'exploration-tech:salvage operations': '抽探索卡，按奖励条件结算',
           'exploration-tech:argo initiative': '将招募行动加入探索牌堆',
+          'negotiation:sustainable oasis': '绿洲休整、消债或生产梦行者',
+          'negotiation:curse exchange': '用命运与债务换取休整、船员或船体',
+          'negotiation:plutocratic diplomacy': '用资源或债务改善外交',
+          'negotiation:the dreamed torus': '绿洲消债或治疗诅咒',
+          'negotiation:grassroots diplomacy': '改善当地或任意派系外交',
+          'negotiation:curse economy basics': '用诅咒卡减少巴比伦债务',
+          'negotiation:temporal aegis': '降低悖论',
+          'negotiation:alliance contacts': '改善当地外交',
+          'negotiation:grassroot support': '获得进展',
+          'negotiation:scientific debunking': '降低猜忌',
+          'negotiation:cyclades information circulation': '获得进展与猜忌',
+          'negotiation:moirai rebellion': '降低阿尔戈号命运',
+          'negotiation:atlantean maintenance procedures': '修复船体',
         })[group.id] || actions[0].effectLabel || actions[0].rewardLabel || actions[0].label || '查看科技能力';
       const actionContext = context;
       const renderGeneration = generation;
@@ -536,31 +580,44 @@
       sources.sort((a, b) => Number(b.actions.some(available)) - Number(a.actions.some(available)) || b.tier - a.tier);
       const sourceLabel = item => item.sourceLabel || item.title || item.techKey;
       const breeding = actions.every(item => item.sacrifice && item.models?.length);
+      const recruitment = compactGroups && group.id === 'voyage:recruitment';
       let source = sources[0], action = null;
-      let sourceNode = null, modeNode = null, modelNode = null, selectedModel = '';
-      let controls = [], tradeControls = [], automaticSelection = {};
-      let pendingId = null, pendingSignature = null, busy = false;
+      let sourceNode = null, sourceSummary = null, modeNode = null, modelNode = null, selectedModel = '';
+      let controls = [], tradeControls = [], automaticSelection = {}, tradeDraft = [], updateTrade = null, choiceCards = [];
+      let pendingId = null, pendingSignature = null, busy = false, actionTiles = false;
+      const modelCards = [], actionCards = [], sourcePicks = [], recruitmentChoices = [];
+      let modeCards = [];
+      // Resource payments (Alliance Contacts and friends) render as clickable
+      // tiles, but keep their hidden number inputs as the validated value.
+      let resourcePayment = null, resourceTiles = [], resourceHistory = [];
       cardTitle.addEventListener('click', () => showCardImages(breeding && !selectedModel ? sources : [source],
         compactGroups ? group.title || sourceLabel(source) : title.textContent));
       const selection = () => {
         const selected = { ...automaticSelection,
           ...Object.fromEntries(controls.map(({ key, node }) => [key, node.type === 'checkbox' ? node.checked : node.value])) };
         if (modelNode) selected.resultTitan = modelNode.value;
-        if (action?.trade) selected.trades = tradeControls.map(({ route, count }) => ({ routeId: route.value, count: Number(count.value) }))
-          .filter(item => item.routeId || item.count > 0);
+        if (action?.trade) selected.tradeSteps = tradeDraft.flatMap(batch => batch.steps.map(step => ({ ...step })));
         return selected;
       };
-      const allControls = () => [sourceNode, modeNode, modelNode, ...controls.map(({ node }) => node), ...tradeControls.flatMap(({ route, count }) => [route, count])].filter(Boolean);
-      function selector(labelText, name) {
+      const allControls = () => [sourceNode, modeNode, modelNode, ...controls.map(({ node }) => node), ...tradeControls, ...choiceCards.map(item => item.button), ...modelCards.map(item => item.button), ...modeCards.map(item => item.button), ...actionCards.map(item => item.button), ...sourcePicks.map(item => item.button), ...recruitmentChoices.map(item => item.button)].filter(Boolean);
+      function selector(labelText, name, container = form) {
         const label = doc.createElement('label');
-        label.className = 'structure-tech-action-choice';
+        label.className = container === sourceCaption ? 'structure-tech-action-source-choice' : 'structure-tech-action-choice';
         const node = doc.createElement('select'); node.name = name;
         label.append(doc.createTextNode(`${labelText} `), node);
-        form.appendChild(label);
+        container.appendChild(label);
+        node.choiceLabel = label;
         return node;
       }
       if (breeding) {
         modelNode = selector('生产泰坦', 'resultTitan');
+        modelNode.hidden = true;
+        const modelLabel = form.children[form.children.length - 1]; modelLabel.hidden = true;
+        const gallery = doc.createElement('div'); gallery.className = 'structure-tech-visual-choice structure-tech-titan-models';
+        const heading = doc.createElement('strong'); heading.textContent = '生产泰坦';
+        const tiles = doc.createElement('div'); tiles.className = 'structure-tech-visual-options';
+        tiles.setAttribute('role', 'group'); tiles.setAttribute('aria-label', '生产泰坦');
+        gallery.append(heading, tiles); form.appendChild(gallery);
         const placeholder = doc.createElement('option'); placeholder.value = ''; placeholder.textContent = '请选择要生产的泰坦…'; modelNode.appendChild(placeholder);
         const models = new Map();
         for (const item of sources) for (const option of item.actions[0].choices?.find(choice => choice.id === 'resultTitan')?.options || []) {
@@ -571,16 +628,33 @@
           const reason = item.source.actions.find(value => value.reason)?.reason;
           option.textContent = `${item.label}${item.source.actions.some(available) ? '' : `（${reason || '当前不可用'}）`}`;
           modelNode.appendChild(option);
+          const pick = doc.createElement('button'); pick.type = 'button'; pick.className = 'structure-tech-visual-option';
+          pick.name = `choice:resultTitan:${item.value}`;
+          pick.title = option.textContent;
+          pick.dataset.available = String(item.source.actions.some(available));
+          const portrait = doc.createElement('img'); portrait.alt = ''; portrait.className = 'structure-tech-titan-portrait';
+          const path = `technology/images/titans/${encodeURIComponent(item.value)}.png?v=20261019-tts-portrait1`;
+          portrait.src = baseUrl ? new URL(path, baseUrl).href : `/${path}`;
+          const caption = doc.createElement('span'); caption.textContent = item.label;
+          const note = doc.createElement('small'); note.textContent = item.source.actions.some(available) ? sourceLabel(item.source) : reason || '当前不可用';
+          portrait.addEventListener('error', () => { portrait.hidden = true; });
+          pick.append(portrait, caption, note); tiles.appendChild(pick);
+          modelCards.push({ button: pick, value: String(item.value) });
+          pick.addEventListener('click', () => {
+            if (busy || pick.disabled) return;
+            modelNode.value = String(item.value); selectModel();
+          });
         }
-        modelNode.addEventListener('change', () => {
+        function selectModel() {
           if (busy) { modelNode.value = selectedModel; return; }
           const previous = selection(), previousMode = action?.id || action?.actionId;
           selectedModel = modelNode.value;
           source = sources.find(item => item.actions.some(value => value.models?.includes(selectedModel))) || sources[0];
           configureSource(previous, previousMode);
-        });
+        }
+        modelNode.addEventListener('change', selectModel);
       } else if (sources.length > 1) {
-        sourceNode = selector('科技来源', 'techSource');
+        sourceNode = compactGroups ? selector('来源：', 'techSource', sourceCaption) : selector('科技来源', 'techSource');
         for (const item of sources) {
           const option = doc.createElement('option'); option.value = item.techKey;
           const reason = item.actions.find(value => value.reason)?.reason;
@@ -593,6 +667,85 @@
           source = sources.find(item => item.techKey === sourceNode.value) || sources[0];
           configureSource();
         });
+        if (compactGroups && group.id === 'voyage:fate') {
+          // Only 调整命运 shows one box per printed payment (the source card
+          // and its fate change sit underneath). Every other merged group,
+          // including 泰坦强化 and 贸易, keeps its normal source dropdown.
+          const primary = value => Object.keys(value.cost || {})[0] || '';
+          const flattened = sources.flatMap(item => item.actions.map(next => ({ source: item, action: next, resource: primary(next) })));
+          const resources = flattened.map(item => item.resource);
+          if (resources.every(Boolean) && new Set(resources).size === resources.length) {
+            actionTiles = true;
+            if (sourceNode.choiceLabel) sourceNode.choiceLabel.hidden = true;
+            sourceNode.hidden = true;
+            sourceSummary = doc.createElement('span');
+            sourceCaption.appendChild(sourceSummary);
+            const gallery = doc.createElement('div');
+            gallery.className = 'structure-tech-visual-choice structure-tech-source-choice';
+            const heading = doc.createElement('strong'); heading.textContent = '选择代价';
+            const tiles = doc.createElement('div'); tiles.className = 'structure-tech-visual-options';
+            tiles.setAttribute('role', 'group'); tiles.setAttribute('aria-label', heading.textContent);
+            for (const item of flattened) {
+              const sourceItem = item.source;
+              const usable = available(item.action);
+              const pick = doc.createElement('button'); pick.type = 'button'; pick.className = 'structure-tech-visual-option';
+              pick.name = `choice:voyageAction:${item.action.id || item.action.actionId}`;
+              pick.dataset.available = String(usable);
+              pick.title = [item.action.label, item.action.description, usable ? '' : item.action.reason || '当前不可用',
+                sourceLabel(sourceItem)].filter(Boolean).join('；');
+              const meta = resourceChoices[item.resource] || { label: item.action.label || item.resource, icon: 'assets/icons/technology.svg' };
+              const image = doc.createElement('img'); image.alt = ''; image.className = 'structure-tech-source-icon';
+              image.src = baseUrl ? new URL(meta.icon, baseUrl).href : `/${meta.icon}`;
+              const fallback = doc.createElement('span'); fallback.className = 'structure-tech-choice-fallback';
+              fallback.textContent = meta.label.slice(0, 1); fallback.hidden = true;
+              image.addEventListener('error', () => { image.hidden = true; fallback.hidden = false; });
+              const text = doc.createElement('span'); text.className = 'structure-tech-source-text';
+              const caption = doc.createElement('span'); caption.textContent = meta.label;
+              // The printed effect matters as much as the card: 消除偶然性 pays
+              // 1 crew/hull for −2 fate, while 被遗弃的方舟 pays 1 priest for −1.
+              const effect = Object.entries(item.action.effects || {})
+                .map(([type, amount]) => `${resourceChoices[type]?.label || type} ${amount > 0 ? '+' : ''}${amount}`).join('；');
+              const note = doc.createElement('small');
+              note.textContent = [`来源：${sourceLabel(sourceItem)}`, effect].filter(Boolean).join(' · ');
+              text.append(caption, note); pick.append(image, fallback, text);
+              pick.addEventListener('click', () => {
+                if (busy || pick.disabled) return;
+                sourceNode.value = sourceItem.techKey; source = sourceItem;
+                configureSource({}, item.action.id || item.action.actionId);
+              });
+              actionCards.push({ button: pick, sourceKey: sourceItem.techKey, actionId: item.action.id || item.action.actionId });
+              tiles.appendChild(pick);
+            }
+            gallery.append(heading, tiles); form.appendChild(gallery);
+          }
+        }
+        if (compactGroups && group.id !== 'voyage:fate') {
+          // Every compact merged group keeps the “来源：” row and replaces its
+          // dropdown with side-by-side buttons for the usable source cards
+          // (泰坦强化、贸易、恢复力量…). 调整命运 has its own payment boxes.
+          sourceNode.hidden = true;
+          const chooser = doc.createElement('span');
+          chooser.className = 'structure-tech-source-toggle';
+          chooser.setAttribute('role', 'group');
+          chooser.setAttribute('aria-label', '来源科技');
+          for (const item of sources) {
+            const usable = item.actions.some(available);
+            const reason = item.actions.find(value => value.reason)?.reason;
+            const pick = doc.createElement('button'); pick.type = 'button';
+            pick.className = 'structure-tech-source-pick';
+            pick.name = `choice:techSource:${item.techKey}`;
+            pick.textContent = sourceLabel(item);
+            pick.dataset.available = String(usable);
+            pick.title = [sourceLabel(item), usable ? '' : reason || '当前不可用'].filter(Boolean).join('；');
+            pick.addEventListener('click', () => {
+              if (busy || pick.disabled || sourceNode.value === item.techKey) return;
+              sourceNode.value = item.techKey; source = item; configureSource();
+            });
+            sourcePicks.push({ button: pick, value: item.techKey });
+            chooser.appendChild(pick);
+          }
+          sourceCaption.appendChild(chooser);
+        }
       }
       const modeContainer = doc.createElement('div');
       modeContainer.className = 'structure-tech-action-mode';
@@ -600,6 +753,123 @@
       const fields = doc.createElement('div');
       fields.className = 'structure-tech-action-fields';
       form.appendChild(fields);
+      const breedingSettings = breeding ? doc.createElement('div') : null;
+      if (breedingSettings) {
+        breedingSettings.className = 'structure-tech-breeding-settings';
+        breedingSettings.append(modeContainer, fields);
+        row.appendChild(breedingSettings);
+      }
+      // Alliance Contacts and the other resource payments read better as
+      // clickable tiles: one click invests one point, and the hidden number
+      // input remains the single value the rules validate.
+      function resourcePaymentBox(spec) {
+        if (resourcePayment) return resourcePayment;
+        const box = doc.createElement('div');
+        box.className = 'structure-tech-resource-payment';
+        const head = doc.createElement('div');
+        head.className = 'structure-tech-resource-payment-head';
+        const heading = doc.createElement('strong');
+        heading.textContent = '投入资源';
+        const state = doc.createElement('span');
+        state.className = 'structure-tech-resource-payment-total';
+        head.append(heading, state);
+        const list = doc.createElement('div');
+        list.className = 'structure-tech-resource-tiles';
+        list.setAttribute('role', 'group');
+        list.setAttribute('aria-label', '投入资源');
+        const footer = doc.createElement('div');
+        footer.className = 'structure-tech-resource-payment-actions';
+        const undo = doc.createElement('button');
+        undo.type = 'button'; undo.name = 'payUndo'; undo.textContent = '撤销投入';
+        const clear = doc.createElement('button');
+        clear.type = 'button'; clear.name = 'payClear'; clear.textContent = '清空投入';
+        const hint = doc.createElement('span');
+        hint.className = 'structure-tech-resource-payment-hint';
+        hint.textContent = '点击资源图标投入 1 个';
+        footer.append(undo, clear, hint);
+        box.append(head, list, footer);
+        fields.appendChild(box);
+        resourcePayment = { box, list, state, undo, clear,
+          required: Number.isInteger(spec.tileTotal) ? spec.tileTotal : null,
+          fromFaction: spec.tileTotalFrom === 'faction' };
+        undo.addEventListener('click', () => {
+          if (busy || undo.disabled) return;
+          const item = resourceHistory.pop();
+          if (item) item.node.value = String(Math.max(0, (Number(item.node.value) || 0) - 1));
+          preview();
+        });
+        clear.addEventListener('click', () => {
+          if (busy || clear.disabled) return;
+          for (const item of resourceTiles) item.node.value = '0';
+          resourceHistory = [];
+          preview();
+        });
+        return resourcePayment;
+      }
+      function payTotal() {
+        return resourceTiles.reduce((sum, item) => sum + (Number(item.node.value) || 0), 0);
+      }
+      function payRequired() {
+        if (!resourcePayment) return null;
+        if (!resourcePayment.fromFaction) return resourcePayment.required;
+        const faction = selection().faction;
+        const value = faction ? engine.factionRelation?.(actionContext, faction) : null;
+        return Number.isInteger(value) && value >= 0 ? value : null;
+      }
+      function updateResourcePayment() {
+        if (!resourcePayment) return;
+        const required = payRequired(), total = payTotal();
+        resourcePayment.state.textContent = required === null ? `已投入 ${total}` : `已投入 ${total} / ${required}`;
+        resourcePayment.state.dataset.complete = String(required !== null && total === required);
+        for (const item of resourceTiles) {
+          const count = Number(item.node.value) || 0, stock = item.spec.tile.stock;
+          item.count.textContent = String(count);
+          item.button.dataset.count = String(count);
+          item.button.dataset.available = String(stock > 0);
+          item.button.setAttribute('aria-pressed', String(count > 0));
+          item.button.setAttribute('aria-label', `${item.spec.tile.name}，库存 ${stock}，已投入 ${count}`);
+          item.button.disabled = busy || stock <= 0;
+        }
+        resourcePayment.undo.disabled = busy || !resourceHistory.length;
+        resourcePayment.clear.disabled = busy || !total;
+      }
+      function resourceTile(spec, node) {
+        const box = resourcePaymentBox(spec);
+        const button = doc.createElement('button');
+        button.type = 'button';
+        button.className = 'structure-tech-resource-tile';
+        button.name = `choice:${spec.id}`;
+        button.dataset.count = '0';
+        const image = doc.createElement('img');
+        image.className = 'structure-tech-resource-icon';
+        image.alt = '';
+        const path = `record/assets/resource-icons/${encodeURIComponent(spec.tile.resource)}.png`;
+        image.src = baseUrl ? new URL(path, baseUrl).href : `/${path}`;
+        image.addEventListener('error', () => { image.hidden = true; });
+        const name = doc.createElement('span');
+        name.className = 'structure-tech-resource-name';
+        name.textContent = spec.tile.name;
+        const stock = doc.createElement('span');
+        stock.className = 'structure-tech-resource-stock';
+        stock.textContent = `库存 ${spec.tile.stock}`;
+        const count = doc.createElement('span');
+        count.className = 'structure-tech-resource-count';
+        count.textContent = '0';
+        button.append(image, name, stock, count);
+        button.addEventListener('click', () => {
+          if (busy || button.disabled) return;
+          const current = Number(node.value) || 0, required = payRequired();
+          if (current >= spec.tile.stock) return;
+          if (required !== null && payTotal() >= required) return;
+          node.value = String(current + 1);
+          resourceHistory.push({ node });
+          preview();
+        });
+        node.hidden = true;
+        box.list.appendChild(button);
+        box.box.appendChild(node);
+        resourceTiles.push({ spec, node, button, count });
+      }
       function field(spec, confirmation, previous) {
         const label = doc.createElement('label');
         label.className = 'structure-tech-action-choice';
@@ -622,6 +892,45 @@
         if (confirmation) label.append(node, doc.createTextNode(spec.label));
         else label.append(doc.createTextNode(`${spec.label} `), node);
         controls.push({ key: spec.id, node });
+        node.choiceLabel = label;
+        if (!confirmation && spec.tile) {
+          node.addEventListener('input', preview);
+          node.addEventListener('change', preview);
+          resourceTile(spec, node);
+          return;
+        }
+        if (recruitment && (spec.id === 'checkResult' || spec.id === 'convertRefugee')) { label.hidden = true; node.hidden = true; }
+        if (!confirmation && spec.type === 'select' && (action.choices || []).length === 1
+          && (action.target === 'hero' && spec.id === 'targetId' || spec.id === 'titanId' || action.rebuild && spec.id === 'payment')) {
+          const group = doc.createElement('div'); group.className = 'structure-tech-visual-choice';
+          const heading = doc.createElement('strong'); heading.textContent = spec.label;
+          const list = doc.createElement('div'); list.className = 'structure-tech-visual-options';
+          list.setAttribute('role', 'group'); list.setAttribute('aria-label', spec.label);
+          label.hidden = true; node.hidden = true;
+          for (const option of spec.options || []) {
+            const pick = doc.createElement('button'); pick.type = 'button'; pick.className = 'structure-tech-visual-option';
+            pick.name = `choice:${spec.id}:${option.value}`;
+            const heroes = Array.isArray(actionContext.heroes) ? actionContext.heroes : actionContext.heroes?.heroes || [];
+            const hero = spec.id === 'targetId' && action.target === 'hero' ? heroes.find(item => String(item.id) === String(option.value)) : null;
+            const portraits = { odys: '01', circe: '02', phenelope: '03', telebac: '04', herakleides: '05', olympia: '06', leocules: '07', raz: '08', fisher: '09', hypatia: '17', anakreon: '18', anathea: '19', orphan: '20', aster: '21', dastan: '22', aktisaeos: '23', oleander: '24', omorfos: '25' };
+            const argonaut = hero?.argonaut;
+            const portrait = portraits[argonaut] ? `argonaut_${portraits[argonaut]}_${argonaut}.png`
+              : /^blank1[0-6]$/.test(argonaut || '') ? `argonaut_${argonaut.slice(5)}_blank.png` : null;
+            const resource = /^c[1-5]-/.test(String(option.value)) ? String(option.value).replace(/^c[1-5]-/, '') : null;
+            const path = hero ? portrait ? `hero/assets/${portrait}` : 'assets/icons/argonauts.svg'
+              : resource ? `record/assets/resource-icons/${encodeURIComponent(resource)}.png` : 'assets/icons/titans.svg';
+            const image = doc.createElement('img'); image.alt = ''; image.className = hero ? 'structure-tech-choice-portrait' : 'structure-tech-choice-icon';
+            image.src = baseUrl ? new URL(path, baseUrl).href : `/${path}`;
+            const fallback = doc.createElement('span'); fallback.className = 'structure-tech-choice-fallback'; fallback.textContent = option.label.slice(0, 1); fallback.hidden = true;
+            image.addEventListener('error', () => { image.hidden = true; fallback.hidden = false; });
+            const text = doc.createElement('span'); text.textContent = option.label;
+            pick.append(image, fallback, text);
+            pick.addEventListener('click', () => { if (!busy && !pick.disabled) { node.value = String(option.value); preview(); } });
+            choiceCards.push({ button: pick, node, value: String(option.value) }); list.appendChild(pick);
+          }
+          if (!spec.options?.length) { const empty = doc.createElement('p'); empty.textContent = `暂无可选${spec.label}`; list.appendChild(empty); }
+          group.append(heading, list); fields.appendChild(group);
+        }
         node.addEventListener('input', preview);
         node.addEventListener('change', () => {
           if (action.negotiation && (spec.id === 'location' || action.agents && spec.id === 'faction')) configureFields(selection());
@@ -642,6 +951,36 @@
         row.appendChild(timelineNote);
       }
       row.appendChild(button);
+      const recruitmentBox = recruitment ? doc.createElement('div') : null;
+      if (recruitmentBox) {
+        // 招聘项目: the effect is introduced on the left, and the two printed
+        // outcomes are direct action buttons on the right. Success converts one
+        // refugee; failure still pays the fate cost.
+        recruitmentBox.className = 'structure-tech-recruitment-actions';
+        button.hidden = true;
+        const outcomeButtons = doc.createElement('div');
+        outcomeButtons.className = 'structure-tech-recruitment-buttons';
+        recruitmentBox.appendChild(outcomeButtons);
+        for (const [result, text] of [['success', '转换成功'], ['failure', '转换失败']]) {
+          const pick = doc.createElement('button');
+          pick.type = 'button';
+          pick.className = 'structure-tech-recruitment-choice';
+          pick.dataset.result = result;
+          pick.name = `recruit:${result}`;
+          pick.textContent = text;
+          pick.addEventListener('click', () => {
+            if (busy || pick.disabled) return;
+            const check = controls.find(item => item.key === 'checkResult');
+            const conversion = controls.find(item => item.key === 'convertRefugee');
+            if (check) check.node.value = result;
+            if (conversion) conversion.node.value = result === 'success' ? 'yes' : 'no';
+            return execute();
+          });
+          outcomeButtons.appendChild(pick);
+          recruitmentChoices.push({ button: pick, result, convert: result === 'success' ? 'yes' : 'no' });
+        }
+        row.appendChild(recruitmentBox);
+      }
       function updatePreviewLayout() {
         if (!row.isConnected || typeof root.getComputedStyle !== 'function') return;
         delete description.dataset.wrap;
@@ -652,12 +991,21 @@
       }
       previewLayouts.set(row, updatePreviewLayout);
       function configureFields(previous = {}) {
-        controls = []; tradeControls = []; automaticSelection = {}; fields.replaceChildren();
+        // Trade results live beside the picker. Restore the shared nodes before
+        // rebuilding fields so switching to another action keeps its controls.
+        (breedingSettings || row).appendChild(description);
+        if (timelineNote) row.appendChild(timelineNote);
+        row.appendChild(button);
+        controls = []; tradeControls = []; choiceCards = []; automaticSelection = {}; updateTrade = null; tradeDraft = []; fields.replaceChildren();
+        resourcePayment = null; resourceTiles = []; resourceHistory = [];
         title.textContent = group.title
           ? [group.title, sources.length === 1 && sourceLabel(source) !== group.title ? sourceLabel(source) : ''].filter(Boolean).join(' · ')
           : [action.title, action.label].filter(Boolean).join(' · ');
         if (compactGroups) {
-          sourceCaption.textContent = breeding && !selectedModel ? '选择泰坦型号后显示来源科技' : `来源：${sourceLabel(source)}`;
+          if (sourceNode) {
+            sourceNode.title = sourceLabel(source);
+            if (sourceSummary) sourceSummary.textContent = `来源：${sourceLabel(source)}`;
+          } else sourceCaption.textContent = breeding && !selectedModel ? '选择泰坦型号后显示来源科技' : `来源：${sourceLabel(source)}`;
           title.textContent = '查看卡图';
         }
         if (summaryTitle) {
@@ -688,43 +1036,7 @@
         }
         for (const confirmation of action.confirmations || []) field(confirmation, true, previous);
         if (action.trade) {
-          const lines = doc.createElement('div'); lines.className = 'structure-tech-trade-lines';
-          const maxTrades = action.maxTrades === null ? null : action.maxTrades || 3;
-          const hint = doc.createElement('p');
-          hint.className = 'structure-tech-trade-hint';
-          hint.textContent = maxTrades === null
-            ? '选择兑换项目并填写次数；同一种置换可填写任意倍率。按下列顺序兑换，任一项不足则整次不生效。'
-            : `选择兑换项目并填写次数；同一种置换可填写任意倍率，只占用 1 类额度。本次最多选择 ${maxTrades} 类置换。按下列顺序兑换，任一项不足则整次不生效。`;
-          if (compactGroups) hint.textContent = `${maxTrades === null ? '同类置换可填写任意次数' : `最多 ${maxTrades} 类置换，同类按次数计算`}。按顺序兑换，资源不足则整次不执行。`;
-          lines.appendChild(hint);
-          for (let index = 0; index < 3; index += 1) {
-            const line = doc.createElement('div'); line.className = 'structure-tech-trade-line';
-            const routeLabel = doc.createElement('label'); routeLabel.className = 'structure-tech-action-choice';
-            const route = doc.createElement('select'); route.name = `tradeRoute${index}`;
-            const empty = doc.createElement('option'); empty.value = ''; empty.textContent = index ? '不兑换' : '请选择兑换项目…'; route.appendChild(empty);
-            for (const item of action.tradeRoutes || []) {
-              const option = doc.createElement('option'); option.value = item.id;
-              option.textContent = tradeRouteLabel(item, actionContext.record); route.appendChild(option);
-            }
-            const countLabel = doc.createElement('label'); countLabel.className = 'structure-tech-action-choice';
-            const count = doc.createElement('input'); count.type = 'number'; count.name = `tradeCount${index}`;
-            count.min = '0'; count.step = '1';
-            const prior = previous.trades?.[index]; route.value = prior?.routeId || ''; count.value = String(prior?.count ?? 0);
-            route.addEventListener('change', () => {
-              // One row per exchange category: choosing a route already used in
-              // another row moves it here instead of duplicating the category.
-              if (route.value) for (const other of tradeControls) {
-                if (other.route !== route && other.route.value === route.value) { other.route.value = ''; other.count.value = '0'; }
-              }
-              if (route.value && Number(count.value) <= 0) count.value = '1';
-              if (!route.value) count.value = '0';
-              preview();
-            });
-            count.addEventListener('input', preview); count.addEventListener('change', preview);
-            routeLabel.append(doc.createTextNode(`兑换 ${index + 1} `), route); countLabel.append(doc.createTextNode('次数 '), count);
-            line.append(routeLabel, countLabel); lines.appendChild(line); tradeControls.push({ route, count });
-          }
-          fields.appendChild(lines);
+          configureTrade();
         }
         if (action.negotiation && engine.saveReminders) {
           const effects = Object.entries(action.effects || {}).map(([type, amount]) => ({ type, amount }));
@@ -751,18 +1063,130 @@
         }
         button.textContent = action.negotiation ? '执行谈判' : action.trade ? (Number(action.days) > 0 ? '执行交易并记录冷却' : '执行交易') : action.immediate ? '使用科技能力' : '使用并添加到时间线';
         if (compactGroups) button.textContent = action.trade ? '执行交易'
-          : breeding || action.grant?.type === 'titan' ? '开始培育' : action.repair ? '开始修复' : '使用能力';
+          : action.negotiation ? '执行谈判' : breeding || action.grant?.type === 'titan' ? '开始培育'
+            : action.repair ? '开始修复' : '使用能力';
+        if (action.trade) button.textContent = '确认贸易';
         if (timelineNote) timelineNote.textContent = action.immediate || action.skipTimeline ? '执行后自动保存'
           : action.trade ? '自动记录冷却' : '自动加入时间线';
         if (disclosure) disclosure.dataset.simple = String(allControls().length === 0);
         preview();
       }
+      function configureTrade() {
+        const box = doc.createElement('div'); box.className = 'structure-tech-trade-planner';
+        const hint = doc.createElement('p'); hint.className = 'structure-tech-trade-hint';
+        hint.textContent = '选择卖出与买入资源，点击箭头加入预览，确认后统一结算。灰色资源当前无法兑换；再次点击已选资源可取消选择。同类重复兑换不额外占额度，中转按沿途种类占额度。';
+        const exchange = doc.createElement('div'); exchange.className = 'structure-tech-trade-exchange';
+        const resources = [...new Map((action.tradeRoutes || []).flatMap(route => [...(route.costs || []), ...(route.gains || [])])
+          .map(item => [item.storageKey, item])).values()];
+        let sell = '', buy = '', proposal = null;
+        const stock = key => actionContext.record?.resources?.[key] ?? 0;
+        function icon(item) {
+          const image = doc.createElement('img'); image.className = 'structure-tech-resource-icon'; image.alt = '';
+          const path = `record/assets/resource-icons/${encodeURIComponent(item.resource || item.storageKey.replace(/^c[1-5]-/, ''))}.png`;
+          image.src = baseUrl ? new URL(path, baseUrl).href : `/${path}`;
+          return image;
+        }
+        const pickers = [];
+        function picker(side, title) {
+          const column = doc.createElement('div'); column.className = 'structure-tech-trade-picker';
+          const heading = doc.createElement('strong'); heading.textContent = title; column.appendChild(heading);
+          const list = doc.createElement('div'); list.className = 'structure-tech-trade-resources';
+          list.setAttribute('role', 'group'); list.setAttribute('aria-label', title);
+          for (const item of resources) {
+            const choice = doc.createElement('button'); choice.type = 'button'; choice.className = 'structure-tech-trade-resource';
+            choice.name = `${side}:${item.storageKey}`;
+            const label = doc.createElement('span'); label.textContent = item.label || item.resource;
+            const balance = doc.createElement('small');
+            choice.append(icon(item), label, balance);
+            choice.addEventListener('click', () => {
+              if (busy || choice.disabled) return;
+              if (side === 'sell') sell = sell === item.storageKey ? '' : item.storageKey;
+              else buy = buy === item.storageKey ? '' : item.storageKey;
+              preview();
+            });
+            list.appendChild(choice); tradeControls.push(choice); pickers.push({ choice, balance, item, side });
+          }
+          column.appendChild(list); return column;
+        }
+        const arrow = doc.createElement('button'); arrow.type = 'button'; arrow.name = 'tradeAdd';
+        arrow.className = 'structure-tech-trade-arrow'; arrow.textContent = '→'; arrow.setAttribute('aria-label', '预览兑换一次');
+        arrow.addEventListener('click', () => {
+          if (busy || arrow.disabled || !proposal?.ok) return;
+          tradeDraft.push({ steps: proposal.steps.map(step => ({ ...step })) }); preview();
+        });
+        exchange.append(picker('sell', '卖出资源'), arrow, picker('buy', '买入资源'));
+        const rate = doc.createElement('p'); rate.className = 'structure-tech-trade-rate'; rate.setAttribute('aria-live', 'polite');
+        const quota = doc.createElement('p'); quota.className = 'structure-tech-trade-quota';
+        const distribution = doc.createElement('div'); distribution.className = 'structure-tech-trade-distribution';
+        distribution.setAttribute('aria-live', 'polite');
+        const history = doc.createElement('ol'); history.className = 'structure-tech-trade-history';
+        const actions = doc.createElement('div'); actions.className = 'structure-tech-trade-draft-actions';
+        const undo = doc.createElement('button'); undo.type = 'button'; undo.name = 'tradeUndo'; undo.textContent = '撤销上一步';
+        const clear = doc.createElement('button'); clear.type = 'button'; clear.name = 'tradeClear'; clear.textContent = '撤销全部';
+        undo.addEventListener('click', () => { if (!busy) { tradeDraft.pop(); preview(); } });
+        clear.addEventListener('click', () => { if (!busy) { tradeDraft = []; preview(); } });
+        actions.append(undo, clear); tradeControls.push(arrow, undo, clear);
+        const columns = doc.createElement('div'); columns.className = 'structure-tech-trade-columns';
+        const workbench = doc.createElement('div'); workbench.className = 'structure-tech-trade-workbench';
+        const results = doc.createElement('div'); results.className = 'structure-tech-trade-results';
+        const footer = doc.createElement('div'); footer.className = 'structure-tech-trade-footer';
+        if (timelineNote) footer.appendChild(timelineNote);
+        footer.append(actions, button);
+        results.append(distribution, description, footer);
+        workbench.append(exchange, rate, quota, history);
+        columns.append(workbench, results); box.append(hint, columns); fields.appendChild(box);
+        updateTrade = () => {
+          const steps = selection().tradeSteps;
+          const result = steps.length ? engine.previewTrades(action, { tradeSteps: steps }, actionContext.record) : null;
+          const changes = new Map((result?.changes || []).map(item => [item.storageKey, item]));
+          proposal = sell && buy ? engine.findTradePath(action, sell, buy, actionContext.record, steps) : null;
+          const current = new Set([...(action.tradeUsedRoutes || []), ...steps.map(step => step.routeId)]).size;
+          quota.textContent = `预览 ${tradeDraft.length} 笔 · 贸易额度 ${current} / ${action.maxTrades === null ? '不限' : action.maxTrades || 3} 类`;
+          const path = proposal?.path;
+          rate.textContent = path ? `${proposal.ok ? '最优可用比率' : '兑换比率'} ${proposal.input} : ${proposal.output} · 每次卖出 ${proposal.input} ${path[0].costs[0].label}，买入 ${proposal.output} ${path.at(-1).gains[0].label}。`
+            + `路径：${[path[0].costs[0].label, ...path.map(route => route.gains[0].label)].join(' → ')}；新增 ${proposal.extra} 类贸易额度。`
+            + (proposal.ok ? '' : ` ${proposal.message}`) : proposal?.message || '请选择卖出和买入资源，自动计算比率与中转路径。';
+          arrow.disabled = !proposal?.ok || action.disabled || action.available === false;
+          undo.disabled = clear.disabled = !tradeDraft.length;
+          for (const { choice, balance, item, side } of pickers) {
+            const selected = (side === 'sell' ? sell : buy) === item.storageKey;
+            const opposite = side === 'sell' ? buy : sell;
+            const possible = opposite ? engine.findTradePath(action, side === 'sell' ? item.storageKey : sell,
+              side === 'sell' ? buy : item.storageKey, actionContext.record, steps) : null;
+            const unavailable = action.disabled || action.available === false || possible && !possible.ok;
+            choice.setAttribute('aria-pressed', String(selected));
+            choice.dataset.available = String(!unavailable);
+            // A selected resource remains clickable so a blocked pair can
+            // always be cleared without discarding the staged transactions.
+            choice.disabled = Boolean(unavailable && !selected);
+            choice.title = [unavailable ? action.reason || possible?.message || '当前不可用' : '',
+              selected ? '再次点击取消选择' : ''].filter(Boolean).join('；');
+            balance.textContent = `${steps.length ? '预览' : '库存'} ${changes.get(item.storageKey)?.after ?? stock(item.storageKey)}`;
+          }
+          distribution.replaceChildren();
+          const heading = doc.createElement('strong'); heading.textContent = '交易后资源预览'; distribution.appendChild(heading);
+          for (const item of resources) {
+            const change = changes.get(item.storageKey), before = stock(item.storageKey), after = change?.after ?? before;
+            const line = doc.createElement('div'); line.className = 'structure-tech-trade-balance'; line.dataset.resource = item.storageKey;
+            line.dataset.direction = after > before ? 'gain' : after < before ? 'cost' : 'same';
+            const label = doc.createElement('span'); label.textContent = item.label || item.resource;
+            const value = doc.createElement('strong'); value.textContent = `${before} → ${after}${after !== before ? ` (${after > before ? '+' : ''}${after - before})` : ''}`;
+            line.append(icon(item), label, value); distribution.appendChild(line);
+          }
+          history.replaceChildren();
+          for (const batch of tradeDraft) {
+            const line = doc.createElement('li');
+            line.textContent = batch.steps.map(step => `${action.tradeRoutes.find(route => route.id === step.routeId)?.label} ×${step.count}`).join('；');
+            history.appendChild(line);
+          }
+        };
+      }
       function configureSource(previous = {}, preferredMode) {
-        modeContainer.replaceChildren(); modeNode = null;
+        modeContainer.replaceChildren(); modeNode = null; modeCards = [];
         action = source.actions.find(item => (item.id || item.actionId) === preferredMode)
           || source.actions.find(item => (item.id || item.actionId) === 'breed' && available(item))
           || source.actions.find(available) || source.actions[0];
-        if (source.actions.length > 1) {
+        if (source.actions.length > 1 && !actionTiles) {
           const label = doc.createElement('label'); label.className = 'structure-tech-action-choice';
           modeNode = doc.createElement('select'); modeNode.name = 'actionMode';
           for (const item of source.actions) {
@@ -772,18 +1196,92 @@
             modeNode.appendChild(option);
           }
           modeNode.value = action.id || action.actionId;
-          modeNode.addEventListener('change', () => {
+          function changeMode() {
             if (busy) { modeNode.value = action.id || action.actionId; return; }
             const previous = selection();
             action = source.actions.find(item => (item.id || item.actionId) === modeNode.value) || source.actions[0];
             configureFields(previous);
-          });
+          }
+          modeNode.addEventListener('change', changeMode);
           label.append(doc.createTextNode(breeding ? '生产速度 ' : '使用方式 '), modeNode); modeContainer.appendChild(label);
+          if (source.actions.every(item => item.restore)) {
+            label.hidden = true; modeNode.hidden = true;
+            const gallery = doc.createElement('div'); gallery.className = 'structure-tech-visual-choice structure-tech-action-modes';
+            const heading = doc.createElement('strong'); heading.textContent = '使用方式';
+            const tiles = doc.createElement('div'); tiles.className = 'structure-tech-visual-options';
+            tiles.setAttribute('role', 'group'); tiles.setAttribute('aria-label', '使用方式');
+            const icons = { priests: 'record/assets/resource-icons/priests.png', fate: 'assets/icons/argo-fate.svg', babelianDebt: 'assets/icons/babelian-debt.svg' };
+            for (const item of source.actions) {
+              const value = item.id || item.actionId;
+              const pick = doc.createElement('button'); pick.type = 'button'; pick.className = 'structure-tech-visual-option';
+              pick.name = `choice:actionMode:${value}`;
+              pick.dataset.available = String(available(item));
+              pick.title = [item.label, item.description, available(item) ? '' : item.reason || '当前不可用'].filter(Boolean).join('；');
+              const image = doc.createElement('img'); image.alt = ''; image.className = 'structure-tech-choice-icon';
+              const path = icons[Object.keys(item.cost || {})[0]] || 'assets/icons/godforms-summons.svg';
+              image.src = baseUrl ? new URL(path, baseUrl).href : `/${path}`;
+              const fallback = doc.createElement('span'); fallback.className = 'structure-tech-choice-fallback'; fallback.textContent = item.label.slice(0, 1); fallback.hidden = true;
+              image.addEventListener('error', () => { image.hidden = true; fallback.hidden = false; });
+              const caption = doc.createElement('span'); caption.textContent = item.label;
+              pick.append(image, fallback, caption);
+              if (!available(item)) {
+                const note = doc.createElement('small'); note.textContent = item.reason || '当前不可用'; pick.appendChild(note);
+              }
+              pick.addEventListener('click', () => {
+                if (busy || pick.disabled) return;
+                modeNode.value = value; changeMode();
+              });
+              modeCards.push({ button: pick, value }); tiles.appendChild(pick);
+            }
+            gallery.append(heading, tiles); modeContainer.appendChild(gallery);
+          }
         }
         configureFields(previous);
       }
       function preview() {
         if (busy) return;
+        for (const item of modeCards) item.button.setAttribute('aria-pressed', String(modeNode.value === item.value));
+        for (const item of modelCards) item.button.setAttribute('aria-pressed', String(modelNode.value === item.value));
+        for (const item of choiceCards) item.button.setAttribute('aria-pressed', String(item.node.value === item.value));
+        for (const item of actionCards) item.button.setAttribute('aria-pressed', String(sourceNode.value === item.sourceKey
+          && (action?.id || action?.actionId) === item.actionId));
+        for (const item of sourcePicks) item.button.setAttribute('aria-pressed', String(sourceNode.value === item.value));
+        updateTrade?.();
+        if (recruitment) {
+          description.replaceChildren();
+          const facts = doc.createElement('dl'); facts.className = 'structure-tech-action-facts';
+          const effectRow = doc.createElement('div'); effectRow.dataset.kind = 'effect';
+          const effectTerm = doc.createElement('dt'); effectTerm.textContent = '效果';
+          const effectDetail = doc.createElement('dd'); effectDetail.textContent = action.label || group.title || '';
+          effectRow.append(effectTerm, effectDetail);
+          const costParts = String(action.costLabel || action.description || '命运 +1')
+            .split('；').map(part => part.trim()).filter(Boolean);
+          const costRow = doc.createElement('div');
+          const costTerm = doc.createElement('dt'); costTerm.textContent = '代价';
+          const costDetail = doc.createElement('dd'); costDetail.textContent = costParts.shift() || '命运 +1';
+          costRow.append(costTerm, costDetail);
+          facts.append(effectRow, costRow); description.appendChild(facts);
+          if (costParts.length) {
+            const note = doc.createElement('p'); note.className = 'structure-tech-recruitment-note';
+            note.textContent = `${costParts.join('；').replace(/^外交 7\+\s*成功后，/, '')}。`;
+            description.appendChild(note);
+          }
+          let usable = false;
+          for (const item of recruitmentChoices) {
+            const chosen = { ...selection(), checkResult: item.result, convertRefugee: item.convert };
+            const outcome = (engine.previewOperation || engine.prepareOperation)({ ...actionContext, techKey: action.techKey,
+              actionId: action.id || action.actionId, selection: chosen, operationId: 'preview-recruitment-outcome' });
+            item.button.disabled = !outcome?.ok;
+            item.button.title = outcome?.ok
+              ? item.result === 'success' ? '外交 7+ 成功：将 1 难民转为 1 船员' : '外交 7+ 失败：仍支付命运'
+              : outcome?.message || '当前不可用';
+            if (outcome?.ok) usable = true;
+          }
+          button.disabled = true;
+          updateSummary(usable, usable ? '' : recruitmentChoices[0]?.button.title || '当前不可用');
+          updatePreviewLayout();
+          return;
+        }
         if (breeding && !modelNode.value) {
           description.textContent = '请选择要生产的泰坦，查看代价和完成日期。'; button.disabled = true;
           updateSummary(false, sources.some(item => item.actions.some(available)) ? '请选择型号' : action.reason || '当前不可用');
@@ -796,16 +1294,27 @@
         const preparedEvent = result?.operation || result?.event;
         // Random draws reveal their result only after a committed operation.
         const event = action.hiddenOutcome || action.draw ? preparedEvent && { ...preparedEvent, rewardLabel: '', targetLabel: '' } : preparedEvent;
-        const cost = event && !action.hiddenOutcome ? paymentLabel(event, action.costLabel) : action.costLabel;
+        // Show net resource costs: intermediate goods are already accounted for
+        // in the path, and must not appear as an additional inventory payment.
+        const costEvent = action.trade && event?.tradeChanges ? { ...event, payment: [
+          ...(event.payment || []).filter(item => item.type !== 'resource'),
+          ...event.tradeChanges.filter(item => item.amount < 0).map(item => ({ ...item, type: 'resource' })),
+        ] } : event;
+        const cost = action.negotiation && action.manualCost ? action.costLabel
+          : action.negotiation && costEvent ? paymentLabel(costEvent) || '无代价'
+            : costEvent && !action.hiddenOutcome ? paymentLabel(costEvent, action.costLabel) : action.costLabel;
         const costNode = doc.createElement('strong');
         costNode.className = 'structure-tech-action-cost';
         costNode.textContent = cost || '';
         const parts = [breeding ? `来源：${sourceLabel(source)}` : '', action.label, cost ? costNode : ''];
         // A printed effect summary sits right behind the price, so the row stays
-        // readable before the target is chosen.
-        if (action.effectLabel) parts.push(action.effectLabel);
+        // readable before the target is chosen. Negotiation rules expose the
+        // mechanical part separately, keeping the card title from repeating.
+        if (action.effectDetail) parts.push(action.effectDetail);
+        else if (action.effectLabel && action.effectLabel !== action.label) parts.push(action.effectLabel);
         if (action.scoutLabel) parts.push(action.scoutLabel);
-        const tradeSummary = (chosen.trades || []).map(trade => {
+        const tradeSummary = action.trade && event?.tradeChanges ? event.tradeChanges.filter(item => item.amount)
+          .map(item => `${item.label} ${item.amount > 0 ? '+' : ''}${item.amount}`).join('；') : (chosen.tradeSteps || chosen.trades || []).map(trade => {
           const route = action.tradeRoutes?.find(item => item.id === trade.routeId);
           return route ? `${tradeRouteLabel(route, actionContext.record)} ×${trade.count}` : '';
         }).filter(Boolean).join('；') || event?.tradeSummary;
@@ -839,8 +1348,14 @@
             item.append(term, detail); facts.appendChild(item);
           }
           fact('代价', cost || '无代价');
-          const effect = tradeSummary || event?.rewardLabel || action.effectLabel || action.rewardLabel || (action.trade ? purpose : action.label) || purpose;
-          fact('效果', [event?.targetLabel && !breeding ? event.targetLabel : '', effect].filter(Boolean).join(' · '));
+          // Negotiation uses the printed effect wording (“扩招船员 · 陌生人 +1”),
+          // not the applied fate summary that also repeats the cost. Trade keeps
+          // its net exchange preview because that is the actual result.
+          const effect = tradeSummary
+            || (action.negotiation ? [action.effectLabel || action.label, action.effectDetail].filter(Boolean).join(' · ') : '')
+            || event?.rewardLabel || action.effectLabel || action.rewardLabel || (action.trade ? purpose : action.label) || purpose;
+          const target = action.negotiation ? '' : event?.targetLabel && !breeding ? event.targetLabel : '';
+          fact('效果', [target, effect].filter(Boolean).join(' · '));
           const dueDay = event?.dueDay ?? (breeding && Number.isFinite(Number(actionContext.day))
             ? Number(actionContext.day) + Number(action.id === 'breed' && modelNode.value === 'tt_shadowdancer' ? 14 : action.days) : null);
           if (dueDay != null && action.kind !== 'cooldown' && !action.skipTimeline && !event?.skipTimeline) fact('到期', `Day ${dueDay}`);
@@ -854,6 +1369,7 @@
           }
         }
         button.disabled = !result?.ok;
+        updateResourcePayment();
         updateSummary(result?.ok, result?.message);
         updatePreviewLayout();
       }
@@ -878,7 +1394,7 @@
           for (const confirmation of candidate.confirmations || []) {
             if (!chosen[confirmation.id]) choices.push({ key: confirmation.id, values: [true] });
           }
-          if (candidate.trade && !chosen.trades?.length) choices.push({ key: 'trades',
+          if (candidate.trade && !chosen.tradeSteps?.length) choices.push({ key: 'tradeSteps',
             values: (candidate.tradeRoutes || []).map(route => [{ routeId: route.id, count: 1 }]),
           });
           if (!choices.length) continue;
@@ -917,6 +1433,20 @@
           else if (/不足/.test(message)) label = message.match(/[^，。；：·]*不足/)?.[0]?.trim() || '资源不足';
           else if (/^没有/.test(message)) label = message;
           else if (/请选择型号/.test(message)) label = '待选型号';
+          else if (action.negotiation && /请先处理上一次荒原商人的选牌/.test(message)) label = '待选牌';
+          else if (action.negotiation && /请先结束当前探索抽卡/.test(message)) label = '待结束抽卡';
+          else if (action.negotiation && /初始化牌堆/.test(message)) label = '待初始化牌堆';
+          else if (action.negotiation && /请选择有效派系/.test(message)) label = '待选派系';
+          else if (action.negotiation && /不属于当前谈判地点/.test(message)) label = '派系不符';
+          else if (action.negotiation && /请完成外交检定/.test(message)) label = '待检定';
+          else if (action.negotiation && /请确认播种/.test(message)) label = '待确认条件';
+          else if (action.negotiation && /请先填写所选派系的当前外交值/.test(message)) label = '外交未填写';
+          else if (action.negotiation && /仅可用于隐藏或怀疑关系/.test(message)) label = '关系不符';
+          else if (action.negotiation && /已到上限/.test(message)) label = '外交已满';
+          else if (action.negotiation && /当前有效的谈判地点/.test(message)) label = '待选地点';
+          else if (action.negotiation && /请选择现有泰坦或祭司/.test(message)) label = '待选代价';
+          else if (action.negotiation && /至少 1 类资源交换/.test(message)) label = '待选兑换';
+          else if (action.negotiation && /本次需要恰好支付/.test(message)) label = '待支付';
           else if (action.target === 'hero' && !controls.find(item => item.key === 'targetId')?.node.value && !message) label = '待选英雄';
           else if (/请选择/.test(message)) label = action.target === 'hero' ? '待选英雄' : '待配置';
           else if (message) label = '暂不可用';
@@ -925,8 +1455,8 @@
         summaryState.dataset.state = ok ? 'ready' : 'blocked';
         summaryState.title = requiresSelection ? '可使用：展开并完成选项后执行' : message || label;
       }
-      button.addEventListener('click', async () => {
-        if (busy || button.disabled) return;
+      async function execute() {
+        if (busy || action.disabled || action.available === false) return;
         busy = true; button.disabled = true;
         status.textContent = action.negotiation ? '正在结算谈判…' : action.trade ? '正在执行科技交易…' : action.immediate ? '正在执行科技能力…' : '正在写入科技安排…'; status.dataset.state = 'saving';
         const selected = selection();
@@ -966,7 +1496,8 @@
           if (committed) button.disabled = true;
           else preview();
         }
-      });
+      }
+      button.addEventListener('click', () => { if (!button.disabled) return execute(); });
       configureSource();
       container.appendChild(disclosure || row);
       previewObserver?.observe(row);

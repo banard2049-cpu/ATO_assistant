@@ -48,6 +48,7 @@ function mapHarness(cycleId = 'c5') {
     function saveState() {}
     function focusArgoAfterNextRender() {}
     function render() {}
+    ${extractFunction(mapSource, 'markTileRevealed')}
     ${extractFunction(mapSource, 'markTileExplored')}
     ${extractFunction(mapSource, 'inheritCycleFiveTileFace')}
     ${extractFunction(mapSource, 'setCurrentTile')}
@@ -61,7 +62,8 @@ test('map movement reveals a new Cycle V tile on the departing tile face', () =>
   game.cycleState.tileVariants.A = 'alternate';
   game.setCurrentTile('B');
   assert.equal(game.cycleState.tileVariants.B, 'alternate');
-  assert.equal(game.cycleState.explored.B, true);
+  assert.equal(game.cycleState.previewRevealed.B, true);
+  assert.equal(game.cycleState.explored.B, undefined);
   assert.equal(game.cycleState.latestRevealedTile, 'B');
   assert.equal(game.undoCount(), 1);
 

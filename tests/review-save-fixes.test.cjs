@@ -286,7 +286,7 @@ function dashboardStartupContext({ fetch, keepLocal = true, sparse = false } = {
     getExplorationLibrary: () => [{ id: 'card-a' }, { id: 'card-b' }], shuffleList: clone,
     campaignSessionEpoch: 0, sessionUser: null, campaignSaveTimer: null,
     campaignSectionBaseline: null, campaignServerBaseline: null, campaignInitialBaseline: null, campaignSaveQueuedBeforeReady: false,
-    campaignRestoreInFlight: false, campaignExternalSyncInFlight: false, campaignConflictReloading: false,
+    campaignRestoreInFlight: false, campaignExternalSyncInFlight: false, campaignExternalSyncPending: false, campaignConflictReloading: false,
     campaignSaveInFlight: false, campaignSectionRevision: 0,
     campaignStorageAvailable: false, campaignReconnectInFlight: false, campaignStorageUrl: '/api',
     clearCampaignReconnect: noop, clearTimeout: noop, beginDashboardWriteLease: noop,

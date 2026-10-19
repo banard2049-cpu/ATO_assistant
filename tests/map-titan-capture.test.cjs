@@ -48,13 +48,23 @@ test('base reward adds one healthy dreamwalker, preserves crippled rows and does
 
 test('scouting, another current location and tiles without a Titan cannot grant a reward', () => {
   for (const saved of [
-    { currentTile: '002', explored: {}, previewRevealed: { '002': true } },
+    { currentTile: '001', explored: {}, previewRevealed: { '002': true } },
     { currentTile: '001', explored: { '002': true } },
     { currentTile: '001', explored: { '001': true } },
   ]) {
     const result = engine.prepareOperation(context({ map: { cycles: { c1: saved } } }));
     assert.equal(result.code, 'INVALID_LOCATION');
   }
+});
+
+test('a tile revealed by entering it can be captured before it becomes explored next day', () => {
+  const ctx = context({ map: { cycles: { c1: {
+    currentTile: '002', explored: {}, previewRevealed: { '002': true }, latestRevealedTile: '002',
+    tokens: { AG: '002' },
+  } } } });
+  const result = engine.prepareOperation(ctx);
+  assert.equal(result.ok, true);
+  assert.match(result.record.titans[1].name, /dreamwalker|梦行者/i);
 });
 
 test('extra capture validates ownership and a player result, charging fate even on failure', () => {

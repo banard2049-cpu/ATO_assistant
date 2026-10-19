@@ -63,7 +63,7 @@ function dashboard(cycle = 'c1', positions = {}) {
     'normalizeCounterValue', 'activeStoryDoomData', 'cardTrackCard', 'cardTrackPreviewCard',
     'cardTrackStatus', 'cardTrackMeta', 'cardTrackTokenState', 'cardTokenLimitText',
     'cardTokenPlacementTargets', 'renderCardTokenPlacementTools', 'refreshCardTokenViews', 'placeCardTrackToken',
-    'getMapProgressTechReminders', 'getStoryMapReminders', 'getDoomMapReminders', 'renderStepTrackReminders',
+    'getMapProgressTechReminders', 'currentTileRevealDayState', 'getStoryMapReminders', 'getDoomMapReminders', 'renderStepTrackReminders',
     'doomSaveFateSources',
   ]) vm.runInContext(dashboardFunction(name), context);
   context.calls = calls;
@@ -443,6 +443,39 @@ test('doom dialogs hide progress controls outside cycle IV and retain doom contr
   assert.match(storyTitles[1][0], /上限 1/);
 });
 
+test('a face revealed today only counts as explored from the next day', () => {
+  const app = mapReminderDashboard('c3', ["delphi peoples' support"]);
+  app.state.day = 10;
+  app.state.mapSnapshot.currentTileId = 'tile-a';
+  // Reveal day: the tile is revealed but not explored yet, and it is the latest reveal.
+  app.state.mapSnapshot.exploredIds = [];
+  app.state.mapSnapshot.exploredDays = { 'tile-a': 10 };
+  app.state.mapCurrentTileIsLatestRevealed = true;
+  let reminders = app.getStoryMapReminders();
+  assert.equal(reminders.filter(reminder => reminder.title === '新探索板块放置进展').length, 1);
+  assert.equal(reminders.filter(reminder => reminder.title.includes('德尔菲人民支援')).length, 0);
+
+  // Next day: the settle step marked it explored and cleared the latest reveal.
+  app.state.day = 11;
+  app.state.mapSnapshot.exploredIds = ['tile-a'];
+  app.state.mapCurrentTileIsLatestRevealed = false;
+  reminders = app.getStoryMapReminders();
+  assert.equal(reminders.filter(reminder => reminder.title === '新探索板块放置进展').length, 0, 'the free placement belongs to the reveal day');
+  assert.equal(reminders.filter(reminder => reminder.title.includes('德尔菲人民支援')).length, 1);
+  const markup = app.renderStepTrackReminders(reminders);
+  assert.ok(markup.includes('data-map-progress-fate="delphi peoples\' support"'));
+  assert.equal(hasPlacement(markup, 'story', 'progress', 1), true);
+});
+
+test('legacy map saves without reveal days keep the previous reminder timing', () => {
+  const app = mapReminderDashboard('c3', ["delphi peoples' support"]);
+  app.state.day = 10;
+  app.state.mapSnapshot.exploredIds = ['tile-a'];
+  const reminders = app.getStoryMapReminders();
+  assert.equal(reminders.filter(reminder => reminder.title === '新探索板块放置进展').length, 1);
+  assert.equal(reminders.filter(reminder => reminder.title.includes('德尔菲人民支援')).length, 1);
+});
+
 test('map progress and doom reminders retain normal quick placement', () => {
   const app = mapReminderDashboard();
   app.state.cardTracks.story.progress = 3;
@@ -455,6 +488,16 @@ test('map progress and doom reminders retain normal quick placement', () => {
   assert.equal(hasPlacement(progress, 'inwardOdyssey', 'progress', 1), true);
   assert.equal(hasPlacement(doom, 'doom', 'doom', 1), true);
   assert.match(doom, /title="[^"]*上限/);
+});
+
+test('a calamity reminder belongs to the day the tile is revealed', () => {
+  const app = mapReminderDashboard();
+  app.state.mapCurrentTileTags = ['calamity'];
+  app.state.mapCurrentTileIsLatestRevealed = false;
+  assert.equal(app.getDoomMapReminders().length, 0);
+  app.state.mapCurrentTileIsLatestRevealed = true;
+  assert.equal(app.getDoomMapReminders().length, 1);
+  assert.equal(app.getDoomMapReminders()[0].placements[0].type, 'doom');
 });
 
 test('map Doom appends the Save cost, check and effect to the tile description without blocking placement', () => {

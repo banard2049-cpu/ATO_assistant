@@ -1,6 +1,6 @@
 """主控台界面图标（SVG）：随 .atopack 分发的字形文件。
 
-程序包（便携版 / Docker / APK）都不带这些字形：它们是从原 App 截图里提取出来的界面
+程序包（便携版 / Docker / APK）都不带这些字形：它们是从原 App 截图或 APK 原始纹理提取的界面
 素材，按仓库的版权约定只留在本地，不进版本库（`.gitignore` 的 ``/assets/*`` 与
 ``*.svg``）。这里让素材库把 ``assets/icons/`` 下的 SVG 原样写进 .atopack 的
 ``iconFiles`` 段，导入后再由「分享与安装」落回 ``assets/icons/``；Android 端

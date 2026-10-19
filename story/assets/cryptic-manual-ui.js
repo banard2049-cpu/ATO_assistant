@@ -23,7 +23,7 @@
     let editing = false, selected = null, range = null, rangeDone = false, lastDraft = "", formatDirty = false, removed = null;
     const id = prefix => prefix + (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function" ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(16).slice(2));
     host.innerHTML = `
-      <p class="cent-help">${language === "siren" ? "按你确认的螺旋读序点选字符。对照方向只旋转键盘字形，不推断几何读序。" : "点选字形记录原文，用「编辑字符对应」记下已学会的字母、词语或含义。"}未知对应显示 [?]。</p>
+      <p class="cent-help">${language === "siren" ? "按你确认的螺旋读序点选字符。对照方向只旋转键盘字形，不推断几何读序。" : "点选字形记录原文，用「编辑字符对应」记下已学会的字母、词语或含义。"}未知对应显示 [?]。已保存记录里保存时未知的字符，会随之后的字符对应自动补全。</p>
       <div class="cent-mode"><button type="button" class="secondary" data-manual="edit" aria-pressed="false">编辑字符对应</button><button type="button" class="secondary" data-manual="reference">补齐参考字符对应</button></div>
       <details class="manual-keyboard-panel" open><summary>字形键盘 · ${glyphs.length} 个字符</summary>
         ${language === "babelian" ? '<label class="manual-filter">字形分类<select data-manual="filter"><option value="all">全部字形</option><option value="upper">大写字形</option><option value="lower">小写字形</option><option value="special">词语与符号</option></select></label>' : '<label class="manual-filter">键盘对照方向<select data-manual="rotation"><option value="0">正下方 · 0°</option><option value="90">正左方 · 90°</option><option value="180">正上方 · 180°</option><option value="270">正右方 · −90°</option></select></label>'}
@@ -188,19 +188,28 @@
       for (const [key, entry] of entries) {
         const row = document.createElement("article"); row.className = "cent-record";
         const heading = document.createElement("strong"); heading.textContent = entry.title || `${name}记录`;
-        const glyphRow = document.createElement("div"); glyphRow.className = "cent-record-symbols"; sequence(glyphRow, entry.tokens, entry.readings);
-        const text = document.createElement("p"); text.className = "manual-record-text"; text.textContent = entry.text; text.setAttribute("aria-label", "保存时的分词文本");
-        const meaning = document.createElement("p"); meaning.className = "cent-help"; meaning.textContent = entry.wordReading;
+        const view = manual.recordView(entry, language, next);
+        const glyphRow = document.createElement("div"); glyphRow.className = "cent-record-symbols"; sequence(glyphRow, entry.tokens, view.readings);
+        const text = document.createElement("p"); text.className = "manual-record-text"; text.textContent = view.text; text.setAttribute("aria-label", "分词文本");
+        const meaning = document.createElement("p"); meaning.className = "cent-help"; meaning.textContent = view.wordReading;
         const actions = document.createElement("div"); actions.className = "cent-actions";
         actions.append(makeButton("载入", () => {
           const value = current(); value.draft = entry.tokens.slice();
-          const raw = manual.transcript(value, language).text;
-          try { value.formatted = manual.formatted(value, language, entry.text).formatted; }
+          const live = manual.recordView(entry, language, value);
+          try { value.formatted = manual.formatted(value, language, live.text).formatted; }
           catch { value.formatted = null; }
           formatDirty = false; editing = false; closeEditor(); commit(value);
-          status(raw === entry.readings.map(text => text || "[?]").join("") ? "已载入原始字符和分词。" : "已载入原始字符；当前读法使用现有对应，旧记录的读法保留。");
+          status(value.formatted
+            ? (live.filled ? "已载入原始字符；保存时未知的字符已按当前对应补全。" : "已载入原始字符和分词。")
+            : (live.filled ? "已载入原始字符；记录中的读法与当前对应不同，分词未载入。" : "已载入原始字符；当前读法使用现有对应。"));
         }), makeButton("删除记录", () => remove("records", key)));
-        row.append(heading, glyphRow, text, meaning, actions); history.appendChild(row);
+        row.append(heading, glyphRow, text, meaning);
+        if (view.filled) {
+          const note = document.createElement("p"); note.className = "cent-help";
+          note.textContent = `保存时未知的 ${view.filled} 个字符已按当前对应补全。`;
+          row.append(note);
+        }
+        row.append(actions); history.appendChild(row);
       }
       if (!entries.length) { const empty = document.createElement("p"); empty.className = "cent-help"; empty.textContent = "还没有保存的字符记录。"; history.appendChild(empty); }
     }

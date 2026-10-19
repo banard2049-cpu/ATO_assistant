@@ -75,7 +75,7 @@ test('unavailable technology and a full silo consume the opportunity so later ch
 
 test('scouting, revisits, legacy saves, other tiles and invalid input never grant frozen time', () => {
   const attempts = [
-    ctx => { ctx.map.cycles.c3.explored = {}; ctx.map.cycles.c3.previewRevealed = { '007': true }; },
+    ctx => { ctx.map.cycles.c3.explored = {}; ctx.map.cycles.c3.previewRevealed = { '007': true }; delete ctx.map.cycles.c3.explorationEntries; },
     ctx => { ctx.map.cycles.c3.latestRevealedTile = '016'; },
     ctx => { delete ctx.map.cycles.c3.explorationEntries; },
     ctx => { ctx.map.cycles.c3.currentTile = '016'; },

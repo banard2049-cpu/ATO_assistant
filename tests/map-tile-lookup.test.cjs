@@ -39,6 +39,23 @@ test('search applies and clears a filter without revealing tiles', () => {
   assert.equal(calls.renders, 2);
 });
 
+test('emptying the search box exits the active search state', () => {
+  const { context, calls } = harness();
+  context.state.query = 'T03';
+  context.elements.searchInput.value = 'T03';
+  context.clearSearchWhenInputEmpty();
+  assert.equal(context.state.query, 'T03');
+  assert.equal(calls.saves, 0);
+  assert.equal(calls.renders, 0);
+
+  context.elements.searchInput.value = '';
+  context.clearSearchWhenInputEmpty();
+  assert.equal(context.state.query, '');
+  assert.equal(context.elements.searchInput.value, '');
+  assert.equal(calls.saves, 1);
+  assert.equal(calls.renders, 1);
+});
+
 test('reveal uses the shared input and clears a previous search without marking explored', () => {
   const { context, cycleState, calls } = harness();
   context.state.query = '001';

@@ -1,6 +1,7 @@
 /* Centimanes: the sixteen quadrant glyphs shown in the user's reference video.
  * Digit meanings are learned by the player, never inferred from the glyph mask.
- * Saved readings keep their digits as a snapshot when a mapping changes.
+ * A saved record keeps the digits it was saved with; symbols still unknown at
+ * that moment follow the current mapping, so old notes fill in as it is solved.
  */
 (function (root, factory) {
   const api = factory();
@@ -43,6 +44,16 @@
     return symbols.map(index => digit(mapping?.[index]));
   }
 
+  // Display view of a saved record. Recorded digits are history and never
+  // change; symbols that had no digit when the record was saved are read with
+  // the current mapping, so a solved cipher makes old records readable.
+  function recordView(entry, mapping) {
+    const symbols = glyphs(entry?.glyphs);
+    const saved = symbols.map((_, index) => digit(entry?.digits?.[index]));
+    const digits = symbols.map((symbol, index) => saved[index] || digit(mapping?.[symbol]));
+    return { digits, filled: digits.filter((number, index) => number && !saved[index]).length };
+  }
+
   function saveReading(value, { id, title = "", cycle = "", createdAt = new Date().toISOString() }) {
     const next = normalize(value);
     if (!next.draft.length) throw Error("请先输入符号。");
@@ -72,7 +83,7 @@
     let selected = null;
     let removed = null;
     host.innerHTML = `
-      <p class="cent-help">点选符号输入密文；用「编辑数字对应」记下已学会的数字。未知符号显示 ?。</p>
+      <p class="cent-help">点选符号输入密文；用「编辑数字对应」记下已学会的数字。未知符号显示 ?。已保存记录里保存时未知的符号，会随之后的数字对应自动补全。</p>
       <div class="cent-mode"><button type="button" class="secondary" data-cent="edit" aria-pressed="false">编辑数字对应</button><span data-cent="mode-hint">输入模式</span></div>
       <div class="cent-keyboard" role="group" aria-label="百臂巨人语符号键盘"></div>
       <form class="cent-editor" hidden>
@@ -189,11 +200,12 @@
       entries.forEach(([id, entry]) => {
         const row = document.createElement("article"); row.className = "cent-record";
         const heading = document.createElement("strong"); heading.textContent = entry.title || "密文记录";
+        const view = recordView(entry, current.mapping);
         const symbols = document.createElement("div"); symbols.className = "cent-record-symbols";
-        sequence(symbols, entry.glyphs, entry.digits);
+        sequence(symbols, entry.glyphs, view.digits);
         const reading = document.createElement("p"); reading.className = "cent-record-reading";
-        reading.textContent = entry.digits.map(n => n || "?").join("");
-        reading.setAttribute("aria-label", "保存时的译文");
+        reading.textContent = view.digits.map(n => n || "?").join("");
+        reading.setAttribute("aria-label", "译文");
         const actions = document.createElement("div"); actions.className = "cent-actions";
         actions.appendChild(makeButton("载入", () => {
           const next = normalize(options.read()); next.draft = entry.glyphs.slice();
@@ -204,11 +216,17 @@
           removed = { id, entry: next.records[id], context: options.context() };
           delete next.records[id]; commit(next); status("记录已删除，可撤销。");
         }));
-        row.append(heading, symbols, reading, actions); history.appendChild(row);
+        row.append(heading, symbols, reading);
+        if (view.filled) {
+          const note = document.createElement("p"); note.className = "cent-help";
+          note.textContent = `保存时未知的 ${view.filled} 个符号已按当前对应补全。`;
+          row.append(note);
+        }
+        row.append(actions); history.appendChild(row);
       });
     }
     render();
     return { render };
   }
-  return { normalize, translate, saveReading, glyphSvg, mount, MAX_INPUT };
+  return { normalize, translate, saveReading, recordView, glyphSvg, mount, MAX_INPUT };
 });

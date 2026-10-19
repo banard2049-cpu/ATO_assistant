@@ -168,6 +168,15 @@ test('科技事项显示来源、目标和完成状态，只在真实冷却日�
   assert.equal(c.structureTechEvents().length, 0, '其它循环的事项不混入当前时间线');
 });
 
+test('日期轨复用同一份科技事件，不按每个日期格重复读取日程', () => {
+  const { context: c } = harness(['structureTechTimelineItems']);
+  let reads = 0;
+  c.structureTechEvents = () => { reads += 1; return [event('due', { dueDay: 3 })]; };
+  const events = c.structureTechEvents();
+  assert.equal(c.structureTechTimelineItems(3, events).length, 1);
+  assert.equal(reads, 1, '传入事件后不再调用 structureTechEvents');
+});
+
 test('侦察船重建到期的按钮说明会恢复地图船只', () => {
   const { context: c, due } = harness([...dueList]);
   c.state.techAutomation.events = { scout: event('scout', { techKey: 'canal reconnaissance', actionId: 'rebuild',

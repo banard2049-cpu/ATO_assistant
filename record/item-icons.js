@@ -6,11 +6,12 @@
    equal-bounding-box-area rule the field labels use, so one entry serves
    both a 24px track title and a 13px counter. */
 window.RECORD_ICON_BASE = "../assets/icons/";
+window.RECORD_ICON_VERSION = "apk-ui-a72da92bdf63";
 window.RECORD_ITEM_ICONS = {
-  "船体": { name: "hull", w: 111, h: 115 },
-  "船员": { name: "crew", w: 111, h: 113 },
-  "难民": { name: "refugees", w: 80, h: 113 },
-  "俘虏": { name: "captives", w: 115, h: 111 },
+  "船体": { name: "hull", w: 207, h: 213 },
+  "船员": { name: "crew", w: 207, h: 208 },
+  "难民": { name: "refugees", w: 146, h: 209 },
+  "俘虏": { name: "captives", w: 215, h: 206 },
 };
 
 /* A masked <span> instead of an inline <svg>: the glyph is painted with
@@ -29,7 +30,7 @@ window.buildItemIcon = function (spec, className, box) {
   const span = document.createElement("span");
   span.className = className;
   span.setAttribute("aria-hidden", "true");
-  if (name) span.style.setProperty("--icon-src", `url(${window.RECORD_ICON_BASE}${name}.svg)`);
+  if (name) span.style.setProperty("--icon-src", `url(${window.RECORD_ICON_BASE}${name}.svg?v=${window.RECORD_ICON_VERSION})`);
   span.style.width = Math.max(1, Math.round(w0 * s)) + "px";
   span.style.height = Math.max(1, Math.round(h0 * s)) + "px";
   return span;

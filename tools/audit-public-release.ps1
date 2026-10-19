@@ -60,6 +60,7 @@ $allowedPaths = @(
   'assets/exploration-card-resource-rules.js',
   'assets/exploration-card-effects.js',
   'assets/exploration-card-options.js',
+  'assets/exploration-trade-dialog.js',
   'assets/exploration-card-choices.js',
   'assets/exploration-card-delays.js',
   'assets/exploration-card-conditions.js',

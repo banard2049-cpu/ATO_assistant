@@ -1,5 +1,25 @@
 # ATO App 界面图标 → SVG
 
+## APK 原始轮廓重建（2026-10-19）
+
+`rebuild_ui_icons_from_apk.py` 将 `assets/icons/` 的 28 个导航及记录图标改为 APK
+命名 `Texture2D` 的透明度等值线，保留全部轮廓、尖角和镂空，不再使用截图样条拟合。
+`story` 对应原有的 `nav_vo` 图案。`glossary` 和用户提供的 `oxygen` 在当前 APK 中没有
+找到相同图案，保留现有文件。下文的截图流程供这类旧资源维护参考。
+
+```powershell
+# 提供 APK 静态解包后的 Unity 资源目录；不运行 APK 代码。
+python tools/icon-extract/rebuild_ui_icons_from_apk.py --unity-dir tmp/apk-c7-analysis --apply
+# 也可用上次保留的 PNG 与来源清单重建，无需重新解析 Unity 文件。
+python tools/icon-extract/rebuild_ui_icons_from_apk.py --source-dir output/reports/ui-icons-apk-20261019/sources --apply
+```
+
+不带 `--apply` 时只生成预览、校验结果和备份。添加 `--apply` 后写回 SVG 与本地
+`manifest.json`，同步主控台、记录表图标 URL 的内容版本及运行时图标尺寸；保持页面
+其他字节不变。可使用 `--report-dir` 指定核对目录。报告包含 APK 原始像素、新旧对照、
+16/24/32/64px 渲染检查、像素哈希及 `before/` 备份。依赖 Pillow、numpy、contourpy、
+PyMuPDF，解析 Unity 文件另需 UnityPy。SVG 和来源素材仍只随 `.atopack` 分发，不进源码库。
+
 从两张 App 截图中把 **23 个界面图标**提取成了矢量图（SVG）。
 
 - 源图：`source/grid-menu.jpg`（图标网格页）、`source/main-menu.jpg`（主菜单页）

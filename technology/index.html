@@ -1067,6 +1067,7 @@ button.gear-group-name:hover {
 <script src="../assets/card-art.js?v=20261017-corners1" defer></script>
   <script src="../story/data/english-source-data.js?v=20261011-english4"></script>
   <script src="../assets/theme.js?v=20261001" defer></script>
+  <link rel="stylesheet" href="trade-planner.css?v=20261019-negotiation-layout1">
 </head>
 <body data-theme-module="technology">
 <div class="app">
@@ -1114,7 +1115,7 @@ button.gear-group-name:hover {
     </div>
   </div>
 </div>
-  <script src="../assets/page-focus-router.js?v=20261007-page-navigation1"></script>
+  <script src="../assets/page-focus-router.js?v=20261020-module-probe1"></script>
   <script src="../assets/campaign-session.js?v=20260917"></script>
   <script src="../assets/campaign-notes.js?v=20261015"></script>
   <script src="../assets/cycle-symbols.js?v=20260918"></script>
@@ -1128,11 +1129,11 @@ button.gear-group-name:hover {
   <script src="../assets/exploration-card-resources.js?v=20261014-card-face-audit2"></script>
   <script src="../map/map-tile-tags.js?v=20261013-corner-audit"></script>
   <script src="../map/map-data.js?v=20260730-cycle-labels"></script>
-  <script src="negotiation-rules.js?v=20261018-trade-categories1"></script>
+  <script src="negotiation-rules.js?v=20261019-negotiation-split1"></script>
   <script src="voyage-action-rules.js?v=20261016-voyage3"></script>
   <script src="exploration-tech-rules.js?v=20261017-automation-audit4"></script>
-  <script src="structure-tech-rules.js?v=20261019-repair-targets1"></script>
-  <script src="structure-tech-client.js?v=20261018-trade-categories1"></script>
+  <script src="structure-tech-rules.js?v=20261019-tech-cache1"></script>
+  <script src="structure-tech-client.js?v=20261019-negotiation-rows2"></script>
 <script src="gear-inventory.js?v=20261002"></script>
 <script>
 const TECH_DICTIONARY_URL = 'tech_card_dictionary.min.json';
@@ -1253,7 +1254,7 @@ function gearImageSrc(gearId) {
   if (!gearId) return '';
   if (gearId.startsWith('T:tt_')) {
     const titanKey = gearId.slice(2);
-    return `images/titans/${titanKey}.png`;
+    return `images/titans/${titanKey}.png?v=20261019-tts-portrait1`;
   }
   return gearCardImages[gearId] || gearCardImages[String(gearId).toUpperCase()] || '';
 }
@@ -3001,6 +3002,7 @@ let gearCraftPlans = new Map();
 const gearCraftOperations = new Map();
 const gearRecordSyncChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('ato-record-sync-v1') : null;
 const structureTechMapSyncChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('ato-map-sync-v1') : null;
+const dashboardSyncChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('ato-dashboard-sync-v1') : null;
 let gearOnlyCurrentCycle = true;
 let gearOnlyCraftable = false;
 let gearGroupByPart = false;
@@ -3900,10 +3902,18 @@ async function saveAndReturnMain() {
   const dashboardModule = window.ATO_PAGE_ROUTER?.moduleFromUrl?.(dashboardUrl) || 'dashboard';
   const singleWindow = Boolean(window.ATO_ANDROID_SINGLE_WINDOW || window.ATOAndroid)
     || window.ATO_PAGE_ROUTER?.isSinglePageMode?.() === true;
-  const dashboardWindow = singleWindow
+  // Only bring the console tab to the front here; navigation happens once after
+  // the save below. openModuleTab()/window.open(url, ...) would reload it now
+  // with the pre-save state, and the post-save navigation would reload it a
+  // second time. The focus call has to stay inside the click gesture: a
+  // background tab cannot focus itself (Chromium ignores window.focus() from a
+  // BroadcastChannel task).
+  // hasOpenModule() also covers a live console tab whose background heartbeat is
+  // throttled; focusModuleWindow() probes it by name, so returning does not fall
+  // back to a full page load.
+  const dashboardWindow = singleWindow || !window.ATO_PAGE_ROUTER?.hasOpenModule?.(dashboardModule)
     ? null
-    : window.ATO_PAGE_ROUTER?.openModuleTab?.(dashboardUrl, dashboardModule)
-      || window.open(dashboardUrl, `ato-module-${dashboardModule}`);
+    : window.ATO_PAGE_ROUTER?.focusModuleWindow?.(dashboardModule) || null;
   returnMain.disabled = true;
   try {
     saveAccounts();
@@ -3912,13 +3922,21 @@ async function saveAndReturnMain() {
     }
     await writeSnapshotToMainArchive(unlockedTechSnapshot());
     returnMain.textContent = '已保存';
-    if (singleWindow) {
-      window.location.href = dashboardUrl;
-    } else if (dashboardWindow) {
-      dashboardWindow.location.href = dashboardUrl;
+    if (dashboardWindow) {
       dashboardWindow.focus?.();
+      if (dashboardSyncChannel) {
+        // The console page is already running: let it re-read the dashboard
+        // section in place instead of reloading scripts, auth and every panel.
+        dashboardSyncChannel.postMessage({ source: 'technology-return' });
+      } else {
+        dashboardWindow.location.href = dashboardUrl;
+      }
+    } else if (window.ATO_PAGE_ROUTER?.focusOrNavigate) {
+      // No live console tab to hand over to: this page becomes the console (or
+      // an existing tab takes over through the BroadcastChannel handshake).
+      await window.ATO_PAGE_ROUTER.focusOrNavigate(dashboardUrl);
     } else {
-      alert('科技进度已保存，但浏览器阻止了打开主控制台。请允许此站点打开弹出窗口后重试。');
+      window.location.href = dashboardUrl;
     }
   } catch (error) {
     console.error(error);
@@ -4750,6 +4768,11 @@ structureTechMapSyncChannel?.addEventListener('message', () => {
   if (activeUnlockedRecord) void renderStructureTechActions(activeUnlockedRecord.page, activeUnlockedRecord.node);
 });
 window.addEventListener('focus', () => {
+  void loadGearRecordState();
+});
+// Focused from another module (主控台 links / 返回): refresh the record snapshot in
+// place instead of reloading the page.
+window.addEventListener('ato-module-sync-request', () => {
   void loadGearRecordState();
 });
 search.addEventListener('input', () => {

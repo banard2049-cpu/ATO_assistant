@@ -151,6 +151,7 @@ const elements = {
   showBackToggle: document.querySelector("#showBackToggle"),
   hideUnknownToggle: document.querySelector("#hideUnknownToggle"),
   showAdjacencyToggle: document.querySelector("#showAdjacencyToggle"),
+  showGridToggle: document.querySelector("#showGridToggle"),
   showArtworkIcons: document.querySelector("#showArtworkIcons"),
   cycleTitle: document.querySelector("#cycleTitle"),
   cycleMeta: document.querySelector("#cycleMeta"),
@@ -190,6 +191,11 @@ let state = loadState();
 const campaignSession = window.ATO_CAMPAIGN_SESSION.create();
 let campaignStorageAvailable = false;
 let campaignUserId = "default";
+// Dashboard day per cycle, read from the campaign's dashboard section. A tile
+// revealed on day N only counts as explored for the story-step technology
+// reminders from day N+1 (the app's `explored` flag itself still flips on
+// reveal so the map can show the face and count).
+let campaignDays = {};
 let campaignSaveTimer = null;
 let campaignSaveInFlight = false;
 let campaignSavePending = false;
@@ -200,6 +206,10 @@ let campaignReconnectDelay = 2000;
 let mapSectionRevision = 0;
 let dashboardSectionRevision = 0;
 const scoutMapSyncChannel = !secondScreenMode && typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-map-sync-v1") : null;
+// "保存并返回" tells an already-open console to re-read the dashboard section in
+// place instead of reloading the whole page (scripts, auth, render) just to apply
+// the map snapshot.
+const dashboardSyncChannel = !secondScreenMode && typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-dashboard-sync-v1") : null;
 let scoutRebuildByCycle = {};
 let scoutMapRefreshBusy = false;
 let scoutMapRefreshPending = false;
@@ -304,6 +314,7 @@ function defaultCycleState() {
     currentTile: "",
     latestRevealedTile: "",
     explored: {},
+    exploredDays: {},
     previewRevealed: {},
     tileNotes: {},
     tileVariants: {},
@@ -326,6 +337,7 @@ function createDefaultState() {
     showBack: false,
     hideUnknown: true,
     showAdjacency: false,
+    showGrid: false,
     mapZoom: 100,
     selectedToken: "AG",
     selectedEdgeDirection: "up",
@@ -348,6 +360,9 @@ function normalizeState(saved) {
       ...(saved.cycles?.[id] || {}),
       explored: isPlainObject(saved.cycles?.[id]?.explored)
         ? saved.cycles[id].explored
+        : {},
+      exploredDays: isPlainObject(saved.cycles?.[id]?.exploredDays)
+        ? saved.cycles[id].exploredDays
         : {},
       previewRevealed: isPlainObject(saved.cycles?.[id]?.previewRevealed)
         ? saved.cycles[id].previewRevealed
@@ -387,6 +402,7 @@ function normalizeState(saved) {
     showBack: Boolean(saved.showBack),
     hideUnknown: saved.hideUnknown == null ? defaults.hideUnknown : Boolean(saved.hideUnknown),
     showAdjacency: Boolean(saved.showAdjacency),
+    showGrid: Boolean(saved.showGrid),
     mapZoom: normalizeMapZoom(saved.mapZoom),
     selectedToken: tokenAvailableInCycle(tokenAssetById[saved.selectedToken], activeCycleId) ? saved.selectedToken : "AG",
     selectedEdgeDirection: edgeDirections.includes(saved.selectedEdgeDirection)
@@ -583,7 +599,7 @@ function scoutPlacedTileId(cycleState = activeCycleState()) {
 function tilePreviewRevealLabels(tileId, cycleState = activeCycleState()) {
   const markers = cycleState.tokens.markers?.[tileId] || {};
   return [
-    cycleState.previewRevealed?.[tileId] ? "手动揭示" : "",
+    cycleState.previewRevealed?.[tileId] ? "已揭示" : "",
     markers.hs ? "侦察船侦察" : "",
     markers.ENGIN ? "引擎 token 揭示" : "",
     markers.night_nymph ? "黑夜宁芙 token 揭示" : "",
@@ -625,12 +641,36 @@ function destroyScout() {
   render();
 }
 
+function markTileRevealed(cycleState, tileId) {
+  if (!tileId || cycleState.explored[tileId]) return false;
+  const wasRevealed = Boolean(cycleState.previewRevealed?.[tileId]);
+  cycleState.previewRevealed ||= {};
+  cycleState.previewRevealed[tileId] = true;
+  if (wasRevealed) return false;
+  cycleState.latestRevealedTile = tileId;
+  // Remember the day this face was revealed. The face only becomes explored
+  // when the day ends (`进入下一天` marks the tile under Argo explored), so the
+  // story-step technology reminders wait until then.
+  const rawDay = (typeof campaignDays === "object" && campaignDays ? campaignDays : {})[state.activeCycleId];
+  if (String(rawDay ?? "").trim() !== "") {
+    cycleState.exploredDays ||= {};
+    if (cycleState.exploredDays[tileId] === undefined) cycleState.exploredDays[tileId] = rawDay;
+  }
+  if (state.activeCycleId === "c3") {
+    cycleState.explorationEntries ||= {};
+    cycleState.explorationEntries[tileId] = true;
+  }
+  return true;
+}
+
 function markTileExplored(cycleState, tileId) {
   if (!tileId) return false;
   const wasExplored = Boolean(cycleState.explored[tileId]);
   cycleState.explored[tileId] = true;
   if (cycleState.previewRevealed) delete cycleState.previewRevealed[tileId];
-  if (!wasExplored) cycleState.latestRevealedTile = tileId;
+  if (!wasExplored) {
+    cycleState.latestRevealedTile = tileId;
+  }
   if (!wasExplored && state.activeCycleId === "c3") {
     cycleState.explorationEntries ||= {};
     cycleState.explorationEntries[tileId] = true;
@@ -639,7 +679,8 @@ function markTileExplored(cycleState, tileId) {
 }
 
 function inheritCycleFiveTileFace(cycleState, destinationId) {
-  if (state.activeCycleId !== "c5" || !destinationId || cycleState.explored[destinationId]) return;
+  if (state.activeCycleId !== "c5" || !destinationId
+      || cycleState.explored[destinationId] || cycleState.previewRevealed?.[destinationId]) return;
   const sourceId = argoTileId(cycleState);
   if (!sourceId || sourceId === destinationId) return;
   cycleState.tileVariants ||= {};
@@ -780,6 +821,12 @@ async function loadCampaignMapSectionState(profileId) {
 function updateScoutRebuildStatus(campaign) {
   const profileId = mapStateLoadedFromServer ? mapStateProfileId : campaignUserId;
   const cycles = campaign.sections?.dashboard?.profiles?.[profileId]?.cycles || {};
+  // The story-step technology reminders need the dashboard day: a face
+  // revealed today is not "explored" for those rules until the next day.
+  campaignDays = Object.fromEntries(Object.entries(cycles).flatMap(([cycleId, cycle]) => {
+    const day = cycle?.state?.day;
+    return String(day ?? "").trim() !== "" ? [[cycleId, day]] : [];
+  }));
   scoutRebuildByCycle = Object.fromEntries(Object.entries(cycles).flatMap(([cycleId, cycle]) => {
     const event = Object.values(cycle.state?.techAutomation?.events || {}).find(event => event
       && event.techKey?.split("@@")[0] === "canal reconnaissance" && event.actionId === "rebuild" && event.status !== "completed");
@@ -1233,7 +1280,21 @@ function renderTokenPalette() {
   });
 }
 
+// Keep the address bar in step with the cycle this page is showing. Module
+// links carry ?cycle=..., and the router compares that with the tab's URL to
+// choose between "focus + sync in place" and "navigate (reload)".
+function syncCycleUrl(cycleId) {
+  if (!cycleId) return;
+  try {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("cycle") === cycleId) return;
+    url.searchParams.set("cycle", cycleId);
+    window.history.replaceState(null, "", url);
+  } catch {}
+}
+
 function renderCycleTabs() {
+  syncCycleUrl(state.activeCycleId);
   const fragment = document.createDocumentFragment();
   elements.cycleTabs.innerHTML = "";
 
@@ -1246,6 +1307,7 @@ function renderCycleTabs() {
     button.addEventListener("click", () => {
       clearPendingAdversarySpawn();
       state.activeCycleId = cycle.id;
+      syncCycleUrl(cycle.id);
       saveState();
       focusArgoAfterNextRender();
       render();
@@ -1288,6 +1350,7 @@ function renderControls() {
   elements.showBackToggle.checked = state.showBack;
   if (elements.hideUnknownToggle) elements.hideUnknownToggle.checked = state.hideUnknown;
   elements.showAdjacencyToggle.checked = state.showAdjacency;
+  if (elements.showGridToggle) elements.showGridToggle.checked = state.showGrid;
   if (elements.markCurrentButton) elements.markCurrentButton.disabled = !cycleState.currentTile;
   renderScoutControls(cycleState);
   renderTitanXTrack(cycleState);
@@ -1366,6 +1429,8 @@ function renderTiles() {
   elements.tileGrid.className = `tile-grid cycle-${cycle.id}`;
   elements.tileGrid.style.setProperty("--map-ratio", `${mapWidth} / ${mapHeight}`);
   elements.tileGrid.style.setProperty("--map-zoom", `${state.mapZoom}%`);
+  elements.tileGrid.style.setProperty("--map-cols", String(mapWidth));
+  elements.tileGrid.style.setProperty("--map-rows", String(mapHeight));
   const visibleUnknownTileIds = state.hideUnknown ? visibleTileIdsForUnknownFilter(cycle, cycleState) : null;
 
   const tiles = cycle.tiles.filter((tile) => {
@@ -1390,6 +1455,12 @@ function renderTiles() {
   }
 
   const fragment = document.createDocumentFragment();
+  if (state.showGrid) {
+    const gridOverlay = document.createElement("div");
+    gridOverlay.className = "map-grid-overlay";
+    gridOverlay.setAttribute("aria-hidden", "true");
+    fragment.appendChild(gridOverlay);
+  }
   tiles.forEach((tile) => {
     const explored = Boolean(cycleState.explored[tile.id]);
     const previewRevealed = tilePreviewRevealedByMarker(tile.id, cycleState);
@@ -1689,7 +1760,7 @@ function setCurrentTile(tileId, reveal = true, recordUndo = true) {
   syncDepartedLandmarkMarkers(cycleState, tileId);
   cycleState.currentTile = tileId;
   cycleState.tokens.AG = tileId;
-  if (tileId && reveal) markTileExplored(cycleState, tileId);
+  if (tileId && reveal) markTileRevealed(cycleState, tileId);
   if (tileId && cycleState.tokens.AD === tileId) {
     triggerAdversaryBattle();
     return;
@@ -1711,7 +1782,7 @@ function placeToken(tileId) {
     syncDepartedLandmarkMarkers(cycleState, tileId);
     cycleState.currentTile = tileId;
     cycleState.tokens.AG = tileId;
-    markTileExplored(cycleState, tileId);
+    markTileRevealed(cycleState, tileId);
     if (tileId && cycleState.tokens.AD === tileId) {
       triggerAdversaryBattle();
       return;
@@ -1832,6 +1903,7 @@ function toggleExplored(tileId) {
   pushUndo();
   if (cycleState.explored[tileId]) {
     delete cycleState.explored[tileId];
+    if (cycleState.exploredDays) delete cycleState.exploredDays[tileId];
     if (cycleState.latestRevealedTile === tileId) cycleState.latestRevealedTile = "";
   } else {
     markTileExplored(cycleState, tileId);
@@ -1852,6 +1924,13 @@ function markCurrentExplored() {
 
 function searchTilesById() {
   state.query = elements.searchInput.value;
+  saveState();
+  renderTiles();
+}
+
+function clearSearchWhenInputEmpty() {
+  if (elements.searchInput.value.trim() || !state.query) return;
+  state.query = "";
   saveState();
   renderTiles();
 }
@@ -2183,6 +2262,10 @@ function currentMapSnapshot() {
   const exploredIds = cycle.tiles
     .filter((tile) => cycleState.explored[tile.id])
     .map((tile) => tile.id);
+  // 翻开但还没到“进入下一天”的板块也算已揭示，简报/地图回放用它决定画不画。
+  const revealedIds = cycle.tiles
+    .filter((tile) => cycleState.explored[tile.id] || cycleState.previewRevealed?.[tile.id])
+    .map((tile) => tile.id);
   const tileNotes = Object.entries(cycleState.tileNotes || {})
     .filter(([, note]) => String(note || "").trim())
     .map(([tileId, note]) => {
@@ -2239,6 +2322,8 @@ function currentMapSnapshot() {
     exploredCount: exploredIds.length,
     totalTiles: cycle.tiles.length,
     exploredIds,
+    revealedIds,
+    exploredDays: { ...(cycleState.exploredDays || {}) },
     tileNotes,
     markers: [...markerEntries, ...edgeMarkerEntries],
   };
@@ -2268,8 +2353,17 @@ async function saveAndReturnToDashboard() {
   const dashboardUrl = new URL("../index.html", window.location.href).href;
   const dashboardModule = window.ATO_PAGE_ROUTER?.moduleFromUrl?.(dashboardUrl) || "dashboard";
   const singlePageMode = window.ATO_PAGE_ROUTER?.isSinglePageMode?.() === true;
-  const dashboardWindow = !singlePageMode && window.ATO_PAGE_ROUTER?.isModuleRecentlyOpen?.(dashboardModule)
-    ? window.ATO_PAGE_ROUTER.focusNamedModule?.(dashboardUrl, dashboardModule)
+  // Only bring the console tab to the front here. openModuleTab() would load
+  // the console URL into it, i.e. reload it now with the pre-save state, and
+  // the navigation after the save would reload it a second time — two visible
+  // refreshes. Focusing has to stay inside the click gesture: a background tab
+  // cannot focus itself (Chromium ignores window.focus() from a
+  // BroadcastChannel task), so the navigation waits until the save is done.
+  // hasOpenModule() also covers a live console tab whose background heartbeat is
+  // throttled (hidden tabs update it about once a minute): focusModuleWindow()
+  // probes it by name, so returning does not fall back to a full page load.
+  const dashboardWindow = !singlePageMode && window.ATO_PAGE_ROUTER?.hasOpenModule?.(dashboardModule)
+    ? window.ATO_PAGE_ROUTER.focusModuleWindow?.(dashboardModule)
     : null;
   if (!await flushCampaignMapSave()) {
     window.alert("地图尚未保存，已保留当前修改并等待服务恢复。");
@@ -2297,8 +2391,16 @@ async function saveAndReturnToDashboard() {
 
   if (dashboardWindow) {
     try {
-      dashboardWindow.location.href = dashboardUrl;
       dashboardWindow.focus?.();
+      if (dashboardSyncChannel) {
+        // The console page is already running. Ask it to read the dashboard
+        // section we just wrote and repaint in place: a full navigation would
+        // reload scripts, auth and every panel (the "wait before it refreshes"
+        // on the way back), while the data change itself is a fraction of that.
+        dashboardSyncChannel.postMessage({ revision: dashboardSectionRevision, source: "map-return" });
+      } else {
+        dashboardWindow.location.href = dashboardUrl;
+      }
     } catch {
       window.location.href = dashboardUrl;
     }
@@ -2321,13 +2423,22 @@ function shortestPlacedPath(startId, targetId, tiles) {
 }
 
 function visibleTileIdsForUnknownFilter(cycle, cycleState) {
+  const allTiles = cycle.tiles.map((tile) => effectiveTile(tile, cycleState));
+  const tilesById = new Map(allTiles.map((tile) => [tile.id, tile]));
   const visibleIds = new Set();
-  (alwaysVisibleStartTileIds[cycle.id] || []).forEach((tileId) => visibleIds.add(tileId));
-  const exploredIds = new Set();
+  const revealedIds = new Set();
+
+  // 开局就在桌上的板块始终显示，但它们还没翻开，不算已揭示，也不向外扩散。
+  (alwaysVisibleStartTileIds[cycle.id] || []).forEach((tileId) => {
+    if (tilesById.has(tileId)) visibleIds.add(tileId);
+  });
+
   cycle.tiles.forEach((tile) => {
-    if (cycleState.explored[tile.id]) {
+    // 只有已探索或已揭示（手动揭示，或侦察船 / 引擎 / 黑夜宁芙等标记揭示）
+    // 的板块才算翻开，从它出发能走到的板块都要跟着显示。
+    if (cycleState.explored?.[tile.id] || tilePreviewRevealedByMarker(tile.id, cycleState)) {
       visibleIds.add(tile.id);
-      exploredIds.add(tile.id);
+      revealedIds.add(tile.id);
     }
     // 云端追逐在背面朝上的地图上移动；保留云船位置，但不揭示该板块。
     if (cycle.id === "c4" && cycleState.tokens?.markers?.[tile.id]?.c4_cloud_ship) {
@@ -2335,11 +2446,9 @@ function visibleTileIdsForUnknownFilter(cycle, cycleState) {
     }
   });
 
-  if (!exploredIds.size) return visibleIds;
-
-  const allTiles = cycle.tiles.map((tile) => effectiveTile(tile, cycleState));
-  const tilesById = new Map(allTiles.map((tile) => [tile.id, tile]));
-  exploredIds.forEach((tileId) => {
+  // 邻接按“能不能走过去”判断：两块板块之间有方向出口或特殊航路才算，光在
+  // 图面上贴着、中间是墙的不算。
+  revealedIds.forEach((tileId) => {
     const tile = tilesById.get(tileId);
     if (!tile) return;
     allTiles.forEach((candidate) => {
@@ -2363,6 +2472,7 @@ function escapeHtml(value) {
 
 elements.currentTileSelect.addEventListener("change", () => setCurrentTile(elements.currentTileSelect.value));
 elements.searchTileButton.addEventListener("click", searchTilesById);
+elements.searchInput.addEventListener("input", clearSearchWhenInputEmpty);
 elements.searchInput.addEventListener("keydown", (event) => {
   if (event.key !== "Enter") return;
   event.preventDefault();
@@ -2398,6 +2508,13 @@ elements.showAdjacencyToggle.addEventListener("change", () => {
   saveState();
   renderTiles();
 });
+if (elements.showGridToggle) {
+  elements.showGridToggle.addEventListener("change", () => {
+    state.showGrid = elements.showGridToggle.checked;
+    saveState();
+    renderTiles();
+  });
+}
 elements.edgeDirectionButtons.forEach((button) => {
   button.addEventListener("click", () => {
     const direction = button.dataset.edgeDirection;
@@ -2495,6 +2612,9 @@ window.addEventListener("online", reconnectCampaignNow);
 window.addEventListener("focus", reconnectCampaignNow);
 scoutMapSyncChannel?.addEventListener("message", () => void refreshMapAfterTechnology());
 window.addEventListener("focus", () => void refreshMapAfterTechnology());
+// Focused from another module (主控台 links / 返回): refresh the map section in
+// place instead of reloading the page.
+window.addEventListener("ato-module-sync-request", () => void refreshMapAfterTechnology());
 
 if (secondScreenMode && elements.tileGridViewport) {
   const allowManualScroll = () => { secondScreenManualScroll = true; };
