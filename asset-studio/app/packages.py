@@ -35,8 +35,8 @@ from .official_assets import resolve as resolve_official_asset
 from .official_resources import LIBRARY, collect, add_to_archive, checked_bytes, import_resources
 from .db import Database
 from .card_previews import add_to_archive as add_card_preview, canonical_board_path, is_preview_source
-from .installer import installable_relative, safe_relative
-from .storage import sha256_file, store_image, write_compatible_image
+from .installer import installable_relative, package_original_can_install_directly, safe_relative
+from .storage import ensure_preview, sha256_file, store_image, write_compatible_image
 from .story_extras import (
     ENTITY_INDEX_KIND,
     ENTITY_INDEX_LIBRARY_PATH,
@@ -319,8 +319,43 @@ def inspect_package(
         _check_package_limits(archive)
         # 先校验清单本身（面路径、条目引用、哈希格式），任何写入之前就失败。
         declared_faces = _validate_manifest_items(manifest)
+        from .fixed_catalog import card_back_paths, card_back_revisions
+
+        mapped_backs = card_back_paths()
+        artwork_revisions = card_back_revisions()
+        mapped_back_faces: dict[tuple[str, str], str] = {}
+        legacy_card_backs: set[tuple[str, str]] = set()
+        legacy_ai3_backs: set[tuple[str, str]] = set()
+        for item in manifest.get("items", []):
+            faces = item.get("faces") or {}
+            canonical_back = mapped_backs.get(faces.get("front"))
+            if canonical_back is None:
+                continue
+            mapped_back_faces[(str(item["id"]), "back")] = canonical_back
+            if faces.get("back") != canonical_back:
+                identity = (str(item["id"]), "back")
+                legacy_card_backs.add(identity)
+                if "_AI_III_" in canonical_back:
+                    legacy_ai3_backs.add(identity)
+            # Older packs must not restore the retired per-card back paths.
+            # Their bytes may also belong to the wrong special card, so keep
+            # existing corrected backs and request missing ones separately.
+            faces["back"] = canonical_back
+            item["faces"] = faces
         names = set(archive.namelist())
         existing = {(r["item_id"], r["face"]): r for r in db.all("SELECT * FROM asset_revisions WHERE is_current=1")}
+        # A shared back import affects peers omitted from this package too.
+        # Classify their differing current artwork as a conflict before any
+        # store_image call can propagate a replacement to the whole group.
+        existing_shared_hashes: dict[str, set[str]] = {}
+        for row in db.all("""
+            SELECT a.sha256,c.faces_json FROM asset_revisions a
+            JOIN catalog_items c ON c.id=a.item_id WHERE a.face='back' AND a.is_current=1
+        """):
+            faces = json.loads(row["faces_json"])
+            target = mapped_backs.get(faces.get("front"))
+            if target is not None:
+                existing_shared_hashes.setdefault(target, set()).add(row["sha256"])
         summary = {"add": 0, "same": 0, "replace": 0, "missing": 0}
         assets = []
         cryptic_entries = list(manifest.get("crypticFiles", []) or [])
@@ -329,8 +364,16 @@ def inspect_package(
                         for item in manifest.get("items", []) for face, target in (item.get("faces") or {}).items()}
         manifest_assets = manifest.get("assets", [])
         total = max(len(manifest_assets), 1)
+        legacy_card_backs_skipped = 0
+        legacy_ai3_backs_skipped = 0
+        outdated_card_backs_skipped = 0
+        incoming_shared_hashes: dict[str, str] = {}
         for index, asset in enumerate(manifest_assets, 1):
             identity = (str(asset.get("itemId") or ""), str(asset.get("face") or ""))
+            if identity in legacy_card_backs:
+                legacy_card_backs_skipped += 1
+                legacy_ai3_backs_skipped += int(identity in legacy_ai3_backs)
+                continue
             glyph_target = face_targets.get(identity)
             if is_cryptic_target(glyph_target):
                 # 兼容旧包里的重复登记：专用段优先；只有 assets 的旧字形也走逐张校验。
@@ -344,6 +387,19 @@ def inspect_package(
                 raise ValueError(f"资料包中的哈希格式无效：{member}")
             if identity not in declared_faces:
                 raise ValueError(f"资料包资源没有对应的清单条目：{identity[0]} / {identity[1]}")
+            shared_target = mapped_back_faces.get(identity)
+            known_revision = artwork_revisions.get(shared_target, {})
+            if digest_value == known_revision.get("fromSha256"):
+                # These exact original bytes were superseded by the baked
+                # colour correction, even in packs using the new filename.
+                legacy_card_backs_skipped += 1
+                legacy_ai3_backs_skipped += int("_AI_III_" in shared_target)
+                outdated_card_backs_skipped += 1
+                continue
+            if shared_target is not None:
+                previous_digest = incoming_shared_hashes.setdefault(shared_target, digest_value)
+                if previous_digest != digest_value:
+                    raise ValueError(f"资料包共享牌背内容冲突：{shared_target}")
             if member not in names:
                 status = "missing"
             else:
@@ -356,6 +412,8 @@ def inspect_package(
                         raise ValueError(f"资料包文件校验失败：{member}")
                 current = existing.get(identity)
                 status = "add" if not current else ("same" if current["sha256"] == digest_value else "replace")
+                if shared_target is not None and existing_shared_hashes.get(shared_target, set()) - {digest_value}:
+                    status = "replace"
             summary[status] += 1
             assets.append({**asset, "member": member, "status": status})
             if progress:
@@ -411,6 +469,9 @@ def inspect_package(
     return {
         "summary": summary,
         "assets": assets,
+        "legacy_card_backs_skipped": legacy_card_backs_skipped,
+        "legacy_ai3_backs_skipped": legacy_ai3_backs_skipped,
+        "outdated_card_backs_skipped": outdated_card_backs_skipped,
         "stories": story_summary,
         "entity_index": entity_summary,
         "official_resources": len(manifest.get("resourceFiles", [])),
@@ -638,7 +699,10 @@ def import_package(
             )
     return {
         "imported": imported,
-        "skipped": len(assets) - imported,
+        "skipped": len(assets) - imported + inspection["legacy_card_backs_skipped"],
+        "legacy_card_backs_skipped": inspection["legacy_card_backs_skipped"],
+        "legacy_ai3_backs_skipped": inspection["legacy_ai3_backs_skipped"],
+        "outdated_card_backs_skipped": inspection["outdated_card_backs_skipped"],
         "stories_imported": len(imported_books),
         "entity_index_imported": entity_index_imported,
         "entity_index_kept": entity_index_kept,
@@ -780,6 +844,7 @@ def export_compat(
     written = 0
     official_assets = 0
     with zipfile.ZipFile(destination, "w", compression=zipfile.ZIP_DEFLATED, allowZip64=True) as archive:
+        written_members: dict[str, str] = {}
         total = max(len(rows), 1)
         for index, row in enumerate(rows, 1):
             target = json.loads(row["faces_json"]).get(row["face"])
@@ -798,19 +863,32 @@ def export_compat(
                 # 位置层：真实 resolve() 之后仍然必须是临时目录的直接子项
                 if rendered.resolve().parent != Path(temp_dir).resolve():
                     raise ValueError(f"资料包含有不安全的渲染文件名：{target}")
-                source_path = row["original_path"] if row["source"] == "package" else row["preview_path"]
+                direct_copy = package_original_can_install_directly(row, target)
+                source_path = row["original_path"] if row["source"] == "package" or direct_copy else row["preview_path"]
                 if use_official_assets:
                     source, overridden = resolve_official_asset(
                         ato_root, target, library / source_path
                     )
                 else:
                     source, overridden = library / source_path, False
+                if not overridden and source_path == row["preview_path"] and not source.is_file():
+                    source = ensure_preview(db, library, source_path) or source
                 if overridden:
                     official_assets += 1
-                write_compatible_image(source, rendered)
-                archive.write(rendered, str(member))
-                add_card_preview(archive, str(member), rendered.read_bytes(), [])
-            written += 1
+                if direct_copy and not overridden:
+                    rendered.write_bytes(source.read_bytes())
+                else:
+                    write_compatible_image(source, rendered)
+                member_name = str(member)
+                digest = sha256_file(rendered)
+                previous_hash = written_members.get(member_name)
+                if previous_hash is not None and previous_hash != digest:
+                    raise ValueError(f"清单资源路径冲突：{member_name}")
+                if previous_hash is None:
+                    archive.write(rendered, member_name)
+                    add_card_preview(archive, member_name, rendered.read_bytes(), [])
+                    written_members[member_name] = digest
+                    written += 1
             if progress:
                 progress(index, total, f"正在转换第 {index}/{len(rows)} 个图片")
         reviewed = db.one("SELECT COUNT(*) AS n FROM story_segments WHERE reviewed=1")["n"]

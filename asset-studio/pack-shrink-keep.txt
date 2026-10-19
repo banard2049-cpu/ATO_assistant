@@ -10,6 +10,10 @@ ss/battle-board/battle-board.jpg
 # 地图底图、透明蒙版、卡背、切换按钮和标记：全部保留原文件字节
 map/*
 
+# AI / BP 牌背：保留 TTS mapping 与原图校色后的精确字节，含 Dragon 独立牌背
+aibp/ps/*/*_AI_*_BACK.jpg
+aibp/ps/*/*_BP_*_BACK.jpg
+
 # 使徒完整面板（aibp/ps/<敌人>/<敌人>.jpg）：20 张
 aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS.jpg
 aibp/ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS.jpg

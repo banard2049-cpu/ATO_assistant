@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 import time
+import re
 from collections import defaultdict
 from pathlib import Path, PurePosixPath
 
@@ -22,6 +23,52 @@ from pathlib import Path, PurePosixPath
 DIRECTORY = "official-assets"
 IMAGE_SUFFIXES = frozenset({".jpg", ".jpeg", ".png", ".webp"})
 SCAN_CACHE_SECONDS = 2.0
+
+# Reviewed deck artwork only: a BACK suffix by itself does not mean a fixed
+# card back. Unknown decks/faces must keep their official effect artwork.
+FIXED_BACK_DECKS = frozenset({
+    "ALPHA_TEMENOS", "CHIMERA_METASTASIOS", "CYCLONUS", "DAHAKA",
+    "DEMIDJINN", "DRAGON_OF_PHOBOS", "HEKATON", "HERMESIAN_PURSUER",
+    "HYPERTIME_ORACLE", "ICARIAN_HARPY", "LABYRINTHAUROS", "MEDUKETOS",
+    "MIDASCORE", "SUN_DESCENDANT", "THE_BABELIAN_LUNACY", "THE_BURDEN",
+    "THE_NIETZSCJEAN", "TITAN_X", "UR_FLEECE",
+})
+EFFECT_ROUTINE_BACK_DECKS = frozenset({
+    "ALPHA_TEMENOS", "CHIMERA_METASTASIOS", "CYCLONUS", "HEKATON",
+    "HERMESIAN_PURSUER", "LABYRINTHAUROS", "UR_FLEECE",
+})
+
+
+def is_fixed_aibp_back(target: str) -> bool:
+    """Only reviewed, decorative AIBP backs use fan resources in every edition.
+
+    Keep effect faces, including two-sided Routines and Dragon BP backs. Shared
+    Shared AI/BP backs and AI III SPECIAL_BACK artwork remain fixed backs.
+    Restrict the rule to AIBP paths and known faces to protect future additions.
+    """
+    parts = str(target).replace("\\", "/").upper().split("/")
+    if len(parts) != 4 or parts[:2] != ["AIBP", "PS"]:
+        return False
+    boss, filename = parts[2:]
+    if boss not in FIXED_BACK_DECKS or not filename.startswith(boss + "_"):
+        return False
+    path = PurePosixPath(filename)
+    if path.suffix.lower() not in IMAGE_SUFFIXES:
+        return False
+    face = re.sub(r"__DUP\d+$", "", path.stem[len(boss) + 1:])
+    if re.fullmatch(r"AI_III_(?:SPECIAL_)?BACK", face):
+        return True
+    if re.fullmatch(r"(?:AI|BP)_(?:I|II|III)_BACK", face):
+        return not (boss == "DRAGON_OF_PHOBOS" and face.startswith("BP_"))
+    if re.fullmatch(r"(?:AI|BP)_(?:I|II|III)_00[1-6]_BACK", face):
+        return not (boss == "DRAGON_OF_PHOBOS" and face.startswith("BP_"))
+    if face == "AI_O_001_BACK":
+        return boss in {"HYPERTIME_ORACLE", "THE_BURDEN", "THE_NIETZSCJEAN", "TITAN_X", "UR_FLEECE"}
+    if face == "AI_X_001_BACK":
+        return boss == "HYPERTIME_ORACLE"
+    if face == "SIGNATURE_X_001_BACK":
+        return True
+    return face == "ROUTINE_X_001_BACK" and boss not in EFFECT_ROUTINE_BACK_DECKS
 
 # base 目录 -> (建索引时刻, 索引)。索引是四张表：精确相对路径、去后缀相对路径、
 # 精确文件名、去后缀文件名（后两张表可能对应多个文件，靠调用侧要求唯一命中）。
@@ -174,7 +221,7 @@ def find(root: Path | None, target: str) -> Path | None:
     """
     parts = _safe_target(target)
     base = directory(root)
-    if not parts or base is None or not base.is_dir():
+    if not parts or is_fixed_aibp_back(target) or base is None or not base.is_dir():
         return None
 
     index = _index(base)

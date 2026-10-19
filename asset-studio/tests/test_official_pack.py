@@ -227,6 +227,37 @@ class OfficialFixture(unittest.TestCase):
 
 
 class OfficialPackTests(OfficialFixture):
+    def test_official_pack_uses_fan_fixed_backs_and_official_effect_backs(self):
+        cases = (
+            ("HEKATON", "AI_I_001_BACK", False),
+            ("HEKATON", "AI_III_BACK", False),
+            ("HEKATON", "AI_III_SPECIAL_BACK", False),
+            ("HEKATON", "AI_I_BACK", False),
+            ("HEKATON", "AI_II_BACK", False),
+            ("HEKATON", "BP_I_BACK", False),
+            ("HEKATON", "BP_II_BACK", False),
+            ("HEKATON", "BP_III_BACK", False),
+            ("HEKATON", "ROUTINE_X_001_BACK", True),
+            ("DRAGON_OF_PHOBOS", "BP_I_002_BACK", True),
+        )
+        expected = {}
+        for index, (boss, stem, use_official) in enumerate(cases):
+            target = f"aibp/ps/{boss}/{boss}_{stem}.jpg"
+            project = self.ato / target
+            official = self.ato / "official-assets" / "ps" / boss / project.name
+            project.parent.mkdir(parents=True, exist_ok=True)
+            official.parent.mkdir(parents=True, exist_ok=True)
+            Image.new("RGB", (240, 320), (10, 20, 30)).save(project)
+            Image.new("RGB", (240, 320), (200, 30, 30)).save(official)
+            item = {**self.payload["items"][0], "id": f"c1:aibp:back:{index}",
+                    "module": "AIBP", "number": f"{boss}_{stem}", "faces": {"back": target}}
+            self.payload["items"].append(item)
+            expected[target] = (official if use_official else project).read_bytes()
+        self.build()
+        for target, raw in expected.items():
+            with self.subTest(target=target):
+                self.assertEqual(raw, self.pack_member_bytes(target))
+
     def test_official_images_replace_and_otherwise_keep_project(self):
         result = self.build()
         self.assertEqual(1, result.from_official_assets, "官中图命中一张")

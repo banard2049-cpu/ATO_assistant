@@ -26,6 +26,7 @@ test('AIBP panel state buttons, marker titles, and break locks are fully English
   vm.runInContext(update, ctx);
   for (const [state, original] of [
     ...Array.from(states('nietzscheStates'), state => [state, state.comboEnglish]),
+    ...Array.from(states('nietzscheAdvancedStates'), state => [state, state.comboEnglish]),
     ...Array.from(states('cyclonusStates'), state => [state, state.comboEnglish]),
     ...Object.values(states('chimeraPhaseStates')).map((state, i) => [state, ['Corrosive', 'Gelatinous', 'Supersolid'][i]]),
   ]) {

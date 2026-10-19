@@ -259,8 +259,114 @@ public final class AtopackImportHarness {
     System.out.println("Layered map import passed: "+checks+" behavioral checks.");
   }
 
+  private void sharedCardBacks() throws Exception {
+    String prefix = "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS_AI_III_";
+    String first = prefix + "001.jpg", second = prefix + "003.jpg", special = prefix + "002.jpg";
+    String ordinaryBack = prefix + "BACK.jpg", specialBack = prefix + "SPECIAL_BACK.jpg";
+    String retired = prefix + "001_BACK.jpg", retiredPreview = retired + ".preview.jpg";
+    String dragonFront = "aibp/ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_BP_I_001.jpg";
+    String dragonBack = dragonFront.replace(".jpg", "_BACK.jpg");
+    byte[] ordinary = bytes("corrected-common-back"), unique = bytes("correct-special-back");
+    byte[] oldTone = bytes("old-white-common-back"), dragonOld = bytes("old-dragon-effect");
+    byte[] dragon = bytes("corrected-dragon-effect"), stale = bytes("wrong-old-numbered-back");
+    JSONArray items = new JSONArray()
+        .put(item("one", first).put("faces", new JSONObject().put("front", first).put("back", ordinaryBack)))
+        .put(item("two", second).put("faces", new JSONObject().put("front", second).put("back", ordinaryBack)))
+        .put(item("special", special).put("faces", new JSONObject().put("front", special).put("back", specialBack)))
+        .put(item("dragon", dragonFront).put("faces", new JSONObject().put("front", dragonFront).put("back", dragonBack)));
+    JSONObject catalog = new JSONObject().put("format", "ato-android-resource-catalog").put("items", items);
+    Context sharedContext = new Context(new File(directory, "shared-backs"), catalog.toString());
+    JSONObject mapping = new JSONObject().put("version", 1).put("backs", new JSONObject()
+        .put(first.substring(5), ordinaryBack.substring(5)).put(second.substring(5), ordinaryBack.substring(5))
+        .put(special.substring(5), specialBack.substring(5)).put(dragonFront.substring(5), dragonBack.substring(5)))
+        .put("canonicalRevisions", new JSONObject()
+          .put(ordinaryBack.substring(5), new JSONObject().put("fromSha256", sha(oldTone)).put("toSha256", sha(ordinary)))
+          .put(dragonBack.substring(5), new JSONObject().put("fromSha256", sha(dragonOld)).put("toSha256", sha(dragon))));
+    sharedContext.getAssets().files.put("web/aibp/card-backs.json", bytes(mapping.toString()));
+    File sharedRoot = new File(sharedContext.getFilesDir(), "atopack");
+    File sharedBlobs = new File(sharedRoot, "blobs");
+    sharedBlobs.mkdirs();
+    Files.write(new File(sharedBlobs, sha(stale)).toPath(), stale);
+    Files.write(new File(sharedBlobs, sha(dragon)).toPath(), dragon);
+    JSONObject seedFiles = new JSONObject()
+        .put(retired, new JSONObject().put("sha256", sha(stale)).put("mimeType", "image/jpeg"))
+        .put(retiredPreview, new JSONObject().put("sha256", sha(stale)).put("mimeType", "image/jpeg"))
+        .put(dragonBack, new JSONObject().put("sha256", sha(dragon)).put("mimeType", "image/jpeg"));
+    File sharedIndex = new File(sharedRoot, "index.json");
+    Files.writeString(sharedIndex.toPath(), new JSONObject().put("files", seedFiles).toString());
+    AtopackStore sharedStore = new AtopackStore(sharedContext);
+    check(sharedStore.open(retired) == null && sharedStore.open(retiredPreview) == null,
+        "Retired numbered backs and their previews must not survive an app upgrade");
+    check(!new File(sharedBlobs, sha(stale)).exists(), "Unreferenced retired numbered blob was retained");
+    check(sharedStore.open(dragonBack) != null, "Distinct Dragon BP effect backs must survive an app upgrade");
+
+    JSONObject good = manifest().put("items", items).put("assets", new JSONArray()
+        .put(asset("one", ordinaryBack, ordinary).put("face", "back"))
+        .put(asset("two", ordinaryBack, ordinary).put("face", "back"))
+        .put(asset("special", specialBack, unique).put("face", "back"))
+        .put(asset("dragon", dragonBack, dragon).put("face", "back")));
+    File goodFile = pack(good, new Member(ordinaryBack, ordinary), new Member(specialBack, unique), new Member(dragonBack, dragon));
+    AtopackStore.ImportResult installed = sharedStore.importPackage(new ContentResolver(), Uri.parse(goodFile.toURI().toString()));
+    check(installed.assets == 4 && installed.skipped == 0 && installed.totalResources == 3,
+        "Shared back associations must import one physical target per unique back");
+    check(sharedBlobs.list().length == 3, "Shared cards must reference a single blob per distinct artwork");
+    try (InputStream input = sharedStore.open(specialBack).input) {
+      check(Arrays.equals(input.readAllBytes(), unique), "Special AI III back was replaced by the common artwork");
+    }
+    JSONObject oldItems = new JSONArray(items.toString()).getJSONObject(0);
+    oldItems.getJSONObject("faces").put("back", retired);
+    JSONObject old = manifest().put("items", new JSONArray().put(oldItems)).put("assets", new JSONArray()
+        .put(asset("one", retired, stale).put("face", "back")));
+    File oldFile = pack(old, new Member(retired, stale));
+    AtopackStore.ImportResult skipped = sharedStore.importPackage(new ContentResolver(), Uri.parse(oldFile.toURI().toString()));
+    check(skipped.assets == 0 && skipped.legacyCardBacksSkipped == 1 && skipped.skipped == 1,
+        "Old per-card backs must be reported separately and skipped");
+    check(skipped.toJson().getInt("legacy_card_backs_skipped") == 1,
+        "Import result must expose the legacy back counter to the UI");
+    JSONObject faded = manifest().put("items", items).put("assets", new JSONArray()
+        .put(asset("one", ordinaryBack, oldTone).put("face", "back"))
+        .put(asset("dragon", dragonBack, dragonOld).put("face", "back")));
+    File fadedFile = pack(faded, new Member(ordinaryBack, oldTone), new Member(dragonBack, dragonOld));
+    skipped = sharedStore.importPackage(new ContentResolver(), Uri.parse(fadedFile.toURI().toString()));
+    check(skipped.assets == 0 && skipped.legacyCardBacksSkipped == 2,
+        "Known faded JPEG revisions must not overwrite corrected common or Dragon backs");
+    try (InputStream input = sharedStore.open(ordinaryBack).input) {
+      check(Arrays.equals(input.readAllBytes(), ordinary), "Importing an older tone reverted the corrected original JPG");
+    }
+    byte[] beforeIndex = Files.readAllBytes(sharedIndex.toPath());
+    String beforeStatus = sharedStore.status().toString();
+    byte[] conflict = bytes("different-shared-back");
+    JSONObject ambiguous = manifest().put("items", items).put("assets", new JSONArray()
+        .put(asset("one", ordinaryBack, ordinary).put("face", "back"))
+        .put(asset("two", "other-shared.jpg", conflict).put("face", "back")));
+    File ambiguousFile = pack(ambiguous, new Member(ordinaryBack, ordinary), new Member("other-shared.jpg", conflict));
+    try {
+      sharedStore.importPackage(new ContentResolver(), Uri.parse(ambiguousFile.toURI().toString()));
+      throw new AssertionError("Conflicting bytes for a shared target must reject the entire package");
+    } catch (java.io.IOException expected) { checks++; }
+    check(Arrays.equals(beforeIndex, Files.readAllBytes(sharedIndex.toPath())) && beforeStatus.equals(sharedStore.status().toString()),
+        "Conflicting shared back changed the committed index or active resources");
+    check(sharedBlobs.list().length == 3, "Failed shared-back import leaked a conflicting blob");
+
+    byte[] replacement = bytes("new-custom-common-back");
+    JSONObject custom = manifest().put("items", items).put("assets", new JSONArray()
+        .put(asset("one", ordinaryBack, replacement).put("face", "back"))
+        .put(asset("two", ordinaryBack, replacement).put("face", "back")));
+    File customFile = pack(custom, new Member(ordinaryBack, replacement));
+    check(sharedStore.importPackage(new ContentResolver(), Uri.parse(customFile.toURI().toString())).assets == 2,
+        "Unknown custom revisions must retain normal replacement behavior");
+    check(!new File(sharedBlobs, sha(ordinary)).exists() && sharedBlobs.list().length == 3,
+        "Replacing a shared back must remove its now-unreferenced old blob");
+    sharedStore = new AtopackStore(sharedContext);
+    try (InputStream input = sharedStore.open(ordinaryBack).input) {
+      check(Arrays.equals(input.readAllBytes(), replacement), "Shared back replacement did not survive restart");
+    }
+    System.out.println("Shared card back import passed: " + checks + " behavioral checks.");
+  }
+
   private void run() throws Exception {
     imageIndex();
+    sharedCardBacks();
     byte[] old = bytes("old-card"), fresh = bytes("new-card"), glyph = bytes("original-glyph");
     JSONObject first = manifest().put("assets", new JSONArray().put(asset("test", ASSET, old)))
         .put("stories", stories("first"));

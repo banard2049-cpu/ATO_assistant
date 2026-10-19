@@ -137,28 +137,33 @@ def build(
             if missing:
                 raise ValueError(f"APK 缺少 {len(missing)} 个固定清单文件，首个为：{missing[0]}")
 
+            written_members: dict[str, str] = {}
             for index, (item, face, target) in enumerate(faces, 1):
                 overlay_file = overlay_files.get(target)
                 # Preserve the original project-relative resource path and
                 # filename in the archive; manifest hashes remain the
                 # canonical identity for deduplication and verification.
                 member = str(safe_member(target))
-                digest = hashlib.sha256()
-                source = (
-                    overlay_file.open("rb")
-                    if overlay_file is not None and overlay_file.is_file()
-                    else source_zip.open(source_members[f"assets/web/{target}"])
-                )
-                with source, output_zip.open(
-                    member, "w", force_zip64=True
-                ) as output:
-                    while chunk := source.read(CHUNK):
-                        digest.update(chunk)
-                        output.write(chunk)
+                digest_value = written_members.get(member)
+                if digest_value is None:
+                    digest = hashlib.sha256()
+                    source = (
+                        overlay_file.open("rb")
+                        if overlay_file is not None and overlay_file.is_file()
+                        else source_zip.open(source_members[f"assets/web/{target}"])
+                    )
+                    with source, output_zip.open(
+                        member, "w", force_zip64=True
+                    ) as output:
+                        while chunk := source.read(CHUNK):
+                            digest.update(chunk)
+                            output.write(chunk)
+                    digest_value = digest.hexdigest()
+                    written_members[member] = digest_value
                 assets.append({
                     "itemId": item["id"],
                     "face": face,
-                    "sha256": digest.hexdigest(),
+                    "sha256": digest_value,
                     "member": member,
                     "mimeType": mimetypes.guess_type(target)[0] or "application/octet-stream",
                     "originalName": PurePosixPath(target).name,

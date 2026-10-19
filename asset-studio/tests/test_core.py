@@ -27,12 +27,12 @@ from app.catalog import (
     catalog_stats,
 )
 from app.db import Database
-from app.fixed_catalog import ensure_fixed_catalog, fixed_catalog_payload
+from app.fixed_catalog import ai3_card_back_paths, card_back_paths, ensure_fixed_catalog, fixed_catalog_payload
 from app.fixed_resources import RESOURCE_MAP, card_resource_note, card_resources
 from app.installer import apply_install, install_plan
 from app.mixed_media_resources import allowed_target as is_mixed_media_target
 from app.packages import export_compat, export_package, import_package, inspect_package
-from app.storage import ensure_preview, store_image
+from app.storage import ensure_preview, store_image, transform_revision
 from app.story_extras import find_entity_index
 from app.stories import import_story, merge_next_segment, split_segment, story_segments, storybook_payload
 from app.stories import extract_text
@@ -104,6 +104,362 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(1, self.db.one("SELECT COUNT(*) n FROM asset_revisions")["n"])
         stats = catalog_stats(self.db)
         self.assertEqual(["back"], stats["items"][0]["missing"])
+
+    def ai3_test_items(self, legacy=False):
+        items = [CatalogItem(**item) for item in fixed_catalog_payload()["items"]
+                 if item["number"].startswith("ALPHA_TEMENOS_AI_III_")]
+        if legacy:
+            for item in items:
+                item.faces["back"] = item.faces["front"].replace(".jpg", "_BACK.jpg")
+        return items
+
+    def migrated_shared_back_fixture(self):
+        items = [item for item in self.ai3_test_items()
+                 if item.faces["back"].endswith("_AI_III_BACK.jpg")]
+        apply_catalog(self.db, items, {"catalog_version": "before-artwork-correction"})
+        target = items[0].faces["back"]
+        ato = self.root / "ato"
+        source = ato / target
+        source.parent.mkdir(parents=True)
+        Image.new("RGB", (320, 440), (130, 140, 150)).save(source)
+        old_digest = hashlib.sha256(source.read_bytes()).hexdigest()
+        ensure_fixed_catalog(self.db, ato)
+        return items, target, ato, source, old_digest
+
+    def test_ai3_catalog_uses_the_console_back_mapping(self):
+        mapping = ai3_card_back_paths()
+        payload = fixed_catalog_payload()
+        items = [item for item in payload["items"] if item["faces"].get("front") in mapping]
+        self.assertEqual(115, len(items))
+        self.assertEqual(38, len(set(mapping.values())))
+        self.assertEqual(
+            mapping["aibp/ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_AI_III_004.jpg"],
+            mapping["aibp/ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_AI_X_002.jpg"],
+        )
+        self.assertEqual(set(mapping.values()), {item["faces"]["back"] for item in items})
+        for item in items:
+            self.assertEqual(mapping[item["faces"]["front"]], item["faces"]["back"])
+        ordinary = [item for item in items if item["faces"]["back"].endswith("_AI_III_BACK.jpg")]
+        self.assertEqual(95, len(ordinary))
+        self.assertIn("+shared-card-backs-20261019", payload["source"]["catalog_version"])
+
+    def test_ai_bp_catalog_uses_one_mapping_and_preserves_dragon_effect_backs(self):
+        mapping = card_back_paths()
+        payload = fixed_catalog_payload()
+        items = [item for item in payload["items"] if item["faces"].get("front") in mapping]
+        self.assertEqual(669, len(mapping))
+        self.assertEqual(145, len(set(mapping.values())))
+        self.assertEqual(set(mapping), {item["faces"]["front"] for item in items})
+        for item in items:
+            self.assertEqual(mapping[item["faces"]["front"]], item["faces"]["back"])
+        dragon = [item for item in items if item["number"].startswith("DRAGON_OF_PHOBOS_BP_")]
+        self.assertEqual(18, len(dragon))
+        self.assertEqual(18, len({item["faces"]["back"] for item in dragon}))
+        for item in dragon:
+            self.assertEqual(item["faces"]["front"].replace(".jpg", "_BACK.jpg"), item["faces"]["back"])
+
+    def test_ai12_and_bp_migrate_then_share_uploads_without_touching_dragon_backs(self):
+        payload = fixed_catalog_payload()
+        groups = {
+            suffix: [CatalogItem(**item) for item in payload["items"]
+                     if item["number"].startswith(f"ALPHA_TEMENOS_{suffix}_")]
+            for suffix in ("AI_I", "AI_II", "BP_I", "BP_II", "BP_III")
+        }
+        dragon = CatalogItem(**next(item for item in payload["items"]
+                                   if item["number"] == "DRAGON_OF_PHOBOS_BP_I_001"))
+        canonical = {suffix: items[0].faces["back"] for suffix, items in groups.items()}
+        for items in groups.values():
+            self.assertEqual(6, len(items))
+            for item in items:
+                item.faces["back"] = item.faces["front"].replace(".jpg", "_BACK.jpg")
+        apply_catalog(self.db, [item for items in groups.values() for item in items] + [dragon],
+                      {**payload["source"], "catalog_version": "legacy-ai12-bp"})
+        dragon_revision = store_image(self.db, self.library, self.image("dragon.png", (200, 20, 20)),
+                                      dragon.id, "back", "dragon.png", "image/png")
+        ato = self.root / "ato"
+        dragon_source = ato / dragon.faces["back"]
+        dragon_source.parent.mkdir(parents=True)
+        Image.new("RGB", (320, 440), (10, 10, 210)).save(dragon_source)
+        expected = {}
+        for index, (suffix, items) in enumerate(groups.items()):
+            for peer, item in enumerate(items[:2]):
+                store_image(self.db, self.library, self.image(f"legacy-{suffix}-{peer}.png", (peer * 160, 20, 30)),
+                            item.id, "back", "legacy.png", "image/png")
+            source = ato / canonical[suffix]
+            source.parent.mkdir(parents=True, exist_ok=True)
+            Image.new("RGB", (320, 440), (30 * index, 70, 140)).save(source)
+            expected[suffix] = hashlib.sha256(source.read_bytes()).hexdigest()
+        ensure_fixed_catalog(self.db, ato)
+        for suffix, items in groups.items():
+            with self.subTest(deck=suffix):
+                rows = [self.db.one("SELECT * FROM asset_revisions WHERE item_id=? AND face='back' AND is_current=1",
+                                    (item.id,)) for item in items]
+                self.assertEqual({expected[suffix]}, {row["sha256"] for row in rows})
+                self.assertEqual(1, len({row["original_path"] for row in rows}))
+                upload = store_image(self.db, self.library, self.image(f"chosen-{suffix}.png", (10, 190, 110)),
+                                     items[0].id, "back", "chosen.png", "image/png")
+                self.assertTrue(all(self.db.one(
+                    "SELECT sha256 FROM asset_revisions WHERE item_id=? AND face='back' AND is_current=1",
+                    (item.id,))["sha256"] == upload["sha256"] for item in items))
+        ensure_fixed_catalog(self.db, ato)
+        self.assertEqual(dragon_revision["sha256"], self.db.one(
+            "SELECT sha256 FROM asset_revisions WHERE item_id=? AND face='back' AND is_current=1",
+            (dragon.id,))["sha256"])
+
+    def test_ai3_migration_uses_correct_back_and_keeps_fronts_and_history(self):
+        items = self.ai3_test_items(legacy=True)
+        payload = fixed_catalog_payload()
+        apply_catalog(self.db, items, {**payload["source"], "catalog_version": "old-ai3-backs"})
+        ordinary_target = ai3_card_back_paths()[items[0].faces["front"]]
+        ordinary = [item for item in items if ai3_card_back_paths()[item.faces["front"]] == ordinary_target]
+        front = store_image(self.db, self.library, self.image("front.png"), ordinary[0].id,
+                            "front", "front.png", "image/png")
+        old = []
+        for index, item in enumerate(ordinary[:2]):
+            old.append(store_image(self.db, self.library, self.image(f"old-{index}.png", (10 + index * 90, 20, 30)),
+                                   item.id, "back", "old.png", "image/png"))
+        ato = self.root / "ato"
+        source = ato / ordinary_target
+        source.parent.mkdir(parents=True)
+        Image.new("RGB", (320, 440), (20, 210, 40)).save(source)
+        expected = hashlib.sha256(source.read_bytes()).hexdigest()
+        ensure_fixed_catalog(self.db, ato)
+        rows = self.db.all("SELECT * FROM asset_revisions WHERE face='back' AND is_current=1")
+        self.assertEqual(5, len(rows))
+        self.assertEqual({expected}, {row["sha256"] for row in rows})
+        self.assertEqual(1, len({row["original_path"] for row in rows}))
+        self.assertTrue(source.is_file(), "迁移不能消费工程源图")
+        self.assertEqual(front["sha256"], self.db.one(
+            "SELECT sha256 FROM asset_revisions WHERE item_id=? AND face='front' AND is_current=1",
+            (ordinary[0].id,))["sha256"])
+        for revision in old:
+            self.assertEqual(0, self.db.one("SELECT is_current FROM asset_revisions WHERE id=?", (revision["id"],))["is_current"])
+
+        # A later user replacement stays current after subsequent startup.
+        replacement = store_image(self.db, self.library, self.image("new-back.png", (170, 50, 190)),
+                                  ordinary[0].id, "back", "new-back.png", "image/png")
+        ensure_fixed_catalog(self.db, ato)
+        self.assertEqual({replacement["sha256"]}, {row["sha256"] for row in self.db.all(
+            "SELECT sha256 FROM asset_revisions WHERE face='back' AND is_current=1")})
+
+    def test_ai3_migration_conflicting_legacy_backs_stay_as_history(self):
+        items = self.ai3_test_items(legacy=True)
+        payload = fixed_catalog_payload()
+        apply_catalog(self.db, items, {**payload["source"], "catalog_version": "old-ai3-backs"})
+        mapping = ai3_card_back_paths()
+        ordinary = [item for item in items if mapping[item.faces["front"]].endswith("_AI_III_BACK.jpg")]
+        for index, item in enumerate(ordinary[:2]):
+            store_image(self.db, self.library, self.image(f"conflict-{index}.png", (index * 180, 30, 40)),
+                        item.id, "back", "old.png", "image/png")
+        ensure_fixed_catalog(self.db)
+        self.assertEqual(2, self.db.one("SELECT COUNT(*) n FROM asset_revisions WHERE face='back'")["n"])
+        self.assertEqual(0, self.db.one("SELECT COUNT(*) n FROM asset_revisions WHERE face='back' AND is_current=1")["n"])
+        self.assertIn(mapping[ordinary[0].faces["front"]], self.db.get_meta("card_shared_backs_migration")["pending"])
+
+    def test_ai3_migration_can_reuse_identical_legacy_captures_without_project_images(self):
+        items = self.ai3_test_items(legacy=True)
+        payload = fixed_catalog_payload()
+        apply_catalog(self.db, items, {**payload["source"], "catalog_version": "old-ai3-backs"})
+        mapping = ai3_card_back_paths()
+        ordinary = [item for item in items if mapping[item.faces["front"]].endswith("_AI_III_BACK.jpg")]
+        for index, item in enumerate(ordinary[:2]):
+            stored = store_image(self.db, self.library, self.image(f"same-{index}.png"),
+                                 item.id, "back", "same.png", "image/png")
+        ensure_fixed_catalog(self.db)
+        rows = self.db.all("SELECT sha256,original_path FROM asset_revisions WHERE face='back' AND is_current=1")
+        self.assertEqual(5, len(rows))
+        self.assertEqual({stored["sha256"]}, {row["sha256"] for row in rows})
+        self.assertEqual(1, len({row["original_path"] for row in rows}))
+
+    def test_ai3_shared_back_upload_and_transform_update_all_peers(self):
+        items = self.ai3_test_items()
+        payload = fixed_catalog_payload()
+        apply_catalog(self.db, items, payload["source"])
+        ordinary = [item for item in items if item.faces["back"].endswith("_AI_III_BACK.jpg")]
+        special = next(item for item in items if item not in ordinary)
+        special_image = store_image(self.db, self.library, self.image("special.png", (15, 80, 160)),
+                                    special.id, "back", "special.png", "image/png")
+        stored = store_image(self.db, self.library, self.image("shared.png"), ordinary[0].id,
+                             "back", "shared.png", "image/png")
+        rows = self.db.all("SELECT * FROM asset_revisions WHERE face='back' AND is_current=1 AND item_id<>?", (special.id,))
+        self.assertEqual(5, len(rows))
+        self.assertEqual({stored["sha256"]}, {row["sha256"] for row in rows})
+        self.assertEqual(5, len({row["preview_path"] for row in rows}))
+        peer = next(row for row in rows if row["item_id"] != ordinary[0].id)
+        transformed = transform_revision(self.db, self.library, peer, rotation=90)
+        self.assertNotEqual(stored["sha256"], transformed["sha256"])
+        rows = self.db.all("SELECT * FROM asset_revisions WHERE face='back' AND is_current=1 AND item_id<>?", (special.id,))
+        self.assertEqual({transformed["sha256"]}, {row["sha256"] for row in rows})
+        self.assertEqual(1, len({row["original_path"] for row in rows}))
+        self.assertEqual(special_image["sha256"], self.db.one(
+            "SELECT sha256 FROM asset_revisions WHERE item_id=? AND is_current=1", (special.id,))["sha256"])
+
+    def test_ai3_migration_updates_a_new_peer_of_an_already_shared_back(self):
+        payload = fixed_catalog_payload()
+        pair = [CatalogItem(**item) for item in payload["items"] if item["number"] in {
+            "HYPERTIME_ORACLE_AI_III_004", "HYPERTIME_ORACLE_AI_X_002",
+        }]
+        target = pair[0].faces["back"]
+        for item in pair:
+            item.faces["back"] = item.faces["front"].replace(".jpg", "_BACK.jpg")
+        apply_catalog(self.db, pair, payload["source"])
+        for index, item in enumerate(pair):
+            store_image(self.db, self.library, self.image(f"oracle-old-{index}.png", (index * 170, 30, 60)),
+                        item.id, "back", "old.png", "image/png")
+        # An earlier map shared only III 004; X 002 now joins that target.
+        self.db.set_meta("ai3_shared_backs_migration", {
+            "version": 1, "completed": [target],
+            "memberships": {target: hashlib.sha256(pair[0].id.encode("utf-8")).hexdigest()},
+        })
+        ato = self.root / "ato"
+        source = ato / target
+        source.parent.mkdir(parents=True)
+        Image.new("RGB", (320, 440), (90, 30, 170)).save(source)
+        expected = hashlib.sha256(source.read_bytes()).hexdigest()
+        ensure_fixed_catalog(self.db, ato)
+        rows = self.db.all("SELECT sha256 FROM asset_revisions WHERE face='back' AND is_current=1")
+        self.assertEqual(2, len(rows))
+        self.assertEqual({expected}, {row["sha256"] for row in rows})
+
+    def test_ai3_completed_legacy_migration_keeps_later_upload_on_unified_upgrade(self):
+        payload = fixed_catalog_payload()
+        items = self.ai3_test_items()
+        apply_catalog(self.db, items, {**payload["source"], "catalog_version": "old-ai3-map"})
+        ordinary = [item for item in items if item.faces["back"].endswith("_AI_III_BACK.jpg")]
+        chosen = store_image(self.db, self.library, self.image("old-chosen.png", (180, 40, 150)),
+                             ordinary[0].id, "back", "chosen.png", "image/png")
+        self.db.set_meta("ai3_shared_backs_migration", self.db.get_meta("card_shared_backs_migration"))
+        self.db.execute("DELETE FROM meta WHERE key=?", ("card_shared_backs_migration",))
+        ato = self.root / "ato"
+        source = ato / ordinary[0].faces["back"]
+        source.parent.mkdir(parents=True)
+        Image.new("RGB", (320, 440), (20, 210, 40)).save(source)
+        ensure_fixed_catalog(self.db, ato)
+        self.assertEqual({chosen["sha256"]}, {row["sha256"] for row in self.db.all(
+            "SELECT sha256 FROM asset_revisions WHERE face='back' AND is_current=1")})
+        self.assertIn(ordinary[0].faces["back"], self.db.get_meta("card_shared_backs_migration")["completed"])
+
+    def test_ai3_uploaded_back_resolves_pending_migration_without_future_reset(self):
+        ensure_fixed_catalog(self.db)
+        item = next(item for item in self.ai3_test_items()
+                    if item.faces["back"].endswith("_AI_III_BACK.jpg"))
+        target = item.faces["back"]
+        self.assertIn(target, self.db.get_meta("card_shared_backs_migration")["pending"])
+        uploaded = store_image(self.db, self.library, self.image("chosen-back.png", (190, 20, 160)),
+                               item.id, "back", "chosen-back.png", "image/png")
+        self.assertIn(target, self.db.get_meta("card_shared_backs_migration")["completed"])
+        ato = self.root / "ato"
+        source = ato / target
+        source.parent.mkdir(parents=True)
+        Image.new("RGB", (320, 440), (10, 160, 30)).save(source)
+        ensure_fixed_catalog(self.db, ato)
+        self.assertEqual({uploaded["sha256"]}, {row["sha256"] for row in self.db.all(
+            "SELECT sha256 FROM asset_revisions WHERE face='back' AND is_current=1")})
+
+    def test_shared_back_artwork_upgrade_refreshes_known_legacy_migration_and_export(self):
+        items, target, ato, source, old_digest = self.migrated_shared_back_fixture()
+        state = self.db.get_meta("card_shared_backs_migration")
+        state.pop("canonical_sha256")
+        self.db.set_meta("ai3_shared_backs_migration", state)
+        self.db.execute("DELETE FROM meta WHERE key=?", ("card_shared_backs_migration",))
+        self.db.execute("UPDATE asset_revisions SET source=? WHERE face='back'",
+                        ("ai3-shared-back-migration",))
+        front = store_image(self.db, self.library, self.image("preserved-front.png"), items[0].id,
+                            "front", "front.png", "image/png")
+        Image.new("RGB", (320, 440), (20, 30, 40)).save(source)
+        corrected = hashlib.sha256(source.read_bytes()).hexdigest()
+        with patch("app.fixed_catalog.card_back_revisions", return_value={}):
+            ensure_fixed_catalog(self.db, ato)
+        self.assertEqual({old_digest}, {row["sha256"] for row in self.db.all(
+            "SELECT sha256 FROM asset_revisions WHERE face='back' AND is_current=1")})
+        with patch("app.fixed_catalog.card_back_revisions", return_value={
+            target: {"fromSha256": old_digest, "toSha256": corrected},
+        }):
+            ensure_fixed_catalog(self.db, ato)
+        rows = self.db.all("SELECT * FROM asset_revisions WHERE face='back' AND is_current=1")
+        self.assertEqual(5, len(rows))
+        self.assertEqual({corrected}, {row["sha256"] for row in rows})
+        self.assertEqual(5, self.db.one(
+            "SELECT COUNT(*) n FROM asset_revisions WHERE face='back' AND sha256=? AND is_current=0",
+            (old_digest,))["n"])
+        self.assertEqual(front["sha256"], self.db.one(
+            "SELECT sha256 FROM asset_revisions WHERE item_id=? AND face='front' AND is_current=1",
+            (items[0].id,))["sha256"])
+        filters = {key: False for key in ("include_stories", "include_bgm", "include_icons",
+                                        "include_cryptic", "include_mixed_media")}
+        output = self.root / "corrected.atopack"
+        export_package(self.db, self.library, output, filters)
+        with zipfile.ZipFile(output) as archive:
+            self.assertEqual(1, archive.namelist().count(target))
+            self.assertEqual(corrected, hashlib.sha256(archive.read(target)).hexdigest())
+        compat = self.root / "corrected.zip"
+        export_compat(self.db, self.library, compat, filters)
+        with zipfile.ZipFile(compat) as archive:
+            self.assertEqual(1, archive.namelist().count(target))
+            with archive.open(target) as stored, Image.open(stored) as picture:
+                self.assertEqual((320, 440), picture.size)
+                self.assertTrue(all(abs(left - right) <= 2
+                                    for left, right in zip(picture.getpixel((0, 0)), (20, 30, 40))))
+
+    def test_shared_back_artwork_upgrade_tracks_project_hash_and_keeps_missing_file(self):
+        _, target, ato, source, old_digest = self.migrated_shared_back_fixture()
+        self.assertEqual(old_digest, self.db.get_meta("card_shared_backs_migration")["canonical_sha256"][target])
+        Image.new("RGB", (320, 440), (20, 30, 40)).save(source)
+        corrected = hashlib.sha256(source.read_bytes()).hexdigest()
+        ensure_fixed_catalog(self.db, ato)
+        self.assertEqual({corrected}, {row["sha256"] for row in self.db.all(
+            "SELECT sha256 FROM asset_revisions WHERE face='back' AND is_current=1")})
+        self.assertEqual(corrected, self.db.get_meta("card_shared_backs_migration")["canonical_sha256"][target])
+        source.unlink()
+        ensure_fixed_catalog(self.db, ato)
+        self.assertEqual({corrected}, {row["sha256"] for row in self.db.all(
+            "SELECT sha256 FROM asset_revisions WHERE face='back' AND is_current=1")})
+
+    def test_shared_back_artwork_upgrade_protects_identical_user_upload(self):
+        items, _, ato, source, old_digest = self.migrated_shared_back_fixture()
+        uploaded = self.library / "tmp" / "same-as-canonical.jpg"
+        shutil.copyfile(source, uploaded)
+        store_image(self.db, self.library, uploaded, items[0].id, "back", uploaded.name, "image/jpeg")
+        Image.new("RGB", (320, 440), (20, 30, 40)).save(source)
+        ensure_fixed_catalog(self.db, ato)
+        rows = self.db.all("SELECT sha256,source FROM asset_revisions WHERE face='back' AND is_current=1")
+        self.assertEqual({old_digest}, {row["sha256"] for row in rows})
+        self.assertEqual({"upload"}, {row["source"] for row in rows})
+
+    def test_shared_back_artwork_upgrade_protects_transformed_then_restored_choice(self):
+        items, _, ato, source, old_digest = self.migrated_shared_back_fixture()
+        current = self.db.one("SELECT * FROM asset_revisions WHERE item_id=? AND face='back' AND is_current=1",
+                              (items[0].id,))
+        transformed = transform_revision(self.db, self.library, current, rotation=90)
+        restored = transform_revision(self.db, self.library, transformed, rotation=0)
+        self.assertEqual(old_digest, restored["sha256"])
+        self.assertEqual("{}", restored["transform_json"])
+        Image.new("RGB", (320, 440), (20, 30, 40)).save(source)
+        ensure_fixed_catalog(self.db, ato)
+        rows = self.db.all("SELECT sha256,source FROM asset_revisions WHERE face='back' AND is_current=1")
+        self.assertEqual({old_digest}, {row["sha256"] for row in rows})
+        self.assertEqual({"user-transform"}, {row["source"] for row in rows})
+
+    def test_shared_back_artwork_upgrade_preserves_library_only_completion(self):
+        mapping = ai3_card_back_paths()
+        items = [item for item in self.ai3_test_items(legacy=True)
+                 if mapping[item.faces["front"]].endswith("_AI_III_BACK.jpg")]
+        apply_catalog(self.db, items, {"catalog_version": "legacy-without-project"})
+        old = store_image(self.db, self.library, self.image("library-only.png"), items[0].id,
+                          "back", "library-only.png", "image/png")
+        ensure_fixed_catalog(self.db)
+        target = mapping[items[0].faces["front"]]
+        self.assertIsNone(self.db.get_meta("card_shared_backs_migration")["canonical_sha256"][target])
+        ato = self.root / "ato"
+        source = ato / target
+        source.parent.mkdir(parents=True)
+        Image.new("RGB", (320, 440), (20, 30, 40)).save(source)
+        with patch("app.fixed_catalog.card_back_revisions", return_value={
+            target: {"fromSha256": old["sha256"], "toSha256": hashlib.sha256(source.read_bytes()).hexdigest()},
+        }):
+            ensure_fixed_catalog(self.db, ato)
+        self.assertEqual({old["sha256"]}, {row["sha256"] for row in self.db.all(
+            "SELECT sha256 FROM asset_revisions WHERE face='back' AND is_current=1")})
 
     def test_export_skips_official_assets_unless_enabled(self):
         """official-assets/ 是本地私有的官中覆盖图，默认不进资料包。
@@ -332,7 +688,7 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(45, len(terrain_cards))
         self.assertTrue(any(item["number"] == "CJ1475" for item in payload["items"]))
         fixed_paths = {path for item in payload["items"] for path in item["faces"].values()}
-        # 4167 张固定素材（含新补录的 8 张等级面与 PNG 卡底，不含旧科技树底图和 28 张停用图标；C1/C3/C4 的 21 张
+        # 3644 张固定素材（AI/BP 的 669 张牌关系映射 145 张背图；含新补录的 8 张等级面、PNG 卡底，不含旧科技树底图和 28 张停用图标；C1/C3/C4 的 21 张
         #   战斗版图、C2 的 23 张扫描件与 C5 的 8 张版图块都已随文件删除退场）
         # + 84 张密语字形（随 crypticFiles 段分发）
         # + 19 首主控台 BGM（随 bgmFiles 段分发）
@@ -342,11 +698,11 @@ class CoreTests(unittest.TestCase):
         mixed_media_paths = {
             path for path in fixed_paths if path.startswith("story/assets/mixed-media/")
         }
-        self.assertEqual(4167, len(fixed_paths - bgm_paths - cryptic_paths - mixed_media_paths))
+        self.assertEqual(3644, len(fixed_paths - bgm_paths - cryptic_paths - mixed_media_paths))
         self.assertEqual(19, len(bgm_paths))
         self.assertEqual(84, len(cryptic_paths))
         self.assertEqual(435, len(mixed_media_paths))
-        self.assertEqual(4705, len(fixed_paths))
+        self.assertEqual(4182, len(fixed_paths))
         self.assertFalse(any(path.startswith("aibp/ps/other/resouce/") for path in fixed_paths))
         self.assertNotIn("aibp/ps/other/token/Ambrosia .png", fixed_paths)
         self.assertNotIn("aibp/ps/other/token/GF.jpg", fixed_paths)
@@ -387,6 +743,8 @@ class CoreTests(unittest.TestCase):
             [item["number"] for item in oracle_ai_iii],
         )
         self.assertTrue(all(set(item["faces"]) == {"front", "back"} for item in oracle_ai_iii))
+        oracle_ai_x = next(item for item in payload["items"] if item["number"] == "HYPERTIME_ORACLE_AI_X_002")
+        self.assertEqual("aibp/ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_AI_III_SPECIAL_BACK.jpg", oracle_ai_x["faces"]["back"])
         aibp_tokens = [item for item in payload["items"] if item["subgroup"] == "AIBP 标记"]
         self.assertEqual(16, len(aibp_tokens))
         active_token_labels = {label for key, label in AIBP_TOKEN_LABELS.items() if key not in {"Ambrosia", "GF"}}
@@ -447,6 +805,22 @@ class CoreTests(unittest.TestCase):
         saved = self.db.one("SELECT id FROM asset_revisions WHERE item_id=? AND is_current=1", (oracle_v.id,))
         self.assertEqual(revision["id"], saved["id"])
         self.assertFalse(any(item["module"] == "状态卡" for item in payload["items"]))
+
+    def test_oracle_ai_x_back_upgrades_existing_catalog_without_losing_front(self):
+        payload = fixed_catalog_payload()
+        old_item = CatalogItem(**next(item for item in payload["items"]
+                                     if item["number"] == "HYPERTIME_ORACLE_AI_X_002"))
+        old_item.faces.pop("back")
+        old_source = {**payload["source"], "catalog_version": payload["source"]["catalog_version"].replace(
+            "+oracle-ai-x-002-back-20261019", "")}
+        apply_catalog(self.db, [old_item], old_source)
+        revision = store_image(self.db, self.library, self.image(), old_item.id, "front", "photo.png", "image/png")
+        ensure_fixed_catalog(self.db)
+        saved_item = self.db.one("SELECT faces_json FROM catalog_items WHERE id=?", (old_item.id,))
+        self.assertEqual("aibp/ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_AI_III_SPECIAL_BACK.jpg",
+                         json.loads(saved_item["faces_json"])["back"])
+        saved_image = self.db.one("SELECT id FROM asset_revisions WHERE item_id=? AND face='front' AND is_current=1", (old_item.id,))
+        self.assertEqual(revision["id"], saved_image["id"])
 
     def test_fixed_catalog_registers_declared_binary_assets_without_private_files(self):
         checkout = self.root / "checkout"

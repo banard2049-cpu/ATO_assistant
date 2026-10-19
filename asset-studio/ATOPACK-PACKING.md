@@ -135,6 +135,21 @@ python asset-studio/tools/build_official_pack.py \
 
 ## 安卓导入要求
 
+### 2026-10-19 AI / BP 共享牌背
+
+当前 `aibp/card-backs.json` 将 669 张 AI / BP 卡映射到 145 个牌背文件；普通 AI III 与
+特殊 AI III 分开对应，Dragon of Phobos 的 18 张独立 BP 效果背面继续单独保留。
+包内每个共享目标只写一次，`assets` 保留各卡的 `itemId/face` 关联。90 张已调色牌背
+直接使用工程 JPG，Q85 豁免名单覆盖 AI / BP 的 `*_BACK.jpg`，不再重编码。
+
+请先更新到包含这份 mapping 的 APK / 程序，再导入本次重打的资源包。mapping 与导入
+逻辑随程序分发，单独导入 `.atopack` 不会更新旧 APK 的名单。新版 Android 会清理已退役
+编号牌背及其预览索引；导入旧包时跳过这些背面，正面与其他有效资源仍可导入。旧包无法
+补齐新的共享背面，需要导入新版包。已知调色前的共享背面也会跳过，避免覆盖修正图。
+
+Android 与 Asset Studio 均拒绝同一个共享目标声明不同 SHA-256 的资料包。Asset Studio
+安装共享背面时只写一个目标文件，并保留原 JPG 字节；缩略图按当前原图单独生成。
+
 ### 2026-10-17 分层地图
 
 新包增加可选的 `mapFiles` 段，保留格式版本 3 和原有地图条目 ID。当前完整包包含
@@ -149,7 +164,7 @@ python asset-studio/tools/build_official_pack.py \
 
 Q85 打包时使用 `--image-quality 85 --image-quality-keep-file asset-studio/pack-shrink-keep.txt`。
 该名单现已覆盖整个 `map/*`，包括仍走普通素材段的 C4 卡背和 C5 切换按钮；原有
-决战板图和使徒大图豁免规则继续保留。仅其他符合收益条件的图片进行重编码，不缩放分辨率。
+决战板图、使徒大图与 AI / BP 牌背豁免规则继续保留。仅其他符合收益条件的图片进行重编码，不缩放分辨率。
 
 **使用新分层资源包前，必须更新到包含 `mapFiles` 支持的 APK / 程序。** 旧 APK 会
 忽略这一可选字段，无法显示新包里只用图层保存的地图。新版仍识别旧整图资源包，

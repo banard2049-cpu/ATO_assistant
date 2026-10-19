@@ -28,6 +28,8 @@ window.ATO_TERMS = [
   // 尼采 / 无眼巨人的连击轨道与武器类型，按官方中文大卡卡面用词。
   // 完整双语标签只在连招操作区转换，民间版保留英文对照。
   { "from": "巨剑连招（Sword Combo）", "to": "刀剑连击", "scope": "#imageZoomAiComboActions" },
+  { "from": "刀剑连招（Sword Combo）", "to": "刀剑连击", "scope": "#imageZoomAiComboActions" },
+  { "from": "仇恨连招（Hatred Combo）", "to": "仇恨连击", "scope": "#imageZoomAiComboActions" },
   { "from": "火焰连招（Fire Combo）", "to": "火焰连击", "scope": "#imageZoomAiComboActions" },
   { "from": "神浆连招（Ambrosia Combo）", "to": "神浆连击", "scope": "#imageZoomAiComboActions" },
   { "from": "球锤连招（Mauls Combo）", "to": "铁槌连击", "scope": "#imageZoomAiComboActions" },

@@ -13456,10 +13456,12 @@
         const skipped = Number(result.skipped) || 0;
         const crypticSkipped = Number(result.cryptic_skipped) || 0;
         const crypticSummary = crypticSkipped ? `（其中密语字形 ${crypticSkipped} 张）` : "";
+        const legacyBacksSkipped = Number(result.legacy_card_backs_skipped ?? result.legacyCardBacksSkipped) || 0;
+        const legacyBackSummary = legacyBacksSkipped ? `已跳过 ${legacyBacksSkipped} 项旧版牌背；如牌背缺失，请导入新版资料包。` : "";
         const warnings = Array.isArray(result.cryptic_warnings) ? result.cryptic_warnings : [];
         const details = warnings.slice(0, 3).map(warning => `${warning.target || "密语字形"}：${warning.reason || "校验未通过"}`).join("\n");
-        elements.resourcePackStatus.textContent = `本次导入 ${result.assets} 张图片、${result.books} 本故事册；跳过 ${skipped} 项无效或缺失文件${crypticSummary}；共安装 ${result.totalResources} 项资源。`;
-        window.alert(`资源导入完成，跳过 ${skipped} 项${crypticSummary}。${details ? `\n${details}\n` : ""}应用将重新载入以启用新资源。`);
+        elements.resourcePackStatus.textContent = `本次导入 ${result.assets} 张图片、${result.books} 本故事册；跳过 ${skipped} 项${crypticSummary}；共安装 ${result.totalResources} 项资源。${legacyBackSummary}`;
+        window.alert(`资源导入完成，跳过 ${skipped} 项${crypticSummary}。${legacyBackSummary}${details ? `\n${details}\n` : ""}应用将重新载入以启用新资源。`);
         window.location.reload();
       };
     }

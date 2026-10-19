@@ -13,7 +13,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from app import official_assets
-from app.official_assets import clear_cache, find, resolve
+from app.official_assets import clear_cache, find, resolve, is_fixed_aibp_back
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -54,6 +54,61 @@ class OfficialAssetTests(unittest.TestCase):
         for folder in ("one", "two"):
             self.write(f"{folder}/CARD.jpg", folder.encode())
         self.assertIsNone(find(SCRATCH, "assets/cards/CARD.jpg"))
+
+    def test_fixed_aibp_backs_always_use_fan_fallback(self) -> None:
+        cases = (
+            ("HEKATON", "AI_I_001_BACK"),
+            ("HEKATON", "AI_II_006_BACK"),
+            ("HEKATON", "AI_III_003_BACK"),
+            ("HEKATON", "AI_III_BACK"),
+            ("HEKATON", "AI_III_SPECIAL_BACK"),
+            ("HEKATON", "AI_I_BACK"),
+            ("HEKATON", "AI_II_BACK"),
+            ("LABYRINTHAUROS", "BP_I_BACK"),
+            ("LABYRINTHAUROS", "BP_II_BACK"),
+            ("LABYRINTHAUROS", "BP_III_BACK"),
+            ("LABYRINTHAUROS", "BP_III_001_BACK"),
+            ("HYPERTIME_ORACLE", "AI_O_001_BACK"),
+            ("HYPERTIME_ORACLE", "AI_X_001_BACK"),
+            ("THE_NIETZSCJEAN", "ROUTINE_X_001_BACK__dup4"),
+            ("ICARIAN_HARPY", "ROUTINE_X_001_BACK"),
+            ("HEKATON", "SIGNATURE_X_001_BACK"),
+        )
+        fallback = SCRATCH / "fan.jpg"
+        for boss, stem in cases:
+            for layout in (f"aibp/ps/{boss}", f"ps/{boss}", boss):
+                with self.subTest(boss=boss, stem=stem, layout=layout):
+                    self.write(f"{layout}/{boss}_{stem}.PNG")
+                    clear_cache()
+                    target = f"aibp/ps/{boss}/{boss}_{stem}.jpg"
+                    self.assertTrue(is_fixed_aibp_back(target))
+                    self.assertEqual((fallback, False), resolve(SCRATCH, target, fallback))
+                    self.assertIsNone(find(SCRATCH, target.lower().replace("/", "\\")))
+
+    def test_effect_backs_and_unknown_faces_keep_official_artwork(self) -> None:
+        cases = [
+            (boss, "ROUTINE_X_001_BACK")
+            for boss in official_assets.EFFECT_ROUTINE_BACK_DECKS
+        ] + [
+            ("DRAGON_OF_PHOBOS", f"BP_{level}_00{number}_BACK")
+            for level in ("I", "II", "III") for number in range(1, 7)
+        ] + [
+            ("HEKATON", "TR_I_001_BACK"),
+            ("HEKATON", "AI_X_002_BACK"),
+            ("NEW_BOSS", "AI_I_001_BACK"),
+        ]
+        for boss, stem in cases:
+            with self.subTest(boss=boss, stem=stem):
+                target = f"aibp/ps/{boss}/{boss}_{stem}.jpg"
+                official = self.write(f"ps/{boss}/{boss}_{stem}.jpg", b"effect artwork")
+                clear_cache()
+                self.assertFalse(is_fixed_aibp_back(target))
+                self.assertEqual(official, find(SCRATCH, target))
+        # A filename shared by an unrelated module is outside the AIBP policy.
+        target = "assets/cards/HEKATON_AI_I_001_BACK.jpg"
+        official = self.write(target)
+        clear_cache()
+        self.assertEqual(official, find(SCRATCH, target))
 
     def test_other_extension_still_matches_the_target(self) -> None:
         """清单写 .jpg、官中图是 .png（或反过来）也算命中。"""

@@ -20,7 +20,7 @@ from .mixed_media_resources import allowed_target as is_mixed_media_target
 from .mixed_media_resources import collect_library as collect_mixed_media_library
 from .map_resources import collect_library as collect_map_library, covered_targets as covered_map_targets
 from .db import Database
-from .storage import sha256_file, write_compatible_image
+from .storage import ensure_preview, sha256_file, write_compatible_image
 from .story_extras import (
     ENTITY_INDEX_JSON_TARGET,
     ENTITY_INDEX_JS_TARGET,
@@ -136,7 +136,12 @@ def installable_relative(relative: str) -> str:
 
 
 def package_original_can_install_directly(row: dict, relative: str) -> bool:
-    if row.get("source") != "package":
+    from .fixed_catalog import SHARED_BACK_MIGRATION_SOURCES
+
+    source = row.get("source")
+    if source != "package" and not (
+        source in SHARED_BACK_MIGRATION_SOURCES and row.get("transform_json") in (None, "", "{}")
+    ):
         return False
     source_suffix = Path(row.get("original_name") or row["original_path"]).suffix.lower()
     target_suffix = PurePosixPath(relative).suffix.lower()
@@ -383,8 +388,12 @@ def install_plan(db: Database, library: Path, root: Path, replace_books: set[str
         if destination.exists() and not destination.is_file():
             raise ValueError(f"目标位置已存在同名文件夹，无法安装：{relative}")
         direct_copy = package_original_can_install_directly(row, relative)
-        source_rel = row["original_path"] if row["source"] == "package" else row["preview_path"]
+        source_rel = row["original_path"] if row["source"] == "package" or direct_copy else row["preview_path"]
         source = library / source_rel
+        if source_rel == row["preview_path"] and not source.is_file():
+            source = ensure_preview(db, library, source_rel) or source
+        if not source.is_file():
+            raise ValueError(f"素材库中的图片文件已丢失：{relative}")
         if destination.exists():
             if direct_copy:
                 status = "same" if sha256_file(destination) == row["sha256"] else "replace"
