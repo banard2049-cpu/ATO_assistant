@@ -311,13 +311,19 @@ class HostilePackSafetyTests(unittest.TestCase):
 
         pack = self.library / "exports" / "builtin.atopack"
         exported = export_package(self.db, self.library, pack)
-        self.assertEqual(len(samples), exported["assets"])
+        # Shared AI/BP backs are one physical file referenced by several cards:
+        # the manifest keeps one entry per card, install plans one per target.
+        current_assets = self.db.one(
+            "SELECT COUNT(*) AS n FROM asset_revisions WHERE is_current=1"
+        )["n"]
+        unique_targets = {target for _, _, target in samples.values()}
+        self.assertEqual(current_assets, exported["assets"])
         with zipfile.ZipFile(pack) as archive:
             members = set(archive.namelist())
         compat = self.library / "exports" / "builtin-compat.zip"
         escaped = export_compat(self.db, self.library, compat,
                                 {"include_stories": False, "include_bgm": False})
-        self.assertEqual(len(samples), escaped["files"])
+        self.assertEqual(len(unique_targets), escaped["files"])
         with zipfile.ZipFile(compat) as archive:
             compat_members = set(archive.namelist())
         for _, _, target in samples.values():
@@ -328,12 +334,12 @@ class HostilePackSafetyTests(unittest.TestCase):
         planned = {entry["target"] for entry in plan["files"]}
         for _, _, target in samples.values():
             self.assertIn(target, planned, "合法目标被安装计划挡掉了")
-        self.assertEqual(len(samples), plan["summary"]["add"])
+        self.assertEqual(len(unique_targets), plan["summary"]["add"])
         installed = apply_install(self.db, self.library, self.ato, [])
-        self.assertEqual(len(samples), installed["installed"])
+        self.assertEqual(len(unique_targets), installed["installed"])
         for _, _, target in samples.values():
             self.assertTrue((self.ato / Path(*target.split("/"))).is_file(), f"没有安装 {target}")
-        self.assertEqual(len(samples), install_plan(self.db, self.library, self.ato)["summary"]["same"])
+        self.assertEqual(len(unique_targets), install_plan(self.db, self.library, self.ato)["summary"]["same"])
 
     # ---- 4. 哈希谎言 ----------------------------------------------------
     def test_import_verifies_the_manifest_hash(self):
