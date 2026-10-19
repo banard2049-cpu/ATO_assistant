@@ -2446,7 +2446,7 @@
       }
     }
   </style>
-  <link rel="stylesheet" href="./api/dashboard.css?v=20261018-tech-simple6">
+  <link rel="stylesheet" href="./api/dashboard.css?v=20261020-acclimation-reminder2">
   <link rel="stylesheet" href="./assets/theme.css?v=20261007-misc-settings11">
   <script src="./story/data/english-source-data.js?v=20261011-english4"></script>
   <script src="./assets/theme.js?v=20261007-page-navigation1" defer></script>
@@ -2455,6 +2455,7 @@
   <script src="./assets/fan-card-trims-data.js?v=20261019-demidjinn-edge1" defer></script>
   <script src="./assets/fan-card-trims.js?v=20261017-fan-fringe2" defer></script>
   <script src="./assets/card-art.js?v=20261017-fan-fringe5" defer></script>
+  <link rel="stylesheet" href="./technology/trade-planner.css?v=20261019-negotiation-layout1">
 </head>
 <body data-theme-dashboard>
   <section id="authGate" class="auth-gate" hidden>
@@ -2503,12 +2504,12 @@
     <div class="dashboard-navigation">
       <nav class="record-links" aria-label="战役工具">
         <span id="campaignSaveStatus" class="campaign-save-status" data-state="saving" aria-live="polite">正在连接存档...</span>
-        <a class="record-card-link" href="./record/index.html" data-cycle-link><span class="nav-icon" aria-hidden="true" style="--nav-icon-w:19px;--nav-icon-h:13px;--icon-src:url(../assets/icons/argo.svg)"></span>阿尔戈号</a>
-        <a class="record-card-link hero-card-link" href="./hero/index.html" data-cycle-link><span class="nav-icon" aria-hidden="true" style="--nav-icon-w:15px;--nav-icon-h:17px;--icon-src:url(../assets/icons/argonauts.svg)"></span>英雄</a>
-        <a class="record-card-link aibp-card-link" href="./aibp/index.html" data-cycle-link><span class="nav-icon" aria-hidden="true" style="--nav-icon-w:16px;--nav-icon-h:16px;--icon-src:url(../assets/icons/evolution.svg)"></span>始徒</a>
-        <a class="record-card-link technology-card-link" href="./technology/index.html"><span class="nav-icon" aria-hidden="true" style="--nav-icon-w:14px;--nav-icon-h:18px;--icon-src:url(../assets/icons/technology.svg)"></span>科技</a>
-        <a class="record-card-link" href="./map/index.html" data-cycle-link><span class="nav-icon" aria-hidden="true" style="--nav-icon-w:16px;--nav-icon-h:16px;--icon-src:url(../assets/icons/map.svg)"></span>地图</a>
-        <a class="record-card-link" href="./story/index.html" data-cycle-link data-story-book-link><span class="nav-icon" aria-hidden="true" style="--nav-icon-w:16px;--nav-icon-h:16px;--icon-src:url(../assets/icons/story.svg)"></span>故事书</a>
+        <a class="record-card-link" href="./record/index.html" data-cycle-link><span class="nav-icon" aria-hidden="true" style="--nav-icon-w:19px;--nav-icon-h:13px;--icon-src:url(../assets/icons/argo.svg?v=apk-ui-a72da92bdf63)"></span>阿尔戈号</a>
+        <a class="record-card-link hero-card-link" href="./hero/index.html" data-cycle-link><span class="nav-icon" aria-hidden="true" style="--nav-icon-w:15px;--nav-icon-h:17px;--icon-src:url(../assets/icons/argonauts.svg?v=apk-ui-a72da92bdf63)"></span>英雄</a>
+        <a class="record-card-link aibp-card-link" href="./aibp/index.html" data-cycle-link><span class="nav-icon" aria-hidden="true" style="--nav-icon-w:16px;--nav-icon-h:16px;--icon-src:url(../assets/icons/evolution.svg?v=apk-ui-a72da92bdf63)"></span>始徒</a>
+        <a class="record-card-link technology-card-link" href="./technology/index.html"><span class="nav-icon" aria-hidden="true" style="--nav-icon-w:14px;--nav-icon-h:18px;--icon-src:url(../assets/icons/technology.svg?v=apk-ui-a72da92bdf63)"></span>科技</a>
+        <a class="record-card-link" href="./map/index.html" data-cycle-link><span class="nav-icon" aria-hidden="true" style="--nav-icon-w:16px;--nav-icon-h:16px;--icon-src:url(../assets/icons/map.svg?v=apk-ui-a72da92bdf63)"></span>地图</a>
+        <a class="record-card-link" href="./story/index.html" data-cycle-link data-story-book-link><span class="nav-icon" aria-hidden="true" style="--nav-icon-w:16px;--nav-icon-h:16px;--icon-src:url(../assets/icons/story.svg?v=apk-ui-a72da92bdf63)"></span>故事书</a>
       </nav>
       <label class="title-cycle-control">
         当前 Cycle
@@ -2534,6 +2535,16 @@
           </div>
         </div>
         <div class="panel-body">
+          <!-- 扎根（Acclimation）一年只有三天，错过当前日期就无法补做。和科技到期
+               提醒放在同一位置、同一套提醒条样式，避免错过当天。 -->
+          <section id="acclimationReminder" class="structure-tech-due acclimation-reminder" aria-live="polite" hidden>
+            <div class="structure-tech-due-item acclimation-reminder-item">
+              <span id="acclimationReminderText"></span>
+              <div class="structure-tech-due-actions">
+                <button id="acclimationReminderButton" type="button">扎根</button>
+              </div>
+            </div>
+          </section>
           <div id="structureTechDue" class="structure-tech-due" aria-live="polite" hidden></div>
           <div id="flowList" class="flow-list"></div>
         </div>
@@ -2621,6 +2632,19 @@
                 <button id="pageNavigationModeToggle" type="button" class="secondary settings-toggle-button" aria-pressed="false" data-dashboard-readonly-allowed>多页跳转</button>
               </div>
               <p class="theme-note">多页模式按模块打开或复用独立网页；单页模式在当前网页中切换模块。</p>
+            </div>
+            <div class="misc-setting-group">
+              <div class="misc-setting-heading">
+                <h3>宿敌结算</h3>
+              </div>
+              <div class="second-screen-card">
+                <label for="pursuitSettlementMode">探索抽卡后的宿敌处理</label>
+                <select id="pursuitSettlementMode" data-dashboard-readonly-allowed>
+                  <option value="auto">自动结算</option>
+                  <option value="manual">手动结算</option>
+                </select>
+                <p class="second-screen-hint">自动：结算探索卡时按追踪标记自动生成或移动宿敌。手动：只在探索步骤显示追踪标记数量与明细，不自动结算宿敌。</p>
+              </div>
             </div>
             <div class="misc-setting-group">
               <div class="misc-setting-heading second-screen-heading">
@@ -2722,7 +2746,7 @@
     </div>
   </dialog>
 
-  <script src="./assets/page-focus-router.js?v=20261007-page-navigation1"></script>
+  <script src="./assets/page-focus-router.js?v=20261020-module-probe1"></script>
   <script src="./assets/story-doom-card-data.js?v=20261014-card-face-audit2"></script>
   <script src="./assets/exploration-card-tags.js?v=20261018-card-audit1"></script>
   <script src="./assets/exploration-card-rules.js?v=20261018-card-audit1"></script>
@@ -2733,12 +2757,13 @@
   <script src="./assets/exploration-card-choices.js?v=20261013-next-choices12"></script>
   <script src="./assets/exploration-card-delays.js?v=20261013-automation5"></script>
   <script src="./assets/exploration-card-resources.js?v=20261018-card-audit1"></script>
-  <script src="./technology/negotiation-rules.js?v=20261018-trade-categories1"></script>
+  <script src="./technology/negotiation-rules.js?v=20261019-negotiation-split1"></script>
   <script src="./technology/voyage-action-rules.js?v=20261016-voyage3"></script>
   <script src="./technology/exploration-tech-rules.js?v=20261017-automation-audit4"></script>
-  <script src="./technology/structure-tech-rules.js?v=20261019-repair-targets1"></script>
+  <script src="./technology/structure-tech-rules.js?v=20261019-tech-cache1"></script>
   <script src="./technology/investigation-rules.js?v=20261018-dark-names1"></script>
-  <script src="./technology/structure-tech-client.js?v=20261018-tech-grouped5"></script>
+  <script src="./technology/structure-tech-client.js?v=20261020-exploration-fast1"></script>
+  <script src="./assets/exploration-trade-dialog.js?v=20261019-exploration-trade1"></script>
   <script src="./map/titan-markers.js?v=20261016-map-titan1"></script>
   <script src="./map/titan-capture-rules.js?v=20261016-map-titan1"></script>
   <script src="./map/map-tile-tags.js?v=20261016-icon-scope"></script>
@@ -2771,6 +2796,7 @@
     const campaignStorageUrl = "./api/campaign-state.php?section=dashboard";
     const campaignStorageSection = "dashboard";
     const termLanguageStorageKey = "ato-term-language-v1";
+    const pursuitSettlementStorageKey = "ato-pursuit-settlement-v1";
     const dashboardWriterLeaseKey = "ato-dashboard-writer-lease-v1";
     const dashboardWriterLeaseTtl = 12000;
     const dashboardWriterHeartbeatInterval = 3000;
@@ -3817,6 +3843,10 @@
       resourcePackStatus: document.querySelector("#resourcePackStatus"),
       dateTrackMeta: document.querySelector("#dateTrackMeta"),
       dateTrackList: document.querySelector("#dateTrackList"),
+      acclimationReminder: document.querySelector("#acclimationReminder"),
+      acclimationReminderText: document.querySelector("#acclimationReminderText"),
+      acclimationReminderButton: document.querySelector("#acclimationReminderButton"),
+      pursuitSettlementMode: document.querySelector("#pursuitSettlementMode"),
       secondScreenToggle: document.querySelector("#secondScreenToggle"),
       secondScreenAddress: document.querySelector("#secondScreenAddress"),
       secondScreenUrl: document.querySelector("#secondScreenUrl"),
@@ -3854,6 +3884,11 @@
     let campaignServerBaseline = null;
     let campaignInitialBaseline = null;
     let campaignExternalSyncInFlight = false;
+    // A sync notification that arrived while a read was already running. Focus
+    // and a "map returned" BroadcastChannel ping can land together, and the read
+    // in flight may predate the write the ping is about; dropping the ping would
+    // leave the console stale until the 4s poll.
+    let campaignExternalSyncPending = false;
     let campaignSessionEpoch = 0;
     let campaignReconnectTimer = null;
     let campaignReconnectInFlight = false;
@@ -4367,7 +4402,11 @@
 
     async function syncDashboardFromExternalUpdate() {
       if (campaignRestoreInFlight) return;
-      if (!campaignStorageAvailable || campaignExternalSyncInFlight || campaignConflictReloading || campaignSaveInFlight) return;
+      if (!campaignStorageAvailable || campaignConflictReloading || campaignSaveInFlight) return;
+      if (campaignExternalSyncInFlight) {
+        campaignExternalSyncPending = true;
+        return;
+      }
       campaignExternalSyncInFlight = true;
       const sessionEpoch = campaignSessionEpoch;
       const revisionBeforeRead = campaignSectionRevision;
@@ -4428,6 +4467,10 @@
         }
       } finally {
         campaignExternalSyncInFlight = false;
+        if (campaignExternalSyncPending) {
+          campaignExternalSyncPending = false;
+          void syncDashboardFromExternalUpdate();
+        }
       }
     }
 
@@ -4903,6 +4946,16 @@
     function normalizeState(value = {}, cycleId = "c2") {
       const { cardCounters: legacyCardCounters, ...normalizedValue } = value;
       const day = normalizeCampaignDay(value === defaultState ? undefined : value.day, cycleId);
+      const mapSnapshot = isPlainObject(value.mapSnapshot) ? { ...value.mapSnapshot } : (value.mapSnapshot ?? null);
+      if (isPlainObject(mapSnapshot)) {
+        const latestId = String(mapSnapshot.latestRevealedTileId || "");
+        const exploredDays = isPlainObject(mapSnapshot.exploredDays) ? { ...mapSnapshot.exploredDays } : {};
+        // 旧存档没有“翻开日”：把当前最新揭示的板块按今天补一次，之后进入下一天
+        // 它才算已探索，避免刚翻开的板块当天就弹出“已探索板块进展”的科技提醒。
+        if (latestId && exploredDays[latestId] === undefined
+            && (!mapSnapshot.cycleId || mapSnapshot.cycleId === cycleId)) exploredDays[latestId] = day;
+        mapSnapshot.exploredDays = exploredDays;
+      }
       const surveyConstantsDay = typeof value.surveyConstantsDay === "string" ? value.surveyConstantsDay : null;
       const surveyConstantsTouchedDay = typeof value.surveyConstantsTouchedDay === "string" ? value.surveyConstantsTouchedDay : null;
       const currentSurveyDay = `${cycleId}:${day}`;
@@ -4914,6 +4967,7 @@
         ...defaultState,
         ...normalizedValue,
         day,
+        mapSnapshot,
         dateNotes: isPlainObject(value.dateNotes) ? cloneJson(value.dateNotes) : {},
         techAutomation: normalizeStructureTechAutomation(value.techAutomation),
         mapCurrentTileTags: Array.isArray(value.mapCurrentTileTags)
@@ -5559,8 +5613,7 @@
       }
     }
 
-    // options.skipPendingConfirm：调用方刚刚已经把「还有 N 项未处理」的事告诉过玩家
-    // （例如点「结算完毕」那一下），就不要再弹一次确认。
+    // 点「结算完毕」已确认手动处理完成，跳过剩余待办的二次确认。
 
     function endExplorationDraw(options = {}) {
       if (typeof settleExplorationPursuit === "function" && settleExplorationPursuit.busy) return;
@@ -5598,7 +5651,7 @@
 
       explorationSettlePrepared = false;
       saveState();
-      renderFlow();
+      if (options.render !== false) renderFlow();
       void processExplorationDelays("explore-end");
     }
 
@@ -5894,6 +5947,7 @@
         cycles[cycle.id] = {
           currentTile: saved.currentTile || tokens.AG || "",
           explored: isPlainObject(saved.explored) ? saved.explored : {},
+          exploredDays: isPlainObject(saved.exploredDays) ? saved.exploredDays : {},
           previewRevealed: isPlainObject(saved.previewRevealed) ? saved.previewRevealed : {},
           latestRevealedTile: saved.latestRevealedTile || "",
           explorationEntries: isPlainObject(saved.explorationEntries) ? saved.explorationEntries : {},
@@ -6044,6 +6098,8 @@
       const adversary = cycle.tiles.find((tile) => tile.id === cycleState.tokens.AD);
       const latest = cycle.tiles.find((tile) => tile.id === cycleState.latestRevealedTile);
       const exploredIds = cycle.tiles.filter((tile) => cycleState.explored[tile.id]).map((tile) => tile.id);
+      const revealedIds = cycle.tiles.filter((tile) => cycleState.explored[tile.id]
+        || cycleState.previewRevealed?.[tile.id]).map((tile) => tile.id);
       const currentEntry = mapCommandTileEntry(cycleId, cycleState.currentTile, cycleState);
       const latestEntry = mapCommandTileEntry(cycleId, cycleState.latestRevealedTile, cycleState);
       const definitions = Object.fromEntries((window.ATO_MAP_TILE_TAGS?.tagDefinitions || []).map(tag => [tag.id, tag.label || tag.id]));
@@ -6109,6 +6165,14 @@
               `${tileId}:${tokenId}(${({ up: "上", right: "右", down: "下", left: "左" })[direction] || direction})`))),
         ],
         exploredIds,
+        revealedIds,
+        // 保留上一次快照里的翻开日：地图页保存的旧存档可能没有该字段，缺了就会
+        // 把“今天刚翻开”误判成“早已探索”。同一循环内合并，换循环时不串用。
+        exploredDays: {
+          ...(isPlainObject(state.mapSnapshot?.exploredDays) && state.mapSnapshot.cycleId === cycleId
+            ? state.mapSnapshot.exploredDays : {}),
+          ...(isPlainObject(cycleState.exploredDays) ? cycleState.exploredDays : {}),
+        },
         exploredCount: exploredIds.length,
         totalTiles: cycle.tiles.length,
       };
@@ -6132,7 +6196,7 @@
     }
 
     function inheritCycleFiveMapCommandFace(cycleState, destinationId) {
-      if (!destinationId || cycleState.explored[destinationId]) return;
+      if (!destinationId || cycleState.explored[destinationId] || cycleState.previewRevealed?.[destinationId]) return;
       const sourceId = cycleState.currentTile || cycleState.tokens.AG;
       if (!sourceId || sourceId === destinationId) return;
       cycleState.tileVariants ||= {};
@@ -6189,14 +6253,24 @@
 
         if (command === "move-argo") {
           const targetId = mapDirectionalTarget(cycle, cycleState, value);
-          const newlyExplored = !cycleState.explored[targetId];
+          const newlyExplored = !cycleState.explored[targetId] && !cycleState.previewRevealed?.[targetId];
           if (cycleId === "c5") inheritCycleFiveMapCommandFace(cycleState, targetId);
           syncMapCommandLandmarks(cycleId, cycleState, targetId);
           cycleState.currentTile = targetId;
           cycleState.tokens.AG = targetId;
-          cycleState.explored[targetId] = true;
-          if (cycleState.previewRevealed) delete cycleState.previewRevealed[targetId];
+          // 进入板块只“揭示”，不直接算已探索；已探索由进入下一天统一结算。
+          if (!cycleState.explored[targetId]) {
+            cycleState.previewRevealed ||= {};
+            cycleState.previewRevealed[targetId] = true;
+          }
           if (newlyExplored) cycleState.latestRevealedTile = targetId;
+          if (newlyExplored) {
+            const rawDay = typeof state === "object" && state ? state.day : undefined;
+            if (String(rawDay ?? "").trim() !== "") {
+              cycleState.exploredDays ||= {};
+              if (cycleState.exploredDays[targetId] === undefined) cycleState.exploredDays[targetId] = rawDay;
+            }
+          }
           if (newlyExplored && cycleId === "c3") (cycleState.explorationEntries ||= {})[targetId] = true;
           if (cycleState.tokens.AD === targetId) {
             cycleState.tokens.AD = "";
@@ -6208,20 +6282,29 @@
           } else {
             message = newlyExplored
               ? (cycleId === "c5"
-                ? `目标板块 ${targetId} 已按出发板块的 ${cycleState.tileVariants?.[targetId] === "alternate" ? "B" : "A"} 面揭示，阿尔戈号已移动过去。`
-                : `目标板块 ${targetId} 已自动标记为已探索，阿尔戈号已移动过去。`)
+                ? `目标板块 ${targetId} 已按出发板块的 ${cycleState.tileVariants?.[targetId] === "alternate" ? "B" : "A"} 面揭示，进入下一天后转为已探索。`
+                : `目标板块 ${targetId} 已揭示，进入下一天后转为已探索。`)
               : `阿尔戈号已移动至 ${targetId}。`;
           }
         } else if (command === "move-special") {
           const targets = currentC3SpecialTargets(cycle, cycleState);
           if (!targets.includes(value)) throw new Error("当前板块没有通向该板块的特殊连接。");
-          const newlyExplored = !cycleState.explored[value];
+          const newlyExplored = !cycleState.explored[value] && !cycleState.previewRevealed?.[value];
           syncMapCommandLandmarks(cycleId, cycleState, value);
           cycleState.currentTile = value;
           cycleState.tokens.AG = value;
-          cycleState.explored[value] = true;
-          if (cycleState.previewRevealed) delete cycleState.previewRevealed[value];
+          if (!cycleState.explored[value]) {
+            cycleState.previewRevealed ||= {};
+            cycleState.previewRevealed[value] = true;
+          }
           if (newlyExplored) cycleState.latestRevealedTile = value;
+          if (newlyExplored) {
+            const rawDay = typeof state === "object" && state ? state.day : undefined;
+            if (String(rawDay ?? "").trim() !== "") {
+              cycleState.exploredDays ||= {};
+              if (cycleState.exploredDays[value] === undefined) cycleState.exploredDays[value] = rawDay;
+            }
+          }
           if (newlyExplored && cycleId === "c3") (cycleState.explorationEntries ||= {})[value] = true;
           if (cycleState.tokens.AD === value) {
             cycleState.tokens.AD = "";
@@ -6232,7 +6315,7 @@
               : `阿尔戈号经特殊连接移动至 ${value}，与宿敌相遇：已移除宿敌，请结算宿敌战斗。`;
           } else {
             message = newlyExplored
-              ? `目标板块 ${value} 已自动标记为已探索，阿尔戈号已通过特殊连接移动过去。`
+              ? `目标板块 ${value} 已揭示，进入下一天后转为已探索。`
               : `阿尔戈号已通过特殊连接移动至 ${value}。`;
           }
         } else if (command === "flip-c5-tile") {
@@ -6779,7 +6862,7 @@
         const badge = [showProgress ? `进展 ${track.progress}` : "", def.key === "doom" ? `灾祸 ${track.doom}` : ""].filter(Boolean).join(" · ");
         const previewBadge = !def.fixed && !track.position && displayedCard ? '<span class="card-track-preview-badge">下张预览</span>' : "";
         const face = def.fixed
-          ? `<div class="card-track-knowledge"><div class="card-track-knowledge-value"><span class="card-track-knowledge-icon" aria-hidden="true" style="--icon-src:url(./assets/icons/argo-knowledge.svg)"></span><span>${track.position}</span></div><div class="card-track-knowledge-label">当前阿尔戈号知识</div></div>`
+          ? `<div class="card-track-knowledge"><div class="card-track-knowledge-value"><span class="card-track-knowledge-icon" aria-hidden="true" style="--icon-src:url(./assets/icons/argo-knowledge.svg?v=apk-ui-a72da92bdf63)"></span><span>${track.position}</span></div><div class="card-track-knowledge-label">当前阿尔戈号知识</div></div>`
           : (displayedCard?.image
             ? `<div class="card-track-face"><img src="${escapeHtml(displayedCard.image)}" alt="${escapeHtml(`${displayedCard.label} ${displayedCard.name}`)}"><span class="card-track-side-badge">${escapeHtml(displayedCard.label)}</span>${badge ? `<span class="card-track-progress-badge">${badge}</span>` : ""}${previewBadge}</div>`
             : '<div class="card-track-empty">无对应卡面</div>');
@@ -8229,7 +8312,7 @@
       // 探索步骤不显示静态提示，这里只作为宿敌命令结果的反馈区（空着时不占位）。
 
       status.textContent = stepId === "move"
-        ? "移动到未揭示目标时，会自动标记为已探索。"
+        ? "移动到未揭示目标时，会先揭示该板块；结束当天（进入下一天）时，阿尔戈号所在板块才转为已探索。"
         : "";
       return status;
     }
@@ -8309,6 +8392,18 @@
       }
     }
 
+    // Let the browser paint the clicked button's busy state before the
+    // settlement work starts. A bare rAF callback runs before paint, so wait
+    // for the next task after the frame as well.
+    function yieldToPaint() {
+      return new Promise((resolve) => {
+        if (typeof setTimeout !== "function") { resolve(); return; }
+        const afterPaint = () => setTimeout(resolve, 0);
+        if (typeof requestAnimationFrame === "function") requestAnimationFrame(afterPaint);
+        else afterPaint();
+      });
+    }
+
     function renderFlow() {
       elements.flowList.innerHTML = "";
       const fragment = document.createDocumentFragment();
@@ -8367,11 +8462,13 @@
           if (link.title) anchor.title = link.title;
           // 带 bgm 的入口（冒险中枢 / R&R / 回忆突破 / 内蕴奥德赛 / 法洛斯之梦 / 主线 / 特殊事件 / 战斗）
 
-          // 自动模式下临时切曲；新开标签让主控台继续播放。
+          // 自动模式下临时切曲；跳转交给 page-focus-router：多页模式会复用或新开
+          // 模块标签，让主控台留在这页继续播放；单页模式则在当前页切换。
+          // 这里不能再写 target="_blank" + rel="noopener"：noopener 会把新标签放进
+          // 另一个 browsing context group，故事书里的「返回主控台」就找不到原来
+          // 的主控台标签页，只能再开一个，表现为路由不回主控台。
 
           if (link.bgm) {
-            anchor.target = "_blank";
-            anchor.rel = "noopener";
             anchor.dataset.bgmStage = link.bgm;
             anchor.title = [anchor.title, "自动模式下临时切换背景音乐；手动锁定时保持当前音乐"].filter(Boolean).join("；");
             anchor.addEventListener("click", () => {
@@ -9214,6 +9311,35 @@
       if (mutateExplorationRecord.busy || settleExplorationDraw.busy || !ownsDashboardWriteLease()) return;
       if (!ensureExplorationDrawState().activePiles.flat().some(value => explorationRoundId(value) === explorationRoundId(entry))) return;
       const cycleId = currentCycleConfig().id;
+      // Optimistic UI: apply the same operation to the cached record and paint
+      // the settled card before the network write. The state is restored right
+      // after the paint, so the authoritative write still starts from the server
+      // record and a failed save simply re-renders the un-settled card.
+      const previousRecord = cachedArgoRecord;
+      const previousExploration = state.exploration;
+      const previousCardTracks = state.cardTracks;
+      const explorationSnapshot = JSON.parse(JSON.stringify(previousExploration || {}));
+      const cardTracksSnapshot = JSON.parse(JSON.stringify(previousCardTracks || {}));
+      const removalSnapshot = entry.removal;
+      if (isPlainObject(previousRecord)) {
+        try {
+          const draft = JSON.parse(JSON.stringify(previousRecord));
+          cachedArgoRecord = draft;
+          const optimistic = applyAutomaticExploration(draft, [entry]);
+          optimistic.updates.forEach(({ entry: current, receipt }) => syncExplorationBatchReceipt(current, receipt));
+          const previous = state.exploration.lastSettlementByCycle[cycleId]?.completed || [];
+          state.exploration.lastSettlementByCycle[cycleId] = { at: Date.now(),
+            completed: [...previous, ...optimistic.completed], pending: pendingExplorationEffects() };
+          renderFlow();
+        } catch (error) {
+          console.warn("探索卡乐观结算失败，等待服务端结果", error);
+        } finally {
+          cachedArgoRecord = previousRecord;
+          state.exploration = explorationSnapshot;
+          state.cardTracks = cardTracksSnapshot;
+          entry.removal = removalSnapshot;
+        }
+      }
       const result = await mutateExplorationRecord(record => applyAutomaticExploration(record, [entry]),
         `探索卡自动结算 D${entry.day} ${entry.name} #${entry.id}`);
       result.updates.forEach(({ entry: current, receipt }) => syncExplorationBatchReceipt(current, receipt));
@@ -9621,10 +9747,172 @@
     // 不落盘：本轮一旦结束就复位，属于一次结算交互里的临时状态。
 
     let explorationSettlePrepared = false;
-    function markExplorationSettlePrepared(value) {
+    function markExplorationSettlePrepared(value, options = {}) {
       if (explorationSettlePrepared === value) return;
       explorationSettlePrepared = value;
-      renderFlow();
+      if (options.render !== false) renderFlow();
+    }
+
+    function explorationRecordSection(section, profileId, record) {
+      const base = isPlainObject(section) && ("users" in section || "accounts" in section) ? section : {};
+      const next = { ...base, users: { ...(base.accounts || {}), ...(base.users || {}), [profileId]: record } };
+      delete next.accounts;
+      return next;
+    }
+
+    // Evaluate the automatic effects before deciding whether pursuit can share
+    // their write. Keep the preview isolated: failed saves and manual choices
+    // must not leave local receipts or card removals that never committed.
+    function previewExplorationSettlement(record, entries) {
+      const previousRecord = cachedArgoRecord;
+      const previousExploration = state.exploration;
+      const previousCardTracks = state.cardTracks;
+      try {
+        state.exploration = JSON.parse(JSON.stringify(previousExploration || {}));
+        state.cardTracks = JSON.parse(JSON.stringify(previousCardTracks || {}));
+        cachedArgoRecord = JSON.parse(JSON.stringify(record || {}));
+        const cycleId = currentCycleConfig().id;
+        const draftEntries = state.exploration.drawStateByCycle?.[cycleId]?.activePiles?.flat() || [];
+        const originals = new Map(entries.map(entry => [explorationRoundId(entry), entry]));
+        const result = applyAutomaticExploration(cachedArgoRecord,
+          draftEntries.filter(entry => originals.has(explorationRoundId(entry))));
+        cachedArgoRecord = result.record;
+        result.updates.forEach(({ entry, receipt }) => syncExplorationBatchReceipt(entry, receipt));
+        return { ...result, pending: pendingExplorationEffects(false),
+          exploration: state.exploration, cardTracks: state.cardTracks,
+          updates: result.updates.map(({ entry, receipt }) => ({ entry: originals.get(explorationRoundId(entry)), receipt })) };
+      } finally {
+        cachedArgoRecord = previousRecord;
+        state.exploration = previousExploration;
+        state.cardTracks = previousCardTracks;
+      }
+    }
+
+    // One exploration round used to write the record, flush the dashboard, and
+    // then write dashboard+record again for the pursuit event. The exploration
+    // record can instead ride along in the pursuit transaction: apply the same
+    // automatic settlement to the freshly loaded record, merge the local
+    // dashboard over the server copy, and submit both in one import-sections.
+    async function settleExplorationWithPursuit(entries, target, options = {}) {
+      const rules = window.ATO_EXPLORATION_PURSUIT;
+      if (!rules || typeof structureTechClient !== "function") return null;
+      const context = typeof getStructureTechContext === "function" ? getStructureTechContext() : null;
+      if (!context) return null;
+      const localRecord = cachedArgoRecord || context.record;
+      const localSettlement = previewExplorationSettlement(localRecord, entries);
+      if (localSettlement.pending.length) return null;
+      assertStructureTechTarget(target);
+      // Revisions protect every input read by pursuit, so the already loaded
+      // context can go straight to POST. A stale snapshot is reloaded once.
+      const cached = !options.fresh && context.campaign?.sections?.dashboard ? context : null;
+      const loaded = cached || await structureTechClient().load(target);
+      assertStructureTechTarget(target);
+      if (loaded.cycleId !== target.cycleId || String(loaded.day) !== String(state.day)) return null;
+      let submitted = false;
+      try {
+        const merged = mergeDashboardChanges(campaignSectionBaseline || campaignServerBaseline || defaultArchive,
+          archive, loaded.campaign.sections.dashboard);
+        if (merged.conflicts.length) throw new Error("其他页面修改了相同字段，请刷新后重试。");
+        const dashboard = merged.value;
+        const profile = dashboard.profiles?.[target.profileId];
+        const cycleState = profile?.cycles?.[target.cycleId]?.state;
+        if (!cycleState) throw new Error("当前循环档案不存在。");
+        const settlement = loaded.record === localRecord ? localSettlement : previewExplorationSettlement(loaded.record, entries);
+        if (settlement.pending.length) return null;
+        cycleState.exploration = settlement.exploration;
+        cycleState.cardTracks = settlement.cardTracks;
+        const current = {
+          ...loaded,
+          campaign: { ...loaded.campaign, sections: { ...loaded.campaign.sections, dashboard,
+            record: explorationRecordSection(loaded.campaign.sections.record, target.profileId, settlement.record) } },
+          record: settlement.record,
+          state: cycleState,
+          automation: cycleState.techAutomation || { version: 1, events: {} },
+          automationsByCycle: Object.fromEntries(Object.entries(profile.cycles || {})
+            .map(([id, saved]) => [id, saved?.state?.techAutomation])),
+          day: cycleState.day,
+        };
+        const preview = rules.plan(current);
+        if (!preview.ok || preview.settled || preview.code === "NO_EXPLORATION_ROUND") return null;
+        const operationId = preview.roundId;
+        const spawnTileId = document.querySelector(".exploration-pursuit [name='pursuitSpawnTile']")?.value || "";
+        submitted = true;
+        const result = await structureTechClient().submit({ ...target, expectedDay: current.day,
+          techKey: "pursuer problem", actionId: "exploration-pursuit", operationId,
+          selection: { roundId: operationId, waive: false, spawnTileId },
+          assertContext: () => assertStructureTechTarget(target),
+        }, { current, refreshAfterCommit: false });
+        await applyStructureTechCommit(result, target);
+        const committedRecord = cachedArgoRecord || {};
+        const missing = settlement.updates.filter(({ entry }) =>
+          !committedRecord.explorationBatchReceipts?.[explorationRoundId(entry)]);
+        if (missing.length) throw new Error("探索结算未完整写入，请重试。");
+        const activeEntries = new Map(ensureExplorationDrawState().activePiles.flat().map(entry => [explorationRoundId(entry), entry]));
+        settlement.updates.forEach(({ entry }) => {
+          const receipt = cachedArgoRecord?.explorationBatchReceipts?.[explorationRoundId(entry)];
+          if (receipt) syncExplorationBatchReceipt(activeEntries.get(explorationRoundId(entry)) || entry, receipt);
+        });
+        return { ...settlement, combined: true };
+      } catch (error) {
+        if (cached && error?.code === "SAVE_CONFLICT") {
+          return settleExplorationWithPursuit(entries, target, { fresh: true });
+        }
+        // Before the POST the fallback can safely resubmit through the normal
+        // record writer; after it the outcome is unknown, so surface the error.
+        try { error.combinedStage = submitted ? "submit" : "preload"; } catch { /* frozen error */ }
+        throw error;
+      }
+    }
+
+    // The finish action has already written the exploration record; it only
+    // needs the pursuit event and the local dashboard. Submit them together so
+    // the old "flush dashboard, then read the campaign again, then import" path
+    // becomes one import-sections request.
+    async function settlePursuitWithDashboard(target) {
+      const rules = window.ATO_EXPLORATION_PURSUIT;
+      if (!rules || typeof structureTechClient !== "function") return null;
+      const context = typeof getStructureTechContext === "function" ? getStructureTechContext() : null;
+      if (!context) return null;
+      const localPlan = rules.plan(context);
+      if (!localPlan.ok || localPlan.settled || localPlan.code === "NO_EXPLORATION_ROUND") return null;
+      assertStructureTechTarget(target);
+      const loaded = await structureTechClient().load(target);
+      assertStructureTechTarget(target);
+      if (loaded.cycleId !== target.cycleId || String(loaded.day) !== String(state.day)) return null;
+      let submitted = false;
+      try {
+        const merged = mergeDashboardChanges(campaignSectionBaseline || campaignServerBaseline || defaultArchive,
+          archive, loaded.campaign.sections.dashboard);
+        if (merged.conflicts.length) throw new Error("其他页面修改了相同字段，请刷新后重试。");
+        const dashboard = merged.value;
+        const profile = dashboard.profiles?.[target.profileId];
+        const cycleState = profile?.cycles?.[target.cycleId]?.state;
+        if (!cycleState) throw new Error("当前循环档案不存在。");
+        const current = {
+          ...loaded,
+          campaign: { ...loaded.campaign, sections: { ...loaded.campaign.sections, dashboard } },
+          state: cycleState,
+          automation: cycleState.techAutomation || { version: 1, events: {} },
+          automationsByCycle: Object.fromEntries(Object.entries(profile.cycles || {})
+            .map(([id, saved]) => [id, saved?.state?.techAutomation])),
+          day: cycleState.day,
+        };
+        const preview = rules.plan(current);
+        if (!preview.ok || preview.settled || preview.code === "NO_EXPLORATION_ROUND") return null;
+        const operationId = preview.roundId;
+        const spawnTileId = document.querySelector(".exploration-pursuit [name='pursuitSpawnTile']")?.value || "";
+        submitted = true;
+        const result = await structureTechClient().submit({ ...target, expectedDay: current.day,
+          techKey: "pursuer problem", actionId: "exploration-pursuit", operationId,
+          selection: { roundId: operationId, waive: false, spawnTileId },
+          assertContext: () => assertStructureTechTarget(target),
+        }, { current, refreshAfterCommit: false });
+        await applyStructureTechCommit(result, target);
+        return result.operation;
+      } catch (error) {
+        try { error.combinedStage = submitted ? "submit" : "preload"; } catch { /* frozen error */ }
+        throw error;
+      }
     }
 
     async function settleExplorationDraw() {
@@ -9635,29 +9923,43 @@
       const entries = ensureExplorationDrawState().activePiles.flat();
       if (!entries.length) return;
       const cycleId = currentCycleConfig().id;
+      const autoPursuit = pursuitSettlementMode() !== "manual";
       settleExplorationDraw.busy = true;
       try {
-        const result = await mutateExplorationRecord((record) => applyAutomaticExploration(record, entries),
-          `一键结算探索卡 D${state.day}：${entries.map((entry) => entry.name).join("、")}`);
-        result.updates.forEach(({ entry, receipt }) => syncExplorationBatchReceipt(entry, receipt));
+        let result = null;
+        if (autoPursuit && typeof settleExplorationWithPursuit === "function") {
+          const target = structureTechTarget();
+          try {
+            result = await settleExplorationWithPursuit(entries, target);
+          } catch (error) {
+            if (error?.combinedStage === "submit") throw error;
+            if (typeof assertStructureTechTarget === "function") assertStructureTechTarget(target);
+            console.warn("合并结算不可用，回退为分步写入", error);
+          }
+        }
+        if (!result) {
+          result = await mutateExplorationRecord((record) => applyAutomaticExploration(record, entries),
+            `一键结算探索卡 D${state.day}：${entries.map((entry) => entry.name).join("、")}`);
+          result.updates.forEach(({ entry, receipt }) => syncExplorationBatchReceipt(entry, receipt));
+        }
         syncExplorationTokenPlacementQueue();
         const pending = pendingExplorationEffects(false);
         // Choices and manual effects can still change Fate or diplomacy, which
         // determine pursuit. Freeze its receipt only after those are resolved.
-        if (!pending.length && typeof settleExplorationPursuit === "function") {
+        if (autoPursuit && !result.combined && !pending.length && typeof settleExplorationPursuit === "function") {
           await settleExplorationPursuit(false, document.querySelector(".exploration-pursuit [name='pursuitSpawnTile']")?.value || "");
         }
         const previous = state.exploration.lastSettlementByCycle[cycleId]?.completed || [];
         state.exploration.lastSettlementByCycle[cycleId] = { at: Date.now(), completed: [...previous, ...result.completed], pending };
         saveState();
         if (!pending.length) {
-          endExplorationDraw();
+          endExplorationDraw({ render: false });
         } else {
           // 还有手工活：不弹窗打断（待办就列在下面的结算明细里），只把按钮改成
 
           // 「结算完毕」，让玩家自己决定什么时候点它结束本轮探索。
 
-          markExplorationSettlePrepared(true);
+          markExplorationSettlePrepared(true, { render: false });
         }
       } catch (error) {
         window.alert(`一键结算失败，当前牌组已保留：${error?.message || error}`);
@@ -9672,11 +9974,33 @@
         window.alert("正在结算探索效果，请稍候。");
         return;
       }
-      if (pendingExplorationEffects(false).length) {
-        window.alert("请先处理剩余选项，并将已手动处理的效果标记完成，再结算追踪并结束探索。");
-        return;
+      if (!ensureExplorationDrawState().activePiles.flat().length) return;
+      settleExplorationDraw.busy = true;
+      try {
+        // The finish action confirms the player handled any remaining effects.
+        // Do not replay automatic effects that may already be resolved manually.
+        // 手动结算模式下这里也不动宿敌，只保留追踪计数。
+        const autoPursuit = pursuitSettlementMode() !== "manual";
+        let pursued = false;
+        if (autoPursuit && typeof settlePursuitWithDashboard === "function") {
+          try { pursued = Boolean(await settlePursuitWithDashboard(structureTechTarget())); }
+          catch (error) {
+            if (error?.combinedStage === "submit") throw error;
+            console.warn("合并追踪结算不可用，回退为分步写入", error);
+          }
+        }
+        if (autoPursuit && !pursued && typeof settleExplorationPursuit === "function") {
+          await settleExplorationPursuit(false, document.querySelector(".exploration-pursuit [name='pursuitSpawnTile']")?.value || "");
+        }
+        const settlement = state.exploration.lastSettlementByCycle[currentCycleConfig().id];
+        if (settlement) settlement.pending = [];
+        endExplorationDraw({ skipPendingConfirm: true, render: false });
+      } catch (error) {
+        window.alert(`结算失败，当前牌组已保留：${error?.message || error}`);
+      } finally {
+        settleExplorationDraw.busy = false;
+        renderFlow();
       }
-      await settleExplorationDraw();
     }
 
     function explorationEffectDescriptors(entry, card, context) {
@@ -10147,63 +10471,75 @@
           status.textContent = "本堆禁止获得资源，无法兑换资源。";
           return box;
         }
-        const select = document.createElement("select");
-        select.setAttribute("aria-label", "商人兑换项目");
-        merchant.trades.forEach((trade) => {
-          const option = document.createElement("option");
-          option.value = trade.id;
-          option.textContent = rules.tradeLabel(trade, cycleId, cachedArgoRecord || {}, explorationResourceDataset());
-          select.appendChild(option);
+        let dialog = null;
+        button("打开交易窗口", () => {
+          if (dialog?.open) return;
+          const profileId = archive.activeProfileId, targetState = state, accountId = sessionUser?.id || "";
+          const assertContext = () => {
+            if (archive.activeProfileId !== profileId || currentCycleConfig().id !== cycleId || state !== targetState
+              || (sessionUser?.id || "") !== accountId) throw new Error("档案或循环已切换，请重新打开交易窗口。");
+            if (!ownsDashboardWriteLease()) throw new Error("请先接管编辑再交易。");
+          };
+          try {
+            dialog = window.ATO_EXPLORATION_TRADE_DIALOG.open({ parent: box, title: `${entry.name} #${entry.id}`,
+              card, profileId, day: entry.day, roundId, dataset: explorationResourceDataset(), assertContext,
+              history: () => effects.trades || [],
+              load: async () => {
+                const server = await readServerArgoRecord(profileId);
+                assertContext();
+                if (!server.available) throw new Error("读取不到记录表存档，无法交易。");
+                cachedArgoRecord = server.record;
+                return server.record;
+              },
+              submit: (steps, operationId) => mutateExplorationRecord(record => {
+                assertContext();
+                const ledger = explorationBatchReceipt(record, entry);
+                const signature = JSON.stringify(steps);
+                const saved = ledger.tradeOperations?.[operationId];
+                if (saved) {
+                  if (saved.signature !== signature) throw new Error("交易请求已变化，请重新打开窗口。");
+                  return { record, receipts: saved.receipts };
+                }
+                const live = explorationBatchContext(entry, card, record, ledger);
+                if (live.blockResourceGains) throw new Error("本堆禁止获得资源，无法兑换资源。");
+                if (!Array.isArray(steps) || !steps.length) throw new Error("请先选择兑换资源。");
+                const receipts = [], history = [...(effects.trades || [])];
+                for (const step of steps) {
+                  const trade = merchant.trades.find(item => item.id === step.routeId);
+                  const result = rules.executeTrade(record, cycleId, card.key, trade, step.count, roundId, explorationResourceDataset(), history);
+                  const receipt = { ...result.receipt, batchId: operationId };
+                  record = result.record; receipts.push(receipt); history.push(receipt);
+                }
+                (explorationBatchReceipt(record, entry).tradeOperations ||= {})[operationId] = { signature, receipts };
+                return { record, receipts };
+              }, `商人交易 D${entry.day} ${entry.name} #${entry.id}`),
+              onCommitted: result => {
+                const trades = effects.trades ||= [];
+                for (const receipt of result.receipts) if (!trades.some(item => item.id === receipt.id)) trades.push(receipt);
+                effects.merchantDone = Number(result.record.explorationTradeRounds[roundId]?.count) >= merchant.limit;
+                effects.context ||= explorationContextSnapshot(context);
+                saveState(); renderFlow();
+              },
+              undo: async () => {
+                assertContext();
+                const receipt = effects.trades?.at(-1);
+                if (!receipt) return;
+                const batch = receipt.batchId ? effects.trades.filter(item => item.batchId === receipt.batchId) : [receipt];
+                await mutateExplorationRecord(record => {
+                  const history = [...effects.trades];
+                  for (const item of [...batch].reverse()) {
+                    record = rules.undoTrade(record, item, history, explorationResourceDataset());
+                    history.splice(history.findIndex(prior => prior.id === item.id), 1);
+                  }
+                  return { record };
+                }, `撤销商人兑换 D${entry.day} ${entry.name} #${entry.id}`);
+                effects.trades = effects.trades.filter(item => !batch.some(prior => prior.id === item.id));
+                effects.merchantDone = false; saveState(); renderFlow();
+              },
+              finish: () => { effects.merchantDone = true; saveState(); renderFlow(); },
+            });
+          } catch (error) { window.alert(error.message || String(error)); }
         });
-        select.value = merchant.trades.some(item => item.id === effects.choices.merchantTrade) ? effects.choices.merchantTrade : merchant.trades[0]?.id || "";
-        const stock = document.createElement("div");
-        stock.className = "exploration-settle-status";
-        stock.setAttribute("aria-live", "polite");
-        const refreshStock = () => {
-          effects.choices.merchantTrade = select.value;
-          const trade = merchant.trades.find(item => item.id === select.value);
-          stock.textContent = trade ? rules.tradeLabel(trade, cycleId, cachedArgoRecord || {}, explorationResourceDataset()) : "";
-        };
-        select.addEventListener("change", refreshStock);
-        refreshStock();
-        box.appendChild(stock);
-        const times = document.createElement("input");
-        times.type = "number";
-        times.min = "1";
-        times.value = "1";
-        times.setAttribute("aria-label", "兑换次数");
-        times.title = "同一种兑换可填写任意次数，仍只占 1 类额度";
-        times.style.width = "55px";
-        controls.append(select, times);
-        const exchange = button("执行兑换", () => {
-          const trade = merchant.trades.find((item) => item.id === select.value);
-          const quantity = Number(times.value);
-          void run((record) => rules.executeTrade(record, cycleId, card.key, trade, quantity, roundId, explorationResourceDataset(), effects.trades || []), (result) => {
-            (effects.trades ||= []).push(result.receipt);
-            effects.merchantDone = Number(result.record.explorationTradeRounds[roundId].count) >= merchant.limit;
-          }, "商人兑换");
-        });
-        // Repeating an already-used exchange stays available even when all five
-        // categories are taken; only a sixth distinct category is blocked.
-        const updateExchange = () => {
-          const full = count >= merchant.limit;
-          exchange.disabled = Boolean(effects.merchantDone) || (full && !(usage?.used || []).includes(select.value));
-        };
-        select.addEventListener("change", updateExchange);
-        updateExchange();
-        button(effects.merchantDone ? "继续交易" : "结束交易", () => {
-          if (mutateExplorationRecord.busy || !ownsDashboardWriteLease()) return;
-          effects.merchantDone = !effects.merchantDone;
-          saveState(); renderFlow();
-        });
-        if ((effects.trades || []).length) {
-          button("撤销上次兑换", () => {
-            const receipt = effects.trades[effects.trades.length - 1];
-            void run((record) => ({ record: rules.undoTrade(record, receipt, effects.trades, explorationResourceDataset()) }), () => {
-              effects.trades.pop(); effects.merchantDone = false;
-            }, "撤销商人兑换");
-          });
-        }
         for (const reward of merchant.rewards) {
           const applied = effects.applied[reward.id];
           const condition = explorationResourceRules().conditionMet(reward.condition, context);
@@ -10812,12 +11148,17 @@
         status.textContent = `${statusText}${selectedFaction && localFactions.length > 1
           ? ` · 适用：${mapFactionLabel(cycleId, selectedFaction, localFactions.indexOf(selectedFaction))}` : ""}`;
 
-        const runSettle = async (variant) => {
+        const runSettle = async (variant, trigger = null) => {
           if (getExplorationSettlement(entry)) return;
           if (!variant) {
-            setBusy(true, "正在写入记录表…");
+            setBusy(true, "正在结算…");
+            if (trigger) trigger.textContent = "正在结算…";
+            await yieldToPaint();
             try { await settleExplorationCard(entry); }
             catch (error) { setBusy(false); window.alert(`自动结算失败：${error?.message || error}`); renderFlow(); }
+            finally {
+              if (trigger?.isConnected && trigger.textContent === "正在结算…") { setBusy(false); renderFlow(); }
+            }
             return;
           }
           const grants = variant ? variant.grants : plan.grants;
@@ -10826,7 +11167,9 @@
           const summary = rules.describeChanges(changes);
           const settlement = explorationSettlementStore(entry);
           const savedContext = explorationContextSnapshot(context);
-          setBusy(true, "正在写入记录表…");
+          setBusy(true, "正在结算…");
+          if (trigger) trigger.textContent = "正在结算…";
+          await yieldToPaint();
           try {
             const record = await writeExplorationResourceChanges(
               changes,
@@ -10856,7 +11199,7 @@
             button.type = "button";
             button.textContent = "自动结算";
             button.title = plan.summary;
-            button.addEventListener("click", () => void runSettle(null));
+            button.addEventListener("click", () => void runSettle(null, button));
             actions.appendChild(button);
           }
         } else if (plan.status === "choice") {
@@ -10867,7 +11210,7 @@
             button.textContent = variant.id === "base" ? "基础值结算" : variant.label;
             const conditionHint = variant.badge ? `条件：${variant.badge}。` : "";
             button.title = `${conditionHint}${rules.describeChanges(rules.planChanges(explorationResourceDataset(), cycleId, variant.grants))}（卡面条件无法自动判定，请按实际战况选择）`;
-            button.addEventListener("click", () => void runSettle(variant));
+            button.addEventListener("click", () => void runSettle(variant, button));
             actions.appendChild(button);
           });
         }
@@ -10900,9 +11243,21 @@
       return block;
     }
 
+    // 宿敌结算方式只影响「自动」路径（一键结算、结算完毕）；手动模式只展示追踪计数，
+    // 由玩家自行在地图或其他地方结算。设置在浏览器本地保存，默认自动。
+    function pursuitSettlementMode() {
+      try { return localStorage.getItem(pursuitSettlementStorageKey) === "manual" ? "manual" : "auto"; }
+      catch { return "auto"; }
+    }
+
+    function setPursuitSettlementMode(value) {
+      try { localStorage.setItem(pursuitSettlementStorageKey, value === "manual" ? "manual" : "auto"); } catch {}
+      renderFlow();
+    }
+
     async function settleExplorationPursuit(waive = false, spawnTileId = "") {
       if (settleExplorationPursuit.busy || mapCommandBusy || mutateExplorationRecord.busy) throw new Error("地图或探索正在结算，请稍候。");
-      if (pendingExplorationEffects(false).length) throw new Error("请先完成探索卡的选项与效果，再结算追踪。");
+      // 追踪按点击时的命运与外交直接结算：探索卡的待办不再阻塞，之后处理卡面效果也不会回改这次追踪。
       const rules = window.ATO_EXPLORATION_PURSUIT;
       if (!rules) throw new Error("追踪结算规则未加载，请刷新页面。");
       const target = structureTechTarget();
@@ -10990,10 +11345,17 @@
         }
         box.appendChild(details);
       }
-      note.textContent = !preview.ok ? preview.message : preview.mode === "spawn" ? "地图无宿敌，本轮达到 2 个标记，将生成宿敌（本次不再移动）。"
+      const manualMode = pursuitSettlementMode() === "manual";
+      note.textContent = manualMode
+        ? (count.ok
+          ? `手动结算：本轮 ${count.total} 个宿敌标记，请按计数自行结算（不会自动生成或移动宿敌）。`
+          : count.message)
+        : !preview.ok ? preview.message : preview.mode === "spawn" ? "地图无宿敌，本轮达到 2 个标记，将生成宿敌（本次不再移动）。"
         : preview.mode === "move" ? `宿敌将移动 ${preview.steps} 格；一键结算默认不豁免。`
         : "无事发生。一键结算会记录本轮已处理。";
       box.appendChild(note);
+      // 手动模式下只做计数提示，不提供生成/移动/豁免按钮，避免误触自动结算。
+      if (manualMode) return box;
       if (!preview.ok || !context) return box;
       let location;
       if (preview.candidates?.length > 1) {
@@ -11067,12 +11429,20 @@
       drawButton.textContent = settleButtonText;
       drawButton.disabled = (selectedIds.length === 0 && !hasActiveExplorationDraw)
         || Boolean(settleExplorationDraw.busy || mutateExplorationRecord.busy);
-      drawButton.addEventListener("click", () => {
+      drawButton.addEventListener("click", async () => {
         if (!hasActiveExplorationDraw) {
           drawExplorationCard();
           return;
         }
-        if (explorationSettlePrepared) void completeExplorationDraw();
+        if (settleExplorationDraw.busy || mutateExplorationRecord.busy) return;
+        const finishing = explorationSettlePrepared;
+        drawButton.disabled = true;
+        drawButton.textContent = finishing ? "正在结束…" : "正在结算…";
+        drawButton.setAttribute("aria-busy", "true");
+        // Paint the busy state before the settlement starts; the actual save can
+        // finish later without the button looking dead.
+        await yieldToPaint();
+        if (finishing) void completeExplorationDraw();
         else void settleExplorationDraw();
       });
 
@@ -11507,7 +11877,10 @@
       actions.className = "map-titan-actions";
       const addButton = (label, run, result = "") => {
         const button = document.createElement("button");
-        button.type = "button"; button.className = "secondary"; button.textContent = label;
+        button.type = "button";
+        // 与「生成宿敌」一致：绿色主按钮 .step-action-button，放在提醒条右上角。
+        button.className = "step-action-button";
+        button.textContent = label;
         if (result) button.dataset.mapTitanResult = result;
         button.disabled = mapTitanCaptureBusy || !ownsDashboardWriteLease();
         button.addEventListener("click", run); actions.appendChild(button);
@@ -11617,7 +11990,11 @@
         || structureTechContext.cycleId !== currentCycleConfig().id) return null;
       const automationsByCycle = Object.fromEntries(Object.entries(archive.profiles?.[archive.activeProfileId]?.cycles || {})
         .map(([cycle, saved]) => [cycle, saved?.state?.techAutomation]));
-      return { ...structureTechContext, day: state.day, state: cloneJson(state), automation: state.techAutomation, automationsByCycle,
+      // This function runs dozens of times per render (once per date cell and
+      // per tech panel). Rules only read this view and copy it before mutating,
+      // so a shallow copy is enough; the old deep clone of the whole cycle state
+      // was the largest single cost in a settlement render.
+      return { ...structureTechContext, day: state.day, state: { ...state }, automation: state.techAutomation, automationsByCycle,
         record: cachedArgoRecord || structureTechContext.record };
     }
 
@@ -11803,9 +12180,9 @@
       return (context && window.ATO_STRUCTURE_TECH_RULES?.referenceText?.(context, techKey, text)) ?? text;
     }
 
-    function structureTechTimelineItems(day) {
+    function structureTechTimelineItems(day, events = null) {
       const items = [];
-      for (const event of structureTechEvents()) {
+      for (const event of events || structureTechEvents()) {
         if (event.skipTimeline) continue;
         if (String(event.dueDay) === String(day)) {
           const completed = event.status === "completed";
@@ -12421,7 +12798,7 @@
     function argoFateChipHtml() {
       const value = escapeHtml(currentArgoFateValue());
       return `<span class="argo-fate-chip" title="当前阿尔戈号命运：${value}">`
-        + '<span class="argo-fate-chip-icon" aria-hidden="true" style="--icon-src:url(./assets/icons/argo-fate.svg)"></span>'
+        + '<span class="argo-fate-chip-icon" aria-hidden="true" style="--icon-src:url(./assets/icons/argo-fate.svg?v=apk-ui-a72da92bdf63)"></span>'
         + `<span>${value}</span></span>`;
     }
 
@@ -12432,11 +12809,27 @@
       return [{
         title: "当前地点可谈判",
         tag: { label: "谈判", className: "structure-tech negotiation" },
-        desc: `${currentMapTileLabel()} 可谈判。选择下方科技能力并结算；点击科技名称可查看卡图。`,
+        desc: `${currentMapTileLabel()} 可谈判。展开下方能力，选择谈判方式与代价后结算；点击「查看卡图」打开科技卡。`,
         className: "negotiation",
         collapsible: true,
         argoFate: true,
       }];
+    }
+
+    // 当天翻开的板块要到“进入下一天”才算已探索：地图存档记下翻开时的游戏日，
+    // 提醒据此把“今天刚翻开”与“之前已探索”区分开，检定类科技只在后一天提示。
+    function currentTileRevealDayState() {
+      const snapshot = state.mapSnapshot;
+      const tileId = snapshot?.currentTileId || "";
+      const raw = tileId ? snapshot?.exploredDays?.[tileId] : undefined;
+      const rawText = raw === undefined ? "" : String(raw).trim();
+      const currentText = String(state.day ?? "").trim();
+      const known = rawText !== "" && currentText !== "";
+      const revealed = Number(rawText);
+      const current = Number(currentText);
+      const revealedToday = known && (rawText.toUpperCase() === currentText.toUpperCase()
+        || (Number.isFinite(revealed) && Number.isFinite(current) && revealed >= current));
+      return { tileId, known, revealedToday };
     }
 
     function getMapProgressTechReminders() {
@@ -12444,9 +12837,11 @@
       const context = typeof getStructureTechContext === "function" ? getStructureTechContext() : null;
       if (!rules?.mapProgressReminders || !context) return [];
       const snapshot = state.mapSnapshot;
+      const reveal = currentTileRevealDayState();
       const explored = Boolean(snapshot?.currentTileId && Array.isArray(snapshot.exploredIds)
         && snapshot.exploredIds.includes(snapshot.currentTileId)
-        && (!snapshot.cycleId || snapshot.cycleId === currentCycleConfig().id));
+        && (!snapshot.cycleId || snapshot.cycleId === currentCycleConfig().id)
+        && !reveal.revealedToday);
       return rules.mapProgressReminders({ ...context, cycleId: currentCycleConfig().id,
         map: { explored, tags: [...currentMapTagSet()] } }).map(reminder => ({
         techKey: reminder.techKey,
@@ -12521,6 +12916,7 @@
     function getStoryMapReminders() {
       const tags = currentMapTagSet();
       const reminders = [];
+      // 免费进展只跟着“最新揭示”走：进入下一天结算时会清掉 latest，所以只在翻开当天提示。
       if (tags.has("progress") && state.mapCurrentTileIsLatestRevealed) {
         reminders.push({
           title: "新探索板块放置进展",
@@ -12570,7 +12966,8 @@
                     title: `${name}「${cardName}」→ ${node}`,
                     tag: { label: "回忆突破", className: "battle-tech milestone" },
                     desc: `${name} 的回忆卡「${cardName}」进度已达 ${threshold}，节点 ${node} 待结算。`,
-                    html: storyBookParam ? `<a class="mnemos-node-link" href="${escapeHtml(storyBookParam)}" target="_blank">跳转故事书 ${node}</a>` : "",
+                    // 同样交给 page-focus-router：noopener 新标签无法把「返回主控台」路由回原标签页。
+                    html: storyBookParam ? `<a class="mnemos-node-link" href="${escapeHtml(storyBookParam)}">跳转故事书 ${node}</a>` : "",
                     className: "milestone",
                   });
                 }
@@ -12591,7 +12988,8 @@
 
     function getDoomMapReminders() {
       const tags = currentMapTagSet();
-      if (!tags.has("calamity")) return [];
+      // 灾祸指示物在“翻开该板块”的当天放置；进入下一天后 latest 会被清掉。
+      if (!tags.has("calamity") || !state.mapCurrentTileIsLatestRevealed) return [];
       const saves = typeof structureSaveReminders === "function" ? structureSaveReminders([{ type: "doom", amount: 1 }]) : [];
       const saveHint = saves.map(reminder => {
         const effect = reminder.text.replace(`${reminder.condition}：`, "")
@@ -12725,16 +13123,20 @@
         elements.dateTrackMeta.textContent = "此循环暂无记录表日期轨。";
         elements.dateTrackList.innerHTML = '<div class="empty">暂无日期轨。</div>';
         renderCurrentDateNote();
+        if (typeof renderAcclimationReminder === "function") renderAcclimationReminder();
         return;
       }
 
       // Insert an element so the term-language observer also translates rerenders.
       elements.dateTrackMeta.innerHTML = `<span>${escapeHtml(`${track.label} · ${state.day}`)}</span>`;
       const fragment = document.createDocumentFragment();
+      // One event scan for the whole track; asking per day cell rebuilt the
+      // normalized event list (and its labels) dozens of times per render.
+      const technologyEvents = typeof structureTechEvents === "function" ? structureTechEvents() : null;
       trackEntriesForRender(track).forEach((entry) => {
         const eventText = entry.day == null ? "" : track.events[entry.day];
         const noteText = entry.day == null ? "" : state.dateNotes?.[dateNoteKey(entry.day)] || "";
-        const technologyItems = entry.day == null || typeof structureTechTimelineItems !== "function" ? [] : structureTechTimelineItems(entry.day);
+        const technologyItems = entry.day == null || typeof structureTechTimelineItems !== "function" ? [] : structureTechTimelineItems(entry.day, technologyEvents);
         const icons = dateTrackIcons(entry, track);
         const isCurrentDay = entry.day != null && String(entry.day) === String(state.day);
         const item = document.createElement("div");
@@ -12814,7 +13216,29 @@
       });
       elements.dateTrackList.appendChild(fragment);
       renderCurrentDateNote();
+      if (typeof renderAcclimationReminder === "function") renderAcclimationReminder();
       if (focusCurrentDay) keepCurrentDateVisible();
+    }
+
+    // 今日流程顶部的扎根提醒：和科技到期提醒使用同一套提醒条。
+    // 只在当前日期刚好有 Acclimation 规则时出现；已扎根后保留当天一条作确认。
+    function renderAcclimationReminder() {
+      const box = elements.acclimationReminder;
+      if (!box) return;
+      const config = currentCycleConfig();
+      const rule = getAcclimationRule(state.day, config.id);
+      if (!rule) {
+        box.hidden = true;
+        return;
+      }
+      const applied = isAcclimationApplied(rule, config.id);
+      box.hidden = false;
+      box.classList.toggle("applied", applied);
+      elements.acclimationReminderText.textContent = applied
+        ? `今日 · Day ${state.day} · 已扎根 · ${rule.label}：探索牌堆已替换。`
+        : `今日 · Day ${state.day} · 扎根 · ${rule.label}：将探索卡 ${rule.from.join("、")} 替换为 ${rule.to.join("、")}。`;
+      elements.acclimationReminderButton.textContent = applied ? "已扎根" : "扎根";
+      elements.acclimationReminderButton.disabled = applied;
     }
 
     function resetToday() {
@@ -12825,6 +13249,43 @@
       saveState();
       renderFlow();
       renderDateTrack();
+    }
+
+    // 这一天结束时，把阿尔戈号脚下的板块从“已揭示”结算为“已探索”。
+    // 地图页与主控台共用地图形状；写入走地图分区的原子保存，冲突时重读合并。
+    async function settleMapExplorationForNextDay() {
+      const target = structureTechTarget();
+      const commandState = await loadMapCommandState(target.profileId);
+      assertStructureTechTarget(target);
+      const baseState = cloneJson(commandState.state);
+      const { cycleId, cycle, cycleState } = currentMapCommandCycle(commandState);
+      const tileId = cycleState.currentTile;
+      if (!tileId) return false;
+      let changed = false;
+      if (!cycleState.explored[tileId]) {
+        cycleState.explored[tileId] = true;
+        changed = true;
+      }
+      if (cycleState.previewRevealed?.[tileId]) {
+        delete cycleState.previewRevealed[tileId];
+        changed = true;
+      }
+      // 旧存档里“最新揭示”可能早已是已探索板块；结束当天同样清掉，
+      // 否则免费进展提醒会一直挂在同一格上。
+      if (cycleState.latestRevealedTile === tileId) {
+        cycleState.latestRevealedTile = "";
+        changed = true;
+      }
+      if (!changed) return false;
+      await saveMapCommandState(commandState, baseState);
+      const savedCycle = currentMapCommandCycle(commandState);
+      const context = typeof getStructureTechContext === "function" ? getStructureTechContext() : null;
+      if (context?.profileId === commandState.profileId) {
+        const savedMap = cloneJson(commandState.state);
+        structureTechContext = { ...structureTechContext, map: savedMap, mapState: savedMap };
+      }
+      syncDashboardMapSnapshot(savedCycle.cycleId, savedCycle.cycle, savedCycle.cycleState);
+      return true;
     }
 
     async function nextDay() {
@@ -12841,6 +13302,11 @@
         // that committed snapshot when the following save changes the date.
         saveState();
         if (!await flushCampaignSave()) throw new Error("当前进度尚未保存，请恢复连接后重试。");
+        if (sessionEpoch !== campaignSessionEpoch || !ownsDashboardWriteLease()
+            || profileId !== archive.activeProfileId || cycleId !== currentCycleConfig().id
+            || currentDay !== String(state.day)) throw new Error("当前账号、档案或日期已变更，请重试。");
+        // 结束当天：阿尔戈号所在的已揭示板块在进入下一天时转为已探索。
+        if (typeof settleMapExplorationForNextDay === "function") await settleMapExplorationForNextDay();
         if (sessionEpoch !== campaignSessionEpoch || !ownsDashboardWriteLease()
             || profileId !== archive.activeProfileId || cycleId !== currentCycleConfig().id
             || currentDay !== String(state.day)) throw new Error("当前账号、档案或日期已变更，请重试。");
@@ -13406,6 +13872,11 @@
     elements.resetTodayButton.addEventListener("click", resetToday);
     elements.nextDayButton.addEventListener("click", nextDay);
     elements.previousDayButton.addEventListener("click", previousDay);
+    elements.acclimationReminderButton.addEventListener("click", () => {
+      if (elements.acclimationReminderButton.disabled) return;
+      const rule = getAcclimationRule(state.day, currentCycleConfig().id);
+      if (rule) applyAcclimationReplacement(rule);
+    });
     elements.loginModeButton.addEventListener("click", () => setAuthMode("login"));
     elements.registerModeButton.addEventListener("click", () => setAuthMode("register"));
     elements.authForm.addEventListener("submit", async (event) => {
@@ -13493,6 +13964,12 @@
         Number(counterButton.dataset.delta || 0)
       );
     });
+    if (elements.pursuitSettlementMode) {
+      elements.pursuitSettlementMode.value = pursuitSettlementMode();
+      elements.pursuitSettlementMode.addEventListener("change", () => {
+        setPursuitSettlementMode(elements.pursuitSettlementMode.value);
+      });
+    }
     elements.secondScreenToggle.addEventListener("click", () => setSecondScreenEnabled(!secondScreenEnabled));
     elements.secondScreenBattleBoardToggle.addEventListener("change", () => {
       setSecondScreenBattleBoardVisible(elements.secondScreenBattleBoardToggle.checked);
@@ -13567,6 +14044,14 @@
       maintainDashboardWriteLease();
     });
     recordSyncChannel?.addEventListener("message", () => void refreshCachedArgoRecord());
+    // A module link that returns here (记录表 / 英雄 / 科技 / 地图 / 故事书) focuses
+    // this tab and asks it to refresh; reloading the whole console for that would
+    // restart every panel just to apply a few fields.
+    window.addEventListener("ato-module-sync-request", () => {
+      void syncDashboardFromExternalUpdate();
+      void refreshCachedArgoRecord();
+      void refreshStructureTechContext().catch(() => {});
+    });
     window.addEventListener("storage", (event) => {
       if (event.key === dashboardWriterLeaseKey) maintainDashboardWriteLease();
     });
@@ -13591,7 +14076,7 @@
   </script>
   <script src="./assets/ato-terms.js?v=20261015-diplomacy2"></script>
   <script src="./assets/english-terms.js?v=20261011-english4"></script>
-  <script src="./assets/english-ui.js?v=20261015-campaign-log"></script>
+  <script src="./assets/english-ui.js?v=20261020-acclimation-reminder2"></script>
   <script src="./assets/english-language.js?v=20261011-english4"></script>
   <script src="./assets/term-language.js?v=20261011-english4"></script>
   <script src="./assets/update/app-version.js?v=3.8.6-rc.1"></script>

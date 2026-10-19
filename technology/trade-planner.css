@@ -1,0 +1,134 @@
+.structure-tech-trade-planner {
+  --trade-line: var(--line, #d5d8d0);
+  --trade-accent: var(--accent, #586b40);
+  --trade-soft: var(--accent-soft, #eff3e9);
+  display: grid; grid-column: 1 / -1; flex: 1 0 100%; gap: 12px; min-width: 0; width: 100%;
+  container: trade-planner / inline-size;
+}
+.structure-tech-visual-choice { grid-column: 1 / -1; min-width: 0; width: 100%; }
+.structure-tech-visual-choice > strong { display: block; margin-bottom: 8px; font-size: 12px; line-height: 18px; color: var(--muted, #666); }
+@container tech-abilities (min-width: 560px) {
+  .app .structure-tech-entry:has(.structure-tech-visual-choice) .structure-tech-action-preview { margin-top: 26px; }
+}
+.structure-tech-visual-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
+.app .structure-tech-visual-option, .structure-tech-visual-option { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; min-width: 0; padding: 12px; border: 1px solid var(--line, #ddd); border-radius: 0; background: var(--panel, #fff); color: var(--ink, #222); font: inherit; cursor: pointer; }
+.app .structure-tech-visual-option[aria-pressed="true"], .structure-tech-visual-option[aria-pressed="true"] { border-color: var(--accent, #805030); box-shadow: inset 0 0 0 1px var(--accent, #805030); background: var(--accent-soft, #eee4d8); }
+.structure-tech-visual-option:focus-visible { outline: 2px solid var(--accent, #805030); outline-offset: 2px; }
+.structure-tech-visual-option:disabled { opacity: .45; cursor: not-allowed; }
+.structure-tech-choice-portrait { width: 72px; height: 88px; object-fit: cover; object-position: top; }
+.structure-tech-choice-icon { width: 48px; height: 48px; object-fit: contain; }
+.structure-tech-action-modes small { color: var(--muted, #666); font-size: 11px; line-height: 1.5; }
+.structure-tech-action-modes [data-available="false"] img { opacity: .45; filter: grayscale(1); }
+.structure-tech-titan-models .structure-tech-visual-options { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
+.structure-tech-titan-models .structure-tech-visual-option { padding: 8px 6px; gap: 5px; font-size: 12px; }
+.structure-tech-titan-portrait { width: 62px; height: 82px; object-fit: cover; }
+.structure-tech-source-choice .structure-tech-visual-options { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+.structure-tech-source-choice .structure-tech-visual-option { flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 10px 8px; text-align: center; }
+.structure-tech-source-icon { width: 38px; height: 38px; object-fit: contain; }
+.structure-tech-source-card { flex: 0 0 auto; width: 52px; height: 72px; object-fit: cover; }
+.structure-tech-source-text { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; }
+.structure-tech-source-choice small { color: var(--muted, #666); font-size: 11px; line-height: 1.45; }
+.structure-tech-source-choice [data-available="false"] img { opacity: .45; filter: grayscale(1); }
+.structure-tech-breeding-settings { display: grid; gap: 12px; min-width: 0; }
+.app .structure-tech-entry:has(.structure-tech-breeding-settings) > .structure-tech-action { grid-template-columns: minmax(0, 1.9fr) minmax(240px, 1fr); }
+.app .structure-tech-entry .structure-tech-breeding-settings { grid-column: 2; grid-row: 2; }
+.app .structure-tech-entry .structure-tech-breeding-settings .structure-tech-action-preview { grid-column: auto; grid-row: auto; margin: 0; }
+@container tech-abilities (max-width: 559.98px) {
+  .app .structure-tech-entry:has(.structure-tech-breeding-settings) > .structure-tech-action { grid-template-columns: minmax(0, 1fr) auto; }
+  .app .structure-tech-entry .structure-tech-breeding-settings { grid-column: 1 / -1; grid-row: auto; }
+}
+.structure-tech-titan-models small { color: var(--muted, #666); font-size: 11px; }
+.structure-tech-titan-models [data-available="false"] img { opacity: .45; filter: grayscale(1); }
+.structure-tech-choice-fallback { display: grid; place-items: center; width: 64px; height: 64px; font-size: 26px; }
+.structure-tech-choice-fallback[hidden], .structure-tech-visual-option img[hidden], .app .structure-tech-action-choice[hidden], .structure-tech-action-choice[hidden], .structure-tech-action-source-choice[hidden] { display: none; }
+.structure-tech-trade-columns { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(220px, 1fr); gap: 24px; align-items: start; }
+.structure-tech-trade-workbench { display: grid; gap: 12px; min-width: 0; }
+.structure-tech-trade-results { display: grid; gap: 12px; min-width: 0; }
+.structure-tech-trade-footer { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.structure-tech-trade-footer .structure-tech-action-timeline-note { grid-column: 1 / -1; }
+.structure-tech-trade-footer .structure-tech-action-use { color: #fff; }
+.structure-tech-trade-planner p { margin: 0; line-height: 1.6; font-size: 12px; }
+.structure-tech-trade-exchange { display: grid; grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr); gap: 10px; align-items: start; }
+.structure-tech-trade-picker { min-width: 0; }
+.structure-tech-trade-picker > strong { display: block; margin-bottom: 8px; font-size: 13px; }
+.structure-tech-trade-resources { display: grid; gap: 6px; }
+.structure-tech-trade-planner button { cursor: pointer; font: inherit; color: inherit; }
+.structure-tech-trade-planner button:disabled { opacity: .45; cursor: not-allowed; }
+.structure-tech-trade-planner .structure-tech-trade-resource[data-available="false"] { opacity: .38; filter: grayscale(1); }
+.structure-tech-trade-planner button:focus-visible { outline: 2px solid var(--trade-accent); outline-offset: 2px; }
+.structure-tech-trade-planner .structure-tech-trade-resource {
+  display: grid; grid-template-columns: 28px minmax(0, 1fr); align-items: center; gap: 2px 8px;
+  width: 100%; min-width: 0; padding: 8px; text-align: left; border: 1px solid var(--trade-line);
+  border-radius: 6px; background: var(--panel, #fff); font-size: 12px; line-height: 1.4;
+}
+.structure-tech-trade-resource .structure-tech-resource-icon { grid-row: span 2; }
+.structure-tech-trade-resource small { grid-column: 2; color: var(--muted, #666); }
+.structure-tech-trade-planner .structure-tech-trade-resource[aria-pressed="true"] {
+  border-color: var(--trade-accent); box-shadow: inset 0 0 0 1px var(--trade-accent); background: var(--trade-soft);
+}
+.structure-tech-resource-icon { width: 28px; height: 28px; object-fit: contain; background: #fff; border-radius: 3px; }
+.structure-tech-trade-planner .structure-tech-trade-arrow {
+  align-self: center; width: 44px; height: 44px; padding: 0; border: 1px solid var(--trade-accent);
+  border-radius: 50%; background: var(--trade-soft); font-size: 26px; color: var(--trade-accent);
+}
+.structure-tech-trade-rate { padding: 10px; border-left: 3px solid var(--trade-accent); background: var(--trade-soft); }
+.structure-tech-trade-quota { color: var(--muted, #666); }
+.structure-tech-trade-distribution { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; min-width: 0; padding: 14px; border: 1px solid var(--trade-line); border-radius: 6px; background: var(--panel, #fff); }
+.structure-tech-trade-distribution > strong { grid-column: 1 / -1; font-size: 13px; }
+.structure-tech-trade-balance { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 6px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--trade-line); font-size: 12px; }
+.structure-tech-trade-balance .structure-tech-resource-icon { width: 22px; height: 22px; }
+.structure-tech-trade-balance[data-direction="gain"] > strong { color: #357442; }
+.structure-tech-trade-balance[data-direction="cost"] > strong { color: #a44a32; }
+.structure-tech-trade-history { margin: 0; padding-left: 22px; max-height: 120px; overflow: auto; font-size: 12px; line-height: 1.7; }
+.structure-tech-trade-history:empty { display: none; }
+.structure-tech-trade-draft-actions { display: contents; }
+.structure-tech-trade-draft-actions button { min-width: 0; padding: 6px 4px; border: 1px solid var(--trade-line); border-radius: 0; background: var(--panel, #fff); font-size: 12px; }
+.app .structure-tech-entry:has(.structure-tech-trade-planner) .structure-tech-action-form { grid-column: 1 / -1; }
+.structure-tech-trade-results .structure-tech-action-preview,
+.app .structure-tech-entry .structure-tech-trade-results .structure-tech-action-preview { grid-column: auto; grid-row: auto; margin: 0; order: 0; }
+.structure-tech-trade-footer .structure-tech-action-use,
+.app .structure-tech-entry .structure-tech-trade-footer .structure-tech-action-use { grid-column: auto; grid-row: auto; min-width: 0; width: 100%; margin: 0; padding: 6px 4px; border-radius: 0; }
+.app .structure-tech-entry .structure-tech-trade-footer .structure-tech-action-timeline-note { grid-column: 1 / -1; grid-row: auto; }
+@container trade-planner (max-width: 680px) {
+  .structure-tech-trade-columns { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+}
+.app .exploration-trade-dialog { width: min(1000px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); box-sizing: border-box; padding: 18px; border: 1px solid var(--line); border-radius: 0; background: var(--panel); color: var(--ink); overflow: auto; }
+.exploration-trade-dialog::backdrop { background: rgb(0 0 0 / .5); }
+.exploration-trade-dialog-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
+.exploration-trade-dialog-header h3 { margin: 0; font-size: 16px; }
+.exploration-trade-dialog-header > button { flex: 0 0 auto; white-space: nowrap; }
+.app .exploration-trade-dialog button { border-radius: 0; }
+.app .exploration-trade-dialog button:disabled { opacity: .45; cursor: not-allowed; }
+.exploration-trade-dialog .structure-tech-action-title { display: none; }
+.exploration-trade-dialog .structure-tech-action-preview { padding: 12px; background: var(--accent-soft); line-height: 1.7; }
+.exploration-trade-saved-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
+@media (max-width: 520px) {
+  .structure-tech-trade-exchange { grid-template-columns: minmax(0, 1fr) 36px minmax(0, 1fr); gap: 6px; }
+  .structure-tech-trade-planner .structure-tech-trade-arrow { width: 36px; height: 36px; }
+  .structure-tech-trade-planner .structure-tech-trade-resource { grid-template-columns: 22px minmax(0, 1fr); padding: 6px; gap: 2px 4px; }
+  .structure-tech-trade-resource .structure-tech-resource-icon { width: 22px; height: 22px; }
+  .structure-tech-trade-distribution { grid-template-columns: minmax(0, 1fr); }
+}
+/* 同盟联络等资源支付：每个资源一张图标卡，点一下投入 1 个。
+   整块横跨展开卡的两栏，避免图标被挤在左栏里。 */
+.structure-tech-resource-payment { grid-column: 1 / -1; flex: 1 0 100%; display: grid; gap: 8px; min-width: 0; width: 100%; }
+.structure-tech-resource-payment-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.structure-tech-resource-payment-head > strong { color: var(--muted); font-size: 12px; font-weight: 600; }
+.structure-tech-resource-payment-total { color: var(--accent-strong); font-size: 12px; font-weight: 700; }
+.structure-tech-resource-payment-total[data-complete="true"]::after { content: ' ✓'; }
+.structure-tech-resource-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 8px; }
+.structure-tech-resource-tile { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 8px 8px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); font: inherit; font-size: 12px; line-height: 1.35; cursor: pointer; }
+.structure-tech-resource-tile:hover { border-color: var(--accent); }
+.structure-tech-resource-tile:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.structure-tech-resource-tile[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--accent-soft); }
+.structure-tech-resource-tile[data-available="false"] { opacity: .4; filter: grayscale(1); cursor: not-allowed; }
+.structure-tech-resource-tile .structure-tech-resource-icon { width: 34px; height: 34px; }
+.structure-tech-resource-name { font-weight: 600; }
+.structure-tech-resource-stock { color: var(--muted); font-size: 11px; }
+.structure-tech-resource-tile .structure-tech-resource-count { position: absolute; top: 4px; right: 4px; min-width: 20px; padding: 0 5px; background: var(--accent-strong); color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }
+.structure-tech-resource-tile[data-count="0"] .structure-tech-resource-count { display: none; }
+.structure-tech-resource-payment-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.structure-tech-resource-payment-actions button { min-height: 26px; padding: 2px 10px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); font: inherit; font-size: 11px; cursor: pointer; }
+.structure-tech-resource-payment-actions button:disabled { opacity: .45; cursor: not-allowed; }
+.structure-tech-resource-payment-hint { color: var(--muted); font-size: 11px; }
+.app .structure-tech-resource-tile { border-radius: 0; }

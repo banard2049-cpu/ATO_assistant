@@ -32,7 +32,7 @@ jobs:
       - name: Test layered maps, icon scope and card artwork
         run: |
           python -m pip install numpy==2.2.6
-          node --test tests/map-tile-artwork.test.cjs tests/map-layered-consumers.test.cjs tests/map-tile-icon-tags.test.cjs tests/map-frozen-time.test.cjs tests/c4-cloud-ship.test.cjs tests/card-art.test.cjs tests/fan-card-trims.test.cjs
+          node --test tests/map-tile-artwork.test.cjs tests/map-layered-consumers.test.cjs tests/map-tile-icon-tags.test.cjs tests/map-frozen-time.test.cjs tests/map-unknown-region-adjacency.test.cjs tests/c4-cloud-ship.test.cjs tests/card-art.test.cjs tests/fan-card-trims.test.cjs
           python -m unittest discover -s tests -p test_fan_card_trims.py
       - name: Test battle layout controls and second screen
         run: |
@@ -119,6 +119,7 @@ jobs:
           tests/structure-tech-rules.test.cjs
           tests/structure-tech-dashboard.test.cjs
           tests/structure-tech-details.test.cjs
+          tests/structure-tech-breakpoints.test.cjs
           tests/negotiation-rules.test.cjs
           tests/investigation-rules.test.cjs
           tests/voyage-action-rules.test.cjs

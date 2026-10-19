@@ -15,8 +15,8 @@ declare(strict_types=1);
 const ATO_UPDATE_BLOCKED_TOP = [
   '.git', '.github', '.agents', '.codex', '.idea', '.vscode',
   'asset-studio', 'official-assets', 'dist', 'export', 'release', 'releases', 'node_modules',
-  'tests',
-  '.claude', 'log', 'logs', 'tmp',
+  'tests', 'docs',
+  '.claude', 'log', 'logs', 'tmp', 'output', 'outputs',
   // 图标提取工作区：界面字形的本地草稿，发布包里没有，更新时既不下载也不删除。
   'icon-extract',
 ];
@@ -29,7 +29,7 @@ const ATO_UPDATE_BLOCKED_LEAVES = [
 
 const ATO_UPDATE_BLOCKED_SUFFIXES = [
   '.backup', '.bak', '.tmp', '.log', '.lock', '.atoback', '.atoback.partial',
-  '.atopack', '.atopack.partial',
+  '.atopack', '.atopack.partial', '.docx',
 ];
 
 const ATO_UPDATE_BLOCKED_LEAF_PREFIXES = ['start-windows', 'start-macos', 'php_errors', 'error_log', '.ato-update-'];

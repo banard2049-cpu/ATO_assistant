@@ -294,6 +294,51 @@ class HardeningTest(unittest.TestCase):
         for component in components[128]:
             self.assertRegex(component, r'^[A-Za-z0-9_-]+-[0-9a-f]{8}$', 'truncated values need a hash suffix')
 
+    # 5b --------------------------------------------------------------------
+    def test_backup_rotation_snapshots_by_link_and_only_on_day_change(self):
+        name = f'backup{uuid.uuid4().hex[:6]}'
+        opener = self.opener()
+        status, _ = self.register(name, opener=opener)
+        self.assertEqual(status, 200)
+        port = self.ports[0]
+        dashboard = {'activeProfileId': 'default',
+                     'profiles': {'default': {'activeCycleId': 'c2',
+                                              'cycles': {'c2': {'state': {'day': 1}}}}}}
+        status, _ = self.json_request(port, '?section=dashboard',
+                                      {'section': 'dashboard', 'state': dashboard, 'expectedRevision': 0},
+                                      opener=opener)
+        self.assertEqual(status, 200)
+        save = self.root / 'data' / f'ato-campaign-{name}.json'
+        recent = self.root / 'data' / 'backups' / name / 'recent' / 'default' / 'c2' / 'day-1'
+        before_first = save.stat().st_ino
+        status, _ = self.json_request(port, '?section=map',
+                                      {'section': 'map', 'state': {'v': 1}, 'expectedRevision': 0}, opener=opener)
+        self.assertEqual(status, 200)
+        first = recent / 'backup-01.json'
+        self.assertTrue(first.is_file())
+        self.assertEqual(first.stat().st_ino, before_first,
+                         'the newest backup is a hard link to the pre-save inode, not a full copy')
+        before_second = save.stat().st_ino
+        status, _ = self.json_request(port, '?section=map',
+                                      {'section': 'map', 'state': {'v': 2}, 'expectedRevision': 1}, opener=opener)
+        self.assertEqual(status, 200)
+        second = recent / 'backup-02.json'
+        self.assertTrue(second.is_file())
+        self.assertEqual(second.stat().st_ino, before_first, 'rotation renames the old newest slot')
+        self.assertEqual((recent / 'backup-01.json').stat().st_ino, before_second)
+        # Changing the dashboard day ends day 1: snapshot it once and clear the
+        # intra-day ring. Later saves in day 2 must not keep rewriting day 1.
+        dashboard['profiles']['default']['cycles']['c2']['state']['day'] = 2
+        status, _ = self.json_request(port, '?section=dashboard',
+                                      {'section': 'dashboard', 'state': dashboard, 'expectedRevision': 1},
+                                      opener=opener)
+        self.assertEqual(status, 200)
+        daily = list((self.root / 'data' / 'backups' / name / 'daily' / 'default' / 'c2' / 'day-1').glob('*.json'))
+        self.assertEqual(len(daily), 1)
+        restored = json.loads(daily[0].read_text(encoding='utf-8'))
+        self.assertEqual(restored['sections']['dashboard']['profiles']['default']['cycles']['c2']['state']['day'], 1)
+        self.assertFalse(recent.exists() and any(recent.iterdir()), 'a day change clears the recent ring')
+
     # 6 ---------------------------------------------------------------------
     def test_session_directories_are_not_world_writable(self):
         session_apis = ['campaign-state.php', 'bp-resource-map-c45.php', 'exploration-card-tags.php',

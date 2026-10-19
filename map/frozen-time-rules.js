@@ -22,7 +22,9 @@
       return {
         marker: cycle === 'c3' && Boolean(tags?.tiles?.[`c3:${tileId}`]?.tags?.includes('frozen_time')),
         current: (saved.currentTile || saved.tokens?.AG) === tileId,
-        explored: Boolean(saved.explored?.[tileId]),
+        // 翻开的当天还只是“已揭示”，凝固时光按揭示结算；已探索状态要到下一天。
+        explored: Boolean(saved.explored?.[tileId] || saved.previewRevealed?.[tileId]
+          || saved.latestRevealedTile === tileId),
         // New entries distinguish a fresh exploration from an old save's last revealed tile.
         newlyExplored: saved.latestRevealedTile === tileId && saved.explorationEntries?.[tileId] === true,
         receipt: ctx.record?.technologyActionReceipts?.[receiptId(tileId)] || null,

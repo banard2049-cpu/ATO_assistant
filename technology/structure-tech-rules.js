@@ -84,7 +84,7 @@
     { key: "titan genetic memory", actions: [{ id: "genesium", label: "泰坦遗传记忆：移植", kind: "reward", days: 7, fate: 1, target: "titan", rewardLabel: "所选泰坦从练兵场获得一张带 Strain 特性的式样卡" }] },
     trade("argo’s curse", "c4"),
     breed("superior titan breeding", ["tt_returner", "tt_ascender", "tt_pdawnburner"]),
-    { key: "the work is never done", actions: [{ id: "final-tear", label: "最后之泪", kind: "reward", days: 30, tear: true, rewardLabel: "取回「最后的泪水」科技卡" }] },
+    { key: "the work is never done", actions: [{ id: "final-tear", label: "最后之泪", kind: "reward", days: 30, tear: true, rewardLabel: "可代替 1 个西西弗斯之泪使用；结算时取回本卡" }] },
     trade("voyage home", "c5"),
     breed("ultimate titan breeding", ["tt_cloudsoarer", "tt_wishender", "tt_plunarlander", "tt_shadowdancer"]),
     { key: "mnestis training", actions: [{ id: "simulation", label: "记忆模拟战斗", kind: "battle", days: 1, cooldownDays: 12, fate: 1, rewardLabel: "进行 Mnestis Simulation Battle（循环 V 故事书第 11 页）" }] },
@@ -140,17 +140,21 @@
     return Number.isSafeInteger(Number(value)) && Number(value) >= 0 ? Number(value) : null;
   }
   function failure(code, message) { return { ok: false, code, message }; }
+  function validEvent(id, event) {
+    return Boolean(safeId(id)) && object(event) && CYCLES.includes(event.cycleId) && safeId(event.techKey)
+      && ["reward", "battle", "cooldown"].includes(event.kind) && count(event.dueDay) !== null;
+  }
   function normalizeAutomation(value) {
     const events = {};
     if (object(value?.events)) Object.entries(value.events).forEach(([id, event]) => {
-      if (!safeId(id) || !object(event) || !CYCLES.includes(event.cycleId) || !safeId(event.techKey)
-        || !["reward", "battle", "cooldown"].includes(event.kind) || count(event.dueDay) === null) return;
+      if (!validEvent(id, event)) return;
       events[id] = clone({ ...event, id, dueDay: count(event.dueDay),
         cooldownUntilDay: count(event.cooldownUntilDay) ?? 0, status: event.status === "completed" ? "completed" : "pending" });
     });
     return { version: 1, events };
   }
   function getEvents(ctx = {}) {
+    if (!object(ctx.automation)) return [];
     let day;
     try { day = dayOf(ctx); } catch { day = null; }
     const cycle = cycleOf(ctx);
@@ -168,8 +172,16 @@
           cooldownActive, locked: !completed || cooldownActive };
       }).sort((a, b) => a.dueDay - b.dueDay || a.id.localeCompare(b.id));
   }
+  // The dictionary is a static 319-card file, but getEvents/getAvailability ask
+  // for it dozens of times per render (once per date cell and per action).
+  // Rebuild the index once per dictionary object instead of once per lookup.
+  const dictionaryIndexCache = new WeakMap();
   function dictionaryIndex(ctx) {
-    const raw = ctx.dictionary?.cards;
+    const dictionary = object(ctx.dictionary) ? ctx.dictionary : null;
+    if (!dictionary) return { cards: [], groups: [], cardsByKey: new Map(), byKey: new Map() };
+    const cached = dictionaryIndexCache.get(dictionary);
+    if (cached) return cached;
+    const raw = dictionary.cards;
     const cards = (Array.isArray(raw) ? raw : object(raw) ? Object.values(raw) : []).filter(object)
       .slice().sort((a, b) => Number(a.index ?? 0) - Number(b.index ?? 0));
     const groups = new Map();
@@ -184,19 +196,29 @@
       names.get(group.name).add(group.cards.map(card => card.index ?? card.key).join(","));
     });
     groups.forEach(group => { group.key = `${group.name}${names.get(group.name).size > 1 ? `@@${group.page}` : ""}`; });
-    return { cards, groups: [...groups.values()] };
+    const index = { cards, groups: [...groups.values()], cardsByKey: new Map(), byKey: new Map() };
+    for (const card of cards) {
+      const cardKey = key(card.key);
+      if (!cardKey) continue;
+      if (!index.cardsByKey.has(cardKey)) index.cardsByKey.set(cardKey, []);
+      index.cardsByKey.get(cardKey).push(card);
+    }
+    for (const group of index.groups) {
+      if (!index.byKey.has(group.key)) index.byKey.set(group.key, []);
+      index.byKey.get(group.key).push(...group.cards);
+    }
+    dictionaryIndexCache.set(dictionary, index);
+    return index;
   }
   function dictionaryCards(ctx, techKey) {
-    const wanted = key(techKey), raw = ctx.dictionary?.cards;
+    const wanted = key(techKey);
+    if (!wanted) return [];
+    const index = dictionaryIndex(ctx);
     // Stored events normally carry a canonical card key; do not rebuild the
     // entire tree for every event label on every availability check.
-    const direct = (Array.isArray(raw) ? raw : object(raw) ? Object.values(raw) : [])
-      .filter(card => object(card) && key(card.key) === wanted);
-    if (direct.length) return direct.filter(card => card.category === "structure")
-      .sort((a, b) => Number(a.index ?? 0) - Number(b.index ?? 0));
-    const index = dictionaryIndex(ctx);
-    return [...new Set(index.groups.filter(group => group.key === wanted).flatMap(group => group.cards))]
-      .filter(card => card.category === "structure");
+    const direct = index.cardsByKey.get(wanted) || [];
+    if (direct.length) return direct.filter(card => card.category === "structure");
+    return [...new Set(index.byKey.get(wanted) || [])].filter(card => card.category === "structure");
   }
   function unlockedKeys(technology) {
     const values = Array.isArray(technology?.unlocked) ? technology.unlocked : technology?.unlockedKeys;
@@ -238,7 +260,12 @@
       ? `冷却至 D${pending.cooldownUntilDay}。` : `已有待结算事件（D${pending.dueDay}）。`);
     const olderPending = Object.entries(object(ctx.automationsByCycle) ? ctx.automationsByCycle : {})
       .filter(([cycle]) => cycle !== cycleOf(ctx))
-      .flatMap(([, automation]) => Object.values(normalizeAutomation(automation).events))
+      // Read the saved events as-is. Normalizing every cycle here cloned every
+      // event once per action availability check, which is the hot path of the
+      // technology panel; validEvent() keeps the same shape while staying read-only.
+      .flatMap(([, automation]) => Object.entries(object(automation?.events) ? automation.events : {})
+        .filter(([id, event]) => validEvent(id, event))
+        .map(([, event]) => event))
       .find(event => key(event.techKey) === canonicalKey && event.kind !== "cooldown" && event.status !== "completed");
     if (olderPending) return failure("ABILITY_BUSY", `${olderPending.cycleId.toUpperCase()} 循环仍有待结算事件（D${olderPending.dueDay}）。请先在原循环标记已手动处理。`);
     if (baseKey(eligible.card.key) === "canal reconnaissance") {
@@ -283,7 +310,9 @@
   function referenceText(ctx, techKey, text) {
     if (typeof text !== "string" || !ctx.dictionary) return text;
     // Upgrade displayed legacy labels without rewriting saved events/receipts.
-    for (const card of dictionaryCards(ctx, techKey)) {
+    const cards = dictionaryCards(ctx, techKey);
+    if (!cards.length) return text;
+    for (const card of cards) {
       const title = titleFor(card);
       for (const name of [card.names?.zh, card.names?.en]) {
         if (name && name !== title) text = text.split(name).join(title);
@@ -459,21 +488,23 @@
     return JSON.stringify(value);
   }
   function prepareTrades(action, selection, record) {
-    if (!Array.isArray(selection.trades) || !selection.trades.length) {
+    const ordered = selection.tradeSteps !== undefined;
+    const trades = ordered ? selection.tradeSteps : selection.trades;
+    if (!Array.isArray(trades) || !trades.length) {
       return failure("INVALID_TRADE", "请选择至少 1 类资源交换。");
     }
     // 贸易次数按“类”计算：同一种置换可以填入任意倍率数量，仍只消耗 1 类额度。
-    const amounts = new Map(), lines = [], steps = [], chosen = new Set();
-    let categories = 0, exchanges = 0;
-    for (const selected of selection.trades) {
+    const amounts = new Map(), lines = [], steps = [], chosen = new Set(action.tradeUsedRoutes || []);
+    let categories = chosen.size, exchanges = 0;
+    for (const selected of trades) {
       const route = object(selected) && action.tradeRoutes.find(item => item.id === selected.routeId);
       const times = count(selected?.count);
       if (!route || times === null || times < 1) return failure("INVALID_TRADE", "请选择卡面中的交换项目和有效的整数次数。");
-      if (chosen.has(route.id)) {
+      if (!ordered && chosen.has(route.id)) {
         return failure("DUPLICATE_TRADE", "同一种资源置换只需填写一行，请直接调高该行的次数倍率。");
       }
+      if (!chosen.has(route.id)) categories += 1;
       chosen.add(route.id);
-      categories += 1;
       exchanges += times;
       if (!Number.isSafeInteger(exchanges)) return failure("TRADE_LIMIT", "交换数量过大，无法完成交换。");
       if (action.maxTrades !== null && categories > action.maxTrades) {
@@ -512,6 +543,44 @@
         label: item.label, amount: -item.costAmount })),
       gains: changes.filter(item => item.gainAmount > 0).map(item => ({ type: "resource", storageKey: item.storageKey,
         label: item.label, amount: item.gainAmount })) };
+  }
+  // Find a simple resource path. Scale all legs to the smallest whole batch so
+  // intermediate goods are fully funded by this exchange, without rounding.
+  function findTradePath(action, from, to, record = {}, previous = []) {
+    if (!from || !to || from === to) return failure('INVALID_TRADE', '请选择两种不同的资源。');
+    const edges = (action.tradeRoutes || []).filter(route => route.costs?.length === 1 && route.gains?.length === 1
+      && [...route.costs, ...route.gains].every(item => Number.isSafeInteger(item.amount) && item.amount > 0));
+    const candidates = [], seen = new Set([from]);
+    const gcd = (a, b) => b ? gcd(b, a % b) : a;
+    function visit(key, path) {
+      if (key === to) {
+        let input = BigInt(path[0].costs[0].amount), output = BigInt(path[0].gains[0].amount), counts = [1n];
+        for (const route of path.slice(1)) {
+          const cost = BigInt(route.costs[0].amount), scale = cost / gcd(output, cost);
+          input *= scale; counts = counts.map(value => value * scale);
+          const count = output * scale / cost;
+          counts.push(count); output = count * BigInt(route.gains[0].amount);
+        }
+        if ([input, output, ...counts].some(value => value > BigInt(Number.MAX_SAFE_INTEGER))) return;
+        const steps = path.map((route, index) => ({ routeId: route.id, count: Number(counts[index]) }));
+        const used = new Set([...(action.tradeUsedRoutes || []), ...previous.map(step => step.routeId)]);
+        const total = new Set([...used, ...steps.map(step => step.routeId)]).size;
+        const result = prepareTrades(action, { tradeSteps: [...previous, ...steps] }, record);
+        candidates.push({ ...result, steps, path, input: Number(input), output: Number(output), total, extra: total - used.size });
+        return;
+      }
+      for (const route of edges) {
+        const next = route.gains[0].storageKey;
+        if (route.costs[0].storageKey !== key || seen.has(next)) continue;
+        seen.add(next); visit(next, [...path, route]); seen.delete(next);
+      }
+    }
+    visit(from, []);
+    // Prefer executable paths, then the best rate; ties spend fewer categories.
+    candidates.sort((a, b) => Number(b.ok) - Number(a.ok)
+      || Number(BigInt(b.output) * BigInt(a.input) - BigInt(a.output) * BigInt(b.input))
+      || a.extra - b.extra || a.steps.length - b.steps.length || a.input - b.input);
+    return candidates[0] || failure('NO_TRADE_PATH', '这两种资源之间没有可用的兑换路径。');
   }
   function prepareOperation(ctx = {}) {
     const id = safeId(ctx.operationId);
@@ -752,9 +821,17 @@
     return { eligibility, getAvailability, dictionaryCards, dayOf, tradeResources, prepareTrades, heroItems, heroTitle, titanItems, titleFor, saveReminders };
   }
   function canNegotiate(ctx = {}) { return Boolean(negotiationRules()?.canNegotiate(ctx, negotiationHelpers())); }
+  // Alliance Contacts pays one resource per point of the chosen faction's
+  // diplomacy, so the client needs the same relation lookup the rules use.
+  function factionRelation(ctx = {}, faction) {
+    if (!faction) return null;
+    const value = negotiationRules()?.relation?.(ctx, faction);
+    return Number.isInteger(value) ? value : null;
+  }
   function canUsePursuerProblem(ctx = {}) { return eligibility(ctx, "pursuer problem"); }
   return { version: 1, catalog: clone(catalog), voyageCatalog: voyageRules()?.catalog || [], explorationCatalog: explorationTechRules()?.catalog || [], negotiationCatalog: negotiationRules()?.catalog || [], saveCatalog: clone(saves), listActions, listActionGroups, actionsFor, getAvailability,
     eligibility, titleFor, referenceTitle, referenceText, getHelpers: negotiationHelpers,
+    factionRelation,
     normalizeAutomation, getEvents, prepareOperation, previewOperation, completeOperation, saveReminders, mapProgressReminders, scoutStatus, canNegotiate, canUsePursuerProblem,
-    eventGrant, autoSettleEvent };
+    eventGrant, autoSettleEvent, previewTrades: prepareTrades, findTradePath };
 });

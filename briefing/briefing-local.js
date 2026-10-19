@@ -73,7 +73,7 @@
       cardTracksVersion: scalar(state.cardTracksVersion) ? Number(state.cardTracksVersion) || 0 : null,
       cardCounters: counters, adventureHubs,
       map: {
-        explored: strings(map.exploredIds), scoutCount: Number(map.scoutCount) || 0, totalTiles: Number(map.totalTiles) || 0,
+        explored: strings(map.revealedIds ?? map.exploredIds), scoutCount: Number(map.scoutCount) || 0, totalTiles: Number(map.totalTiles) || 0,
         tileNotes: Object.fromEntries(array(map.tileNotes).filter((entry) => entry && entry.tileId != null && text(entry.note).trim())
           .map((entry) => [text(entry.tileId), text(entry.note).trim()])),
       },

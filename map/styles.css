@@ -616,6 +616,19 @@ h1 {
   background: #151816;
 }
 
+.map-grid-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgba(240, 184, 50, 0.38) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(240, 184, 50, 0.38) 1px, transparent 1px);
+  background-size:
+    calc(100% / var(--map-cols, 1)) calc(100% / var(--map-rows, 1));
+  box-shadow: inset 0 0 0 1px rgba(240, 184, 50, 0.38);
+}
+
 .tile-card {
   position: absolute;
   overflow: hidden;

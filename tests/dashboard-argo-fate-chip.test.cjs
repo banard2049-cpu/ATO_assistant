@@ -83,7 +83,7 @@ test('命运数字取当前循环的记录值，缺省或坏值显示「—」',
 test('徽章是「图标 + 数字」，图标用 assets/icons/argo-fate.svg', () => {
   const chip = harness({ cycle: 'c1', record: { cycle: 'c1', fate: '3' } }).argoFateChipHtml();
   assert.match(chip, /<span class="argo-fate-chip" title="当前阿尔戈号命运：3">/);
-  assert.match(chip, /class="argo-fate-chip-icon" aria-hidden="true" style="--icon-src:url\(\.\/assets\/icons\/argo-fate\.svg\)"/);
+  assert.match(chip, /class="argo-fate-chip-icon" aria-hidden="true" style="--icon-src:url\(\.\/assets\/icons\/argo-fate\.svg(?:\?v=[A-Za-z0-9._-]+)?\)"/);
   assert.match(chip, /<span>3<\/span>/);
   assert.ok(!chip.includes('\n'), '徽章是单行标记，拼进标题行时不引入换行');
 });

@@ -34,7 +34,7 @@
     { key: 'moirai operation', actions: [mode('moirai', '摩伊赖克服 · 外交 7+', { sacrifice: true, check: true, effects: { fate: -3 } })] },
     { key: 'temporal aegis', actions: [mode('paradox', '时变庇护', { fate: 1, effects: { paradox: -1 } })] },
     { key: 'ultimate trading solutions', cycle: 'c3', actions: [mode('trade', '终极贸易', { fate: 1, trade: true })] },
-    { key: 'curse economy basics', actions: [mode('curse', '诅咒经济', { costEffects: ['babelianDebt'], effects: { babelianDebt: -2 }, manual: '下次战斗加入 1 张随机诅咒特性卡；请抽取实体卡并处理' })] },
+    { key: 'curse economy basics', actions: [mode('curse', '诅咒经济', { costEffects: ['babelianDebt'], effects: { babelianDebt: -2 }, manualCost: true, manual: '下次战斗加入 1 张随机诅咒特性卡；请抽取实体卡并处理' })] },
     { key: 'sustainable oasis', actions: [
       mode('oasis-fate', '绿洲休整', { location: 'oasis', effects: { fate: -1 } }),
       mode('oasis-debt', '债务换取休整', { location: 'oasis', effects: { babelianDebt: 1, fate: -2 } }),
@@ -162,13 +162,51 @@
   function resourceFields(ctx, action, helpers) {
     const cycle = cycleOf(ctx), entries = helpers.tradeResources[cycle].slice(0, 4).map(([id, label]) => [`${cycle}-${id}`, label]);
     if (action.contacts) entries.push(['fearEssence', '恐惧精华'], ['mazeFragment', '迷宫碎片']);
-    return entries.map(([storageKey, label]) => ({ id: `pay:${storageKey}`, storageKey, type: 'number', label: `${label}（库存 ${ctx.record?.resources?.[storageKey] ?? 0}）`, defaultValue: 0, min: 0 }));
+    return entries.map(([storageKey, label]) => {
+      const stock = integer(ctx.record?.resources?.[storageKey] ?? 0) ?? 0;
+      return { id: `pay:${storageKey}`, storageKey, type: 'number', label: `${label}（库存 ${stock}）`,
+        // The panel turns these into clickable resource tiles; the hidden input
+        // still carries the exact amount the rules validate.
+        tile: { resource: storageKey.replace(/^c[1-5]-/, ''), name: label, stock },
+        ...(action.mortal ? { tileTotal: action.mortal } : {}),
+        ...(action.contacts ? { tileTotalFrom: 'faction' } : {}),
+        defaultValue: 0, min: 0 };
+    });
   }
-  function describe(action) {
-    return [action.fate ? `命运 +${action.fate}` : '', action.mortal ? `任选 ${action.mortal} 个凡人资源` : '', action.contacts ? '支付与当地外交值相同数量的凡人资源／恐惧精华／迷宫碎片' : '',
-      action.relief ? '失去 1 难民；命运 +1（隐藏／怀疑）或 +2（友善／结盟）' : '', action.sacrifice ? '失去 1 泰坦或 1 祭司；外交 7+' : '',
-      ...Object.entries(action.effects || {}).map(([type, amount]) => `${labels[type]} ${amount > 0 ? '+' : ''}${amount}`), action.diplomacy ? `${action.diplomacy === 'local' ? '当地' : '所选派系'}外交 +1` : '',
-      action.agents ? '另一派系外交 -1' : '', action.echo ? '回忆回响 +1' : '', action.manual || '', action.draw ? '抽取 2 张探索卡，选择 1 张，仅处理资源或泰坦奖励' : ''].filter(Boolean).join('；');
+  // Split the printed text into the two boxes the timeline tech panel uses:
+  // “代价” only carries what the player pays (or must have), while “效果”
+  // carries what changes. The old single describe() line put gains such as
+  // “船员 +1” in the cost box, which made the negotiation rows look wrong.
+  function describeParts(action) {
+    const costs = [], effects = [];
+    if (action.fate) costs.push(`命运 +${action.fate}`);
+    if (action.mortal) costs.push(`任选 ${action.mortal} 个凡人资源`);
+    if (action.contacts) costs.push('凡人资源／恐惧精华／迷宫碎片（数量=当地外交）');
+    if (action.sacrifice) costs.push('失去 1 泰坦或 1 祭司');
+    if (action.sow) costs.push(`需播种标记至少 ${action.sow}`);
+    else if (action.oasisAt) costs.push(`绿洲分支需播种标记至少 ${action.oasisAt}`);
+    for (const [type, amount] of Object.entries(action.effects || {})) {
+      const label = labels[type] || type;
+      if (type === 'fate' && action.relief) continue;
+      if (type === 'refugees' && amount < 0) { costs.push(`失去 ${-amount} ${label}`); continue; }
+      if (type === 'babelianDebt' && amount > 0 && !action.costEffects?.includes(type)) { costs.push(`${label} +${amount}`); continue; }
+      if (action.costEffects?.includes(type) && amount < 0) {
+        costs.push(`需至少 ${-amount} ${label}`);
+        effects.push(`${label} ${amount}`);
+        continue;
+      }
+      effects.push(`${label} ${amount > 0 ? '+' : ''}${amount}`);
+    }
+    if (action.diplomacy) effects.push(`${action.diplomacy === 'local' ? '当地' : '所选'}派系外交 +1`);
+    if (action.agents) effects.push('另一派系外交 -1');
+    if (action.echo) effects.push('回忆回响 +1');
+    if (action.trade) effects.push('按比例交换资源');
+    if (action.draw) effects.push('抽取 2 张探索卡，选择 1 张，仅处理资源或泰坦奖励');
+    if (action.check) effects.unshift('外交 7+ 检定');
+    if (action.relief) costs.push('命运 +1～2（友善时 +2）');
+    if (action.manual && action.manualCost) costs.push(action.manual);
+    if (action.manual && !action.manualCost) effects.push(action.manual);
+    return { cost: costs.filter(Boolean).join('；'), effect: effects.filter(Boolean).join('；') };
   }
   function listActions(ctx, helpers) {
     const cycle = cycleOf(ctx), actions = [];
@@ -204,9 +242,11 @@
         if (helpers.eligibility(ctx, 'advanced trading solutions').ok && (action.fate || action.relief)) confirmations.push({ id: 'waiveFate', label: '高级贸易方案：本次为今天首次交涉，免除命运增加', optional: true });
         let reason = eligible.message || '';
         if (!reason && !places.length) reason = '当前地点不符合本能力的谈判条件，或已有最后到访指示物。';
+        const parts = describeParts(action);
         actions.push({ ...action, choices, confirmations, actionId: action.id, techKey: rule.key,
           title: helpers.titleFor(card), image: card.image?.back || '', groupKey: action.groupKey || `negotiation:${rule.key}`, groupTitle: action.groupTitle || helpers.titleFor(card), tier: 1,
-          available: !reason, disabled: Boolean(reason), reason, costLabel: describe(action), dueDays: 0, stepId: 'explore' });
+          available: !reason, disabled: Boolean(reason), reason, costLabel: parts.cost || '无代价',
+          effectLabel: action.label, effectDetail: parts.effect, dueDays: 0, stepId: 'explore' });
       }
     }
     return actions;

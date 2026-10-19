@@ -159,7 +159,8 @@ function extract_snapshot(array $campaign, string $cycleId): array {
   }
 
   $explored = [];
-  foreach (($map['exploredIds'] ?? []) as $tileId) $explored[] = (string) $tileId;
+  // 当天翻开、还没到“进入下一天”的板块也算已揭示，地图回放要画出来。
+  foreach (($map['revealedIds'] ?? $map['exploredIds'] ?? []) as $tileId) $explored[] = (string) $tileId;
 
   $tileNotes = [];
   foreach (($map['tileNotes'] ?? []) as $entry) {

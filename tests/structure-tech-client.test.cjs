@@ -107,6 +107,87 @@ test('record conflicts rebase the charge onto the newest balance', async () => {
   assert.equal(f.state.campaign.sections.record.users.chosen.resources.ore, 11);
 });
 
+test('a caller with a fresh context submits once without rereading the campaign', async () => {
+  const f = fixture();
+  const loaded = await f.client.load(f.target);
+  const dashboard = clone(loaded.campaign.sections.dashboard);
+  dashboard.profiles.chosen.cycles.c2.state.notes = 'local draft';
+  const current = { ...loaded, campaign: { ...loaded.campaign, sections: { ...loaded.campaign.sections, dashboard } },
+    state: dashboard.profiles.chosen.cycles.c2.state, day: 4,
+    automation: dashboard.profiles.chosen.cycles.c2.state.techAutomation, record: loaded.record };
+  const reads = f.state.reads;
+  const result = await f.client.submit({ ...f.target, operationId: 'two' }, { current });
+  assert.equal(result.operation.id, 'two');
+  assert.equal(f.state.reads, reads + 1, 'only the post-commit freshness read');
+  assert.equal(f.state.posts.length, 1);
+  assert.match(f.state.posts[0].sections.dashboard.profiles.chosen.cycles.c2.state.notes, /local draft/);
+});
+
+test('a caller-supplied context surfaces a conflict instead of retrying a stale draft', async () => {
+  const f = fixture({ beforePost(state) { state.campaign.sectionRevisions.record++; } });
+  const loaded = await f.client.load(f.target);
+  await assert.rejects(f.client.submit({ ...f.target, operationId: 'two' }, { current: { ...loaded, day: 4 } }),
+    error => error.code === 'SAVE_CONFLICT');
+  assert.equal(f.state.posts.length, 1);
+});
+
+test('a confirmed round commit can return its revision-checked draft without another campaign read', async () => {
+  const f = fixture();
+  const current = await f.client.load(f.target);
+  const reads = f.state.reads;
+  const result = await f.client.submit(f.target, { current, refreshAfterCommit: false });
+  assert.equal(f.state.reads, reads);
+  assert.equal(f.state.posts.length, 1);
+  assert.equal(result.campaign.sections.record.users.chosen.resources.ore, 6);
+  assert.equal(result.campaign.sections.record.users.other.resources.ore, 77);
+  assert.equal(result.campaign.sectionRevisions.dashboard, 1);
+  assert.equal(result.campaign.sectionRevisions.record, 1);
+  assert.deepEqual(f.state.posts[0].expectedRevisions, { dashboard: 0, record: 0, technology: 0, heroes: 0 });
+});
+
+test('skipping the success refresh still checks conflicts and recovers a lost commit response', async () => {
+  const conflict = fixture({ beforePost(state) { state.campaign.sectionRevisions.record++; } });
+  const current = await conflict.client.load(conflict.target);
+  await assert.rejects(conflict.client.submit(conflict.target, { current, refreshAfterCommit: false }),
+    { code: 'SAVE_CONFLICT' });
+  assert.equal(conflict.state.campaign.sections.record.users.chosen.resources.ore, 8);
+
+  const lost = fixture({ loseResponse: true });
+  const loaded = await lost.client.load(lost.target);
+  const reads = lost.state.reads;
+  const result = await lost.client.submit(lost.target, { current: loaded, refreshAfterCommit: false });
+  assert.equal(lost.state.reads, reads + 1, 'an uncertain response must still read the persisted receipt');
+  assert.equal(result.duplicate, true);
+  assert.equal(lost.state.posts.length, 1);
+  assert.equal(result.campaign.sections.record.users.chosen.resources.ore, 6);
+});
+
+test('commit broadcasts identify the originating page so it can avoid refreshing itself', async () => {
+  const previous = globalThis.BroadcastChannel;
+  const messages = [];
+  globalThis.BroadcastChannel = class {
+    constructor(name) { this.name = name; }
+    postMessage(payload) { messages.push({ name: this.name, ...payload }); }
+    close() {}
+  };
+  try {
+    const f = fixture();
+    // Use the browser client with the same transport/session behavior as fixture.
+    const clientSource = require('node:fs').readFileSync(require.resolve('../technology/structure-tech-client.js'), 'utf8');
+    const root = { BroadcastChannel: globalThis.BroadcastChannel };
+    require('node:vm').runInNewContext(clientSource, { window: root, URL });
+    const loaded = await f.client.load(f.target);
+    const client = root.ATO_STRUCTURE_TECH_CLIENT.create({ pageId: 'origin-console', expectedAccountId: 'alice',
+      session: f.accountSession, rules, fetch: async () => response(200, { ok: true, user: { id: 'alice' }, sections: { dashboard: 1, record: 1 } }) });
+    await client.submit(f.target, { current: loaded, refreshAfterCommit: false });
+    assert.equal(messages.length, 3);
+    assert.ok(messages.every(message => message.pageId === 'origin-console'));
+    assert.deepEqual(messages.map(message => message.name), ['ato-dashboard-sync-v1', 'ato-record-sync-v1', 'ato-map-sync-v1']);
+  } finally {
+    globalThis.BroadcastChannel = previous;
+  }
+});
+
 test('concurrent submissions of one operation settle once', async () => {
   const f = fixture();
   const results = await Promise.all([f.client.submit(f.target), f.client.submit(f.target)]);
@@ -197,7 +278,7 @@ function fakeDocument() {
     constructor(tagName) { this.tagName = tagName; this.children = []; this.listeners = {}; this.dataset = {}; this.value = ''; this.checked = false; }
     get textContent() { return this.children.map(child => child.textContent || '').join(''); }
     set textContent(value) { this.children = [{ textContent: String(value ?? '') }]; }
-    setAttribute() {}
+    setAttribute(name, value) { (this.attributes ||= {})[name] = String(value); }
     appendChild(node) { this.children.push(node); return node; }
     append(...nodes) { this.children.push(...nodes); }
     replaceChildren(...nodes) { this.children = nodes; }
@@ -291,37 +372,6 @@ test('merchant card selection can explicitly resolve unknown reward conditions',
   } finally { global.document = previous; }
 });
 
-test('trade lines collect mixed exchange routes and quantities without a manual exchange confirmation', async () => {
-  const previous = global.document;
-  global.document = fakeDocument();
-  try {
-    const engine = { ...rules,
-      listActions: () => [{ id: 'study', techKey: 'laboratory', label: '贸易', available: true, trade: true, days: 7,
-        maxTrades: 3, tradeRoutes: [{ id: 'ore-wood', label: '矿石 2 → 木材 1' }, { id: 'ore-gold', label: '矿石 2 → 黄金 1' }] }],
-      prepareOperation(ctx) { return ctx.selection.trades?.length ? rules.prepareOperation(ctx)
-        : { ok: false, code: 'INVALID_TRADE', message: '请选择交易' }; },
-    };
-    const f = fixture({ rules: engine });
-    const panel = f.client.createActionPanel(f.target);
-    await panel.ready;
-    const button = findNode(panel, node => node.className === 'structure-tech-action-use');
-    assert.equal(findNode(panel, node => node.type === 'checkbox'), undefined);
-    assert.equal(findNodes(panel, node => node.className === 'structure-tech-trade-line').length, 3);
-    assert.equal(button.disabled, true);
-    assert.equal(f.state.posts.length, 0);
-    change(control(panel, 'tradeRoute0'), 'ore-wood');
-    assert.equal(control(panel, 'tradeCount0').value, '1');
-    change(control(panel, 'tradeCount0'), '2');
-    change(control(panel, 'tradeRoute1'), 'ore-gold');
-    assert.equal(button.disabled, false);
-    let submitted;
-    const submit = f.client.submit; f.client.submit = target => { submitted = target; return submit(target); };
-    await button.listeners.click();
-    assert.deepEqual(submitted.selection.trades, [{ routeId: 'ore-wood', count: 2 }, { routeId: 'ore-gold', count: 1 }]);
-    assert.equal(f.state.posts.length, 1);
-  } finally { global.document = previous; }
-});
-
 const realRules = require('../technology/structure-tech-rules.js');
 const dictionary = require('../technology/tech_card_dictionary.min.json');
 function negotiationFixture(key = 'crew expansion', options = {}) {
@@ -359,6 +409,41 @@ test('a negotiation panel executes immediately, retains receipts and guards the 
     assert.equal(event.selection.location, 'current:site');
   } finally { global.document = previous; }
 });
+
+test('negotiation uses the same collapsible rows as the voyage technology list', () => withPanelDocument(async () => {
+  const f = negotiationFixture('crew expansion');
+  const panel = f.client.createActionPanel({ ...f.target, techKey: undefined, scope: 'negotiation' });
+  await panel.ready;
+  assert.equal(panel.dataset.layout, 'grouped');
+  const entries = findNodes(panel, node => node.className === 'structure-tech-entry');
+  assert.equal(entries.length, 1);
+  assert.equal(findNodes(panel, node => node.className === 'structure-tech-category').length, 0,
+    'negotiation is a flat list without voyage category headings');
+  assert.equal(entries[0].tagName, 'details');
+  assert.equal(entries[0].open, false, 'every negotiation ability starts collapsed');
+  assert.ok(findNode(entries[0], node => node.className === 'structure-tech-entry-title').textContent.trim());
+  assert.equal(findNode(entries[0], node => node.className === 'structure-tech-action-use').textContent, '执行谈判');
+  assert.equal(findNode(entries[0], node => node.className === 'structure-tech-action-timeline-note').textContent,
+    '执行后自动保存');
+  assert.equal(control(entries[0], 'location'), undefined, 'the single valid location stays automatic');
+  const facts = findNode(entries[0], node => node.className === 'structure-tech-action-facts');
+  const rows = findNodes(facts, node => node.tagName === 'div').map(row => [
+    findNode(row, node => node.tagName === 'dt').textContent,
+    findNode(row, node => node.tagName === 'dd').textContent,
+  ]);
+  assert.deepEqual(rows.map(([label]) => label), ['代价', '效果']);
+  assert.equal(rows[0][1], '命运 +1', 'the cost box only contains what the player pays');
+  assert.equal(rows[1][1], '扩招船员 · 陌生人 +1；船员 +1', 'the effect box uses the printed effect, not the applied fate summary');
+  assert.doesNotMatch(rows[1][1], /阿尔戈号命运|当前城市/, 'neither the fate cost nor the target leaks into the effect box');
+  const waiver = control(entries[0], 'waiveFate');
+  waiver.checked = true; waiver.listeners.change();
+  const waivedFacts = findNode(entries[0], node => node.className === 'structure-tech-action-facts');
+  const waivedRows = findNodes(waivedFacts, node => node.tagName === 'div').map(row => [
+    findNode(row, node => node.tagName === 'dt').textContent,
+    findNode(row, node => node.tagName === 'dd').textContent,
+  ]);
+  assert.equal(waivedRows[0][1], '无代价', 'waiving the day’s first negotiation removes the fate cost instead of showing the printed fallback');
+}));
 
 test('Plutocratic Agents derives its local faction and only asks which other faction loses diplomacy', async () => {
   const previous = global.document; global.document = fakeDocument();
@@ -483,6 +568,62 @@ test('Mortal Alliance follows the chosen adjacent city for its automatic local f
     global.ATO_MAP_TILE_TAGS = previous.tags;
     global.ATO_MAP_DATA = previous.data;
   }
+});
+
+test('Alliance Contacts turns its resource payment into clickable tiles', async () => {
+  const previousTags = global.ATO_MAP_TILE_TAGS;
+  global.ATO_MAP_TILE_TAGS = { tiles: { 'c2:site': { tags: ['city'], factions: ['helots'] } } };
+  try {
+    await withPanelDocument(async () => {
+      const f = negotiationFixture('alliance contacts');
+      const record = f.state.campaign.sections.record.users.chosen;
+      record.diplomacy = { 'c2-helots': '3' };
+      Object.assign(record.resources, { 'c2-warTrireme': 8, fearEssence: 5, mazeFragment: 1 });
+      const panel = f.client.createActionPanel({ ...f.target, scope: 'negotiation' });
+      await panel.ready;
+      const use = findNode(panel, node => node.className === 'structure-tech-action-use');
+      assert.equal(use.disabled, true, 'the idle preview asks for the full payment');
+      assert.equal(findNodes(panel, node => node.type === 'number' && node.hidden !== true).length, 0,
+        'bare number inputs give way to the resource tiles');
+      const tiles = findNodes(panel, node => node.className === 'structure-tech-resource-tile');
+      assert.deepEqual(tiles.map(node => node.name), ['choice:pay:c2-warTrireme', 'choice:pay:c2-relief',
+        'choice:pay:c2-warMachine', 'choice:pay:c2-violentAmbrosia', 'choice:pay:fearEssence', 'choice:pay:mazeFragment']);
+      const trireme = tiles[0], fragments = tiles[5], total = findNode(panel, node => node.className === 'structure-tech-resource-payment-total');
+      assert.equal(total.textContent, '已投入 0 / 3');
+      trireme.listeners.click();
+      trireme.listeners.click();
+      assert.equal(control(panel, 'pay:c2-warTrireme').value, '2', 'each click invests exactly one point');
+      assert.equal(trireme.dataset.count, '2');
+      assert.equal(trireme.attributes['aria-pressed'], 'true');
+      assert.equal(total.textContent, '已投入 2 / 3');
+      assert.match(panel.textContent, /需要恰好支付 3 个资源，已选择 2/);
+      assert.equal(use.disabled, true);
+      fragments.listeners.click();
+      assert.equal(total.textContent, '已投入 3 / 3');
+      assert.equal(total.dataset.complete, 'true');
+      assert.equal(use.disabled, false);
+      trireme.listeners.click();
+      assert.equal(control(panel, 'pay:c2-warTrireme').value, '2', 'a full payment ignores further clicks');
+      findNode(panel, node => node.name === 'payUndo').listeners.click();
+      assert.equal(control(panel, 'pay:mazeFragment').value, '0', 'undo returns the last invested point');
+      assert.equal(total.textContent, '已投入 2 / 3');
+      findNode(panel, node => node.name === 'payClear').listeners.click();
+      assert.equal(control(panel, 'pay:c2-warTrireme').value, '0');
+      fragments.listeners.click();
+      fragments.listeners.click();
+      assert.equal(control(panel, 'pay:mazeFragment').value, '1', 'the tile never invests past its stock');
+      assert.equal(f.state.posts.length, 0, 'staging the payment never executes the negotiation');
+      trireme.listeners.click();
+      trireme.listeners.click();
+      assert.equal(use.disabled, false);
+      await use.listeners.click();
+      assert.equal(f.state.posts.length, 1);
+      const saved = f.state.campaign.sections.record.users.chosen;
+      assert.equal(saved.resources['c2-warTrireme'], 6);
+      assert.equal(saved.resources.mazeFragment, 0);
+      assert.equal(saved.diplomacy['c2-helots'], '4');
+    });
+  } finally { global.ATO_MAP_TILE_TAGS = previousTags; }
 });
 
 test('negotiation response loss and simultaneous duplicate clicks settle fate and result exactly once', async () => {
@@ -890,77 +1031,107 @@ test('due scout completion atomically restores one ship and rebases onto unrelat
   assert.equal(f.state.posts.length, posts);
 });
 
-test('the actual trade panel previews all resource payments and performs mixed exchanges atomically', () => withPanelDocument(async () => {
+function clickTrade(panel, from, to, times = 1) {
+  for (const node of findNodes(panel, node => node.attributes?.['aria-pressed'] === 'true')) node.listeners.click();
+  control(panel, `sell:${from}`).listeners.click();
+  control(panel, `buy:${to}`).listeners.click();
+  for (let n = 0; n < times; n++) control(panel, 'tradeAdd').listeners.click();
+}
+const tradeBalance = (panel, key) => findNode(panel, node => node.dataset?.resource === key).textContent;
+
+test('resource choices dim impossible pairs, keep indirect paths available and recover after deselection or undo', () => withPanelDocument(async () => {
   const rule = realRules.catalog.find(item => item.key === 'superior trading solutions');
-  const f = realFixture(rule.key, rule.actions[0], { loseResponse: true });
-  f.state.campaign.sections.record.users.chosen.resources['c1-monument'] = 2;
+  const f = realFixture(rule.key, rule.actions[0]);
+  f.state.campaign.sections.record.users.chosen.resources['c1-monument'] = 4;
   const panel = f.client.createActionPanel(f.target);
   await panel.ready;
-  assert.equal(control(panel, 'tradeManualConfirmed'), undefined);
-  assert.equal(control(panel, 'tradeRoute0').children.find(option => option.value === 'trireme-to-monument').textContent,
-    '3 船材（库存 8） → 1 石筑（库存 2）');
-  change(control(panel, 'tradeRoute0'), 'trireme-to-monument');
-  change(control(panel, 'tradeRoute1'), 'monument-to-trireme');
-  const preview = findNode(panel, node => node.className === 'structure-tech-action-preview');
-  assert.match(preview.textContent, /命运 \+1.*船材 -3.*石筑 -1.*3 船材（库存 8） → 1 石筑（库存 2） ×1.*1 石筑（库存 2） → 1 船材（库存 8） ×1.*Day 11/);
+  const sell = control(panel, 'sell:c1-monument'), buy = control(panel, 'buy:c1-armament');
+  const disconnected = control(panel, 'buy:c1-rawAmbrosia');
+  sell.listeners.click();
+  assert.equal(disconnected.disabled, true);
+  assert.equal(disconnected.dataset.available, 'false');
+  assert.equal(control(panel, 'buy:c1-monument').disabled, true, 'same resource cannot be traded');
+  assert.equal(buy.disabled, false, 'an indirect but funded path stays available');
+  disconnected.listeners.click();
+  assert.equal(disconnected.attributes['aria-pressed'], 'false', 'disabled choices cannot change selection');
+  buy.listeners.click();
+  assert.equal(control(panel, 'sell:c1-rawAmbrosia').disabled, true, 'buy-first filtering is symmetric');
+  control(panel, 'tradeAdd').listeners.click();
+  assert.equal(buy.dataset.available, 'false', 'the next batch is unavailable once its stock is spent');
+  assert.equal(buy.disabled, false, 'the selected resource can still be deselected');
+  control(panel, 'tradeUndo').listeners.click();
+  assert.equal(buy.dataset.available, 'true');
+  assert.equal(control(panel, 'tradeAdd').disabled, false);
+  sell.listeners.click();
+  buy.listeners.click();
+  assert.equal(disconnected.disabled, false, 'clearing both selections restores the choices');
+  assert.equal(f.state.posts.length, 0);
+}));
+
+test('trade planner stages icon-backed selections, undoes drafts and commits mixed trades atomically', () => withPanelDocument(async () => {
+  const rule = realRules.catalog.find(item => item.key === 'superior trading solutions');
+  const f = realFixture(rule.key, rule.actions[0], { loseResponse: true });
+  const original = clone(f.state.campaign);
+  const panel = f.client.createActionPanel(f.target);
+  await panel.ready;
   const button = findNode(panel, node => node.className === 'structure-tech-action-use');
+  assert.equal(button.disabled, true);
+  assert.equal(button.textContent, '确认贸易');
+  assert.match(control(panel, 'sell:c1-trireme').children[0].src, /resource-icons\/trireme.png$/);
+  clickTrade(panel, 'c1-trireme', 'c1-monument');
+  assert.match(tradeBalance(panel, 'c1-trireme'), /8 → 5/);
+  assert.match(tradeBalance(panel, 'c1-monument'), /0 → 1/);
   assert.equal(button.disabled, false);
+  assert.deepEqual(f.state.campaign, original, 'the arrow never changes persisted resources, fate or cooldown');
+  control(panel, 'tradeUndo').listeners.click();
+  assert.match(tradeBalance(panel, 'c1-trireme'), /8 → 8/);
+  assert.equal(button.disabled, true);
+  clickTrade(panel, 'c1-trireme', 'c1-monument');
+  clickTrade(panel, 'c1-monument', 'c1-trireme');
+  assert.match(tradeBalance(panel, 'c1-trireme'), /8 → 6/);
+  assert.match(tradeBalance(panel, 'c1-monument'), /0 → 0/);
+  assert.deepEqual(f.state.campaign, original);
   await Promise.all([button.listeners.click(), button.listeners.click()]);
   assert.equal(f.state.posts.length, 1);
   const record = f.state.campaign.sections.record.users.chosen;
   assert.equal(record.resources['c1-trireme'], 6);
-  assert.equal(record.resources['c1-monument'], 2);
+  assert.equal(record.resources['c1-monument'], 0);
   assert.equal(record.fate, '3');
-  assert.equal(control(panel, 'tradeRoute0').children.find(option => option.value === 'trireme-to-monument').textContent,
-    '3 船材（库存 6） → 1 石筑（库存 2）');
   assert.match(f.state.campaign.sections.dashboard.profiles.chosen.cycles.c1.state.notes, /兑换：3 船材 → 1 石筑 ×1；1 石筑 → 1 船材 ×1/);
   assert.match(findNode(panel, node => node.className === 'structure-tech-action-status').textContent, /交易已完成.*冷却/);
 }));
 
-test('trade quantities multiply beyond three while stock still guards execution', () => withPanelDocument(async () => {
+test('repeated arrows stop at available stock; clearing restores all preview balances and quota', () => withPanelDocument(async () => {
   const rule = realRules.catalog.find(item => item.key === 'superior trading solutions');
   const f = realFixture(rule.key, rule.actions[0]);
   const panel = f.client.createActionPanel(f.target);
   await panel.ready;
-  assert.equal(control(panel, 'tradeCount0').max, undefined, 'the quantity multiplier is not capped by the three-category limit');
-  assert.match(findNode(panel, node => node.className === 'structure-tech-trade-hint').textContent, /任意倍率.*最多选择 3 类/);
-  change(control(panel, 'tradeRoute0'), 'trireme-to-monument');
-  change(control(panel, 'tradeCount0'), '4');
-  const button = findNode(panel, node => node.className === 'structure-tech-action-use');
-  const preview = findNode(panel, node => node.className === 'structure-tech-action-preview');
-  assert.equal(button.disabled, true);
-  assert.match(preview.textContent, /船材不足/);
-  assert.doesNotMatch(preview.textContent, /最多选择 3 类/, 'four of the same exchange are one category, not four');
-  change(control(panel, 'tradeCount0'), '2');
-  change(control(panel, 'tradeRoute1'), 'trireme-to-armament');
-  change(control(panel, 'tradeCount1'), '2');
-  assert.equal(button.disabled, true);
-  assert.match(preview.textContent, /船材不足/);
-  await button.listeners.click();
+  clickTrade(panel, 'c1-trireme', 'c1-monument', 4);
+  assert.match(tradeBalance(panel, 'c1-trireme'), /8 → 2/);
+  assert.equal(control(panel, 'tradeAdd').disabled, true);
+  assert.match(findNode(panel, node => node.className === 'structure-tech-trade-rate').textContent, /船材不足/);
+  assert.match(findNode(panel, node => node.className === 'structure-tech-trade-quota').textContent, /预览 2 笔.*1 \/ 3 类/);
+  control(panel, 'tradeClear').listeners.click();
+  assert.match(tradeBalance(panel, 'c1-trireme'), /8 → 8/);
+  assert.match(findNode(panel, node => node.className === 'structure-tech-trade-quota').textContent, /预览 0 笔.*0 \/ 3 类/);
+  await findNode(panel, node => node.className === 'structure-tech-action-use').listeners.click();
   assert.equal(f.state.posts.length, 0);
   assert.equal(f.state.campaign.sections.record.users.chosen.fate, '2');
-  assert.equal(f.state.campaign.sections.record.users.chosen.resources['c1-trireme'], 8);
 }));
 
-test('development exchanges allow quantities above three without fate or cooldown', () => withPanelDocument(async () => {
+test('development exchanges stage more than three repetitions without fate or cooldown', () => withPanelDocument(async () => {
   const rule = realRules.catalog.find(item => item.key === 'temenos project');
   const action = rule.actions[0], route = action.tradeRoutes[0];
   const f = realFixture(rule.key, action);
   const panel = f.client.createActionPanel(f.target);
   await panel.ready;
-  const count = control(panel, 'tradeCount0');
-  assert.equal(count.max, undefined, 'the quantity input must not impose a three-exchange limit');
-  assert.match(findNode(panel, node => node.className === 'structure-tech-trade-lines').children[0].textContent, /按下列顺序兑换/);
-  change(control(panel, 'tradeRoute0'), route.id); change(count, '4');
-  assert.equal(control(panel, 'developmentConfirmed'), undefined);
-  assert.doesNotMatch(panel.textContent, /当前正在发展阶段/);
+  clickTrade(panel, route.costs[0].storageKey, route.gains[0].storageKey, 4);
+  const button = findNode(panel, node => node.className === 'structure-tech-action-use');
+  assert.equal(button.disabled, true, 'story confirmation is still required');
   control(panel, 'story2aConfirmed').checked = true;
   control(panel, 'story2aConfirmed').listeners.change();
-  const preview = findNode(panel, node => node.className === 'structure-tech-action-preview');
-  assert.match(preview.textContent, /舰材 -4.*×4/);
-  assert.doesNotMatch(preview.textContent, /命运 \+1|到期：|恢复：|至多 3/);
-  const button = findNode(panel, node => node.className === 'structure-tech-action-use');
-  assert.equal(button.disabled, false); assert.equal(button.textContent, '执行交易');
+  assert.equal(button.disabled, false);
+  assert.match(tradeBalance(panel, 'c2-warTrireme'), /4 → 0/);
   await button.listeners.click();
   const record = f.state.campaign.sections.record.users.chosen;
   assert.equal(record.resources['c2-warTrireme'], 0);
@@ -971,24 +1142,28 @@ test('development exchanges allow quantities above three without fate or cooldow
   assert.equal(event.skipTimeline, true);
 }));
 
-test('ordered trade rows may spend the preceding exchange gain and still commit only once', () => withPanelDocument(async () => {
+test('indirect trade batches show exact ratios, consume two categories and undo as a whole', () => withPanelDocument(async () => {
   const rule = realRules.catalog.find(item => item.key === 'superior trading solutions');
   const f = realFixture(rule.key, rule.actions[0]);
+  f.state.campaign.sections.record.users.chosen.resources = { 'c1-monument': 8 };
   const panel = f.client.createActionPanel(f.target);
   await panel.ready;
-  change(control(panel, 'tradeRoute0'), 'trireme-to-monument');
-  change(control(panel, 'tradeRoute1'), 'monument-to-trireme');
-  // The same category cannot occupy two rows: choosing it again moves it.
-  change(control(panel, 'tradeRoute2'), 'monument-to-trireme');
-  assert.equal(control(panel, 'tradeRoute1').value, '');
-  assert.equal(control(panel, 'tradeCount1').value, '0');
-  assert.equal(control(panel, 'tradeCount2').value, '1');
-  const button = findNode(panel, node => node.className === 'structure-tech-action-use');
-  assert.equal(button.disabled, false);
-  await button.listeners.click();
+  clickTrade(panel, 'c1-monument', 'c1-armament', 2);
+  assert.match(findNode(panel, node => node.className === 'structure-tech-trade-rate').textContent, /4 : 1.*石筑 → 船材 → 军备/);
+  assert.match(tradeBalance(panel, 'c1-monument'), /8 → 0/);
+  assert.match(tradeBalance(panel, 'c1-trireme'), /0 → 0/);
+  assert.match(tradeBalance(panel, 'c1-armament'), /0 → 2/);
+  assert.match(findNode(panel, node => node.className === 'structure-tech-trade-quota').textContent, /2 \/ 3 类/);
+  control(panel, 'tradeUndo').listeners.click();
+  assert.match(tradeBalance(panel, 'c1-monument'), /8 → 4/);
+  assert.match(tradeBalance(panel, 'c1-armament'), /0 → 1/);
+  clickTrade(panel, 'c1-monument', 'c1-armament');
+  await findNode(panel, node => node.className === 'structure-tech-action-use').listeners.click();
   assert.equal(f.state.posts.length, 1);
-  assert.equal(f.state.campaign.sections.record.users.chosen.resources['c1-trireme'], 6);
-  assert.equal(f.state.campaign.sections.record.users.chosen.resources['c1-monument'], 0);
+  const record = f.state.campaign.sections.record.users.chosen;
+  assert.equal(record.resources['c1-monument'], 0);
+  assert.equal(record.resources['c1-trireme'], 0);
+  assert.equal(record.resources['c1-armament'], 2);
 }));
 
 test('the panel retains an operation id for retry after a lost connection', async () => {
@@ -1176,6 +1351,183 @@ async function withPanelDocument(run) {
   try { await run(); } finally { global.document = previous; }
 }
 
+test('restoration image choices update the selected cost and submit only the chosen payment', () => withPanelDocument(async () => {
+  const rule = realRules.voyageCatalog.find(item => item.key === 'strange alliance');
+  const f = realFixture(rule.key, rule.actions[0]);
+  Object.assign(f.state.campaign.sections.record.users.chosen, { nymphCharges: '1', nymphLimit: '3' });
+  f.state.campaign.sections.record.users.chosen.resources.priests = 4;
+  const panel = f.client.createActionPanel({ ...f.target, scope: 'voyage' });
+  await panel.ready;
+  const mode = control(panel, 'actionMode');
+  const priests = control(panel, 'choice:actionMode:voyage-alliance-priests');
+  const fate = control(panel, 'choice:actionMode:voyage-alliance-fate');
+  assert.equal(mode.hidden, true);
+  assert.equal(findNode(priests, node => node.tagName === 'img').src, '/record/assets/resource-icons/priests.png');
+  assert.equal(findNode(fate, node => node.tagName === 'img').src, '/assets/icons/argo-fate.svg');
+  assert.equal(priests.attributes['aria-pressed'], 'true');
+  fate.listeners.click();
+  assert.equal(mode.value, 'voyage-alliance-fate');
+  assert.equal(fate.attributes['aria-pressed'], 'true');
+  assert.equal(priests.attributes['aria-pressed'], 'false');
+  const preview = findNode(panel, node => node.className === 'structure-tech-action-preview').textContent;
+  assert.match(preview, /命运 \+2/);
+  assert.match(preview, /灾祸 \+2/);
+  assert.equal(f.state.posts.length, 0, 'choosing a payment does not execute it');
+  const use = findNode(panel, node => node.className === 'structure-tech-action-use');
+  await use.listeners.click();
+  const saved = f.state.campaign.sections.record.users.chosen;
+  assert.equal(saved.nymphCharges, '2');
+  assert.equal(saved.resources.priests, 4);
+  assert.equal(saved.cycleStats[f.target.cycleId].fate, '4');
+  assert.equal(f.state.posts.length, 1);
+}));
+
+test('unavailable restoration image choices keep their reason visible and cannot execute', () => withPanelDocument(async () => {
+  const rule = realRules.voyageCatalog.find(item => item.key === 'strange alliance');
+  const f = realFixture(rule.key, rule.actions[0]);
+  const panel = f.client.createActionPanel({ ...f.target, scope: 'voyage' });
+  await panel.ready;
+  const fate = control(panel, 'choice:actionMode:voyage-alliance-fate');
+  assert.equal(fate.dataset.available, 'false');
+  assert.match(fate.textContent, /请先在记录表填写有效的召唤充能与充能上限/);
+  const image = findNode(fate, node => node.tagName === 'img');
+  image.listeners.error();
+  assert.equal(image.hidden, true);
+  assert.equal(findNode(fate, node => node.className === 'structure-tech-choice-fallback').hidden, false);
+  fate.listeners.click();
+  assert.equal(fate.attributes['aria-pressed'], 'true');
+  const use = findNode(panel, node => node.className === 'structure-tech-action-use');
+  assert.equal(use.disabled, true);
+  await use.listeners.click();
+  assert.equal(f.state.posts.length, 0);
+}));
+
+test('merged voyage sources become one clickable box per payment resource', () => withPanelDocument(async () => {
+  const f = fixture({ rules: realRules, dictionary });
+  f.state.campaign.sections.dashboard.profiles.chosen.cycles = {
+    c3: { state: { day: 4, notes: '', techAutomation: { version: 1, events: {} } } },
+  };
+  f.state.campaign.sections.record.users.chosen = { cycle: 'c3', fate: '4', hull: '5',
+    cycleStats: { c3: { fate: '4', crew: '3', hull: '5' } }, resources: { priests: 5 }, titans: [] };
+  f.state.campaign.sections.technology.users.chosen = { unlocked: ['spark of the dead gods', 'extinction contingency'] };
+  const panel = f.client.createActionPanel({ ...f.target, cycleId: 'c3', techKey: undefined, actionId: undefined, scope: 'voyage' });
+  await panel.ready;
+  const entry = findNode(panel, node => node.className === 'structure-tech-entry' && node.dataset.groupId === 'voyage:fate');
+  const select = control(entry, 'techSource');
+  assert.equal(select.hidden, true, 'the source dropdown is hidden behind the boxes');
+  assert.equal(select.choiceLabel.hidden, true, 'the source row label is hidden with its dropdown');
+  const tiles = findNodes(entry, node => String(node.name || '').startsWith('choice:voyageAction:'));
+  assert.deepEqual(tiles.map(node => node.name), ['choice:voyageAction:voyage-contingency-crew',
+    'choice:voyageAction:voyage-contingency-hull', 'choice:voyageAction:voyage-spark']);
+  assert.match(tiles[0].textContent, /船员.*来源：消除偶然性 · 命运 -2/);
+  assert.match(tiles[1].textContent, /船体.*来源：消除偶然性 · 命运 -2/);
+  assert.match(tiles[2].textContent, /祭司.*来源：被遗弃的方舟 · 命运 -1/);
+  assert.equal(findNode(tiles[0], node => node.tagName === 'img').src, '/assets/icons/crew.svg');
+  assert.equal(findNode(tiles[1], node => node.tagName === 'img').src, '/assets/icons/hull.svg');
+  assert.equal(findNode(tiles[2], node => node.tagName === 'img').src, '/record/assets/resource-icons/priests.png');
+  assert.equal(tiles[0].attributes['aria-pressed'], 'true', 'the first payment starts selected');
+  assert.equal(control(entry, 'actionMode'), undefined, 'their payment boxes replace the mode dropdown');
+  const initial = findNode(entry, node => node.className === 'structure-tech-action-preview').textContent;
+  assert.match(initial, /船员 -1/);
+  assert.match(initial, /命运 -2/, '消除偶然性 lowers Argo fate by 2, never 1');
+  tiles[2].listeners.click();
+  assert.equal(select.value, 'spark of the dead gods');
+  assert.equal(tiles[2].attributes['aria-pressed'], 'true');
+  assert.equal(tiles[0].attributes['aria-pressed'], 'false');
+  assert.match(entry.textContent, /来源：被遗弃的方舟/);
+  const preview = findNode(entry, node => node.className === 'structure-tech-action-preview').textContent;
+  assert.match(preview, /祭司 -1/);
+  assert.match(preview, /命运 -1/);
+  tiles[1].listeners.click();
+  assert.equal(select.value, 'extinction contingency');
+  assert.match(findNode(entry, node => node.className === 'structure-tech-action-preview').textContent, /船体 -1/);
+  assert.match(findNode(entry, node => node.className === 'structure-tech-action-preview').textContent, /命运 -2/);
+  assert.equal(findNode(entry, node => node.className === 'structure-tech-action-use').textContent, '使用能力');
+  assert.equal(f.state.posts.length, 0, 'switching payments only previews');
+}));
+
+test('every compact merged source becomes side-by-side buttons instead of a dropdown', () => withPanelDocument(async () => {
+  const f = fixture({ rules: realRules, dictionary });
+  f.state.campaign.sections.dashboard.profiles.chosen.cycles = {
+    c2: { state: { day: 4, notes: '', techAutomation: { version: 1, events: {} } } },
+  };
+  f.state.campaign.sections.record.users.chosen = { cycle: 'c2', fate: '4', hull: '5',
+    cycleStats: { c2: { fate: '4', crew: '3', hull: '5' } }, resources: { priests: 5 },
+    titans: [{ id: 'dream', name: '梦行者', count: 2 }] };
+  f.state.campaign.sections.technology.users.chosen = { unlocked: ['titan training', 'titan genetic memory',
+    "argo's mission", 'temenos project'] };
+  const panel = f.client.createActionPanel({ ...f.target, cycleId: 'c2', techKey: undefined, actionId: undefined, scope: 'voyage' });
+  await panel.ready;
+  const enhancement = findNode(panel, node => node.className === 'structure-tech-entry' && node.dataset.groupId === 'titan-enhancement');
+  const enhancementSource = control(enhancement, 'techSource');
+  assert.ok(enhancementSource, '泰坦强化 still exposes its source control state');
+  assert.equal(enhancementSource.hidden, true, 'the dropdown is replaced by the two source buttons');
+  assert.notEqual(enhancementSource.choiceLabel.hidden, true, '"来源：" stays visible');
+  const picks = findNodes(enhancement, node => String(node.name || '').startsWith('choice:techSource:'));
+  assert.deepEqual(picks.map(node => node.textContent), ['泰坦遗传记忆', '泰坦训练']);
+  assert.equal(picks[0].attributes['aria-pressed'], 'true');
+  assert.match(findNode(enhancement, node => node.className === 'structure-tech-action-preview').textContent, /Strain/);
+  picks[1].listeners.click();
+  assert.equal(enhancementSource.value, 'titan training');
+  assert.equal(picks[1].attributes['aria-pressed'], 'true');
+  assert.equal(picks[0].attributes['aria-pressed'], 'false');
+  assert.match(findNode(enhancement, node => node.className === 'structure-tech-action-preview').textContent,
+    /Training 或 Conditioning/);
+  assert.equal(findNodes(enhancement, node => String(node.name || '').startsWith('choice:voyageAction:')).length, 0);
+  const trade = findNode(panel, node => node.className === 'structure-tech-entry' && node.dataset.groupId === 'trade');
+  const tradeSource = control(trade, 'techSource');
+  assert.ok(tradeSource, '贸易 still exposes its source control state');
+  assert.equal(tradeSource.hidden, true, '贸易 also replaces the dropdown with buttons');
+  assert.notEqual(tradeSource.choiceLabel.hidden, true, '"来源：" stays visible');
+  const tradePicks = findNodes(trade, node => String(node.name || '').startsWith('choice:techSource:'));
+  assert.deepEqual(tradePicks.map(node => node.textContent), ['圆桌舰桥', '迷宫矿井']);
+  assert.equal(tradePicks[0].attributes['aria-pressed'], 'true');
+  tradePicks[1].listeners.click();
+  assert.equal(tradeSource.value, 'temenos project');
+  assert.equal(tradePicks[1].attributes['aria-pressed'], 'true');
+  assert.equal(tradePicks[0].attributes['aria-pressed'], 'false');
+  assert.equal(findNodes(panel, node => node.tagName === 'select' && node.name === 'techSource' && node.hidden !== true).length, 0,
+    'no visible source dropdown remains in any compact group');
+}));
+
+test('招聘项目 shows the effect on the left and two direct outcome buttons on the right', () => withPanelDocument(async () => {
+  const f = fixture({ rules: realRules, dictionary });
+  f.state.campaign.sections.dashboard.profiles.chosen.cycles = {
+    c2: { state: { day: 4, notes: '', techAutomation: { version: 1, events: {} } } },
+  };
+  f.state.campaign.sections.record.users.chosen = { cycle: 'c2', fate: '4',
+    cycleStats: { c2: { fate: '4', crew: '3', hull: '5', crewCounters: { crew: 3, refugees: 2, captives: 0 } } },
+    resources: { priests: 5 } };
+  f.state.campaign.sections.technology.users.chosen = { unlocked: ['recruitment programs'] };
+  const panel = f.client.createActionPanel({ ...f.target, cycleId: 'c2', techKey: undefined, actionId: undefined, scope: 'voyage' });
+  await panel.ready;
+  const entry = findNode(panel, node => node.className === 'structure-tech-entry' && node.dataset.groupId === 'voyage:recruitment');
+  assert.equal(control(entry, 'checkResult').hidden, true);
+  assert.equal(control(entry, 'convertRefugee').hidden, true);
+  const success = control(entry, 'recruit:success');
+  const failure = control(entry, 'recruit:failure');
+  assert.equal(success.textContent, '转换成功');
+  assert.equal(failure.textContent, '转换失败');
+  const left = findNode(entry, node => node.className === 'structure-tech-action-preview').textContent;
+  assert.match(left, /效果.*外交 7\+ · 难民转为船员/);
+  assert.match(left, /代价.*命运 \+1/);
+  assert.match(left, /可将 1 难民转为 1 船员；失败仍支付命运/);
+  let request;
+  f.client.submit = async target => { request = target; throw new Error('stop before writing'); };
+  await success.listeners.click();
+  assert.equal(request.techKey, 'recruitment programs');
+  assert.equal(request.actionId, 'voyage-recruitment');
+  assert.equal(request.selection.checkResult, 'success');
+  assert.equal(request.selection.convertRefugee, 'yes');
+  request = null;
+  await failure.listeners.click();
+  assert.equal(request.selection.checkResult, 'failure');
+  assert.equal(request.selection.convertRefugee, 'no');
+  assert.equal(control(entry, 'checkResult').value, 'failure');
+  assert.equal(control(entry, 'convertRefugee').value, 'no');
+  assert.equal(f.state.posts.length, 0, 'the stubbed save never wrote');
+}));
+
 test('voyage list starts compact, preserves disclosures, and keeps execution and card viewing available', () => withPanelDocument(async () => {
   const rule = realRules.catalog.find(item => item.key === 'grand stoa');
   const f = realFixture(rule.key, rule.actions[0]);
@@ -1212,6 +1564,22 @@ test('voyage list starts compact, preserves disclosures, and keeps execution and
   assert.equal(updated.dataset.simple, 'true', 'a pending event keeps its simple layout after execution');
   assert.equal(findNode(updated, node => node.className === 'structure-tech-entry-meta').textContent, '培育梦行者泰坦');
   assert.match(findNode(updated, node => node.className === 'structure-tech-entry-state').textContent, /待结算/);
+}));
+
+test('the Final Tear row spells out the tear use and the card coming back', () => withPanelDocument(async () => {
+  const rule = realRules.catalog.find(item => item.key === 'the work is never done');
+  const f = realFixture(rule.key, rule.actions[0]);
+  const panel = f.client.createActionPanel({ ...f.target, techKey: undefined, scope: 'voyage' });
+  await panel.ready;
+  const entry = findNode(panel, node => node.className === 'structure-tech-entry'
+    && node.dataset.groupId === 'the work is never done');
+  const facts = findNode(entry, node => node.className === 'structure-tech-action-facts');
+  const rows = findNodes(facts, node => node.tagName === 'div').map(row => [
+    findNode(row, node => node.tagName === 'dt').textContent,
+    findNode(row, node => node.tagName === 'dd').textContent,
+  ].join('：'));
+  assert.deepEqual(rows, ['代价：暂时弃置本卡', '效果：可代替 1 个西西弗斯之泪使用；结算时取回本卡', '到期：Day 34']);
+  assert.equal(f.state.posts.length, 0, 'reading the row never executes it');
 }));
 
 test('compact hero status follows selections while individual card panels retain the existing layout', () => withPanelDocument(async () => {
@@ -1266,7 +1634,7 @@ test('missing choices only show ready when a legal payable completion exists', (
   await tradePanel.ready;
   const tradeBadge = () => findNode(tradePanel, node => node.className === 'structure-tech-entry-state');
   assert.equal(tradeBadge().textContent, '可使用', 'an affordable later route makes unconfigured trade available');
-  assert.equal(control(tradePanel, 'tradeRoute0').value, '');
+  assert.equal(control(tradePanel, 'tradeAdd').disabled, true);
   resources['c1-monument'] = 0;
   await tradePanel.refresh();
   assert.equal(tradeBadge().dataset.state, 'blocked');

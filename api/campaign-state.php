@@ -336,6 +336,7 @@ function public_second_screen_payload(array $campaign, array $screenEntry = []):
       'onlyExplored' => (bool) ($mapState['onlyExplored'] ?? false),
       'hideUnknown' => (bool) ($mapState['hideUnknown'] ?? true),
       'showAdjacency' => (bool) ($mapState['showAdjacency'] ?? false),
+      'showGrid' => (bool) ($mapState['showGrid'] ?? false),
       'query' => (string) ($mapState['query'] ?? ''),
     ],
     'aibp' => $aibpState,
@@ -549,6 +550,21 @@ function copy_campaign_backup(string $source, string $destination): void {
   }
 }
 
+// A snapshot only has to preserve the bytes the save file has right now: the
+// caller writes the new campaign by renaming a temp file over $source, so a
+// hard link keeps the old inode without copying 3.5 MB. Filesystems without
+// link support (or a locked source on Windows) fall back to copy().
+function snapshot_campaign_backup(string $source, string $destination, bool $replace = false): void {
+  ensure_campaign_backup_dir(dirname($destination));
+  if ($replace && is_file($destination) && !unlink($destination)) {
+    respond(500, ['ok' => false, 'error' => 'Could not replace a campaign backup.']);
+  }
+  if (@link($source, $destination)) return;
+  if (!copy($source, $destination)) {
+    respond(500, ['ok' => false, 'error' => 'Could not create a campaign backup.']);
+  }
+}
+
 function prepare_campaign_backups(
   string $saveFile,
   array $currentCampaign,
@@ -561,6 +577,7 @@ function prepare_campaign_backups(
 
   $currentDay = campaign_game_day($currentCampaign);
   $nextDay = campaign_game_day($nextCampaign);
+  $dayChanged = $currentDay['identity'] !== $nextDay['identity'];
   $markerFile = campaign_backup_root($saveFile) . DIRECTORY_SEPARATOR . 'backup-current-day.json';
   $marker = read_campaign_backup_marker($markerFile);
   if ($marker['identity'] !== $currentDay['identity']) {
@@ -570,20 +587,29 @@ function prepare_campaign_backups(
   $archiveId = $marker['identity'] === $currentDay['identity'] ? $marker['archiveId'] : null;
   if ($currentDay['valid']) {
     if ($archiveId === null || $archiveId === '') $archiveId = new_campaign_archive_id();
-    copy_campaign_backup($saveFile, campaign_daily_backup_file($saveFile, $currentDay, $archiveId));
+    // The daily snapshot marks the end of a day. The recent ring already keeps
+    // the last N saves inside the same day, so copying a full daily file on
+    // every single save only multiplied disk writes (and antivirus scans).
+    if ($dayChanged) {
+      $dailyFile = campaign_daily_backup_file($saveFile, $currentDay, $archiveId);
+      if (!is_file($dailyFile)) snapshot_campaign_backup($saveFile, $dailyFile);
+    }
   }
 
-  if ($currentDay['identity'] === $nextDay['identity']) {
+  if (!$dayChanged) {
+    // Rotate by renaming instead of copying every slot: moving backup-09 to
+    // backup-10 is metadata-only, while the old code copied ~10 x the whole
+    // campaign on every save. backup-01 is a hard link to the current file.
     for ($index = $backupCount; $index >= 2; $index -= 1) {
       $previous = campaign_recent_backup_file($saveFile, $currentDay, $index - 1);
       $next = campaign_recent_backup_file($saveFile, $currentDay, $index);
       if (is_file($previous)) {
-        copy_campaign_backup($previous, $next);
+        if (!@rename($previous, $next)) copy_campaign_backup($previous, $next);
       } elseif (is_file($next) && !unlink($next)) {
         respond(500, ['ok' => false, 'error' => 'Could not rotate campaign backups.']);
       }
     }
-    copy_campaign_backup($saveFile, campaign_recent_backup_file($saveFile, $currentDay, 1));
+    snapshot_campaign_backup($saveFile, campaign_recent_backup_file($saveFile, $currentDay, 1), true);
   } else {
     clear_campaign_recent_backups($saveFile, $backupCount);
   }

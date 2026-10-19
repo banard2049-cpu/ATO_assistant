@@ -1,0 +1,67 @@
+{
+  "version": "20261020",
+  "coordinateSystem": "original scan pixels; boxes are left, top, right, bottom",
+  "reviewedFaces": 511,
+  "tiles": {
+    "c1-tile-009-alt-front": [
+      ["alpha", "ellipse", [139,168,205,233]],
+      ["beta", "ellipse", [471,575,537,641]]
+    ],
+    "c1-tile-010-front": [
+      ["alpha", "ellipse", [524,105,589,171]],
+      ["beta", "ellipse", [523,632,589,699]]
+    ],
+    "c1-tile-018-alt-front": [
+      ["alpha", "ellipse", [15,61,81,127]],
+      ["beta", "ellipse", [676,128,742,195]]
+    ],
+    "c1-tile-019-front": [["*1*6", "ribbon", [353,248,463,288]]],
+    "c1-tile-027-front": [["克诺索斯 KNOSSOS", "polygon", [[293,656],[311,656],[311,650],[527,650],[527,656],[544,656],[531,678],[544,701],[516,701],[516,697],[323,697],[323,701],[293,701],[306,678]]]],
+    "c1-tile-030-front": [["*4*7", "ribbon", [597,596,707,637]]],
+    "c1-tile-035-alt-front": [
+      ["alpha", "ellipse", [68,562,134,628]],
+      ["beta", "ellipse", [699,71,765,137]]
+    ],
+    "c1-tile-053-front": [["*3*8", "ribbon", [595,486,706,529]]],
+    "c1-tile-068-front": [["*9*0", "ribbon", [157,555,267,597]]],
+    "c3-tile-088-front": [
+      ["alpha", "ellipse", [110,520,176,586]],
+      ["beta", "ellipse", [647,519,714,587]]
+    ],
+    "c4-tile-027-front": [
+      ["alpha", "ellipse", [182,556,248,622]],
+      ["beta", "ellipse", [607,160,674,226]],
+      ["036 beta suffix", "rectangle", [451,69,503,123]],
+      ["026 alpha suffix", "rectangle", [171,386,225,442]],
+      ["018 alpha suffix", "rectangle", [448,710,502,765]]
+    ],
+    "c4-tile-028-front": [
+      ["alpha", "ellipse", [722,581,789,648]],
+      ["beta", "ellipse", [79,100,146,167]],
+      ["037 beta suffix", "rectangle", [474,74,526,129]],
+      ["029 alpha prefix", "rectangle", [598,391,653,444]],
+      ["019 beta suffix", "rectangle", [477,711,531,767]]
+    ],
+    "c4-tile-079-front": [
+      ["alpha", "ellipse", [230,102,297,168]],
+      ["beta", "ellipse", [553,668,619,735]],
+      ["078 alpha suffix", "rectangle", [169,386,223,441]],
+      ["080 beta prefix", "rectangle", [600,384,654,438]],
+      ["070 beta suffix", "rectangle", [450,704,504,760]]
+    ],
+    "c5-tile-002-front": [["*4*7", "ribbon", [352,400,461,440]]],
+    "c5-tile-023-front": [["*1*7", "ribbon", [351,393,462,434]]],
+    "c5-tile-027-front": [
+      ["026 alpha route", "polygon", [[31,261],[46,236],[115,235],[144,220],[173,235],[226,235],[226,291],[46,291]]],
+      ["026 beta route", "polygon", [[29,568],[44,541],[114,541],[143,526],[173,541],[225,541],[225,598],[44,598]]]
+    ],
+    "c5-tile-039-front": [["*3*0", "ribbon", [359,285,468,327]]],
+    "c5-tile-040-back": [["039 beta suffix", "rectangle", [173,386,229,440]]],
+    "c5-tile-053-front": [["*5*5", "ribbon", [359,534,468,576]]],
+    "c5-tile-060-front": [
+      ["*7*3", "ribbon", [304,218,414,259]],
+      ["059 upper route", "polygon", [[33,256],[48,229],[118,229],[148,214],[177,229],[187,229],[187,239],[177,239],[177,273],[187,273],[187,284],[48,284]]]
+    ],
+    "c5-tile-071-front": [["*9*2", "ribbon", [181,448,292,490]]]
+  }
+}

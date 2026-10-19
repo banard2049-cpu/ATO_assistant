@@ -1285,6 +1285,17 @@
     let titleCycle = CYCLES.includes(new URLSearchParams(window.location.search).get("cycle"))
       ? new URLSearchParams(window.location.search).get("cycle")
       : "c1";
+    // Keep ?cycle= in the URL: module links carry it and the page router compares
+    // it with the tab URL to decide between "focus + sync" and a reload.
+    function syncTitleCycleUrl(cycleId) {
+      try {
+        const url = new URL(window.location.href);
+        if (url.searchParams.get("cycle") === cycleId) return;
+        url.searchParams.set("cycle", cycleId);
+        window.history.replaceState(null, "", url);
+      } catch {}
+    }
+    syncTitleCycleUrl(titleCycle);
     const dashboardCycleChannel = typeof BroadcastChannel === "function"
       ? new BroadcastChannel("ato-dashboard-cycle-v1")
       : null;
@@ -1292,6 +1303,7 @@
     function setTitleCycle(cycleId) {
       if (!CYCLES.includes(cycleId) || cycleId === titleCycle) return;
       titleCycle = cycleId;
+      syncTitleCycleUrl(cycleId);
       document.body.dataset.cycle = cycleId;
       window.ATO_CYCLE_SYMBOLS?.prependTitleIcon(
         document.querySelector("#heroTitle"),
@@ -2890,6 +2902,9 @@
         void syncHeroFromExternalUpdate();
       }
     });
+    // Focused from another module (主控台 links / 返回): refresh in place instead of
+    // reloading the page.
+    window.addEventListener("ato-module-sync-request", () => void syncHeroFromExternalUpdate());
 
     // Init
     state = loadState();
@@ -2899,7 +2914,7 @@
     renderAll();
     loadFromServer();
   </script>
-  <script src="../assets/page-focus-router.js?v=20261007-page-navigation1"></script>
+  <script src="../assets/page-focus-router.js?v=20261020-module-probe1"></script>
 
   <script src="../assets/ato-terms.js?v=20261015-diplomacy2"></script>
   <script src="../assets/english-terms.js?v=20261011-english4"></script>

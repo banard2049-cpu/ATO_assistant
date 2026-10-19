@@ -48,30 +48,287 @@ test('pursuit waits for the priest choice and uses the resulting Fate threshold'
   };
   await h.ctx.settleExplorationDraw();
   assert.deepEqual(totals, [], 'the unresolved choice must not freeze a pursuit receipt');
-  await h.ctx.completeExplorationDraw();
-  assert.equal(h.drawState.activePiles.flat().length, 2, 'completion cannot bypass unresolved choices');
-  assert.deepEqual(totals, []);
   await h.ctx.writeExplorationChoice(priest, 'choice:priest-offer', 'accept');
-  await h.ctx.settleExplorationDraw();
+  await h.ctx.completeExplorationDraw();
   assert.equal(h.record.cycleStats.c1.fate, '9');
   assert.deepEqual(totals, [4], 'Fate 8+ adds the fourth marker');
   assert.equal(h.drawState.activePiles.flat().length, 0);
 });
 
-test('the standalone pursuit action refuses unresolved exploration effects before writing', async () => {
+test('manual pursuit mode leaves the adversary to the player during batch and finish', async () => {
+  const card = drawnEntry('6411', 'WEAPONS CACHE');
+  const h = settleHarness({ cycle: 'c1', activePiles: [[card], []], fullRecord: nextRecord('c1', { fate: '7' }) });
+  h.ctx.pursuitSettlementStorageKey = 'ato-pursuit-settlement-v1';
+  h.ctx.localStorage = { getItem: () => 'manual', setItem: () => {} };
+  let calls = 0;
+  h.ctx.settleExplorationWithPursuit = async () => null;
+  h.ctx.settleExplorationPursuit = async () => { calls++; };
+  h.ctx.settlePursuitWithDashboard = async () => { calls++; return null; };
+  await h.ctx.settleExplorationDraw();
+  assert.equal(calls, 0, '一键结算 must not move the adversary in manual mode');
+  await h.ctx.completeExplorationDraw();
+  assert.equal(calls, 0, '结算完毕 must not move the adversary in manual mode');
+  assert.equal(h.drawState.activePiles.flat().length, 0, 'the cards still leave normally');
+});
+
+test('automatic pursuit mode still settles during 一键结算', async () => {
+  const card = drawnEntry('6411', 'WEAPONS CACHE');
+  const h = settleHarness({ cycle: 'c1', activePiles: [[card], []], fullRecord: nextRecord('c1', { fate: '7' }) });
+  h.ctx.pursuitSettlementStorageKey = 'ato-pursuit-settlement-v1';
+  h.ctx.localStorage = { getItem: () => 'auto', setItem: () => {} };
+  let calls = 0;
+  h.ctx.settleExplorationWithPursuit = async () => null;
+  h.ctx.settleExplorationPursuit = async () => { calls++; };
+  await h.ctx.settleExplorationDraw();
+  assert.equal(calls, 1, 'the default mode keeps moving the adversary');
+});
+
+test('the standalone pursuit action settles immediately even while exploration effects are pending', async () => {
   const h = settleHarness();
-  let writes = 0;
+  let loads = 0;
   h.ctx.mapCommandBusy = false;
   h.ctx.pendingExplorationEffects = () => ['unresolved Fate choice'];
-  h.ctx.beforeStructureTechSubmit = async () => { writes++; };
+  h.ctx.beforeStructureTechSubmit = async () => {};
+  h.ctx.structureTechTarget = () => ({ cycleId: 'c1' });
+  h.ctx.structureTechClient = () => ({ load: async () => { loads++; return {}; } });
+  h.ctx.assertStructureTechTarget = () => {};
+  h.ctx.window.ATO_EXPLORATION_PURSUIT = { plan: () => ({ code: 'NO_EXPLORATION_ROUND' }) };
   vm.runInContext(fn('settleExplorationPursuit'), h.ctx);
-  await assert.rejects(h.ctx.settleExplorationPursuit(), /先完成探索卡/);
-  assert.equal(writes, 0);
+  await h.ctx.settleExplorationPursuit();
+  assert.equal(loads, 1, 'pending card effects must not block the pursuit request');
+});
+
+test('Resolved accepts unmarked manual effects, settles pursuit once and ends without another prompt', async () => {
+  const pursuit = require('../assets/exploration-pursuit.js');
+  const priest = drawnEntry('6426', 'Hidden Temple');
+  const cackle = drawnEntry('6436', 'Cackle', 1);
+  const h = settleHarness({ cycle: 'c1', activePiles: [[priest], [cackle]], confirm: false,
+    fullRecord: nextRecord('c1', { fate: '7' }) });
+  await h.ctx.settleExplorationDraw();
+  assert.ok(h.ctx.pendingExplorationEffects(false).length);
+  // The player changes the record manually without marking the card's choice.
+  h.updateServerRecord(nextRecord('c1', { fate: '9' }));
+  await h.ctx.refreshCachedArgoRecord();
+  const writes = h.written.length;
+  const totals = [];
+  h.ctx.settleExplorationPursuit = async (waive, spawnTileId) => {
+    assert.equal(waive, false);
+    assert.equal(spawnTileId, 'selected-tile');
+    assert.equal(h.drawState.activePiles.flat().length, 2, 'pursuit runs before the cards leave');
+    totals.push(pursuit.countMarkers({ cycleId: 'c1', state: h.ctx.state, record: h.record }).total);
+  };
+  h.ctx.document.querySelector = () => ({ value: 'selected-tile' });
+  await h.ctx.completeExplorationDraw();
+  await h.ctx.completeExplorationDraw();
+  assert.deepEqual(totals, [4], 'use the manually updated Fate without repeating pursuit');
+  assert.equal(h.record.cycleStats.c1.fate, '9');
+  assert.equal(h.written.length, writes, 'finishing must not replay automatic card effects');
+  assert.equal(h.drawState.activePiles.flat().length, 0);
+  assert.equal(h.ctx.state.exploration.lastSettlementByCycle.c1.pending.length, 0);
+  assert.deepEqual(h.alerts, []);
+  assert.deepEqual(h.confirmations, []);
+});
+
+test('the pursuit action always loads the latest context and no longer needs a manual-resolution flag', async () => {
+  const h = settleHarness();
+  let loads = 0;
+  h.ctx.mapCommandBusy = false;
+  h.ctx.pendingExplorationEffects = () => ['unmarked manual effect'];
+  h.ctx.structureTechTarget = () => ({ cycleId: 'c1' });
+  h.ctx.beforeStructureTechSubmit = async () => {};
+  h.ctx.structureTechClient = () => ({ load: async () => { loads++; return {}; } });
+  h.ctx.assertStructureTechTarget = () => {};
+  h.ctx.window.ATO_EXPLORATION_PURSUIT = { plan: () => ({ code: 'NO_EXPLORATION_ROUND' }) };
+  vm.runInContext(fn('settleExplorationPursuit'), h.ctx);
+  await h.ctx.settleExplorationPursuit(false, '');
+  assert.equal(loads, 1);
+  assert.equal(h.ctx.settleExplorationPursuit.busy, false);
+  await h.ctx.settleExplorationPursuit();
+  assert.equal(loads, 2, 'a second click still reads the record instead of being refused');
+});
+
+test('a pursuit failure during Resolved preserves the current cards and allows retry', async () => {
+  const entry = drawnEntry('6426', 'Hidden Temple');
+  const h = settleHarness({ activePiles: [[entry], []], fullRecord: nextRecord('c1', { fate: '7' }) });
+  await h.ctx.settleExplorationDraw();
+  const pending = [...h.ctx.state.exploration.lastSettlementByCycle.c1.pending];
+  h.ctx.settleExplorationPursuit = async () => { throw new Error('pursuit save failed'); };
+  await h.ctx.completeExplorationDraw();
+  assert.equal(h.drawState.activePiles.flat().length, 1);
+  assert.deepEqual([...h.ctx.state.exploration.lastSettlementByCycle.c1.pending], pending);
+  assert.match(h.alerts[0], /pursuit save failed/);
+  assert.equal(h.ctx.settleExplorationDraw.busy, false);
+  h.ctx.settleExplorationPursuit = async () => {};
+  await h.ctx.completeExplorationDraw();
+  assert.equal(h.drawState.activePiles.flat().length, 0);
+  assert.deepEqual(h.confirmations, []);
 });
 
 function drawnEntry(id, name, pile = 0) {
   return { id, name, day: 12, removal: 'keep', draw: 'single', pile };
 }
+
+function combinedSettlementHarness(id = '6401') {
+  const clone = value => JSON.parse(JSON.stringify(value));
+  const entry = drawnEntry(id, dataset.cards[`c1:${id}`].titleEn);
+  const h = settleHarness({ activePiles: [[entry], []], fullRecord: nextRecord('c1', { fate: '3' }) });
+  const c = h.ctx;
+  c.state.techAutomation = { version: 1, events: {} };
+  c.state.exploration.drawStateByCycle.c1.pursuitRoundId = 'performance-test-round';
+  c.archive.profiles = { 'test-campaign': { cycles: { c1: { state: c.state } } } };
+  c.campaignSectionBaseline = clone(c.archive);
+  c.campaignServerBaseline = clone(c.archive);
+  c.ensureExplorationDrawState = () => c.state.exploration.drawStateByCycle.c1;
+  c.assertStructureTechTarget = () => {};
+  c.window.ATO_EXPLORATION_PURSUIT = require('../assets/exploration-pursuit.js');
+  vm.runInContext(fn('mergeDashboardChanges'), c);
+  c.cloneJson = value => value === undefined ? undefined : clone(value);
+  c.jsonEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  const campaign = { sections: { dashboard: clone(c.archive), record: { users: { 'test-campaign': clone(h.record) } },
+    technology: {}, heroes: {}, map: {} }, sectionRevisions: { dashboard: 1, record: 1, technology: 0, heroes: 0, map: 0 } };
+  const cachedCampaign = clone(campaign);
+  const traffic = { reads: 0, posts: 0, fail: false, conflict: false, loseResponse: false, useCached: false };
+  const response = (status, value) => ({ status, ok: status === 200, json: async () => clone(value) });
+  const client = require('../technology/structure-tech-client.js').create({
+    session: { accountId: 'test-account', accept() {}, assertCurrent() {} }, expectedAccountId: 'test-account',
+    apiUrl: '/campaign', dictionaryUrl: '/dictionary', rules: c.window.ATO_STRUCTURE_TECH_RULES,
+    fetch: async (url, options = {}) => {
+      if (url === '/dictionary') return response(200, {});
+      if (options.method !== 'POST') { traffic.reads++; return response(200, { ok: true, user: { id: 'test-account' }, campaign }); }
+      traffic.posts++;
+      if (traffic.fail) throw new Error('connection failed');
+      if (traffic.conflict) return response(409, { ok: false, code: 'SAVE_CONFLICT' });
+      const request = JSON.parse(options.body);
+      assert.deepEqual(Object.keys(request.expectedRevisions).sort(), ['dashboard', 'heroes', 'map', 'record', 'technology']);
+      if (Object.entries(request.expectedRevisions).some(([key, revision]) => revision !== campaign.sectionRevisions[key])) {
+        return response(409, { ok: false, code: 'SAVE_CONFLICT' });
+      }
+      campaign.sections.dashboard = request.sections.dashboard;
+      campaign.sections.record.users[request.userId] = request.sections.record;
+      h.updateServerRecord(request.sections.record);
+      campaign.sectionRevisions.dashboard++;
+      campaign.sectionRevisions.record++;
+      if (traffic.loseResponse) throw new Error('response lost after commit');
+      return response(200, { ok: true, user: { id: 'test-account' }, sections: {
+        dashboard: campaign.sectionRevisions.dashboard, record: campaign.sectionRevisions.record } });
+    },
+  });
+  c.structureTechClient = () => client;
+  c.getStructureTechContext = () => ({ record: c.cachedArgoRecord,
+    ...(traffic.useCached ? { campaign: cachedCampaign, profileId: 'test-campaign', cycleId: 'c1', day: c.state.day,
+      dictionary: {}, technology: {}, heroes: {}, mapState: {}, state: c.state, automation: c.state.techAutomation } : {}) });
+  c.applyStructureTechCommit = async result => {
+    c.archive = clone(result.campaign.sections.dashboard);
+    c.state = c.archive.profiles['test-campaign'].cycles.c1.state;
+    c.cachedArgoRecord = clone(result.campaign.sections.record.users['test-campaign']);
+  };
+  c.settleExplorationPursuit = async () => { throw new Error('combined settlement must not write pursuit separately'); };
+  return Object.assign(h, { entry, traffic, campaign });
+}
+
+test('automatic settlement preview clears automatic pending effects without changing the live record or draw', () => {
+  const h = combinedSettlementHarness();
+  assert.ok(h.ctx.pendingExplorationEffects(false).length, 'the unclaimed resource starts as pending');
+  const record = h.record, exploration = h.ctx.state.exploration, tracks = h.ctx.state.cardTracks;
+  const before = JSON.stringify({ record, exploration, tracks });
+  const result = h.ctx.previewExplorationSettlement(record, [h.entry]);
+  assert.equal(result.pending.length, 0);
+  assert.equal(result.record.resources['c1-trireme'], 4);
+  assert.equal(h.record, record);
+  assert.equal(h.ctx.state.exploration, exploration);
+  assert.equal(h.ctx.state.cardTracks, tracks);
+  assert.equal(JSON.stringify({ record: h.record, exploration, tracks }), before);
+  assert.equal(h.traffic.reads + h.traffic.posts, 0);
+});
+
+test('Resolve all commits automatic resources and pursuit in one POST with no success reread', async () => {
+  const h = combinedSettlementHarness();
+  let renders = 0;
+  h.ctx.renderFlow = () => { renders++; };
+  await h.ctx.settleExplorationDraw();
+  assert.deepEqual(h.alerts, []);
+  assert.equal(h.traffic.reads, 1);
+  assert.equal(h.traffic.posts, 1);
+  assert.equal(h.written.length, 0, 'no separate record write');
+  assert.equal(h.record.resources['c1-trireme'], 4);
+  assert.ok(h.record.technologyActionReceipts['performance-test-round']);
+  assert.equal(h.ctx.ensureExplorationDrawState().activePiles.flat().length, 0);
+  assert.equal(renders, 1, 'finish and finally share one flow refresh');
+  await h.ctx.settleExplorationDraw();
+  assert.equal(h.traffic.posts, 1, 'a completed draw cannot charge again');
+});
+
+test('a manual card choice skips the combined preload and keeps pursuit pending', async () => {
+  const h = combinedSettlementHarness('6426');
+  await h.ctx.settleExplorationDraw();
+  assert.deepEqual(h.alerts, []);
+  assert.equal(h.traffic.reads, 0);
+  assert.equal(h.traffic.posts, 0);
+  assert.equal(h.written.length, 1);
+  assert.equal(h.ctx.ensureExplorationDrawState().activePiles.flat().length, 1);
+});
+
+test('a loaded console settles with a single request and rebases a stale cache before retrying', async () => {
+  for (const stale of [false, true]) {
+    const h = combinedSettlementHarness();
+    h.traffic.useCached = true;
+    if (stale) {
+      h.campaign.sections.record.users['test-campaign'].resources['c1-trireme'] = 7;
+      h.campaign.sectionRevisions.record++;
+    }
+    await h.ctx.settleExplorationDraw();
+    assert.deepEqual(h.alerts, []);
+    assert.equal(h.traffic.reads, stale ? 1 : 0);
+    assert.equal(h.traffic.posts, stale ? 2 : 1);
+    assert.equal(h.written.length, 0);
+    assert.equal(h.record.resources['c1-trireme'], stale ? 11 : 4);
+    assert.equal(h.ctx.ensureExplorationDrawState().activePiles.flat().length, 0);
+  }
+});
+
+test('failed combined submissions preserve cards and receipts and never fall back to a separate charge', async () => {
+  for (const failure of ['fail', 'conflict']) {
+    const h = combinedSettlementHarness();
+    const before = JSON.stringify({ record: h.record, exploration: h.ctx.state.exploration });
+    h.traffic[failure] = true;
+    await h.ctx.settleExplorationDraw();
+    assert.equal(h.alerts.length, 1);
+    assert.equal(h.written.length, 0, 'an attempted POST must not fall back');
+    assert.equal(JSON.stringify({ record: h.record, exploration: h.ctx.state.exploration }), before);
+    assert.equal(h.ctx.settleExplorationDraw.busy, false);
+    h.traffic[failure] = false;
+    await h.ctx.settleExplorationDraw();
+    assert.equal(h.record.resources['c1-trireme'], 4, 'retry applies resources once');
+    assert.equal(h.ctx.ensureExplorationDrawState().activePiles.flat().length, 0);
+  }
+});
+
+test('a lost combined response recovers the atomic receipt without another resource write', async () => {
+  const h = combinedSettlementHarness();
+  h.traffic.loseResponse = true;
+  await h.ctx.settleExplorationDraw();
+  assert.deepEqual(h.alerts, []);
+  assert.equal(h.traffic.posts, 1);
+  assert.equal(h.traffic.reads, 2, 'only an uncertain response needs a recovery read');
+  assert.equal(h.written.length, 0);
+  assert.equal(h.record.resources['c1-trireme'], 4);
+  assert.equal(h.ctx.ensureExplorationDrawState().activePiles.flat().length, 0);
+});
+
+test('switching profiles during a failed preload cannot fall back into the new profile', async () => {
+  const h = combinedSettlementHarness();
+  h.ctx.assertStructureTechTarget = target => {
+    if (target.profileId !== h.ctx.archive.activeProfileId) throw new Error('profile changed');
+  };
+  h.ctx.structureTechClient = () => ({ load: async () => {
+    h.ctx.archive.activeProfileId = 'another-profile';
+    throw new Error('preload interrupted');
+  } });
+  await h.ctx.settleExplorationDraw();
+  assert.match(h.alerts[0], /profile changed/);
+  assert.equal(h.written.length, 0);
+  assert.equal(h.ctx.ensureExplorationDrawState().activePiles.flat().length, 1);
+});
 
 function textOf(node) {
   return [node.textContent, node.innerHTML, ...node.children.map(textOf)].filter(Boolean).join(' ');
@@ -121,6 +378,10 @@ class Element {
       this.children.unshift(child);
     });
   }
+  replaceChildren(...children) { this.children = []; this.append(...children); }
+  showModal() { this.open = true; }
+  close() { this.open = false; this.listeners.close?.(); }
+  remove() { this._detach(this); this.parentNode = null; }
   replaceWith(replacement) { this.replacement = replacement; }
   // 旧测试直接调 `listeners.change()`／`listeners.click()`：这里把注册的监听器
   // 直接暴露成函数（同一个事件只留最后一个，和之前的桩一致）。
@@ -183,6 +444,7 @@ function settleHarness(options = {}) {
       createElement: (tag) => new Element(tag),
       createDocumentFragment: () => new Element('#fragment'),
       createTextNode: (text) => { const node = new Element('#text'); node.textContent = text; return node; },
+      querySelector: () => null,
     },
     console,
     state: {
@@ -222,6 +484,7 @@ function settleHarness(options = {}) {
     renderFlow: () => {},
     renderCardTrackDialog: () => {},
     ownsDashboardWriteLease: () => true,
+    structureTechTarget: () => ({ profileId: 'test-campaign', cycleId: cycle, day: ctx.state.day }),
     ensureExplorationDrawState: () => drawState,
     explorationRules: () => deckRules,
     getSelectedExplorationIds: () => [...drawState.drawPile, ...drawState.activePiles.flat().map((entry) => entry.id)],
@@ -245,6 +508,10 @@ function settleHarness(options = {}) {
     settleExplorationDraw: () => {},
     completeExplorationDraw: () => {},
   });
+  ctx.window.document = ctx.document;
+  ctx.window.ATO_STRUCTURE_TECH_RULES = require('../technology/structure-tech-rules.js');
+  vm.runInContext(fs.readFileSync(path.join(root, 'technology/structure-tech-client.js'), 'utf8'), ctx);
+  vm.runInContext(fs.readFileSync(path.join(root, 'assets/exploration-trade-dialog.js'), 'utf8'), ctx);
   // Placement reminders use the actual card-face rules and dashboard helpers.
   // Dialog rendering stays outside this resource-settlement DOM harness.
   vm.runInContext(fs.readFileSync(path.join(root, 'assets/story-doom-card-data.js'), 'utf8'), ctx);
@@ -307,6 +574,7 @@ function settleHarness(options = {}) {
     fn('explorationSingleAutomaticEffect'),
     fn('settleSingleExplorationEffects'),
     fn('settleExplorationCard'),
+    fn('yieldToPaint'),
     fn('explorationHasRecordOperation'),
     fn('explorationNeedsPlacement'),
     fn('explorationPlacementText'),
@@ -319,7 +587,12 @@ function settleHarness(options = {}) {
     fn('revertExplorationOperation'),
     fn('writeExplorationChoice'),
     fn('applyAutomaticExploration'),
+    fn('previewExplorationSettlement'),
+    fn('explorationRecordSection'),
+    fn('settleExplorationWithPursuit'),
     fn('settleExplorationDraw'),
+    fn('pursuitSettlementMode'),
+    fn('setPursuitSettlementMode'),
     fn('explorationEffectDescriptors'),
     fn('pendingExplorationEffects'),
     fn('mutateExplorationRecord'),
@@ -1853,96 +2126,114 @@ test('a Titan loss needs an explicit choice before it can write', async () => {
 });
 
 // ---- 商人兑换 -------------------------------------------------------------------
-test('the merchant UI exchanges, counts up to the limit, and can be undone', async () => {
-  const harness = settleHarness({
-    diplomacyBonus: 2,
-    fullRecord: {
-      cycle: 'c1', resources: { 'c1-trireme': 9, 'c1-monument': 0 }, fate: '0',
-      cycleStats: { c1: { trireme: '9', monument: '0', fate: '0' } },
-    },
-  });
-  const entry = { id: '13400', name: 'Theban Trader', day: 12 };
+async function merchantWindow(harness, entry) {
   const block = harness.ctx.createExplorationSettleBlock(entry);
-  const select = block.descendants().find((node) => node.tag === 'select');
-  const times = block.descendants().find((node) => node.tag === 'input');
-  assert.ok(select && times, '商人要给出兑换项目与次数两个控件');
-  assert.equal(select.children[0].textContent,'3 船材（库存 9） → 1 石筑（库存 0）');
-  // 第一项兑换是「3 船材 → 1 石筑」，给够船材。
-  const tradeId = select.children[0].value;
-  select.value = tradeId;
-  times.value = '1';
-  await clickAndWait(buttonNamed(block, '执行兑换'));
-  assert.equal(harness.written.length, 1, '兑换要写一次记录表');
-  assert.equal(harness.alerts.length, 0, `兑换不该报错：${harness.alerts.join(' | ')}`);
-  const roundId = harness.ctx.explorationRoundId(entry);
-  assert.equal(harness.record.explorationTradeRounds[roundId].count, 1, '兑换次数要累加');
+  await clickAndWait(buttonNamed(block, '打开交易窗口'));
+  const dialog = block.descendants().find(node => node.tag === 'dialog');
+  assert.ok(dialog?.open, harness.alerts.join(' | '));
+  await dialog.ready;
+  return { block, dialog };
+}
+function chooseMerchant(dialog, from, to, times = 1) {
+  const find = name => dialog.descendants().find(node => node.name === name);
+  find(`sell:${from}`).listeners.click(); find(`buy:${to}`).listeners.click();
+  for (let i = 0; i < times; i++) find('tradeAdd').listeners.click();
+}
 
-  const after = harness.ctx.createExplorationSettleBlock(entry);
-  assert.match(textOf(after), /商人交易 1\/5/);
-  assert.match(textOf(after),/3 船材（库存 6） → 1 石筑（库存 1）/);
-  await clickAndWait(buttonNamed(after, '撤销上次兑换'));
-  // 撤销掉最后一次兑换后，本回合的交易记录整条消失（而不是留个 0）。
-  assert.equal(harness.record.explorationTradeRounds[roundId], undefined, '撤销要把交易记录清掉');
-  const reverted=harness.ctx.createExplorationSettleBlock(entry);
-  assert.match(textOf(reverted),/3 船材（库存 9） → 1 石筑（库存 0）/);
-  const reward=reverted.descendants().find(node=>node.tag==='select' && node.getAttribute('aria-label')==='商人奖励资源');
-  assert.ok(reward,'Friendly+ reward provides a manual resource choice');
-  assert.equal(reward.value,'','the player must select the reward explicitly');
-  reward.value='muscleCluster';
-  const claim=buttonNamed(reverted,'领取奖励资源');
-  await clickAndWait(claim);await clickAndWait(claim);
-  assert.equal(harness.record.resources['c1-muscleCluster'],1,'the selected reward is written once');
-  assert.equal(harness.record.explorationTradeRounds[roundId],undefined,'reward does not spend a trade');
-  await clickAndWait(buttonNamed(harness.ctx.createExplorationSettleBlock(entry),'撤销奖励资源'));
-  assert.equal(harness.record.resources['c1-muscleCluster'],undefined);
-  const neutral=settleHarness({diplomacyBonus:0});
-  assert.ok(!neutral.ctx.createExplorationSettleBlock(entry).descendants().some(node=>node.tag==='select' && node.getAttribute('aria-label')==='商人奖励资源'));
+test('merchant opens a preview window and only confirmation writes; saved trades and rewards remain undoable', async () => {
+  const harness = settleHarness({ diplomacyBonus: 2, fullRecord: { cycle: 'c1', resources: { 'c1-trireme': 9, 'c1-monument': 0 }, fate: '0' } });
+  const entry = { id: '13400', name: 'Theban Trader', day: 12 };
+  let { dialog } = await merchantWindow(harness, entry);
+  chooseMerchant(dialog, 'c1-trireme', 'c1-monument');
+  assert.equal(harness.written.length, 0);
+  await clickAndWait(buttonNamed(dialog, '关闭'));
+  assert.equal(harness.written.length, 0, 'closing a draft does not settle');
+  ({ dialog } = await merchantWindow(harness, entry));
+  chooseMerchant(dialog, 'c1-trireme', 'c1-monument');
+  await clickAndWait(buttonNamed(dialog, '确认贸易'));
+  assert.equal(harness.written.length, 1);
   assert.deepEqual(harness.alerts, []);
+  assert.equal(harness.record.resources['c1-trireme'], 6);
+  assert.equal(harness.record.resources['c1-monument'], 1);
+  assert.equal(dialog.open, false);
+  const roundId = harness.ctx.explorationRoundId(entry);
+  assert.equal(harness.record.explorationTradeRounds[roundId].count, 1);
+  ({ dialog } = await merchantWindow(harness, entry));
+  await clickAndWait(buttonNamed(dialog, '撤销上次已结算兑换'));
+  assert.equal(harness.record.explorationTradeRounds[roundId], undefined);
+  assert.equal(harness.record.resources['c1-trireme'], 9);
+  const reverted = harness.ctx.createExplorationSettleBlock(entry);
+  const reward = reverted.descendants().find(node => node.tag === 'select' && node.getAttribute('aria-label') === '商人奖励资源');
+  assert.ok(reward); assert.equal(reward.value, '');
+  reward.value = 'muscleCluster';
+  const claim = buttonNamed(reverted, '领取奖励资源');
+  await clickAndWait(claim); await clickAndWait(claim);
+  assert.equal(harness.record.resources['c1-muscleCluster'], 1);
+  assert.equal(harness.record.explorationTradeRounds[roundId], undefined);
+  await clickAndWait(buttonNamed(harness.ctx.createExplorationSettleBlock(entry), '撤销奖励资源'));
+  assert.equal(harness.record.resources['c1-muscleCluster'], undefined);
 });
 
-test('merchant trade multiplies one category and still allows repeats after five categories', async () => {
-  const resources = Object.fromEntries(Object.keys(dataset.cycles.c1.resources).map((resource) => [dataset.cycles.c1.resources[resource].storageKey, 1000]));
-  const harness = settleHarness({ fullRecord: { cycle: 'c1', resources, fate: '0', cycleStats: { c1: { fate: '0' } } } });
+test('merchant window preserves used categories across openings and allows repeats at the five-category limit', async () => {
+  const resources = Object.fromEntries(Object.values(dataset.cycles.c1.resources).map(item => [item.storageKey, 1000]));
+  const harness = settleHarness({ fullRecord: { cycle: 'c1', resources, fate: '0' } });
   const entry = { id: '13400', name: 'Theban Trader', day: 12 };
-  const roundId = harness.ctx.explorationRoundId(entry);
-  const optionApi = harness.ctx.window.ATO_EXPLORATION_OPTION_RULES;
-  const menu = optionApi.merchant(dataset.cards['c1:13400']);
-  let block = harness.ctx.createExplorationSettleBlock(entry);
-  let select = block.descendants().find((node) => node.tag === 'select');
-  let times = block.descendants().find((node) => node.tag === 'input');
-  select.value = menu.trades[0].id;
-  times.value = '10';
-  await clickAndWait(buttonNamed(block, '执行兑换'));
-  assert.equal(harness.alerts.length, 0, `兑换不该报错：${harness.alerts.join(' | ')}`);
-  assert.equal(harness.record.explorationTradeRounds[roundId].count, 1);
-  block = harness.ctx.createExplorationSettleBlock(entry);
-  assert.match(textOf(block), /商人交易 1\/5 类/);
-  select = block.descendants().find((node) => node.tag === 'select');
-  times = block.descendants().find((node) => node.tag === 'input');
-  assert.equal(times.max, undefined, 'the quantity input must not cap one category at five');
-  select.value = menu.trades[0].id;
-  times.value = '12';
-  await clickAndWait(buttonNamed(block, '执行兑换'));
-  assert.equal(harness.record.explorationTradeRounds[roundId].count, 1, 'the same category adds no slot');
+  const roundId = harness.ctx.explorationRoundId(entry), menu = optionRules.merchant(dataset.cards['c1:13400']);
   let record = harness.record;
-  for (const trade of menu.trades.slice(1, 5)) record = optionApi.executeTrade(record, 'c1', '13400', trade, 1, roundId, dataset).record;
+  for (const trade of menu.trades.slice(0, 5)) record = optionRules.executeTrade(record, 'c1', '13400', trade, 1, roundId, dataset).record;
   harness.updateServerRecord(record);
-  harness.ctx.cachedArgoRecord = record;
-  block = harness.ctx.createExplorationSettleBlock(entry);
-  select = block.descendants().find((node) => node.tag === 'select');
-  times = block.descendants().find((node) => node.tag === 'input');
-  const exchange = buttonNamed(block, '执行兑换');
-  select.value = menu.trades[5].id;
-  select.listeners.change();
-  assert.equal(exchange.disabled, true, 'a sixth distinct category stays blocked');
-  select.value = menu.trades[0].id;
-  select.listeners.change();
-  assert.equal(exchange.disabled, false, 'an already-used category remains available');
-  times.value = '20';
-  await clickAndWait(exchange);
-  assert.equal(harness.alerts.length, 0, `加量兑换不该报错：${harness.alerts.join(' | ')}`);
+  const { dialog } = await merchantWindow(harness, entry);
+  assert.match(textOf(dialog), /贸易额度 5 \/ 5 类/);
+  const trade = menu.trades[0];
+  chooseMerchant(dialog, `c1-${trade.costs[0].resource}`, `c1-${trade.gains[0].resource}`, 10);
+  await clickAndWait(buttonNamed(dialog, '确认贸易'));
   assert.equal(harness.record.explorationTradeRounds[roundId].count, 5);
-  assert.equal(harness.record.resources['c1-monument'] > 0, true);
+  assert.equal(harness.alerts.length, 0);
+  assert.equal(harness.written.length, 1);
+});
+
+test('merchant intermediate steps commit together, recover a lost response and undo the whole saved batch', async () => {
+  const harness = settleHarness({ fullRecord: { cycle: 'c1', resources: { 'c1-monument': 8 }, fate: '0' } });
+  const entry = { id: '13400', name: 'Theban Trader', day: 12 };
+  let { dialog } = await merchantWindow(harness, entry);
+  chooseMerchant(dialog, 'c1-monument', 'c1-armament', 2);
+  const originalWrite = harness.ctx.writeServerArgoRecord;
+  let lost = false;
+  harness.ctx.writeServerArgoRecord = async (...args) => {
+    const result = await originalWrite(...args);
+    if (!lost) { lost = true; throw new Error('lost response'); }
+    return result;
+  };
+  const confirm = buttonNamed(dialog, '确认贸易');
+  await clickAndWait(confirm);
+  assert.equal(dialog.open, true, 'failure leaves the draft open for retry');
+  assert.equal(harness.record.resources['c1-armament'], 2);
+  await clickAndWait(confirm);
+  assert.equal(harness.record.resources['c1-monument'], 0);
+  assert.equal(harness.record.resources['c1-armament'], 2, 'retry cannot charge the batch twice');
+  assert.equal(harness.record.resources['c1-trireme'], 0);
+  assert.equal(harness.record.fate, '0');
+  ({ dialog } = await merchantWindow(harness, entry));
+  await clickAndWait(buttonNamed(dialog, '撤销上次已结算兑换'));
+  assert.equal(harness.record.resources['c1-monument'], 8);
+  assert.equal(harness.record.resources['c1-armament'] || 0, 0);
+  assert.equal(harness.record.resources['c1-trireme'] || 0, 0);
+});
+
+test('merchant rechecks live stock before any write and can end trading without settling a draft', async () => {
+  const harness = settleHarness({ fullRecord: { cycle: 'c1', resources: { 'c1-monument': 4 }, fate: '0' } });
+  const entry = { id: '13400', name: 'Theban Trader', day: 12 };
+  const { dialog } = await merchantWindow(harness, entry);
+  chooseMerchant(dialog, 'c1-monument', 'c1-armament');
+  harness.updateServerRecord({ cycle:'c1',resources:{'c1-monument':1},fate:'0' });
+  await clickAndWait(buttonNamed(dialog, '确认贸易'));
+  assert.equal(harness.written.length, 0);
+  assert.equal(harness.record.resources['c1-monument'], 1);
+  assert.equal(harness.record.resources['c1-trireme'], undefined);
+  await clickAndWait(buttonNamed(dialog, '结束本次商人交易'));
+  assert.equal(dialog.open, false);
+  assert.equal(harness.ctx.explorationEffectState(entry).merchantDone, true);
+  assert.equal(harness.written.length, 0);
 });
 
 // ---- String Wish（c4:9333）-------------------------------------------------------

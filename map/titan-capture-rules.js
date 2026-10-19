@@ -20,8 +20,12 @@
       const current = saved.currentTile || saved.tokens?.AG;
       const receipts = ctx.record?.technologyActionReceipts || {};
       const available = technology?.getAvailability({ ...ctx, techKey: 'titan hunting' });
+      // 当天翻开的板块尚未“已探索”（进入下一天才结算），但捕获发生在本日，
+      // 所以这里按“已揭示”判断，与已探索板块一视同仁。
+      const revealed = Boolean(saved.explored?.[tileId] || saved.previewRevealed?.[tileId]
+        || saved.latestRevealedTile === tileId);
       return { marker: marker(ctx.cycleId, tileId, saved, options.data),
-        current: current === tileId, explored: Boolean(saved.explored?.[tileId]),
+        current: current === tileId, explored: revealed, revealed,
         newlyExplored: saved.latestRevealedTile === tileId,
         collected: Boolean(receipts[baseId(ctx.cycleId, tileId)]),
         hunted: receipts[huntId(ctx.cycleId, ctx.day)] || null,

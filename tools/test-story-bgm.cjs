@@ -61,14 +61,34 @@ test("主控台的故事 / 考察入口各自带对应阶段", () => {
   assert.match(CONSOLE_HTML, /\{ label: "战斗模块", bgm: "encounter"/);
 });
 
-test("渲染链接时接上「点一下临时切阶段」，并且新开标签避免主控台被导航走", () => {
+test("渲染链接时接上「点一下临时切阶段」，跳转交给页面路由保持模块标签可回退", () => {
   const start = CONSOLE_HTML.indexOf("getStepLinks(step).forEach");
   assert.ok(start > 0, "找不到链接渲染代码");
-  const block = CONSOLE_HTML.slice(start, start + 900);
+  const block = CONSOLE_HTML.slice(start, start + 1100);
   assert.match(block, /if \(link\.bgm\)/);
   assert.match(block, /api\.setScene\(link\.bgm\)/, "入口链接走临时切换，控制台阶段一变就切回");
-  assert.match(block, /anchor\.target = "_blank"/);
   assert.match(block, /anchor\.dataset\.bgmStage = link\.bgm/);
+  // 主控台 -> 故事书必须让 page-focus-router 接管：多页模式负责新开/复用标签，
+  // 单页模式负责当前页切换。target=_blank + noopener 会把故事书放进另一个
+  // browsing context group，故事书里的「返回主控台」就找不到原来那个标签页。
+  assert.doesNotMatch(block, /anchor\.target = "_blank"/, "故事入口又绕过了页面路由，返回主控台会开新标签");
+  assert.doesNotMatch(block, /anchor\.rel = "noopener"/, "noopener 会让故事书无法路由回原主控台标签");
+});
+
+test("主控台里指向故事书的链接都交给页面路由，不用 noopener 新标签", () => {
+  const storyLinks = Array.from(CONSOLE_HTML.matchAll(/<a\b[^>]*href="(?:\.\/)?story\/index\.html[^"]*"[^>]*>/g));
+  assert.ok(storyLinks.length > 0, "主控台里找不到故事书链接");
+  for (const [anchor] of storyLinks) {
+    assert.doesNotMatch(anchor, /target="_blank"/, `故事书链接仍在绕过页面路由：${anchor}`);
+    assert.doesNotMatch(anchor, /rel="noopener"/, `故事书链接带 noopener，返回主控台会失效：${anchor}`);
+  }
+});
+
+test("故事书的「返回主控台」也由页面路由接管", () => {
+  assert.match(STORY_HTML, /page-focus-router\.js/, "故事书没有加载页面路由");
+  const home = STORY_HTML.match(/<a class="home-link" href="\.\.\/index\.html"[^>]*>/);
+  assert.ok(home, "故事书找不到返回主控台链接");
+  assert.doesNotMatch(home[0], /target=/, "返回主控台不该强制新标签");
 });
 
 test("跟随流程只由勾选推进，不因缺少提醒提前跳到打造与训练", () => {

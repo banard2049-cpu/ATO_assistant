@@ -27,7 +27,7 @@ function harness() {
   });
   vm.runInContext(source.slice(source.indexOf('const tokenAssets = ['), source.indexOf('const tokenMenuGroups = [')), context);
   for (const name of ['placeToken', 'removeMarkerEverywhere', 'normalizeMarkers',
-    'tilePreviewRevealLabels', 'tileConnectsTo', 'visibleTileIdsForUnknownFilter']) {
+    'tilePreviewRevealLabels', 'tilePreviewRevealedByMarker', 'tileConnectsTo', 'visibleTileIdsForUnknownFilter']) {
     vm.runInContext(functionSource(name), context);
   }
   return { context, cycleState };

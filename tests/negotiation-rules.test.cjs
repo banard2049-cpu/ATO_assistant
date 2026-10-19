@@ -55,6 +55,34 @@ test('all 32 printed negotiation cards and every branch can execute without muta
   }
 });
 
+test('negotiation rows split printed payments from gains for the timeline tech layout', () => {
+  const action = (key, id) => rules.actionsFor(key, { ...fixture(key), scope: 'negotiation' })
+    .find(item => item.negotiation && item.actionId === id);
+  const rhetoric = action('rhetoric', 'negotiate-rhetoric');
+  assert.equal(rhetoric.costLabel, '命运 +1');
+  assert.equal(rhetoric.effectLabel, '遣散陌生人');
+  assert.equal(rhetoric.effectDetail, '陌生人 -1');
+  const diplomacy = action('diplomatic relations', 'negotiate-diplomacy');
+  assert.match(diplomacy.costLabel, /任选 4 个凡人资源/);
+  assert.doesNotMatch(diplomacy.costLabel, /外交 \+1/);
+  assert.equal(diplomacy.effectDetail, '当地派系外交 +1');
+  const relief = action('refugee relief effort', 'negotiate-refugees');
+  assert.match(relief.costLabel, /失去 1 难民/);
+  assert.match(relief.costLabel, /命运 \+1～2/);
+  assert.match(relief.effectDetail, /人性 \+1/);
+  assert.doesNotMatch(relief.effectDetail, /难民/);
+  const curseEconomy = action('curse economy basics', 'negotiate-curse');
+  assert.match(curseEconomy.costLabel, /下次战斗加入 1 张随机诅咒特性卡/);
+  assert.match(curseEconomy.costLabel, /需至少 2 巴比伦债务/);
+  assert.equal(curseEconomy.effectDetail, '巴比伦债务 -2');
+  const oasisDebt = action('sustainable oasis', 'negotiate-oasis-debt');
+  assert.equal(oasisDebt.costLabel, '巴比伦债务 +1');
+  assert.equal(oasisDebt.effectDetail, '命运 -2');
+  const trade = action('trading solutions', 'negotiate-trade');
+  assert.equal(trade.costLabel, '命运 +1');
+  assert.equal(trade.effectDetail, '按比例交换资源');
+});
+
 test('development lists retain voyage abilities while negotiations have their own scope and details', () => {
   const ctx = fixture('trading solutions');
   assert.equal(rules.listActions({ ...ctx, techKey: undefined }).some(item => item.negotiation), false);

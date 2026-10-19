@@ -55,18 +55,66 @@
     });
     return { text, spans, readings };
   }
-  function wordReading(value, language) {
-    const current = normalize(value, language);
-    const words = Object.values(current.words).sort((a, b) => b.glyphs.length - a.glyphs.length);
+  function wordReadingFrom(tokens, readings, words) {
+    const groups = [];
+    if (plain(words)) for (const word of Object.values(words)) {
+      if (Array.isArray(word?.glyphs) && word.glyphs.length && typeof word.meaning === "string" && word.meaning.trim()) groups.push(word);
+    }
+    groups.sort((a, b) => b.glyphs.length - a.glyphs.length);
     const parts = [];
-    for (let index = 0; index < current.draft.length;) {
-      const token = current.draft[index];
+    for (let index = 0; index < tokens.length;) {
+      const token = tokens[index];
       if (separator(token)) { parts.push(token); index++; continue; }
-      const word = words.find(word => word.glyphs.every((glyph, offset) => current.draft[index + offset] === glyph));
+      const word = groups.find(word => word.glyphs.every((glyph, offset) => tokens[index + offset] === glyph));
       if (word) { parts.push(`【${word.meaning}】`); index += word.glyphs.length; }
-      else { parts.push(current.mapping[token] || "[?]"); index++; }
+      else { parts.push(readings[index] || "[?]"); index++; }
     }
     return parts.join("");
+  }
+  function wordReading(value, language) {
+    const current = normalize(value, language), source = transcript(current, language);
+    return wordReadingFrom(current.draft, source.readings, current.words);
+  }
+  // Saved records keep their original glyphs and the readings that were already
+  // known when they were saved. Unknown markers follow the current mapping, so a
+  // record made before the cipher was solved becomes readable as it is solved.
+  // The saved segmentation (spaces and punctuation) stays as it was; phrase
+  // meanings follow the current word notes.
+  function recordText(entry, tokens, saved, readings) {
+    const fallback = tokens.map((token, index) => separator(token) ? token : readings[index] || "[?]").join("");
+    const text = typeof entry?.text === "string" ? entry.text : "";
+    const source = tokens.map((token, index) => separator(token) ? token : saved[index] || "[?]").join("");
+    if (!text || source === fallback) return text || fallback;
+    const spans = [];
+    let at = 0;
+    for (let index = 0; index < tokens.length; index++) {
+      const token = tokens[index];
+      if (separator(token)) { at += token.length; continue; }
+      const value = saved[index] || "[?]";
+      spans.push({ start: at, end: at + value.length, glyph: token, index });
+      at += value.length;
+    }
+    try {
+      const aligned = textFormat.reflow({ text: source, spans }, text), parts = [];
+      let cursor = 0;
+      for (const span of aligned.spans) {
+        parts.push(text.slice(cursor, span.start));
+        parts.push(saved[span.index] ? text.slice(span.start, span.end) : readings[span.index] || text.slice(span.start, span.end));
+        cursor = span.end;
+      }
+      parts.push(text.slice(cursor));
+      return parts.join("");
+    } catch { return fallback; }
+  }
+  function recordView(entry, language, current) {
+    if (!catalog[language]) throw Error("未知语言。");
+    const state = plain(current) ? current : {}, mapping = plain(state.mapping) ? state.mapping : {};
+    const tokens = Array.isArray(entry?.tokens)
+      ? entry.tokens.filter(token => separator(token) || valid(token, language)).slice(0, MAX_INPUT) : [];
+    const saved = tokens.map((token, index) => separator(token) ? token : reading(entry?.readings?.[index]));
+    const readings = tokens.map((token, index) => separator(token) ? token : saved[index] || reading(mapping[token]));
+    const filled = tokens.reduce((count, token, index) => count + (!separator(token) && !saved[index] && readings[index] ? 1 : 0), 0);
+    return { readings, text: recordText(entry, tokens, saved, readings), wordReading: wordReadingFrom(tokens, readings, state.words), filled };
   }
   function addWord(value, language, { id, start, end, meaning }) {
     const next = normalize(value, language);
@@ -128,6 +176,6 @@
     const words = Object.values(next.words).map(word => word.meaning).filter(text => /^[A-Za-z]{2,40}$/.test(text));
     return formatted(next, language, formatter.suggest(source, { punctuate: false, extraWords: words }).text);
   }
-  return { normalize, transcript, wordReading, addWord, formatted, saveReading, inputText, reference, setWordData, suggest,
+  return { normalize, transcript, wordReading, addWord, formatted, saveReading, recordView, inputText, reference, setWordData, suggest,
     catalog, MAX_INPUT };
 });
