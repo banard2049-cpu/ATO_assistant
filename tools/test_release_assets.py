@@ -103,8 +103,13 @@ def check_release_notes_files(failures: list[str]) -> None:
             failures.append(f"公告文件名不符合 v<版本>.md：{path.name}")
             continue
         text = read(path)
-        if path.name == "v3.6.2.md":
-            if text.strip() != "修正了aibp bug":
+        # These releases keep the exact, user-specified short announcement.
+        short_notices = {
+            "v3.6.2.md": "修正了aibp bug",
+            "v3.8.8.md": "修正了 AIBP 卡图问题，请下载最新的 atopack。",
+        }
+        if path.name in short_notices:
+            if text.strip() != short_notices[path.name]:
                 failures.append(f"{path.name} 必须只包含用户指定的 AIBP 修复公告")
             continue
         if path.name in {"v2.1.0.md", "v2.1.1-rc.1.md"}:

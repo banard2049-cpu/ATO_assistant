@@ -38,7 +38,7 @@ class Element {
   click(target = this) { this.listeners.click({ target, stopPropagation() {} }); }
 }
 
-function harness(name, storage = new Map()) {
+function harness(name, storage = new Map(), level = 1) {
   const controls = {};
   for (const id of ['confirmAiButton', 'breakAiComboButton', 'continueAiComboButton',
     'drawAiButton', 'drawBpButton', 'discardBpButton', 'defeatBpButton', 'criticalBpButton',
@@ -62,7 +62,9 @@ function harness(name, storage = new Map()) {
     nietzscheStateKey: 'nietzsche', cyclonusStateKey: 'cyclonus', nietzscheDefaultStateIndex: 2,
     nietzscheStateIndex: 2, cyclonusStateIndex: 0,
     nietzscheStates: trackConfig('nietzscheStates'),
+    nietzscheAdvancedStates: trackConfig('nietzscheAdvancedStates'),
     cyclonusStates: trackConfig('cyclonusStates'),
+    currentApostleLevel: () => level,
     isLabyrinthTrackApostle: () => false, isChimera: () => false,
     shuffleCards: cards => [...cards],
     defaultPile: type => [1, 2, 3].map(index => ({ type, level: 'I', index })),
@@ -89,12 +91,14 @@ function harness(name, storage = new Map()) {
     titanXGroup: () => null, titanXDrawsFromBottom: () => false,
   });
   for (const name of ['initialState', 'hasAiCombo', 'sameCard', 'isNietzsche', 'isCyclonus',
+    'isAdvancedNietzscheTrack', 'nietzscheComboStates',
     'hasPanelState', 'hasManualPanelState', 'currentPanelState', 'panelMarkerStateForArtwork', 'updateNietzscheStateUi', 'cycleNietzscheState',
     'bpDamageValue', 'bpDamageTotalForKey', 'currentBpDamageSummary', 'currentAiComboBreakInfo',
     'isPlainObject', 'clonePileState', 'migrateLegacyHealedPiles', 'loadSavedPiles', 'savePiles',
     'rememberUndo', 'trimUndoStack', 'undoSharedState', 'captureUndoEffects', 'undoEntryIndex',
     'reverseUndoEffects', 'canUndo', 'undoLastAibp', 'updateUndoButtons',
     'drawAi', 'discardAiPending', 'removePendingFromDeck', 'resolveAiCombo', 'confirmAiDiscard',
+    'drawPileBackPreviewCard', 'renderPileBackPreview', 'cardBackMappingSrc', 'cardBackImageSrc',
     'renderDrawPreview', 'setImageZoomAiComboActions', 'openImageZoom', 'closeImageZoom', 'openZoomForImage']) {
     vm.runInContext(fn(name), ctx);
   }
@@ -235,10 +239,32 @@ test('old combo saves retain their manual track position and cannot retain a sta
     vm.runInNewContext(normalization, {
       name, piles: { [name]: { AI: ai } }, nietzscheName: 'THE_NIETZSCJEAN',
       nietzscheStateIndex: 1, cyclonusStateIndex: 1,
+      nietzscheAdvancedStates: trackConfig('nietzscheAdvancedStates'),
+      cyclonusStates: trackConfig('cyclonusStates'),
     });
     assert.equal(ai.comboTrackIndex, 1);
     assert.equal(ai.comboFollowup, false);
   }
+});
+
+test('Nietzsche IV combo resolution, reload and undo retain the fourth position and its weapons', () => {
+  let h = harness('THE_NIETZSCJEAN', new Map(), 4);
+  for (const expected of [0, 1, 3]) {
+    h.ctx.drawAi();
+    h.zoomAction('continue');
+    h.zoomAction('finish');
+    assert.equal(h.ai().comboTrackIndex, expected);
+  }
+  h = harness('THE_NIETZSCJEAN', h.storage, 4);
+  assert.equal(h.ai().comboTrackIndex, 3);
+  assert.equal(h.ctx.currentPanelState().label, '仇恨');
+  h.ctx.drawAi();
+  assert.deepEqual([...h.ctx.currentAiComboBreakInfo().weapons], ['鞭（Whip）', '弓（Bow）', '板剑（Slabsword）']);
+  h.zoomAction('break');
+  assert.equal(h.ai().comboTrackIndex, 2);
+  h.ctx.undoLastAibp('AI');
+  assert.equal(h.ai().comboTrackIndex, 3);
+  assert.equal(h.ai().pending != null, true);
 });
 
 test('AI zoom controls never act on a different Boss or a stale pending card', () => {

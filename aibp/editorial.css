@@ -45,6 +45,8 @@ body:not(.sidebar-collapsed) .sidebar-toggle { left: 212px; top: 24px; }
 .segmented button.active { background: var(--accent-soft); border-color: var(--accent); box-shadow: none; color: var(--accent-strong); }
 #aiViewTabs button.active, #bpViewTabs button.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-strong); }
 .draw-preview, .draw-preview:not(.has-card):hover { background: var(--bg); border-color: var(--line); border-radius: 0; }
+.draw-preview.has-card { width: var(--draw-card-width) !important; height: var(--draw-card-height) !important; padding: 0 !important; border: 0; background: transparent; box-shadow: none; }
+.draw-preview img[data-draw-back-action="draw"] { cursor: pointer; }
 .card-grid img, .draw-preview img, .extra-grid img, .scry-card, .scry-card img { border-radius: 0; background: transparent; border-color: var(--line); box-shadow: none; }
 .bp-combined-counter { border-radius: 0; background: var(--accent-soft); border-color: var(--line); }
 body dialog { border-radius: 0; border-color: var(--line); background: var(--panel); color: var(--ink); }

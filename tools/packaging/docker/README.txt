@@ -43,8 +43,10 @@ Update:
   For 3.6.1-rc.2, first replace compose.yaml (or compose.legacy.yaml) with the file
   from the same release tag, preserving your custom ports and deployment settings.
   Set ATO_VERSION=3.6.1-rc.2 in .env; prereleases do not update latest.
-  Reimport the updated 2026-10-11 atopack into app/ so the board and thumbnail are
-  available in app/ss/battle-board/. Updating the image alone is insufficient.
+  Install the updated 2026-10-19 atopack into app/ using the current Asset Studio.
+  Update the application and resource pack together: the program supplies the
+  AI/BP shared-back mapping, while the pack supplies the corrected JPEGs and
+  layered map images. Updating the image alone does not refresh these resources.
   docker compose pull
   docker compose up -d
 

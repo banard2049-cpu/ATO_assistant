@@ -215,6 +215,13 @@ class KeepPatternTests(unittest.TestCase):
             "map/tokens/marker.png",
         ):
             self.assertTrue(matches_any(map_image, patterns), map_image)
+        for back in (
+            "aibp/ps/HEKATON/HEKATON_AI_III_BACK.jpg",
+            "aibp/ps/HEKATON/HEKATON_AI_III_SPECIAL_BACK.jpg",
+            "aibp/ps/TITAN_X/TITAN_X_BP_II_BACK.jpg",
+            "aibp/ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_BP_I_001_BACK.jpg",
+        ):
+            self.assertTrue(matches_any(back, patterns), back)
         # 普通卡不该被豁免，否则瘦身就白做了
         for card in (
             "aibp/ps/HEKATON/HEKATON_BP_I_001.jpg",

@@ -273,7 +273,10 @@ def store_image(
         conn.execute("UPDATE asset_revisions SET is_current=0 WHERE item_id=? AND face=?", (item_id, face))
         if existing:
             revision_id = existing["id"]
-            conn.execute("UPDATE asset_revisions SET is_current=1, preview_path=? WHERE id=?", (preview_rel.as_posix(), revision_id))
+            # Re-uploading identical bytes is still an explicit user/package
+            # choice, so do not leave an old automatic-migration provenance.
+            conn.execute("UPDATE asset_revisions SET is_current=1, preview_path=?, source=? WHERE id=?",
+                         (preview_rel.as_posix(), source, revision_id))
         else:
             cursor = conn.execute(
                 """INSERT INTO asset_revisions
@@ -284,6 +287,7 @@ def store_image(
             )
             revision_id = cursor.lastrowid
         conn.execute("DELETE FROM skipped_faces WHERE item_id=? AND face=?", (item_id, face))
+    _share_back_revision(db, item_id, face, revision_id)
     return {
         "id": revision_id,
         "sha256": digest,
@@ -291,6 +295,65 @@ def store_image(
         "height": height,
         "preview": f"/media/{preview_rel.as_posix()}",
     }
+
+
+def _share_back_revision(db: Database, item_id: str, face: str, revision_id: int) -> None:
+    """One mapped back edit applies to every card using that physical back.
+
+    Ordinary card faces and unrelated shared uploads keep their independent
+    editing behavior. Each mapped card retains its own revision history and
+    preview address; all current peers reference one content-addressed object.
+    """
+    if face != "back":
+        return
+    from .fixed_catalog import card_back_paths, shared_back_migration_state
+
+    item = db.one("SELECT faces_json FROM catalog_items WHERE id=?", (item_id,))
+    faces = json.loads(item["faces_json"]) if item else {}
+    mapping = card_back_paths()
+    target = mapping.get(faces.get("front"))
+    if not target or faces.get("back") != target:
+        return
+    revision = db.one("SELECT * FROM asset_revisions WHERE id=? AND is_current=1", (revision_id,))
+    if revision is None:
+        return
+    peers = []
+    for row in db.all("SELECT id,faces_json FROM catalog_items WHERE faces_json LIKE ?", (f"%{target}%",)):
+        peer_faces = json.loads(row["faces_json"])
+        if (row["id"] != item_id and peer_faces.get("back") == target
+                and mapping.get(peer_faces.get("front")) == target):
+            peers.append(row["id"])
+    with db.connect() as conn:
+        for peer_id in peers:
+            conn.execute("UPDATE asset_revisions SET is_current=0 WHERE item_id=? AND face='back'", (peer_id,))
+            preview = preview_relative(revision["sha256"], peer_id, "back").as_posix()
+            conn.execute(
+                """INSERT INTO asset_revisions
+                (item_id,face,sha256,original_path,source_path,preview_path,mime_type,original_name,
+                 width,height,source,transform_json,is_current)
+                VALUES(?,?,?,?,?,?,?,?,?,?,?,?,1)
+                ON CONFLICT(item_id,face,sha256) DO UPDATE SET
+                original_path=excluded.original_path,source_path=excluded.source_path,
+                preview_path=excluded.preview_path,mime_type=excluded.mime_type,
+                original_name=excluded.original_name,width=excluded.width,height=excluded.height,
+                source=excluded.source,transform_json=excluded.transform_json,is_current=1""",
+                (peer_id, "back", revision["sha256"], revision["original_path"], revision["source_path"],
+                 preview, revision["mime_type"], revision["original_name"], revision["width"],
+                 revision["height"], revision["source"], revision["transform_json"]),
+            )
+            conn.execute("DELETE FROM skipped_faces WHERE item_id=? AND face='back'", (peer_id,))
+    # An explicit upload/import also resolves a target whose startup migration
+    # was waiting for an image. A project image appearing later must not replace
+    # this user's already shared choice.
+    migration = shared_back_migration_state(db)
+    if migration.get("version") != 1:
+        migration = {"version": 1, "completed": [], "pending": [], "memberships": {}}
+    migration["completed"] = sorted(set(migration.get("completed", [])) | {target})
+    migration["pending"] = [path for path in migration.get("pending", []) if path != target]
+    migration.setdefault("memberships", {})[target] = hashlib.sha256(
+        "\n".join(sorted([item_id, *peers])).encode("utf-8")
+    ).hexdigest()
+    db.set_meta("card_shared_backs_migration", migration)
 
 
 def transform_revision(
@@ -321,6 +384,9 @@ def transform_revision(
     finally:
         temporary.unlink(missing_ok=True)
     transform_json = dump_transform(rotation, crop)
+    from .fixed_catalog import SHARED_BACK_MIGRATION_SOURCES
+
+    source_kind = "user-transform" if revision["source"] in SHARED_BACK_MIGRATION_SOURCES else revision["source"]
     with db.connect() as conn:
         # Only one row per (item, face, sha256) is allowed; an older revision
         # holding this exact content would conflict, and it is the same image.
@@ -330,15 +396,17 @@ def transform_revision(
         )
         conn.execute(
             """UPDATE asset_revisions
-            SET sha256=?,original_path=?,preview_path=?,transform_json=?,width=?,height=? WHERE id=?""",
-            (digest, original_rel.as_posix(), preview_rel.as_posix(), transform_json, width, height, revision["id"]),
+            SET sha256=?,original_path=?,preview_path=?,transform_json=?,width=?,height=?,source=? WHERE id=?""",
+            (digest, original_rel.as_posix(), preview_rel.as_posix(), transform_json, width, height, source_kind, revision["id"]),
         )
+    _share_back_revision(db, revision["item_id"], revision["face"], revision["id"])
     return {
         **revision,
         "sha256": digest,
         "original_path": original_rel.as_posix(),
         "preview_path": preview_rel.as_posix(),
         "transform_json": transform_json,
+        "source": source_kind,
         "width": width,
         "height": height,
     }

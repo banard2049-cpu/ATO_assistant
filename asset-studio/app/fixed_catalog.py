@@ -9,8 +9,9 @@ import base64
 import gzip
 import hashlib
 import json
+import shutil
 from dataclasses import asdict
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 from .catalog import (
@@ -1372,6 +1373,60 @@ CATALOG_B85 = (
 )
 
 
+def card_back_paths() -> dict[str, str]:
+    """Read the same AI/BP face-to-back mapping used by the battle console."""
+    manifest = Path(__file__).resolve().parents[2] / "aibp" / "card-backs.json"
+    payload = json.loads(manifest.read_text(encoding="utf-8"))
+    if payload.get("version") != 1 or not isinstance(payload.get("backs"), dict):
+        raise ValueError("AI/BP 牌背映射格式无效")
+    result = {}
+    for front, back in payload["backs"].items():
+        for path in (front, back):
+            if (not isinstance(path, str) or not path.startswith("ps/")
+                    or "\\" in path or ":" in path
+                    or any(part in ("", ".", "..") for part in path.split("/"))
+                    or PurePosixPath(path).suffix != ".jpg"):
+                raise ValueError(f"无效的 AI/BP 牌背路径：{path}")
+        result[f"aibp/{front}"] = f"aibp/{back}"
+    return result
+
+
+def ai3_card_back_paths() -> dict[str, str]:
+    """Compatibility view of the original AI III map, from the unified file."""
+    return {front: back for front, back in card_back_paths().items()
+            if "_AI_III_" in back}
+
+
+SHARED_BACK_MIGRATION_SOURCES = frozenset({"ai3-shared-back-migration", "shared-back-migration"})
+
+
+def card_back_revisions() -> dict[str, dict]:
+    """Known canonical artwork upgrades bridge libraries without digest metadata."""
+    manifest = Path(__file__).resolve().parents[2] / "aibp" / "card-backs.json"
+    payload = json.loads(manifest.read_text(encoding="utf-8"))
+    revisions = payload.get("canonicalRevisions", {})
+    if not isinstance(revisions, dict):
+        raise ValueError("AI/BP 牌背版本记录格式无效")
+    targets = set(card_back_paths().values())
+    result = {}
+    for relative, entry in revisions.items():
+        target = f"aibp/{relative}"
+        if target not in targets or not isinstance(entry, dict):
+            raise ValueError(f"无效的 AI/BP 牌背版本记录：{relative}")
+        for digest in [entry.get("fromSha256"), entry.get("toSha256")]:
+            if (not isinstance(digest, str) or len(digest) != 64
+                    or any(character not in "0123456789abcdef" for character in digest)):
+                raise ValueError(f"无效的 AI/BP 牌背版本哈希：{relative}")
+        result[target] = entry
+    return result
+
+
+def shared_back_migration_state(db: Database) -> dict:
+    """Carry forward completed AI III uploads when upgrading older libraries."""
+    return db.get_meta("card_shared_backs_migration",
+                       db.get_meta("ai3_shared_backs_migration", {}))
+
+
 def fixed_catalog_payload() -> dict[str, Any]:
     compressed = base64.b85decode(CATALOG_B85.encode("ascii"))
     payload = json.loads(gzip.decompress(compressed).decode("utf-8"))
@@ -1396,6 +1451,14 @@ def fixed_catalog_payload() -> dict[str, Any]:
             item["faces"]["front"] = "aibp/ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_AI_III_001.jpg"
         corrected_oracle_items.append(item)
     payload["items"] = corrected_oracle_items
+
+    # Keep each physical card's catalog relation while storing its shared
+    # ordinary or special back only once, using the console's authoritative map.
+    shared_backs = card_back_paths()
+    for item in payload["items"]:
+        front = item.get("faces", {}).get("front")
+        if front in shared_backs:
+            item["faces"]["back"] = shared_backs[front]
 
     # 旧 APK 中标成 IV 的那张特性卡印的是 V 级，已改名 TR_V_001；保留迁移后的
     # 条目 ID 与官中覆盖路径。后来补录的 TR_IV_001 等级面已取消，不再另登记。
@@ -1895,6 +1958,10 @@ def fixed_catalog_payload() -> dict[str, Any]:
         "+drop-story-spoiler-card-20261017"
         "+shared-record-resource-icons-20261018"
         "+drop-unused-ambrosia-gf-tokens-20261018"
+        "+oracle-ai-x-002-back-20261019"
+        "+shared-card-backs-20261019-"
+        + hashlib.sha256(json.dumps(shared_backs, sort_keys=True).encode("utf-8")).hexdigest()[:12]
+        + "+tone-baked-shared-backs-20261019"
     )
     return payload
 
@@ -1956,6 +2023,112 @@ def collect_supplemental_resources(ato_root: Path) -> tuple[list[CatalogItem], s
     return items, paths
 
 
+def _migrate_shared_backs(db: Database, ato_root: Path | None) -> None:
+    """Unify old back revisions once per target without discarding history.
+
+    The corrected project asset is authoritative for this migration. Without
+    it, an existing back is reusable only when every captured peer agrees.
+    Completed project migrations can follow canonical artwork corrections.
+    Later uploads, edits and library-only completions remain current.
+    """
+    from .storage import new_temp_file, sha256_file, store_image
+
+    # Dragon BP effect backs keep their original, per-card paths. They are in
+    # the runtime mapping for completeness but need no image migration.
+    mapping = {front: back for front, back in card_back_paths().items()
+               if back != front.removesuffix(".jpg") + "_BACK.jpg"}
+    groups: dict[str, list[str]] = {}
+    for item in db.all("SELECT id,faces_json FROM catalog_items"):
+        faces = json.loads(item["faces_json"])
+        front = faces.get("front")
+        if front not in mapping:
+            continue
+        target = mapping[front]
+        if faces.get("back") != target:
+            faces["back"] = target
+            db.execute("UPDATE catalog_items SET faces_json=? WHERE id=?",
+                       (json.dumps(faces, ensure_ascii=False, sort_keys=True), item["id"]))
+        groups.setdefault(target, []).append(item["id"])
+
+    previous = shared_back_migration_state(db)
+    memberships = {
+        target: hashlib.sha256("\n".join(sorted(item_ids)).encode("utf-8")).hexdigest()
+        for target, item_ids in groups.items()
+    }
+    completed = {
+        target for target in previous.get("completed", [])
+        if previous.get("version") == 1
+        and previous.get("memberships", {}).get(target) == memberships.get(target)
+    }
+    canonical_hashes = {target: digest for target, digest in previous.get("canonical_sha256", {}).items()
+                        if target in groups}
+    artwork_revisions = card_back_revisions()
+    pending = []
+    library = db.path.parent
+    for target, item_ids in groups.items():
+        source = Path(ato_root) / target if ato_root is not None else None
+        project_digest = sha256_file(source) if source is not None and source.is_file() else None
+        if target in completed:
+            # Null records a completion made without project artwork. Never
+            # replace that library-only choice if a project file appears later.
+            if (project_digest is None or canonical_hashes.get(target) == project_digest
+                    or target in canonical_hashes and canonical_hashes[target] is None):
+                continue
+        placeholders = ",".join("?" for _ in item_ids)
+        revisions = db.all(
+            f"SELECT * FROM asset_revisions WHERE face='back' AND is_current=1 "
+            f"AND item_id IN ({placeholders})", tuple(item_ids),
+        )
+        if target in completed:
+            hashes = {row["sha256"] for row in revisions}
+            known = artwork_revisions.get(target, {})
+            allowed = {canonical_hashes[target]} if target in canonical_hashes else set()
+            if known.get("toSha256") == project_digest:
+                allowed.add(known["fromSha256"])
+                allowed.add(project_digest)
+            if (len(revisions) != len(item_ids) or len(hashes) != 1 or not hashes <= allowed
+                    or any(row["source"] not in SHARED_BACK_MIGRATION_SOURCES
+                           or row["transform_json"] not in (None, "", "{}") for row in revisions)):
+                continue
+            if hashes == {project_digest}:
+                canonical_hashes[target] = project_digest
+                continue
+        if project_digest is None:
+            hashes = {row["sha256"] for row in revisions}
+            source = next((library / row["original_path"] for row in revisions
+                           if len(hashes) == 1 and (library / row["original_path"]).is_file()), None)
+        if source is None:
+            # Conflicting old captures cannot represent one shared file. Keep
+            # them as history and ask for the missing back through normal UI.
+            if revisions:
+                with db.connect() as conn:
+                    conn.execute(
+                        f"UPDATE asset_revisions SET is_current=0 WHERE face='back' "
+                        f"AND item_id IN ({placeholders})", tuple(item_ids),
+                    )
+                    conn.execute(
+                        f"DELETE FROM skipped_faces WHERE face='back' AND item_id IN ({placeholders})",
+                        tuple(item_ids),
+                    )
+            pending.append(target)
+            continue
+        temporary = new_temp_file(library, ".jpg")
+        try:
+            shutil.copyfile(source, temporary)
+            # store_image propagates this one content-addressed object to all
+            # mapped peers, with separate item relations and lazy previews.
+            store_image(db, library, temporary, item_ids[0], "back", Path(target).name,
+                        "image/jpeg", "shared-back-migration", defer_preview=True)
+        finally:
+            temporary.unlink(missing_ok=True)
+        completed.add(target)
+        canonical_hashes[target] = project_digest
+    db.set_meta("card_shared_backs_migration", {
+        "version": 1, "completed": sorted(completed), "pending": pending,
+        "memberships": memberships, "canonical_sha256": canonical_hashes,
+    })
+
+
 def ensure_fixed_catalog(db: Database, ato_root: Path | None = None) -> dict[str, int]:
     # Retire these unused entries even when the old library already has images.
     # Foreign-key cascades remove their revisions and skipped-face records.
@@ -1986,5 +2159,8 @@ def ensure_fixed_catalog(db: Database, ato_root: Path | None = None) -> dict[str
     current = db.get_meta("catalog_source", {})
     existing = db.one("SELECT COUNT(*) AS n FROM catalog_items")["n"]
     if existing and current.get("catalog_version") == source["catalog_version"]:
+        _migrate_shared_backs(db, ato_root)
         return {"items": existing, "aibp_enemies": source["aibp_enemies"], "stories": len(source["stories"])}
-    return apply_catalog(db, [CatalogItem(**item) for item in payload["items"]], source)
+    result = apply_catalog(db, [CatalogItem(**item) for item in payload["items"]], source)
+    _migrate_shared_backs(db, ato_root)
+    return result

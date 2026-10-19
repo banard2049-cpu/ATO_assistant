@@ -90,6 +90,8 @@ final class AtopackStore {
   private final AtomicFile indexFile;
   private final AtomicFile storiesFile;
   private final Map<String, String> knownTargets;
+  private final Map<String, String> retiredCardBackTargets = new HashMap<>();
+  private final Map<String, String> retiredCardBackHashes = new HashMap<>();
   private volatile Map<String, ResourceEntry> resources;
   private volatile String updatedAt = "";
 
@@ -101,6 +103,7 @@ final class AtopackStore {
     indexFile = new AtomicFile(new File(root, "index.json"));
     storiesFile = new AtomicFile(new File(root, "stories.json"));
     knownTargets = loadCatalog();
+    loadCardBackMapping();
     File[] leftovers = root.listFiles((directory, name) -> name.startsWith("import-") && name.endsWith(".staging"));
     if (leftovers != null) for (File leftover : leftovers) restoreInterruptedRepairs(leftover);
     resources = loadIndex();
@@ -272,6 +275,7 @@ final class AtopackStore {
       if (assets.length() > MAX_ASSETS) throw new IOException("资料包资源数量超过限制");
 
       Map<String, ResourceEntry> next = new HashMap<>(resources);
+      Map<String, String> importedTargets = new HashMap<>();
       int importedAssets = 0;
       ImportStats stats = new ImportStats();
       for (int index = 0; index < assets.length(); index++) {
@@ -287,17 +291,31 @@ final class AtopackStore {
         String member;
         String sha256;
         try {
-          if (declaredTarget.isEmpty() || !target.equals(canonicalBoardPath(safePath(declaredTarget, "资源目标路径")))) {
+          String declared = canonicalBoardPath(safePath(declaredTarget, "资源目标路径"));
+          if (retiredCardBackTargets.containsKey(declared)) {
+            stats.skipLegacyCardBack();
+            continue;
+          }
+          if (!target.equals(declared)) {
             stats.skipped++;
             continue;
           }
           member = safePath(asset.optString("member"), "资料包成员路径");
           sha256 = validSha256(asset.optString("sha256"));
+          if (sha256.equals(retiredCardBackHashes.get(target))) {
+            stats.skipLegacyCardBack();
+            continue;
+          }
         } catch (IOException invalid) { stats.skipped++; continue; }
         ZipArchiveEntry entry = findEntry(archive, member, asset);
         if (entry == null || entry.isDirectory()) { stats.skipped++; continue; }
+        String priorHash = importedTargets.get(target);
+        if (priorHash != null && !priorHash.equals(sha256)) {
+          throw new IOException("共享资源存在不同内容，无法导入：" + target);
+        }
         try { installBlob(archive, entry, sha256, asset, MAX_MEMBER_BYTES, transaction); }
         catch (InvalidPackEntry invalid) { stats.skipped++; continue; }
+        importedTargets.put(target, sha256);
         // An older resource pack can replace a face without supplying its new
         // preview. Discard the old preview rather than showing the wrong face.
         next.remove(target + ".preview.jpg");
@@ -551,6 +569,7 @@ final class AtopackStore {
         }
       }
       int importedBooks = mergeStories(incomingStories, next, stats, transaction);
+      removeRetiredCardBacks(next);
       String nextUpdatedAt = Long.toString(System.currentTimeMillis());
       transaction.commit(next, nextUpdatedAt);
       resources = next;
@@ -664,7 +683,11 @@ final class AtopackStore {
     for (ZipArchiveEntry candidate : archive.getEntries(entry.getName())) {
       if (candidate.isDirectory()) continue;
       try {
+        validateSize(candidate, resource, maximum);
+        String verified = candidate.getName() + "\u0000" + expected + "\u0000" + candidate.getSize();
+        if (transaction.verifiedMembers.contains(verified)) return;
         stageBlob(archive, candidate, expected, resource, maximum, transaction);
+        transaction.verifiedMembers.add(verified);
         return;
       } catch (InvalidPackEntry invalid) {
         failure = invalid;
@@ -769,6 +792,7 @@ final class AtopackStore {
     final File staging;
     final List<File> created = new ArrayList<>();
     final Map<File, File> replaced = new HashMap<>();
+    final Set<String> verifiedMembers = new HashSet<>();
     JSONObject stories;
     long readBytes;
     boolean committed;
@@ -860,7 +884,54 @@ final class AtopackStore {
       ResourceEntry old = result.remove(oldPath);
       if (old != null) result.putIfAbsent(canonicalBoardPath(oldPath), old);
     }
+    removeRetiredCardBacks(result);
     return result;
+  }
+
+  private void removeRetiredCardBacks(Map<String, ResourceEntry> entries) {
+    // Old numbered backs may have the wrong special-card artwork. Do not guess
+    // a shared replacement from them; a new pack supplies the authoritative JPG.
+    for (String retired : retiredCardBackTargets.keySet()) {
+      entries.remove(retired);
+      entries.remove(retired + ".preview.jpg");
+    }
+  }
+
+  private void loadCardBackMapping() {
+    try (InputStream input = context.getAssets().open("web/aibp/card-backs.json")) {
+      JSONObject mapping = new JSONObject(new String(readAll(input, MAX_MANIFEST_BYTES), StandardCharsets.UTF_8));
+      if (mapping.optInt("version", 0) != 1) return;
+      Set<String> allowed = new HashSet<>(knownTargets.values());
+      JSONObject backs = mapping.optJSONObject("backs");
+      if (backs != null) {
+        Iterator<String> fronts = backs.keys();
+        while (fronts.hasNext()) {
+          String front = safePath(fronts.next(), "牌背正面路径");
+          String target = "aibp/" + safePath(backs.optString(front), "共享牌背路径");
+          if (!front.matches("ps/[A-Z][A-Z0-9_]+/[^/]+\\.(?i:jpg|jpeg|png)")
+              || !allowed.contains(target)) continue;
+          int extension = front.lastIndexOf('.');
+          String retired = "aibp/" + front.substring(0, extension) + "_BACK" + front.substring(extension);
+          // Dragon BP cards retain distinct effect backs under their old names.
+          if (!retired.equals(target)) retiredCardBackTargets.put(retired, target);
+        }
+      }
+      JSONObject revisions = mapping.optJSONObject("canonicalRevisions");
+      if (revisions != null) {
+        Iterator<String> targets = revisions.keys();
+        while (targets.hasNext()) {
+          String relative = targets.next();
+          String target = "aibp/" + safePath(relative, "共享牌背路径");
+          JSONObject revision = revisions.optJSONObject(relative);
+          if (!allowed.contains(target) || revision == null) continue;
+          String before = validSha256(revision.optString("fromSha256"));
+          String after = validSha256(revision.optString("toSha256"));
+          if (!before.equals(after)) retiredCardBackHashes.put(target, before);
+        }
+      }
+    } catch (Exception ignored) {
+      // A missing mapping never grants permission to import unknown targets.
+    }
   }
 
   private Map<String, String> loadCatalog() {
@@ -1039,8 +1110,14 @@ final class AtopackStore {
 
   private static final class ImportStats {
     int skipped;
+    int legacyCardBacksSkipped;
     final JSONArray crypticSkipped = new JSONArray();
     final JSONArray mixedMediaSkipped = new JSONArray();
+
+    void skipLegacyCardBack() {
+      skipped++;
+      legacyCardBacksSkipped++;
+    }
 
     void skipCryptic(String target, String reason) throws JSONException {
       skipped++;
@@ -1063,6 +1140,7 @@ final class AtopackStore {
     final boolean entityIndex;
     final int totalResources;
     final int skipped;
+    final int legacyCardBacksSkipped;
     final JSONArray crypticSkipped;
     final JSONArray mixedMediaSkipped;
 
@@ -1072,6 +1150,7 @@ final class AtopackStore {
       this.entityIndex = entityIndex;
       this.totalResources = totalResources;
       this.skipped = stats.skipped;
+      this.legacyCardBacksSkipped = stats.legacyCardBacksSkipped;
       this.crypticSkipped = stats.crypticSkipped;
       this.mixedMediaSkipped = stats.mixedMediaSkipped;
     }
@@ -1079,6 +1158,7 @@ final class AtopackStore {
     JSONObject toJson() throws JSONException {
       return new JSONObject().put("ok", true).put("assets", assets).put("books", books)
         .put("entityIndex", entityIndex).put("totalResources", totalResources).put("skipped", skipped)
+        .put("legacyCardBacksSkipped", legacyCardBacksSkipped).put("legacy_card_backs_skipped", legacyCardBacksSkipped)
         .put("cryptic_skipped", crypticSkipped.length()).put("cryptic_warnings", crypticSkipped)
         .put("mixed_media_skipped", mixedMediaSkipped.length()).put("mixed_media_warnings", mixedMediaSkipped);
     }

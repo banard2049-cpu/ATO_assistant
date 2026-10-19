@@ -14,7 +14,8 @@
   const pursuerCard = (type, level, index, stem) => ({
     type, level, index,
     src: pursuerFile(`${stem}.jpg`),
-    backSrc: pursuerFile(`${stem}_BACK.jpg`),
+    // AI / BP 与追踪者共用牌背映射，不能绑定已移除的逐卡反面路径。
+    ...(["AI", "BP"].includes(type) ? {} : { backSrc: pursuerFile(`${stem}_BACK.jpg`) }),
   });
   const pursuerRange = (type, level, prefix, count) =>
     Array.from({ length: count }, (_, offset) => {
@@ -107,12 +108,17 @@
       // 补齐早期存档的明文卡图路径，保留牌堆顺序和已抽取状态。
       for (const type of ["AI", "BP"]) {
         const pile = state[type];
-        for (const cards of [pile.deck, pile.discard, pile.removed, pile.damage, ...Object.values(pile.supply || {}), [pile.pending]]) {
+        for (const cards of [pile.deck, pile.discard, pile.removed, pile.damage, pile.damage1, pile.damage2,
+          ...Object.values(pile.supply || {}), [pile.pending]]) {
           for (const card of cards || []) {
             if (!card || card.special) continue;
             const source = list[type][card.level]?.find((item) => item.index === card.index);
-            if (source && (card.src !== source.src || card.backSrc !== source.backSrc)) {
-              Object.assign(card, { src: source.src, backSrc: source.backSrc });
+            if (source && card.src !== source.src) {
+              card.src = source.src;
+              changed = true;
+            }
+            if (source && card.backSrc === source.src.replace(/\.jpg$/, "_BACK.jpg")) {
+              delete card.backSrc;
               changed = true;
             }
           }

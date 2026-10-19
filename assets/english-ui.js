@@ -213,7 +213,10 @@
     "默认显示；取消勾选并保存后从特性区移除": "Shown by default; uncheck and save to remove it from the Trait area",
     "致死一击已结算：从 BP 牌堆顶部补伤；BP III 计双重损伤，未达到总生命时执行 BP 晋升。": "Deathblow resolved: add wounds from the top of the BP deck. BP III counts as a double wound; promote BP if wounds remain below total health.",
     "（每命中）": "(per hit)", "（额外闪避骰）": "(extra Evasion die)",
-    "巨剑连招（Sword Combo）": "Sword combo", "火焰连招（Fire Combo）": "Fire combo", "神浆连招（Ambrosia Combo）": "Ambrosia combo",
+    "巨剑连招（Sword Combo）": "Sword combo", "刀剑连招（Sword Combo）": "Sword combo", "火焰连招（Fire Combo）": "Fire combo", "神浆连招（Ambrosia Combo）": "Ambrosia combo", "仇恨连招（Hatred Combo）": "Hatred combo",
+    "牌顶 BP 背面 · 完全失手效果": "Top BP back · Full Miss effect", "牌顶 AI 背面": "Top AI back", "牌顶 BP 背面": "Top BP back", "点击放大牌背": "Click to enlarge the card back",
+    "牌背加载中": "Loading card back", "牌背加载失败": "Card back failed to load",
+    "点击抽取 AI": "Click to draw AI", "点击抽取 BP": "Click to draw BP",
     "球锤连招（Mauls Combo）": "Mauls combo", "锁链连招（Chain Combo）": "Chain combo", "身躯连招（Body Combo）": "Body combo",
     "匕首（Knife）": "Knife", "盾牌（Shield）": "Shield", "鞭（Whip）": "Whip", "板剑（Slabsword）": "Slabsword", "矛（Spear）": "Spear", "剑（Sword）": "Sword", "拳套（Cestus）": "Cestus", "棍棒（Club）": "Club", "斧（Axe）": "Axe", "弓（Bow）": "Bow",
     "墓园": "Graveyard", "添加英雄": "Add Argonaut", "添加泰坦": "Add Titan", "泰坦列表": "Titans", "泰坦名称": "Titan name",
@@ -506,7 +509,7 @@
   // name scoped so it cannot rename unrelated greatsword gear elsewhere.
   window.ATO_ENGLISH_UI_SCOPED = [
     ["#nietzscheStateButton, .panel-state-marker, .nietzsche-break-lock, #imageZoomNotice", [
-      ["巨剑", "Sword"], ["火焰", "Fire"], ["神浆", "Ambrosia"],
+      ["巨剑", "Sword"], ["刀剑", "Sword"], ["火焰", "Fire"], ["神浆", "Ambrosia"], ["仇恨", "Hatred"],
       ["球锤", "Mauls"], ["锁链", "Chain"], ["身躯", "Body"],
       ["腐蚀液态", "Corrosive"], ["腐蚀态", "Corrosive"],
       ["凝胶态", "Gelatinous"], ["超固态", "Supersolid"],

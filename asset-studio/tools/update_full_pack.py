@@ -101,6 +101,7 @@ def update_full_pack(
             with zipfile.ZipFile(
                 partial, "w", compression=zipfile.ZIP_STORED, allowZip64=True
             ) as output_zip:
+                written_members: dict[str, str] = {}
                 for index, (item, face, target) in enumerate(faces, 1):
                     # Keep the resource tree and filename from the catalog.
                     member = str(safe_member(target))
@@ -124,11 +125,23 @@ def update_full_pack(
                             f"新增资源缺少本地文件，旧包也无可复用内容：{target}"
                         )
 
-                    with source, output_zip.open(member, "w", force_zip64=True) as output:
-                        copy_stream(source, output, digest)
+                    previous_hash = written_members.get(member)
+                    if previous_hash is None:
+                        with source, output_zip.open(member, "w", force_zip64=True) as output:
+                            copy_stream(source, output, digest)
+                    else:
+                        # Every card keeps its manifest relation, while a shared
+                        # back has one physical member. Check older per-card
+                        # sources before reusing it so conflicting backs fail.
+                        with source:
+                            while chunk := source.read(CHUNK):
+                                digest.update(chunk)
                     sha256 = digest.hexdigest()
                     if not overlay.is_file() and old_asset and sha256 != old_asset["sha256"]:
                         raise ValueError(f"旧包资源哈希不匹配：{old_asset['member']}")
+                    if previous_hash is not None and previous_hash != sha256:
+                        raise ValueError(f"清单资源路径冲突：{member}")
+                    written_members[member] = sha256
                     assets.append({
                         "itemId": item["id"],
                         "face": face,

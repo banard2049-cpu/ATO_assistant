@@ -87,6 +87,7 @@ function trackScope({ currentApostle = "LABYRINTHAUROS", stored = {} } = {}) {
     trackBlock,
     functionSource("isNietzsche"),
     functionSource("isCyclonus"),
+    functionSource("isAdvancedNietzscheTrack"),
     functionSource("hasPanelState"),
     functionSource("hasManualPanelState"),
     functionSource("currentPanelState"),

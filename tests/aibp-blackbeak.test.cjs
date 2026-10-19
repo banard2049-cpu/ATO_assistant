@@ -90,6 +90,7 @@ test("黑喙卡组：18 张 AI + 17 张 BP，永久排除黑血密码筒", () =>
     }
   }
   const problems = [];
+  const sharedBacks = JSON.parse(fs.readFileSync(path.join(aibpDir, "card-backs.json"), "utf8")).backs;
   const check = (label, src) => {
     if (typeof src !== "string" || !src.startsWith("ps/HERMESIAN_PURSUER/")) {
       problems.push(`${label} 不是追踪者明文引用 -> ${src}`);
@@ -101,7 +102,7 @@ test("黑喙卡组：18 张 AI + 17 张 BP，永久排除黑血密码筒", () =>
     for (const level of ["I", "II", "III"]) {
       for (const card of blackbeak[type][level]) {
         check(`${type} ${level} #${card.index} F`, card.src);
-        check(`${type} ${level} #${card.index} B`, card.backSrc);
+        check(`${type} ${level} #${card.index} B`, card.backSrc || sharedBacks[card.src]);
       }
     }
   }
@@ -210,7 +211,13 @@ test("追踪者的卡图不加密：不留 .bin，也不进 catalog", () => {
   const catalog = JSON.parse(fs.readFileSync(path.join(binDir, "catalog.json"), "utf8"));
   const pursuerDir = path.join(aibpDir, "ps", "HERMESIAN_PURSUER");
   const plain = fs.readdirSync(pursuerDir).filter((name) => /\.jpe?g$/i.test(name) && !name.endsWith(".preview.jpg"));
-  assert.equal(plain.length, 82, "追踪者明文卡图应为 82 张");
+  assert.ok(plain.includes("HERMESIAN_PURSUER.jpg"), "追踪者明文面板应存在");
+  const sharedBacks = JSON.parse(fs.readFileSync(path.join(aibpDir, "card-backs.json"), "utf8")).backs;
+  for (const back of new Set(Object.entries(sharedBacks)
+    .filter(([front]) => front.startsWith("ps/HERMESIAN_PURSUER/"))
+    .map(([, back]) => back))) {
+    assert.ok(plain.includes(path.basename(back)), `追踪者共享牌背缺失：${back}`);
+  }
   const leftovers = [];
   for (const name of plain) {
     const target = path.posix.join("3b6e9d20", path.basename(assets.path(`HERMESIAN_PURSUER/${name}`)));

@@ -8,6 +8,7 @@ const assert = require("node:assert/strict");
 
 const ROOT = path.resolve(__dirname, "..");
 const source = fs.readFileSync(path.join(ROOT, "aibp", "index.html"), "utf8");
+const mapping = JSON.parse(fs.readFileSync(path.join(ROOT, "aibp", "card-backs.json"), "utf8")).backs;
 
 function extract(name) {
   const start = source.search(new RegExp(`function ${name}\\(`));
@@ -21,10 +22,15 @@ const ctx = vm.createContext({
   levelBack: { O: "0", I: "1", II: "2", III: "3", X: "X" },
   currentApostle: "LABYRINTHAUROS",
   viewDeckOrderToggle: { checked: true },
+  window: {
+    HeliosAssets: { resolve: (src) => src },
+    AibpCardBacks: { backFor: (front) => mapping[front] || null },
+  },
 });
 
 for (const name of [
   "cardBackDisplayLevel",
+  "cardBackMappingSrc",
   "cardBackImageSrc",
   "deckBackText",
   "deckBackCompositionText",
@@ -63,12 +69,19 @@ assert.equal(ctx.deckBackCompositionText([bp1, special, bp3, bp3]), "1（1×1，
 assert.doesNotMatch(ctx.deckBackCompositionText([bp1, special, bp3]), /X/);
 assert.equal(
   ctx.cardBackImageSrc(special, "ps/LABYRINTHAUROS/LABYRINTHAUROS_TP_X_001.jpg"),
-  "ps/LABYRINTHAUROS/LABYRINTHAUROS_BP_III_001_BACK.jpg"
+  "ps/LABYRINTHAUROS/LABYRINTHAUROS_BP_III_BACK.jpg"
 );
 assert.equal(
   ctx.cardBackImageSrc(oldSaved, "ps/LABYRINTHAUROS/LABYRINTHAUROS_TP_X_001.jpg"),
-  "ps/LABYRINTHAUROS/LABYRINTHAUROS_BP_III_001_BACK.jpg"
+  "ps/LABYRINTHAUROS/LABYRINTHAUROS_BP_III_BACK.jpg"
 );
+for (const card of [special, oldSaved, bp3]) {
+  const front = card.type === "BP"
+    ? "ps/LABYRINTHAUROS/LABYRINTHAUROS_BP_III_001.jpg"
+    : "ps/LABYRINTHAUROS/LABYRINTHAUROS_TP_X_001.jpg";
+  assert.equal(ctx.cardBackImageSrc(card, front + "?v=1#card"),
+    mapping["ps/LABYRINTHAUROS/LABYRINTHAUROS_BP_III_001.jpg"]);
+}
 
 ctx.currentApostle = "DAHAKA";
 const dahakaStarting = { type: "AI", level: "II", bpLevel: "I", combinedAibp: true, index: 1 };
