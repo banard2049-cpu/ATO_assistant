@@ -7,6 +7,7 @@ must not match a generated entry. Requires Pillow and NumPy.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import io
 import json
 from pathlib import Path
@@ -24,6 +25,41 @@ MAX_TRIM = 8
 DARK_EDGE = 85
 SUFFIXES = {".jpg", ".jpeg", ".png", ".webp"}
 CARD = re.compile(r"aibp/ps/(?:[A-Z][A-Z0-9_]+|other/trait)/[^/]+\.(?:jpg|jpeg|png|webp)$")
+
+# This scan has a gray halo behind its thin black cut line. The automatic
+# detector deliberately stops at the black line to preserve printed artwork.
+# Keep the reviewed measurement tied to the exact source bytes so replacing
+# the card (especially with official artwork) cannot inherit this deeper trim.
+REVIEWED_SCANS = {
+    "aibp/ps/DEMIDJINN/DEMIDJINN.jpg": {
+        "size": (6417, 4402),
+        "sha256": "4afa1c0ddb70ef8b6b4977dfdb0a5b7d9294b067df44891a8a7e69a5bba1836f",
+        "trim": (14, 4, 5, 4),
+        # Observed through the runtime's 36-point canvas sampler. This JPEG
+        # decodes differently in the browser and Pillow; retain both exact
+        # fingerprints instead of relaxing the global channel tolerance.
+        "browserSamples": [
+            100, 108, 95, 82, 88, 88, 211, 214, 229, 60, 56, 45, 124, 115, 106, 179, 169, 159,
+            91, 103, 93, 46, 36, 60, 146, 122, 120, 92, 91, 86, 244, 232, 242, 186, 177, 168,
+            109, 85, 37, 42, 59, 66, 116, 112, 111, 148, 149, 118, 132, 128, 119, 174, 163, 159,
+            96, 94, 82, 144, 141, 132, 151, 151, 115, 203, 185, 173, 104, 45, 49, 157, 144, 135,
+            181, 175, 175, 184, 173, 155, 200, 186, 173, 156, 133, 162, 191, 185, 151, 189, 188, 170,
+            187, 180, 172, 207, 191, 178, 211, 197, 184, 201, 188, 180, 128, 123, 117, 133, 133, 109,
+        ],
+    },
+    "aibp/ps/DEMIDJINN/DEMIDJINN.jpg.preview.jpg": {
+        "size": (1600, 1098),
+        "sha256": "2787232339ec74de51d083ef9b1c6ebc05258eee217b9031ffc074da03b77d50",
+        "browserSamples": [
+            119, 119, 107, 37, 42, 48, 232, 232, 240, 169, 160, 151, 126, 127, 122, 190, 180, 168,
+            110, 112, 109, 66, 58, 55, 107, 110, 99, 70, 69, 74, 149, 150, 152, 191, 181, 171,
+            135, 127, 88, 43, 46, 51, 103, 104, 98, 186, 177, 160, 180, 152, 141, 152, 146, 130,
+            132, 133, 125, 153, 128, 121, 148, 145, 130, 189, 180, 165, 126, 92, 83, 153, 151, 139,
+            178, 168, 158, 180, 172, 161, 202, 190, 176, 124, 125, 127, 189, 180, 165, 185, 178, 159,
+            191, 181, 171, 198, 186, 174, 206, 194, 180, 185, 180, 161, 163, 156, 138, 155, 148, 130,
+        ],
+    },
+}
 
 
 def samples(image: Image.Image) -> list[int]:
@@ -97,6 +133,27 @@ def open_rgb(path: Path) -> Image.Image:
         return ImageOps.exif_transpose(source).convert("RGB")
 
 
+def reviewed_scan(path: Path, target: str, image: Image.Image) -> dict | None:
+    reviewed = REVIEWED_SCANS.get(target)
+    if (reviewed and image.size == reviewed["size"]
+            and hashlib.sha256(path.read_bytes()).hexdigest() == reviewed["sha256"]):
+        return reviewed
+    return None
+
+
+def measured_trims(path: Path, target: str, image: Image.Image) -> list[int]:
+    reviewed = reviewed_scan(path, target, image)
+    return list(reviewed["trim"]) if reviewed and "trim" in reviewed else detect_trims(image)
+
+
+def fingerprint_variants(path: Path, target: str, image: Image.Image, trim: list) -> list[dict]:
+    variants = [{"size": list(image.size), "samples": samples(image), "trim": trim}]
+    reviewed = reviewed_scan(path, target, image)
+    if reviewed and "browserSamples" in reviewed:
+        variants.append({"size": list(image.size), "samples": reviewed["browserSamples"], "trim": trim})
+    return variants
+
+
 def candidate_paths(root: Path):
     for folder in (root / "assets/exploration-cards", root / "aibp/ps"):
         for path in sorted(folder.rglob("*")):
@@ -146,7 +203,7 @@ def generate(root: Path, fan_packs=()) -> tuple[dict, dict]:
     for path, target in candidate_paths(root):
         image = open_rgb(path)
         report["scanned"] += 1
-        trim = detect_trims(image)
+        trim = measured_trims(path, target, image)
         if not any(trim):
             continue
         fingerprint = samples(image)
@@ -157,15 +214,15 @@ def generate(root: Path, fan_packs=()) -> tuple[dict, dict]:
                     abs(a - b) <= TOLERANCE for a, b in zip(fingerprint, samples(official_image))):
                 report["protectedOfficial"].append(target)
                 continue
-        entry = {"size": list(image.size), "samples": fingerprint, "trim": trim}
-        data["images"][target] = [entry]
+        data["images"][target] = fingerprint_variants(path, target, image, trim)
         report["trimmed"].append({"path": target, "size": list(image.size), "trim": trim})
         preview = path.with_name(path.name + ".preview.jpg")
         if preview.is_file() and not preview.is_symlink() and preview.stat().st_mtime_ns >= path.stat().st_mtime_ns:
             small = open_rgb(preview)
             scale = [small.height / image.height, small.width / image.width] * 2
-            data["images"][target + ".preview.jpg"] = [{"size": list(small.size),
-                "samples": samples(small), "trim": [round(value * factor, 5) for value, factor in zip(trim, scale)]}]
+            small_trim = [round(value * factor, 5) for value, factor in zip(trim, scale)]
+            data["images"][target + ".preview.jpg"] = fingerprint_variants(
+                preview, target + ".preview.jpg", small, small_trim)
     report["packVariants"] = sum(add_pack_variants(data, Path(pack)) for pack in fan_packs)
     return data, report
 

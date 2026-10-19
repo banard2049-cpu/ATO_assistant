@@ -1176,6 +1176,104 @@ async function withPanelDocument(run) {
   try { await run(); } finally { global.document = previous; }
 }
 
+test('voyage list starts compact, preserves disclosures, and keeps execution and card viewing available', () => withPanelDocument(async () => {
+  const rule = realRules.catalog.find(item => item.key === 'grand stoa');
+  const f = realFixture(rule.key, rule.actions[0]);
+  f.state.campaign.sections.technology.users.chosen.unlocked.push("argo's mission", 'the work is never done', 'mnestis thesis');
+  const options = { ...f.target, techKey: undefined, scope: 'voyage' };
+  const panel = f.client.createActionPanel(options);
+  await panel.ready;
+  const entries = () => findNodes(panel, node => node.className === 'structure-tech-entry');
+  assert.equal(panel.dataset.layout, 'grouped');
+  assert.equal(findNodes(panel, node => node.className === 'structure-tech-category').length, 3);
+  assert.equal(entries().length, 4);
+  assert.ok(entries().every(node => node.open === false));
+  assert.equal(f.state.posts.length, 0, 'rendering collapsed rows never executes an ability');
+  let stoa = entries().find(node => node.dataset.groupId === 'grand stoa');
+  assert.equal(stoa.dataset.simple, 'true', 'direct-use abilities retain the compact light layout');
+  assert.equal(entries().find(node => node.dataset.groupId === 'the work is never done').dataset.simple, 'true');
+  assert.equal(entries().find(node => node.dataset.groupId === 'trade').dataset.simple, 'false');
+  assert.equal(entries().find(node => node.dataset.groupId === 'mnestis thesis').dataset.simple, 'false');
+  assert.equal(findNode(stoa, node => node.className === 'structure-tech-entry-meta').textContent, '培育梦行者泰坦');
+  assert.equal(findNode(stoa, node => node.className === 'structure-tech-entry-state').textContent, '可使用');
+  stoa.open = true;
+  await panel.refresh();
+  assert.deepEqual(panel.expandedGroups(), ['grand stoa']);
+  const rebuilt = f.client.createActionPanel({ ...options, expandedGroups: panel.expandedGroups() });
+  await rebuilt.ready;
+  assert.deepEqual(rebuilt.expandedGroups(), ['grand stoa'], 'dashboard recreation retains open rows');
+  stoa = findNode(rebuilt, node => node.className === 'structure-tech-entry' && node.dataset.groupId === 'grand stoa');
+  findNode(stoa, node => node.className?.includes('structure-tech-action-title')).listeners.click();
+  assert.equal(findNode(rebuilt, node => node.tagName === 'dialog').open, true);
+  await findNode(stoa, node => node.className === 'structure-tech-action-use').listeners.click();
+  assert.equal(f.state.posts.length, 1);
+  const updated = findNode(rebuilt, node => node.className === 'structure-tech-entry' && node.dataset.groupId === 'grand stoa');
+  assert.equal(updated.open, true);
+  assert.equal(updated.dataset.simple, 'true', 'a pending event keeps its simple layout after execution');
+  assert.equal(findNode(updated, node => node.className === 'structure-tech-entry-meta').textContent, '培育梦行者泰坦');
+  assert.match(findNode(updated, node => node.className === 'structure-tech-entry-state').textContent, /待结算/);
+}));
+
+test('compact hero status follows selections while individual card panels retain the existing layout', () => withPanelDocument(async () => {
+  const rule = realRules.catalog.find(item => item.key === 'mnestis thesis');
+  const f = realFixture(rule.key, rule.actions[0]);
+  const panel = f.client.createActionPanel({ ...f.target, techKey: undefined, scope: 'voyage' });
+  await panel.ready;
+  const state = findNode(panel, node => node.className === 'structure-tech-entry-state');
+  assert.equal(state.textContent, '可使用');
+  assert.equal(state.dataset.state, 'ready');
+  assert.equal(control(panel, 'targetId').value, '', 'availability preview must not select a target');
+  assert.equal(findNode(panel, node => node.className === 'structure-tech-action-use').disabled, true);
+  assert.equal(f.state.posts.length, 0, 'availability preview never saves');
+  change(control(panel, 'targetId'), 'h');
+  assert.equal(state.textContent, '可使用');
+  const detail = f.client.createActionPanel({ ...f.target, scope: 'voyage' });
+  await detail.ready;
+  assert.equal(findNode(detail, node => node.className === 'structure-tech-entry'), undefined);
+  assert.ok(control(detail, 'targetId'));
+}));
+
+test('missing choices only show ready when a legal payable completion exists', () => withPanelDocument(async () => {
+  const rule = realRules.catalog.find(item => item.key === 'mnestis thesis');
+  const f = realFixture(rule.key, rule.actions[0]);
+  f.state.campaign.sections.record.users.chosen.cycleStats[f.target.cycleId].fate = '9';
+  f.state.campaign.sections.record.users.chosen.fate = '9';
+  const panel = f.client.createActionPanel({ ...f.target, techKey: undefined, scope: 'voyage' });
+  await panel.ready;
+  const badge = () => findNode(panel, node => node.className === 'structure-tech-entry-state');
+  assert.equal(badge().dataset.state, 'blocked', 'an unselected hero must not hide the fate limit');
+  assert.match(badge().title, /命运上限/);
+  f.state.campaign.sections.heroes.users.chosen.heroes = [];
+  await panel.refresh();
+  assert.equal(badge().textContent, '没有可选英雄');
+  assert.equal(f.state.posts.length, 0);
+  const breeding = breedingFixture();
+  const breedingPanel = breeding.client.createActionPanel({ ...breeding.target, techKey: undefined, scope: 'voyage' });
+  await breedingPanel.ready;
+  const breedingBadge = () => findNode(breedingPanel, node => node.className === 'structure-tech-entry-state');
+  assert.equal(breedingBadge().textContent, '可使用');
+  assert.equal(control(breedingPanel, 'resultTitan').value, '');
+  breeding.state.campaign.sections.record.users.chosen.titans = [];
+  await breedingPanel.refresh();
+  assert.equal(breedingBadge().textContent, '没有可用梦行者');
+  assert.equal(breeding.state.posts.length, 0);
+  const tradeRule = realRules.catalog.find(item => item.key === 'superior trading solutions');
+  const trading = realFixture(tradeRule.key, tradeRule.actions[0]);
+  const resources = trading.state.campaign.sections.record.users.chosen.resources;
+  for (const route of tradeRule.actions[0].tradeRoutes) for (const item of [...route.costs, ...route.gains]) resources[item.storageKey] = 0;
+  resources['c1-monument'] = 1;
+  const tradePanel = trading.client.createActionPanel({ ...trading.target, techKey: undefined, scope: 'voyage' });
+  await tradePanel.ready;
+  const tradeBadge = () => findNode(tradePanel, node => node.className === 'structure-tech-entry-state');
+  assert.equal(tradeBadge().textContent, '可使用', 'an affordable later route makes unconfigured trade available');
+  assert.equal(control(tradePanel, 'tradeRoute0').value, '');
+  resources['c1-monument'] = 0;
+  await tradePanel.refresh();
+  assert.equal(tradeBadge().dataset.state, 'blocked');
+  assert.match(tradeBadge().textContent, /不足/);
+  assert.equal(trading.state.posts.length, 0);
+}));
+
 test('the Mnestis Thesis row reads its effect after the price and only reminds when no hero exists', () => withPanelDocument(async () => {
   const rule = realRules.catalog.find(item => item.key === 'mnestis thesis');
   const action = rule.actions[0];

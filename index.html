@@ -2446,13 +2446,13 @@
       }
     }
   </style>
-  <link rel="stylesheet" href="./api/dashboard.css?v=20261017-exploration-corners2">
+  <link rel="stylesheet" href="./api/dashboard.css?v=20261018-tech-simple6">
   <link rel="stylesheet" href="./assets/theme.css?v=20261007-misc-settings11">
   <script src="./story/data/english-source-data.js?v=20261011-english4"></script>
   <script src="./assets/theme.js?v=20261007-page-navigation1" defer></script>
   <link rel="stylesheet" href="./assets/update/update-check.css?v=2">
   <link rel="stylesheet" href="./assets/card-art.css?v=20261017-fan-fringe5">
-  <script src="./assets/fan-card-trims-data.js?v=20261017-fan-fringe2" defer></script>
+  <script src="./assets/fan-card-trims-data.js?v=20261019-demidjinn-edge1" defer></script>
   <script src="./assets/fan-card-trims.js?v=20261017-fan-fringe2" defer></script>
   <script src="./assets/card-art.js?v=20261017-fan-fringe5" defer></script>
 </head>
@@ -2736,9 +2736,9 @@
   <script src="./technology/negotiation-rules.js?v=20261018-trade-categories1"></script>
   <script src="./technology/voyage-action-rules.js?v=20261016-voyage3"></script>
   <script src="./technology/exploration-tech-rules.js?v=20261017-automation-audit4"></script>
-  <script src="./technology/structure-tech-rules.js?v=20261018-trade-categories1"></script>
+  <script src="./technology/structure-tech-rules.js?v=20261019-repair-targets1"></script>
   <script src="./technology/investigation-rules.js?v=20261018-dark-names1"></script>
-  <script src="./technology/structure-tech-client.js?v=20261018-trade-categories1"></script>
+  <script src="./technology/structure-tech-client.js?v=20261018-tech-grouped5"></script>
   <script src="./map/titan-markers.js?v=20261016-map-titan1"></script>
   <script src="./map/titan-capture-rules.js?v=20261016-map-titan1"></script>
   <script src="./map/map-tile-tags.js?v=20261016-icon-scope"></script>
@@ -6988,19 +6988,20 @@
       }
     }
 
-    async function readLatestHeroState() {
-      try {
-        const response = await fetch("./api/campaign-state.php?section=heroes", { cache: "no-store" });
-        const payload = await response.json().catch(() => null);
-        const heroState = payload?.state;
-        if (response.ok && payload?.ok && heroState && Array.isArray(heroState.heroes)) {
-          heroState._lastSyncRevision = Math.max(0, Number(payload.revision || heroState._lastSyncRevision || 0));
-          heroState._userId = payload.user?.id || heroState._userId || "";
-          try { localStorage.setItem(HERO_STORAGE_KEY, JSON.stringify(heroState)); } catch {}
-          return heroState;
-        }
-      } catch {}
-      return readLocalHeroState();
+    function heroProgressTarget() {
+      return { accountId: sessionUser?.id || "", sessionEpoch: campaignSessionEpoch };
+    }
+
+    function assertHeroProgressTarget(target, accountId = target.accountId) {
+      if (!target.accountId || target.accountId !== accountId || target.accountId !== sessionUser?.id
+          || target.sessionEpoch !== campaignSessionEpoch) throw accountMismatchError();
+    }
+
+    async function readLatestHeroState(target = heroProgressTarget()) {
+      assertHeroProgressTarget(target);
+      const latest = await readServerHeroStateForUpdate();
+      assertHeroProgressTarget(target, latest.userId);
+      return latest.state;
     }
 
     function applyHeroProgressChanges(baseState, changes) {
@@ -7032,7 +7033,15 @@
     }
 
     async function applyMnemosTagToHeroes(tagId, hubTitle, boxLabel) {
-      const heroState = await readLatestHeroState();
+      const target = heroProgressTarget();
+      let heroState;
+      try {
+        heroState = await readLatestHeroState(target);
+        assertHeroProgressTarget(target);
+      } catch (error) {
+        window.alert(`无法读取英雄回忆，尚未增加进度：${error?.message || error}`);
+        return;
+      }
       if (!heroState || !Array.isArray(heroState.heroes) || !heroState.heroes.length) return;
 
       const tagZh = MNEMOS_TAG_ZH[tagId] || tagId;
@@ -7106,20 +7115,17 @@
         cardId: proposal.cardId,
         max: proposal.type === "mnemos" ? mnemosTrackLength(proposal.cardId) : 3,
       }));
-      const localHeroState = applyHeroProgressChanges(readLocalHeroState() || heroState, progressChanges);
-
-      // Save back to localStorage
-      try { localStorage.setItem(HERO_STORAGE_KEY, JSON.stringify(localHeroState)); } catch {}
-      // Also save to NAS
-      void saveHeroMnemosToServer(heroState, progressChanges);
-      // Notify hero page if open
-      heroMnemosSyncChannel?.postMessage({ type: "hero-state-updated" });
+      // Only publish confirmed progress. A failed write must not look like a
+      // successful local update that the next server read silently removes.
+      await saveHeroMnemosToServer(heroState, progressChanges, target);
     }
 
-    async function saveHeroMnemosToServer(baseHeroState, progressChanges) {
+    async function saveHeroMnemosToServer(baseHeroState, progressChanges, target = heroProgressTarget()) {
       try {
         for (let attempt = 0; attempt < 5; attempt += 1) {
+          assertHeroProgressTarget(target);
           const latest = await readServerHeroStateForUpdate();
+          assertHeroProgressTarget(target, latest.userId);
           const next = applyHeroProgressChanges(latest.state || baseHeroState, progressChanges);
           const response = await fetch("./api/campaign-state.php?section=heroes", {
             method: "POST",
@@ -7128,23 +7134,28 @@
               section: "heroes",
               state: next,
               expectedRevision: latest.revision,
-              expectedAccountId: sessionUser?.id || "",
+              expectedAccountId: target.accountId,
             }),
           });
           const payload = await response.json().catch(() => null);
+          assertHeroProgressTarget(target);
+          if (payload?.user?.id) assertHeroProgressTarget(target, payload.user.id);
           if (response.status === 409 && payload?.code === "SAVE_CONFLICT") continue;
           if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
 
-          const currentLocal = readLocalHeroState() || next;
-          currentLocal._lastSyncRevision = Math.max(0, Number(payload.revision || latest.revision + 1));
-          currentLocal._userId = payload.user?.id || latest.userId || currentLocal._userId || "";
-          try { localStorage.setItem(HERO_STORAGE_KEY, JSON.stringify(currentLocal)); } catch {}
+          const currentLocal = readLocalHeroState();
+          if (!currentLocal?._dirty) {
+            const confirmed = { ...next, _dirty: false, _userId: target.accountId,
+              _lastSyncRevision: Math.max(0, Number(payload.revision || latest.revision + 1)) };
+            try { localStorage.setItem(HERO_STORAGE_KEY, JSON.stringify(confirmed)); } catch {}
+          }
           heroMnemosSyncChannel?.postMessage({ type: "hero-state-updated" });
           return true;
         }
         throw new Error("英雄记录持续冲突，请稍后重试。");
       } catch (error) {
         console.warn(error);
+        window.alert(`回忆进度保存未确认：${error?.message || error}。请恢复连接后在英雄页核对进度，再补记缺少的节点。`);
         return false;
       }
     }
@@ -8193,9 +8204,8 @@
       button.className = "step-action-button";
       button.textContent = "进入下一天";
       button.title = "结清今日流程并推进到时间表的下一天";
-      button.addEventListener("click", () => {
-        nextDay();
-        scrollPageToTopAfterNextDay();
+      button.addEventListener("click", async () => {
+        if (await nextDay()) scrollPageToTopAfterNextDay();
       });
       return button;
     }
@@ -9631,8 +9641,12 @@
           `一键结算探索卡 D${state.day}：${entries.map((entry) => entry.name).join("、")}`);
         result.updates.forEach(({ entry, receipt }) => syncExplorationBatchReceipt(entry, receipt));
         syncExplorationTokenPlacementQueue();
-        if (typeof settleExplorationPursuit === "function") await settleExplorationPursuit(false, document.querySelector(".exploration-pursuit [name='pursuitSpawnTile']")?.value || "");
         const pending = pendingExplorationEffects(false);
+        // Choices and manual effects can still change Fate or diplomacy, which
+        // determine pursuit. Freeze its receipt only after those are resolved.
+        if (!pending.length && typeof settleExplorationPursuit === "function") {
+          await settleExplorationPursuit(false, document.querySelector(".exploration-pursuit [name='pursuitSpawnTile']")?.value || "");
+        }
         const previous = state.exploration.lastSettlementByCycle[cycleId]?.completed || [];
         state.exploration.lastSettlementByCycle[cycleId] = { at: Date.now(), completed: [...previous, ...result.completed], pending };
         saveState();
@@ -9653,17 +9667,16 @@
       }
     }
 
-    // 「结算完毕」这一下：上一步的按钮文本已经把「还剩手工项」告诉过玩家，这里不再弹窗
-
-    // 二次提醒（endExplorationDraw 也不再问一次），直接结束本轮探索。
-
     async function completeExplorationDraw() {
       if (settleExplorationDraw.busy || mutateExplorationRecord.busy) {
         window.alert("正在结算探索效果，请稍候。");
         return;
       }
-      markExplorationSettlePrepared(false);
-      endExplorationDraw({ skipPendingConfirm: true });
+      if (pendingExplorationEffects(false).length) {
+        window.alert("请先处理剩余选项，并将已手动处理的效果标记完成，再结算追踪并结束探索。");
+        return;
+      }
+      await settleExplorationDraw();
     }
 
     function explorationEffectDescriptors(entry, card, context) {
@@ -10889,6 +10902,7 @@
 
     async function settleExplorationPursuit(waive = false, spawnTileId = "") {
       if (settleExplorationPursuit.busy || mapCommandBusy || mutateExplorationRecord.busy) throw new Error("地图或探索正在结算，请稍候。");
+      if (pendingExplorationEffects(false).length) throw new Error("请先完成探索卡的选项与效果，再结算追踪。");
       const rules = window.ATO_EXPLORATION_PURSUIT;
       if (!rules) throw new Error("追踪结算规则未加载，请刷新页面。");
       const target = structureTechTarget();
@@ -11732,6 +11746,7 @@
       }
       if (context) {
         const panel = structureTechClient().createActionPanel({ ...target, context, scope,
+          expandedGroups: cached?.key === key ? cached.element.actionPanel?.expandedGroups?.() : [],
           explorationCardPreview: cardId => {
             const image = document.createElement("img");
             image.src = `./assets/exploration-cards/${target.cycleId}/${cardId}.png`;
@@ -11743,6 +11758,7 @@
           onError: error => { if (error?.code === "ACCOUNT_MISMATCH") stopForAccountMismatch(); },
         });
         element.appendChild(panel);
+        element.actionPanel = panel;
       } else {
         const note = document.createElement("p");
         note.className = "field-note";
@@ -12811,24 +12827,46 @@
       renderDateTrack();
     }
 
-    function nextDay() {
-      const track = dateTrackData[currentCycleConfig().id];
-      const entries = track?.entries || [];
-      const currentIndex = entries.findIndex((entry) => String(entry.day) === String(state.day));
-      // 日期轨里还有下一行就跟着走；走到最后一行之后按数字 +1 继续推（C4 就是这样
-      // 一直往后打，没有上限），日期轨用 trackEntriesForRender() 把当天补出来。
-
-      state.day = currentIndex >= 0 && currentIndex < entries.length - 1
-        ? entries[currentIndex + 1].day
-        : Math.max(0, Math.floor(Number(state.day) || 0) + 1);
-      state.completed = {};
-      state.events = state.events.filter((item) => !item.done);
-      state.latestSurveyAdventureAction = null;
-      state.latestSimpleAdventureAction = null;
-      syncInputs();
-      saveState();
-      renderFlow();
-      renderDateTrack({ focusCurrentDay: true });
+    async function nextDay() {
+      if (nextDay.busy || campaignRestoreInFlight || !ownsDashboardWriteLease()) return false;
+      const profileId = archive.activeProfileId;
+      const cycleId = currentCycleConfig().id;
+      const currentDay = String(state.day);
+      const sessionEpoch = campaignSessionEpoch;
+      nextDay.busy = true;
+      const wasInert = elements.appShell.inert;
+      elements.appShell.inert = true;
+      try {
+        // Commit the closing day before clearing its state. The server backs up
+        // that committed snapshot when the following save changes the date.
+        saveState();
+        if (!await flushCampaignSave()) throw new Error("当前进度尚未保存，请恢复连接后重试。");
+        if (sessionEpoch !== campaignSessionEpoch || !ownsDashboardWriteLease()
+            || profileId !== archive.activeProfileId || cycleId !== currentCycleConfig().id
+            || currentDay !== String(state.day)) throw new Error("当前账号、档案或日期已变更，请重试。");
+        const entries = dateTrackData[cycleId]?.entries || [];
+        const currentIndex = entries.findIndex((entry) => String(entry.day) === currentDay);
+        // Beyond the printed track, continue with numeric days (including C4).
+        state.day = currentIndex >= 0 && currentIndex < entries.length - 1
+          ? entries[currentIndex + 1].day
+          : Math.max(0, Math.floor(Number(state.day) || 0) + 1);
+        state.completed = {};
+        state.events = state.events.filter((item) => !item.done);
+        state.latestSurveyAdventureAction = null;
+        state.latestSimpleAdventureAction = null;
+        syncInputs();
+        saveState();
+        renderFlow();
+        renderDateTrack({ focusCurrentDay: true });
+        if (!await flushCampaignSave()) throw new Error("日期已推进，但保存尚未完成，请恢复连接后重试保存。");
+        return true;
+      } catch (error) {
+        window.alert(`进入下一天未完成：${error?.message || error}`);
+        return false;
+      } finally {
+        nextDay.busy = false;
+        elements.appShell.inert = wasInert;
+      }
     }
 
     function previousCampaignDay() {

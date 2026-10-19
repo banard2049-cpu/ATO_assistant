@@ -26,7 +26,7 @@ function harness(cycle, adventures = []) {
   const c = vm.createContext({
     console: { warn: error => { throw error; } },
     state: { day: '3', surveyConstants: null }, archive: { activeProfileId: 'A' },
-    authUrl: '/api', sessionUser: { id: 'owner' },
+    authUrl: '/api', sessionUser: { id: 'owner' }, campaignSessionEpoch: 1,
     currentCycleConfig: () => ({ id: cycle }), normalizeCampaignDay: String,
     readLocalArgoRecord: () => ({}), isPlainObject: value => value && typeof value === 'object' && !Array.isArray(value),
     setNextBattleTerrainFromHub: noop, clearNextBattleTerrainForHub: noop,
@@ -52,7 +52,7 @@ function harness(cycle, adventures = []) {
     'mergeArgoRecords', 'normalizeRecordCrewCounters', 'syncAdventureActionToArgoRecord',
     'syncSurveyAdventureToArgoRecord', 'normalizeAdventureTitle', 'recordAdventureIndex',
     'markRecordAdventure', 'recordAdventureMiddleSlots', 'appendRecordSyncLog', 'adventureSlotLabel',
-    'setSurveyConstant', 'applyMnemosTagToHeroes', 'currentPharosDreamConstants', 'findSimpleConstantRow',
+    'setSurveyConstant', 'heroProgressTarget', 'assertHeroProgressTarget', 'applyMnemosTagToHeroes', 'currentPharosDreamConstants', 'findSimpleConstantRow',
     'simpleConstantSlotIds', 'ensureTodaySimpleConstants', 'pharosDreamsDayKey', 'ensureTodayPharosDreams',
     'setSimpleConstant', 'setPharosDreamConstant', 'latestSimpleAdventureRecordAction'];
   vm.runInContext(['surveyConstantData', 'pharosDreamConstants'].map(declaration).join('\n')

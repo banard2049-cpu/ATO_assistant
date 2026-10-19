@@ -34,6 +34,41 @@ function loadDataset() {
 
 const dataset = loadDataset();
 
+test('pursuit waits for the priest choice and uses the resulting Fate threshold', async () => {
+  const pursuit = require('../assets/exploration-pursuit.js');
+  const priest = drawnEntry('6426', 'Hidden Temple');
+  const cackle = drawnEntry('6436', 'Cackle', 1);
+  const h = settleHarness({ cycle: 'c1', activePiles: [[priest], [cackle]],
+    fullRecord: nextRecord('c1', { fate: '7' }) });
+  const totals = [];
+  h.ctx.window.ATO_EXPLORATION_PURSUIT = pursuit;
+  h.ctx.document.querySelector = () => null;
+  h.ctx.settleExplorationPursuit = async () => {
+    totals.push(pursuit.countMarkers({ cycleId: 'c1', state: h.ctx.state, record: h.record }).total);
+  };
+  await h.ctx.settleExplorationDraw();
+  assert.deepEqual(totals, [], 'the unresolved choice must not freeze a pursuit receipt');
+  await h.ctx.completeExplorationDraw();
+  assert.equal(h.drawState.activePiles.flat().length, 2, 'completion cannot bypass unresolved choices');
+  assert.deepEqual(totals, []);
+  await h.ctx.writeExplorationChoice(priest, 'choice:priest-offer', 'accept');
+  await h.ctx.settleExplorationDraw();
+  assert.equal(h.record.cycleStats.c1.fate, '9');
+  assert.deepEqual(totals, [4], 'Fate 8+ adds the fourth marker');
+  assert.equal(h.drawState.activePiles.flat().length, 0);
+});
+
+test('the standalone pursuit action refuses unresolved exploration effects before writing', async () => {
+  const h = settleHarness();
+  let writes = 0;
+  h.ctx.mapCommandBusy = false;
+  h.ctx.pendingExplorationEffects = () => ['unresolved Fate choice'];
+  h.ctx.beforeStructureTechSubmit = async () => { writes++; };
+  vm.runInContext(fn('settleExplorationPursuit'), h.ctx);
+  await assert.rejects(h.ctx.settleExplorationPursuit(), /先完成探索卡/);
+  assert.equal(writes, 0);
+});
+
 function drawnEntry(id, name, pile = 0) {
   return { id, name, day: 12, removal: 'keep', draw: 'single', pile };
 }

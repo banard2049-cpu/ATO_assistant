@@ -594,6 +594,23 @@ test('titan repair clears one maimed model and reports a vanished target instead
   assert.equal(missing.event.grant.skipped, '记录表中已找不到原目标泰坦');
 });
 
+test('scheduled repair follows multiple row merges and prefers an existing original target', () => {
+  const ctx = context('trauma growth'), scheduled = apply(ctx, 'rehabilitate');
+  const record = copy(scheduled.record);
+  record.titans = [{ id: 'last', name: '历战者', count: 2, crippled: true }];
+  record.titanMergedIds = { crippled: 'middle', middle: 'last' };
+  const merged = rules.completeOperation({ ...withResult(ctx, scheduled, 12), record });
+  assert.equal(merged.ok, true, merged.message);
+  assert.equal(merged.record.titans.find(titan => titan.id === 'last').count, 1);
+  assert.equal(merged.record.titans.find(titan => titan.id === 'last-healed').crippled, false);
+
+  record.titans.push({ id: 'crippled', name: '历战者', count: 1, crippled: true });
+  const restored = rules.completeOperation({ ...withResult(ctx, scheduled, 12), record });
+  assert.equal(restored.ok, true, restored.message);
+  assert.equal(restored.record.titans.find(titan => titan.id === 'crippled').crippled, false);
+  assert.equal(restored.record.titans.find(titan => titan.id === 'last').count, 2);
+});
+
 test('only rewards whose result is already chosen settle automatically', () => {
   for (const [techKey, actionId] of [['mnestis thesis', 'reflect'], ['titan training', 'train'],
     ['titan genetic memory', 'genesium'], ['the work is never done', 'final-tear'], ["argo's mission", 'trade']]) {

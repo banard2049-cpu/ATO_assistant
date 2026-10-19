@@ -2300,7 +2300,7 @@
   <script src="../assets/theme.js?v=20261001" defer></script>
   <link rel="stylesheet" href="editorial.css?v=20261018-shared-resource-icons2">
   <link rel="stylesheet" href="../assets/card-art.css?v=20261017-fan-fringe5">
-  <script src="../assets/fan-card-trims-data.js?v=20261017-fan-fringe2" defer></script>
+  <script src="../assets/fan-card-trims-data.js?v=20261019-demidjinn-edge1" defer></script>
   <script src="../assets/fan-card-trims.js?v=20261017-fan-fringe2" defer></script>
   <script src="../assets/card-art.js?v=20261017-fan-fringe5" defer></script>
 </head>
@@ -2397,6 +2397,8 @@
                 <button type="button" id="defeatAiAsBpButton" hidden disabled>击败</button>
                 <button type="button" id="criticalAiAsBpButton" hidden disabled>暴击</button>
                 <button type="button" id="promoteAiSingleButton">AI 晋升</button>
+                <button type="button" id="demidjinnDiscardLowestAiButton" hidden>弃等级最低AI</button>
+                <button type="button" id="demidjinnLastWishButton" hidden>洗入AI IV</button>
                 <button type="button" id="addOracleAiXButton" class="oracle-only-action">添加AI X</button>
                 <button type="button" id="drawFlareButton" class="hermesian-only-action">抽取闪粉</button>
                 <button type="button" id="drawFeintButton" class="titan-x-only-action">抽取变招</button>
@@ -3072,7 +3074,7 @@
       TITAN_X: { BP: { I: 6, II: 6, III: 6 } }
     };
     const panelRatio = 2.2;
-    const levelBack = { O: "0", I: "1", II: "2", III: "3", X: "X" };
+    const levelBack = { O: "0", I: "I", II: "II", III: "III", X: "X" };
 
     const sidebarToggle = document.getElementById("sidebarToggle");
     const nav = document.getElementById("nav");
@@ -5603,7 +5605,7 @@
         && card.type === "AI"
         && card.level === "X"
         && card.index === 2) {
-        return "3";
+        return "III";
       }
       const level = card.combinedAibp
         ? card.bpLevel
@@ -5973,7 +5975,11 @@
       }
 
       // BP III 关键一击：击伤的 BP3 本体进入损伤堆，视作 2 个损伤。
+      const firstLastWish = currentApostle === "DEMIDJINN"
+        && !piles[currentApostle].special?.demidjinn?.lastWishAiIvAdded;
       pushBpDamage({ ...card, damageValue: 2 });
+      const lastWishReplacedPromotion = firstLastWish
+        && piles[currentApostle].special?.demidjinn?.lastWishAiIvAdded;
 
       if (hasSupply("BP", "III")) {
         removeLowestCard("BP");
@@ -5983,7 +5989,7 @@
         bp.deck = shuffleCards(bp.deck.concat(bp.discard));
         bp.discard = [];
       }
-      promoteAiForBpIII(2);
+      if (!lastWishReplacedPromotion) promoteAiForBpIII(2);
     }
 
     function addBpSpecialDamage(special) {
@@ -9245,7 +9251,7 @@
   <script src="ps/other/resouce/bp_resource_map.js?v=20261017a" defer></script>
   <script src="ps/other/resouce/bp_resource_map_c1_c3.js?v=20261017a" defer></script>
   <script src="ps/other/resouce/bp_resource_map_c4_c5.js?v=20261018a" defer></script>
-  <script src="c45_specials.js?v=20261018-titan-x-notice1" defer></script>
+  <script src="c45_specials.js?v=20261019-demidjinn-manual1" defer></script>
   <script src="bp_loot_calculator_addon.js?v=20261018-shared-resource-icons2" defer></script>
   <script src="../story/data/english-source-data.js?v=20261011-english4" defer></script>
   <script src="../assets/ato-terms.js?v=20261015-diplomacy2" defer></script>

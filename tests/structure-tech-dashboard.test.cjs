@@ -191,11 +191,12 @@ test('无冷却的发展交换保留凭据但不生成虚假的冷却事项或�
   assert.equal(due.hidden, true);
 });
 
-test('超表科技日期稀疏补行，nextDay 仍按官方日期轨推进并保留科技记录', () => {
+test('超表科技日期稀疏补行，nextDay 仍按官方日期轨推进并保留科技记录', async () => {
   const { context: c } = harness(['trackEntriesForRender', 'nextDay'], {
     dateTrackData: { c2: { entries: [{ day: 1 }, { day: 2 }, { day: 3 }] } },
     structureTechEvents: () => [event('reward', { dueDay: 1000, cooldownUntilDay: 1200 }), event('done', { dueDay: 900, status: 'completed' })],
     syncInputs() {},
+    campaignRestoreInFlight: false, elements: { appShell: { inert: false } },
   });
   const track = c.dateTrackData.c2;
   c.state.day = 3;
@@ -204,7 +205,7 @@ test('超表科技日期稀疏补行，nextDay 仍按官方日期轨推进并保
   c.state.techAutomation.events.keep = event('keep');
   assert.deepEqual(clone(c.trackEntriesForRender(track)).map(row => row.day), [1, 2, 3, 900, 1000, 1200]);
   assert.equal(track.entries.length, 3);
-  c.nextDay();
+  await c.nextDay();
   assert.equal(c.state.day, 4, '下一天不能跳到未来科技日期');
   assert.deepEqual(clone(c.state.events), [{ done: false }]);
   assert.equal(c.state.techAutomation.events.keep.id, 'keep');

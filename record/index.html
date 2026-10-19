@@ -3648,6 +3648,9 @@
         if (!titan.crippled) return true;
         const existing = crippledByName.get(titan.name);
         if (existing) {
+          // Scheduled repairs still refer to the removed row's identity.
+          state.titanMergedIds = isPlainObject(state.titanMergedIds) ? state.titanMergedIds : {};
+          state.titanMergedIds[titan.id] = existing.id;
           existing.count += titan.count;
           existing.limit += titan.limit;
           return false;

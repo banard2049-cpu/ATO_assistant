@@ -27,6 +27,9 @@ function setup(extra = {}) {
   const ctx = vm.createContext({
     state: {day: 96, completed: {}, events: [], notes: ''},
     currentCycleConfig: () => ({id: 'c4'}),
+    archive: { activeProfileId: 'default' }, campaignSessionEpoch: 1, campaignRestoreInFlight: false,
+    ownsDashboardWriteLease: () => true, flushCampaignSave: async () => true,
+    elements: { appShell: { inert: false } }, window: { alert: message => { throw new Error(message); } },
     ...extra,
   });
   vm.runInContext(`dateTrackData = ${extractConstObject('dateTrackData')};`, ctx);
@@ -152,18 +155,18 @@ test('今日战斗提醒与记录表一致，包括 93/94 边界及 96 之后', 
   assert.ok(!ctx.getStepTrackReminders('encounter').some(reminder => reminder.title === '今日战斗'));
 });
 
-test('nextDay 穿过原末尾并走到 Day 200 后继续往后推，没有上限', () => {
+test('nextDay 穿过原末尾并走到 Day 200 后继续往后推，没有上限', async () => {
   const ctx = setup();
   for (const day of [17, 96, 199]) {
     ctx.state.day = day;
-    ctx.nextDay();
+    await ctx.nextDay();
     assert.equal(ctx.state.day, day + 1, `Day ${day} 应推进到下一行`);
   }
   ctx.state.day = 200;
   ctx.rendered.length = 0;
   const days = [];
   for (let index = 0; index < 5; index += 1) {
-    ctx.nextDay();
+    await ctx.nextDay();
     days.push(ctx.state.day);
   }
   assert.deepEqual(days, [201, 202, 203, 204, 205]);
