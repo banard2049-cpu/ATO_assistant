@@ -196,6 +196,8 @@ function makeHarness(startApostle = "MIDASCORE", options = {}) {
     "defeatBpButton",
     "criticalBpButton",
     "promoteAiSingleButton",
+    "demidjinnDiscardLowestAiButton",
+    "demidjinnLastWishButton",
     "promoteBpSingleButton",
     "promoteBpButton",
     "drawFeintButton",

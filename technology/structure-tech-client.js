@@ -290,6 +290,11 @@
     if (!client) throw fail('科技操作面板缺少连接。', 'CLIENT_UNAVAILABLE');
     const panel = doc.createElement('div');
     panel.className = 'structure-tech-actions';
+    const compactGroups = options.scope === 'voyage' && !options.techKey;
+    const disclosures = new Map();
+    const initiallyExpanded = new Set(options.expandedGroups || []);
+    if (compactGroups) panel.dataset.layout = 'grouped';
+    panel.expandedGroups = () => [...disclosures].filter(([, node]) => node.open).map(([key]) => key);
     const previewLayouts = new WeakMap();
     const previewObserver = typeof root.ResizeObserver === 'function' ? new root.ResizeObserver(entries => {
       for (const { target } of entries) root.requestAnimationFrame(() => previewLayouts.get(target)?.());
@@ -373,10 +378,38 @@
         const groups = engine.listActionGroups ? engine.listActionGroups(inputs)
           : engine.listActions(inputs).map(action => ({ id: `${action.techKey}/${action.id || action.actionId}`, actions: [action] }));
         previewObserver?.disconnect();
+        const expanded = new Set(disclosures.size ? panel.expandedGroups() : initiallyExpanded);
+        disclosures.clear();
         body.replaceChildren();
         status.textContent = groups.length ? '' : options.scope === 'negotiation' ? '当前循环没有已解锁的谈判能力。' : options.scope === 'exploration' ? '当前探索没有可用的科技能力。' : '当前没有可用的科技能力。';
         status.dataset.state = '';
-        for (const group of groups) renderActionGroup(group, engine);
+        if (compactGroups) {
+          const categories = [
+            { title: '泰坦与英雄', groups: [] },
+            { title: '贸易与航行', groups: [] },
+            { title: '命运与恢复', groups: [] },
+          ];
+          for (const group of groups) {
+            const actions = group.actions || [];
+            if (!actions.length) continue;
+            const people = actions.some(action => action.sacrifice || action.target || action.repair
+              || action.grant?.type === 'titan' || ['titan-enhancement', 'mnestis training'].includes(action.groupKey));
+            const voyage = actions.some(action => action.trade || action.rebuild || action.draw || action.groupKey?.startsWith('exploration-tech:'));
+            categories[people ? 0 : voyage ? 1 : 2].groups.push(group);
+          }
+          for (const category of categories) {
+            if (!category.groups.length) continue;
+            const section = doc.createElement('section');
+            section.className = 'structure-tech-category';
+            section.setAttribute('aria-label', category.title);
+            const heading = doc.createElement('h4');
+            heading.className = 'structure-tech-category-title';
+            heading.textContent = category.title;
+            const count = doc.createElement('span'); count.textContent = String(category.groups.length);
+            heading.appendChild(count); section.appendChild(heading); body.appendChild(section);
+            for (const group of category.groups) renderActionGroup(group, engine, section, expanded);
+          }
+        } else for (const group of groups) renderActionGroup(group, engine);
         renderNegotiationDraws(engine);
         return true;
       } catch (error) { if (token === generation) message(error); return false; }
@@ -427,9 +460,29 @@
         row.appendChild(button); body.appendChild(row);
       }
     }
-    function renderActionGroup(group, engine) {
+    function renderActionGroup(group, engine, container = body, expanded = new Set()) {
       const actions = group.actions || [];
       if (!actions.length) return;
+      // Describe the group's purpose, independently of the selected payment or date.
+      const purpose = actions.every(action => action.trade) ? '按比例交换资源'
+        : actions.every(action => action.sacrifice) ? '培育新的泰坦'
+        : group.id === 'voyage:replenish' ? (actions.every(action => action.restore === 'charge')
+          ? '恢复已消耗的召唤充能' : '恢复召唤或神之形态')
+        : ({
+          'mnestis thesis': '为英雄增加回忆节点',
+          'grand stoa': '培育梦行者泰坦',
+          'titan-enhancement': '训练或移植泰坦式样卡',
+          'trauma growth': '修复残废泰坦',
+          'canal reconnaissance': '重建赫米奥拉侦察船',
+          'the work is never done': '到期取回本科技卡',
+          'mnestis training': '进行记忆模拟战斗',
+          'voyage:fate': '降低阿尔戈号命运',
+          'voyage:recruitment': '将难民转为船员',
+          'voyage:loop-length': '延长当前轮回',
+          'voyage:loop-effect': '立即结算轮回效果',
+          'exploration-tech:salvage operations': '抽探索卡，按奖励条件结算',
+          'exploration-tech:argo initiative': '将招募行动加入探索牌堆',
+        })[group.id] || actions[0].effectLabel || actions[0].rewardLabel || actions[0].label || '查看科技能力';
       const actionContext = context;
       const renderGeneration = generation;
       function assertContext() {
@@ -439,14 +492,39 @@
       const row = doc.createElement('div');
       row.className = 'structure-tech-action';
       row.dataset.groupId = group.id || '';
+      let disclosure, summaryTitle, summaryMeta, summaryState;
+      if (compactGroups) {
+        const groupId = group.id || `${actions[0].techKey}/${actions[0].id || actions[0].actionId}`;
+        disclosure = doc.createElement('details');
+        disclosure.className = 'structure-tech-entry';
+        disclosure.dataset.groupId = groupId;
+        disclosure.open = expanded.has(groupId);
+        const summary = doc.createElement('summary');
+        summaryTitle = doc.createElement('span'); summaryTitle.className = 'structure-tech-entry-title';
+        summaryMeta = doc.createElement('span'); summaryMeta.className = 'structure-tech-entry-meta';
+        summaryMeta.textContent = purpose;
+        summaryMeta.title = purpose;
+        summaryState = doc.createElement('span'); summaryState.className = 'structure-tech-entry-state';
+        summary.append(summaryTitle, summaryMeta, summaryState);
+        disclosure.append(summary, row);
+        disclosures.set(groupId, disclosure);
+        disclosure.addEventListener('toggle', () => { if (disclosure.open) updatePreviewLayout(); });
+      }
       const cardTitle = doc.createElement('button');
       cardTitle.type = 'button';
-      cardTitle.className = 'structure-tech-action-title flow-title-button';
+      cardTitle.className = `structure-tech-action-title${compactGroups ? '' : ' flow-title-button'}`;
       cardTitle.title = '查看科技卡图';
       cardTitle.setAttribute('aria-haspopup', 'dialog');
       const title = doc.createElement('strong');
       cardTitle.appendChild(title);
-      row.appendChild(cardTitle);
+      const sourceCaption = compactGroups ? doc.createElement('span') : null;
+      if (compactGroups) {
+        const header = doc.createElement('div'); header.className = 'structure-tech-action-header';
+        sourceCaption.className = 'structure-tech-action-source';
+        header.append(sourceCaption, cardTitle); row.appendChild(header);
+      } else row.appendChild(cardTitle);
+      const form = compactGroups ? doc.createElement('div') : row;
+      if (compactGroups) { form.className = 'structure-tech-action-form'; row.appendChild(form); }
       const sources = [];
       for (const action of actions) {
         let source = sources.find(item => item.techKey === action.techKey);
@@ -462,7 +540,8 @@
       let sourceNode = null, modeNode = null, modelNode = null, selectedModel = '';
       let controls = [], tradeControls = [], automaticSelection = {};
       let pendingId = null, pendingSignature = null, busy = false;
-      cardTitle.addEventListener('click', () => showCardImages(breeding && !selectedModel ? sources : [source], title.textContent));
+      cardTitle.addEventListener('click', () => showCardImages(breeding && !selectedModel ? sources : [source],
+        compactGroups ? group.title || sourceLabel(source) : title.textContent));
       const selection = () => {
         const selected = { ...automaticSelection,
           ...Object.fromEntries(controls.map(({ key, node }) => [key, node.type === 'checkbox' ? node.checked : node.value])) };
@@ -477,7 +556,7 @@
         label.className = 'structure-tech-action-choice';
         const node = doc.createElement('select'); node.name = name;
         label.append(doc.createTextNode(`${labelText} `), node);
-        row.appendChild(label);
+        form.appendChild(label);
         return node;
       }
       if (breeding) {
@@ -517,10 +596,10 @@
       }
       const modeContainer = doc.createElement('div');
       modeContainer.className = 'structure-tech-action-mode';
-      row.appendChild(modeContainer);
+      form.appendChild(modeContainer);
       const fields = doc.createElement('div');
       fields.className = 'structure-tech-action-fields';
-      row.appendChild(fields);
+      form.appendChild(fields);
       function field(spec, confirmation, previous) {
         const label = doc.createElement('label');
         label.className = 'structure-tech-action-choice';
@@ -550,13 +629,18 @@
         });
         fields.appendChild(label);
       }
-      const description = doc.createElement('p');
+      const description = doc.createElement(compactGroups ? 'div' : 'p');
       description.className = 'structure-tech-action-preview';
       row.appendChild(description);
       const button = doc.createElement('button');
       button.type = 'button';
       button.className = 'structure-tech-action-use';
       button.textContent = '使用并添加到时间线';
+      const timelineNote = compactGroups ? doc.createElement('span') : null;
+      if (timelineNote) {
+        timelineNote.className = 'structure-tech-action-timeline-note';
+        row.appendChild(timelineNote);
+      }
       row.appendChild(button);
       function updatePreviewLayout() {
         if (!row.isConnected || typeof root.getComputedStyle !== 'function') return;
@@ -572,6 +656,14 @@
         title.textContent = group.title
           ? [group.title, sources.length === 1 && sourceLabel(source) !== group.title ? sourceLabel(source) : ''].filter(Boolean).join(' · ')
           : [action.title, action.label].filter(Boolean).join(' · ');
+        if (compactGroups) {
+          sourceCaption.textContent = breeding && !selectedModel ? '选择泰坦型号后显示来源科技' : `来源：${sourceLabel(source)}`;
+          title.textContent = '查看卡图';
+        }
+        if (summaryTitle) {
+          summaryTitle.textContent = group.title || action.title || action.label;
+          summaryTitle.title = summaryTitle.textContent;
+        }
         for (const choice of action.choices || []) {
           let spec = choice;
           if (choice.optionsByLocation) {
@@ -603,6 +695,7 @@
           hint.textContent = maxTrades === null
             ? '选择兑换项目并填写次数；同一种置换可填写任意倍率。按下列顺序兑换，任一项不足则整次不生效。'
             : `选择兑换项目并填写次数；同一种置换可填写任意倍率，只占用 1 类额度。本次最多选择 ${maxTrades} 类置换。按下列顺序兑换，任一项不足则整次不生效。`;
+          if (compactGroups) hint.textContent = `${maxTrades === null ? '同类置换可填写任意次数' : `最多 ${maxTrades} 类置换，同类按次数计算`}。按顺序兑换，资源不足则整次不执行。`;
           lines.appendChild(hint);
           for (let index = 0; index < 3; index += 1) {
             const line = doc.createElement('div'); line.className = 'structure-tech-trade-line';
@@ -657,6 +750,11 @@
           }
         }
         button.textContent = action.negotiation ? '执行谈判' : action.trade ? (Number(action.days) > 0 ? '执行交易并记录冷却' : '执行交易') : action.immediate ? '使用科技能力' : '使用并添加到时间线';
+        if (compactGroups) button.textContent = action.trade ? '执行交易'
+          : breeding || action.grant?.type === 'titan' ? '开始培育' : action.repair ? '开始修复' : '使用能力';
+        if (timelineNote) timelineNote.textContent = action.immediate || action.skipTimeline ? '执行后自动保存'
+          : action.trade ? '自动记录冷却' : '自动加入时间线';
+        if (disclosure) disclosure.dataset.simple = String(allControls().length === 0);
         preview();
       }
       function configureSource(previous = {}, preferredMode) {
@@ -687,7 +785,9 @@
       function preview() {
         if (busy) return;
         if (breeding && !modelNode.value) {
-          description.textContent = '请选择要生产的泰坦，查看代价和完成日期。'; button.disabled = true; updatePreviewLayout(); return;
+          description.textContent = '请选择要生产的泰坦，查看代价和完成日期。'; button.disabled = true;
+          updateSummary(false, sources.some(item => item.actions.some(available)) ? '请选择型号' : action.reason || '当前不可用');
+          updatePreviewLayout(); return;
         }
         const chosen = selection();
         const result = action.disabled || action.available === false ? { ok: false, message: action.reason || '当前不可用' }
@@ -727,8 +827,103 @@
           if (index) description.appendChild(doc.createTextNode(' · '));
           description.appendChild(typeof part === 'string' ? doc.createTextNode(part) : part);
         });
+        if (compactGroups) {
+          description.replaceChildren();
+          const facts = doc.createElement('dl'); facts.className = 'structure-tech-action-facts';
+          function fact(label, value) {
+            if (!value) return;
+            const item = doc.createElement('div');
+            item.dataset.kind = label === '效果' ? 'effect' : 'detail';
+            const term = doc.createElement('dt'); term.textContent = label;
+            const detail = doc.createElement('dd'); detail.textContent = value;
+            item.append(term, detail); facts.appendChild(item);
+          }
+          fact('代价', cost || '无代价');
+          const effect = tradeSummary || event?.rewardLabel || action.effectLabel || action.rewardLabel || (action.trade ? purpose : action.label) || purpose;
+          fact('效果', [event?.targetLabel && !breeding ? event.targetLabel : '', effect].filter(Boolean).join(' · '));
+          const dueDay = event?.dueDay ?? (breeding && Number.isFinite(Number(actionContext.day))
+            ? Number(actionContext.day) + Number(action.id === 'breed' && modelNode.value === 'tt_shadowdancer' ? 14 : action.days) : null);
+          if (dueDay != null && action.kind !== 'cooldown' && !action.skipTimeline && !event?.skipTimeline) fact('到期', `Day ${dueDay}`);
+          const cooldown = event?.cooldownUntilDay ?? (breeding && action.cooldownDays ? Number(actionContext.day) + Number(action.cooldownDays) : null);
+          if (Number(cooldown) > Number(event?.createdDay ?? actionContext.day)) fact('冷却恢复', `Day ${cooldown}`);
+          description.appendChild(facts);
+          const note = [action.scoutLabel, !result?.ok ? result?.message : ''].filter(Boolean).join(' · ');
+          if (note) {
+            const feedback = doc.createElement('p'); feedback.className = 'structure-tech-action-feedback';
+            feedback.textContent = note; description.appendChild(feedback);
+          }
+        }
         button.disabled = !result?.ok;
+        updateSummary(result?.ok, result?.message);
         updatePreviewLayout();
+      }
+      // Preview possible completions without choosing controls or committing.
+      // A missing picker alone should not make an otherwise usable ability look locked.
+      function readinessAfterChoices() {
+        const chosen = selection();
+        const candidates = breeding && !modelNode.value ? sources.flatMap(item => item.actions).filter(available)
+          : available(action) ? [action] : [];
+        let blocked = null;
+        for (const candidate of candidates) {
+          const missing = (candidate.choices || []).filter(spec => spec.required && !chosen[spec.id]);
+          const empty = missing.find(spec => spec.type === 'select' && !spec.options?.length);
+          if (empty) {
+            blocked ||= { ok: false, message: candidate.sacrifice ? '没有可用梦行者' : candidate.target === 'crippled-titan'
+              ? '没有残废泰坦' : candidate.target === 'hero' ? '没有可选英雄' : `没有可选的${empty.label}` };
+            continue;
+          }
+          const choices = missing.filter(spec => spec.type === 'select').map(spec => ({
+            key: spec.id, values: spec.options.map(option => option.value),
+          }));
+          for (const confirmation of candidate.confirmations || []) {
+            if (!chosen[confirmation.id]) choices.push({ key: confirmation.id, values: [true] });
+          }
+          if (candidate.trade && !chosen.trades?.length) choices.push({ key: 'trades',
+            values: (candidate.tradeRoutes || []).map(route => [{ routeId: route.id, count: 1 }]),
+          });
+          if (!choices.length) continue;
+          function check(index, proposal) {
+            if (index < choices.length) {
+              const { key, values } = choices[index];
+              for (const value of values) {
+                const ready = check(index + 1, { ...proposal, [key]: value });
+                if (ready) return ready;
+              }
+              return null;
+            }
+            const result = (engine.previewOperation || engine.prepareOperation)({ ...actionContext,
+              techKey: candidate.techKey, actionId: candidate.id || candidate.actionId, selection: proposal,
+              operationId: 'preview-structure-tech-action' });
+            if (result?.ok) return result;
+            blocked ||= result;
+            return null;
+          }
+          const ready = check(0, chosen);
+          if (ready) return ready;
+        }
+        return blocked;
+      }
+      function updateSummary(ok, reason) {
+        if (!summaryState) return;
+        const potential = !ok ? readinessAfterChoices() : null;
+        const requiresSelection = !ok && potential?.ok;
+        if (potential) { ok = potential.ok; reason = potential.message; }
+        const message = String(reason || '');
+        const date = message.match(/D(?:ay\s*)?(\d+)/i)?.[1];
+        let label = ok ? '可使用' : '待配置';
+        if (!ok) {
+          if (/待结算/.test(message)) label = `待结算${date ? ` · D${date}` : ''}`;
+          else if (/冷却/.test(message)) label = `冷却中${date ? ` · D${date}` : ''}`;
+          else if (/不足/.test(message)) label = message.match(/[^，。；：·]*不足/)?.[0]?.trim() || '资源不足';
+          else if (/^没有/.test(message)) label = message;
+          else if (/请选择型号/.test(message)) label = '待选型号';
+          else if (action.target === 'hero' && !controls.find(item => item.key === 'targetId')?.node.value && !message) label = '待选英雄';
+          else if (/请选择/.test(message)) label = action.target === 'hero' ? '待选英雄' : '待配置';
+          else if (message) label = '暂不可用';
+        }
+        summaryState.textContent = label;
+        summaryState.dataset.state = ok ? 'ready' : 'blocked';
+        summaryState.title = requiresSelection ? '可使用：展开并完成选项后执行' : message || label;
       }
       button.addEventListener('click', async () => {
         if (busy || button.disabled) return;
@@ -773,7 +968,7 @@
         }
       });
       configureSource();
-      body.appendChild(row);
+      container.appendChild(disclosure || row);
       previewObserver?.observe(row);
     }
     panel.refresh = refresh;

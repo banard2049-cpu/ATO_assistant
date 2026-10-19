@@ -108,6 +108,8 @@
 
   let titanRoster = [];
   let specialRoot = null;
+  const demidjinnDiscardLowestAiButton = document.getElementById("demidjinnDiscardLowestAiButton");
+  const demidjinnLastWishButton = document.getElementById("demidjinnLastWishButton");
   let awakeningSwitchInFlight = false;
   let resolvingGroupBp = false;
 
@@ -819,6 +821,58 @@
     ai.deck.push(aiO);
   }
 
+  function demidjinnLowestAiIndex(ai) {
+    const ranks = { I: 1, II: 2, III: 3, IV: 4 };
+    let lowest = -1;
+    ai.deck.forEach((card, index) => {
+      if (card.specialAi === "demidjinn-o" || !ranks[card.level]) return;
+      if (lowest < 0 || ranks[card.level] < ranks[ai.deck[lowest].level]) lowest = index;
+    });
+    return lowest;
+  }
+
+  function manuallyDiscardDemidjinnAi() {
+    if (currentApostle !== "DEMIDJINN" || (typeof activeScry !== "undefined" && activeScry)) return;
+    ensureC45State("DEMIDJINN");
+    const ai = piles.DEMIDJINN.AI;
+    const index = demidjinnLowestAiIndex(ai);
+    if (index < 0) return;
+    rememberUndo("DEMIDJINN", "AI");
+    ai.discard.push(ai.deck.splice(index, 1)[0]);
+    saveAndRender();
+  }
+
+  function manuallyPlaceDemidjinnAiIv() {
+    if (currentApostle !== "DEMIDJINN" || (typeof activeScry !== "undefined" && activeScry)) return;
+    ensureC45State("DEMIDJINN");
+    const state = piles.DEMIDJINN;
+    const ai = state.AI;
+    const inDeck = ai.deck.some(card => card.specialAi === "demidjinn-iv");
+    rememberUndo("DEMIDJINN", "AI");
+    const card = findSpecialAi(ai, "demidjinn-iv")
+      || specialAiCard("DEMIDJINN_TR_IV_001.jpg", "IV", "demidjinn-iv");
+    // Move the single physical card, including from discard or a drawn card.
+    removeSpecialAi(ai, "demidjinn-iv");
+    if (inDeck) ai.deck.unshift(card);
+    else ai.deck = shuffleCards(ai.deck.concat(card));
+    state.special.demidjinn.lastWishAiIvAdded = true;
+    normalizeDemidjinnAi(ai);
+    saveAndRender();
+  }
+
+  function updateDemidjinnManualAiUi() {
+    const show = currentApostle === "DEMIDJINN";
+    demidjinnDiscardLowestAiButton.hidden = !show;
+    demidjinnLastWishButton.hidden = !show;
+    if (!show) return;
+    const ai = piles.DEMIDJINN.AI;
+    const locked = Boolean(typeof activeScry !== "undefined" && activeScry);
+    demidjinnDiscardLowestAiButton.disabled = locked || demidjinnLowestAiIndex(ai) < 0;
+    demidjinnLastWishButton.disabled = locked;
+    demidjinnLastWishButton.textContent = ai.deck.some(card => card.specialAi === "demidjinn-iv")
+      ? "置顶AI IV" : "洗入AI IV";
+  }
+
   function activateDemidjinnLastWish() {
     if (currentApostle !== "DEMIDJINN") return false;
     ensureC45State("DEMIDJINN");
@@ -1369,6 +1423,7 @@
   }
 
   function updateSpecialDrawUi() {
+    updateDemidjinnManualAiUi();
     drawAiButton.textContent = "抽取 AI";
     promoteBpSingleButton.disabled = false;
     promoteBpButton.disabled = false;
@@ -1845,6 +1900,8 @@
   }
 
   function interceptDirectListeners() {
+    demidjinnDiscardLowestAiButton.addEventListener("click", manuallyDiscardDemidjinnAi);
+    demidjinnLastWishButton.addEventListener("click", manuallyPlaceDemidjinnAiIv);
     interceptDirectButton(
       drawAiButton,
       () => ["DAHAKA", "DEMIDJINN"].includes(currentApostle) || titanXDrawsFromBottom()

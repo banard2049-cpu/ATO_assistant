@@ -1,8 +1,10 @@
 import importlib.util
+import hashlib
 import io
 import json
 from pathlib import Path
 import unittest
+from unittest import mock
 import zipfile
 
 from PIL import Image, ImageDraw
@@ -49,6 +51,25 @@ class FanCardTrimTests(unittest.TestCase):
         for x in range(40, 700, 50):
             drawing.rectangle((x, 12, x + 15, 19), fill="black")
         self.assertEqual(trims.detect_trims(image), [1, 0, 0, 0])
+
+    def test_reviewed_halo_trim_requires_the_exact_source_revision(self):
+        target = "aibp/ps/DEMIDJINN/DEMIDJINN.jpg"
+        image = Image.new("RGB", (470, 740), "#eee8dd")
+        ImageDraw.Draw(image).line((0, 0, 469, 0), fill="black")
+        source = mock.Mock(spec=Path)
+        source.read_bytes.return_value = b"original scan bytes"
+        reviewed = {"size": image.size, "sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+                    "trim": (14, 0, 0, 0), "browserSamples": [120] * 108}
+        with mock.patch.dict(trims.REVIEWED_SCANS, {target: reviewed}, clear=True):
+            self.assertEqual(trims.measured_trims(source, target, image), [14, 0, 0, 0])
+            self.assertEqual(len(trims.fingerprint_variants(source, target, image, [14, 0, 0, 0])), 2)
+            self.assertEqual(trims.measured_trims(source, "aibp/ps/OTHER/OTHER.jpg", image), [1, 0, 0, 0])
+            self.assertEqual(trims.measured_trims(source, target, image.resize((235, 370))), [0, 0, 0, 0])
+            # Even a same-size replacement must fall back to automatic
+            # measurement, rather than inherit a previous scan's halo.
+            source.read_bytes.return_value = b"replacement scan bytes"
+            self.assertEqual(trims.measured_trims(source, target, image), [1, 0, 0, 0])
+            self.assertEqual(len(trims.fingerprint_variants(source, target, image, [1, 0, 0, 0])), 1)
 
     def test_compressed_fan_variants_keep_the_original_edge_measurement(self):
         target = "assets/exploration-cards/c3/13517.png"

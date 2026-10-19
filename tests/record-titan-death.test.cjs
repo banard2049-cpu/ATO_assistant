@@ -148,3 +148,36 @@ test('recovering a grouped crippled row also splits off only one Titan', () => {
   assert.equal(c.state.titans[1].id, 'b');
   assert.equal(c.state.deadTitans, '1');
 });
+
+test('a scheduled repair follows its target through row merging and a record reload', () => {
+  const rules = require('../technology/structure-tech-rules.js');
+  const dictionary = require('../technology/tech_card_dictionary.min.json');
+  const c = harness();
+  const ctx = {
+    dictionary, cycle: 'c2', day: 5, techKey: 'trauma growth', actionId: 'rehabilitate',
+    operationId: 'repair-one', selection: { titanId: 'repair-target' },
+    technology: { unlocked: dictionary.cards.map(card => card.key), unimportant: [] },
+    record: { cycle: 'c2', titans: [
+      { id: 'healthy-first', name: 'A', count: 1, limit: 1, crippled: false },
+      { id: 'repair-target', name: 'A', count: 1, limit: 1, crippled: true },
+    ] }, automation: { version: 1, events: {} },
+  };
+  const scheduled = rules.prepareOperation(ctx);
+  assert.equal(scheduled.ok, true, scheduled.message);
+  c.state = scheduled.record;
+  c.renderTitans();
+  const checkbox = c.elements.titanList.children[0].children[2].children[0];
+  checkbox.checked = true;
+  checkbox.listeners.change();
+  assert.equal(c.state.titans.length, 1);
+  assert.equal(c.state.titans[0].count, 2);
+  c.state = JSON.parse(JSON.stringify(c.state));
+  c.renderTitans();
+  const completed = rules.completeOperation({ ...ctx, day: 12, record: c.state, automation: scheduled.automation });
+  assert.equal(completed.ok, true, completed.message);
+  assert.equal(completed.operation.grant.skipped, undefined);
+  assert.equal(completed.record.titans.filter(titan => titan.crippled).reduce((sum, titan) => sum + titan.count, 0), 1);
+  assert.equal(completed.record.titans.filter(titan => !titan.crippled).reduce((sum, titan) => sum + titan.count, 0), 1);
+  const again = rules.completeOperation({ ...ctx, day: 12, record: completed.record, automation: completed.automation });
+  assert.deepEqual(again.record.titans, completed.record.titans, 'retry cannot heal twice');
+});

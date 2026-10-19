@@ -376,7 +376,14 @@
   function grantRepair(record, grant) {
     const valid = validTitans(record);
     if (!valid.ok) return valid;
-    const index = record.titans.findIndex(titan => safeId(titan.id) === safeId(grant.titanId));
+    let targetId = safeId(grant.titanId);
+    const visited = new Set();
+    while (!record.titans.some(titan => safeId(titan.id) === targetId)
+        && record.titanMergedIds?.[targetId] && !visited.has(targetId)) {
+      visited.add(targetId);
+      targetId = safeId(record.titanMergedIds[targetId]);
+    }
+    const index = record.titans.findIndex(titan => safeId(titan.id) === targetId);
     // A row the player already removed is reported instead of blocking the
     // completion forever; the printed reward stays visible in the log.
     if (index < 0) return { ok: true, skipped: "记录表中已找不到原目标泰坦" };
