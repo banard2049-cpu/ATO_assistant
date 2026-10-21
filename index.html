@@ -4222,7 +4222,7 @@
       campaignReconnectDelay = 2000;
     }
 
-    function renderDashboardArchive(nextArchive) {
+    function renderDashboardArchive(nextArchive, options = {}) {
       archive = normalizeArchive(nextArchive);
       const requestedCycleId = new URLSearchParams(window.location.search).get("cycle");
       if (cycleConfigs.some((cycle) => cycle.id === requestedCycleId)) {
@@ -4242,7 +4242,9 @@
       syncInputs();
       renderProfiles();
       renderCycles();
-      renderFlow();
+      // Exploration finishes updating its cards after accepting this archive.
+      // Its caller paints the final flow once, after the round is closed.
+      if (options.renderFlow !== false) renderFlow();
       renderDateTrack({ focusCurrentDay: true });
       if (campaignSectionBaseline) {
         // Rendering initializes old saves (including shuffled exploration decks).
@@ -9788,6 +9790,39 @@
       }
     }
 
+    function cachedExplorationCampaignContext(context, target) {
+      let campaign = context?.campaign;
+      if (!campaign?.sections?.dashboard || !campaign.sectionRevisions) return null;
+      // A successful dashboard save already gives us the exact server section
+      // and its revision. Reuse that pair instead of downloading it again.
+      // Keep the other sections' revisions: the transaction still checks every
+      // dependency and reloads if another page changed any of them.
+      if (campaignSectionRevision > Number(campaign.sectionRevisions.dashboard || 0) && campaignServerBaseline) {
+        campaign = { ...campaign, sections: { ...campaign.sections, dashboard: campaignServerBaseline },
+          sectionRevisions: { ...campaign.sectionRevisions, dashboard: campaignSectionRevision } };
+      }
+      const record = window.ATO_STRUCTURE_TECH_CLIENT.profileSection(campaign.sections.record, target.profileId);
+      const savedState = campaign.sections.dashboard.profiles?.[target.profileId]?.cycles?.[target.cycleId]?.state;
+      if (Number(campaign.sectionRevisions.dashboard || 0) !== campaignSectionRevision
+        || !savedState || !jsonEqual(context.record, record)) return null;
+      return { ...context, campaign, day: savedState.day, record };
+    }
+
+    function rememberExplorationRecordCommit(record, revision, target) {
+      const context = structureTechContext;
+      if (!context?.campaign?.sectionRevisions || context.epoch !== target.sessionEpoch
+        || campaignSessionEpoch !== target.sessionEpoch || sessionUser?.id !== target.accountId
+        || context.profileId !== target.profileId || archive.activeProfileId !== target.profileId
+        || !Number.isSafeInteger(revision) || revision <= Number(context.campaign.sectionRevisions.record || 0)) return;
+      // Snapshot the acknowledged write, never an editable draft. Only this
+      // profile is written by the record endpoint; preserve the other buckets.
+      const saved = cloneJson(record);
+      const campaign = context.campaign;
+      structureTechContext = { ...context, record: saved, campaign: { ...campaign,
+        sections: { ...campaign.sections, record: explorationRecordSection(campaign.sections.record, target.profileId, saved) },
+        sectionRevisions: { ...campaign.sectionRevisions, record: revision } } };
+    }
+
     // One exploration round used to write the record, flush the dashboard, and
     // then write dashboard+record again for the pursuit event. The exploration
     // record can instead ride along in the pursuit transaction: apply the same
@@ -9804,7 +9839,7 @@
       assertStructureTechTarget(target);
       // Revisions protect every input read by pursuit, so the already loaded
       // context can go straight to POST. A stale snapshot is reloaded once.
-      const cached = !options.fresh && context.campaign?.sections?.dashboard ? context : null;
+      const cached = !options.fresh ? cachedExplorationCampaignContext(context, target) : null;
       const loaded = cached || await structureTechClient().load(target);
       assertStructureTechTarget(target);
       if (loaded.cycleId !== target.cycleId || String(loaded.day) !== String(state.day)) return null;
@@ -9842,7 +9877,7 @@
           selection: { roundId: operationId, waive: false, spawnTileId },
           assertContext: () => assertStructureTechTarget(target),
         }, { current, refreshAfterCommit: false });
-        await applyStructureTechCommit(result, target);
+        await applyStructureTechCommit(result, target, { renderFlow: false });
         const committedRecord = cachedArgoRecord || {};
         const missing = settlement.updates.filter(({ entry }) =>
           !committedRecord.explorationBatchReceipts?.[explorationRoundId(entry)]);
@@ -9868,7 +9903,7 @@
     // needs the pursuit event and the local dashboard. Submit them together so
     // the old "flush dashboard, then read the campaign again, then import" path
     // becomes one import-sections request.
-    async function settlePursuitWithDashboard(target) {
+    async function settlePursuitWithDashboard(target, options = {}) {
       const rules = window.ATO_EXPLORATION_PURSUIT;
       if (!rules || typeof structureTechClient !== "function") return null;
       const context = typeof getStructureTechContext === "function" ? getStructureTechContext() : null;
@@ -9876,7 +9911,8 @@
       const localPlan = rules.plan(context);
       if (!localPlan.ok || localPlan.settled || localPlan.code === "NO_EXPLORATION_ROUND") return null;
       assertStructureTechTarget(target);
-      const loaded = await structureTechClient().load(target);
+      const cached = !options.fresh ? cachedExplorationCampaignContext(context, target) : null;
+      const loaded = cached || await structureTechClient().load(target);
       assertStructureTechTarget(target);
       if (loaded.cycleId !== target.cycleId || String(loaded.day) !== String(state.day)) return null;
       let submitted = false;
@@ -9907,9 +9943,12 @@
           selection: { roundId: operationId, waive: false, spawnTileId },
           assertContext: () => assertStructureTechTarget(target),
         }, { current, refreshAfterCommit: false });
-        await applyStructureTechCommit(result, target);
+        await applyStructureTechCommit(result, target, { renderFlow: false });
         return result.operation;
       } catch (error) {
+        if (cached && error?.code === "SAVE_CONFLICT") {
+          return settlePursuitWithDashboard(target, { fresh: true });
+        }
         try { error.combinedStage = submitted ? "submit" : "preload"; } catch { /* frozen error */ }
         throw error;
       }
@@ -10278,8 +10317,9 @@
       const cycleId = currentCycleConfig().id;
       const accountId = sessionUser?.id || "";
       const targetState = state;
+      const sessionEpoch = campaignSessionEpoch;
       const checkTarget = () => {
-        if (archive.activeProfileId !== profileId || currentCycleConfig().id !== cycleId || state !== targetState || (sessionUser?.id || "") !== accountId) {
+        if (campaignSessionEpoch !== sessionEpoch || archive.activeProfileId !== profileId || currentCycleConfig().id !== cycleId || state !== targetState || (sessionUser?.id || "") !== accountId) {
           throw new Error("活动档案或循环已切换，请返回原档案后重试。");
         }
       };
@@ -10296,6 +10336,7 @@
           const written = await writeServerArgoRecord(record, server.revision, profileId, accountId);
           if (!written.conflict) {
             checkTarget();
+            rememberExplorationRecordCommit(record, written.revision, { profileId, accountId, sessionEpoch });
             if (archive.activeProfileId === profileId && currentCycleConfig().id === cycleId && state === targetState) cachedArgoRecord = record;
             recordSyncChannel?.postMessage({ revision: written.revision });
             return result;
@@ -11520,88 +11561,93 @@
       builderSummary.textContent = "选择探索卡库";
       builder.appendChild(builderSummary);
 
-      const builderBody = document.createElement("div");
-      builderBody.className = "exploration-builder-body";
-      const builderActions = document.createElement("div");
-      builderActions.className = "exploration-builder-actions";
+      // 结算会重绘探索工具；折叠时不创建整套卡库，第一次展开才构建并在两处复用。
+      let builderBody = null;
+      const ensureLibraryBody = () => {
+        if (builderBody) return builderBody;
+        builderBody = document.createElement("div");
+        builderBody.className = "exploration-builder-body";
+        const builderActions = document.createElement("div");
+        builderActions.className = "exploration-builder-actions";
 
-      const applyButton = document.createElement("button");
-      applyButton.type = "button";
-      applyButton.className = "step-action-button";
-      applyButton.textContent = "应用选择";
+        const applyButton = document.createElement("button");
+        applyButton.type = "button";
+        applyButton.className = "step-action-button";
+        applyButton.textContent = "应用选择";
 
-      const restoreDefaultButton = document.createElement("button");
-      restoreDefaultButton.type = "button";
-      restoreDefaultButton.className = "secondary step-action-button";
-      restoreDefaultButton.textContent = "恢复初始";
-      restoreDefaultButton.hidden = !defaultExplorationSelections[currentCycleConfig().id]?.length;
-      restoreDefaultButton.addEventListener("click", restoreDefaultExplorationSelection);
+        const restoreDefaultButton = document.createElement("button");
+        restoreDefaultButton.type = "button";
+        restoreDefaultButton.className = "secondary step-action-button";
+        restoreDefaultButton.textContent = "恢复初始";
+        restoreDefaultButton.hidden = !defaultExplorationSelections[currentCycleConfig().id]?.length;
+        restoreDefaultButton.addEventListener("click", restoreDefaultExplorationSelection);
 
-      // 卡库内容只建一次，哪个折叠区打开就挂到哪个里面（见下面的 onPaneToggle）。
+        // 卡库内容只建一次，哪个折叠区打开就挂到哪个里面（见下面的 onPaneToggle）。
 
-      const libraryList = document.createElement("div");
-      libraryList.className = "exploration-library";
-      const selectedSet = new Set(selectedIds);
-      const destructionSet = new Set(specialRule ? getDestructionCardIds() : []);
-      const hiddenCards = library.filter((card) => card.hidden);
-      // Keep saved hidden selections even when their spoiler menu is unopened.
-      const hiddenSelected = new Set(hiddenCards.filter((card) => selectedSet.has(card.id)).map((card) => card.id));
-      const hiddenMenu = createHiddenExplorationMenu(hiddenCards, hiddenSelected, destructionSet);
-      library.filter((card) => !card.hidden).forEach((card) => {
-        const item = document.createElement("label");
-        const preview = document.createElement("div");
-        preview.className = "exploration-library-preview";
-        preview.setAttribute("role", "img");
-        preview.setAttribute("aria-label", card.name);
-        preview.style.cssText = getExplorationCardImageStyle(card.id);
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.value = card.id;
-        checkbox.checked = selectedSet.has(card.id);
-        checkbox.disabled = destructionSet.has(card.id);
-        const text = document.createElement("span");
-        const cornerNumber = getExplorationCornerNumber(card.id);
-        const tag = getExplorationCardTag(card.id);
-        const removalLabel = tag.removal === "permanent" ? "永久移出" : (tag.removal === "remove" ? "暂时移出" : "非移出");
-        const drawLabel = tag.draw === "chain" ? "连抽" : "不连抽";
-        text.textContent = `${card.name} #${card.id}${cornerNumber ? ` · 黑底${cornerNumber}` : ""} · ${removalLabel} · ${drawLabel}${destructionSet.has(card.id) ? " · 破坏卡" : ""}`;
-        item.append(preview, checkbox, text);
-        if (specialRule && !destructionSet.has(card.id)) {
-          const destructionButton = document.createElement("button");
-          destructionButton.type = "button";
-          destructionButton.className = "secondary";
-          destructionButton.textContent = "加入破坏";
-          destructionButton.addEventListener("click", (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            addCardToDestructionPile(card.id);
-          });
-          item.appendChild(destructionButton);
-        }
-        libraryList.appendChild(item);
-      });
+        const libraryList = document.createElement("div");
+        libraryList.className = "exploration-library";
+        const selectedSet = new Set(selectedIds);
+        const destructionSet = new Set(specialRule ? getDestructionCardIds() : []);
+        const hiddenCards = library.filter((card) => card.hidden);
+        // Keep saved hidden selections even when their spoiler menu is unopened.
+        const hiddenSelected = new Set(hiddenCards.filter((card) => selectedSet.has(card.id)).map((card) => card.id));
+        const hiddenMenu = createHiddenExplorationMenu(hiddenCards, hiddenSelected, destructionSet);
+        library.filter((card) => !card.hidden).forEach((card) => {
+          const item = document.createElement("label");
+          const preview = document.createElement("div");
+          preview.className = "exploration-library-preview";
+          preview.setAttribute("role", "img");
+          preview.setAttribute("aria-label", card.name);
+          preview.style.cssText = getExplorationCardImageStyle(card.id);
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.value = card.id;
+          checkbox.checked = selectedSet.has(card.id);
+          checkbox.disabled = destructionSet.has(card.id);
+          const text = document.createElement("span");
+          const cornerNumber = getExplorationCornerNumber(card.id);
+          const tag = getExplorationCardTag(card.id);
+          const removalLabel = tag.removal === "permanent" ? "永久移出" : (tag.removal === "remove" ? "暂时移出" : "非移出");
+          const drawLabel = tag.draw === "chain" ? "连抽" : "不连抽";
+          text.textContent = `${card.name} #${card.id}${cornerNumber ? ` · 黑底${cornerNumber}` : ""} · ${removalLabel} · ${drawLabel}${destructionSet.has(card.id) ? " · 破坏卡" : ""}`;
+          item.append(preview, checkbox, text);
+          if (specialRule && !destructionSet.has(card.id)) {
+            const destructionButton = document.createElement("button");
+            destructionButton.type = "button";
+            destructionButton.className = "secondary";
+            destructionButton.textContent = "加入破坏";
+            destructionButton.addEventListener("click", (event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              addCardToDestructionPile(card.id);
+            });
+            item.appendChild(destructionButton);
+          }
+          libraryList.appendChild(item);
+        });
 
-      const getCheckedIds = () => [
-        ...[...libraryList.querySelectorAll('input[type="checkbox"]:checked')].map((input) => input.value),
-        ...hiddenSelected,
-      ];
-      applyButton.addEventListener("click", () => applyExplorationSelection(getCheckedIds()));
+        const getCheckedIds = () => [
+          ...[...libraryList.querySelectorAll('input[type="checkbox"]:checked')].map((input) => input.value),
+          ...hiddenSelected,
+        ];
+        applyButton.addEventListener("click", () => applyExplorationSelection(getCheckedIds()));
 
-      // 「选择探索卡库」的工具栏 + 隐藏卡菜单 + 卡库列表，默认挂在自己的折叠区里。
+        // 「选择探索卡库」的工具栏 + 隐藏卡菜单 + 卡库列表共用同一个 body。
 
-      builderActions.append(applyButton, restoreDefaultButton);
-      // 破坏卡组（只有带 destructionIds 的循环才有）跟卡库放在同一层子菜单里，
-      // 排在卡库列表**上面**：先处理破坏卡组，再往下才是那一大片卡库列表。
+        builderActions.append(applyButton, restoreDefaultButton);
+        // 破坏卡组（只有带 destructionIds 的循环才有）跟卡库放在同一层子菜单里，
+        // 排在卡库列表**上面**：先处理破坏卡组，再往下才是那一大片卡库列表。
 
-      const destructionTools = createExplorationDestructionTools(selectedIds, destructionPileIds);
-      builderBody.append(builderActions, hiddenMenu, ...(destructionTools ? [destructionTools] : []), libraryList);
-      // 选择数量属于卡库内容，随卡库一起折叠。
+        const destructionTools = createExplorationDestructionTools(selectedIds, destructionPileIds);
+        builderBody.append(builderActions, hiddenMenu, ...(destructionTools ? [destructionTools] : []), libraryList);
+        // 选择数量属于卡库内容，随卡库一起折叠。
 
-      const selectedCount = document.createElement("div");
-      selectedCount.className = "exploration-count";
-      selectedCount.textContent = `已选 ${selectedIds.length} / ${library.length} 张`;
-      builderBody.prepend(selectedCount);
-      builder.appendChild(builderBody);
+        const selectedCount = document.createElement("div");
+        selectedCount.className = "exploration-count";
+        selectedCount.textContent = `已选 ${selectedIds.length} / ${library.length} 张`;
+        builderBody.prepend(selectedCount);
+        return builderBody;
+      };
 
       // 两个折叠区横向并排，同时只允许打开一个；打开后占满整个宽度（跨两列），另一个
 
@@ -11613,17 +11659,22 @@
       const temporaryHead = document.createElement("summary");
       temporaryHead.textContent = `暂时移出牌堆（${drawState.temporaryRemoved.length} 张）`;
       temporarySection.appendChild(temporaryHead);
-      if (drawState.temporaryRemoved.length) {
-        const temporaryGrid = document.createElement("div");
-        temporaryGrid.className = "exploration-drawn-grid";
-        drawState.temporaryRemoved.forEach((entry) => temporaryGrid.appendChild(createDrawnCard(entry)));
-        temporarySection.appendChild(temporaryGrid);
-      } else {
-        const empty = document.createElement("div");
-        empty.className = "exploration-summary";
-        empty.textContent = "暂无暂时移出的卡牌";
-        temporarySection.appendChild(empty);
-      }
+      let temporaryContentsBuilt = false;
+      const ensureTemporaryContents = () => {
+        if (temporaryContentsBuilt) return;
+        temporaryContentsBuilt = true;
+        if (drawState.temporaryRemoved.length) {
+          const temporaryGrid = document.createElement("div");
+          temporaryGrid.className = "exploration-drawn-grid";
+          drawState.temporaryRemoved.forEach((entry) => temporaryGrid.appendChild(createDrawnCard(entry)));
+          temporarySection.appendChild(temporaryGrid);
+        } else {
+          const empty = document.createElement("div");
+          empty.className = "exploration-summary";
+          empty.textContent = "暂无暂时移出的卡牌";
+          temporarySection.appendChild(empty);
+        }
+      };
 
       // 卡库内容永远跟着"当前打开的那个折叠区"走；谁都没打开时回到卡库自己的折叠区。
 
@@ -11632,7 +11683,8 @@
       // 而那时卡库可能已经被别的操作重新打开了，按收起方判断会把内容搬错地方。
 
       const attachLibraryBody = (container) => {
-        if (!container.contains(builderBody)) container.appendChild(builderBody);
+        const body = ensureLibraryBody();
+        if (!container.contains(body)) container.appendChild(body);
       };
       // 收起方要记下来：toggle 事件是异步派发的，等它到达时 open 属性可能已经被别的操作
       // 改回去了，光看"谁现在开着"会把刚收起的那个又当成打开的那个。
@@ -11645,11 +11697,15 @@
 
         if (pane === temporarySection) closePane(builder);
         else closePane(temporarySection);
-        if (pane === temporarySection) attachLibraryBody(temporarySection);
+        if (pane === temporarySection) {
+          ensureTemporaryContents();
+          attachLibraryBody(temporarySection);
+        }
         else attachLibraryBody(builder);
       };
       const onPaneClose = (pane) => {
         if (pane === closingPane) closingPane = null;
+        if (!builderBody) return;
         // 空牌堆也保留入口，卡库内容仍跟随当前打开的折叠区。
 
         if (builder.open) attachLibraryBody(builder);
@@ -11777,6 +11833,16 @@
         : { version: 1, events: isPlainObject(value?.events) ? cloneJson(value.events) : {} };
     }
 
+    function listenForExternalCampaignSync(channel, refresh) {
+      channel?.addEventListener("message", (event) => {
+        // Clients broadcast through separate channel instances, so this tab
+        // receives its own commit too. applyStructureTechCommit already applies
+        // that response; only another page (or a legacy sender) needs a reread.
+        if (event.data?.pageId === dashboardPageId) return;
+        void refresh();
+      });
+    }
+
     function structureTechSession() {
       if (!sessionUser?.id) throw new Error("请先登录再使用科技能力。");
       const epoch = campaignSessionEpoch;
@@ -11803,7 +11869,7 @@
         const accountId = sessionUser.id;
         const session = structureTechSession();
         if (!window.ATO_STRUCTURE_TECH_CLIENT) throw new Error("科技自动化模块未加载，请刷新页面。");
-        structureTechConnection = window.ATO_STRUCTURE_TECH_CLIENT.create({ session, expectedAccountId: accountId });
+        structureTechConnection = window.ATO_STRUCTURE_TECH_CLIENT.create({ session, expectedAccountId: accountId, pageId: dashboardPageId });
         structureTechConnectionEpoch = epoch;
         structureTechContext = null;
         structureTechContextRevision = -1;
@@ -11816,7 +11882,7 @@
 
     function mapTitanClient() {
       if (!mapTitanConnection || mapTitanConnectionEpoch !== campaignSessionEpoch) {
-        mapTitanConnection = window.ATO_STRUCTURE_TECH_CLIENT.create({ session: structureTechSession(),
+        mapTitanConnection = window.ATO_STRUCTURE_TECH_CLIENT.create({ session: structureTechSession(), pageId: dashboardPageId,
           rules: window.ATO_MAP_TITAN_RULES.createEngine() });
         mapTitanConnectionEpoch = campaignSessionEpoch;
       }
@@ -11908,7 +11974,7 @@
 
     function mapFrozenTimeClient() {
       if (!mapFrozenTimeConnection || mapFrozenTimeConnectionEpoch !== campaignSessionEpoch) {
-        mapFrozenTimeConnection = window.ATO_STRUCTURE_TECH_CLIENT.create({ session: structureTechSession(),
+        mapFrozenTimeConnection = window.ATO_STRUCTURE_TECH_CLIENT.create({ session: structureTechSession(), pageId: dashboardPageId,
           rules: window.ATO_MAP_FROZEN_TIME_RULES.createEngine() });
         mapFrozenTimeConnectionEpoch = campaignSessionEpoch;
       }
@@ -12052,7 +12118,7 @@
       assertStructureTechTarget(target);
     }
 
-    async function applyStructureTechCommit(result, target) {
+    async function applyStructureTechCommit(result, target, options = {}) {
       const epoch = target?.sessionEpoch ?? campaignSessionEpoch;
       const accountId = target?.accountId ?? sessionUser?.id;
       const assertSession = () => {
@@ -12087,7 +12153,7 @@
           map: sectionForProfile(campaign.sections.map, profileId), mapState: sectionForProfile(campaign.sections.map, profileId) };
         structureTechContextRevision = campaignSectionRevision;
       }
-      renderDashboardArchive(merged.value);
+      renderDashboardArchive(merged.value, options);
       if (campaignHasUnsavedChanges()) queueCampaignSave();
       else setCampaignSaveStatus("科技安排已保存", "saved");
     }
@@ -14031,8 +14097,8 @@
     });
     dashboardControlObserver.observe(elements.appShell, { childList: true, subtree: true });
     dashboardControlObserver.observe(elements.cardTrackDialog, { childList: true, subtree: true });
-    campaignSyncChannel?.addEventListener("message", () => void syncDashboardFromExternalUpdate());
-    structureTechMapSyncChannel?.addEventListener("message", () => void refreshStructureTechContext().catch(() => {}));
+    listenForExternalCampaignSync(campaignSyncChannel, () => syncDashboardFromExternalUpdate());
+    listenForExternalCampaignSync(structureTechMapSyncChannel, () => refreshStructureTechContext().catch(() => {}));
     dashboardWriterChannel?.addEventListener("message", (event) => {
       const message = event.data || {};
       if (message.pageId === dashboardPageId) return;
@@ -14043,7 +14109,7 @@
       }
       maintainDashboardWriteLease();
     });
-    recordSyncChannel?.addEventListener("message", () => void refreshCachedArgoRecord());
+    listenForExternalCampaignSync(recordSyncChannel, () => refreshCachedArgoRecord());
     // A module link that returns here (记录表 / 英雄 / 科技 / 地图 / 故事书) focuses
     // this tab and asks it to refresh; reloading the whole console for that would
     // restart every panel just to apply a few fields.

@@ -171,13 +171,15 @@ function drawnEntry(id, name, pile = 0) {
 function combinedSettlementHarness(id = '6401') {
   const clone = value => JSON.parse(JSON.stringify(value));
   const entry = drawnEntry(id, dataset.cards[`c1:${id}`].titleEn);
-  const h = settleHarness({ activePiles: [[entry], []], fullRecord: nextRecord('c1', { fate: '3' }) });
+  const h = settleHarness({ activePiles: [[entry], []], fullRecord: nextRecord('c1', { fate: '3' }, { 'c1-trireme': 0 }) });
   const c = h.ctx;
+  c.state.exploration = c.normalizeExploration(c.state.exploration);
   c.state.techAutomation = { version: 1, events: {} };
   c.state.exploration.drawStateByCycle.c1.pursuitRoundId = 'performance-test-round';
   c.archive.profiles = { 'test-campaign': { cycles: { c1: { state: c.state } } } };
   c.campaignSectionBaseline = clone(c.archive);
   c.campaignServerBaseline = clone(c.archive);
+  c.campaignSectionRevision = 1;
   c.ensureExplorationDrawState = () => c.state.exploration.drawStateByCycle.c1;
   c.assertStructureTechTarget = () => {};
   c.window.ATO_EXPLORATION_PURSUIT = require('../assets/exploration-pursuit.js');
@@ -187,7 +189,7 @@ function combinedSettlementHarness(id = '6401') {
   const campaign = { sections: { dashboard: clone(c.archive), record: { users: { 'test-campaign': clone(h.record) } },
     technology: {}, heroes: {}, map: {} }, sectionRevisions: { dashboard: 1, record: 1, technology: 0, heroes: 0, map: 0 } };
   const cachedCampaign = clone(campaign);
-  const traffic = { reads: 0, posts: 0, fail: false, conflict: false, loseResponse: false, useCached: false };
+  const traffic = { reads: 0, posts: 0, requests: [], fail: false, conflict: false, loseResponse: false, useCached: false };
   const response = (status, value) => ({ status, ok: status === 200, json: async () => clone(value) });
   const client = require('../technology/structure-tech-client.js').create({
     session: { accountId: 'test-account', accept() {}, assertCurrent() {} }, expectedAccountId: 'test-account',
@@ -196,9 +198,10 @@ function combinedSettlementHarness(id = '6401') {
       if (url === '/dictionary') return response(200, {});
       if (options.method !== 'POST') { traffic.reads++; return response(200, { ok: true, user: { id: 'test-account' }, campaign }); }
       traffic.posts++;
+      const request = JSON.parse(options.body);
+      traffic.requests.push(request);
       if (traffic.fail) throw new Error('connection failed');
       if (traffic.conflict) return response(409, { ok: false, code: 'SAVE_CONFLICT' });
-      const request = JSON.parse(options.body);
       assert.deepEqual(Object.keys(request.expectedRevisions).sort(), ['dashboard', 'heroes', 'map', 'record', 'technology']);
       if (Object.entries(request.expectedRevisions).some(([key, revision]) => revision !== campaign.sectionRevisions[key])) {
         return response(409, { ok: false, code: 'SAVE_CONFLICT' });
@@ -214,17 +217,231 @@ function combinedSettlementHarness(id = '6401') {
     },
   });
   c.structureTechClient = () => client;
-  c.getStructureTechContext = () => ({ record: c.cachedArgoRecord,
-    ...(traffic.useCached ? { campaign: cachedCampaign, profileId: 'test-campaign', cycleId: 'c1', day: c.state.day,
-      dictionary: {}, technology: {}, heroes: {}, mapState: {}, state: c.state, automation: c.state.techAutomation } : {}) });
+  c.structureTechContext = { epoch: c.campaignSessionEpoch, campaign: cachedCampaign, profileId: 'test-campaign', cycleId: 'c1',
+    dictionary: {}, technology: {}, heroes: {}, mapState: {} };
+  c.getStructureTechContext = () => ({
+    ...(traffic.useCached ? { ...c.structureTechContext, day: c.state.day,
+      state: c.state, automation: c.state.techAutomation } : {}), record: c.cachedArgoRecord });
   c.applyStructureTechCommit = async result => {
     c.archive = clone(result.campaign.sections.dashboard);
     c.state = c.archive.profiles['test-campaign'].cycles.c1.state;
     c.cachedArgoRecord = clone(result.campaign.sections.record.users['test-campaign']);
   };
   c.settleExplorationPursuit = async () => { throw new Error('combined settlement must not write pursuit separately'); };
-  return Object.assign(h, { entry, traffic, campaign });
+  return Object.assign(h, { entry, traffic, campaign, cachedCampaign });
 }
+
+function finishSettlementHarness() {
+  const h = combinedSettlementHarness();
+  h.traffic.useCached = true;
+  vm.runInContext(fn('settlePursuitWithDashboard'), h.ctx);
+  const applyCommit = h.ctx.applyStructureTechCommit;
+  h.ctx.applyStructureTechCommit = async (result, target, options) => {
+    assert.equal(options?.renderFlow, false, 'the caller renders once after ending the draw');
+    await applyCommit(result, target);
+  };
+  return h;
+}
+
+test('Resolved reuses the loaded campaign and commits pursuit without replaying resources', async () => {
+  const h = finishSettlementHarness();
+  let renders = 0;
+  h.ctx.renderFlow = () => { renders++; };
+  await h.ctx.completeExplorationDraw();
+  assert.deepEqual(h.alerts, []);
+  assert.equal(h.traffic.reads, 0);
+  assert.equal(h.traffic.posts, 1);
+  assert.equal(h.written.length, 0);
+  assert.equal(h.record.resources['c1-trireme'], 0, 'finishing never replays the automatic resource effect');
+  assert.ok(h.record.technologyActionReceipts['performance-test-round']);
+  assert.equal(h.ctx.ensureExplorationDrawState().activePiles.flat().length, 0);
+  assert.equal(renders, 1);
+  await h.ctx.completeExplorationDraw();
+  assert.equal(h.traffic.posts, 1, 'a completed draw cannot settle pursuit twice');
+});
+
+test('Resolved reloads an unknown remote record change once after a conflict', async () => {
+  const h = finishSettlementHarness();
+  const latest = JSON.parse(JSON.stringify(h.record));
+  latest.resources['c1-trireme'] = 11;
+  h.campaign.sections.record.users['test-campaign'] = latest;
+  h.campaign.sectionRevisions.record++;
+  await h.ctx.completeExplorationDraw();
+  assert.deepEqual(h.alerts, []);
+  assert.equal(h.traffic.reads, 1);
+  assert.equal(h.traffic.posts, 2);
+  assert.equal(h.traffic.requests[0].sections.record.resources['c1-trireme'], 0,
+    'the first attempt pairs the cached record with its matching revision');
+  assert.equal(h.traffic.requests[0].expectedRevisions.record, 1);
+  assert.equal(h.traffic.requests[1].sections.record.resources['c1-trireme'], 11);
+  assert.equal(h.traffic.requests[1].expectedRevisions.record, 2);
+  assert.equal(h.record.resources['c1-trireme'], 11);
+  assert.equal(h.written.length, 0);
+  assert.equal(h.ctx.ensureExplorationDrawState().activePiles.flat().length, 0);
+});
+
+test('settlement reloads an unversioned record change but reuses an acknowledged dashboard snapshot', async () => {
+  for (const finish of [false, true]) {
+    for (const changed of ['record', 'dashboard']) {
+      const h = finish ? finishSettlementHarness() : combinedSettlementHarness();
+      h.traffic.useCached = true;
+      if (changed === 'record') {
+        const latest = JSON.parse(JSON.stringify(h.record));
+        latest.resources['c1-trireme'] = 11;
+        h.campaign.sections.record.users['test-campaign'] = latest;
+        h.campaign.sectionRevisions.record++;
+        h.updateServerRecord(latest);
+        await h.ctx.refreshCachedArgoRecord();
+      } else {
+        h.campaign.sectionRevisions.dashboard++;
+        h.ctx.campaignSectionRevision = h.campaign.sectionRevisions.dashboard;
+      }
+      if (finish) await h.ctx.completeExplorationDraw();
+      else await h.ctx.settleExplorationDraw();
+      assert.deepEqual(h.alerts, [], `${finish ? 'Resolved' : 'Resolve all'} ${changed}`);
+      assert.equal(h.traffic.reads, changed === 'record' ? 1 : 0);
+      assert.equal(h.traffic.posts, 1, 'known staleness must not cost a rejected POST');
+      assert.equal(h.traffic.requests[0].expectedRevisions[changed], 2);
+      assert.equal(h.record.resources['c1-trireme'], (changed === 'record' ? 11 : 0) + (finish ? 0 : 4));
+      assert.equal(h.written.length, 0);
+      assert.equal(h.ctx.ensureExplorationDrawState().activePiles.flat().length, 0);
+    }
+  }
+});
+
+test('a confirmed local record write lets both settlement paths skip the full campaign read', async () => {
+  for (const finish of [false, true]) {
+    const h = finish ? finishSettlementHarness() : combinedSettlementHarness();
+    h.traffic.useCached = true;
+    const write = h.ctx.writeServerArgoRecord;
+    h.ctx.writeServerArgoRecord = async (...args) => {
+      const ack = await write(...args);
+      h.campaign.sections.record.users['test-campaign'] = JSON.parse(JSON.stringify(args[0]));
+      h.campaign.sectionRevisions.record = ack.revision;
+      return ack;
+    };
+    await h.ctx.mutateExplorationRecord(record => {
+      record.resources['c1-trireme'] = 11;
+      return { record };
+    }, 'local choice');
+    const saved = h.ctx.structureTechContext.campaign;
+    assert.equal(saved.sectionRevisions.record, 2);
+    assert.equal(saved.sections.record.users['test-campaign'].resources['c1-trireme'], 11);
+    if (finish) await h.ctx.completeExplorationDraw();
+    else await h.ctx.settleExplorationDraw();
+    assert.deepEqual(h.alerts, []);
+    assert.equal(h.traffic.reads, 0);
+    assert.equal(h.traffic.posts, 1);
+    assert.equal(h.traffic.requests[0].expectedRevisions.record, 2);
+    assert.equal(h.record.resources['c1-trireme'], finish ? 11 : 15);
+    assert.equal(h.written.length, 1, 'only the initial local choice used the standalone writer');
+  }
+});
+
+test('reused dashboard data preserves remote fields and still rejects a changed dependency', async () => {
+  const h = finishSettlementHarness();
+  h.campaign.sections.dashboard.remoteNote = 'another page saved this';
+  h.campaign.sectionRevisions.dashboard++;
+  h.ctx.campaignSectionRevision = 2;
+  h.ctx.campaignServerBaseline = JSON.parse(JSON.stringify(h.campaign.sections.dashboard));
+  h.campaign.sectionRevisions.heroes++;
+  await h.ctx.completeExplorationDraw();
+  assert.deepEqual(h.alerts, []);
+  assert.equal(h.traffic.reads, 1);
+  assert.equal(h.traffic.posts, 2, 'an unseen heroes change must still force a fresh transaction');
+  assert.equal(h.traffic.requests[0].sections.dashboard.remoteNote, 'another page saved this');
+  assert.equal(h.traffic.requests[0].expectedRevisions.dashboard, 2);
+  assert.equal(h.traffic.requests[0].expectedRevisions.heroes, 0);
+  assert.equal(h.traffic.requests[1].expectedRevisions.heroes, 1);
+  assert.equal(h.campaign.sections.dashboard.remoteNote, 'another page saved this');
+});
+
+test('record cache acknowledges only current-session writes and isolates the committed snapshot', () => {
+  const h = finishSettlementHarness();
+  const target = { sessionEpoch: 1, accountId: 'test-account', profileId: 'test-campaign' };
+  const original = h.ctx.structureTechContext;
+  const record = JSON.parse(JSON.stringify(h.record));
+  record.resources['c1-trireme'] = 11;
+  for (const wrong of [{ sessionEpoch: 0 }, { accountId: 'other' }, { profileId: 'other' }]) {
+    h.ctx.rememberExplorationRecordCommit(record, 2, { ...target, ...wrong });
+    assert.equal(h.ctx.structureTechContext, original);
+  }
+  h.ctx.rememberExplorationRecordCommit(record, 1, target);
+  assert.equal(h.ctx.structureTechContext, original, 'an older acknowledgement cannot replace newer data');
+  original.campaign.sections.record.users.other = { resources: { untouched: 4 } };
+  h.ctx.rememberExplorationRecordCommit(record, 2, target);
+  record.resources['c1-trireme'] = 99;
+  assert.equal(h.ctx.structureTechContext.record.resources['c1-trireme'], 11);
+  assert.equal(h.ctx.structureTechContext.campaign.sections.record.users.other.resources.untouched, 4);
+  assert.equal(original.campaign.sectionRevisions.record, 1, 'an in-flight reader keeps its own version pair');
+  h.ctx.rememberExplorationRecordCommit(record, 1, target);
+  assert.equal(h.ctx.structureTechContext.record.resources['c1-trireme'], 11);
+});
+
+test('a failed standalone record write never advances the settlement cache', async () => {
+  const h = finishSettlementHarness();
+  const original = h.ctx.structureTechContext;
+  h.ctx.writeServerArgoRecord = async () => { throw new Error('response lost'); };
+  await assert.rejects(h.ctx.mutateExplorationRecord(record => {
+    record.resources['c1-trireme'] = 11;
+    return { record };
+  }, 'local choice'), /response lost/);
+  assert.equal(h.ctx.structureTechContext, original);
+  assert.equal(original.campaign.sectionRevisions.record, 1);
+});
+
+test('dashboard snapshot reuse requires the exact server baseline and checks the saved day', () => {
+  const h = finishSettlementHarness();
+  const target = { profileId: 'test-campaign', cycleId: 'c1' };
+  h.ctx.campaignSectionRevision = 2;
+  h.ctx.campaignServerBaseline = null;
+  assert.equal(h.ctx.cachedExplorationCampaignContext(h.ctx.getStructureTechContext(), target), null);
+  h.ctx.campaignServerBaseline = JSON.parse(JSON.stringify(h.campaign.sections.dashboard));
+  h.ctx.campaignServerBaseline.profiles['test-campaign'].cycles.c1.state.day = 13;
+  const reused = h.ctx.cachedExplorationCampaignContext(h.ctx.getStructureTechContext(), target);
+  assert.equal(reused.day, 13, 'settlement must compare the saved day against its pinned local day');
+  assert.equal(h.cachedCampaign.sectionRevisions.dashboard, 1);
+});
+
+test('Resolved reloads a campaign cache without section revisions before submitting', async () => {
+  const h = finishSettlementHarness();
+  delete h.cachedCampaign.sectionRevisions;
+  await h.ctx.completeExplorationDraw();
+  assert.deepEqual(h.alerts, []);
+  assert.equal(h.traffic.reads, 1);
+  assert.equal(h.traffic.posts, 1);
+});
+
+test('failed cached Resolved submissions preserve cards and never fall back to a separate write', async () => {
+  for (const failure of ['fail', 'conflict']) {
+    const h = finishSettlementHarness();
+    const before = JSON.stringify({ record: h.record, exploration: h.ctx.state.exploration });
+    h.traffic[failure] = true;
+    await h.ctx.completeExplorationDraw();
+    assert.equal(h.alerts.length, 1);
+    assert.equal(h.traffic.posts, failure === 'conflict' ? 2 : 1, 'a revision conflict retries only once');
+    assert.equal(h.written.length, 0);
+    assert.equal(JSON.stringify({ record: h.record, exploration: h.ctx.state.exploration }), before);
+    assert.equal(h.ctx.settleExplorationDraw.busy, false);
+    h.traffic[failure] = false;
+    await h.ctx.completeExplorationDraw();
+    assert.equal(h.record.resources['c1-trireme'], 0);
+    assert.ok(h.record.technologyActionReceipts['performance-test-round']);
+    assert.equal(h.ctx.ensureExplorationDrawState().activePiles.flat().length, 0);
+  }
+});
+
+test('a lost cached Resolved response recovers the pursuit receipt without another write', async () => {
+  const h = finishSettlementHarness();
+  h.traffic.loseResponse = true;
+  await h.ctx.completeExplorationDraw();
+  assert.deepEqual(h.alerts, []);
+  assert.equal(h.traffic.posts, 1);
+  assert.equal(h.traffic.reads, 1, 'only the uncertain response needs a recovery read');
+  assert.equal(h.written.length, 0);
+  assert.ok(h.record.technologyActionReceipts['performance-test-round']);
+  assert.equal(h.ctx.ensureExplorationDrawState().activePiles.flat().length, 0);
+});
 
 test('automatic settlement preview clears automatic pending effects without changing the live record or draw', () => {
   const h = combinedSettlementHarness();
@@ -405,6 +622,7 @@ class Element {
     return found;
   }
   get buttons() { return this.querySelectorAll('button'); }
+  contains(node) { return node === this || this.descendants().includes(node); }
   descendants() {
     return this.children.flatMap((child) => [child, ...child.descendants()]);
   }
@@ -458,6 +676,9 @@ function settleHarness(options = {}) {
     },
     archive: { activeProfileId: 'test-campaign' },
     sessionUser: { id: 'test-account' },
+    campaignSessionEpoch: 1,
+    structureTechContext: null,
+    cloneJson: clone,
     currentCycleConfig: () => ({ id: cycle }),
     mapFactionLabel: (cycleId, factionId) => labels[factionId] || factionId,
     diplomacyValue: (_cycleId, factionId, record) => typeof options.diplomacyFromRecord === 'function'
@@ -589,6 +810,8 @@ function settleHarness(options = {}) {
     fn('applyAutomaticExploration'),
     fn('previewExplorationSettlement'),
     fn('explorationRecordSection'),
+    fn('cachedExplorationCampaignContext'),
+    fn('rememberExplorationRecordCommit'),
     fn('settleExplorationWithPursuit'),
     fn('settleExplorationDraw'),
     fn('pursuitSettlementMode'),
@@ -1235,9 +1458,14 @@ test('all cycles retain card selection and temporary pile entrances even when bo
     const removed=panes.children.find(node=>node.className==='exploration-removed-pile');
     assert.ok(builder,cycle+' has its card library');
     assert.ok(removed && !removed.hidden,cycle+' has its empty temporary pile entrance');
+    assert.equal(removed.children.length,1,cycle+' defers the closed temporary pile contents');
+    removed.open=true; removed.listeners.toggle();
     assert.match(textOf(removed),/暂无暂时移出的卡牌/);
     h.drawState.temporaryRemoved.push(drawnEntry(cycle==='c2'?'13601':cycle==='c3'?'13501':cycle==='c4'?'9301':cycle==='c5'?'10301':'6401','Removed'));
     const withCard=h.ctx.createExplorationTools();
+    const withCardRemoved=withCard.descendants().find(node=>node.className==='exploration-removed-pile');
+    assert.equal(withCardRemoved.children.length,1,cycle+' defers temporary cards until expansion');
+    withCardRemoved.open=true; withCardRemoved.listeners.toggle();
     const grid=withCard.descendants().find(node=>node.className==='exploration-drawn-grid');
     assert.ok(grid?.children.length,cycle+' shows its temporary card');
   }

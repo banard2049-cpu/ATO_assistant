@@ -393,6 +393,36 @@ test('到期泰坦奖励自动结算一次，手动奖励仍等待玩家点击',
   assert.equal(calls.timeouts.length, 1, 'the same due event is never settled twice');
 });
 
+test('exploration commits update the archive and date track while deferring the intermediate flow render', async () => {
+  for (const defer of [false, true]) {
+    const { context: c, calls } = harness(['mergeDashboardChanges', 'applyStructureTechCommit', 'renderDashboardArchive'], {
+      URLSearchParams, CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options.detail; } },
+      cycleConfigs: [{ id: 'c2' }], storedTermLanguage: () => 'fan',
+      syncInputs() {}, renderProfiles() {}, renderCycles() {},
+    });
+    c.window.location = { search: '' };
+    c.window.dispatchEvent = () => {};
+    c.currentProfile = () => c.archive.profiles.A;
+    c.currentCycle = () => c.archive.profiles.A.cycles.c2;
+    c.archive.profiles.A.cycles.c2.state.notes = 'note edited while saving';
+    const remote = clone(c.campaignSectionBaseline);
+    remote.profiles.A.cycles.c2.state.techAutomation.events.settled = event('settled');
+    await c.applyStructureTechCommit({ campaign: { sectionRevisions: { dashboard: 5 }, sections: {
+      dashboard: remote, record: { users: { A: { fate: '4' } } },
+    } } }, { sessionEpoch: 1, accountId: 'owner' }, defer ? { renderFlow: false } : {});
+    assert.equal(c.state.notes, 'note edited while saving');
+    assert.ok(c.state.techAutomation.events.settled);
+    assert.equal(c.cachedArgoRecord.fate, '4');
+    assert.equal(c.campaignSectionRevision, 5);
+    assert.equal(calls.track, 1, 'the timeline still receives the committed event');
+    assert.equal(calls.render, defer ? 0 : 1, 'only exploration defers its intermediate flow');
+    if (defer) {
+      c.renderFlow();
+      assert.equal(calls.render, 1, 'the caller paints its final state once');
+    }
+  }
+});
+
 test('提交返回后合并正在编辑的备注与远端科技日程，更新record缓存', async () => {  const { context: c, calls } = harness(['mergeDashboardChanges', 'applyStructureTechCommit']);
   const remote = clone(c.campaignSectionBaseline);
   remote.profiles.A.cycles.c2.state.techAutomation.events.reward = event('reward');
