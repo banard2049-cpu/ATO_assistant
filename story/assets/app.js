@@ -1,4 +1,7 @@
 (function () {
+  // 安卓 WebView 可能把离开的故事页留在返回缓存（bfcache）里；空的 beforeunload
+  // 监听会让它不进入 bfcache，下次再进故事书时不会同时保留两份大对象。
+  if (window.ATOAndroid) window.addEventListener("beforeunload", () => {});
   const fetch = window.ATO_CAMPAIGN_NOTES.createFetch(window.fetch.bind(window), { source: "故事" });
   // Optional renderer/materials never become a prerequisite for reading source.
   function mixedMediaRuntime() {
@@ -121,6 +124,20 @@
   const entityLookup = new Map();
   let entityAliases = [];
   let entityBiosEnabled = false;
+  // 混排图不可关闭。只有本次运行中渲染进程崩过，才临时降级为不加载 mapping，
+  // 并在页面上提醒；完全退出重开 App 后自动恢复。
+  let mixedMediaDegraded = false;
+  try {
+    mixedMediaDegraded = Boolean(window.ATOAndroid?.rendererCrashedThisProcess?.());
+  } catch {
+    mixedMediaDegraded = false;
+  }
+  function showMixedMediaDegradedNotice() {
+    const notice = document.querySelector("#mixedMediaDegraded");
+    if (!notice) return;
+    notice.hidden = false;
+    notice.textContent = "上次页面渲染进程异常退出，本次已自动关闭混排插图；完全退出并重新打开 App 后恢复。";
+  }
   const externalAudioCache = new Map();
   const externalAudioCacheMax = 90;
   const ttsStorageKey = "ato-story-tts-config-v1";
@@ -4568,6 +4585,7 @@
     loadMemories();
     if (window.STORY_ENTITY_INDEX) initEntities();
     updateEntityBioToggle();
+    if (mixedMediaDegraded) showMixedMediaDegradedNotice();
     renderMemories();
     loadVoices();
     updateTtsControls();
@@ -4877,9 +4895,10 @@
     storyText.scrollTop = top; storyText.scrollLeft = left;
   });
 
-  // 混排 mapping 有十几兆。首屏只渲染正文，页面空闲后再补图；加载完成后
-  // renderer 会发出 ato-mixed-media-map-ready，上面的监听会重绘当前条目。
+  // 混排 mapping 有十几兆，页面空闲后加载；加载完成后 renderer 会发出
+  // ato-mixed-media-map-ready，上面的监听会重绘当前条目。
   function loadMixedMediaMap() {
+    if (mixedMediaDegraded) return;
     if (window.ATO_MIXED_MEDIA_MAP || document.querySelector("script[data-ato-mm-map]")) return;
     const script = document.createElement("script");
     script.async = true;
@@ -4889,6 +4908,7 @@
     document.head.appendChild(script);
   }
   function scheduleMixedMediaMap() {
+    if (mixedMediaDegraded) return;
     if (typeof window.requestIdleCallback === "function") {
       window.requestIdleCallback(loadMixedMediaMap, { timeout: 4000 });
     } else {

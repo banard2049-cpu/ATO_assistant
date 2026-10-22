@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>ATO 故事书跳转器</title>
-    <link rel="stylesheet" href="./assets/styles.css?v=20261022-lazy-scan1" />
+    <link rel="stylesheet" href="./assets/styles.css?v=20261022-degrade1" />
     <link rel="stylesheet" href="../api/cycle-theme.css" />
   <script src="../story/data/english-source-data.js?v=20261011-english4"></script>
   <script src="../assets/theme.js?v=20261001" defer></script>
@@ -119,6 +119,8 @@
         </div>
       </header>
 
+      <div id="mixedMediaDegraded" class="mixed-media-degraded" role="status" hidden></div>
+
       <article id="storyText" class="story-text">
         <p>左侧先选择故事书、模块和入口层，再输入段落号。正文里的段落号会按当前上下文优先跳转。</p>
       </article>
@@ -152,7 +154,7 @@
     <script src="./assets/story-tables.js?v=20261016-reward-tables1"></script>
     <script src="./assets/mixed-media/renderer.js?v=c4c5-20261006-r3-compat1"></script>
     <!-- 混排 mapping 有十几兆：先让正文可读，再由 app.js 在页面空闲时加载。 -->
-    <script src="./assets/app.js?v=20261022-lazy-scan1"></script>
+    <script src="./assets/app.js?v=20261022-degrade1"></script>
     <script src="./assets/centimanes.js?v=20261020-record-live1"></script>
     <script src="./assets/cryptic/glyph-catalog.js?v=20261004-manual1"></script>
     <script src="./assets/cryptic/vendor/text-format.js?v=20261004-manual1"></script>
