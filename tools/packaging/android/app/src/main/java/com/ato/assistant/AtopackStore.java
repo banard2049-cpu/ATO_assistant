@@ -122,7 +122,15 @@ final class AtopackStore {
       return null;
     }
     OpenedResource resource = open(relative);
-    return resource == null ? null : new WebResourceResponse(resource.mimeType, encodingFor(resource.mimeType), resource.input);
+    if (resource == null) return null;
+    String encoding = encodingFor(resource.mimeType);
+    if (resource.length < 0) return new WebResourceResponse(resource.mimeType, encoding, resource.input);
+    // 故事书的官方正文/人物索引/mapping 都有十几兆：显式长度让 WebView 按流读取，
+    // 不至于把整个响应当成未知长度缓冲在内存里。
+    Map<String, String> headers = new HashMap<>();
+    headers.put("Content-Length", Long.toString(resource.length));
+    headers.put("Cache-Control", "no-store");
+    return new WebResourceResponse(resource.mimeType, encoding, 200, "OK", headers, resource.input);
   }
 
   OpenedResource open(String relative) {
@@ -138,7 +146,7 @@ final class AtopackStore {
       File blob = new File(blobs, entry.sha256);
       if (!blob.isFile()) continue;
       try {
-        return new OpenedResource(entry.mimeType, new BufferedInputStream(new FileInputStream(blob)));
+        return new OpenedResource(entry.mimeType, new BufferedInputStream(new FileInputStream(blob)), blob.length());
       } catch (IOException ignored) {
         return null;
       }
@@ -1167,10 +1175,16 @@ final class AtopackStore {
   static final class OpenedResource {
     final String mimeType;
     final InputStream input;
+    final long length;
 
     OpenedResource(String mimeType, InputStream input) {
+      this(mimeType, input, -1);
+    }
+
+    OpenedResource(String mimeType, InputStream input, long length) {
       this.mimeType = mimeType;
       this.input = input;
+      this.length = length;
     }
   }
 

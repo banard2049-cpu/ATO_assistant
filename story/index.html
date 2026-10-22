@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>ATO 故事书跳转器</title>
-    <link rel="stylesheet" href="./assets/styles.css?v=20261011-english4" />
+    <link rel="stylesheet" href="./assets/styles.css?v=20261022-lazy-scan1" />
     <link rel="stylesheet" href="../api/cycle-theme.css" />
   <script src="../story/data/english-source-data.js?v=20261011-english4"></script>
   <script src="../assets/theme.js?v=20261001" defer></script>
@@ -134,15 +134,25 @@
     <!-- 公共仓库使用占位数据；本地完整数据存在时由后一项覆盖。 -->
     <script src="./storybook-placeholder.js?v=20260813"></script>
     <script src="./data/storybook-data.js?v=c4c5-20261006-r2"></script>
-    <script src="./data/storybook-official-data.js?v=20261006-official-c45-1"></script>
-    <script src="./data/entity-index.js?v=c4c5-20261006-r2"></script>
+    <!-- 官方版正文有十几兆，民间版用不到；只有浏览器已选官方版时才在首屏加载。 -->
+    <script>
+      (function () {
+        var version = "";
+        try { version = localStorage.getItem("ato-term-language-v1"); } catch (error) {}
+        if (version === "official") {
+          document.write('<script src="./data/storybook-official-data.js?v=20261006-official-c45-1"><\/script>');
+        }
+      })();
+    </script>
+    <!-- 人物小传索引由 app.js 在用户打开「人物小传」时按需加载，避免安卓端首屏 -->
+    <!-- 为十几兆的索引付出解析和内存代价。 -->
     <script src="./audio-packs/audio/manifest.js?v=20260614structure1"></script>
     <script src="../assets/cycle-symbols.js?v=20260918"></script>
     <script src="./assets/pharos-codes.js?v=20260924-title-codes1"></script>
     <script src="./assets/story-tables.js?v=20261016-reward-tables1"></script>
     <script src="./assets/mixed-media/renderer.js?v=c4c5-20261006-r3-compat1"></script>
-    <script async data-ato-mm-map src="./assets/mixed-media/mapping.js?v=c4c5-20261006-official-c45-1"></script>
-    <script src="./assets/app.js?v=20261016-reward-tables1"></script>
+    <!-- 混排 mapping 有十几兆：先让正文可读，再由 app.js 在页面空闲时加载。 -->
+    <script src="./assets/app.js?v=20261022-lazy-scan1"></script>
     <script src="./assets/centimanes.js?v=20261020-record-live1"></script>
     <script src="./assets/cryptic/glyph-catalog.js?v=20261004-manual1"></script>
     <script src="./assets/cryptic/vendor/text-format.js?v=20261004-manual1"></script>

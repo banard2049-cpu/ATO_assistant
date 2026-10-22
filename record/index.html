@@ -696,6 +696,13 @@
       object-fit: contain;
     }
 
+    .track-boss-avatar {
+      width: 36px;
+      height: 36px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+
     .track-name-text {
       min-width: 0;
     }
@@ -3941,12 +3948,64 @@
       outcastVanguard: "OUTCASTVANGUARD",
     };
 
+    const bossAvatarFiles = {
+      hekaton: "HEKATON.png",
+      labyrinthauros: "LABYRINTHAUROS.png",
+      temenos: "ALPHA_TEMENOS.png",
+      pursuer: "HERMESIAN_PURSUER.png",
+      cyclonus: "CYCLONUS.png",
+      chimera: "CHIMERA_METASTASIOS.png",
+      nietzschean: "THE_NIETZSCJEAN.png",
+      adversary: "THE_BURDEN.png",
+      oracle: "HYPERTIME_ORACLE.png",
+      harpy: "ICARIAN_HARPY.png",
+      sunDescendant: "SUN_DESCENDANT.png",
+      midascore: "MIDASCORE.png",
+      demidjinn: "DEMIDJINN.png",
+      babelianLunacy: "THE_BABELIAN_LUNACY.png",
+      dahaka: "DAHAKA.png",
+      dragonOfPhobos: "DRAGON_OF_PHOBOS.png",
+      meduketos: "MEDUKETOS.png",
+      urFleece: "UR_FLEECE.png",
+      titanX: "TITAN_X.png",
+    };
+
+    // 头像文件不一定存在：精简版／资料包里可能没有随包分发
+    // record/assets/boss-avatars/。这类行只显示名称，不留破图、不空占图标列。
+    // 失败过的 bossKey 记在这里，重绘（每次点等级都会重绘）不再重复请求缺图。
+    const missingBossAvatars = new Set();
+
+    function makeBossAvatar(title, bossKey) {
+      const fileName = bossAvatarFiles[bossKey];
+      if (!fileName || missingBossAvatars.has(bossKey)) return null;
+      const icon = document.createElement("img");
+      icon.className = "track-boss-avatar";
+      icon.alt = "";
+      icon.loading = "lazy";
+      // 加载完成前先隐藏，避免缺图时闪一下浏览器自带的碎图标。
+      icon.style.visibility = "hidden";
+      icon.addEventListener("load", () => {
+        icon.style.visibility = "";
+      }, { once: true });
+      icon.addEventListener("error", () => {
+        missingBossAvatars.add(bossKey);
+        icon.remove();
+        title.classList.remove("with-icon");
+      }, { once: true });
+      icon.src = `./assets/boss-avatars/${fileName}`;
+      return icon;
+    }
+
     function makeTrackTitle(zh, en, options = {}) {
       const title = document.createElement("div");
       title.className = "track-name";
       const itemSpec = options.iconPath
         || (window.RECORD_ITEM_ICONS && window.RECORD_ITEM_ICONS[zh]);
-      if (options.icon) {
+      const bossAvatar = options.bossKey ? makeBossAvatar(title, options.bossKey) : null;
+      if (bossAvatar) {
+        title.classList.add("with-icon");
+        title.appendChild(bossAvatar);
+      } else if (options.icon) {
         title.classList.add("with-icon");
         const icon = document.createElement("img");
         icon.className = "track-faction-icon";
@@ -4355,7 +4414,7 @@
         });
         chips.appendChild(button);
       });
-      row.append(nemesis ? makeNemesisTrackTitle() : makeTrackTitle(zh, en), chips);
+      row.append(nemesis ? makeNemesisTrackTitle() : makeTrackTitle(zh, en, { bossKey: group === "enemies" ? key : undefined }), chips);
       if (nemesis) row.appendChild(makeNemesisSwitch());
       container.appendChild(row);
     }
@@ -4387,8 +4446,8 @@
 
     function makeNemesisTrackTitle() {
       const enemy = currentNemesis();
-      const title = makeTrackTitle(enemy.zh, enemy.en);
-      title.className = "track-name nemesis-track-name";
+      const title = makeTrackTitle(enemy.zh, enemy.en, { bossKey: enemy.key });
+      title.className += " nemesis-track-name";
       return title;
     }
 

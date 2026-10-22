@@ -100,15 +100,24 @@ class Reader {
 }
 
 async function main() {
+  await check('北京时间跨日、跨年并保留真实时间点', () => {
+    const ctx = vm.createContext({});
+    vm.runInContext(extractFunction('beijingTimestamp'), ctx);
+    const instant = '2026-12-31T18:04:05.123Z';
+    const result = ctx.beijingTimestamp(instant);
+    assert.equal(result, '2027-01-01T02:04:05.123+08:00');
+    assert.equal(Date.parse(result), Date.parse(instant));
+    assert.equal(ctx.beijingTimestamp(Date.parse(instant)), result);
+  });
   await check('Android 导出等待文件实际写入结果', async () => {
     let filename;
     let contents;
     const androidWindow = { ATOAndroid: { exportStateJson(name, text) { filename = name; contents = text; } } };
     const ctx = vm.createContext({ window: androidWindow });
-    vm.runInContext(extractFunction('downloadJsonPayload'), ctx);
+    vm.runInContext(extractFunction('beijingTimestamp') + '\n' + extractFunction('downloadJsonPayload'), ctx);
     let settled = false;
-    const saved = ctx.downloadJsonPayload({ app: 'test' }).then(() => { settled = true; });
-    assert.match(filename, /^ato-full-save-.*\.json$/);
+    const saved = ctx.downloadJsonPayload({ app: 'test', exportedAt: '2027-01-01T02:04:05.123+08:00' }).then(() => { settled = true; });
+    assert.equal(filename, 'ato-full-save-2027-01-01T02-04-05-123+08-00.json');
     assert.equal(JSON.parse(contents).app, 'test');
     assert.equal(settled, false, '选择文件和写入完成前不能显示已下载');
     androidWindow.ATOAndroidExportResult({ ok: true });

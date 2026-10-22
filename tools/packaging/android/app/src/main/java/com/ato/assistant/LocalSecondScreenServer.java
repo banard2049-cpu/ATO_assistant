@@ -188,6 +188,9 @@ final class LocalSecondScreenServer {
         else socket.close();
       } catch (IOException error) {
         if (current.isClosed()) return;
+      } catch (RuntimeException error) {
+        // 线程池拒绝任务（关闭第二屏的瞬间）不该把整个应用结束掉。
+        if (current.isClosed()) return;
       }
     }
   }
@@ -256,6 +259,8 @@ final class LocalSecondScreenServer {
       }
     } catch (IOException ignored) {
       // Browsers commonly close stale image requests during a screen refresh.
+    } catch (RuntimeException error) {
+      // 后台线程里未捕获的异常会结束整个应用；一次坏请求只该影响它自己。
     }
   }
 

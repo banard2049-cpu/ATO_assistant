@@ -100,9 +100,12 @@ function createElement(tag) {
     setAttribute(name, value) { this.attributes[name] = String(value); },
     getBoundingClientRect() { return { left: 10, right: 120, top: 40, bottom: 70, width: 110, height: 30 }; },
     matches() { return false; },
-    contains() { return false; },
+    contains(child) { return descendants(this).includes(child); },
     querySelector() { return null; },
-    querySelectorAll() { return []; },
+    querySelectorAll(selector) {
+      return descendants(this).filter((node) =>
+        selector === 'input[type="checkbox"]:checked' && node.tagName === "INPUT" && node.type === "checkbox" && node.checked);
+    },
   };
 }
 
@@ -116,6 +119,8 @@ function collectClass(node, className) {
 
 const settleCalls = [];
 const toolbarCalls = [];
+const selectionCalls = [];
+const imageCalls = [];
 const searcher = { library: [], selected: [], drawState: null, specialRule: null, settlePrepared: false };
 
 const context = vm.createContext({
@@ -133,7 +138,7 @@ const context = vm.createContext({
   getDestructionPileIds: () => [],
   getDestructionCardIds: () => [],
   addCardToDestructionPile() {},
-  applyExplorationSelection() {},
+  applyExplorationSelection(ids) { selectionCalls.push(Array.from(ids)); },
   restoreDefaultExplorationSelection() {},
   createExplorationFactionStatus: () => createElement("div"),
   // 「一键结算 → 结算完毕」两段式：准备好时主控台会把按钮文本换掉。
@@ -149,7 +154,7 @@ const context = vm.createContext({
     block.className = "exploration-settle";
     return block;
   },
-  getExplorationCardImageStyle: () => "background-image:url(card.png)",
+  getExplorationCardImageStyle: (id) => { imageCalls.push(id); return "background-image:url(card.png)"; },
   getExplorationCornerNumber: () => "",
   getExplorationCardTag: () => ({ removal: "remove", draw: "single" }),
   drawExplorationCard() { toolbarCalls.push('draw'); },
@@ -157,9 +162,11 @@ const context = vm.createContext({
   mutateExplorationRecord() {},
   endExplorationDraw() { toolbarCalls.push('end'); },
   returnTemporaryExplorationCards() {},
+  yieldToPaint: async () => {},
 });
 vm.runInContext(extractFunction(source, "createExplorationTools"), context);
 
+async function main() {
 searcher.library = [
   { id: "6404", name: "Trade Post" },
   { id: "6411", name: "Weapons Cache" },
@@ -185,10 +192,12 @@ assert.deepEqual(collectClass(wrapper, "exploration-drawn-title"), [], "「本�
 assert.ok(!descendants(wrapper).some((node) => String(node.textContent || "").includes("本次探索结果")),
   "页面上不该再出现「本次探索结果」字样");
 const cardFaces = collectClass(wrapper, "exploration-drawn-face");
-assert.equal(cardFaces.length, 3, "三张牌面（本次结果 1 张 + 暂时移出 2 张）都要显示");
+assert.equal(cardFaces.length, 1, "折叠时只创建本次结果牌面，不创建暂时移出牌面");
 assert.deepEqual(cardFaces.map((face) => face.attributes["aria-label"]),
-  ["Trade Post #6404", "Weapons Cache #6411", "Trade Post #6404"],
+  ["Trade Post #6404"],
   "牌面仍要保留可读的卡名与编号");
+assert.deepEqual(imageCalls, ["6404"], "折叠时不能为卡库或暂时移出牌堆创建图片预览");
+assert.equal(collectClass(wrapper, "exploration-builder-body").length, 0, "折叠时不能构建卡库内容");
 
 // 2) 悬停预览浮层已经移除。
 assert.deepEqual(collectClass(wrapper, "exploration-return-preview"), [], "暂时移出预览浮层不该再出现");
@@ -206,7 +215,15 @@ const pileHeads = descendants(wrapper).filter((node) => String(node.textContent 
 assert.equal(pileHeads.length, 1, "暂时移出牌堆折叠区要保留");
 const pileSection = descendants(wrapper).find((node) => node.tagName === "DETAILS" && node.className === "exploration-removed-pile");
 assert.ok(pileSection, "暂时移出牌堆的折叠区没了");
+assert.equal(collectClass(pileSection, "exploration-drawn-card").length, 0, "暂时移出的牌等展开再创建");
+pileSection.open = true;
+pileSection.listeners.toggle[0]();
 assert.equal(collectClass(pileSection, "exploration-drawn-card").length, 2, "折叠区里要列出两张暂时移出的牌");
+assert.deepEqual(collectClass(pileSection, "exploration-drawn-face").map((face) => face.attributes["aria-label"]),
+  ["Weapons Cache #6411", "Trade Post #6404"]);
+assert.equal(collectClass(pileSection, "exploration-library-preview").length, 2, "首次展开暂时移出牌堆也提供卡库");
+pileSection.open = false;
+pileSection.listeners.toggle[0]();
 
 // 4) 「已选 N / M 张」跟随卡库一起折叠，不再占用工具条。
 const counts = collectClass(wrapper, "exploration-count");
@@ -226,6 +243,10 @@ assert.equal(builder.children[1].children[0], counts[0],
 const has = (node, child) => descendants(node).includes(child);
 const paneRow = collectClass(wrapper, "exploration-removed-piles")[0];
 const pilePane = collectClass(wrapper, "exploration-removed-pile")[0];
+const libraryBody = collectClass(wrapper, "exploration-builder-body")[0];
+const firstCheckbox = descendants(libraryBody).find((node) => node.tagName === "INPUT");
+firstCheckbox.checked = false;
+const imageCountAfterOpen = imageCalls.length;
 assert.ok(paneRow && pilePane, "两个折叠区都要挂在并排的包裹层里");
 assert.equal(paneRow.children.length, 2, "包裹层里正好是两个折叠区");
 assert.equal(paneRow.children[0], pilePane);
@@ -244,6 +265,21 @@ pilePane.open = false;
 pilePane.listeners.toggle[0]();
 assert.ok(has(builder, counts[0]), "收起后卡库内容搬回卡库折叠区");
 assert.ok(!has(pilePane, counts[0]));
+assert.equal(collectClass(wrapper, "exploration-builder-body")[0], libraryBody, "两个入口必须复用同一个卡库");
+assert.equal(imageCalls.length, imageCountAfterOpen, "反复开合不能重建卡库或暂时移出牌面");
+assert.equal(firstCheckbox.checked, false, "切换折叠区不能丢失未应用的勾选");
+descendants(libraryBody).find((node) => node.textContent === "应用选择").listeners.click[0]();
+assert.deepEqual(selectionCalls, [["6411"]], "应用选择应读取搬动后仍保留的草稿");
+
+// 折叠事件可能延迟到另一个入口已打开后才送达，不能把卡库搬回刚收起的一侧。
+pilePane.open = true;
+pilePane.listeners.toggle[0]();
+builder.open = true;
+builder.listeners.toggle[0]();
+pilePane.listeners.toggle[0]();
+assert.ok(has(builder, libraryBody));
+assert.equal(pilePane.open, false);
+assert.equal(imageCalls.length, imageCountAfterOpen);
 
 // 5) 自动结算只挂在本次探索结果上。
 assert.deepEqual(settleCalls, ["6404"], "只有本次探索结果的牌才生成结算区块");
@@ -257,7 +293,7 @@ const settleButton = descendants(toolbar).find((node) => node.tagName === "BUTTO
 assert.ok(settleButton, "工具条应将结算完毕改为一键结算");
 assert.equal(settleButton.disabled, false);
 assert.ok(!descendants(toolbar).some((node) => node.textContent === "结算完毕"));
-settleButton.listeners.click[0]();
+await settleButton.listeners.click[0]();
 assert.deepEqual(toolbarCalls, ['settle'], "一键结算应调用自动结算，不能直接结束探索");
 
 // 6b) 自动结算后仍有手工项：按钮变成「结算完毕」，再点一次走 completeExplorationDraw。
@@ -265,7 +301,7 @@ searcher.settlePrepared = true;
 const finishTools = context.createExplorationTools();
 const finishButton = descendants(finishTools).find((node) => node.tagName === "BUTTON" && node.textContent === "结算完毕");
 assert.ok(finishButton, "自动结算后仍有待办时，按钮文本要变成「结算完毕」");
-finishButton.listeners.click[0]();
+await finishButton.listeners.click[0]();
 assert.deepEqual(toolbarCalls, ['settle', 'complete'], "「结算完毕」应结束本轮探索而不是再跑一次自动结算");
 searcher.settlePrepared = false;
 
@@ -300,4 +336,25 @@ assert.ok(!descendants(report).some((node) => node.textContent === 'a stale pend
 assert.ok(!descendants(report).some((node) => node.textContent === 'Trade Post：船材 +2'),
   '自动处理明细不再逐条列出');
 
+// 卡库先展开时，不创建暂时移出的牌；空牌堆入口也应可展开并复用同一卡库。
+searcher.drawState.activePiles = [];
+searcher.drawState.temporaryRemoved = [];
+delete context.state.exploration.lastSettlementByCycle.c1;
+const emptyTools = context.createExplorationTools();
+const emptyBuilder = collectClass(emptyTools, "exploration-builder")[0];
+const emptyPile = collectClass(emptyTools, "exploration-removed-pile")[0];
+emptyBuilder.listeners.toggle[0]();
+assert.equal(collectClass(emptyTools, "exploration-builder-body").length, 0, "关闭事件不应触发懒构建");
+emptyBuilder.open = true;
+emptyBuilder.listeners.toggle[0]();
+assert.equal(emptyPile.children.length, 1, "只打开卡库时暂时移出牌堆仍只有标题");
+const emptyLibrary = collectClass(emptyBuilder, "exploration-builder-body")[0];
+emptyPile.open = true;
+emptyPile.listeners.toggle[0]();
+assert.equal(emptyBuilder.open, false);
+assert.ok(descendants(emptyPile).some((node) => node.textContent === "暂无暂时移出的卡牌"));
+assert.equal(collectClass(emptyPile, "exploration-builder-body")[0], emptyLibrary);
+
 console.log("exploration drawn card tests passed");
+}
+main().catch((error) => { console.error(error); process.exitCode = 1; });

@@ -1,0 +1,48 @@
+{
+  "version": "20261020-hidden-numbers-upright",
+  "reviewedFaces": 511,
+  "numberGroups": 2,
+  "coordinateSystem": "1024x1024 overlay pixels; clean typeset numerals, tight ink bounds",
+  "tiles": {
+    "c1-tile-066-front": {
+      "overlaySha256": "77eab0a197de82c69dcf84a8b6b5bfcd2f64d753677929a5b909a9544c02ae39",
+      "baselineFile": "output/reports/map-hidden-numbers-20261020/originals/c1-tile-066-front.png",
+      "replaceableOverlaySha256": [
+        "21dbaaab357797b4ac4cbc3762d808c5c7e0fb25f6e2d6438f591c33b3286c1f",
+        "82a7593e0946a6bd60649632ac996953755cba47bb2c3a21afd942a457686bf4"
+      ],
+      "numbers": [
+        {
+          "text": "0223",
+          "bounds": [
+            924,
+            150,
+            991,
+            173
+          ],
+          "color": "#69756e"
+        }
+      ]
+    },
+    "c2-tile-002-front": {
+      "overlaySha256": "9ade7277f8d1c0bbc10c6e38dee2ff56585a11fef06373a139b8024ff2b9265e",
+      "baselineFile": "output/reports/map-hidden-numbers-20261020/originals/c2-tile-002-front.png",
+      "replaceableOverlaySha256": [
+        "c4f44196fec2dcf9c2e0e69ea1dd6ac569fe0633ade4fc0a4b9c5bd401671e00",
+        "14d7d8b7b2d5d151989191481f87fc6dfe2ee50751be4f95fb4cdfe7d7e9385e"
+      ],
+      "numbers": [
+        {
+          "text": "7979",
+          "bounds": [
+            514,
+            119,
+            571,
+            140
+          ],
+          "color": "#bacabd"
+        }
+      ]
+    }
+  }
+}

@@ -205,6 +205,53 @@ ALLY_LABELS = {
     "WASTERS": "盟友阵营：荒原者 / Wasters",
 }
 
+# 记录表「敌人」面板的 Boss 头像：从官方 AI 卡背提取的 512×512 透明 PNG。
+# PNG 是本地私有素材（/record/assets/ 被 .gitignore 忽略），所以按文件名列出，
+# 目录里多出来的文件不会被顺手打包；资料包与 APK 内置名单都只认这份名单。
+BOSS_AVATAR_FILES = (
+    "ALPHA_TEMENOS",
+    "CHIMERA_METASTASIOS",
+    "CYCLONUS",
+    "DAHAKA",
+    "DEMIDJINN",
+    "DRAGON_OF_PHOBOS",
+    "HEKATON",
+    "HERMESIAN_PURSUER",
+    "HYPERTIME_ORACLE",
+    "ICARIAN_HARPY",
+    "LABYRINTHAUROS",
+    "MEDUKETOS",
+    "MIDASCORE",
+    "SUN_DESCENDANT",
+    "THE_BABELIAN_LUNACY",
+    "THE_BURDEN",
+    "THE_NIETZSCJEAN",
+    "TITAN_X",
+    "UR_FLEECE",
+)
+
+BOSS_AVATAR_LABELS = {
+    "ALPHA_TEMENOS": "Boss 头像：吞域兽 / Temenos",
+    "CHIMERA_METASTASIOS": "Boss 头像：蠕变奇美拉 / Chimera Metastasios",
+    "CYCLONUS": "Boss 头像：独眼巨人 / Cyclonus",
+    "DAHAKA": "Boss 头像：达哈卡 / Dahaka",
+    "DEMIDJINN": "Boss 头像：半神迪精 / Demidjinn",
+    "DRAGON_OF_PHOBOS": "Boss 头像：深海惧龙 / Dragon of Phobos",
+    "HEKATON": "Boss 头像：百臂巨人 / Hekaton",
+    "HERMESIAN_PURSUER": "Boss 头像：赫尔墨斯追击者 / Hermesian Pursuer",
+    "HYPERTIME_ORACLE": "Boss 头像：超时光先知 / Hypertime Oracle",
+    "ICARIAN_HARPY": "Boss 头像：伊卡洛斯哈尔皮 / Icarian Harpy",
+    "LABYRINTHAUROS": "Boss 头像：迷宫机牛 / Labyrinthauros",
+    "MEDUKETOS": "Boss 头像：须目刻托斯 / Meduketos",
+    "MIDASCORE": "Boss 头像：迈达狮 / Midascore",
+    "SUN_DESCENDANT": "Boss 头像：坠落太阳 / Sun Descendant",
+    "THE_BABELIAN_LUNACY": "Boss 头像：巴比伦疯塔 / Babelian Lunacy",
+    "THE_BURDEN": "Boss 头像：重担 / The Burden",
+    "THE_NIETZSCJEAN": "Boss 头像：尼采超人 / Nietzschean",
+    "TITAN_X": "Boss 头像：泰坦 X / Titan X",
+    "UR_FLEECE": "Boss 头像：乌尔-弗里斯 / Ur-Fleece",
+}
+
 SUMMON_CARD_LABELS = {
     "001_Nymph_Engine_Nymph": "宁芙 001：引擎宁芙 / Engine Nymph",
     "002_Nymph_Solitude_Nymph": "宁芙 002：孤独宁芙 / Solitude Nymph",
@@ -263,6 +310,8 @@ def component_display_name(path: str, stem: str | None = None) -> str:
         return HERO_PORTRAIT_LABELS.get(raw_stem, f"英雄头像（{raw_stem}）")
     if path.startswith("record/assets/ally/"):
         return ALLY_LABELS.get(raw_stem, f"盟友阵营图标（{raw_stem}）")
+    if path.startswith("record/assets/boss-avatars/"):
+        return BOSS_AVATAR_LABELS.get(raw_stem, f"Boss 头像（{raw_stem}）")
     if path.startswith("record/assets/godforms-nymphs/"):
         return SUMMON_CARD_LABELS.get(raw_stem, f"神形或宁芙实体素材（{raw_stem}）")
     return raw_stem.replace("_", " ")
@@ -485,6 +534,7 @@ class CatalogBuilder:
             ("record/assets/ally/", "common", "英雄/盟友", "盟友"),
             ("record/assets/godforms-nymphs/", "common", "英雄/盟友", "神形/宁芙"),
             ("record/assets/resource-icons/", "common", "资源标记", "记录表资源"),
+            ("record/assets/boss-avatars/", "common", "记录表图标", "Boss 头像"),
         )
         result = []
         for order, path in enumerate(sorted(paths, key=natural_key)):

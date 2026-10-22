@@ -1,0 +1,219 @@
+{
+  "images": [
+    {
+      "path": "aibp/ps/THE_BURDEN/THE_BURDEN_AI_I_001.jpg",
+      "sha256": "de08c7d9e6c01e49f32a50f4fec3869981af83b6c0c8803d18400bbcbc2a3188",
+      "angle": -0.3
+    },
+    {
+      "path": "aibp/ps/THE_BURDEN/THE_BURDEN_AI_I_006.jpg",
+      "sha256": "62a1871cb72327a9f1d10bbffdeacc1be8abcb51026ace2efe985227bc3651e5",
+      "angle": 0.53
+    },
+    {
+      "path": "aibp/ps/THE_BURDEN/THE_BURDEN_AI_II_002.jpg",
+      "sha256": "d3693ff30a725c7da002882f0a5a0e127ad9f11bfe21a47871664b7b21a9c310",
+      "angle": -0.54
+    },
+    {
+      "path": "aibp/ps/CYCLONUS/CYCLONUS_BP_III_001.jpg",
+      "sha256": "4c4dc59a80e0d16d02a361a5c67de4039182fb00bf97a152d6fbbe7f36b4ab33",
+      "angle": -0.3075
+    },
+    {
+      "path": "aibp/ps/CYCLONUS/CYCLONUS_SIGNATURE_X_001.jpg",
+      "sha256": "33393dc919e33e1e89ddbf95533381991e7f3b2872154016cfa077eefdc5d809",
+      "angle": -0.3802
+    },
+    {
+      "path": "aibp/ps/DAHAKA/DAHAKA_AI_I_003.jpg",
+      "sha256": "ccd51a8e99809706700472f3469122206fc18d788b3eb58014244b83d32b8885",
+      "angle": -0.3037
+    },
+    {
+      "path": "aibp/ps/DAHAKA/DAHAKA_AI_I_004.jpg",
+      "sha256": "d4c0d0fb0b31948aebf2b899f7ed75e52cee34cff319283c0d21613b420a2f2d",
+      "angle": -0.4007
+    },
+    {
+      "path": "aibp/ps/DAHAKA/DAHAKA_AI_I_005.jpg",
+      "sha256": "c7cbdbe0ca024725cc9db382a917e0fbc74bfc33560e6b7316972f270748cd0c",
+      "angle": -0.5256
+    },
+    {
+      "path": "aibp/ps/DAHAKA/DAHAKA_AI_I_006.jpg",
+      "sha256": "92553d13f093c610ef701d065eeabeccbe8218c7ff81d3856ed93ffa2506ffc0",
+      "angle": -0.336
+    },
+    {
+      "path": "aibp/ps/DAHAKA/DAHAKA_AI_II_001.jpg",
+      "sha256": "3c8051c82d181c2b5619f0bbd3aed1240154c57aafed0c8e9809fa65d4f95310",
+      "angle": -0.4063
+    },
+    {
+      "path": "aibp/ps/DAHAKA/DAHAKA_AI_II_002.jpg",
+      "sha256": "2518e2837d1c39f0e38e56f94c6d3681b86d63df2a19039446b25cb1a4302618",
+      "angle": -0.4081
+    },
+    {
+      "path": "aibp/ps/DAHAKA/DAHAKA_AI_II_005.jpg",
+      "sha256": "0264ef18c73e6af9ef7ec60813dae240d36a54440f14e0c22dfebe29c404b04a",
+      "angle": -0.51
+    },
+    {
+      "path": "aibp/ps/DAHAKA/DAHAKA_AI_II_006.jpg",
+      "sha256": "614659fe508e59c9b52b5c5c3d06bc7c6781f80188794de0f508c84e7d40832d",
+      "angle": -0.3174
+    },
+    {
+      "path": "aibp/ps/DAHAKA/DAHAKA_AI_III_002.jpg",
+      "sha256": "b208ab6c3c58499bb87b28c05892252d82a195f25af44be38f44779b24ffca76",
+      "angle": -0.4721
+    },
+    {
+      "path": "aibp/ps/DAHAKA/DAHAKA_AI_III_003.jpg",
+      "sha256": "7960b1f62d4cb1a64ec369c2298974b60b0033881ec954a26b7418a3514035fd",
+      "angle": -0.3478
+    },
+    {
+      "path": "aibp/ps/DAHAKA/DAHAKA_AI_III_004.jpg",
+      "sha256": "8676e13e1a6d36dcfb15118d3525a4dc3b74289b7b4dd20113a0a22cafd56413",
+      "angle": -0.3166
+    },
+    {
+      "path": "aibp/ps/DAHAKA/DAHAKA_AI_III_005.jpg",
+      "sha256": "7c861c3a80250fb627b7b0975c0bb169df69cdbbfe9d58dfedfc4e82c11127c2",
+      "angle": -0.3061
+    },
+    {
+      "path": "aibp/ps/DAHAKA/DAHAKA_SIGNATURE_X_001.jpg",
+      "sha256": "933e3f0227425328191986662c5bb387d813b87dd81b47df9925e635f295c2e4",
+      "angle": -0.3183
+    },
+    {
+      "path": "aibp/ps/DEMIDJINN/DEMIDJINN_AI_III_006.jpg",
+      "sha256": "1fb9d67a17a7fe3e41c8a41969a2320c96f48f2b12e00daa6fc4071bf8125a04",
+      "angle": 0.321
+    },
+    {
+      "path": "aibp/ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_AI_III_003.jpg",
+      "sha256": "a476b327104e77c6b2761cb91119b0f1cf76ec94ceb08f2a24d254bdde452c28",
+      "angle": 0.3097
+    },
+    {
+      "path": "aibp/ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_BP_II_003_BACK.jpg",
+      "sha256": "3aa6f2e87f844527c9d9720584093d3e87f45764189f6ebfc3b8c6182a03e9f9",
+      "angle": 0.336
+    },
+    {
+      "path": "aibp/ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_BP_II_005_BACK.jpg",
+      "sha256": "d7a469aa7fb64902e682533a2da2cb0b02fa5b5060cf277aca0303752fa5083d",
+      "angle": 0.3424
+    },
+    {
+      "path": "aibp/ps/HEKATON/HEKATON_AI_II_002.jpg",
+      "sha256": "4f92e328e1b78f8bbf14653d290fd18b5848bb051d3a54b33e0aebca4ec80dd3",
+      "angle": 0.5508
+    },
+    {
+      "path": "aibp/ps/LABYRINTHAUROS/LABYRINTHAUROS_BP_I_006.jpg",
+      "sha256": "7f009f19576fa52e8d4ab6d2af8cc741e2378b61890267edeb3a49124d78bd63",
+      "angle": 0.3165
+    },
+    {
+      "path": "aibp/ps/LABYRINTHAUROS/LABYRINTHAUROS_BP_III_005.jpg",
+      "sha256": "85ef4d6fc92e53858680ad678499c0bc324446ae650c29b8b2e8f8795003baab",
+      "angle": 0.3325
+    },
+    {
+      "path": "aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT_AI_III_004.jpg",
+      "sha256": "da3fba8dba828e35e9b2b91c3bf6464d99e0e939908e1ed1b91b69e52baf4e96",
+      "angle": -0.3559
+    },
+    {
+      "path": "aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT_BP_I_002.jpg",
+      "sha256": "5fde76e4853e8577d78093fa662c3f916e4306ea0de0f3eedd4d5f9d03c53a57",
+      "angle": 0.369
+    },
+    {
+      "path": "aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT_BP_I_003.jpg",
+      "sha256": "aaa51d51add08c41f051452c729cebd931027b62d8056116dea1b06bf1cd2891",
+      "angle": 0.3533
+    },
+    {
+      "path": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_AI_I_001.jpg",
+      "sha256": "c564e7cc852bad138d76b26343d7eb0a5b257de6c84defc5dac9ab93a93304b8",
+      "angle": -0.3056
+    },
+    {
+      "path": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_AI_I_006.jpg",
+      "sha256": "ed36d277e992360adb72ccb36a73f4de423bf1cc111f06e52f721b8a47dbba6d",
+      "angle": 0.5071
+    },
+    {
+      "path": "aibp/ps/TITAN_X/TITAN_X_AI_I_001.jpg",
+      "sha256": "4819cec94e5b657fd25875dd9badf191f0dc70d2a3840a3c2d86810ecae4f663",
+      "angle": 0.3233
+    },
+    {
+      "path": "aibp/ps/TITAN_X/TITAN_X_AI_III_001.jpg",
+      "sha256": "9a8721d3e8cd1390f59735c9f85dd7b1d366cd1865a505eb13038770aea0e42f",
+      "angle": 0.476
+    },
+    {
+      "path": "aibp/ps/TITAN_X/TITAN_X_AI_III_002.jpg",
+      "sha256": "ec04f2ec5bfcdc5c9700f5cd99dde93b80b7d1c901365a6bf7cfc8df5d20a3fa",
+      "angle": 0.3708
+    },
+    {
+      "path": "aibp/ps/TITAN_X/TITAN_X_AI_III_004.jpg",
+      "sha256": "24c2d0d40303ffde5398d92504ab065d1eb4a55ee695c33f49e3f86516ef1d98",
+      "angle": 0.3673
+    },
+    {
+      "path": "aibp/ps/TITAN_X/TITAN_X_BP_I_002.jpg",
+      "sha256": "88a92d36d4c8c7961d9e613b71103dd7260e9dbe3222f2a20af3177a6d1a12fc",
+      "angle": 0.4007
+    },
+    {
+      "path": "aibp/ps/TITAN_X/TITAN_X_BP_I_003.jpg",
+      "sha256": "ee5b9e0fad9a847e826e5844386bd56f89e668f877c8f430c50cab4d4c5a48c9",
+      "angle": 0.3951
+    },
+    {
+      "path": "aibp/ps/TITAN_X/TITAN_X_BP_II_001.jpg",
+      "sha256": "207531d40b56281f0d19aaf2a5453c1ad4ef407614c9e4739e87943fbb311743",
+      "angle": 0.3421
+    },
+    {
+      "path": "aibp/ps/TITAN_X/TITAN_X_BP_III_002.jpg",
+      "sha256": "97b8e86b38469197135213a95e4b5b82f4396e5e6f4b4cce6e691804dac19f74",
+      "angle": 0.5498
+    },
+    {
+      "path": "aibp/ps/TITAN_X/TITAN_X_BP_III_004.jpg",
+      "sha256": "e8667fa1e18260079d2799dbe05194e579b26c4c47a2817626285b43779f1a58",
+      "angle": 0.3644
+    },
+    {
+      "path": "aibp/ps/TITAN_X/TITAN_X_BP_III_005.jpg",
+      "sha256": "e271b5340345c623a1d36ccc842996f77a48b687587d150cd7c2942c754aba97",
+      "angle": 0.3446
+    },
+    {
+      "path": "aibp/ps/TITAN_X/TITAN_X_ROUTINE_X_001.jpg",
+      "sha256": "2ba8ee47f840f6a1dfb97bb211d031025791b3783828e03805d6439f35e8fa67",
+      "angle": 0.6313
+    },
+    {
+      "path": "aibp/ps/UR_FLEECE/UR_FLEECE_BP_I_004.jpg",
+      "sha256": "bda8d464c9df7ab722fec2e6966ce6d193ccfe1616e836d31fe15734905e9e0e",
+      "angle": 0.3375
+    },
+    {
+      "path": "aibp/ps/UR_FLEECE/UR_FLEECE_BP_II_002.jpg",
+      "sha256": "5b2664c9bf23f492271c48890407e94cdb4b0233b30f912541e531b6d322f627",
+      "angle": 0.3685
+    }
+  ]
+}

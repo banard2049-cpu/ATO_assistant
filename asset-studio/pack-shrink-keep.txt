@@ -56,3 +56,7 @@ aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_O_001.jpg
 # ICARIAN_HARPY_TR_I_003：工程版仅 884×1240/0.20M，官中 2376×1628/2.15M
 aibp/ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_TR_V_001.jpg
 aibp/ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_I_003.jpg
+
+# 记录表 Boss 头像（record/assets/boss-avatars/*.png，512×512 透明 PNG，页面按 36px 显示）：
+# 原字节进包，避免调色板重编码改掉透明边缘和刻线细节。
+record/assets/boss-avatars/*

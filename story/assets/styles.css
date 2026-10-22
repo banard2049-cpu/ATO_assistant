@@ -662,6 +662,52 @@ h2 {
   text-align: right;
 }
 
+.official-scan-open {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.42);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: zoom-in;
+}
+
+.official-scan-open .supplement-gallery-hint {
+  margin: 0;
+  text-align: left;
+}
+
+.official-scan-open:hover,
+.official-scan-open:focus-visible {
+  border-color: var(--accent);
+  box-shadow: 0 6px 18px rgba(33, 25, 13, 0.14);
+  outline: none;
+}
+
+.official-scan-open:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.official-scan-open.is-loading {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.official-scan-action {
+  flex: none;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .supplement-gallery .battle-page {
   width: 100%;
   margin: 0;

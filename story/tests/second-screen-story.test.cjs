@@ -349,9 +349,8 @@ test('模式切换失败时把服务端原因交回调用方（以前只回 true
   assert.deepEqual(JSON.parse(JSON.stringify(saved)), { ok: true, error: '' });
 });
 
-test('阅读器渲染的扫描图带兜底钩子，图取不到时换成同一句说明', () => {
-  // 民间版资源包不带官方版故事书截图：官方数据里仍然声明着扫描图，本地却没有这张
-  // 原书页。这时阅读器不能只留一个加载失败的方框。
+test('阅读器进条目只给扫描图按钮，点开失败时换成同一句说明', () => {
+  // 官方原书页可能有几千万像素：进条目时只渲染按钮，不生成 <img>，用户点开才加载。
   const calls = { refresh: 0, schedule: 0 };
   const ctx = vm.createContext({
     storyVersion: '官方版',
@@ -369,9 +368,11 @@ test('阅读器渲染的扫描图带兜底钩子，图取不到时换成同一�
   const html = ctx.renderOfficialScan({ key: 'entry', title: '民间标题' });
   assert.match(html, /data-supplement-scan="c1:entry"/);
   assert.match(html, /data-supplement-scan-hint/);
-  assert.match(html, /data-page-viewer/);
+  assert.match(html, /data-official-scan-open/);
+  assert.match(html, /data-official-scan-src="\.\/data\/ato-storybook-key-scans\/c1-0-0\.jpg"/);
+  assert.doesNotMatch(html, /<img/);
 
-  // 模拟这块 DOM：加载失败的是块里的 img，块自己带着登记键。
+  // 模拟扫描图加载失败的 DOM：块自己带着登记键。
   const block = {
     replaced: '',
     getAttribute: name => (name === 'data-supplement-scan' ? 'c1:entry' : null),
@@ -452,4 +453,58 @@ test('扫描图本机缺失时快照改发官方正文', () => {
 test('阅读器在捕获阶段接管扫描图加载失败', () => {
   // error 事件不冒泡：漏了捕获阶段，兜底函数就永远不会被调用。
   assert.match(STORY_SOURCE, /storyText\.addEventListener\("error", handleStoryImageError, true\)/);
+});
+
+function scanButtonContext(preload) {
+  const opened = [];
+  const ctx = vm.createContext({
+    storyVersion: '官方版',
+    currentBook: () => ({ id: 'c1' }),
+    officialEntries: new Map([['c1:entry', { officialScan: { src: SCAN, status: 'exact' } }]]),
+    missingOfficialScans: new Set(),
+    MISSING_OFFICIAL_SCAN_HINT: MISSING_SCAN_HINT,
+    secondScreenStoryModeToggle: { checked: true },
+    refreshSecondScreenStoryContentToggle: () => {},
+    scheduleSecondScreenStorySnapshot: () => {},
+    openPageViewerImages: (images, index) => opened.push({ images, index }),
+    preloadStoryImage: preload,
+  });
+  ['supportsOfficialVersion', 'escapeHtml', 'officialScanHintHtml', 'openOfficialScan']
+    .forEach(name => vm.runInContext(slice(STORY_SOURCE, name, '  '), ctx));
+  const hint = { textContent: '官方扫描图 · 点击加载原书页' };
+  const classes = new Set();
+  const block = {
+    replaced: '',
+    getAttribute: name => (name === 'data-supplement-scan' ? 'c1:entry' : null),
+    set outerHTML(value) { this.replaced = value; },
+  };
+  const button = {
+    dataset: { officialScanSrc: SCAN, officialScanAlt: '官方扫描图' },
+    disabled: false,
+    isConnected: true,
+    classList: { add: name => classes.add(name), remove: name => classes.delete(name) },
+    querySelector: selector => (selector === '[data-supplement-scan-hint]' ? hint : null),
+    closest: selector => (selector === '[data-supplement-scan]' ? block : null),
+  };
+  return { ctx, opened, hint, classes, block, button };
+}
+
+test('官方扫描图只在点开按钮后才加载并打开查看器', async () => {
+  const { ctx, opened, hint, classes, button } = scanButtonContext(async src => ({ src }));
+  await ctx.openOfficialScan(button);
+  assert.equal(opened.length, 1);
+  assert.equal(opened[0].images.length, 1);
+  assert.equal(opened[0].images[0].src, SCAN);
+  assert.equal(opened[0].images[0].alt, '官方扫描图');
+  assert.equal(button.disabled, false);
+  assert.equal(classes.size, 0);
+  assert.equal(hint.textContent, '官方扫描图 · 点击加载原书页');
+});
+
+test('官方扫描图点开失败时替换成同一句本地缺失提示', async () => {
+  const { ctx, opened, block, button } = scanButtonContext(async () => { throw new Error('missing'); });
+  await ctx.openOfficialScan(button);
+  assert.equal(opened.length, 0);
+  assert.ok(block.replaced.includes(MISSING_SCAN_HINT));
+  assert.equal([...ctx.missingOfficialScans].join(), 'c1:entry');
 });

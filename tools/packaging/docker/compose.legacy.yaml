@@ -28,6 +28,7 @@ services:
       # Recursive: layered HD maps, shared card backs and legacy flat scans.
       - ./app/map/images:/app/map/images
       - ./app/map/tokens:/app/map/tokens
+      # 记录表素材整棵挂 assets（含 Boss 头像 record/assets/boss-avatars/），与 compose.yaml 一致。
       - ./app/record/assets:/app/record/assets
       # Only mount artwork so the second-screen program can still update.
       - ./app/ss/battle-board:/app/ss/battle-board:ro

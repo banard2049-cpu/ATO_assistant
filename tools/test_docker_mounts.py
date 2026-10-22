@@ -371,6 +371,16 @@ def main() -> int:
             if not any(covers(target, resource_path) for target in targets):
                 failures.append(f"资料包素材没有挂载点覆盖：{resource_path}")
 
+    # 记录表 Boss 头像（record/assets/boss-avatars/*.png，2026-10-22）：PNG 不随镜像分发，
+    # 只能靠资料包解压到宿主机的 record/assets 再挂进容器。显式钉一遍，防止以后有人把
+    # 整棵 record/assets 拆成 resource-icons/ 之类的“纯素材”子目录，头像又变成 404。
+    boss_avatar = "/app/record/assets/boss-avatars/HEKATON.png"
+    if not any(covers(target, boss_avatar) for target in targets):
+        failures.append(
+            "compose 没有让 record/assets/boss-avatars/ 落在挂载里："
+            "记录表 Boss 头像会 404；record/assets 必须整棵挂到 /app/record/assets"
+        )
+
     # 3. BGM 挂载点要和 manifest.audioDir 对上（两边不一致就永远找不到音频）
     audio_match = re.search(r'audioDir:\s*"([^"]*)"', manifest)
     if not audio_match:

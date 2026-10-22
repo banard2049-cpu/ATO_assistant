@@ -8,6 +8,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
+import android.view.ViewGroup;
+import android.webkit.RenderProcessGoneDetail;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
@@ -15,6 +17,8 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -28,6 +32,7 @@ public final class MainActivity extends Activity {
   private static final int ATOPACK_CHOOSER_REQUEST = 1002;
   private static final int EXPORT_CHOOSER_REQUEST = 1003;
   private WebView webView;
+  private FrameLayout rootView;
   private ValueCallback<Uri[]> filePathCallback;
   private Uri pendingCameraUri;
   private LocalCampaignApi localApi;
@@ -57,7 +62,10 @@ public final class MainActivity extends Activity {
     if ((getApplicationInfo().flags & android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
       WebView.setWebContentsDebuggingEnabled(true);
     }
-    setContentView(webView);
+    rootView = new FrameLayout(this);
+    rootView.addView(webView, new FrameLayout.LayoutParams(
+        FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+    setContentView(rootView);
 
     WebSettings settings = webView.getSettings();
     settings.setJavaScriptEnabled(true);
@@ -72,14 +80,45 @@ public final class MainActivity extends Activity {
     webView.addJavascriptInterface(new LocalApiBridge(), "ATOAndroid");
     webView.setWebViewClient(new WebViewClient() {
       @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-        WebResourceResponse override = atopackStore.intercept(request.getUrl());
-        return override != null ? override : super.shouldInterceptRequest(view, request);
+        try {
+          WebResourceResponse override = atopackStore.intercept(request.getUrl());
+          return override != null ? override : super.shouldInterceptRequest(view, request);
+        } catch (RuntimeException error) {
+          // 资料包里的文件损坏/被删时退回 APK 资源，不让回调线程把应用带走。
+          return super.shouldInterceptRequest(view, request);
+        }
       }
 
       @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
         Uri uri = request.getUrl();
         if ("file".equals(uri.getScheme()) && uri.toString().startsWith(ROOT)) return false;
-        startActivity(new Intent(Intent.ACTION_VIEW, uri));
+        try {
+          startActivity(new Intent(Intent.ACTION_VIEW, uri));
+        } catch (Exception error) {
+          Toast.makeText(MainActivity.this, "没有可以打开这个链接的应用。", Toast.LENGTH_SHORT).show();
+        }
+        return true;
+      }
+
+      // 故事书这类页面会把整本官方数据读进渲染进程；内存不足时 Android 会直接结束
+      // 渲染进程。不处理这个回调，系统会连整个应用一起杀掉（用户看到的就是闪退）。
+      // 这里销毁已失效的 WebView，回到主控台，至少不会丢应用。
+      @Override public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
+        if (view != webView) return true;
+        webView = null;
+        if (view.getParent() instanceof ViewGroup) ((ViewGroup) view.getParent()).removeView(view);
+        view.destroy();
+        Toast.makeText(
+            MainActivity.this,
+            detail.didCrash()
+                ? "页面渲染进程异常退出，已返回主控台。"
+                : "内存不足，页面已被系统关闭，已返回主控台。",
+            Toast.LENGTH_LONG).show();
+        if (rootView != null) {
+          rootView.post(() -> {
+            if (!isFinishing() && !isDestroyed()) recreate();
+          });
+        }
         return true;
       }
     });
@@ -162,7 +201,7 @@ public final class MainActivity extends Activity {
   }
 
   @Override public void onBackPressed() {
-    if (webView.canGoBack()) webView.goBack(); else super.onBackPressed();
+    if (webView != null && webView.canGoBack()) webView.goBack(); else super.onBackPressed();
   }
 
   @Override protected void onDestroy() {
@@ -172,7 +211,11 @@ public final class MainActivity extends Activity {
       storyTts.shutdown();
       storyTts = null;
     }
-    if (webView != null) webView.destroy();
+    if (webView != null) {
+      webView.destroy();
+      // 延迟的 TTS / 导入 / 导出回调仍可能排队到 UI 线程；置空让它们安静退出。
+      webView = null;
+    }
     super.onDestroy();
   }
 
@@ -423,12 +466,18 @@ public final class MainActivity extends Activity {
   }
 
   private void notifyAtopackResult(org.json.JSONObject result) {
-    runOnUiThread(() -> webView.evaluateJavascript(
-      "window.ATOAtopackImportResult && window.ATOAtopackImportResult(" + result.toString() + ")", null));
+    runOnUiThread(() -> {
+      if (webView == null) return;
+      webView.evaluateJavascript(
+        "window.ATOAtopackImportResult && window.ATOAtopackImportResult(" + result.toString() + ")", null);
+    });
   }
 
   private void notifyExportResult(org.json.JSONObject result) {
-    runOnUiThread(() -> webView.evaluateJavascript(
-      "window.ATOAndroidExportResult && window.ATOAndroidExportResult(" + result.toString() + ")", null));
+    runOnUiThread(() -> {
+      if (webView == null) return;
+      webView.evaluateJavascript(
+        "window.ATOAndroidExportResult && window.ATOAndroidExportResult(" + result.toString() + ")", null);
+    });
   }
 }

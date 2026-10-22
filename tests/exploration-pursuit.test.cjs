@@ -56,7 +56,7 @@ test('count both piles and every chained draw; merchant choices never activate p
   assert.equal(pursuit.countMarkers(ctx).total, 0);
 });
 
-test('no enemy plus fewer than two symbols records no event movement or payment; two spawn without chasing', () => {
+test('no enemy plus fewer than two symbols records no event movement or payment; two spawn after the introduction', () => {
   for (const ids of [['6401'], ['6407']]) {
     const ctx = fixture(ids, { adversary: '' }), before = clone(ctx), result = apply(ctx);
     assert.equal(result.ok, true);
@@ -65,12 +65,80 @@ test('no enemy plus fewer than two symbols records no event movement or payment;
     assert.equal(result.record.cycleStats.c1.fate, '3');
     assert.deepEqual(clone(ctx), before);
   }
+  // 咯咯笑（两张追踪标记）也只有在特殊事件把宿敌放进地图之后才会生成。
   const ctx = fixture(['6436'], { adversary: '' }), result = apply(ctx);
   assert.equal(result.ok, true);
-  assert.equal(result.mapState.cycles.c1.tokens.AD, '005');
-  assert.equal(result.event.pursuit.mode, 'spawn');
-  assert.equal(result.event.pursuit.steps, 0);
+  assert.equal(result.event.pursuit.mode, 'none', '宿敌尚未登场时不生成');
+  assert.equal(result.mapState, undefined);
   assert.equal(apply(ctx, {waive:true}).code,'CANNOT_WAIVE_SPAWN');
+  ctx.mapState.cycles.c1.adversaryIntroduced = true;
+  const spawned = apply(ctx);
+  assert.equal(spawned.mapState.cycles.c1.tokens.AD, '005');
+  assert.equal(spawned.mapState.cycles.c1.adversaryIntroduced, true, '生成后要留下已登场标记');
+  assert.equal(spawned.event.pursuit.mode, 'spawn');
+  assert.equal(spawned.event.pursuit.steps, 0);
+});
+
+test('markers are ignored until the cycle special event introduces the adversary', () => {
+  const ctx = fixture(['6436'], { adversary: '' });
+  const counted = pursuit.countMarkers(ctx);
+  assert.equal(counted.total, 2, '抽到的标记照常展示，方便核对');
+  const preview = pursuit.plan(ctx);
+  assert.equal(preview.ok, true);
+  assert.equal(preview.ignored, true);
+  assert.equal(preview.total, 0);
+  assert.equal(preview.rawTotal, 2);
+  assert.equal(preview.mode, 'none');
+  const settled = apply(ctx);
+  assert.equal(settled.ok, true);
+  assert.equal(settled.event.pursuit.total, 0);
+  assert.equal(settled.event.rewardLabel, '宿敌未引入，追踪标记忽略。');
+  assert.equal(settled.mapState, undefined, '未引入时不写地图');
+  // 只有一个标记时同样忽略；没有标记则还是普通的一轮“无事发生”。
+  const single = fixture(['6407'], { adversary: '' });
+  assert.equal(pursuit.plan(single).ignored, true);
+  assert.equal(pursuit.plan(single).rawTotal, 1);
+  assert.equal(apply(single).event.rewardLabel, '宿敌未引入，追踪标记忽略。');
+  const empty = fixture(['6401'], { adversary: '' });
+  assert.equal(pursuit.plan(empty).ignored, undefined);
+  assert.match(apply(empty).event.rewardLabel, /无事发生/);
+  // 旧存档没有 adversaryIntroduced 字段，但地图上已经有模型，按已引入处理。
+  assert.equal(pursuit.introduction(fixture()).introduced, true);
+});
+
+test('the introduction flag is per cycle and defaults to not introduced', () => {
+  for (const cycle of ['c1', 'c2', 'c3', 'c4', 'c5']) {
+    assert.equal(pursuit.introduction({ cycleId: cycle, mapState: { cycles: {} } }).introduced, false, cycle);
+  }
+  assert.equal(pursuit.introduction({ cycleId: 'c1', mapState: { cycles: { c1: { tokens: { AD: '006' } }, c2: {} } } }).introduced, true);
+  assert.equal(pursuit.introduction({ cycleId: 'c2', mapState: { cycles: { c1: { tokens: { AD: '006' } }, c2: {} } } }).introduced, false, '其他循环的仇敌不算本循环已引入');
+  assert.equal(pursuit.introduction({ cycleId: 'c5', mapState: { cycles: { c5: { titanXTrackPosition: 7 } } } }).introduced, true);
+});
+
+test('dashboard map commands keep the cycle introduction flag', () => {
+  const source = fs.readFileSync(require.resolve('../index.html'), 'utf8').replace(/\r\n/g, '\n');
+  const match = source.match(/^ {4}function normalizeMapCommandState\([^]*?^ {4}}/m);
+  assert.ok(match, 'normalizeMapCommandState');
+  const sandbox = { window: { ATO_MAP_DATA: data }, isPlainObject: value => Boolean(value) && typeof value === 'object' && !Array.isArray(value) };
+  vm.createContext(sandbox);
+  vm.runInContext(`${match[0]}\nthis.normalize = normalizeMapCommandState;`, sandbox);
+  const normalized = sandbox.normalize({ cycles: { c1: { currentTile: '001', tokens: { AD: '006' }, adversaryIntroduced: true } } }, 'c1');
+  assert.equal(normalized.cycles.c1.adversaryIntroduced, true, '整体重写地图分区时不能丢掉已登场状态');
+  assert.equal(normalized.cycles.c1.tokens.AD, '006');
+  assert.equal(normalized.cycles.c1.adversaryIntroduced, pursuit.introduction({ cycleId: 'c1', mapState: normalized }).introduced);
+});
+
+test('Cycle V ignores markers until Titan X is placed on the track', () => {
+  const ctx = fixture(['10311', '10318'], { cycle: 'c5', adversary: '' });
+  ctx.mapState.cycles.c5.titanXTrackPosition = null;
+  const ignored = apply(ctx);
+  assert.equal(ignored.ok, true);
+  assert.equal(ignored.event.pursuit.mode, 'none');
+  assert.equal(ignored.mapState, undefined);
+  ctx.mapState.cycles.c5.titanXTrackPosition = 7;
+  const move = apply(ctx);
+  assert.equal(move.event.pursuit.mode, 'move');
+  assert.equal(move.mapState.cycles.c5.titanXTrackPosition, 5);
 });
 
 test('normal pursuit moves exactly the count along the shared path, preserving unrelated map markers', () => {
@@ -129,20 +197,25 @@ test('unreachable routes stay still; missing spawn routes and stale rounds fail 
   const result=apply(ctx);
   assert.equal(result.ok,true);
   assert.equal(result.mapState.cycles.c1.tokens.AD,'006');
-  ctx.mapState.cycles.c1.tokens.AD='';
+  // 宿敌已被打掉但本循环已经登场过：2 个标记仍按原规则生成，只是没有合格位置。
+  ctx.mapState.cycles.c1.tokens.AD='';ctx.mapState.cycles.c1.adversaryIntroduced=true;
   assert.equal(apply(ctx).code,'NO_SPAWN_LOCATION');
   assert.equal(apply(fixture(),{roundId:'old'}).code,'EXPLORATION_CHANGED');
   assert.equal(apply(fixture(['forged'])).code,'UNKNOWN_PURSUIT_CARD');
 });
 
-test('Cycle V uses Titan X track, spawn at seven, then advances once per marker and respects avoidance', () => {
-  const ctx=fixture(['10311','10318'],{cycle:'c5',adversary:''}),spawn=apply(ctx);
-  assert.equal(spawn.mapState.cycles.c5.titanXTrackPosition,7);
+test('Cycle V advances once per marker along the Titan X track and respects avoidance', () => {
   const move=apply(fixture(['10311','10318'],{cycle:'c5'}));
   assert.equal(move.mapState.cycles.c5.titanXTrackPosition,5);
   const waive=apply(fixture(['10311','10318'],{cycle:'c5'}),{waive:true});
   assert.equal(waive.mapState.cycles.c5.titanXTrackPosition,6);
   assert.equal(waive.mapState.cycles.c5.tokens.AD,'002');
+  // 泰坦 X 被击杀、追踪轨清空后，本循环仍算已登场，2 个标记会重新放到第 7 格。
+  const cleared=fixture(['10311','10318'],{cycle:'c5',adversary:''});
+  cleared.mapState.cycles.c5.titanXTrackPosition=null;
+  cleared.mapState.cycles.c5.adversaryIntroduced=true;
+  const respawn=apply(cleared);
+  assert.equal(respawn.mapState.cycles.c5.titanXTrackPosition,7);
 });
 
 function clientFixture(options={}) {
