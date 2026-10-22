@@ -76,6 +76,17 @@ def side_trim(band: np.ndarray, depth: int) -> int:
     A dark header, illustration or printed footer extending inward is retained.
     """
     gray = band[..., :3].astype(np.float32) @ np.array([.299, .587, .114], dtype=np.float32)
+    # A white scanner margin outside a dark card face has the opposite polarity
+    # to a black cut line. Require a continuous dark face after the margin, so
+    # pale card stock, title lettering and printed light panels are retained.
+    if (gray[0] > 180).mean() >= .2:
+        dark = gray < 120
+        first = dark.argmax(axis=0)
+        end = int(np.ceil(np.quantile(first, .99)))
+        if (0 < end < depth and dark.any(axis=0).mean() >= .995
+                and all((gray[row] < 140).mean() >= .97 for row in range(end, end + 4))
+                and ((gray[0] - gray[end + 2]) > 70).mean() >= .2):
+            return end + 1
     transitions = np.zeros((depth, gray.shape[1]), dtype=bool)
     candidates = []
     for row in range(depth):
@@ -143,11 +154,38 @@ def reviewed_scan(path: Path, target: str, image: Image.Image) -> dict | None:
 
 def measured_trims(path: Path, target: str, image: Image.Image) -> list[int]:
     reviewed = reviewed_scan(path, target, image)
-    return list(reviewed["trim"]) if reviewed and "trim" in reviewed else detect_trims(image)
+    trim = list(reviewed["trim"]) if reviewed and "trim" in reviewed else detect_trims(image)
+    if target.startswith('assets/exploration-cards/'):
+        trim[0] = max(trim[0], exploration_header_halo(image))
+    return trim
+
+
+def exploration_header_halo(image: Image.Image) -> int:
+    """Measure the shallow gray scanner fringe above a black exploration title.
+
+    Only the first four rows qualify, with a broad, consistent brightness drop.
+    A light face or isolated title glyphs cannot meet this transition test.
+    """
+    w, h = image.size
+    if min(w, h) < 250:
+        return 0
+    gray = np.asarray(image.crop((round(w * .08), 0, round(w * .92), 8))).mean(axis=2)
+    medians = np.median(gray, axis=1)
+    if not (35 < medians[0] < 150 and medians[3:7].min() < medians[0] * .55):
+        return 0
+    for row in range(1, 5):
+        if (medians[row] < medians[0] * .55
+                and ((gray[0] - gray[row]) > 12).mean() >= .7):
+            return row + 1
+    return 0
 
 
 def fingerprint_variants(path: Path, target: str, image: Image.Image, trim: list) -> list[dict]:
     variants = [{"size": list(image.size), "samples": samples(image), "trim": trim}]
+    # These titles can begin immediately below the measured halo. Do not add
+    # the ordinary extra screen pixel (several source pixels in a thumbnail).
+    if target.startswith('assets/exploration-cards/') and exploration_header_halo(image):
+        variants[0]['guards'] = {'top': 0}
     reviewed = reviewed_scan(path, target, image)
     if reviewed and "browserSamples" in reviewed:
         variants.append({"size": list(image.size), "samples": reviewed["browserSamples"], "trim": trim})
@@ -189,7 +227,10 @@ def add_pack_variants(data: dict, pack: Path) -> int:
             nearest = int(np.argmin([delta.mean() for delta in differences]))
             if differences[nearest].mean() > 6 or differences[nearest].max() > 40:
                 continue
-            variants.append({"size": list(image.size), "samples": fingerprint, "trim": same_size[nearest]["trim"]})
+            variant = {"size": list(image.size), "samples": fingerprint, "trim": same_size[nearest]["trim"]}
+            if 'guards' in same_size[nearest]:
+                variant['guards'] = same_size[nearest]['guards']
+            variants.append(variant)
             added += 1
     return added
 

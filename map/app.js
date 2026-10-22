@@ -1790,6 +1790,8 @@ function placeToken(tileId) {
   } else if (tokenId === "AD") {
     pushUndo();
     cycleState.tokens.AD = cycleState.tokens.AD === tileId ? "" : tileId;
+    // 手动把仇敌模型放到地图上，等于本循环的宿敌已经登场；探索卡的追踪标记从此才结算。
+    if (cycleState.tokens.AD) cycleState.adversaryIntroduced = true;
     if (cycleState.tokens.AD && cycleState.tokens.AD === cycleState.currentTile) {
       triggerAdversaryBattle();
       return;
@@ -2083,6 +2085,7 @@ function spawnAdversary() {
     pushUndo();
     cycleState.titanXTrackPosition = 7;
     cycleState.tokens.AD = "";
+    cycleState.adversaryIntroduced = true;
     saveState();
     render();
     return;
@@ -2153,6 +2156,7 @@ function placeAdversary(tileId) {
   const cycleState = activeCycleState();
   pushUndo();
   cycleState.tokens.AD = tileId;
+  cycleState.adversaryIntroduced = true;
   clearPendingAdversarySpawn();
   saveState();
   render();

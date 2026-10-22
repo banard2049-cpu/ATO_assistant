@@ -51,7 +51,11 @@
       const [top, right, bottom, left] = entry.trim;
       if (![top, right, bottom, left].every(value => Number.isFinite(value) && value >= 0)
         || top + bottom >= height || left + right >= width) continue;
-      return { top: top / height, right: right / width, bottom: bottom / height, left: left / width,
+      const guards = entry.guards;
+      if (guards !== undefined && (!guards || typeof guards !== 'object'
+        || Object.entries(guards).some(([side, value]) => !['top', 'right', 'bottom', 'left'].includes(side)
+          || !Number.isFinite(value) || value < 0 || value > 1))) continue;
+      return { ...(guards ? { guards } : {}), top: top / height, right: right / width, bottom: bottom / height, left: left / width,
         naturalWidth: width, naturalHeight: height };
     }
     return null;

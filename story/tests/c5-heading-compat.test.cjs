@@ -139,10 +139,16 @@ test('forbidden nodes and transformed text cause no partial DOM mutation', () =>
 
 test('both screens use the same revised renderer and local mapping cache versions', () => {
   const root = path.resolve(__dirname, '../..');
-  for (const page of ['story/index.html', 'ss/index.html']) {
-    const html = fs.readFileSync(path.join(root, page), 'utf8');
+  const story = fs.readFileSync(path.join(root, 'story/index.html'), 'utf8');
+  const second = fs.readFileSync(path.join(root, 'ss/index.html'), 'utf8');
+  const app = fs.readFileSync(path.join(root, 'story/assets/app.js'), 'utf8');
+  for (const html of [story, second]) {
     assert.match(html, /mixed-media\/renderer\.js\?v=c4c5-20261006-r3-compat1/);
-    assert.match(html, /mixed-media\/mapping\.js\?v=c4c5-20261006-official-c45-1/);
     assert.match(html, /story-tables\.js\?v=20261016-reward-tables1/);
   }
+  // 故事书页把十几兆的 mapping 改成 app.js 空闲时按需加载，首屏不再写死 script 标签；
+  // 第二屏仍由页面直接加载。两处版本必须一致。
+  assert.doesNotMatch(story, /mixed-media\/mapping\.js\?v=/);
+  assert.match(app, /mixed-media\/mapping\.js\?v=c4c5-20261006-official-c45-1/);
+  assert.match(second, /mixed-media\/mapping\.js\?v=c4c5-20261006-official-c45-1/);
 });

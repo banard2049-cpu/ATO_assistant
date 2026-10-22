@@ -8,11 +8,20 @@
   }
   const fanData = window.STORYBOOK_DATA;
   let data = fanData;
-  const officialData = window.STORYBOOK_OFFICIAL_DATA || { books: [] };
-  const officialEntries = new Map();
-  officialData.books.forEach((book) => (book.entries || []).forEach((entry) => officialEntries.set(`${book.id}:${entry.key}`, entry)));
+  // 官方版正文只在官方版下使用；民间版不加载它，首次切到官方版时再按需读入。
+  let officialData = window.STORYBOOK_OFFICIAL_DATA || { books: [] };
+  let officialEntries = new Map();
+  let officialDataPromise = null;
+  function indexOfficialData() {
+    officialEntries = new Map();
+    officialData.books.forEach((book) => (book.entries || []).forEach((entry) => officialEntries.set(`${book.id}:${entry.key}`, entry)));
+  }
+  indexOfficialData();
   const characterData = window.STORY_CHARACTER_DATA || { characters: [] };
-  const entityData = buildEntityData(window.STORY_ENTITY_INDEX, characterData);
+  // 人物小传索引有十几兆：默认关闭时不读，等用户真的打开「人物小传」再加载，
+  // 避免安卓上的故事书一进来就把整本索引塞进 WebView。
+  let entityData = buildEntityData(window.STORY_ENTITY_INDEX, characterData);
+  let entityIndexPromise = null;
   const storageKey = "ato-story-memory-v1";
 
   const bookSelect = document.querySelector("#bookSelect");
@@ -282,6 +291,32 @@
     };
   }
 
+  function loadEntityIndex() {
+    if (window.STORY_ENTITY_INDEX) {
+      entityData = buildEntityData(window.STORY_ENTITY_INDEX, characterData);
+      initEntities();
+      return Promise.resolve();
+    }
+    if (!entityIndexPromise) {
+      entityIndexPromise = new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = "./data/entity-index.js?v=c4c5-20261006-r2";
+        script.onload = () => {
+          entityData = buildEntityData(window.STORY_ENTITY_INDEX, characterData);
+          initEntities();
+          resolve();
+        };
+        script.onerror = () => {
+          entityIndexPromise = null;
+          script.remove();
+          reject(new Error("人物小传数据加载失败，请检查 data/entity-index.js 是否存在。"));
+        };
+        document.head.appendChild(script);
+      });
+    }
+    return entityIndexPromise;
+  }
+
   function initEntities() {
     entityLookup.clear();
     const aliasRecords = [];
@@ -395,9 +430,22 @@
     entityBioToggle.classList.toggle("active", entityBiosEnabled);
   }
 
-  function toggleEntityBios() {
+  async function toggleEntityBios() {
     if (!entityBioToggle) return;
     if (!entityBiosEnabled) {
+      if (!(entityData.entities || []).length) {
+        entityBioToggle.disabled = true;
+        entityBioToggle.textContent = "人物小传：加载中…";
+        try {
+          await loadEntityIndex();
+        } catch (error) {
+          entityBioToggle.disabled = false;
+          updateEntityBioToggle();
+          window.alert(error.message || String(error));
+          return;
+        }
+        entityBioToggle.disabled = false;
+      }
       const accepted = window.confirm(
         "人物小传为 AI 生成，仅用于提醒人物大致是谁，不保证正确；同时非剧透部分也可能包含剧透。\n\n请在明白上述风险后再打开人物小传。"
       );
@@ -460,6 +508,32 @@
       entries.sort((a, b) => a.order - b.order);
       return { ...book, entries, entryCount: entries.length };
     }) };
+  }
+
+  function loadOfficialData() {
+    if (window.STORYBOOK_OFFICIAL_DATA) {
+      officialData = window.STORYBOOK_OFFICIAL_DATA;
+      indexOfficialData();
+      return Promise.resolve();
+    }
+    if (!officialDataPromise) {
+      officialDataPromise = new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = "./data/storybook-official-data.js?v=20261006-official-c45-1";
+        script.onload = () => {
+          officialData = window.STORYBOOK_OFFICIAL_DATA || { books: [] };
+          indexOfficialData();
+          resolve();
+        };
+        script.onerror = () => {
+          officialDataPromise = null;
+          script.remove();
+          reject(new Error("官方版故事数据加载失败，请确认已导入官方版资源包。"));
+        };
+        document.head.appendChild(script);
+      });
+    }
+    return officialDataPromise;
   }
 
   function currentBook() {
@@ -1539,6 +1613,9 @@
     if (!pageViewer || pageViewer.hidden) return;
     pageViewer.hidden = true;
     pageViewerState.pointerId = null;
+    pageViewerState.images = [];
+    // 原书扫描图可能有几千万像素；关掉后立即断开引用，别让解码后的位图跟着页面一直占内存。
+    pageViewer.querySelector(".page-viewer-image")?.removeAttribute("src");
     document.body.style.overflow = pageViewerState.previousBodyOverflow;
   }
 
@@ -1647,23 +1724,27 @@
     return pageViewer;
   }
 
+  function openPageViewerImages(images, index = 0) {
+    if (!images.length) return;
+    ensurePageViewer();
+    pageViewerState.images = images.map((image) => ({
+      src: image.currentSrc || image.src,
+      alt: image.alt || "原书扫描页",
+    }));
+    pageViewerState.previousBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    pageViewer.hidden = false;
+    setPageViewerImage(Math.max(0, Math.min(index, images.length - 1)));
+    pageViewer.querySelector(".page-viewer-close").focus();
+  }
+
   function openPageViewer(target) {
     const gallery = target.closest(".supplement-gallery");
     const images = gallery
       ? Array.from(gallery.querySelectorAll("[data-page-viewer]"))
       : [target];
     if (!images.length) return;
-
-    ensurePageViewer();
-    pageViewerState.images = images.map((image) => ({
-      src: image.currentSrc || image.src,
-      alt: image.alt,
-    }));
-    pageViewerState.previousBodyOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    pageViewer.hidden = false;
-    setPageViewerImage(Math.max(0, images.indexOf(target)));
-    pageViewer.querySelector(".page-viewer-close").focus();
+    openPageViewerImages(images, Math.max(0, images.indexOf(target)));
   }
 
   function normalizeTableCell(text) {
@@ -3273,20 +3354,57 @@
     const scanKey = `${currentBook()?.id}:${entry.key}`;
     const scan = officialEntries.get(scanKey)?.officialScan;
     if (!scan?.src) return officialScanHintHtml("", "该条目暂无对应的官方扫描图。");
-    // 已经知道本机没有这张图时不再渲染 img：反复发一个必然失败的请求没有意义。
+    // 已经知道本机没有这张图时不再渲染加载按钮：反复发一个必然失败的请求没有意义。
     if (missingOfficialScans.has(scanKey)) return officialScanHintHtml(scanKey, MISSING_OFFICIAL_SCAN_HINT);
     const note = scan.status === "title-only" ? "（仅定位标题）"
       : scan.status === "page-context" ? "（含完整原页上下文）" : "";
-    // 声明了扫描图不等于本地真有这张图：民间版资源包不带原书扫描图，图也可能没跟着
-    // 项目走。这一块整体包在 data-supplement-scan 里，图加载失败时由
-    // handleStoryImageError 换成同一句说明，而不是留一个破图。
-    return `<div class="supplement-scan" data-supplement-scan="${escapeHtml(scanKey)}"><div class="supplement-gallery-hint" data-supplement-scan-hint>官方扫描图${note} · 点击放大查看</div><div class="battle-gallery supplement-gallery"><img class="battle-page zoomable-page" src="${escapeHtml(scan.src)}" alt="${escapeHtml(entry.title)} 官方扫描图" loading="lazy" data-page-viewer tabindex="0" role="button" title="点击放大查看原书页"></div></div>`;
+    // 官方原书页可能有几千万像素，进条目时不加载，只放一个按钮；用户点开时才取图，
+    // 并且只在放大查看器里显示。点开失败时走 openOfficialScan 的兜底。
+    return `<div class="supplement-scan" data-supplement-scan="${escapeHtml(scanKey)}"><button type="button" class="official-scan-open" data-official-scan-open data-official-scan-src="${escapeHtml(scan.src)}" data-official-scan-alt="${escapeHtml(entry.title)} 官方扫描图"><span class="supplement-gallery-hint" data-supplement-scan-hint>官方扫描图${note} · 点击加载原书页</span><span class="official-scan-action">查看原书页</span></button></div>`;
   }
 
   // 扫描图那一块的提示语：有 data-supplement-scan 属性时就是「这块图加载失败过」的登记键。
   function officialScanHintHtml(scanKey, message) {
     const attribute = scanKey ? ` data-supplement-scan="${escapeHtml(scanKey)}"` : "";
     return `<div class="supplement-scan"${attribute}><div class="supplement-gallery-hint" data-supplement-scan-hint>${message}</div></div>`;
+  }
+
+  function preloadStoryImage(src) {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error("官方扫描图加载失败"));
+      image.src = src;
+    });
+  }
+
+  async function openOfficialScan(button) {
+    if (!button || button.disabled) return;
+    const src = button.dataset.officialScanSrc;
+    const alt = button.dataset.officialScanAlt || "官方扫描图";
+    const block = button.closest("[data-supplement-scan]");
+    const scanKey = block?.getAttribute("data-supplement-scan") || "";
+    if (!src) return;
+    const hint = button.querySelector("[data-supplement-scan-hint]");
+    const previous = hint?.textContent || "";
+    button.disabled = true;
+    button.classList.add("is-loading");
+    if (hint) hint.textContent = "正在加载原书页…";
+    try {
+      await preloadStoryImage(src);
+    } catch {
+      if (scanKey) missingOfficialScans.add(scanKey);
+      if (block) block.outerHTML = officialScanHintHtml(scanKey, MISSING_OFFICIAL_SCAN_HINT);
+      refreshSecondScreenStoryContentToggle(Boolean(secondScreenStoryModeToggle?.checked));
+      scheduleSecondScreenStorySnapshot();
+      return;
+    }
+    // 加载期间用户可能已经跳到别的条目；不要拿旧图盖住新页面。
+    if (!button.isConnected) return;
+    openPageViewerImages([{ src, alt }], 0);
+    button.disabled = false;
+    button.classList.remove("is-loading");
+    if (hint) hint.textContent = previous;
   }
 
   // 官方扫描图取不到（民间版资源包不带原书扫描图、原书页没跟项目走，或图被删了）时，
@@ -4448,7 +4566,7 @@
     if (deepLinkTarget.bookId) bookSelect.value = deepLinkTarget.bookId;
 
     loadMemories();
-    initEntities();
+    if (window.STORY_ENTITY_INDEX) initEntities();
     updateEntityBioToggle();
     renderMemories();
     loadVoices();
@@ -4564,15 +4682,25 @@
     }
     renderResults(searchEntries(searchInput.value));
   }
+  function applyStoryLanguage(language) {
+    const nextVersion = language === "en" ? "English" : language === "official" || language === true ? "官方版" : "民间版";
+    if (nextVersion === "官方版" && !officialData.books.length) {
+      loadOfficialData()
+        .then(() => syncStoryLanguage("official"))
+        .catch((error) => console.warn("官方版故事数据加载失败：", error));
+      return;
+    }
+    syncStoryLanguage(language);
+  }
   window.addEventListener("storage", (event) => {
-    if (event.key === "ato-term-language-v1") syncStoryLanguage(event.newValue);
+    if (event.key === "ato-term-language-v1") applyStoryLanguage(event.newValue);
   });
   window.addEventListener("ato-term-language-changed", (event) => {
-    if (event.detail?.language || typeof event.detail?.official === "boolean") syncStoryLanguage(event.detail.language || event.detail.official);
+    if (event.detail?.language || typeof event.detail?.official === "boolean") applyStoryLanguage(event.detail.language || event.detail.official);
   });
-  window.addEventListener("ato-language-changed", (event) => syncStoryLanguage(event.detail?.language));
+  window.addEventListener("ato-language-changed", (event) => applyStoryLanguage(event.detail?.language));
   storyLanguageChannel?.addEventListener("message", (event) => {
-    if (event.data?.language || typeof event.data?.official === "boolean") syncStoryLanguage(event.data.language || event.data.official);
+    if (event.data?.language || typeof event.data?.official === "boolean") applyStoryLanguage(event.data.language || event.data.official);
   });
   ttsUi.configButton.addEventListener("click", openTtsConfigModal);
   ttsUi.engineSelect.addEventListener("change", (event) => {
@@ -4682,6 +4810,12 @@
   }
 
   storyText.addEventListener("click", (event) => {
+    const scanTarget = event.target.closest("[data-official-scan-open]");
+    if (scanTarget) {
+      void openOfficialScan(scanTarget);
+      return;
+    }
+
     const pageTarget = event.target.closest("[data-page-viewer]");
     if (pageTarget) {
       openPageViewer(pageTarget);
@@ -4742,6 +4876,27 @@
     renderStory(activeEntry);
     storyText.scrollTop = top; storyText.scrollLeft = left;
   });
+
+  // 混排 mapping 有十几兆。首屏只渲染正文，页面空闲后再补图；加载完成后
+  // renderer 会发出 ato-mixed-media-map-ready，上面的监听会重绘当前条目。
+  function loadMixedMediaMap() {
+    if (window.ATO_MIXED_MEDIA_MAP || document.querySelector("script[data-ato-mm-map]")) return;
+    const script = document.createElement("script");
+    script.async = true;
+    script.dataset.atoMmMap = "";
+    script.src = "./assets/mixed-media/mapping.js?v=c4c5-20261006-official-c45-1";
+    script.onerror = () => script.remove();
+    document.head.appendChild(script);
+  }
+  function scheduleMixedMediaMap() {
+    if (typeof window.requestIdleCallback === "function") {
+      window.requestIdleCallback(loadMixedMediaMap, { timeout: 4000 });
+    } else {
+      window.setTimeout(loadMixedMediaMap, 2000);
+    }
+  }
+  if (document.readyState === "complete") scheduleMixedMediaMap();
+  else window.addEventListener("load", scheduleMixedMediaMap, { once: true });
 
   init();
   refreshSecondScreenStoryModeToggle();

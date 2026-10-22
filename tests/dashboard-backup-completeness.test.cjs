@@ -16,6 +16,7 @@ const dashboard = {
 function harness({ offline = false, flushed = true, invalidCampaign } = {}) {
   const downloads = [], alerts = [], reads = [], writes = [];
   let server = {
+    updatedAt: '2026-12-31T18:04:05.123Z',
     sections: Object.fromEntries(sections.map(name => [name, name === 'dashboard' ? copy(dashboard) : { saved: name }])),
     sectionRevisions: Object.fromEntries(sections.map(name => [name, 3])),
   };
@@ -56,7 +57,7 @@ function harness({ offline = false, flushed = true, invalidCampaign } = {}) {
     },
   });
   vm.runInContext(attachmentSource, context);
-  for (const name of ['isPlainObject', 'cloneJson', 'loadFullCampaign', 'exportState', 'applyImportedSections', 'importStateFile']) {
+  for (const name of ['isPlainObject', 'cloneJson', 'loadFullCampaign', 'beijingTimestamp', 'exportState', 'applyImportedSections', 'importStateFile']) {
     const match = source.match(new RegExp('^( *)(?:async )?function ' + name + '\\([^]*?^\\1}', 'm'));
     assert.ok(match, `missing ${name}`);
     vm.runInContext(match[0], context);
@@ -93,6 +94,8 @@ test('a successful full export preserves all server sections', async () => {
   assert.equal(app.downloads.length, 1);
   assert.deepEqual(app.downloads[0].sections, app.server().sections);
   assert.equal(app.downloads[0].source.serverIncluded, true);
+  assert.match(app.downloads[0].exportedAt, /\+08:00$/);
+  assert.equal(app.downloads[0].source.serverUpdatedAt, '2027-01-01T02:04:05.123+08:00');
   assert.equal(app.context.elements.exportButton.textContent, '已下载');
   assert.equal(app.alerts.length, 0);
 });

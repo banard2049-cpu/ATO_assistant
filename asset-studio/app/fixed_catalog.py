@@ -18,6 +18,7 @@ from .catalog import (
     AIBP_CYCLES,
     AIBP_NAMES,
     AIBP_TOKEN_LABELS,
+    BOSS_AVATAR_FILES,
     HERO_RECORD_ICONS,
     MAP_TOKEN_LABELS,
     CatalogItem,
@@ -1775,6 +1776,24 @@ def fixed_catalog_payload() -> dict[str, Any]:
             faces={"front": path},
         ))
 
+    # 记录表「敌人」面板的 Boss 头像（2026-10-22）：512×512 透明 PNG，从官方 AI 卡背
+    # 里直接提取，不重绘。它们和别的 record/assets 素材一样是本地私有文件，程序包
+    # （便携版/Docker/APK）按后缀规则把它们排除在外，只能随资料包分发；APK 导入时
+    # 只认内置 atpack-catalog，所以加条目后必须同时重打 APK，旧 APK 会跳过这 19 张。
+    for order, stem in enumerate(BOSS_AVATAR_FILES):
+        path = f"record/assets/boss-avatars/{stem}.png"
+        additions.append(CatalogItem(
+            id=make_id("common", "记录表图标", "Boss 头像", stem, stem),
+            cycle="common",
+            module="记录表图标",
+            subgroup="Boss 头像",
+            name=component_display_name(path, stem),
+            number=stem,
+            sort_order=59_800 + order,
+            faces={"front": path},
+            capture_required=False,
+        ))
+
     additions.extend((
         CatalogItem(
             id=make_id("c1.5", "故事书配图", "章节配图", "DY1P5", "破碎的图纹"),
@@ -1962,6 +1981,7 @@ def fixed_catalog_payload() -> dict[str, Any]:
         "+shared-card-backs-20261019-"
         + hashlib.sha256(json.dumps(shared_backs, sort_keys=True).encode("utf-8")).hexdigest()[:12]
         + "+tone-baked-shared-backs-20261019"
+        + "+record-boss-avatars-20261022"
     )
     return payload
 

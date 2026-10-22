@@ -51,6 +51,16 @@ test('sampling locations address natural pixels with the generator rounding rule
   assert.deepEqual(points[35], [402, 633]);
 });
 
+test('measured title guards survive matching and malformed guards fail closed', () => {
+  const data = metadata();
+  data.images[path] = [{ ...entry, guards: { top: 0 } }];
+  assert.deepEqual(match(data, path, 470, 740, values), { ...expected, guards: { top: 0 } });
+  for (const guards of [null, { top: -1 }, { top: 2 }, { unknown: 0 }]) {
+    data.images[path] = [{ ...entry, guards }];
+    assert.equal(match(data, path, 470, 740, values), null);
+  }
+});
+
 function harness() {
   const listeners = new Map(), images = [], reads = [];
   const rgba = () => values.flatMap((value, index) => index % 3 ? [] : [value, values[index + 1], values[index + 2], 255]);

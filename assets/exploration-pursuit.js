@@ -31,6 +31,19 @@
   };
   // These cards retain their printed symbol, but Allied diplomacy ignores it.
   const ignores = { 'c5:10326': { index: 0 }, 'c5:10327': { index: 0 } };
+  // 宿敌由本循环的故事事件引入（C1–C4 是咯咯笑系列特殊事件，C5 是主线生成泰坦 X）。
+  // 引入之前，探索卡上的追踪标记一律忽略（不生成、不移动），否则开局第一轮抽卡就能
+  // 凭 2 个标记把还没登场的宿敌拉进地图。界面只需提示“宿敌未引入”，不必展开事件名。
+  // 地图上有模型（或 C5 的追踪指示物）就说明已经引入；老存档没有 adversaryIntroduced
+  // 字段时靠这两项兼容，不会把已经生成的宿敌当成未引入。
+  function introductionState(ctx) {
+    const cycle = ctx.cycleId || ctx.cycle;
+    const map = ctx.mapState || ctx.map || {};
+    const saved = map.cycles?.[cycle] || {};
+    const introduced = Boolean(saved.adversaryIntroduced) || Boolean(saved.tokens?.AD)
+      || (cycle === 'c5' && Number.isInteger(saved.titanXTrackPosition));
+    return { cycle, introduced };
+  }
   function manualIndexes(card) {
     const key = card.key || `${card.cycleId}:${card.cardId || card.id}`;
     return conditional[key] ? [conditional[key].index] : ignores[key] ? [ignores[key].index] : key === 'c5:10304' ? [0] : [];
@@ -135,10 +148,16 @@
       const operation = ctx.automation.events[id];
       return { ok: true, total: operation.pursuit.total, cards: operation.pursuit.cards, roundId: id, settled: true, operation };
     }
+    const introduction = introductionState(ctx);
     const counted = countMarkers(ctx);
     if (!counted.ok) return counted;
+    // 宿敌还没在本循环登场：标记只做展示，不生成、不移动，条件未填也不再阻塞结算。
+    if (!introduction.introduced && counted.total) {
+      return { ...counted, ok: true, total: 0, rawTotal: counted.total, unresolved: [], fateChoices: 0,
+        ignored: true, introduction, roundId: id, mode: 'none', steps: 0, candidates: [] };
+    }
     if (counted.unresolved.length) return { ...fail('PURSUIT_CONDITION_REQUIRED', counted.unresolved.join('；')), ...counted, ok: false, roundId: id };
-    if (!counted.total) return { ok: true, ...counted, roundId: id, mode: 'none', steps: 0, candidates: [] };
+    if (!counted.total) return { ok: true, ...counted, introduction, roundId: id, mode: 'none', steps: 0, candidates: [] };
     const cycle = (ctx.mapData || root.ATO_MAP_DATA)?.cycles?.find(item => item.id === cycleId);
     const map = ctx.mapState || ctx.map, saved = map?.cycles?.[cycleId];
     const pathRules = ctx.pathRules || root.ATO_NEMESIS_PATH;
@@ -147,7 +166,7 @@
     const mode = active ? 'move' : counted.total >= 2 ? 'spawn' : 'none';
     const candidates = mode === 'spawn' && cycleId !== 'c5' ? pathRules.spawnCandidates(cycle, saved).map(tile => ({ id: tile.id, label: tile.label || tile.id })) : [];
     if (mode === 'spawn' && cycleId !== 'c5' && !candidates.length) return fail('NO_SPAWN_LOCATION', '本轮至少有 2 个追踪标记，但没有距离阿尔戈号正好 4 格的已揭示生成位置，请先核对地图。');
-    return { ok: true, ...counted, roundId: id, mode, steps: mode === 'move' ? counted.total : 0, candidates, cycle, saved, pathRules };
+    return { ok: true, ...counted, introduction, roundId: id, mode, steps: mode === 'move' ? counted.total : 0, candidates, cycle, saved, pathRules };
   }
   function prepareOperation(ctx, helpers, draft) {
     const preview = plan(ctx);
@@ -177,16 +196,18 @@
       payment.push({ type: 'fate', amount: 1, before: fate, after: fate + 1 });
       steps = Math.max(0, steps - 1);
     }
-    if (preview.mode === 'none') message = `本轮 ${preview.total} 个追踪标记，${preview.total ? '地图无宿敌且不足 2 个' : '无需激活宿敌'}，无事发生`;
+    if (preview.mode === 'none') message = preview.ignored
+      ? '宿敌未引入，追踪标记忽略。'
+      : `本轮 ${preview.total} 个追踪标记，${preview.total ? '地图无宿敌且不足 2 个' : '无需激活宿敌'}，无事发生`;
     else {
       mapState = copy(ctx.mapState || ctx.map || {});
       const saved = mapState.cycles[cycleId]; saved.tokens ||= {};
       if (preview.mode === 'spawn') {
-        if (cycleId === 'c5') { saved.titanXTrackPosition = 7; saved.tokens.AD = ''; message = '泰坦 X 已生成，追踪指示物放在 7'; }
+        if (cycleId === 'c5') { saved.titanXTrackPosition = 7; saved.tokens.AD = ''; saved.adversaryIntroduced = true; message = '泰坦 X 已生成，追踪指示物放在 7'; }
         else {
           const chosen = selection.spawnTileId || preview.candidates[0]?.id;
           if (!preview.candidates.some(tile => tile.id === chosen)) return fail('INVALID_SPAWN_LOCATION', '所选生成位置已失效，请按最新地图重新选择。');
-          saved.tokens.AD = chosen; message = `本轮 ${preview.total} 个追踪标记，宿敌生成在 ${chosen}，本次不再移动`;
+          saved.tokens.AD = chosen; saved.adversaryIntroduced = true; message = `本轮 ${preview.total} 个追踪标记，宿敌生成在 ${chosen}，本次不再移动`;
         }
       } else if (cycleId === 'c5') {
         let position = saved.titanXTrackPosition;
@@ -232,5 +253,6 @@
     (record.technologyActionReceipts ||= {})[ctx.operationId] = receipt;
     return { ok: true, operation: event, event, receipt, record, automation, state, readSections: ['map'], ...(mapState ? { mapState } : {}) };
   }
-  return { version: 2, markers: copy(manifest), conditional: copy(conditional), ignores: copy(ignores), manualIndexes, choiceCards, roundId, countMarkers, plan, prepareOperation };
+  return { version: 2, markers: copy(manifest), conditional: copy(conditional), ignores: copy(ignores),
+    manualIndexes, choiceCards, roundId, countMarkers, introduction: introductionState, plan, prepareOperation };
 });

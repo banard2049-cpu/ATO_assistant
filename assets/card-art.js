@@ -61,7 +61,8 @@
     const inset = side => Math.max(0, Math.min(.1, number(trim?.[side])));
     // A measured source pixel may occupy less than one screen pixel. Hide its
     // interpolation fringe too, and only on edges with an actual scan line.
-    const edge = (side, length) => length * inset(side) + (inset(side) > 0 ? Math.max(0, trimGuard) : 0);
+    const edge = (side, length) => length * inset(side)
+      + (inset(side) > 0 ? Math.max(0, trimGuard) * (trim?.guards?.[side] ?? 1) : 0);
     const visibleLeft = Math.max(0, x + edge('left', width));
     const visibleTop = Math.max(0, y + edge('top', height));
     const left = box.x + visibleLeft, top = box.y + visibleTop;

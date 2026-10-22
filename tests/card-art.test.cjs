@@ -42,6 +42,13 @@ test('downscaled scan lines include one screen-pixel fringe only on affected edg
   near(background.insets[2], 190 / 470 + 2 / 3);
 });
 
+test('a title immediately below a measured halo keeps its first printed row', () => {
+  const geometry = imageGeometry(box(94, 148), 470, 740, 'contain', 'center', .06,
+    { top: 4 / 740, bottom: 1 / 740, guards: { top: 0 } }, 1);
+  near(geometry.insets[0], .8);
+  near(geometry.insets[2], 1.2);
+});
+
 test('scale-down uses natural pixels only when they fit, and none preserves intrinsic size', () => {
   assert.equal(imageGeometry(box(300, 400), 100, 200, 'scale-down').clip,
     'inset(100px 100px 100px 100px round 6px)');

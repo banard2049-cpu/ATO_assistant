@@ -55,6 +55,17 @@ class OfficialAssetTests(unittest.TestCase):
             self.write(f"{folder}/CARD.jpg", folder.encode())
         self.assertIsNone(find(SCRATCH, "assets/cards/CARD.jpg"))
 
+    def test_record_boss_avatars_never_take_official_card_artwork(self) -> None:
+        # 记录表 Boss 头像与 ps/<BOSS>/<BOSS>.jpg 同 stem；派生头像必须继续使用项目
+        # 里的 512×512 PNG，不能被官中使徒大卡替换（2026-10-22 官方版重打时踩过）。
+        official = self.write("ps/HEKATON/HEKATON.jpg", b"full panel jpeg")
+        target = "record/assets/boss-avatars/HEKATON.png"
+        self.assertIsNone(find(SCRATCH, target))
+        fallback = SCRATCH / "avatar.png"
+        fallback.write_bytes(b"avatar")
+        self.assertEqual((fallback, False), resolve(SCRATCH, target, fallback))
+        self.assertEqual(official, find(SCRATCH, "aibp/ps/HEKATON/HEKATON.jpg"))
+
     def test_fixed_aibp_backs_always_use_fan_fallback(self) -> None:
         cases = (
             ("HEKATON", "AI_I_001_BACK"),

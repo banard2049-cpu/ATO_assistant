@@ -16,6 +16,28 @@ spec.loader.exec_module(trims)
 
 
 class FanCardTrimTests(unittest.TestCase):
+    def test_white_scanner_margin_before_a_dark_header(self):
+        image = Image.new("RGB", (743, 1043), "#eee8dd")
+        draw = ImageDraw.Draw(image)
+        draw.rectangle((0, 0, 742, 150), fill="#20232a")
+        draw.polygon([(0, 0), (742, 0), (742, 11), (0, 3)], fill="white")
+        self.assertEqual(trims.detect_trims(image), [12, 0, 0, 0])
+
+    def test_light_card_stock_is_not_a_white_scanner_margin(self):
+        image = Image.new("RGB", (743, 1043), "#eee8dd")
+        self.assertEqual(trims.detect_trims(image), [0, 0, 0, 0])
+
+    def test_gray_exploration_header_halo_and_title_glyphs(self):
+        image = Image.new("RGB", (470, 740), "#eee8dd")
+        draw = ImageDraw.Draw(image)
+        draw.rectangle((0, 0, 469, 140), fill="#111111")
+        draw.line((0, 0, 469, 0), fill="#555555", width=2)
+        self.assertEqual(trims.exploration_header_halo(image), 3)
+        self.assertEqual(trims.exploration_header_halo(Image.new("RGB", (470, 740), "#eee8dd")), 0)
+        draw.rectangle((0, 0, 469, 5), fill="#111111")
+        draw.rectangle((200, 0, 220, 15), fill="white")
+        self.assertEqual(trims.exploration_header_halo(image), 0)
+
     def test_only_the_affected_edge_is_trimmed(self):
         image = Image.new("RGB", (470, 740), "#e8e3d0")
         ImageDraw.Draw(image).line((0, 739, 469, 739), fill="black")

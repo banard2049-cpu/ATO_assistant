@@ -33,6 +33,8 @@ services:
       - ./briefing:/var/www/html/briefing
       - ./hero:/var/www/html/hero
       - ./map:/var/www/html/map
+      # 记录表整棵挂载：页面代码来自仓库，record/assets/ 下的私有素材（含 Boss 头像
+      # record/assets/boss-avatars/*.png）因此与资料包/本机文件同步生效。
       - ./record:/var/www/html/record
       - ./ss:/var/www/html/ss
       - ./story:/var/www/html/story

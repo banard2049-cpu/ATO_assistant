@@ -78,6 +78,12 @@ def check_catalog(catalog: dict) -> None:
     expected = {f"aibp/ps/{enemy}/{stem}.jpg" for enemy, stem in BOSS_LEVEL_BACK_CARDS}
     expected.add("aibp/ps/other/trait/custom_trait_blank.png")
     assert expected <= set(targets.values()), "APK lacks newly registered Boss/trait assets"
+    # 记录表 Boss 头像（2026-10-22）：PNG 不随 APK 打包，只能靠资料包导入；内置名单
+    # 少一条，安卓就会静默跳过那张头像，记录表只剩文字。
+    from app.catalog import BOSS_AVATAR_FILES
+    boss_avatars = {f"record/assets/boss-avatars/{stem}.png" for stem in BOSS_AVATAR_FILES}
+    missing_avatars = boss_avatars - set(targets.values())
+    assert not missing_avatars, f"内置名单缺少记录表 Boss 头像：{sorted(missing_avatars)[:3]}"
     assert "aibp/ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_TR_IV_001.jpg" not in targets.values(), (
         "APK still requests the retired Oracle TR IV card"
     )

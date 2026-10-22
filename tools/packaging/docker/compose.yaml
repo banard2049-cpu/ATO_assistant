@@ -40,6 +40,9 @@ services:
       # map/*.js stays in the image and updates independently of user assets.
       - ./app/map/images:/app/map/images
       - ./app/map/tokens:/app/map/tokens
+      # 记录表素材整棵挂 assets：resource-icons / ally / godforms-nymphs / boss-avatars
+      # （Boss 头像）都在这一层。头像 PNG 不随镜像分发，资料包解压进 app/ 后即时生效；
+      # 不要改成像只挂 resource-icons/ 那样的子目录，否则新素材会在容器里 404。
       - ./app/record/assets:/app/record/assets
       # 第二屏：只挂本地素材（版图底图 + 地形图），ss/ 里的程序文件
       # （index.html / app.js / styles.css / terrain-data.js）必须由镜像提供。以前整棵挂

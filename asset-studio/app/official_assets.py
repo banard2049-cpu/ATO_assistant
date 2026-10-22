@@ -224,6 +224,13 @@ def find(root: Path | None, target: str) -> Path | None:
     if not parts or is_fixed_aibp_back(target) or base is None or not base.is_dir():
         return None
 
+    # 记录表 Boss 头像是从官方 AI 卡背提取的 512×512 派生 UI 素材，不是官方卡面。
+    # official-assets/ 里没有这个目录，但 ps/<BOSS>/<BOSS>.jpg 与头像同 stem，文件名
+    # 兜底会把整张使徒面板当成头像塞进资料包（.png 成员里装 2 MB JPEG），记录表就
+    # 显示成一张大卡。派生素材永远用项目自己的 PNG，不接受官中覆盖。
+    if tuple(part.casefold() for part in parts[:3]) == ("record", "assets", "boss-avatars"):
+        return None
+
     index = _index(base)
     by_relative = index["relative"]
     by_relative_stem = index["relative_stem"]

@@ -162,6 +162,75 @@ test('spoiler consent gates names, images stay folded, and selections can be add
   assert.equal(preview.open, false, 'reopening the menu keeps images folded');
 });
 
+test('lazy shared library preserves saved hidden selections without opening the spoiler menu', () => {
+  const all = node => node.children.flatMap(child => [child, ...all(child)]);
+  class Element {
+    constructor(tag) { this.tag = tag; this.children = []; this.listeners = {}; this.style = {}; }
+    append(...children) { children.forEach(child => this.appendChild(child)); }
+    prepend(child) { this.appendChild(child); this.children.unshift(this.children.pop()); }
+    appendChild(child) {
+      if (child.parent) child.parent.children.splice(child.parent.children.indexOf(child), 1);
+      child.parent = this;
+      this.children.push(child);
+    }
+    contains(child) { return all(this).includes(child); }
+    addEventListener(type, listener) { this.listeners[type] = listener; }
+    setAttribute(name, value) { this[name] = value; }
+    querySelectorAll(selector) {
+      return all(this).filter(child =>
+        selector === 'input[type="checkbox"]:checked' && child.tag === 'input' && child.checked);
+    }
+  }
+  const applied = [];
+  let hiddenBuilds = 0;
+  let hiddenSelected;
+  const ctx = vm.createContext({
+    document: {createElement: tag => new Element(tag)}, window: {},
+    state: {exploration: {lastSettlementByCycle: {}}},
+    currentCycleConfig: () => ({id: 'c1'}), defaultExplorationSelections: {c1: []},
+    getExplorationLibrary: () => [
+      {id: '6404', name: 'Trade Post'}, {id: '8201', name: 'Saved secret', hidden: true},
+      {id: '8202', name: 'Another secret', hidden: true},
+    ],
+    getSelectedExplorationIds: () => ['6404', '8201'],
+    ensureExplorationDrawState: () => ({activePiles: [], temporaryRemoved: []}),
+    getExplorationSpecialRule: () => null,
+    createExplorationFactionStatus: () => new Element('div'),
+    createExplorationDestructionTools: () => null,
+    createHiddenExplorationMenu(cards, selected) {
+      hiddenBuilds++;
+      hiddenSelected = selected;
+      assert.deepEqual(Array.from(cards, card => card.id), ['8201', '8202']);
+      return new Element('details');
+    },
+    getExplorationCardImageStyle: () => '',
+    getExplorationCornerNumber: () => '',
+    getExplorationCardTag: () => ({}),
+    applyExplorationSelection: ids => applied.push(Array.from(ids)),
+    drawExplorationCard() {}, settleExplorationDraw() {}, mutateExplorationRecord() {},
+    restoreDefaultExplorationSelection() {}, returnTemporaryExplorationCards() {},
+  });
+  vm.runInContext(fn('createExplorationTools'), ctx);
+  const tools = ctx.createExplorationTools();
+  const builder = all(tools).find(node => node.className === 'exploration-builder');
+  const pile = all(tools).find(node => node.className === 'exploration-removed-pile');
+  assert.equal(hiddenBuilds, 0, 'folded tools should not build the hidden menu');
+  builder.open = true;
+  builder.listeners.toggle();
+  const apply = all(tools).find(node => node.textContent === '应用选择');
+  apply.listeners.click();
+  assert.deepEqual(applied[0], ['6404', '8201'], 'unopened secret menu must retain saved selections');
+  hiddenSelected.delete('8201');
+  hiddenSelected.add('8202');
+  pile.open = true;
+  pile.listeners.toggle();
+  builder.listeners.toggle();
+  assert.equal(hiddenBuilds, 1, 'moving the shared library must not reset hidden selections');
+  assert.ok(pile.contains(apply));
+  apply.listeners.click();
+  assert.deepEqual(applied[1], ['6404', '8202'], 'new hidden choices must survive pane changes');
+});
+
 test('focus after spoiler confirmation preserves the picker when records are unchanged', async () => {
   let renders = 0;
   let record = {crew: 5};

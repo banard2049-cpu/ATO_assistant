@@ -201,7 +201,7 @@
     if (action.agents) effects.push('另一派系外交 -1');
     if (action.echo) effects.push('回忆回响 +1');
     if (action.trade) effects.push('按比例交换资源');
-    if (action.draw) effects.push('抽取 2 张探索卡，选择 1 张，仅处理资源或泰坦奖励');
+    if (action.draw) effects.push('抽取 2 张探索卡，选择 1 张；若其给予资源或泰坦，则结算整张卡，否则弃置');
     if (action.check) effects.unshift('外交 7+ 检定');
     if (action.relief) costs.push('命运 +1～2（友善时 +2）');
     if (action.manual && action.manualCost) costs.push(action.manual);
