@@ -649,6 +649,21 @@ h2 {
   white-space: pre-wrap;
 }
 
+.mixed-media-degraded {
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  border: 1px solid #d8b06a;
+  border-radius: 8px;
+  background: #fff6e3;
+  color: #6b4a12;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.mixed-media-degraded[hidden] {
+  display: none;
+}
+
 .supplement-gallery {
   display: grid;
   gap: 18px;

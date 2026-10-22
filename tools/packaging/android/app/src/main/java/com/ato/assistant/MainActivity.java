@@ -31,6 +31,8 @@ public final class MainActivity extends Activity {
   private static final int FILE_CHOOSER_REQUEST = 1001;
   private static final int ATOPACK_CHOOSER_REQUEST = 1002;
   private static final int EXPORT_CHOOSER_REQUEST = 1003;
+  // 跨 Activity 重建保留：渲染进程崩过一次后，故事页下一次默认先关混排图。
+  private static volatile boolean rendererCrashedThisProcess;
   private WebView webView;
   private FrameLayout rootView;
   private ValueCallback<Uri[]> filePathCallback;
@@ -89,6 +91,13 @@ public final class MainActivity extends Activity {
         }
       }
 
+      @Override public void onPageFinished(WebView view, String url) {
+        super.onPageFinished(view, url);
+        // 回到主控台后清掉前进/后退历史，避免刚离开的故事页连同几十兆脚本
+        // 留在 WebView 的返回缓存里，第二次进入时同时保留两份。
+        if (url != null && url.startsWith(ROOT + "index.html")) view.clearHistory();
+      }
+
       @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
         Uri uri = request.getUrl();
         if ("file".equals(uri.getScheme()) && uri.toString().startsWith(ROOT)) return false;
@@ -105,14 +114,15 @@ public final class MainActivity extends Activity {
       // 这里销毁已失效的 WebView，回到主控台，至少不会丢应用。
       @Override public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
         if (view != webView) return true;
+        rendererCrashedThisProcess = true;
         webView = null;
         if (view.getParent() instanceof ViewGroup) ((ViewGroup) view.getParent()).removeView(view);
         view.destroy();
         Toast.makeText(
             MainActivity.this,
             detail.didCrash()
-                ? "页面渲染进程异常退出，已返回主控台。"
-                : "内存不足，页面已被系统关闭，已返回主控台。",
+                ? "页面渲染进程异常退出，已返回主控台；本次混排插图自动关闭，重开应用后恢复。"
+                : "内存不足，页面已被系统关闭，已返回主控台；本次混排插图自动关闭，重开应用后恢复。",
             Toast.LENGTH_LONG).show();
         if (rootView != null) {
           rootView.post(() -> {
@@ -275,6 +285,10 @@ public final class MainActivity extends Activity {
   }
 
   private final class LocalApiBridge {
+    @android.webkit.JavascriptInterface public boolean rendererCrashedThisProcess() {
+      return rendererCrashedThisProcess;
+    }
+
     @android.webkit.JavascriptInterface public boolean copyStoryTextToClipboard(String text) {
       if (text == null || text.isEmpty()) return false;
       runOnUiThread(() -> {
