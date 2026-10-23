@@ -1,7 +1,7 @@
 {
-  "version": "20261023-hidden-numbers-tts",
+  "version": "20261023-hidden-numbers-c1-list-11",
   "reviewedFaces": 511,
-  "numberGroups": 7,
+  "numberGroups": 11,
   "coordinateSystem": "1024x1024 overlay pixels; bounds are unrotated tight ink, optional angle is counterclockwise about bounds center",
   "tiles": {
     "c1-tile-066-front": {
@@ -196,6 +196,159 @@
           ],
           "angle": 29.65,
           "color": "#403c34"
+        }
+      ]
+    },
+    "c1-tile-078-front": {
+      "overlaySha256": "33828433152196844d936ddca57c0a8df75e7da5b5a84fc7df58f3d3e9e556b3",
+      "baselineFile": "output/reports/map-hidden-numbers-c1-078-20261023/base-overlays/c1-tile-078-front.png",
+      "reference": {
+        "image": "output/reports/map-workshop-fronts-20261023/source/c1-tile-078-front.png",
+        "sourceSha256": "a55559a5b09344384f68cfb45bad73c712fd13edca241129ab84a369b43b906d",
+        "sourceBox": [
+          320,
+          560,
+          374,
+          581
+        ],
+        "overlayToSourceAffine": [
+          0.8058573775653982,
+          0.006783986861657129,
+          -1.6993720793765996,
+          -0.0022113232198461646,
+          0.8001846047616861,
+          6.179076971790758
+        ],
+        "alignmentCorrelation": 0.9666858827670378,
+        "textConfirmedByUser": "0211"
+      },
+      "numbers": [
+        {
+          "text": "0211",
+          "bounds": [
+            393,
+            693,
+            460,
+            720
+          ],
+          "color": "#354f5a"
+        }
+      ]
+    },
+    "c1-tile-014-alt-front": {
+      "overlaySha256": "9b36ce2154738c3a9a8851e86179a42670458f90d23351ff394314fe3062e221",
+      "baselineFile": "output/reports/c1-hidden-number-completion-20261023/base-overlays/c1-tile-014-alt-front.png",
+      "reference": {
+        "save": "3458296558.json",
+        "image": "output/reports/map-workshop-fronts-20261023/source/c1-tile-014-alt-front.png",
+        "sourceSha256": "de9b2d792a6e1087f5ee69dabfa3a5fd45365ebc87f8ce776e8e5ea07af1c2d3",
+        "sourceBox": [
+          454,
+          11,
+          520,
+          32
+        ],
+        "overlayToSourceAffine": [
+          0.8038504605073955,
+          0.006907331895217845,
+          -2.913505149192469,
+          -0.003136714714184797,
+          0.8010162076479428,
+          4.11230302400671
+        ],
+        "alignmentCorrelation": 0.9719032386859963,
+        "position": "右上礁石下方的水里",
+        "confidence": "较可能；末位被网点遮挡一半"
+      },
+      "numbers": [
+        {
+          "text": "0240",
+          "bounds": [
+            568,
+            11,
+            650,
+            37
+          ],
+          "angle": -2,
+          "color": "#475f67"
+        }
+      ]
+    },
+    "c1-tile-054-front": {
+      "overlaySha256": "97a6f05f1d7115d5b936e9ac117c1b828edc9c2afa3ac5fb2674e71a8fc9858b",
+      "baselineFile": "output/reports/c1-hidden-number-completion-20261023/base-overlays/c1-tile-054-front.png",
+      "reference": {
+        "save": "3458296558.json",
+        "image": "output/reports/map-workshop-fronts-20261023/source/c1-tile-054-front.png",
+        "sourceSha256": "bcd3bda10f1626c312c92943bea3b05ab634a2cbbdae558cc8d56e3c2c53e28b",
+        "sourceBox": [
+          2,
+          105,
+          84,
+          130
+        ],
+        "overlayToSourceAffine": [
+          0.8044012682713724,
+          0.006060872292248058,
+          -7.511918793210164,
+          -0.0031896491188423996,
+          0.803824878520105,
+          3.0829393968620873
+        ],
+        "alignmentCorrelation": 0.9596654059039762,
+        "position": "左上悬崖，跳伞标记上方",
+        "confidence": "较可能；末位按 1 录入"
+      },
+      "numbers": [
+        {
+          "text": "0281",
+          "bounds": [
+            11,
+            127,
+            113,
+            158
+          ],
+          "angle": 4,
+          "color": "#3a413b"
+        }
+      ]
+    },
+    "c1-tile-076-front": {
+      "overlaySha256": "c5467f9980f329ecf2eb86aa7b4802401fdfd753dedc707f1d0d7e4d3506046f",
+      "baselineFile": "output/reports/c1-hidden-number-completion-20261023/base-overlays/c1-tile-076-front.png",
+      "reference": {
+        "save": "3458296558.json",
+        "image": "output/reports/map-workshop-fronts-20261023/source/c1-tile-076-front.png",
+        "sourceSha256": "737fb4e61ff2a2657f90de6595852c97577ea7c99925086bee6e8105f3b8df17",
+        "sourceBox": [
+          610,
+          99,
+          691,
+          133
+        ],
+        "overlayToSourceAffine": [
+          0.8043584984022484,
+          0.008370944155156861,
+          -3.70193046561468,
+          -0.006117758351322127,
+          0.8025824756367893,
+          5.661408251922987
+        ],
+        "alignmentCorrelation": 0.9755354204934348,
+        "position": "上方水域，斜着写",
+        "confidence": "确定"
+      },
+      "numbers": [
+        {
+          "text": "0279",
+          "bounds": [
+            762,
+            122,
+            862,
+            165
+          ],
+          "angle": -17,
+          "color": "#435e69"
         }
       ]
     }

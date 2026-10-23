@@ -31,7 +31,9 @@ const tokenAssets = [
   { id: "night_nymph", label: "Night Nymph", path: "./tokens/night_nymph.png", cycles: ["c3", "c4", "c5"] },
   { id: "last_oasis", label: "最后到访的绿洲", path: "./tokens/last_visited_oasis.png", group: "c4", cycles: ["c4"], unique: true },
   { id: "c4_city_of_squalor", label: "City of Squalor", path: "./tokens/c4_city_of_squalor.png", group: "c4", cycles: ["c4"], square: true },
+  { id: "c4_city_of_splendor", label: "City of Splendor", path: "./tokens/c4_city_of_splendor.jpg", group: "c4", cycles: ["c4"], square: true, unique: true },
   { id: "c4_cloud_ship", label: "埃米尔云船 (Emir’s Cloud Ship)", path: "./tokens/c4_cloud_ship.png", group: "c4", cycles: ["c4"], square: true, unique: true },
+  { id: "c4_hanging_gardens", label: "Hanging Gardens", path: "./tokens/c4_hanging_gardens.jpg", group: "c4", cycles: ["c4"], square: true, unique: true },
   {
     id: "sandstorm",
     label: "沙尘暴",

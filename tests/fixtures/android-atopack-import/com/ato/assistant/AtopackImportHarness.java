@@ -55,6 +55,10 @@ public final class AtopackImportHarness {
           .put(item("map-base", MAP_BASE)).put(item("map-mask", MAP_MASK))
           .put(item("back-base", BACK_BASE)).put(item("back-number", BACK_NUMBER))
           .put(item("c4-base", C4_BASE)).put(item("c4-mask", C4_MASK))
+          .put(item("c2-base", "map/images/card-backs/c2-base.png"))
+          .put(item("c3-base", "map/images/card-backs/c3-base.png"))
+          .put(item("c2-mask", "map/images/card-backs/numbers/c2-tile-001-back.png"))
+          .put(item("c3-mask", "map/images/card-backs/numbers/c3-tile-001-back.png"))
           .put(item("alt-number", ALT_NUMBER)).put(item("alt-instruction", ALT_INSTRUCTION))
           .put(item("legacy-map", LEGACY_MAP)));
     context = new Context(new File(directory, "app"), catalog.toString());
@@ -246,6 +250,15 @@ public final class AtopackImportHarness {
     check("original-transparent-mask".equals(open(C4_MASK)),"C4 direction mask bytes changed");
     store=new AtopackStore(context);
     check("printed-number".equals(open(BACK_NUMBER)),"Layered maps did not survive restart");
+    for (String cycle : new String[] {"c2", "c3"}) {
+      String cycleMask = "map/images/card-backs/numbers/" + cycle + "-tile-001-back.png";
+      for (String cycleBase : new String[] {BACK_BASE, "map/images/card-backs/" + cycle + "-base.png"}) {
+        JSONArray recolored = new JSONArray().put(resource(cycleBase,base)).put(resource(cycleMask,number));
+        check(install(pack(manifest().put("mapFiles",recolored),new Member(cycleBase,base),new Member(cycleMask,number))).assets==2,
+            "Shared or legacy cycle base rejected: " + cycleBase);
+      }
+      reject(pack(manifest().put("mapFiles",new JSONArray().put(resource(cycleMask,number))),new Member(cycleMask,number)));
+    }
     reject(pack(manifest().put("mapFiles",new JSONArray().put(resource(MAP_BASE,base))),new Member(MAP_BASE,base)));
     reject(pack(manifest().put("mapFiles",new JSONArray().put(resource(BACK_NUMBER,number))),new Member(BACK_NUMBER,number)));
     reject(pack(manifest().put("mapFiles",new JSONArray().put(resource(C4_MASK,mask))),new Member(C4_MASK,mask)));

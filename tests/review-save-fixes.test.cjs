@@ -287,6 +287,7 @@ function dashboardStartupContext({ fetch, keepLocal = true, sparse = false } = {
     campaignSessionEpoch: 0, sessionUser: null, campaignSaveTimer: null,
     campaignSectionBaseline: null, campaignServerBaseline: null, campaignInitialBaseline: null, campaignSaveQueuedBeforeReady: false,
     campaignRestoreInFlight: false, campaignExternalSyncInFlight: false, campaignExternalSyncPending: false, campaignConflictReloading: false,
+    surveyConstantMnemosSyncPending: 0, surveyConstantExternalSyncDeferred: false,
     campaignSaveInFlight: false, campaignSectionRevision: 0,
     campaignStorageAvailable: false, campaignReconnectInFlight: false, campaignStorageUrl: '/api',
     clearCampaignReconnect: noop, clearTimeout: noop, beginDashboardWriteLease: noop,

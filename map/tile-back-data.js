@@ -1,5 +1,5 @@
 window.ATO_MAP_BACK_DATA = {
-  "version": "20261023-c4-shared-backs2-b65-c12-originals",
+  "version": "20261023-t06-shared-c123-dark-purple4",
   "tileSize": 825,
   "source": {
     "workshopId": "3458296558",
@@ -8,8 +8,8 @@ window.ATO_MAP_BACK_DATA = {
   },
   "bases": {
     "c1": "./images/card-backs/c1-base.png",
-    "c2": "./images/card-backs/c2-base.png",
-    "c3": "./images/card-backs/c3-base.png",
+    "c2": "./images/card-backs/c1-base.png",
+    "c3": "./images/card-backs/c1-base.png",
     "c4": "./images/card-backs/c4-base.png"
   },
   "backs": {
@@ -6790,5 +6790,17 @@ window.ATO_MAP_BACK_DATA = {
   },
   "pixelBrightness": 0.65,
   "numberBrightness": 1,
-  "alternateBacks": "original-images"
+  "alternateBacks": "original-images",
+  "baseFilters": {
+    "c2": "hue-rotate(-25deg) saturate(1.65) brightness(1.1)",
+    "c3": "grayscale(1) sepia(1) saturate(3.4) hue-rotate(222deg) brightness(0.82)"
+  },
+  "sharedBaseSource": {
+    "workshopId": "1957681721",
+    "objectGUID": "f98850",
+    "card": "T06",
+    "url": "https://steamusercontent-a.akamaihd.net/ugc/11815484186709439786/A08AEC21879F3042C3A379CB9CB5665FFD3F9BBB/",
+    "edit": "ImageGen removed the T06 plaque and reconstructed its covered background.",
+    "sha256": "60266a196b3a9f9dd918221065684664fc858f11f896ad3af155e1496766b049"
+  }
 };

@@ -54,9 +54,14 @@ function harness(cycle, adventures = []) {
     'markRecordAdventure', 'recordAdventureMiddleSlots', 'appendRecordSyncLog', 'adventureSlotLabel',
     'setSurveyConstant', 'heroProgressTarget', 'assertHeroProgressTarget', 'applyMnemosTagToHeroes', 'currentPharosDreamConstants', 'findSimpleConstantRow',
     'simpleConstantSlotIds', 'ensureTodaySimpleConstants', 'pharosDreamsDayKey', 'ensureTodayPharosDreams',
-    'setSimpleConstant', 'setPharosDreamConstant', 'latestSimpleAdventureRecordAction'];
+    'setSimpleConstant', 'setPharosDreamConstant', 'latestSimpleAdventureRecordAction',
+    'beginSurveyConstantInteraction', 'surveyConstantInteractionIsCurrent',
+    'beginSurveyConstantMnemosSync', 'finishSurveyConstantMnemosSync', 'restoreSurveyConstantHubSelection'];
   vm.runInContext(['surveyConstantData', 'pharosDreamConstants'].map(declaration).join('\n')
-    + '\n' + names.map(name => extract(source, name)).join('\n'), c);
+    + '\nlet surveyConstantInteractionVersions = new Map();'
+    + '\nlet surveyConstantMnemosSyncPending = 0;'
+    + '\nlet surveyConstantExternalSyncDeferred = false;\n'
+    + names.map(name => extract(source, name)).join('\n'), c);
   const sync = c.syncSurveyAdventureToArgoRecord;
   c.syncSurveyAdventureToArgoRecord = () => (activity.pending = sync());
   const syncAction = c.syncAdventureActionToArgoRecord;

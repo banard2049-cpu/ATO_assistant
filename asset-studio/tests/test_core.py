@@ -609,13 +609,14 @@ class CoreTests(unittest.TestCase):
         empty = Database(self.root / "empty.sqlite3")
         result = ensure_fixed_catalog(empty)
         payload = fixed_catalog_payload()
-        # 3202 条：内置清单 2643（移除 26 张独立 AIBP 资源图和 2 张停用标记）+ 故事书配图 2（只剩后日奥德赛的两张章节配图，战斗版图
+        # 3204 条：内置清单 2645（移除 26 张独立 AIBP 资源图和 2 张停用标记，新增
+        # C4 辉煌之城、悬空花园两枚大地图标记）+ 故事书配图 2（只剩后日奥德赛的两张章节配图，战斗版图
         # 52 条——C1/C3/C4 的 21 张 + C2 的 23 张扫描件 + C5 的 8 张版图块——已全部随文件
         # 删除退场）+ 19 首主控台 BGM + 84 张密语字形 + 435 个混排素材（映射表 1 + 裁图 434）
         # + 19 张记录表 Boss 头像（2026-10-22）。
         # 后四类都登记为「无需拍摄」（见 test_bgm_resources / test_cryptic_resources /
         # test_boss_avatars）。
-        self.assertEqual(3202, result["items"])
+        self.assertEqual(3204, result["items"])
         self.assertEqual(19, result["aibp_enemies"])
         self.assertEqual({"c1", "c1.5", "c2", "c2.5", "c3", "c4", "c5"}, {book["id"] for book in payload["source"]["stories"]})
         self.assertNotIn("apk", payload["source"])
@@ -690,7 +691,7 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(45, len(terrain_cards))
         self.assertTrue(any(item["number"] == "CJ1475" for item in payload["items"]))
         fixed_paths = {path for item in payload["items"] for path in item["faces"].values()}
-        # 3663 张固定素材（AI/BP 的 669 张牌关系映射 145 张背图；含新补录的 8 张等级面、PNG 卡底，
+        # 3665 张固定素材（AI/BP 的 669 张牌关系映射 145 张背图；含新补录的 8 张等级面、PNG 卡底，
         #   不含旧科技树底图和 28 张停用图标；C1/C3/C4 的 21 张
         #   战斗版图、C2 的 23 张扫描件与 C5 的 8 张版图块都已随文件删除退场；
         #   另含 2026-10-22 补录的 19 张记录表 Boss 头像）
@@ -702,11 +703,11 @@ class CoreTests(unittest.TestCase):
         mixed_media_paths = {
             path for path in fixed_paths if path.startswith("story/assets/mixed-media/")
         }
-        self.assertEqual(3663, len(fixed_paths - bgm_paths - cryptic_paths - mixed_media_paths))
+        self.assertEqual(3665, len(fixed_paths - bgm_paths - cryptic_paths - mixed_media_paths))
         self.assertEqual(19, len(bgm_paths))
         self.assertEqual(84, len(cryptic_paths))
         self.assertEqual(435, len(mixed_media_paths))
-        self.assertEqual(4201, len(fixed_paths))
+        self.assertEqual(4203, len(fixed_paths))
         self.assertFalse(any(path.startswith("aibp/ps/other/resouce/") for path in fixed_paths))
         self.assertNotIn("aibp/ps/other/token/Ambrosia .png", fixed_paths)
         self.assertNotIn("aibp/ps/other/token/GF.jpg", fixed_paths)

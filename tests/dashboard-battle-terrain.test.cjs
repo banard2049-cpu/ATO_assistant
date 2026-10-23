@@ -25,11 +25,17 @@ function harness(cycle = 'c1') {
   });
   const data = source.match(/^    const surveyConstantData = \{[^]*?^    };/m);
   assert.ok(data);
-  vm.runInContext(data[0], ctx);
+  vm.runInContext(data[0]
+    + '\nlet surveyConstantInteractionVersions = new Map();'
+    + '\nlet surveyConstantMnemosSyncPending = 0;'
+    + '\nlet surveyConstantExternalSyncDeferred = false;', ctx);
   for (const name of ['isPlainObject', 'surveyConstantsDayKey', 'normalizeSurveyConstants',
     'ensureTodaySurveyConstants', 'getCurrentSurveyConstantData', 'findSurveyHub', 'findSurveyHubBox',
     'surveyHubSummaryRow', 'normalizeNextBattleTerrain', 'setNextBattleTerrainFromHub',
-    'clearNextBattleTerrainForHub', 'surveyRrBoxKey', 'setSurveyConstant', 'completeTimelineBattle']) vm.runInContext(fn(name), ctx);
+    'clearNextBattleTerrainForHub', 'surveyRrBoxKey',
+    'beginSurveyConstantInteraction', 'surveyConstantInteractionIsCurrent',
+    'beginSurveyConstantMnemosSync', 'finishSurveyConstantMnemosSync',
+    'restoreSurveyConstantHubSelection', 'setSurveyConstant', 'completeTimelineBattle']) vm.runInContext(fn(name), ctx);
   ctx.hubs = ctx.getCurrentSurveyConstantData().hubs;
   return { ctx, calls, select: (index, checked = true, boxId = 'alpha') => ctx.setSurveyConstant('hubs', ctx.hubs[index].id, boxId, checked) };
 }

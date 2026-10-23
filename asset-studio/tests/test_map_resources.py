@@ -61,7 +61,7 @@ class MapResourceTests(unittest.TestCase):
 
     def test_c5_only_pack_includes_shared_cover_texture_and_roundtrips(self):
         target = 'map/images/c5-tile-080-front.png'
-        paths = set(maps.layer_index()['c5-tile-080-front']) | {'map/images/card-backs/c3-base.png'}
+        paths = set(maps.layer_index()['c5-tile-080-front']) | {'map/images/card-backs/c1-base.png'}
         for filename in paths:
             dest = self.project / filename
             dest.parent.mkdir(parents=True, exist_ok=True)
@@ -77,6 +77,27 @@ class MapResourceTests(unittest.TestCase):
         files=maps.collect(None,self.library,targets=[self.front,self.back,
             'map/images/c2-tile-001-front.png','map/images/c2-tile-001-back.png'])
         self.assertEqual({target for target,_ in files},{target for target,_ in self.files})
+
+    def test_c23_shared_and_legacy_bases_both_import_but_missing_base_fails(self):
+        for cycle in ('c2', 'c3'):
+            targets = maps.layer_index()[f'{cycle}-tile-001-back']
+            self.assertIn('map/images/card-backs/c1-base.png', targets)
+            for shared in (True, False):
+                files = []
+                for target in targets:
+                    if not shared and target == 'map/images/card-backs/c1-base.png':
+                        target = f'map/images/card-backs/{cycle}-base.png'
+                    path = self.project / target
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    Image.new('RGBA', (32,32), (20,50,80,255)).save(path)
+                    files.append((target, path))
+                package, manifest = self.package(f'{cycle}-{shared}.atopack', files=files)
+                with zipfile.ZipFile(package) as archive:
+                    self.assertEqual(len(maps.validate(archive, manifest)), len(files))
+                masks = [(target,path) for target,path in files if '/numbers/' in target]
+                package, manifest = self.package(f'{cycle}-mask-only.atopack', files=masks)
+                with zipfile.ZipFile(package) as archive, self.assertRaisesRegex(ValueError, '配套底图'):
+                    maps.validate(archive, manifest)
 
     def test_studio_import_install_export_roundtrip_preserves_exact_png_bytes(self):
         package,manifest=self.package()
