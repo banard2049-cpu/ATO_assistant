@@ -30,8 +30,11 @@ function harness(wounds = 3) {
     ensurePiles() {}, updateAiViewTabs() {}, updateBpViewTabs() {}, updateNietzscheStateUi() {},
     panelWrap: { querySelector() {} }, battleMapControl: { render() {} }, renderPanelTokens() {}, renderExtraCards() {},
     undoAiButton: {}, undoBpButton: {}, aiBackInfo: {}, bpBackInfo: {}, bpDamageSummary: {}, healBpButton: {},
-    deathblowBpButton: {}, deathblowBpStatus: {},
-    deckBackDisplayText: cards => String(cards.length), renderNietzscheBreakLocks() {},
+    deathblowBpButton: {}, deathblowBpStatus: {}, viewDeckOrderToggle: { checked: true },
+    deckBackDisplayText: cards => String(cards.length),
+    deckBackCompositionText: cards => String(cards.length),
+    cardBackDisplayLevel: card => String(card?.level || '?'),
+    renderNietzscheBreakLocks() {},
     savePiles: () => { ctx.captureUndoEffects(); saves.push(clone(ctx.piles[ctx.currentApostle])); },
     renderAibpCards: () => ctx.renderDeckInfo(),
   });
@@ -42,7 +45,8 @@ function harness(wounds = 3) {
     'removeFirstMatchingToRemoved', 'lowestLevelCard', 'removeLowestCardToRemoved', 'promoteBpDeckForDefeatedLevel',
     'currentBpDamageKey', 'currentBpDamageView', 'bpDamageValue', 'currentBpHealIndex', 'healBp',
     'bpDamageTotalForKey', 'currentBpDamageSummary', 'currentBossWounds', 'bpDamageSummaryText',
-    'deathblowUnavailableReason', 'renderDeathblowControl', 'resolveBossDeathblow', 'renderDeckInfo']) {
+    'deathblowUnavailableReason', 'renderDeathblowControl', 'resolveBossDeathblow', 'renderDeckBackInfo',
+    'renderDeckInfo']) {
     vm.runInContext(fn(name), ctx);
   }
   return { ctx, state, saves, setLevel(value) { level = value; } };

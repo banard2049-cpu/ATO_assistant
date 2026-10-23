@@ -1485,7 +1485,8 @@ function renderTiles() {
       && (state.showBack || (!explored && !previewRevealed));
     const imageSrc = (!state.showBack && (explored || previewRevealed)) || !assets.back ? assets.front : assets.back;
     const imageMarkup = c5Covered
-      ? `<span class="tile-blue-cover" role="img" aria-label="未揭示地图 ${escapeHtml(tile.label)}">${escapeHtml(tile.label)}</span>`
+      ? window.ATO_MAP_ARTWORK?.coverMarkup(assets.front, tile.label)
+        || `<span class="tile-back-fallback" role="img" aria-label="未揭示地图 ${escapeHtml(tile.label)}">${escapeHtml(tile.label)}</span>`
       : window.ATO_MAP_ARTWORK
         ? window.ATO_MAP_ARTWORK.markup(imageSrc, tile.label)
         : `<img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(tile.label)}">`;

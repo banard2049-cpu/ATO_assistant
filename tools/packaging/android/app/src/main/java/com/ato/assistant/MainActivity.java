@@ -25,15 +25,22 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 
 public final class MainActivity extends Activity {
   private static final String ROOT = "file:///android_asset/web/";
   private static final int FILE_CHOOSER_REQUEST = 1001;
   private static final int ATOPACK_CHOOSER_REQUEST = 1002;
   private static final int EXPORT_CHOOSER_REQUEST = 1003;
-  // 跨 Activity 重建保留：渲染进程崩过一次后，故事页下一次默认先关混排图。
+  // 为旧页面保留崩溃标记；新版故事页使用逐条读取，无需关闭插图。
   private static volatile boolean rendererCrashedThisProcess;
-  private WebView webView;
+  private final ExecutorService mixedMediaWorker = Executors.newSingleThreadExecutor();
+  private AtomicLong mixedMediaRequest = new AtomicLong();
+  private volatile WebView webView;
+  private volatile WebView retiringStoryWebView;
+  private StoryWebViewSession currentStorySession;
   private FrameLayout rootView;
   private ValueCallback<Uri[]> filePathCallback;
   private Uri pendingCameraUri;
@@ -59,15 +66,54 @@ public final class MainActivity extends Activity {
     localApi.attachImageIndex(atopackStore::aibpImageIndex);
     secondScreenServer = new LocalSecondScreenServer(this, atopackStore, localApi);
     localApi.attachSecondScreenServer(secondScreenServer);
+    rootView = new FrameLayout(this);
+    setContentView(rootView);
+    createWebView(ROOT + "index.html");
+
+    storyTts = new TextToSpeech(this, status -> {
+      if (status != TextToSpeech.SUCCESS || storyTts == null) return;
+      storyTts.setLanguage(Locale.SIMPLIFIED_CHINESE);
+      storyTts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+        @Override public void onStart(String utteranceId) { }
+
+        @Override public void onDone(String utteranceId) {
+          if (utteranceId.equals(storyTtsSegmentId)) finishStoryTts(storyTtsId, true, "");
+        }
+
+        @Override public void onError(String utteranceId) {
+          if (utteranceId.equals(storyTtsSegmentId)) finishStoryTts(storyTtsId, false, "Android 系统语音合成失败");
+        }
+
+        @Override public void onError(String utteranceId, int errorCode) {
+          if (utteranceId.equals(storyTtsSegmentId)) finishStoryTts(storyTtsId, false, "Android 系统语音合成失败（" + errorCode + "）");
+        }
+
+        @Override public void onStop(String utteranceId, boolean interrupted) {
+          if (utteranceId.equals(storyTtsSegmentId) && !storyTtsPaused) finishStoryTts(storyTtsId, false, "朗读已停止");
+        }
+
+        @Override public void onRangeStart(String utteranceId, int start, int end, int frame) {
+          if (utteranceId.equals(storyTtsSegmentId)) storyTtsOffset = Math.max(storyTtsOffset, storyTtsSegmentStart + start);
+        }
+      });
+      storyTtsReady = true;
+      runOnUiThread(() -> {
+        if (webView != null) webView.evaluateJavascript("window.ATOAndroidTtsReady&&window.ATOAndroidTtsReady()", null);
+      });
+    });
+  }
+
+  private void createWebView(String url) {
+    mixedMediaRequest = new AtomicLong();
     webView = new WebView(this);
+    final StoryWebViewSession storySession = new StoryWebViewSession(ROOT);
+    currentStorySession = storySession;
     // Only debug APKs expose their WebView to adb/Chrome inspection.
     if ((getApplicationInfo().flags & android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
       WebView.setWebContentsDebuggingEnabled(true);
     }
-    rootView = new FrameLayout(this);
     rootView.addView(webView, new FrameLayout.LayoutParams(
         FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
-    setContentView(rootView);
 
     WebSettings settings = webView.getSettings();
     settings.setJavaScriptEnabled(true);
@@ -79,8 +125,20 @@ public final class MainActivity extends Activity {
     settings.setAllowUniversalAccessFromFileURLs(true);
     settings.setMediaPlaybackRequiresUserGesture(false);
 
-    webView.addJavascriptInterface(new LocalApiBridge(), "ATOAndroid");
+    webView.addJavascriptInterface(new LocalApiBridge(webView), "ATOAndroid");
     webView.setWebViewClient(new WebViewClient() {
+      @Override public void onPageStarted(WebView view, String url, android.graphics.Bitmap favicon) {
+        if (view != webView || view == retiringStoryWebView) return;
+        // A navigation keeps the WebView but replaces its page. Stop the old page's scan.
+        mixedMediaRequest.incrementAndGet();
+        // System Back/goBack does not necessarily pass through shouldOverrideUrlLoading.
+        if (storySession.needsResetOnNavigation(url)) {
+          resetStoryWebView(view, url);
+          return;
+        }
+        super.onPageStarted(view, url, favicon);
+      }
+
       @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
         try {
           WebResourceResponse override = atopackStore.intercept(request.getUrl());
@@ -92,14 +150,23 @@ public final class MainActivity extends Activity {
       }
 
       @Override public void onPageFinished(WebView view, String url) {
+        if (view != webView || view == retiringStoryWebView) return;
+        if (storySession.needsResetOnNavigation(url)) {
+          resetStoryWebView(view, url);
+          return;
+        }
         super.onPageFinished(view, url);
-        // 回到主控台后清掉前进/后退历史，避免刚离开的故事页连同几十兆脚本
-        // 留在 WebView 的返回缓存里，第二次进入时同时保留两份。
+        // Navigation history only; story page resources are released by replacing its WebView.
         if (url != null && url.startsWith(ROOT + "index.html")) view.clearHistory();
       }
 
       @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+        if (view != webView || view == retiringStoryWebView) return true;
         Uri uri = request.getUrl();
+        if (request.isForMainFrame() && storySession.needsResetOnNavigation(uri.toString())) {
+          resetStoryWebView(view, uri.toString());
+          return true;
+        }
         if ("file".equals(uri.getScheme()) && uri.toString().startsWith(ROOT)) return false;
         try {
           startActivity(new Intent(Intent.ACTION_VIEW, uri));
@@ -114,6 +181,15 @@ public final class MainActivity extends Activity {
       // 这里销毁已失效的 WebView，回到主控台，至少不会丢应用。
       @Override public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
         if (view != webView) return true;
+        android.app.ActivityManager.MemoryInfo memory = new android.app.ActivityManager.MemoryInfo();
+        android.app.ActivityManager manager = (android.app.ActivityManager) getSystemService(ACTIVITY_SERVICE);
+        if (manager != null) manager.getMemoryInfo(memory);
+        android.content.pm.PackageInfo provider = WebView.getCurrentWebViewPackage();
+        android.util.Log.w("ATORenderer", "Renderer exited: crashed=" + detail.didCrash()
+            + ", priority=" + detail.rendererPriorityAtExit() + ", lowMemory=" + memory.lowMemory
+            + ", availableMiB=" + memory.availMem / (1024 * 1024)
+            + ", webView=" + (provider == null ? "unknown" : provider.packageName + "/" + provider.versionName));
+        mixedMediaRequest.incrementAndGet();
         rendererCrashedThisProcess = true;
         webView = null;
         if (view.getParent() instanceof ViewGroup) ((ViewGroup) view.getParent()).removeView(view);
@@ -121,8 +197,8 @@ public final class MainActivity extends Activity {
         Toast.makeText(
             MainActivity.this,
             detail.didCrash()
-                ? "页面渲染进程异常退出，已返回主控台；本次混排插图自动关闭，重开应用后恢复。"
-                : "内存不足，页面已被系统关闭，已返回主控台；本次混排插图自动关闭，重开应用后恢复。",
+                ? "页面渲染进程异常退出，已返回主控台，可重新打开页面继续。"
+                : "页面渲染进程被系统结束，已返回主控台，可重新打开页面继续。",
             Toast.LENGTH_LONG).show();
         if (rootView != null) {
           rootView.post(() -> {
@@ -175,46 +251,46 @@ public final class MainActivity extends Activity {
       }
     });
 
-    storyTts = new TextToSpeech(this, status -> {
-      if (status != TextToSpeech.SUCCESS || storyTts == null) return;
-      storyTts.setLanguage(Locale.SIMPLIFIED_CHINESE);
-      storyTts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
-        @Override public void onStart(String utteranceId) { }
+    webView.loadUrl(url);
+  }
 
-        @Override public void onDone(String utteranceId) {
-          if (utteranceId.equals(storyTtsSegmentId)) finishStoryTts(storyTtsId, true, "");
-        }
-
-        @Override public void onError(String utteranceId) {
-          if (utteranceId.equals(storyTtsSegmentId)) finishStoryTts(storyTtsId, false, "Android 系统语音合成失败");
-        }
-
-        @Override public void onError(String utteranceId, int errorCode) {
-          if (utteranceId.equals(storyTtsSegmentId)) finishStoryTts(storyTtsId, false, "Android 系统语音合成失败（" + errorCode + "）");
-        }
-
-        @Override public void onStop(String utteranceId, boolean interrupted) {
-          if (utteranceId.equals(storyTtsSegmentId) && !storyTtsPaused) finishStoryTts(storyTtsId, false, "朗读已停止");
-        }
-
-        @Override public void onRangeStart(String utteranceId, int start, int end, int frame) {
-          if (utteranceId.equals(storyTtsSegmentId)) storyTtsOffset = Math.max(storyTtsOffset, storyTtsSegmentStart + start);
-        }
-      });
-      storyTtsReady = true;
-      runOnUiThread(() -> {
-        if (webView != null) webView.evaluateJavascript("window.ATOAndroidTtsReady&&window.ATOAndroidTtsReady()", null);
-      });
+  private void resetStoryWebView(WebView oldView, String destination) {
+    if (oldView != webView || oldView == retiringStoryWebView) return;
+    retiringStoryWebView = oldView;
+    mixedMediaRequest.incrementAndGet();
+    oldView.stopLoading();
+    // Destroy outside WebView's navigation callback; keep the native API, imported
+    // resources and second-screen server alive while replacing only the page host.
+    rootView.post(() -> {
+      if (webView != oldView || isFinishing() || isDestroyed()) return;
+      webView = null;
+      storyTtsPaused = false;
+      storyTtsId = "";
+      storyTtsText = "";
+      if (storyTts != null) storyTts.stop();
+      if (oldView.getParent() instanceof ViewGroup) ((ViewGroup) oldView.getParent()).removeView(oldView);
+      oldView.removeJavascriptInterface("ATOAndroid");
+      oldView.destroy();
+      retiringStoryWebView = null;
+      createWebView(destination);
+      android.util.Log.i("ATOStoryWebView", "Released story WebView and created dashboard WebView");
     });
-
-    webView.loadUrl(ROOT + "index.html");
   }
 
   @Override public void onBackPressed() {
-    if (webView != null && webView.canGoBack()) webView.goBack(); else super.onBackPressed();
+    if (webView == retiringStoryWebView && webView != null) return;
+    if (webView != null && webView.canGoBack()) {
+      android.webkit.WebBackForwardList history = webView.copyBackForwardList();
+      int previous = history.getCurrentIndex() - 1;
+      String destination = previous >= 0 ? history.getItemAtIndex(previous).getUrl() : null;
+      if (currentStorySession.needsResetOnNavigation(destination)) resetStoryWebView(webView, destination);
+      else webView.goBack();
+    } else super.onBackPressed();
   }
 
   @Override protected void onDestroy() {
+    mixedMediaRequest.incrementAndGet();
+    mixedMediaWorker.shutdownNow();
     if (secondScreenServer != null) secondScreenServer.stop();
     if (storyTts != null) {
       storyTts.stop();
@@ -285,8 +361,51 @@ public final class MainActivity extends Activity {
   }
 
   private final class LocalApiBridge {
+    private final WebView owner;
+    private final AtomicLong requests;
+
+    LocalApiBridge(WebView owner) {
+      this.owner = owner;
+      this.requests = mixedMediaRequest;
+    }
+
     @android.webkit.JavascriptInterface public boolean rendererCrashedThisProcess() {
       return rendererCrashedThisProcess;
+    }
+
+    @android.webkit.JavascriptInterface public void cancelMixedMediaMap() {
+      if (webView == owner && owner != retiringStoryWebView) requests.incrementAndGet();
+    }
+
+    @android.webkit.JavascriptInterface public boolean requestMixedMediaMap(
+        String book, String variant, String key, String requestId) {
+      if (webView != owner || owner == retiringStoryWebView || !MixedMediaMapReader.validContext(book, variant, key) || requestId == null
+          || requestId.length() > 128 || mixedMediaWorker.isShutdown()) return false;
+      long serial = requests.incrementAndGet();
+      WebView target = owner;
+      try {
+        mixedMediaWorker.execute(() -> {
+          if (webView != owner || serial != requests.get()) return;
+          String result = "";
+          AtopackStore.OpenedResource resource = atopackStore.open("story/assets/mixed-media/mapping.js");
+          if (resource != null) {
+            try (InputStream input = resource.input) {
+              result = MixedMediaMapReader.read(input, book, variant, key,
+                  () -> webView != owner || serial != requests.get());
+            } catch (Exception ignored) {
+              // Missing or incompatible optional materials leave the source text readable.
+            }
+          }
+          String json = result;
+          if (serial != requests.get()) return;
+          runOnUiThread(() -> {
+            if (webView == null || webView != target || serial != requests.get()) return;
+            webView.evaluateJavascript("window.ATOAndroidMixedMediaMapResult&&window.ATOAndroidMixedMediaMapResult("
+                + org.json.JSONObject.quote(requestId) + "," + org.json.JSONObject.quote(json) + ")", null);
+          });
+        });
+        return true;
+      } catch (java.util.concurrent.RejectedExecutionException ignored) { return false; }
     }
 
     @android.webkit.JavascriptInterface public boolean copyStoryTextToClipboard(String text) {
@@ -311,8 +430,9 @@ public final class MainActivity extends Activity {
     }
 
     @android.webkit.JavascriptInterface public boolean speakStoryText(String text, String utteranceId, float rate) {
-      if (!storyTtsReady || text == null || text.isEmpty() || utteranceId == null || utteranceId.isEmpty()) return false;
+      if (webView != owner || owner == retiringStoryWebView || !storyTtsReady || text == null || text.isEmpty() || utteranceId == null || utteranceId.isEmpty()) return false;
       runOnUiThread(() -> {
+        if (webView != owner || owner == retiringStoryWebView) return;
         if (storyTts == null || !storyTtsReady) {
           finishStoryTts(utteranceId, false, "Android 系统语音尚未就绪");
           return;
@@ -330,6 +450,7 @@ public final class MainActivity extends Activity {
 
     @android.webkit.JavascriptInterface public void pauseStoryTts() {
       runOnUiThread(() -> {
+        if (webView != owner) return;
         if (storyTts == null || storyTtsId.isEmpty() || storyTtsPaused) return;
         storyTtsPaused = true;
         storyTts.stop();
@@ -338,6 +459,7 @@ public final class MainActivity extends Activity {
 
     @android.webkit.JavascriptInterface public void resumeStoryTts() {
       runOnUiThread(() -> {
+        if (webView != owner) return;
         if (storyTts == null || storyTtsId.isEmpty() || !storyTtsPaused) return;
         storyTtsPaused = false;
         speakStoryTtsFromOffset();
@@ -346,6 +468,7 @@ public final class MainActivity extends Activity {
 
     @android.webkit.JavascriptInterface public void stopStoryTts() {
       runOnUiThread(() -> {
+        if (webView != owner) return;
         if (storyTts == null || storyTtsId.isEmpty()) return;
         String id = storyTtsId;
         storyTtsPaused = false;

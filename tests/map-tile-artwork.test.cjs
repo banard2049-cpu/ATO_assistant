@@ -19,6 +19,7 @@ function harness(initial = null, blocked = false) {
   const context = vm.createContext({ window });
   vm.runInContext(fs.readFileSync(path.join(root, 'map/tile-artwork-data.js'), 'utf8'), context);
   vm.runInContext(fs.readFileSync(path.join(root, 'map/tile-back-data.js'), 'utf8'), context);
+  vm.runInContext(fs.readFileSync(path.join(root, 'map/c5-heading-data.js'), 'utf8'), context);
   vm.runInContext(fs.readFileSync(path.join(root, 'map/map-data.js'), 'utf8'), context);
   vm.runInContext(source, context);
   function control() { return { listeners: {}, addEventListener(name, fn) { this.listeners[name] = fn; } }; }
@@ -46,6 +47,19 @@ test('HD registry covers every legacy playable front, C1 variant and both C5 fac
   assert.equal(JSON.stringify(window.ATO_MAP_DATA), before);
   assert.match(api.resolve('./images/c5-tile-040-front.png').base, /c5-tile-040-front\.png$/);
   assert.match(api.resolve('./images/c5-tile-040-back.png').base, /c5-tile-040-back\.png$/);
+});
+
+test('workshop front masks refresh C1-C3 caches while retaining base and C4-C5 URLs', () => {
+  const { api } = harness();
+  for (const cycle of ['c1', 'c2', 'c3']) {
+    const artwork = api.resolve(`./images/${cycle}-tile-001-front.jpg?old-cache=1`);
+    assert.equal(artwork.base, `./images/hd1024/base/${cycle}-tile-001-front.png`);
+    assert.equal(artwork.overlay, `./images/hd1024/overlay/${cycle}-tile-001-front.png?v=20261023-workshop-fronts1-b90-c110`);
+  }
+  for (const cycle of ['c4', 'c5']) {
+    const artwork = api.resolve(`./images/${cycle}-tile-001-front.png`);
+    assert.equal(artwork.overlay, `./images/hd1024/overlay/${cycle}-tile-001-front.png`);
+  }
 });
 
 test('combined mask exposes the unmarked base without touching campaign storage', () => {
@@ -138,12 +152,15 @@ function renderHarness(cycleId, explored, variant, showBack = false) {
   return { html: grid.children[0].innerHTML, cycleState };
 }
 
-test('C5 unknown/back covers never expose HD artwork; old face selections stay unchanged', () => {
+test('C5 covers show the C3 texture and cropped current label, without exposing the map face', () => {
   for (const variant of [false, true]) {
     for (const [explored, showBack] of [[false, false], [true, true]]) {
       const { html } = renderHarness('c5', explored, variant, showBack);
-      assert.match(html, /tile-blue-cover/);
-      assert.doesNotMatch(html, /hd1024/);
+      assert.match(html, /tile-c5-cover/);
+      assert.match(html, /card-backs\/c3-base\.png/);
+      assert.match(html, /tile-c5-cover-heading/);
+      assert.doesNotMatch(html, /hd1024\/base\//);
+      assert.match(html, new RegExp('hd1024/overlay/c5-tile-040-' + (variant ? 'back' : 'front') + '\\.png'));
     }
     const { html, cycleState } = renderHarness('c5', true, variant);
     assert.match(html, new RegExp('hd1024/base/c5-tile-040-' + (variant ? 'back' : 'front') + '\\.png'));
@@ -154,21 +171,82 @@ test('C5 unknown/back covers never expose HD artwork; old face selections stay u
   assert.match(renderHarness('c1', false, true).html, /card-backs\/numbers\/c1-tile-009-alt-back-instruction\.png/);
 });
 
-test('C1-C3 share exactly three backs and keep printed numbers visible with icons on or off', () => {
+test('all 160 C5 covers reuse their own number and faction; revealed masks stay intact', () => {
   const h = harness();
-  assert.equal(Object.keys(h.window.ATO_MAP_BACK_DATA.backs).length, 270);
-  assert.deepEqual(Object.keys(h.window.ATO_MAP_BACK_DATA.bases).sort(), ['c1', 'c2', 'c3']);
+  const geometry = h.window.ATO_C5_HEADING_DATA;
+  assert.equal(Object.keys(geometry).length, 160);
+  for (const [key, regions] of Object.entries(geometry)) {
+    const source = `./images/${key}.png`;
+    const heading = h.api.headingMarkup(source, key.slice(8, 11));
+    assert.match(heading, new RegExp(`hd1024/overlay/${key}\\.png`));
+    assert.match(heading, new RegExp(`viewBox="${regions.header[0]} ${regions.header[1]} `));
+    assert.match(heading, new RegExp(`viewBox="${regions.faction[0] + 8} ${regions.faction[1] + 8} `));
+    assert.doesNotMatch(heading, /c5-face-[ab]\.png/);
+    assert.doesNotMatch(h.api.markup(source, 'label'), /clip-path|tile-c5-heading/);
+    assert.ok(regions.header[2] - regions.header[0] >= 260);
+  }
+  assert.ok(geometry['c5-tile-040-front'].header[0] < 100);
+  assert.ok(geometry['c5-tile-050-front'].header[0] < 100);
+  h.controls.icons.checked = false; h.controls.icons.listeners.change();
+  assert.match(h.api.coverMarkup('./images/c5-tile-080-front.png', '080'), /tile-c5-heading/);
+});
+
+test('missing C5 cover assets fall back to a number and never to a revealed map', () => {
+  const h = harness(); let onError;
+  h.api.bind({ addEventListener(_name, callback) { onError = callback; } });
+  const key = 'c5-tile-008-front-cover';
+  const stack = { dataset: { artworkKey: key, cardCover: 'true', artworkLabel: '008' } };
+  onError({ target: { closest: () => stack } });
+  assert.match(stack.innerHTML, /tile-back-fallback/);
+  assert.match(h.api.coverMarkup('./images/c5-tile-008-front.png', '008'), />008<\/span>/);
+  assert.doesNotMatch(stack.innerHTML, /<img|<image|hd1024/);
+});
+
+test('C1-C4 share four bases and keep printed numbers visible with icons on or off', () => {
+  const h = harness();
+  assert.equal(Object.keys(h.window.ATO_MAP_BACK_DATA.backs).length, 351);
+  assert.deepEqual(Object.keys(h.window.ATO_MAP_BACK_DATA.bases).sort(), ['c1', 'c2', 'c3', 'c4']);
+  assert.equal(new Set(Object.values(h.window.ATO_MAP_BACK_DATA.bases)).size, 4);
   for (const showIcons of [true, false]) {
     h.controls.icons.checked = showIcons; h.controls.icons.listeners.change();
     const html = h.api.markup('./images/c2-tile-038-back.png', '038');
     assert.match(html, /card-backs\/c2-base\.png/);
+    assert.doesNotMatch(html, /filter:/);
     assert.match(html, /card-backs\/numbers\/c2-tile-038-back\.png/);
     assert.doesNotMatch(html, /hd1024/);
   }
-  assert.equal(h.api.resolveBack('./images/c4-tile-001-back.png'), null);
+  assert.ok(h.api.resolveBack('./images/c4-tile-001-back.png'));
   assert.equal(h.api.resolveBack('./images/c5-tile-001-back.png'), null);
   assert.match(h.api.markup('./images/c1-tile-009-alt-back.jpg', '009'), /-instruction\.png/);
   assert.equal(Object.values(h.window.ATO_MAP_BACK_DATA.backs).filter(r=>r.pieces.length===2).length, 7);
+  for (const id of ['009', '013', '014', '018', '022', '023', '035']) {
+    const html = h.api.markup(`./images/c1-tile-${id}-alt-back.jpg`, id);
+    assert.equal((html.match(/<img /g) || []).length, 1, `special back ${id} uses one complete image`);
+    assert.match(html, new RegExp(`c1-tile-${id}-alt-back-instruction\\.png`));
+    assert.doesNotMatch(html, /tile-back-piece|card-backs\/c1-base/);
+  }
+});
+
+test('all C4 backs use the common scroll and their complete marker mask even with icons hidden', () => {
+  const h = harness();
+  for (const showIcons of [true, false]) {
+    h.controls.icons.checked = showIcons; h.controls.icons.listeners.change();
+    for (let number = 1; number <= 81; number++) {
+      const id = String(number).padStart(3, '0');
+      const source = `./images/c4-tile-${id}-back.png`;
+      const back = h.api.resolveBack(source);
+      assert.equal(back.pieces.length, 1);
+      assert.equal(back.pieces[0].kind, 'markers');
+      const html = h.api.markup(source, id);
+      assert.equal((html.match(/<img /g) || []).length, 2);
+      assert.match(html, /card-backs\/c4-base\.png\?v=/);
+      assert.match(html, new RegExp(`card-backs/numbers/c4-tile-${id}-back\\.png\\?v=`));
+      assert.doesNotMatch(html, /hd1024|tile-artwork-fallback/);
+    }
+  }
+  assert.match(renderHarness('c4', false, false).html, /card-backs\/c4-base/);
+  assert.match(renderHarness('c4', true, false, true).html, /card-backs\/c4-base/);
+  assert.match(renderHarness('c4', true, false).html, /hd1024\/base\/c4-tile-040-front/);
 });
 
 test('an older asset pack can fall back to its original card back; missing both keeps a readable number', () => {

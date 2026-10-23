@@ -149,6 +149,6 @@ test('both screens use the same revised renderer and local mapping cache version
   // 故事书页把十几兆的 mapping 改成 app.js 空闲时按需加载，首屏不再写死 script 标签；
   // 第二屏仍由页面直接加载。两处版本必须一致。
   assert.doesNotMatch(story, /mixed-media\/mapping\.js\?v=/);
-  assert.match(app, /mixed-media\/mapping\.js\?v=c4c5-20261006-official-c45-1/);
-  assert.match(second, /mixed-media\/mapping\.js\?v=c4c5-20261006-official-c45-1/);
+  assert.match(app, /mixed-media\/mapping\.js\?v=20261023-runtime1/);
+  assert.match(second, /mixed-media\/mapping\.js\?v=20261023-runtime1/);
 });

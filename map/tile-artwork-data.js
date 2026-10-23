@@ -515,5 +515,10 @@ window.ATO_MAP_ARTWORK_DATA = {
     "c5-tile-079-front",
     "c5-tile-080-back",
     "c5-tile-080-front"
-  ]
+  ],
+  "overlayVersions": {
+    "c1": "20261023-workshop-fronts1-b90-c110",
+    "c2": "20261023-workshop-fronts1-b90-c110",
+    "c3": "20261023-workshop-fronts1-b90-c110"
+  }
 };

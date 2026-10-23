@@ -4,7 +4,7 @@
 是使用者的私有映射表，``images/c1..c5/`` 里是从原书裁下来的图（PNG/SVG），两者都在
 ``.gitignore`` 里（``/story/assets/mixed-media/mapping.js`` 与
 ``/story/assets/mixed-media/images/``），按仓库的版权约定只留在本地。这里让素材库把它们
-原样写进 .atopack 的 ``mixedMediaFiles`` 段，导入后再由「分享与安装」落回同目录；
+将运行时必需的映射及原始图片写进 .atopack 的 ``mixedMediaFiles`` 段，导入后由「分享与安装」落回同目录；
 Android 端 AtopackStore 按同一段解包到 web 根目录的 ``story/assets/mixed-media/``，
 因此故事书按 ``./assets/mixed-media/images/c1/<名称>.png``（相对 ``story/index.html``）
 取混排图时不用额外配置。
@@ -18,6 +18,7 @@ Android 端 AtopackStore 按同一段解包到 web 根目录的 ``story/assets/m
 from __future__ import annotations
 
 import hashlib
+import json
 import re
 from pathlib import Path
 
@@ -43,6 +44,39 @@ _TARGET = re.compile(
     r"story/assets/mixed-media/images/c[1-5]/[a-z0-9][a-z0-9_-]*"
     r"\.(?:" + "|".join(re.escape(suffix[1:]) for suffix in IMAGE_SUFFIXES) + r")"
 )
+
+# renderer.js 消费的字段；审计说明、覆盖统计和重复的源文/图片摘要不进入运行时 mapping。
+RUNTIME_SCHEMAS = ("schema", "resourceSchema", "battleSchema", "requestedSchema", "vectorSchema")
+RUNTIME_LEDGERS = ("rows", "resourceRows", "battleRows", "requestedRows", "resourceScopeExclusions", "vectorAssets")
+RUNTIME_FIELDS = frozenset("""
+book key variant kind path anchor position replaceText contextBefore contextAfter textFingerprint layout
+alt resourceLabel semanticLabel retainedNameText scope vectorPath sourcePngSha256 svgSha256
+anchorOccurrence anchorCount textLength retainedNameStart retainedNameEnd pdfPage printedPage start end width height
+textAlreadyNamesResource textAlreadyNamesMedia
+""".split())
+_ASSIGNMENT = re.compile(r"\s*(?:(?:/\*.*?\*/|//[^\r\n]*)\s*)*window\.ATO_MIXED_MEDIA_MAP\s*=\s*", re.S)
+
+
+def compact_mapping(raw: bytes) -> bytes:
+    """保留现有 schema 和锚点语义，只移除渲染器从不读取的资料及空白。"""
+    try:
+        text = raw.decode("utf-8-sig")
+        assignment = _ASSIGNMENT.match(text)
+        if assignment is None:
+            raise ValueError("mapping 缺少约定的数据赋值")
+        data, end = json.JSONDecoder().raw_decode(text, assignment.end())
+        if text[end:].strip() not in ("", ";"):
+            raise ValueError("mapping 含有额外脚本")
+        if not isinstance(data, dict) or type(data.get("schema")) not in (int, float) or data["schema"] != 1:
+            raise ValueError("不支持的 mapping schema")
+        result = {name: data[name] for name in RUNTIME_SCHEMAS if name in data}
+        for name in RUNTIME_LEDGERS:
+            if name in data:
+                result[name] = [{key: value for key, value in row.items() if key in RUNTIME_FIELDS}
+                                if isinstance(row, dict) else row for row in data[name]] if isinstance(data[name], list) else data[name]
+        return ("window.ATO_MIXED_MEDIA_MAP=" + json.dumps(result, ensure_ascii=False, separators=(",", ":"), allow_nan=False) + ";\n").encode("utf-8")
+    except (UnicodeError, json.JSONDecodeError, ValueError) as exc:
+        raise ValueError(f"无法精简混排 mapping：{exc}") from exc
 
 
 def allowed_target(target: str) -> bool:
@@ -138,7 +172,9 @@ def add_to_archive(
             raw = fallback_archive.read(member)
         else:
             raw = path.read_bytes()
-        if target != MAPPING_TARGET:
+        if target == MAPPING_TARGET:
+            raw = compact_mapping(raw)
+        else:
             images += 1
             if images > MAX_IMAGE_FILES:
                 raise ValueError(f"混合媒体图片数量超过 {MAX_IMAGE_FILES} 个上限")

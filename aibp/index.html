@@ -1091,9 +1091,52 @@
       letter-spacing: 0.4px;
     }
 
+    .deck-info .deck-back-chips {
+      display: inline-flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      max-width: min(100%, 430px);
+      letter-spacing: 0;
+    }
+
+    .deck-info .deck-back-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      box-sizing: border-box;
+      border: 1px solid var(--line);
+      border-radius: 0;
+      background: transparent;
+      color: var(--text);
+      font-family: Georgia, "Songti SC", "Noto Serif CJK SC", SimSun, serif;
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .deck-info .deck-back-chip.is-top {
+      border-color: var(--gold);
+      color: var(--accent-strong);
+    }
+
+    .deck-info .deck-back-chip-text {
+      /* .deck-info span 会直接命中这层，这里把字号、字重、颜色拉回格子自己的设定。 */
+      font: inherit;
+      color: inherit;
+      letter-spacing: -0.05em;
+      /* 负字距会在最后一个字符后留下 -0.05em 的空隙，居中时会整体偏右，补回等宽空隙。 */
+      margin-right: 0.05em;
+      /* 只保留字面高度（cap 到基线），去掉字体上下留白，数字才会在框里垂直居中。 */
+      text-box-trim: trim-both;
+      text-box-edge: cap alphabetic;
+    }
+
     .card-title-with-back {
       display: flex;
-      align-items: baseline;
+      align-items: center;
       gap: 10px;
       min-width: max-content;
     }
@@ -5667,6 +5710,26 @@
         : deckBackText(cards);
     }
 
+    function renderDeckBackInfo(container, cards) {
+      if (!container) return;
+      if (viewDeckOrderToggle?.checked === false) {
+        container.textContent = deckBackCompositionText(cards);
+        return;
+      }
+      if (cards.length === 0) {
+        container.textContent = "空";
+        return;
+      }
+      const escape = (value) => String(value).replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+      }[char]));
+      const chips = cards.map((card, index) => {
+        const level = escape(cardBackDisplayLevel(card));
+        return `<span class="deck-back-chip${index === 0 ? " is-top" : ""}"><span class="deck-back-chip-text">${level}</span></span>`;
+      });
+      container.innerHTML = `<span class="deck-back-chips" title="牌堆顺序，左侧为牌顶">${chips.join("")}</span>`;
+    }
+
     function shuffleCards(cards) {
       const shuffled = cards.slice();
       for (let i = shuffled.length - 1; i > 0; i--) {
@@ -6416,8 +6479,8 @@
     function renderDeckInfo() {
       ensurePiles(currentApostle);
       const aiCards = piles[currentApostle].AI.deck;
-      aiBackInfo.textContent = deckBackDisplayText(aiCards);
-      bpBackInfo.textContent = deckBackDisplayText(piles[currentApostle].BP.deck);
+      renderDeckBackInfo(aiBackInfo, aiCards);
+      renderDeckBackInfo(bpBackInfo, piles[currentApostle].BP.deck);
       const damageSummary = currentBpDamageSummary();
       bpDamageSummary.textContent = bpDamageSummaryText(damageSummary, currentBossWounds());
       bpDamageSummary.title = "当前损伤 / 总生命（击杀所需伤口数）";

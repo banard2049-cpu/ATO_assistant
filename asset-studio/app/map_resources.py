@@ -18,7 +18,7 @@ MAX_FILE_BYTES = 8 * 1024 * 1024
 PROJECT = Path(__file__).resolve().parents[2]
 _TARGET = re.compile(
     r'map/images/(?:hd1024/(?:base|overlay)/c[1-5]-tile-[A-Za-z0-9-]+\.png'
-    r'|card-backs/(?:c[1-3]-base\.png|numbers/c[1-3]-tile-[A-Za-z0-9-]+\.png))'
+    r'|card-backs/(?:c[1-4]-base\.png|numbers/c[1-4]-tile-[A-Za-z0-9-]+\.png))'
 )
 
 
@@ -80,12 +80,20 @@ def collect_library(library: Path) -> list[tuple[str, Path]]:
 
 def collect(root: Path | None, fallback_library: Path | None = None, targets=None) -> list[tuple[str, Path]]:
     """Use registered dependencies only; never pull archives or composite copies in."""
+    targets = tuple(targets) if targets is not None else None
     index_root = Path(root) if root is not None and (Path(root)/'map/tile-artwork-data.js').is_file() else PROJECT
     index = layer_index(index_root)
     needed = expected_targets(index_root) if targets is None else {
         target for old in targets if Path(old).parent.as_posix() == 'map/images'
         for target in index.get(Path(old).stem, ())
     }
+    # C5's unrevealed face reuses the C3 texture plus its own cropped mask.
+    # Include the texture when exporting a C5-only pack, too. Older packs
+    # without it remain valid and use the map's numbered fallback.
+    needs_c5_cover = targets is None or any(re.fullmatch(r'c5-tile-\d{3}-(?:front|back)', Path(old).stem)
+                                           for old in targets)
+    if needs_c5_cover:
+        needed.add('map/images/card-backs/c3-base.png')
     fallback = dict(collect_library(fallback_library)) if fallback_library else {}
     found = {}
     for target in sorted(needed):
@@ -97,11 +105,14 @@ def collect(root: Path | None, fallback_library: Path | None = None, targets=Non
                 raise ValueError(f'地图图层超过 8MB：{target}')
             found[target] = path
     complete = set()
+    cover_base = 'map/images/card-backs/c3-base.png'
+    if needs_c5_cover and cover_base in found:
+        complete.add(cover_base)
     for paths in index.values():
         group = set(paths)
         if not group <= needed:
             continue
-        specific = {p for p in group if not re.fullmatch(r'map/images/card-backs/c[1-3]-base\.png', p)}
+        specific = {p for p in group if not re.fullmatch(r'map/images/card-backs/c[1-4]-base\.png', p)}
         # A library may contain only one cycle. Missing whole faces can still
         # use legacy scans; a face with any specific layer must be complete.
         if not specific & found.keys():
@@ -167,7 +178,7 @@ def validate(archive, manifest: dict) -> list[dict]:
         seen.add(entry['target'])
     # Partial cycle packs are allowed; each face they contain must be complete.
     for paths in layer_index().values():
-        specific = set(paths) - {p for p in paths if re.fullmatch(r'map/images/card-backs/c[1-3]-base\.png', p)}
+        specific = set(paths) - {p for p in paths if re.fullmatch(r'map/images/card-backs/c[1-4]-base\.png', p)}
         if seen & specific and not set(paths) <= seen:
             raise ValueError(f'地图图层缺少配套底图或蒙版：{paths[0]}')
     return entries
