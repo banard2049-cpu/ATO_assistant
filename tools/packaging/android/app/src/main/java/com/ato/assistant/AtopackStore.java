@@ -556,6 +556,12 @@ final class AtopackStore {
           if (target.startsWith("map/images/card-backs/numbers/")) {
             String cycle = target.substring("map/images/card-backs/numbers/".length(), "map/images/card-backs/numbers/".length() + 2);
             companion = "map/images/card-backs/" + cycle + "-base.png";
+            // New C2/C3 backs recolor the common C1 texture; old packs retain
+            // their independent base. Both complete forms remain importable.
+            if (("c2".equals(cycle) || "c3".equals(cycle))
+                && declaredMaps.contains("map/images/card-backs/c1-base.png")) {
+              companion = "map/images/card-backs/c1-base.png";
+            }
             String number = target.replace("-instruction.png", ".png");
             String instruction = number.substring(0, number.length() - 4) + "-instruction.png";
             for (String piece : new String[] {number, instruction}) {

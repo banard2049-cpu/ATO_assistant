@@ -66,7 +66,7 @@ def extract(save, cache, output):
     registry = {'version': VERSION, 'tileSize': 825, 'pixelBrightness': DEFAULT_BRIGHTNESS,
                 'numberBrightness': 1, 'alternateBacks': 'original-images',
                 'source': {'workshopId': save.stem, 'side': 'FaceURL', 'saveSha256': sha(save)},
-                'bases': dict(old['bases']),
+                'bases': {**old['bases'], **{cycle: f'./images/card-backs/{cycle}-base.png' for cycle in EXPECTED}},
                 'backs': {key: entry for key, entry in old['backs'].items() if entry['cycle'] not in EXPECTED}}
     rows = []
     destination = output / 'card-backs'

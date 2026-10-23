@@ -1513,7 +1513,9 @@ def fixed_catalog_payload() -> dict[str, Any]:
         "night_nymph": "night_nymph.png",
         "last_oasis": "last_visited_oasis.png",
         "c4_city_of_squalor": "c4_city_of_squalor.png",
+        "c4_city_of_splendor": "c4_city_of_splendor.jpg",
         "c4_cloud_ship": "c4_cloud_ship.png",
+        "c4_hanging_gardens": "c4_hanging_gardens.jpg",
         "sandstorm": "sandstorm.jpg",
         "last_silver_ruin": "silver_remnant.png",
         "c5_ae_siren": "c5_ae_siren.png",
@@ -1538,14 +1540,15 @@ def fixed_catalog_payload() -> dict[str, Any]:
     map_cycles = {
         "c11": ["c1"], "c12": ["c1"], "c13": ["c1"],
         "last_oasis": ["c4"], "c4_city_of_squalor": ["c4"],
-        "c4_cloud_ship": ["c4"], "sandstorm": ["c4"],
+        "c4_city_of_splendor": ["c4"], "c4_cloud_ship": ["c4"],
+        "c4_hanging_gardens": ["c4"], "sandstorm": ["c4"],
         "last_silver_ruin": ["c5"], "c5_atlantean_capital": ["c5"],
         "c5_ae_siren": ["c5"],
         "c5_black_beak": ["c5"], "c5_last_visited_underwater_city": ["c5"],
         "c5_nemesis": ["c5"], "c5_ruin": ["c5"], "AA": ["c3"],
     }
     unique_tokens = {"AG", "AD", "hs", "c5_last_visited_underwater_city", "c5_ae_siren"}
-    square_tokens = {"c11", "c12", "c13", "c4_city_of_squalor", "c4_cloud_ship", "c5_atlantean_capital", "c5_ruin", "AA"}
+    square_tokens = {"c11", "c12", "c13", "c4_city_of_squalor", "c4_city_of_splendor", "c4_cloud_ship", "c4_hanging_gardens", "c5_atlantean_capital", "c5_ruin", "AA"}
     for order, (number, filename) in enumerate(map_token_files.items()):
         label = MAP_TOKEN_LABELS.get(number, f"地图标记（{number}）")
         cycle = map_cycles.get(number, [])

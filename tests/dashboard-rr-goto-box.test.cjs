@@ -85,13 +85,19 @@ function harness(cycle) {
   });
   const names = ['normalizeSurveyConstants', 'surveyConstantsDayKey', 'ensureTodaySurveyConstants',
     'getCurrentSurveyConstantData', 'firstCheckedSurveyHubTarget', 'firstCheckedSurveyRrTarget',
-    'surveyRrBoxKey', 'surveyConstantChecked', 'setSurveyConstant', 'createSurveyConstantCard',
+    'surveyRrBoxKey', 'surveyConstantChecked',
+    'beginSurveyConstantInteraction', 'surveyConstantInteractionIsCurrent',
+    'beginSurveyConstantMnemosSync', 'finishSurveyConstantMnemosSync',
+    'restoreSurveyConstantHubSelection', 'setSurveyConstant', 'createSurveyConstantCard',
     'createSurveyConstantTools',
     // 分支卡标题后的点数（当前故事卡 + 分支总表）——这里没有故事卡追踪条，取不到就退回空括号。
     'surveyStoryColumnHeaders', 'currentStoryCardLabel', 'surveyStoryColumnIndex', 'surveyHubPointsText'];
   c.rememberConstantDetailsOpen = () => {};
   c.createSurveyHubSummary = () => null;
   vm.runInContext(declaration('surveyConstantData') + '\n' + constantLine('SURVEY_STORY_ROMANS') + '\n'
+    + 'let surveyConstantInteractionVersions = new Map();'
+    + '\nlet surveyConstantMnemosSyncPending = 0;'
+    + '\nlet surveyConstantExternalSyncDeferred = false;\n'
     + names.map((name) => extract(source, name)).join('\n'), c);
   return { c, activity };
 }

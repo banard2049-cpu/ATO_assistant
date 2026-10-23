@@ -62,7 +62,10 @@ def layer_index(root: Path = PROJECT) -> dict[str, tuple[str, ...]]:
 
 
 def expected_targets(root: Path = PROJECT) -> set[str]:
-    return {target for paths in layer_index(root).values() for target in paths}
+    # Keep accepting the original independent textures from older packs.
+    return {target for paths in layer_index(root).values() for target in paths} | {
+        f'map/images/card-backs/c{cycle}-base.png' for cycle in (1, 2, 3, 4)
+    }
 
 
 def covered_targets(files: list[tuple[str, Path]], targets, root: Path = PROJECT) -> set[str]:
@@ -83,17 +86,22 @@ def collect(root: Path | None, fallback_library: Path | None = None, targets=Non
     targets = tuple(targets) if targets is not None else None
     index_root = Path(root) if root is not None and (Path(root)/'map/tile-artwork-data.js').is_file() else PROJECT
     index = layer_index(index_root)
-    needed = expected_targets(index_root) if targets is None else {
+    needed = {target for paths in index.values() for target in paths} if targets is None else {
         target for old in targets if Path(old).parent.as_posix() == 'map/images'
         for target in index.get(Path(old).stem, ())
     }
-    # C5's unrevealed face reuses the C3 texture plus its own cropped mask.
+    # C5's unrevealed face reuses the registered C3 texture plus its own cropped mask.
     # Include the texture when exporting a C5-only pack, too. Older packs
     # without it remain valid and use the map's numbered fallback.
     needs_c5_cover = targets is None or any(re.fullmatch(r'c5-tile-\d{3}-(?:front|back)', Path(old).stem)
                                            for old in targets)
+    cover_base = 'map/images/card-backs/c3-base.png'
+    if (index_root / 'map/tile-back-data.js').is_file():
+        cover_base = 'map/' + _data(index_root, 'tile-back-data.js', 'ATO_MAP_BACK_DATA')['bases']['c3'].removeprefix('./')
+    if not allowed_target(cover_base):
+        raise ValueError('地图卡背底图路径无效')
     if needs_c5_cover:
-        needed.add('map/images/card-backs/c3-base.png')
+        needed.add(cover_base)
     fallback = dict(collect_library(fallback_library)) if fallback_library else {}
     found = {}
     for target in sorted(needed):
@@ -105,7 +113,6 @@ def collect(root: Path | None, fallback_library: Path | None = None, targets=Non
                 raise ValueError(f'地图图层超过 8MB：{target}')
             found[target] = path
     complete = set()
-    cover_base = 'map/images/card-backs/c3-base.png'
     if needs_c5_cover and cover_base in found:
         complete.add(cover_base)
     for paths in index.values():
@@ -177,10 +184,16 @@ def validate(archive, manifest: dict) -> list[dict]:
         checked_bytes(archive, entry)
         seen.add(entry['target'])
     # Partial cycle packs are allowed; each face they contain must be complete.
-    for paths in layer_index().values():
+    for stem, paths in layer_index().items():
         specific = set(paths) - {p for p in paths if re.fullmatch(r'map/images/card-backs/c[1-4]-base\.png', p)}
         if seen & specific and not set(paths) <= seen:
-            raise ValueError(f'地图图层缺少配套底图或蒙版：{paths[0]}')
+            # Old C2/C3 packs used their own colored base. Accept those complete
+            # groups too, but never accept a mask without either valid base.
+            cycle = stem.split('-')[0]
+            legacy = f'map/images/card-backs/{cycle}-base.png'
+            if not (cycle in ('c2', 'c3') and specific <= seen and legacy in seen
+                    and 'map/images/card-backs/c1-base.png' in paths):
+                raise ValueError(f'地图图层缺少配套底图或蒙版：{paths[0]}')
     return entries
 
 

@@ -34,7 +34,7 @@
     const key = String(source || '').split(/[?#]/)[0].split('/').pop().replace(/\.(?:jpg|jpeg|png)$/i, '');
     const entry = backData.backs?.[key];
     if (!entry || !backData.bases?.[entry.cycle]) return null;
-    return { key, base: backData.bases[entry.cycle], pieces: entry.pieces, image: entry.image };
+    return { key, base: backData.bases[entry.cycle], filter: backData.baseFilters?.[entry.cycle] || '', pieces: entry.pieces, image: entry.image };
   }
 
   function backPlaceholder(label) {
@@ -53,7 +53,7 @@
     // icons are switched off.
     const content = fallback ? legacyImage(source, label)
       : back.image ? `<img src="${escape(backAssetUrl(back.image))}" alt="${escape(label)}" decoding="async">`
-      : `<img src="${escape(backAssetUrl(back.base))}" alt="${escape(label)}" decoding="async">`
+      : `<img class="tile-back-base" src="${escape(backAssetUrl(back.base))}" alt="${escape(label)}" decoding="async"${back.filter ? ` style="filter:${escape(back.filter)}"` : ''}>`
         + back.pieces.map((piece) => `<img class="tile-back-piece" src="${escape(backAssetUrl(piece.src))}" alt="" aria-hidden="true" decoding="async" style="left:${Number(piece.x)}%;top:${Number(piece.y)}%;width:${Number(piece.width)}%;height:${Number(piece.height)}%">`).join('');
     return `<span class="tile-artwork-stack" ${attributes}${fallback ? ' data-artwork-fallback="true"' : ''}>${content}</span>`;
   }

@@ -152,12 +152,12 @@ function renderHarness(cycleId, explored, variant, showBack = false) {
   return { html: grid.children[0].innerHTML, cycleState };
 }
 
-test('C5 covers show the C3 texture and cropped current label, without exposing the map face', () => {
+test('C5 covers show the shared texture and cropped current label, without exposing the map face', () => {
   for (const variant of [false, true]) {
     for (const [explored, showBack] of [[false, false], [true, true]]) {
       const { html } = renderHarness('c5', explored, variant, showBack);
       assert.match(html, /tile-c5-cover/);
-      assert.match(html, /card-backs\/c3-base\.png/);
+      assert.match(html, /card-backs\/c1-base\.png/);
       assert.match(html, /tile-c5-cover-heading/);
       assert.doesNotMatch(html, /hd1024\/base\//);
       assert.match(html, new RegExp('hd1024/overlay/c5-tile-040-' + (variant ? 'back' : 'front') + '\\.png'));
@@ -202,16 +202,17 @@ test('missing C5 cover assets fall back to a number and never to a revealed map'
   assert.doesNotMatch(stack.innerHTML, /<img|<image|hd1024/);
 });
 
-test('C1-C4 share four bases and keep printed numbers visible with icons on or off', () => {
+test('C1-C3 recolor one base and C4 retains its own base with printed masks visible', () => {
   const h = harness();
   assert.equal(Object.keys(h.window.ATO_MAP_BACK_DATA.backs).length, 351);
   assert.deepEqual(Object.keys(h.window.ATO_MAP_BACK_DATA.bases).sort(), ['c1', 'c2', 'c3', 'c4']);
-  assert.equal(new Set(Object.values(h.window.ATO_MAP_BACK_DATA.bases)).size, 4);
+  assert.equal(new Set(Object.values(h.window.ATO_MAP_BACK_DATA.bases)).size, 2);
   for (const showIcons of [true, false]) {
     h.controls.icons.checked = showIcons; h.controls.icons.listeners.change();
     const html = h.api.markup('./images/c2-tile-038-back.png', '038');
-    assert.match(html, /card-backs\/c2-base\.png/);
-    assert.doesNotMatch(html, /filter:/);
+    assert.match(html, /card-backs\/c1-base\.png/);
+    assert.match(html, /class="tile-back-base"[^>]*style="filter:/);
+    assert.doesNotMatch(html, /class="tile-back-piece"[^>]*filter:/);
     assert.match(html, /card-backs\/numbers\/c2-tile-038-back\.png/);
     assert.doesNotMatch(html, /hd1024/);
   }

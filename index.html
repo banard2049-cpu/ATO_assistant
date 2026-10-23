@@ -3903,6 +3903,9 @@
     const recordSyncChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-record-sync-v1") : null;
     const heroMnemosSyncChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-hero-mnemos-sync-v1") : null;
     const constantToolsOpen = {};
+    const surveyConstantInteractionVersions = new Map();
+    let surveyConstantMnemosSyncPending = 0;
+    let surveyConstantExternalSyncDeferred = false;
     let authMode = "login";
     let sessionUser = null;
     let cachedArgoRecord = {};
@@ -4405,6 +4408,14 @@
     async function syncDashboardFromExternalUpdate() {
       if (campaignRestoreInFlight) return;
       if (!campaignStorageAvailable || campaignConflictReloading || campaignSaveInFlight) return;
+      // The expedition checkbox is committed before the mnemos prompt, but the
+      // prompt and its hero-state writes may take long enough for a focus event
+      // to start an older dashboard reread. Do not replace the console state
+      // under that interaction; replay the sync after the hero flow settles.
+      if (surveyConstantMnemosSyncPending > 0) {
+        surveyConstantExternalSyncDeferred = true;
+        return;
+      }
       if (campaignExternalSyncInFlight) {
         campaignExternalSyncPending = true;
         return;
@@ -4414,6 +4425,10 @@
       const revisionBeforeRead = campaignSectionRevision;
       try {
         const latest = await readLatestDashboardSection();
+        if (surveyConstantMnemosSyncPending > 0) {
+          surveyConstantExternalSyncDeferred = true;
+          return;
+        }
         if (sessionEpoch !== campaignSessionEpoch || campaignRestoreInFlight || campaignSaveInFlight || revisionBeforeRead !== campaignSectionRevision) return;
         if (latest.revision <= campaignSectionRevision) return;
         if (!ownsDashboardWriteLease()) {
@@ -7921,8 +7936,54 @@
       return Boolean(state.surveyConstants.hubs?.[itemId]?.[boxId]);
     }
 
+    function beginSurveyConstantInteraction(groupId, itemId, boxId) {
+      const key = `${groupId}:${itemId}:${boxId}`;
+      const version = (surveyConstantInteractionVersions.get(key) || 0) + 1;
+      surveyConstantInteractionVersions.set(key, version);
+      return version;
+    }
+
+    function surveyConstantInteractionIsCurrent(groupId, itemId, boxId, version) {
+      return surveyConstantInteractionVersions.get(`${groupId}:${itemId}:${boxId}`) === version;
+    }
+
+    function beginSurveyConstantMnemosSync() {
+      surveyConstantMnemosSyncPending += 1;
+    }
+
+    function finishSurveyConstantMnemosSync() {
+      surveyConstantMnemosSyncPending = Math.max(0, surveyConstantMnemosSyncPending - 1);
+      if (surveyConstantMnemosSyncPending || !surveyConstantExternalSyncDeferred) return;
+      surveyConstantExternalSyncDeferred = false;
+      queueMicrotask(() => {
+        if (typeof syncDashboardFromExternalUpdate === "function") void syncDashboardFromExternalUpdate();
+      });
+    }
+
+    function restoreSurveyConstantHubSelection(itemId, boxId, interactionVersion, cycleId, dayKey) {
+      if (!surveyConstantInteractionIsCurrent("hubs", itemId, boxId, interactionVersion)
+          || currentCycleConfig().id !== cycleId || surveyConstantsDayKey() !== dayKey) return false;
+      ensureTodaySurveyConstants();
+      if (state.surveyConstants.hubs?.[itemId]?.[boxId]) return false;
+      state.surveyConstants.hubs[itemId] ||= {};
+      state.surveyConstants.hubs[itemId][boxId] = true;
+      state.surveyConstants.activeHub = { itemId, boxId };
+      state.latestSurveyAdventureAction = {
+        cycle: cycleId,
+        day: normalizeCampaignDay(state.day, cycleId),
+        itemId,
+        boxId,
+        setAt: Date.now(),
+      };
+      setNextBattleTerrainFromHub(itemId, boxId);
+      saveState();
+      renderFlow();
+      return true;
+    }
+
     function setSurveyConstant(groupId, itemId, boxId, checked) {
       ensureTodaySurveyConstants();
+      const interactionVersion = beginSurveyConstantInteraction(groupId, itemId, boxId);
       state.surveyConstantsTouchedDay = surveyConstantsDayKey();
       if (groupId === "rr") {
         const key = surveyRrBoxKey(itemId, boxId);
@@ -7976,7 +8037,17 @@
           const box = hub.boxes.find(b => b[0] === boxId);
           const tag = box?.[3];
           if (tag) {
-            void applyMnemosTagToHeroes(tag, hub.title, box[2]);
+            const cycleId = currentCycleConfig().id;
+            const dayKey = surveyConstantsDayKey();
+            beginSurveyConstantMnemosSync();
+            void Promise.resolve(applyMnemosTagToHeroes(tag, hub.title, box[2]))
+              .finally(() => {
+                // A focus/visibility sync or a late server response can replace
+                // `state` while the prompt is open. Reapply this exact checkbox
+                // only if the user has not toggled it again in the meantime.
+                restoreSurveyConstantHubSelection(itemId, boxId, interactionVersion, cycleId, dayKey);
+                finishSurveyConstantMnemosSync();
+              });
           }
         }
       }
