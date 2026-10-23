@@ -19,6 +19,21 @@ SPEC.loader.exec_module(EXTRACTOR)
 
 
 class HiddenNumberMergeTests(unittest.TestCase):
+    def test_rotated_numbers_keep_center_color_and_rise_to_the_right(self):
+        number = {'text': '0240', 'bounds': [450, 490, 574, 514], 'color': '#546b69', 'angle': 36}
+        pixels = np.asarray(EXTRACTOR.render_numbers([number], EXTRACTOR.FONT))
+        yy, xx = np.where(pixels[:, :, 3] > 16)
+        self.assertLess(np.cov(xx, yy)[0, 1], 0)
+        self.assertLess(abs((xx.min() + xx.max()) / 2 - 512), 3)
+        self.assertLess(abs((yy.min() + yy.max()) / 2 - 502), 3)
+        self.assertTrue(np.all(pixels[pixels[:, :, 3] > 0, :3] == [84, 107, 105]))
+        self.assertGreater(yy.max() - yy.min(), 24)
+
+    def test_rotated_numbers_cannot_be_silently_clipped(self):
+        number = {'text': '0312', 'bounds': [10, 2, 100, 22], 'color': '#546b69', 'angle': 40}
+        with self.assertRaisesRegex(ValueError, 'beyond the overlay'):
+            EXTRACTOR.render_numbers([number], EXTRACTOR.FONT)
+
     def test_preserves_partial_alpha_and_hidden_rgb_outside_numbers(self):
         old = np.full((16, 16, 4), [13, 27, 39, 0], dtype=np.uint8)
         old[2, 2] = [100, 90, 80, 100]

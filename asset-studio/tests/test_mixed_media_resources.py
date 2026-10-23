@@ -34,6 +34,7 @@ from app.mixed_media_resources import (
     checked_bytes,
     collect,
     collect_library,
+    compact_mapping,
     import_resources,
     mime_for,
 )
@@ -42,7 +43,7 @@ from app.packages import export_compat, export_package, import_package, inspect_
 ROOT = Path(__file__).resolve().parents[1]
 SCRATCH = ROOT / ".local" / "tests" / "mixed-media-resources"
 
-MAPPING_JS = '/* 私有映射表 */\nwindow.ATO_MIXED_MEDIA_MAP = {"schema":1,"rows":[]};\n'
+MAPPING_JS = 'window.ATO_MIXED_MEDIA_MAP={"schema":1,"rows":[]};\n'
 MAPPING_BYTES = MAPPING_JS.encode("utf-8")
 PNG_ONE = b"\x89PNG\r\n\x1a\n" + b"mixed-media-one" * 4
 PNG_TWO = b"\x89PNG\r\n\x1a\n" + b"mixed-media-two" * 4
@@ -66,6 +67,42 @@ def fan_pack_kwargs(project: Path) -> dict:
 
 
 class MixedMediaResourceTests(unittest.TestCase):
+    def test_compact_mapping_keeps_runtime_fields_and_drops_audit(self) -> None:
+        row = dict(book="c1", key="one", variant="fan", anchor="中文 □", anchorOccurrence=1,
+                   anchorCount=1, position="replace", replaceText="□", contextBefore="中文 ",
+                   contextAfter="", textLength=4, textFingerprint="01234567", path=f"{IMAGES_DIR}/c1/test.png",
+                   layout="inline", kind="resource-icon", resourceLabel="资源", textAlreadyNamesResource=True,
+                   retainedNameText="资源", retainedNameStart=0, retainedNameEnd=2, pdfPage=12, printedPage=10)
+        full = dict(schema=1, resourceSchema=1, battleSchema=1, requestedSchema=1, vectorSchema=1,
+                    rows=[dict(row, sourceReason="长篇审计", sourceTextSha256="hash", assetSha256="hash")],
+                    resourceRows=[row], battleRows=[row], requestedRows=[row],
+                    resourceScopeExclusions=[dict(book="c1", variant="fan", key="one", scope="range", start=2, end=4)],
+                    vectorAssets=[dict(path="test.png", vectorPath="test.svg", width=2, height=3,
+                                       sourcePngSha256="png", svgSha256="svg")],
+                    coverage={"audit": "only"}, fanAnchorRevision={"counts": {}}, version="audit-version")
+        raw = ("\ufeff/* schema=1 */\nwindow.ATO_MIXED_MEDIA_MAP = " + json.dumps(full, ensure_ascii=False) + ";").encode("utf-8")
+        compact = compact_mapping(raw)
+        result = json.loads(compact.decode().split("=", 1)[1].strip().rstrip(";"))
+        expected = {key: value for key, value in full.items() if key not in ("coverage", "fanAnchorRevision", "version")}
+        expected["rows"] = [row]
+        self.assertEqual(expected, result)
+        self.assertEqual(compact, compact_mapping(compact))
+        for invalid in (b"window.WRONG={};", b'window.ATO_MIXED_MEDIA_MAP={"schema":2};',
+                        b'window.ATO_MIXED_MEDIA_MAP={"schema":1};alert(1)'):
+            with self.assertRaises(ValueError):
+                compact_mapping(invalid)
+
+    def test_export_compacts_mapping_and_hashes_the_actual_runtime_bytes(self) -> None:
+        full = b'/* audit */\nwindow.ATO_MIXED_MEDIA_MAP={"schema":1,"rows":[],"coverage":{"notes":"audit"}};'
+        (self.media / "mapping.js").write_bytes(full)
+        with zipfile.ZipFile(self.pack, "w") as archive:
+            manifest = {}
+            add_to_archive(archive, manifest, self.source)
+        with zipfile.ZipFile(self.pack) as archive:
+            self.assertEqual(MAPPING_BYTES, archive.read(MAPPING_TARGET))
+            self.assertEqual(MAPPING_BYTES, checked_bytes(archive, manifest["mixedMediaFiles"][0]))
+        self.assertEqual(full, (self.media / "mapping.js").read_bytes())
+
     def setUp(self) -> None:
         shutil.rmtree(SCRATCH, ignore_errors=True)
         self.source = SCRATCH / "ato"
@@ -416,7 +453,7 @@ class MixedMediaResourceTests(unittest.TestCase):
         (project / "assets" / "cards").mkdir(parents=True)
         (media / "images" / "c1").mkdir(parents=True)
         (project / "assets" / "cards" / "001.jpg").write_bytes(b"card-bytes")
-        (media / "mapping.js").write_bytes(MAPPING_BYTES)
+        (media / "mapping.js").write_bytes(b'/* audit */ window.ATO_MIXED_MEDIA_MAP={"schema":1,"rows":[],"coverage":{"audit":true}};')
         (media / "images" / "c1" / "a-diagram.png").write_bytes(PNG_ONE)
         (media / "images" / "c1" / "b-icon.svg").write_bytes(SVG_ONE)
         (media / "renderer.js").write_text("// renderer\n", encoding="utf-8")
@@ -439,6 +476,7 @@ class MixedMediaResourceTests(unittest.TestCase):
                 self.assertEqual(len(archive.namelist()), len(set(archive.namelist())))
                 self.assertEqual(["assets/cards/001.jpg"], [a["member"] for a in manifest["assets"]])
                 if include:
+                    self.assertEqual(MAPPING_BYTES, archive.read(MAPPING_TARGET))
                     entries = {entry["target"]: entry for entry in manifest["mixedMediaFiles"]}
                     self.assertEqual(
                         {MAPPING_TARGET, f"{IMAGES_DIR}/c1/a-diagram.png", f"{IMAGES_DIR}/c1/b-icon.svg"},

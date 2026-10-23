@@ -1,8 +1,8 @@
 {
-  "version": "20261020-hidden-numbers-upright",
+  "version": "20261023-hidden-numbers-tts",
   "reviewedFaces": 511,
-  "numberGroups": 2,
-  "coordinateSystem": "1024x1024 overlay pixels; clean typeset numerals, tight ink bounds",
+  "numberGroups": 7,
+  "coordinateSystem": "1024x1024 overlay pixels; bounds are unrotated tight ink, optional angle is counterclockwise about bounds center",
   "tiles": {
     "c1-tile-066-front": {
       "overlaySha256": "77eab0a197de82c69dcf84a8b6b5bfcd2f64d753677929a5b909a9544c02ae39",
@@ -41,6 +41,161 @@
             140
           ],
           "color": "#bacabd"
+        }
+      ]
+    },
+    "c1-tile-014-front": {
+      "overlaySha256": "ad8444321b5917e18c0aaf7dd203a889597752b773fd0afaeacf6e056b4d0489",
+      "baselineFile": "output/reports/map-hidden-numbers-20261023/base-overlays/c1-tile-014-front.png",
+      "reference": {
+        "save": "3458296558.json",
+        "image": "tts-user-c1-014-back.png",
+        "note": "TTS BackURL contains the map face; FaceURL contains the scroll back.",
+        "overlayToSourceAffine": [
+          0.8038579303813939,
+          0.010053268893190873,
+          -6.197766941935501,
+          -0.006051714809765394,
+          0.8035288922889411,
+          3.6862708397813413
+        ],
+        "alignmentCorrelation": 0.9677340612676948
+      },
+      "numbers": [
+        {
+          "text": "0240",
+          "bounds": [
+            699,
+            810,
+            788,
+            832
+          ],
+          "angle": 35.48,
+          "color": "#546f73"
+        }
+      ]
+    },
+    "c1-tile-045-front": {
+      "overlaySha256": "033e4eaa98a45ec0c07550a7af32ae3e43bca6ec360f80c8fc5215d8e758bbd7",
+      "baselineFile": "output/reports/map-hidden-numbers-20261023/base-overlays/c1-tile-045-front.png",
+      "reference": {
+        "save": "3458296558.json",
+        "image": "tts-user-c1-045-back.png",
+        "note": "TTS BackURL contains the map face; FaceURL contains the scroll back.",
+        "overlayToSourceAffine": [
+          0.8040972212426064,
+          0.0050633963186022595,
+          -4.711097456209492,
+          -0.0005175629678560569,
+          0.8037886620883627,
+          0.3129794450718624
+        ],
+        "alignmentCorrelation": 0.9802517081182168
+      },
+      "numbers": [
+        {
+          "text": "0312",
+          "bounds": [
+            878,
+            68,
+            965,
+            90
+          ],
+          "angle": 37.85,
+          "color": "#647d7b"
+        }
+      ]
+    },
+    "c2-tile-008-front": {
+      "overlaySha256": "3721fffc9feb2edafb40d99718c271315619388c147549864644a2a396d807a7",
+      "baselineFile": "output/reports/map-hidden-numbers-20261023/base-overlays/c2-tile-008-front.png",
+      "reference": {
+        "save": "3458296558.json",
+        "image": "tts-user-c2-008-back.png",
+        "note": "TTS BackURL contains the map face; FaceURL contains the scroll back.",
+        "overlayToSourceAffine": [
+          0.8042468439531257,
+          0.0040448669495160424,
+          -0.07992712730240623,
+          -0.00014582283740174516,
+          0.8010434188271672,
+          1.0963902819860354
+        ],
+        "alignmentCorrelation": 0.9708342919662429
+      },
+      "numbers": [
+        {
+          "text": "5735",
+          "bounds": [
+            401,
+            132,
+            461,
+            156
+          ],
+          "angle": 17.03,
+          "color": "#35352c"
+        }
+      ]
+    },
+    "c2-tile-037-front": {
+      "overlaySha256": "cc733b11c00e4dc2ad9d53167fabcfe9ef4aae131658ded49b820153f8a7b156",
+      "baselineFile": "output/reports/map-hidden-numbers-20261023/base-overlays/c2-tile-037-front.png",
+      "reference": {
+        "save": "3458296558.json",
+        "image": "tts-user-c2-037-back.png",
+        "note": "TTS BackURL contains the map face; FaceURL contains the scroll back.",
+        "overlayToSourceAffine": [
+          0.8063816224901779,
+          0.00499470185591584,
+          -0.7172893878237999,
+          -0.002699943033416755,
+          0.8030183130160284,
+          2.0927242691671615
+        ],
+        "alignmentCorrelation": 0.9707380073257161
+      },
+      "numbers": [
+        {
+          "text": "3721",
+          "bounds": [
+            865,
+            372,
+            937,
+            396
+          ],
+          "angle": -0.19,
+          "color": "#593c35"
+        }
+      ]
+    },
+    "c2-tile-057-front": {
+      "overlaySha256": "46901497c16aded8f9d7e0148947dc1353c48d2b222a79135b5764e36ecfc77c",
+      "baselineFile": "output/reports/map-hidden-numbers-20261023/base-overlays/c2-tile-057-front.png",
+      "reference": {
+        "save": "3458296558.json",
+        "image": "tts-user-c2-057-back.png",
+        "note": "TTS BackURL contains the map face; FaceURL contains the scroll back.",
+        "overlayToSourceAffine": [
+          0.8062315242786499,
+          0.007845424519248538,
+          -7.4530779877230025,
+          -0.005236623878736955,
+          0.8039697874600099,
+          4.706190611364207
+        ],
+        "alignmentCorrelation": 0.941372057084868
+      },
+      "numbers": [
+        {
+          "text": "7214",
+          "bounds": [
+            752,
+            311,
+            813,
+            335
+          ],
+          "angle": 29.65,
+          "color": "#403c34"
         }
       ]
     }

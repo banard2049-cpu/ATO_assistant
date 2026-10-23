@@ -89,6 +89,7 @@ from app.cryptic_resources import mime_for as cryptic_mime  # noqa: E402
 from app.mixed_media_resources import collect as collect_mixed_media_files  # noqa: E402
 from app.mixed_media_resources import allowed_target as is_mixed_media_target  # noqa: E402
 from app.mixed_media_resources import mime_for as mixed_media_mime  # noqa: E402
+from app.mixed_media_resources import MAPPING_TARGET, compact_mapping  # noqa: E402
 from app.map_resources import collect as collect_map_files, covered_targets as covered_map_targets
 from app.map_resources import add_to_archive as add_map_to_archive, validate as validate_map_files
 from app.fixed_catalog import collect_supplemental_resources  # noqa: E402
@@ -1208,7 +1209,8 @@ def write_pack(
         # story/assets/mixed-media/（见 app/mixed_media_resources.py）。
         mixed_media_entries: list[dict] = []
         for target, path in mixed_media_files:
-            cached = reuse_plain_file(target, path)
+            # 旧底包可能仍带审计大表；mapping 总是从当前源重新精简，图片照旧复用。
+            cached = reuse_plain_file(target, path) if target != MAPPING_TARGET else None
             if cached is not None:
                 mixed_media_entries.append(
                     {
@@ -1221,6 +1223,8 @@ def write_pack(
                 )
                 continue
             raw = path.read_bytes()
+            if target == MAPPING_TARGET:
+                raw = compact_mapping(raw)
             archive.writestr(target, raw)
             mixed_media_entries.append(
                 {

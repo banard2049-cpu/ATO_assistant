@@ -1,7 +1,49 @@
 (function () {
-  // 安卓 WebView 可能把离开的故事页留在返回缓存（bfcache）里；空的 beforeunload
-  // 监听会让它不进入 bfcache，下次再进故事书时不会同时保留两份大对象。
-  if (window.ATOAndroid) window.addEventListener("beforeunload", () => {});
+  // Android releases the story page by replacing its WebView on return to the dashboard.
+  // An empty beforeunload listener does not reliably prevent back/forward caching.
+  // 安卓只把当前条目的映射交给 WebView；旧壳/普通浏览器继续使用整表加载。
+  function createAndroidMixedMediaLoader(env) {
+    const native = typeof env.ATOAndroid?.requestMixedMediaMap === "function";
+    let current = "", requestId = "", timer = null, sequence = 0;
+    const session = String(Date.now()) + "-" + Math.random().toString(36).slice(2);
+    const empty = () => ({ schema: 1 });
+    if (native) env.ATO_MIXED_MEDIA_MAP = empty();
+    env.ATOAndroidMixedMediaMapResult = (id, json) => {
+      if (!native || !requestId || id !== requestId) return;
+      requestId = "";
+      try {
+        const value = JSON.parse(json);
+        if (value?.schema !== 1) return;
+        env.ATO_MIXED_MEDIA_MAP = value;
+        env.dispatchEvent(new env.CustomEvent("ato-mixed-media-map-ready"));
+      } catch (_) { /* Optional missing/corrupt material keeps the existing text fallback. */ }
+    };
+    function load(context) {
+      if (!native) return;
+      const valid = context?.schema === 1 && /^c[1-5]$/.test(context.bookId)
+        && /^(fan|official)$/.test(context.variant) && typeof context.entryKey === "string" && context.entryKey.length;
+      const key = valid ? JSON.stringify([context.bookId, context.variant, context.entryKey]) : "";
+      if (key === current) return;
+      current = key;
+      requestId = "";
+      // 立即停止旧条目的扫描；离开可显示的条目时也要取消，而不只忽略回调。
+      try { env.ATOAndroid.cancelMixedMediaMap?.(); } catch (_) {}
+      if (timer !== null) env.clearTimeout(timer);
+      timer = null;
+      // Clear before rendering the next entry; never apply the previous entry's anchors.
+      env.ATO_MIXED_MEDIA_MAP = empty();
+      if (!valid) return;
+      const id = requestId = session + "-" + (++sequence);
+      timer = env.setTimeout(() => {
+        timer = null;
+        try {
+          if (!env.ATOAndroid.requestMixedMediaMap(context.bookId, context.variant, context.entryKey, id)) requestId = "";
+        } catch (_) { requestId = ""; }
+      }, 0);
+    }
+    return Object.freeze({ native, load });
+  }
+  window.ATO_MIXED_MEDIA_LOADER = createAndroidMixedMediaLoader(window);
   const fetch = window.ATO_CAMPAIGN_NOTES.createFetch(window.fetch.bind(window), { source: "故事" });
   // Optional renderer/materials never become a prerequisite for reading source.
   function mixedMediaRuntime() {
@@ -124,11 +166,11 @@
   const entityLookup = new Map();
   let entityAliases = [];
   let entityBiosEnabled = false;
-  // 混排图不可关闭。只有本次运行中渲染进程崩过，才临时降级为不加载 mapping，
-  // 并在页面上提醒；完全退出重开 App 后自动恢复。
+  // 新版安卓逐条流式读取 mapping，进程恢复后仍可使用插图；旧壳保留整表加载的保护。
   let mixedMediaDegraded = false;
   try {
-    mixedMediaDegraded = Boolean(window.ATOAndroid?.rendererCrashedThisProcess?.());
+    mixedMediaDegraded = !window.ATO_MIXED_MEDIA_LOADER?.native
+      && Boolean(window.ATOAndroid?.rendererCrashedThisProcess?.());
   } catch {
     mixedMediaDegraded = false;
   }
@@ -3283,6 +3325,7 @@
     mixedMediaRuntime()?.dispose?.(storyText);
     mixedMediaRender = null;
     const displayEntry = getDisplayEntry(entry);
+    window.ATO_MIXED_MEDIA_LOADER?.load(mixedMediaContext(displayEntry));
     const isTranslatedSupplement = storyVersion !== "English" && Boolean(displayEntry.originalText);
     // C5 的 AI 翻译条目按普通条目排版：没有「AI 翻译」标题、提醒、英文原文，也不挂原书图片；
     // 战斗条目的 AIBP 入口照旧保留。其它册若以后出现翻译条目，仍走 renderAiTranslatedSupplement。
@@ -4690,6 +4733,7 @@
       if (pharosTitleDecodeButton) pharosTitleDecodeButton.hidden = true;
       entryBadge.textContent = "----";
       mixedMediaRuntime()?.dispose?.(storyText);
+      window.ATO_MIXED_MEDIA_LOADER?.load(null);
       storyText.textContent = "该条目为官方版独有，请切换至官方版后打开。";
       linkPanel.innerHTML = "";
     }
@@ -4895,19 +4939,21 @@
     storyText.scrollTop = top; storyText.scrollLeft = left;
   });
 
-  // 混排 mapping 有十几兆，页面空闲后加载；加载完成后 renderer 会发出
+  // 浏览器在页面空闲后加载运行时 mapping；加载完成后 renderer 会发出
   // ato-mixed-media-map-ready，上面的监听会重绘当前条目。
   function loadMixedMediaMap() {
+    if (window.ATO_MIXED_MEDIA_LOADER?.native) return;
     if (mixedMediaDegraded) return;
     if (window.ATO_MIXED_MEDIA_MAP || document.querySelector("script[data-ato-mm-map]")) return;
     const script = document.createElement("script");
     script.async = true;
     script.dataset.atoMmMap = "";
-    script.src = "./assets/mixed-media/mapping.js?v=c4c5-20261006-official-c45-1";
+    script.src = "./assets/mixed-media/mapping.js?v=20261023-runtime1";
     script.onerror = () => script.remove();
     document.head.appendChild(script);
   }
   function scheduleMixedMediaMap() {
+    if (window.ATO_MIXED_MEDIA_LOADER?.native) return;
     if (mixedMediaDegraded) return;
     if (typeof window.requestIdleCallback === "function") {
       window.requestIdleCallback(loadMixedMediaMap, { timeout: 4000 });

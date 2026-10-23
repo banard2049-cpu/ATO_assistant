@@ -59,6 +59,19 @@ class MapResourceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'不完整'):
             maps.collect(self.project,targets=[self.front,self.back])
 
+    def test_c5_only_pack_includes_shared_cover_texture_and_roundtrips(self):
+        target = 'map/images/c5-tile-080-front.png'
+        paths = set(maps.layer_index()['c5-tile-080-front']) | {'map/images/card-backs/c3-base.png'}
+        for filename in paths:
+            dest = self.project / filename
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            Image.new('RGBA', (32, 32), (20, 50, 80, 255)).save(dest)
+        files = maps.collect(self.project, targets=iter([target]))
+        self.assertEqual({name for name, _ in files}, paths)
+        package, manifest = self.package('c5-only.atopack', files=files)
+        with zipfile.ZipFile(package) as archive:
+            self.assertEqual(len(maps.validate(archive, manifest)), 3)
+
     def test_partial_cycle_library_does_not_require_unimported_cycles(self):
         package,_=self.package();import_package(self.db,self.library,package)
         files=maps.collect(None,self.library,targets=[self.front,self.back,
@@ -141,6 +154,30 @@ class MapResourceTests(unittest.TestCase):
         self.assertEqual(import_package(self.db,self.library,package)['imported'],1)
         plan=install_plan(self.db,self.library,self.project)
         self.assertEqual([row['target'] for row in plan['files']],[self.front])
+
+    def test_c4_masks_roundtrip_and_require_their_own_shared_base(self):
+        legacy = 'map/images/c4-tile-011-back.png'
+        targets = maps.layer_index()['c4-tile-011-back']
+        self.assertEqual(len(targets), 2)
+        self.files = []
+        for target in targets:
+            path = self.project / target
+            path.parent.mkdir(parents=True, exist_ok=True)
+            Image.new('RGBA', (32, 32), (80, 65, 40, 128)).save(path)
+            self.files.append((target, path))
+        collected = maps.collect(self.project, targets=[legacy])
+        self.assertEqual({p for p, _ in collected}, set(targets))
+        self.assertEqual(maps.covered_targets(collected, [legacy]), {legacy})
+        package, _ = self.package('c4.atopack')
+        self.assertEqual(import_package(self.db, self.library, package)['map_imported'], 2)
+        for target, path in self.files:
+            self.assertEqual((self.library / maps.LIBRARY / target).read_bytes(), path.read_bytes())
+        package, _ = self.package('c4-mask-only.atopack', files=[self.files[1]])
+        with self.assertRaisesRegex(ValueError, '配套底图'):
+            import_package(self.db, self.library, package)
+        self.files[1][1].unlink()
+        # A shared base without a face-specific mask permits legacy fallback.
+        self.assertEqual(maps.collect(self.project, targets=[legacy]), [])
 
 
 if __name__=='__main__':unittest.main()

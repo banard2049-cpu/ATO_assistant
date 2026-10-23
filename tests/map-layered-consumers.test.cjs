@@ -14,7 +14,7 @@ function context() {
 test('briefing displays both HD layers using its own page-relative paths', () => {
   const c = context();
   const images = [...c.window.ATO_BRIEFING_MAP.artworkLayers('../map/images/c2-tile-038-front.png')];
-  assert.deepEqual(images, ['../map/images/hd1024/base/c2-tile-038-front.png', '../map/images/hd1024/overlay/c2-tile-038-front.png']);
+  assert.deepEqual(images, ['../map/images/hd1024/base/c2-tile-038-front.png', '../map/images/hd1024/overlay/c2-tile-038-front.png?v=20261023-workshop-fronts1-b90-c110']);
   assert.deepEqual([...c.window.ATO_BRIEFING_MAP.artworkLayers('../map/images/custom.png')], ['../map/images/custom.png']);
 });
 test('GIF/PDF loader composes base then mask in memory without requesting the retired scan', async () => {

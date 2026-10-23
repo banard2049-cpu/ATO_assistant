@@ -50,7 +50,7 @@ final class AtopackStore {
   private static final long MAX_MAP_BYTES = 8L * 1024 * 1024;
   private static final String MAP_IMAGE_PATTERN =
       "map/images/(?:hd1024/(?:base|overlay)/c[1-5]-tile-[A-Za-z0-9-]+\\.png"
-      + "|card-backs/(?:c[1-3]-base\\.png|numbers/c[1-3]-tile-[A-Za-z0-9-]+\\.png))";
+      + "|card-backs/(?:c[1-4]-base\\.png|numbers/c[1-4]-tile-[A-Za-z0-9-]+\\.png))";
   // 混合媒体（私有映射表 + 书籍裁图）：上限与 asset-studio/app/mixed_media_resources.py 一致——
   // mapping.js 单份 ≤ 32MB，单张裁图 ≤ 8MB，成员总数 ≤ 2048 + 1（映射表一份）。
   // 两个字节上限分开写：合成一个 32MB 会把裁图的上限放宽 4 倍，合成一个 8MB 又会拒掉

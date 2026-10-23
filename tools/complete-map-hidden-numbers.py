@@ -11,6 +11,7 @@ import argparse
 import hashlib
 from io import BytesIO
 import json
+import math
 import os
 from pathlib import Path
 import re
@@ -24,7 +25,7 @@ ROOT = Path(__file__).resolve().parents[1]
 HD = ROOT / 'map/images/hd1024'
 SPEC = Path(__file__).with_name('map-hidden-number-regions.json')
 FONT = Path('C:/Windows/Fonts/times.ttf')
-OUTPUT = ROOT / 'output/reports/map-hidden-numbers-upright-20261020'
+OUTPUT = ROOT / 'output/reports/map-hidden-numbers-20261023'
 
 
 def sha(path):
@@ -68,13 +69,20 @@ def render_numbers(numbers, font_path, size=(1024, 1024)):
         mask = mask.crop(ink).resize((width * scale, height * scale), Image.Resampling.LANCZOS)
         high = Image.new('L', ((width + 2 * fringe) * scale, (height + 2 * fringe) * scale))
         high.paste(mask, (fringe * scale, fringe * scale))
-        alpha = high.resize((width + 2 * fringe, height + 2 * fringe), Image.Resampling.LANCZOS)
+        angle = number.get('angle', 0)
+        if angle:
+            high = high.rotate(angle, resample=Image.Resampling.BICUBIC, expand=True)
+        alpha = high.resize((round(high.width / scale), round(high.height / scale)), Image.Resampling.LANCZOS)
         pixels = np.zeros((alpha.height, alpha.width, 4), dtype=np.uint8)
         pixels[:, :, :3] = ImageColor.getrgb(number['color'])
         pixels[:, :, 3] = np.asarray(alpha)
         pixels[pixels[:, :, 3] == 0] = 0
         glyphs = Image.fromarray(pixels, 'RGBA')
-        result.alpha_composite(glyphs, (left - fringe, top - fringe))
+        position = (round((left + right - glyphs.width) / 2), round((top + bottom - glyphs.height) / 2))
+        require(position[0] >= 0 and position[1] >= 0
+                and position[0] + glyphs.width <= size[0] and position[1] + glyphs.height <= size[1],
+                'Rotated numerals extend beyond the overlay')
+        result.alpha_composite(glyphs, position)
     return result
 
 
@@ -120,6 +128,9 @@ def validate_entry(key, entry):
                 f'Invalid numeral bounds: {key}')
         require(isinstance(number.get('color'), str) and re.fullmatch('#[0-9a-fA-F]{6}', number['color']),
                 f'Invalid numeral color: {key}')
+        angle = number.get('angle', 0)
+        require(type(angle) in (int, float) and math.isfinite(angle) and -180 <= angle <= 180,
+                f'Invalid numeral angle: {key}')
 
 
 def backup_verified(source, destination, expected_hash):
@@ -130,7 +141,7 @@ def backup_verified(source, destination, expected_hash):
     require(sha(destination) == expected_hash, f'Backup hash changed: {destination}')
 
 
-def write_previews(out, key, base, current, result, additions, numbers):
+def write_previews(out, key, base, current, result, additions, numbers, font=FONT):
     additions.save(out / 'additions' / (key + '.png'), compress_level=9)
     additions.save(out / 'numbers' / (key + '.png'), compress_level=9)
     board = checkerboard()
@@ -144,7 +155,7 @@ def write_previews(out, key, base, current, result, additions, numbers):
     complete_after = Image.alpha_composite(base, result)
     complete_after.convert('RGB').save(out / (key + '-complete.jpg'), quality=95)
     for index, number in enumerate(numbers):
-        left, top, right, bottom = number['bounds']
+        left, top, right, bottom = render_numbers([number], font).getbbox() if number.get('angle') else number['bounds']
         box = (max(0, left - 16), max(0, top - 16), min(1024, right + 16), min(1024, bottom + 16))
         a, b = complete_before.crop(box).convert('RGB'), complete_after.crop(box).convert('RGB')
         detail = Image.new('RGB', (a.width * 2, a.height))
@@ -207,7 +218,7 @@ def run(spec_path, out=OUTPUT, apply=False, hd=HD, font=FONT):
         stage = out / 'completed' / target.name
         stage.write_bytes(item['content'])
         require(sha(stage) == item['afterHash'], f'Staging hash changed: {key}')
-        write_previews(out, key, item['base'], item['current'], item['result'], item['additions'], entry['numbers'])
+        write_previews(out, key, item['base'], item['current'], item['result'], item['additions'], entry['numbers'], font)
         records.append(dict(key=key, baseline=str(item['baselinePath']), beforeSha256=entry['overlaySha256'],
                             installedBeforeSha256=item['currentHash'], replaceableOverlaySha256=entry.get('replaceableOverlaySha256', []),
                             afterSha256=item['afterHash'], numbers=entry['numbers'], regions=entry['numbers'],
@@ -244,6 +255,7 @@ def run(spec_path, out=OUTPUT, apply=False, hd=HD, font=FONT):
     report = dict(version=spec.get('version', 1), rendering='typeset-font-4x', applied=apply,
                   spec=str(spec_path), specSha256=sha(spec_path), font=str(font), fontSha256=font_hash,
                   reviewedFaces=spec.get('reviewedFaces'), changedFaces=len(records),
+                  actualChangedFaces=sum(item['currentHash'] != item['afterHash'] for item in prepared) if apply else 0,
                   addedRegions=sum(len(r['numbers']) for r in records), otherLayersUnchanged=True,
                   originalNontransparentPixelsPreserved=True, outsideNumbersRgbaPreserved=True,
                   originalBackupsVerified=True, files=records)

@@ -180,21 +180,26 @@ test('C5 cleanup preserves exactly the three real-image placeholders', { skip: !
   }
 });
 
-test('all local mappings match exact source and immutable asset hashes', { skip: !local }, () => {
+test('all local mappings match exact source fingerprints and available assets', { skip: !local }, () => {
   const ix = new Map(fan.books.flatMap(b => b.entries.map(e => [`${b.id}|fan|${e.key}`, e.text])));
   for (const b of official.books) for (const e of b.entries) ix.set(`${b.id}|official|${e.key}`, e.officialText);
   const rows = ledgers.flatMap(k => mapping[k]), groups = new Map(), checked = new Set();
+  const api = create(mapping, harness().env);
   for (const row of rows) {
     const identity = `${row.book}|${row.variant}|${row.key}`;
-    assert.equal(sha(ix.get(identity)), row.sourceTextSha256, identity);
+    assert.equal(ix.get(identity).length, row.textLength, identity);
+    assert.equal(api.fingerprint(ix.get(identity)), row.textFingerprint, identity);
+    // Legacy audit ledgers additionally carry SHA-256; compact runtime maps use the fingerprint.
+    if (row.sourceTextSha256) assert.equal(sha(ix.get(identity)), row.sourceTextSha256, identity);
     if (!groups.has(identity)) groups.set(identity, []);
     groups.get(identity).push(row);
     if (!checked.has(row.path)) {
-      assert.equal(sha(fs.readFileSync(path.join(root, row.path))), row.assetSha256, row.path);
+      const bytes = fs.readFileSync(path.join(root, row.path));
+      assert.ok(bytes.length > 0, row.path);
+      if (row.assetSha256) assert.equal(sha(bytes), row.assetSha256, row.path);
       checked.add(row.path);
     }
   }
-  const api = create(mapping, harness().env);
   for (const [identity, group] of groups) {
     const [book, variant, key] = identity.split('|'), text = ix.get(identity), p = api.plan(context(book, key, variant), text);
     assert.equal(p.count, group.length, identity);

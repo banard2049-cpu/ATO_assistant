@@ -40,11 +40,14 @@ function fanEntry(book, key) {
 
 test('C1-C3 fan rows exist only for real fan entries and reuse the official graphics', { skip: !local }, () => {
   const rows = fanRows();
-  assert.deepEqual(mapping.fanAnchorRevision?.counts, {
+  assert.deepEqual({ resourceRows: rows.filter(r => r.kind === 'resource-icon').length,
+    battleRows: rows.filter(r => ['battle-cipher', 'terrain-icon', 'terrain-diagram'].includes(r.kind)).length,
+    narrativeRows: rows.filter(r => !r.kind || r.kind === 'narrative').length, total: rows.length }, {
     resourceRows: 2808, battleRows: 108, narrativeRows: 40, total: 2956,
   });
   assert.equal(rows.length, 2956);
   const seen = new Map();
+  const api = create(mapping, {});
   for (const row of rows) {
     assert.ok(BOOKS.has(row.book), row.key);
     assert.equal(row.variant, 'fan');
@@ -54,8 +57,9 @@ test('C1-C3 fan rows exist only for real fan entries and reuse the official grap
     // every fan placement must point at a graphic the official audit already verified
     const officialPaths = new Set(officialRowsFor(row.book, row.key).map(r => r.path));
     assert.ok(officialPaths.has(row.path), `${row.key}: ${row.path} has no official counterpart`);
-    // the recorded source text hash must be the current fan text
-    assert.equal(sha(text), row.sourceTextSha256, row.key);
+    // Runtime fingerprints remain mandatory; legacy audit hashes are optional.
+    assert.equal(api.fingerprint(text), row.textFingerprint, row.key);
+    if (row.sourceTextSha256) assert.equal(sha(text), row.sourceTextSha256, row.key);
     assert.equal(text.length, row.textLength, row.key);
     assert.equal(text.indexOf(row.anchor) >= 0, true, `${row.key}: anchor missing`);
     seen.set(row.path, true);

@@ -31,6 +31,8 @@ public final class AtopackImportHarness {
   private static final String MAP_MASK = "map/images/hd1024/overlay/c1-tile-001-front.png";
   private static final String BACK_BASE = "map/images/card-backs/c1-base.png";
   private static final String BACK_NUMBER = "map/images/card-backs/numbers/c1-tile-001-back.png";
+  private static final String C4_BASE = "map/images/card-backs/c4-base.png";
+  private static final String C4_MASK = "map/images/card-backs/numbers/c4-tile-011-back.png";
   private static final String ALT_NUMBER = "map/images/card-backs/numbers/c1-tile-009-alt-back.png";
   private static final String ALT_INSTRUCTION = "map/images/card-backs/numbers/c1-tile-009-alt-back-instruction.png";
   private static final String LEGACY_MAP = "map/images/c1-tile-001-front.jpg";
@@ -52,6 +54,7 @@ public final class AtopackImportHarness {
         .put("items", new JSONArray().put(item("test", ASSET)).put(item("glyph", GLYPH))
           .put(item("map-base", MAP_BASE)).put(item("map-mask", MAP_MASK))
           .put(item("back-base", BACK_BASE)).put(item("back-number", BACK_NUMBER))
+          .put(item("c4-base", C4_BASE)).put(item("c4-mask", C4_MASK))
           .put(item("alt-number", ALT_NUMBER)).put(item("alt-instruction", ALT_INSTRUCTION))
           .put(item("legacy-map", LEGACY_MAP)));
     context = new Context(new File(directory, "app"), catalog.toString());
@@ -231,17 +234,21 @@ public final class AtopackImportHarness {
   private void mapLayers() throws Exception {
     byte[] base=bytes("original-base"), mask=bytes("original-transparent-mask"), number=bytes("printed-number");
     JSONArray layers=new JSONArray().put(resource(MAP_BASE,base)).put(resource(MAP_MASK,mask))
-        .put(resource(BACK_BASE,base)).put(resource(BACK_NUMBER,number));
+        .put(resource(BACK_BASE,base)).put(resource(BACK_NUMBER,number))
+        .put(resource(C4_BASE,base)).put(resource(C4_MASK,mask));
     JSONObject good=manifest().put("mapFiles",layers);
-    Member[] members={new Member(MAP_BASE,base),new Member(MAP_MASK,mask),new Member(BACK_BASE,base),new Member(BACK_NUMBER,number)};
-    check(install(pack(good,members)).assets==4,"Layered map files not installed");
+    Member[] members={new Member(MAP_BASE,base),new Member(MAP_MASK,mask),new Member(BACK_BASE,base),new Member(BACK_NUMBER,number),
+        new Member(C4_BASE,base),new Member(C4_MASK,mask)};
+    check(install(pack(good,members)).assets==6,"Layered map files not installed");
     check("original-base".equals(open(MAP_BASE)),"Map base bytes changed");
     check("original-transparent-mask".equals(open(MAP_MASK)),"Transparent mask bytes changed");
     check("printed-number".equals(open(BACK_NUMBER)),"Shared-back number missing");
+    check("original-transparent-mask".equals(open(C4_MASK)),"C4 direction mask bytes changed");
     store=new AtopackStore(context);
     check("printed-number".equals(open(BACK_NUMBER)),"Layered maps did not survive restart");
     reject(pack(manifest().put("mapFiles",new JSONArray().put(resource(MAP_BASE,base))),new Member(MAP_BASE,base)));
     reject(pack(manifest().put("mapFiles",new JSONArray().put(resource(BACK_NUMBER,number))),new Member(BACK_NUMBER,number)));
+    reject(pack(manifest().put("mapFiles",new JSONArray().put(resource(C4_MASK,mask))),new Member(C4_MASK,mask)));
     reject(pack(manifest().put("mapFiles",new JSONArray().put(resource(BACK_BASE,base)).put(resource(ALT_NUMBER,number))),
         new Member(BACK_BASE,base),new Member(ALT_NUMBER,number)));
     JSONObject broken=new JSONObject(good.toString());broken.getJSONArray("mapFiles").getJSONObject(0).put("sha256","0".repeat(64));
