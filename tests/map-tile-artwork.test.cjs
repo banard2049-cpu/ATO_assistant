@@ -4,6 +4,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const root = path.join(__dirname, '..');
+// Private images arrive through .atopack and are absent from CI checkouts.
+const hasPrivateMaps = fs.existsSync(path.join(root, 'map/images'));
 const source = fs.readFileSync(path.join(root, 'map/tile-artwork.js'), 'utf8');
 const app = fs.readFileSync(path.join(root, 'map/app.js'), 'utf8').replace(/\r\n/g, '\n');
 const noop = () => {};
@@ -84,7 +86,7 @@ test('all 511 map faces including seven C1 alternatives use vector corners', () 
     const source = `./images/${key}.png`;
     const art = api.resolve(source);
     assert.match(art.displayOverlay, new RegExp(`${key}-corners\\.svg\\?v=`));
-    assert.ok(fs.existsSync(path.join(root, 'map', art.displayOverlay.split('?')[0])));
+    if (hasPrivateMaps) assert.ok(fs.existsSync(path.join(root, 'map', art.displayOverlay.split('?')[0])));
     assert.ok(api.markup(source, key).includes(art.displayOverlay));
   }
   assert.equal(data.files.filter(key => key.includes('-alt-')).length, 7);
@@ -280,7 +282,7 @@ test('C1-C3 recolor one base and C4 retains its own base with printed masks visi
     const entry = h.window.ATO_MAP_BACK_DATA.backs[`c1-tile-${id}-alt-back`];
     assert.equal(entry.pieces.length, 1);
     assert.equal(entry.pieces[0].src, entry.image);
-    assert.ok(fs.existsSync(path.join(root, 'map', entry.image)));
+    if (hasPrivateMaps) assert.ok(fs.existsSync(path.join(root, 'map', entry.image)));
     const html = h.api.markup(`./images/c1-tile-${id}-alt-back.jpg`, id);
     assert.equal((html.match(/<img /g) || []).length, 1, `special back ${id} uses one complete image`);
     assert.match(html, new RegExp(`c1-tile-${id}-alt-back-instruction\\.png`));
