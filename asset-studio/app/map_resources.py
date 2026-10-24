@@ -68,8 +68,15 @@ def layer_index(root: Path = PROJECT) -> dict[str, tuple[str, ...]]:
 
 
 def legacy_index(root: Path = PROJECT) -> dict[str, tuple[str, ...]]:
-    return {stem: tuple(path.replace('-corners.svg', '.png').replace('/vectors/', '/numbers/').replace('.svg', '.png')
-                        for path in paths) for stem, paths in layer_index(root).items()}
+    result = {stem: tuple(path.replace('-corners.svg', '.png').replace('/vectors/', '/numbers/').replace('.svg', '.png')
+                          for path in paths) for stem, paths in layer_index(root).items()}
+    # Seven old C1 special backs split the number from the instruction image.
+    # Current renderers use the complete instruction image on its own.
+    for stem, paths in result.items():
+        if stem.startswith('c1-') and '-alt-back' in stem:
+            number = f'map/images/card-backs/numbers/{stem}.png'
+            result[stem] = (*paths, number)
+    return result
 
 
 def cover_index(root: Path = PROJECT) -> dict[str, tuple[str, ...]]:

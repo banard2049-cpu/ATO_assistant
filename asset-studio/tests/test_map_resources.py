@@ -209,6 +209,20 @@ class MapResourceTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, '配套底图'):
                 maps.validate(archive, broken)
 
+    def test_legacy_special_number_and_instruction_layers_remain_importable(self):
+        files = []
+        for target in maps.legacy_index()['c1-tile-009-alt-back']:
+            path = self.root / 'special' / target
+            path.parent.mkdir(parents=True, exist_ok=True)
+            write_layer(path, (60, 70, 90, 255))
+            files.append((target, path))
+        self.assertEqual(len(files), 3)
+        package, manifest = self.package('old-special.atopack', files=files)
+        self.assertEqual(import_package(self.db, self.library, package)['map_imported'], 3)
+        package, manifest = self.package('new-special.atopack', files=[row for row in files if row[0].endswith(('-base.png', '-instruction.png'))])
+        with zipfile.ZipFile(package) as archive:
+            self.assertEqual(len(maps.validate(archive, manifest)), 2)
+
     def test_c4_masks_roundtrip_and_require_their_own_shared_base(self):
         legacy = 'map/images/c4-tile-011-back.png'
         targets = maps.layer_index()['c4-tile-011-back']

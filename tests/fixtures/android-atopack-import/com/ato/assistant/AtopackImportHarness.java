@@ -270,6 +270,12 @@ public final class AtopackImportHarness {
     reject(pack(manifest().put("mapFiles",new JSONArray().put(resource(C4_MASK,mask))),new Member(C4_MASK,mask)));
     reject(pack(manifest().put("mapFiles",new JSONArray().put(resource(BACK_BASE,base)).put(resource(ALT_NUMBER,number))),
         new Member(BACK_BASE,base),new Member(ALT_NUMBER,number)));
+    check(install(pack(manifest().put("mapFiles",new JSONArray().put(resource(BACK_BASE,base))
+        .put(resource(ALT_INSTRUCTION,mask))),new Member(BACK_BASE,base),new Member(ALT_INSTRUCTION,mask))).assets==2,
+        "Complete special back image must import without obsolete separate number");
+    check(install(pack(manifest().put("mapFiles",new JSONArray().put(resource(BACK_BASE,base))
+        .put(resource(ALT_NUMBER,number)).put(resource(ALT_INSTRUCTION,mask))),new Member(BACK_BASE,base),
+        new Member(ALT_NUMBER,number),new Member(ALT_INSTRUCTION,mask))).assets==3,"Old special back layers rejected");
     JSONObject broken=new JSONObject(good.toString());broken.getJSONArray("mapFiles").getJSONObject(0).put("sha256","0".repeat(64));
     reject(pack(broken,members));
     broken=new JSONObject(good.toString());broken.getJSONArray("mapFiles").getJSONObject(0).put("bytes",base.length+1);

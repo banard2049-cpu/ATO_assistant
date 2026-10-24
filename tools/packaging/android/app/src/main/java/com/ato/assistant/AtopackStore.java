@@ -569,7 +569,9 @@ final class AtopackStore {
                 && declaredMaps.contains("map/images/card-backs/c1-base.png")) {
               companion = "map/images/card-backs/c1-base.png";
             }
-            if (target.contains("/numbers/")) {
+            // Special backs now use their complete instruction image alone.
+            // Old separate number masks still require the instruction image.
+            if (target.contains("/numbers/") && !target.endsWith("-instruction.png")) {
               String number = target.replace("-instruction.png", ".png");
               String instruction = number.substring(0, number.length() - 4) + "-instruction.png";
               for (String piece : new String[] {number, instruction}) {
