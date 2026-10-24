@@ -46,7 +46,7 @@ async function main() {
       if (url.pathname === '/map/preview.html') return route.fulfill({ contentType: 'text/html', body: html });
       const file = path.resolve(root, '.' + decodeURIComponent(url.pathname));
       if (!file.startsWith(root + path.sep) || !fs.existsSync(file) || !fs.statSync(file).isFile()) return route.fulfill({ status: 404 });
-      const types = { '.png': 'image/png', '.jpg': 'image/jpeg', '.css': 'text/css', '.js': 'text/javascript' };
+      const types = { '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.css': 'text/css', '.js': 'text/javascript' };
       return route.fulfill({ contentType: types[path.extname(file)] || 'text/plain', body: fs.readFileSync(file) });
     });
     await page.goto('http://c5.test/map/preview.html', { waitUntil: 'networkidle' });

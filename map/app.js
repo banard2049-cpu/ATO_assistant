@@ -1485,9 +1485,13 @@ function renderTiles() {
     const assets = tileAssets(tile, cycleState);
     const c5Covered = cycle.id === "c5"
       && (state.showBack || (!explored && !previewRevealed));
+    // Unrevealed C5 cards follow Argo's depth, regardless of a destination's
+    // remembered face. Revealed cards continue to use their own saved face.
+    const c5CoverSource = cycleState.tileVariants?.[effectiveArgoTileId] === "alternate"
+      ? tile.back : tile.front;
     const imageSrc = (!state.showBack && (explored || previewRevealed)) || !assets.back ? assets.front : assets.back;
     const imageMarkup = c5Covered
-      ? window.ATO_MAP_ARTWORK?.coverMarkup(assets.front, tile.label)
+      ? window.ATO_MAP_ARTWORK?.coverMarkup(c5CoverSource, tile.label)
         || `<span class="tile-back-fallback" role="img" aria-label="未揭示地图 ${escapeHtml(tile.label)}">${escapeHtml(tile.label)}</span>`
       : window.ATO_MAP_ARTWORK
         ? window.ATO_MAP_ARTWORK.markup(imageSrc, tile.label)

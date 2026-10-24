@@ -25,6 +25,9 @@ const terms = sandbox.window.ATO_TERMS;
 
 const surveyScope = '[data-term-scope~="survey-record"]';
 const stepScope = '[data-term-scope~="step-constants"]';
+// 与 assets/english-terms.js 的 scoped 条目同一组宿敌选择器；作用域名要和词表里
+// 写的那一整串一致，引擎才会在 closest() 命中后启用这组条目。
+const bossScope = '#enemyTracks, .boss-search-results, #boss-title';
 const engine = createEngine(terms);
 
 test('官方外交关系采用记录表卡面译名且只影响外交显示', () => {
@@ -52,6 +55,23 @@ test('译文不会被别的条目二次改写', () => {
   assert.equal(engine.translate('赫尔墨斯弩炮'), '赫尔墨斯弩炮枪');
   assert.equal(engine.translate('命运守护者'), '命运保险器');
   assert.equal(engine.translate('永恒誓言'), '永恒誓约');
+});
+
+test('派系名「独眼巨人」不会被宿敌旧名顶成「无眼巨人」', () => {
+  // 官方 App 1.1.22 里是两个词：f_cyclopes 派系 = 独眼巨人，core_cyclonus 宿敌 =
+  // 无眼巨人（见 assets/english-terms.js）。旧名替换只进宿敌区域（#enemyTracks），
+  // 地图/记录表/AIBP 的派系标签、「独眼巨人的…」形容词和独眼巨人装备都得保持原样。
+  assert.equal(engine.translate('独眼巨人'), '独眼巨人');
+  assert.equal(engine.translate('独眼巨人', [bossScope]), '无眼巨人');
+  assert.equal(engine.translate('独眼巨人：同盟（+2 或更好）'), '独眼巨人：同盟（+2 或更好）');
+  assert.equal(engine.translate('独眼巨人的许珀里翁神殿'), '独眼巨人的许珀里翁神殿');
+  assert.equal(engine.translate('独眼巨人的，神器'), '独眼巨人的，神器');
+  assert.equal(engine.translate('独眼巨人装备'), '独眼巨人装备');
+  // 宿敌自己的条目、以及科技树条件与核心资源名，照旧用官名。
+  assert.equal(engine.translate('独眼巨人核心'), '无眼巨人核心');
+  assert.equal(engine.translate('独眼巨人 等级 2'), '无眼巨人 等级 2');
+  assert.equal(engine.translate('等级 2 的独眼巨人战斗'), '等级 2 的无眼巨人战斗');
+  assert.equal(engine.translate('核心 · 独眼巨人'), '核心 · 无眼巨人');
 });
 
 test('航行时间线保留「循环纪」', () => {

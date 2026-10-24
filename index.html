@@ -5533,19 +5533,23 @@
       const validIds = new Set(getExplorationLibrary().map((card) => card.id));
       const selectedIds = [...new Set(cardIds)].filter((id) => validIds.has(id));
       const drawState = ensureExplorationDrawState();
-      if ((drawState.activePiles.flat().length || drawState.temporaryRemoved.length)
-        && !window.confirm("更新探索牌组会重洗，并清空当前抽牌结果和暂时移出区。继续吗？")) return;
+      if (drawState.activePiles.flat().length
+        && !window.confirm("更新探索牌组会重洗，并清空当前抽牌结果。暂时移出的已选卡牌仍会保留在移出区。继续吗？")) return;
+      const selectedSet = new Set(selectedIds);
+      const temporaryRemoved = drawState.temporaryRemoved.filter((entry) => selectedSet.has(entry.id));
+      const temporaryRemovedIds = new Set(temporaryRemoved.map((entry) => entry.id));
       state.exploration.selectedByCycle[cycleId] = selectedIds;
       const rule = getExplorationSpecialRule();
       if (rule?.destructionIds) {
         const destructionIds = new Set(getDestructionCardIds());
-        const selectedSet = new Set(selectedIds);
         const storedPile = Array.isArray(state.exploration.destructionByCycle[cycleId])
           ? state.exploration.destructionByCycle[cycleId]
           : getDestructionCardIds();
         state.exploration.destructionByCycle[cycleId] = storedPile.filter((id) => destructionIds.has(id) && !selectedSet.has(id));
       }
-      state.exploration.drawStateByCycle[cycleId] = createExplorationDrawState(selectedIds);
+      const next = createExplorationDrawState(selectedIds.filter((id) => !temporaryRemovedIds.has(id)));
+      next.temporaryRemoved = temporaryRemoved;
+      state.exploration.drawStateByCycle[cycleId] = next;
       saveState();
       renderFlow();
     }
@@ -14228,7 +14232,7 @@
     setAuthMode("login");
     initAuth();
   </script>
-  <script src="./assets/ato-terms.js?v=20261015-diplomacy2"></script>
+  <script src="./assets/ato-terms.js?v=20261024-cyclopes-faction1"></script>
   <script src="./assets/english-terms.js?v=20261011-english4"></script>
   <script src="./assets/english-ui.js?v=20261020-acclimation-reminder2"></script>
   <script src="./assets/english-language.js?v=20261011-english4"></script>

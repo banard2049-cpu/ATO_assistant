@@ -16,6 +16,13 @@ from tests.test_fan_pack import _relax_tempdirs_when_the_sandbox_forbids_0700_di
 _relax_tempdirs_when_the_sandbox_forbids_0700_dirs()
 
 
+def write_layer(path, color):
+    if path.suffix == '.svg':
+        path.write_text(f'<svg xmlns="http://www.w3.org/2000/svg"><path fill="rgb{color[:3]}" d="M0 0h32v32H0z"/></svg>')
+    else:
+        Image.new('RGBA', (32, 32), color).save(path)
+
+
 class MapResourceTests(unittest.TestCase):
     def setUp(self):
         self.tmp=tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup)
@@ -35,7 +42,7 @@ class MapResourceTests(unittest.TestCase):
         self.files=[]
         for number,target in enumerate(sorted(targets)):
             path=self.project/target;path.parent.mkdir(parents=True,exist_ok=True)
-            Image.new('RGBA',(32,32),(20+number,50,80,128 if '/overlay/' in target else 255)).save(path)
+            write_layer(path, (20+number,50,80,128 if '/overlay/' in target else 255))
             self.files.append((target,path))
 
     def package(self, name='input.atopack', files=None):
@@ -61,16 +68,16 @@ class MapResourceTests(unittest.TestCase):
 
     def test_c5_only_pack_includes_shared_cover_texture_and_roundtrips(self):
         target = 'map/images/c5-tile-080-front.png'
-        paths = set(maps.layer_index()['c5-tile-080-front']) | {'map/images/card-backs/c1-base.png'}
+        paths = set(maps.layer_index()['c5-tile-080-front']) | set(maps.cover_index()['c5-tile-080-front'])
         for filename in paths:
             dest = self.project / filename
             dest.parent.mkdir(parents=True, exist_ok=True)
-            Image.new('RGBA', (32, 32), (20, 50, 80, 255)).save(dest)
+            write_layer(dest, (20, 50, 80, 255))
         files = maps.collect(self.project, targets=iter([target]))
         self.assertEqual({name for name, _ in files}, paths)
         package, manifest = self.package('c5-only.atopack', files=files)
         with zipfile.ZipFile(package) as archive:
-            self.assertEqual(len(maps.validate(archive, manifest)), 3)
+            self.assertEqual(len(maps.validate(archive, manifest)), 4)
 
     def test_partial_cycle_library_does_not_require_unimported_cycles(self):
         package,_=self.package();import_package(self.db,self.library,package)
@@ -89,12 +96,12 @@ class MapResourceTests(unittest.TestCase):
                         target = f'map/images/card-backs/{cycle}-base.png'
                     path = self.project / target
                     path.parent.mkdir(parents=True, exist_ok=True)
-                    Image.new('RGBA', (32,32), (20,50,80,255)).save(path)
+                    write_layer(path, (20,50,80,255))
                     files.append((target, path))
                 package, manifest = self.package(f'{cycle}-{shared}.atopack', files=files)
                 with zipfile.ZipFile(package) as archive:
                     self.assertEqual(len(maps.validate(archive, manifest)), len(files))
-                masks = [(target,path) for target,path in files if '/numbers/' in target]
+                masks = [(target,path) for target,path in files if '/numbers/' in target or '/vectors/' in target]
                 package, manifest = self.package(f'{cycle}-mask-only.atopack', files=masks)
                 with zipfile.ZipFile(package) as archive, self.assertRaisesRegex(ValueError, '配套底图'):
                     maps.validate(archive, manifest)
@@ -125,7 +132,7 @@ class MapResourceTests(unittest.TestCase):
     def test_studio_reports_map_conflicts_and_keeps_existing_without_replace(self):
         package,_=self.package();import_package(self.db,self.library,package)
         target,path=self.files[0];stored=self.library/maps.LIBRARY/target
-        original=stored.read_bytes();Image.new('RGBA',(32,32),(220,0,0,255)).save(path)
+        original=stored.read_bytes();write_layer(path, (220,0,0,255))
         package,_=self.package('updated.atopack')
         self.assertEqual(inspect_package(self.db,package,library=self.library)['map_summary']['replace'],1)
         import_package(self.db,self.library,package,replace=False);self.assertEqual(stored.read_bytes(),original)
@@ -176,6 +183,46 @@ class MapResourceTests(unittest.TestCase):
         plan=install_plan(self.db,self.library,self.project)
         self.assertEqual([row['target'] for row in plan['files']],[self.front])
 
+    def test_legacy_png_layers_still_import_and_reexport(self):
+        files = []
+        for stem in ('c1-tile-001-front', 'c1-tile-001-back'):
+            for target in maps.legacy_index()[stem]:
+                path = self.root / 'old' / target
+                path.parent.mkdir(parents=True, exist_ok=True)
+                write_layer(path, (50, 70, 90, 255))
+                files.append((target, path))
+        package, manifest = self.package('old-layers.atopack', files=files)
+        self.assertEqual(import_package(self.db, self.library, package)['map_imported'], 4)
+        collected = maps.collect(None, self.library, targets=[self.front, self.back])
+        self.assertEqual({p for p, _ in collected}, {p for p, _ in files})
+        self.assertEqual(maps.covered_targets(collected, [self.front, self.back]), {self.front, self.back})
+
+    def test_svg_mime_and_hash_are_preserved_and_missing_base_is_rejected(self):
+        package, manifest = self.package()
+        vectors = [entry for entry in manifest['mapFiles'] if entry['target'].endswith('.svg')]
+        self.assertEqual(len(vectors), 2)
+        self.assertTrue(all(entry['mimeType'] == 'image/svg+xml' for entry in vectors))
+        with zipfile.ZipFile(package) as archive:
+            maps.validate(archive, manifest)
+            broken = json.loads(json.dumps(manifest))
+            broken['mapFiles'] = [entry for entry in broken['mapFiles'] if '/base/' not in entry['target']]
+            with self.assertRaisesRegex(ValueError, '配套底图'):
+                maps.validate(archive, broken)
+
+    def test_legacy_special_number_and_instruction_layers_remain_importable(self):
+        files = []
+        for target in maps.legacy_index()['c1-tile-009-alt-back']:
+            path = self.root / 'special' / target
+            path.parent.mkdir(parents=True, exist_ok=True)
+            write_layer(path, (60, 70, 90, 255))
+            files.append((target, path))
+        self.assertEqual(len(files), 3)
+        package, manifest = self.package('old-special.atopack', files=files)
+        self.assertEqual(import_package(self.db, self.library, package)['map_imported'], 3)
+        package, manifest = self.package('new-special.atopack', files=[row for row in files if row[0].endswith(('-base.png', '-instruction.png'))])
+        with zipfile.ZipFile(package) as archive:
+            self.assertEqual(len(maps.validate(archive, manifest)), 2)
+
     def test_c4_masks_roundtrip_and_require_their_own_shared_base(self):
         legacy = 'map/images/c4-tile-011-back.png'
         targets = maps.layer_index()['c4-tile-011-back']
@@ -184,7 +231,7 @@ class MapResourceTests(unittest.TestCase):
         for target in targets:
             path = self.project / target
             path.parent.mkdir(parents=True, exist_ok=True)
-            Image.new('RGBA', (32, 32), (80, 65, 40, 128)).save(path)
+            write_layer(path, (80, 65, 40, 128))
             self.files.append((target, path))
         collected = maps.collect(self.project, targets=[legacy])
         self.assertEqual({p for p, _ in collected}, set(targets))

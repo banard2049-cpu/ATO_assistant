@@ -1,7 +1,7 @@
 const BattleTerrain = (() => {
   const columns = 20;
   const rows = 14;
-  const assetVersion = "20260819-crop1";
+  const assetVersion = "20261023-hd1";
   const terrainCardVersion = "20260815-zh-pdf1";
 
   // Names, sizes, and placements are transcribed from the TTS Content module.

@@ -4,6 +4,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const root = path.join(__dirname, '..');
+// Private images arrive through .atopack and are absent from CI checkouts.
+const hasPrivateMaps = fs.existsSync(path.join(root, 'map/images'));
 const source = fs.readFileSync(path.join(root, 'map/tile-artwork.js'), 'utf8');
 const app = fs.readFileSync(path.join(root, 'map/app.js'), 'utf8').replace(/\r\n/g, '\n');
 const noop = () => {};
@@ -49,17 +51,15 @@ test('HD registry covers every legacy playable front, C1 variant and both C5 fac
   assert.match(api.resolve('./images/c5-tile-040-back.png').base, /c5-tile-040-back\.png$/);
 });
 
-test('workshop front masks refresh C1-C3 caches while retaining base and C4-C5 URLs', () => {
+test('all overlays including special alternatives resolve directly to SVG', () => {
   const { api } = harness();
-  for (const cycle of ['c1', 'c2', 'c3']) {
-    const artwork = api.resolve(`./images/${cycle}-tile-001-front.jpg?old-cache=1`);
-    assert.equal(artwork.base, `./images/hd1024/base/${cycle}-tile-001-front.png`);
-    assert.equal(artwork.overlay, `./images/hd1024/overlay/${cycle}-tile-001-front.png?v=20261023-workshop-fronts1-b90-c110`);
-  }
-  for (const cycle of ['c4', 'c5']) {
+  for (const cycle of ['c1', 'c2', 'c3', 'c4', 'c5']) {
     const artwork = api.resolve(`./images/${cycle}-tile-001-front.png`);
-    assert.equal(artwork.overlay, `./images/hd1024/overlay/${cycle}-tile-001-front.png`);
+    assert.equal(artwork.base, `./images/hd1024/base/${cycle}-tile-001-front.png`);
+    assert.ok(artwork.overlay.startsWith(`./images/hd1024/overlay/${cycle}-tile-001-front-corners.svg?v=`));
+    assert.equal(artwork.overlay, artwork.displayOverlay);
   }
+  assert.ok(api.resolve('./images/c1-tile-009-alt-front.jpg').overlay.includes('c1-tile-009-alt-front-corners.svg'));
 });
 
 test('combined mask exposes the unmarked base without touching campaign storage', () => {
@@ -75,6 +75,37 @@ test('combined mask exposes the unmarked base without touching campaign storage'
   controls.icons.checked = true; controls.icons.listeners.change();
   assert.match(api.markup(src, '038'), /hd1024\/overlay\//);
   assert.ok(writes.every((key) => key === 'ato-map-artwork-v1'));
+});
+
+test('all 511 map faces including seven C1 alternatives use vector corners', () => {
+  const { api, window } = harness();
+  const data = window.ATO_MAP_ARTWORK_DATA;
+  assert.equal(data.cornerVectorFiles.length, 511);
+  assert.equal(new Set(data.cornerVectorFiles).size, 511);
+  for (const key of data.files) {
+    const source = `./images/${key}.png`;
+    const art = api.resolve(source);
+    assert.match(art.displayOverlay, new RegExp(`${key}-corners\\.svg\\?v=`));
+    if (hasPrivateMaps) assert.ok(fs.existsSync(path.join(root, 'map', art.displayOverlay.split('?')[0])));
+    assert.ok(api.markup(source, key).includes(art.displayOverlay));
+  }
+  assert.equal(data.files.filter(key => key.includes('-alt-')).length, 7);
+  assert.match(api.headingMarkup('./images/c5-tile-040-front.png', '040'), /c5-tile-040-front-cover\.svg/);
+  assert.doesNotMatch(api.headingMarkup('./images/c5-tile-040-front.png', '040'), /-corners\.svg/);
+});
+
+test('missing vector overlays fall back to the complete legacy map without requesting archived PNGs', () => {
+  const { api } = harness();
+  let onError;
+  api.bind({ addEventListener(name, callback) { if (name === 'error') onError = callback; } });
+  const source = './images/c3-tile-042-front.jpg';
+  const stack = { dataset: { artworkKey: 'c3-tile-042-front', legacySrc: source, artworkLabel: '042' } };
+  const target = { closest: () => stack, classList: { contains: name => name === 'tile-artwork-overlay' } };
+  onError({ target });
+  assert.equal(target.src, undefined);
+  assert.ok(stack.innerHTML.includes(source));
+  assert.doesNotMatch(stack.innerHTML, /-corners\.svg|hd1024/);
+  assert.doesNotMatch(api.markup(source, '042'), /-corners\.svg|hd1024/);
 });
 
 test('artwork selection is automatic even after saving the old legacy preference', () => {
@@ -123,17 +154,19 @@ test('previous two-layer display preferences migrate without changing campaign d
   assert.equal(harness(JSON.stringify({ local: false, neighbors: true })).controls.icons.checked, true);
 });
 
-function renderHarness(cycleId, explored, variant, showBack = false) {
+function renderHarness(cycleId, explored, variant, showBack = false, argoVariant = variant) {
   const h = harness();
   const cycle = h.window.ATO_MAP_DATA.cycles.find((x) => x.id === cycleId);
   const tile = cycle.tiles.find((x) => x.id === (cycleId === 'c1' ? '009' : '040'));
   const cycleState = { explored: explored ? { [tile.id]: true } : {}, tokens: {}, tileVariants: variant ? { [tile.id]: 'alternate' } : {} };
+  cycleState.currentTile = argoVariant === null ? '' : '001';
+  if (argoVariant) cycleState.tileVariants['001'] = 'alternate';
   const grid = { style: { setProperty: noop }, appendChild(fragment) { this.children = fragment.children; } };
   Object.assign(h.context, {
     state: { activeCycleId: cycleId, query: '', mapZoom: 100, showBack },
     activeCycle: () => ({ ...cycle, tiles: [tile] }), activeCycleState: () => cycleState,
     elements: { tileGrid: grid }, pendingAdversarySpawnCandidates: new Set(),
-    argoTileId: () => '', displayLayout: () => ({ tileWidth: 1, width: 2, height: 2, position: () => ({ x: 0, y: 0 }) }),
+    argoTileId: () => cycleState.currentTile, displayLayout: () => ({ tileWidth: 1, width: 2, height: 2, position: () => ({ x: 0, y: 0 }) }),
     tilePreviewRevealedByMarker: () => false, tilePreviewRevealLabels: () => [],
     getTileTokens: () => [], getTileEdgeTokens: () => [], tileTooltip: () => '',
     renderVariantToggle: () => '', renderTileNoteMarker: () => '', renderTileTokens: () => '',
@@ -149,10 +182,10 @@ function renderHarness(cycleId, explored, variant, showBack = false) {
     vm.runInContext(app.match(new RegExp('^function ' + name + '\\([^]*?^}', 'm'))[0], h.context);
   }
   h.context.renderTiles();
-  return { html: grid.children[0].innerHTML, cycleState };
+  return { get html() { return grid.children[0].innerHTML; }, cycleState, render: h.context.renderTiles };
 }
 
-test('C5 covers show the shared texture and cropped current label, without exposing the map face', () => {
+test('C5 covers show the shared texture and vector label for Argo depth', () => {
   for (const variant of [false, true]) {
     for (const [explored, showBack] of [[false, false], [true, true]]) {
       const { html } = renderHarness('c5', explored, variant, showBack);
@@ -160,7 +193,8 @@ test('C5 covers show the shared texture and cropped current label, without expos
       assert.match(html, /card-backs\/c1-base\.png/);
       assert.match(html, /tile-c5-cover-heading/);
       assert.doesNotMatch(html, /hd1024\/base\//);
-      assert.match(html, new RegExp('hd1024/overlay/c5-tile-040-' + (variant ? 'back' : 'front') + '\\.png'));
+      assert.match(html, new RegExp('card-backs/vectors/c5-tile-040-' + (variant ? 'back' : 'front') + '-cover\\.svg'));
+      assert.doesNotMatch(html, /hd1024\/overlay\//);
     }
     const { html, cycleState } = renderHarness('c5', true, variant);
     assert.match(html, new RegExp('hd1024/base/c5-tile-040-' + (variant ? 'back' : 'front') + '\\.png'));
@@ -171,6 +205,31 @@ test('C5 covers show the shared texture and cropped current label, without expos
   assert.match(renderHarness('c1', false, true).html, /card-backs\/numbers\/c1-tile-009-alt-back-instruction\.png/);
 });
 
+test('C5 covered factions and color follow Argo, without changing destination faces', () => {
+  for (const argoSurface of [false, true]) {
+    for (const destinationSurface of [false, true]) {
+      for (const [explored, showBack] of [[false, false], [true, true]]) {
+        const h = renderHarness('c5', explored, destinationSurface, showBack, argoSurface);
+        assert.match(h.html, new RegExp(`data-c5-face="${argoSurface ? 'B' : 'A'}"`));
+        assert.match(h.html, new RegExp(`c5-tile-040-${argoSurface ? 'back' : 'front'}-cover\\.svg`));
+        assert.equal(h.cycleState.tileVariants['040'], destinationSurface ? 'alternate' : undefined);
+      }
+      const revealed = renderHarness('c5', true, destinationSurface, false, argoSurface);
+      assert.match(revealed.html, new RegExp(`hd1024/base/c5-tile-040-${destinationSurface ? 'back' : 'front'}\\.png`));
+      assert.doesNotMatch(revealed.html, /tile-c5-cover/);
+    }
+  }
+  const h = renderHarness('c5', false, true, false, false);
+  h.cycleState.tileVariants['001'] = 'alternate';
+  h.render();
+  assert.match(h.html, /data-c5-face="B"/);
+  delete h.cycleState.tileVariants['001'];
+  h.render();
+  assert.match(h.html, /data-c5-face="A"/);
+  assert.equal(h.cycleState.tileVariants['040'], 'alternate');
+  assert.match(renderHarness('c5', false, true, false, null).html, /data-c5-face="A"/);
+});
+
 test('all 160 C5 covers reuse their own number and faction; revealed masks stay intact', () => {
   const h = harness();
   const geometry = h.window.ATO_C5_HEADING_DATA;
@@ -178,9 +237,8 @@ test('all 160 C5 covers reuse their own number and faction; revealed masks stay 
   for (const [key, regions] of Object.entries(geometry)) {
     const source = `./images/${key}.png`;
     const heading = h.api.headingMarkup(source, key.slice(8, 11));
-    assert.match(heading, new RegExp(`hd1024/overlay/${key}\\.png`));
-    assert.match(heading, new RegExp(`viewBox="${regions.header[0]} ${regions.header[1]} `));
-    assert.match(heading, new RegExp(`viewBox="${regions.faction[0] + 8} ${regions.faction[1] + 8} `));
+    assert.ok(heading.includes(regions.cover));
+    assert.doesNotMatch(heading, /hd1024\/overlay/);
     assert.doesNotMatch(heading, /c5-face-[ab]\.png/);
     assert.doesNotMatch(h.api.markup(source, 'label'), /clip-path|tile-c5-heading/);
     assert.ok(regions.header[2] - regions.header[0] >= 260);
@@ -213,14 +271,18 @@ test('C1-C3 recolor one base and C4 retains its own base with printed masks visi
     assert.match(html, /card-backs\/c1-base\.png/);
     assert.match(html, /class="tile-back-base"[^>]*style="filter:/);
     assert.doesNotMatch(html, /class="tile-back-piece"[^>]*filter:/);
-    assert.match(html, /card-backs\/numbers\/c2-tile-038-back\.png/);
+    assert.match(html, /card-backs\/vectors\/c2-tile-038-back\.svg/);
     assert.doesNotMatch(html, /hd1024/);
   }
   assert.ok(h.api.resolveBack('./images/c4-tile-001-back.png'));
   assert.equal(h.api.resolveBack('./images/c5-tile-001-back.png'), null);
   assert.match(h.api.markup('./images/c1-tile-009-alt-back.jpg', '009'), /-instruction\.png/);
-  assert.equal(Object.values(h.window.ATO_MAP_BACK_DATA.backs).filter(r=>r.pieces.length===2).length, 7);
+  assert.equal(Object.values(h.window.ATO_MAP_BACK_DATA.backs).filter(r=>r.image).length, 7);
   for (const id of ['009', '013', '014', '018', '022', '023', '035']) {
+    const entry = h.window.ATO_MAP_BACK_DATA.backs[`c1-tile-${id}-alt-back`];
+    assert.equal(entry.pieces.length, 1);
+    assert.equal(entry.pieces[0].src, entry.image);
+    if (hasPrivateMaps) assert.ok(fs.existsSync(path.join(root, 'map', entry.image)));
     const html = h.api.markup(`./images/c1-tile-${id}-alt-back.jpg`, id);
     assert.equal((html.match(/<img /g) || []).length, 1, `special back ${id} uses one complete image`);
     assert.match(html, new RegExp(`c1-tile-${id}-alt-back-instruction\\.png`));
@@ -241,7 +303,7 @@ test('all C4 backs use the common scroll and their complete marker mask even wit
       const html = h.api.markup(source, id);
       assert.equal((html.match(/<img /g) || []).length, 2);
       assert.match(html, /card-backs\/c4-base\.png\?v=/);
-      assert.match(html, new RegExp(`card-backs/numbers/c4-tile-${id}-back\\.png\\?v=`));
+      assert.match(html, new RegExp(`card-backs/vectors/c4-tile-${id}-back\\.svg\\?v=`));
       assert.doesNotMatch(html, /hd1024|tile-artwork-fallback/);
     }
   }

@@ -5,6 +5,7 @@
   const data = window.ATO_MAP_ARTWORK_DATA || {};
   const backData = window.ATO_MAP_BACK_DATA || { backs: {}, bases: {} };
   const known = new Set(data.files || []);
+  const vectorCorners = new Set(data.cornerVectorFiles || []);
   const failed = new Set();
   const missingBacks = new Set();
   let preferences = readPreferences();
@@ -27,7 +28,10 @@
     const prefix = data.prefix || './images/hd1024';
     const overlayVersion = data.overlayVersions?.[key.split('-')[0]];
     const overlaySuffix = overlayVersion ? `?v=${encodeURIComponent(overlayVersion)}` : '';
-    return { key, base: `${prefix}/base/${key}.png`, overlay: `${prefix}/overlay/${key}.png${overlaySuffix}` };
+    const overlay = vectorCorners.has(key)
+      ? `${prefix}/overlay/${key}-corners.svg?v=${encodeURIComponent(data.cornerVectorVersion || '')}`
+      : `${prefix}/overlay/${key}.png${overlaySuffix}`;
+    return { key, base: `${prefix}/base/${key}.png`, overlay, displayOverlay: overlay };
   }
 
   function resolveBack(source) {
@@ -67,27 +71,17 @@
     const artwork = resolve(source);
     const geometry = window.ATO_C5_HEADING_DATA?.[artwork?.key];
     if (!geometry) return escape(label);
-    const [left, top, right, bottom] = geometry.header;
-    const [fl, ft, fr, fb] = geometry.faction;
-    const divider = Math.round((right - left) * 0.60);
-    const filterId = `${artwork.key}-${location}-faction-ink`;
-    const src = escape(artwork.overlay);
-    // Reuse the printed numeral and this face's faction ink in its pentagonal frame.
-    return `<svg class="tile-c5-heading" viewBox="0 0 280 112" aria-hidden="true" focusable="false">
-      <defs><filter id="${filterId}" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  4 4 4 0 -8.4"/></filter></defs>
-      <svg x="0" y="0" width="170" height="112" viewBox="${left} ${top} ${divider} ${bottom - top}" preserveAspectRatio="none"><image href="${src}" width="1024" height="1024"/></svg>
-      <path d="M168 3H249L277 56 249 109H168Z" fill="#526c77" stroke="#e3e5dc" stroke-width="3"/>
-      <path d="M174 9H245L270 56 245 103H174Z" fill="none" stroke="#e3e5dc" stroke-width="2"/>
-      <svg x="180" y="15" width="76" height="82" viewBox="${fl + 8} ${ft + 8} ${fr - fl - 16} ${fb - ft - 16}" preserveAspectRatio="xMidYMid meet"><image href="${src}" width="1024" height="1024" filter="url(#${filterId})"/></svg>
-    </svg>`;
+    if (!geometry.cover) return escape(label);
+    return `<svg class="tile-c5-heading" viewBox="0 0 280 112" aria-hidden="true" focusable="false"><image href="${escape(backAssetUrl(geometry.cover))}" width="280" height="112"/></svg>`;
   }
 
   function coverMarkup(source, label) {
     const artwork = resolve(source);
+    const face = artwork?.key.endsWith('-back') ? 'B' : 'A';
     const base = backData.bases?.c3;
     const key = `${artwork?.key || label}-cover`;
     if (!base || missingBacks.has(key)) return backPlaceholder(label);
-    return `<span class="tile-artwork-stack tile-c5-cover" data-artwork-key="${escape(key)}" data-card-cover="true" data-artwork-label="${escape(label)}" role="img" aria-label="未揭示地图 ${escape(label)}">
+    return `<span class="tile-artwork-stack tile-c5-cover" data-c5-face="${face}" data-artwork-key="${escape(key)}" data-card-cover="true" data-artwork-label="${escape(label)}" role="img" aria-label="未揭示地图 ${escape(label)} ${face === 'A' ? '水下' : '水上'}">
       <img class="tile-c5-cover-base" src="${escape(backAssetUrl(base))}" alt="" aria-hidden="true" decoding="async">
       <span class="tile-c5-cover-heading">${headingMarkup(source, label, 'cover')}</span>
     </span>`;
@@ -101,7 +95,7 @@
     if (!artwork || failed.has(artwork.key)) return legacyImage(source, label);
     const layers = ['base', ...(preferences.showIcons ? ['overlay'] : [])];
     return `<span class="tile-artwork-stack" data-artwork-key="${escape(artwork.key)}" data-legacy-src="${escape(source)}" data-artwork-label="${escape(label)}">`
-      + layers.map((layer) => `<img class="tile-artwork-${layer}" src="${escape(artwork[layer])}" alt="${layer === 'base' ? escape(label) : ''}"${layer === 'base' ? '' : ' aria-hidden="true"'} decoding="async">`).join('')
+      + layers.map((layer) => `<img class="tile-artwork-${layer}" src="${escape(layer === 'overlay' ? artwork.displayOverlay : artwork[layer])}" alt="${layer === 'base' ? escape(label) : ''}"${layer === 'base' ? '' : ' aria-hidden="true"'} decoding="async">`).join('')
       + '</span>';
   }
 

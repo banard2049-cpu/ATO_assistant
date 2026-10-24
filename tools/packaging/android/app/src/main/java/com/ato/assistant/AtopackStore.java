@@ -50,7 +50,9 @@ final class AtopackStore {
   private static final long MAX_MAP_BYTES = 8L * 1024 * 1024;
   private static final String MAP_IMAGE_PATTERN =
       "map/images/(?:hd1024/(?:base|overlay)/c[1-5]-tile-[A-Za-z0-9-]+\\.png"
-      + "|card-backs/(?:c[1-4]-base\\.png|numbers/c[1-4]-tile-[A-Za-z0-9-]+\\.png))";
+      + "|hd1024/overlay/c[1-5]-tile-[A-Za-z0-9-]+-corners\\.svg"
+      + "|card-backs/(?:c[1-4]-base\\.png|numbers/c[1-4]-tile-[A-Za-z0-9-]+\\.png"
+      + "|vectors/c[1-5]-tile-[A-Za-z0-9-]+\\.svg))";
   // 混合媒体（私有映射表 + 书籍裁图）：上限与 asset-studio/app/mixed_media_resources.py 一致——
   // mapping.js 单份 ≤ 32MB，单张裁图 ≤ 8MB，成员总数 ≤ 2048 + 1（映射表一份）。
   // 两个字节上限分开写：合成一个 32MB 会把裁图的上限放宽 4 倍，合成一个 8MB 又会拒掉
@@ -551,21 +553,30 @@ final class AtopackStore {
         }
         for (String target : declaredMaps) {
           String companion = null;
-          if (target.startsWith("map/images/hd1024/base/")) companion = target.replace("/base/", "/overlay/");
-          if (target.startsWith("map/images/hd1024/overlay/")) companion = target.replace("/overlay/", "/base/");
-          if (target.startsWith("map/images/card-backs/numbers/")) {
-            String cycle = target.substring("map/images/card-backs/numbers/".length(), "map/images/card-backs/numbers/".length() + 2);
+          if (target.startsWith("map/images/hd1024/base/")) {
+            companion = target.replace("/base/", "/overlay/");
+            String vector = companion.substring(0, companion.length() - 4) + "-corners.svg";
+            if (declaredMaps.contains(vector)) companion = vector;
+          }
+          if (target.startsWith("map/images/hd1024/overlay/")) companion = target.replace("/overlay/", "/base/").replace("-corners.svg", ".png");
+          if (target.startsWith("map/images/card-backs/numbers/") || target.startsWith("map/images/card-backs/vectors/")) {
+            String cycle = target.substring(target.lastIndexOf('/') + 1, target.lastIndexOf('/') + 3);
             companion = "map/images/card-backs/" + cycle + "-base.png";
+            if ("c5".equals(cycle)) companion = "map/images/card-backs/c1-base.png";
             // New C2/C3 backs recolor the common C1 texture; old packs retain
             // their independent base. Both complete forms remain importable.
             if (("c2".equals(cycle) || "c3".equals(cycle))
                 && declaredMaps.contains("map/images/card-backs/c1-base.png")) {
               companion = "map/images/card-backs/c1-base.png";
             }
-            String number = target.replace("-instruction.png", ".png");
-            String instruction = number.substring(0, number.length() - 4) + "-instruction.png";
-            for (String piece : new String[] {number, instruction}) {
-              if (allowedMaps.contains(piece) && !declaredMaps.contains(piece)) throw new IOException("地图卡背缺少数字或说明蒙版：" + piece);
+            // Special backs now use their complete instruction image alone.
+            // Old separate number masks still require the instruction image.
+            if (target.contains("/numbers/") && !target.endsWith("-instruction.png")) {
+              String number = target.replace("-instruction.png", ".png");
+              String instruction = number.substring(0, number.length() - 4) + "-instruction.png";
+              for (String piece : new String[] {number, instruction}) {
+                if (allowedMaps.contains(piece) && !declaredMaps.contains(piece)) throw new IOException("地图卡背缺少数字或说明蒙版：" + piece);
+              }
             }
           }
           if (companion != null && !declaredMaps.contains(companion)) throw new IOException("地图图层缺少配套文件：" + companion);
@@ -578,7 +589,7 @@ final class AtopackStore {
           if (entry == null || entry.isDirectory() || entry.getSize() < 0 || entry.getSize() > MAX_MAP_BYTES
               || resource.optLong("bytes", -1) != entry.getSize()) throw new IOException("地图图层缺失或大小不符：" + target);
           installBlob(archive, entry, sha256, resource, MAX_MAP_BYTES, transaction);
-          next.put(target, new ResourceEntry(sha256, "image/png"));
+          next.put(target, new ResourceEntry(sha256, target.endsWith(".svg") ? "image/svg+xml" : "image/png"));
           importedAssets++;
         }
       }
