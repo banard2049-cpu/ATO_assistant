@@ -865,12 +865,19 @@ body.second-screen-map .tile-grid {
 }
 
 .tile-c5-cover {
-  background: #071b28;
+  background: #7b8e99;
+  isolation: isolate;
   overflow: hidden;
 }
 
+.tile-c5-cover[data-c5-face="B"] {
+  background: #3e484d;
+}
+
 .tile-c5-cover-base {
-  filter: grayscale(1) sepia(1) saturate(3) hue-rotate(155deg) brightness(0.5);
+  filter: grayscale(1);
+  mix-blend-mode: luminosity;
+  opacity: 0.16;
 }
 
 .tile-c5-cover-heading {

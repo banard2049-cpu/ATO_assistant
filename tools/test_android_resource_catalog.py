@@ -71,6 +71,15 @@ def check_catalog(catalog: dict) -> None:
             assert key not in targets, f"Duplicate Android catalog entry: {key}"
             targets[key] = target
 
+    from app.map_resources import expected_targets, layer_index, cover_index
+    required_maps = expected_targets()
+    assert required_maps <= set(targets.values()), "APK lacks current or legacy map layers"
+    for index in (layer_index(), cover_index()):
+        for paths in index.values():
+            for target in paths:
+                if target.endswith('.svg'):
+                    assert targets.get(('map-layer:' + target, 'layer')) == target
+
     template_targets = [target for target in targets.values()
                         if target == "aibp/ps/other/trait/custom_trait_blank.jpg"]
     assert len(template_targets) == 1, "APK lacks the custom trait template import mapping"

@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import xml.etree.ElementTree as ET
 from functools import lru_cache
 from pathlib import Path
 
@@ -18,7 +19,9 @@ MAX_FILE_BYTES = 8 * 1024 * 1024
 PROJECT = Path(__file__).resolve().parents[2]
 _TARGET = re.compile(
     r'map/images/(?:hd1024/(?:base|overlay)/c[1-5]-tile-[A-Za-z0-9-]+\.png'
-    r'|card-backs/(?:c[1-4]-base\.png|numbers/c[1-4]-tile-[A-Za-z0-9-]+\.png))'
+    r'|hd1024/overlay/c[1-5]-tile-[A-Za-z0-9-]+-corners\.svg'
+    r'|card-backs/(?:c[1-4]-base\.png|numbers/c[1-4]-tile-[A-Za-z0-9-]+\.png'
+    r'|vectors/c[1-5]-tile-[A-Za-z0-9-]+\.svg))'
 )
 
 
@@ -29,6 +32,7 @@ def allowed_target(target: str) -> bool:
 def _data(root: Path, filename: str, variable: str) -> dict:
     path = root / 'map' / filename
     text = path.read_text(encoding='utf-8-sig')
+    text = re.sub(r'^\s*/\*.*?\*/', '', text, count=1, flags=re.S)
     match = re.fullmatch(r'\s*window\.' + variable + r'\s*=\s*(.*);\s*', text, re.S)
     if not match:
         raise ValueError(f'地图图层索引格式无效：{path}')
@@ -47,8 +51,10 @@ def layer_index(root: Path = PROJECT) -> dict[str, tuple[str, ...]]:
         data = _data(root, 'tile-artwork-data.js', 'ATO_MAP_ARTWORK_DATA')
         if data.get('maskLayout') != 'combined' or data.get('prefix') != './images/hd1024':
             raise ValueError('不支持的地图蒙版布局')
+        vectors = set(data.get('cornerVectorFiles', []))
         for stem in data['files']:
-            result[stem] = tuple(f'map/images/hd1024/{kind}/{stem}.png' for kind in ('base', 'overlay'))
+            overlay = f'{stem}-corners.svg' if stem in vectors else f'{stem}.png'
+            result[stem] = (f'map/images/hd1024/base/{stem}.png', f'map/images/hd1024/overlay/{overlay}')
     if back_path.is_file():
         data = _data(root, 'tile-back-data.js', 'ATO_MAP_BACK_DATA')
         for stem, back in data['backs'].items():
@@ -61,9 +67,26 @@ def layer_index(root: Path = PROJECT) -> dict[str, tuple[str, ...]]:
     return result
 
 
+def legacy_index(root: Path = PROJECT) -> dict[str, tuple[str, ...]]:
+    return {stem: tuple(path.replace('-corners.svg', '.png').replace('/vectors/', '/numbers/').replace('.svg', '.png')
+                        for path in paths) for stem, paths in layer_index(root).items()}
+
+
+def cover_index(root: Path = PROJECT) -> dict[str, tuple[str, ...]]:
+    if not (root / 'map/c5-heading-data.js').is_file():
+        root = PROJECT
+    data = _data(root, 'c5-heading-data.js', 'ATO_C5_HEADING_DATA')
+    base = 'map/' + _data(root, 'tile-back-data.js', 'ATO_MAP_BACK_DATA')['bases']['c3'].removeprefix('./')
+    result = {stem: (base, 'map/' + row['cover'].removeprefix('./'))
+              for stem, row in data.items() if row.get('cover')}
+    if any(not allowed_target(target) for paths in result.values() for target in paths):
+        raise ValueError('C5 卡背索引含不支持的路径')
+    return result
+
+
 def expected_targets(root: Path = PROJECT) -> set[str]:
     # Keep accepting the original independent textures from older packs.
-    return {target for paths in layer_index(root).values() for target in paths} | {
+    return {target for index in (layer_index(root), legacy_index(root), cover_index(root)) for paths in index.values() for target in paths} | {
         f'map/images/card-backs/c{cycle}-base.png' for cycle in (1, 2, 3, 4)
     }
 
@@ -71,9 +94,11 @@ def expected_targets(root: Path = PROJECT) -> set[str]:
 def covered_targets(files: list[tuple[str, Path]], targets, root: Path = PROJECT) -> set[str]:
     have = {target for target, _ in files}
     index = layer_index(root)
+    old_index = legacy_index(root)
     return {target for target in targets
             if Path(target).parent.as_posix() == 'map/images'
-            and (layers := index.get(Path(target).stem)) and set(layers) <= have}
+            and any(layers and set(layers) <= have for layers in
+                    (index.get(Path(target).stem), old_index.get(Path(target).stem)))}
 
 
 def collect_library(library: Path) -> list[tuple[str, Path]]:
@@ -86,6 +111,17 @@ def collect(root: Path | None, fallback_library: Path | None = None, targets=Non
     targets = tuple(targets) if targets is not None else None
     index_root = Path(root) if root is not None and (Path(root)/'map/tile-artwork-data.js').is_file() else PROJECT
     index = layer_index(index_root)
+    # A library restored from an older PNG pack can still be exported. Prefer
+    # current vectors whenever present, without requiring archived PNGs.
+    fallback = dict(collect_library(fallback_library)) if fallback_library else {}
+    for stem, paths in legacy_index(index_root).items():
+        if paths == index[stem]:
+            continue
+        def available(target):
+            return (root is not None and (Path(root) / target).is_file()) or target in fallback
+        current_specific = set(index[stem]) - set(paths)
+        if not any(available(target) for target in current_specific) and all(available(target) for target in paths):
+            index = {**index, stem: paths}
     needed = {target for paths in index.values() for target in paths} if targets is None else {
         target for old in targets if Path(old).parent.as_posix() == 'map/images'
         for target in index.get(Path(old).stem, ())
@@ -95,6 +131,10 @@ def collect(root: Path | None, fallback_library: Path | None = None, targets=Non
     # without it remain valid and use the map's numbered fallback.
     needs_c5_cover = targets is None or any(re.fullmatch(r'c5-tile-\d{3}-(?:front|back)', Path(old).stem)
                                            for old in targets)
+    covers = cover_index(index_root) if needs_c5_cover else {}
+    for stem, paths in covers.items():
+        if targets is None or any(Path(old).stem == stem for old in targets):
+            needed.update(paths)
     cover_base = 'map/images/card-backs/c3-base.png'
     if (index_root / 'map/tile-back-data.js').is_file():
         cover_base = 'map/' + _data(index_root, 'tile-back-data.js', 'ATO_MAP_BACK_DATA')['bases']['c3'].removeprefix('./')
@@ -102,7 +142,6 @@ def collect(root: Path | None, fallback_library: Path | None = None, targets=Non
         raise ValueError('地图卡背底图路径无效')
     if needs_c5_cover:
         needed.add(cover_base)
-    fallback = dict(collect_library(fallback_library)) if fallback_library else {}
     found = {}
     for target in sorted(needed):
         path = Path(root)/target if root is not None else None
@@ -115,7 +154,7 @@ def collect(root: Path | None, fallback_library: Path | None = None, targets=Non
     complete = set()
     if needs_c5_cover and cover_base in found:
         complete.add(cover_base)
-    for paths in index.values():
+    for paths in (*index.values(), *covers.values()):
         group = set(paths)
         if not group <= needed:
             continue
@@ -140,15 +179,27 @@ def add_to_archive(archive, manifest: dict, root: Path | None = None,
         if not allowed_target(target):
             raise ValueError(f'不支持的地图图层：{target}')
         raw = source.read_bytes()
-        if not raw.startswith(b'\x89PNG\r\n\x1a\n') or len(raw) > MAX_FILE_BYTES:
-            raise ValueError(f'无效的地图 PNG 图层：{target}')
+        check_image(target, raw)
         archive.writestr(target, raw)
         entries.append({'target':target, 'member':target, 'sha256':hashlib.sha256(raw).hexdigest(),
-                        'bytes':len(raw), 'mimeType':'image/png'})
+                        'bytes':len(raw), 'mimeType':'image/svg+xml' if target.endswith('.svg') else 'image/png'})
     if entries:
         manifest['mapFiles'] = entries
         manifest.setdefault('build', {})['mapLayers'] = 'hd1024-combined-shared-backs'
     return len(entries)
+
+
+def check_image(target: str, raw: bytes) -> None:
+    if len(raw) > MAX_FILE_BYTES:
+        raise ValueError(f'地图图层超过 8MB：{target}')
+    if target.endswith('.svg'):
+        try:
+            if ET.fromstring(raw).tag != '{http://www.w3.org/2000/svg}svg':
+                raise ValueError('缺少 SVG 根节点')
+        except (ET.ParseError, ValueError) as error:
+            raise ValueError(f'无效的地图 SVG 图层：{target}') from error
+    elif not raw.startswith(b'\x89PNG\r\n\x1a\n'):
+        raise ValueError(f'无效的地图 PNG 图层：{target}')
 
 
 def checked_bytes(archive, entry: dict) -> bytes:
@@ -162,8 +213,7 @@ def checked_bytes(archive, entry: dict) -> bytes:
     if info.file_size > MAX_FILE_BYTES:
         raise ValueError(f'地图图层超过 8MB：{target}')
     raw = archive.read(target)
-    if not raw.startswith(b'\x89PNG\r\n\x1a\n'):
-        raise ValueError(f'无效的地图 PNG 图层：{target}')
+    check_image(target, raw)
     if (type(entry.get('bytes')) is not int or entry['bytes'] != len(raw)
             or hashlib.sha256(raw).hexdigest() != entry.get('sha256')):
         raise ValueError(f'地图图层大小或哈希不匹配：{target}')
@@ -184,16 +234,18 @@ def validate(archive, manifest: dict) -> list[dict]:
         checked_bytes(archive, entry)
         seen.add(entry['target'])
     # Partial cycle packs are allowed; each face they contain must be complete.
-    for stem, paths in layer_index().items():
-        specific = set(paths) - {p for p in paths if re.fullmatch(r'map/images/card-backs/c[1-4]-base\.png', p)}
-        if seen & specific and not set(paths) <= seen:
-            # Old C2/C3 packs used their own colored base. Accept those complete
-            # groups too, but never accept a mask without either valid base.
-            cycle = stem.split('-')[0]
-            legacy = f'map/images/card-backs/{cycle}-base.png'
-            if not (cycle in ('c2', 'c3') and specific <= seen and legacy in seen
-                    and 'map/images/card-backs/c1-base.png' in paths):
-                raise ValueError(f'地图图层缺少配套底图或蒙版：{paths[0]}')
+    groups = []
+    for index in (layer_index(), legacy_index(), cover_index()):
+        for stem, paths in index.items():
+            groups.append(set(paths))
+            if stem.startswith(('c2-', 'c3-')) and 'map/images/card-backs/c1-base.png' in paths:
+                groups.append(set(paths) - {'map/images/card-backs/c1-base.png'} |
+                              {f'map/images/card-backs/{stem[:2]}-base.png'})
+    for target in seen:
+        if re.fullmatch(r'map/images/card-backs/c[1-4]-base\.png', target):
+            continue
+        if not any(target in group and group <= seen for group in groups):
+            raise ValueError(f'地图图层缺少配套底图或蒙版：{target}')
     return entries
 
 

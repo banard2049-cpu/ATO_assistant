@@ -108,6 +108,8 @@ def check_release_notes_files(failures: list[str]) -> None:
             "v3.6.2.md": "修正了aibp bug",
             "v3.8.8.md": "修正了 AIBP 卡图问题，请下载最新的 atopack。",
             "v3.8.11.md": "修正了地图信息，建议所有人更新并更新 atopack。",
+            "v3.8.12.md": "修正了地图和地图标记。",
+            "v3.8.13.md": "修正探索卡加卡时会放回已移除卡牌的错误。\n\n更新资源包。",
         }
         if path.name in short_notices:
             if text.strip() != short_notices[path.name]:

@@ -135,6 +135,14 @@ python asset-studio/tools/build_official_pack.py \
 
 ## 安卓导入要求
 
+### 2026-10-24 矢量地图资源
+
+地图收集器按当前注册表读取 511 张正面 SVG 叠加图、344 张普通牌背 SVG 和 160 张 C5 卡背 SVG，
+不再依赖已归档的 PNG。底图与 7 张特殊牌背的 PNG 仍原样保存，完整包包含
+1535 个地图文件。SVG 的 MIME 为 `image/svg+xml`，不参与图片重编码。
+素材库导入、安装、再次导出及 Android 导入同步支持新路径，并继续接受旧 PNG 包。
+Android 必须先更新到 v3.8.13，再导入本次资源包；新 APK 的白名单同时包含两代路径。
+
 ### 2026-10-19 AI / BP 共享牌背
 
 当前 `aibp/card-backs.json` 将 669 张 AI / BP 卡映射到 145 个牌背文件；普通 AI III 与

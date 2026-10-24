@@ -1,5 +1,5 @@
 window.ATO_MAP_BACK_DATA = {
-  "version": "20261023-t06-shared-c123-dark-purple4",
+  "version": "20261024-vector-backs6-c5-split-colors",
   "tileSize": 825,
   "source": {
     "workshopId": "3458296558",
@@ -17,7 +17,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-001-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-001-back.svg",
           "kind": "number",
           "x": 37.21212121212121,
           "y": 5.696969696969697,
@@ -36,7 +36,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-002-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-002-back.svg",
           "kind": "number",
           "x": 37.09090909090909,
           "y": 5.575757575757576,
@@ -55,7 +55,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-003-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-003-back.svg",
           "kind": "number",
           "x": 37.21212121212121,
           "y": 5.454545454545454,
@@ -74,7 +74,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-004-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-004-back.svg",
           "kind": "number",
           "x": 36.96969696969697,
           "y": 5.454545454545454,
@@ -93,7 +93,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-005-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-005-back.svg",
           "kind": "number",
           "x": 37.09090909090909,
           "y": 5.333333333333333,
@@ -112,7 +112,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-006-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-006-back.svg",
           "kind": "number",
           "x": 36.96969696969697,
           "y": 5.575757575757576,
@@ -131,7 +131,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-007-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-007-back.svg",
           "kind": "number",
           "x": 37.333333333333336,
           "y": 5.333333333333333,
@@ -150,7 +150,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-008-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-008-back.svg",
           "kind": "number",
           "x": 37.45454545454545,
           "y": 5.454545454545454,
@@ -168,20 +168,6 @@ window.ATO_MAP_BACK_DATA = {
     "c1-tile-009-alt-back": {
       "cycle": "c1",
       "pieces": [
-        {
-          "src": "./images/card-backs/numbers/c1-tile-009-alt-back.png",
-          "kind": "number",
-          "x": 31.03030303030303,
-          "y": 5.696969696969697,
-          "width": 36.484848484848484,
-          "height": 10.06060606060606,
-          "bbox": [
-            256,
-            47,
-            557,
-            130
-          ]
-        },
         {
           "src": "./images/card-backs/numbers/c1-tile-009-alt-back-instruction.png",
           "kind": "instruction",
@@ -203,7 +189,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-009-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-009-back.svg",
           "kind": "number",
           "x": 37.333333333333336,
           "y": 5.575757575757576,
@@ -222,7 +208,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-010-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-010-back.svg",
           "kind": "number",
           "x": 36.96969696969697,
           "y": 5.818181818181818,
@@ -241,7 +227,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-011-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-011-back.svg",
           "kind": "number",
           "x": 36.84848484848485,
           "y": 5.575757575757576,
@@ -260,7 +246,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-012-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-012-back.svg",
           "kind": "number",
           "x": 36.84848484848485,
           "y": 5.818181818181818,
@@ -278,20 +264,6 @@ window.ATO_MAP_BACK_DATA = {
     "c1-tile-013-alt-back": {
       "cycle": "c1",
       "pieces": [
-        {
-          "src": "./images/card-backs/numbers/c1-tile-013-alt-back.png",
-          "kind": "number",
-          "x": 31.151515151515152,
-          "y": 5.9393939393939394,
-          "width": 36.36363636363637,
-          "height": 10.06060606060606,
-          "bbox": [
-            257,
-            49,
-            557,
-            132
-          ]
-        },
         {
           "src": "./images/card-backs/numbers/c1-tile-013-alt-back-instruction.png",
           "kind": "instruction",
@@ -313,7 +285,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-013-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-013-back.svg",
           "kind": "number",
           "x": 37.09090909090909,
           "y": 5.575757575757576,
@@ -331,20 +303,6 @@ window.ATO_MAP_BACK_DATA = {
     "c1-tile-014-alt-back": {
       "cycle": "c1",
       "pieces": [
-        {
-          "src": "./images/card-backs/numbers/c1-tile-014-alt-back.png",
-          "kind": "number",
-          "x": 31.03030303030303,
-          "y": 5.696969696969697,
-          "width": 36.484848484848484,
-          "height": 9.93939393939394,
-          "bbox": [
-            256,
-            47,
-            557,
-            129
-          ]
-        },
         {
           "src": "./images/card-backs/numbers/c1-tile-014-alt-back-instruction.png",
           "kind": "instruction",
@@ -366,7 +324,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-014-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-014-back.svg",
           "kind": "number",
           "x": 36.84848484848485,
           "y": 5.333333333333333,
@@ -385,7 +343,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-015-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-015-back.svg",
           "kind": "number",
           "x": 36.72727272727273,
           "y": 5.575757575757576,
@@ -404,7 +362,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-016-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-016-back.svg",
           "kind": "number",
           "x": 36.84848484848485,
           "y": 5.333333333333333,
@@ -423,7 +381,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-017-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-017-back.svg",
           "kind": "number",
           "x": 36.72727272727273,
           "y": 5.333333333333333,
@@ -441,20 +399,6 @@ window.ATO_MAP_BACK_DATA = {
     "c1-tile-018-alt-back": {
       "cycle": "c1",
       "pieces": [
-        {
-          "src": "./images/card-backs/numbers/c1-tile-018-alt-back.png",
-          "kind": "number",
-          "x": 30.90909090909091,
-          "y": 5.9393939393939394,
-          "width": 36.24242424242424,
-          "height": 10.06060606060606,
-          "bbox": [
-            255,
-            49,
-            554,
-            132
-          ]
-        },
         {
           "src": "./images/card-backs/numbers/c1-tile-018-alt-back-instruction.png",
           "kind": "instruction",
@@ -476,7 +420,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-018-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-018-back.svg",
           "kind": "number",
           "x": 36.84848484848485,
           "y": 5.333333333333333,
@@ -495,7 +439,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-019-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-019-back.svg",
           "kind": "number",
           "x": 37.333333333333336,
           "y": 5.333333333333333,
@@ -514,7 +458,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-020-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-020-back.svg",
           "kind": "number",
           "x": 36.96969696969697,
           "y": 5.575757575757576,
@@ -533,7 +477,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-021-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-021-back.svg",
           "kind": "number",
           "x": 37.09090909090909,
           "y": 5.696969696969697,
@@ -551,20 +495,6 @@ window.ATO_MAP_BACK_DATA = {
     "c1-tile-022-alt-back": {
       "cycle": "c1",
       "pieces": [
-        {
-          "src": "./images/card-backs/numbers/c1-tile-022-alt-back.png",
-          "kind": "number",
-          "x": 31.151515151515152,
-          "y": 5.9393939393939394,
-          "width": 36.36363636363637,
-          "height": 10.06060606060606,
-          "bbox": [
-            257,
-            49,
-            557,
-            132
-          ]
-        },
         {
           "src": "./images/card-backs/numbers/c1-tile-022-alt-back-instruction.png",
           "kind": "instruction",
@@ -586,7 +516,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-022-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-022-back.svg",
           "kind": "number",
           "x": 36.96969696969697,
           "y": 5.818181818181818,
@@ -604,20 +534,6 @@ window.ATO_MAP_BACK_DATA = {
     "c1-tile-023-alt-back": {
       "cycle": "c1",
       "pieces": [
-        {
-          "src": "./images/card-backs/numbers/c1-tile-023-alt-back.png",
-          "kind": "number",
-          "x": 31.03030303030303,
-          "y": 5.818181818181818,
-          "width": 36.36363636363637,
-          "height": 10.181818181818182,
-          "bbox": [
-            256,
-            48,
-            556,
-            132
-          ]
-        },
         {
           "src": "./images/card-backs/numbers/c1-tile-023-alt-back-instruction.png",
           "kind": "instruction",
@@ -639,7 +555,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-023-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-023-back.svg",
           "kind": "number",
           "x": 36.96969696969697,
           "y": 5.696969696969697,
@@ -658,7 +574,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-024-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-024-back.svg",
           "kind": "number",
           "x": 36.484848484848484,
           "y": 5.575757575757576,
@@ -677,7 +593,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-025-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-025-back.svg",
           "kind": "number",
           "x": 37.09090909090909,
           "y": 5.454545454545454,
@@ -696,7 +612,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-026-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-026-back.svg",
           "kind": "number",
           "x": 36.72727272727273,
           "y": 5.454545454545454,
@@ -715,7 +631,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-027-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-027-back.svg",
           "kind": "number",
           "x": 37.09090909090909,
           "y": 5.333333333333333,
@@ -734,7 +650,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-028-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-028-back.svg",
           "kind": "number",
           "x": 36.96969696969697,
           "y": 5.333333333333333,
@@ -753,7 +669,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-029-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-029-back.svg",
           "kind": "number",
           "x": 37.21212121212121,
           "y": 4.96969696969697,
@@ -772,7 +688,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-030-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-030-back.svg",
           "kind": "number",
           "x": 36.72727272727273,
           "y": 5.696969696969697,
@@ -791,7 +707,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-031-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-031-back.svg",
           "kind": "number",
           "x": 36.84848484848485,
           "y": 5.696969696969697,
@@ -810,7 +726,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-032-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-032-back.svg",
           "kind": "number",
           "x": 36.84848484848485,
           "y": 5.9393939393939394,
@@ -829,7 +745,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-033-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-033-back.svg",
           "kind": "number",
           "x": 36.72727272727273,
           "y": 5.454545454545454,
@@ -848,7 +764,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-034-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-034-back.svg",
           "kind": "number",
           "x": 36.72727272727273,
           "y": 5.575757575757576,
@@ -866,20 +782,6 @@ window.ATO_MAP_BACK_DATA = {
     "c1-tile-035-alt-back": {
       "cycle": "c1",
       "pieces": [
-        {
-          "src": "./images/card-backs/numbers/c1-tile-035-alt-back.png",
-          "kind": "number",
-          "x": 30.90909090909091,
-          "y": 5.818181818181818,
-          "width": 36.24242424242424,
-          "height": 9.93939393939394,
-          "bbox": [
-            255,
-            48,
-            554,
-            130
-          ]
-        },
         {
           "src": "./images/card-backs/numbers/c1-tile-035-alt-back-instruction.png",
           "kind": "instruction",
@@ -901,7 +803,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-035-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-035-back.svg",
           "kind": "number",
           "x": 36.96969696969697,
           "y": 5.333333333333333,
@@ -920,7 +822,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-036-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-036-back.svg",
           "kind": "number",
           "x": 36.84848484848485,
           "y": 5.212121212121212,
@@ -939,7 +841,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-037-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-037-back.svg",
           "kind": "number",
           "x": 36.96969696969697,
           "y": 5.333333333333333,
@@ -958,7 +860,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-038-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-038-back.svg",
           "kind": "number",
           "x": 36.96969696969697,
           "y": 5.818181818181818,
@@ -977,7 +879,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-039-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-039-back.svg",
           "kind": "number",
           "x": 37.21212121212121,
           "y": 5.212121212121212,
@@ -996,7 +898,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-040-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-040-back.svg",
           "kind": "number",
           "x": 36.96969696969697,
           "y": 5.454545454545454,
@@ -1015,7 +917,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-041-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-041-back.svg",
           "kind": "number",
           "x": 37.333333333333336,
           "y": 5.454545454545454,
@@ -1034,7 +936,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-042-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-042-back.svg",
           "kind": "number",
           "x": 36.96969696969697,
           "y": 5.696969696969697,
@@ -1053,7 +955,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-043-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-043-back.svg",
           "kind": "number",
           "x": 37.45454545454545,
           "y": 5.090909090909091,
@@ -1072,7 +974,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-044-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-044-back.svg",
           "kind": "number",
           "x": 36.96969696969697,
           "y": 5.575757575757576,
@@ -1091,7 +993,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-045-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-045-back.svg",
           "kind": "number",
           "x": 37.21212121212121,
           "y": 5.454545454545454,
@@ -1110,7 +1012,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-046-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-046-back.svg",
           "kind": "number",
           "x": 36.96969696969697,
           "y": 5.575757575757576,
@@ -1129,7 +1031,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-047-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-047-back.svg",
           "kind": "number",
           "x": 37.21212121212121,
           "y": 5.333333333333333,
@@ -1148,7 +1050,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-048-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-048-back.svg",
           "kind": "number",
           "x": 37.21212121212121,
           "y": 5.575757575757576,
@@ -1167,7 +1069,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-049-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-049-back.svg",
           "kind": "number",
           "x": 37.45454545454545,
           "y": 5.333333333333333,
@@ -1186,7 +1088,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-050-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-050-back.svg",
           "kind": "number",
           "x": 37.333333333333336,
           "y": 5.333333333333333,
@@ -1205,7 +1107,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-051-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-051-back.svg",
           "kind": "number",
           "x": 37.45454545454545,
           "y": 5.696969696969697,
@@ -1224,7 +1126,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-052-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-052-back.svg",
           "kind": "number",
           "x": 37.09090909090909,
           "y": 5.454545454545454,
@@ -1243,7 +1145,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-053-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-053-back.svg",
           "kind": "number",
           "x": 37.21212121212121,
           "y": 5.333333333333333,
@@ -1262,7 +1164,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-054-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-054-back.svg",
           "kind": "number",
           "x": 37.09090909090909,
           "y": 5.696969696969697,
@@ -1281,7 +1183,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-055-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-055-back.svg",
           "kind": "number",
           "x": 37.45454545454545,
           "y": 5.575757575757576,
@@ -1300,7 +1202,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-056-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-056-back.svg",
           "kind": "number",
           "x": 37.09090909090909,
           "y": 5.333333333333333,
@@ -1319,7 +1221,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-057-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-057-back.svg",
           "kind": "number",
           "x": 37.333333333333336,
           "y": 5.454545454545454,
@@ -1338,7 +1240,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-058-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-058-back.svg",
           "kind": "number",
           "x": 37.57575757575758,
           "y": 5.454545454545454,
@@ -1357,7 +1259,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-059-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-059-back.svg",
           "kind": "number",
           "x": 37.45454545454545,
           "y": 5.333333333333333,
@@ -1376,7 +1278,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-060-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-060-back.svg",
           "kind": "number",
           "x": 37.21212121212121,
           "y": 5.454545454545454,
@@ -1395,7 +1297,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-061-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-061-back.svg",
           "kind": "number",
           "x": 37.09090909090909,
           "y": 5.454545454545454,
@@ -1414,7 +1316,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-062-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-062-back.svg",
           "kind": "number",
           "x": 37.21212121212121,
           "y": 5.575757575757576,
@@ -1433,7 +1335,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-063-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-063-back.svg",
           "kind": "number",
           "x": 37.57575757575758,
           "y": 5.333333333333333,
@@ -1452,7 +1354,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-064-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-064-back.svg",
           "kind": "number",
           "x": 37.333333333333336,
           "y": 5.454545454545454,
@@ -1471,7 +1373,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-065-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-065-back.svg",
           "kind": "number",
           "x": 37.45454545454545,
           "y": 5.454545454545454,
@@ -1490,7 +1392,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-066-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-066-back.svg",
           "kind": "number",
           "x": 37.21212121212121,
           "y": 5.575757575757576,
@@ -1509,7 +1411,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-067-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-067-back.svg",
           "kind": "number",
           "x": 37.45454545454545,
           "y": 5.818181818181818,
@@ -1528,7 +1430,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-068-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-068-back.svg",
           "kind": "number",
           "x": 37.696969696969695,
           "y": 5.454545454545454,
@@ -1547,7 +1449,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-069-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-069-back.svg",
           "kind": "number",
           "x": 36.96969696969697,
           "y": 5.818181818181818,
@@ -1566,7 +1468,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-070-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-070-back.svg",
           "kind": "number",
           "x": 36.96969696969697,
           "y": 5.818181818181818,
@@ -1585,7 +1487,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-071-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-071-back.svg",
           "kind": "number",
           "x": 36.84848484848485,
           "y": 5.696969696969697,
@@ -1604,7 +1506,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-072-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-072-back.svg",
           "kind": "number",
           "x": 36.84848484848485,
           "y": 5.818181818181818,
@@ -1623,7 +1525,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-073-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-073-back.svg",
           "kind": "number",
           "x": 36.84848484848485,
           "y": 5.212121212121212,
@@ -1642,7 +1544,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-074-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-074-back.svg",
           "kind": "number",
           "x": 36.96969696969697,
           "y": 5.575757575757576,
@@ -1661,7 +1563,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-075-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-075-back.svg",
           "kind": "number",
           "x": 37.21212121212121,
           "y": 5.454545454545454,
@@ -1680,7 +1582,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-076-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-076-back.svg",
           "kind": "number",
           "x": 37.09090909090909,
           "y": 5.333333333333333,
@@ -1699,7 +1601,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-077-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-077-back.svg",
           "kind": "number",
           "x": 36.72727272727273,
           "y": 5.818181818181818,
@@ -1718,7 +1620,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-078-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-078-back.svg",
           "kind": "number",
           "x": 36.36363636363637,
           "y": 5.9393939393939394,
@@ -1737,7 +1639,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-079-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-079-back.svg",
           "kind": "number",
           "x": 36.484848484848484,
           "y": 5.696969696969697,
@@ -1756,7 +1658,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-080-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-080-back.svg",
           "kind": "number",
           "x": 36.96969696969697,
           "y": 5.575757575757576,
@@ -1775,7 +1677,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-T00-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-T00-back.svg",
           "kind": "number",
           "x": 40.72727272727273,
           "y": 5.9393939393939394,
@@ -1794,7 +1696,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-T01-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-T01-back.svg",
           "kind": "number",
           "x": 40.36363636363637,
           "y": 5.9393939393939394,
@@ -1813,7 +1715,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-T02-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-T02-back.svg",
           "kind": "number",
           "x": 40.36363636363637,
           "y": 5.9393939393939394,
@@ -1832,7 +1734,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-T03-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-T03-back.svg",
           "kind": "number",
           "x": 40.36363636363637,
           "y": 5.9393939393939394,
@@ -1851,7 +1753,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-T04-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-T04-back.svg",
           "kind": "number",
           "x": 40.484848484848484,
           "y": 5.9393939393939394,
@@ -1870,7 +1772,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-T05-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-T05-back.svg",
           "kind": "number",
           "x": 36.84848484848485,
           "y": 5.696969696969697,
@@ -1889,7 +1791,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c1",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c1-tile-T06-back.png",
+          "src": "./images/card-backs/vectors/c1-tile-T06-back.svg",
           "kind": "number",
           "x": 36.72727272727273,
           "y": 5.575757575757576,
@@ -1908,7 +1810,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-001-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-001-back.svg",
           "kind": "number",
           "x": 36.484848484848484,
           "y": 5.818181818181818,
@@ -1927,7 +1829,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-002-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-002-back.svg",
           "kind": "number",
           "x": 36.84848484848485,
           "y": 5.696969696969697,
@@ -1946,7 +1848,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-003-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-003-back.svg",
           "kind": "number",
           "x": 36.484848484848484,
           "y": 5.9393939393939394,
@@ -1965,7 +1867,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-004-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-004-back.svg",
           "kind": "number",
           "x": 36.60606060606061,
           "y": 5.818181818181818,
@@ -1984,7 +1886,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-005-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-005-back.svg",
           "kind": "number",
           "x": 36.24242424242424,
           "y": 5.818181818181818,
@@ -2003,7 +1905,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-006-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-006-back.svg",
           "kind": "number",
           "x": 36.484848484848484,
           "y": 5.818181818181818,
@@ -2022,7 +1924,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-007-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-007-back.svg",
           "kind": "number",
           "x": 36.484848484848484,
           "y": 5.9393939393939394,
@@ -2041,7 +1943,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-008-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-008-back.svg",
           "kind": "number",
           "x": 36.484848484848484,
           "y": 5.818181818181818,
@@ -2060,7 +1962,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-009-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-009-back.svg",
           "kind": "number",
           "x": 36.60606060606061,
           "y": 6.0606060606060606,
@@ -2079,7 +1981,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-010-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-010-back.svg",
           "kind": "number",
           "x": 36.36363636363637,
           "y": 5.696969696969697,
@@ -2098,7 +2000,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-011-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-011-back.svg",
           "kind": "number",
           "x": 36.60606060606061,
           "y": 5.818181818181818,
@@ -2117,7 +2019,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-012-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-012-back.svg",
           "kind": "number",
           "x": 36.60606060606061,
           "y": 5.818181818181818,
@@ -2136,7 +2038,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-013-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-013-back.svg",
           "kind": "number",
           "x": 36.24242424242424,
           "y": 6.0606060606060606,
@@ -2155,7 +2057,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-014-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-014-back.svg",
           "kind": "number",
           "x": 36.484848484848484,
           "y": 5.818181818181818,
@@ -2174,7 +2076,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-015-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-015-back.svg",
           "kind": "number",
           "x": 36.484848484848484,
           "y": 5.9393939393939394,
@@ -2193,7 +2095,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-016-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-016-back.svg",
           "kind": "number",
           "x": 36.36363636363637,
           "y": 5.818181818181818,
@@ -2212,7 +2114,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-017-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-017-back.svg",
           "kind": "number",
           "x": 36.24242424242424,
           "y": 5.9393939393939394,
@@ -2231,7 +2133,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-018-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-018-back.svg",
           "kind": "number",
           "x": 36.24242424242424,
           "y": 5.9393939393939394,
@@ -2250,7 +2152,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-019-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-019-back.svg",
           "kind": "number",
           "x": 33.81818181818182,
           "y": 5.818181818181818,
@@ -2269,7 +2171,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-020-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-020-back.svg",
           "kind": "number",
           "x": 36.121212121212125,
           "y": 5.9393939393939394,
@@ -2288,7 +2190,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-021-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-021-back.svg",
           "kind": "number",
           "x": 36.60606060606061,
           "y": 5.818181818181818,
@@ -2307,7 +2209,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-022-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-022-back.svg",
           "kind": "number",
           "x": 36.72727272727273,
           "y": 5.212121212121212,
@@ -2326,7 +2228,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-023-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-023-back.svg",
           "kind": "number",
           "x": 36.484848484848484,
           "y": 5.333333333333333,
@@ -2345,7 +2247,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-024-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-024-back.svg",
           "kind": "number",
           "x": 33.81818181818182,
           "y": 5.333333333333333,
@@ -2364,7 +2266,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-025-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-025-back.svg",
           "kind": "number",
           "x": 36.72727272727273,
           "y": 5.575757575757576,
@@ -2383,7 +2285,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-026-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-026-back.svg",
           "kind": "number",
           "x": 36.484848484848484,
           "y": 5.575757575757576,
@@ -2402,7 +2304,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-027-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-027-back.svg",
           "kind": "number",
           "x": 36.60606060606061,
           "y": 5.454545454545454,
@@ -2421,7 +2323,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-028-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-028-back.svg",
           "kind": "number",
           "x": 36.60606060606061,
           "y": 5.454545454545454,
@@ -2440,7 +2342,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-029-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-029-back.svg",
           "kind": "number",
           "x": 36.36363636363637,
           "y": 5.575757575757576,
@@ -2459,7 +2361,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-030-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-030-back.svg",
           "kind": "number",
           "x": 36.484848484848484,
           "y": 5.696969696969697,
@@ -2478,7 +2380,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-031-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-031-back.svg",
           "kind": "number",
           "x": 33.93939393939394,
           "y": 5.454545454545454,
@@ -2497,7 +2399,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-032-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-032-back.svg",
           "kind": "number",
           "x": 36.72727272727273,
           "y": 5.333333333333333,
@@ -2516,7 +2418,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-033-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-033-back.svg",
           "kind": "number",
           "x": 36.72727272727273,
           "y": 5.454545454545454,
@@ -2535,7 +2437,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-034-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-034-back.svg",
           "kind": "number",
           "x": 36.484848484848484,
           "y": 5.454545454545454,
@@ -2554,7 +2456,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-035-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-035-back.svg",
           "kind": "number",
           "x": 36.484848484848484,
           "y": 5.454545454545454,
@@ -2573,7 +2475,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-036-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-036-back.svg",
           "kind": "number",
           "x": 36.484848484848484,
           "y": 5.454545454545454,
@@ -2592,7 +2494,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-037-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-037-back.svg",
           "kind": "number",
           "x": 36.60606060606061,
           "y": 5.575757575757576,
@@ -2611,7 +2513,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-038-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-038-back.svg",
           "kind": "number",
           "x": 36.60606060606061,
           "y": 5.575757575757576,
@@ -2630,7 +2532,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-039-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-039-back.svg",
           "kind": "number",
           "x": 36.484848484848484,
           "y": 5.454545454545454,
@@ -2649,7 +2551,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-040-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-040-back.svg",
           "kind": "number",
           "x": 33.696969696969695,
           "y": 5.575757575757576,
@@ -2668,7 +2570,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-041-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-041-back.svg",
           "kind": "number",
           "x": 36.60606060606061,
           "y": 5.575757575757576,
@@ -2687,7 +2589,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-042-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-042-back.svg",
           "kind": "number",
           "x": 37.57575757575758,
           "y": 5.9393939393939394,
@@ -2706,7 +2608,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-043-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-043-back.svg",
           "kind": "number",
           "x": 37.45454545454545,
           "y": 6.181818181818182,
@@ -2725,7 +2627,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-044-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-044-back.svg",
           "kind": "number",
           "x": 37.21212121212121,
           "y": 6.181818181818182,
@@ -2744,7 +2646,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-045-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-045-back.svg",
           "kind": "number",
           "x": 37.333333333333336,
           "y": 5.9393939393939394,
@@ -2763,7 +2665,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-046-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-046-back.svg",
           "kind": "number",
           "x": 37.45454545454545,
           "y": 5.9393939393939394,
@@ -2782,7 +2684,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-047-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-047-back.svg",
           "kind": "number",
           "x": 37.21212121212121,
           "y": 5.818181818181818,
@@ -2801,7 +2703,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-048-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-048-back.svg",
           "kind": "number",
           "x": 37.333333333333336,
           "y": 5.9393939393939394,
@@ -2820,7 +2722,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-049-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-049-back.svg",
           "kind": "number",
           "x": 37.45454545454545,
           "y": 5.9393939393939394,
@@ -2839,7 +2741,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-050-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-050-back.svg",
           "kind": "number",
           "x": 37.21212121212121,
           "y": 5.9393939393939394,
@@ -2858,7 +2760,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-051-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-051-back.svg",
           "kind": "number",
           "x": 37.21212121212121,
           "y": 6.181818181818182,
@@ -2877,7 +2779,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-052-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-052-back.svg",
           "kind": "number",
           "x": 37.333333333333336,
           "y": 6.0606060606060606,
@@ -2896,7 +2798,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-053-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-053-back.svg",
           "kind": "number",
           "x": 37.21212121212121,
           "y": 6.0606060606060606,
@@ -2915,7 +2817,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-054-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-054-back.svg",
           "kind": "number",
           "x": 37.45454545454545,
           "y": 5.818181818181818,
@@ -2934,7 +2836,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-055-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-055-back.svg",
           "kind": "number",
           "x": 34.666666666666664,
           "y": 5.9393939393939394,
@@ -2953,7 +2855,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-056-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-056-back.svg",
           "kind": "number",
           "x": 37.45454545454545,
           "y": 5.696969696969697,
@@ -2972,7 +2874,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-057-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-057-back.svg",
           "kind": "number",
           "x": 37.333333333333336,
           "y": 5.818181818181818,
@@ -2991,7 +2893,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-058-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-058-back.svg",
           "kind": "number",
           "x": 37.21212121212121,
           "y": 5.818181818181818,
@@ -3010,7 +2912,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-059-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-059-back.svg",
           "kind": "number",
           "x": 37.21212121212121,
           "y": 5.818181818181818,
@@ -3029,7 +2931,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-060-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-060-back.svg",
           "kind": "number",
           "x": 37.57575757575758,
           "y": 5.9393939393939394,
@@ -3048,7 +2950,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-061-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-061-back.svg",
           "kind": "number",
           "x": 37.45454545454545,
           "y": 5.818181818181818,
@@ -3067,7 +2969,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-062-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-062-back.svg",
           "kind": "number",
           "x": 37.21212121212121,
           "y": 5.818181818181818,
@@ -3086,7 +2988,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-063-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-063-back.svg",
           "kind": "number",
           "x": 37.21212121212121,
           "y": 5.696969696969697,
@@ -3105,7 +3007,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-064-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-064-back.svg",
           "kind": "number",
           "x": 37.333333333333336,
           "y": 5.696969696969697,
@@ -3124,7 +3026,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-065-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-065-back.svg",
           "kind": "number",
           "x": 37.333333333333336,
           "y": 5.696969696969697,
@@ -3143,7 +3045,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-066-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-066-back.svg",
           "kind": "number",
           "x": 37.333333333333336,
           "y": 5.818181818181818,
@@ -3162,7 +3064,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-067-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-067-back.svg",
           "kind": "number",
           "x": 34.666666666666664,
           "y": 5.575757575757576,
@@ -3181,7 +3083,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-068-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-068-back.svg",
           "kind": "number",
           "x": 37.45454545454545,
           "y": 5.575757575757576,
@@ -3200,7 +3102,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-069-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-069-back.svg",
           "kind": "number",
           "x": 37.333333333333336,
           "y": 5.696969696969697,
@@ -3219,7 +3121,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-070-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-070-back.svg",
           "kind": "number",
           "x": 37.57575757575758,
           "y": 5.9393939393939394,
@@ -3238,7 +3140,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-071-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-071-back.svg",
           "kind": "number",
           "x": 37.21212121212121,
           "y": 5.9393939393939394,
@@ -3257,7 +3159,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-072-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-072-back.svg",
           "kind": "number",
           "x": 37.45454545454545,
           "y": 5.818181818181818,
@@ -3276,7 +3178,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-073-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-073-back.svg",
           "kind": "number",
           "x": 37.45454545454545,
           "y": 5.818181818181818,
@@ -3295,7 +3197,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-074-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-074-back.svg",
           "kind": "number",
           "x": 37.09090909090909,
           "y": 5.575757575757576,
@@ -3314,7 +3216,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-075-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-075-back.svg",
           "kind": "number",
           "x": 37.21212121212121,
           "y": 5.575757575757576,
@@ -3333,7 +3235,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-076-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-076-back.svg",
           "kind": "number",
           "x": 37.45454545454545,
           "y": 5.575757575757576,
@@ -3352,7 +3254,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-077-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-077-back.svg",
           "kind": "number",
           "x": 37.333333333333336,
           "y": 5.454545454545454,
@@ -3371,7 +3273,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-078-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-078-back.svg",
           "kind": "number",
           "x": 37.09090909090909,
           "y": 5.818181818181818,
@@ -3390,7 +3292,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-079-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-079-back.svg",
           "kind": "number",
           "x": 37.21212121212121,
           "y": 5.818181818181818,
@@ -3409,7 +3311,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-080-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-080-back.svg",
           "kind": "number",
           "x": 37.696969696969695,
           "y": 5.818181818181818,
@@ -3428,7 +3330,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-081-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-081-back.svg",
           "kind": "number",
           "x": 37.45454545454545,
           "y": 5.818181818181818,
@@ -3447,7 +3349,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-082-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-082-back.svg",
           "kind": "number",
           "x": 37.21212121212121,
           "y": 5.9393939393939394,
@@ -3466,7 +3368,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-083-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-083-back.svg",
           "kind": "number",
           "x": 37.333333333333336,
           "y": 5.818181818181818,
@@ -3485,7 +3387,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c2",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c2-tile-084-back.png",
+          "src": "./images/card-backs/vectors/c2-tile-084-back.svg",
           "kind": "number",
           "x": 37.333333333333336,
           "y": 5.696969696969697,
@@ -3504,7 +3406,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-001-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-001-back.svg",
           "kind": "number",
           "x": 36.60606060606061,
           "y": 5.212121212121212,
@@ -3523,7 +3425,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-002-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-002-back.svg",
           "kind": "number",
           "x": 36.96969696969697,
           "y": 5.333333333333333,
@@ -3542,7 +3444,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-003-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-003-back.svg",
           "kind": "number",
           "x": 36.72727272727273,
           "y": 4.484848484848484,
@@ -3561,7 +3463,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-004-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-004-back.svg",
           "kind": "number",
           "x": 36.72727272727273,
           "y": 5.212121212121212,
@@ -3580,7 +3482,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-005-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-005-back.svg",
           "kind": "number",
           "x": 36.84848484848485,
           "y": 5.696969696969697,
@@ -3599,7 +3501,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-006-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-006-back.svg",
           "kind": "number",
           "x": 37.696969696969695,
           "y": 5.454545454545454,
@@ -3618,7 +3520,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-007-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-007-back.svg",
           "kind": "number",
           "x": 37.45454545454545,
           "y": 5.575757575757576,
@@ -3637,7 +3539,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-008-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-008-back.svg",
           "kind": "number",
           "x": 37.45454545454545,
           "y": 5.454545454545454,
@@ -3656,7 +3558,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-009-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-009-back.svg",
           "kind": "number",
           "x": 37.09090909090909,
           "y": 5.090909090909091,
@@ -3675,7 +3577,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-010-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-010-back.svg",
           "kind": "number",
           "x": 37.45454545454545,
           "y": 5.575757575757576,
@@ -3694,7 +3596,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-011-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-011-back.svg",
           "kind": "number",
           "x": 37.09090909090909,
           "y": 5.333333333333333,
@@ -3713,7 +3615,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-012-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-012-back.svg",
           "kind": "number",
           "x": 36.84848484848485,
           "y": 4.848484848484849,
@@ -3732,7 +3634,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-013-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-013-back.svg",
           "kind": "number",
           "x": 36.484848484848484,
           "y": 4.484848484848484,
@@ -3751,7 +3653,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-014-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-014-back.svg",
           "kind": "number",
           "x": 36.60606060606061,
           "y": 5.454545454545454,
@@ -3770,7 +3672,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-015-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-015-back.svg",
           "kind": "number",
           "x": 36.72727272727273,
           "y": 5.454545454545454,
@@ -3789,7 +3691,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-016-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-016-back.svg",
           "kind": "number",
           "x": 36.24242424242424,
           "y": 5.333333333333333,
@@ -3808,7 +3710,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-017-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-017-back.svg",
           "kind": "number",
           "x": 36.36363636363637,
           "y": 5.212121212121212,
@@ -3827,7 +3729,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-018-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-018-back.svg",
           "kind": "number",
           "x": 36.484848484848484,
           "y": 5.575757575757576,
@@ -3846,7 +3748,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-019-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-019-back.svg",
           "kind": "number",
           "x": 36.121212121212125,
           "y": 5.454545454545454,
@@ -3865,7 +3767,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-020-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-020-back.svg",
           "kind": "number",
           "x": 36.36363636363637,
           "y": 5.212121212121212,
@@ -3884,7 +3786,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-021-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-021-back.svg",
           "kind": "number",
           "x": 36.0,
           "y": 5.333333333333333,
@@ -3903,7 +3805,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-022-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-022-back.svg",
           "kind": "number",
           "x": 36.121212121212125,
           "y": 5.212121212121212,
@@ -3922,7 +3824,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-023-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-023-back.svg",
           "kind": "number",
           "x": 35.878787878787875,
           "y": 5.212121212121212,
@@ -3941,7 +3843,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-024-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-024-back.svg",
           "kind": "number",
           "x": 36.121212121212125,
           "y": 5.212121212121212,
@@ -3960,7 +3862,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-025-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-025-back.svg",
           "kind": "number",
           "x": 36.484848484848484,
           "y": 5.454545454545454,
@@ -3979,7 +3881,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-026-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-026-back.svg",
           "kind": "number",
           "x": 36.36363636363637,
           "y": 5.090909090909091,
@@ -3998,7 +3900,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-027-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-027-back.svg",
           "kind": "number",
           "x": 36.121212121212125,
           "y": 5.333333333333333,
@@ -4017,7 +3919,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-028-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-028-back.svg",
           "kind": "number",
           "x": 36.36363636363637,
           "y": 4.96969696969697,
@@ -4036,7 +3938,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-029-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-029-back.svg",
           "kind": "number",
           "x": 36.36363636363637,
           "y": 4.96969696969697,
@@ -4055,7 +3957,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-030-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-030-back.svg",
           "kind": "number",
           "x": 36.24242424242424,
           "y": 4.848484848484849,
@@ -4074,7 +3976,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-031-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-031-back.svg",
           "kind": "number",
           "x": 36.36363636363637,
           "y": 5.090909090909091,
@@ -4093,7 +3995,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-032-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-032-back.svg",
           "kind": "number",
           "x": 36.72727272727273,
           "y": 4.96969696969697,
@@ -4112,7 +4014,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-033-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-033-back.svg",
           "kind": "number",
           "x": 35.878787878787875,
           "y": 5.212121212121212,
@@ -4131,7 +4033,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-034-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-034-back.svg",
           "kind": "number",
           "x": 36.60606060606061,
           "y": 5.333333333333333,
@@ -4150,7 +4052,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-035-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-035-back.svg",
           "kind": "number",
           "x": 36.84848484848485,
           "y": 5.454545454545454,
@@ -4169,7 +4071,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-036-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-036-back.svg",
           "kind": "number",
           "x": 36.36363636363637,
           "y": 5.090909090909091,
@@ -4188,7 +4090,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-037-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-037-back.svg",
           "kind": "number",
           "x": 36.60606060606061,
           "y": 4.96969696969697,
@@ -4207,7 +4109,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-038-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-038-back.svg",
           "kind": "number",
           "x": 36.60606060606061,
           "y": 5.212121212121212,
@@ -4226,7 +4128,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-039-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-039-back.svg",
           "kind": "number",
           "x": 36.484848484848484,
           "y": 5.090909090909091,
@@ -4245,7 +4147,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-040-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-040-back.svg",
           "kind": "number",
           "x": 36.484848484848484,
           "y": 5.090909090909091,
@@ -4264,7 +4166,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-041-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-041-back.svg",
           "kind": "number",
           "x": 36.484848484848484,
           "y": 4.848484848484849,
@@ -4283,7 +4185,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-042-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-042-back.svg",
           "kind": "number",
           "x": 36.36363636363637,
           "y": 5.212121212121212,
@@ -4302,7 +4204,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-043-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-043-back.svg",
           "kind": "number",
           "x": 36.484848484848484,
           "y": 5.212121212121212,
@@ -4321,7 +4223,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-044-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-044-back.svg",
           "kind": "number",
           "x": 36.60606060606061,
           "y": 5.575757575757576,
@@ -4340,7 +4242,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-045-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-045-back.svg",
           "kind": "number",
           "x": 36.72727272727273,
           "y": 4.484848484848484,
@@ -4359,7 +4261,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-046-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-046-back.svg",
           "kind": "number",
           "x": 36.484848484848484,
           "y": 5.454545454545454,
@@ -4378,7 +4280,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-047-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-047-back.svg",
           "kind": "number",
           "x": 36.24242424242424,
           "y": 4.7272727272727275,
@@ -4397,7 +4299,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-048-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-048-back.svg",
           "kind": "number",
           "x": 36.24242424242424,
           "y": 5.212121212121212,
@@ -4416,7 +4318,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-049-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-049-back.svg",
           "kind": "number",
           "x": 36.121212121212125,
           "y": 4.848484848484849,
@@ -4435,7 +4337,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-050-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-050-back.svg",
           "kind": "number",
           "x": 36.484848484848484,
           "y": 5.212121212121212,
@@ -4454,7 +4356,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-051-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-051-back.svg",
           "kind": "number",
           "x": 36.36363636363637,
           "y": 5.212121212121212,
@@ -4473,7 +4375,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-052-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-052-back.svg",
           "kind": "number",
           "x": 36.36363636363637,
           "y": 4.96969696969697,
@@ -4492,7 +4394,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-053-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-053-back.svg",
           "kind": "number",
           "x": 36.24242424242424,
           "y": 4.96969696969697,
@@ -4511,7 +4413,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-054-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-054-back.svg",
           "kind": "number",
           "x": 36.121212121212125,
           "y": 5.090909090909091,
@@ -4530,7 +4432,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-055-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-055-back.svg",
           "kind": "number",
           "x": 36.484848484848484,
           "y": 4.363636363636363,
@@ -4549,7 +4451,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-056-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-056-back.svg",
           "kind": "number",
           "x": 36.484848484848484,
           "y": 4.848484848484849,
@@ -4568,7 +4470,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-057-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-057-back.svg",
           "kind": "number",
           "x": 37.09090909090909,
           "y": 5.333333333333333,
@@ -4587,7 +4489,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-058-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-058-back.svg",
           "kind": "number",
           "x": 36.84848484848485,
           "y": 4.606060606060606,
@@ -4606,7 +4508,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-059-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-059-back.svg",
           "kind": "number",
           "x": 37.09090909090909,
           "y": 4.848484848484849,
@@ -4625,7 +4527,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-060-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-060-back.svg",
           "kind": "number",
           "x": 36.96969696969697,
           "y": 4.848484848484849,
@@ -4644,7 +4546,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-061-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-061-back.svg",
           "kind": "number",
           "x": 36.60606060606061,
           "y": 4.7272727272727275,
@@ -4663,7 +4565,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-062-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-062-back.svg",
           "kind": "number",
           "x": 36.484848484848484,
           "y": 5.333333333333333,
@@ -4682,7 +4584,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-063-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-063-back.svg",
           "kind": "number",
           "x": 36.484848484848484,
           "y": 5.818181818181818,
@@ -4701,7 +4603,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-064-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-064-back.svg",
           "kind": "number",
           "x": 36.96969696969697,
           "y": 5.454545454545454,
@@ -4720,7 +4622,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-065-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-065-back.svg",
           "kind": "number",
           "x": 37.09090909090909,
           "y": 5.575757575757576,
@@ -4739,7 +4641,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-066-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-066-back.svg",
           "kind": "number",
           "x": 36.96969696969697,
           "y": 5.212121212121212,
@@ -4758,7 +4660,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-067-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-067-back.svg",
           "kind": "number",
           "x": 36.60606060606061,
           "y": 4.848484848484849,
@@ -4777,7 +4679,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-068-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-068-back.svg",
           "kind": "number",
           "x": 37.21212121212121,
           "y": 5.333333333333333,
@@ -4796,7 +4698,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-069-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-069-back.svg",
           "kind": "number",
           "x": 36.60606060606061,
           "y": 5.212121212121212,
@@ -4815,7 +4717,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-070-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-070-back.svg",
           "kind": "number",
           "x": 36.84848484848485,
           "y": 5.090909090909091,
@@ -4834,7 +4736,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-071-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-071-back.svg",
           "kind": "number",
           "x": 36.84848484848485,
           "y": 4.96969696969697,
@@ -4853,7 +4755,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-072-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-072-back.svg",
           "kind": "number",
           "x": 37.21212121212121,
           "y": 5.212121212121212,
@@ -4872,7 +4774,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-073-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-073-back.svg",
           "kind": "number",
           "x": 36.96969696969697,
           "y": 5.454545454545454,
@@ -4891,7 +4793,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-074-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-074-back.svg",
           "kind": "number",
           "x": 37.09090909090909,
           "y": 4.7272727272727275,
@@ -4910,7 +4812,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-075-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-075-back.svg",
           "kind": "number",
           "x": 36.96969696969697,
           "y": 5.454545454545454,
@@ -4929,7 +4831,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-076-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-076-back.svg",
           "kind": "number",
           "x": 36.84848484848485,
           "y": 4.96969696969697,
@@ -4948,7 +4850,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-077-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-077-back.svg",
           "kind": "number",
           "x": 36.96969696969697,
           "y": 5.333333333333333,
@@ -4967,7 +4869,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-078-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-078-back.svg",
           "kind": "number",
           "x": 37.21212121212121,
           "y": 5.333333333333333,
@@ -4986,7 +4888,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-079-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-079-back.svg",
           "kind": "number",
           "x": 36.96969696969697,
           "y": 4.7272727272727275,
@@ -5005,7 +4907,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-080-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-080-back.svg",
           "kind": "number",
           "x": 36.96969696969697,
           "y": 5.090909090909091,
@@ -5024,7 +4926,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-081-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-081-back.svg",
           "kind": "number",
           "x": 36.84848484848485,
           "y": 5.090909090909091,
@@ -5043,7 +4945,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-082-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-082-back.svg",
           "kind": "number",
           "x": 37.21212121212121,
           "y": 4.96969696969697,
@@ -5062,7 +4964,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-083-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-083-back.svg",
           "kind": "number",
           "x": 37.333333333333336,
           "y": 5.818181818181818,
@@ -5081,7 +4983,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-084-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-084-back.svg",
           "kind": "number",
           "x": 36.72727272727273,
           "y": 5.696969696969697,
@@ -5100,7 +5002,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-085-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-085-back.svg",
           "kind": "number",
           "x": 37.333333333333336,
           "y": 5.575757575757576,
@@ -5119,7 +5021,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-086-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-086-back.svg",
           "kind": "number",
           "x": 37.333333333333336,
           "y": 4.96969696969697,
@@ -5138,7 +5040,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-087-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-087-back.svg",
           "kind": "number",
           "x": 37.09090909090909,
           "y": 5.454545454545454,
@@ -5157,7 +5059,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-088-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-088-back.svg",
           "kind": "number",
           "x": 36.84848484848485,
           "y": 5.212121212121212,
@@ -5176,7 +5078,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-089-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-089-back.svg",
           "kind": "number",
           "x": 37.21212121212121,
           "y": 5.212121212121212,
@@ -5195,7 +5097,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-090-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-090-back.svg",
           "kind": "number",
           "x": 36.96969696969697,
           "y": 5.212121212121212,
@@ -5214,7 +5116,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-091-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-091-back.svg",
           "kind": "number",
           "x": 36.96969696969697,
           "y": 4.96969696969697,
@@ -5233,7 +5135,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c3",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c3-tile-333-back.png",
+          "src": "./images/card-backs/vectors/c3-tile-333-back.svg",
           "kind": "number",
           "x": 40.60606060606061,
           "y": 5.212121212121212,
@@ -5252,7 +5154,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-001-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-001-back.svg",
           "kind": "markers",
           "x": 41.45454545454545,
           "y": 4.848484848484849,
@@ -5271,7 +5173,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-002-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-002-back.svg",
           "kind": "markers",
           "x": 3.272727272727273,
           "y": 5.333333333333334,
@@ -5290,7 +5192,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-003-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-003-back.svg",
           "kind": "markers",
           "x": 3.151515151515152,
           "y": 4.96969696969697,
@@ -5309,7 +5211,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-004-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-004-back.svg",
           "kind": "markers",
           "x": 3.151515151515152,
           "y": 4.96969696969697,
@@ -5328,7 +5230,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-005-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-005-back.svg",
           "kind": "markers",
           "x": 3.0303030303030303,
           "y": 5.090909090909091,
@@ -5347,7 +5249,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-006-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-006-back.svg",
           "kind": "markers",
           "x": 3.0303030303030303,
           "y": 4.96969696969697,
@@ -5366,7 +5268,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-007-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-007-back.svg",
           "kind": "markers",
           "x": 3.272727272727273,
           "y": 4.96969696969697,
@@ -5385,7 +5287,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-008-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-008-back.svg",
           "kind": "markers",
           "x": 3.3939393939393945,
           "y": 4.96969696969697,
@@ -5404,7 +5306,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-009-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-009-back.svg",
           "kind": "markers",
           "x": 3.3939393939393945,
           "y": 5.212121212121213,
@@ -5423,7 +5325,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-010-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-010-back.svg",
           "kind": "markers",
           "x": 41.21212121212121,
           "y": 4.7272727272727275,
@@ -5442,7 +5344,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-011-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-011-back.svg",
           "kind": "markers",
           "x": 3.3939393939393945,
           "y": 4.96969696969697,
@@ -5461,7 +5363,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-012-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-012-back.svg",
           "kind": "markers",
           "x": 3.272727272727273,
           "y": 4.96969696969697,
@@ -5480,7 +5382,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-013-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-013-back.svg",
           "kind": "markers",
           "x": 3.151515151515152,
           "y": 4.7272727272727275,
@@ -5499,7 +5401,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-014-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-014-back.svg",
           "kind": "markers",
           "x": 3.151515151515152,
           "y": 4.7272727272727275,
@@ -5518,7 +5420,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-015-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-015-back.svg",
           "kind": "markers",
           "x": 3.151515151515152,
           "y": 4.7272727272727275,
@@ -5537,7 +5439,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-016-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-016-back.svg",
           "kind": "markers",
           "x": 3.151515151515152,
           "y": 4.96969696969697,
@@ -5556,7 +5458,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-017-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-017-back.svg",
           "kind": "markers",
           "x": 3.3939393939393945,
           "y": 5.090909090909091,
@@ -5575,7 +5477,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-018-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-018-back.svg",
           "kind": "markers",
           "x": 3.272727272727273,
           "y": 4.96969696969697,
@@ -5594,7 +5496,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-019-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-019-back.svg",
           "kind": "markers",
           "x": 41.21212121212121,
           "y": 4.7272727272727275,
@@ -5613,7 +5515,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-020-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-020-back.svg",
           "kind": "markers",
           "x": 3.3939393939393945,
           "y": 4.7272727272727275,
@@ -5632,7 +5534,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-021-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-021-back.svg",
           "kind": "markers",
           "x": 3.272727272727273,
           "y": 4.7272727272727275,
@@ -5651,7 +5553,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-022-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-022-back.svg",
           "kind": "markers",
           "x": 3.272727272727273,
           "y": 4.7272727272727275,
@@ -5670,7 +5572,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-023-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-023-back.svg",
           "kind": "markers",
           "x": 3.272727272727273,
           "y": 4.7272727272727275,
@@ -5689,7 +5591,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-024-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-024-back.svg",
           "kind": "markers",
           "x": 3.272727272727273,
           "y": 4.848484848484849,
@@ -5708,7 +5610,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-025-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-025-back.svg",
           "kind": "markers",
           "x": 3.3939393939393945,
           "y": 4.7272727272727275,
@@ -5727,7 +5629,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-026-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-026-back.svg",
           "kind": "markers",
           "x": 3.3939393939393945,
           "y": 4.96969696969697,
@@ -5746,7 +5648,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-027-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-027-back.svg",
           "kind": "markers",
           "x": 3.5151515151515147,
           "y": 4.7272727272727275,
@@ -5765,7 +5667,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-028-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-028-back.svg",
           "kind": "markers",
           "x": 41.6969696969697,
           "y": 5.575757575757575,
@@ -5784,7 +5686,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-029-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-029-back.svg",
           "kind": "markers",
           "x": 4.0,
           "y": 5.333333333333334,
@@ -5803,7 +5705,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-030-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-030-back.svg",
           "kind": "markers",
           "x": 3.7575757575757573,
           "y": 5.212121212121213,
@@ -5822,7 +5724,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-031-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-031-back.svg",
           "kind": "markers",
           "x": 3.878787878787879,
           "y": 5.090909090909091,
@@ -5841,7 +5743,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-032-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-032-back.svg",
           "kind": "markers",
           "x": 3.6363636363636362,
           "y": 4.848484848484849,
@@ -5860,7 +5762,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-033-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-033-back.svg",
           "kind": "markers",
           "x": 3.878787878787879,
           "y": 4.7272727272727275,
@@ -5879,7 +5781,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-034-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-034-back.svg",
           "kind": "markers",
           "x": 3.878787878787879,
           "y": 4.6060606060606055,
@@ -5898,7 +5800,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-035-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-035-back.svg",
           "kind": "markers",
           "x": 4.0,
           "y": 4.848484848484849,
@@ -5917,7 +5819,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-036-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-036-back.svg",
           "kind": "markers",
           "x": 4.121212121212121,
           "y": 4.6060606060606055,
@@ -5936,7 +5838,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-037-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-037-back.svg",
           "kind": "markers",
           "x": 42.18181818181818,
           "y": 5.575757575757575,
@@ -5955,7 +5857,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-038-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-038-back.svg",
           "kind": "markers",
           "x": 3.878787878787879,
           "y": 5.333333333333334,
@@ -5974,7 +5876,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-039-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-039-back.svg",
           "kind": "markers",
           "x": 3.7575757575757573,
           "y": 5.212121212121213,
@@ -5993,7 +5895,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-040-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-040-back.svg",
           "kind": "markers",
           "x": 3.7575757575757573,
           "y": 5.212121212121213,
@@ -6012,7 +5914,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-041-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-041-back.svg",
           "kind": "markers",
           "x": 3.5151515151515147,
           "y": 4.96969696969697,
@@ -6031,7 +5933,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-042-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-042-back.svg",
           "kind": "markers",
           "x": 3.878787878787879,
           "y": 4.96969696969697,
@@ -6050,7 +5952,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-043-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-043-back.svg",
           "kind": "markers",
           "x": 3.878787878787879,
           "y": 4.848484848484849,
@@ -6069,7 +5971,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-044-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-044-back.svg",
           "kind": "markers",
           "x": 4.121212121212121,
           "y": 4.848484848484849,
@@ -6088,7 +5990,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-045-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-045-back.svg",
           "kind": "markers",
           "x": 4.0,
           "y": 4.7272727272727275,
@@ -6107,7 +6009,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-046-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-046-back.svg",
           "kind": "markers",
           "x": 41.6969696969697,
           "y": 5.696969696969697,
@@ -6126,7 +6028,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-047-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-047-back.svg",
           "kind": "markers",
           "x": 3.878787878787879,
           "y": 5.454545454545454,
@@ -6145,7 +6047,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-048-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-048-back.svg",
           "kind": "markers",
           "x": 4.0,
           "y": 5.454545454545454,
@@ -6164,7 +6066,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-049-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-049-back.svg",
           "kind": "markers",
           "x": 4.0,
           "y": 5.090909090909091,
@@ -6183,7 +6085,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-050-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-050-back.svg",
           "kind": "markers",
           "x": 3.878787878787879,
           "y": 5.090909090909091,
@@ -6202,7 +6104,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-051-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-051-back.svg",
           "kind": "markers",
           "x": 4.0,
           "y": 5.090909090909091,
@@ -6221,7 +6123,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-052-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-052-back.svg",
           "kind": "markers",
           "x": 3.878787878787879,
           "y": 5.090909090909091,
@@ -6240,7 +6142,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-053-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-053-back.svg",
           "kind": "markers",
           "x": 4.121212121212121,
           "y": 5.090909090909091,
@@ -6259,7 +6161,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-054-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-054-back.svg",
           "kind": "markers",
           "x": 4.0,
           "y": 4.848484848484849,
@@ -6278,7 +6180,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-055-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-055-back.svg",
           "kind": "markers",
           "x": 41.93939393939394,
           "y": 5.454545454545454,
@@ -6297,7 +6199,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-056-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-056-back.svg",
           "kind": "markers",
           "x": 3.878787878787879,
           "y": 5.333333333333334,
@@ -6316,7 +6218,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-057-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-057-back.svg",
           "kind": "markers",
           "x": 3.878787878787879,
           "y": 5.212121212121213,
@@ -6335,7 +6237,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-058-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-058-back.svg",
           "kind": "markers",
           "x": 4.0,
           "y": 5.090909090909091,
@@ -6354,7 +6256,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-059-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-059-back.svg",
           "kind": "markers",
           "x": 4.0,
           "y": 4.848484848484849,
@@ -6373,7 +6275,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-060-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-060-back.svg",
           "kind": "markers",
           "x": 4.0,
           "y": 4.848484848484849,
@@ -6392,7 +6294,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-061-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-061-back.svg",
           "kind": "markers",
           "x": 4.0,
           "y": 4.848484848484849,
@@ -6411,7 +6313,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-062-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-062-back.svg",
           "kind": "markers",
           "x": 4.0,
           "y": 4.7272727272727275,
@@ -6430,7 +6332,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-063-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-063-back.svg",
           "kind": "markers",
           "x": 4.0,
           "y": 4.848484848484849,
@@ -6449,7 +6351,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-064-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-064-back.svg",
           "kind": "markers",
           "x": 42.06060606060606,
           "y": 5.212121212121213,
@@ -6468,7 +6370,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-065-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-065-back.svg",
           "kind": "markers",
           "x": 4.0,
           "y": 5.333333333333334,
@@ -6487,7 +6389,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-066-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-066-back.svg",
           "kind": "markers",
           "x": 4.0,
           "y": 5.212121212121213,
@@ -6506,7 +6408,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-067-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-067-back.svg",
           "kind": "markers",
           "x": 4.0,
           "y": 4.7272727272727275,
@@ -6525,7 +6427,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-068-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-068-back.svg",
           "kind": "markers",
           "x": 3.7575757575757573,
           "y": 4.7272727272727275,
@@ -6544,7 +6446,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-069-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-069-back.svg",
           "kind": "markers",
           "x": 3.878787878787879,
           "y": 4.484848484848484,
@@ -6563,7 +6465,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-070-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-070-back.svg",
           "kind": "markers",
           "x": 3.878787878787879,
           "y": 4.848484848484849,
@@ -6582,7 +6484,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-071-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-071-back.svg",
           "kind": "markers",
           "x": 4.0,
           "y": 4.6060606060606055,
@@ -6601,7 +6503,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-072-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-072-back.svg",
           "kind": "markers",
           "x": 4.0,
           "y": 4.7272727272727275,
@@ -6620,7 +6522,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-073-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-073-back.svg",
           "kind": "markers",
           "x": 41.6969696969697,
           "y": 6.787878787878789,
@@ -6639,7 +6541,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-074-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-074-back.svg",
           "kind": "markers",
           "x": 3.7575757575757573,
           "y": 6.666666666666667,
@@ -6658,7 +6560,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-075-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-075-back.svg",
           "kind": "markers",
           "x": 3.878787878787879,
           "y": 6.181818181818182,
@@ -6677,7 +6579,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-076-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-076-back.svg",
           "kind": "markers",
           "x": 4.0,
           "y": 5.9393939393939394,
@@ -6696,7 +6598,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-077-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-077-back.svg",
           "kind": "markers",
           "x": 3.878787878787879,
           "y": 6.303030303030304,
@@ -6715,7 +6617,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-078-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-078-back.svg",
           "kind": "markers",
           "x": 4.121212121212121,
           "y": 6.0606060606060606,
@@ -6734,7 +6636,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-079-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-079-back.svg",
           "kind": "markers",
           "x": 4.121212121212121,
           "y": 6.181818181818182,
@@ -6753,7 +6655,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-080-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-080-back.svg",
           "kind": "markers",
           "x": 4.363636363636364,
           "y": 5.818181818181818,
@@ -6772,7 +6674,7 @@ window.ATO_MAP_BACK_DATA = {
       "cycle": "c4",
       "pieces": [
         {
-          "src": "./images/card-backs/numbers/c4-tile-081-back.png",
+          "src": "./images/card-backs/vectors/c4-tile-081-back.svg",
           "kind": "markers",
           "x": 4.121212121212121,
           "y": 5.9393939393939394,

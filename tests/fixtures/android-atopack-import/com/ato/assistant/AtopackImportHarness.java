@@ -29,6 +29,10 @@ public final class AtopackImportHarness {
   private static final String ASSET = "assets/cards/test.png";
   private static final String MAP_BASE = "map/images/hd1024/base/c1-tile-001-front.png";
   private static final String MAP_MASK = "map/images/hd1024/overlay/c1-tile-001-front.png";
+  private static final String MAP_VECTOR = "map/images/hd1024/overlay/c1-tile-001-front-corners.svg";
+  private static final String BACK_VECTOR = "map/images/card-backs/vectors/c1-tile-001-back.svg";
+  private static final String C4_VECTOR = "map/images/card-backs/vectors/c4-tile-011-back.svg";
+  private static final String C5_VECTOR = "map/images/card-backs/vectors/c5-tile-080-front-cover.svg";
   private static final String BACK_BASE = "map/images/card-backs/c1-base.png";
   private static final String BACK_NUMBER = "map/images/card-backs/numbers/c1-tile-001-back.png";
   private static final String C4_BASE = "map/images/card-backs/c4-base.png";
@@ -53,6 +57,8 @@ public final class AtopackImportHarness {
     JSONObject catalog = new JSONObject().put("format", "ato-android-resource-catalog")
         .put("items", new JSONArray().put(item("test", ASSET)).put(item("glyph", GLYPH))
           .put(item("map-base", MAP_BASE)).put(item("map-mask", MAP_MASK))
+          .put(item("map-vector", MAP_VECTOR)).put(item("back-vector", BACK_VECTOR)).put(item("c4-vector", C4_VECTOR))
+          .put(item("c5-vector", C5_VECTOR))
           .put(item("back-base", BACK_BASE)).put(item("back-number", BACK_NUMBER))
           .put(item("c4-base", C4_BASE)).put(item("c4-mask", C4_MASK))
           .put(item("c2-base", "map/images/card-backs/c2-base.png"))
@@ -276,6 +282,28 @@ public final class AtopackImportHarness {
         .put("assets",new JSONArray().put(asset("legacy-map",LEGACY_MAP,number)));
     check(install(pack(legacy,new Member(LEGACY_MAP,number))).assets==1,"Old flat map pack no longer imports");
     check("printed-number".equals(open(LEGACY_MAP)),"Legacy map fallback resource unreadable");
+    byte[] svg = bytes("<svg xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M0 0h2v2z\"/></svg>");
+    JSONArray vectors = new JSONArray().put(resource(MAP_BASE,base)).put(resource(MAP_VECTOR,svg))
+        .put(resource(BACK_BASE,base)).put(resource(BACK_VECTOR,svg))
+        .put(resource(C4_BASE,base)).put(resource(C4_VECTOR,svg));
+    Member[] vectorMembers = {new Member(MAP_BASE,base),new Member(MAP_VECTOR,svg),new Member(BACK_BASE,base),
+        new Member(BACK_VECTOR,svg),new Member(C4_BASE,base),new Member(C4_VECTOR,svg)};
+    check(install(pack(manifest().put("mapFiles",vectors),vectorMembers)).assets==6,"SVG maps not installed");
+    for (String target : new String[] {MAP_VECTOR,BACK_VECTOR,C4_VECTOR}) {
+      check(new String(svg,StandardCharsets.UTF_8).equals(open(target)),"SVG map bytes changed");
+      check("image/svg+xml".equals(store.open(target).mimeType),"SVG MIME must remain image/svg+xml");
+      reject(pack(manifest().put("mapFiles",new JSONArray().put(resource(target,svg))),new Member(target,svg)));
+    }
+    store=new AtopackStore(context);
+    check(new String(svg,StandardCharsets.UTF_8).equals(open(MAP_VECTOR)),"SVG map lost after restart");
+    check(install(pack(manifest().put("mapFiles",new JSONArray().put(resource(BACK_BASE,base))
+        .put(resource(C5_VECTOR,svg))),new Member(BACK_BASE,base),new Member(C5_VECTOR,svg))).assets==2,
+        "C5 vector cover not imported with shared base");
+    check("image/svg+xml".equals(store.open(C5_VECTOR).mimeType),"C5 cover MIME incorrect");
+    reject(pack(manifest().put("mapFiles",new JSONArray().put(resource(C5_VECTOR,svg))),new Member(C5_VECTOR,svg)));
+    JSONObject badVector = manifest().put("mapFiles",new JSONArray().put(resource(MAP_BASE,base))
+        .put(resource(MAP_VECTOR,svg).put("sha256","0".repeat(64))));
+    reject(pack(badVector,new Member(MAP_BASE,base),new Member(MAP_VECTOR,svg)));
     System.out.println("Layered map import passed: "+checks+" behavioral checks.");
   }
 

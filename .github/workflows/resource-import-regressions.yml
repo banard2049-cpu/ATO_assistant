@@ -51,6 +51,7 @@ jobs:
         run: node --test story/tests/c5-heading-compat.test.cjs story/tests/mixed-media.test.cjs story/tests/story-pipe-tables.test.cjs story/tests/story-pipe-tables-second-screen.test.cjs story/tests/story-battle-reward-tables.test.cjs story/tests/story-dice-tables.test.cjs
       - name: Test hidden exploration and music playback
         run: |
+          node --test tests/exploration-selection.test.cjs
           node tests/hidden-exploration.test.cjs
           node tools/test-bgm-player.cjs
           node tools/test-story-bgm.cjs
