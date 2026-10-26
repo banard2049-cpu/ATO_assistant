@@ -313,6 +313,69 @@ public final class AtopackImportHarness {
     System.out.println("Layered map import passed: "+checks+" behavioral checks.");
   }
 
+  private File mapVariant(boolean current, String edition) throws Exception {
+    byte[] base = bytes(edition + "-base"), overlay = bytes(edition + (current ? "-svg" : "-png"));
+    byte[] backBase = bytes("shared-back-base"), back = bytes("shared-back-svg");
+    String target = current ? MAP_VECTOR : MAP_MASK;
+    JSONObject manifest = manifest().put("build", new JSONObject().put("edition", edition)
+        .put("mapMaskVersion", current ? "current" : "legacy"))
+        .put("mapFiles", new JSONArray().put(resource(MAP_BASE, base)).put(resource(target, overlay))
+            .put(resource(BACK_BASE, backBase)).put(resource(BACK_VECTOR, back)));
+    return pack(manifest, new Member(MAP_BASE, base), new Member(target, overlay),
+        new Member(BACK_BASE, backBase), new Member(BACK_VECTOR, back));
+  }
+
+  private void checkMapVariant(boolean current, String edition) throws Exception {
+    String expected = edition + (current ? "-svg" : "-png");
+    String mime = current ? "image/svg+xml" : "image/png";
+    check((edition + "-base").equals(open(MAP_BASE)), "Variant base does not match the imported edition");
+    for (String request : new String[] {MAP_MASK, MAP_VECTOR}) {
+      check(expected.equals(open(request)), "Map registry request served the wrong mask generation");
+      AtopackStore.OpenedResource opened = store.open(request);
+      try (InputStream input = opened.input) {
+        check(mime.equals(opened.mimeType), "Aliased map mask has the wrong MIME");
+      }
+      String data = store.readExportImageData(request);
+      check(data.startsWith("data:" + mime + ";base64,"), "Export data URL has the requested extension instead of installed mask MIME");
+      check(expected.equals(new String(java.util.Base64.getDecoder().decode(data.substring(data.indexOf(',') + 1)),
+          StandardCharsets.UTF_8)), "Map export changed the installed mask bytes");
+    }
+    check("shared-back-svg".equals(open(BACK_VECTOR)), "Legacy front mask must keep the current vector back");
+    JSONObject files = new JSONObject(Files.readString(new File(root(), "index.json").toPath())).getJSONObject("files");
+    check(files.has(current ? MAP_VECTOR : MAP_MASK), "Selected mask generation is missing from persistent index");
+    check(!files.has(current ? MAP_MASK : MAP_VECTOR), "Superseded map mask remains in persistent index");
+  }
+
+  private void mapVariants() throws Exception {
+    File fanLegacy = mapVariant(false, "fan"), officialLegacy = mapVariant(false, "official"),
+        fanCurrent = mapVariant(true, "fan");
+    check(install(fanLegacy).assets == 4, "Legacy fan pack did not import");
+    checkMapVariant(false, "fan");
+    check(install(officialLegacy).assets == 4, "Legacy official pack did not import");
+    checkMapVariant(false, "official");
+    check(install(fanCurrent).assets == 4, "Current fan pack did not import");
+    checkMapVariant(true, "fan");
+    store = new AtopackStore(context);
+    checkMapVariant(true, "fan");
+    AtomicFile.failDuringWrite = true;
+    reject(fanLegacy);
+    checkMapVariant(true, "fan");
+    check(install(fanLegacy).assets == 4, "Current-to-legacy mask switch failed");
+    checkMapVariant(false, "fan");
+    store = new AtopackStore(context);
+    checkMapVariant(false, "fan");
+    AtomicFile.failNextWrite = "index.json";
+    reject(fanCurrent);
+    checkMapVariant(false, "fan");
+    check(install(fanCurrent).assets == 4, "Legacy-to-current mask switch failed");
+    checkMapVariant(true, "fan");
+    context.getAssets().files.put("web/assets/cards/external.svg", bytes("<svg/>"));
+    check(store.readExportImageData("assets/cards/external.svg").isEmpty(), "SVG export must remain limited to map resources");
+    context.getAssets().files.put("web/" + C4_VECTOR, bytes("<svg/>"));
+    check(store.readExportImageData(C4_VECTOR).startsWith("data:image/svg+xml;base64,"), "Bundled map SVG export failed");
+    System.out.println("Three map pack variants passed: " + checks + " behavioral checks.");
+  }
+
   private void sharedCardBacks() throws Exception {
     String prefix = "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS_AI_III_";
     String first = prefix + "001.jpg", second = prefix + "003.jpg", special = prefix + "002.jpg";
@@ -656,5 +719,6 @@ public final class AtopackImportHarness {
   public static void main(String[] args) throws Exception {
     new AtopackImportHarness(new File(args[0])).run();
     new AtopackImportHarness(new File(args[0],"layered-maps")).mapLayers();
+    new AtopackImportHarness(new File(args[0],"map-variants")).mapVariants();
   }
 }

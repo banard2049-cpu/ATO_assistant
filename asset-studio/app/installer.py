@@ -19,6 +19,7 @@ from .icon_resources import collect_library as collect_icon_library
 from .mixed_media_resources import allowed_target as is_mixed_media_target
 from .mixed_media_resources import collect_library as collect_mixed_media_library
 from .map_resources import collect_library as collect_map_library, covered_targets as covered_map_targets
+from .map_resources import alternate_overlay_target
 from .db import Database
 from .storage import ensure_preview, sha256_file, write_compatible_image
 from .story_extras import (
@@ -497,14 +498,22 @@ def install_plan(db: Database, library: Path, root: Path, replace_books: set[str
                   "source": source.relative_to(library).as_posix(), "target": relative,
                   "status": status, "direct_copy": True},
                  lambda source=source: sha256_file(source))
+    declared_map_targets = {relative for relative, _ in map_files}
     for relative, source in map_files:
         destination = safe_target(root, relative)
         if destination.exists() and not destination.is_file():
             raise ValueError(f'地图图层目标不是文件：{relative}')
         digest = sha256_file(source)
         status = 'add' if not destination.exists() else ('same' if sha256_file(destination) == digest else 'replace')
+        alternate = alternate_overlay_target(relative)
+        previous = safe_target(root, alternate) if alternate and alternate not in declared_map_targets else None
+        if previous is not None and previous.exists():
+            if not previous.is_file():
+                raise ValueError(f'地图图层目标不是文件：{alternate}')
+            status = 'replace'
         add_file({'item_id':'map-layers', 'name':f'地图底图／蒙版：{PurePosixPath(relative).name}',
                   'face':'layer', 'source':source.relative_to(library).as_posix(), 'target':relative,
+                  'alternate_map_overlay':alternate if previous is not None and previous.exists() else None,
                   'status':status, 'direct_copy':True}, lambda digest=digest: digest)
     return {"root": str(root), "summary": summary, "files": files}
 
@@ -578,6 +587,14 @@ def apply_install(db: Database, library: Path, root: Path, replacements: list[st
             finally:
                 temporary.unlink(missing_ok=True)
             completed.append((target, backup))
+            if entry.get('alternate_map_overlay'):
+                previous = safe_target(root, entry['alternate_map_overlay'])
+                if previous.exists():
+                    previous_backup = safe_target(backup_root, entry['alternate_map_overlay'])
+                    previous_backup.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(previous, previous_backup)
+                    previous.unlink()
+                    completed.append((previous, previous_backup))
             installed += 1
     except Exception:
         for target, backup in reversed(completed):

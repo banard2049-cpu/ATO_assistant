@@ -410,6 +410,7 @@ function renderStatus() {
     const artwork = window.ATO_MAP_ARTWORK?.resolve(tile.front);
     const paths = artwork ? [artwork.overlay, artwork.base] : [tile.front];
     elements.tileImage.style.backgroundImage = paths.map(path => `url("../map/${String(path).replace(/^\.\//, '').replace(/"/g, '%22')}")`).join(',');
+    window.ATO_MAP_ARTWORK?.paintBackground(elements.tileImage, tile.front, path => `../map/${String(path).replace(/^\.\//, '')}`, document);
     elements.tileImage.setAttribute('aria-label', tile.label);
     elements.rawPreview.value = JSON.stringify(state.tagData, null, 2);
     elements.reviewedToggle.checked = Boolean(entry?.reviewed);
@@ -420,6 +421,7 @@ function renderStatus() {
   } else {
     elements.tileTitle.textContent = "未选择";
     elements.tileMeta.textContent = "点击左侧板块开始打标。";
+    window.ATO_MAP_ARTWORK?.paintBackground(elements.tileImage, '');
     elements.tileImage.style.backgroundImage = '';
     elements.tileImage.setAttribute('aria-label', '板块预览');
     elements.rawPreview.value = JSON.stringify(state.tagData, null, 2);

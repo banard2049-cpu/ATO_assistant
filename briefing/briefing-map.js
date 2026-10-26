@@ -171,6 +171,7 @@
       node.title = badgeTitle;
       node.innerHTML = `${face}<span class="tile-badge">${escapeText(badge)}</span>`
         + '<span class="tile-tokens"></span><span class="tile-edge-tokens"></span><span class="tile-pin"></span>';
+      if (tile.front) window.ATO_MAP_ARTWORK?.paintBackground(node.querySelector('.tile-face'), tile.front, assetPath, document);
       node.style.left = `${positions.get(id).x}px`;
       node.style.top = `${positions.get(id).y}px`;
       // 宽高都写成像素：绝对定位元素靠 aspect-ratio 推高度时，这里实测会算成高度 0

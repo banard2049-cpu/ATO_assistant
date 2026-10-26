@@ -116,7 +116,11 @@ def _files(root: Path) -> list[Path]:
     if not root.is_dir():
         return []
     return sorted(
-        (path for path in root.rglob("*") if path.is_file() and path.suffix.casefold() in IMAGE_SUFFIXES),
+        (path for path in root.rglob("*")
+         if path.is_file() and path.suffix.casefold() in IMAGE_SUFFIXES
+         # Backups are source material for restore, never active overrides.
+         # Exclude them before building every exact/stem/filename lookup table.
+         and "_backups" not in {part.casefold() for part in path.relative_to(root).parts[:-1]}),
         key=lambda path: path.relative_to(root).as_posix().casefold(),
     )
 

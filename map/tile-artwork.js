@@ -8,6 +8,7 @@
   const vectorCorners = new Set(data.cornerVectorFiles || []);
   const failed = new Set();
   const missingBacks = new Set();
+  const backgroundRequests = new WeakMap();
   let preferences = readPreferences();
 
   function readPreferences() {
@@ -28,10 +29,36 @@
     const prefix = data.prefix || './images/hd1024';
     const overlayVersion = data.overlayVersions?.[key.split('-')[0]];
     const overlaySuffix = overlayVersion ? `?v=${encodeURIComponent(overlayVersion)}` : '';
-    const overlay = vectorCorners.has(key)
-      ? `${prefix}/overlay/${key}-corners.svg?v=${encodeURIComponent(data.cornerVectorVersion || '')}`
-      : `${prefix}/overlay/${key}.png${overlaySuffix}`;
-    return { key, base: `${prefix}/base/${key}.png`, overlay, displayOverlay: overlay };
+    const vector = `${prefix}/overlay/${key}-corners.svg?v=${encodeURIComponent(data.cornerVectorVersion || '')}`;
+    const raster = `${prefix}/overlay/${key}.png${overlaySuffix}`;
+    const [overlay, overlayFallback] = vectorCorners.has(key) ? [vector, raster] : [raster, vector];
+    return { key, base: `${prefix}/base/${key}.png`, overlay, overlayFallback, displayOverlay: overlay };
+  }
+
+  // The registry describes current artwork; installed packs may carry either
+  // mask generation. Do not remember the successful format across pack changes.
+  function loadOverlay(artwork, load) {
+    return Promise.resolve().then(() => load(artwork.overlay))
+      .catch(() => load(artwork.overlayFallback));
+  }
+
+  function paintBackground(element, source, toUrl = value => value, doc = window.document) {
+    if (!element) return;
+    const artwork = resolve(source);
+    const request = {};
+    backgroundRequests.set(element, request);
+    function paint(paths) {
+      if (backgroundRequests.get(element) !== request) return;
+      element.style.backgroundImage = paths.map(path => `url("${String(toUrl(path)).replace(/"/g, '%22')}")`).join(',');
+    }
+    paint(artwork ? [artwork.overlay, artwork.base] : source ? [source] : []);
+    if (!artwork || !doc?.createElement) return;
+    return loadOverlay(artwork, path => new Promise((resolve, reject) => {
+      const image = doc.createElement('img');
+      image.onload = () => resolve(path);
+      image.onerror = reject;
+      image.src = toUrl(path);
+    })).then(path => paint([path, artwork.base]), () => paint([source]));
   }
 
   function resolveBack(source) {
@@ -116,6 +143,14 @@
         stack.innerHTML = backPlaceholder(stack.dataset.artworkLabel);
         return;
       }
+      if (event.target.classList?.contains('tile-artwork-overlay') && stack.dataset.artworkOverlayFallback !== 'true') {
+        const artwork = resolve(stack.dataset.legacySrc);
+        if (artwork) {
+          stack.dataset.artworkOverlayFallback = 'true';
+          event.target.src = artwork.overlayFallback;
+          return;
+        }
+      }
       failed.add(stack.dataset.artworkKey);
       stack.dataset.artworkFallback = 'true';
       stack.innerHTML = legacyImage(stack.dataset.legacySrc, stack.dataset.artworkLabel);
@@ -144,5 +179,5 @@
     sync();
   }
 
-  window.ATO_MAP_ARTWORK = { resolve, resolveBack, markup, coverMarkup, headingMarkup, bind, attachControls };
+  window.ATO_MAP_ARTWORK = { resolve, resolveBack, loadOverlay, paintBackground, markup, coverMarkup, headingMarkup, bind, attachControls };
 })();

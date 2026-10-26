@@ -1,5 +1,50 @@
 # .atopack 打包（民间版 / 官方版）
 
+## 固定分发流程（2026-10-26 起）
+
+以后统一运行三包入口；版本号显式传入，避免本地程序版本与资料包版本不同步：
+
+```powershell
+python asset-studio/tools/build_release_packs.py --ato-root . --version 3.8.13 --date 2026-10-26
+```
+
+按顺序输出到 `export/`（可用 `--output-dir` 指定）：
+
+| 文件 | 地图正面蒙版 | 其他资源口径 |
+| --- | --- | --- |
+| `ATOassets-民间版-分层地图-q85-<日期>-v<版本>.atopack` | 旧版 PNG | 民间图片与正文、官方正文数据 |
+| `ATOassets-官方版-分层地图-q85-<日期>-v<版本>.atopack` | 旧版 PNG | 官中图优先、官方正文及原书扫描图 |
+| `ATOassets-民间版-新版蒙版-分层地图-q85-<日期>-v<版本>.atopack` | 当前新版 SVG | 与第一份相同的民间资源口径 |
+| `ATOassets-民间版-新版蒙版-分层地图-q85-<日期>-v<版本>.zip` | 内含第三份 `.atopack` | 额外压缩层，密码固定为 **`20`** |
+
+旧版正面蒙版固定取自工程内
+`official-assets/_backups/map-links-20261025/originals/map/images/hd1024/overlay/`，
+共 511 张 PNG。新版取当前地图索引注册的 SVG。**版本选择只影响正面 overlay**；
+底图与卡背仍取当前注册资源，两种版本均保留当前卡背的 SVG 与特殊 PNG。
+包内 `build.mapMaskVersion` 标记 `legacy` 或 `current`，`build.edition` 标记民间／官方。
+
+三份统一使用 Q85 和 `pack-shrink-keep.txt`，`map/*` 始终豁免重编码；均先写 `.partial`，
+逐项校验完整 SHA-256 后才原子改名。新版民间包使用本轮旧版民间包做增量基础，
+其他素材仍取当前工程内容。可加 `--incremental-fan <上次民间包>` 和
+`--incremental-official <上次官方包>` 加快前两份构建，编码口径不同会自动全量重建。
+另保存 `ATOassets-三包构建-<日期>-v<版本>.json` 记录三包口径、体积、校验及加密层摘要。
+
+加密层使用本机 **Info-ZIP `zip` / `unzip`**（从 PATH 或 `zip` 同目录查找；也可传
+`--zip-tool` / `--unzip-tool`）。ZIP 写完后用密码 `20` 原生解密，逐块比对第三份
+`.atopack` 的完整 SHA-256，确认一致后才发布到最终本地路径。为兼容旧 Windows
+压缩工具，ZIP 内 `.atopack` 使用 ASCII 名称 `ATOassets-fan-current-q85-<日期>-v<版本>.atopack`；
+内容与第三份包完全相同。
+
+Android 需使用包含本次蒙版兼容改动重新构建的 APK，支持导入以上三种 **`.atopack`**。
+新版民间 ZIP 先使用密码 `20` 解压，再在
+安卓内选择解出的 `.atopack`。地图渲染同时接受旧 PNG 与新 SVG，并支持来回切换资源包。
+外层 ZIP 作为分发压缩层，不直接交给安卓导入器。
+
+中断后可加 `--resume`：核对已有包的版本口径与完整哈希后继续未完成步骤；它复用已有
+完整文件，如需重新读取已变更的工程素材，请加 `--force` 重建。`--dry-run` 只做三包统计。
+
+## 单包入口
+
 两个命令行打包器，共用一份引擎（`asset-studio/tools/build_fan_pack.py` 里的写入、校验、
 原子改名只有一份实现）：
 
@@ -137,8 +182,10 @@ python asset-studio/tools/build_official_pack.py \
 
 ### 2026-10-24 矢量地图资源
 
-地图收集器按当前注册表读取 511 张正面 SVG 叠加图、344 张普通牌背 SVG 和 160 张 C5 卡背 SVG，
-不再依赖已归档的 PNG。底图与 7 张特殊牌背的 PNG 仍原样保存，完整包包含
+新版蒙版包按当前注册表读取 511 张正面 SVG 叠加图、344 张普通牌背 SVG 和 160 张 C5 卡背 SVG。
+自 2026-10-26 起，普通民间／官方单包 CLI 默认 `--map-mask-version legacy`，使用指定备份
+的 511 张正面 PNG；额外新版民间包显式使用 `--map-mask-version current`。
+底图与 7 张特殊牌背的 PNG 仍原样保存，两种版本的完整包均包含
 1535 个地图文件。SVG 的 MIME 为 `image/svg+xml`，不参与图片重编码。
 素材库导入、安装、再次导出及 Android 导入同步支持新路径，并继续接受旧 PNG 包。
 Android 必须先更新到 v3.8.13，再导入本次资源包；新 APK 的白名单同时包含两代路径。

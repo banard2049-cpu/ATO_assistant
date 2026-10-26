@@ -17,6 +17,8 @@ LIBRARY = Path('sources/map-layers')
 MAX_FILES = 2048
 MAX_FILE_BYTES = 8 * 1024 * 1024
 PROJECT = Path(__file__).resolve().parents[2]
+LEGACY_OVERLAY_DIR = Path('official-assets/_backups/map-links-20261025/originals/map/images/hd1024/overlay')
+MASK_VERSIONS = ('legacy', 'current')
 _TARGET = re.compile(
     r'map/images/(?:hd1024/(?:base|overlay)/c[1-5]-tile-[A-Za-z0-9-]+\.png'
     r'|hd1024/overlay/c[1-5]-tile-[A-Za-z0-9-]+-corners\.svg'
@@ -27,6 +29,16 @@ _TARGET = re.compile(
 
 def allowed_target(target: str) -> bool:
     return isinstance(target, str) and bool(_TARGET.fullmatch(target))
+
+
+def alternate_overlay_target(target: str) -> str | None:
+    if not allowed_target(target) or not target.startswith('map/images/hd1024/overlay/'):
+        return None
+    if target.endswith('-corners.svg'):
+        return target.removesuffix('-corners.svg') + '.png'
+    if target.endswith('.png'):
+        return target.removesuffix('.png') + '-corners.svg'
+    return None
 
 
 def _data(root: Path, filename: str, variable: str) -> dict:
@@ -113,15 +125,26 @@ def collect_library(library: Path) -> list[tuple[str, Path]]:
     return [(target, root / target) for target in sorted(expected_targets()) if (root / target).is_file()]
 
 
-def collect(root: Path | None, fallback_library: Path | None = None, targets=None) -> list[tuple[str, Path]]:
+def collect(root: Path | None, fallback_library: Path | None = None, targets=None,
+            mask_version: str | None = None) -> list[tuple[str, Path]]:
     """Use registered dependencies only; never pull archives or composite copies in."""
+    if mask_version is not None and mask_version not in MASK_VERSIONS:
+        raise ValueError(f'不支持的地图蒙版版本：{mask_version}')
     targets = tuple(targets) if targets is not None else None
     index_root = Path(root) if root is not None and (Path(root)/'map/tile-artwork-data.js').is_file() else PROJECT
-    index = layer_index(index_root)
+    index = dict(layer_index(index_root))
+    # The two release editions share current bases and card backs. Only the
+    # front overlay changes, and legacy pixels come from the immutable backup.
+    if mask_version == 'legacy':
+        index = {stem: tuple(path.replace('-corners.svg', '.png')
+                             if '/hd1024/overlay/' in path else path for path in paths)
+                 for stem, paths in index.items()}
     # A library restored from an older PNG pack can still be exported. Prefer
     # current vectors whenever present, without requiring archived PNGs.
     fallback = dict(collect_library(fallback_library)) if fallback_library else {}
     for stem, paths in legacy_index(index_root).items():
+        if mask_version is not None and any('/hd1024/overlay/' in path for path in index[stem]):
+            continue
         if paths == index[stem]:
             continue
         def available(target):
@@ -151,7 +174,11 @@ def collect(root: Path | None, fallback_library: Path | None = None, targets=Non
         needed.add(cover_base)
     found = {}
     for target in sorted(needed):
-        path = Path(root)/target if root is not None else None
+        legacy_overlay = mask_version == 'legacy' and '/hd1024/overlay/' in target
+        path = ((Path(root) / LEGACY_OVERLAY_DIR / Path(target).name) if legacy_overlay
+                else Path(root) / target) if root is not None else None
+        if legacy_overlay and root is not None and not path.is_file():
+            raise ValueError(f'旧版地图蒙版备份缺失：{path}')
         if path is None or not path.is_file():
             path = fallback.get(target)
         if path is not None and path.is_file():
@@ -258,13 +285,18 @@ def validate(archive, manifest: dict) -> list[dict]:
 
 def import_resources(archive, manifest: dict, library: Path, replace: bool) -> int:
     entries = validate(archive, manifest)
+    declared = {entry['target'] for entry in entries}
     imported = 0
     for entry in entries:
         target = Path(library) / LIBRARY / entry['target']
-        if target.exists() and not replace:
+        alternate = alternate_overlay_target(entry['target'])
+        previous = Path(library) / LIBRARY / alternate if alternate and alternate not in declared else None
+        if (target.exists() or (previous is not None and previous.exists())) and not replace:
             continue
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(checked_bytes(archive, entry))
+        if previous is not None:
+            previous.unlink(missing_ok=True)
         imported += 1
     return imported
 

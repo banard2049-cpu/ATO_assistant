@@ -506,6 +506,7 @@ def plan_assets(
     official_assets: bool,
     skip_missing: bool,
     reporter: Reporter,
+    map_mask_version: str | None = None,
 ) -> tuple[list[PlannedAsset], PlanStats]:
     """每个面按「官中覆盖图（可选）→ 工程目录 → 素材库兜底」定来源。"""
     stats = PlanStats()
@@ -513,7 +514,8 @@ def plan_assets(
     if official_assets:
         clear_official_cache()
     map_files = collect_map_files(ato_root, library.root if library else None,
-                                  targets=[target for item in items for target in item.faces.values()])
+                                  targets=[target for item in items for target in item.faces.values()],
+                                  mask_version=map_mask_version)
     covered_maps = covered_map_targets(map_files, [target for item in items for target in item.faces.values()],
                                       root=ato_root if (ato_root/'map/tile-artwork-data.js').is_file() else Path(__file__).resolve().parents[2])
     for item in items:
@@ -943,6 +945,7 @@ def write_pack(
     image_quality_keep: list[str] | None = None,
     incremental: tuple[Path, dict[str, str], dict, dict] | None = None,
     map_files: list[tuple[str, Path]] | None = None,
+    map_mask_version: str | None = None,
 ) -> WriteOutcome:
     """先写 .partial；写入时顺手算真实哈希（清单哈希必须等于真实字节）。
 
@@ -1254,6 +1257,8 @@ def write_pack(
         # optional re-encoding, so zoom and preview always show the same edition.
         add_map_to_archive(archive, manifest, ato_root, files=map_files,
                            targets=[target for item in items for target in item.faces.values()])
+        if map_mask_version is not None:
+            manifest["build"]["mapMaskVersion"] = map_mask_version
         preview_entries = []
         for member in sorted({asset.member for asset, _digest in written if is_preview_source(asset.member)}):
             add_card_preview(archive, member, archive.read(member), preview_entries)
@@ -1449,6 +1454,7 @@ class BuildResult:
     cryptic_files: int = 0
     mixed_media_files: int = 0
     map_files: int = 0
+    map_mask_version: str = "current"
     edition: str = "fan"
     unsafe_targets: int = 0
     broken_items: int = 0
@@ -1490,6 +1496,7 @@ def build(
     image_quality: int | None = None,
     image_quality_keep: list[str] | None = None,
     incremental_from: Path | None = None,
+    map_mask_version: str = "current",
 ) -> BuildResult:
     started = time.monotonic()
     ato_root = ato_root.expanduser().resolve()
@@ -1510,13 +1517,17 @@ def build(
             official_assets=official_assets,
             skip_missing=skip_missing,
             reporter=reporter,
+            map_mask_version=map_mask_version,
         )
+    except ValueError as error:
+        raise PackError(str(error)) from error
     finally:
         if library is not None:
             library.close()
 
     map_files = collect_map_files(ato_root, library_path,
-                                  targets=[target for item in items for target in item.faces.values()])
+                                  targets=[target for item in items for target in item.faces.values()],
+                                  mask_version=map_mask_version)
     covered_maps = covered_map_targets(map_files, [target for item in items for target in item.faces.values()])
     if complete_only:
         have = {(asset.item_id, asset.face) for asset in planned}
@@ -1634,6 +1645,7 @@ def build(
     reporter.say(f"密语字形  : {len(cryptic)} 张（巴别语／塞壬语）")
     reporter.say(f"混合媒体  : {len(mixed_media)} 个文件（私有映射表 + 书籍裁图）")
     reporter.say(f"地图图层  : {len(map_files)} 个文件（原样保存底图、图标蒙版与数字蒙版）")
+    reporter.say(f"正面蒙版  : {'旧版备份 PNG' if map_mask_version == 'legacy' else '新版 SVG'}")
     reporter.say(f"成员/体积 : {member_count} / {human_bytes(total_bytes)}")
     if image_quality:
         reporter.say(f"图片重编码: 开（JPEG 质量 {image_quality}，不缩放；实际体积以写盘后为准）")
@@ -1670,6 +1682,7 @@ def build(
             cryptic_files=len(cryptic),
             mixed_media_files=len(mixed_media),
             map_files=len(map_files),
+            map_mask_version=map_mask_version,
             edition=edition,
             unsafe_targets=stats.unsafe_targets,
             broken_items=stats.broken_items,
@@ -1721,6 +1734,7 @@ def build(
             image_quality_keep=image_quality_keep,
             incremental=incremental,
             map_files=map_files,
+            map_mask_version=map_mask_version,
         )
         reporter.say("校验 .partial（改名之前）……")
         verification = verify_partial(
@@ -1773,6 +1787,7 @@ def build(
         cryptic_files=outcome.cryptic_count,
         mixed_media_files=outcome.mixed_media_count,
         map_files=len(outcome.manifest.get('mapFiles', [])),
+        map_mask_version=map_mask_version,
         edition=edition,
         unsafe_targets=stats.unsafe_targets,
         broken_items=stats.broken_items,
@@ -1858,6 +1873,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--cycle", action="append", default=[], help="只打这些循环，可重复或逗号分隔")
     parser.add_argument("--module", action="append", default=[], help="只打这些模块，可重复或逗号分隔")
     parser.add_argument("--complete-only", action="store_true", help="只打正反面都齐了的条目")
+    parser.add_argument("--map-mask-version", choices=("legacy", "current"), default="legacy",
+                        help="正面地图蒙版：legacy=指定备份 PNG（默认）；current=当前新版 SVG，卡背保持当前版")
     parser.add_argument("--no-story-data", action="store_true", help="不带故事正文与人物小传")
     parser.add_argument("--no-bgm", action="store_true", help="不带主控台背景音乐")
     parser.add_argument("--no-icons", action="store_true", help="不带主控台界面图标（assets/icons/*.svg）")
@@ -1959,6 +1976,7 @@ def main(argv: list[str] | None = None) -> int:
             image_quality_keep=as_list(args.image_quality_keep)
             + load_keep_patterns(args.image_quality_keep_file),
             incremental_from=args.incremental_from,
+            map_mask_version=args.map_mask_version,
         )
     except PackError as error:
         print(f"打包失败：{error}", file=sys.stderr)

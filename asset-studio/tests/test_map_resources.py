@@ -61,6 +61,85 @@ class MapResourceTests(unittest.TestCase):
         (self.project/'map/images/hd1024/base/unused.png').write_bytes(b'not a map')
         self.assertEqual(len(maps.collect(self.project,targets=[self.front,self.back])),4)
 
+    def legacy_overlay(self):
+        target = 'map/images/hd1024/overlay/c1-tile-001-front.png'
+        path = self.project / maps.LEGACY_OVERLAY_DIR / Path(target).name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        write_layer(path, (210, 60, 40, 128))
+        # A different live PNG must never become the release's legacy source.
+        live = self.project / target
+        write_layer(live, (10, 200, 40, 128))
+        return target, path
+
+    def test_release_mask_selection_uses_exact_backup_and_keeps_current_backs(self):
+        target, backup = self.legacy_overlay()
+        files = maps.collect(self.project, targets=[self.front, self.back], mask_version='legacy')
+        self.assertEqual(dict(files)[target], backup)
+        self.assertIn('map/images/card-backs/vectors/c1-tile-001-back.svg', dict(files))
+        self.assertNotIn('map/images/hd1024/overlay/c1-tile-001-front-corners.svg', dict(files))
+        package, manifest = self.package('legacy-release.atopack', files=files)
+        with zipfile.ZipFile(package) as archive:
+            maps.validate(archive, manifest)
+            self.assertEqual(archive.read(target), backup.read_bytes())
+        current = dict(maps.collect(self.project, targets=[self.front, self.back], mask_version='current'))
+        self.assertNotIn(target, current)
+        self.assertIn('map/images/hd1024/overlay/c1-tile-001-front-corners.svg', current)
+        backup.unlink()
+        with self.assertRaisesRegex(ValueError, '备份缺失'):
+            maps.collect(self.project, targets=[self.front], mask_version='legacy')
+
+    def test_cli_release_versions_record_generation_and_preserve_backup_bytes(self):
+        target, backup = self.legacy_overlay()
+        from tools.build_fan_pack import parse_args as fan_args
+        from tools.build_official_pack import parse_args as official_args
+        for parse_args in (fan_args, official_args):
+            self.assertEqual(parse_args(['--ato-root', str(self.project), '--output', 'out.atopack']).map_mask_version,
+                             'legacy')
+        for version in ('legacy', 'current'):
+            output = self.root / f'{version}.atopack'
+            with patch('tools.build_fan_pack.fixed_catalog_payload', return_value=self.payload):
+                build(ato_root=self.project, output=output, library_path=None, cycles=[], modules=[],
+                      complete_only=True, include_story_data=False, include_story_files=False,
+                      include_bgm=False, include_icons=False, include_cryptic=False, include_mixed_media=False,
+                      official_story=False, official_scans=False, official_assets=False, skip_missing=False,
+                      force=False, dry_run=False, compression_name='store', verify_mode='full', verify_sample=32,
+                      reporter=Reporter(quiet=True), image_quality=85, map_mask_version=version)
+            with zipfile.ZipFile(output) as archive:
+                manifest = json.loads(archive.read('manifest.json'))
+                self.assertEqual(manifest['build']['mapMaskVersion'], version)
+                if version == 'legacy':
+                    self.assertEqual(archive.read(target), backup.read_bytes())
+                else:
+                    self.assertNotIn(target, archive.namelist())
+
+    def test_studio_mask_switch_is_a_conflict_and_replaces_previous_generation(self):
+        current_pack, _ = self.package('current.atopack')
+        import_package(self.db, self.library, current_pack)
+        target, backup = self.legacy_overlay()
+        files = maps.collect(self.project, targets=[self.front, self.back], mask_version='legacy')
+        legacy_pack, _ = self.package('legacy.atopack', files=files)
+        self.assertEqual(inspect_package(self.db, legacy_pack, library=self.library)['map_summary']['replace'], 1)
+        old_target = self.library / maps.LIBRARY / target
+        vector_target = self.library / maps.LIBRARY / maps.alternate_overlay_target(target)
+        import_package(self.db, self.library, legacy_pack, replace=False)
+        self.assertFalse(old_target.exists())
+        self.assertTrue(vector_target.exists())
+        import_package(self.db, self.library, legacy_pack, replace=True)
+        self.assertEqual(old_target.read_bytes(), backup.read_bytes())
+        self.assertFalse(vector_target.exists())
+        # Installing the older mask also backs up and retires the installed SVG.
+        plan = install_plan(self.db, self.library, self.project)
+        switched = next(row for row in plan['files'] if row['target'] == target)
+        self.assertEqual(switched['status'], 'replace')
+        vector = self.project / maps.alternate_overlay_target(target)
+        vector_bytes = vector.read_bytes()
+        result = apply_install(self.db, self.library, self.project, [target])
+        self.assertFalse(vector.exists())
+        self.assertEqual((Path(result['backup']) / maps.alternate_overlay_target(target)).read_bytes(), vector_bytes)
+        import_package(self.db, self.library, current_pack, replace=True)
+        self.assertFalse(old_target.exists())
+        self.assertTrue(vector_target.exists())
+
     def test_missing_companion_fails_before_pack_build(self):
         next(path for target,path in self.files if '/overlay/' in target).unlink()
         with self.assertRaisesRegex(ValueError,'不完整'):

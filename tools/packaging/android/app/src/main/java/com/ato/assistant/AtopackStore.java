@@ -82,6 +82,13 @@ final class AtopackStore {
     }
     return path;
   }
+
+  private static String alternateMapOverlayPath(String path) {
+    if (!path.startsWith("map/images/hd1024/overlay/")) return null;
+    if (path.endsWith("-corners.svg")) return path.substring(0, path.length() - "-corners.svg".length()) + ".png";
+    if (path.endsWith(".png")) return path.substring(0, path.length() - 4) + "-corners.svg";
+    return null;
+  }
   // 页面从 web/index.html 加载，而 aibp/ 里的脚本按 ps/... 取资源；补全一层前缀：
   // 先按清单里的完整路径找，再按“页面视角的少一层路径”找。
   private static final String[] OPEN_PATH_PREFIXES = {"", "aibp/"};
@@ -144,6 +151,13 @@ final class AtopackStore {
     }
     for (String prefix : OPEN_PATH_PREFIXES) {
       ResourceEntry entry = resources.get(prefix + normalized);
+      // The bundled map registry may name the other mask generation. Serve the
+      // installed generation with its own MIME type rather than requiring both
+      // the legacy PNG and current SVG to be present in every pack.
+      if (entry == null) {
+        String alternate = alternateMapOverlayPath(prefix + normalized);
+        if (alternate != null) entry = resources.get(alternate);
+      }
       if (entry == null) continue;
       File blob = new File(blobs, entry.sha256);
       if (!blob.isFile()) continue;
@@ -209,7 +223,7 @@ final class AtopackStore {
         && target.matches("aibp/ps/(?:[A-Z][A-Z0-9_]+|other|other/trait)/[^/]+\\.(?i:jpg|jpeg|png)");
   }
 
-  // Export canvases must decode raster bytes from a data URL rather than use
+  // Export canvases must decode image bytes from a data URL rather than use
   // file:// images. Prefer the installed pack, exactly as WebView interception
   // does, then fall back to APK assets. Never expose arbitrary app-private files.
   String readExportImageData(String relative) {
@@ -223,11 +237,17 @@ final class AtopackStore {
         case "webp": mime = "image/webp"; break;
         case "gif": mime = "image/gif"; break;
         case "bmp": mime = "image/bmp"; break;
+        case "svg":
+          if (!normalized.matches(MAP_IMAGE_PATTERN)) return "";
+          mime = "image/svg+xml"; break;
         default: return "";
       }
       OpenedResource resource = open(normalized);
+      if (resource != null) mime = resource.mimeType;
       try (InputStream input = resource == null ? context.getAssets().open("web/" + normalized) : resource.input;
            ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+        if (!mime.matches("image/(?:png|jpeg|webp|gif|bmp|svg\\+xml)")) return "";
+        if ("image/svg+xml".equals(mime) && !normalized.matches(MAP_IMAGE_PATTERN)) return "";
         byte[] buffer = new byte[64 * 1024];
         int total = 0;
         for (int count; (count = input.read(buffer)) != -1;) {
@@ -591,6 +611,13 @@ final class AtopackStore {
           installBlob(archive, entry, sha256, resource, MAX_MAP_BYTES, transaction);
           next.put(target, new ResourceEntry(sha256, target.endsWith(".svg") ? "image/svg+xml" : "image/png"));
           importedAssets++;
+        }
+        // A mask switch replaces the other generation for that face. Keeping
+        // both would let the bundled registry select a stale SVG after a user
+        // imports a legacy pack. Changes remain part of this transaction.
+        for (String target : declaredMaps) {
+          String alternate = alternateMapOverlayPath(target);
+          if (alternate != null && !declaredMaps.contains(alternate)) next.remove(alternate);
         }
       }
       int importedBooks = mergeStories(incomingStories, next, stats, transaction);
