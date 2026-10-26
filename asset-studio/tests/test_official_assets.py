@@ -55,6 +55,31 @@ class OfficialAssetTests(unittest.TestCase):
             self.write(f"{folder}/CARD.jpg", folder.encode())
         self.assertIsNone(find(SCRATCH, "assets/cards/CARD.jpg"))
 
+    def test_backup_map_masks_never_override_legacy_faces_or_bases(self) -> None:
+        """A transparent restore mask must not become a full map by filename fallback."""
+        name = "c4-tile-011-front.png"
+        self.write(f"_backups/map-links/originals/map/images/hd1024/overlay/{name}",
+                   b"transparent source overlay")
+        for target in (f"map/images/{name}",
+                       f"map/images/hd1024/base/{name}",
+                       f"map/images/hd1024/overlay/{name}"):
+            with self.subTest(target=target):
+                self.assertIsNone(find(SCRATCH, target))
+        backup_target = f"_backups/map-links/originals/map/images/hd1024/overlay/{name}"
+        self.assertIsNone(find(SCRATCH, backup_target), "Even exact backup paths are inactive")
+        fallback = SCRATCH / "map-base.png"
+        self.assertEqual((fallback, False), resolve(SCRATCH, f"map/images/{name}", fallback))
+
+        # A real active override still wins; the archived copy cannot create
+        # a false ambiguity or suppress the normal compact-path behaviour.
+        active = self.write(f"map/images/{name}", b"official full map")
+        clear_cache()
+        self.assertEqual(active, find(SCRATCH, f"map/images/{name}"))
+        card = self.write("HEKATON/CARD.jpg", b"active compact official card")
+        self.write("HEKATON/_BACKUPS/old/CARD.jpg", b"archived card")
+        clear_cache()
+        self.assertEqual(card, find(SCRATCH, "aibp/ps/HEKATON/CARD.jpg"))
+
     def test_record_boss_avatars_never_take_official_card_artwork(self) -> None:
         # 记录表 Boss 头像与 ps/<BOSS>/<BOSS>.jpg 同 stem；派生头像必须继续使用项目
         # 里的 512×512 PNG，不能被官中使徒大卡替换（2026-10-22 官方版重打时踩过）。

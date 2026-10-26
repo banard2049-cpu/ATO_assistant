@@ -78,6 +78,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--cycle", action="append", default=[], help="只打这些循环，可重复或逗号分隔")
     parser.add_argument("--module", action="append", default=[], help="只打这些模块，可重复或逗号分隔")
     parser.add_argument("--complete-only", action="store_true", help="只打正反面都齐了的条目")
+    parser.add_argument("--map-mask-version", choices=("legacy", "current"), default="legacy",
+                        help="正面地图蒙版：legacy=指定备份 PNG（默认）；current=当前新版 SVG，卡背保持当前版")
     parser.add_argument(
         "--story-source", choices=("official", "project"), default="official",
         help="故事书 js 的来源：official=只留官方正文（默认）；project=用工程里的民间版",
@@ -170,6 +172,7 @@ def main(argv: list[str] | None = None) -> int:
             image_quality_keep=as_list(args.image_quality_keep)
             + load_keep_patterns(args.image_quality_keep_file),
             incremental_from=args.incremental_from,
+            map_mask_version=args.map_mask_version,
         )
     except PackError as error:
         print(f"打包失败：{error}", file=sys.stderr)

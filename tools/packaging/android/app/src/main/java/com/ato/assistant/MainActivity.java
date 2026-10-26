@@ -346,6 +346,9 @@ public final class MainActivity extends Activity {
       new Thread(() -> {
         try {
           notifyAtopackResult(atopackStore.importPackage(getContentResolver(), packageUri).toJson());
+        } catch (OutOfMemoryError error) {
+          // 解析大型清单/故事索引时可能耗尽堆。把错误带回页面，至少让应用本身活下来。
+          notifyAtopackMemoryError();
         } catch (Exception error) {
           notifyAtopackResult(errorResult(error.getMessage() == null ? error.toString() : error.getMessage()));
         }
@@ -607,6 +610,17 @@ public final class MainActivity extends Activity {
       if (webView == null) return;
       webView.evaluateJavascript(
         "window.ATOAtopackImportResult && window.ATOAtopackImportResult(" + result.toString() + ")", null);
+    });
+  }
+
+  private void notifyAtopackMemoryError() {
+    runOnUiThread(() -> {
+      if (webView == null) return;
+      // 用字面量而不是再构造 JSONObject，避免堆已经紧张时二次分配。
+      webView.evaluateJavascript(
+        "window.ATOAtopackImportResult && window.ATOAtopackImportResult({\"ok\":false,"
+          + "\"error\":\"导入时可用内存不足。请重启 ATO 并关闭其他应用后重试；"
+          + "若仍失败，请使用不含故事数据的较小资料包。\"})", null);
     });
   }
 
