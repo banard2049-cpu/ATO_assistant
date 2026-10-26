@@ -19,9 +19,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
@@ -40,6 +45,9 @@ final class AtopackStore {
   private static final int PACKAGE_VERSION = 3;
   private static final int MAX_MANIFEST_BYTES = 64 * 1024 * 1024;
   private static final int MAX_ENTITY_INDEX_BYTES = 128 * 1024 * 1024;
+  private static final byte[] ENTITY_INDEX_SCRIPT_PREFIX =
+      "(function () {\n  window.STORY_ENTITY_INDEX = ".getBytes(StandardCharsets.UTF_8);
+  private static final byte[] ENTITY_INDEX_SCRIPT_SUFFIX = ";\n})();\n".getBytes(StandardCharsets.UTF_8);
   private static final long MAX_BGM_BYTES = 32L * 1024 * 1024;
   private static final int MAX_BGM_FILES = 128;
   private static final long MAX_ICON_BYTES = 1024L * 1024;
@@ -670,7 +678,10 @@ final class AtopackStore {
     payload.put("generatedAt", incoming.optString("generatedAt", "Android .atopack import"));
     payload.put("books", books);
     transaction.stories = payload;
-    installGenerated(next, "story/data/storybook-data.js", "application/javascript", "window.STORYBOOK_DATA = " + payload + ";\n", transaction);
+    // 不再先拼出整段 JS 字符串再转 byte[]：逐段写盘并边写边算哈希，峰值只多一份
+    // payload.toString()，不再同时保留拼接结果和它的 UTF-8 副本。
+    installText(next, "story/data/storybook-data.js", "application/javascript", transaction,
+        "window.STORYBOOK_DATA = ", payload.toString(), ";\n");
     return imported;
   }
 
@@ -693,38 +704,78 @@ final class AtopackStore {
       } catch (IOException invalid) { stats.skipped++; continue; }
       if (!"story/entity-index.json".equals(member)) { stats.skipped++; continue; }
       ZipArchiveEntry entry = findEntry(archive, member, storyFile);
-      if (entry == null || entry.isDirectory()) { stats.skipped++; continue; }
-      byte[] raw;
+      if (entry == null || entry.isDirectory() || entry.getSize() <= 0) { stats.skipped++; continue; }
       try {
-        validateSize(entry, storyFile, MAX_ENTITY_INDEX_BYTES);
-        raw = readLimited(archive, entry, MAX_ENTITY_INDEX_BYTES, transaction);
-        validateActualSize(entry, storyFile, raw.length);
+        // 人物小传索引可达十几 MB，旧实现会同时保留 byte[]、String、JSONObject
+        // 以及两份重新序列化后的文本。这里只校验大小/SHA 并原样落盘，再由 WebView
+        // 在页面里解析，导入器的内存占用与索引大小无关。
+        stageBlob(archive, entry, expected, storyFile, MAX_ENTITY_INDEX_BYTES, transaction);
+        installEntityIndexScript(archive, entry, storyFile, next, transaction);
       } catch (InvalidPackEntry invalid) { stats.skipped++; continue; }
-      if (!expected.equals(hex(digest(raw)))) { stats.skipped++; continue; }
-      JSONObject entityIndex;
-      try { entityIndex = new JSONObject(new String(raw, StandardCharsets.UTF_8)); }
-      catch (JSONException invalid) { stats.skipped++; continue; }
-      JSONArray entities = entityIndex.optJSONArray("entities");
-      if (entities == null || entities.length() == 0) { stats.skipped++; continue; }
-      installGenerated(next, "story/data/entity-index.json", "application/json", entityIndex.toString(), transaction);
-      installGenerated(next, "story/data/entity-index.js", "application/javascript", "(function () {\n  window.STORY_ENTITY_INDEX = " + entityIndex + ";\n})();\n", transaction);
+      next.put("story/data/entity-index.json", new ResourceEntry(expected, "application/json"));
       imported = true;
     }
     return imported;
   }
 
-  private void installGenerated(Map<String, ResourceEntry> next, String target, String mimeType, String content, ImportTransaction transaction) throws Exception {
-    byte[] bytes = content.getBytes(StandardCharsets.UTF_8);
-    String sha256 = hex(digest(bytes));
-    if (bytes.length > MAX_MEMBER_BYTES) throw new IOException("生成的资源超过大小限制：" + target);
-    transaction.account(bytes.length);
-    File blob = new File(transaction.staging, sha256);
-    if (!blob.isFile()) {
-      try (FileOutputStream output = new FileOutputStream(blob)) {
-        output.write(bytes);
+  /** 逐段 UTF-8 写盘并计算哈希；避免把整段文本再复制成 byte[]。 */
+  private void installText(Map<String, ResourceEntry> next, String target, String mimeType,
+      ImportTransaction transaction, String... parts) throws Exception {
+    File temporary = File.createTempFile("text-", ".tmp", transaction.staging);
+    MessageDigest digest = sha256();
+    long size;
+    try {
+      try (FileOutputStream file = new FileOutputStream(temporary);
+           CountingOutputStream counted = new CountingOutputStream(file);
+           DigestOutputStream output = new DigestOutputStream(counted, digest);
+           Writer writer = new OutputStreamWriter(output, StandardCharsets.UTF_8)) {
+        for (String part : parts) writer.write(part);
+        writer.flush();
+        size = counted.count;
       }
+      if (size > MAX_MEMBER_BYTES) throw new IOException("生成的资源超过大小限制：" + target);
+      transaction.account(size);
+      String sha256 = hex(digest.digest());
+      File blob = new File(transaction.staging, sha256);
+      moveBlob(temporary, blob);
+      next.put(target, new ResourceEntry(sha256, mimeType));
+    } finally {
+      if (temporary.exists()) temporary.delete();
     }
-    next.put(target, new ResourceEntry(sha256, mimeType));
+  }
+
+  /**
+   * 以流式方式生成 entity-index.js：prefix + 原始 JSON + suffix。
+   * 不构造完整字符串，也不把 JSON 解析成对象。
+   */
+  private void installEntityIndexScript(ZipFile archive, ZipArchiveEntry entry, JSONObject resource,
+      Map<String, ResourceEntry> next, ImportTransaction transaction) throws Exception {
+    File temporary = File.createTempFile("entity-index-", ".tmp", transaction.staging);
+    MessageDigest digest = sha256();
+    long size;
+    try {
+      try (FileOutputStream file = new FileOutputStream(temporary);
+           CountingOutputStream counted = new CountingOutputStream(file);
+           DigestOutputStream output = new DigestOutputStream(counted, digest)) {
+        output.write(ENTITY_INDEX_SCRIPT_PREFIX);
+        long raw;
+        try (InputStream input = archive.getInputStream(entry)) {
+          raw = copy(input, output, null, MAX_ENTITY_INDEX_BYTES, null);
+        }
+        validateActualSize(entry, resource, raw);
+        output.write(ENTITY_INDEX_SCRIPT_SUFFIX);
+        output.flush();
+        size = counted.count;
+      }
+      if (size > MAX_MEMBER_BYTES) throw new IOException("生成的人物小传脚本超过大小限制");
+      transaction.account(size);
+      String sha256 = hex(digest.digest());
+      File blob = new File(transaction.staging, sha256);
+      moveBlob(temporary, blob);
+      next.put("story/data/entity-index.js", new ResourceEntry(sha256, "application/javascript"));
+    } finally {
+      if (temporary.exists()) temporary.delete();
+    }
   }
 
   private void installBlob(ZipFile archive, ZipArchiveEntry entry, String expected, JSONObject resource, long maximum, ImportTransaction transaction) throws Exception {
@@ -862,7 +913,7 @@ final class AtopackStore {
       if (!staging.delete() || !staging.mkdir()) throw new IOException("无法创建资料包暂存目录");
     }
 
-    void account(int count) throws IOException {
+    void account(long count) throws IOException {
       if (count > MAX_PACKAGE_TOTAL_BYTES - readBytes) throw new IOException("资料包解压总量超过限制");
       readBytes += count;
     }
@@ -1070,7 +1121,7 @@ final class AtopackStore {
     return output.toByteArray();
   }
 
-  private static long copy(InputStream input, FileOutputStream output, MessageDigest digest, long maximum, ImportTransaction transaction) throws IOException {
+  private static long copy(InputStream input, OutputStream output, MessageDigest digest, long maximum, ImportTransaction transaction) throws IOException {
     byte[] buffer = new byte[1024 * 1024];
     long total = 0;
     for (int count; (count = transaction == null ? input.read(buffer) : readPackChunk(input, buffer)) != -1;) {
@@ -1081,6 +1132,24 @@ final class AtopackStore {
       if (digest != null) digest.update(buffer, 0, count);
     }
     return total;
+  }
+
+  private static final class CountingOutputStream extends FilterOutputStream {
+    long count;
+
+    CountingOutputStream(OutputStream output) {
+      super(output);
+    }
+
+    @Override public void write(int value) throws IOException {
+      out.write(value);
+      count++;
+    }
+
+    @Override public void write(byte[] buffer, int offset, int length) throws IOException {
+      out.write(buffer, offset, length);
+      count += length;
+    }
   }
 
   private static int readPackChunk(InputStream input, byte[] buffer) throws IOException {
@@ -1148,10 +1217,6 @@ final class AtopackStore {
 
   private static MessageDigest sha256() throws NoSuchAlgorithmException {
     return MessageDigest.getInstance("SHA-256");
-  }
-
-  private static byte[] digest(byte[] value) throws NoSuchAlgorithmException {
-    return sha256().digest(value);
   }
 
   private static String hex(byte[] bytes) {

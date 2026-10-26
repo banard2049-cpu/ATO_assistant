@@ -346,6 +346,32 @@ public final class AtopackImportHarness {
     check(!files.has(current ? MAP_MASK : MAP_VECTOR), "Superseded map mask remains in persistent index");
   }
 
+  private void largeEntityIndex() throws Exception {
+    // Old importer parsed the whole index into JSONObject and serialized it twice.
+    // At -Xmx96m this size is enough to reproduce the OutOfMemoryError.
+    StringBuilder builder = new StringBuilder(8 * 1024 * 1024 + 64);
+    builder.append("{\"entities\":[");
+    int index = 0;
+    while (builder.length() < 8 * 1024 * 1024) {
+      if (index > 0) builder.append(',');
+      builder.append("{\"id\":\"e").append(index).append("\",\"detail\":\"");
+      for (int i = 0; i < 220; i++) builder.append('x');
+      builder.append("\"}");
+      index++;
+    }
+    builder.append("]}");
+    byte[] raw = bytes(builder.toString());
+    String member = "story/entity-index.json";
+    JSONObject manifest = manifest().put("storyFiles", new JSONArray()
+        .put(resource(member, raw).put("kind", "entity-index")));
+    AtopackStore.ImportResult result = install(pack(manifest, new Member(member, raw)));
+    check(result.entityIndex, "Large entity index was not imported");
+    check(result.totalResources == 2, "Large entity index must install JSON and JS only");
+    check(new String(raw, StandardCharsets.UTF_8).equals(open("story/data/entity-index.json")),
+        "Large entity index JSON changed");
+    System.out.println("Large entity index import passed: " + checks + " behavioral checks.");
+  }
+
   private void mapVariants() throws Exception {
     File fanLegacy = mapVariant(false, "fan"), officialLegacy = mapVariant(false, "official"),
         fanCurrent = mapVariant(true, "fan");
@@ -575,6 +601,9 @@ public final class AtopackImportHarness {
       String target = member.name.equals("story/entity-index.json") ? "story/data/entity-index.json" : member.name;
       check(new String(member.bytes, StandardCharsets.UTF_8).equals(open(target)), "Valid segment failed roundtrip: " + target);
     }
+    String entityJson = new String(payloads.get(payloads.size() - 1).bytes, StandardCharsets.UTF_8);
+    check(("(function () {\n  window.STORY_ENTITY_INDEX = " + entityJson + ";\n})();\n")
+        .equals(open("story/data/entity-index.js")), "Streamed entity-index.js wrapper changed");
 
     // 混合媒体（mapping.js + 书籍裁图）：合法目标要能落地（PNG 与 SVG 都收），
     // 白名单外的路径、路径与成员不一致的声明只跳过，不打断其余素材。
@@ -720,5 +749,6 @@ public final class AtopackImportHarness {
     new AtopackImportHarness(new File(args[0])).run();
     new AtopackImportHarness(new File(args[0],"layered-maps")).mapLayers();
     new AtopackImportHarness(new File(args[0],"map-variants")).mapVariants();
+    new AtopackImportHarness(new File(args[0],"large-index")).largeEntityIndex();
   }
 }
