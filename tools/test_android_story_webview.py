@@ -16,8 +16,11 @@ def main() -> None:
     directory.mkdir(parents=True)
     source = PROJECT_ROOT / "tools/packaging/android/app/src/main/java/com/ato/assistant/StoryWebViewSession.java"
     harness = PROJECT_ROOT / "tests/fixtures/android-story-webview/com/ato/assistant/StoryWebViewSessionHarness.java"
-    subprocess.run([str(javac), "-encoding", "UTF-8", "-d", str(directory), str(source), str(harness)], check=True)
+    policy = PROJECT_ROOT / "tools/packaging/android/app/src/main/java/com/ato/assistant/TabNavigationPolicy.java"
+    policy_harness = PROJECT_ROOT / "tests/fixtures/android-story-webview/com/ato/assistant/TabNavigationPolicyHarness.java"
+    subprocess.run([str(javac), "-encoding", "UTF-8", "-d", str(directory), str(source), str(harness), str(policy), str(policy_harness)], check=True)
     subprocess.run([str(java), "-cp", str(directory), "com.ato.assistant.StoryWebViewSessionHarness"], check=True)
+    subprocess.run([str(java), "-cp", str(directory), "com.ato.assistant.TabNavigationPolicyHarness"], check=True)
 
 
 if __name__ == "__main__":

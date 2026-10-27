@@ -383,3 +383,40 @@ test('module pages keep ?cycle= in the URL when the shown cycle changes', () => 
     assert.equal(calls.length, 1, name + ' does not rewrite an already matching URL');
   }
 });
+const nativeRouterSource = extract(read('assets/page-focus-router.js'), 'focusOrNavigate');
+function nativeReturnHarness(kind, { saveFails = false, nativeHandles = true } = {}) {
+  const harness = kind === 'map' ? mapHarness({ saveFails }) : technologyHarness({ saveFails });
+  const { context, calls } = harness;
+  context.window.location.href = `file:///android_asset/web/${kind === 'map' ? 'map' : 'technology'}/index.html`;
+  context.window.ATO_ANDROID_SINGLE_WINDOW = true;
+  context.window.ATOAndroid = { openModuleTab(url) { calls.push('native-tab:' + url); return nativeHandles; } };
+  context.isSingleWindowMode = () => true;
+  context.moduleFromUrl = () => 'dashboard';
+  context.currentModule = kind;
+  vm.runInContext(nativeRouterSource, context);
+  context.window.ATO_PAGE_ROUTER.isSinglePageMode = () => true;
+  context.window.ATO_PAGE_ROUTER.focusOrNavigate = context.focusOrNavigate;
+  return harness;
+}
+
+test('Android map and technology return to the dashboard tab only after their saves succeed', async () => {
+  for (const kind of ['map', 'technology']) {
+    const { context, calls } = nativeReturnHarness(kind);
+    await (kind === 'map' ? context.saveAndReturnToDashboard() : context.saveAndReturnMain());
+    const handoff = calls.indexOf('native-tab:file:///android_asset/web/index.html');
+    const save = calls.indexOf(kind === 'map' ? 'save-dashboard' : 'write-snapshot');
+    assert.ok(save >= 0 && handoff > save, `${kind} must save before switching tabs`);
+    assert.match(context.window.location.href, new RegExp(`/${kind}/index\\.html$`));
+
+    const failed = nativeReturnHarness(kind, { saveFails: true });
+    await (kind === 'map' ? failed.context.saveAndReturnToDashboard() : failed.context.saveAndReturnMain());
+    assert.ok(!failed.calls.some(call => call.startsWith('native-tab:')), `${kind} must remain open after a failed save`);
+  }
+});
+
+test('Android falls back to current-page navigation with an older or unavailable tab bridge', async () => {
+  const { context, calls } = nativeReturnHarness('technology', { nativeHandles: false });
+  await context.saveAndReturnMain();
+  assert.ok(calls.includes('native-tab:file:///android_asset/web/index.html'));
+  assert.equal(context.window.location.href, 'file:///android_asset/web/index.html');
+});

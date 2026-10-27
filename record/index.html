@@ -1845,7 +1845,7 @@
     <button type="button" data-camera-shoot>拍摄并添加</button>
   </dialog>
 
-  <script src="../assets/page-focus-router.js?v=20261020-module-probe1"></script>
+  <script src="../assets/page-focus-router.js?v=20261028-android-return1"></script>
   <script src="./mark-notes.js"></script>
   <script src="./item-icons.js?v=apk-ui-a72da92bdf63"></script>
   <script src="./matrix-summaries.js"></script>
@@ -6525,6 +6525,10 @@
         return;
       }
 
+      // On Android, keep the record sheet open and hand the full story target
+      // (book, chapter and entry) to the native tab manager.
+      if (typeof window.ATOAndroid?.openModuleTab === "function"
+          && window.ATOAndroid.openModuleTab(new URL(url, window.location.href).href)) return;
       window.location.href = url;
     }
 

@@ -2208,6 +2208,15 @@ async function triggerAdversaryBattle(recordUndo = false) {
 
   if (battleUrl) {
     window.alert("仇敌与阿尔戈号同板块：移除仇敌，并打开对应战斗。");
+    // Native Android tabs must keep the map open after its save. Browsers and
+    // older Android builds retain the existing current-page navigation.
+    if (typeof window.ATOAndroid?.openModuleTab === "function") {
+      // The map will remain alive in its tab, so show the saved token removal
+      // before handing the battle off to another page.
+      render();
+      const absolute = new URL(battleUrl, window.location.href).href;
+      if (window.ATOAndroid.openModuleTab(absolute)) return;
+    }
     window.location.href = battleUrl;
     return;
   }

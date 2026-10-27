@@ -2746,7 +2746,7 @@
     </div>
   </dialog>
 
-  <script src="./assets/page-focus-router.js?v=20261020-module-probe1"></script>
+  <script src="./assets/page-focus-router.js?v=20261028-android-return1"></script>
   <script src="./assets/story-doom-card-data.js?v=20261014-card-face-audit2"></script>
   <script src="./assets/exploration-card-tags.js?v=20261018-card-audit1"></script>
   <script src="./assets/exploration-card-rules.js?v=20261018-card-audit1"></script>
@@ -9072,12 +9072,10 @@
       if (!rules || !["encounter", "development"].includes(stepId)) return null;
       const cycleId = currentCycleConfig().id;
       const queue = rules.getQueue(cachedArgoRecord || {}, cycleId, ["waiting", "ready"]);
-      const relevant = queue.filter((item) => stepId === "development" ? item.kind === "tech-disable" : item.kind !== "tech-disable");
-      const temporary = state.exploration?.drawStateByCycle?.[cycleId]?.temporaryRemoved?.length || 0;
-      // 遭遇步骤没有「开始定时战斗 / 定时战斗已完成」按钮了，所以这里只在真的有延迟效果
-      // 或暂时移出的卡时出现；战斗当天的提醒走 getStepTrackReminders 的「今日战斗」。
-
-      if (!relevant.length && (stepId === "development" || !temporary)) return null;
+      const relevant = queue.filter((item) => stepId === "development" ? item.kind === "tech-disable"
+        : !["tech-disable", "once-until-timeline", "return-exploration-card"].includes(item.kind));
+      // 次数限制和暂时移出的卡在定时战斗结束时自动处理，无须在遭遇步骤提醒。
+      if (!relevant.length) return null;
       const box = document.createElement("div");
       box.className = "step-track-reminders";
       // 和特殊板块一样只展示来源与内容；勾选对应步骤时统一处理并移除提醒。
