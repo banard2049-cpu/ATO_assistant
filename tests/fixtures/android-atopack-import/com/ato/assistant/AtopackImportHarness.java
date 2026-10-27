@@ -738,10 +738,60 @@ public final class AtopackImportHarness {
     check(install(pack(manifest().put("stories", stories("migrated")))).books == 1, "Legacy stories migration failed");
     check(open("story/data/storybook-data.js").contains("legacy") && open("story/data/storybook-data.js").contains("migrated"), "Legacy stories were lost during migration");
     check(Arrays.equals(oldStories, Files.readAllBytes(legacyStories.toPath())), "Import mutated legacy stories.json outside atomic index");
+    byte[] precious = bytes("previously imported image");
+    File preciousBlob = new File(legacyRoot, "blobs/" + sha(precious));
+    Files.write(preciousBlob.toPath(), precious);
     Files.write(new File(legacyRoot, "index.json").toPath(), bytes("damaged-index"));
     store = new AtopackStore(legacyContext);
+    check(preciousBlob.isFile() && store.status().getBoolean("indexRecoveryNeeded"), "Damaged index deleted imported images");
     check(install(pack(manifest().put("stories", stories("recovered")))).books == 1, "Damaged index blocked a future valid import");
     check(open("story/data/storybook-data.js").contains("recovered"), "Valid import did not replace damaged index");
+    check("damaged-index".equals(Files.readString(new File(legacyRoot, "index-before-recovery.json").toPath())),
+        "Recovery import did not preserve the original damaged index");
+    store = new AtopackStore(legacyContext);
+    check(preciousBlob.isFile() && store.status().getBoolean("indexRecoveryNeeded"), "Later import or restart deleted protected images");
+    Context missingContext = new Context(new File(directory, "missing-index"), new JSONObject().put("format", "ato-android-resource-catalog").put("items", new JSONArray().put(item("test", ASSET))).toString());
+    File missingRoot = new File(missingContext.getFilesDir(), "atopack/blobs");
+    missingRoot.mkdirs();
+    File missingBlob = new File(missingRoot, sha(precious));
+    Files.write(missingBlob.toPath(), precious);
+    AtopackStore missingStore = new AtopackStore(missingContext);
+    check(missingBlob.isFile() && missingStore.status().getBoolean("indexRecoveryNeeded"), "Missing index deleted imported images");
+    JSONObject recoverManifest = manifest().put("assets", new JSONArray().put(asset("test", ASSET, precious)));
+    File recoveryPack = pack(recoverManifest, new Member(ASSET, precious));
+    check(missingStore.importPackage(new ContentResolver(), Uri.parse(recoveryPack.toURI().toString())).assets == 1,
+        "Reimport did not rebuild missing image index");
+    missingStore = new AtopackStore(missingContext);
+    try (InputStream restored = missingStore.open(ASSET).input) {
+      check(Arrays.equals(restored.readAllBytes(), precious), "Reimported image did not survive restart");
+    }
+    Context wipedContext = new Context(new File(directory, "missing-files"), new JSONObject().put("format", "ato-android-resource-catalog").put("items", new JSONArray().put(item("test", ASSET))).toString());
+    AtopackStore wipedStore = new AtopackStore(wipedContext);
+    check(wipedStore.importPackage(new ContentResolver(), Uri.parse(recoveryPack.toURI().toString())).assets == 1,
+        "Reimport did not restore deleted image files");
+    wipedStore = new AtopackStore(wipedContext);
+    try (InputStream restored = wipedStore.open(ASSET).input) {
+      check(Arrays.equals(restored.readAllBytes(), precious), "Restored image did not survive restart");
+    }
+    Context emptyContext = new Context(new File(directory, "empty-index"), new JSONObject().put("format", "ato-android-resource-catalog").put("items", new JSONArray()).toString());
+    File emptyRoot = new File(emptyContext.getFilesDir(), "atopack");
+    File emptyBlobs = new File(emptyRoot, "blobs");
+    emptyBlobs.mkdirs();
+    File emptyBlob = new File(emptyBlobs, sha(precious));
+    Files.write(emptyBlob.toPath(), precious);
+    Files.writeString(new File(emptyRoot, "index.json").toPath(), new JSONObject().put("files", new JSONObject()).toString());
+    AtopackStore emptyStore = new AtopackStore(emptyContext);
+    check(emptyBlob.isFile() && emptyStore.status().getBoolean("indexRecoveryNeeded"), "Empty index deleted imported images");
+    Context partialContext = new Context(new File(directory, "partial-index"), new JSONObject().put("format", "ato-android-resource-catalog").put("items", new JSONArray()).toString());
+    File partialRoot = new File(partialContext.getFilesDir(), "atopack");
+    File partialBlobs = new File(partialRoot, "blobs");
+    partialBlobs.mkdirs();
+    Files.write(new File(partialBlobs, sha(precious)).toPath(), precious);
+    JSONObject partialFiles = new JSONObject().put(ASSET, new JSONObject().put("sha256", sha(precious)).put("mimeType", "image/png"))
+        .put("assets/cards/broken.png", new JSONObject().put("sha256", "bad"));
+    Files.writeString(new File(partialRoot, "index.json").toPath(), new JSONObject().put("files", partialFiles).toString());
+    AtopackStore partialStore = new AtopackStore(partialContext);
+    check(partialStore.open(ASSET) != null && partialStore.status().getBoolean("indexRecoveryNeeded"), "Invalid index entry hid other valid resources");
     System.out.println("Android .atopack import passed: " + checks + " behavioral checks.");
   }
 

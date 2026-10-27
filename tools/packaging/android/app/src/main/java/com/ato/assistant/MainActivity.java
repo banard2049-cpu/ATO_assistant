@@ -10,7 +10,12 @@ import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.TextView;
+import android.widget.HorizontalScrollView;
+import android.view.Gravity;
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.text.TextUtils;
 import android.widget.LinearLayout;
 import java.util.ArrayList;
 import android.webkit.RenderProcessGoneDetail;
@@ -55,7 +60,8 @@ public final class MainActivity extends Activity {
   }
   private final ArrayList<PageTab> tabs = new ArrayList<>();
   private PageTab activeTab;
-  private Button tabsButton;
+  private HorizontalScrollView tabScroll;
+  private LinearLayout tabStrip;
   private volatile WebView exportOwner;
   private volatile WebView atopackOwner;
   private volatile WebView webView;
@@ -109,19 +115,23 @@ public final class MainActivity extends Activity {
       return insets;
     });
     LinearLayout toolbar = new LinearLayout(this);
-    Button add = new Button(this);
-    add.setText("＋ 新页面");
+    toolbar.setBackgroundColor(Color.rgb(31, 48, 45));
+    toolbar.setGravity(Gravity.CENTER_VERTICAL);
+    tabScroll = new HorizontalScrollView(this);
+    tabScroll.setHorizontalScrollBarEnabled(false);
+    tabScroll.setFillViewport(false);
+    tabStrip = new LinearLayout(this);
+    tabStrip.setOrientation(LinearLayout.HORIZONTAL);
+    tabScroll.addView(tabStrip);
+    toolbar.addView(tabScroll, new LinearLayout.LayoutParams(0, dp(48), 1));
+    TextView add = new TextView(this);
+    add.setText("＋");
+    add.setTextSize(24);
+    add.setTextColor(Color.WHITE);
+    add.setGravity(Gravity.CENTER);
     add.setContentDescription("打开新页面");
     add.setOnClickListener(v -> openNewTab());
-    tabsButton = new Button(this);
-    tabsButton.setOnClickListener(v -> showTabs());
-    Button close = new Button(this);
-    close.setText("关闭");
-    close.setContentDescription("关闭当前页面");
-    close.setOnClickListener(v -> closeTab(activeTab));
-    toolbar.addView(add, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
-    toolbar.addView(tabsButton, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
-    toolbar.addView(close, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+    toolbar.addView(add, new LinearLayout.LayoutParams(dp(48), dp(48)));
     layout.addView(toolbar);
     rootView = new FrameLayout(this);
     layout.addView(rootView, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1));
@@ -172,19 +182,82 @@ public final class MainActivity extends Activity {
     selectTab(tab);
   }
 
-  private void updateTabButton() {
-    tabsButton.setText("页面 " + tabs.size());
-    tabsButton.setContentDescription("切换页面，共 " + tabs.size() + " 个");
+  private int dp(int value) {
+    return Math.round(value * getResources().getDisplayMetrics().density);
   }
 
-  private void showTabs() {
-    String[] labels = new String[tabs.size()];
-    for (int i = 0; i < tabs.size(); i++) labels[i] = (i + 1) + ". " + tabs.get(i).title;
-    new android.app.AlertDialog.Builder(this).setTitle("切换页面")
-        .setSingleChoiceItems(labels, tabs.indexOf(activeTab), (dialog, index) -> {
-          selectTab(tabs.get(index));
-          dialog.dismiss();
-        }).setNegativeButton("取消", null).show();
+  private void updateTabs(boolean revealActive) {
+    tabStrip.removeAllViews();
+    View selected = null;
+    for (PageTab tab : tabs) {
+      LinearLayout item = new LinearLayout(this);
+      item.setOrientation(LinearLayout.HORIZONTAL);
+      item.setGravity(Gravity.CENTER_VERTICAL);
+      item.setBackgroundColor(tab == activeTab ? Color.rgb(245, 241, 232) : Color.rgb(53, 73, 69));
+      LinearLayout.LayoutParams itemParams = new LinearLayout.LayoutParams(dp(150), dp(42));
+      itemParams.setMargins(dp(4), dp(4), 0, dp(2));
+      tabStrip.addView(item, itemParams);
+      TextView label = new TextView(this);
+      label.setText(tab.title);
+      label.setTextSize(14);
+      label.setSingleLine(true);
+      label.setEllipsize(TextUtils.TruncateAt.END);
+      label.setPadding(dp(12), 0, dp(4), 0);
+      label.setGravity(Gravity.CENTER_VERTICAL);
+      label.setTextColor(tab == activeTab ? Color.rgb(25, 47, 41) : Color.WHITE);
+      label.setTypeface(null, tab == activeTab ? Typeface.BOLD : Typeface.NORMAL);
+      label.setContentDescription("切换到 " + tab.title);
+      label.setOnClickListener(v -> selectTab(tab));
+      item.addView(label, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1));
+      TextView close = new TextView(this);
+      close.setText("×");
+      close.setTextSize(20);
+      close.setTextColor(tab == activeTab ? Color.rgb(25, 47, 41) : Color.WHITE);
+      close.setGravity(Gravity.CENTER);
+      close.setContentDescription("关闭 " + tab.title);
+      close.setOnClickListener(v -> closeTab(tab));
+      item.addView(close, new LinearLayout.LayoutParams(dp(42), ViewGroup.LayoutParams.MATCH_PARENT));
+      if (tab == activeTab) selected = item;
+    }
+    if (revealActive && selected != null) {
+      final View target = selected;
+      tabScroll.post(() -> tabScroll.smoothScrollTo(target.getLeft(), 0));
+    }
+  }
+
+  private static String moduleForUrl(String url) {
+    if (url == null || !url.startsWith(ROOT)) return "";
+    String path = url.substring(ROOT.length()).split("[?#]", 2)[0];
+    if (path.isEmpty() || path.equals("index.html")) return "dashboard";
+    for (String module : new String[]{"story", "map", "record", "hero", "technology", "aibp", "briefing"})
+      if (path.equals(module + "/") || path.equals(module + "/index.html")) return module;
+    return "";
+  }
+
+  private void openModule(String url) {
+    String module = moduleForUrl(url);
+    if (module.isEmpty()) return;
+    for (PageTab tab : tabs) {
+      String currentUrl = tab.view.getUrl();
+      if (!tab.closed && module.equals(moduleForUrl(currentUrl))) {
+        // The dashboard is a single shared page. Other modules can carry a
+        // different cycle/book/profile in the query and must keep that context.
+        String currentQuery = Uri.parse(currentUrl).getEncodedQuery();
+        String targetQuery = Uri.parse(url).getEncodedQuery();
+        if ("dashboard".equals(module) || java.util.Objects.equals(currentQuery, targetQuery)) {
+          selectTab(tab);
+          return;
+        }
+      }
+    }
+    if (tabs.size() >= MAX_TABS) {
+      Toast.makeText(this, "最多同时打开 6 个页面，请先关闭一个页面。", Toast.LENGTH_SHORT).show();
+      return;
+    }
+    PageTab tab = new PageTab();
+    tabs.add(tab);
+    createWebView(tab, url);
+    selectTab(tab);
   }
 
   private void selectTab(PageTab tab) {
@@ -205,7 +278,7 @@ public final class MainActivity extends Activity {
     webView = tab.view;
     currentStorySession = tab.story;
     tab.view.setVisibility(View.VISIBLE);
-    updateTabButton();
+    updateTabs(true);
   }
 
   private void closeTab(PageTab tab) {
@@ -222,7 +295,7 @@ public final class MainActivity extends Activity {
     if (tab.view.getParent() instanceof ViewGroup) ((ViewGroup) tab.view.getParent()).removeView(tab.view);
     tab.view.removeJavascriptInterface("ATOAndroid");
     tab.view.destroy();
-    updateTabButton();
+    updateTabs(false);
   }
 
   private void createWebView(PageTab tab, String url) {
@@ -338,7 +411,10 @@ public final class MainActivity extends Activity {
     });
     view.setWebChromeClient(new WebChromeClient() {
       @Override public void onReceivedTitle(WebView page, String title) {
-        if (!tab.closed && page == tab.view && title != null && !title.trim().isEmpty()) tab.title = title;
+        if (!tab.closed && page == tab.view && title != null && !title.trim().isEmpty()) {
+          tab.title = title;
+          updateTabs(false);
+        }
       }
 
       @Override public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) {
@@ -551,6 +627,12 @@ public final class MainActivity extends Activity {
       this.tab = tab;
       this.owner = owner;
       this.requests = requests;
+    }
+
+    @android.webkit.JavascriptInterface public boolean openModuleTab(String url) {
+      if (tab.closed || tab.view != owner || moduleForUrl(url).isEmpty()) return false;
+      runOnUiThread(() -> { if (!tab.closed && tab.view == owner) openModule(url); });
+      return true;
     }
 
     @android.webkit.JavascriptInterface public String rememberedSession() {
