@@ -6,6 +6,7 @@ import json
 import tempfile
 import unittest
 import zipfile
+import zlib
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -146,7 +147,7 @@ class ReleasePackTests(unittest.TestCase):
             self.assertEqual(archive.namelist(), [member])
             with self.assertRaises(RuntimeError):
                 archive.read(member)
-            with self.assertRaises(RuntimeError):
+            with self.assertRaises((RuntimeError, zipfile.BadZipFile, zlib.error)):
                 archive.read(member, pwd=b"wrong")
             self.assertEqual(archive.read(member, pwd=b"20"), source.read_bytes())
         self.assertEqual(list(self.root.glob(".encrypt-atopack-*")), [])
