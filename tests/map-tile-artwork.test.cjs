@@ -94,7 +94,7 @@ test('all 511 map faces including seven C1 alternatives use vector corners', () 
   assert.doesNotMatch(api.headingMarkup('./images/c5-tile-040-front.png', '040'), /-corners\.svg/);
 });
 
-test('missing vector overlays fall back to the complete legacy map without requesting archived PNGs', () => {
+test('missing SVG mask tries the old PNG before falling back to the complete legacy map', () => {
   const { api } = harness();
   let onError;
   api.bind({ addEventListener(name, callback) { if (name === 'error') onError = callback; } });
@@ -102,10 +102,45 @@ test('missing vector overlays fall back to the complete legacy map without reque
   const stack = { dataset: { artworkKey: 'c3-tile-042-front', legacySrc: source, artworkLabel: '042' } };
   const target = { closest: () => stack, classList: { contains: name => name === 'tile-artwork-overlay' } };
   onError({ target });
-  assert.equal(target.src, undefined);
+  assert.equal(target.src, api.resolve(source).overlayFallback);
+  assert.match(target.src, /hd1024\/overlay\/c3-tile-042-front\.png/);
+  assert.equal(stack.innerHTML, undefined);
+  assert.match(api.markup(source, '042'), /-corners\.svg/);
+  onError({ target });
   assert.ok(stack.innerHTML.includes(source));
   assert.doesNotMatch(stack.innerHTML, /-corners\.svg|hd1024/);
   assert.doesNotMatch(api.markup(source, '042'), /-corners\.svg|hd1024/);
+});
+
+test('each fresh map stack retries current SVG after an older PNG pack was displayed', () => {
+  const { api } = harness();
+  let onError;
+  api.bind({ addEventListener(_name, callback) { onError = callback; } });
+  const source = './images/c1-tile-001-front.jpg';
+  const oldStack = { dataset: { artworkKey: 'c1-tile-001-front', legacySrc: source } };
+  const oldImage = { closest: () => oldStack, classList: { contains: () => true } };
+  onError({ target: oldImage });
+  assert.match(oldImage.src, /c1-tile-001-front\.png/);
+  assert.match(api.markup(source, '001'), /src="[^\"]+-corners\.svg/);
+  const newStack = { dataset: { artworkKey: 'c1-tile-001-front', legacySrc: source } };
+  const newImage = { closest: () => newStack, classList: { contains: () => true } };
+  onError({ target: newImage });
+  assert.equal(newImage.src, oldImage.src);
+});
+
+test('an older registry can use a current SVG when its PNG mask is missing', async () => {
+  const c = vm.createContext({ window: { ATO_MAP_ARTWORK_DATA: { files: ['c1-tile-001-front'] } } });
+  vm.runInContext(source, c);
+  const api = c.window.ATO_MAP_ARTWORK;
+  const artwork = api.resolve('./images/c1-tile-001-front.jpg');
+  const attempts = [];
+  const loaded = await api.loadOverlay(artwork, path => {
+    attempts.push(path);
+    if (path.endsWith('.png')) throw Error('missing old mask');
+    return path;
+  });
+  assert.deepEqual(attempts, [artwork.overlay, artwork.overlayFallback]);
+  assert.match(loaded, /-corners\.svg/);
 });
 
 test('artwork selection is automatic even after saving the old legacy preference', () => {

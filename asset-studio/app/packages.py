@@ -31,6 +31,7 @@ from .mixed_media_resources import MAX_FILES as MAX_MIXED_MEDIA_FILES
 from .map_resources import collect as collect_map_files, covered_targets as covered_map_targets
 from .map_resources import add_to_archive as add_map_to_archive, validate as validate_map_files
 from .map_resources import import_resources as import_map_resources
+from .map_resources import alternate_overlay_target
 from .official_assets import resolve as resolve_official_asset
 from .official_resources import LIBRARY, collect, add_to_archive, checked_bytes, import_resources
 from .db import Database
@@ -463,6 +464,9 @@ def inspect_package(
         for entry in map_files:
             local = library / 'sources/map-layers' / entry['target']
             status = 'add' if not local.is_file() else ('same' if sha256_file(local)==entry['sha256'] else 'replace')
+            alternate = alternate_overlay_target(entry['target'])
+            if alternate and (library / 'sources/map-layers' / alternate).is_file():
+                status = 'replace'
             map_summary[status] += 1
         if int(manifest.get("version", 0)) >= 2 and incoming_books and not entity_summary["included"]:
             raise ValueError("新版资料包含有故事，但没有人物小传索引")

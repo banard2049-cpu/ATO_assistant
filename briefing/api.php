@@ -324,6 +324,18 @@ function load_tech_dictionary(string $root): array {
   $data = read_json($root . '/technology/tech_card_dictionary.min.json');
   $cards = [];
   $nodesByPage = [];
+  $refKeyGroups = static function ($groups): array {
+    if (!is_array($groups) || !$groups) return [];
+    $rawGroups = is_array($groups[0] ?? null) && array_is_list($groups[0]) ? $groups : [$groups];
+    return array_values(array_filter(array_map(static function ($group): array {
+      $refs = [];
+      foreach ((array) $group as $item) {
+        $key = is_string($item) ? $item : (is_array($item) ? ($item['key'] ?? null) : null);
+        if ($key) $refs[] = $key;
+      }
+      return $refs;
+    }, $rawGroups)));
+  };
   foreach (($data['cards'] ?? []) as $card) {
     if (!is_array($card)) continue;
     $rawKey = trim((string) ($card['key'] ?? ''));
@@ -354,9 +366,9 @@ function load_tech_dictionary(string $root): array {
         // 依赖原始写法原样交给前端：连线由 technology/tech-tree.js 的 buildGraph() 算，
         // 简报不自己实现一套规则，科技树页面的连线才不会和简报出现差异。
         'requires' => array_values(array_map('strval', (array) ($node['req'] ?? []))),
-        'requiresAnyGroups' => array_map(
-          static fn($group): array => array_values(array_map('strval', (array) $group)),
-          array_values((array) ($node['requires_any_groups'] ?? []))
+        'requiresAnyGroups' => array_merge(
+          $refKeyGroups($node['requirements_any'] ?? $node['req_any'] ?? []),
+          $refKeyGroups($node['requirement_any_groups'] ?? $node['req_any_groups'] ?? $node['requires_any_groups'] ?? [])
         ),
         'xlsmLeadsTo' => array_values(array_map('strval', (array) ($node['unlocks'] ?? []))),
       ];

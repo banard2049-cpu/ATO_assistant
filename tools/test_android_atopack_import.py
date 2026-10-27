@@ -31,7 +31,9 @@ def main() -> None:
             str(source), *(str(path) for path in sorted(fixtures.rglob("*.java"))),
         ], check=True)
         subprocess.run([
-            str(java), "-cp", os.pathsep.join((directory, classpath)),
+            # Keep the importer honest about large catalogs and story indexes: the
+            # real device process also has to share its heap with the WebView.
+            str(java), "-Xmx96m", "-cp", os.pathsep.join((directory, classpath)),
             "com.ato.assistant.AtopackImportHarness", directory,
         ], check=True)
 

@@ -47,14 +47,18 @@
     const artwork = /(?:^|\/)images\/c[1-5]-tile-[^/]+\.(?:jpg|jpeg|png)(?:[?#].*)?$/i.test(src)
       ? window.ATO_MAP_ARTWORK?.resolve(src) : null;
     if (artwork) {
-      const paths = [artwork.base, artwork.overlay].map(path => `../map/${path.replace(/^\.\//, '')}`);
-      return Promise.all(paths.map(path => defaultLoadImage(path, doc))).then(images => {
+      const load = path => loadSingleImage(`../map/${path.replace(/^\.\//, '')}`, doc);
+      return Promise.all([load(artwork.base), window.ATO_MAP_ARTWORK.loadOverlay(artwork, load)]).then(images => {
         const canvas = createCanvas(doc, images[0].naturalWidth || images[0].width, images[0].naturalHeight || images[0].height);
         const ctx = canvas.getContext('2d');
         images.forEach(image => ctx.drawImage(image, 0, 0, canvas.width, canvas.height));
         return canvas;
-      });
+      }).catch(() => loadSingleImage(src, doc));
     }
+    return loadSingleImage(src, doc);
+  }
+
+  function loadSingleImage(src, doc) {
     return new Promise((resolve, reject) => {
       const image = doc.createElement('img');
       image.onload = () => resolve(image);
@@ -69,7 +73,7 @@
           if (!url.pathname.startsWith(prefix)) throw new Error('无法导出应用外的本地图片。');
           if (typeof window.ATOAndroid.readExportImageData !== 'function') throw new Error('请更新 APK 后再导出简报图片。');
           src = window.ATOAndroid.readExportImageData(decodeURIComponent(url.pathname.slice(prefix.length)));
-          if (!/^data:image\/(?:png|jpeg|webp|gif|bmp);base64,/.test(src)) throw new Error('本地导出图片不可用。');
+          if (!/^data:image\/(?:png|jpeg|webp|gif|bmp|svg\+xml);base64,/.test(src)) throw new Error('本地导出图片不可用。');
         }
       }
       image.src = src;

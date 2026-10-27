@@ -11,6 +11,12 @@
   const text = (value) => typeof value === 'boolean' ? (value ? '1' : '') : scalar(value) ? String(value) : '';
   const array = (value) => Array.isArray(value) ? value : [];
   const strings = (value) => array(value).map(text);
+  const refKeyGroups = (value) => {
+    const groups = array(value);
+    return (Array.isArray(groups[0]) ? groups : [groups])
+      .map((group) => array(group).map((item) => typeof item === 'string' ? item : item?.key).filter(Boolean))
+      .filter((group) => group.length);
+  };
   const normalize = (value) => text(value).trim().replace(/\s+/g, ' ').toLowerCase();
   const label = (id) => ({ c1: '循环 I', c2: '循环 II', c3: '循环 III', c4: '循环 IV', c5: '循环 V' }[id] || id);
 
@@ -106,7 +112,10 @@
         if (!pages.has(page)) pages.set(page, []);
         pages.get(page).push({ ...info, id: text(node.id), rawKey,
           box: Array.isArray(node.box) ? node.box.slice(0, 4).map(Number) : null,
-          requires: strings(node.req), requiresAnyGroups: array(node.requires_any_groups).map(strings), xlsmLeadsTo: strings(node.unlocks) });
+          requires: strings(node.req), requiresAnyGroups: [
+            ...refKeyGroups(node.requirements_any || node.req_any),
+            ...refKeyGroups(node.requirement_any_groups || node.req_any_groups || node.requires_any_groups),
+          ], xlsmLeadsTo: strings(node.unlocks) });
       }
     }
     const byName = new Map();

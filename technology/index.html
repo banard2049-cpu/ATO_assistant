@@ -1119,7 +1119,7 @@ button.gear-group-name:hover {
   <script src="../assets/campaign-session.js?v=20260917"></script>
   <script src="../assets/campaign-notes.js?v=20261015"></script>
   <script src="../assets/cycle-symbols.js?v=20260918"></script>
-  <script src="tech-page-layout.js?v=20261003-hekaton-row1"></script>
+  <script src="tech-page-layout.js?v=20261027-card-prerequisites"></script>
   <script src="tech-tree.js?v=20261001-c4-gutters"></script>
   <script src="structure-card-types.js?v=20261004-large"></script>
   <script src="../assets/exploration-card-effects.js?v=20261014-record-tracks1"></script>
@@ -2314,12 +2314,14 @@ const PRINTED_CONDITION_BOXES = {
     'cycle2_9': [[-0.0, 13.5]],
     'cycle2_10': [[-0.2, 14.0]],
     'cycle2_28': [[0.2, 20.5]],
+    'cycle2_29': [[0.0, 20.5]],
     'cycle2_30': [[0.1, 13.5]],
     'cycle2_31': [[0.2, 13.5]],
     'cycle2_33': [[-0.2, 14.0]],
     'cycle2_34': [[0.1, 13.5]],
     'cycle2_42': [[-0.0, 14.0]],
     'cycle2_43': [[0.2, 20.5]],
+    'cycle2_47': [[0.0, 13.5]],
     'cycle2_52': [[0.1, 13.5]],
     'cycle2_54': [[-0.1, 14.0]],
     'cycle2_64': [[0.2, 21.0]],
@@ -2337,6 +2339,7 @@ const PRINTED_CONDITION_BOXES = {
     'cycle3_31': [[-0.1, 14.0]],
     'cycle3_32': [[-0.2, 14.0]],
     'cycle3_35': [[0.2, 20.5]],
+    'cycle3_36': [[0.0, 13.5]],
     'cycle3_37': [[0.3, 13.5], [14.3, 20.5]],
     'cycle3_43': [[-0.1, 21.0]],
     'cycle3_44': [[0.2, 13.5]],
@@ -2407,11 +2410,14 @@ const PRINTED_CONDITION_TEXT = {
   'cycle1_20': "Pursuit's End Battle Victory",
   'cycle2_42': '20+ Argo Knowledge',
   'cycle2_43': 'Nietzschean LVL 1 Battle',
+  'cycle2_47': 'Pursuer LVL 1 Battle',
+  'cycle2_28': "Pursuit's End Battle Victory",
+  'cycle2_29': 'Burden Hardest to Bear Battle Victory',
   'cycle3_36': 'Burden LVL 1 Battle',
   'cycle2_30': 'Burden LVL 1 Battle',
   'cycle2_4': 'Story 3A',
   'cycle2_64': 'Diplomacy (any Faction) 7+',
-  'cycle3_31': '45+ Argo Knowledge',
+  'cycle3_31': '46+ Argo Knowledge',
   'cycle3_35': 'Burden Hardest to Bear Battle Victory',
   // 下面这批是「图上印的与词典不同」、以图为准更正的（词长/数字/模板三重核对过）
   'cycle1_28': '30+ explored Map tiles',        // 词典写的是 plus 30 tiles
@@ -2467,6 +2473,9 @@ const CONDITION_TEXT_ZH = {
   'Dragon of Phobos LVL 3 Battle': '等级 3 的深海惧龙战斗',
   'Dragon of Phobos LVL 4 Battle': '等级 4 的深海惧龙战斗',
   'Followers of Areté Alliance': '与阿瑞特追随者结盟',
+  'Helot Alliance': '与黑劳士结盟',
+  'Hypertime Oracle LVL 2 Battle OR Gain +1 Paradox': '等级 2 的超时光先知战斗 或 获得 1 点悖论',
+  'Icarian Harpy LVL 2 Battle OR Gain +1 Paradox': '等级 2 的伊卡洛斯哈尔皮战斗 或 获得 1 点悖论',
   'Hypertime Oracle LVL 2 Battle': '等级 2 的超时光先知战斗',
   'Hypertime Oracle LVL 3 Battle': '等级 3 的超时光先知战斗',
   'Hypertime Oracle LVL 4 Battle': '等级 4 的超时光先知战斗',
@@ -2515,6 +2524,7 @@ const CONDITION_TEXT_ZH = {
   '3+ Argo Knowledge': '阿尔戈号知识 3+',
   '20+ Argo Knowledge': '阿尔戈号知识 20+',
   '45+ Argo Knowledge': '阿尔戈号知识 45+',
+  '46+ Argo Knowledge': '阿尔戈号知识 46+',
   'Nietzschean LVL 1 Battle': '等级 1 的尼采超人战斗',
   'Burden LVL 1 Battle': '等级 1 的重担战斗',
   'Burden Hardest to Bear Battle Victory': '承受最重之担战役胜利',
