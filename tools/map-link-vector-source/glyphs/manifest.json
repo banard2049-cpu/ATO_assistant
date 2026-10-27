@@ -1,0 +1,600 @@
+{
+  "purpose": "Review-only route glyphs; no runtime assets or registry modified",
+  "coordinateSystem": "1024 × 1024; preserve aspect ratio when fitting",
+  "sourceImages": 0,
+  "runtimeFonts": 0,
+  "glyphs": [
+    {
+      "id": "c5_starting_dragon",
+      "file": "tools/map-link-vector-source/glyphs/c5_starting_dragon.svg",
+      "source": "output/map-asset-kit-20261024/native-icons/markers/c5_starting_dragon-black.svg",
+      "sourceSha256": "86cc906c92b7273c268e1ad21b7f7742716881a9ef0e06c4186d472073459169",
+      "bytes": 4402,
+      "method": "isolated-bitmap-contour",
+      "nativeVector": false,
+      "nativeBitmapSize": [
+        60,
+        62
+      ],
+      "sourceImagePlacement": [
+        46.4827586,
+        23.2068966,
+        15.51724138,
+        15.517241379032258
+      ],
+      "contourTolerancePx": 0.22,
+      "threshold": 0.48,
+      "vertices": 255,
+      "loops": 8,
+      "layers": 1
+    },
+    {
+      "id": "calamity",
+      "file": "tools/map-link-vector-source/glyphs/calamity.svg",
+      "source": "output/map-asset-kit-20261024/native-icons/markers/calamity.svg",
+      "sourceSha256": "d8cb3a08e8ca3e3dbc0560c323d5e056d07de17072ccb1f6d462b4bc85618a3a",
+      "bytes": 74675,
+      "method": "existing-vector-paths",
+      "nativeVector": null,
+      "sourceClaim": "native-vector",
+      "sourceProvenance": {
+        "path": "output/map-vector-previews-20261023/hybrid/source-audit/record-c4-doom-native.svg",
+        "originalManifest": "output/map-vector-previews-20261023/hybrid/source-audit/record-progress-doom-manifest.json"
+      }
+    },
+    {
+      "id": "central_adventure",
+      "file": "tools/map-link-vector-source/glyphs/central_adventure.svg",
+      "source": "output/map-asset-kit-20261024/native-icons/markers/central_adventure.svg",
+      "sourceSha256": "a45d8ad82f9d084419d9b5af73c41ae178401d168c572de67ee76b556f2e2abf",
+      "bytes": 22447,
+      "method": "existing-vector-paths",
+      "nativeVector": null,
+      "sourceClaim": "native-vector",
+      "sourceProvenance": {
+        "path": "D:\\desktop\\A3 ATO中文规则书  V1.4.pdf",
+        "page": 15,
+        "drawingIndices": [
+          51,
+          52,
+          53,
+          54,
+          55,
+          56,
+          57,
+          58,
+          59,
+          60,
+          61,
+          62,
+          63,
+          64,
+          65,
+          66,
+          67
+        ],
+        "nativeBounds": [
+          320.6400146484375,
+          183.47998046875,
+          338.3999938964844,
+          198.7899932861328
+        ],
+        "extraction": "original PDF drawing paths; no tracing"
+      }
+    },
+    {
+      "id": "daedalus_lighthouse",
+      "file": "tools/map-link-vector-source/glyphs/daedalus_lighthouse.svg",
+      "source": "output/map-asset-kit-20261024/native-icons/markers/daedalus_lighthouse.svg",
+      "sourceSha256": "7aa4c06147e773f6aa2ea6f114ac62a7e8018c1b65c014dfc56f46a358916ac6",
+      "bytes": 3221,
+      "method": "isolated-bitmap-contour",
+      "nativeVector": false,
+      "nativeBitmapSize": [
+        33,
+        47
+      ],
+      "sourceImagePlacement": [
+        196.0425532,
+        62.0,
+        19.14893616969697,
+        19.148936170212767
+      ],
+      "contourTolerancePx": 0.22,
+      "threshold": 0.48,
+      "vertices": 182,
+      "loops": 4,
+      "layers": 2
+    },
+    {
+      "id": "frozen_time",
+      "file": "tools/map-link-vector-source/glyphs/frozen_time.svg",
+      "source": "output/map-asset-kit-20261024/native-icons/markers/frozen_time.svg",
+      "sourceSha256": "25e3b98f8d8a8ee6c695aac7831a96664423f34817e994d4514142dfba505c26",
+      "bytes": 46436,
+      "method": "existing-vector-paths",
+      "nativeVector": null,
+      "sourceClaim": "source-bitmap",
+      "sourceProvenance": {
+        "path": "D:\\desktop\\大文档\\A5 循环I~Ⅲ 特别规则V1.22.pdf",
+        "page": 19,
+        "xref": 493,
+        "smask": 510,
+        "extraction": "original embedded PDF image",
+        "nativeSize": [
+          109,
+          83
+        ],
+        "sourceBitmap": "D:\\desktop\\ATO_assistant\\output\\map-asset-kit-20261024\\native-icons\\source-audit\\frozen_time-original-pdf-xref-493.png",
+        "alphaBitmap": "native-icons/source-audit/frozen_time-source-alpha.png",
+        "alphaMethod": "native"
+      }
+    },
+    {
+      "id": "helmet_icon",
+      "file": "tools/map-link-vector-source/glyphs/helmet_icon.svg",
+      "source": "output/map-asset-kit-20261024/native-icons/markers/helmet_icon-black.svg",
+      "sourceSha256": "1f676a5c8b0447c2a83672b896cdc41eb8527de7e7c1835872eca202d732a7ef",
+      "bytes": 2350,
+      "method": "isolated-bitmap-contour",
+      "nativeVector": false,
+      "nativeBitmapSize": [
+        36,
+        37
+      ],
+      "sourceImagePlacement": [
+        74.1621622,
+        62.0,
+        24.324324325000003,
+        24.324324324324323
+      ],
+      "contourTolerancePx": 0.22,
+      "threshold": 0.48,
+      "vertices": 128,
+      "loops": 4,
+      "layers": 1
+    },
+    {
+      "id": "hourglass_icon",
+      "file": "tools/map-link-vector-source/glyphs/hourglass_icon.svg",
+      "source": "output/map-asset-kit-20261024/native-icons/markers/hourglass_icon-black.svg",
+      "sourceSha256": "5a32df131cef085bd4df555fe536ba1bcf3c6166f0df7d0b06bc42d162e1b420",
+      "bytes": 2105,
+      "method": "isolated-bitmap-contour",
+      "nativeVector": false,
+      "nativeBitmapSize": [
+        27,
+        35
+      ],
+      "sourceImagePlacement": [
+        164.8571429,
+        62.0,
+        25.714285714814814,
+        25.714285714285715
+      ],
+      "contourTolerancePx": 0.22,
+      "threshold": 0.48,
+      "vertices": 113,
+      "loops": 4,
+      "layers": 1
+    },
+    {
+      "id": "oasis",
+      "file": "tools/map-link-vector-source/glyphs/oasis.svg",
+      "source": "output/map-asset-kit-20261024/native-icons/markers/oasis-black.svg",
+      "sourceSha256": "2797fc01e388f9ea0b3b9a9bcbf0646a5f0104f0889f1ec72c6aa0e9dcc844bc",
+      "bytes": 2631,
+      "method": "isolated-bitmap-contour",
+      "nativeVector": false,
+      "nativeBitmapSize": [
+        49,
+        39
+      ],
+      "sourceImagePlacement": [
+        22.0,
+        92.0,
+        20.0,
+        20.0
+      ],
+      "contourTolerancePx": 0.22,
+      "threshold": 0.48,
+      "vertices": 145,
+      "loops": 6,
+      "layers": 1
+    },
+    {
+      "id": "progress",
+      "file": "tools/map-link-vector-source/glyphs/progress.svg",
+      "source": "output/map-asset-kit-20261024/native-icons/markers/progress.svg",
+      "sourceSha256": "71aa8b9e8da12303187045756c91be1b7d2e2ebcee33b35f46c7dc71ba8a911f",
+      "bytes": 38460,
+      "method": "existing-vector-paths",
+      "nativeVector": null,
+      "sourceClaim": "native-vector",
+      "sourceProvenance": {
+        "path": "output/map-vector-previews-20261023/hybrid/source-audit/record-c4-progress-native.svg",
+        "originalManifest": "output/map-vector-previews-20261023/hybrid/source-audit/record-progress-doom-manifest.json"
+      }
+    },
+    {
+      "id": "restricted",
+      "file": "tools/map-link-vector-source/glyphs/restricted.svg",
+      "source": "output/map-asset-kit-20261024/native-icons/markers/restricted.svg",
+      "sourceSha256": "730dbcf1091a1ac7f056a0db1db3287bb65e9cdc602a655b8ad48fc94ae7de0f",
+      "bytes": 2086,
+      "method": "existing-vector-paths",
+      "nativeVector": null,
+      "sourceClaim": "native-vector",
+      "sourceProvenance": {
+        "path": "D:\\desktop\\A3 ATO中文规则书  V1.4.pdf",
+        "page": 15,
+        "drawingIndices": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "nativeBounds": [
+          36.2400016784668,
+          476.39996337890625,
+          50.470001220703125,
+          490.91998291015625
+        ],
+        "extraction": "original PDF drawing paths; no tracing"
+      }
+    },
+    {
+      "id": "river",
+      "file": "tools/map-link-vector-source/glyphs/river.svg",
+      "source": "output/map-asset-kit-20261024/native-icons/markers/river.svg",
+      "sourceSha256": "648fbd7af0e8ec7c445032612d56f5ef392244d505bcb3bb88a859ae29682194",
+      "bytes": 8118,
+      "method": "isolated-bitmap-contour",
+      "nativeVector": false,
+      "nativeBitmapSize": [
+        140,
+        129
+      ],
+      "sourceImagePlacement": [
+        -138.4950495,
+        -107.3069307,
+        8.910891089285714,
+        8.910891089147286
+      ],
+      "contourTolerancePx": 0.22,
+      "threshold": 0.48,
+      "vertices": 466,
+      "loops": 18,
+      "layers": 2
+    },
+    {
+      "id": "rr_adventure",
+      "file": "tools/map-link-vector-source/glyphs/rr_adventure.svg",
+      "source": "output/map-asset-kit-20261024/native-icons/markers/rr_adventure.svg",
+      "sourceSha256": "beaf12ce1b602a3becb8e9c492eda7daac9ee5a53f67c8ad020db7f9fd03edad",
+      "bytes": 8063,
+      "method": "existing-vector-paths",
+      "nativeVector": null,
+      "sourceClaim": "native-vector",
+      "sourceProvenance": {
+        "path": "D:\\desktop\\A3 ATO中文规则书  V1.4.pdf",
+        "page": 15,
+        "drawingIndices": [
+          68,
+          69,
+          70,
+          71,
+          72,
+          73,
+          74,
+          75,
+          76,
+          77,
+          78,
+          79,
+          80,
+          81,
+          82,
+          83,
+          84,
+          85
+        ],
+        "nativeBounds": [
+          322.0799865722656,
+          235.91998291015625,
+          338.3999938964844,
+          251.34996032714844
+        ],
+        "extraction": "original PDF drawing paths; no tracing"
+      }
+    },
+    {
+      "id": "silver_ruin",
+      "file": "tools/map-link-vector-source/glyphs/silver_ruin.svg",
+      "source": "output/map-asset-kit-20261024/native-icons/markers/silver_ruin.svg",
+      "sourceSha256": "d20e5cfa5bddf3f1be999a74b4fa99c7f97124a62a483b9786ee4bd98036b80f",
+      "bytes": 36354,
+      "method": "isolated-bitmap-contour",
+      "nativeVector": false,
+      "nativeBitmapSize": [
+        317,
+        321
+      ],
+      "sourceImagePlacement": [
+        63.4423077,
+        38.9230769,
+        2.884615384542587,
+        2.8846153847352025
+      ],
+      "contourTolerancePx": 0.22,
+      "threshold": 0.48,
+      "vertices": 2059,
+      "loops": 221,
+      "layers": 2
+    },
+    {
+      "id": "smoking_bowl_icon",
+      "file": "tools/map-link-vector-source/glyphs/smoking_bowl_icon.svg",
+      "source": "output/map-asset-kit-20261024/native-icons/markers/smoking_bowl_icon-black.svg",
+      "sourceSha256": "539530e156f3111e5b2b80ae9085ae53dbf85d8eb689595200fbaec71c3b814b",
+      "bytes": 5718,
+      "method": "isolated-bitmap-contour",
+      "nativeVector": false,
+      "nativeBitmapSize": [
+        46,
+        47
+      ],
+      "sourceImagePlacement": [
+        71.5744681,
+        62.0,
+        19.148936169565218,
+        19.148936170212767
+      ],
+      "contourTolerancePx": 0.22,
+      "threshold": 0.48,
+      "vertices": 342,
+      "loops": 10,
+      "layers": 1
+    },
+    {
+      "id": "spartan_stronghold",
+      "file": "tools/map-link-vector-source/glyphs/spartan_stronghold.svg",
+      "source": "output/map-asset-kit-20261024/native-icons/markers/spartan_stronghold.svg",
+      "sourceSha256": "3ac9a11f5dbf796080f949090b4815cb8c68192418799112250644c384a31194",
+      "bytes": 2444,
+      "method": "isolated-bitmap-contour",
+      "nativeVector": false,
+      "nativeBitmapSize": [
+        48,
+        44
+      ],
+      "sourceImagePlacement": [
+        -23.7142857,
+        8.4285714,
+        21.428571429166666,
+        21.428571429545453
+      ],
+      "contourTolerancePx": 0.22,
+      "threshold": 0.48,
+      "vertices": 128,
+      "loops": 5,
+      "layers": 2
+    },
+    {
+      "id": "staff_icon",
+      "file": "tools/map-link-vector-source/glyphs/staff_icon.svg",
+      "source": "output/map-asset-kit-20261024/native-icons/markers/staff_icon-black.svg",
+      "sourceSha256": "e3fb0500f9ba0cc39a879aaa47fd75efc8877e3651ba7047a1aecc58b00f25d4",
+      "bytes": 1670,
+      "method": "isolated-bitmap-contour",
+      "nativeVector": false,
+      "nativeBitmapSize": [
+        34,
+        30
+      ],
+      "sourceImagePlacement": [
+        62.0,
+        114.9411765,
+        26.470588235294116,
+        26.470588236666668
+      ],
+      "contourTolerancePx": 0.22,
+      "threshold": 0.48,
+      "vertices": 85,
+      "loops": 9,
+      "layers": 1
+    },
+    {
+      "id": "time_portal",
+      "file": "tools/map-link-vector-source/glyphs/time_portal.svg",
+      "source": "output/map-asset-kit-20261024/native-icons/markers/time_portal.svg",
+      "sourceSha256": "98a5f77c1a800fd29d1d7981dcd35ad9354431a7d68212bdc6920541d7153edf",
+      "bytes": 8662,
+      "method": "isolated-bitmap-contour",
+      "nativeVector": false,
+      "nativeBitmapSize": [
+        78,
+        73
+      ],
+      "sourceImagePlacement": [
+        62.0,
+        62.0,
+        12.857142857692308,
+        12.857142857534246
+      ],
+      "contourTolerancePx": 0.22,
+      "threshold": 0.48,
+      "vertices": 516,
+      "loops": 36,
+      "layers": 2
+    },
+    {
+      "id": "time_portal_angular",
+      "file": "tools/map-link-vector-source/glyphs/time_portal_angular.svg",
+      "source": "output/map-asset-kit-20261024/native-icons/markers/time_portal_angular.svg",
+      "sourceSha256": "5f59b908feff86a68d18aa87e63347b52a5008de64f5c7d406f89908bb895e8b",
+      "bytes": 4949,
+      "method": "isolated-bitmap-contour",
+      "nativeVector": false,
+      "nativeBitmapSize": [
+        77,
+        74
+      ],
+      "sourceImagePlacement": [
+        17.0,
+        49.1428571,
+        12.857142857142858,
+        12.857142856756758
+      ],
+      "contourTolerancePx": 0.22,
+      "threshold": 0.48,
+      "vertices": 284,
+      "loops": 7,
+      "layers": 2
+    },
+    {
+      "id": "time_wound",
+      "file": "tools/map-link-vector-source/glyphs/time_wound.svg",
+      "source": "output/map-asset-kit-20261024/native-icons/markers/time_wound.svg",
+      "sourceSha256": "5fdd69afb326a846c21439d722b95f71bf9ee1ea60757d5a40515bee211af77a",
+      "bytes": 11930,
+      "method": "isolated-bitmap-contour",
+      "nativeVector": false,
+      "nativeBitmapSize": [
+        84,
+        86
+      ],
+      "sourceImagePlacement": [
+        8.0,
+        -22.0,
+        12.0,
+        12.0
+      ],
+      "contourTolerancePx": 0.22,
+      "threshold": 0.48,
+      "vertices": 716,
+      "loops": 35,
+      "layers": 2
+    },
+    {
+      "id": "wheel_icon",
+      "file": "tools/map-link-vector-source/glyphs/wheel_icon.svg",
+      "source": "output/map-asset-kit-20261024/native-icons/markers/wheel_icon-black.svg",
+      "sourceSha256": "032e1da92f8e5f16aad3d14e3910a144238add98451c00d9c574cc4ed66a4e8c",
+      "bytes": 2292,
+      "method": "isolated-bitmap-contour",
+      "nativeVector": false,
+      "nativeBitmapSize": [
+        44,
+        44
+      ],
+      "sourceImagePlacement": [
+        62.0,
+        62.0,
+        20.454545454545453,
+        20.454545454545453
+      ],
+      "contourTolerancePx": 0.22,
+      "threshold": 0.48,
+      "vertices": 123,
+      "loops": 9,
+      "layers": 1
+    },
+    {
+      "id": "wild_titan",
+      "file": "tools/map-link-vector-source/glyphs/wild_titan.svg",
+      "source": "output/map-asset-kit-20261024/native-icons/markers/wild_titan.svg",
+      "sourceSha256": "3fbb6a944261eae73d4ae2534600d5be80f1b9803b58a7d3085f31811fc3f14c",
+      "bytes": 28193,
+      "method": "existing-vector-paths",
+      "nativeVector": null,
+      "sourceClaim": "native-vector",
+      "sourceProvenance": {
+        "path": "D:\\desktop\\A3 ATO中文规则书  V1.4.pdf",
+        "page": 15,
+        "drawingIndices": [
+          43,
+          44,
+          45,
+          46,
+          47,
+          48,
+          49,
+          50
+        ],
+        "nativeBounds": [
+          322.55999755859375,
+          129.36000061035156,
+          334.79998779296875,
+          144.30999755859375
+        ],
+        "extraction": "original PDF drawing paths; no tracing"
+      }
+    },
+    {
+      "id": "alpha",
+      "file": "tools/map-link-vector-source/glyphs/alpha.svg",
+      "bytes": 646,
+      "method": "font-outline",
+      "nativeVector": true,
+      "character": "α",
+      "font": "C:\\Windows\\Fonts\\times.ttf",
+      "fontSha256": "931c5de5c70401d9324d5014c123802b4fb753000360ceb2f56c589403cd58c5",
+      "glyphName": "alpha",
+      "originalBounds": [
+        87,
+        -28,
+        1059,
+        943
+      ]
+    },
+    {
+      "id": "beta",
+      "file": "tools/map-link-vector-source/glyphs/beta.svg",
+      "bytes": 827,
+      "method": "font-outline",
+      "nativeVector": true,
+      "character": "β",
+      "font": "C:\\Windows\\Fonts\\times.ttf",
+      "fontSha256": "931c5de5c70401d9324d5014c123802b4fb753000360ceb2f56c589403cd58c5",
+      "glyphName": "beta",
+      "originalBounds": [
+        110,
+        -438,
+        974,
+        1420
+      ]
+    },
+    {
+      "id": "sea_route",
+      "file": "tools/map-link-vector-source/glyphs/sea_route.svg",
+      "bytes": 3368,
+      "method": "native-vector-subset",
+      "nativeVector": true,
+      "source": "output/map-asset-kit-20261024/native-icons/markers/rr_adventure.svg",
+      "sourceSha256": "beaf12ce1b602a3becb8e9c492eda7daac9ee5a53f67c8ad020db7f9fd03edad",
+      "sourceDrawings": [
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75
+      ],
+      "originalBounds": [
+        322.0799866,
+        245.6399536,
+        338.3999939,
+        251.3499603
+      ]
+    }
+  ],
+  "counts": {
+    "existing-vector-paths": 7,
+    "font-outline": 2,
+    "isolated-bitmap-contour": 14,
+    "native-vector-subset": 1
+  }
+}

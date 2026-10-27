@@ -1,4 +1,4 @@
-// Android daily archives -> the same replay contract as briefing/api.php.
+// Paged daily archives -> the same replay contract on Android and PHP servers.
 // Pure data conversion: never read today's state into a historical entry.
 (function (root, factory) {
   const api = factory();
@@ -73,7 +73,7 @@
     const snapshot = {
       day: text(state.day), savedAt: text(map.savedAt ?? state.updatedAt),
       location: text(state.location), objective: text(state.objective).trim(), reminder: text(state.reminder).trim(),
-      notes: text(state.notes), dateNotes: array(state.dateNotes),
+      notes: text(state.notes), dateNotes: state.dateNotes && typeof state.dateNotes === 'object' ? Object.values(state.dateNotes) : [],
       surveyActive: text(state.specialEventConstantsActive), pharosActive: text(state.pharosDreamsActive),
       mainStoryActive: text(state.mainStoryConstantsActive), cardTracks: tracks,
       cardTracksVersion: scalar(state.cardTracksVersion) ? Number(state.cardTracksVersion) || 0 : null,
@@ -157,12 +157,12 @@
   function build(source, mapData, techData) {
     const profileId = source.profileId, cycleId = source.cycleId;
     const profiles = source.campaign?.sections?.dashboard?.profiles || {};
-    const cycles = Object.entries(profiles).flatMap(([id, profile]) => Object.entries(profile.cycles || {}).map(([cycle, entry]) =>
+    const cycles = Array.isArray(source.cycles) ? source.cycles : Object.entries(profiles).flatMap(([id, profile]) => Object.entries(profile.cycles || {}).map(([cycle, entry]) =>
       ({ profileId: id, profileName: text(profile.name) || id, cycleId: cycle, label: label(cycle), day: text(entry.state?.day) })));
     const base = { ok: true, version: 2, user: { id: source.user.id },
-      cycle: { profileId, cycleId, label: label(cycleId), backupDir: '' }, cycles };
+      cycle: { profileId, cycleId, label: label(cycleId), backupDir: '', ...source.cycle }, cycles };
     const snapshots = new Map(array(source.snapshots).map((campaign) => {
-      const snapshot = extract(campaign, profileId, cycleId);
+      const snapshot = source.snapshotFormat === 'briefing' ? campaign : extract(campaign, profileId, cycleId);
       return [snapshot.day, snapshot];
     }));
     if (!snapshots.size) return { ...base, hasData: false,
@@ -176,7 +176,7 @@
       if (kind === 0) maxPrologue = Math.max(maxPrologue, n);
       if (kind === 1) maxNumeric = Math.max(maxNumeric, n);
     }
-    // A malformed save cannot allocate an unbounded date axis on the phone.
+    // A malformed save cannot allocate an unbounded date axis in the browser.
     if (maxNumeric > 10000 || maxPrologue > 10000) throw new Error('存档天数超出可读取范围。');
     if (maxPrologue > 0) for (let n = 0; n <= maxPrologue; n++) sequence.add(`T${n}`);
     if (maxNumeric > 0 || maxPrologue > 0) for (let n = 0; n <= maxNumeric; n++) sequence.add(String(n));

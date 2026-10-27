@@ -1,0 +1,400 @@
+{
+  "version": "20261026-source-c3-disc-tabs1",
+  "method": "Original alpha determines only one of four fixed circle/tab backings, never a traced visible contour.",
+  "palette": {
+    "rim": "#585777",
+    "field": "#e6e6e6",
+    "ink": "#282826"
+  },
+  "outerDiameter": 84,
+  "innerDiameter": 72.45,
+  "glyphMetrics": {
+    "time_portal": {
+      "size": [
+        71,
+        70
+      ],
+      "offset": [
+        -1,
+        -1.5
+      ]
+    },
+    "time_wound": {
+      "size": [
+        60,
+        66
+      ],
+      "offset": [
+        2,
+        0
+      ]
+    },
+    "time_portal_angular": {
+      "size": [
+        51,
+        52
+      ],
+      "offset": [
+        1,
+        0
+      ]
+    }
+  },
+  "byType": {
+    "time_portal": 6,
+    "time_wound": 11,
+    "time_portal_angular": 8
+  },
+  "instances": {
+    "c3-tile-003-front:special-1:0": {
+      "key": "c3-tile-003-front",
+      "panelId": "special-1",
+      "extraIndex": 0,
+      "kind": "time_portal",
+      "tab": "TR",
+      "sourceBBox": [
+        402,
+        359,
+        487,
+        445
+      ],
+      "sourceSha256": "c36ea4baf612e7253882a35ba87585e077098d09f60947a3d916460183b29e00"
+    },
+    "c3-tile-010-front:special-1:0": {
+      "key": "c3-tile-010-front",
+      "panelId": "special-1",
+      "extraIndex": 0,
+      "kind": "time_portal",
+      "tab": "BL",
+      "sourceBBox": [
+        637,
+        652,
+        722,
+        738
+      ],
+      "sourceSha256": "7e9396d56e5dedccdfdf45cdb10562e9b9a406d20a17597aeaf67ed7794a35aa"
+    },
+    "c3-tile-012-front:special-1:0": {
+      "key": "c3-tile-012-front",
+      "panelId": "special-1",
+      "extraIndex": 0,
+      "kind": "time_wound",
+      "tab": "BR",
+      "sourceBBox": [
+        294,
+        517,
+        379,
+        602
+      ],
+      "sourceSha256": "aeeef7dce2a0428a5c585bfde884c8b63368d2c5e0f7d1375bcfc72793fa7013"
+    },
+    "c3-tile-021-front:special-1:0": {
+      "key": "c3-tile-021-front",
+      "panelId": "special-1",
+      "extraIndex": 0,
+      "kind": "time_wound",
+      "tab": "TL",
+      "sourceBBox": [
+        325,
+        428,
+        411,
+        515
+      ],
+      "sourceSha256": "70eaf1c23d2a2d9223c2f99da6f47582f2de63e0d58623a40ba6173104b364ee"
+    },
+    "c3-tile-023-front:special-1:0": {
+      "key": "c3-tile-023-front",
+      "panelId": "special-1",
+      "extraIndex": 0,
+      "kind": "time_wound",
+      "tab": "TR",
+      "sourceBBox": [
+        502,
+        671,
+        588,
+        757
+      ],
+      "sourceSha256": "18c0046a06848aea13dfebed27c88a41f49b046e1956566042afda5bfb8fe97d"
+    },
+    "c3-tile-027-front:special-1:0": {
+      "key": "c3-tile-027-front",
+      "panelId": "special-1",
+      "extraIndex": 0,
+      "kind": "time_portal",
+      "tab": "TR",
+      "sourceBBox": [
+        62,
+        670,
+        147,
+        756
+      ],
+      "sourceSha256": "7371ce751dc2a9769b22e8a0960f3d4818098cff3cd70bc2fc643e54752ac04a"
+    },
+    "c3-tile-034-front:special-1:0": {
+      "key": "c3-tile-034-front",
+      "panelId": "special-1",
+      "extraIndex": 0,
+      "kind": "time_wound",
+      "tab": "BL",
+      "sourceBBox": [
+        559,
+        39,
+        644,
+        125
+      ],
+      "sourceSha256": "eff8a7f37c4b6ac3c15340e542e4cbfddc9147116a357b734037969294e47a5d"
+    },
+    "c3-tile-036-front:special-1:0": {
+      "key": "c3-tile-036-front",
+      "panelId": "special-1",
+      "extraIndex": 0,
+      "kind": "time_portal_angular",
+      "tab": "BL",
+      "sourceBBox": [
+        439,
+        674,
+        524,
+        759
+      ],
+      "sourceSha256": "0de5c31d27ced33e5019cfc579711d186f200075b6b4d36ea91ed0ba130a6c51"
+    },
+    "c3-tile-038-front:special-1:0": {
+      "key": "c3-tile-038-front",
+      "panelId": "special-1",
+      "extraIndex": 0,
+      "kind": "time_portal",
+      "tab": "TL",
+      "sourceBBox": [
+        402,
+        349,
+        487,
+        435
+      ],
+      "sourceSha256": "7a55c4da89cf8bfc8953bd563ffd9de45e483898c4fa2557c88cbe7f7164afd5"
+    },
+    "c3-tile-042-front:special-1:0": {
+      "key": "c3-tile-042-front",
+      "panelId": "special-1",
+      "extraIndex": 0,
+      "kind": "time_portal_angular",
+      "tab": "TL",
+      "sourceBBox": [
+        266,
+        779,
+        351,
+        864
+      ],
+      "sourceSha256": "e4efa271e54d8976ab7eabbfde29a876d6b10d60ca067668ec5af047495e7726"
+    },
+    "c3-tile-043-front:special-1:0": {
+      "key": "c3-tile-043-front",
+      "panelId": "special-1",
+      "extraIndex": 0,
+      "kind": "time_portal",
+      "tab": "BL",
+      "sourceBBox": [
+        642,
+        653,
+        727,
+        739
+      ],
+      "sourceSha256": "69efcdb65c341f338f07cf2c09d6648b83fb0a5468f4d29630ae983736120e3d"
+    },
+    "c3-tile-055-front:special-1:0": {
+      "key": "c3-tile-055-front",
+      "panelId": "special-1",
+      "extraIndex": 0,
+      "kind": "time_wound",
+      "tab": "BR",
+      "sourceBBox": [
+        156,
+        377,
+        242,
+        463
+      ],
+      "sourceSha256": "95aca93285eddab0d656dd49cf0249485860353e40cfbd50b1f35fad4762e719"
+    },
+    "c3-tile-056-front:special-1:0": {
+      "key": "c3-tile-056-front",
+      "panelId": "special-1",
+      "extraIndex": 0,
+      "kind": "time_portal_angular",
+      "tab": "BL",
+      "sourceBBox": [
+        485,
+        260,
+        571,
+        345
+      ],
+      "sourceSha256": "f2e212d0bde6445a08b05cd20bbdb6480284d50b7aba757797fcbdcb2b0ec820"
+    },
+    "c3-tile-056-front:special-2:0": {
+      "key": "c3-tile-056-front",
+      "panelId": "special-2",
+      "extraIndex": 0,
+      "kind": "time_wound",
+      "tab": "BL",
+      "sourceBBox": [
+        678,
+        378,
+        764,
+        463
+      ],
+      "sourceSha256": "f2e212d0bde6445a08b05cd20bbdb6480284d50b7aba757797fcbdcb2b0ec820"
+    },
+    "c3-tile-057-front:special-1:0": {
+      "key": "c3-tile-057-front",
+      "panelId": "special-1",
+      "extraIndex": 0,
+      "kind": "time_portal",
+      "tab": "TR",
+      "sourceBBox": [
+        54,
+        679,
+        139,
+        764
+      ],
+      "sourceSha256": "87b174c2626c80b7fd373b96f95b293396804ba32019939bfd406c5051253989"
+    },
+    "c3-tile-058-front:special-1:0": {
+      "key": "c3-tile-058-front",
+      "panelId": "special-1",
+      "extraIndex": 0,
+      "kind": "time_portal_angular",
+      "tab": "BR",
+      "sourceBBox": [
+        541,
+        622,
+        626,
+        707
+      ],
+      "sourceSha256": "d23374fe95216c2256d632a1a252344d62c3085552e9762e12d8f9aa7bc18413"
+    },
+    "c3-tile-060-front:special-1:0": {
+      "key": "c3-tile-060-front",
+      "panelId": "special-1",
+      "extraIndex": 0,
+      "kind": "time_wound",
+      "tab": "BR",
+      "sourceBBox": [
+        589,
+        672,
+        675,
+        758
+      ],
+      "sourceSha256": "2c0e1d2e0c7b95f1ca73ea7d971d76294c9cd716801a5334bda01a6004503262"
+    },
+    "c3-tile-068-front:special-1:0": {
+      "key": "c3-tile-068-front",
+      "panelId": "special-1",
+      "extraIndex": 0,
+      "kind": "time_wound",
+      "tab": "TR",
+      "sourceBBox": [
+        598,
+        540,
+        684,
+        626
+      ],
+      "sourceSha256": "e3ef4eb5c88788ae83605b8d7e5c52e32a334b9d6b6e75f3824b394c89458bde"
+    },
+    "c3-tile-069-front:special-1:0": {
+      "key": "c3-tile-069-front",
+      "panelId": "special-1",
+      "extraIndex": 0,
+      "kind": "time_portal_angular",
+      "tab": "BL",
+      "sourceBBox": [
+        385,
+        647,
+        471,
+        732
+      ],
+      "sourceSha256": "e82d3da48087297fd454331d71dac7d4b56d61841c90ddc23c1fd78ca4f9c337"
+    },
+    "c3-tile-072-front:special-1:0": {
+      "key": "c3-tile-072-front",
+      "panelId": "special-1",
+      "extraIndex": 0,
+      "kind": "time_portal_angular",
+      "tab": "TL",
+      "sourceBBox": [
+        105,
+        849,
+        190,
+        935
+      ],
+      "sourceSha256": "6b35bb2991b935a09745657d07a39d6166e393ad3d77322d59c2a175e457c0e8"
+    },
+    "c3-tile-073-front:special-1:0": {
+      "key": "c3-tile-073-front",
+      "panelId": "special-1",
+      "extraIndex": 0,
+      "kind": "time_wound",
+      "tab": "BL",
+      "sourceBBox": [
+        315,
+        588,
+        400,
+        673
+      ],
+      "sourceSha256": "2af9f56b10fd47144dd790a3edff1a026d942224443312134ab3a9dfc85bf63c"
+    },
+    "c3-tile-083-front:special-1:0": {
+      "key": "c3-tile-083-front",
+      "panelId": "special-1",
+      "extraIndex": 0,
+      "kind": "time_portal_angular",
+      "tab": "BR",
+      "sourceBBox": [
+        209,
+        521,
+        295,
+        607
+      ],
+      "sourceSha256": "48c9390856edc8ce7403e2eb7f384981581a1d82476a778cbce298fa5b6f2130"
+    },
+    "c3-tile-085-front:special-1:0": {
+      "key": "c3-tile-085-front",
+      "panelId": "special-1",
+      "extraIndex": 0,
+      "kind": "time_wound",
+      "tab": "TL",
+      "sourceBBox": [
+        416,
+        423,
+        501,
+        508
+      ],
+      "sourceSha256": "0b11460813ca17232fb36e9dabb95b57dd871dc4f8111c697591dafb06399f13"
+    },
+    "c3-tile-087-front:special-1:0": {
+      "key": "c3-tile-087-front",
+      "panelId": "special-1",
+      "extraIndex": 0,
+      "kind": "time_wound",
+      "tab": "TL",
+      "sourceBBox": [
+        563,
+        694,
+        648,
+        780
+      ],
+      "sourceSha256": "7532cba02d8a6519c456b91dc8001e0326a341107f88ab4d96d096e030573029"
+    },
+    "c3-tile-090-front:special-1:0": {
+      "key": "c3-tile-090-front",
+      "panelId": "special-1",
+      "extraIndex": 0,
+      "kind": "time_portal_angular",
+      "tab": "BR",
+      "sourceBBox": [
+        528,
+        608,
+        614,
+        694
+      ],
+      "sourceSha256": "991efa187f6e98bf33518a7a58fd764fa647b13a3d962663b8e5412884c6314c"
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "method": "All 101 extra symbol crops enlarged and visually checked, separately from destination-faction metadata. Numbers with OCR disagreement read directly from the original.",
+  "greekAndHelmetOverrides": [
+    ["c5-tile-027-front","left-1",2,"greek","alpha"],
+    ["c5-tile-030-front","down-1",2,"icon","helmet_icon"],
+    ["c5-tile-037-front","down-1",2,"greek","alpha"],
+    ["c5-tile-038-front","up-1",2,"icon","helmet_icon"],
+    ["c5-tile-044-front","down-1",2,"icon","helmet_icon"],
+    ["c5-tile-050-front","up-2",2,"icon","helmet_icon"],
+    ["c5-tile-052-front","down-1",2,"icon","helmet_icon"],
+    ["c5-tile-054-front","down-1",2,"icon","helmet_icon"],
+    ["c5-tile-055-front","left-1",2,"icon","helmet_icon"],
+    ["c5-tile-057-front","right-1",0,"greek","alpha"],
+    ["c5-tile-059-front","right-1",0,"greek","alpha"],
+    ["c5-tile-062-front","up-1",2,"icon","helmet_icon"],
+    ["c5-tile-062-front","right-1",0,"icon","helmet_icon"],
+    ["c5-tile-015-back","right-1",0,"greek","alpha"],
+    ["c5-tile-024-back","down-2",2,"greek","beta"],
+    ["c5-tile-059-back","right-1",0,"greek","alpha"]
+  ],
+  "factions": [
+    ["c5-tile-013-back","up-1",1,"followersofarete"],
+    ["c5-tile-057-back","down-1",1,"cycladeanprotectorate"],
+    ["c5-tile-066-back","right-1",0,"cycladeanprotectorate"],
+    ["c5-tile-068-back","left-1",1,"cycladeanprotectorate"],
+    ["c5-tile-077-back","up-1",1,"cycladeanprotectorate"]
+  ],
+  "numbers": [
+    ["c5-tile-013-front","down-1",0,"023"],
+    ["c5-tile-013-back","up-1",0,"003"],
+    ["c5-tile-032-back","down-1",0,"042"],
+    ["c5-tile-036-back","left-1",0,"035"],
+    ["c5-tile-057-back","left-1",0,"056"]
+  ]
+}

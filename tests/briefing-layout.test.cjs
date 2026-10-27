@@ -29,12 +29,9 @@ const win = loadSandbox();
 const dictionary = JSON.parse(fs.readFileSync(path.join(root, 'technology/tech_card_dictionary.min.json'), 'utf8'));
 
 // Use the production converter so this test cannot silently drop compact OR fields.
-const campaign = { sections: { dashboard: { profiles: { test: { cycles: { c1: { state: {
-  day: '0', mapSnapshot: { exploredIds: [] },
-  unlockedTech: { unlockedKeys: dictionary.cards.map(card => card.key) },
-} } } } } } } };
-const replay = build({ user: { id: 'test' }, profileId: 'test', cycleId: 'c1',
-  campaign, snapshots: [campaign] }, {}, dictionary);
+const replay = build({ user: { id: 'test' }, profileId: 'test', cycleId: 'c1', snapshotFormat: 'briefing',
+  snapshots: [{ day: '0', map: { explored: [] }, techKeys: dictionary.cards.map(card => card.key),
+    draws: [], notes: '', story: {}, heroes: { names: [] } }] }, {}, dictionary);
 function pageNodes(pageKey) {
   return replay.tech.pages.find(page => page.page === pageKey).nodes;
 }

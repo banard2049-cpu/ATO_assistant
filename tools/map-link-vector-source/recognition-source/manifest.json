@@ -1,0 +1,134 @@
+[
+  {
+    "id": "river",
+    "key": "c1-tile-019-front",
+    "panelId": "down-1",
+    "index": 2,
+    "box": [
+      524,
+      894,
+      583,
+      955
+    ]
+  },
+  {
+    "id": "waves",
+    "key": "c2-tile-011-front",
+    "panelId": "down-1",
+    "index": 2,
+    "box": [
+      529,
+      878,
+      588,
+      939
+    ]
+  },
+  {
+    "id": "land_route",
+    "key": "c2-tile-007-front",
+    "panelId": "right-1",
+    "index": 0,
+    "box": [
+      745,
+      482,
+      806,
+      542
+    ]
+  },
+  {
+    "id": "gate_route",
+    "key": "c2-tile-023-front",
+    "panelId": "up-1",
+    "index": 2,
+    "box": [
+      524,
+      84,
+      584,
+      146
+    ]
+  },
+  {
+    "id": "alpha",
+    "key": "c1-tile-010-front",
+    "panelId": "up-1",
+    "index": 2,
+    "box": [
+      563,
+      72,
+      623,
+      133
+    ]
+  },
+  {
+    "id": "beta",
+    "key": "c1-tile-010-front",
+    "panelId": "down-1",
+    "index": 2,
+    "box": [
+      561,
+      887,
+      621,
+      948
+    ]
+  },
+  {
+    "id": "hornsworn",
+    "key": "c1-tile-001-front",
+    "panelId": "right-1",
+    "index": 0,
+    "box": [
+      823,
+      482,
+      882,
+      543
+    ]
+  },
+  {
+    "id": "labyrinthians",
+    "key": "c1-tile-024-front",
+    "panelId": "left-1",
+    "index": 1,
+    "box": [
+      140,
+      480,
+      199,
+      543
+    ]
+  },
+  {
+    "id": "helots",
+    "key": "c2-tile-005-front",
+    "panelId": "down-1",
+    "index": 1,
+    "box": [
+      532,
+      877,
+      591,
+      939
+    ]
+  },
+  {
+    "id": "cyclopes",
+    "key": "c2-tile-003-front",
+    "panelId": "left-1",
+    "index": 1,
+    "box": [
+      154,
+      482,
+      213,
+      543
+    ]
+  },
+  {
+    "id": "symmachy",
+    "key": "c2-tile-021-front",
+    "panelId": "up-1",
+    "index": 1,
+    "box": [
+      431,
+      84,
+      488,
+      147
+    ]
+  }
+]

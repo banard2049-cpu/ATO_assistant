@@ -53,6 +53,7 @@ final class LocalSecondScreenServer {
   private final Context context;
   private final AtopackStore atopackStore;
   private final LocalCampaignApi localApi;
+  private final LocalBackupHttpHandler backupHttp;
 
   // 不在局域网里转发的 action（见类注释）。
   private static final Set<String> LAN_BLOCKED_ACTIONS = new HashSet<>(Arrays.asList(
@@ -69,6 +70,11 @@ final class LocalSecondScreenServer {
     this.context = context.getApplicationContext();
     this.atopackStore = atopackStore;
     this.localApi = localApi;
+    backupHttp = new LocalBackupHttpHandler(new java.io.File(context.getFilesDir(), "daily-backup-http"), new LocalBackupHttpHandler.Backend() {
+      public String currentUser() { return localApi.dailyBackupUser(); }
+      public JSONObject exportZip(String user, OutputStream output) throws Exception { return localApi.exportDailyBackups(user, output); }
+      public JSONObject importZip(String user, InputStream input) throws Exception { return localApi.importDailyBackups(user, input); }
+    });
   }
 
   List<String> start() throws IOException {
@@ -100,6 +106,7 @@ final class LocalSecondScreenServer {
   }
 
   void stop() {
+    backupHttp.clear();
     synchronized (lock) {
       if (serverSocket != null) {
         try { serverSocket.close(); } catch (IOException ignored) {}
@@ -209,11 +216,13 @@ final class LocalSecondScreenServer {
       }
       long contentLength = -1;
       boolean chunked = false;
+      java.util.Map<String, String> headers = new java.util.HashMap<>();
       for (String header; (header = reader.readLine()) != null && !header.isEmpty();) {
         int separator = header.indexOf(':');
         if (separator <= 0) continue;
         String name = header.substring(0, separator).trim().toLowerCase(Locale.ROOT);
         String value = header.substring(separator + 1).trim();
+        headers.put(name, headers.containsKey(name) ? headers.get(name) + "," + value : value);
         if ("content-length".equals(name)) {
           try { contentLength = Long.parseLong(value); } catch (NumberFormatException ignored) { contentLength = -1; }
         } else if ("transfer-encoding".equals(name) && value.toLowerCase(Locale.ROOT).contains("chunked")) {
@@ -228,6 +237,11 @@ final class LocalSecondScreenServer {
         return;
       }
       String method = request[0];
+      if ("/briefing/backups.php".equals(uri.getPath())) {
+        connection.setSoTimeout(60_000);
+        backupHttp.handle(uri, method, headers, contentLength, chunked, reader, connection.getOutputStream());
+        return;
+      }
       boolean head = "HEAD".equals(method);
       boolean get = "GET".equals(method);
       boolean post = "POST".equals(method);

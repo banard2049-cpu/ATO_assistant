@@ -203,3 +203,7 @@ test('取不到图标时退化成文字标记，不留破图', () => {
   assert.equal(icon.replacedBy.className, 'token-fallback');
   assert.equal(icon.replacedBy.textContent, '城');
 });
+
+test('导入历史的缺口日可传入空快照，不中断整个日期回放', () => {
+  assert.doesNotThrow(() => renderDay(null));
+});

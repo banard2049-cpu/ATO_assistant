@@ -86,7 +86,47 @@
   let loadToken = 0;
   let loadAbort = null;
 
-  async function load(cycleId) {
+  async function readSnapshotPages(payload, signal) {
+    if (!Array.isArray(payload.snapshots)) throw new Error('每日备份响应格式无效，请重新读取。');
+    const cursors = new Set();
+    while (payload.nextCursor != null) {
+      const cursor = String(payload.nextCursor);
+      if (!/^\d+$/.test(cursor) || cursors.has(cursor)) throw new Error('每日备份分页位置无效，请重新读取。');
+      cursors.add(cursor);
+      if (signal.aborted) throw new Error('读取已取消。');
+      els.headSub.textContent = `正在读取每日备份（已读取 ${payload.snapshots.length} 天）…`;
+      // Yield between small pages so the loading message can paint and a newer
+      // cycle selection can cancel even the synchronous Android bridge.
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      if (signal.aborted) throw new Error('读取已取消。');
+      const query = new URLSearchParams({ format: 'snapshots', profile: payload.profileId, cycle: payload.cycleId, cursor });
+      const response = await fetch(`${API}?${query}`, { cache: 'no-store', signal });
+      const page = await response.json();
+      if (signal.aborted) throw new Error('读取已取消。');
+      if (!page.ok) {
+        if (page.code === 'AUTH_REQUIRED') return page;
+        throw new Error(page.error || `HTTP ${response.status}`);
+      }
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      if (page.source !== payload.source || page.snapshotFormat !== payload.snapshotFormat
+          || page.profileId !== payload.profileId || page.cycleId !== payload.cycleId
+          || page.user?.id !== payload.user?.id || !Array.isArray(page.snapshots)) {
+        throw new Error('读取期间账号或循环已变化，请重新读取。');
+      }
+      payload.snapshots.push(...page.snapshots);
+      payload.nextCursor = page.nextCursor;
+    }
+    return payload;
+  }
+
+  function latestRecordedIndex() {
+    for (let index = state.days.length - 1; index >= 0; index--) {
+      if (state.days[index].present) return index;
+    }
+    return Math.max(0, state.days.length - 1);
+  }
+
+  async function load(cycleId, profileId = state.payload?.cycle?.profileId || '') {
     if (state.exporting) return;
     const token = ++loadToken;
     if (loadAbort) loadAbort.abort();
@@ -98,21 +138,27 @@
     els.headSub.textContent = '正在读取每日备份…';
     const query = new URLSearchParams();
     if (cycleId) query.set('cycle', cycleId);
+    if (profileId) query.set('profile', profileId);
+    query.set('format', 'snapshots');
     let payload;
     try {
       const response = await fetch(`${API}${query.toString() ? `?${query}` : ''}`, { cache: 'no-store', signal: controller.signal });
       payload = await response.json();
       if (!response.ok && !payload.code) throw new Error(`HTTP ${response.status}`);
-      if (payload.ok && payload.source === 'android-daily-backups') {
-        const dictionaryResponse = await fetch('../technology/tech_card_dictionary.min.json', { cache: 'no-store', signal: controller.signal });
-        if (!dictionaryResponse.ok) throw new Error(`科技字典 HTTP ${dictionaryResponse.status}`);
-        payload = window.ATO_BRIEFING_LOCAL.build(payload, window.ATO_MAP_DATA, await dictionaryResponse.json());
+      if (payload.ok && ['android-daily-backups', 'daily-backups'].includes(payload.source)) {
+        payload = await readSnapshotPages(payload, controller.signal);
+        if (payload.ok) {
+          const dictionaryResponse = await fetch('../technology/tech_card_dictionary.min.json', { cache: 'no-store', signal: controller.signal });
+          if (!dictionaryResponse.ok) throw new Error(`科技字典 HTTP ${dictionaryResponse.status}`);
+          payload = window.ATO_BRIEFING_LOCAL.build(payload, window.ATO_MAP_DATA, await dictionaryResponse.json());
+        }
       }
     } catch (error) {
       // 被更新的请求取代（含 abort）时，连错误提示也不要弹。
       if (token !== loadToken) return;
+      els.headSub.textContent = '每日备份读取失败';
       showNotice('读不到简报数据', `请求 ${API} 失败：${String(error && error.message ? error.message : error)}\n请确认程序仍在运行，然后重新读取。`, [
-        { label: '重新读取', onClick: () => load(state.cycleId) },
+        { label: '重新读取', onClick: () => load(cycleId, profileId) },
         { label: '回主控台', href: '../' },
       ]);
       return;
@@ -124,17 +170,20 @@
     if (payload.code === 'AUTH_REQUIRED') {
       showNotice('请先登录', '战役简报读取的是当前账号的每日存档备份，需要先登录主控台。', [
         { label: '去登录', href: '../' },
-        { label: '已登录，重新读取', onClick: () => load(state.cycleId) },
+        { label: '已登录，重新读取', onClick: () => load(cycleId, profileId) },
       ]);
       return;
     }
     if (!payload.ok) {
+      els.headSub.textContent = '每日备份读取失败';
       showNotice('读不到简报数据', String(payload.error || '接口返回了异常结果。'), [
-        { label: '重新读取', onClick: () => load(state.cycleId) },
+        { label: '重新读取', onClick: () => load(cycleId, profileId) },
       ]);
       return;
     }
 
+    const selectionChanged = state.payload && (state.payload.cycle.profileId !== payload.cycle.profileId
+      || state.payload.cycle.cycleId !== payload.cycle.cycleId);
     state.payload = payload;
     state.cycleId = payload.cycle.cycleId;
     els.body.dataset.cycle = payload.cycle.cycleId;
@@ -155,7 +204,7 @@
     renderAxis();
     renderLog();
     if (els.exportFilesButton) els.exportFilesButton.disabled = !window.ATO_BRIEFING_REPORT;
-    selectDay(initialIndex());
+    selectDay(selectionChanged ? latestRecordedIndex() : initialIndex());
   }
 
   function initialIndex() {
@@ -167,7 +216,7 @@
       if (Number.isInteger(byIndex) && byIndex >= 0 && byIndex < state.days.length) return byIndex;
     }
     // 默认停在最后一天：打开简报先看到「现在」，再拖回过去。
-    return Math.max(0, state.days.length - 1);
+    return latestRecordedIndex();
   }
 
   function buildDays(timeline) {
@@ -197,13 +246,15 @@
   }
 
   function renderCycleOptions(payload) {
-    const options = (payload.cycles || []).filter((entry) => entry.profileId === payload.cycle.profileId);
+    const options = payload.cycles || [];
+    const multipleProfiles = new Set(options.map((entry) => entry.profileId)).size > 1;
     els.cycleSelect.textContent = '';
     options.forEach((entry) => {
       const option = document.createElement('option');
       option.value = entry.cycleId;
-      option.textContent = `${entry.label}（当前第 ${entry.day === '' ? '?' : entry.day} 天）`;
-      option.selected = entry.cycleId === payload.cycle.cycleId;
+      option.dataset.profileId = entry.profileId;
+      option.textContent = `${multipleProfiles ? `${entry.profileName || entry.profileId} · ` : ''}${entry.label}（当前第 ${entry.day === '' ? '?' : entry.day} 天）`;
+      option.selected = entry.cycleId === payload.cycle.cycleId && entry.profileId === payload.cycle.profileId;
       els.cycleSelect.appendChild(option);
     });
     if (!options.length) {
@@ -488,6 +539,7 @@
     try {
       const url = new URL(window.location.href);
       url.searchParams.set('cycle', state.cycleId);
+      url.searchParams.set('profile', state.payload.cycle.profileId);
       url.searchParams.set('day', entry.day);
       window.history.replaceState(null, '', url.toString());
     } catch { /* 隐私模式下改地址栏失败无所谓 */ }
@@ -650,7 +702,7 @@
   }));
 
   els.cycleSelect.addEventListener('change', () => {
-    load(els.cycleSelect.value);
+    load(els.cycleSelect.value, els.cycleSelect.selectedOptions[0]?.dataset.profileId || '');
   });
   els.refreshButton.addEventListener('click', () => load(state.cycleId));
   els.prevButton.addEventListener('click', () => { stopPlay(); selectDay(state.index - 1); });
@@ -732,5 +784,26 @@
     });
   }
 
-  load(new URLSearchParams(window.location.search).get('cycle') || '');
+  window.ATO_BRIEFING_BACKUPS?.bind({
+    canStart: () => !state.exporting,
+    onBusyChange(busy) {
+      if (busy) {
+        stopPlay();
+        ++loadToken;
+        loadAbort?.abort();
+      }
+      state.exporting = busy;
+      els.cycleSelect.disabled = busy;
+      els.refreshButton.disabled = busy;
+      els.playButton.disabled = busy || state.days.length < 2;
+      if (els.exportFilesButton) els.exportFilesButton.disabled = busy || !state.payload?.hasData || !state.map || !window.ATO_BRIEFING_REPORT;
+      if (!busy && !state.payload) load(state.cycleId);
+    },
+    onImported(result) {
+      const importedCycle = !state.payload?.hasData && result.cycles?.[0];
+      return load(importedCycle?.cycleId || state.cycleId, importedCycle?.profileId || state.payload?.cycle?.profileId || '');
+    },
+  });
+  const initialQuery = new URLSearchParams(window.location.search);
+  load(initialQuery.get('cycle') || '', initialQuery.get('profile') || '');
 })();

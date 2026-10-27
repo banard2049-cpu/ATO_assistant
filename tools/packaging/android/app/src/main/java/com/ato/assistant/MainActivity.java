@@ -8,7 +8,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import java.util.ArrayList;
 import android.webkit.RenderProcessGoneDetail;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -34,10 +38,24 @@ public final class MainActivity extends Activity {
   private static final int FILE_CHOOSER_REQUEST = 1001;
   private static final int ATOPACK_CHOOSER_REQUEST = 1002;
   private static final int EXPORT_CHOOSER_REQUEST = 1003;
+  private static final int BACKUPS_EXPORT_REQUEST = 1004;
+  private static final int BACKUPS_IMPORT_REQUEST = 1005;
   // 为旧页面保留崩溃标记；新版故事页使用逐条读取，无需关闭插图。
   private static volatile boolean rendererCrashedThisProcess;
   private final ExecutorService mixedMediaWorker = Executors.newSingleThreadExecutor();
-  private AtomicLong mixedMediaRequest = new AtomicLong();
+  private static final int MAX_TABS = 6;
+  private static final class PageTab {
+    volatile boolean closed;
+    volatile WebView view;
+    StoryWebViewSession story;
+    AtomicLong requests = new AtomicLong();
+    String title = "新页面";
+  }
+  private final ArrayList<PageTab> tabs = new ArrayList<>();
+  private PageTab activeTab;
+  private Button tabsButton;
+  private volatile WebView exportOwner;
+  private volatile WebView atopackOwner;
   private volatile WebView webView;
   private volatile WebView retiringStoryWebView;
   private StoryWebViewSession currentStorySession;
@@ -48,6 +66,10 @@ public final class MainActivity extends Activity {
   private AtopackStore atopackStore;
   private LocalSecondScreenServer secondScreenServer;
   private LocalExportFile pendingExportFile;
+  private final Object backupsOperationLock = new Object();
+  private String backupsOperationUser;
+  private String backupsOperationAction;
+  private WebView backupsOperationOwner;
   private TextToSpeech storyTts;
   private volatile boolean storyTtsReady;
   private String storyTtsText = "";
@@ -66,9 +88,27 @@ public final class MainActivity extends Activity {
     localApi.attachImageIndex(atopackStore::aibpImageIndex);
     secondScreenServer = new LocalSecondScreenServer(this, atopackStore, localApi);
     localApi.attachSecondScreenServer(secondScreenServer);
+    LinearLayout layout = new LinearLayout(this);
+    layout.setOrientation(LinearLayout.VERTICAL);
+    LinearLayout toolbar = new LinearLayout(this);
+    Button add = new Button(this);
+    add.setText("＋ 新页面");
+    add.setContentDescription("打开新页面");
+    add.setOnClickListener(v -> openNewTab());
+    tabsButton = new Button(this);
+    tabsButton.setOnClickListener(v -> showTabs());
+    Button close = new Button(this);
+    close.setText("关闭");
+    close.setContentDescription("关闭当前页面");
+    close.setOnClickListener(v -> closeTab(activeTab));
+    toolbar.addView(add, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+    toolbar.addView(tabsButton, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+    toolbar.addView(close, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+    layout.addView(toolbar);
     rootView = new FrameLayout(this);
-    setContentView(rootView);
-    createWebView(ROOT + "index.html");
+    layout.addView(rootView, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1));
+    setContentView(layout);
+    openNewTab();
 
     storyTts = new TextToSpeech(this, status -> {
       if (status != TextToSpeech.SUCCESS || storyTts == null) return;
@@ -98,24 +138,90 @@ public final class MainActivity extends Activity {
       });
       storyTtsReady = true;
       runOnUiThread(() -> {
-        if (webView != null) webView.evaluateJavascript("window.ATOAndroidTtsReady&&window.ATOAndroidTtsReady()", null);
+        for (PageTab tab : tabs) if (!tab.closed) tab.view.evaluateJavascript("window.ATOAndroidTtsReady&&window.ATOAndroidTtsReady()", null);
       });
     });
   }
 
-  private void createWebView(String url) {
-    mixedMediaRequest = new AtomicLong();
-    webView = new WebView(this);
-    final StoryWebViewSession storySession = new StoryWebViewSession(ROOT);
-    currentStorySession = storySession;
+  private void openNewTab() {
+    if (tabs.size() >= MAX_TABS) {
+      Toast.makeText(this, "最多同时打开 6 个页面，请先关闭一个页面。", Toast.LENGTH_SHORT).show();
+      return;
+    }
+    PageTab tab = new PageTab();
+    tabs.add(tab);
+    createWebView(tab, ROOT + "index.html");
+    selectTab(tab);
+  }
+
+  private void updateTabButton() {
+    tabsButton.setText("页面 " + tabs.size());
+    tabsButton.setContentDescription("切换页面，共 " + tabs.size() + " 个");
+  }
+
+  private void showTabs() {
+    String[] labels = new String[tabs.size()];
+    for (int i = 0; i < tabs.size(); i++) labels[i] = (i + 1) + ". " + tabs.get(i).title;
+    new android.app.AlertDialog.Builder(this).setTitle("切换页面")
+        .setSingleChoiceItems(labels, tabs.indexOf(activeTab), (dialog, index) -> {
+          selectTab(tabs.get(index));
+          dialog.dismiss();
+        }).setNegativeButton("取消", null).show();
+  }
+
+  private void selectTab(PageTab tab) {
+    if (tab == null || tab.closed) return;
+    if (activeTab != null && activeTab != tab && activeTab.view != null) {
+      // The system TTS engine is shared; finish the old page's utterance before switching.
+      if (!storyTtsId.isEmpty()) {
+        String id = storyTtsId;
+        storyTtsId = "";
+        storyTtsText = "";
+        storyTtsPaused = false;
+        if (storyTts != null) storyTts.stop();
+        notifyStoryTtsResult(id, false, "切换页面，朗读已停止");
+      }
+      activeTab.view.setVisibility(View.GONE);
+    }
+    activeTab = tab;
+    webView = tab.view;
+    currentStorySession = tab.story;
+    tab.view.setVisibility(View.VISIBLE);
+    updateTabButton();
+  }
+
+  private void closeTab(PageTab tab) {
+    if (tab == null || tab.closed) return;
+    if (tabs.size() == 1) {
+      Toast.makeText(this, "请至少保留一个页面。", Toast.LENGTH_SHORT).show();
+      return;
+    }
+    int index = tabs.indexOf(tab);
+    if (tab == activeTab) selectTab(tabs.get(index == 0 ? 1 : index - 1));
+    tabs.remove(tab);
+    tab.closed = true;
+    tab.requests.incrementAndGet();
+    if (tab.view.getParent() instanceof ViewGroup) ((ViewGroup) tab.view.getParent()).removeView(tab.view);
+    tab.view.removeJavascriptInterface("ATOAndroid");
+    tab.view.destroy();
+    updateTabButton();
+  }
+
+  private void createWebView(PageTab tab, String url) {
+    final WebView view = new WebView(this);
+    tab.view = view;
+    tab.story = new StoryWebViewSession(ROOT);
+    tab.requests = new AtomicLong();
+    final StoryWebViewSession storySession = tab.story;
+    final AtomicLong requests = tab.requests;
     // Only debug APKs expose their WebView to adb/Chrome inspection.
     if ((getApplicationInfo().flags & android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
       WebView.setWebContentsDebuggingEnabled(true);
     }
-    rootView.addView(webView, new FrameLayout.LayoutParams(
+    rootView.addView(view, new FrameLayout.LayoutParams(
         FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
 
-    WebSettings settings = webView.getSettings();
+    WebSettings settings = view.getSettings();
     settings.setJavaScriptEnabled(true);
     settings.setDomStorageEnabled(true);
     settings.setDatabaseEnabled(true);
@@ -125,12 +231,12 @@ public final class MainActivity extends Activity {
     settings.setAllowUniversalAccessFromFileURLs(true);
     settings.setMediaPlaybackRequiresUserGesture(false);
 
-    webView.addJavascriptInterface(new LocalApiBridge(webView), "ATOAndroid");
-    webView.setWebViewClient(new WebViewClient() {
+    view.addJavascriptInterface(new LocalApiBridge(tab, view, requests), "ATOAndroid");
+    view.setWebViewClient(new WebViewClient() {
       @Override public void onPageStarted(WebView view, String url, android.graphics.Bitmap favicon) {
-        if (view != webView || view == retiringStoryWebView) return;
+        if (tab.closed || view != tab.view || view == retiringStoryWebView) return;
         // A navigation keeps the WebView but replaces its page. Stop the old page's scan.
-        mixedMediaRequest.incrementAndGet();
+        requests.incrementAndGet();
         // System Back/goBack does not necessarily pass through shouldOverrideUrlLoading.
         if (storySession.needsResetOnNavigation(url)) {
           resetStoryWebView(view, url);
@@ -150,7 +256,7 @@ public final class MainActivity extends Activity {
       }
 
       @Override public void onPageFinished(WebView view, String url) {
-        if (view != webView || view == retiringStoryWebView) return;
+        if (tab.closed || view != tab.view || view == retiringStoryWebView) return;
         if (storySession.needsResetOnNavigation(url)) {
           resetStoryWebView(view, url);
           return;
@@ -161,7 +267,7 @@ public final class MainActivity extends Activity {
       }
 
       @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-        if (view != webView || view == retiringStoryWebView) return true;
+        if (tab.closed || view != tab.view || view == retiringStoryWebView) return true;
         Uri uri = request.getUrl();
         if (request.isForMainFrame() && storySession.needsResetOnNavigation(uri.toString())) {
           resetStoryWebView(view, uri.toString());
@@ -180,7 +286,7 @@ public final class MainActivity extends Activity {
       // 渲染进程。不处理这个回调，系统会连整个应用一起杀掉（用户看到的就是闪退）。
       // 这里销毁已失效的 WebView，回到主控台，至少不会丢应用。
       @Override public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
-        if (view != webView) return true;
+        if (tab.closed || view != tab.view) return true;
         android.app.ActivityManager.MemoryInfo memory = new android.app.ActivityManager.MemoryInfo();
         android.app.ActivityManager manager = (android.app.ActivityManager) getSystemService(ACTIVITY_SERVICE);
         if (manager != null) manager.getMemoryInfo(memory);
@@ -189,9 +295,11 @@ public final class MainActivity extends Activity {
             + ", priority=" + detail.rendererPriorityAtExit() + ", lowMemory=" + memory.lowMemory
             + ", availableMiB=" + memory.availMem / (1024 * 1024)
             + ", webView=" + (provider == null ? "unknown" : provider.packageName + "/" + provider.versionName));
-        mixedMediaRequest.incrementAndGet();
+        requests.incrementAndGet();
         rendererCrashedThisProcess = true;
-        webView = null;
+        tab.closed = true;
+        tabs.remove(tab);
+        if (view == webView) webView = null;
         if (view.getParent() instanceof ViewGroup) ((ViewGroup) view.getParent()).removeView(view);
         view.destroy();
         Toast.makeText(
@@ -208,7 +316,11 @@ public final class MainActivity extends Activity {
         return true;
       }
     });
-    webView.setWebChromeClient(new WebChromeClient() {
+    view.setWebChromeClient(new WebChromeClient() {
+      @Override public void onReceivedTitle(WebView page, String title) {
+        if (!tab.closed && page == tab.view && title != null && !title.trim().isEmpty()) tab.title = title;
+      }
+
       @Override public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) {
         if (filePathCallback != null) filePathCallback.onReceiveValue(null);
         filePathCallback = callback;
@@ -251,29 +363,37 @@ public final class MainActivity extends Activity {
       }
     });
 
-    webView.loadUrl(url);
+    view.setVisibility(View.GONE);
+    view.loadUrl(url);
   }
 
   private void resetStoryWebView(WebView oldView, String destination) {
-    if (oldView != webView || oldView == retiringStoryWebView) return;
+    PageTab tab = null;
+    for (PageTab candidate : tabs) if (candidate.view == oldView) { tab = candidate; break; }
+    if (tab == null || oldView == retiringStoryWebView) return;
+    final PageTab target = tab;
     retiringStoryWebView = oldView;
-    mixedMediaRequest.incrementAndGet();
+    target.requests.incrementAndGet();
     oldView.stopLoading();
-    // Destroy outside WebView's navigation callback; keep the native API, imported
-    // resources and second-screen server alive while replacing only the page host.
     rootView.post(() -> {
-      if (webView != oldView || isFinishing() || isDestroyed()) return;
-      webView = null;
-      storyTtsPaused = false;
-      storyTtsId = "";
-      storyTtsText = "";
-      if (storyTts != null) storyTts.stop();
+      if (target.closed || target.view != oldView || isFinishing() || isDestroyed()) {
+        if (retiringStoryWebView == oldView) retiringStoryWebView = null;
+        return;
+      }
+      if (target == activeTab && !storyTtsId.isEmpty()) {
+        String id = storyTtsId;
+        storyTtsId = "";
+        storyTtsText = "";
+        storyTtsPaused = false;
+        if (storyTts != null) storyTts.stop();
+        notifyStoryTtsResult(id, false, "页面已关闭，朗读已停止");
+      }
       if (oldView.getParent() instanceof ViewGroup) ((ViewGroup) oldView.getParent()).removeView(oldView);
       oldView.removeJavascriptInterface("ATOAndroid");
       oldView.destroy();
       retiringStoryWebView = null;
-      createWebView(destination);
-      android.util.Log.i("ATOStoryWebView", "Released story WebView and created dashboard WebView");
+      createWebView(target, destination);
+      if (target == activeTab) selectTab(target);
     });
   }
 
@@ -285,11 +405,18 @@ public final class MainActivity extends Activity {
       String destination = previous >= 0 ? history.getItemAtIndex(previous).getUrl() : null;
       if (currentStorySession.needsResetOnNavigation(destination)) resetStoryWebView(webView, destination);
       else webView.goBack();
-    } else super.onBackPressed();
+    } else if (tabs.size() > 1) closeTab(activeTab);
+    else super.onBackPressed();
   }
 
   @Override protected void onDestroy() {
-    mixedMediaRequest.incrementAndGet();
+    for (PageTab tab : tabs) {
+      tab.closed = true;
+      tab.requests.incrementAndGet();
+      tab.view.destroy();
+    }
+    tabs.clear();
+    webView = null;
     mixedMediaWorker.shutdownNow();
     if (secondScreenServer != null) secondScreenServer.stop();
     if (storyTts != null) {
@@ -297,16 +424,47 @@ public final class MainActivity extends Activity {
       storyTts.shutdown();
       storyTts = null;
     }
-    if (webView != null) {
-      webView.destroy();
-      // 延迟的 TTS / 导入 / 导出回调仍可能排队到 UI 线程；置空让它们安静退出。
-      webView = null;
-    }
     super.onDestroy();
   }
 
   @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     super.onActivityResult(requestCode, resultCode, data);
+    if (requestCode == BACKUPS_EXPORT_REQUEST || requestCode == BACKUPS_IMPORT_REQUEST) {
+      String action, account;
+      synchronized (backupsOperationLock) { action = backupsOperationAction; account = backupsOperationUser; }
+      if (action == null || account == null) return;
+      if (resultCode != RESULT_OK || data == null || data.getData() == null) {
+        org.json.JSONObject result = errorResult("已取消" + ("export".equals(action) ? "导出" : "导入"));
+        try { result.put("cancelled", true); } catch (org.json.JSONException ignored) { }
+        finishDailyBackups(result);
+        return;
+      }
+      Uri chosen = data.getData();
+      new Thread(() -> {
+        try {
+          org.json.JSONObject result;
+          if ("export".equals(action)) {
+            try (OutputStream output = getContentResolver().openOutputStream(chosen, "wt")) {
+              if (output == null) throw new java.io.IOException("无法打开所选文件。");
+              result = localApi.exportDailyBackups(account, output);
+            }
+          } else {
+            try (InputStream input = getContentResolver().openInputStream(chosen)) {
+              if (input == null) throw new java.io.IOException("无法打开所选压缩包。");
+              result = localApi.importDailyBackups(account, input);
+            }
+          }
+          finishDailyBackups(result);
+        } catch (OutOfMemoryError error) {
+          finishDailyBackups(errorResult("备份处理超出当前可用内存，请释放内存后重试。"));
+        } catch (StackOverflowError error) {
+          finishDailyBackups(errorResult("备份内容的嵌套层级过深，无法读取。"));
+        } catch (Exception error) {
+          finishDailyBackups(errorResult(error.getMessage() == null ? "每日备份处理失败。" : error.getMessage()));
+        }
+      }, "daily-backups-" + action).start();
+      return;
+    }
     if (requestCode == EXPORT_CHOOSER_REQUEST) {
       LocalExportFile file = pendingExportFile;
       if (resultCode != RESULT_OK || data == null || data.getData() == null) {
@@ -367,9 +525,12 @@ public final class MainActivity extends Activity {
     private final WebView owner;
     private final AtomicLong requests;
 
-    LocalApiBridge(WebView owner) {
+    private final PageTab tab;
+
+    LocalApiBridge(PageTab tab, WebView owner, AtomicLong requests) {
+      this.tab = tab;
       this.owner = owner;
-      this.requests = mixedMediaRequest;
+      this.requests = requests;
     }
 
     @android.webkit.JavascriptInterface public boolean rendererCrashedThisProcess() {
@@ -377,24 +538,24 @@ public final class MainActivity extends Activity {
     }
 
     @android.webkit.JavascriptInterface public void cancelMixedMediaMap() {
-      if (webView == owner && owner != retiringStoryWebView) requests.incrementAndGet();
+      if (!tab.closed && tab.view == owner && owner != retiringStoryWebView) requests.incrementAndGet();
     }
 
     @android.webkit.JavascriptInterface public boolean requestMixedMediaMap(
         String book, String variant, String key, String requestId) {
-      if (webView != owner || owner == retiringStoryWebView || !MixedMediaMapReader.validContext(book, variant, key) || requestId == null
+      if (tab.closed || tab.view != owner || owner == retiringStoryWebView || !MixedMediaMapReader.validContext(book, variant, key) || requestId == null
           || requestId.length() > 128 || mixedMediaWorker.isShutdown()) return false;
       long serial = requests.incrementAndGet();
       WebView target = owner;
       try {
         mixedMediaWorker.execute(() -> {
-          if (webView != owner || serial != requests.get()) return;
+          if (tab.closed || tab.view != owner || serial != requests.get()) return;
           String result = "";
           AtopackStore.OpenedResource resource = atopackStore.open("story/assets/mixed-media/mapping.js");
           if (resource != null) {
             try (InputStream input = resource.input) {
               result = MixedMediaMapReader.read(input, book, variant, key,
-                  () -> webView != owner || serial != requests.get());
+                  () -> tab.closed || tab.view != owner || serial != requests.get());
             } catch (Exception ignored) {
               // Missing or incompatible optional materials leave the source text readable.
             }
@@ -402,8 +563,8 @@ public final class MainActivity extends Activity {
           String json = result;
           if (serial != requests.get()) return;
           runOnUiThread(() -> {
-            if (webView == null || webView != target || serial != requests.get()) return;
-            webView.evaluateJavascript("window.ATOAndroidMixedMediaMapResult&&window.ATOAndroidMixedMediaMapResult("
+            if (tab.closed || tab.view != target || serial != requests.get()) return;
+            target.evaluateJavascript("window.ATOAndroidMixedMediaMapResult&&window.ATOAndroidMixedMediaMapResult("
                 + org.json.JSONObject.quote(requestId) + "," + org.json.JSONObject.quote(json) + ")", null);
           });
         });
@@ -510,38 +671,101 @@ public final class MainActivity extends Activity {
 
     @android.webkit.JavascriptInterface public void importAtopack() {
       runOnUiThread(() -> {
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("application/octet-stream");
-        intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[] {"application/octet-stream", "application/zip", "application/x-zip-compressed"});
-        startActivityForResult(intent, ATOPACK_CHOOSER_REQUEST);
+        if (atopackOwner != null) {
+          if (isLiveView(owner)) owner.evaluateJavascript("window.ATOAtopackImportResult&&window.ATOAtopackImportResult({\"ok\":false,\"error\":\"已有导入正在进行\"})", null);
+          return;
+        }
+        atopackOwner = owner;
+        try {
+          Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+          intent.addCategory(Intent.CATEGORY_OPENABLE);
+          intent.setType("application/octet-stream");
+          intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[] {"application/octet-stream", "application/zip", "application/x-zip-compressed"});
+          startActivityForResult(intent, ATOPACK_CHOOSER_REQUEST);
+        } catch (Exception error) {
+          notifyAtopackResult(errorResult("无法打开系统文件选择器。"));
+        }
       });
     }
 
     @android.webkit.JavascriptInterface public void exportStateJson(String filename, String json) {
       try {
-        showFileExport(LocalExportFile.json(filename, json));
+        showFileExport(LocalExportFile.json(filename, json), owner);
       } catch (Exception error) {
-        notifyExportResult(errorResult(error.getMessage() == null ? error.toString() : error.getMessage()));
+        notifyExportResult(owner, errorResult(error.getMessage() == null ? error.toString() : error.getMessage()));
       }
     }
 
     @android.webkit.JavascriptInterface public void exportBriefingZip(String filename, String base64) {
       try {
-        showFileExport(LocalExportFile.briefingZip(filename, base64));
+        showFileExport(LocalExportFile.briefingZip(filename, base64), owner);
       } catch (Exception error) {
-        notifyExportResult(errorResult(error.getMessage() == null ? error.toString() : error.getMessage()));
+        notifyExportResult(owner, errorResult(error.getMessage() == null ? error.toString() : error.getMessage()));
       }
+    }
+
+    @android.webkit.JavascriptInterface public boolean exportDailyBackups() {
+      return beginDailyBackups("export", owner);
+    }
+
+    @android.webkit.JavascriptInterface public boolean importDailyBackups() {
+      return beginDailyBackups("import", owner);
     }
   }
 
-  private void showFileExport(LocalExportFile file) {
+  private boolean beginDailyBackups(String action, WebView owner) {
+    if (owner != webView || owner == retiringStoryWebView) return false;
+    String account = localApi.dailyBackupUser();
+    if (account.isEmpty()) return false;
+    synchronized (backupsOperationLock) {
+      if (backupsOperationAction != null) return false;
+      backupsOperationAction = action;
+      backupsOperationUser = account;
+      backupsOperationOwner = owner;
+    }
+    runOnUiThread(() -> {
+      try {
+        Intent intent = new Intent("export".equals(action) ? Intent.ACTION_CREATE_DOCUMENT : Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("application/zip");
+        if ("export".equals(action)) {
+          java.text.SimpleDateFormat format = new java.text.SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ROOT);
+          intent.putExtra(Intent.EXTRA_TITLE, "ATO-daily-backups-" + format.format(new java.util.Date()) + ".zip");
+        } else intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[] {"application/zip", "application/x-zip-compressed", "application/octet-stream"});
+        startActivityForResult(intent, "export".equals(action) ? BACKUPS_EXPORT_REQUEST : BACKUPS_IMPORT_REQUEST);
+      } catch (Exception error) {
+        finishDailyBackups(errorResult(error.getMessage() == null ? "无法打开系统文件选择器。" : error.getMessage()));
+      }
+    });
+    return true;
+  }
+
+  private void finishDailyBackups(org.json.JSONObject result) {
+    runOnUiThread(() -> {
+      WebView owner;
+      synchronized (backupsOperationLock) {
+        owner = backupsOperationOwner;
+        try {
+          result.put("action", backupsOperationAction);
+          for (String field : new String[] {"imported", "skipped", "total"}) if (!result.has(field)) result.put(field, 0);
+        } catch (org.json.JSONException ignored) { }
+        backupsOperationOwner = null;
+        backupsOperationUser = null;
+        backupsOperationAction = null;
+      }
+      if (isLiveView(owner) && owner != retiringStoryWebView)
+        owner.evaluateJavascript("window.ATOAndroidBackupsResult&&window.ATOAndroidBackupsResult(" + result + ")", null);
+    });
+  }
+
+  private void showFileExport(LocalExportFile file, WebView owner) {
     runOnUiThread(() -> {
       if (pendingExportFile != null) {
-        notifyExportResult(errorResult("已有导出正在进行"));
+        notifyExportResult(owner, errorResult("已有导出正在进行"));
         return;
       }
       pendingExportFile = file;
+      exportOwner = owner;
       try {
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
@@ -605,19 +829,28 @@ public final class MainActivity extends Activity {
     return result;
   }
 
+  private boolean isLiveView(WebView view) {
+    if (view == null) return false;
+    for (PageTab tab : tabs) if (!tab.closed && tab.view == view) return true;
+    return false;
+  }
+
   private void notifyAtopackResult(org.json.JSONObject result) {
     runOnUiThread(() -> {
-      if (webView == null) return;
-      webView.evaluateJavascript(
+      WebView owner = atopackOwner;
+      atopackOwner = null;
+      if (isLiveView(owner)) owner.evaluateJavascript(
         "window.ATOAtopackImportResult && window.ATOAtopackImportResult(" + result.toString() + ")", null);
     });
   }
 
   private void notifyAtopackMemoryError() {
     runOnUiThread(() -> {
-      if (webView == null) return;
+      WebView owner = atopackOwner;
+      atopackOwner = null;
+      if (!isLiveView(owner)) return;
       // 用字面量而不是再构造 JSONObject，避免堆已经紧张时二次分配。
-      webView.evaluateJavascript(
+      owner.evaluateJavascript(
         "window.ATOAtopackImportResult && window.ATOAtopackImportResult({\"ok\":false,"
           + "\"error\":\"导入时可用内存不足。请重启 ATO 并关闭其他应用后重试；"
           + "若仍失败，请使用不含故事数据的较小资料包。\"})", null);
@@ -625,9 +858,13 @@ public final class MainActivity extends Activity {
   }
 
   private void notifyExportResult(org.json.JSONObject result) {
+    notifyExportResult(exportOwner, result);
+  }
+
+  private void notifyExportResult(WebView owner, org.json.JSONObject result) {
     runOnUiThread(() -> {
-      if (webView == null) return;
-      webView.evaluateJavascript(
+      if (!isLiveView(owner)) return;
+      owner.evaluateJavascript(
         "window.ATOAndroidExportResult && window.ATOAndroidExportResult(" + result.toString() + ")", null);
     });
   }

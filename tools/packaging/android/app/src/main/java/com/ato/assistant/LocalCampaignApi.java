@@ -15,8 +15,10 @@ import java.util.UUID;
 final class LocalCampaignApi {
   private static final String[] SECTIONS = {"dashboard", "map", "record", "technology", "heroes", "aibp", "story"};
   private static final int BACKUP_COUNT = 10;
+  private static final int BRIEFING_PAGE_DAYS = 4;
   private final SharedPreferences store;
   private final java.io.File attachmentRoot;
+  private final java.io.File dailyBackupRoot;
   private final Object lock = new Object();
   private String currentUser;
   private LocalSecondScreenServer secondScreenServer;
@@ -25,6 +27,7 @@ final class LocalCampaignApi {
   LocalCampaignApi(Context context) {
     store = context.getSharedPreferences("ato-local-store", Context.MODE_PRIVATE);
     attachmentRoot = new java.io.File(context.getFilesDir(), "record-attachments");
+    dailyBackupRoot = new java.io.File(context.getFilesDir(), "daily-backup-imports");
     currentUser = store.getString("currentUser", "");
   }
 
@@ -36,25 +39,130 @@ final class LocalCampaignApi {
     imageIndex = provider;
   }
 
+  String dailyBackupUser() {
+    synchronized (lock) { return currentUser; }
+  }
+
+  private void requireBackupUser(String expected) throws java.io.IOException {
+    if (expected == null || expected.isEmpty() || !expected.equals(currentUser))
+      throw new java.io.IOException("登录账号已变化，请返回简报页重试。");
+  }
+
+  JSONObject exportDailyBackups(String expected, java.io.OutputStream output) throws Exception {
+    synchronized (lock) {
+      requireBackupUser(expected);
+      return DailyBackupArchive.exportZip(dailyArchiveSources(), campaignKey() + "::daily::", briefingCycles(), output);
+    }
+  }
+
+  JSONObject importDailyBackups(String expected, java.io.InputStream input) throws Exception {
+    synchronized (lock) { requireBackupUser(expected); }
+    java.io.File stage = new java.io.File(dailyBackupRoot, "stage-" + UUID.randomUUID());
+    DailyBackupArchive.Staged imported = DailyBackupArchive.stage(input, stage);
+    try {
+      synchronized (lock) {
+        requireBackupUser(expected);
+        java.util.Set<String> hashes = new java.util.HashSet<>();
+        for (DailyBackupArchive.Source source : dailyArchiveSources().values()) {
+          hashes.add(source.metadata == null ? DailyBackupArchive.sha(source.read()) : source.metadata.getString("sha256"));
+        }
+        JSONArray entries = imported.manifest.getJSONArray("entries"), additions = new JSONArray();
+        int skipped = 0;
+        for (int i = 0; i < entries.length(); i++) {
+          JSONObject entry = entries.getJSONObject(i);
+          if (hashes.add(entry.getString("sha256"))) additions.put(entry);
+          else { new java.io.File(stage, entry.getString("file")).delete(); skipped++; }
+        }
+        if (additions.length() > 0) {
+          imported.manifest.put("entries", additions);
+          DailyBackupArchive.writeJson(new java.io.File(stage, "index.json"), imported.manifest);
+          new java.io.File(stage, "manifest.json").delete();
+          java.io.File account = new java.io.File(dailyBackupRoot, currentUser);
+          if (!account.isDirectory() && !account.mkdirs()) throw new java.io.IOException("无法创建每日备份目录。");
+          java.io.File destination = new java.io.File(account, "batch-" + UUID.randomUUID());
+          // Publishing the fully validated directory is the only storage mutation.
+          // No archive JSON is retained in SharedPreferences or written over a save.
+          if (!stage.renameTo(destination)) throw new java.io.IOException("无法保存导入的每日备份。");
+        }
+        return ok().put("action", "import").put("imported", additions.length()).put("skipped", skipped).put("total", entries.length())
+          .put("cycles", imported.manifest.getJSONArray("cycles"));
+      }
+    } finally { DailyBackupArchive.deleteTree(stage); }
+  }
+
+  private java.io.File[] dailyBackupBatches() {
+    java.io.File[] files = new java.io.File(dailyBackupRoot, currentUser).listFiles(
+      file -> file.isDirectory() && file.getName().startsWith("batch-"));
+    if (files == null) return new java.io.File[0];
+    java.util.Arrays.sort(files, java.util.Comparator.comparing(java.io.File::getName));
+    return files;
+  }
+
+  private Map<String, DailyBackupArchive.Source> dailyArchiveSources() throws Exception {
+    String prefix = campaignKey() + "::daily::";
+    Map<String, DailyBackupArchive.Source> sources = new TreeMap<>();
+    for (Map.Entry<String, ?> entry : store.getAll().entrySet()) {
+      if (entry.getKey().startsWith(prefix) && entry.getValue() instanceof String)
+        sources.put(entry.getKey(), new DailyBackupArchive.Source(entry.getKey(), (String) entry.getValue(), null, null));
+    }
+    for (java.io.File batch : dailyBackupBatches()) {
+      JSONObject index = new JSONObject(DailyBackupArchive.readText(new java.io.File(batch, "index.json"), DailyBackupArchive.MAX_MANIFEST));
+      JSONArray entries = index.getJSONArray("entries");
+      for (int i = 0; i < entries.length(); i++) {
+        JSONObject entry = entries.getJSONObject(i);
+        String file = entry.getString("file");
+        if (!file.matches("backups/[0-9]{8}\\.json")) throw new java.io.IOException("导入备份索引的文件名无效。");
+        String key = prefix + DailyBackupArchive.dayKey(entry.getString("profileId"), entry.getString("cycleId"), entry.getString("day"))
+          + "::" + entry.getLong("timestamp") + "-zip-" + entry.getString("sha256");
+        if (!sources.containsKey(key)) sources.put(key, new DailyBackupArchive.Source(key, null, new java.io.File(batch, file), entry));
+      }
+    }
+    return sources;
+  }
+
+  private JSONArray briefingCycles() throws Exception {
+    JSONObject dashboard = briefingDashboard(), profiles = dashboard.optJSONObject("profiles");
+    JSONArray result = new JSONArray();
+    if (profiles == null) return result;
+    for (Iterator<String> ids = profiles.keys(); ids.hasNext();) {
+      String id = ids.next(); JSONObject profile = profiles.getJSONObject(id), cycles = profile.getJSONObject("cycles");
+      for (Iterator<String> cycleIds = cycles.keys(); cycleIds.hasNext();) {
+        String cycle = cycleIds.next(); JSONObject state = cycles.getJSONObject(cycle).optJSONObject("state");
+        result.put(new JSONObject().put("profileId", id).put("profileName", profile.optString("name", id))
+          .put("cycleId", cycle).put("label", DailyBackupArchive.cycleLabel(cycle)).put("day", state == null ? "" : state.optString("day", "")));
+      }
+    }
+    return result;
+  }
+
   String handleForJavascript(Uri uri, String method, String requestBody) {
     synchronized (lock) {
-      int status = 200;
-      JSONObject response;
       try {
-        response = dispatch(uri, method, requestBody == null ? "" : requestBody);
-      } catch (ApiException error) {
-        status = error.status;
-        response = error.body;
-      } catch (Exception error) {
-        status = 500;
-        response = new JSONObject();
-        put(response, "ok", false);
-        put(response, "error", error.getMessage() == null ? "Local save failed." : error.getMessage());
+        int status = 200;
+        JSONObject response;
+        try {
+          response = dispatch(uri, method, requestBody == null ? "" : requestBody);
+        } catch (ApiException error) {
+          status = error.status;
+          response = error.body;
+        } catch (Exception error) {
+          status = 500;
+          response = new JSONObject();
+          put(response, "ok", false);
+          put(response, "error", error.getMessage() == null ? "Local save failed." : error.getMessage());
+        }
+        JSONObject result = new JSONObject();
+        put(result, "status", status);
+        put(result, "body", response.toString());
+        return result.toString();
+      } catch (OutOfMemoryError error) {
+        // Never let a large local archive escape the JavascriptInterface as a
+        // Java invocation exception or take down its bridge thread. This literal
+        // response needs no JSON object/string serialization on an exhausted heap.
+        return "{\"status\":503,\"body\":\"{\\\"ok\\\":false,\\\"code\\\":\\\"LOCAL_MEMORY_LIMIT\\\",\\\"error\\\":\\\"本地存档数据量超出当前可用内存，请关闭其他应用后重试。\\\"}\"}";
+      } catch (StackOverflowError error) {
+        return "{\"status\":422,\"body\":\"{\\\"ok\\\":false,\\\"code\\\":\\\"INVALID_LOCAL_ARCHIVE\\\",\\\"error\\\":\\\"本地存档的嵌套层级过深，无法读取。\\\"}\"}";
       }
-      JSONObject result = new JSONObject();
-      put(result, "status", status);
-      put(result, "body", response.toString());
-      return result.toString();
     }
   }
 
@@ -580,17 +688,18 @@ final class LocalCampaignApi {
     String backupPrefix = campaignKey() + "::daily::" + targetDay + "::";
     JSONObject restored = null;
     int latestRevision = -1;
-    String latestKey = "";
-    for (String key : store.getAll().keySet()) {
+    DailyBackupArchive.Source latestSource = null;
+    for (Map.Entry<String, DailyBackupArchive.Source> archive : dailyArchiveSources().entrySet()) {
+      String key = archive.getKey();
       if (!key.startsWith(backupPrefix)) continue;
       try {
-        JSONObject candidate = normalizeCampaign(new JSONObject(store.getString(key, "")));
+        JSONObject candidate = normalizeCampaign(new JSONObject(archive.getValue().read()));
         if (!targetDay.equals(gameDayKey(candidate))) continue;
         int revision = candidate.getJSONObject("sectionRevisions").optInt("dashboard", 0);
-        if (restored == null || revision > latestRevision || (revision == latestRevision && key.compareTo(latestKey) > 0)) {
+        if (restored == null || revision > latestRevision || (revision == latestRevision && DailyBackupArchive.compareSources(archive.getValue(), latestSource) > 0)) {
           restored = candidate;
           latestRevision = revision;
-          latestKey = key;
+          latestSource = archive.getValue();
         }
       } catch (JSONException ignored) {
         // An incomplete archive must not prevent trying other backups of this day.
@@ -693,9 +802,9 @@ final class LocalCampaignApi {
   // builder, using the same revision/key ordering as restorePreviousDay. Reading
   // a briefing must never save, normalize on disk, or create a backup.
   private JSONObject briefingSource(Uri uri) throws Exception {
-    JSONObject campaign = loadCampaign();
-    JSONObject dashboard = campaign.getJSONObject("sections").optJSONObject("dashboard");
-    if (dashboard == null) dashboard = new JSONObject();
+    // Extract selector metadata before opening any historical archive. In
+    // particular, do not retain today's complete campaign beside every day.
+    JSONObject dashboard = briefingDashboard();
     JSONObject profiles = dashboard.optJSONObject("profiles");
     if (profiles == null) profiles = new JSONObject();
     String profileId = uri.getQueryParameter("profile");
@@ -712,46 +821,210 @@ final class LocalCampaignApi {
       if (cycles.optJSONObject(cycleId) == null) cycleId = cycles.keys().hasNext() ? cycles.keys().next() : "c1";
     }
     String prefix = campaignKey() + "::daily::" + Uri.encode(profileId) + "::" + Uri.encode(cycleId) + "::";
-    Map<String, JSONObject> latest = new TreeMap<>();
-    Map<String, String> latestKeys = new TreeMap<>();
-    for (Map.Entry<String, ?> entry : store.getAll().entrySet()) {
+    Map<String, java.util.ArrayList<String>> days = new TreeMap<>();
+    Map<String, DailyBackupArchive.Source> sources = dailyArchiveSources();
+    for (Map.Entry<String, DailyBackupArchive.Source> entry : sources.entrySet()) {
       String key = entry.getKey();
-      if (!key.startsWith(prefix) || !(entry.getValue() instanceof String)) continue;
+      if (!key.startsWith(prefix)) continue;
+      int separator = key.indexOf("::", prefix.length());
+      if (separator < 0) continue;
+      String dayKey = key.substring(0, separator);
+      java.util.ArrayList<String> keys = days.get(dayKey);
+      if (keys == null) { keys = new java.util.ArrayList<>(); days.put(dayKey, keys); }
+      keys.add(key);
+    }
+    String cursorValue = uri.getQueryParameter("cursor");
+    int cursor = 0;
+    if (cursorValue != null) {
       try {
-        JSONObject candidate = new JSONObject((String) entry.getValue());
-        String dayKey = gameDayKey(candidate);
-        String expectedPrefix = Uri.encode(profileId) + "::" + Uri.encode(cycleId) + "::";
-        if (!dayKey.startsWith(expectedPrefix) || !key.startsWith(campaignKey() + "::daily::" + dayKey + "::")) continue;
-        JSONObject previous = latest.get(dayKey);
-        int revision = candidate.optJSONObject("sectionRevisions") == null ? 0
-          : candidate.getJSONObject("sectionRevisions").optInt("dashboard", 0);
-        int previousRevision = previous == null || previous.optJSONObject("sectionRevisions") == null ? -1
-          : previous.getJSONObject("sectionRevisions").optInt("dashboard", 0);
-        if (previous == null || revision > previousRevision || (revision == previousRevision && key.compareTo(latestKeys.get(dayKey)) > 0)) {
-          latest.put(dayKey, candidate);
-          latestKeys.put(dayKey, key);
-        }
-      } catch (JSONException ignored) {
-        // Keep reading when an individual archive is corrupt.
+        if (!cursorValue.matches("[0-9]+")) throw new NumberFormatException();
+        cursor = Integer.parseInt(cursorValue);
+        if (cursor > days.size()) throw new NumberFormatException();
+      } catch (NumberFormatException error) {
+        throw new ApiException(400, error("Invalid briefing cursor."));
       }
     }
     JSONArray snapshots = new JSONArray();
-    for (JSONObject snapshot : latest.values()) {
-      // A briefing only needs this profile/cycle's dashboard state plus heroes
-      // and story. Do not send inventory or unrelated profiles for every day.
-      JSONObject sourceSections = snapshot.getJSONObject("sections");
-      JSONObject sourceProfile = sourceSections.getJSONObject("dashboard").getJSONObject("profiles").getJSONObject(profileId);
-      JSONObject slimProfile = new JSONObject().put("activeCycleId", cycleId)
-        .put("cycles", new JSONObject().put(cycleId, sourceProfile.getJSONObject("cycles").getJSONObject(cycleId)));
-      JSONObject sections = new JSONObject().put("dashboard", new JSONObject().put("activeProfileId", profileId)
-        .put("profiles", new JSONObject().put(profileId, slimProfile)));
-      sections.put("heroes", userSectionState(sourceSections.opt("heroes"), profileId));
-      sections.put("story", userSectionState(sourceSections.opt("story"), profileId));
-      snapshots.put(new JSONObject().put("sections", sections));
+    int index = 0, end = cursor + BRIEFING_PAGE_DAYS;
+    for (Map.Entry<String, java.util.ArrayList<String>> day : days.entrySet()) {
+      if (index++ < cursor) continue;
+      if (index > end) break;
+      JSONObject latest = null;
+      int latestRevision = -1;
+      DailyBackupArchive.Source latestSource = null;
+      for (String key : day.getValue()) {
+        try {
+          JSONObject candidate = new JSONObject(sources.get(key).read());
+          if (!(campaignKey() + "::daily::" + gameDayKey(candidate)).equals(day.getKey())) continue;
+          int revision = candidate.optJSONObject("sectionRevisions") == null ? 0
+            : candidate.getJSONObject("sectionRevisions").optInt("dashboard", 0);
+          if (latest != null && (revision < latestRevision || (revision == latestRevision && DailyBackupArchive.compareSources(sources.get(key), latestSource) <= 0))) continue;
+          // Only the projection survives this iteration. Retaining each full
+          // candidate used to multiply the whole campaign by its day count.
+          JSONObject slim = briefingSnapshot(candidate, profileId, cycleId);
+          latest = slim;
+          latestRevision = revision;
+          latestSource = sources.get(key);
+        } catch (JSONException ignored) {
+          // A malformed/incomplete revision cannot hide another valid archive.
+        }
+      }
+      if (latest != null) snapshots.put(latest);
     }
+    int next = Math.min(end, days.size());
     return ok().put("source", "android-daily-backups").put("user", user())
       .put("campaign", new JSONObject().put("sections", new JSONObject().put("dashboard", dashboard)))
-      .put("profileId", profileId).put("cycleId", cycleId).put("snapshots", snapshots);
+      .put("profileId", profileId).put("cycleId", cycleId).put("snapshots", snapshots)
+      .put("nextCursor", next < days.size() ? String.valueOf(next) : JSONObject.NULL);
+  }
+
+  private JSONObject briefingDashboard() throws Exception {
+    JSONObject dashboard = loadCampaign().getJSONObject("sections").optJSONObject("dashboard");
+    if (dashboard == null) dashboard = new JSONObject();
+    JSONObject profiles = dashboard.optJSONObject("profiles"), slimProfiles = new JSONObject();
+    if (profiles != null) for (Iterator<String> ids = profiles.keys(); ids.hasNext();) {
+      String id = ids.next();
+      JSONObject profile = profiles.optJSONObject(id);
+      if (profile == null) continue;
+      JSONObject cycles = profile.optJSONObject("cycles"), slimCycles = new JSONObject();
+      if (cycles != null) for (Iterator<String> cycleIds = cycles.keys(); cycleIds.hasNext();) {
+        String cycleId = cycleIds.next();
+        JSONObject cycle = cycles.optJSONObject(cycleId);
+        if (cycle == null) continue;
+        slimCycles.put(cycleId, new JSONObject().put("state", briefingFields(cycle.optJSONObject("state"), "day")));
+      }
+      slimProfiles.put(id, briefingFields(profile, "name", "activeCycleId").put("cycles", slimCycles));
+    }
+    java.util.Set<String> currentCycles = new java.util.HashSet<>();
+    for (Iterator<String> ids = slimProfiles.keys(); ids.hasNext();) {
+      String id = ids.next();
+      for (Iterator<String> cycleIds = slimProfiles.getJSONObject(id).getJSONObject("cycles").keys(); cycleIds.hasNext();)
+        currentCycles.add(DailyBackupArchive.dayKey(id, cycleIds.next(), ""));
+    }
+    for (java.io.File batch : dailyBackupBatches()) {
+      JSONObject index = new JSONObject(DailyBackupArchive.readText(new java.io.File(batch, "index.json"), DailyBackupArchive.MAX_MANIFEST));
+      JSONArray importedCycles = index.getJSONArray("cycles");
+      for (int i = 0; i < importedCycles.length(); i++) {
+        JSONObject entry = importedCycles.getJSONObject(i);
+        String id = entry.getString("profileId"), cycleId = entry.getString("cycleId");
+        JSONObject profile = slimProfiles.optJSONObject(id);
+        if (profile == null) {
+          profile = new JSONObject().put("name", entry.getString("profileName")).put("activeCycleId", cycleId).put("cycles", new JSONObject());
+          slimProfiles.put(id, profile);
+        }
+        JSONObject profileCycles = profile.getJSONObject("cycles");
+        String selection = DailyBackupArchive.dayKey(id, cycleId, "");
+        JSONObject existing = profileCycles.optJSONObject(cycleId);
+        if (existing == null || (!currentCycles.contains(selection) && DailyBackupArchive.compareDays(entry.getString("day"),
+            existing.getJSONObject("state").optString("day", "")) > 0))
+          profileCycles.put(cycleId, new JSONObject().put("state", new JSONObject().put("day", entry.getString("day"))));
+      }
+    }
+    return briefingFields(dashboard, "activeProfileId").put("profiles", slimProfiles);
+  }
+
+  private JSONObject briefingSnapshot(JSONObject campaign, String profileId, String cycleId) throws JSONException {
+    JSONObject sourceSections = campaign.getJSONObject("sections");
+    JSONObject state = sourceSections.getJSONObject("dashboard").getJSONObject("profiles").getJSONObject(profileId)
+      .getJSONObject("cycles").getJSONObject(cycleId).getJSONObject("state");
+    JSONObject slimState = briefingFields(state, "day", "updatedAt", "location", "objective", "reminder", "notes",
+      "specialEventConstantsActive", "pharosDreamsActive", "mainStoryConstantsActive", "cardTracksVersion");
+    Object dateNotes = state.opt("dateNotes");
+    if (dateNotes instanceof JSONArray || dateNotes instanceof JSONObject) {
+      JSONArray notes = new JSONArray();
+      java.util.ArrayList<Object> values = new java.util.ArrayList<>();
+      if (dateNotes instanceof JSONArray) {
+        JSONArray array = (JSONArray) dateNotes;
+        for (int i = 0; i < array.length(); i++) values.add(array.opt(i));
+      } else {
+        JSONObject byDay = (JSONObject) dateNotes;
+        for (Iterator<String> keys = byDay.keys(); keys.hasNext();) values.add(byDay.opt(keys.next()));
+      }
+      for (Object note : values) {
+        if (briefingScalar(note)) notes.put(note);
+        else if (note instanceof JSONObject) notes.put(briefingFields((JSONObject) note, "text"));
+      }
+      slimState.put("dateNotes", notes);
+    }
+    JSONObject tracks = state.optJSONObject("cardTracks");
+    if (tracks != null) {
+      JSONObject slimTracks = new JSONObject();
+      for (String kind : new String[] {"story", "doom", "inwardOdyssey"}) {
+        JSONObject track = tracks.optJSONObject(kind);
+        if (track != null) slimTracks.put(kind, briefingFields(track, "position", "progress", "doom"));
+      }
+      slimState.put("cardTracks", slimTracks);
+    }
+    JSONObject counters = state.optJSONObject("cardCounters");
+    if (counters != null) slimState.put("cardCounters", briefingFields(counters, "story", "doom", "storyCount", "doomCount", "inwardOdyssey", "inwardOdysseyCount"));
+    JSONObject survey = state.optJSONObject("surveyConstants");
+    if (survey != null) {
+      JSONObject hubs = survey.optJSONObject("hubs"), slimHubs = new JSONObject();
+      if (hubs != null) for (Iterator<String> ids = hubs.keys(); ids.hasNext();) {
+        String id = ids.next();
+        JSONObject boxes = hubs.optJSONObject(id), slimBoxes = new JSONObject();
+        if (boxes != null) for (Iterator<String> keys = boxes.keys(); keys.hasNext();) {
+          String key = keys.next();
+          if (briefingScalar(boxes.opt(key))) slimBoxes.put(key, boxes.opt(key));
+        }
+        slimHubs.put(id, slimBoxes);
+      }
+      slimState.put("surveyConstants", new JSONObject().put("hubs", slimHubs)
+        .put("activeHub", briefingFields(survey.optJSONObject("activeHub"), "itemId", "boxId")));
+    }
+    JSONObject map = state.optJSONObject("mapSnapshot");
+    JSONObject slimMap = briefingFields(map, "savedAt", "scoutCount", "totalTiles", "currentTileId", "latestRevealedTileId",
+      "adversaryTileId", "lastCityTileId", "lastOasisTileId", "lastSilverRuinTileId", "scoutTileId");
+    if (map != null) for (String field : new String[] {"revealedIds", "exploredIds", "currentTileTagLabels", "currentTileFactionLabels", "markers"}) {
+      if (map.optJSONArray(field) != null) slimMap.put(field, briefingScalars(map.optJSONArray(field)));
+    }
+    if (map != null && map.optJSONArray("tileNotes") != null) slimMap.put("tileNotes", briefingEntries(map.optJSONArray("tileNotes"), "tileId", "note"));
+    slimState.put("mapSnapshot", slimMap);
+    JSONObject tech = state.optJSONObject("unlockedTech");
+    slimState.put("unlockedTech", new JSONObject().put("unlockedKeys", briefingScalars(tech == null ? null : tech.optJSONArray("unlockedKeys"))));
+    JSONObject exploration = state.optJSONObject("exploration");
+    JSONObject drawStates = exploration == null ? null : exploration.optJSONObject("drawStateByCycle");
+    JSONObject draws = drawStates == null ? null : drawStates.optJSONObject(cycleId);
+    JSONArray history = draws == null ? null : draws.optJSONArray("history"), slimHistory = new JSONArray();
+    if (history != null) for (int i = 0; i < history.length(); i++) {
+      JSONObject draw = history.optJSONObject(i);
+      if (draw != null && state.optString("day", "").equals(draw.optString("day", ""))) slimHistory.put(briefingFields(draw, "id", "name", "day"));
+    }
+    slimState.put("exploration", new JSONObject().put("drawStateByCycle", new JSONObject().put(cycleId, new JSONObject().put("history", slimHistory))));
+    JSONObject slimProfile = new JSONObject().put("activeCycleId", cycleId)
+      .put("cycles", new JSONObject().put(cycleId, new JSONObject().put("state", slimState)));
+    JSONObject sections = new JSONObject().put("dashboard", new JSONObject().put("activeProfileId", profileId)
+      .put("profiles", new JSONObject().put(profileId, slimProfile)));
+    JSONObject heroes = userSectionState(sourceSections.opt("heroes"), profileId);
+    sections.put("heroes", new JSONObject().put("heroes", briefingEntries(heroes.optJSONArray("heroes"), "customName", "playerName", "argonaut"))
+      .put("graveyard", briefingEntries(heroes.optJSONArray("graveyard"), "customName", "argonaut")));
+    sections.put("story", briefingFields(userSectionState(sourceSections.opt("story"), profileId), "bookTitle", "section", "title", "id"));
+    return new JSONObject().put("sections", sections);
+  }
+
+  private static boolean briefingScalar(Object value) {
+    return value instanceof String || value instanceof Number || value instanceof Boolean;
+  }
+
+  private static JSONObject briefingFields(JSONObject source, String... fields) throws JSONException {
+    JSONObject result = new JSONObject();
+    if (source != null) for (String field : fields) if (briefingScalar(source.opt(field))) result.put(field, source.opt(field));
+    return result;
+  }
+
+  private static JSONArray briefingScalars(JSONArray source) {
+    JSONArray result = new JSONArray();
+    if (source != null) for (int i = 0; i < source.length(); i++) if (briefingScalar(source.opt(i))) result.put(source.opt(i));
+    return result;
+  }
+
+  private static JSONArray briefingEntries(JSONArray source, String... fields) throws JSONException {
+    JSONArray result = new JSONArray();
+    if (source != null) for (int i = 0; i < source.length(); i++) {
+      JSONObject entry = source.optJSONObject(i);
+      if (entry != null) result.put(briefingFields(entry, fields));
+    }
+    return result;
   }
 
   private String campaignKey() {

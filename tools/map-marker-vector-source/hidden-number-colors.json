@@ -1,0 +1,138 @@
+{
+  "version": "20261027-original-hidden-number-colors1",
+  "method": "Fixed font outlines, audited source positions/angles, original scalar ink colours. No traced contours.",
+  "records": [
+    {
+      "key": "c1-tile-014-alt-front",
+      "groupIndex": 0,
+      "text": "0240",
+      "source": "official-assets/_backups/map-links-20261025/originals/map/images/hd1024/overlay/c1-tile-014-alt-front.png",
+      "sourceSha256": "87981472b8d1aae5e8130a557c44e9393208e298195a950cda2e7f0a72d4f26a",
+      "color": "#475f67",
+      "previousSpecColor": "#475f67",
+      "opaqueSourcePixels": 371,
+      "dominantColorPixels": 371,
+      "measurement": "Mode RGB of original source PNG hidden-number connected components at alpha >250; only scalar colour sampled, no visible paths or contours extracted."
+    },
+    {
+      "key": "c1-tile-014-front",
+      "groupIndex": 0,
+      "text": "0240",
+      "source": "official-assets/_backups/map-links-20261025/originals/map/images/hd1024/overlay/c1-tile-014-front.png",
+      "sourceSha256": "7f343761cffb92ddcd30ac68b74976255d869abe4af6b415e69cff072e19639c",
+      "color": "#486266",
+      "previousSpecColor": "#546f73",
+      "opaqueSourcePixels": 318,
+      "dominantColorPixels": 318,
+      "measurement": "Mode RGB of original source PNG hidden-number connected components at alpha >250; only scalar colour sampled, no visible paths or contours extracted."
+    },
+    {
+      "key": "c1-tile-045-front",
+      "groupIndex": 0,
+      "text": "0312",
+      "source": "official-assets/_backups/map-links-20261025/originals/map/images/hd1024/overlay/c1-tile-045-front.png",
+      "sourceSha256": "467df38b79a28638d8343bbb326d2d94a698afd7657e97d8aef5ba9b195be3ca",
+      "color": "#57706e",
+      "previousSpecColor": "#647d7b",
+      "opaqueSourcePixels": 245,
+      "dominantColorPixels": 245,
+      "measurement": "Mode RGB of original source PNG hidden-number connected components at alpha >250; only scalar colour sampled, no visible paths or contours extracted."
+    },
+    {
+      "key": "c1-tile-054-front",
+      "groupIndex": 0,
+      "text": "0281",
+      "source": "official-assets/_backups/map-links-20261025/originals/map/images/hd1024/overlay/c1-tile-054-front.png",
+      "sourceSha256": "e8bcdabe4a9b49fa8f6b592cd06ea09a5705acf4a0c2514573b9690fc3afa4a9",
+      "color": "#3a413b",
+      "previousSpecColor": "#3a413b",
+      "opaqueSourcePixels": 522,
+      "dominantColorPixels": 522,
+      "measurement": "Mode RGB of original source PNG hidden-number connected components at alpha >250; only scalar colour sampled, no visible paths or contours extracted."
+    },
+    {
+      "key": "c1-tile-066-front",
+      "groupIndex": 0,
+      "text": "0223",
+      "source": "official-assets/_backups/map-links-20261025/originals/map/images/hd1024/overlay/c1-tile-066-front.png",
+      "sourceSha256": "741c269b02b109367e3bac24899ec8504a705a2dfebefa67baaeaa2f950f5e06",
+      "color": "#5c6861",
+      "previousSpecColor": "#69756e",
+      "opaqueSourcePixels": 191,
+      "dominantColorPixels": 191,
+      "measurement": "Mode RGB of original source PNG hidden-number connected components at alpha >250; only scalar colour sampled, no visible paths or contours extracted."
+    },
+    {
+      "key": "c1-tile-076-front",
+      "groupIndex": 0,
+      "text": "0279",
+      "source": "official-assets/_backups/map-links-20261025/originals/map/images/hd1024/overlay/c1-tile-076-front.png",
+      "sourceSha256": "38ccbe58e727f55bb64dd3ab180acb205c9a5ee9f84d5aadeebf2e8aa4f1de99",
+      "color": "#435e69",
+      "previousSpecColor": "#435e69",
+      "opaqueSourcePixels": 746,
+      "dominantColorPixels": 746,
+      "measurement": "Mode RGB of original source PNG hidden-number connected components at alpha >250; only scalar colour sampled, no visible paths or contours extracted."
+    },
+    {
+      "key": "c1-tile-078-front",
+      "groupIndex": 0,
+      "text": "0211",
+      "source": "official-assets/_backups/map-links-20261025/originals/map/images/hd1024/overlay/c1-tile-078-front.png",
+      "sourceSha256": "b2c18ef584b460c15e477bf529d7e2b8734694bfb7895da490ee1432e28bf04e",
+      "color": "#354f5a",
+      "previousSpecColor": "#354f5a",
+      "opaqueSourcePixels": 224,
+      "dominantColorPixels": 224,
+      "measurement": "Mode RGB of original source PNG hidden-number connected components at alpha >250; only scalar colour sampled, no visible paths or contours extracted."
+    },
+    {
+      "key": "c2-tile-002-front",
+      "groupIndex": 0,
+      "text": "7979",
+      "source": "official-assets/_backups/map-links-20261025/originals/map/images/hd1024/overlay/c2-tile-002-front.png",
+      "sourceSha256": "4978baf7084db258ad63ff27b2d4cfee6648f7fce60a9f38ed52f5b348fd7680",
+      "color": "#adbcb0",
+      "previousSpecColor": "#bacabd",
+      "opaqueSourcePixels": 116,
+      "dominantColorPixels": 116,
+      "measurement": "Mode RGB of original source PNG hidden-number connected components at alpha >250; only scalar colour sampled, no visible paths or contours extracted."
+    },
+    {
+      "key": "c2-tile-008-front",
+      "groupIndex": 0,
+      "text": "5735",
+      "source": "official-assets/_backups/map-links-20261025/originals/map/images/hd1024/overlay/c2-tile-008-front.png",
+      "sourceSha256": "a86c3271df62c104b4bbd650e14680344d0d072bac3324584e8be70c138e9b3d",
+      "color": "#292920",
+      "previousSpecColor": "#35352c",
+      "opaqueSourcePixels": 153,
+      "dominantColorPixels": 153,
+      "measurement": "Mode RGB of original source PNG hidden-number connected components at alpha >250; only scalar colour sampled, no visible paths or contours extracted."
+    },
+    {
+      "key": "c2-tile-037-front",
+      "groupIndex": 0,
+      "text": "3721",
+      "source": "official-assets/_backups/map-links-20261025/originals/map/images/hd1024/overlay/c2-tile-037-front.png",
+      "sourceSha256": "fa983c0313472a71a3c99b5b73c35c456f8e9207da14d261cbbd564cc374e8d2",
+      "color": "#4d3029",
+      "previousSpecColor": "#593c35",
+      "opaqueSourcePixels": 183,
+      "dominantColorPixels": 183,
+      "measurement": "Mode RGB of original source PNG hidden-number connected components at alpha >250; only scalar colour sampled, no visible paths or contours extracted."
+    },
+    {
+      "key": "c2-tile-057-front",
+      "groupIndex": 0,
+      "text": "7214",
+      "source": "official-assets/_backups/map-links-20261025/originals/map/images/hd1024/overlay/c2-tile-057-front.png",
+      "sourceSha256": "8439d11b2274822339d19f5bbf793550d2b996baabbc1535ada626d80acad6ab",
+      "color": "#343028",
+      "previousSpecColor": "#403c34",
+      "opaqueSourcePixels": 151,
+      "dominantColorPixels": 151,
+      "measurement": "Mode RGB of original source PNG hidden-number connected components at alpha >250; only scalar colour sampled, no visible paths or contours extracted."
+    }
+  ]
+}
