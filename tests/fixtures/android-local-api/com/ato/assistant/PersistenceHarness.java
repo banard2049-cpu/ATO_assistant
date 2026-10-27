@@ -28,6 +28,9 @@ public final class PersistenceHarness {
     }
     String saved = call("", "GET", "", 200).getJSONObject("campaign").toString();
     restart();
+    JSONObject restoredSession = new JSONObject(api.rememberedSession());
+    check(restoredSession.getBoolean("authenticated") && "alpha".equals(restoredSession.getJSONObject("user").getString("id")),
+        "Remembered session was not restored from existing local preferences");
     check(saved.equals(call("", "GET", "", 200).getJSONObject("campaign").toString()), "Acknowledged save lost at process stop");
     JSONObject source = new JSONObject(api.handleForJavascript(Uri.parse("file:///android_asset/web/briefing/api.php"), "GET", ""));
     check(source.getInt("status") == 200 && new JSONObject(source.getString("body")).getJSONArray("snapshots").length() == 2,
@@ -47,6 +50,7 @@ public final class PersistenceHarness {
     call("?action=logout", "POST", "", 200);
     restart();
     check(!call("?action=me", "GET", "", 200).getBoolean("authenticated"), "Logout was not durable");
+    check(!new JSONObject(api.rememberedSession()).getBoolean("authenticated"), "Remembered session survived logout");
     System.out.println("Android persistence passed: " + checks + " checks");
   }
   public static void main(String[] args) throws Exception { new PersistenceHarness().run(); }
