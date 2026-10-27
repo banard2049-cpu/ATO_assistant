@@ -78,6 +78,24 @@ class ReleasePackTests(unittest.TestCase):
             self.run_fixture()
         self.assertEqual(self.calls, [])
 
+    def test_custom_current_name_changes_only_current_pack_and_password_zip(self):
+        result = self.run_fixture(current_name="测试用请勿下载")
+        self.assertEqual(Path(result["packs"][0]["output"]).name,
+                         "ATOassets-民间版-分层地图-q85-2026-10-26-v3.8.13.atopack")
+        self.assertEqual(Path(result["packs"][1]["output"]).name,
+                         "ATOassets-官方版-分层地图-q85-2026-10-26-v3.8.13.atopack")
+        self.assertEqual(Path(result["packs"][2]["output"]).name, "测试用请勿下载.atopack")
+        self.assertEqual(Path(result["encrypted"]["output"]).name, "测试用请勿下载.zip")
+        self.assertEqual(result["encrypted"]["password"], "20")
+        self.assertTrue(result["encrypted"]["member"].isascii())
+        self.assertEqual(self.calls[2]["incremental_from"], self.calls[0]["output"])
+
+    def test_custom_current_name_cannot_escape_or_collide(self):
+        legacy = "ATOassets-民间版-分层地图-q85-2026-10-26-v3.8.13"
+        for name in ("", ".", "..", "../test", "C:\\test", "bad:name", "tail.", "tail ", "CON", legacy):
+            with self.subTest(name=name), self.assertRaises(releases.PackError):
+                releases.output_paths(self.root, "3.8.13", "2026-10-26", current_name=name)
+
     def test_resume_checks_hashes_and_skips_completed_packs(self):
         result = self.run_fixture()
         self.calls.clear()

@@ -411,6 +411,17 @@ def test_map_payload_has_positions_and_art(logged_in):
     assert tiles["007"]["firstDay"] == "2"
 
 
+def assert_smelted_gear_or_dependencies(payload):
+    page = next(page for page in payload["tech"]["pages"] if page["page"] == "cycle1")
+    smelted = next(node for node in page["nodes"] if node["key"] == "smelted gear")
+    assert smelted["requiresAnyGroups"] == [["advanced support equipment", "hekaton autopsy"]]
+    optional_sources = {
+        edge["sourceKey"] for edge in page["edges"]
+        if edge["target"] == smelted["id"] and edge["optional"]
+    }
+    assert optional_sources == {"advanced support equipment", "hekaton autopsy"}
+
+
 def test_tech_payload_has_nodes_edges_and_first_day(logged_in):
     status, payload = logged_in.request("/briefing/api.php")
     tech = payload["tech"]
@@ -434,6 +445,7 @@ def test_tech_payload_has_nodes_edges_and_first_day(logged_in):
     assert [record["key"] for record in tech["unlocked"]][0] == "trireme armor"
     assert unlocked["argo works"]["name"] == "巨型广场"
     assert unlocked["last tome"]["name"] == "最后的学院"
+    assert_smelted_gear_or_dependencies(payload)
 
 
 def test_summary_counts(logged_in):
@@ -604,6 +616,8 @@ process.stdout.write(JSON.stringify(build(JSON.parse(fs.readFileSync(0, 'utf8'))
                             input=json.dumps(source, ensure_ascii=False), encoding="utf-8",
                             capture_output=True, check=True)
     actual = json.loads(result.stdout)
+    assert_smelted_gear_or_dependencies(actual)
+    assert_smelted_gear_or_dependencies(expected)
     # Native storage has no filesystem backupDir; timestamps use the phone's timezone.
     for payload in (actual, expected):
         payload["cycle"].pop("backupDir")

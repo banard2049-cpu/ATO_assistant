@@ -10,6 +10,12 @@ const source = fs.readFileSync(path.join(root, 'technology/index.html'), 'utf8')
 // 坐标重放科技树，两份页面共用一套布局。那个文件仍然保留 `const PAGE_METADATA = [...]`
 // 这个声明形式，所以下面按声明名读源码的逻辑不用改。
 const layoutSource = fs.readFileSync(path.join(root, 'technology/tech-page-layout.js'), 'utf8').replace(/\r\n/g, '\n');
+const audited = JSON.parse(fs.readFileSync(path.join(root, 'tests/fixtures/technology-card-prerequisites.json'), 'utf8'));
+const sortedRefs = refs => Array.from(refs || [], value => value.toLowerCase().trim()).sort();
+const sortedGroups = raw => {
+  const groups = raw?.length && !Array.isArray(raw[0]) ? [raw] : (raw || []);
+  return Array.from(groups, group => sortedRefs(group).join('|')).sort();
+};
 
 function context() {
   const scope = vm.createContext({
@@ -153,6 +159,94 @@ test('AND prerequisites, OR groups and manual unlocks preserve discovery semanti
   assert.equal(c.isDiscoveredNode('cycle1', and), false);
   c.unlocked.add('and');
   assert.equal(c.isDiscoveredNode('cycle1', and), true);
+});
+
+test('Ambrosia Spill Solution requires only Up-stream Navigation as printed on its face', () => {
+  const c = context(), page = c.data.pages.find(item => item.key === 'cycle2');
+  const spill = page.nodes.find(node => node.name === 'Ambrosia Spill Solution');
+  const upstream = page.nodes.find(node => node.name === 'Up-Stream Navigation');
+  const canal = page.nodes.find(node => node.name === 'Canal Reconnaissance');
+  assert.deepEqual(Array.from(spill.requires), ['up-stream navigation']);
+  assert.equal(c.isDiscoveredNode(page.key, spill), false);
+  c.unlocked.add(c.nodeKey(page.key, upstream));
+  assert.equal(c.isDiscoveredNode(page.key, spill), true);
+  assert.equal(c.isUnlockableNode(page.key, spill), true);
+  assert.equal(c.isUnlockedNode(page.key, canal), false);
+  const graph = tree.buildGraph(page.nodes, node => c.nodeKey(page.key, node));
+  assert.deepEqual(graph.edges.filter(edge => edge.target === spill.id), [
+    { source: upstream.id, target: spill.id, optional: false },
+  ]);
+  assert.match(c.renderRequirementUnlockColumns(page.key, upstream), /神浆泄漏对策/);
+  assert.doesNotMatch(c.renderRequirementUnlockColumns(page.key, canal), /神浆泄漏对策/);
+});
+
+test('all 319 card faces retain their manually audited prerequisites across 323 cycle nodes', () => {
+  const dictionary = JSON.parse(fs.readFileSync(path.join(root, 'technology/tech_card_dictionary.min.json'), 'utf8'));
+  assert.equal(dictionary.cards.length, audited.cards);
+  assert.equal(audited.nodes.length, 323);
+  assert.equal(new Set(audited.nodes.map(node => node.index)).size, 319);
+  const actual = dictionary.cards.flatMap(card => card.nodes.map(node => ({ card, node })));
+  assert.equal(actual.length, audited.nodes.length);
+  for (const expected of audited.nodes) {
+    const { card, node } = actual.find(item => item.card.index === expected.index
+      && item.node.page === expected.page && item.node.id === expected.id);
+    const message = `${expected.page}/${card.key}`;
+    assert.equal(card.image.face, expected.image, message + ': evidence face');
+    assert.deepEqual(sortedRefs(node.req), sortedRefs(expected.req), message + ': AND prerequisites');
+    assert.deepEqual(sortedGroups(node.req_any), sortedGroups(expected.req_any), message + ': OR prerequisites');
+    assert.deepEqual(sortedRefs(node.req_conditions), sortedRefs(expected.req_conditions), message + ': external conditions');
+  }
+});
+
+test('every audited external condition gates research and retains its card-face caption', () => {
+  const c = context();
+  c.areRequirementsMet = () => true;
+  for (const expected of audited.nodes.filter(node => node.req_conditions.length)) {
+    const page = c.data.pages.find(item => item.key === expected.page);
+    const node = page.nodes.find(item => item.id === expected.id);
+    c.currentCycle = page.key;
+    c.conditionTicked.clear();
+    const cells = c.conditionCells(page.key, node);
+    assert.equal(cells?.length, expected.req_conditions.length, `${node.name}: condition count`);
+    assert.equal(c.isUnlockableNode(page.key, node), false, `${node.name}: unchecked conditions must block`);
+    const captions = cells.map((_, index) => c.conditionCellCaption(page.key, node, index));
+    assert.deepEqual(sortedRefs(captions), sortedRefs(expected.req_conditions), `${node.name}: printed captions`);
+    for (let index = 0; index < cells.length; index++) c.conditionTicked.add(c.conditionCellKey(page.key, node, index));
+    assert.equal(c.isUnlockableNode(page.key, node), true, `${node.name}: satisfied conditions permit research`);
+  }
+});
+
+test('outgoing previews and graph edges contain exactly the audited incoming prerequisites', () => {
+  const c = context();
+  for (const page of c.data.pages) {
+    const expected = new Map();
+    const graph = tree.buildGraph(page.nodes, node => c.nodeKey(page.key, node));
+    const resolve = ref => page.nodes.find(node => c.nodeKey(page.key, node) === ref
+      || node.name.toLowerCase() === ref.toLowerCase());
+    const outgoing = new Map(page.nodes.map(node => [node.id, []]));
+    for (const row of audited.nodes.filter(node => node.page === page.key)) {
+      const add = (ref, optional) => {
+        const source = resolve(ref);
+        if (!source) return; // C2 Pursuer Sighting retains its C1 technology prerequisites.
+        const key = `${source.id}>${row.id}`, previous = expected.get(key);
+        expected.set(key, { source: source.id, target: row.id, optional: previous ? previous.optional && optional : optional });
+        outgoing.get(source.id).push(c.nodeKey(page.key, page.nodes.find(node => node.id === row.id)));
+      };
+      row.req.forEach(ref => add(ref, false));
+      const groups = row.req_any?.length && !Array.isArray(row.req_any[0]) ? [row.req_any] : row.req_any;
+      groups.forEach(group => group.forEach(ref => add(ref, true)));
+    }
+    const edgeList = edges => Array.from(edges, edge => JSON.stringify(edge)).sort();
+    assert.deepEqual(edgeList(graph.edges), edgeList(expected.values()), `${page.key}: exact card-face graph`);
+    for (const node of page.nodes) {
+      const targets = node.xlsm_leads_to.map(ref => {
+        const target = resolve(ref);
+        assert.ok(target, `${node.name}: preview reference ${ref} resolves in its cycle`);
+        return c.nodeKey(page.key, target);
+      });
+      assert.deepEqual(sortedRefs(targets), sortedRefs([...new Set(outgoing.get(node.id))]), `${node.name}: outgoing preview`);
+    }
+  }
 });
 
 test('prerequisite references conceal undiscovered nodes while successor previews show their names', () => {
@@ -376,8 +470,8 @@ test('adjusted related nodes form straight horizontal branches in both languages
     [['cycle4_da2185', 'cycle4_da2193'], ['cycle4_da2205', 'cycle4_da2211'], ['cycle4_da2211', 'cycle4_da2216'],
       ['cycle4_da2203', 'cycle4_da2220'], ['cycle4_da2200', 'cycle4_da2204']],
     [['cycle5_ea2777', 'cycle5_ea2778'], ['cycle5_ea2778', 'cycle5_ea2779'], ['cycle5_ea2776', 'cycle5_ea2777'],
-      ['cycle5_ea2749', 'cycle5_ea2776'], ['cycle5_ea2766', 'cycle5_ea2767'], ['cycle5_ea2772', 'cycle5_ea2782'],
-      ['cycle5_ea2729', 'cycle5_ea2747'], ['cycle5_ea2747', 'cycle5_ea2757']],
+      ['cycle5_ea2749', 'cycle5_ea2776'], ['cycle5_ea2766', 'cycle5_ea2767'],
+      ['cycle5_ea2729', 'cycle5_ea2747']],
   ];
   for (const language of ['zh', 'en']) {
     c.treeLanguage = language;
@@ -434,7 +528,7 @@ test('cycle IV cloud support fleet receives from above and departs to the right'
   const fleet = page.nodes.find(node => node.name === 'Cloud Support Fleet');
   const incoming = graph.edges.filter(edge => edge.target === fleet.id);
   const outgoing = graph.edges.filter(edge => edge.source === fleet.id);
-  assert.equal(incoming.length, 2);
+  assert.deepEqual(incoming.map(edge => edge.source), ['cycle4_da2175']);
   assert.equal(outgoing.length, 2);
   for (const language of ['zh', 'en']) {
     c.treeLanguage = language;

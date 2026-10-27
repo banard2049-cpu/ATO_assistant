@@ -219,6 +219,19 @@ test('渲染器只画传进来的页面（页面挑选由调用方负责）', ()
   assert.equal(render(filtered.svg, filtered.renderer, timeline[0]).result.total, 1, '只统计当前循环最终点亮的节点');
 });
 
+test('简报渲染器保留带轮回限定名的真实前置连线', () => {
+  const page = miniPage();
+  page.nodes = page.nodes.slice(0, 2);
+  Object.assign(page.nodes[0], { key: 'intelligence gathering@@cycle1', rawKey: 'intelligence gathering@@cycle1', nameEn: 'Intelligence Gathering' });
+  Object.assign(page.nodes[1], { requires: ['intelligence gathering@@cycle1'], firstDay: 'T0' });
+  const timeline = timelineFor([{ day: 'T0', unlocked: page.nodes.map(node => node.key), newKeys: [] }]);
+  const { svg, renderer } = newRenderer([page], timeline);
+  renderer.render(timeline[0]);
+  const paths = svg.children.flatMap(group => group.children).filter(node => node.tagName === 'path');
+  assert.ok(paths.length > 0, '带 @@cycle1 的字典key应解析为连线');
+  assert.ok(paths.every(node => node.classes.includes('live')));
+});
+
 test('科技树切换日期、缩放和调整窗口后保持最新点亮节点居中', () => {
   const days = timelineFor([{ day: 'T0', unlocked: ['alpha'], newKeys: ['alpha'] }, { day: 'T2', unlocked: ['alpha', 'beta'], newKeys: ['beta'] }]);
   const { svg, renderer, canvas } = newRenderer([miniPage()], days);

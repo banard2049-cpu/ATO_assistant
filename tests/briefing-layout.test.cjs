@@ -12,6 +12,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('vm');
+const { build } = require('../briefing/briefing-local.js');
 
 const root = path.join(__dirname, '..');
 
@@ -27,28 +28,15 @@ function loadSandbox() {
 const win = loadSandbox();
 const dictionary = JSON.parse(fs.readFileSync(path.join(root, 'technology/tech_card_dictionary.min.json'), 'utf8'));
 
-/** 复刻 briefing/api.php 的节点结构：原始卡名 + 中文显示名 + 依赖原始写法。 */
+// Use the production converter so this test cannot silently drop compact OR fields.
+const campaign = { sections: { dashboard: { profiles: { test: { cycles: { c1: { state: {
+  day: '0', mapSnapshot: { exploredIds: [] },
+  unlockedTech: { unlockedKeys: dictionary.cards.map(card => card.key) },
+} } } } } } } };
+const replay = build({ user: { id: 'test' }, profileId: 'test', cycleId: 'c1',
+  campaign, snapshots: [campaign] }, {}, dictionary);
 function pageNodes(pageKey) {
-  const nodes = [];
-  for (const card of dictionary.cards) {
-    for (const node of card.nodes || []) {
-      if (node.page !== pageKey) continue;
-      const nameEn = (card.names && card.names.en) || card.key;
-      const nameZh = (card.names && card.names.zh) || nameEn;
-      nodes.push({
-        id: node.id,
-        key: nameEn.toLowerCase().trim(),
-        rawKey: card.key,
-        name: nameZh,
-        nameEn,
-        box: node.box || null,
-        requires: node.req || [],
-        requiresAnyGroups: node.requires_any_groups || [],
-        xlsmLeadsTo: node.unlocks || [],
-      });
-    }
-  }
-  return nodes;
+  return replay.tech.pages.find(page => page.page === pageKey).nodes;
 }
 
 /** 复刻 briefing/briefing-tech.js 的构图方式。 */
@@ -73,7 +61,7 @@ function buildBriefingPage(pageKey) {
       xlsm_leads_to: node.xlsmLeadsTo,
     };
   });
-  const graph = win.ATO_TECH_TREE.buildGraph(graphNodes, (node) => node.id);
+  const graph = win.ATO_TECH_TREE.buildGraph(graphNodes, (node) => node.key);
   const layout = win.ATO_TECH_TREE.layoutGraph(graph, pageMeta, (node) => ({
     width: Math.min(150, Math.max(76, String(node.displayName || node.name || '').length * 9 + 22)),
     height: 36,
@@ -85,11 +73,11 @@ function buildBriefingPage(pageKey) {
 
 test('每个循环的科技树都能布点并画出连线', () => {
   const expected = {
-    cycle1: { nodes: 53, edges: 57 },
+    cycle1: { nodes: 53, edges: 63 },
     cycle2: { nodes: 68, edges: 67 },
-    cycle3: { nodes: 68, edges: 74 },
-    cycle4: { nodes: 65, edges: 70 },
-    cycle5: { nodes: 69, edges: 88 },
+    cycle3: { nodes: 68, edges: 78 },
+    cycle4: { nodes: 65, edges: 74 },
+    cycle5: { nodes: 69, edges: 92 },
   };
   for (const [pageKey, want] of Object.entries(expected)) {
     const built = buildBriefingPage(pageKey);
@@ -122,7 +110,7 @@ test('简报的连线与科技树页面的构图结果一致', () => {
         requires_any_groups: node.requiresAnyGroups,
         xlsm_leads_to: node.xlsmLeadsTo,
       })),
-      (node) => `${node.key}@@${node.id}`
+      (node) => node.key
     );
     const built = buildBriefingPage(pageKey);
     assert.ok(built.graph.edges.length > 0, `${pageKey} 简报应当能解析出依赖边`);

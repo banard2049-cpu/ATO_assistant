@@ -58,7 +58,7 @@ const PAGE_METADATA = [
         cycle4_da2192: [5, 1], cycle4_da2169: [5, 2], cycle4_da2193: [5, 3],
         cycle4_da2170: [6, 0], cycle4_da2176: [6, 1], cycle4_da2196: [6, 2],
         cycle4_da2201: [10, 0], cycle4_da2171: [7, 1.5], cycle4_da2179: [7, 2],
-        cycle4_da2184: [8, 0], cycle4_da2194: [7, .5], cycle4_da2195: [8, 2], cycle4_da2183: [8, 3],
+        cycle4_da2184: [8, 0], cycle4_da2194: [8, .5], cycle4_da2195: [8, 2], cycle4_da2183: [8, 3],
         cycle4_da2182: [9, 0], cycle4_da2177: [9, 1], cycle4_da2180: [9, 2], cycle4_da2186: [9, 3],
         cycle4_da2181: [10, 2],
         cycle4_da2172: [0, 4], cycle4_da2173: [2, 4], cycle4_da2174: [4, 4],
@@ -67,7 +67,6 @@ const PAGE_METADATA = [
     },
     edge_ports: {
       'cycle4_da2175>cycle4_da2192': { target: 'top' },
-      'cycle4_da2167>cycle4_da2192': { target: 'top' },
       'cycle4_da2192>cycle4_da2170': { source: 'right' },
       'cycle4_da2192>cycle4_da2176': { source: 'right' },
     },

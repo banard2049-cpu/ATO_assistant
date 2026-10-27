@@ -35,6 +35,16 @@ python asset-studio/tools/build_release_packs.py --ato-root . --version 3.8.13 -
 压缩工具，ZIP 内 `.atopack` 使用 ASCII 名称 `ATOassets-fan-current-q85-<日期>-v<版本>.atopack`；
 内容与第三份包完全相同。
 
+可用 `--current-name` 单独指定新版蒙版包与密码 ZIP 的文件名主体，旧版民间／官方包的命名不变。
+例如 3.9.0 的测试分发：
+
+```powershell
+python asset-studio/tools/build_release_packs.py --ato-root . --version 3.9.0 --date 2026-10-27 --current-name "测试用请勿下载"
+```
+
+新版输出为 `测试用请勿下载.atopack` 和 `测试用请勿下载.zip`，ZIP 密码仍为 `20`。
+未传此参数时继续使用上表默认名称；包内 ASCII 文件名仍包含日期与版本。
+
 Android 需使用包含本次蒙版兼容改动重新构建的 APK，支持导入以上三种 **`.atopack`**。
 新版民间 ZIP 先使用密码 `20` 解压，再在
 安卓内选择解出的 `.atopack`。地图渲染同时接受旧 PNG 与新 SVG，并支持来回切换资源包。

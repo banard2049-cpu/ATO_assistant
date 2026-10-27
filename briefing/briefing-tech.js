@@ -135,9 +135,8 @@
         : { x: 28, y: 28, w: 113.386, h: 49.606 };
       return {
         id: node.id,
-        // tech-tree.js 的 buildGraph() 是按「节点 name」解析依赖引用的（先按 name 精确匹配，
-        // 再按 key）：科技树页面喂进去的就是英文卡名，所以这里也必须用英文名，否则所有
-        // requires 都会解析失败、连线整片消失。中文显示名另外放在 displayName 里。
+        // Resolve compact dictionary keys first, including cycle-qualified names;
+        // English names remain the fallback. Chinese names are only for display.
         name: node.nameEn || node.name,
         key: node.rawKey || node.nameEn || node.key,
         displayName: node.name,
@@ -148,7 +147,7 @@
         xlsm_leads_to: node.xlsmLeadsTo || [],
       };
     });
-    const graph = api.buildGraph(graphNodes, (node) => node.id);
+    const graph = api.buildGraph(graphNodes, (node) => String(node.key).trim().toLowerCase());
     // 节点宽度按实际显示的中文名算（英文名只用于解析依赖）。
     const layout = api.layoutGraph(graph, pageMeta, (node) => moduleSize(displayNameOf(node)));
     // 与科技树页面同样先拆共线段，再把每段画成一条 path。
