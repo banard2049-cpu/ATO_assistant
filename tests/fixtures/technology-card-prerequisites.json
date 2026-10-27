@@ -1,0 +1,3748 @@
+{
+  "source": "Manual visual reading of all 319 technology image.face REQUIREMENTS panels, 2026-10-27",
+  "cards": 319,
+  "nodes": [
+    {
+      "index": 0,
+      "page": "cycle1",
+      "id": "cycle1_46",
+      "image": "images/split_cards/14a4efee5a234d5f_face.png",
+      "req": [
+        "antikratos project"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 1,
+      "page": "cycle1",
+      "id": "cycle1_39",
+      "image": "images/split_cards/7a95174ddad4f9ae_face.png",
+      "req": [
+        "trireme ranged weapons"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 2,
+      "page": "cycle1",
+      "id": "cycle1_40",
+      "image": "images/split_cards/677f1f2bb89650b7_face.png",
+      "req": [
+        "specialized trireme weapons"
+      ],
+      "req_any": [
+        "advanced support equipment",
+        "hekaton autopsy"
+      ],
+      "req_conditions": []
+    },
+    {
+      "index": 3,
+      "page": "cycle1",
+      "id": "cycle1_6",
+      "image": "images/split_cards/bf427a9bd7d2250d_face.png",
+      "req": [
+        "arrow barrage"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 4,
+      "page": "cycle1",
+      "id": "cycle1_2",
+      "image": "images/split_cards/7f2f52c77b3257e0_face.png",
+      "req": [
+        "labyrinthauros autopsy"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 5,
+      "page": "cycle1",
+      "id": "cycle1_47",
+      "image": "images/split_cards/71e51c2acfae2f36_face.png",
+      "req": [
+        "antikratos project"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 6,
+      "page": "cycle1",
+      "id": "cycle1_4",
+      "image": "images/split_cards/f1eb402d3af089e5_face.png",
+      "req": [
+        "siren armor"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 7,
+      "page": "cycle1",
+      "id": "cycle1_12",
+      "image": "images/split_cards/c583230087218dda_face.png",
+      "req": [
+        "advanced trireme weapons",
+        "basic support equipment"
+      ],
+      "req_any": [
+        "teleresuscitation",
+        "trireme reach weapons"
+      ],
+      "req_conditions": []
+    },
+    {
+      "index": 8,
+      "page": "cycle1",
+      "id": "cycle1_14",
+      "image": "images/split_cards/a5679079473508ec_face.png",
+      "req": [
+        "trireme armor",
+        "trireme weapons"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 9,
+      "page": "cycle1",
+      "id": "cycle1_15",
+      "image": "images/split_cards/ee700b5a3db1cba7_face.png",
+      "req": [
+        "hekaton sighting"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 10,
+      "page": "cycle1",
+      "id": "cycle1_26",
+      "image": "images/split_cards/1d5bcaa99318db53_face.png",
+      "req": [
+        "advanced trireme weapons",
+        "forced kratos reaction"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Hekaton LVL 2 Battle"
+      ]
+    },
+    {
+      "index": 11,
+      "page": "cycle1",
+      "id": "cycle1_25",
+      "image": "images/split_cards/4fe51e9d2836a890_face.png",
+      "req": [
+        "fate sink",
+        "specialized trireme weapons"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Hekaton LVL 3 Battle"
+      ]
+    },
+    {
+      "index": 12,
+      "page": "cycle1",
+      "id": "cycle1_10",
+      "image": "images/split_cards/bf465ac976c5ccd8_face.png",
+      "req": [
+        "hekaton autopsy",
+        "pursuer protocol",
+        "smelted gear"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Hekaton LVL 4 Battle"
+      ]
+    },
+    {
+      "index": 13,
+      "page": "cycle1",
+      "id": "cycle1_30",
+      "image": "images/split_cards/e8e2a28b61034a31_face.png",
+      "req": [
+        "basic support equipment",
+        "crisis protocol"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Labyrinthauros LVL 2 Battle"
+      ]
+    },
+    {
+      "index": 14,
+      "page": "cycle1",
+      "id": "cycle1_29",
+      "image": "images/split_cards/eeba59977060bfce_face.png",
+      "req": [
+        "pursuer protocol",
+        "teleresuscitation"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Labyrinthauros LVL 3 Battle"
+      ]
+    },
+    {
+      "index": 15,
+      "page": "cycle1",
+      "id": "cycle1_11",
+      "image": "images/split_cards/f1397574bcd3b1ca_face.png",
+      "req": [
+        "advanced support equipment",
+        "trireme reach weapons",
+        "smelted gear"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Labyrinthauros LVL 4 Battle"
+      ]
+    },
+    {
+      "index": 16,
+      "page": "cycle1",
+      "id": "cycle1_42",
+      "image": "images/split_cards/e1beb1dd9a1a98ba_face.png",
+      "req": [],
+      "req_any": [
+        "labyrinthauros live study",
+        "hekaton live study"
+      ],
+      "req_conditions": [
+        "Temenos LVL 1 Battle"
+      ]
+    },
+    {
+      "index": 17,
+      "page": "cycle1",
+      "id": "cycle1_37",
+      "image": "images/split_cards/7d739a641c3dad9f_face.png",
+      "req": [
+        "basic support equipment",
+        "advanced trireme weapons"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Pursuer LVL 1 Battle"
+      ]
+    },
+    {
+      "index": 18,
+      "page": "cycle1",
+      "id": "cycle1_9",
+      "image": "images/split_cards/9469342f05a871ba_face.png",
+      "req": [
+        "siren armor"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 19,
+      "page": "cycle1",
+      "id": "cycle1_51",
+      "image": "images/split_cards/3786ae2d5ccb6516_face.png",
+      "req": [
+        "labyrinthauros sighting"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 20,
+      "page": "cycle1",
+      "id": "cycle1_24",
+      "image": "images/split_cards/be4d307eb42c1b63_face.png",
+      "req": [
+        "trireme reach weapons"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 21,
+      "page": "cycle1",
+      "id": "cycle1_19",
+      "image": "images/split_cards/ec1dbdbe6e19ab00_face.png",
+      "req": [
+        "trireme ranged weapons"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 22,
+      "page": "cycle1",
+      "id": "cycle1_22",
+      "image": "images/split_cards/670e87eb5ea336e1_face.png",
+      "req": [
+        "arrow barrage"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 23,
+      "page": "cycle1",
+      "id": "cycle1_36",
+      "image": "images/split_cards/4b360e974c027905_face.png",
+      "req": [
+        "pursuer sighting"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 24,
+      "page": "cycle1",
+      "id": "cycle1_28",
+      "image": "images/split_cards/12492d6d3a94bcca_face.png",
+      "req": [
+        "diplomatic relations"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "30+ explored Map tiles"
+      ]
+    },
+    {
+      "index": 25,
+      "page": "cycle1",
+      "id": "cycle1_38",
+      "image": "images/split_cards/02cd98edc5fec52e_face.png",
+      "req": [
+        "trading solutions"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 26,
+      "page": "cycle1",
+      "id": "cycle1_50",
+      "image": "images/split_cards/359b4cb3658efea9_face.png",
+      "req": [
+        "last tome"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 27,
+      "page": "cycle1",
+      "id": "cycle1_23",
+      "image": "images/split_cards/0d5a0f05b60a2d80_face.png",
+      "req": [
+        "trading solutions"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 28,
+      "page": "cycle1",
+      "id": "cycle1_35",
+      "image": "images/split_cards/fd698b306a7e1a7c_face.png",
+      "req": [
+        "shallows navigation",
+        "pursuer sighting"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 29,
+      "page": "cycle1",
+      "id": "cycle1_49",
+      "image": "images/split_cards/b38c1e009804d096_face.png",
+      "req": [
+        "diplomatic relations"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "At War",
+        "Lose -1 Titan"
+      ]
+    },
+    {
+      "index": 30,
+      "page": "cycle1",
+      "id": "cycle1_5",
+      "image": "images/split_cards/148f1dacdd6f7068_face.png",
+      "req": [
+        "rhetoric"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 31,
+      "page": "cycle1",
+      "id": "cycle1_27",
+      "image": "images/split_cards/f3e26b08aad4b62a_face.png",
+      "req": [
+        "anti-indoctrination philosophy"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 32,
+      "page": "cycle1",
+      "id": "cycle1_17",
+      "image": "images/split_cards/1cd63746ff4e98a1_face.png",
+      "req": [
+        "shallows navigation"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "5+ Argo Knowledge"
+      ]
+    },
+    {
+      "index": 33,
+      "page": "cycle1",
+      "id": "cycle1_7",
+      "image": "images/split_cards/fd252af924b43981_face.png",
+      "req": [
+        "anti-indoctrination philosophy",
+        "intelligence gathering@@cycle1"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "45+ explored Map tiles"
+      ]
+    },
+    {
+      "index": 34,
+      "page": "cycle1",
+      "id": "cycle1_8",
+      "image": "images/split_cards/c62faba895c5702e_face.png",
+      "req": [
+        "shallows navigation"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 35,
+      "page": "cycle1",
+      "id": "cycle1_32",
+      "image": "images/split_cards/e6bc140e6091ccb6_face.png",
+      "req": [
+        "rhetoric"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 36,
+      "page": "cycle1",
+      "id": "cycle1_43",
+      "image": "images/split_cards/3486f6da7b0b446e_face.png",
+      "req": [
+        "rhetoric",
+        "titanogenesis"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 37,
+      "page": "cycle1",
+      "id": "cycle1_44",
+      "image": "images/split_cards/bd178d5f10cebac7_face.png",
+      "req": [
+        "titan hunting"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 38,
+      "page": "cycle1",
+      "id": "cycle1_3",
+      "image": "images/split_cards/5a9183c09349a705_face.png",
+      "req": [
+        "trading solutions"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 39,
+      "page": "cycle1",
+      "id": "cycle1_21",
+      "image": "images/split_cards/264bc18d589a2184_face.png",
+      "req": [
+        "trading solutions"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 40,
+      "page": "cycle1",
+      "id": "cycle1_1",
+      "image": "images/split_cards/97aa47d5d7e49868_face.png",
+      "req": [
+        "crew expansion"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 41,
+      "page": "cycle1",
+      "id": "cycle1_13",
+      "image": "images/split_cards/c4f783adf4c9fa18_face.png",
+      "req": [
+        "advanced trading solutions"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 43,
+      "page": "cycle1",
+      "id": "cycle1_31",
+      "image": "images/split_cards/ce2ce7e3829530b8_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 44,
+      "page": "cycle1",
+      "id": "cycle1_33",
+      "image": "images/split_cards/75002d12a4cdfe2c_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": [
+        "6+ Argo Knowledge"
+      ]
+    },
+    {
+      "index": 45,
+      "page": "cycle1",
+      "id": "cycle1_34",
+      "image": "images/split_cards/0d839fc441cd169e_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 46,
+      "page": "cycle1",
+      "id": "cycle1_16",
+      "image": "images/split_cards/c62722851daa5c08_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 47,
+      "page": "cycle1",
+      "id": "cycle1_48",
+      "image": "images/split_cards/ec02891805ecb68d_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": [
+        "2+ Argo Knowledge"
+      ]
+    },
+    {
+      "index": 48,
+      "page": "cycle1",
+      "id": "cycle1_18",
+      "image": "images/split_cards/9bbd3d3b58d85254_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 49,
+      "page": "cycle1",
+      "id": "cycle1_0",
+      "image": "images/split_cards/652610be548e7899_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": [
+        "4+ Argo Knowledge"
+      ]
+    },
+    {
+      "index": 50,
+      "page": "cycle1",
+      "id": "cycle1_41",
+      "image": "images/split_cards/fe749f001c772ecb_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": [
+        "3+ Argo Knowledge"
+      ]
+    },
+    {
+      "index": 51,
+      "page": "cycle1",
+      "id": "cycle1_52",
+      "image": "images/split_cards/d5f5c6296a2ca688_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 52,
+      "page": "cycle1",
+      "id": "cycle1_45",
+      "image": "images/split_cards/876b06aecea69140_face.png",
+      "req": [
+        "argo works"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 83,
+      "page": "cycle1",
+      "id": "cycle1_20",
+      "image": "images/split_cards/dce57c56de9d26d3_face.png",
+      "req": [
+        "pursuer sighting"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Pursuit's End Battle Victory"
+      ]
+    },
+    {
+      "index": 17,
+      "page": "cycle2",
+      "id": "cycle2_47",
+      "image": "images/split_cards/7d739a641c3dad9f_face.png",
+      "req": [
+        "advanced trireme weapons",
+        "basic support equipment"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Pursuer LVL 1 Battle"
+      ]
+    },
+    {
+      "index": 58,
+      "page": "cycle2",
+      "id": "cycle2_42",
+      "image": "images/split_cards/a01c47d55a5c8a9a_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": [
+        "20+ Argo Knowledge"
+      ]
+    },
+    {
+      "index": 59,
+      "page": "cycle2",
+      "id": "cycle2_15",
+      "image": "images/split_cards/0a3d5dcbc93ed758_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 62,
+      "page": "cycle2",
+      "id": "cycle2_55",
+      "image": "images/split_cards/aded6dc2f5b505be_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 63,
+      "page": "cycle2",
+      "id": "cycle2_57",
+      "image": "images/split_cards/ce5cec3f0d16bd4a_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 64,
+      "page": "cycle2",
+      "id": "cycle2_13",
+      "image": "images/split_cards/3d67388c3b1c55ad_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 65,
+      "page": "cycle2",
+      "id": "cycle2_18",
+      "image": "images/split_cards/2bef812c406cb9d6_face.png",
+      "req": [
+        "triskelion power boost",
+        "trireme ballista fire"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 66,
+      "page": "cycle2",
+      "id": "cycle2_19",
+      "image": "images/split_cards/d1ec55112df2afea_face.png",
+      "req": [
+        "temenos advanced gear"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 67,
+      "page": "cycle2",
+      "id": "cycle2_23",
+      "image": "images/split_cards/c8528b77bf7e30eb_face.png",
+      "req": [
+        "hyperadrenaline infusion",
+        "relief gear"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 68,
+      "page": "cycle2",
+      "id": "cycle2_17",
+      "image": "images/split_cards/0682269b078da106_face.png",
+      "req": [
+        "spartan weapons"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 69,
+      "page": "cycle2",
+      "id": "cycle2_54",
+      "image": "images/split_cards/a2b45b42bb26f457_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": [
+        "Helot Alliance"
+      ]
+    },
+    {
+      "index": 70,
+      "page": "cycle2",
+      "id": "cycle2_35",
+      "image": "images/split_cards/c9f2fce5f13ff6b3_face.png",
+      "req": [
+        "13th muse grand cannon",
+        "transport trireme"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 71,
+      "page": "cycle2",
+      "id": "cycle2_41",
+      "image": "images/split_cards/12827bab929794a3_face.png",
+      "req": [
+        "relief gear"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 72,
+      "page": "cycle2",
+      "id": "cycle2_51",
+      "image": "images/split_cards/6c7c03ae13f05d13_face.png",
+      "req": [
+        "ambrosia containment"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 73,
+      "page": "cycle2",
+      "id": "cycle2_31",
+      "image": "images/split_cards/5287b2fd5feceb4f_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": [
+        "Cyclopean Alliance"
+      ]
+    },
+    {
+      "index": 74,
+      "page": "cycle2",
+      "id": "cycle2_11",
+      "image": "images/split_cards/d106a2d561070818_face.png",
+      "req": [
+        "cyclopean gear"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 75,
+      "page": "cycle2",
+      "id": "cycle2_34",
+      "image": "images/split_cards/f0f06d6918d245d3_face.png",
+      "req": [
+        "forced kratos cooldown",
+        "trireme ballista fire"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Cyclonus LVL 2 Battle"
+      ]
+    },
+    {
+      "index": 76,
+      "page": "cycle2",
+      "id": "cycle2_33",
+      "image": "images/split_cards/5ee05130e874c172_face.png",
+      "req": [
+        "experimental gear",
+        "metal weapons"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Cyclonus LVL 3 Battle"
+      ]
+    },
+    {
+      "index": 77,
+      "page": "cycle2",
+      "id": "cycle2_10",
+      "image": "images/split_cards/129ea105539350b5_face.png",
+      "req": [
+        "cyclonus autopsy"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Cyclonus LVL 4 Battle"
+      ]
+    },
+    {
+      "index": 78,
+      "page": "cycle2",
+      "id": "cycle2_9",
+      "image": "images/split_cards/75954170900cac6c_face.png",
+      "req": [
+        "reflex priming",
+        "triskelion power boost"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Chimera LVL 2 Battle"
+      ]
+    },
+    {
+      "index": 79,
+      "page": "cycle2",
+      "id": "cycle2_8",
+      "image": "images/split_cards/cab50a749062bd50_face.png",
+      "req": [
+        "relief gear",
+        "war support equipment"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Chimera LVL 3 Battle"
+      ]
+    },
+    {
+      "index": 80,
+      "page": "cycle2",
+      "id": "cycle2_1",
+      "image": "images/split_cards/e6f8db873780ae9e_face.png",
+      "req": [
+        "chimera metastasios autopsy",
+        "metal weapons"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Chimera LVL 4 Battle"
+      ]
+    },
+    {
+      "index": 81,
+      "page": "cycle2",
+      "id": "cycle2_43",
+      "image": "images/split_cards/7e3c08bb153560e9_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": [
+        "Nietzschean LVL 1 Battle"
+      ]
+    },
+    {
+      "index": 82,
+      "page": "cycle2",
+      "id": "cycle2_14",
+      "image": "images/split_cards/b4e144e1cf9c685e_face.png",
+      "req": [
+        "nietzschean sighting"
+      ],
+      "req_any": [
+        "cyclonus live study",
+        "chimera metastasios live study"
+      ],
+      "req_conditions": []
+    },
+    {
+      "index": 83,
+      "page": "cycle2",
+      "id": "cycle2_28",
+      "image": "images/split_cards/dce57c56de9d26d3_face.png",
+      "req": [
+        "pursuer sighting"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Pursuit's End Battle Victory"
+      ]
+    },
+    {
+      "index": 84,
+      "page": "cycle2",
+      "id": "cycle2_30",
+      "image": "images/split_cards/6341df02b80dd34a_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": [
+        "Burden LVL 1 Battle"
+      ]
+    },
+    {
+      "index": 85,
+      "page": "cycle2",
+      "id": "cycle2_25",
+      "image": "images/split_cards/dfc03cfdcd9f7ed4_face.png",
+      "req": [
+        "chimera metastasios sighting"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 86,
+      "page": "cycle2",
+      "id": "cycle2_61",
+      "image": "images/split_cards/6ca85e9470aa9b8b_face.png",
+      "req": [
+        "cyclonus sighting"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 87,
+      "page": "cycle2",
+      "id": "cycle2_49",
+      "image": "images/split_cards/c55ec1434389eb59_face.png",
+      "req": [
+        "trireme ballista fire"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 88,
+      "page": "cycle2",
+      "id": "cycle2_12",
+      "image": "images/split_cards/a44c4e424cb4ae68_face.png",
+      "req": [
+        "triskelion power boost"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 89,
+      "page": "cycle2",
+      "id": "cycle2_21",
+      "image": "images/split_cards/a6b5fb6c85543f02_face.png",
+      "req": [
+        "temenos weapons"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 90,
+      "page": "cycle2",
+      "id": "cycle2_20",
+      "image": "images/split_cards/d156ca520e94a12b_face.png",
+      "req": [
+        "temenos armor"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 91,
+      "page": "cycle2",
+      "id": "cycle2_39",
+      "image": "images/split_cards/270c15142e2a303a_face.png",
+      "req": [
+        "13th muse grand cannon",
+        "transport trireme"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 92,
+      "page": "cycle2",
+      "id": "cycle2_40",
+      "image": "images/split_cards/6429debcfda7d823_face.png",
+      "req": [
+        "temenos support equipment"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 93,
+      "page": "cycle2",
+      "id": "cycle2_46",
+      "image": "images/split_cards/118d9b1db8eba65b_face.png",
+      "req": [
+        "bronze lair"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 94,
+      "page": "cycle2",
+      "id": "cycle2_52",
+      "image": "images/split_cards/44384164abd5cc52_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": [
+        "Symmachy Alliance"
+      ]
+    },
+    {
+      "index": 95,
+      "page": "cycle2",
+      "id": "cycle2_44",
+      "image": "images/split_cards/bb102bb78fde257d_face.png",
+      "req": [
+        "mnestis theater"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 96,
+      "page": "cycle2",
+      "id": "cycle2_45",
+      "image": "images/split_cards/645c8b3692852b07_face.png",
+      "req": [
+        "titanomorphosis"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 97,
+      "page": "cycle2",
+      "id": "cycle2_37",
+      "image": "images/split_cards/06becda30105276d_face.png",
+      "req": [
+        "titan breeding"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 98,
+      "page": "cycle2",
+      "id": "cycle2_60",
+      "image": "images/split_cards/a91dc575e853a9dc_face.png",
+      "req": [
+        "grand stoa"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 99,
+      "page": "cycle2",
+      "id": "cycle2_66",
+      "image": "images/split_cards/1d9e54235711b40a_face.png",
+      "req": [
+        "argo security",
+        "refugee relief effort",
+        "spartan investigations"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 100,
+      "page": "cycle2",
+      "id": "cycle2_62",
+      "image": "images/split_cards/db141800e550ad39_face.png",
+      "req": [
+        "counterintelligence",
+        "war recruitment"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 101,
+      "page": "cycle2",
+      "id": "cycle2_5",
+      "image": "images/split_cards/b09cd5aaf0cf580e_face.png",
+      "req": [
+        "up-stream navigation"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 102,
+      "page": "cycle2",
+      "id": "cycle2_16",
+      "image": "images/split_cards/d39f341981bd386f_face.png",
+      "req": [
+        "political protection"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 103,
+      "page": "cycle2",
+      "id": "cycle2_48",
+      "image": "images/split_cards/dd2384d62520e294_face.png",
+      "req": [
+        "refugee relief effort"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 104,
+      "page": "cycle2",
+      "id": "cycle2_50",
+      "image": "images/split_cards/5a35cda33b035255_face.png",
+      "req": [
+        "recruitment programs"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 105,
+      "page": "cycle2",
+      "id": "cycle2_53",
+      "image": "images/split_cards/23da42d6d56a95fa_face.png",
+      "req": [
+        "titanomorphosis"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 106,
+      "page": "cycle2",
+      "id": "cycle2_58",
+      "image": "images/split_cards/8c9105366d7bcb21_face.png",
+      "req": [
+        "spartan investigations"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 107,
+      "page": "cycle2",
+      "id": "cycle2_38",
+      "image": "images/split_cards/58f32fd5535b0a60_face.png",
+      "req": [
+        "theseus method"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 108,
+      "page": "cycle2",
+      "id": "cycle2_4",
+      "image": "images/split_cards/180270638ba89281_face.png",
+      "req": [
+        "up-stream navigation"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Story 3A"
+      ]
+    },
+    {
+      "index": 109,
+      "page": "cycle2",
+      "id": "cycle2_22",
+      "image": "images/split_cards/9c949f84a0c8557f_face.png",
+      "req": [
+        "canal reconnaissance"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 110,
+      "page": "cycle2",
+      "id": "cycle2_32",
+      "image": "images/split_cards/a987d88fc9aed105_face.png",
+      "req": [
+        "argo works ii"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 111,
+      "page": "cycle2",
+      "id": "cycle2_3",
+      "image": "images/split_cards/a15f78ada4e78248_face.png",
+      "req": [
+        "alliance contacts"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 112,
+      "page": "cycle2",
+      "id": "cycle2_24",
+      "image": "images/split_cards/64486c4574f7d6ac_face.png",
+      "req": [
+        "mobile trade fleet dock"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 113,
+      "page": "cycle2",
+      "id": "cycle2_2",
+      "image": "images/split_cards/6d0dc85fe4b761c1_face.png",
+      "req": [
+        "argo works ii"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 114,
+      "page": "cycle2",
+      "id": "cycle2_27",
+      "image": "images/split_cards/42d18e500b84c34b_face.png",
+      "req": [
+        "argo works ii"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 115,
+      "page": "cycle2",
+      "id": "cycle2_64",
+      "image": "images/split_cards/5258f452f9444c90_face.png",
+      "req": [
+        "argo security"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Diplomacy (any Faction) 7+"
+      ]
+    },
+    {
+      "index": 116,
+      "page": "cycle2",
+      "id": "cycle2_63",
+      "image": "images/split_cards/078711395bedacd5_face.png",
+      "req": [
+        "war recruitment"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 117,
+      "page": "cycle2",
+      "id": "cycle2_65",
+      "image": "images/split_cards/d699285947554bfa_face.png",
+      "req": [
+        "war propylon",
+        "up-stream navigation"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 118,
+      "page": "cycle2",
+      "id": "cycle2_26",
+      "image": "images/split_cards/d931abef80705742_face.png",
+      "req": [
+        "war propylon"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 119,
+      "page": "cycle2",
+      "id": "cycle2_59",
+      "image": "images/split_cards/eb00da9ede1795d9_face.png",
+      "req": [
+        "titanomorphosis"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 120,
+      "page": "cycle2",
+      "id": "cycle2_36",
+      "image": "images/split_cards/f3d8bd09f320d66f_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 121,
+      "page": "cycle2",
+      "id": "cycle2_7",
+      "image": "images/split_cards/da84a57ab01cde44_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 122,
+      "page": "cycle2",
+      "id": "cycle2_56",
+      "image": "images/split_cards/8780a24e18dc4509_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 123,
+      "page": "cycle2",
+      "id": "cycle2_0",
+      "image": "images/split_cards/fe11a1caa45f0d25_face.png",
+      "req": [
+        "temenos advanced gear"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 124,
+      "page": "cycle2",
+      "id": "cycle2_6",
+      "image": "images/split_cards/ad921cf84346eca1_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 125,
+      "page": "cycle2",
+      "id": "cycle2_67",
+      "image": "images/split_cards/4634733949f3f1b6_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 135,
+      "page": "cycle2",
+      "id": "cycle2_29",
+      "image": "images/split_cards/c16e44f42e6f3950_face.png",
+      "req": [
+        "burden sighting"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Burden Hardest to Bear Battle Victory"
+      ]
+    },
+    {
+      "index": 42,
+      "page": "cycle3",
+      "id": "cycle3_34",
+      "image": "images/split_cards/b8b6c8c7866ca225_face.png",
+      "req": [
+        "adyton completion"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 53,
+      "page": "cycle3",
+      "id": "cycle3_30",
+      "image": "images/split_cards/876c9d0062707bfe_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 54,
+      "page": "cycle3",
+      "id": "cycle3_10",
+      "image": "images/split_cards/4b1fc720743a3eb4_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 55,
+      "page": "cycle3",
+      "id": "cycle3_9",
+      "image": "images/split_cards/855d247cb0e8b2de_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 56,
+      "page": "cycle3",
+      "id": "cycle3_42",
+      "image": "images/split_cards/4dff30d554725b17_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 57,
+      "page": "cycle3",
+      "id": "cycle3_67",
+      "image": "images/split_cards/26edfc3b30a961ad_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 60,
+      "page": "cycle3",
+      "id": "cycle3_26",
+      "image": "images/split_cards/96158789178a8536_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 61,
+      "page": "cycle3",
+      "id": "cycle3_31",
+      "image": "images/split_cards/9e31f9a6ee252262_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": [
+        "46+ Argo Knowledge"
+      ]
+    },
+    {
+      "index": 84,
+      "page": "cycle3",
+      "id": "cycle3_36",
+      "image": "images/split_cards/6341df02b80dd34a_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": [
+        "Burden LVL 1 Battle"
+      ]
+    },
+    {
+      "index": 126,
+      "page": "cycle3",
+      "id": "cycle3_5",
+      "image": "images/split_cards/9a3fed6372684499_face.png",
+      "req": [
+        "temporal aegis"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 127,
+      "page": "cycle3",
+      "id": "cycle3_6",
+      "image": "images/split_cards/e129ba05283b62b5_face.png",
+      "req": [
+        "titanoaristia"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 128,
+      "page": "cycle3",
+      "id": "cycle3_7",
+      "image": "images/split_cards/70547663bae4eb44_face.png",
+      "req": [
+        "delphian siren weapons"
+      ],
+      "req_any": [
+        "icarian harpy sighting",
+        "hypertime oracle sighting"
+      ],
+      "req_conditions": []
+    },
+    {
+      "index": 129,
+      "page": "cycle3",
+      "id": "cycle3_32",
+      "image": "images/split_cards/5d48b343f4497747_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": [
+        "Twilight Watch Alliance"
+      ]
+    },
+    {
+      "index": 130,
+      "page": "cycle3",
+      "id": "cycle3_33",
+      "image": "images/split_cards/bc19720b00c96071_face.png",
+      "req": [
+        "apostate armor"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 131,
+      "page": "cycle3",
+      "id": "cycle3_8",
+      "image": "images/split_cards/89351ecdf84eccaa_face.png",
+      "req": [
+        "surviving the loop"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 132,
+      "page": "cycle3",
+      "id": "cycle3_11",
+      "image": "images/split_cards/9c8065b5f2b667f5_face.png",
+      "req": [
+        "advanced transforming weapons",
+        "atemporal support equipment"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 133,
+      "page": "cycle3",
+      "id": "cycle3_12",
+      "image": "images/split_cards/4c21d61d2ee6abb1_face.png",
+      "req": [
+        "chronosphere warning system"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 134,
+      "page": "cycle3",
+      "id": "cycle3_13",
+      "image": "images/split_cards/a8da611192e7725c_face.png",
+      "req": [
+        "chronosphere warning system"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 135,
+      "page": "cycle3",
+      "id": "cycle3_35",
+      "image": "images/split_cards/c16e44f42e6f3950_face.png",
+      "req": [
+        "burden sighting"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Burden Hardest to Bear Battle Victory"
+      ]
+    },
+    {
+      "index": 136,
+      "page": "cycle3",
+      "id": "cycle3_64",
+      "image": "images/split_cards/62c65e0c6e801cb4_face.png",
+      "req": [
+        "delphian diplomatic relations"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "At War",
+        "Lose -1 Titan",
+        "Gain +1 Doom"
+      ]
+    },
+    {
+      "index": 137,
+      "page": "cycle3",
+      "id": "cycle3_65",
+      "image": "images/split_cards/7bb409e420004d93_face.png",
+      "req": [
+        "advanced time solutions"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Story 3A"
+      ]
+    },
+    {
+      "index": 138,
+      "page": "cycle3",
+      "id": "cycle3_14",
+      "image": "images/split_cards/1805486aa36afa88_face.png",
+      "req": [
+        "delphian siren armor",
+        "delphian siren weapons"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 139,
+      "page": "cycle3",
+      "id": "cycle3_37",
+      "image": "images/split_cards/650fa7484cb938e7_face.png",
+      "req": [
+        "argoline transforming weapons"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Pursuit's End Battle Victory",
+        "51+ Argo Knowledge"
+      ]
+    },
+    {
+      "index": 140,
+      "page": "cycle3",
+      "id": "cycle3_15",
+      "image": "images/split_cards/1d20d6856f47903a_face.png",
+      "req": [
+        "intelligence gathering@@cycle3"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "45+ Explored tiles"
+      ]
+    },
+    {
+      "index": 141,
+      "page": "cycle3",
+      "id": "cycle3_16",
+      "image": "images/split_cards/b76e39540bf5a260_face.png",
+      "req": [
+        "ultimate trading solutions"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 142,
+      "page": "cycle3",
+      "id": "cycle3_38",
+      "image": "images/split_cards/5366e80bd45d2544_face.png",
+      "req": [
+        "argo works iii"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 143,
+      "page": "cycle3",
+      "id": "cycle3_17",
+      "image": "images/split_cards/90ec9986b39f805a_face.png",
+      "req": [
+        "possibility matrix",
+        "reverse timeflow"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 144,
+      "page": "cycle3",
+      "id": "cycle3_18",
+      "image": "images/split_cards/e41be4b328d4f9c5_face.png",
+      "req": [
+        "possibility matrix",
+        "reverse timeflow"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 145,
+      "page": "cycle3",
+      "id": "cycle3_39",
+      "image": "images/split_cards/db508433af44de91_face.png",
+      "req": [
+        "temporal aegis"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 146,
+      "page": "cycle3",
+      "id": "cycle3_40",
+      "image": "images/split_cards/421e73e5fae89486_face.png",
+      "req": [
+        "icebreaker protocol",
+        "quantum propylon"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 147,
+      "page": "cycle3",
+      "id": "cycle3_41",
+      "image": "images/split_cards/d9008409cc3ddc76_face.png",
+      "req": [
+        "nietzschean armor",
+        "nietzschean reach weapons"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 148,
+      "page": "cycle3",
+      "id": "cycle3_19",
+      "image": "images/split_cards/1cbb5026f2f42b0b_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": [
+        "Sunheirs Alliance"
+      ]
+    },
+    {
+      "index": 149,
+      "page": "cycle3",
+      "id": "cycle3_0",
+      "image": "images/split_cards/5b64680c80612d10_face.png",
+      "req": [
+        "helios fanatics equipment"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 150,
+      "page": "cycle3",
+      "id": "cycle3_20",
+      "image": "images/split_cards/dc66a8a9018dbf51_face.png",
+      "req": [
+        "argoline transforming weapons",
+        "opportunity freeze"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Hypertime Oracle LVL 3 Battle"
+      ]
+    },
+    {
+      "index": 151,
+      "page": "cycle3",
+      "id": "cycle3_1",
+      "image": "images/split_cards/9fb669d8fa447213_face.png",
+      "req": [
+        "time dilation"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Hypertime Oracle LVL 4 Battle"
+      ]
+    },
+    {
+      "index": 152,
+      "page": "cycle3",
+      "id": "cycle3_21",
+      "image": "images/split_cards/aa8a72754d047506_face.png",
+      "req": [
+        "fate converter",
+        "reverse timeflow",
+        "telehealing"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Hypertime Oracle LVL 2 Battle OR Gain +1 Paradox"
+      ]
+    },
+    {
+      "index": 153,
+      "page": "cycle3",
+      "id": "cycle3_22",
+      "image": "images/split_cards/0f887dfc583fc167_face.png",
+      "req": [
+        "argoline transforming weapons",
+        "quantum armory",
+        "sun descendant sighting"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Icarian Harpy LVL 3 Battle"
+      ]
+    },
+    {
+      "index": 154,
+      "page": "cycle3",
+      "id": "cycle3_2",
+      "image": "images/split_cards/a643f0b4032292a6_face.png",
+      "req": [
+        "time skip"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Icarian Harpy LVL 4 Battle"
+      ]
+    },
+    {
+      "index": 155,
+      "page": "cycle3",
+      "id": "cycle3_23",
+      "image": "images/split_cards/cd1e2b66db0a216b_face.png",
+      "req": [
+        "fate converter",
+        "possibility matrix",
+        "telehealing"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Icarian Harpy LVL 2 Battle OR Gain +1 Paradox"
+      ]
+    },
+    {
+      "index": 156,
+      "page": "cycle3",
+      "id": "cycle3_43",
+      "image": "images/split_cards/c10f40561c2e0280_face.png",
+      "req": [
+        "trespass protocol"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "20+ Explored tiles in the Past"
+      ]
+    },
+    {
+      "index": 157,
+      "page": "cycle3",
+      "id": "cycle3_44",
+      "image": "images/split_cards/23edf1b04c1aad30_face.png",
+      "req": [
+        "delphian investigations"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "30+ Explored tiles"
+      ]
+    },
+    {
+      "index": 158,
+      "page": "cycle3",
+      "id": "cycle3_45",
+      "image": "images/split_cards/56c2cec52d564323_face.png",
+      "req": [
+        "temporal aegis",
+        "intelligence gathering@@cycle3"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 159,
+      "page": "cycle3",
+      "id": "cycle3_46",
+      "image": "images/split_cards/35c64032baa50b69_face.png",
+      "req": [
+        "argoline transforming weapons"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "48+ Argo Knowledge"
+      ]
+    },
+    {
+      "index": 160,
+      "page": "cycle3",
+      "id": "cycle3_48",
+      "image": "images/split_cards/8ceae46e861d57ce_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 161,
+      "page": "cycle3",
+      "id": "cycle3_24",
+      "image": "images/split_cards/12ab373fa0d43675_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 162,
+      "page": "cycle3",
+      "id": "cycle3_47",
+      "image": "images/split_cards/f7c7ce9819ada979_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 163,
+      "page": "cycle3",
+      "id": "cycle3_49",
+      "image": "images/split_cards/f1aa96f1f3193025_face.png",
+      "req": [
+        "hypertime oracle sighting"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 164,
+      "page": "cycle3",
+      "id": "cycle3_50",
+      "image": "images/split_cards/685389e2189ca8ce_face.png",
+      "req": [
+        "nietzschean weapons",
+        "temporal support equipment"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 165,
+      "page": "cycle3",
+      "id": "cycle3_51",
+      "image": "images/split_cards/c1ca1948dbdf0ecc_face.png",
+      "req": [
+        "icarian harpy sighting"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 166,
+      "page": "cycle3",
+      "id": "cycle3_52",
+      "image": "images/split_cards/5521dffde5f2d2c5_face.png",
+      "req": [
+        "argo timeline security"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 167,
+      "page": "cycle3",
+      "id": "cycle3_53",
+      "image": "images/split_cards/c6c45f5b773b711d_face.png",
+      "req": [
+        "nietzschean armor",
+        "nietzschean reach weapons"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 168,
+      "page": "cycle3",
+      "id": "cycle3_54",
+      "image": "images/split_cards/8401d3e78488938b_face.png",
+      "req": [
+        "extinction contingency"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 169,
+      "page": "cycle3",
+      "id": "cycle3_3",
+      "image": "images/split_cards/17f17a370b525366_face.png",
+      "req": [
+        "sun descendant partial autopsy",
+        "hypertime oracle live study",
+        "icarian harpy live study"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 170,
+      "page": "cycle3",
+      "id": "cycle3_4",
+      "image": "images/split_cards/5ed18aaeddbb3e10_face.png",
+      "req": [
+        "hypertime oracle autopsy",
+        "icarian harpy autopsy",
+        "sun descendant sighting"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 171,
+      "page": "cycle3",
+      "id": "cycle3_25",
+      "image": "images/split_cards/9a5908dd0e57c1e0_face.png",
+      "req": [
+        "hypertime oracle sighting",
+        "icarian harpy sighting"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Sun Descendant LVL 1 Battle"
+      ]
+    },
+    {
+      "index": 172,
+      "page": "cycle3",
+      "id": "cycle3_55",
+      "image": "images/split_cards/a5fa1a1c1773a2f4_face.png",
+      "req": [
+        "time wounds"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 173,
+      "page": "cycle3",
+      "id": "cycle3_66",
+      "image": "images/split_cards/6a6045a4edaa5fec_face.png",
+      "req": [
+        "nietzschean weapons",
+        "temporal support equipment"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 174,
+      "page": "cycle3",
+      "id": "cycle3_56",
+      "image": "images/split_cards/242427bf8a5a25b6_face.png",
+      "req": [
+        "time solutions"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 175,
+      "page": "cycle3",
+      "id": "cycle3_27",
+      "image": "images/split_cards/907e336f8cf9a801_face.png",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 176,
+      "page": "cycle3",
+      "id": "cycle3_57",
+      "image": "images/split_cards/fbfd2fe842e7e254_face.png",
+      "req": [
+        "hypertime oracle autopsy"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 177,
+      "page": "cycle3",
+      "id": "cycle3_58",
+      "image": "images/split_cards/733e9424aa0e5ddb_face.png",
+      "req": [
+        "icarian harpy autopsy"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 178,
+      "page": "cycle3",
+      "id": "cycle3_59",
+      "image": "images/split_cards/5fe3fef036be703f_face.png",
+      "req": [
+        "surviving the loop"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 179,
+      "page": "cycle3",
+      "id": "cycle3_60",
+      "image": "images/split_cards/7992a186219d520a_face.png",
+      "req": [
+        "trespass protocol"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 180,
+      "page": "cycle3",
+      "id": "cycle3_61",
+      "image": "images/split_cards/677e8342c3e05c18_face.png",
+      "req": [
+        "titan genetic memory"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 181,
+      "page": "cycle3",
+      "id": "cycle3_28",
+      "image": "images/split_cards/db6d2f5142ca767e_face.png",
+      "req": [
+        "advanced titan breeding"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 182,
+      "page": "cycle3",
+      "id": "cycle3_62",
+      "image": "images/split_cards/23ef85f2ff2895b6_face.png",
+      "req": [
+        "argoline transforming weapons"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 183,
+      "page": "cycle3",
+      "id": "cycle3_63",
+      "image": "images/split_cards/596427db4fc1f5bc_face.png",
+      "req": [
+        "surviving the loop"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "20+ Explored tiles in the Present"
+      ]
+    },
+    {
+      "index": 184,
+      "page": "cycle3",
+      "id": "cycle3_29",
+      "image": "images/split_cards/e77bb2e5e29db546_face.png",
+      "req": [
+        "argo works iii"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 185,
+      "page": "cycle4",
+      "id": "cycle4_da2160",
+      "image": "images/split_cards/cded454e8d9d5f4b_back.jpg",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 186,
+      "page": "cycle4",
+      "id": "cycle4_da2161",
+      "image": "images/split_cards/d482c5f313d4073a_back.jpg",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 187,
+      "page": "cycle4",
+      "id": "cycle4_da2162",
+      "image": "images/split_cards/d14c3b1634c5b9e4_back.jpg",
+      "req": [
+        "cinder support"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 188,
+      "page": "cycle4",
+      "id": "cycle4_da2163",
+      "image": "images/split_cards/d927c89d0f81d7be_back.jpg",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 189,
+      "page": "cycle4",
+      "id": "cycle4_da2164",
+      "image": "images/split_cards/263c57b9f4060d93_back.jpg",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 190,
+      "page": "cycle4",
+      "id": "cycle4_da2165",
+      "image": "images/split_cards/b35e9180e09290c8_back.jpg",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 191,
+      "page": "cycle4",
+      "id": "cycle4_da2166",
+      "image": "images/split_cards/7a62f6f94bfe0ed9_back.jpg",
+      "req": [
+        "cinder armor",
+        "cinder weapons"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 192,
+      "page": "cycle4",
+      "id": "cycle4_da2167",
+      "image": "images/split_cards/5e26ba42749b6d99_back.jpg",
+      "req": [
+        "imperial deprived armorer",
+        "wish deflector"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 193,
+      "page": "cycle4",
+      "id": "cycle4_da2168",
+      "image": "images/split_cards/1cccc38cac131840_back.jpg",
+      "req": [
+        "irem protocols"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 194,
+      "page": "cycle4",
+      "id": "cycle4_da2169",
+      "image": "images/split_cards/5733c4d9e351deac_back.jpg",
+      "req": [
+        "demidjinn sighting"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 195,
+      "page": "cycle4",
+      "id": "cycle4_da2170",
+      "image": "images/split_cards/d8a27c9b9e10f9ab_back.jpg",
+      "req": [
+        "imperial deprived stockpile",
+        "imperial deprived outfitter"
+      ],
+      "req_any": [
+        [
+          "cloud support fleet",
+          "old irem dig"
+        ]
+      ],
+      "req_conditions": []
+    },
+    {
+      "index": 196,
+      "page": "cycle4",
+      "id": "cycle4_da2171",
+      "image": "images/split_cards/03111a7cad117c53_back.jpg",
+      "req": [
+        "midascore autopsy"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 197,
+      "page": "cycle4",
+      "id": "cycle4_da2172",
+      "image": "images/split_cards/6199d548d7dc5e14_back.jpg",
+      "req": [],
+      "req_any": [],
+      "req_conditions": [
+        "Wasters Alliance"
+      ]
+    },
+    {
+      "index": 198,
+      "page": "cycle4",
+      "id": "cycle4_da2173",
+      "image": "images/split_cards/26ea487b6ec0beb2_back.jpg",
+      "req": [],
+      "req_any": [],
+      "req_conditions": [
+        "Aristotelians Alliance"
+      ]
+    },
+    {
+      "index": 199,
+      "page": "cycle4",
+      "id": "cycle4_da2174",
+      "image": "images/split_cards/3d6c1e286c96d0c4_back.jpg",
+      "req": [],
+      "req_any": [],
+      "req_conditions": [
+        "Cloud Thieves Alliance"
+      ]
+    },
+    {
+      "index": 200,
+      "page": "cycle4",
+      "id": "cycle4_da2175",
+      "image": "images/split_cards/af02e9b577cf4799_back.jpg",
+      "req": [
+        "gold transmogrifier",
+        "imperial deprived stockpile"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Midascore LVL 2 Battle"
+      ]
+    },
+    {
+      "index": 201,
+      "page": "cycle4",
+      "id": "cycle4_da2176",
+      "image": "images/split_cards/cbe85c885cd754e9_back.jpg",
+      "req": [
+        "cloud support fleet",
+        "dahaka phasing"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Midascore LVL 3 Battle"
+      ]
+    },
+    {
+      "index": 202,
+      "page": "cycle4",
+      "id": "cycle4_da2177",
+      "image": "images/split_cards/d4ee6d4f9e0f30ae_back.jpg",
+      "req": [
+        "old irem composite shop",
+        "cloud scout fleet"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Midascore LVL 4 Battle"
+      ]
+    },
+    {
+      "index": 203,
+      "page": "cycle4",
+      "id": "cycle4_da2178",
+      "image": "images/split_cards/1a86c42e06962cfb_back.jpg",
+      "req": [
+        "imperial deprived outfitter",
+        "archimedean ballista"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Demidjinn LVL 2 Battle"
+      ]
+    },
+    {
+      "index": 204,
+      "page": "cycle4",
+      "id": "cycle4_da2179",
+      "image": "images/split_cards/f1e584035a9bd685_back.jpg",
+      "req": [
+        "old irem excavation",
+        "curse resistor"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Demidjinn LVL 3 Battle"
+      ]
+    },
+    {
+      "index": 205,
+      "page": "cycle4",
+      "id": "cycle4_da2180",
+      "image": "images/split_cards/41a6054f003f1b1f_back.jpg",
+      "req": [
+        "ascension protocols",
+        "highrise projects",
+        "dahaka phasing"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Demidjinn LVL 4 Battle"
+      ]
+    },
+    {
+      "index": 206,
+      "page": "cycle4",
+      "id": "cycle4_da2181",
+      "image": "images/split_cards/111935e34fb87b5a_back.jpg",
+      "req": [
+        "imperial deprived armorer",
+        "grassroot projects"
+      ],
+      "req_any": [
+        [
+          "midascore live study",
+          "demidjinn live study"
+        ]
+      ],
+      "req_conditions": []
+    },
+    {
+      "index": 207,
+      "page": "cycle4",
+      "id": "cycle4_da2182",
+      "image": "images/split_cards/a0ebdbd19bf860eb_back.jpg",
+      "req": [
+        "highrise projects"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 208,
+      "page": "cycle4",
+      "id": "cycle4_da2183",
+      "image": "images/split_cards/353719ba631f2108_back.jpg",
+      "req": [
+        "dahaka phasing",
+        "old irem composite shop"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 209,
+      "page": "cycle4",
+      "id": "cycle4_da2184",
+      "image": "images/split_cards/4684cb133158ff60_back.jpg",
+      "req": [
+        "old irem excavation",
+        "old irem composite shop",
+        "demidjinn autopsy"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 210,
+      "page": "cycle4",
+      "id": "cycle4_da2185",
+      "image": "images/split_cards/2c3687b48ef5141e_back.jpg",
+      "req": [
+        "imperial deprived stockpile",
+        "imperial deprived outfitter"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Dahaka LVL 1 Battle"
+      ]
+    },
+    {
+      "index": 211,
+      "page": "cycle4",
+      "id": "cycle4_da2186",
+      "image": "images/split_cards/b5e0fbf4720019bc_back.jpg",
+      "req": [
+        "dahaka phasing",
+        "insolvency bulwark"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Still Life Battle Victory"
+      ]
+    },
+    {
+      "index": 212,
+      "page": "cycle4",
+      "id": "cycle4_da2187",
+      "image": "images/split_cards/9e519fafb26e91b4_back.jpg",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 213,
+      "page": "cycle4",
+      "id": "cycle4_da2188",
+      "image": "images/split_cards/50420838a1fc45a0_back.jpg",
+      "req": [
+        "cinder support",
+        "cinder ranged weapons"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 214,
+      "page": "cycle4",
+      "id": "cycle4_da2189",
+      "image": "images/split_cards/b56935fe52275daa_back.jpg",
+      "req": [
+        "cinder ranged weapons",
+        "cinder armor"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 215,
+      "page": "cycle4",
+      "id": "cycle4_da2190",
+      "image": "images/split_cards/233a337e527e13cb_back.jpg",
+      "req": [
+        "irem protocols"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 216,
+      "page": "cycle4",
+      "id": "cycle4_da2191",
+      "image": "images/split_cards/e504ba86c08d19fc_back.jpg",
+      "req": [
+        "imperial deprived armorer"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 217,
+      "page": "cycle4",
+      "id": "cycle4_da2192",
+      "image": "images/split_cards/6d60ea52057ddff4_back.jpg",
+      "req": [
+        "midascore sighting"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 218,
+      "page": "cycle4",
+      "id": "cycle4_da2193",
+      "image": "images/split_cards/d0d05bf78adef9b1_back.jpg",
+      "req": [
+        "dahaka sighting"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 219,
+      "page": "cycle4",
+      "id": "cycle4_da2194",
+      "image": "images/split_cards/892ee6598a41c0ce_back.jpg",
+      "req": [
+        "old irem composite shop"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 220,
+      "page": "cycle4",
+      "id": "cycle4_da2195",
+      "image": "images/split_cards/c6bea772c57243b8_back.jpg",
+      "req": [
+        "demidjinn autopsy"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 221,
+      "page": "cycle4",
+      "id": "cycle4_da2196",
+      "image": "images/split_cards/93aca49a42f02f6a_back.jpg",
+      "req": [
+        "old irem dig"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 222,
+      "page": "cycle4",
+      "id": "cycle4_da2197",
+      "image": "images/split_cards/f4a1fa3314f55e52_back.jpg",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 223,
+      "page": "cycle4",
+      "id": "cycle4_da2198",
+      "image": "images/split_cards/10c2677d4591aa9a_back.jpg",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 224,
+      "page": "cycle4",
+      "id": "cycle4_da2199",
+      "image": "images/split_cards/78a69ecb8753c024_back.jpg",
+      "req": [
+        "argo academy"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 225,
+      "page": "cycle4",
+      "id": "cycle4_da2200",
+      "image": "images/split_cards/2d2040cc4ab13784_back.jpg",
+      "req": [
+        "law mora"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 226,
+      "page": "cycle4",
+      "id": "cycle4_da2201",
+      "image": "images/split_cards/2ce1676e52365a4a_back.jpg",
+      "req": [
+        "curse economy basics",
+        "curse resistor"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 227,
+      "page": "cycle4",
+      "id": "cycle4_da2202",
+      "image": "images/split_cards/b054d0374970f195_back.jpg",
+      "req": [
+        "law mora"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 228,
+      "page": "cycle4",
+      "id": "cycle4_da2203",
+      "image": "images/split_cards/d5f404ab17becc2f_back.jpg",
+      "req": [
+        "law mora"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 229,
+      "page": "cycle4",
+      "id": "cycle4_da2204",
+      "image": "images/split_cards/8bee5af5fef83eef_back.jpg",
+      "req": [
+        "curse economy basics",
+        "imperial contact"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "45+ explored Map tiles"
+      ]
+    },
+    {
+      "index": 230,
+      "page": "cycle4",
+      "id": "cycle4_da2205",
+      "image": "images/split_cards/53db8fd12e60eaf0_back.jpg",
+      "req": [
+        "argo wonders"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 231,
+      "page": "cycle4",
+      "id": "cycle4_da2206",
+      "image": "images/split_cards/163a3d964f55b8d3_back.jpg",
+      "req": [
+        "curse exchange"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 232,
+      "page": "cycle4",
+      "id": "cycle4_da2207",
+      "image": "images/split_cards/4a1389c50874b25b_back.jpg",
+      "req": [
+        "curse exchange"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 233,
+      "page": "cycle4",
+      "id": "cycle4_da2208",
+      "image": "images/split_cards/518a1f4bd1d95b2c_back.jpg",
+      "req": [
+        "plutocratic diplomacy"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 234,
+      "page": "cycle4",
+      "id": "cycle4_da2209",
+      "image": "images/split_cards/961cca3ee8b5e668_back.jpg",
+      "req": [
+        "plutocratic diplomacy"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "30+ explored Map tiles"
+      ]
+    },
+    {
+      "index": 235,
+      "page": "cycle4",
+      "id": "cycle4_da2210",
+      "image": "images/split_cards/8ab26576e5c58326_back.jpg",
+      "req": [
+        "plutocratic agents"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 236,
+      "page": "cycle4",
+      "id": "cycle4_da2211",
+      "image": "images/split_cards/e68556d539fc0f47_back.jpg",
+      "req": [
+        "curse exchange"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "10+ explored Map tiles"
+      ]
+    },
+    {
+      "index": 237,
+      "page": "cycle4",
+      "id": "cycle4_da2212",
+      "image": "images/split_cards/014afc976f07c7c8_back.jpg",
+      "req": [
+        "sandstorm navigation"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "25+ explored Map tiles"
+      ]
+    },
+    {
+      "index": 238,
+      "page": "cycle4",
+      "id": "cycle4_da2213",
+      "image": "images/split_cards/34820570fc915f49_back.jpg",
+      "req": [
+        "sandstorm sailing"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "45+ explored Map tiles"
+      ]
+    },
+    {
+      "index": 239,
+      "page": "cycle4",
+      "id": "cycle4_da2214",
+      "image": "images/split_cards/761901074b06003b_back.jpg",
+      "req": [
+        "curse exchange"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 240,
+      "page": "cycle4",
+      "id": "cycle4_da2215",
+      "image": "images/split_cards/24207477b99128a7_back.jpg",
+      "req": [
+        "merchants of the waste"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 241,
+      "page": "cycle4",
+      "id": "cycle4_da2216",
+      "image": "images/split_cards/c4cf58c3c65c5c4e_back.jpg",
+      "req": [
+        "superior titan breeding",
+        "sandstorm navigation"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 242,
+      "page": "cycle4",
+      "id": "cycle4_da2217",
+      "image": "images/split_cards/7d7dc759e695a429_back.jpg",
+      "req": [
+        "titanosyntrofia"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 243,
+      "page": "cycle4",
+      "id": "cycle4_da2218",
+      "image": "images/split_cards/c45_da2218_face.jpg",
+      "req": [],
+      "req_any": [],
+      "req_conditions": [
+        "78+ Argo Knowledge"
+      ]
+    },
+    {
+      "index": 244,
+      "page": "cycle4",
+      "id": "cycle4_da2219",
+      "image": "images/split_cards/43c56b7964f6eab3_back.jpg",
+      "req": [
+        "argo cloud operations"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 245,
+      "page": "cycle4",
+      "id": "cycle4_da2220",
+      "image": "images/split_cards/ee2db7311bf0a257_back.jpg",
+      "req": [
+        "sustainable oasis"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "3+ Sow tally marks"
+      ]
+    },
+    {
+      "index": 246,
+      "page": "cycle4",
+      "id": "cycle4_da2221",
+      "image": "images/split_cards/0595057ccabc9396_back.jpg",
+      "req": [],
+      "req_any": [],
+      "req_conditions": [
+        "Pursuit's End Battle Victory",
+        "51+ Argo Knowledge"
+      ]
+    },
+    {
+      "index": 247,
+      "page": "cycle4",
+      "id": "cycle4_da2222",
+      "image": "images/split_cards/e2c547083937787a_back.jpg",
+      "req": [],
+      "req_any": [],
+      "req_conditions": [
+        "48+ Argo Knowledge"
+      ]
+    },
+    {
+      "index": 248,
+      "page": "cycle4",
+      "id": "cycle4_da2223",
+      "image": "images/split_cards/c45_da2223_face.jpg",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 249,
+      "page": "cycle4",
+      "id": "cycle4_da2224",
+      "image": "images/split_cards/c45_da2224_face.jpg",
+      "req": [],
+      "req_any": [],
+      "req_conditions": [
+        "Sisyphus Gear",
+        "Dahaka LVL 1 Battle"
+      ]
+    },
+    {
+      "index": 250,
+      "page": "cycle5",
+      "id": "cycle5_ea2722",
+      "image": "images/split_cards/c5_ea2722_face.jpg",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 251,
+      "page": "cycle5",
+      "id": "cycle5_ea2723",
+      "image": "images/split_cards/c5_ea2723_face.jpg",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 252,
+      "page": "cycle5",
+      "id": "cycle5_ea2724",
+      "image": "images/split_cards/14fb5c66fcf993a0_back.jpg",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 253,
+      "page": "cycle5",
+      "id": "cycle5_ea2725",
+      "image": "images/split_cards/837ab59f8b5ddf08_back.jpg",
+      "req": [
+        "babelian support"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 254,
+      "page": "cycle5",
+      "id": "cycle5_ea2726",
+      "image": "images/split_cards/b88924f5dc5a00db_back.jpg",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 255,
+      "page": "cycle5",
+      "id": "cycle5_ea2727",
+      "image": "images/split_cards/2c9368da2fc37d4c_back.jpg",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 256,
+      "page": "cycle5",
+      "id": "cycle5_ea2728",
+      "image": "images/split_cards/51c27036df601aa3_back.jpg",
+      "req": [
+        "babelian armor",
+        "babelian weapons"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 257,
+      "page": "cycle5",
+      "id": "cycle5_ea2729",
+      "image": "images/split_cards/2e0154d0d496062f_back.jpg",
+      "req": [
+        "abyss armor",
+        "kintsukuroi pharos"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 258,
+      "page": "cycle5",
+      "id": "cycle5_ea2730",
+      "image": "images/split_cards/a08c9fc306c39b66_back.jpg",
+      "req": [
+        "calculate statistical certainty"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 259,
+      "page": "cycle5",
+      "id": "cycle5_ea2731",
+      "image": "images/split_cards/32cfbdf54238de75_back.jpg",
+      "req": [],
+      "req_any": [],
+      "req_conditions": [
+        "Outcast Vanguard Alliance"
+      ]
+    },
+    {
+      "index": 260,
+      "page": "cycle5",
+      "id": "cycle5_ea2732",
+      "image": "images/split_cards/9672229abef7c00a_back.jpg",
+      "req": [],
+      "req_any": [],
+      "req_conditions": [
+        "Cycladean Protectorate Alliance"
+      ]
+    },
+    {
+      "index": 261,
+      "page": "cycle5",
+      "id": "cycle5_ea2733",
+      "image": "images/split_cards/a47dffadf1754c02_back.jpg",
+      "req": [],
+      "req_any": [],
+      "req_conditions": [
+        "Followers of Areté Alliance"
+      ]
+    },
+    {
+      "index": 262,
+      "page": "cycle5",
+      "id": "cycle5_ea2734",
+      "image": "images/split_cards/f4f94db3725d6b3c_back.jpg",
+      "req": [
+        "meduketos sighting"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 263,
+      "page": "cycle5",
+      "id": "cycle5_ea2735",
+      "image": "images/split_cards/b8f714175b1f2d60_back.jpg",
+      "req": [
+        "flash backstep",
+        "abyss support",
+        "abyss weapons",
+        "atlantean armor"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 264,
+      "page": "cycle5",
+      "id": "cycle5_ea2736",
+      "image": "images/split_cards/4bc0d7802bcbc2c3_back.jpg",
+      "req": [
+        "atlantean weapons",
+        "dragon of phobos autopsy"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 265,
+      "page": "cycle5",
+      "id": "cycle5_ea2737",
+      "image": "images/split_cards/149f705b9ed2bbad_back.jpg",
+      "req": [
+        "abyss support",
+        "oxygen tubes"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Dragon of Phobos LVL 2 Battle"
+      ]
+    },
+    {
+      "index": 266,
+      "page": "cycle5",
+      "id": "cycle5_ea2738",
+      "image": "images/split_cards/e0cc2287365dec45_back.jpg",
+      "req": [
+        "underwater support fleet",
+        "flash backstep"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Dragon of Phobos LVL 3 Battle"
+      ]
+    },
+    {
+      "index": 267,
+      "page": "cycle5",
+      "id": "cycle5_ea2739",
+      "image": "images/split_cards/62af6f035747c478_back.jpg",
+      "req": [
+        "atlantean support",
+        "soulbalm"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Dragon of Phobos LVL 4 Battle"
+      ]
+    },
+    {
+      "index": 268,
+      "page": "cycle5",
+      "id": "cycle5_ea2740",
+      "image": "images/split_cards/52f9a233c2a667d6_back.jpg",
+      "req": [
+        "abyss weapons",
+        "drag it back!"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Meduketos LVL 2 Battle"
+      ]
+    },
+    {
+      "index": 269,
+      "page": "cycle5",
+      "id": "cycle5_ea2741",
+      "image": "images/split_cards/73091b0614cf24a7_back.jpg",
+      "req": [
+        "atlantean weapons",
+        "painkiller shot"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Meduketos LVL 3 Battle"
+      ]
+    },
+    {
+      "index": 270,
+      "page": "cycle5",
+      "id": "cycle5_ea2742",
+      "image": "images/split_cards/03af5afec38c6b6a_back.jpg",
+      "req": [
+        "silvered weapons",
+        "flash backstep",
+        "anchor drop pod"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Meduketos LVL 4 Battle"
+      ]
+    },
+    {
+      "index": 271,
+      "page": "cycle5",
+      "id": "cycle5_ea2743",
+      "image": "images/split_cards/511f4387c2fe9ae1_back.jpg",
+      "req": [
+        "atlantean weapons",
+        "atlantean support",
+        "meduketos autopsy"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 272,
+      "page": "cycle5",
+      "id": "cycle5_ea2744",
+      "image": "images/split_cards/58892a77a300733a_back.jpg",
+      "req": [
+        "atlantean support",
+        "silvered weapons",
+        "flash backstep",
+        "triskelion override"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 273,
+      "page": "cycle5",
+      "id": "cycle5_ea2745",
+      "image": "images/split_cards/588dc782f1eae6a6_back.jpg",
+      "req": [
+        "silvered weapons"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 274,
+      "page": "cycle5",
+      "id": "cycle5_ea2746",
+      "image": "images/split_cards/3b11a6826f2c44f1_back.jpg",
+      "req": [
+        "silvered support",
+        "calculate statistical certainty"
+      ],
+      "req_any": [
+        [
+          "dragon of phobos live study",
+          "meduketos live study"
+        ]
+      ],
+      "req_conditions": [
+        "Ur-Fleece LVL 1 Battle"
+      ]
+    },
+    {
+      "index": 275,
+      "page": "cycle5",
+      "id": "cycle5_ea2747",
+      "image": "images/split_cards/f52458385e9592c9_back.jpg",
+      "req": [
+        "abyss weapons",
+        "abyss support"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Titan X LVL 1 Battle"
+      ]
+    },
+    {
+      "index": 276,
+      "page": "cycle5",
+      "id": "cycle5_ea2748",
+      "image": "images/split_cards/d5027e8a9244d2db_back.jpg",
+      "req": [
+        "silvered armor",
+        "flash backstep"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "Titan X Battle Victory"
+      ]
+    },
+    {
+      "index": 277,
+      "page": "cycle5",
+      "id": "cycle5_ea2749",
+      "image": "images/split_cards/c5_ea2749_face.jpg",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 278,
+      "page": "cycle5",
+      "id": "cycle5_ea2750",
+      "image": "images/split_cards/dfbdf33025e29ce8_back.jpg",
+      "req": [
+        "babelian ranged weapons",
+        "babelian support"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 279,
+      "page": "cycle5",
+      "id": "cycle5_ea2751",
+      "image": "images/split_cards/bcc3968e8d1b95fc_back.jpg",
+      "req": [
+        "babelian armor",
+        "babelian ranged weapons"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 280,
+      "page": "cycle5",
+      "id": "cycle5_ea2752",
+      "image": "images/split_cards/ecb5f05c396f1d0e_back.jpg",
+      "req": [
+        "calculate statistical certainty"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 281,
+      "page": "cycle5",
+      "id": "cycle5_ea2753",
+      "image": "images/split_cards/33024db333912f6c_back.jpg",
+      "req": [
+        "kintsukuroi pharos"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 282,
+      "page": "cycle5",
+      "id": "cycle5_ea2754",
+      "image": "images/split_cards/b05c49b1ff90f499_back.jpg",
+      "req": [
+        "dragon of phobos sighting"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 283,
+      "page": "cycle5",
+      "id": "cycle5_ea2755",
+      "image": "images/split_cards/f5d119961d2b7cba_back.jpg",
+      "req": [
+        "titan x sighting"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 284,
+      "page": "cycle5",
+      "id": "cycle5_ea2756",
+      "image": "images/split_cards/b9649c539b592d3d_back.jpg",
+      "req": [
+        "atlantean armor"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 285,
+      "page": "cycle5",
+      "id": "cycle5_ea2757",
+      "image": "images/split_cards/154eb799d0c414b6_back.jpg",
+      "req": [
+        "flash backstep"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 286,
+      "page": "cycle5",
+      "id": "cycle5_ea2758",
+      "image": "images/split_cards/fabe0ddf18f2456d_back.jpg",
+      "req": [
+        "atlantean armor"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 287,
+      "page": "cycle5",
+      "id": "cycle5_ea2759",
+      "image": "images/split_cards/41163695edfd0131_back.jpg",
+      "req": [
+        "inner light",
+        "meduketos autopsy"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 288,
+      "page": "cycle5",
+      "id": "cycle5_ea2760",
+      "image": "images/split_cards/bfe2623081e3664e_back.jpg",
+      "req": [
+        "atlantean support"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 289,
+      "page": "cycle5",
+      "id": "cycle5_ea2761",
+      "image": "images/split_cards/c5_ea2761_face.jpg",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 290,
+      "page": "cycle5",
+      "id": "cycle5_ea2762",
+      "image": "images/split_cards/c5_ea2762_face.jpg",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 291,
+      "page": "cycle5",
+      "id": "cycle5_ea2763",
+      "image": "images/split_cards/5bd55781735de322_back.jpg",
+      "req": [
+        "sharing the knowledge"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 292,
+      "page": "cycle5",
+      "id": "cycle5_ea2764",
+      "image": "images/split_cards/91a35b661d5509a3_back.jpg",
+      "req": [
+        "argo crew rebuilding"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 293,
+      "page": "cycle5",
+      "id": "cycle5_ea2765",
+      "image": "images/split_cards/33c94b0903c181aa_back.jpg",
+      "req": [
+        "argo philosophy"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 294,
+      "page": "cycle5",
+      "id": "cycle5_ea2766",
+      "image": "images/split_cards/99b9340ca55e2fd2_back.jpg",
+      "req": [
+        "argo initiative",
+        "cyclades intelligence"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 295,
+      "page": "cycle5",
+      "id": "cycle5_ea2767",
+      "image": "images/split_cards/5188475f5fc08a49_back.jpg",
+      "req": [
+        "atlantean investigations"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "30+ explored Map tiles"
+      ]
+    },
+    {
+      "index": 296,
+      "page": "cycle5",
+      "id": "cycle5_ea2768",
+      "image": "images/split_cards/55f43e24c59a0bf0_back.jpg",
+      "req": [
+        "sharing the knowledge"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 297,
+      "page": "cycle5",
+      "id": "cycle5_ea2769",
+      "image": "images/split_cards/8ea15e8b56f7d3d4_back.jpg",
+      "req": [
+        "scientific debunking",
+        "grassroots diplomacy"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 298,
+      "page": "cycle5",
+      "id": "cycle5_ea2770",
+      "image": "images/split_cards/dba3764079ef7bbf_back.jpg",
+      "req": [
+        "scientific debunking"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 299,
+      "page": "cycle5",
+      "id": "cycle5_ea2771",
+      "image": "images/split_cards/02e0b18edfff3195_back.jpg",
+      "req": [
+        "argo philosophy",
+        "scientific debunking",
+        "the peace mission"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 300,
+      "page": "cycle5",
+      "id": "cycle5_ea2772",
+      "image": "images/split_cards/22be38a5197bd4d7_back.jpg",
+      "req": [
+        "spiral theory",
+        "tight-spaces navigation"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 301,
+      "page": "cycle5",
+      "id": "cycle5_ea2773",
+      "image": "images/split_cards/e47722def53a16db_back.jpg",
+      "req": [
+        "the future of the argo"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 302,
+      "page": "cycle5",
+      "id": "cycle5_ea2774",
+      "image": "images/split_cards/0ab901a020618dc3_back.jpg",
+      "req": [
+        "grassroots diplomacy"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 303,
+      "page": "cycle5",
+      "id": "cycle5_ea2775",
+      "image": "images/split_cards/50b8d6baec1487d8_back.jpg",
+      "req": [
+        "cyclades commerce"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 304,
+      "page": "cycle5",
+      "id": "cycle5_ea2776",
+      "image": "images/split_cards/75daf33792839f02_back.jpg",
+      "req": [
+        "the last wish",
+        "voyage home"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 305,
+      "page": "cycle5",
+      "id": "cycle5_ea2777",
+      "image": "images/split_cards/fbe2276ae6d1d117_back.jpg",
+      "req": [
+        "underwater scouting"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "18+ explored Map tiles"
+      ]
+    },
+    {
+      "index": 306,
+      "page": "cycle5",
+      "id": "cycle5_ea2778",
+      "image": "images/split_cards/c258d55003f9a8a4_back.jpg",
+      "req": [
+        "improved submergence"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 307,
+      "page": "cycle5",
+      "id": "cycle5_ea2779",
+      "image": "images/split_cards/78d4be9ce0933bfd_back.jpg",
+      "req": [
+        "tight-spaces navigation"
+      ],
+      "req_any": [],
+      "req_conditions": [
+        "35+ explored Map tiles"
+      ]
+    },
+    {
+      "index": 308,
+      "page": "cycle5",
+      "id": "cycle5_ea2780",
+      "image": "images/split_cards/d9c4a0d5ce1786b3_back.jpg",
+      "req": [
+        "cyclades commerce"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 309,
+      "page": "cycle5",
+      "id": "cycle5_ea2781",
+      "image": "images/split_cards/b3e6263f0ce90d31_back.jpg",
+      "req": [
+        "spiral theory",
+        "moirai rebellion"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 310,
+      "page": "cycle5",
+      "id": "cycle5_ea2782",
+      "image": "images/split_cards/8711fea2769e3f54_back.jpg",
+      "req": [
+        "improved submergence",
+        "moirai rebellion"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 311,
+      "page": "cycle5",
+      "id": "cycle5_ea2783",
+      "image": "images/split_cards/699dceac3c933449_back.jpg",
+      "req": [
+        "atlantean docking procedures",
+        "grassroots diplomacy"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 312,
+      "page": "cycle5",
+      "id": "cycle5_ea2784",
+      "image": "images/split_cards/e0732c9f92421dd2_back.jpg",
+      "req": [
+        "atlantean docking procedures"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 313,
+      "page": "cycle5",
+      "id": "cycle5_ea2785",
+      "image": "images/split_cards/55fe8d2d57503896_back.jpg",
+      "req": [
+        "shared fates"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 314,
+      "page": "cycle5",
+      "id": "cycle5_ea2786",
+      "image": "images/split_cards/343d41b21195c50c_back.jpg",
+      "req": [
+        "ultimate titan breeding",
+        "cyclades commerce"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 315,
+      "page": "cycle5",
+      "id": "cycle5_ea2787",
+      "image": "images/split_cards/6b2628b6f5e394ea_back.jpg",
+      "req": [
+        "atlantean docking procedures",
+        "tight-spaces navigation"
+      ],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 316,
+      "page": "cycle5",
+      "id": "cycle5_ea2788",
+      "image": "images/split_cards/c45_ea2788_face.jpg",
+      "req": [],
+      "req_any": [],
+      "req_conditions": []
+    },
+    {
+      "index": 317,
+      "page": "cycle5",
+      "id": "cycle5_ea2789",
+      "image": "images/split_cards/ce801e4f16008468_back.jpg",
+      "req": [],
+      "req_any": [],
+      "req_conditions": [
+        "Pursuit's End Battle Victory",
+        "51+ Argo Knowledge"
+      ]
+    },
+    {
+      "index": 318,
+      "page": "cycle5",
+      "id": "cycle5_ea2790",
+      "image": "images/split_cards/f57aead6b6db97b8_back.jpg",
+      "req": [],
+      "req_any": [],
+      "req_conditions": [
+        "48+ Argo Knowledge"
+      ]
+    }
+  ]
+}

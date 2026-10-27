@@ -44,7 +44,8 @@ def staging_directory(parent: Path, prefix: str):
         shutil.rmtree(stage)
 
 
-def output_paths(output_dir: Path, version: str, date: str) -> dict[str, Path]:
+def output_paths(output_dir: Path, version: str, date: str,
+                 current_name: str | None = None) -> dict[str, Path]:
     version = version.removeprefix("v")
     if not VERSION.fullmatch(version):
         raise PackError(f"版本号无效：{version}")
@@ -54,14 +55,25 @@ def output_paths(output_dir: Path, version: str, date: str) -> dict[str, Path]:
     except ValueError as error:
         raise PackError(f"日期必须为 YYYY-MM-DD：{date}") from error
     suffix = f"分层地图-q85-{date}-v{version}"
-    current = output_dir / f"ATOassets-民间版-新版蒙版-{suffix}.atopack"
-    return {
+    if current_name is not None:
+        if (not current_name or current_name in (".", "..")
+                or re.search(r'[<>:"/\\|?*\x00-\x1f]', current_name)
+                or current_name.endswith((" ", "."))
+                or re.fullmatch(r"(?i:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\..*)?", current_name)):
+            raise PackError("新版蒙版名称必须是不含路径或非法字符的文件名主体")
+        current = output_dir / f"{current_name}.atopack"
+    else:
+        current = output_dir / f"ATOassets-民间版-新版蒙版-{suffix}.atopack"
+    result = {
         "fan_legacy": output_dir / f"ATOassets-民间版-{suffix}.atopack",
         "official_legacy": output_dir / f"ATOassets-官方版-{suffix}.atopack",
         "fan_current": current,
         "encrypted": current.with_suffix(".zip"),
         "summary": output_dir / f"ATOassets-三包构建-{date}-v{version}.json",
     }
+    if len({str(path).casefold() for path in result.values()}) != len(result):
+        raise PackError("新版蒙版名称不能与其他输出文件重名")
+    return result
 
 
 def find_zip_tools(zip_tool: Path | None = None, unzip_tool: Path | None = None) -> tuple[Path, Path]:
@@ -185,6 +197,7 @@ def resume_pack(path: Path, edition: str, mask: str, keep: list[str], reporter: 
 
 
 def build_release(*, ato_root: Path, version: str, date: str, output_dir: Path | None = None,
+                  current_name: str | None = None,
                   library_path: Path | None = None, incremental_fan: Path | None = None,
                   incremental_official: Path | None = None, force: bool = False, resume: bool = False,
                   dry_run: bool = False, zip_tool: Path | None = None, unzip_tool: Path | None = None,
@@ -192,7 +205,7 @@ def build_release(*, ato_root: Path, version: str, date: str, output_dir: Path |
     reporter = reporter or Reporter()
     ato_root = ato_root.expanduser().resolve()
     output_dir = (output_dir or ato_root / "export").expanduser().resolve()
-    paths = output_paths(output_dir, version, date)
+    paths = output_paths(output_dir, version, date, current_name=current_name)
     if force and resume:
         raise PackError("--force 与 --resume 不能同时使用")
     if not dry_run and not force and not resume:
@@ -247,6 +260,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--version", required=True, help="分发版本号，例如 3.8.13")
     parser.add_argument("--date", default=datetime.now(timezone(timedelta(hours=8))).strftime("%Y-%m-%d"))
     parser.add_argument("--output-dir", type=Path, help="默认 <ato-root>/export")
+    parser.add_argument("--current-name", help="新版蒙版 .atopack 和密码 ZIP 的文件名主体；不含扩展名")
     parser.add_argument("--library", type=Path, dest="library_path")
     parser.add_argument("--incremental-fan", type=Path)
     parser.add_argument("--incremental-official", type=Path)
