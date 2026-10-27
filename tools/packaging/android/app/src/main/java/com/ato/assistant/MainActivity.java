@@ -98,6 +98,9 @@ public final class MainActivity extends Activity {
     localApi.attachSecondScreenServer(secondScreenServer);
     LinearLayout layout = new LinearLayout(this);
     layout.setOrientation(LinearLayout.VERTICAL);
+    // Android 15 draws the status bar transparently over this root view.
+    // Paint the inset area dark so the white system clock and icons stay legible.
+    layout.setBackgroundColor(Color.rgb(31, 48, 45));
     // Android 15 enforces edge-to-edge for target SDK 35. Keep both the
     // toolbar and page contents clear of status/navigation bars and cutouts.
     layout.setOnApplyWindowInsetsListener((view, insets) -> {
