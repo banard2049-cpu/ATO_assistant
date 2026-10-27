@@ -4583,6 +4583,7 @@
       cachedArgoRecord = {};
       elements.appShell.hidden = true;
       elements.authGate.hidden = false;
+      window.ATOAndroid?.dashboardAuthState?.(false);
       elements.authMessage.textContent = message;
       elements.authUsername.focus();
     }
@@ -4613,6 +4614,7 @@
       elements.sessionAccountName.textContent = user?.username || "当前账号";
       elements.authGate.hidden = true;
       elements.appShell.hidden = false;
+      window.ATOAndroid?.dashboardAuthState?.(true);
       setCampaignSaveStatus("正在连接存档", "saving");
       loadCampaignSection(campaignSessionEpoch);
       refreshCachedArgoRecord();
@@ -4910,15 +4912,29 @@
     }
 
     async function initAuth() {
+      let payload = null;
       try {
-        const response = await fetch(`${authUrl}?action=me`, { cache: "no-store" });
-        const payload = await response.json();
-        if (payload.ok && payload.authenticated && payload.user) {
-          startAuthenticatedApp(payload.user);
-          return;
+        // Android keeps the account in native preferences, shared by every
+        // WebView. Read that durable session directly when the bridge supports it.
+        if (typeof window.ATOAndroid?.rememberedSession === "function") {
+          payload = JSON.parse(window.ATOAndroid.rememberedSession());
+        } else {
+          const response = await fetch(`${authUrl}?action=me`, { cache: "no-store" });
+          payload = await response.json();
         }
       } catch (error) {
-        console.warn(error);
+        console.warn("Unable to restore the saved session", error);
+        showAuth("无法读取登录状态，请重新打开应用后重试。");
+        return;
+      }
+      if (payload?.ok && payload.authenticated && payload.user) {
+        // Do not mistake a dashboard rendering error for a lost login.
+        try { startAuthenticatedApp(payload.user); }
+        catch (error) {
+          console.error("Unable to initialize the dashboard", error);
+          elements.authMessage.textContent = "登录状态已恢复，但主控台加载失败，请重启应用后重试。";
+        }
+        return;
       }
       showAuth();
     }

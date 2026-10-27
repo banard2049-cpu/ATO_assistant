@@ -220,6 +220,13 @@ final class LocalCampaignApi {
     return response;
   }
 
+  String rememberedSession() {
+    synchronized (lock) {
+      try { return me().toString(); }
+      catch (JSONException error) { return ""; }
+    }
+  }
+
   private JSONObject me() throws JSONException {
     JSONObject response = ok();
     put(response, "authenticated", !currentUser.isEmpty());

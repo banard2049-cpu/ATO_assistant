@@ -50,6 +50,8 @@ public final class MainActivity extends Activity {
     StoryWebViewSession story;
     AtomicLong requests = new AtomicLong();
     String title = "新页面";
+    boolean loginPage;
+    boolean dashboardAuthenticated;
   }
   private final ArrayList<PageTab> tabs = new ArrayList<>();
   private PageTab activeTab;
@@ -90,6 +92,22 @@ public final class MainActivity extends Activity {
     localApi.attachSecondScreenServer(secondScreenServer);
     LinearLayout layout = new LinearLayout(this);
     layout.setOrientation(LinearLayout.VERTICAL);
+    // Android 15 enforces edge-to-edge for target SDK 35. Keep both the
+    // toolbar and page contents clear of status/navigation bars and cutouts.
+    layout.setOnApplyWindowInsetsListener((view, insets) -> {
+      int left, top, right, bottom;
+      if (android.os.Build.VERSION.SDK_INT >= 30) {
+        android.graphics.Insets bars = insets.getInsets(
+            android.view.WindowInsets.Type.systemBars() | android.view.WindowInsets.Type.displayCutout());
+        android.graphics.Insets keyboard = insets.getInsets(android.view.WindowInsets.Type.ime());
+        left = bars.left; top = bars.top; right = bars.right; bottom = Math.max(bars.bottom, keyboard.bottom);
+      } else {
+        left = insets.getSystemWindowInsetLeft(); top = insets.getSystemWindowInsetTop();
+        right = insets.getSystemWindowInsetRight(); bottom = insets.getSystemWindowInsetBottom();
+      }
+      view.setPadding(left, top, right, bottom);
+      return insets;
+    });
     LinearLayout toolbar = new LinearLayout(this);
     Button add = new Button(this);
     add.setText("＋ 新页面");
@@ -237,6 +255,8 @@ public final class MainActivity extends Activity {
         if (tab.closed || view != tab.view || view == retiringStoryWebView) return;
         // A navigation keeps the WebView but replaces its page. Stop the old page's scan.
         requests.incrementAndGet();
+        tab.loginPage = false;
+        tab.dashboardAuthenticated = false;
         // System Back/goBack does not necessarily pass through shouldOverrideUrlLoading.
         if (storySession.needsResetOnNavigation(url)) {
           resetStoryWebView(view, url);
@@ -531,6 +551,34 @@ public final class MainActivity extends Activity {
       this.tab = tab;
       this.owner = owner;
       this.requests = requests;
+    }
+
+    @android.webkit.JavascriptInterface public String rememberedSession() {
+      return localApi.rememberedSession();
+    }
+
+    @android.webkit.JavascriptInterface public void dashboardAuthState(boolean authenticated) {
+      runOnUiThread(() -> {
+        if (tab.closed || tab.view != owner) return;
+        tab.loginPage = !authenticated;
+        tab.dashboardAuthenticated = authenticated;
+        if (!authenticated) {
+          if (localApi.dailyBackupUser().isEmpty()) return;
+          for (PageTab other : tabs) {
+            if (other != tab && other.dashboardAuthenticated) {
+              closeTab(tab);
+              return;
+            }
+          }
+          return;
+        }
+        if (localApi.dailyBackupUser().isEmpty()) return;
+        // A login screen is only the unauthenticated state of the dashboard.
+        // Remove stale login-only tabs after another dashboard signs in.
+        for (PageTab other : new ArrayList<>(tabs)) {
+          if (other != tab && other.loginPage && other.view != retiringStoryWebView) closeTab(other);
+        }
+      });
     }
 
     @android.webkit.JavascriptInterface public boolean rendererCrashedThisProcess() {
