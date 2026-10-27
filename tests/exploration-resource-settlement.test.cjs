@@ -2146,6 +2146,28 @@ test('terrain-only encounter on a non-battle day retains its reminder', async ()
   assert.equal(harness.written.length, 0, 'an empty encounter does not create a battle record');
 });
 
+test('once-per-battle limits and temporary card returns do not create encounter reminders', async () => {
+  const harness = settleHarness({ cycle: 'c3', fullRecord: { cycle: 'c3', resources: {} } });
+  const onceCard = dataset.cards['c3:13510'];
+  const once = delayRules.delayed(onceCard).find(item => item.kind === 'once-until-timeline');
+  const removal = delayRules.delayed(dataset.cards['c3:13536']).find(item => item.kind === 'return-exploration-card');
+  let record = delayRules.schedule(harness.record, 'c3', 12, drawnEntry('13510', '代达罗斯考古工坊'),
+    { descriptors: [once], confirmed: true }).record;
+  record = delayRules.schedule(record, 'c3', 12, drawnEntry('13536', 'Temporary card'),
+    { descriptors: [removal], confirmed: true }).record;
+  harness.updateServerRecord(record);
+  harness.ctx.cachedArgoRecord = record;
+  harness.drawState.temporaryRemoved.push(drawnEntry('13536', 'Temporary card'));
+  assert.equal(harness.ctx.createDelayedExplorationStepTools('encounter'), null);
+
+  harness.ctx.todayTrackIcons = () => [{ className: 'battle' }];
+  await harness.ctx.completeTimelineBattle();
+  assert.equal(harness.record.explorationDelays.queue.find(item => item.kind === 'once-until-timeline').status, 'expired');
+  assert.equal(harness.record.explorationDelays.queue.find(item => item.kind === 'return-exploration-card').status, 'done');
+  assert.equal(harness.drawState.temporaryRemoved.length, 0);
+  assert.ok(harness.drawState.drawPile.includes('13536'));
+});
+
 test('the encounter step completes the Timeline Battle instead of showing buttons', async () => {
   const entry = drawnEntry('6403', 'Labyrinthian Vessel');
   const harness = settleHarness({

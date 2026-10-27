@@ -48,7 +48,6 @@ public final class MainActivity extends Activity {
   // 为旧页面保留崩溃标记；新版故事页使用逐条读取，无需关闭插图。
   private static volatile boolean rendererCrashedThisProcess;
   private final ExecutorService mixedMediaWorker = Executors.newSingleThreadExecutor();
-  private static final int MAX_TABS = 6;
   private static final class PageTab {
     volatile boolean closed;
     volatile WebView view;
@@ -175,10 +174,6 @@ public final class MainActivity extends Activity {
   }
 
   private void openNewTab() {
-    if (tabs.size() >= MAX_TABS) {
-      Toast.makeText(this, "最多同时打开 6 个页面，请先关闭一个页面。", Toast.LENGTH_SHORT).show();
-      return;
-    }
     PageTab tab = new PageTab();
     tabs.add(tab);
     createWebView(tab, ROOT + "index.html");
@@ -243,19 +238,18 @@ public final class MainActivity extends Activity {
     for (PageTab tab : tabs) {
       String currentUrl = tab.view.getUrl();
       if (!tab.closed && module.equals(moduleForUrl(currentUrl))) {
-        // The dashboard is a single shared page. Other modules can carry a
-        // different cycle/book/profile in the query and must keep that context.
-        String currentQuery = Uri.parse(currentUrl).getEncodedQuery();
-        String targetQuery = Uri.parse(url).getEncodedQuery();
-        if ("dashboard".equals(module) || java.util.Objects.equals(currentQuery, targetQuery)) {
+        // Explicit story targets must open at the requested entry without
+        // replacing or silently reusing an existing reader's current position.
+        if (TabNavigationPolicy.canReuse(module, currentUrl, url)) {
           selectTab(tab);
+          if ("dashboard".equals(module)) {
+            // Saved module data may have changed while the console was hidden.
+            // Refresh its existing page in place rather than reloading it.
+            tab.view.evaluateJavascript("window.dispatchEvent(new CustomEvent('ato-module-sync-request'))", null);
+          }
           return;
         }
       }
-    }
-    if (tabs.size() >= MAX_TABS) {
-      Toast.makeText(this, "最多同时打开 6 个页面，请先关闭一个页面。", Toast.LENGTH_SHORT).show();
-      return;
     }
     PageTab tab = new PageTab();
     tabs.add(tab);

@@ -192,3 +192,43 @@ for (const command of ['move-argo', 'move-special', 'chase-nemesis']) {
     assert.deepEqual(activity, [`read:${cycleId}:original`, 'save', '/story?book=c4']);
   });
 }
+
+test('Android nemesis encounter saves the map then opens the exact battle in a new native tab', async () => {
+  const sequence = [];
+  const cycleState = { tokens: { AD: '001' } };
+  const target = '../story/index.html?book=c4&chapter=battle&encounter=dahaka&entry=123';
+  const ctx = vm.createContext({
+    URL,
+    state: { activeCycleId: 'c2' }, mapStateProfileId: 'original',
+    activeCycleState: () => cycleState, render: () => sequence.push('render'), pushUndo: noop,
+    adversaryBattleUrl: async () => target,
+    saveState: () => sequence.push('queue-save'),
+    flushCampaignMapSave: async () => { sequence.push('save'); return true; },
+    window: { location: { href: 'file:///android_asset/web/map/index.html?cycle=c2' },
+      alert: () => sequence.push('alert'),
+      ATOAndroid: { openModuleTab(url) { sequence.push('open:' + url); return true; } } },
+  });
+  vm.runInContext(fn(map, 'triggerAdversaryBattle'), ctx);
+  await ctx.triggerAdversaryBattle();
+  assert.deepEqual(sequence, ['queue-save', 'save', 'alert', 'render',
+    'open:file:///android_asset/web/story/index.html?book=c4&chapter=battle&encounter=dahaka&entry=123']);
+  assert.equal(ctx.window.location.href, 'file:///android_asset/web/map/index.html?cycle=c2');
+});
+
+test('Android encounter does not navigate after a failed map save', async () => {
+  let opened = false;
+  const cycleState = { tokens: { AD: '001' } };
+  const ctx = vm.createContext({
+    URL, state: { activeCycleId: 'c2' }, mapStateProfileId: 'original',
+    activeCycleState: () => cycleState, render: noop, pushUndo: noop, saveState: noop,
+    adversaryBattleUrl: async () => '../story/index.html?entry=123',
+    flushCampaignMapSave: async () => false,
+    campaignSession: { changed: false }, mapSaveConflict: false,
+    window: { location: { href: 'file:///android_asset/web/map/index.html' }, alert: noop,
+      ATOAndroid: { openModuleTab() { opened = true; return true; } } },
+  });
+  vm.runInContext(fn(map, 'triggerAdversaryBattle'), ctx);
+  await ctx.triggerAdversaryBattle();
+  assert.equal(opened, false);
+  assert.equal(ctx.window.location.href, 'file:///android_asset/web/map/index.html');
+});

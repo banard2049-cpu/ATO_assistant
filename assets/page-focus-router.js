@@ -270,6 +270,12 @@
     const module = moduleFromUrl(url);
     const absolute = new URL(url, window.location.href).href;
     if (isSingleWindowMode()) {
+      // Android hosts multiple WebViews even though browser window.open is
+      // unavailable. Hand scripted navigation to its tab manager as well as
+      // normal links; callers such as save-and-return reach here after saving.
+      if (module && module !== currentModule
+          && typeof window.ATOAndroid?.openModuleTab === "function"
+          && window.ATOAndroid.openModuleTab(absolute)) return true;
       window.location.href = absolute;
       return false;
     }
