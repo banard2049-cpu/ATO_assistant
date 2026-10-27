@@ -106,6 +106,8 @@ final class AtopackStore {
   private final File blobs;
   private final AtomicFile indexFile;
   private final AtomicFile storiesFile;
+  private final File preserveBlobsMarker;
+  private boolean preserveBlobs;
   private final Map<String, String> knownTargets;
   private final Map<String, String> retiredCardBackTargets = new HashMap<>();
   private final Map<String, String> retiredCardBackHashes = new HashMap<>();
@@ -119,6 +121,8 @@ final class AtopackStore {
     if (!blobs.exists()) blobs.mkdirs();
     indexFile = new AtomicFile(new File(root, "index.json"));
     storiesFile = new AtomicFile(new File(root, "stories.json"));
+    preserveBlobsMarker = new File(root, "preserve-blobs");
+    preserveBlobs = preserveBlobsMarker.exists();
     knownTargets = loadCatalog();
     loadCardBackMapping();
     File[] leftovers = root.listFiles((directory, name) -> name.startsWith("import-") && name.endsWith(".staging"));
@@ -277,6 +281,7 @@ final class AtopackStore {
       result.put("installed", !resources.isEmpty());
       result.put("resources", resources.size());
       result.put("updatedAt", updatedAt);
+      result.put("indexRecoveryNeeded", preserveBlobs);
     } catch (JSONException ignored) {
       // These fixed keys and primitive values cannot fail in practice.
     }
@@ -298,6 +303,11 @@ final class AtopackStore {
   }
 
   private ImportResult importZip(File packageFile) throws Exception {
+    if (preserveBlobs) {
+      if (!preserveBlobsMarker.isFile())
+        throw new IOException("无法保护已有资源文件，请检查应用存储空间后重试。");
+      backupIndexBeforeRecovery();
+    }
     try (ZipFile archive = new ZipFile(packageFile); ImportTransaction transaction = new ImportTransaction()) {
       validateArchive(archive);
       ZipArchiveEntry manifestEntry = archive.getEntry("manifest.json");
@@ -868,6 +878,7 @@ final class AtopackStore {
   }
 
   private void removeUnreferencedBlobs() {
+    if (preserveBlobs) return;
     Set<String> referenced = new HashSet<>();
     for (ResourceEntry entry : resources.values()) referenced.add(entry.sha256);
     File[] files = blobs.listFiles();
@@ -964,23 +975,67 @@ final class AtopackStore {
     }
   }
 
+  private void backupIndexBeforeRecovery() throws IOException {
+    File source = new File(root, "index.json");
+    File backup = new File(root, "index-before-recovery.json");
+    if (!source.isFile() || backup.isFile()) return;
+    File temporary = File.createTempFile("index-recovery-", ".tmp", root);
+    try {
+      try (InputStream input = new FileInputStream(source); FileOutputStream output = new FileOutputStream(temporary)) {
+        copy(input, output, null, MAX_MANIFEST_BYTES, null);
+        output.getFD().sync();
+      }
+      if (!temporary.renameTo(backup)) throw new IOException("无法备份原资源索引。");
+    } finally {
+      if (temporary.exists()) temporary.delete();
+    }
+  }
+
+  private void protectBlobsForRecovery() {
+    preserveBlobs = true;
+    try { preserveBlobsMarker.createNewFile(); }
+    catch (IOException ignored) {
+      // Keep pruning disabled for this process even if the marker cannot be written.
+    }
+  }
+
   private Map<String, ResourceEntry> loadIndex() {
     Map<String, ResourceEntry> result = new HashMap<>();
     try {
-      JSONObject index = readJson(indexFile, new JSONObject());
+      JSONObject index = readJson(indexFile, null);
+      if (index == null) {
+        File[] existing = blobs.listFiles();
+        if (existing == null || existing.length > 0) protectBlobsForRecovery();
+        return result;
+      }
       updatedAt = index.optString("updatedAt");
       JSONObject files = index.optJSONObject("files");
-      if (files == null) return result;
+      if (files == null) {
+        protectBlobsForRecovery();
+        return result;
+      }
+      if (files.length() == 0) {
+        File[] existing = blobs.listFiles();
+        if (existing == null || existing.length > 0) protectBlobsForRecovery();
+      }
       Iterator<String> paths = files.keys();
       while (paths.hasNext()) {
         String path = paths.next();
         JSONObject value = files.optJSONObject(path);
-        if (value == null) continue;
-        String sha256 = validSha256(value.optString("sha256"));
-        if (new File(blobs, sha256).isFile()) result.put(path, new ResourceEntry(sha256, value.optString("mimeType", "application/octet-stream")));
+        if (value == null) { protectBlobsForRecovery(); continue; }
+        try {
+          String sha256 = validSha256(value.optString("sha256"));
+          if (new File(blobs, sha256).isFile())
+            result.put(path, new ResourceEntry(sha256, value.optString("mimeType", "application/octet-stream")));
+          else protectBlobsForRecovery();
+        } catch (IOException invalid) {
+          // One malformed entry must not prevent recovery of other images.
+          protectBlobsForRecovery();
+        }
       }
-    } catch (Exception ignored) {
-      // A damaged index disables overrides; the bundled application remains usable.
+    } catch (Exception error) {
+      // An unreadable or incomplete index is not proof that any blob is unused.
+      protectBlobsForRecovery();
     }
     // Reuse already imported blobs after upgrading the board's resource path.
     for (String oldPath : new String[]{LEGACY_BOARD_SOURCE, LEGACY_BOARD_SOURCE + ".preview.jpg"}) {

@@ -11,6 +11,9 @@
     if (url.protocol !== "file:" || !url.pathname.startsWith("/android_asset/web/")) return;
     event.preventDefault();
     event.stopImmediatePropagation();
+    const modulePath = /^\/android_asset\/web\/(?:(?:story|map|record|hero|technology|aibp|briefing)\/(?:index\.html)?|index\.html)?$/;
+    if (modulePath.test(url.pathname) && typeof window.ATOAndroid.openModuleTab === "function"
+        && window.ATOAndroid.openModuleTab(url.href)) return;
     window.location.href = url.href;
   }, true);
 

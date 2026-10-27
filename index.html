@@ -14081,7 +14081,9 @@
       elements.resourcePackCard.hidden = false;
       try {
         const packStatus = JSON.parse(window.ATOAndroid.resourcePackStatus());
-        if (packStatus.installed) elements.resourcePackStatus.textContent = `已安装 ${packStatus.resources} 项资源。`;
+        if (packStatus.indexRecoveryNeeded) {
+          elements.resourcePackStatus.textContent = `曾发现资源索引异常，已有文件已保留；当前可读取 ${Number(packStatus.resources) || 0} 项。可重新导入原资料包恢复资源，请勿卸载或清除应用数据。`;
+        } else if (packStatus.installed) elements.resourcePackStatus.textContent = `已安装 ${packStatus.resources} 项资源。`;
       } catch (_) {
         elements.resourcePackStatus.textContent = "无法读取已安装资源状态。";
       }
