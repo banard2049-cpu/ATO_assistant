@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/backup-archive.php';
+
 // 战役简报数据接口（只读）。
 //
 // 简报完全由「每日存档备份」重建：api/campaign-state.php 在每次进入下一天之前，会把
@@ -14,6 +16,24 @@ declare(strict_types=1);
 
 ini_set('display_errors', '0');
 ini_set('log_errors', '1');
+// Leave enough space to send a small JSON error even if decoding a damaged or
+// unusually large local archive exhausts PHP's configured memory limit.
+$briefingErrorReserve = str_repeat(' ', 64 * 1024);
+$briefingResponseFinished = false;
+register_shutdown_function(static function () use (&$briefingErrorReserve, &$briefingResponseFinished): void {
+  if ($briefingResponseFinished) return;
+  $briefingErrorReserve = null;
+  $last = error_get_last();
+  if (!is_array($last) || !in_array($last['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR], true)) return;
+  $message = (string) ($last['message'] ?? '');
+  $memoryFailure = str_contains($message, 'Allowed memory size') || str_contains($message, 'Out of memory');
+  http_response_code($memoryFailure ? 503 : 500);
+  header('Content-Type: application/json; charset=utf-8');
+  header('Cache-Control: no-store');
+  echo $memoryFailure
+    ? '{"ok":false,"code":"BRIEFING_MEMORY_LIMIT","error":"读取每日备份所需内存超过程序限制，请释放内存或提高服务内存限制后重试。"}'
+    : '{"ok":false,"code":"BRIEFING_READ_FAILED","error":"读取每日备份失败，请重新读取。"}';
+});
 set_error_handler(static function (int $severity, string $message, string $file, int $line): bool {
   if (!(error_reporting() & $severity)) return false;
   error_log(sprintf('%s in %s on line %d', $message, $file, $line));
@@ -49,23 +69,54 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 
 const BRIEFING_VERSION = 2;
-// 简报要看的是一整轮的历史，不按单日备份的保留策略裁剪；这里只是防御性上限，
-// 避免一个损坏的备份目录把整个目录树读进内存。
-const MAX_REVISIONS_PER_DAY = 24;
+// Read all revisions one at a time: imported file names must not change which
+// revision wins merely by sorting outside a fixed file-name window.
+const BRIEFING_PAGE_DAYS = 4;
+const MAX_BRIEFING_DAY = 10000;
 
 function respond(int $status, array $payload): void {
-  http_response_code($status);
-  echo json_encode(
+  global $briefingResponseFinished;
+  $json = json_encode(
     $payload,
     JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE
   );
+  if (!is_string($json)) {
+    $status = 500;
+    $json = '{"ok":false,"code":"BRIEFING_READ_FAILED","error":"简报数据无法编码，请重新读取。"}';
+  }
+  $briefingResponseFinished = true;
+  http_response_code($status);
+  echo $json;
   exit;
+}
+
+function available_memory(): ?int {
+  $limit = trim((string) ini_get('memory_limit'));
+  if ($limit === '' || $limit === '-1') return null;
+  $unit = strtolower(substr($limit, -1));
+  $bytes = (int) $limit;
+  if ($unit === 'g') $bytes *= 1024 * 1024 * 1024;
+  elseif ($unit === 'm') $bytes *= 1024 * 1024;
+  elseif ($unit === 'k') $bytes *= 1024;
+  return max(0, $bytes - memory_get_usage(true));
 }
 
 function read_json(string $file): ?array {
   if (!is_file($file)) return null;
-  $raw = @file_get_contents($file);
+  $available = available_memory();
+  // Reading and decoding coexist briefly; reject an obviously oversized file
+  // before allocating its raw bytes. The shutdown guard covers object-heavy JSON
+  // whose decoded representation grows beyond this conservative estimate.
+  $budget = $available === null ? null : intdiv($available, 3);
+  $size = @filesize($file);
+  if ($budget !== null && ($budget < 1 || ($size !== false && $size > $budget))) {
+    respond(503, ['ok' => false, 'code' => 'BRIEFING_MEMORY_LIMIT', 'error' => '这份存档过大，超过当前服务可用内存，请提高服务内存限制后重新读取。']);
+  }
+  $raw = $budget === null ? @file_get_contents($file) : @file_get_contents($file, false, null, 0, $budget + 1);
   if ($raw === false || $raw === '') return null;
+  if ($budget !== null && strlen($raw) > $budget) {
+    respond(503, ['ok' => false, 'code' => 'BRIEFING_MEMORY_LIMIT', 'error' => '这份存档过大，超过当前服务可用内存，请提高服务内存限制后重新读取。']);
+  }
   $decoded = json_decode($raw, true);
   return is_array($decoded) ? $decoded : null;
 }
@@ -176,6 +227,7 @@ function extract_snapshot(array $campaign, string $cycleId): array {
   $draws = [];
   foreach ((array) ($state['exploration']['drawStateByCycle'][$cycleId]['history'] ?? []) as $entry) {
     if (!is_array($entry)) continue;
+    if (!is_scalar($entry['day'] ?? null) || (string) $entry['day'] !== (string) ($state['day'] ?? '')) continue;
     $draws[] = [
       'id' => (string) ($entry['id'] ?? ''),
       'name' => (string) ($entry['name'] ?? ''),
@@ -186,6 +238,11 @@ function extract_snapshot(array $campaign, string $cycleId): array {
   $scalar = static function ($value): string {
     return is_scalar($value) ? (string) $value : '';
   };
+  $dateNotes = [];
+  foreach (is_array($state['dateNotes'] ?? null) ? $state['dateNotes'] : [] as $note) {
+    if (is_scalar($note)) $dateNotes[] = $note;
+    elseif (is_array($note)) $dateNotes[] = ['text' => $scalar($note['text'] ?? null)];
+  }
   // 保留备份中的版本信息，由简报使用主控台同一份 A/B 卡面字典解释旧版位置。
   // 缺少卡片记录时返回 null，不能把今天的进展补进历史备份。
   $cardTracks = null;
@@ -234,7 +291,7 @@ function extract_snapshot(array $campaign, string $cycleId): array {
     'objective' => trim($scalar($state['objective'] ?? null)),
     'reminder' => trim($scalar($state['reminder'] ?? null)),
     'notes' => $scalar($state['notes'] ?? null),
-    'dateNotes' => is_array($state['dateNotes'] ?? null) ? array_values($state['dateNotes']) : [],
+    'dateNotes' => $dateNotes,
     'surveyActive' => $scalar($state['specialEventConstantsActive'] ?? null),
     'pharosActive' => $scalar($state['pharosDreamsActive'] ?? null),
     'mainStoryActive' => $scalar($state['mainStoryConstantsActive'] ?? null),
@@ -476,7 +533,6 @@ function collect_backup_days(string $dir): array {
     $dayFiles = glob($path . DIRECTORY_SEPARATOR . '*.json') ?: [];
     if (!$dayFiles) continue;
     sort($dayFiles, SORT_STRING);
-    $dayFiles = array_slice($dayFiles, -MAX_REVISIONS_PER_DAY);
     $day = snapshot_day($dayFiles) ?? substr($entry, 4);
     $files[$day] = $dayFiles;
     $days[] = $day;
@@ -491,6 +547,7 @@ function snapshot_day(array $paths): ?string {
   $bestRevision = -1;
   $bestModified = -1;
   foreach ($paths as $path) {
+    unset($campaign, $dashboard, $profile, $state);
     $campaign = read_json($path);
     if (!is_array($campaign) || !is_array($campaign['sections']['dashboard'] ?? null)) continue;
     $dashboard = $campaign['sections']['dashboard'];
@@ -500,7 +557,7 @@ function snapshot_day(array $paths): ?string {
     $state = $profile['cycles'][$cycleId]['state'] ?? null;
     if (!is_array($state) || !array_key_exists('day', $state) || !is_scalar($state['day'])) continue;
     $revision = (int) ($campaign['sectionRevisions']['dashboard'] ?? 0);
-    $modified = (int) @filemtime($path);
+    $modified = backup_archive_timestamp($path);
     if ($bestDay === null || $revision > $bestRevision || ($revision === $bestRevision && $modified >= $bestModified)) {
       $bestDay = (string) $state['day'];
       $bestRevision = $revision;
@@ -516,15 +573,24 @@ function day_dir_exists(string $dir, string $day): bool {
 }
 
 /** 一天里最新的一份快照（先比 revision 再比修改时间，与主控台「恢复前一天」一致）。 */
-function latest_snapshot(string $cycleId, array $paths): ?array {
+function latest_snapshot(string $cycleId, array $paths, ?string $expectedProfile = null, ?string $dayDirectory = null): ?array {
   $best = null;
   $bestRevision = -1;
   $bestModified = -1;
   foreach ($paths as $path) {
+    unset($campaign, $dashboard, $profile, $state);
     $campaign = read_json($path);
     if (!is_array($campaign) || !is_array($campaign['sections'] ?? null)) continue;
+    if ($expectedProfile !== null) {
+      if (campaign_profile_id($campaign) !== $expectedProfile) continue;
+      $dashboard = $campaign['sections']['dashboard'] ?? [];
+      $profile = $dashboard['profiles'][$expectedProfile] ?? [];
+      $state = $profile['cycles'][$cycleId]['state'] ?? null;
+      if (($profile['activeCycleId'] ?? '') !== $cycleId || !is_array($state) || !is_scalar($state['day'] ?? null)) continue;
+      if ($dayDirectory !== null && basename($dayDirectory) !== 'day-' . backup_component((string) $state['day'])) continue;
+    }
     $revision = (int) ($campaign['sectionRevisions']['dashboard'] ?? 0);
-    $modified = (int) @filemtime($path);
+    $modified = backup_archive_timestamp($path);
     if ($best === null || $revision > $bestRevision || ($revision === $bestRevision && $modified >= $bestModified)) {
       $best = extract_snapshot($campaign, $cycleId);
       $bestRevision = $revision;
@@ -532,6 +598,28 @@ function latest_snapshot(string $cycleId, array $paths): ?array {
     }
   }
   return $best;
+}
+
+/** List directory names only. A paged request must not decode other days. */
+function backup_day_directories(string $dir): array {
+  if (!is_dir($dir)) return [];
+  $directories = [];
+  foreach (scandir($dir) ?: [] as $entry) {
+    if (str_starts_with($entry, 'day-') && is_dir($dir . DIRECTORY_SEPARATOR . $entry)) $directories[] = $entry;
+  }
+  sort($directories, SORT_STRING);
+  return $directories;
+}
+
+function validate_briefing_day(string $day): void {
+  $key = day_sort_key($day);
+  if (($key[0] === 0 || $key[0] === 1) && $key[1] > MAX_BRIEFING_DAY) {
+    respond(422, ['ok' => false, 'code' => 'INVALID_BRIEFING_DAY', 'error' => '存档天数超出可读取范围，请检查每日备份。']);
+  }
+}
+
+if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'GET') {
+  respond(405, ['ok' => false, 'code' => 'METHOD_NOT_ALLOWED', 'error' => '简报接口只支持读取。']);
 }
 
 $userId = $_SESSION['ato_user_id'] ?? null;
@@ -542,23 +630,37 @@ $userId = preg_replace('/[^a-z0-9_-]/', '', strtolower($userId)) ?? '';
 if ($userId === '') {
   respond(401, ['ok' => false, 'code' => 'AUTH_REQUIRED', 'error' => '登录信息无效，请重新登录。']);
 }
+session_write_close();
 
 $campaign = read_json($dataDir . DIRECTORY_SEPARATOR . 'ato-campaign-' . $userId . '.json');
-if ($campaign === null) {
+$catalog = read_json(backup_root($dataDir, $userId) . DIRECTORY_SEPARATOR . 'briefing-catalog.json');
+if ($campaign === null && $catalog === null) {
   respond(404, ['ok' => false, 'code' => 'NO_CAMPAIGN', 'error' => '没有找到这个账号的存档。']);
 }
 
+$campaign ??= [];
 $cycles = list_cycles($campaign);
+$knownCycles = [];
+foreach ($cycles as $entry) $knownCycles[$entry['profileId'] . "\0" . $entry['cycleId']] = true;
+foreach (is_array($catalog['cycles'] ?? null) ? $catalog['cycles'] : [] as $entry) {
+  if (!is_array($entry) || !is_string($entry['profileId'] ?? null) || !is_string($entry['cycleId'] ?? null)
+      || $entry['profileId'] === '' || $entry['cycleId'] === '') continue;
+  $key = $entry['profileId'] . "\0" . $entry['cycleId'];
+  if (isset($knownCycles[$key])) continue;
+  $cycles[] = ['profileId' => $entry['profileId'], 'profileName' => is_string($entry['profileName'] ?? null) ? $entry['profileName'] : $entry['profileId'],
+    'cycleId' => $entry['cycleId'], 'label' => cycle_label($entry['cycleId']), 'day' => is_scalar($entry['day'] ?? null) ? (string) $entry['day'] : ''];
+  $knownCycles[$key] = true;
+}
+unset($catalog, $knownCycles);
 $dashboard = is_array($campaign['sections']['dashboard'] ?? null) ? $campaign['sections']['dashboard'] : [];
 $activeProfileId = (string) ($dashboard['activeProfileId'] ?? 'default');
 $requestedProfile = isset($_GET['profile']) && is_string($_GET['profile']) ? trim($_GET['profile']) : '';
 $requestedCycle = isset($_GET['cycle']) && is_string($_GET['cycle']) ? trim($_GET['cycle']) : '';
 
 $profileId = $requestedProfile;
-if ($profileId === '' || !isset($dashboard['profiles'][$profileId])) $profileId = $activeProfileId;
-if (!isset($dashboard['profiles'][$profileId]) && is_array($dashboard['profiles'] ?? null) && $dashboard['profiles']) {
-  $profileId = (string) array_key_first($dashboard['profiles']);
-}
+$availableProfiles = array_column($cycles, 'profileId');
+if ($profileId === '' || !in_array($profileId, $availableProfiles, true)) $profileId = $activeProfileId;
+if (!in_array($profileId, $availableProfiles, true) && $availableProfiles) $profileId = (string) $availableProfiles[0];
 
 $availableCycles = array_values(array_filter($cycles, static fn(array $c): bool => $c['profileId'] === $profileId));
 $availableIds = array_column($availableCycles, 'cycleId');
@@ -574,6 +676,41 @@ if ($cycleId === '' || !in_array($cycleId, $availableIds, true)) {
 $cycleDir = backup_root($dataDir, $userId) . DIRECTORY_SEPARATOR . 'daily'
   . DIRECTORY_SEPARATOR . backup_component($profileId)
   . DIRECTORY_SEPARATOR . backup_component($cycleId);
+
+// Nothing below needs today's complete state. Avoid keeping inventories,
+// images, logs and other profiles alive beside decoded historical archives.
+unset($campaign, $dashboard, $profileForActive);
+
+if (isset($_GET['format']) && $_GET['format'] === 'snapshots') {
+  $directories = backup_day_directories($cycleDir);
+  $cursorValue = $_GET['cursor'] ?? '0';
+  if (!is_string($cursorValue) || !preg_match('/^[0-9]+$/D', $cursorValue)
+      || strlen($cursorValue) > strlen((string) PHP_INT_MAX) || (float) $cursorValue > count($directories)) {
+    respond(400, ['ok' => false, 'code' => 'INVALID_BRIEFING_CURSOR', 'error' => '每日备份分页位置无效，请重新读取。']);
+  }
+  $cursor = (int) $cursorValue;
+  $snapshots = [];
+  foreach (array_slice($directories, $cursor, BRIEFING_PAGE_DAYS) as $directory) {
+    $path = $cycleDir . DIRECTORY_SEPARATOR . $directory;
+    $paths = glob($path . DIRECTORY_SEPARATOR . '*.json') ?: [];
+    sort($paths, SORT_STRING);
+    $snapshot = latest_snapshot($cycleId, $paths, $profileId, $path);
+    if ($snapshot === null) continue;
+    validate_briefing_day($snapshot['day']);
+    // This unused field is absent from the original replay contract as well.
+    unset($snapshot['map']['latestRevealedTileTagLabels']);
+    $snapshots[] = $snapshot;
+  }
+  $next = min($cursor + BRIEFING_PAGE_DAYS, count($directories));
+  respond(200, [
+    'ok' => true, 'source' => 'daily-backups', 'snapshotFormat' => 'briefing',
+    'version' => BRIEFING_VERSION, 'user' => ['id' => $userId],
+    'profileId' => $profileId, 'cycleId' => $cycleId, 'cycles' => $cycles,
+    'cycle' => ['profileId' => $profileId, 'cycleId' => $cycleId, 'label' => cycle_label($cycleId),
+      'backupDir' => str_replace('\\', '/', substr($cycleDir, strlen($root) + 1))],
+    'snapshots' => $snapshots, 'nextCursor' => $next < count($directories) ? (string) $next : null,
+  ]);
+}
 
 $collected = collect_backup_days($cycleDir);
 $presentDays = $collected['days'];
@@ -614,6 +751,7 @@ $sequence = $presentDays;
 $maxNumeric = 0;
 $maxPrologue = 0;
 foreach ($presentDays as $day) {
+  validate_briefing_day($day);
   $key = day_sort_key($day);
   if ($key[0] === 0) $maxPrologue = max($maxPrologue, $key[1]);
   if ($key[0] === 1) $maxNumeric = max($maxNumeric, $key[1]);

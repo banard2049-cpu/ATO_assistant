@@ -6,7 +6,7 @@
 <title>ATO 战役简报</title>
 <link rel="stylesheet" href="../api/cycle-theme.css">
 <link rel="stylesheet" href="../assets/theme.css?v=20261001">
-<link rel="stylesheet" href="briefing.css?v=20261003-progress2">
+<link rel="stylesheet" href="briefing.css?v=20261026-backups1">
   <script src="../story/data/english-source-data.js?v=20261011-english4"></script>
   <script src="../assets/theme.js?v=20261001" defer></script>
 </head>
@@ -45,6 +45,16 @@
   </div>
   <p class="head-status" id="exportStatus" role="status" hidden></p>
 </div>
+
+<section class="backup-toolbar" aria-label="每日备份压缩包">
+  <div class="export-description"><strong>备份迁移</strong><span>当前账号全部战役与循环的每日存档 · ZIP 压缩包<br>导入合并历史备份，保留当前存档与已有备份。</span></div>
+  <div class="backup-actions">
+    <button type="button" id="exportBackupsButton" class="ghost-button">导出全部备份</button>
+    <button type="button" id="importBackupsButton" class="ghost-button">导入备份压缩包</button>
+    <input type="file" id="backupZipInput" accept=".zip,application/zip,application/x-zip-compressed" hidden>
+  </div>
+  <p class="head-status" id="backupStatus" role="status" hidden></p>
+</section>
 
 <main class="briefing-body" id="briefingBody" hidden>
   <section class="replay" aria-label="回放">
@@ -189,11 +199,12 @@
 <script src="briefing-core.js?v=20261010-inward0"></script>
 <script src="briefing-local.js?v=20261027-card-prerequisites"></script>
 <script src="briefing-progress-data.js?v=20261003-progress"></script>
-<script src="briefing-map.js?v=20261026-dual-map-masks1"></script>
+<script src="briefing-map.js?v=20261026-dual-map-masks1-backup-gaps1"></script>
 <script src="briefing-tech.js?v=20261027-card-prerequisites"></script>
 <script src="briefing-gif.js?v=20261026-dual-map-masks1"></script>
 <script src="briefing-report.js?v=20261009-clean-canvas"></script>
-<script src="briefing-app.js?v=20261003-focus"></script>
+<script src="briefing-backups.js?v=20261026-backups1"></script>
+<script src="briefing-app.js?v=20261026-backups2"></script>
   <script src="../assets/ato-terms.js?v=20261024-cyclopes-faction1"></script>
   <script src="../assets/english-terms.js?v=20261011-english4"></script>
   <script src="../assets/english-ui.js?v=20261011-english4"></script>

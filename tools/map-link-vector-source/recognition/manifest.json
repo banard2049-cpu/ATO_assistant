@@ -1,0 +1,338 @@
+{
+  "purpose": "Private recognition templates only; no PNG is inserted into any runtime SVG. Companion SVGs are rendered with librsvg/sharp by this generator.",
+  "templates": [
+    {
+      "id": "minoans",
+      "kind": "faction",
+      "svg": "minoans.svg",
+      "png": "minoans.png",
+      "sourceSvgSha256": "814275472cfc8e0c7e730d8c4fa9cd02c382758f174f79491ba589e49d7e616f",
+      "pngSha256": "8c71503457f72be7b502c74e62791034143c5cce6574ab4aa35c7504ef48caac",
+      "pngBytes": 1654
+    },
+    {
+      "id": "labyrinthians",
+      "kind": "faction",
+      "svg": "labyrinthians.svg",
+      "png": "labyrinthians.png",
+      "sourceSvgSha256": "1ae303f3c7d9440acd17465938ca50a64ddd7d59197b270478e8d33a10d1ae90",
+      "pngSha256": "47fc9ca205557ce9b2fe64066bf631bedad681e446ed8a44f0ee1de4eabc8395",
+      "pngBytes": 1585
+    },
+    {
+      "id": "hornsworn",
+      "kind": "faction",
+      "svg": "hornsworn.svg",
+      "png": "hornsworn.png",
+      "sourceSvgSha256": "66f113e72fe36eb260563effa040e18d1e23bc30268315676c0e3e9bc351b74e",
+      "pngSha256": "e1ae20ffeba9f18a2f1bd8fa646a5a9fd80a10ba4fd22b109480f69fd8e30cf0",
+      "pngBytes": 3598
+    },
+    {
+      "id": "helots",
+      "kind": "faction",
+      "svg": "helots.svg",
+      "png": "helots.png",
+      "sourceSvgSha256": "78a297f3c908b8de5e4b1400e77e26d8cefa87cf901d7ba83f86ddd9bcc97aef",
+      "pngSha256": "06ed65d4bee0553edd5ec91808b57dc1588fd88552144b2fc9227d818124e801",
+      "pngBytes": 2217
+    },
+    {
+      "id": "cyclopes",
+      "kind": "faction",
+      "svg": "cyclopes.svg",
+      "png": "cyclopes.png",
+      "sourceSvgSha256": "e643372088b0545d1c2ace59e58d469aadc21afce37a60c4bdb4549c2503d810",
+      "pngSha256": "6df63bcd4c15a4068422755402ebba2061fc7bb78090ddc3033bf092891fe9bd",
+      "pngBytes": 1570
+    },
+    {
+      "id": "symmachy",
+      "kind": "faction",
+      "svg": "symmachy.svg",
+      "png": "symmachy.png",
+      "sourceSvgSha256": "09e0982880c4083925ed2ec7e24356848f0a229fb84a033b18672dd664bbc979",
+      "pngSha256": "6cd006d0ebe8e9bb79aebb95746f3a7f35f4abebb3af7d8a34623e7b703ffe4a",
+      "pngBytes": 2363
+    },
+    {
+      "id": "sunheirs",
+      "kind": "faction",
+      "svg": "sunheirs.svg",
+      "png": "sunheirs.png",
+      "sourceSvgSha256": "d164e6f14efda2b9da2ec901dde6fb1799a80283d93ffb9b13f30cd9b5bc3957",
+      "pngSha256": "40de2074089cc0f688d8564acdac5fea111538b079410afe257fe93e700a48fc",
+      "pngBytes": 3010
+    },
+    {
+      "id": "delphians",
+      "kind": "faction",
+      "svg": "delphians.svg",
+      "png": "delphians.png",
+      "sourceSvgSha256": "b16f84e6fb6cca6b574f48d6087421c0b197645e845041bec3bad3b71ebabf6e",
+      "pngSha256": "3a9d5815cba2ee85d087ddad006ee160a3e5d37a11eedc86d114a9a4e8f71ae0",
+      "pngBytes": 1487
+    },
+    {
+      "id": "twilightwatch",
+      "kind": "faction",
+      "svg": "twilightwatch.svg",
+      "png": "twilightwatch.png",
+      "sourceSvgSha256": "aa65bc6695b2683f9e6bad4ff10cc407c1f755984c4ef69c4b5ff3dc0b3b5d1c",
+      "pngSha256": "a6224ac8aefd8b193a9ea90d84ed21ee85a5bdd26cf04cc940850ae5f9763b4d",
+      "pngBytes": 2658
+    },
+    {
+      "id": "wasters",
+      "kind": "faction",
+      "svg": "wasters.svg",
+      "png": "wasters.png",
+      "sourceSvgSha256": "43c9fc28c0ab3b52ce87143cc5094c252db08fcec87fd2239f825614dab799de",
+      "pngSha256": "f41e90d15ce1ebbdfecd63d043ee485dd83ec7cd8e8f964527be167ca5165da9",
+      "pngBytes": 2932
+    },
+    {
+      "id": "aristotelians",
+      "kind": "faction",
+      "svg": "aristotelians.svg",
+      "png": "aristotelians.png",
+      "sourceSvgSha256": "83b1602ad676b5c221c36764dd16bb0eb211c7554b323e9065680f34f4e487a0",
+      "pngSha256": "e5df87e9729bba571a564bcb5e179b99574ca233527698235c183b8b97991bcb",
+      "pngBytes": 2076
+    },
+    {
+      "id": "cloudthieves",
+      "kind": "faction",
+      "svg": "cloudthieves.svg",
+      "png": "cloudthieves.png",
+      "sourceSvgSha256": "cce5eeed8945fcf86093d23f70f009c5ef1e2a38ea9e75958f11ec923465403e",
+      "pngSha256": "0356e78e9fc87328e37e526a8a3c1b181c85448b036df6a53d8c662005e14139",
+      "pngBytes": 2985
+    },
+    {
+      "id": "followersofarete",
+      "kind": "faction",
+      "svg": "followersofarete.svg",
+      "png": "followersofarete.png",
+      "sourceSvgSha256": "6703eabd494c808e5571fd07d8d0d44b8c1760af6b8b4c499aa6f345246e858a",
+      "pngSha256": "511d1cb5b44b987d3f842e96b7a69b1b16cb993b436ab770f0358b0d749b8080",
+      "pngBytes": 1625
+    },
+    {
+      "id": "cycladeanprotectorate",
+      "kind": "faction",
+      "svg": "cycladeanprotectorate.svg",
+      "png": "cycladeanprotectorate.png",
+      "sourceSvgSha256": "efb85ac2cd50d4bbb81f43ec03aaaa4bc0e4b452459a17a28816f33c0820ad84",
+      "pngSha256": "31432f31b0043055ef678391df22ee375b971185876acb1ddd88768d14d790dd",
+      "pngBytes": 3654
+    },
+    {
+      "id": "outcastvanguard",
+      "kind": "faction",
+      "svg": "outcastvanguard.svg",
+      "png": "outcastvanguard.png",
+      "sourceSvgSha256": "dccfda6d5c93785c74b97e857ee0b8824a1601bc07625289197163feb618ffeb",
+      "pngSha256": "435fc715f4e7e38f8813c287728ac804dd9bfd76972306207f7058ba3d85b826",
+      "pngBytes": 1662
+    },
+    {
+      "id": "digit-0",
+      "kind": "digit",
+      "svg": "digit-0.svg",
+      "png": "digit-0.png",
+      "sourceSvgSha256": "738f088ddcd71f059b615af9e32a118e656577dda7ecb7e2b910dcb2a3a9f9b2",
+      "pngSha256": "d5554e1ced7642ef3fdfedae29c2b6abb88661d1f7bf58fcc051da7229f1e9c4",
+      "pngBytes": 1482
+    },
+    {
+      "id": "digit-1",
+      "kind": "digit",
+      "svg": "digit-1.svg",
+      "png": "digit-1.png",
+      "sourceSvgSha256": "fab76d0ec7e109a6e20f61d1b56bb0daba2bbc38962052a9e067a78673990618",
+      "pngSha256": "6ab438d64b8d50f5c1ddc3628f160c32be77888719979c8e0e1e82efd6fdcf34",
+      "pngBytes": 671
+    },
+    {
+      "id": "digit-2",
+      "kind": "digit",
+      "svg": "digit-2.svg",
+      "png": "digit-2.png",
+      "sourceSvgSha256": "e6703960a7fe5f7dffc2dddb20f4c4aef6f03a17ff944062a1172d278d29d02c",
+      "pngSha256": "b7045966adfd609913346c02f7e4ede81001e85e6ec6809172a932c1ed83514b",
+      "pngBytes": 1347
+    },
+    {
+      "id": "digit-3",
+      "kind": "digit",
+      "svg": "digit-3.svg",
+      "png": "digit-3.png",
+      "sourceSvgSha256": "95e52ea67e9a83308c86a5689b584eff4e6598a91b56daa96741312fc67a39a8",
+      "pngSha256": "69088f130226c804e60cf901625e1cf72e09ece566ee8d4a5bad761a8df92ee9",
+      "pngBytes": 1532
+    },
+    {
+      "id": "digit-4",
+      "kind": "digit",
+      "svg": "digit-4.svg",
+      "png": "digit-4.png",
+      "sourceSvgSha256": "4e43fa3d43f8b004ebdf12b58b9c9a0ac4090a57c7993f46dd2fc06ce04a6e7b",
+      "pngSha256": "7ae6bdf1b433eada69320dcec796dca97017604ec09150afcebb8387b4ca21fd",
+      "pngBytes": 1033
+    },
+    {
+      "id": "digit-5",
+      "kind": "digit",
+      "svg": "digit-5.svg",
+      "png": "digit-5.png",
+      "sourceSvgSha256": "5e74f9ab6508fcbdf9c680afc17df8a2b7399910513e8282ec6b2ae23800d646",
+      "pngSha256": "028d74cf67a3676df06b2abf19f1cdb9e5756af15f5a9bd6ece9304ae89f7c7a",
+      "pngBytes": 1321
+    },
+    {
+      "id": "digit-6",
+      "kind": "digit",
+      "svg": "digit-6.svg",
+      "png": "digit-6.png",
+      "sourceSvgSha256": "486c861e59731e4d3adedd64f2cda8cfaf859d5fd4bd132cb527c1197d4c3a44",
+      "pngSha256": "aa026e187e3525385f9c0caf5c813d3f6acd4271dabef2c14368bef05da09eab",
+      "pngBytes": 1430
+    },
+    {
+      "id": "digit-7",
+      "kind": "digit",
+      "svg": "digit-7.svg",
+      "png": "digit-7.png",
+      "sourceSvgSha256": "b35801af4a8eb54881c9a0d705d69d70f86b22cae81b713422328e167935ad6e",
+      "pngSha256": "c1bc033b9bc5f95eae053d4d05787f6dbd027cc78c84e2bbe0a03858b888b0c0",
+      "pngBytes": 887
+    },
+    {
+      "id": "digit-8",
+      "kind": "digit",
+      "svg": "digit-8.svg",
+      "png": "digit-8.png",
+      "sourceSvgSha256": "4af49b28561b01b144fd975576ae2bc7506db64d40e583bd7f22b1b3f4592d30",
+      "pngSha256": "6845163209934782087e9d84ee6545743bb1779a844aaa08aced12290c99f470",
+      "pngBytes": 1613
+    },
+    {
+      "id": "digit-9",
+      "kind": "digit",
+      "svg": "digit-9.svg",
+      "png": "digit-9.png",
+      "sourceSvgSha256": "c5cad41016728282421fe333822f1cb6ed4182d71f343b937e2299bf09b60c9d",
+      "pngSha256": "3f5afd4eeda4a4019687973dee14642a4895edffcaa1cfa8717deaa133de4eda",
+      "pngBytes": 1455
+    },
+    {
+      "id": "alpha",
+      "kind": "glyph",
+      "svg": "alpha.svg",
+      "png": "alpha.png",
+      "sourceSvgSha256": "17b312bd88488228ffc961624d4924be98ffd9049a79c0504a8f9c1dad3f5e74",
+      "pngSha256": "9fe3fe15f1f7f0da9a78f32fc9758366ba10bcf03b8eb463cd96908d7069c28d",
+      "pngBytes": 2111
+    },
+    {
+      "id": "beta",
+      "kind": "glyph",
+      "svg": "beta.svg",
+      "png": "beta.png",
+      "sourceSvgSha256": "357f5433bb4f93ce163e21986a3bb0ee6ee48833a0dacdab5e331acd36f4ea83",
+      "pngSha256": "aa5a54a39c9037b72ce655c4e38071a0d1ac553f01cdd3130a78d2a8b2ce1307",
+      "pngBytes": 1721
+    },
+    {
+      "id": "helmet_icon",
+      "kind": "glyph",
+      "svg": "helmet_icon.svg",
+      "png": "helmet_icon.png",
+      "sourceSvgSha256": "20b0373d0554c660fd1ab490453d8806820aad2ea26854b91ef5c71ff360b19c",
+      "pngSha256": "6c87d959656de300cc11d0af25456182f79c9f0c924b10d1bb96a51bce90f5bc",
+      "pngBytes": 2428
+    },
+    {
+      "id": "hourglass_icon",
+      "kind": "glyph",
+      "svg": "hourglass_icon.svg",
+      "png": "hourglass_icon.png",
+      "sourceSvgSha256": "6ac67d4db78677b8349dd95f723318e5ec60cedc3ce771c3be084f12957f3cf4",
+      "pngSha256": "708d2c34ff885697f9b1fd629dfae37b6d5515a687233f3e8174eebbebcbd9e0",
+      "pngBytes": 2010
+    },
+    {
+      "id": "staff_icon",
+      "kind": "glyph",
+      "svg": "staff_icon.svg",
+      "png": "staff_icon.png",
+      "sourceSvgSha256": "dfe87e14f8195fa6fb7dbeb40ebde09821bd2328ab578ca51060c3748cd434f8",
+      "pngSha256": "8934844c40ddaea815214d6d71bb8351b021259945e4eb118278898cf89e74cc",
+      "pngBytes": 1615
+    },
+    {
+      "id": "wheel_icon",
+      "kind": "glyph",
+      "svg": "wheel_icon.svg",
+      "png": "wheel_icon.png",
+      "sourceSvgSha256": "2b137edc724b47543961d0b797d60a5217b2a7f4de6e6defbee393dc8eb104c9",
+      "pngSha256": "26decabb8b7254efc893b889926be2e1af188d19fae5479b2e9b89b84d835155",
+      "pngBytes": 2022
+    },
+    {
+      "id": "smoking_bowl_icon",
+      "kind": "glyph",
+      "svg": "smoking_bowl_icon.svg",
+      "png": "smoking_bowl_icon.png",
+      "sourceSvgSha256": "2864f7d488bc7c807cac32bc25ac5ad18c553753aa365b3681201a7a09806c84",
+      "pngSha256": "b8e439503c5c8e47c1c6007bf9c818d7d0d76877705f9879cb54035b3ab059fe",
+      "pngBytes": 3395
+    },
+    {
+      "id": "time_portal",
+      "kind": "glyph",
+      "svg": "time_portal.svg",
+      "png": "time_portal.png",
+      "sourceSvgSha256": "7539351b80995f5c815f230b1b28d82adf8e16008aabe6bd9228a65ed8520204",
+      "pngSha256": "00fd50b1dbca8da97dad8a0a7f4184b53d65e34643dba718af4657841ebfbdd6",
+      "pngBytes": 4445
+    },
+    {
+      "id": "time_portal_angular",
+      "kind": "glyph",
+      "svg": "time_portal_angular.svg",
+      "png": "time_portal_angular.png",
+      "sourceSvgSha256": "f0dcbf58f77e691af4e14561d43fea3d572980b3d6cf5800176740e5ed7d1fd9",
+      "pngSha256": "0e69fd711aacb407a3bc4cc0563408dd89b63a8618b1a603ad7a01df69df76e3",
+      "pngBytes": 2782
+    },
+    {
+      "id": "time_wound",
+      "kind": "glyph",
+      "svg": "time_wound.svg",
+      "png": "time_wound.png",
+      "sourceSvgSha256": "d8bf0ccbf4a438c340e8fe18401bdfce6bac79c4698adf6ca6c3e3a2dbc5d652",
+      "pngSha256": "a865301a5c3c5b4c5ffa5c9aed1b83cb0819aa71d27bce55819ae053913592c1",
+      "pngBytes": 4981
+    },
+    {
+      "id": "restricted",
+      "kind": "glyph",
+      "svg": "restricted.svg",
+      "png": "restricted.png",
+      "sourceSvgSha256": "4f63180a7594d1895bbf3688c5d707d9fc791b14188faae397feb283e0c3f1cb",
+      "pngSha256": "d014af6dcba3af5ae9dc09e674d028aa187c4573cb6458d791646674f4101df1",
+      "pngBytes": 1238
+    },
+    {
+      "id": "sea_route",
+      "kind": "glyph",
+      "svg": "sea_route.svg",
+      "png": "sea_route.png",
+      "sourceSvgSha256": "db649133182a1356b2417df042156b52de6f63f36508517eb7faf062068865f7",
+      "pngSha256": "eabdff3c8c17db71e7e5eb84f6d7f3455fa357fd9b23f9b3f730e32c79854708",
+      "pngBytes": 1856
+    }
+  ]
+}

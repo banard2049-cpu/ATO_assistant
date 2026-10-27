@@ -1,0 +1,4637 @@
+{
+  "version": "20261027-fixed-marker-components6-layered-land",
+  "method": "shared-fixed-elements",
+  "fullSemanticCoverage": true,
+  "faces": {
+    "c5-tile-001-front": {
+      "vector": "production/c5-tile-001-front.svg",
+      "sha256": "73e5e7d0041f36fb387b888095a0ec1d66eb6d535db171469301ccf2bf46ae20",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "9f9f89782204db6e05ea86e993d36ac29fc11473ef1012bc0361ef3ec32bc4dc",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-002-front": {
+      "vector": "production/c5-tile-002-front.svg",
+      "sha256": "99f042ca40404543cd828c275a532f91d0a777bd91971d79d05fc1d1e592c842",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "73c4f51aa8e6a1a9b38b7ee79d5c020656a1582836e73a56f5576a949d49a428",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-003-front": {
+      "vector": "production/c5-tile-003-front.svg",
+      "sha256": "8f0ca02fc43598cc48c27894771890eca7a6d2ea7aa291ca0b5e89f707d30af9",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "71a8d808d371753f7ad75341d1a32ed7acb4aa1d66b99423d1f2e8e84276b570",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-004-front": {
+      "vector": "production/c5-tile-004-front.svg",
+      "sha256": "fdbe5ead9833e0f8289e36c51be244b2eed5895cd22d3e14c80dc90f179cf49e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "40241026b25712e45e1d9b281d27e68ef27c86b03d8c21cf36242ec4d3a65a93",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-005-front": {
+      "vector": "production/c5-tile-005-front.svg",
+      "sha256": "bb1b435846dd3a0c722f819ce96868c378a458d258edd4eb3a493ab6bf0bc096",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "4e3af2281b8054ac770ea97991e9672c40a3d84af27b8ad7065442423accf351",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-006-front": {
+      "vector": "production/c5-tile-006-front.svg",
+      "sha256": "0dc3e7bc7e6a801d8cc301933da6c79c8a4fc3b8674baee0690f9915d37bab50",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "a2645c1e42c68fbaae348622e5975926933cdcda9484289c5ab0bc459c1bc6bf",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-007-front": {
+      "vector": "production/c5-tile-007-front.svg",
+      "sha256": "72d65943a6b055cc91210f497bd882c3114408b2bc78cc4627f624b22317a94e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "be166f677b10a6bff23e2bafcac849f1e1549617918b61e6bc9a9366662e9b3d",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-008-front": {
+      "vector": "production/c5-tile-008-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "4cfdb6b3056661fe249d7ca409756f63fe14a3314bdb27e39c51314a3e476da1",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-009-front": {
+      "vector": "production/c5-tile-009-front.svg",
+      "sha256": "57c39beb3489cf47d1c1df617c60017247e5a72a863bce517bf9333570e3d505",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "3439079dbfec189800a36eb7f443367b86f4f4070231348a0242cc8fed06a7c6",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-010-front": {
+      "vector": "production/c5-tile-010-front.svg",
+      "sha256": "2d85ff1060abe75ff809e8b1566705d3d2fc4571d747b42fa6c0dfb74c827a0b",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "81721d8210df93831b4d4c5e02ef0f775041faef7e541d6a0d596eb4c87e32e1",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-011-front": {
+      "vector": "production/c5-tile-011-front.svg",
+      "sha256": "df58069b7f3f979efdf96b4be071d9998353209daf8ecbc1fa93a8fae9fa70a5",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "15d7f72b73fb9efd537760c72ff86add60d99826baec6a3e801c4ba6c434a604",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-012-front": {
+      "vector": "production/c5-tile-012-front.svg",
+      "sha256": "51d05ffcbe0182369da246a9465f1eca4fa328fb8ce742884012da4af2c2a656",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "657061b596a48a830fd5eca00319ad59f7f74a1239b84b79dcdce1f8209c4e6c",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-013-front": {
+      "vector": "production/c5-tile-013-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "e92a0f3f4649f411c914aa1b4771ad1522e0a3ad33c6abe387f8706adffeaa50",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-014-front": {
+      "vector": "production/c5-tile-014-front.svg",
+      "sha256": "d69a4aa95ca3052965961daba8fb29f0216fffa7746a7cbd8427530d17d58ddc",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "ebd1e311d813db616063b34e3f7751824f99f8fe26e7b06b35e9cfb7f2145330",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-015-front": {
+      "vector": "production/c5-tile-015-front.svg",
+      "sha256": "b19cd5a18ac2579be904a1360da8191e26538dfd182fb7fa9e5dc0f33a8d51e4",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "4fdc185a62bd64f6a5a9917ee704e34289ba6f4a49ac1ea0653b03adf964dd08",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-016-front": {
+      "vector": "production/c5-tile-016-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "a2ca20d1f52bb44d5c7884b09d92c78e8038f106e24e1c3caa0d621373be8e53",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-017-front": {
+      "vector": "production/c5-tile-017-front.svg",
+      "sha256": "96ee6a5e5b8a72347f95c0431c2518e0ee5848d697927409734dafcd1aa2e5a6",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "9b7593727e299792244b77018b1a7a8ecb0099885233d2c00b5d7e441ef34590",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-018-front": {
+      "vector": "production/c5-tile-018-front.svg",
+      "sha256": "01b8f009fa6b1d2f6de8e777987101c3adc7786b344dacabdf99f5333e5421d7",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "d070f696adfa11b40421413ed345d8c2724b181ec7cd50bf48fa54882326dadc",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-019-front": {
+      "vector": "production/c5-tile-019-front.svg",
+      "sha256": "112ce908d9a397941e392746d2501f57b01bc6fe58b0d052b63e0d859cbdd1f4",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "d331b70558c389d7a7943d655173e1c84bbb4dc580500a159ab6b00dd13e706c",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-020-front": {
+      "vector": "production/c5-tile-020-front.svg",
+      "sha256": "fa90b3e220689b9a5e28d909f0955bea14a77b0e5801da4d54ae6c1884adb0d8",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "f2afe4024a0794d1f9edd1a181e8c1e04fe60f3a88af335f987e6fa16fa87891",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-021-front": {
+      "vector": "production/c5-tile-021-front.svg",
+      "sha256": "899c8d74aaf70074e27acfca7c8171ef1ec041f5ff73eaca6412756bb0195a00",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "4b98485c2c123112ff2bff02f04aa3cb1c5d3299f8a3c084a26b9dfa01ccdfe0",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-022-front": {
+      "vector": "production/c5-tile-022-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "4bd81fecbee519606c20c5b5b15acc1cafc5c092e945dd5bac05c1cff8b71a86",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-023-front": {
+      "vector": "production/c5-tile-023-front.svg",
+      "sha256": "c66e9e01518b4e5117a9a0a4e0fe69a0c50770fda20ffe460c9de3be26864fb0",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "9ba22d1a4f1583d9a7c9bdacc74ac4fc853ee103bf3983b130980adaa6ad2d5b",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-024-front": {
+      "vector": "production/c5-tile-024-front.svg",
+      "sha256": "cd4c5d894d11da29f759e9514803e2004f0ba213e671669d94d0b0774d5c6a24",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "772399825074f347448f45ab4ded7048da7a3b3593370bd1910724785708019c",
+      "markers": 3,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-025-front": {
+      "vector": "production/c5-tile-025-front.svg",
+      "sha256": "d4945ace950f10f95ce4a5556353bdaa5125656fc8cfec99e0ebe063b36793c2",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "568b64bf961738313639543de1f80cc385023ee95486d47ab492e3524bf474a2",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-026-front": {
+      "vector": "production/c5-tile-026-front.svg",
+      "sha256": "635f72b9e7283d0708f7fa9f42b5edb252addd3c2c74d426dbc3b98f99a46eea",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "47c790b3f73381f150abca974fa880c0ecbe0b13171f350c3e665dcf12e26120",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-027-front": {
+      "vector": "production/c5-tile-027-front.svg",
+      "sha256": "c68171994f8a212573008ea1a95c8ca7be2faf033a0b10cb1f2acdaf2fcd818f",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "89e2dac6a3ca5083875438a205e9f2f8e72f307f99b29af2f9ec0e3cfcaec147",
+      "markers": 3,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-028-front": {
+      "vector": "production/c5-tile-028-front.svg",
+      "sha256": "a5e3b96ea1eb49a0db2467b41d1b9f773592a4934921fe798d1a2f9d7c262793",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "dd8510c3b1f5c49d17a760ef0923926ae24c3bbf6e72f037c4b554632387c91d",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-029-front": {
+      "vector": "production/c5-tile-029-front.svg",
+      "sha256": "1e33cf7d56d205232979d4f3d5883eb88c94295717ef57eba9cc392b46818e00",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "8394008312623f090d3ed1f83081aae92da9e430adcf0833858d789705d2dd04",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-030-front": {
+      "vector": "production/c5-tile-030-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "dec7bdac931e4e014ed37ffd342887fe2c245d83b4511859b9c5cca06d4c829a",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-031-front": {
+      "vector": "production/c5-tile-031-front.svg",
+      "sha256": "c02ef9b5e751877ba00640bb5d5a5be3668c1a7c2b52249681f9320a660ea0d3",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "f97512eb9d619efd5dd5332320814d7016731d04cdb8764a9e7680399b86c2bf",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-032-front": {
+      "vector": "production/c5-tile-032-front.svg",
+      "sha256": "588e0d5c8c77e4011b0344698c6cf6d4b8c96b34525d13b5abfaa0ccdc1ed234",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "5a9bbef4bfa77d4d5c26d3bb1e231c7cc497b5f759485abe2ef177f9169a9b93",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-033-front": {
+      "vector": "production/c5-tile-033-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "82b8b27d3b46fefd3c8f96dd99d387ed0a12292e9ae6395c6e6a54cb850ce283",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-034-front": {
+      "vector": "production/c5-tile-034-front.svg",
+      "sha256": "38f36fe47932b7a6171bd2f6f7d12627dc196264ad322d8ebbc255f65a59501f",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "52733c259c6aa61656a72abb15fab348360eea678363ec4fed57a9829395c401",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-035-front": {
+      "vector": "production/c5-tile-035-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "c90ff5346e507145371363360c36e070b545140ee0ae1ce7f0c1a9c6b0cebde3",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-036-front": {
+      "vector": "production/c5-tile-036-front.svg",
+      "sha256": "fccdcd4eaba1bb106b6c2a2c552e5d505b5d6517605090891005ae044ab3099f",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "f415b1f59d19a58e011b072f10fa6f9a8c4952ea3b8c6d0b2be4dc4c96c0ae7c",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-037-front": {
+      "vector": "production/c5-tile-037-front.svg",
+      "sha256": "a78b841c8b7c422dab0f6233e94e2248bec86a4edb1fff37a36934ce8cc3557d",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "54787ac03a288e4b52bc546d4532fda35c6901b4f3d964dccb4e15e79005b5a5",
+      "markers": 3,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-038-front": {
+      "vector": "production/c5-tile-038-front.svg",
+      "sha256": "0f9e9c9fc489ddeae058e4692daeec720d7ee9dcf4d06a20748b913314dc71d4",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "d05aad8da25616de9cc1d0564ba3e1266ca6a2d0ca1da813988805fd4fea5198",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-039-front": {
+      "vector": "production/c5-tile-039-front.svg",
+      "sha256": "11c4d82fd45104cd40792703e311d63d51b408cbc1901d1773d59e132ddf7a98",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "73aaef730fcd14ff190b774b0c7de8c2a23d7a376f5c4eb8596460e82479f019",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-040-front": {
+      "vector": "production/c5-tile-040-front.svg",
+      "sha256": "77597ad1ae20563b9e581b8a89a25d68bb89c7a6c0e82d0a02795b2a34702854",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "a2e2dd0059deaf8fa69d2d67f9284ddf2a1ef50b653db52be9c5e27a6be91f95",
+      "markers": 3,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-041-front": {
+      "vector": "production/c5-tile-041-front.svg",
+      "sha256": "c9729156d8ac7eb5aedf6b5e22be790a0a8b7da4483002e9a7b6b0a22a804360",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "0001d82c03a27f649e7317d4d0b8e700f6863d11a2b72e7399ceaa432d909ea5",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-042-front": {
+      "vector": "production/c5-tile-042-front.svg",
+      "sha256": "51004ebc410d388ea59ac5f4e35d5765fc181f46cc06af6f09cd1b380ad64887",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "49dacbf1958d6182a91a2048bb12508cc8c1edc8578890c270d722c4a806d8c0",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-043-front": {
+      "vector": "production/c5-tile-043-front.svg",
+      "sha256": "24ed5c7902c1d33f3abf44b7f3fdc2c72b5d2b94aee2066f6f7947556111d7c8",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "ec488a38ca593bf304422cb75f557552545152a182f2f7ea4c323c4e8c4c474e",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-044-front": {
+      "vector": "production/c5-tile-044-front.svg",
+      "sha256": "6497cb71cd28e822fbada2399c989764c340a77f649ea57fe723f6592615f0c5",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "9d25edebd6c0bb77f60eb98a8c0de5614969069a515484e6f69d35318b38e550",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-045-front": {
+      "vector": "production/c5-tile-045-front.svg",
+      "sha256": "94184d516948a43f1c8379372a6957ebaeb076dc2c0931675fe495663234ff20",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "a0ac968dc623d77b1e055aa6b16c1a91aa94b0eae140cef88c07ef668d3259df",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-046-front": {
+      "vector": "production/c5-tile-046-front.svg",
+      "sha256": "f89427240af37c658f6e0024d5da77e20fd4108c643935a6da0e4ebd5384a8b0",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "b28b36f322f8a73ca1df0983af7efe78a70804a2b80be7e6121e916240942c18",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-047-front": {
+      "vector": "production/c5-tile-047-front.svg",
+      "sha256": "66f7590c7273c239f03532826230f34205592ca97083a2ffca0cad55171db10f",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "143fa3084035e046e7ac1ef9db1dca0193c4bd7e5ff26ed95ce0b2755f2a6115",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-048-front": {
+      "vector": "production/c5-tile-048-front.svg",
+      "sha256": "0c966526468ccad7030820c26ff19feb38405e2b0b53df5540ee28f671a6e081",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "cc0701d1b9817cf5641e85d04aee05bdfd7c3a030fb070fa1d64b1bde476ceaf",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-049-front": {
+      "vector": "production/c5-tile-049-front.svg",
+      "sha256": "d597eff827f85910ff8b995d55d2fcf38aeed92e247b21dceb634a181d0718dd",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "ee158124d375322de688e2a69ed26bdee453afc2fbd564b5bf4e37f7b605711c",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-050-front": {
+      "vector": "production/c5-tile-050-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "794146479677101193ce0be945f2bddab35a9292de816cad5998dc6b38f87126",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-051-front": {
+      "vector": "production/c5-tile-051-front.svg",
+      "sha256": "afbad1bd6a66e68d88445c97464cc94ae97f9d8261cd527e386ad7ba0342b00f",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "1f1097b22007bff7d09ee8152088c5ad0bac8c45931fe3ab75025c2f727e0168",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-052-front": {
+      "vector": "production/c5-tile-052-front.svg",
+      "sha256": "a8f1fd8bdd9d9f8ca1c10c271e9a98fa72f60966fee7cb3e5cb2bb3e9b68780c",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "13775a150ea147bb9dadd3fe52a86bfa801ad170205de8c14dacae114704f9db",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-053-front": {
+      "vector": "production/c5-tile-053-front.svg",
+      "sha256": "d2b09c5dd26065eb2040265a8e4fdc194929c036aa45a5d5b32f34c850243fcb",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "9ce4d6facdfad55f97d60b3b195e40236ec7dd7fee3cb0bd700425139b048978",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-054-front": {
+      "vector": "production/c5-tile-054-front.svg",
+      "sha256": "4d87d7e83e8f361811afdbc87b67be83f86ac85665e062a98f81e0da9c112025",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "5b1f11e642a7516ebcd9faab1346ec97da613c0af8adc940536ea21def131ebb",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-055-front": {
+      "vector": "production/c5-tile-055-front.svg",
+      "sha256": "dcf897c76df7230bb918731b01d048072f6a15da356eea5f5243fe62f09f4e08",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "8fb6309102f336559367c3b93953cd932bc4c4b19e72bc901b06ac3e8a6aca2d",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-056-front": {
+      "vector": "production/c5-tile-056-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "ba4509eb2456b05b52a25fcc8f6e7973d53b1962f8c383a4d5cd50c43ed41a57",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-057-front": {
+      "vector": "production/c5-tile-057-front.svg",
+      "sha256": "5a5dbef6b270d51577be7c030b852c5ae84108e32575a56f611a46d8d5e1cb89",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "3dc562adbe6d2ab43d4531fb0340dadd7dfc350de9a3c883f91531828c7837ca",
+      "markers": 3,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-058-front": {
+      "vector": "production/c5-tile-058-front.svg",
+      "sha256": "0275bdc78d5f32c1c894911dea9921c8c3dd7f680cfed9e14b56b4a7e3bbdd9c",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "07d6218d9f6c7fd2663f01ba6064c3ef6e347b40962eae0cf8689ec31c08002e",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-059-front": {
+      "vector": "production/c5-tile-059-front.svg",
+      "sha256": "6092843f78df684fc45de337dfa30ad663658a13921a27262fb0c40c6a13f3d0",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "70f3a8b22c9d24f406497993c3595cdd545ad485b178b9cdbf4369733f712db7",
+      "markers": 3,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-060-front": {
+      "vector": "production/c5-tile-060-front.svg",
+      "sha256": "b6df55cd7a3d3c5918262e39fe2d5ef0a9c1088760c826cc25abb59e0e0afbbc",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "b8ff034ed7d99c41ed599cdc3178c194eb15bf163b4fdb68ffd14e4b7b8b6e9a",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-061-front": {
+      "vector": "production/c5-tile-061-front.svg",
+      "sha256": "4fc4c86d7ef24319a1f4a9c330a37cb3e3a6162ed25824103bd689881bb93f53",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "4fb1f9a4d7330334525539b93a91a6e5280ceb47d10f85a2e023443a4bc3659d",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-062-front": {
+      "vector": "production/c5-tile-062-front.svg",
+      "sha256": "4e6342555a927fff25f9dcf98fc36392cf13a326b0531615013f7066a5a7aa28",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "c46c5ad1c4d17e8e862c66753b0f6a78a4adaa5ea29e9742c666b096167fff6f",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-063-front": {
+      "vector": "production/c5-tile-063-front.svg",
+      "sha256": "e6ce42a330b34a651dde55780ba70ae84908e1d6fb4d422880724d175d25aa23",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "1d79f595124e0d53cd748de8f87318e8f633a88444c5318a869158f38d4d8fdf",
+      "markers": 3,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-064-front": {
+      "vector": "production/c5-tile-064-front.svg",
+      "sha256": "6962c7f4c6c6336554da706a738e6e6eaed9998bc0effaa5acb461585a77ccdf",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "e75551144e65019c2ddc564f5f7e16448c3ed6feff39a0e2914a7cb09bb216f2",
+      "markers": 3,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-065-front": {
+      "vector": "production/c5-tile-065-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "80cef3c0d37cabcc95b3d9e1a2423b0b536ee33f31dc4a8e68167c6dd40c2bb6",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-066-front": {
+      "vector": "production/c5-tile-066-front.svg",
+      "sha256": "4a7f5e692870371bf95e1b1fdf31d6a8f53dffe0108d11bd0fd755914e062d5f",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "a3ffaac8378b953c14f38aabfd7cafa39910cd6db1da0c897f84523b460cd9b2",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-067-front": {
+      "vector": "production/c5-tile-067-front.svg",
+      "sha256": "aea810bd072fb4f28602adc54a2305dd54b315e5fdc50e00697261ddbd10dae0",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "cacf03271f04c1b652650959d7ad26b4e370d42e5b88c878f1d8509189762b6b",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-068-front": {
+      "vector": "production/c5-tile-068-front.svg",
+      "sha256": "a2cac19e88b46eebc940fc7462a652c64f16713c34eb0c4f1cba5082379c838a",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "e76ef9b67c9dff211c278cbe4964d3817b0ea3cbb2aac121340991e6382d5ee6",
+      "markers": 3,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-069-front": {
+      "vector": "production/c5-tile-069-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "ecf981fcd624078495b76fbf0132857886b7918dad98b5abca24fef394b46980",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-070-front": {
+      "vector": "production/c5-tile-070-front.svg",
+      "sha256": "9e0e48ec79568b57d9d035c9b22486c7177362856d1f6557a8af83fd0fe93ea1",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "5d8e579a3f7b9c0c1d579be977eff238b023d1458553aafe85ba8658826cc7f1",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-071-front": {
+      "vector": "production/c5-tile-071-front.svg",
+      "sha256": "54ad0e2dbe556e1718e5eeecf37a9c9ca637fb9c75cc07785e4fc94489b76583",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "a92e43293baff0d358c47bc12d79c37ef4e7edfb885c5074a04ff426ce097f5c",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-072-front": {
+      "vector": "production/c5-tile-072-front.svg",
+      "sha256": "8580bad15f0d355a70f4ee2f882001be1e771ac83fccc099cb43d6079fde6979",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "d3c496cfacb9909354764cb129419dcb305956384f6a3e5ff5e51b5f19c9a205",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-073-front": {
+      "vector": "production/c5-tile-073-front.svg",
+      "sha256": "4b3e823801053b8b74950906391a33d2c9109b5ea06a7eca82a6d8f9609e3cae",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "8a80e65d24c8af58c30cbdef06d007ec8ddc5e7d578c2b899b8a31faf16f4480",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-074-front": {
+      "vector": "production/c5-tile-074-front.svg",
+      "sha256": "bc98f17f0392de88d8ec2f3d4bb8d5367b119f8622ad7a14c5febf072bfa12ff",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "5b156e45adc330c1437d2b0442cc3844469f330e4dc0bc5887de267b45175bd6",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-075-front": {
+      "vector": "production/c5-tile-075-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "bff50390e758abce3e0d13e94fbbd7175419ab4d100917b2f66d0d630fb1820e",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-076-front": {
+      "vector": "production/c5-tile-076-front.svg",
+      "sha256": "9f83979a311ed89be6612bff89bb34740acaf81f137c99af09aa0ec4ef9aa746",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "08b59342dfe8802046d3a6bf8ada01a884f450257bbf3e05be428114b1a63cd3",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-077-front": {
+      "vector": "production/c5-tile-077-front.svg",
+      "sha256": "1a0fabca551f8f6fc3b1559e2af91fc9dbaa9e81fda7dfb96fe6c208299904ec",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "fe18d71890062aa59bdcf4a85feed508cab696f4f8cfa4fea224826ed8b77741",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-078-front": {
+      "vector": "production/c5-tile-078-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "a1b609b59d00df8c613f56201b517e00a661370c1e3b0fe39420aa322709b3f4",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-079-front": {
+      "vector": "production/c5-tile-079-front.svg",
+      "sha256": "8a5063f6f6eec3c6ecb3e38337e9e36f81f80c0b022c30769681a31e1bd8dc12",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "d1b826bfb90a03dcbd277cb9b588886fa2f6f567c5fb78be493c27b8c9ad9a2c",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-080-front": {
+      "vector": "production/c5-tile-080-front.svg",
+      "sha256": "85f95474ce976bdd20cc6c8ecea6f98a1c32b448d28865a9fe06eda487feeb85",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "44a15907da5f6e01e8f934a05b5874c1999488b581f173670f469b3ce58ef9c1",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-001-back": {
+      "vector": "production/c5-tile-001-back.svg",
+      "sha256": "3bb601229b59fd20ee307cae4af4bde7df73cb6391495995a038b6e8f0c4fcc5",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "5f1f5f4a482366207073d816f7ea33a18382891d25e2dfb18b95de271559c0b6",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-002-back": {
+      "vector": "production/c5-tile-002-back.svg",
+      "sha256": "f8ce2fe9c1f3a536dccf37db2ab5aea8831584ce24f112fb4972a707f9f01116",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "990f4e4783b88e8314b5f149e86d5075d1f6e962e0e855ea0a178fea4c9857d9",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-003-back": {
+      "vector": "production/c5-tile-003-back.svg",
+      "sha256": "3d797e0b73ac95acb3ec55048839406174fd4b019732df34e5f9395ae5c102e3",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "63dec6f0c7189ec0b4a253b9e2d7e710c3e8310b5520397ceee81f407ddbfb78",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-004-back": {
+      "vector": "production/c5-tile-004-back.svg",
+      "sha256": "387c136b27f8cfb7349310f44d0b902d64074b956db007c7180b60699169cd82",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "80ae8a80dceacee8fdb316d0103a8b1e52f6f30f58fa48087e5b160daf26e695",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-005-back": {
+      "vector": "production/c5-tile-005-back.svg",
+      "sha256": "a5fcea92958aa340ebce8b9e91bec920a3a336fa6efc3206341fe58107bdbc78",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "ea2cbd488613a4ee5778460f6a2db216ad0ab07fbc0729ae7fd955ab3b9a1719",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-006-back": {
+      "vector": "production/c5-tile-006-back.svg",
+      "sha256": "7d23a820976489d17ddc7664624c0196b103556e05b3cde3abf48b8cbbf4cb29",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "fd0c475dc53c99cb203c234829afce363c1e5036ad4aee70b1938729f9f588a6",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-007-back": {
+      "vector": "production/c5-tile-007-back.svg",
+      "sha256": "82564c43461cd8a3380f77a380f296e9a4078560b6cf3bad1e1f1eccf246056b",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "bb4c0e1d3ee4f4116327cd8fe1038cb8658c15d26ac3aaced29a269c9669f7cc",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-008-back": {
+      "vector": "production/c5-tile-008-back.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "1613f3bed43a6e91fd2323843b66a1a6f490de0b0e83f9abb02b729669a2b3ae",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-009-back": {
+      "vector": "production/c5-tile-009-back.svg",
+      "sha256": "ba44c64db081472e571525fcad22325d6f821ed9ca88f6aef0d0f5f980c1a5a5",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "09cba3c82fd2593336b1988aa5668b308bd5612794305e5177dccb52fb86bd28",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-010-back": {
+      "vector": "production/c5-tile-010-back.svg",
+      "sha256": "8159acc0278026432895876bbc667ef6c4089e87636a9df32e2030190e4395ce",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "bf3b784fca21a5567905fae891acce4f59c3cf8165003fe511f2f2799980ea7c",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-011-back": {
+      "vector": "production/c5-tile-011-back.svg",
+      "sha256": "5ace128d81f8bd96bb18aa4c9fd59c881fe7e25fc92c0e4eed084d34e1435298",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "1fc85524b728c53cb717ae2535d8b5d893c1a41332993bede06f525b6d761c8b",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-012-back": {
+      "vector": "production/c5-tile-012-back.svg",
+      "sha256": "9c08f7fc8b4807f39f754145317507bb651080ac0dfe64975230bf7640d49250",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "b66b7a2767b73335b79721320afd8325706229f34e484364140a7783a205e479",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-013-back": {
+      "vector": "production/c5-tile-013-back.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "092423a61968b33ee4eb3462c974cf99383790afc69451e597bcbe31e378d772",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-014-back": {
+      "vector": "production/c5-tile-014-back.svg",
+      "sha256": "badcfc0583478bac8602aa528fb496f4864a0a6e64a5f7d9538d649af1322afa",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "8c1406076e914ea50f0d529318176450af66b568bd0df3fb92d12c9b2ba55a12",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-015-back": {
+      "vector": "production/c5-tile-015-back.svg",
+      "sha256": "188d4a69eae9cdc72705b7606fa90dd2b35d9450d305506d55b2449a7f396c9b",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "bae1c18004c13b0e91b8869fe746e5da4f91726fa14c0c5f68e6aab506526fad",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-016-back": {
+      "vector": "production/c5-tile-016-back.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "cfdb26615191fe9679cc8092f826931245cc8a4d9d06bc66748afce432a900b0",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-017-back": {
+      "vector": "production/c5-tile-017-back.svg",
+      "sha256": "c9c4de873c41881c571cb31115f6d0cdaafe8f52654128fdc00eed4df299bfc7",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "1e1016db624b25577f3e1f3638081a58a02338d43f336da602e473dce99c8d09",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-018-back": {
+      "vector": "production/c5-tile-018-back.svg",
+      "sha256": "b8a636830b5724164fc6549d51281eb86044bea59b20ae8a852747f1a661aa1a",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "61f2562fc68400afa55ed0e9d8ee2326be067317fd8e44ca13570aa6b23eebea",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-019-back": {
+      "vector": "production/c5-tile-019-back.svg",
+      "sha256": "77948fd78581fdc7168ff143b5de89b6e59788df259760092005e2eca2256c1c",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "2d346cfcbc4a19274a2c98ba028d1d907b11e35d83c4778488caf5c7f4db7747",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-020-back": {
+      "vector": "production/c5-tile-020-back.svg",
+      "sha256": "64272cbc3374cc7702a0b59c141a0b6989a8913daeb34aa3d4d808cb10ee3369",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "9aaedc9709c29f51c8510a444729c5df98fbe443ea03d1b7e865f78492b8096d",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-021-back": {
+      "vector": "production/c5-tile-021-back.svg",
+      "sha256": "ea9b84620405600c5b7318f55642ba1165343d99bd8bef6c5440fecb34b3b4bf",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "bc9036496f65d66e9736330e8417e2f9dde8e5f843bcdb55cc7d36754d768604",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-022-back": {
+      "vector": "production/c5-tile-022-back.svg",
+      "sha256": "495c44b89df5e052ba51f1f808164c381ba34e93110bff77ffc50056cb3b3f48",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "067f56414a6c6cc98390dd99b3d1099ba085c5b4109209b01372e9e511ae5567",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-023-back": {
+      "vector": "production/c5-tile-023-back.svg",
+      "sha256": "5ef9569f823aee0d691d121e3612a8d03bec5b47741c924f4d4cd6d9c7b13001",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "ab91f2393890c10bd0b8b024cc902bd978e99e6a414a7ac8762386171201d0b2",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-024-back": {
+      "vector": "production/c5-tile-024-back.svg",
+      "sha256": "262b15d453bda1f5e34ebcd553bc7bfbf8b63f758af770290a99d9755d5a0e0b",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "91cf347665e224c704987d3111a98b8b95ea581cf22ea15f1dc2cdbc87a89901",
+      "markers": 3,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-025-back": {
+      "vector": "production/c5-tile-025-back.svg",
+      "sha256": "d72e2248faae081ded9520459beb01e7f658573a089e691ff1fa5708d63109a8",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "22c2fe45d7e109a7fe599dd5fe83735dbf8d9a3ba04842068105eb7bf5971401",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-026-back": {
+      "vector": "production/c5-tile-026-back.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "f34c749773d5da178e179cffaebe7aeca7a5cf05b2dbd9c0932238d18de6a435",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-027-back": {
+      "vector": "production/c5-tile-027-back.svg",
+      "sha256": "e18286baaae2fa7cacc8693b018e2e102920788d1dfca58e65a85409b623260b",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "2541090d42f3924f0cae1fb5c12fa43c272cb620ed3694f1ff5d5663fe0a343d",
+      "markers": 3,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-028-back": {
+      "vector": "production/c5-tile-028-back.svg",
+      "sha256": "3b0b609d821e63aefc516add5c5e07b39251cbda974892cbf4bc4c91524d283f",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "af173693ce33224aadc3bed3faf786aa21f86a6fa85fe758d60798d9ca82f35c",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-029-back": {
+      "vector": "production/c5-tile-029-back.svg",
+      "sha256": "d7b9aa14ce6a4cc9d33279aea26d0d380f03422b3f646f6a8bc3aba82d72fd04",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "ffea7e0a4a2d0fe754ae3dcbf05a926eaad52f4dbe5244fe5043225c2d9c0d6a",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-030-back": {
+      "vector": "production/c5-tile-030-back.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "162afc6230e60f437348bd1bd403bb97ba089bb42c73021404c6b2a717cd20eb",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-031-back": {
+      "vector": "production/c5-tile-031-back.svg",
+      "sha256": "cff4950e0e8e6499bf6e5e7e3d459c46350ea5d0202b81ba0d4188af61797cd7",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "28a441b630d103a91511e588163e32316316302b8f9ebe65ce67a1538e80a812",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-032-back": {
+      "vector": "production/c5-tile-032-back.svg",
+      "sha256": "0f82617d4d3d7ff62aa987ac4ce92e10cda2f65de72d6f3470026dce3ec8cd97",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "698db841c9d3a93dbd0eeed49760e031309b17e1473bea313af6587da9164860",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-033-back": {
+      "vector": "production/c5-tile-033-back.svg",
+      "sha256": "68ff29b15eb845355bab3d69447d736f54ea00bbc654cabbbfb4c2c7a680ad8b",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "8c76e7ed799d58fa3c503ee9ac8dfcf029bad66e6a4aba7691e770e5cf8f2018",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-034-back": {
+      "vector": "production/c5-tile-034-back.svg",
+      "sha256": "dec6dd1aba729e6ba8d3b963707eba2534e2d89e5bd286e45c2cc449d1b8a55a",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "169a8502f206ea8f44d82dcf92603cb8be9c22285b5aa55c85095fd6a5141094",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-035-back": {
+      "vector": "production/c5-tile-035-back.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "25997772be5f6637bc1d1666978815ad894e6a0609e3e3536d2bc5e32fce9716",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-036-back": {
+      "vector": "production/c5-tile-036-back.svg",
+      "sha256": "a40ffb46c21382372376d7818d62e17cf6f308d07bad0aaac5e022e2b9fde5f4",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "238fe9e1a07cf4784733e40103c237b285093d219815e0656b56b31d0ff9ac5e",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-037-back": {
+      "vector": "production/c5-tile-037-back.svg",
+      "sha256": "77336cb027e4af38516e4fd44417e6f51242213ad106341580c327ae254145d7",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "a4605270603a9f732bc9a0093fcb4128dccaa6550c63f1ab8f7b11e794082133",
+      "markers": 4,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-038-back": {
+      "vector": "production/c5-tile-038-back.svg",
+      "sha256": "93c5c1012b6133f21229d012d8408034874eabfd23c8025060eab26a5d0d5a9f",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "035de8d5585e8e6311bfa823c207293a5e0a914bf772f03242366c6ca4d84a12",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-039-back": {
+      "vector": "production/c5-tile-039-back.svg",
+      "sha256": "32c3f87bbe72e325dbef4431e5e22c064bb55f44366f5b61c45d52d2caf58a70",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "e852ed64cb238112b162024d643cbb73dda4eef9420e014d1b47891ce48497ee",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-040-back": {
+      "vector": "production/c5-tile-040-back.svg",
+      "sha256": "2e348688989433be972d6b2bfecea487be6c9ad74d2c7794e8345deb2226e14e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "1d0754d06e328e4fa46792ab82f57a2d011138c933e9e485f5084e442ef9ec78",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-041-back": {
+      "vector": "production/c5-tile-041-back.svg",
+      "sha256": "f237f157608f2f64458e180438d8700fe0d5bdd3c7519ee7e70f0a71e40f16b9",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "8f2ea0ccdc074f099e12bf21d4702af070367cb4e26580e2c20c7aada364b29f",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-042-back": {
+      "vector": "production/c5-tile-042-back.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "42edf4c8ae062336d6480530c340414aace0973a26adf54b2874777d65853eb6",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-043-back": {
+      "vector": "production/c5-tile-043-back.svg",
+      "sha256": "f5301f90bb6b6357b398d2dcb71fc33951bd3988bcfc4c7434eebff51ccbb1b1",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "ef35b9ba87d6c0b31dbb39873ca9f2a7c22bfc08a1f5a0acd62afa5c3633cf88",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-044-back": {
+      "vector": "production/c5-tile-044-back.svg",
+      "sha256": "a9532ca8049c1e9a5d87d67645937630622127decfd33e2e6fc652901257b041",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "4fbca786a6a3ff487c305684b524129c084d2d2cd5081b6fcfef3a71ee4c5112",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-045-back": {
+      "vector": "production/c5-tile-045-back.svg",
+      "sha256": "1b9c6bfdd293c6794d1ee9c94549019b73e89dc6ca7a5c039ba4f247d837082f",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "1d9de6fea6eb2b7434e95cc2c6e0963c693755669b103123bee0bbe58dd53aa2",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-046-back": {
+      "vector": "production/c5-tile-046-back.svg",
+      "sha256": "6ed69c97dca8b188606fa2a1399735bdf9e855415fc1e88c813521e1154a4ee6",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "bcea999ea48be3541b0e9f88ca5ff279c280f1d5cae1ad4f7296fd542ea82f06",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-047-back": {
+      "vector": "production/c5-tile-047-back.svg",
+      "sha256": "ebb476c3d3757821a5be9e83a419a673f1722cc39bf28c288163bf74d16e65da",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "51bf989ef7980df1327dd22ddc1d389f7bd67ba9a8be02869e647b66d58a6365",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-048-back": {
+      "vector": "production/c5-tile-048-back.svg",
+      "sha256": "038277c6289fa36efcc9a054407f15559c3ab4c3c939286ca7a6c47ef9537155",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "1f764c01bebeed8b042692d66ab46c8997396b82b89c4b3b33f30345bcfaf467",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-049-back": {
+      "vector": "production/c5-tile-049-back.svg",
+      "sha256": "c25297017f336a725e9cd82b64223793ab66d48125659d90f90c0543096856aa",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "435925877811daf585ea8a4e17373fa91a53f7cc1aefbaf2bba4c938f931f27b",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-050-back": {
+      "vector": "production/c5-tile-050-back.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "4096eed349e01a4fe62ffc3830ea8e6e3ce66e1b65edbd077edc0f35570ee4fc",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-051-back": {
+      "vector": "production/c5-tile-051-back.svg",
+      "sha256": "6aa5fc021a43eebfd0a698d02d10dbbff75505b6ea395e9d92bdb5d2bc2c7f97",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "def2a12f9862cd795a15d814168c76fd29ad008959feedf8e2325a3b87b6db7a",
+      "markers": 3,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-052-back": {
+      "vector": "production/c5-tile-052-back.svg",
+      "sha256": "3ac4ba3e1a677901f3d66b95e77b26e0d4851fb720165784c5179f2090ba89ee",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "98936b462493042e650a7cc7d620c61aa1683d4a090e2e3d6c683c9ae4f96945",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-053-back": {
+      "vector": "production/c5-tile-053-back.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "b152eb556229a8a1d6345c24eb6eb668b16d884ced40ddf753c958e09fd031db",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-054-back": {
+      "vector": "production/c5-tile-054-back.svg",
+      "sha256": "5f29c7999d4d67a3c8042de8ca4302539e91b2f967e29644d90c212bfadc09c0",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "f20f530fe0c538ec242332639b362cd95398a020516956a22e9700acb0ba6290",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-055-back": {
+      "vector": "production/c5-tile-055-back.svg",
+      "sha256": "bb10e6cef31abec11531b03e9f03e5e1ec9f101340adbdf45e5f407d25269ae6",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "fc62c0a4d4ff5eeb46af97b8563b4560b70da13713ca94aa6a9ffcb57e434450",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-056-back": {
+      "vector": "production/c5-tile-056-back.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "2ac65c353937480e7ea27394d373fb4dbca28e4bf1a83f0394940030d345b47b",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-057-back": {
+      "vector": "production/c5-tile-057-back.svg",
+      "sha256": "00fb5aaf0fe1e40b53f30e5205222a81bca675e45b77f81275f0de53cfdfd157",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "f25d7f0e42c22866ced415c28878c6159b958c6e4d504d09b657d02026541faf",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-058-back": {
+      "vector": "production/c5-tile-058-back.svg",
+      "sha256": "62b86e5bdceafc66caa094835fd3a9405594df4a459d25177419e08a3b65f9d9",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "7bbc7e8a5940bb942a4c5e78abb5509196346ea71116cad9740ad92c0d6d6930",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-059-back": {
+      "vector": "production/c5-tile-059-back.svg",
+      "sha256": "461bf281c5ff4a39095cec038c2caa8aac338a85a847258b64cd1eff9de46368",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "199a67f476e4f01216b27a595368114f837a2c88e3a560b25d71bf0bcb2908bd",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-060-back": {
+      "vector": "production/c5-tile-060-back.svg",
+      "sha256": "4b3f2fac7ce84cd4a6346edeb4b32719a08356082fcf2a1cd307fa0c1066d841",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "7e42de3b1b7348b967a47618b93cb7d925757313e8564fc7692d9041c55f779f",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-061-back": {
+      "vector": "production/c5-tile-061-back.svg",
+      "sha256": "322027a0f0b872a69b30854db0459e45d28c398a719ee17bf227f5bf1bd2e4ff",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "bb0cf4feb9b29af4af479f0ef2964a049aec6d122a1b020abe07d5e47b7e4898",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-062-back": {
+      "vector": "production/c5-tile-062-back.svg",
+      "sha256": "c215bd532ae9f55552f95acdc887ebbac04543985da98ec7c5d2d11c554efd8a",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "4af32af953576f85ccf3d3f60788eb04c8af978676c311b271cf4008cc21e620",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-063-back": {
+      "vector": "production/c5-tile-063-back.svg",
+      "sha256": "74fd24957a5e441c26c78f6813418abc8c013fb8ad014469fc2cd4aaf1496160",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "cc7d799e38088d766e41d4c7ba427678b063149a72d581169f51d52c9784bf77",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-064-back": {
+      "vector": "production/c5-tile-064-back.svg",
+      "sha256": "819f350c19d74f7437e8c0bca9870af6a535c8162da4622a93e99c0a4c916152",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "96cdb509550a9bdcbca30a2edbec6e2cc9512b9193d3d9300cc3bdc2f4ffce92",
+      "markers": 3,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-065-back": {
+      "vector": "production/c5-tile-065-back.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "b4ae059c0a48298f0ad59dbb1cfa71682464983a580267989fd700b767ef0673",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-066-back": {
+      "vector": "production/c5-tile-066-back.svg",
+      "sha256": "8d045feff3d88b5e913315623105dd036f1307bc4c28f90e71eb701c8b70aa86",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "7a0c2399ce2156814fc64a6605dc532605e54a38be61523532631e4ffec2026b",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-067-back": {
+      "vector": "production/c5-tile-067-back.svg",
+      "sha256": "499ee583ef11111f61c716e9e968e1858d1714d3c44dd3dc91431ab09210d098",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "284e19160914b4220109d5a091024ca62e777517c2bbf049404dc1c8e8250044",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-068-back": {
+      "vector": "production/c5-tile-068-back.svg",
+      "sha256": "ca6919ca83df30cfa2f61438e0e67ab33ba04267630a8bbe4bad600db3e0a620",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "1fc53917ef8e7eee37f10811d70937f7d5cdec87bddfd71e1afb0ed7e3d44da1",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-069-back": {
+      "vector": "production/c5-tile-069-back.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "f3f7a63955302295ead817e6c74f0d9a78953da8a497f0762543d48f7193d2e9",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-070-back": {
+      "vector": "production/c5-tile-070-back.svg",
+      "sha256": "a71adb25c7b87c30ef9e40c3bf873b5d941b500a1f5b1d6d2f7febd25fcc95d1",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "bbb1b9a69a3ce7b9152a9856a28df275077cf50b26f4ac45b8467eef6723a47b",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-071-back": {
+      "vector": "production/c5-tile-071-back.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "e3277189655a70c047e9ccce73f16cc23fad2b5d6e29d15453209e383caada7c",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-072-back": {
+      "vector": "production/c5-tile-072-back.svg",
+      "sha256": "a6988063676ffc7a6cb635577cfe407b4b515ecf08b4d246ee0f45d1cb16ab8d",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "99dc541cca760c88fe1fdae7050ceaba81f4bf2144ae9a88f2f4fc5d25f6724c",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-073-back": {
+      "vector": "production/c5-tile-073-back.svg",
+      "sha256": "b2fbda96fef491b8c649e0590a4d707b24df39667531aa2104659cbeebd43e43",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "2a2fadf3968d3cfff83b41aceb9d63617a729ee46537b448ee5f2f8fa107cdcf",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-074-back": {
+      "vector": "production/c5-tile-074-back.svg",
+      "sha256": "2364372318f22c6e54f7464bcee3ebc1a4504e310b9694ec7da6fda0ca48e845",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "a3c74f71de9f80429cf18f52f7ed632a7b2abe325ecd25a465350cb74d0156ee",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-075-back": {
+      "vector": "production/c5-tile-075-back.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "cf1e04e7561b533e407de49eba2c10b608f2078ef4d51a80eda79d22fced53d6",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-076-back": {
+      "vector": "production/c5-tile-076-back.svg",
+      "sha256": "4017745389b0065a1375a8d4d74d2f2a7d926effeba9640608bc692d036162f9",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "eb4f3046855214f27b882e88109fb0aac8a0962a2b1908d7db2a4fc60e689dab",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-077-back": {
+      "vector": "production/c5-tile-077-back.svg",
+      "sha256": "d8de76af05ba80578d13b7701bdc601d8f3a9cc04ace3aec3fd1be1fa121b1fe",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "53fe9b20b91d0f1fc34230561c2f045ce66104ab745a4c100704f85c8da73b6e",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-078-back": {
+      "vector": "production/c5-tile-078-back.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "451b621e23ecb8476d1ddc33a588191a9b34d89f6062856cb2d96d7ccbe517d1",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-079-back": {
+      "vector": "production/c5-tile-079-back.svg",
+      "sha256": "08c2bffe19b7dd54c2b683df7c046ec99824880a8746e65247a4f2a066bb6d98",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "322122d9683f6263eba156cee1be9625bddbc0729aa81544d46370087b060a8f",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c5-tile-080-back": {
+      "vector": "production/c5-tile-080-back.svg",
+      "sha256": "9a30c5b59a70e1dac0cbbd8accd97573c9ad6f3ae6170e865c3c5b3345d6cc42",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "41c63081445609d8e9160e455fa502283061934b2c833fc77f942e01a060c0d2",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-001-front": {
+      "vector": "production/c4-tile-001-front.svg",
+      "sha256": "c4fa156635af002daf847b3fa908545e499682d3bbf7eb4253bd1059b5c72e97",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "c5cf9afc4e045645a08fe5fbf3f36491f4c950a3f4387f8cc1f94b061c2a5f98",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-002-front": {
+      "vector": "production/c4-tile-002-front.svg",
+      "sha256": "b9395f698c6b5d159d7bf56e52b94b699c841b1fc08e008fda44c25e1f87be55",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "a0323f33258e3ba23e00eeffa1f28a82a364d036c917a7e65df6a50667fe9985",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-003-front": {
+      "vector": "production/c4-tile-003-front.svg",
+      "sha256": "59b627d440e08a9c836a0a8da25eca2152671096b49399fa3ffd71f0c2245232",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "e1b0938924a2955d0bd64f32b2757129b2e514d47d1653814f8229aef0f6c325",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-004-front": {
+      "vector": "production/c4-tile-004-front.svg",
+      "sha256": "a347af67cf4db23dfa1dadf72f8f5bb3bf62ea3e7202a516174c90008a1428e9",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "90d3509c5a8cff58701c8ad49a82edd47ef9edd775b157e44cb3aba656ce92a1",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-005-front": {
+      "vector": "production/c4-tile-005-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "cf5a182ee3f7a50ba2315f19553530e8c87a3a60b7cf4305f722dbd91ee5d98c",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-006-front": {
+      "vector": "production/c4-tile-006-front.svg",
+      "sha256": "f5f2dcdd2f3d64dd984aef9e4eac3ba032cf7e40a32182dcd130ddf554e2a5b0",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "611838cc5e64b6bdc8748c3f9331a338ef05a772fa099ca51493305b4b23b39b",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-007-front": {
+      "vector": "production/c4-tile-007-front.svg",
+      "sha256": "7ef6ab757f4c63272094ee80f536dd7bae5844084804c65584819734b0e018bb",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "0fac48ce2b620a870520b3e310ef589d2ff132984559e8d059abc970bb3b801e",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-008-front": {
+      "vector": "production/c4-tile-008-front.svg",
+      "sha256": "6dec1b0840887c58f17435add8336f6651fcbaf1dea7e6fc09ba54e6c6e8521d",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "8d8d210059731b347a40c6cd615efaa8d7ee58648c0bd05f0c6ae4128abdc728",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-009-front": {
+      "vector": "production/c4-tile-009-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "f6368db34e78ccec22b3e33b71118e2357f2b892445bf452e95c0d22bad83c25",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-010-front": {
+      "vector": "production/c4-tile-010-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "35703f435724f5e2827711778218ecd81b7abe12ba0d3e3e62682356dbc3d185",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-011-front": {
+      "vector": "production/c4-tile-011-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "011ca227cb985c405d10d5832fa43651dd92c04a1a5cfe0cdcef1814c06ae35a",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-012-front": {
+      "vector": "production/c4-tile-012-front.svg",
+      "sha256": "47e645d6f1887994d730676752c4ee393ba870d5f157405e17fd9b6ec125d323",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "86adbf766bdf8c66b7203e93b9b37ba2addc43d442fcf3388ef01ae18c86a18c",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-013-front": {
+      "vector": "production/c4-tile-013-front.svg",
+      "sha256": "47ec1075929b3e1492fe349458c4cdae4b08058b1e4bc9d04c0e6661c12c8fff",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "cc400566c1670d21be74bacd45d1c546b6eb6a31f3ad1705a7df183884672d4e",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-014-front": {
+      "vector": "production/c4-tile-014-front.svg",
+      "sha256": "028436a7647db678406c246ab5be6aeeb2b1fcbd6ba8fe7a9d97b76919f922d4",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "4ca30d0644995a4fc5600b0eea1d73be014a1af87bce36cb1c7f82503ddba84d",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-015-front": {
+      "vector": "production/c4-tile-015-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "f17280a3846fb0fb522cbebeb839c589c3c98028699cf445e75380c6acde3e7d",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-016-front": {
+      "vector": "production/c4-tile-016-front.svg",
+      "sha256": "8e3c5ec1948f1de9d13f490e2de3b550c281f97729439d6ed62618005b212db7",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "754d67a704d669fb28874a01cc9b8d6bac37f4a1960150077fd26cf2104084dc",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-017-front": {
+      "vector": "production/c4-tile-017-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "f7fb0fb3aa5a01eac7c904244181b7d5c748c294994e75ecf321756d276005cb",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-018-front": {
+      "vector": "production/c4-tile-018-front.svg",
+      "sha256": "d6fe29659862b39bee5223fd1cdd8b7c5427b81e2b1ad3cd701633e3b5398550",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "7109dbb66cdbc956ace5515350c40b3079deb08de0636afe8373d135d16331b0",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-019-front": {
+      "vector": "production/c4-tile-019-front.svg",
+      "sha256": "cf1bec28f8cf827f2c0892f7baf111089ecb83428d7a738fd1cbb50649ecfbdc",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "10056c41cf33641b3c6459a2fd68cda4ac7b4c493fa0066b3921d7c4546d125a",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-020-front": {
+      "vector": "production/c4-tile-020-front.svg",
+      "sha256": "a177400d4f3da5fc54fbec5e33da3f5dcdbdabd566b3e7b21b41779b3b07435f",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "849a76b66a520c14fe0fa174c62940d801d2505d37eb85ff6a37a4f03c9ce135",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-021-front": {
+      "vector": "production/c4-tile-021-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "60cd97ba05a5dbe0ac6172b3fe54224597e410613840ca94e4e731b3c12c6a0f",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-022-front": {
+      "vector": "production/c4-tile-022-front.svg",
+      "sha256": "af81ff4364ca3fd6b302dc354f7301247113604e997b10863de5c0455efbd98d",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "e42f7eafddaef8f7f55e83d77f5ecaaa75d38823e898fdab623d0eadc9884904",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-023-front": {
+      "vector": "production/c4-tile-023-front.svg",
+      "sha256": "d6292c02307ce245790f33b23733ada8bf2e926a9304959d8e171d90725ad08e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "35e53d8a240c1ba85f78ea161e972f0f42362552f90e0437419391d665c797ae",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-024-front": {
+      "vector": "production/c4-tile-024-front.svg",
+      "sha256": "42e92a62f7ad157e6c44c6b0889d26d6b18b658da332409e3dbf89d30068496a",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "f81613e2b2da38b75443e629761fd7b3f136cda7a1c1365a56aaf86c208b6787",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-025-front": {
+      "vector": "production/c4-tile-025-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "c698de07b257d83e88805d3d59d90b36c0105b4388841bd26c93002cd3d40746",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-026-front": {
+      "vector": "production/c4-tile-026-front.svg",
+      "sha256": "332e86988412ae0251f9bec2a0cfe2a90ba79e9658d8394524cf52db945efa55",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "72d823018cf1e9b858397b3be6da06dc98f597135c4fcce8e069c456d7fda378",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-027-front": {
+      "vector": "production/c4-tile-027-front.svg",
+      "sha256": "1414f0043fb145b5aba7d3ef166a11841275b9040c94079dadcf38c935422cbe",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "ea08e2b3c71ea740206b4a144e697229ea6044dfc7a8dbbe0475fae98ff0cfee",
+      "markers": 4,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-028-front": {
+      "vector": "production/c4-tile-028-front.svg",
+      "sha256": "331342bd536a51b0e3d095503d27a46b93b7b0233c0b769471f7b576d2c7f436",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "368bdc6d689ae33ee1027ccceac46c966657e014910c93fcf3e037bab61315f9",
+      "markers": 4,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-029-front": {
+      "vector": "production/c4-tile-029-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "79dccdbae8ff27b9b717ef6b3d365d245486e21ce0c6ccb83310b0273ba3796d",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-030-front": {
+      "vector": "production/c4-tile-030-front.svg",
+      "sha256": "34f652e9175015606ea8434d11fc9fec26b94c2c4dcd59b7c6ef145f138d65e5",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "6b9eb47986ebc5c0299379a0894d483b4725a50ef46063c3f3136679c528f9ca",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-031-front": {
+      "vector": "production/c4-tile-031-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "55beaf8727d6e04e91e843fdaa117f4d091a26a8a1d7624447c313a6f05d9c91",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-032-front": {
+      "vector": "production/c4-tile-032-front.svg",
+      "sha256": "94a3bda06cb532dec7685df7f5816e42073d9f403d09e1395690780d66da1e2b",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "afd1527903285236ca1fd8872a1ccd5509afbfcb9ff849812ed9bbb1a42ce412",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-033-front": {
+      "vector": "production/c4-tile-033-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "8c719c5a739a956af6ae08f3cf95e2310ff35b914534348e9022e2322ba1986e",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-034-front": {
+      "vector": "production/c4-tile-034-front.svg",
+      "sha256": "b2d3baca2563df632411fe7d8742bad94da612ec36128bada206d4d811e4b098",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "a2539b855c5783e05535db55027de3934f64708ecf4a4dbb964d4a4a7658ceb4",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-035-front": {
+      "vector": "production/c4-tile-035-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "08d0c9a680c3e685ee363ab1c2633f88935e5db522510b78960749c2c2376d82",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-036-front": {
+      "vector": "production/c4-tile-036-front.svg",
+      "sha256": "4f74b8ebc19d3f39db7f02670bd77e925222c8f21f721b0ce296a57afbce2107",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "c3d489950b02bb78b839c32a93e5d3b6e6e0d5799f0f09fe6641e1253358026d",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-037-front": {
+      "vector": "production/c4-tile-037-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "96de80b019d774d589a7374d68355e60e49cd963007e117aa95922408cb96764",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-038-front": {
+      "vector": "production/c4-tile-038-front.svg",
+      "sha256": "7eb5e0caf9f67fc5ed457670a039a0efb50c0586d2f28244e073c3e4a6c5d26f",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "e0114ea5e34120ebe167f79cae129bb2ed7f3da38696968aa1ca295a7e447221",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-039-front": {
+      "vector": "production/c4-tile-039-front.svg",
+      "sha256": "589493d5aad848f0b8dfcf4f6210df8d1fb414bcfd9f12076194f3237db7c8fc",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "5bf9638e66711025dd74cdad45f42c65c661bd7eedceffe3985ae323e13eec41",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-040-front": {
+      "vector": "production/c4-tile-040-front.svg",
+      "sha256": "31c8e8d63cd87eb95b073c1673f81869e2c6b43d1dbe8dec4e2347d506cd287e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "ac0f560e2ed0b27fe8ccb2573ffa5269d65b3542c5b1cc4944a7549ac3760b12",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-041-front": {
+      "vector": "production/c4-tile-041-front.svg",
+      "sha256": "67c170c827ad3adcfb095375d6a7940e82ab88426aab7a6b6fcca0f05c5bbe85",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "d370e0a3e6eb605b35cacd15a45fdf9ed6124fd390992c58ff53f874dc6b0bbb",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-042-front": {
+      "vector": "production/c4-tile-042-front.svg",
+      "sha256": "74c9b52bb5e45406e5c5a7e25bcd7c7e538635a54344a53363241788207bb2cb",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "e3046b22816440e99865567d71ca620b196ea97582035ef76e382e09fc687c85",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-043-front": {
+      "vector": "production/c4-tile-043-front.svg",
+      "sha256": "f8d8a8fdb916997a42fc3db78e30039c7cb3718316f3622a8242cf840b1c6bd7",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "12e73db8b538bc0e04868804536ecf8acef387908f7f3e8c752d9b188535ecc2",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-044-front": {
+      "vector": "production/c4-tile-044-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "0ee9c2e23ef2ae021b1a02af3ccf1a03f893402f113632be1b9220fb31a56921",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-045-front": {
+      "vector": "production/c4-tile-045-front.svg",
+      "sha256": "d53bb061672aed22dc6bff33efae96e5bc37ed4fce53e082712e7d3a3a1fa115",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "6e8dc5a657e35f9b038064b6d341872abd6b2800ce84884ee8f9807cc4c444b8",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-046-front": {
+      "vector": "production/c4-tile-046-front.svg",
+      "sha256": "75bc5ba2d86eef40ae161b175d2e6c5b1342e6c791f6ba375389861cef96d2d5",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "878f2298284bf9e20320f33e44ec36faab62a13294a0a9443af2d0e03644afc0",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-047-front": {
+      "vector": "production/c4-tile-047-front.svg",
+      "sha256": "e079f3469dc6685f109c32b8207cdbee214b4295668d8cb1588b8d113a581919",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "c3d695842a83821982a8a5afd5e18210d207daafc8e183f143d634e9f67c88b6",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-048-front": {
+      "vector": "production/c4-tile-048-front.svg",
+      "sha256": "955daff37d408f5aa7c71067cf25b87340215f46f156dd2baa049b953964bbb1",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "109ecd683a69c8a7d252c821d52dec040ef84a2ab14ddc7e6c1d876430aee3ae",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-049-front": {
+      "vector": "production/c4-tile-049-front.svg",
+      "sha256": "ba9ab642bd3276c35bbebcf9d72e137e28c78f5e5b52fd4ac6a5398816410950",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "f5a863aa13d72ff15c36f0b4d76835571a1dc7e18d988559bdfd9c822e3fee53",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-050-front": {
+      "vector": "production/c4-tile-050-front.svg",
+      "sha256": "87e16d9dd06869a6d6b26907b1b1a4fb56935a335078855e947cf3b25ca55bab",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "580b121bfdf82803e672ad3aa02f7cba1f176be8bac35b19635fdd6bce3893c9",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-051-front": {
+      "vector": "production/c4-tile-051-front.svg",
+      "sha256": "7de226f56f0e4e3ef068005051ee73dd60397dcf72a0c0c5afe963b18ed258a1",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "8b9f89e6790f3c1ef84bbe1b374edbcb0b492b2b12cb86ff2f4d61c5dce33864",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-052-front": {
+      "vector": "production/c4-tile-052-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "82e09c3222762ad05efd363a1fa15300508d888d2fb81aa3af620a4fd9550d14",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-053-front": {
+      "vector": "production/c4-tile-053-front.svg",
+      "sha256": "0a93b06703a54de28e38fb067623c7e9bc46574011e4e819ca193c8867f92a72",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "b3a6c89cce9a58fa7980f64dd443f9985da6df45d52c37b087370099359985c2",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-054-front": {
+      "vector": "production/c4-tile-054-front.svg",
+      "sha256": "63d0c3ca0b622ba13b456a09e77ff03761691a111eb78cffbfb3cabc38418939",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "18eba077f9fdf965670b0d1f5392f47b7e0ee2c5b1f4642e3ba78ac1e265db00",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-055-front": {
+      "vector": "production/c4-tile-055-front.svg",
+      "sha256": "6cbd66f26b7d96a24eedf0ab9b20576eb54da9326f4d2419f9f0125d4571e4b2",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "09ec685946f97455616992f979192371c70dc03ccbec354803578dc41d4e35a5",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-056-front": {
+      "vector": "production/c4-tile-056-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "486d3a5f900310586dd7c605b4d5de17a92672fb8b5807e5e5f75638cd46bf21",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-057-front": {
+      "vector": "production/c4-tile-057-front.svg",
+      "sha256": "a6f369ca8553c990b92a2c88829c48625cf6ebf14dd2e10446559b701881ddaf",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "973702077e15fae701882d3f28523539ffc6038bcfd63f886f5e18990931d210",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-058-front": {
+      "vector": "production/c4-tile-058-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "4045bd480a14a353f7bc289240c2dd15a2a505b587dca4a2410cc8948b5317b3",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-059-front": {
+      "vector": "production/c4-tile-059-front.svg",
+      "sha256": "780770463e0c3d53203f8de00e5b28e5d2cd0e5c164ccab1709207e010f480d7",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "a2911f8c29c11c8a27fa4848f803b60d1675111a301c214f22b42fa4256d9f68",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-060-front": {
+      "vector": "production/c4-tile-060-front.svg",
+      "sha256": "bf7f09c5cb528d8b11310dbc07b54028983e646a5145193675355de436480eb8",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "7e01eeb5a74a08422795f8a5a497a7782fee89060b4c44231173eb078ad45c14",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-061-front": {
+      "vector": "production/c4-tile-061-front.svg",
+      "sha256": "594780f7d3e64fb70a86cdce3fd0d16f16f1af8c4850b1ba6cb49ba1a3eca84b",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "83e93e1205c04ec79826e99786ca9f4c3d0b510e92c781116ed16cf961c378cb",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-062-front": {
+      "vector": "production/c4-tile-062-front.svg",
+      "sha256": "cc2b818c9235370460a49dbefc22ee965799501a80ed5a9af664a6261b929cba",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "cf6fa3d6986772e188b7404cdd4d4cfd01372eecb9692485e22e93a9c386ada2",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-063-front": {
+      "vector": "production/c4-tile-063-front.svg",
+      "sha256": "e287558595de443c29166d062de52aae6c67746d6e254795fa637c7a90bc1629",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "753e70231de8ecf2f901fb95d54205b4d9b6dfa02fded32668d0c9374e3ff7a9",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-064-front": {
+      "vector": "production/c4-tile-064-front.svg",
+      "sha256": "3e20a732bfe388febf50f476ec0d76740a2d99addcfb01c4ab07c385a04f6cd3",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "7301a2c3555e05e889ced91249efd6132fc44e53cfc4efb5c2d5de172f03b14f",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-065-front": {
+      "vector": "production/c4-tile-065-front.svg",
+      "sha256": "d3196780e48fcfe98673b0b7a4d6ee43b252332d4d7e427dd951ee340e72a649",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "20ad4d5aff7b5c8bebff47c502b26b62d19dcade0c3e302f2491da2125f0b580",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-066-front": {
+      "vector": "production/c4-tile-066-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "88543b512de6efe7188254735abb751ea298aa56946abf0885ab50df247cb8fd",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-067-front": {
+      "vector": "production/c4-tile-067-front.svg",
+      "sha256": "8ab4bfbb729f51892f8696c8f30ef7a5dbd78b5f264408ce1b4ff82c646b47b0",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "c3692402ba141e201459c5cf70f037f5377e7cbd6d9f802dab66973c9a14fed4",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-068-front": {
+      "vector": "production/c4-tile-068-front.svg",
+      "sha256": "ce52c0865399641245998a3e09e46983cc9a9a07f985400b656838e0494dd800",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "ad1ab025eb56d28bf6b1c2d0e1611529fe73495b9dc21d27195abc14d728cba2",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-069-front": {
+      "vector": "production/c4-tile-069-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "d27a0dd69f40496aa8fa40b274572f2e5730f6a8bfaa294eaf2e2d93463c93e8",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-070-front": {
+      "vector": "production/c4-tile-070-front.svg",
+      "sha256": "1f7285766c23e9c2d8282f4b1f414295dbc22cec8895e4673135b37f50645abe",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "d4f77dcb4819cfd01af4398be39da871e83add3579bc26db12da8a553ad3427e",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-071-front": {
+      "vector": "production/c4-tile-071-front.svg",
+      "sha256": "bf1a038ee6b42f7b59243389c09e35506ee52ba8b35c1c0e3beb688b05e08677",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "cbf4a96a2bd653d785c9f72779e9da45312f852240ada1dbc71ae7b41f55e7b5",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-072-front": {
+      "vector": "production/c4-tile-072-front.svg",
+      "sha256": "3b9a790fb23d0aafaac94478e20e60d2a098d06c639820a8cdc7da177658c808",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "1d2892bfb665c0f4b3319087bef1fec064ba505ea90ff557388518a45910ebe9",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-073-front": {
+      "vector": "production/c4-tile-073-front.svg",
+      "sha256": "a10d784da27b6b09ea998410fc9385856ed10f3556f31eda465c07e862056515",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "60f5ba38721352b61c757bbac7025dddae4c0a152a416cc9c7ecce5c6f229fd7",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-074-front": {
+      "vector": "production/c4-tile-074-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "b2673f66fc687eb63cc016e481ad32caf383d88ae02f7f8a112fcb8bcbd69871",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-075-front": {
+      "vector": "production/c4-tile-075-front.svg",
+      "sha256": "8f416d60ed912b68fe8e43a5699ac9bce5414e0663a5fb42dde81f05def3941e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "d8eb61cb84262b2c6682fe6f9cd83573cb60c92cc480acf0876d8c3e84a9029c",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-076-front": {
+      "vector": "production/c4-tile-076-front.svg",
+      "sha256": "fc9245f213aaec469a4af9b87414a95060ba69e584867d979afe1da7d0872b88",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "3e8630acbbb422738008bc33b6fc9309c7bc65f7464361b37cc3c5cea292b3a8",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-077-front": {
+      "vector": "production/c4-tile-077-front.svg",
+      "sha256": "0558c09e795ecc4b2495557c4e92243c87481b9d6c021083ef347919dceee101",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "f955677d5b156f659bcee7775f7e5a3115b5b6a64a6180c2bec5f68c4c5f835b",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-078-front": {
+      "vector": "production/c4-tile-078-front.svg",
+      "sha256": "ab42e24e621a0a43d871c4311280725f4b48dac035844930545a22986dad9020",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "338700bdb95e9d64e651bf090733d06909494c61e1f54aa739774b72800170be",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-079-front": {
+      "vector": "production/c4-tile-079-front.svg",
+      "sha256": "2c230afe389183c5504fa00b40a6237bbbd64c7d2c22328486bd11f93f77d659",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "6c39c60477d961d62704740daeef9933cdcea2012471a8b294b7923a48afbce6",
+      "markers": 4,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-080-front": {
+      "vector": "production/c4-tile-080-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "6fba65f6ac859f7108c417d4d14f37be9ffaa602be9755ba22974ca9b955e2b2",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c4-tile-081-front": {
+      "vector": "production/c4-tile-081-front.svg",
+      "sha256": "bfd55f3cb05509c6937cbc4488f064563e62ef3f4804f208e361b2c349518327",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "570ca141f1e17a68b8c755a43aac88c9e0081800bad33965d9f57ba9f8d76d7e",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-001-front": {
+      "vector": "production/c3-tile-001-front.svg",
+      "sha256": "e0d9925515298e82c87c03b8d2d9c49401b0a6c2f7be9bd6577a46a1eb0fc44b",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "30d61ced9c8e8c52ad242edc975a02fb262d4fad79bcbe9363cab4e2f2dea6ff",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-002-front": {
+      "vector": "production/c3-tile-002-front.svg",
+      "sha256": "7cb73db092ed4cd19e9d15922ea18f9871ed168834a862c26c58468d7cf06165",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "61b16865383c78c5b15ced5b1c14515bebe8a5c40490e210503e91001e52ad01",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-003-front": {
+      "vector": "production/c3-tile-003-front.svg",
+      "sha256": "0fc5a363b5c8a7a1d4471bf6720f99c0a18fbda9b9fdb3fddf322bd93cee6433",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "c36ea4baf612e7253882a35ba87585e077098d09f60947a3d916460183b29e00",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-004-front": {
+      "vector": "production/c3-tile-004-front.svg",
+      "sha256": "59095a3f0becea0e27b19d6a230f76c25f07bdd40b25f8c476436b51a91fc152",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "210ebae44729e0e5c38ee86f253e478121db14d06be41f97a7b78a0d01392aa0",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-005-front": {
+      "vector": "production/c3-tile-005-front.svg",
+      "sha256": "1cdf600f32414358e6ee8854d58d522f5f1084c569d9c3c4e9566170c026d5b2",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "b95e4bf70a5f699c5fdd1d73beb0140bcd244140859b033c10baf20ab8cd9194",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-006-front": {
+      "vector": "production/c3-tile-006-front.svg",
+      "sha256": "f47fa49c10944ff676caa7859f4fb66f04127dc6b4a660eba7980a93b0d15f27",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "64473221ac9f29b44e93a51379434a35387266f81658cbf4411e74d26f4b6474",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-007-front": {
+      "vector": "production/c3-tile-007-front.svg",
+      "sha256": "088ade6c54294be829b896b99eb54ec1a3d4237450905bf04b1031991c7a6590",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "0c64d67ede79a5ec0fffd31b91bd4c6d4c7439893d12b498544ae2ab2016d3a5",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-008-front": {
+      "vector": "production/c3-tile-008-front.svg",
+      "sha256": "83383da7d74da4e967455939ab6f9944d6b1a9f01b1fdcb8fe0a01b7b5b25e48",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "b4a95b5e5f30338799272b19bbe95ef6e453598bfacf2f2880a67f604c94b0aa",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-009-front": {
+      "vector": "production/c3-tile-009-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "4fdfb08612cfcf71ac450fe189ce20b7289bc154caa813552bcd6869a4ebf622",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-010-front": {
+      "vector": "production/c3-tile-010-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "7e9396d56e5dedccdfdf45cdb10562e9b9a406d20a17597aeaf67ed7794a35aa",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-011-front": {
+      "vector": "production/c3-tile-011-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "057f6acc9e62ef9ae43f626223d2b1906d41efc0e17f8468cc33e0b94570cf8e",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-012-front": {
+      "vector": "production/c3-tile-012-front.svg",
+      "sha256": "b015ef57d62c3446f079bc6999b269b9cb177a797f93ec5bb3f8a0596317f840",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "aeeef7dce2a0428a5c585bfde884c8b63368d2c5e0f7d1375bcfc72793fa7013",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-013-front": {
+      "vector": "production/c3-tile-013-front.svg",
+      "sha256": "ac9b57b2ca712f117c11d849c860e89abbe073c7827ce56a913a97c99b4b68dd",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "c0aa60354fc0eafea3b1e1b61056753e8c8389ccd34db66efdab26aa1bc9c0c7",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-014-front": {
+      "vector": "production/c3-tile-014-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "fffefbdb5b6d677fd502a82ad3f310a24cc16fe32bcb8d3f5a9d97a3f71c4242",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-015-front": {
+      "vector": "production/c3-tile-015-front.svg",
+      "sha256": "b5ea2b17ae3a4e2624a0e93c1478ec0bc905fad6aed632d321e9352ebd4cd618",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "ce1b4063264a52a7efce78fb83f89cee8ac31b96fad038ba6fe20b764153b577",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-016-front": {
+      "vector": "production/c3-tile-016-front.svg",
+      "sha256": "37f92ec121f616ea1bd0492fb9dffb0790b788dcaff03e5afd20db550e3ac34c",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "11074f0e81cdecac9a6f1226243d08e796649bd46f1bd70be0c457d525b117a4",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-017-front": {
+      "vector": "production/c3-tile-017-front.svg",
+      "sha256": "5897f589c388f9583ce7b868b536fb9d75098c7d17b40c1e105ad33d4307139d",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "f3e1d92eedc2d9275c75536fe20f1e59ee23925f31409d6e1fe06d3181f32931",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-018-front": {
+      "vector": "production/c3-tile-018-front.svg",
+      "sha256": "ddeca863e7ef3846f1a7aa4146703263126821b5494873ed42206296661c3730",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "2c8199fec24a8aedf7c9d8885ab1b90a134bf1d32859e70b79b50554440e9410",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-019-front": {
+      "vector": "production/c3-tile-019-front.svg",
+      "sha256": "edc7b34df4aad30ba1a5b6903333f378c3c1ac66c88b1f531e3cc4d3bfe463de",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "fee44bdd42c7700696f42b6f300b9c40a9a624cf3f70ee8b6cf8083ed863f5b5",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-020-front": {
+      "vector": "production/c3-tile-020-front.svg",
+      "sha256": "137d1be9aa16bf8797c86926c07964f547fb1b74ff9330caf232206366be7a46",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "ba9510911cca793ccae32978e684247d70250ac208d02ba73f5655a2a8a49ed8",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-021-front": {
+      "vector": "production/c3-tile-021-front.svg",
+      "sha256": "7fca29b013c3f67eba44b7c24b16f1b1c1f78736c826c9b7bb5b199df6463c3c",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "70eaf1c23d2a2d9223c2f99da6f47582f2de63e0d58623a40ba6173104b364ee",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-022-front": {
+      "vector": "production/c3-tile-022-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "141c85470d2415cbd05e50a8bf29984f05766efff8dec8e1da8166f316b063bf",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-023-front": {
+      "vector": "production/c3-tile-023-front.svg",
+      "sha256": "f6609279d714adfbb9646a5853c820e72ff1aa5c92d9077f4f82f6ccca7500ed",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "18c0046a06848aea13dfebed27c88a41f49b046e1956566042afda5bfb8fe97d",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-024-front": {
+      "vector": "production/c3-tile-024-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "6b8738c3dd9603aa39965356f69b06f5ec181aa30c4f86e095960f265d9f3bfc",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-025-front": {
+      "vector": "production/c3-tile-025-front.svg",
+      "sha256": "4d8549b5aa852c43ac2539e262c2435fef794fb15ce1a571bb988dd3da4fa0d1",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "938f74242bbf15499872613a1645c1258d0577b294ebf5c58aed8a7091098112",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-026-front": {
+      "vector": "production/c3-tile-026-front.svg",
+      "sha256": "de103a28cc9e53b9b7a4805a2367b0b50450ceb52aae6a01a96950a1f2e5bfdf",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "c766c62b3f84fd2fa9d1fa9595a3955fd727d352daa9af58b5f2f5e117633c21",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-027-front": {
+      "vector": "production/c3-tile-027-front.svg",
+      "sha256": "a2a8e1938b08075dffd9231e90c374cb7bf782576c2a74b106df795d9a5458e0",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "7371ce751dc2a9769b22e8a0960f3d4818098cff3cd70bc2fc643e54752ac04a",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-028-front": {
+      "vector": "production/c3-tile-028-front.svg",
+      "sha256": "7c192bc3bf9f2932a0d8e1c37c9811d8ea66e32d9381d8361801694517fa7339",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "c0a526ee19383428ccf16fa846b09bbfbcfdacfc4c244d5205fe29f0c7a69041",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-029-front": {
+      "vector": "production/c3-tile-029-front.svg",
+      "sha256": "e4dd1c586c9b87ad59abfe5710ed3e6231cfabf01b23927b61b0b18b875e643b",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "08d53624352a04ff817ab74f0f6c37974d5a2349cc78444e77f4a6d6f641b307",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-030-front": {
+      "vector": "production/c3-tile-030-front.svg",
+      "sha256": "6bc8530b519ff89a9f45dbd94e205b613c8efd347c1ead3c791125d2c47e8153",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "00e71b62aac11dc8094dd7bf3107f0ece837c1e3b3ca050c077f36d5664182d2",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-031-front": {
+      "vector": "production/c3-tile-031-front.svg",
+      "sha256": "3970ce53aaa5f34d391a481baf6e72a7116a4bde64eb7c107da24a50e12838fa",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "ac57b2f2d2f215850b1761beaf2b6095ac1f63cbab7ec1dd7da0a5d4ed0a8acd",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-032-front": {
+      "vector": "production/c3-tile-032-front.svg",
+      "sha256": "33a176bd6c3086d2566896abf77f91d6dfdc217a1458b4773a133ebcc78eb175",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "963d3463f3e0375e9f4425404363601378c89d0a4ef6642b4db999ce9fc81e68",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-033-front": {
+      "vector": "production/c3-tile-033-front.svg",
+      "sha256": "358d8373093017e635c64b5dbba31d9c386c4d59297d39f01b3f63ac76090984",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "6bc07566d0bb27ede6ea0265d77d6cd8892ba29ce1599d7d272a5c9f40c9b8b3",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-034-front": {
+      "vector": "production/c3-tile-034-front.svg",
+      "sha256": "679455369e7c9b16de7f1f1a00f84db1accf88c66a66a041fe291900c0bf6c44",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "eff8a7f37c4b6ac3c15340e542e4cbfddc9147116a357b734037969294e47a5d",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-035-front": {
+      "vector": "production/c3-tile-035-front.svg",
+      "sha256": "74878992829cdbce405c88ac56202e068a062a43057fead0e0ccb4e3aabd87ee",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "79b1d148b217054d777f5c35d5fe765c602086f5b3f984187d244c3ccb8938ea",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-036-front": {
+      "vector": "production/c3-tile-036-front.svg",
+      "sha256": "6ffbe6a1c63d45b7949aca33b70565656242409244e236c2f316cfeb5b39022a",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "0de5c31d27ced33e5019cfc579711d186f200075b6b4d36ea91ed0ba130a6c51",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-037-front": {
+      "vector": "production/c3-tile-037-front.svg",
+      "sha256": "b86b786b233001b85ac3714a8b4bd8e38edbe3237efe2be8acb39f19f642a121",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "01ba49c1abb1a26aaa3e9d6b9b3ee48b1230ee9528ead5e9cebd1f88f2c7c139",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-038-front": {
+      "vector": "production/c3-tile-038-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "7a55c4da89cf8bfc8953bd563ffd9de45e483898c4fa2557c88cbe7f7164afd5",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-039-front": {
+      "vector": "production/c3-tile-039-front.svg",
+      "sha256": "0f2f10853e522a3658424359baa1b0694cb356a2785441060ac408b41cbfaba5",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "cc340a6d1ffbfa4462bf184c87c542d583d674b31ea0cc69bb44323f034adbd1",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-040-front": {
+      "vector": "production/c3-tile-040-front.svg",
+      "sha256": "a10b6060f62d84c065be236c4f8a1c2b0fda07a78a1a42b8877a3f197715ee7d",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "8af008679cfa18e6f12bc16d75768f37573e90eb8f5acc6ee391573133602c73",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-041-front": {
+      "vector": "production/c3-tile-041-front.svg",
+      "sha256": "e6e8099245ca6099e3be9046895e308c1d833b1dc0827e8298eb85f7057b2830",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "64b928790b5cd382c91fd94c7a91d02acdd0017ba4f52628c8c469c46d0aaa27",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-042-front": {
+      "vector": "production/c3-tile-042-front.svg",
+      "sha256": "e580420f4ecfb1160b9bcab85bed6c68c67c9895891bdd2d22640b57aaf2191f",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "e4efa271e54d8976ab7eabbfde29a876d6b10d60ca067668ec5af047495e7726",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-043-front": {
+      "vector": "production/c3-tile-043-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "69efcdb65c341f338f07cf2c09d6648b83fb0a5468f4d29630ae983736120e3d",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-044-front": {
+      "vector": "production/c3-tile-044-front.svg",
+      "sha256": "5a975e2acb425b4cc44113d9ad38b022606dc30234ac1357158e96c21db73d36",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "3993242f99867bb8cf2e75963e80aa3e03351cb722b32956ea63954ec94b0566",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-045-front": {
+      "vector": "production/c3-tile-045-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "8a7e28853b7b7a87151c25efb8505123001b20e13476511986794ceaf7a089bd",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-046-front": {
+      "vector": "production/c3-tile-046-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "b793b2097318c759077849a319d3d4976f3e62575d911db8271b8d15dc224b93",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-047-front": {
+      "vector": "production/c3-tile-047-front.svg",
+      "sha256": "9857e956a52657198ff386f172314a88129175b94b54a1a9213a83b69981cf5e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "e025de35cba7948c9c3182ba68474f03dd7ba6f0d95bb4075fbe79df4000798b",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-048-front": {
+      "vector": "production/c3-tile-048-front.svg",
+      "sha256": "6ef7bbd980f97e8ab3150ebea0778af25859dd56c059f15d2dfc769a853a450f",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "857edd6712929ab35fa7ff4c3fd4bd68270d4b33bfb75b8de1fad60bb0b80c26",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-049-front": {
+      "vector": "production/c3-tile-049-front.svg",
+      "sha256": "32e809b30e805fa3ede5e3b1820bcd1073d1b3416ecd777cdd24075b00d38f80",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "7b5795668aa917ff04e56444ed62504d267514cd4765e9e0e644cf578ab324ac",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-050-front": {
+      "vector": "production/c3-tile-050-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "e4ee1949a9bae55be688739d768f45901373abe77ef0d358d24a1bb49bae5f2d",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-051-front": {
+      "vector": "production/c3-tile-051-front.svg",
+      "sha256": "041bb744cfeda422cf85d0131a6d880772f64fc760ff56429d01db244cc036da",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "395887906245a920c4a861b144302410fbbd837f9c4c2806279b6cb627281dbd",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-052-front": {
+      "vector": "production/c3-tile-052-front.svg",
+      "sha256": "93cc4f30330f0ac7f176f5ca54a56968241b06a1a05c4237da1bcf3908fdd852",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "d78d98badf2968b1e1aff52029fde02028c26852128068f1404bf6766333c842",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-053-front": {
+      "vector": "production/c3-tile-053-front.svg",
+      "sha256": "fcbbc277081f418eeedfb5c45583e813ca1bf62c226e6de886781a64de8ae44b",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "d77202c93c7f14a04f2d7962e371d38b97838d8f831c9ad96da316e9199ab9ab",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-054-front": {
+      "vector": "production/c3-tile-054-front.svg",
+      "sha256": "02dc5fdee70183717fe7e89e97a647d45f9fedb5ae1605b7f1cbe0d9ea759ad1",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "4ceba5398781370038528cbb9259e78ecd0f4a7ddfea240c0ba7011cd2da02e8",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-055-front": {
+      "vector": "production/c3-tile-055-front.svg",
+      "sha256": "fcc343bded6f9faeaef86ee2442a220b8fe67e83e0c0e71b1d932ac7aa0f2459",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "95aca93285eddab0d656dd49cf0249485860353e40cfbd50b1f35fad4762e719",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-056-front": {
+      "vector": "production/c3-tile-056-front.svg",
+      "sha256": "4406d067c9bd0578fd0434050c7fed4a09560733b203d41ad26f3fcf58353227",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "f2e212d0bde6445a08b05cd20bbdb6480284d50b7aba757797fcbdcb2b0ec820",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-057-front": {
+      "vector": "production/c3-tile-057-front.svg",
+      "sha256": "686db51b13a971b4d359d4a4626748a37b6347b3e6166bfb391f503e02e19c60",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "87b174c2626c80b7fd373b96f95b293396804ba32019939bfd406c5051253989",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-058-front": {
+      "vector": "production/c3-tile-058-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "d23374fe95216c2256d632a1a252344d62c3085552e9762e12d8f9aa7bc18413",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-059-front": {
+      "vector": "production/c3-tile-059-front.svg",
+      "sha256": "38e141271fd0a5454361df42054adfeb352001da956fa09e05500dfd1775ddde",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "8ce6d533f08da13896a156e5f343479781ab60b15e2523588a4a34e5bff3b0b8",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-060-front": {
+      "vector": "production/c3-tile-060-front.svg",
+      "sha256": "f0f381140ca54d3c3d738f12d1b0ccea912052b45796e761d62bed069263e240",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "2c0e1d2e0c7b95f1ca73ea7d971d76294c9cd716801a5334bda01a6004503262",
+      "markers": 3,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-061-front": {
+      "vector": "production/c3-tile-061-front.svg",
+      "sha256": "ac4d23bb264c04ffa275b5c6303e7abcefff74280e58975fffbe59e0d3ec038f",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "0854d06dbe32afa852f5831cdbc36b0f329e04615380c912ef3d1f56dac5a489",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-062-front": {
+      "vector": "production/c3-tile-062-front.svg",
+      "sha256": "900650dea014cc228ce8a1a847da77cae41237db73b27a7bb930409d71f6160e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "1b28a818b20ac4fe69cfdc19790dbce7b52af9960975e9d6afe16fa5b6c5b771",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-063-front": {
+      "vector": "production/c3-tile-063-front.svg",
+      "sha256": "c1483c52acec574fa07522155b1d39a6745c12e2d123bba3d192e42ceaa9a497",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "47e023ca5b45d795288c5b3be39842b4347b01a2472d8fcda4e12d0c5e85923a",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-064-front": {
+      "vector": "production/c3-tile-064-front.svg",
+      "sha256": "668579950a93276531cffa497cbee920a9ac8d03fc43bb8d727bae707d0e75bf",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "9f2818c755a48a83854f9b1fcf416a85f64fb82191df39a837555f77be9e6d6a",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-065-front": {
+      "vector": "production/c3-tile-065-front.svg",
+      "sha256": "6dfcca7dfd3a0444dcd74cc042c4d0c386f2116e50c36f27342e0ba7fca0f39e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "c623e96048a251562195618fadab1be228732afd9aa649f2746a9ae80bbd4351",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-066-front": {
+      "vector": "production/c3-tile-066-front.svg",
+      "sha256": "a5e2e573ee7221801decb7643c20ef408d70181ec2887e93eb8c8f9aadee354b",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "b82e97d171359ee20144f5eef81a20ab128a8d68e6f900e32ebcaaae0714e109",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-067-front": {
+      "vector": "production/c3-tile-067-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "2fec59cdb858f7245c360407e4275aed52dece6f2aac820cfee1464d9926cf82",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-068-front": {
+      "vector": "production/c3-tile-068-front.svg",
+      "sha256": "047ed972755a2a309f08ae71b7bd49425c8286c3931bb44cb6e5e1f28f4e0262",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "e3ef4eb5c88788ae83605b8d7e5c52e32a334b9d6b6e75f3824b394c89458bde",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-069-front": {
+      "vector": "production/c3-tile-069-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "e82d3da48087297fd454331d71dac7d4b56d61841c90ddc23c1fd78ca4f9c337",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-070-front": {
+      "vector": "production/c3-tile-070-front.svg",
+      "sha256": "254b328f8c31152c68ded6e6d96fad2c8739e0070d147f0b9d8325431690349f",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "7f580d25f2678eb077b8b096110519311db496082cb1ddd80e8120a27b7bb9c3",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-071-front": {
+      "vector": "production/c3-tile-071-front.svg",
+      "sha256": "22c19d511bf55faf847dfebbd031a3721c9d7b28674230bda9b75d6fc4122636",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "a65502387da958b3f9f9384c1f57d6eb56fbd5f95ab134940c5e46ad058bd9d5",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-072-front": {
+      "vector": "production/c3-tile-072-front.svg",
+      "sha256": "4850eeb6872d2b5bf8e91d9944c0c706945ef45175d8e81e1d7d0e2e8f486d38",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "6b35bb2991b935a09745657d07a39d6166e393ad3d77322d59c2a175e457c0e8",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-073-front": {
+      "vector": "production/c3-tile-073-front.svg",
+      "sha256": "a7f0baccad417ee2e0954b7cc906b5b4ce031351890bb769b2895f10cb22c1f1",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "2af9f56b10fd47144dd790a3edff1a026d942224443312134ab3a9dfc85bf63c",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-074-front": {
+      "vector": "production/c3-tile-074-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "b8a511bc84742da89220e392b670608e4a4f23e1eaf05dbaa3457a6eb9083436",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-075-front": {
+      "vector": "production/c3-tile-075-front.svg",
+      "sha256": "4e4d49ebee06257a62e340850b0b331ddacd2044c855035250ef102100c4c2e3",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "e0e2b1c3271766227bdb095d5ef82bc05a2013490bf5831e71627245692ae548",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-076-front": {
+      "vector": "production/c3-tile-076-front.svg",
+      "sha256": "89805db03451cb284ca786148521652be242488cb23d5378b9de58b921e8cddb",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "2f0323f2908f2b7e834d90922cdca94dd89163c6aef51172d6d9bc273001ff2a",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-077-front": {
+      "vector": "production/c3-tile-077-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "063e3cdb50b466b3553ff8b831e1d379adbe15baa3986e07a374a90c5be55cc7",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-078-front": {
+      "vector": "production/c3-tile-078-front.svg",
+      "sha256": "3ff0820464e680b2b4ab4ae57d17f6ff1b5d729848aad06131b03973a6760552",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "cbe46b5964691da6f9979aa7d74208fe222c896627b2861ef8651becded70b0e",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-079-front": {
+      "vector": "production/c3-tile-079-front.svg",
+      "sha256": "034f5f1159f5402dd05730d2c3c4f8338341d4c1f0c24135fc767f0e7b0215d9",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "a3908e858c504e3db4ebc5c28df8bd89870238bf4d463a96ed79b719878e6b9b",
+      "markers": 3,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-080-front": {
+      "vector": "production/c3-tile-080-front.svg",
+      "sha256": "384b73381fd113a792d87e5b48f9f4800d44d7557af99d8733b183ef13180ac4",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "6479aa0578b0f7502eecd5e89883955ece5b8051eb525ea3cb11b13852226ce8",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-081-front": {
+      "vector": "production/c3-tile-081-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "a1da94385f478620f86ffa4a9e2824db9488828475243731d2aebaefb2b03788",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-082-front": {
+      "vector": "production/c3-tile-082-front.svg",
+      "sha256": "5e3d707d8495485c5adc5c324be51d844f6912b4c41cfad0ec68fbcc5b56435f",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "52e8c28f6de37217e7d4c22060a6416874debd122643c1e36b8597ab034c7e03",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-083-front": {
+      "vector": "production/c3-tile-083-front.svg",
+      "sha256": "c1ef122ff7da75dd39e169b45df8731de481445b71d99d35e950da98829ce85b",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "48c9390856edc8ce7403e2eb7f384981581a1d82476a778cbce298fa5b6f2130",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-084-front": {
+      "vector": "production/c3-tile-084-front.svg",
+      "sha256": "c63e9f981da46cf9be119cfe4fc4f864c58770a1c6aa648f34e4d91eb9aca8fb",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "cebce424c9fba04d919c0dccda3f0686c660ec1fc5a2fc385cf08480b3bfe489",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-085-front": {
+      "vector": "production/c3-tile-085-front.svg",
+      "sha256": "83afa15f888d3834df73b8768d09d7ad293bacf63d17191c7ddca35904642071",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "0b11460813ca17232fb36e9dabb95b57dd871dc4f8111c697591dafb06399f13",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-086-front": {
+      "vector": "production/c3-tile-086-front.svg",
+      "sha256": "f7796c77ce8d0118a1675996c1f3c54158f803f4cbe453f6a99c8b93ac8eb39b",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "a7ab9bd1edef9d52042a407cc4a1020db28dee3b8e055c8c29a180c58e04b698",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-087-front": {
+      "vector": "production/c3-tile-087-front.svg",
+      "sha256": "dea03c12d1e095a0fcff7915320a9a661ca2bcdd16ed9627e524e64aff1d99b0",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "7532cba02d8a6519c456b91dc8001e0326a341107f88ab4d96d096e030573029",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-088-front": {
+      "vector": "production/c3-tile-088-front.svg",
+      "sha256": "701578736c2ac6544dc8d520c652c523f12696bdc695517c84ac7e466baf0913",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "3a961a868a924174997730600b6d60cc95885a8ce523d33ffca7929488291d81",
+      "markers": 3,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-089-front": {
+      "vector": "production/c3-tile-089-front.svg",
+      "sha256": "8369e32b044bdc8e3b631e03a4f4acd03ad980fab8386cc4f25ff11c868c718b",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "5c42656232da595556dc81778df9004931e44422ec5e17f4b91034ef45fede96",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-090-front": {
+      "vector": "production/c3-tile-090-front.svg",
+      "sha256": "f698973013edc2089c6f1a3feead4cb3a8991e7b50eb5973cc3ac408dc99dcf0",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "991efa187f6e98bf33518a7a58fd764fa647b13a3d962663b8e5412884c6314c",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-091-front": {
+      "vector": "production/c3-tile-091-front.svg",
+      "sha256": "5ec6bd44b99d9d28f4efc56c50b7e9fc0ead549a103701522522bfb08f0545b9",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "c20c227950df3495ea0a02e6834bde3ceb89be02b2aafc2b4cbcfa4d661acb60",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c3-tile-333-front": {
+      "vector": "production/c3-tile-333-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "7425dca2c81cb6397c20d61c06cbb98395fdb3427da08d206bb044338c766c50",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-001-front": {
+      "vector": "production/c2-tile-001-front.svg",
+      "sha256": "2f716a45afffa390bfc5b26a3f3982ec19f2c61e57871156542fbd5a79dfb302",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "33b46ec6a2328e04d9d417dbddb59b111f02d46620b1dd08c3484387f7fb53b2",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-002-front": {
+      "vector": "production/c2-tile-002-front.svg",
+      "sha256": "bbd072f9e1b1d75696c873366b065c8749cdaabaa12ce3b43bde9518211c0b83",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "4978baf7084db258ad63ff27b2d4cfee6648f7fce60a9f38ed52f5b348fd7680",
+      "markers": 1,
+      "hiddenNumbers": 1,
+      "pending": 0
+    },
+    "c2-tile-003-front": {
+      "vector": "production/c2-tile-003-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "97293253bed15d97dc79f65640a205b455f6402adb51afdc5108d5df78f37bbd",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-004-front": {
+      "vector": "production/c2-tile-004-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "3447b90a66ed6a8b7c049e4c649a44bdb445c75037df1300ac708b4f66aebc5d",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-005-front": {
+      "vector": "production/c2-tile-005-front.svg",
+      "sha256": "ad09c45438c7b0683e86d3ce59fa4bd1237d6569344c5b3131c5696cecb4191f",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "45d1c952b509956dcf56e9435037398c462581972afd4950935f9594dbedd45b",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-006-front": {
+      "vector": "production/c2-tile-006-front.svg",
+      "sha256": "8b202194c3d122d7cb60302f1fc936cd536f72692416d6db422524f50fa0a4e1",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "e2c5d8d84d5a6fa66f6669e56700dd633db2c1ca6b6c2b204fdb614add53f920",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-007-front": {
+      "vector": "production/c2-tile-007-front.svg",
+      "sha256": "5a76784865641b9c473446dba9771cd512ac55ae1246707cd96bd2c1128d51a3",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "f573bb08d2628c83ac0a2b3f22c0da8649e2632c8d17b2a77e52c4c7dd1d79f3",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-008-front": {
+      "vector": "production/c2-tile-008-front.svg",
+      "sha256": "5d656fbb5efd81c153a0ee3527716346791769ff6c846ea0ef73f1cb40a482a0",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "a86c3271df62c104b4bbd650e14680344d0d072bac3324584e8be70c138e9b3d",
+      "markers": 1,
+      "hiddenNumbers": 1,
+      "pending": 0
+    },
+    "c2-tile-009-front": {
+      "vector": "production/c2-tile-009-front.svg",
+      "sha256": "216e8ee89d08eaa70c60483c8a3fd49931f2499f5345a33ca858db31f5eb35e9",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "6de41e53ed4ee28dc5711ac36964501a519597bc7bfdb7c491992002f8ba75ef",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-010-front": {
+      "vector": "production/c2-tile-010-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "38e996fa7596442426c36aa120f83ae67d5c9b515dd41e968b013ff8cc52d1b2",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-011-front": {
+      "vector": "production/c2-tile-011-front.svg",
+      "sha256": "7028872afd4c4d4f5a1824ae0699d7329c26983f76995e3e9ffea96be8d7c86d",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "b12108aff35138c3411e63dff0d17e9b19498e6d13c12e2ecf801bae14dfbafd",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-012-front": {
+      "vector": "production/c2-tile-012-front.svg",
+      "sha256": "36ab8e6efb5bcb0851ef02f43a6a84d274cb2a4f4b4b3120c036ac3fc342f91e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "357ef3d449e29b718a15286e3a176ef98394f4e31551f29a6fcbaac8a83ed9a8",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-013-front": {
+      "vector": "production/c2-tile-013-front.svg",
+      "sha256": "a69cf418d236a9d353bfce7d4956b2c85d77f5ae2a4ed54df11940fdd1049131",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "4a864bb6a05447ee7bcd05324bb8091296fd01be83ab55018f9b2bddc8af4755",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-014-front": {
+      "vector": "production/c2-tile-014-front.svg",
+      "sha256": "04868b29922d7116f253df2ac5b73f6c95d8fb5824f8be6ce783f919aba0cc42",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "e2f0056b2d7368dfd135831ed6f0a9661fca1118a39a6b22fa4265cee4b06f36",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-015-front": {
+      "vector": "production/c2-tile-015-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "d7b88a0c18ce54cd2c97ed45208157a84245852a432ab1f97c65be42800181c2",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-016-front": {
+      "vector": "production/c2-tile-016-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "67ab2d39a07afdc617ab61a17f40ec8c26ef790fd5d470a08956dfb3d425908b",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-017-front": {
+      "vector": "production/c2-tile-017-front.svg",
+      "sha256": "d58703a20c07d112a1bf387d8c47010aadd95ec3738682a8a28269dced579ba5",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "35bfe3891272c0cca66b70ffbfb22f3610bdfe015ce9b33da128b9967a03c503",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-018-front": {
+      "vector": "production/c2-tile-018-front.svg",
+      "sha256": "9d6bd15bce507e699f80bdd373b9681b0d6818f683a8db44001e71e4eacd4ba9",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "0bcc5ac5d5b459fb7004993ac2af3bddb2b2c511a9e0234e0a9e9081f62c8d7e",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-019-front": {
+      "vector": "production/c2-tile-019-front.svg",
+      "sha256": "db3323b81686610d4c68bb5533a852dceb6f2ac800abde80cc6555b54501f563",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "ed85023fbe3f33d2092d9db8031492e812789285a3627b5e44a0d2678738dcad",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-020-front": {
+      "vector": "production/c2-tile-020-front.svg",
+      "sha256": "0a5b47518cb46cd32433c0c99789a15cbe6048a585c0daa3ae67a92483407185",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "912fee75cfb93bc75653bf8eae973cddc49c828a8540e2294596496fbf1b2c48",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-021-front": {
+      "vector": "production/c2-tile-021-front.svg",
+      "sha256": "1124a51ecc71761b10749799b38de84ee5e28d045e89e21c329f8873883f2c5d",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "89dad1008d704658aeb1b053fdb3fced0d174af36f92c70fc316e5edf2250b76",
+      "markers": 3,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-022-front": {
+      "vector": "production/c2-tile-022-front.svg",
+      "sha256": "bf91157df22b9e8dc907465b3566be432145c46751725bd1c5f63b6bf4964a48",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "6d9815a7a1a259c5bbf6cce35bd9bc45437d0c698888b3926a89b032f6ed25bd",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-023-front": {
+      "vector": "production/c2-tile-023-front.svg",
+      "sha256": "59d94de7ad2b783c05be004fe48e6b93d8e0b53b547aa34ac44c0e67332fee01",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "a1796083395498dc6f5d48949eeb9aba4aa8d544f5ba284c18b874ffaaf2ba12",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-024-front": {
+      "vector": "production/c2-tile-024-front.svg",
+      "sha256": "24a93d863827528a20043e51018040543860656319a4caad05b663870362c4b3",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "dd17e3a85515cb49a6dda5e6f6c01511d2b479c3e1e301d52712723f4689c0bc",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-025-front": {
+      "vector": "production/c2-tile-025-front.svg",
+      "sha256": "15f1daa25bfd3282b4d5594f078bfc9d0f4a3fd00cb0ba211dc99839fa108b00",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "a47005163c815a6bf6d34ea36a784f84cb7c882bab41b9d8b9783740879633ee",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-026-front": {
+      "vector": "production/c2-tile-026-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "27fac84effa2e7cbd81fac783ed12d38ac735c8243c8a94c7771a92c7a0a4313",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-027-front": {
+      "vector": "production/c2-tile-027-front.svg",
+      "sha256": "7e105bc99dfe07482c813d166ba0bce6d25a52a7f5e1cd31fca8991053c53073",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "511f25c851c024c050c9777e44c1e93e8b165131aa9014898a3bafd6b4768d6a",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-028-front": {
+      "vector": "production/c2-tile-028-front.svg",
+      "sha256": "a2df9ab8863f31c9516c1d9ebb3597f12fa382a186330ea0c3115577e7ec2ca4",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "351574e73c3ca5a1d20a44f318175e506b56a87b086c72aa5f212ccf2a573724",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-029-front": {
+      "vector": "production/c2-tile-029-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "dbbb80c719489b9b007c5ba50ec41e5b36e96334c4da96ff553a6cd0108f3bab",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-030-front": {
+      "vector": "production/c2-tile-030-front.svg",
+      "sha256": "ee7fd1a53896d64195996888a237dbe9e658db3a288d9158fead0166d2805d3f",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "21699443119498b7d72bb6eb05e6297bea3edc19fa6644e05773239cfd318463",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-031-front": {
+      "vector": "production/c2-tile-031-front.svg",
+      "sha256": "c618b2f86717b4c4ce3ded1f9c8bf259d4c7a1baa783fe9f14d53d3b080b4443",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "cc7bad1260ff215795f1f248cbbe331ae3a2189b5d8df3d4df604cf79aba8110",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-032-front": {
+      "vector": "production/c2-tile-032-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "8656fc4c5bd7a1dc0296db77ad69a0fd71fad091db88f7dace2721ab012731d0",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-033-front": {
+      "vector": "production/c2-tile-033-front.svg",
+      "sha256": "d1b9131c2d0f96245008e7833b2f2776dabdfc8ad471a5414eedabaccc9be1e0",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "1b096743863ae2047893a4b93e736e28167f555f8eebc9839ed45c02ca9a506d",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-034-front": {
+      "vector": "production/c2-tile-034-front.svg",
+      "sha256": "28a3715af7c3d5b3a97819baf9c0f79cf0d9cb9d7fa8678f76d5b7be08b27339",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "2473075ab77213e92d5b28701746173b22cb515df2f54753dcd98a83cb78e83f",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-035-front": {
+      "vector": "production/c2-tile-035-front.svg",
+      "sha256": "e4a49b397c679894ded0e6b1cf5f876616042e4aa85ffaa2ba989a6fbe99b507",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "7bba099a8c2ece4fd583855d6e2dd2c344c0b83ffe1234cad40f01bc5f7f1406",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-036-front": {
+      "vector": "production/c2-tile-036-front.svg",
+      "sha256": "7511ed34394de247fd9fe0fd316d2eed7a8acadfa0b92c66469fd47cc8bc4a68",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "b26733042af100d721cb12c9655adde499f1262cb556dd0f520f0e11e04197b7",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-037-front": {
+      "vector": "production/c2-tile-037-front.svg",
+      "sha256": "94504c6695a64e25fc8605c50a24796b7ebb906faf64f1059f763b4d066b324e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "fa983c0313472a71a3c99b5b73c35c456f8e9207da14d261cbbd564cc374e8d2",
+      "markers": 3,
+      "hiddenNumbers": 1,
+      "pending": 0
+    },
+    "c2-tile-038-front": {
+      "vector": "production/c2-tile-038-front.svg",
+      "sha256": "f3fef4617ab8325bb0436dcf9413eea938dd595be3d70a519950f1afecf29531",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "217cbcb97de27885b892edf658d8d9502a4be7ad01a7d846b9d1a42d4c8df001",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-039-front": {
+      "vector": "production/c2-tile-039-front.svg",
+      "sha256": "a0bd6e69c365f442522866409347e0771ed49459c24c01c045469a3dbfc73d76",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "4bdd529a55911f01092a96f14239d005e5ed4e67f8bd423e9c5955601cd1459e",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-040-front": {
+      "vector": "production/c2-tile-040-front.svg",
+      "sha256": "153845e46af4f255bbd46a5b8c9706fc2fae6609893fb1722ba745d2b8c3720b",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "2601d28ab503487aab5a25814ae746d897a959dcf0c227405eb8f42e1b061548",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-041-front": {
+      "vector": "production/c2-tile-041-front.svg",
+      "sha256": "205a93f5e7064277a5e5525cd482f66ff9c59ca7d8e29e0c0a8222edc0affdfe",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "6d85431ae8f0bf0d7003adbf169385508adebc64586c1f320225bf978560a52a",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-042-front": {
+      "vector": "production/c2-tile-042-front.svg",
+      "sha256": "3f77fb49df7688bee517aeffe99bbf9f864abf6d304a0c9bd15c0c2bacdff816",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "a09237d8e68d8499a5bb44a8bf4b4390412a78c25f3810027d3c9264f11c05fb",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-043-front": {
+      "vector": "production/c2-tile-043-front.svg",
+      "sha256": "066ad931cf78da82b88a3f3fccd0d85cef710b3d2024a744ff5afb8a048ba1bd",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "3fbf1070db5343bcb4399fb77b93687ae6c60f668ce36be4e3a4cf0fb0683e29",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-044-front": {
+      "vector": "production/c2-tile-044-front.svg",
+      "sha256": "eef60694594c0c7403cf512f2a70c78cb478ac6f37b5310e0f0708d1f257050e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "eced0e812ee5b29438faeb2cb79d890cd00c6af24954eceb235402b5d5508761",
+      "markers": 3,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-045-front": {
+      "vector": "production/c2-tile-045-front.svg",
+      "sha256": "a5a93cf03f8f52405ef57bd886a46528752f4ebea290146091de338fb429c16a",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "11473b1603964e17c3fda8ded52b3e142f5d6a30fd01796b9d44345d9458ba8f",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-046-front": {
+      "vector": "production/c2-tile-046-front.svg",
+      "sha256": "78dc191706781691fc01105c207ce49848ab60090752f7495d1de4551ec9bb81",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "3f43d432af3fc77b37e4eeebc2b93aabbfd534583a44cd5331177902b9b0244b",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-047-front": {
+      "vector": "production/c2-tile-047-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "26ce7130e9d2d186e1c0eceb04c5f9c61ef28071485eecd6eb78e18ba5bb8226",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-048-front": {
+      "vector": "production/c2-tile-048-front.svg",
+      "sha256": "e8d69119c104d7f9df8b670dc08ffa9fed80a6625bef30ad482a311b72328dab",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "c36a0d711bfd5f1b456e96125105341b6aa28c45ed46f338a29078ef946c3da2",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-049-front": {
+      "vector": "production/c2-tile-049-front.svg",
+      "sha256": "79cfef17c3830bbc123207e068acfdef36913e41ecf088774c0a1f36101ffa4d",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "088e72394f0492cb614eb762c15d9d131c3a37dd5a3c998afd3445a803a907ab",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-050-front": {
+      "vector": "production/c2-tile-050-front.svg",
+      "sha256": "e1d652e341f796e02c8a110f61dea6735627cfcd0df65a05bd731aadfd5d5501",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "7da703c1bda94e33ffec8412082763308c8e060bbcbf3a8f2e575dc0c8f8e769",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-051-front": {
+      "vector": "production/c2-tile-051-front.svg",
+      "sha256": "5377a08a76bced4573476a6a8a42c8e436ed2001c7aba295e689149225974a44",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "4e4817bef539dd337cdfe7649f6ab43428afe8649f42213853ab2e53b4387439",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-052-front": {
+      "vector": "production/c2-tile-052-front.svg",
+      "sha256": "b568d74c83f13521d994b7c80e2ca0a66adefb697c96f714a5f4f8cf101fa5aa",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "cb7def485c8edb33e23a04e0bc369ba1997b25e620254b3d4dbc0ee151142525",
+      "markers": 3,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-053-front": {
+      "vector": "production/c2-tile-053-front.svg",
+      "sha256": "e883761428237a079424ddf7804d00f33e29d4773691de2034c4063621799c0b",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "d152dc22c6006799b24af15bcbf9b7274bb7ab9d2580bf02c4aceb21c666bf35",
+      "markers": 3,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-054-front": {
+      "vector": "production/c2-tile-054-front.svg",
+      "sha256": "0721d4eaff246a6f097dd8c78d20a871a91abf3059dc74ca2d1645d0eb4d719a",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "098727bf60a21022c8c17f4ef1846ca7bb0582d5387f8e4572b9e94294dec41e",
+      "markers": 4,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-055-front": {
+      "vector": "production/c2-tile-055-front.svg",
+      "sha256": "b97a7e5e7a9f0ad5f057d06362210da5db9ba3ab8b4efb4d29a7c1d8fea12b5c",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "f8b1a576d4ea54446f42f29e921da38424a2326f30fb640c60813361c59f8421",
+      "markers": 3,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-056-front": {
+      "vector": "production/c2-tile-056-front.svg",
+      "sha256": "57a10a3521268f8367ab7965c0f9189b1112e2bf3944fd530c337103b4cf6c04",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "5d5e0a4bfed6807d137c8cff9a50693e24bcd6569f54ff0cf16d649225f82c04",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-057-front": {
+      "vector": "production/c2-tile-057-front.svg",
+      "sha256": "3a7e29d87afa3d03806ef54a02f5d0764aa206452c92e62222c16ef4dd3f6ceb",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "8439d11b2274822339d19f5bbf793550d2b996baabbc1535ada626d80acad6ab",
+      "markers": 1,
+      "hiddenNumbers": 1,
+      "pending": 0
+    },
+    "c2-tile-058-front": {
+      "vector": "production/c2-tile-058-front.svg",
+      "sha256": "9aeff4e32964f11504dbcc06e7dc8e21e665acc0f10cfa561ec0ba85e1d8333a",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "98ee70d525d16b782dbabda2c3cf6ffcd6286ae40d1d87dbbd8e6cbd8ccaef8b",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-059-front": {
+      "vector": "production/c2-tile-059-front.svg",
+      "sha256": "54d97338e248f1f83aee0d4e8e4dc024a13d35cd802a0a6b31e2f53d46aae03e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "675ee1a6c8ab6c0ad9573ade079cd4869b8bc39c5551471cca4bfa5d160df33e",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-060-front": {
+      "vector": "production/c2-tile-060-front.svg",
+      "sha256": "a6c14b31164e30e9306eef8c6492c692c585512e9ad59d919f2b1711c6290933",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "f68c8eda8bc0450b6eeeae99bb2f1f783d0911efaef49078b26ecc3b22d208c6",
+      "markers": 3,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-061-front": {
+      "vector": "production/c2-tile-061-front.svg",
+      "sha256": "22ff608dc3a16d7d80d59a9e08b669ab7f75f73568500ad39af5d48cab83e041",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "a21a521eeb5d354a7165842072c7ebe417d8672d230fa3a031b9f1b646bc1601",
+      "markers": 3,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-062-front": {
+      "vector": "production/c2-tile-062-front.svg",
+      "sha256": "358c707e983d18bc83269568931226373e1eb97601b135c61e5f1a4a4f398130",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "3978b721d219bcf5e45cf25868642272df175e492275adf8b4d72654e4ad14b2",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-063-front": {
+      "vector": "production/c2-tile-063-front.svg",
+      "sha256": "3dc4b27edb769b6330a44e1cdb66f1b5739d912e4f8f6a64298715e90f44b5c3",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "ac1e884d3b6f50b07a840ebb135193f25ef8b7961ea5cde0ece8139e6cb01cf2",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-064-front": {
+      "vector": "production/c2-tile-064-front.svg",
+      "sha256": "4713c31c0ce7a6ee286e7479cb8ce0b188c346314c34085b686a41cd9ba935fd",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "876fb51eb6f9600e5c022882a1844a7074fd4cbd326b237d7ee9bbc3d2154110",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-065-front": {
+      "vector": "production/c2-tile-065-front.svg",
+      "sha256": "f80ee72f72a0439874739bedd8be8263b38c4c0197ce7afb98a2438a7d047725",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "f6d7b6130688687693ea8f1c21d7b81850c3482c6c9ad761619471bbe31a55b8",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-066-front": {
+      "vector": "production/c2-tile-066-front.svg",
+      "sha256": "e4be441f6abf469dc7f5be0581758d53b72d03203051158dad9b95309c293377",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "36c2f0d043503a6548729e3824b06cfb619cb56efd78351605d8df989ed1acd8",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-067-front": {
+      "vector": "production/c2-tile-067-front.svg",
+      "sha256": "52441499b8f6f3d6498536670a681534cdfa586f63e4c7f545d3506c6ec68246",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "cf638f3ef1a332523bc1367bfa73c7731ec516a4329587a0d9cec78df19e9fcb",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-068-front": {
+      "vector": "production/c2-tile-068-front.svg",
+      "sha256": "0b96a2b7af2dbd5cd1d484f7f7b60d50327bf64e6fddaa5ae33319fc45990281",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "16f74ce5421f5b03d9966340d899327cf7b4ba12da91bec520cf4da139c99d13",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-069-front": {
+      "vector": "production/c2-tile-069-front.svg",
+      "sha256": "545ea540d05ce6f421ba7c28da3d2f1c9916d30a747d41fed1de45e106a8759a",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "124f1ecd0d94f52abe0397417885bcf79ee068a3f303b9903d46c0fa521479dc",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-070-front": {
+      "vector": "production/c2-tile-070-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "82876f1b1808c06446ba652ff421ca12a4303625abcad1c0d3559a45004b8400",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-071-front": {
+      "vector": "production/c2-tile-071-front.svg",
+      "sha256": "565790b45cc636c5b5d065ad4ccfaa40de270051c4f6c737cdc21c40da8d2ae6",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "2ac7adeb367451c8e02d334b512c057cd540e572ff50f6ba96438aaa8142e3ef",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-072-front": {
+      "vector": "production/c2-tile-072-front.svg",
+      "sha256": "649d09d3d824f31942794a3e708b2596be971267f2ba2c49ddd7e3dcb1c74003",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "823823b8c1f3dc884faac0cbb3dd7a6c2c88a28f96b6c97c590a99058ba5131d",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-073-front": {
+      "vector": "production/c2-tile-073-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "65d011942a55311c43943d784ee2e8ffdd537f7662c4482050430a2deff4d736",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-074-front": {
+      "vector": "production/c2-tile-074-front.svg",
+      "sha256": "ad0a58991dfb9d0371de7adc70dd71898dc648eb721bc100b0df3faf33b69088",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "d11ff4f6308670d3529177fb1d81ce318586b159f42daff08d07a3df982ac13f",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-075-front": {
+      "vector": "production/c2-tile-075-front.svg",
+      "sha256": "4bdace8368757d7bac18c0745124cc74bd26d7ab0d19ded43ea3e43f98f42e35",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "c465d50dd4af84b2fcb6487c40e72b118a905c0846680ed7f5c9ca92de3e4178",
+      "markers": 3,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-076-front": {
+      "vector": "production/c2-tile-076-front.svg",
+      "sha256": "6face697dd251ed511eb70ea92f8f9b0c952f116314d9a8716d0faf39204d32b",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "fd96af1826b5560d39e013fdb69cb6394c5cbb4e0ca195fb20dc98ca3e6716ab",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-077-front": {
+      "vector": "production/c2-tile-077-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "25d99a8639407400c9c56d93cfecac7af07b3acfa56ba667e8d0eed831d75ea2",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-078-front": {
+      "vector": "production/c2-tile-078-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "e097c89d3515d43009bf0533777ea78986788cc1918b3baf84d8efa74e55283f",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-079-front": {
+      "vector": "production/c2-tile-079-front.svg",
+      "sha256": "ea2d316494d507164f497d350ab81723d9d7aa499c383b73ee4be7aa5c277f52",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "adfc55c6d455cb67e907428d27585849b10a7e97c2396f93ab0a86a7ec2fd682",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-080-front": {
+      "vector": "production/c2-tile-080-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "3f8ea603fa4953d72e9bae81cb74ef43bb36fd2c63238ccddfebded879516e48",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-081-front": {
+      "vector": "production/c2-tile-081-front.svg",
+      "sha256": "aa3ff8c29a2ed5d98aaf08e532fd7463bc05beaf942faced6f9fc127cae802be",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "d396729ae29dcc8b3b3d7331dcd5718c595fe5a1e3c072c4ccb39ecc7c5b6f97",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-082-front": {
+      "vector": "production/c2-tile-082-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "b680753da6d66f4ee7fcfb57005c025c0da9831877e63b24be5ed560b0a14fb8",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-083-front": {
+      "vector": "production/c2-tile-083-front.svg",
+      "sha256": "271976e2a34c722385edf3537c346608402260217a7ad2685eb8300cce28e864",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "c7516956992084677d6d04db6d72999a24ac4077a00aef06f5f899169cedacc6",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c2-tile-084-front": {
+      "vector": "production/c2-tile-084-front.svg",
+      "sha256": "af52c1f04096c7216662641dde5e445fe31ec75db167f88afbe05dc90ada0316",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "29b4f149c000d4bc8a7d9680e2e60b13b1c58133fa6172883a1b36250f6cf268",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-001-front": {
+      "vector": "production/c1-tile-001-front.svg",
+      "sha256": "f94b19a394285fa58f9091a0635a4173bf7c4261138886c6ad79dacd4c2caf76",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "761e3239ecfb7b40ac4cfc45aab87444770364a81057c9ca6c4ecdc14fc0a6d6",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-002-front": {
+      "vector": "production/c1-tile-002-front.svg",
+      "sha256": "903779764522dee17ed464523dc23c7533726f8cebb5764fcfb0c32a566a8c24",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "919f66fa195df3a6114d2314bfc5ddc4fc85e999151574276448e596b2d743a2",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-003-front": {
+      "vector": "production/c1-tile-003-front.svg",
+      "sha256": "1a63bf7134855d43cac6138b180bd4466b94f710e74f141f1c08caeb861acce7",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "06389a2995739e3fee116b6aebc656ab514b2ad7b825e053ca6e7faa868fa004",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-004-front": {
+      "vector": "production/c1-tile-004-front.svg",
+      "sha256": "c526de281578dd988dc9a37705562559566767435b76ed8a503921c72c79378f",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "445e27e355ae90610f89341402712c1220efd4f2c1d0a2fd87d3a69e76fb451e",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-005-front": {
+      "vector": "production/c1-tile-005-front.svg",
+      "sha256": "5015dffce6a6ab91be0c02cb6b960e046c98786aba762caafd33c0564d49f76b",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "7d0e5a66199d196be001df633554c58aa248b648c28881c8c2eba7f4b3b79c57",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-006-front": {
+      "vector": "production/c1-tile-006-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "e027bb8f7dc2f0adc5ccb0aa0717780c31de2a742877405e45956e8878226721",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-007-front": {
+      "vector": "production/c1-tile-007-front.svg",
+      "sha256": "e6cff7d466f681111a20f146907b958df409b27828e3ccde3bdd153cdc35fdf6",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "1bc278c3612941aed610c0045533a220c45ea3f1a73424a3110a8060899e19db",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-008-front": {
+      "vector": "production/c1-tile-008-front.svg",
+      "sha256": "a3049c0c18f0185669028f2ca1f22ba1d6c5e6f28702fefc8ac5b62023d34a4f",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "b82c627b9611409abe317da440be4dfe58be1b1a8578beb3bb5777e99e6594fa",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-009-front": {
+      "vector": "production/c1-tile-009-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "ef46ee778bb44b0b4293d72d2b4dc58097d526bd0d5a150c29a502aefd5ddc94",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-010-front": {
+      "vector": "production/c1-tile-010-front.svg",
+      "sha256": "f5a0b26b4dcf90338c2cb8e893e2af76a5a8bed21a9df94a9922a4d6e091ed73",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "bc657ee2bccf3732190edf411bb3e0d2710d492e9f83528e4a9dcb2b6b75ee68",
+      "markers": 4,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-011-front": {
+      "vector": "production/c1-tile-011-front.svg",
+      "sha256": "54bd30debba0f49383ea6624ee03175286a7af1551faef47075192e0cfde6ec4",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "66084b8273d7c512d630d0a0c668ab46222880088e941026fe1374415f09a253",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-012-front": {
+      "vector": "production/c1-tile-012-front.svg",
+      "sha256": "7bd53d4b2172adc675ae43a882a31b28b6821667b34853e63eeceeb6df0969fb",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "0e368aad7f8cbbc4a6dd8e1e0fccda1f8185adcb598fde169aeee01626ac28f0",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-013-front": {
+      "vector": "production/c1-tile-013-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "035823b4df54a4ebe887bc3b101a443a8917f10d0f8497e15107b4ad9e3f0c94",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-014-front": {
+      "vector": "production/c1-tile-014-front.svg",
+      "sha256": "efac10752cf8565490ab01d5aed121b186dc42d1d9fd02a5d0eacdbe93cb8eac",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "7f343761cffb92ddcd30ac68b74976255d869abe4af6b415e69cff072e19639c",
+      "markers": 0,
+      "hiddenNumbers": 1,
+      "pending": 0
+    },
+    "c1-tile-015-front": {
+      "vector": "production/c1-tile-015-front.svg",
+      "sha256": "f2e22df30996c056c0428fddd5073800a5eda6a87fcdda457988fc4386a3139b",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "9ee922da4507b985813be61d95f33cfbeddcb187e1998b39e58aa3055a736b3a",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-016-front": {
+      "vector": "production/c1-tile-016-front.svg",
+      "sha256": "69323dc9d2602934063b0d090d857dfcb753f8a81464da90be22d9c4c335056b",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "156c5e8334c3a080771a17f6134dc977b28e5d7b384bc1679c534a837965b002",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-017-front": {
+      "vector": "production/c1-tile-017-front.svg",
+      "sha256": "764120972f662dcff0eae82a4210cc44325728b7944665687830ce3836081c76",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "93f4ba7717bcb7fba902d69ccff51afa26a675fe3a7f586aeab0ccfe0c508ed9",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-018-front": {
+      "vector": "production/c1-tile-018-front.svg",
+      "sha256": "a040b925ad8b44cf5b2e4c00cbfb9ef881eb4b2c2f8db75ff39120e495c3a2ab",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "3184fcc81618be4b71c98d0535701eb52096f188273784ae4f0ea78b7659e631",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-019-front": {
+      "vector": "production/c1-tile-019-front.svg",
+      "sha256": "b14fcac31b705e6a45b76af77099a013df79b123fd9df08557d6a8f3e57ac531",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "566b8d3a275b8e68bb0821692261193d45e7955748099951947e2048e5e2a594",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-020-front": {
+      "vector": "production/c1-tile-020-front.svg",
+      "sha256": "03f9b3748d216e5a58d2fe12f1f8cf64a21bb6e9ee99aba808ee9f95488debcd",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "5764792dc03cd36be10a601e3d00252186c836b2129e773430d1d6e328163f05",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-021-front": {
+      "vector": "production/c1-tile-021-front.svg",
+      "sha256": "a8d3b458caaf1b9f18f0d1f7b29d95b5c246e40cad5467921a6af01b2d78a4ab",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "0159c560227e5f6654aa0a1d85e2ac0d488b9f7732464dc0b341154773998e8a",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-022-front": {
+      "vector": "production/c1-tile-022-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "88685aa83bed289504fa76fdaa9b59f2672e99c265c899ed15c7165d4310495f",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-023-front": {
+      "vector": "production/c1-tile-023-front.svg",
+      "sha256": "9768dcd3c902dcd1bdbe9d24a73b716e3f097e900d8981aed2b1d1e1bb72a6e8",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "50f78985bc6f9e9ae180c83407d721ef6841d4693dcf1c9e865f21ab71ea58dd",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-024-front": {
+      "vector": "production/c1-tile-024-front.svg",
+      "sha256": "d4adb98c32f4ed2ed93aed9f759426f06f9e64cfb150ff0723eb74541f5c41ae",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "6d9740bba8c33bea3f14fb16bdab20048a4329e18c08fa5464ade1f679908d95",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-025-front": {
+      "vector": "production/c1-tile-025-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "be5cc41c3c24fd8ea105d16e128276ad88c398f1f6c9c064bb31f8aa01788a01",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-026-front": {
+      "vector": "production/c1-tile-026-front.svg",
+      "sha256": "460f1ea93d572ea2fb499b623c78fe53302d0818f9cf0776139fb3032b33d79b",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "a5822d0ad34e6d725de24daf1693fc695faf1b77445267cdc1d64a2afc98724c",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-027-front": {
+      "vector": "production/c1-tile-027-front.svg",
+      "sha256": "60f3b96167f58b0a1236ecd6d3f083c0fd4a41f7a5cb300db6870174dd701c29",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "bb2ecfe2ef787bb76734192508f026995bfc0493cbcfeccca815481ef82d941c",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-028-front": {
+      "vector": "production/c1-tile-028-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "70980c8be12fac85e58b6ce77d217777dd1430c3c2ac92a4c210eb348ec80ef0",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-029-front": {
+      "vector": "production/c1-tile-029-front.svg",
+      "sha256": "f87901f5137871dbf252de6c1b705bb016e1f078ba0e5a9534778ff41abdf059",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "8b88c135d01d6f41f291ae6d0af2904864b3e54e29fbe53e03abfd736bcc7434",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-030-front": {
+      "vector": "production/c1-tile-030-front.svg",
+      "sha256": "bc0fe32fe06e6634338d90cc3cea1d4308fca6a5a1390f5b6064f446b5979137",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "9eaf4d95a41b34c9dbcb3147546e58e608d3b849c35a07314054c294c16321b7",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-031-front": {
+      "vector": "production/c1-tile-031-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "383e4ca3d9e8686bb4878cb95ee6261226f5bda3215681092c7e4c07d6d72af8",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-032-front": {
+      "vector": "production/c1-tile-032-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "bf60f755500314a53fb04170d85a0c98f69a23f83fce82165ef505b3d0879d15",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-033-front": {
+      "vector": "production/c1-tile-033-front.svg",
+      "sha256": "eb2856c4ce3ab43563760ab87c42b318b993fe9044978277fc1bcb408c5021ee",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "c3f361425969d285fc2c79b6e9b2c33e80c86f5dc5c9ba5d0f38dddd2d1d55cd",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-034-front": {
+      "vector": "production/c1-tile-034-front.svg",
+      "sha256": "a7216f4c2ff73f2ab6bdffaea5ed114a96110d4979c6dad0768316bf38488ef6",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "0d5c3fd41eb2da7698ce274ed564367d6b091d8b5241adaef6fd2f201da3756d",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-035-front": {
+      "vector": "production/c1-tile-035-front.svg",
+      "sha256": "2e4bd87e11b11ebccda5b3ef1ee0473883c7433db530795b06e0bc9534712fec",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "85152fd5b7525736c1182d719b811e0948e1bf4378a561c54ff3eb074fe5a0cd",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-036-front": {
+      "vector": "production/c1-tile-036-front.svg",
+      "sha256": "5ab8dec686ca60cc0671a872ecb64e8204f8e766aafef3455b336c1f0d7344e0",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "4a784b2d94c97688382ad63f81be4b5cbec8f5ef9317b529cf0e54674aae19b3",
+      "markers": 3,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-037-front": {
+      "vector": "production/c1-tile-037-front.svg",
+      "sha256": "e9723fba1f154eee5dec721bb922903f19cd558b678cf81a55f0d67d19f325eb",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "cd155ab2fd18c19ef0ab37e6392b49b6dd1000d2f1017c762f005b5481c580b0",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-038-front": {
+      "vector": "production/c1-tile-038-front.svg",
+      "sha256": "e025ab49b90d4477509ff6fc78b66c2436fb82519ba2a5da253738d2443490b5",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "696ee82e123d40c672786ff2a91787a8008d6942153d2ff4bd74cbc485c6bd3b",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-039-front": {
+      "vector": "production/c1-tile-039-front.svg",
+      "sha256": "e869a2e368972ab9e1efde72034f789bb95f8c31d0f9cd641323b2baa6356486",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "ef1068bef33be3c2e6731980c54da382693963515791e545d4b7ea98224c8416",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-040-front": {
+      "vector": "production/c1-tile-040-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "dc47ca9257ff42c1cdd200f86936b7aa45757f062ae1c655d8793f650351ee94",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-041-front": {
+      "vector": "production/c1-tile-041-front.svg",
+      "sha256": "9c32b04068e306b2a2b0b40c044b2201356c812492c618f0bbc1810253f74baa",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "4a8373caf27e489ad668fe089f060fdc2c2d949fd87252470eeba24feed73a41",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-042-front": {
+      "vector": "production/c1-tile-042-front.svg",
+      "sha256": "a42e2c7fb2a48ed1b4b4cbcbffdd3f2dae0b865df268af45c331a9880496cd35",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "ce5355a0d6658f5a418cd1190b723ed09ccfe6ca8ec3a133eb30112fe05f4df1",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-043-front": {
+      "vector": "production/c1-tile-043-front.svg",
+      "sha256": "b22e8be922fce9093fd13b657294d917ce6a269f570061bb778d53cdf4a930a0",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "5927932b0d829071ab71a5eaca727ec7b2850e3c6813ed31c5d981b9aef58fbf",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-044-front": {
+      "vector": "production/c1-tile-044-front.svg",
+      "sha256": "492d267089906bfa4c1915c5348332cc0916b332ccbe764605e54f2435c01d66",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "4d5cfc04616edb0dcf44589ab92ddcb1771f68554675e9c5cf7e130da538d205",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-045-front": {
+      "vector": "production/c1-tile-045-front.svg",
+      "sha256": "11a1a2063db2fb0d9ff7f4bf5c94464aa66127f094d4a82279c5ab75c6a00422",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "467df38b79a28638d8343bbb326d2d94a698afd7657e97d8aef5ba9b195be3ca",
+      "markers": 2,
+      "hiddenNumbers": 1,
+      "pending": 0
+    },
+    "c1-tile-046-front": {
+      "vector": "production/c1-tile-046-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "45ab2c0351c5b8affa5373587a4a16fa2580d07dbea9af266562aa239ea5f320",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-047-front": {
+      "vector": "production/c1-tile-047-front.svg",
+      "sha256": "d0cb4d00801d30948cfccab964233092590cfd4764e3a04c6b1aa85b84c86fa2",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "94cef0e11510abec38965ac7a46324e4e7cd1e2aa9073af9359fe0448b5ec5d0",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-048-front": {
+      "vector": "production/c1-tile-048-front.svg",
+      "sha256": "dd791efd2a8804b7d8d9a504f5029300fa0a33f3d752c72b74bca856314d101d",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "138dc9eeb7a1c5b5e49c436b05085a57020bfc499562bd4147e9dc85f88728c3",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-049-front": {
+      "vector": "production/c1-tile-049-front.svg",
+      "sha256": "f020c849abfadc7167eb38ba07454525467f84f21e77b670846c4d3fda76c39e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "7bf1c8680f5c8f200730869a8d94db851cdab378d8ac100622c35fa250f01842",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-050-front": {
+      "vector": "production/c1-tile-050-front.svg",
+      "sha256": "516dca00e3f06aa9dbdb5a765741cbfc2aecd8507e5e7078422e1090700e134c",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "a4ab2f051958c4291c9d5a367e4476686f3a69a08a73992144a7363b05706843",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-051-front": {
+      "vector": "production/c1-tile-051-front.svg",
+      "sha256": "a80e49dc66d080ca9535662fef2dba4688b10e8c4366c3162fd6b0dbd0f5ef52",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "5d906d387e2c9086ba4cd9cd7970902febc770262219fa7ad704e9475fade188",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-052-front": {
+      "vector": "production/c1-tile-052-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "bf78528410b9f0311c3be20cffb5a0f0df82338ab9df9de5bce654ac5d547633",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-053-front": {
+      "vector": "production/c1-tile-053-front.svg",
+      "sha256": "8c8f0fc6ca172bd222feb858c9144c7b495934aa85e64df215129a4401e53c8e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "1db5bcb48cd50a75a55f33031e5e180409f77c6f5c769164270a8704be2e2cda",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-054-front": {
+      "vector": "production/c1-tile-054-front.svg",
+      "sha256": "9d42c62a4a304a19cfe7eb3c88358221dc482feb5ae0b05af9a9b163d8d32f6d",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "e8bcdabe4a9b49fa8f6b592cd06ea09a5705acf4a0c2514573b9690fc3afa4a9",
+      "markers": 2,
+      "hiddenNumbers": 1,
+      "pending": 0
+    },
+    "c1-tile-055-front": {
+      "vector": "production/c1-tile-055-front.svg",
+      "sha256": "0f9187f458b1a2c3678ec4de3893b4839cd9eff9a09e98cb6df803469edc90cb",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "470439a52ddf8b6ed3e82c2e24c3103bbcc8d1e647fbf6819805f59d35ea9f64",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-056-front": {
+      "vector": "production/c1-tile-056-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "fecf13631defb73a9bb1d7e8d64ffb250a6a9e9b2df144dffbc8e3630abbf72d",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-057-front": {
+      "vector": "production/c1-tile-057-front.svg",
+      "sha256": "b06fb0fab07d78e33995b8094abf9df4fbc8ceb394bce745127e24ccbb337fa6",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "695cf3b3cde5f0a18cd7ba5bb3e45a91f41327c9d403c331c50a01e72380ad09",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-058-front": {
+      "vector": "production/c1-tile-058-front.svg",
+      "sha256": "35ac038420c56cc3bded60aed51a1f3dfbf44400fb3cb53da5bc406b2c2b32c9",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "be47ae5cdf05a535c89cc33132f441eda8e488139d98567e01eebda7248bf489",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-059-front": {
+      "vector": "production/c1-tile-059-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "2adaa9a4c031bb289c041b4e765b921805638fd34bbcd4edd6f4bd70dcc35dd4",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-060-front": {
+      "vector": "production/c1-tile-060-front.svg",
+      "sha256": "92e094ad01b6bb23caf85453b0d3d75834c2b7252a589474516ace06f3981257",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "aa2d1f25fb9b6812b1eb3fed9eb3f180d5fde58e36c7d6b3e540ceefa8f045f1",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-061-front": {
+      "vector": "production/c1-tile-061-front.svg",
+      "sha256": "9200f3a4de3ec038ccfc9be9b38179fd66bb3bf7e451d6277eff855f66793b72",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "1ce20356eb3bebcd00f7e8bcf8a77075e98242236f56a55664d7bde18062f01d",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-062-front": {
+      "vector": "production/c1-tile-062-front.svg",
+      "sha256": "2e1040c2724fffa98702f18f3d50c6de722e589d0769e9a5f6adb0756103ef81",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "0f2c8f5e8576197a39d3f0b482c9eb902edff3aff7177fad8ae36c4c1bcc1c1e",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-063-front": {
+      "vector": "production/c1-tile-063-front.svg",
+      "sha256": "f053f034bbf88d9db208653dc6a04695ac971e5f57241f09332d9aa3341292d5",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "fa7a68f41120bb2871e462748ad61febb8ff605701b21a3ba35d9a861873ecb1",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-064-front": {
+      "vector": "production/c1-tile-064-front.svg",
+      "sha256": "58f5c997884f828903704868ef3d18ac89fcb7a9892af91b0cad9a2cee4115fd",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "88bce3fc48effae9db355e3e084c1e1b82ccde8dc72c8278e1e110fb5fb84461",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-065-front": {
+      "vector": "production/c1-tile-065-front.svg",
+      "sha256": "2aed1c6eb2542ec2342d72045eabceeaa00123142cae239ff5202d7d944c1c4c",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "66dfdad6e2d662115de6e498d44785edb9b71d8ff6e86afab4a75334089b02fd",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-066-front": {
+      "vector": "production/c1-tile-066-front.svg",
+      "sha256": "b789a9d6ff9a2e2a48fb44e012b40af1ce21f2deda7c959d98696aebe4fcd418",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "741c269b02b109367e3bac24899ec8504a705a2dfebefa67baaeaa2f950f5e06",
+      "markers": 1,
+      "hiddenNumbers": 1,
+      "pending": 0
+    },
+    "c1-tile-067-front": {
+      "vector": "production/c1-tile-067-front.svg",
+      "sha256": "43d963f58fc2c5902e5dcfe07ca40ef4feadbd0a5b03fac9f6d70830b26d9d90",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "5b785e900ac0b679c485c5854371fda26bf88983555295c91b21de3f4ab0d24b",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-068-front": {
+      "vector": "production/c1-tile-068-front.svg",
+      "sha256": "584a02d630e5063f053c3b65ba3565bd22d426e30d7c89a28275de9d97edadcb",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "95f9b109022c1f8e728f5322175a3b30f50ddc8155c7512a5f4e9627889b0bfa",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-069-front": {
+      "vector": "production/c1-tile-069-front.svg",
+      "sha256": "d781ead0c89cbca89bd91288b09e6d969dc167dad72174d33ce38f1a16401bee",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "44d10e4d04b5b20b118219a87cda5a3931dd7c5dcb9ef2eb59f24878fa5c7611",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-070-front": {
+      "vector": "production/c1-tile-070-front.svg",
+      "sha256": "abf2d0b94ef5effe83a18fba2f8fae45fd3ad5f28c299aaef5d36c0f709c49d1",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "f35303f1dbcba9f2db1542c9e6850b9dd88fa7360e992654cb3245858151eae8",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-071-front": {
+      "vector": "production/c1-tile-071-front.svg",
+      "sha256": "343161a40678d3eaaf0c0efb0b1d9b3d83ba77dcb600ec045b1d615de7343bde",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "d407480984589ec55fb6abd0db07bdd14fd5e9eff0f8c03d2f95a3e9d5820986",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-072-front": {
+      "vector": "production/c1-tile-072-front.svg",
+      "sha256": "2c90090782fe8acd87719f6ac8bbaef1583fe1741e7006a6500542842ff8e88d",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "72151b35e06f54d6a468b77c957a8a3c5d4e06dff28423d0a77b39eb1705ed9e",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-073-front": {
+      "vector": "production/c1-tile-073-front.svg",
+      "sha256": "b3e9ce610defa01533984fdf4f6339c4caa5f60ec254bb21581de17ce70acab2",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "7b253132a28ab5bd0855b39bb3e6bd9aa69599de27ac3d6dcca61f70bd202b33",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-074-front": {
+      "vector": "production/c1-tile-074-front.svg",
+      "sha256": "ec5415864325726ba886bac24e78ae0f27ff640178271f1e0ed9ddfa8000ab62",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "640619c299778e9c8dbec36d900f68adadca0c267e998ba8a0495af5ed977ddb",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-075-front": {
+      "vector": "production/c1-tile-075-front.svg",
+      "sha256": "4ecc6acde5540e10e3a595977c4e2dd886c43b86d46ddac405ebc08640a5b5f4",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "84d7061b4fff13d64605ef6efa16b49c57e650827d3740bd14d1028c4bc8c78d",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-076-front": {
+      "vector": "production/c1-tile-076-front.svg",
+      "sha256": "729abdef97c9e867d6cf5779c37cc16317aa088f39fe37e6b303b8f63c2e201f",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "38ccbe58e727f55bb64dd3ab180acb205c9a5ee9f84d5aadeebf2e8aa4f1de99",
+      "markers": 1,
+      "hiddenNumbers": 1,
+      "pending": 0
+    },
+    "c1-tile-077-front": {
+      "vector": "production/c1-tile-077-front.svg",
+      "sha256": "c8b81578fe6380e69fe5b8089b9c04eb07bc0766c14080a6c4b5f88b63c6e8bc",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "0f0cfebeb7dc6feb885765dacb0e548fdb0e15cce710b5911995a5cd06d9fd0c",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-078-front": {
+      "vector": "production/c1-tile-078-front.svg",
+      "sha256": "858dc9d6fc41142b2e378828f06f090340d65849138096abcc647898161966dd",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "b2c18ef584b460c15e477bf529d7e2b8734694bfb7895da490ee1432e28bf04e",
+      "markers": 1,
+      "hiddenNumbers": 1,
+      "pending": 0
+    },
+    "c1-tile-079-front": {
+      "vector": "production/c1-tile-079-front.svg",
+      "sha256": "28709be6b8fe8ceb05e356442dfaa3583ac45c0a1d45cd15b8f368e35ca38ca9",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "70dc2d5278443db3051796943264238326d29e10a7622a6517331819b70f53fc",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-080-front": {
+      "vector": "production/c1-tile-080-front.svg",
+      "sha256": "19b6c3709d662e17d00e3dc080322749f49e5dbab4d812de8ed6eea47f9f3837",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "f5c99715e9b0e58bf800d36390920fee72e1eb93255f5022afb398c36b90211f",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-T00-front": {
+      "vector": "production/c1-tile-T00-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "b208a228abeb2e130d3e586756916862dc370a2528db0988d09520113725cf4b",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-T01-front": {
+      "vector": "production/c1-tile-T01-front.svg",
+      "sha256": "1b0f00b17cf9346a8bfe655c6799eff52b15860da9c5afbe330d769f79c1ed21",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "5fe56be809524f045b144b9dd7f6bcd68a947ecec7a82c4c6b0c4a6637253a1d",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-T02-front": {
+      "vector": "production/c1-tile-T02-front.svg",
+      "sha256": "8ee31465e54da408c46c219ad35613e5d3a6f9c0ee95c515bc6f34c1255f7274",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "4936fd9ff582e3227a3b325b432b09de5f56f207f7a2379671dbd8bcd389b99b",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-T03-front": {
+      "vector": "production/c1-tile-T03-front.svg",
+      "sha256": "ee95e6b5b4795007f9df98101a540e545b186b1e568ab19c3d9ed2fd25f7283c",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "521316a2749d11d8ae2f57da681b62c0b2e064850d344d1ffe685391759e6ab1",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-T04-front": {
+      "vector": "production/c1-tile-T04-front.svg",
+      "sha256": "de477ffeee1ecbfc043c290024e575e0a168fc7451494d77d3109c9e4edd2967",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "1040ac320f42bfb618ffecb6dd695d25b97a1a2683c847304d622bb70fb0e309",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-T05-front": {
+      "vector": "production/c1-tile-T05-front.svg",
+      "sha256": "cfd24e0de82dd7b108251f34a9751ef54cb411cc1938dd672c745b2b3abe5930",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "1da4d5014891b6e2ba863f82cfabc24729e776548e0b5c86b742f41d17020ffe",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-T06-front": {
+      "vector": "production/c1-tile-T06-front.svg",
+      "sha256": "dc81d5c474b5a81834a418f0061214c0b7f636eedacafb41862a705d767bb5a5",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "f18d0db279425fe75a87434e92b9591ab5050c0c723fc374d07179838149cb44",
+      "markers": 1,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-009-alt-front": {
+      "vector": "production/c1-tile-009-alt-front.svg",
+      "sha256": "1e423c145c8bfc3f63a8f9d4b7a6e8585e8e7cff070067b7bbd0fbf79e9a1c8d",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "e3ce94286c1d0ef0a4a93ff7b1a238ecc176d66f26618ef2e8881e33c414ffd4",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-013-alt-front": {
+      "vector": "production/c1-tile-013-alt-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "4d4995c9e744fbb0c8095c92eb8edff475e429daea1bc2eb299e02fa7711f341",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-014-alt-front": {
+      "vector": "production/c1-tile-014-alt-front.svg",
+      "sha256": "af606ff9f7de39971996fedeb786c393ce268d3b1ce3b22d60709ced4dd6084d",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "87981472b8d1aae5e8130a557c44e9393208e298195a950cda2e7f0a72d4f26a",
+      "markers": 0,
+      "hiddenNumbers": 1,
+      "pending": 0
+    },
+    "c1-tile-018-alt-front": {
+      "vector": "production/c1-tile-018-alt-front.svg",
+      "sha256": "bac44c2ec4b7d18e8d29d9549a35595f05e64f89704065c8883e94a9e91bdf99",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "9af41655f361ec3dc4d021405f108b900380dbc9052f73fe8b0847b5be5d59d5",
+      "markers": 3,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-022-alt-front": {
+      "vector": "production/c1-tile-022-alt-front.svg",
+      "sha256": "9e13cb23cb45aad422f840382454780ebfca435ca126fc46f7f3e348e1a3409e",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "5078b7b66ccaa15b3da12a30d9362e1f7d4e980d92c0eb70dce5446af14c1e05",
+      "markers": 0,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-023-alt-front": {
+      "vector": "production/c1-tile-023-alt-front.svg",
+      "sha256": "a7c07edaee8f66b867cb90b3bebad94c90c1d48b9397d2379a1f9f1011fecdbd",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "f22675016e9de68b935aebc446104b82a6bd31bfdf6776ab3e051b53821f88d1",
+      "markers": 2,
+      "hiddenNumbers": 0,
+      "pending": 0
+    },
+    "c1-tile-035-alt-front": {
+      "vector": "production/c1-tile-035-alt-front.svg",
+      "sha256": "9ec7c0b744da71f2add018c0103830570b614181b511851e341c991e0e04ddd4",
+      "maskPath": "M0 0H1024V1024H0Z",
+      "sourceSha256": "b94546fc19cbb8d676d330e6337f06231b316e459f4bb6675b3b95c9e1d06130",
+      "markers": 3,
+      "hiddenNumbers": 0,
+      "pending": 0
+    }
+  },
+  "inputSha256": {
+    "tools/map-marker-vector-source/inventory.json": "e167285fb058d296d0752a95cf518f9375866f8b143ae3580021e02c677e27b6",
+    "tools/map-marker-vector-source/backing-layouts.json": "991992af3075de9874b14bb1d8bd332798df05fb4c70fda8a0ec8204a18176fa",
+    "tools/map-marker-vector-source/hidden-number-colors.json": "462b1a4960b06c3ac3a62ae15ca6b665dc9812cf990eaa6ab5bcc88c2c4a91b6",
+    "tools/map-marker-vector-source/original-components/manifest.json": "1df6246104695d6bb09a9f0395e621e048a25aae5adaece97717b6b3c8d2b144",
+    "tools/map_marker_templates.py": "bdd8f2e5ad3e494231bb774562d0caaf71195831ca27b823d5acbbf084582dff",
+    "tools/map_marker_build.py": "b0c3d5b2585cf7fd77bdfaf32310d17c42e15fde062497fdf8841f9b16bc5f89",
+    "tools/map_original_components.py": "339fdd1907b6ad1a44e736fbbea907eaa9d260e8d1d2be33a188fabda066e541",
+    "tools/map_marker_production.py": "6bd7c106e6d497bfb440354602acc3c45c9b6a36356323ba2593e9ed0970ca30",
+    "tools/map-marker-vector-source/reuse/central_adventure.svg": "522b4cff3f28087ae42e53f377908f4b1707e0bba0d8f528bf81adc2c8714673",
+    "tools/map-marker-vector-source/original-components/staff_icon.png": "b3f8432f79309548829745443bbc38e2cbbfdd7b24b9f813d14a5dc22e7edeed",
+    "tools/map-marker-vector-source/reuse/rr_adventure.svg": "2045fd7e1a15f87ba0652fb5796f48eb42d822d2a34d087940a1961d251c0841",
+    "tools/map-marker-vector-source/reuse/wild_titan.svg": "b530988cd9ae0f832c1649067af6df635d7b05a4ee523694b5c71abc6d8f063c",
+    "tools/map-marker-vector-source/original-components/wheel_icon_winged.png": "05dd167b0ea9e1b58dba1d0c7a6084483b9b9168c3c1c0ec49587e09a597dac4",
+    "tools/map-marker-vector-source/original-components/wheel_icon.png": "f705c73503e95a3dbf41f56ab40ed67064fc6672da314da3a70f6b46e45f1952",
+    "tools/map-marker-vector-source/reuse/frozen_time.svg": "909fd864bdf9c973c9cda3931d997aadab671c0d1e89add320666647695dc51b",
+    "tools/map-marker-vector-source/original-components/oasis.png": "e887198bcc2ceb4d0d445062911234d9015f13765fc13baf0245018629207fc0",
+    "tools/map-marker-vector-source/original-components/daedalus_lighthouse.png": "bfa61c178d64a7c82f9458674eabec9f3fbbdd0525b61343adbf0c4b46200779",
+    "tools/map-marker-vector-source/original-components/spartan_stronghold.png": "f45ec88af3119e055570a0265b8cb1245061141e2b66d8763b3fc3ce9f2e0ccc",
+    "tools/map-marker-vector-source/original-components/hourglass_icon.png": "dd8d10ca5acc9675ab10df7f6760449ac890e146c190e50d065ed08940f3c476",
+    "tools/map-marker-vector-source/original-components/smoking_bowl_icon.png": "b5c407a306dafa0108697780403e9c62434f24eb03c80a6feb082d34b36efd15",
+    "tools/map-marker-vector-source/original-components/time_portal_angular.png": "b53dd450b9878982ad029bfbab8ef0b93617e954826d5c8b1617916950e92aa3",
+    "tools/map-marker-vector-source/original-components/city.png": "19a2e6b29c01c40f351814f8aedb379c1cdc922889b3f4d7d8c0880ba0a80419",
+    "tools/map-marker-vector-source/original-components/time_wound.png": "f4262e772b89ac4d1d4c0bca8425f41127ce73b02b6e2d1d70493788cf62d95b",
+    "tools/map-marker-vector-source/original-components/time_portal.png": "44510cb86380ed596fce1aace110994929a1e7c49020d933626c6e8f52a6db8f",
+    "tools/map-marker-vector-source/original-components/silver_ruin.png": "108793a171223cd3a7bcf5cd81e9f37a9785bd0c00735b6c6491d1aff729063d"
+  },
+  "fontSha256": {
+    "C:/Windows/Fonts/times.ttf": "931c5de5c70401d9324d5014c123802b4fb753000360ceb2f56c589403cd58c5",
+    "C:/Windows/Fonts/simsun.ttc": "1526ac24375f51f6eb73bc2d3f8072dbe4a80a3a65217677c9d9a84f67dab2ab"
+  }
+}

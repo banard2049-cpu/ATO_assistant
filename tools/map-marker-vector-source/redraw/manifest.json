@@ -1,0 +1,137 @@
+{
+  "version": "20261026-clean-category-trials1",
+  "templates": [
+    {
+      "id": "time_wound",
+      "label": "同心菱形",
+      "file": "tools/map-marker-vector-source/redraw/time_wound.svg",
+      "sha256": "7cda80fe0376473e87f544dd195b4259d4d5c9c2f55fa2278b93665fd4e25cac",
+      "method": "three equal-width concentric diamond ribbons; exact geometric symmetry",
+      "sourceRole": "Original printed scan used only for visual comparison; no extracted contours.",
+      "status": "trial-needs-visual-approval",
+      "pathCount": 3,
+      "runtimeModified": false
+    },
+    {
+      "id": "time_portal",
+      "label": "圆旋涡",
+      "file": "tools/map-marker-vector-source/redraw/time_portal.svg",
+      "sha256": "7cf8305e75b63bee329592eea600aa7ed6375f67ea26346a497c13bbe0ff914b",
+      "method": "three identical authored Archimedean spiral ribbons; cubic analytic tangents, 120-degree rotational symmetry",
+      "sourceRole": "Original printed scan used only for visual comparison; no extracted contours.",
+      "status": "trial-needs-visual-approval",
+      "pathCount": 3,
+      "runtimeModified": false
+    },
+    {
+      "id": "time_portal_angular",
+      "label": "角旋涡",
+      "file": "tools/map-marker-vector-source/redraw/time_portal_angular.svg",
+      "sha256": "027c276b66b4a0334ddf594e02b6f1dff3626f7d37de5d4a10cbd78df0dfe535",
+      "method": "one authored hooked arm repeated at 0/120/240 degrees",
+      "sourceRole": "Original printed scan used only for visual comparison; no extracted contours.",
+      "status": "trial-needs-visual-approval",
+      "pathCount": 6,
+      "runtimeModified": false
+    },
+    {
+      "id": "hourglass_icon",
+      "label": "牛头沙漏形",
+      "file": "tools/map-marker-vector-source/redraw/hourglass_icon.svg",
+      "sha256": "7b13a69d636df285e1f3259a0d45e0dcc24517db1e6b6df26f258ddc5574dddc",
+      "method": "reuse original minoans faction head, authored pedestal and torso",
+      "sourceRole": "Original printed scan used only for visual comparison; no extracted contours.",
+      "status": "trial-needs-visual-approval",
+      "pathCount": 1,
+      "runtimeModified": false
+    },
+    {
+      "id": "staff_icon",
+      "label": "条纹杖形",
+      "file": "tools/map-marker-vector-source/redraw/staff_icon.svg",
+      "sha256": "1d44cad45b3f3eb429deb77df96324cbd604dca4c1e632d73cc54f20dda42d4d",
+      "method": "authored polygons, one repeated stripe and a circular head",
+      "sourceRole": "Original printed scan used only for visual comparison; no extracted contours.",
+      "status": "trial-needs-visual-approval",
+      "pathCount": 6,
+      "runtimeModified": false
+    },
+    {
+      "id": "spartan_stronghold",
+      "label": "斯巴达要塞",
+      "file": "tools/map-marker-vector-source/redraw/spartan_stronghold.svg",
+      "sha256": "3c55cae4d72803b494ab1f9eb69d20305c3af3bd7a3d9f1ea50bc7e3f8046426",
+      "method": "authored symmetric stepped tower silhouette and window counters",
+      "sourceRole": "Original printed scan used only for visual comparison; no extracted contours.",
+      "status": "trial-needs-visual-approval",
+      "pathCount": 1,
+      "runtimeModified": false
+    },
+    {
+      "id": "daedalus_lighthouse",
+      "label": "代达罗斯灯塔",
+      "file": "tools/map-marker-vector-source/redraw/daedalus_lighthouse.svg",
+      "sha256": "0b63ded78353c4f0847e9f47e214b4d012d5b46fe458a6c81fff6d37ae5a456b",
+      "method": "authored narrow tapered tower, repeated window bands and circular halo",
+      "sourceRole": "Original printed scan used only for visual comparison; no extracted contours.",
+      "status": "trial-needs-visual-approval",
+      "pathCount": 2,
+      "runtimeModified": false
+    },
+    {
+      "id": "wheel_icon",
+      "label": "无翼车轮",
+      "file": "tools/map-marker-vector-source/redraw/wheel_icon.svg",
+      "sha256": "292c2d190d2b0ff0ec2326e2e237c2e489d3831cd31967d50d6fa57e2e3d8f09",
+      "method": "one authored wheel, eight shared spokes and straight wagon silhouette",
+      "sourceRole": "Original printed scan used only for visual comparison; no extracted contours.",
+      "status": "trial-needs-visual-approval",
+      "pathCount": 11,
+      "runtimeModified": false
+    },
+    {
+      "id": "wheel_icon_winged",
+      "label": "有翼车轮",
+      "file": "tools/map-marker-vector-source/redraw/wheel_icon_winged.svg",
+      "sha256": "1339d99a36a071be0848cabac4c7b72dd211025e7b057cf328d8f7c7f71f04d7",
+      "method": "reuse same wheel and spokes; separate authored curved wing",
+      "sourceRole": "Original printed scan used only for visual comparison; no extracted contours.",
+      "status": "trial-needs-visual-approval",
+      "pathCount": 12,
+      "runtimeModified": false
+    },
+    {
+      "id": "oasis",
+      "label": "绿洲",
+      "file": "tools/map-marker-vector-source/redraw/oasis.svg",
+      "sha256": "41cdcb13bc301e2357ba36f1aee8e885d08060c5a7ee9442184cd88a08a09400",
+      "method": "three reused palm-canopy subcomponents, curved trunks, small quadruped and water bowl",
+      "sourceRole": "Original printed scan used only for visual comparison; no extracted contours.",
+      "status": "trial-needs-visual-approval",
+      "pathCount": 6,
+      "runtimeModified": false
+    },
+    {
+      "id": "smoking_bowl_icon",
+      "label": "烟雾碗",
+      "file": "tools/map-marker-vector-source/redraw/smoking_bowl_icon.svg",
+      "sha256": "d1349c83c3d1e89435d87ec67c230faa3195e4db183362a096b20afe3e03e7ca",
+      "method": "authored oval bowl, repeated slots, pedestal and Bezier cloud curls",
+      "sourceRole": "Original printed scan used only for visual comparison; no extracted contours.",
+      "status": "trial-needs-visual-approval",
+      "pathCount": 8,
+      "runtimeModified": false
+    },
+    {
+      "id": "silver_ruin",
+      "label": "白银种遗迹",
+      "file": "tools/map-marker-vector-source/redraw/silver_ruin.svg",
+      "sha256": "e03c0026b4a839b7f534529257f370d4281e2b1980d78357a02a4c2bca52d7dc",
+      "method": "authored gate, branch form, central figure and repeated architectural ledges",
+      "sourceRole": "Original printed scan used only for visual comparison; no extracted contours.",
+      "status": "trial-needs-visual-approval",
+      "pathCount": 4,
+      "runtimeModified": false
+    }
+  ]
+}

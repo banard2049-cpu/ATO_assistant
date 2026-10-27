@@ -25,13 +25,16 @@ def main() -> None:
     fixtures = PROJECT_ROOT / "tests" / "fixtures" / "android-local-api"
     api = PROJECT_ROOT / "tools/packaging/android/app/src/main/java/com/ato/assistant/LocalCampaignApi.java"
     export_file = api.with_name("LocalExportFile.java")
+    backup_archive = api.with_name("DailyBackupArchive.java")
+    backup_http = api.with_name("LocalBackupHttpHandler.java")
     with tempfile.TemporaryDirectory() as directory:
+        java_options = ["-Dato.test.files=" + str(Path(directory) / "files")]
         subprocess.run([
             str(javac), "-encoding", "UTF-8", "-cp", str(json_jar), "-d", directory,
-            str(api), str(export_file), *(str(path) for path in sorted(fixtures.rglob("*.java"))),
+            str(api), str(export_file), str(backup_archive), str(backup_http), *(str(path) for path in sorted(fixtures.rglob("*.java"))),
         ], check=True)
         subprocess.run([
-            str(java), "-cp", os.pathsep.join((directory, str(json_jar))),
+            str(java), *java_options, "-cp", os.pathsep.join((directory, str(json_jar))),
             "com.ato.assistant.CampaignImportHarness",
         ], check=True)
         subprocess.run([
@@ -41,19 +44,35 @@ def main() -> None:
         ], check=True)
         briefing_fixture = Path(directory) / "briefing.json"
         subprocess.run([
-            str(java), "-cp", os.pathsep.join((directory, str(json_jar))),
+            str(java), *java_options, "-cp", os.pathsep.join((directory, str(json_jar))),
             "com.ato.assistant.BriefingHarness", str(briefing_fixture),
         ], check=True)
         subprocess.run([
-            str(java), "-cp", os.pathsep.join((directory, str(json_jar))),
+            str(java), *java_options, "-Xmx64m", "-cp", os.pathsep.join((directory, str(json_jar))),
+            "com.ato.assistant.BriefingMemoryHarness",
+        ], check=True)
+        subprocess.run([
+            str(java), *java_options, "-cp", os.pathsep.join((directory, str(json_jar))),
+            "com.ato.assistant.DailyBackupArchiveHarness",
+        ], check=True)
+        subprocess.run([
+            str(java), *java_options, "-Xmx64m", "-cp", os.pathsep.join((directory, str(json_jar))),
+            "com.ato.assistant.DailyBackupArchiveHarness", "memory",
+        ], check=True)
+        subprocess.run([
+            str(java), *java_options, "-cp", os.pathsep.join((directory, str(json_jar))),
+            "com.ato.assistant.BackupHttpHarness",
+        ], check=True)
+        subprocess.run([
+            str(java), *java_options, "-cp", os.pathsep.join((directory, str(json_jar))),
             "com.ato.assistant.ExportFileHarness",
         ], check=True)
         subprocess.run([
-            str(java), "-cp", os.pathsep.join((directory, str(json_jar))),
+            str(java), *java_options, "-cp", os.pathsep.join((directory, str(json_jar))),
             "com.ato.assistant.PersistenceHarness",
         ], check=True)
         subprocess.run([
-            str(java), "-cp", os.pathsep.join((directory, str(json_jar))),
+            str(java), *java_options, "-cp", os.pathsep.join((directory, str(json_jar))),
             "com.ato.assistant.CampaignNotesHarness",
         ], check=True)
         subprocess.run([

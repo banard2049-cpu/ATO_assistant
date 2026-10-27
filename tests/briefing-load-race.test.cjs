@@ -17,7 +17,7 @@ const root = path.join(__dirname, '..');
 const appSource = fs.readFileSync(path.join(root, 'briefing', 'briefing-app.js'), 'utf8');
 
 // 抽取真实的 load()：从 token 声明（若存在）到下一个函数开头，保持源码原样。
-const fnStart = appSource.indexOf('async function load(cycleId)');
+const fnStart = appSource.indexOf('async function load(cycleId');
 assert.ok(fnStart > 0, '找不到 briefing-app.js 里的 load()');
 const tokenDecl = appSource.indexOf('let loadToken = 0;');
 const loadStart = tokenDecl > 0 && tokenDecl < fnStart ? tokenDecl : fnStart;

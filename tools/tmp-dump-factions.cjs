@@ -1,0 +1,10 @@
+const fs = require('fs');
+const path = require('path');
+const vm = require('vm');
+const root = path.join(__dirname, '..');
+const box = { window: {} };
+vm.runInNewContext(fs.readFileSync(path.join(root, 'assets/english-terms.js'), 'utf8'), box);
+const en = box.window.ATO_ENGLISH_TERMS;
+const rows = en.terms.filter((r) => /app:1\.1\.22:f_/.test(r[2] || ''));
+for (const r of rows) console.log(JSON.stringify(r));
+console.log('count', rows.length);

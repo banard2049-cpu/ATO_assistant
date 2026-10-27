@@ -1,0 +1,221 @@
+{
+  "method": "Byte-identical local TTS original copies, pixel-exact crop references only. No visible contour output.",
+  "sources": [
+    {
+      "id": "oasis",
+      "tokenContactIndex": 11,
+      "original": "tools/map-marker-vector-source/hd-sources/token-originals/oasis-token.png",
+      "sourceFile": "D:\\desktop\\新建文件夹 (3)\\Aeon Trespass_ Odyssey (3458296558)\\Mods\\Images\\httpssteamusercontentaakamaihdnetugc104085491763871184812C2378DD51DC4585CE80B3B422CA173F0BF94CFB.png",
+      "sourceSha256": "22856ae59564a949e099392f7d3f54fc45cc519676134ab475d659643c46fad7",
+      "originalDimensions": [
+        412,
+        412
+      ],
+      "crop": "tools/map-marker-vector-source/hd-sources/token-originals/oasis-reference-crop.png",
+      "cropPixels": [
+        65,
+        100,
+        350,
+        345
+      ],
+      "cropDimensions": [
+        285,
+        245
+      ],
+      "cropMethod": "exact rectangular crop from original pixels; no resize, denoise, threshold or tracing",
+      "references": [
+        {
+          "GUID": "070ca3",
+          "Name": "Custom_Tile",
+          "Nickname": "",
+          "Description": "",
+          "context": "CYCLE IV Gardens Of Infinity Growth / Tokens",
+          "role": "CustomImage.ImageURL",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/10408549176387118481/2C2378DD51DC4585CE80B3B422CA173F0BF94CFB/"
+        }
+      ],
+      "finding": "same printed silhouette: three palms, domed central shelter and crescent ground; full glyph plus margin",
+      "runtimeModified": false
+    },
+    {
+      "id": "silver_ruin",
+      "tokenContactIndex": 171,
+      "original": "tools/map-marker-vector-source/hd-sources/token-originals/silver_ruin-token.png",
+      "sourceFile": "D:\\desktop\\新建文件夹 (3)\\Aeon Trespass_ Odyssey (3458296558)\\Mods\\Images\\httpssteamusercontentaakamaihdnetugc155207917010152031206BC62B05E98B9EA8B1C172538BC8EDEFAE7255C1.png",
+      "sourceSha256": "ecfdd8534ce54f33612a2bf8e9dfa3580e22a23e9623b858eb9485855e49b90f",
+      "originalDimensions": [
+        412,
+        412
+      ],
+      "crop": "tools/map-marker-vector-source/hd-sources/token-originals/silver_ruin-reference-crop.png",
+      "cropPixels": [
+        95,
+        95,
+        325,
+        325
+      ],
+      "cropDimensions": [
+        230,
+        230
+      ],
+      "cropMethod": "exact rectangular crop from original pixels; no resize, denoise, threshold or tracing",
+      "references": [
+        {
+          "GUID": "03c9ff",
+          "Name": "Custom_Tile",
+          "Nickname": "",
+          "Description": "",
+          "context": "Cycle V Truthsayer / Tokens",
+          "role": "CustomImage.ImageURL",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/15520791701015203120/6BC62B05E98B9EA8B1C172538BC8EDEFAE7255C1/"
+        }
+      ],
+      "finding": "same printed silhouette: gate, branching figure and central person; full glyph plus margin",
+      "runtimeModified": false
+    },
+    {
+      "id": "daedalus_candidate",
+      "tokenContactIndex": 37,
+      "original": "tools/map-marker-vector-source/hd-sources/token-originals/daedalus_candidate-token.png",
+      "sourceFile": "D:\\desktop\\新建文件夹 (3)\\Aeon Trespass_ Odyssey (3458296558)\\Mods\\Images\\httpssteamusercontentaakamaihdnetugc11598017765464310818341F4D361CDB6BFFD7EE196351DDC9CE6569776A.png",
+      "sourceSha256": "e196cec4e56e61bbb66bbf52101aa2bb4a6a3d9a8aa9c2c38c04c6d4eaab92aa",
+      "originalDimensions": [
+        475,
+        475
+      ],
+      "crop": "tools/map-marker-vector-source/hd-sources/token-originals/daedalus_candidate-reference-crop.png",
+      "cropPixels": [
+        145,
+        125,
+        335,
+        350
+      ],
+      "cropDimensions": [
+        190,
+        225
+      ],
+      "cropMethod": "exact rectangular crop from original pixels; no resize, denoise, threshold or tracing",
+      "references": [
+        {
+          "GUID": "13e276",
+          "Name": "Custom_Tile",
+          "Nickname": "",
+          "Description": "",
+          "context": "",
+          "role": "CustomImage.ImageURL",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/11598017765464310818/341F4D361CDB6BFFD7EE196351DDC9CE6569776A/"
+        }
+      ],
+      "finding": "tall flame-topped tower; possible related Daedalus reference, not striped staff; exact-match not proven",
+      "runtimeModified": false
+    },
+    {
+      "id": "spartan_candidate",
+      "tokenContactIndex": 39,
+      "original": "tools/map-marker-vector-source/hd-sources/token-originals/spartan_candidate-token.jpg",
+      "sourceFile": "D:\\desktop\\新建文件夹 (3)\\Aeon Trespass_ Odyssey (3458296558)\\Mods\\Images\\httpssteamusercontentaakamaihdnetugc11631765320367245116A666E45DDECC5CC2F1C2A5BCD321AE88D22F1E78.jpg",
+      "sourceSha256": "f96dff77d6c1935e391057503e7cb5e63de7d1f46f99593d7e7144f0d928e356",
+      "originalDimensions": [
+        1182,
+        1179
+      ],
+      "crop": "tools/map-marker-vector-source/hd-sources/token-originals/spartan_candidate-reference-crop.png",
+      "cropPixels": [
+        165,
+        180,
+        1015,
+        1020
+      ],
+      "cropDimensions": [
+        850,
+        840
+      ],
+      "cropMethod": "exact rectangular crop from original pixels; no resize, denoise, threshold or tracing",
+      "references": [
+        {
+          "GUID": "603c72",
+          "Name": "Custom_Tile",
+          "Nickname": "",
+          "Description": "",
+          "context": "CYCLE IV Gardens Of Infinity Growth / Tokens",
+          "role": "CustomImage.ImageURL",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/11631765320367245116/A666E45DDECC5CC2F1C2A5BCD321AE88D22F1E78/"
+        }
+      ],
+      "finding": "possible related fortress; source-map match not yet proven",
+      "runtimeModified": false
+    },
+    {
+      "id": "lighthouse_candidate",
+      "tokenContactIndex": 203,
+      "original": "tools/map-marker-vector-source/hd-sources/token-originals/lighthouse_candidate-token.jpg",
+      "sourceFile": "D:\\desktop\\新建文件夹 (3)\\Aeon Trespass_ Odyssey (3458296558)\\Mods\\Images\\httpssteamusercontentaakamaihdnetugc1655339238387893128228D39A139D87CD6D36BE3E35B311775023A7E6C1.jpg",
+      "sourceSha256": "12bcf1292cc68f9b930b3676f8eb299adcc95162a5465c8c31aac3d74fbdc556",
+      "originalDimensions": [
+        1180,
+        1172
+      ],
+      "crop": "tools/map-marker-vector-source/hd-sources/token-originals/lighthouse_candidate-reference-crop.png",
+      "cropPixels": [
+        146,
+        135,
+        1040,
+        1030
+      ],
+      "cropDimensions": [
+        894,
+        895
+      ],
+      "cropMethod": "exact rectangular crop from original pixels; no resize, denoise, threshold or tracing",
+      "references": [
+        {
+          "GUID": "eb278b",
+          "Name": "Custom_Tile",
+          "Nickname": "",
+          "Description": "",
+          "context": "Cycle V Truthsayer / Tokens",
+          "role": "CustomImage.ImageURL",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/16553392383878931282/28D39A139D87CD6D36BE3E35B311775023A7E6C1/"
+        }
+      ],
+      "finding": "same-game lighthouse composition; includes dock and wave, map silhouette differs",
+      "runtimeModified": false
+    },
+    {
+      "id": "bull_head_reference",
+      "tokenContactIndex": 257,
+      "original": "tools/map-marker-vector-source/hd-sources/token-originals/bull_head_reference-token.png",
+      "sourceFile": "D:\\desktop\\新建文件夹 (3)\\Aeon Trespass_ Odyssey (3458296558)\\Mods\\Images\\httpssteamusercontentaakamaihdnetugc9668416591319993696516A02D74A9078FB2E7106A471800C87E7249F6B.png",
+      "sourceSha256": "f769745b30128ec6d3d44dd4f8fb6fd980f22b3bb24850221b28faab15c80f2b",
+      "originalDimensions": [
+        475,
+        475
+      ],
+      "crop": "tools/map-marker-vector-source/hd-sources/token-originals/bull_head_reference-reference-crop.png",
+      "cropPixels": [
+        155,
+        170,
+        324,
+        330
+      ],
+      "cropDimensions": [
+        169,
+        160
+      ],
+      "cropMethod": "exact rectangular crop from original pixels; no resize, denoise, threshold or tracing",
+      "references": [
+        {
+          "GUID": "047c2a",
+          "Name": "Custom_Tile",
+          "Nickname": "",
+          "Description": "",
+          "context": "",
+          "role": "CustomImage.ImageURL",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/9668416591319993696/516A02D74A9078FB2E7106A471800C87E7249F6B/"
+        }
+      ],
+      "finding": "bull head is partial reference only, no hourglass torso",
+      "runtimeModified": false
+    }
+  ]
+}

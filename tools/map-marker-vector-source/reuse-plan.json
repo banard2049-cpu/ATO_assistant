@@ -1,0 +1,315 @@
+{
+  "version": "20261026-map-marker-reuse-plan1",
+  "scope": "All 511 map faces, after excluding already handled corner panels, own C5 header, links/arrows and route-attached marks.",
+  "installation": "none",
+  "evidenceInventory": "tools/map-marker-vector-source/inventory.json",
+  "summary": {
+    "faces": 511,
+    "remainingLargeComponents": 612,
+    "ownLocationEmblems": 505,
+    "reuseExistingPathInstances": 446,
+    "reuseExistingPathComponents": 5,
+    "bitmapOnlyEmblemInstances": 59,
+    "bitmapOnlySemanticFamilies": 8,
+    "minimumNewCleanEmblemShapes": 9,
+    "greekDiscs": 76,
+    "greekAlpha": 36,
+    "greekBeta": 40,
+    "secretNumberBanners": 14,
+    "cityNameplates": 1,
+    "hiddenNumberGroups": 11,
+    "hiddenNumberDigitComponents": 44,
+    "hiddenNumberDigitsUnder150Pixels": 27,
+    "antialiasSpeckles": 2
+  },
+  "reuse": [
+    {
+      "id": "central_adventure",
+      "label": "中枢冒险 / 帆船",
+      "instances": 190,
+      "decision": "reuse-existing-vector-paths",
+      "original": "output/map-asset-kit-20261024/native-icons/markers/central_adventure.svg",
+      "originalSha256": "a45d8ad82f9d084419d9b5af73c41ae178401d168c572de67ee76b556f2e2abf",
+      "component": "tools/map-marker-vector-source/reuse/central_adventure.svg",
+      "sha256": "522b4cff3f28087ae42e53f377908f4b1707e0bba0d8f528bf81adc2c8714673",
+      "provenance": {
+        "path": "assets/icons/adventures.svg",
+        "extraction": "reuse existing repository SVG path data; currentColor resolved to black"
+      },
+      "notes": "The emblem is reused; colours and circle/tab/scallop backing are shared geometry. No scan tracing."
+    },
+    {
+      "id": "wild_titan",
+      "label": "野生泰坦",
+      "instances": 123,
+      "decision": "reuse-existing-vector-paths",
+      "original": "output/map-asset-kit-20261024/native-icons/markers/wild_titan.svg",
+      "originalSha256": "3fbb6a944261eae73d4ae2534600d5be80f1b9803b58a7d3085f31811fc3f14c",
+      "component": "tools/map-marker-vector-source/reuse/wild_titan.svg",
+      "sha256": "b530988cd9ae0f832c1649067af6df635d7b05a4ee523694b5c71abc6d8f063c",
+      "provenance": {
+        "path": "assets/icons/titans.svg",
+        "extraction": "reuse existing repository SVG path data; currentColor resolved to black"
+      },
+      "notes": "The emblem is reused; colours and circle/tab/scallop backing are shared geometry. No scan tracing."
+    },
+    {
+      "id": "rr_adventure",
+      "label": "R&R / 飞鸟与海浪",
+      "instances": 51,
+      "decision": "reuse-existing-vector-paths",
+      "original": "output/map-asset-kit-20261024/native-icons/markers/rr_adventure.svg",
+      "originalSha256": "beaf12ce1b602a3becb8e9c492eda7daac9ee5a53f67c8ad020db7f9fd03edad",
+      "component": "tools/map-marker-vector-source/reuse/rr_adventure.svg",
+      "sha256": "2045fd7e1a15f87ba0652fb5796f48eb42d822d2a34d087940a1961d251c0841",
+      "provenance": {
+        "path": "D:\\desktop\\A3 ATO中文规则书  V1.4.pdf",
+        "page": 15,
+        "drawingIndices": [
+          68,
+          69,
+          70,
+          71,
+          72,
+          73,
+          74,
+          75,
+          76,
+          77,
+          78,
+          79,
+          80,
+          81,
+          82,
+          83,
+          84,
+          85
+        ],
+        "nativeBounds": [
+          322.0799865722656,
+          235.91998291015625,
+          338.3999938964844,
+          251.34996032714844
+        ],
+        "extraction": "original PDF drawing paths; no tracing"
+      },
+      "notes": "The emblem is reused; colours and circle/tab/scallop backing are shared geometry. No scan tracing."
+    },
+    {
+      "id": "city",
+      "label": "城市柱廊（含据点、水下城市）",
+      "instances": 64,
+      "decision": "reuse-existing-vector-paths",
+      "original": "output/map-asset-kit-20261024/native-icons/cities/city.svg",
+      "originalSha256": "0c8a0147cfd496fe901479cde4ac81099acb23888f145a00fcbc9e2795d55b4c",
+      "component": "tools/map-marker-vector-source/reuse/city.svg",
+      "sha256": "400f833339230d4f518365260b7e4cf1edd6967259bdb411ea1c4cc8eff2f3ac",
+      "provenance": {
+        "path": "D:\\desktop\\A3 ATO中文规则书  V1.4.pdf",
+        "page": 15,
+        "drawingIndices": [
+          86,
+          87,
+          88,
+          89,
+          90,
+          91,
+          92,
+          93,
+          94
+        ],
+        "nativeBounds": [
+          324.1199951171875,
+          308.39996337890625,
+          340.55999755859375,
+          323.51995849609375
+        ],
+        "extraction": "original PDF drawing paths; no tracing"
+      },
+      "notes": "The emblem is reused; colours and circle/tab/scallop backing are shared geometry. No scan tracing."
+    },
+    {
+      "id": "frozen_time",
+      "label": "凝固时光",
+      "instances": 18,
+      "decision": "reuse-existing-vector-paths",
+      "original": "output/map-asset-kit-20261024/native-icons/markers/frozen_time.svg",
+      "originalSha256": "25e3b98f8d8a8ee6c695aac7831a96664423f34817e994d4514142dfba505c26",
+      "component": "tools/map-marker-vector-source/reuse/frozen_time.svg",
+      "sha256": "909fd864bdf9c973c9cda3931d997aadab671c0d1e89add320666647695dc51b",
+      "provenance": {
+        "path": "assets/icons/frozen-time.svg",
+        "extraction": "reuse existing repository SVG path data; currentColor resolved to black"
+      },
+      "notes": "The emblem is reused; colours and circle/tab/scallop backing are shared geometry. No scan tracing."
+    }
+  ],
+  "redrawMinimum": [
+    {
+      "id": "hourglass_icon",
+      "label": "牛头沙漏形（待释义）",
+      "instances": 5,
+      "distinctShapes": 1,
+      "decision": "author-clean-component-once-per-shape-for-full-vector-output",
+      "availableOriginalBitmap": "native-icons/source-audit/hourglass_icon-source-alpha.png",
+      "existingAsset": "output/map-asset-kit-20261024/native-icons/markers/hourglass_icon.svg",
+      "existingAssetKind": "source-bitmap",
+      "sourceSize": [
+        27,
+        35
+      ],
+      "notes": "An existing original bitmap can be reused unchanged when bitmap output is acceptable; its SVG wrapper is not an original vector."
+    },
+    {
+      "id": "staff_icon",
+      "label": "条纹杖形（待释义）",
+      "instances": 4,
+      "distinctShapes": 1,
+      "decision": "author-clean-component-once-per-shape-for-full-vector-output",
+      "availableOriginalBitmap": "native-icons/source-audit/staff_icon-source-alpha.png",
+      "existingAsset": "output/map-asset-kit-20261024/native-icons/markers/staff_icon.svg",
+      "existingAssetKind": "source-bitmap",
+      "sourceSize": [
+        34,
+        30
+      ],
+      "notes": "An existing original bitmap can be reused unchanged when bitmap output is acceptable; its SVG wrapper is not an original vector."
+    },
+    {
+      "id": "spartan_stronghold",
+      "label": "斯巴达要塞",
+      "instances": 9,
+      "distinctShapes": 1,
+      "decision": "author-clean-component-once-per-shape-for-full-vector-output",
+      "availableOriginalBitmap": "native-icons/source-audit/spartan_stronghold-source-alpha.png",
+      "existingAsset": "output/map-asset-kit-20261024/native-icons/markers/spartan_stronghold.svg",
+      "existingAssetKind": "source-bitmap",
+      "sourceSize": [
+        48,
+        44
+      ],
+      "notes": "An existing original bitmap can be reused unchanged when bitmap output is acceptable; its SVG wrapper is not an original vector."
+    },
+    {
+      "id": "daedalus_lighthouse",
+      "label": "代达罗斯灯塔",
+      "instances": 12,
+      "distinctShapes": 1,
+      "decision": "author-clean-component-once-per-shape-for-full-vector-output",
+      "availableOriginalBitmap": "native-icons/source-audit/daedalus_lighthouse-source-alpha.png",
+      "existingAsset": "output/map-asset-kit-20261024/native-icons/markers/daedalus_lighthouse.svg",
+      "existingAssetKind": "source-bitmap",
+      "sourceSize": [
+        33,
+        47
+      ],
+      "notes": "An existing original bitmap can be reused unchanged when bitmap output is acceptable; its SVG wrapper is not an original vector."
+    },
+    {
+      "id": "wheel_icon",
+      "label": "车轮 / 有翼和无翼（待释义）",
+      "instances": 4,
+      "distinctShapes": 2,
+      "decision": "author-clean-component-once-per-shape-for-full-vector-output",
+      "availableOriginalBitmap": "native-icons/source-audit/wheel_icon-source-alpha.png",
+      "existingAsset": "output/map-asset-kit-20261024/native-icons/markers/wheel_icon.svg",
+      "existingAssetKind": "source-bitmap",
+      "sourceSize": [
+        44,
+        44
+      ],
+      "notes": "The winged and plain chariot are distinct printed silhouettes; one wheel/axle subcomponent can be shared."
+    },
+    {
+      "id": "oasis",
+      "label": "绿洲",
+      "instances": 8,
+      "distinctShapes": 1,
+      "decision": "author-clean-component-once-per-shape-for-full-vector-output",
+      "availableOriginalBitmap": "native-icons/source-audit/oasis-source-alpha.png",
+      "existingAsset": "output/map-asset-kit-20261024/native-icons/markers/oasis.svg",
+      "existingAssetKind": "source-bitmap",
+      "sourceSize": [
+        49,
+        39
+      ],
+      "notes": "An existing original bitmap can be reused unchanged when bitmap output is acceptable; its SVG wrapper is not an original vector."
+    },
+    {
+      "id": "smoking_bowl_icon",
+      "label": "烟雾碗（待释义）",
+      "instances": 4,
+      "distinctShapes": 1,
+      "decision": "author-clean-component-once-per-shape-for-full-vector-output",
+      "availableOriginalBitmap": "native-icons/source-audit/smoking_bowl_icon-source-alpha.png",
+      "existingAsset": "output/map-asset-kit-20261024/native-icons/markers/smoking_bowl_icon.svg",
+      "existingAssetKind": "source-bitmap",
+      "sourceSize": [
+        46,
+        47
+      ],
+      "notes": "An existing original bitmap can be reused unchanged when bitmap output is acceptable; its SVG wrapper is not an original vector."
+    },
+    {
+      "id": "silver_ruin",
+      "label": "白银种遗迹",
+      "instances": 13,
+      "distinctShapes": 1,
+      "decision": "author-clean-component-once-per-shape-for-full-vector-output",
+      "availableOriginalBitmap": "native-icons/source-audit/silver_ruin-source-alpha.png",
+      "existingAsset": "output/map-asset-kit-20261024/native-icons/markers/silver_ruin.svg",
+      "existingAssetKind": "source-bitmap",
+      "sourceSize": [
+        317,
+        321
+      ],
+      "notes": "An existing original bitmap can be reused unchanged when bitmap output is acceptable; its SVG wrapper is not an original vector."
+    }
+  ],
+  "sharedGeometry": [
+    {
+      "id": "disc-tab",
+      "appliesTo": "round circle with optional square lower/upper tabs; palette variants reuse the same geometry"
+    },
+    {
+      "id": "underwater-city-scallop",
+      "appliesTo": "7 C5-A city backings; same city emblem, only the outside backing differs"
+    },
+    {
+      "id": "greek-disc",
+      "appliesTo": "76 alpha/beta circles; two existing font-outline glyphs, one common circle"
+    },
+    {
+      "id": "secret-number-banner",
+      "appliesTo": "14 instances; one flared strip plus existing digit/star paths"
+    },
+    {
+      "id": "city-nameplate",
+      "appliesTo": "1 Knossos nameplate; reuse city emblem and a separate clean banner/text outline"
+    },
+    {
+      "id": "hidden-number-text",
+      "appliesTo": "11 four-digit hidden labels / 44 source digit components; reuse existing font, bounds, colours and rotation from tools/map-hidden-number-regions.json and complete-map-hidden-numbers.py"
+    }
+  ],
+  "excludedFromNewEmblemCount": {
+    "cornerAndRouteAssets": "River, locks, helmet and C3 category emblems belong to the link/corner inventory and are not counted twice.",
+    "hiddenNumbers": "17 large + 27 small components are 44 real hidden-number digits in 11 complete labels, preserved and classified as reusable existing text.",
+    "speckles": "Only 2 separate antialias speckles (1px and 3px), visually and independently audited, are nonsemantic noise."
+  },
+  "routeCategoryTrials": {
+    "components": 3,
+    "files": "tools/map-marker-vector-source/redraw/manifest.json",
+    "status": "authored geometry trials; not yet approved or installed",
+    "actualNames": {
+      "time_wound": "concentric diamonds",
+      "time_portal": "round spiral",
+      "time_portal_angular": "angular spiral"
+    }
+  },
+  "coverageLimits": [
+    "Minimum 9 assumes retaining every printed emblem silhouette, including both wheel variants. It counts emblem drawings, not palette changes or repeated placements.",
+    "A full vector version still requires authoring and visually approving those missing silhouettes; inventory coverage does not prove redraw fidelity.",
+    "The 14 old bitmap-derived contour glyphs are recognition/reference material and are not accepted as clean native final components."
+  ]
+}

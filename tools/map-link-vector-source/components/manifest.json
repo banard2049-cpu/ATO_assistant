@@ -1,0 +1,10 @@
+{
+  "purpose": "Fixed clean vector elements. Each is drawn once and reused; source scans supply semantic reference only.",
+  "components": {
+    "land_route": {"method": "fixed-analytical-layered-geometry", "elements": "three source-white faces, three opaque warm-grey recess planes and three thin source-white lower ledges over one axis; complete ink 45x46, common template for all twelve originals"},
+    "gate_route": {"method": "fixed-analytical-straight-line-geometry", "elements": "one tall center pillar and two broad short side pillars, fixed lower slots and trapezoid feet; original map ink 47x39"},
+    "gate_route_double": {"method": "fixed-analytical-straight-line-geometry", "elements": "two tall narrow center pillars and two narrower side pillars, fixed lower slots and trapezoid feet; original map ink 47x39"},
+    "river": {"method": "hand-built-cubic-curves", "elements": "one smooth river and three droplet curves"},
+    "helmet_icon": {"method": "hand-built-cubic-curves", "elements": "crest, helmet and circular rivet"}
+  }
+}

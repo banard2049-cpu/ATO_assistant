@@ -1,0 +1,80 @@
+{
+  "version": "20261027-c2-route-source-scalar2-layered-land",
+  "policy": "One analytic geometry per genuine map variant. Original scalar measurements and native style references only; no map contour traced into visible paths.",
+  "expectedCounts": {
+    "gate_route_double": 3,
+    "gate_route": 5,
+    "land_route": 12,
+    "waves": 28
+  },
+  "gateInkSize": [
+    47,
+    39
+  ],
+  "landInkSize": [
+    45,
+    46
+  ],
+  "waveWidth": 45,
+  "waveHeightBox": 26,
+  "nativeAssetCaveats": [
+    "Both APK gate sprites have one center pillar; double-center map variant is independently confirmed on C2 023/024/027.",
+    "APK land sprite has five bands inside a ring; map land symbol has three bands and is not replaced with that different native image."
+  ],
+  "evidenceSha256": {
+    "output/c2-special-route-audit/native-sources.json": "3580f705e6072805182944327ecf7dd36b543cfed36553ebca4080809516f471",
+    "output/c2-special-route-audit/map-gate-anatomy.json": "3cac19f5fde7258b0d67fbc64dace06e00a9cbfdbc47e8ed1af4c5bbb8be2473",
+    "output/c2-special-route-audit/land-route-scalar-anatomy.json": "3a93fa20e8119955c24ed7e6d46aeea048d7a0b7d2e90d7da1e54c6ae8726e45",
+    "output/c2-special-route-audit/waves-source-metrics.json": "4a5cd21adeecadfe1231f944718f1dcffa7e133474024b0210363c8e4ec1cfee",
+    "output/c2-special-route-audit/land-fixed-layer-palette-evidence.json": "1b0e1b94c742cd041d6b95e8d33c09ebdd02727820572ce9c18b29417d6f3a0d"
+  },
+  "landLayers": {
+    "body": "#e6e6e6",
+    "recess": "#b3a59f",
+    "recessOpaque": true,
+    "bandLayers": {
+      "top": {
+        "face": [
+          3,
+          9
+        ],
+        "recess": [
+          9,
+          11
+        ],
+        "ledge": [
+          11,
+          12
+        ]
+      },
+      "middle": {
+        "face": [
+          16,
+          23
+        ],
+        "recess": [
+          23,
+          25
+        ],
+        "ledge": [
+          25,
+          26
+        ]
+      },
+      "bottom": {
+        "face": [
+          30,
+          38
+        ],
+        "recess": [
+          38,
+          40
+        ],
+        "ledge": [
+          40,
+          41.5
+        ]
+      }
+    }
+  }
+}

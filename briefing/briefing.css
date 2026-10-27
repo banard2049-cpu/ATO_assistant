@@ -41,6 +41,9 @@ button, select, input, a.link-button { border-radius: 0; font: inherit; }
 .head-summary small { margin-left: 7px; color: var(--muted, #706a60); font: 11px "Microsoft YaHei", "PingFang SC", system-ui, sans-serif; }
 .briefing-toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 20px; border-block: 1px solid var(--line, #e3d4c8); padding: 10px 0; }
 .head-actions, .export-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; min-width: 0; }
+.backup-toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 20px; padding: 14px 0; border-bottom: 1px solid var(--line, #e3d4c8); }
+.backup-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.backup-toolbar .head-status { margin: 0; }
 .field { display: flex; align-items: center; gap: 10px; color: var(--muted, #706a60); font-size: 12px; min-width: 0; }
 .field select { min-width: 0; max-width: 100%; height: 40px; border: 1px solid var(--line, #e3d4c8); background: var(--panel, #fffdfb); color: var(--ink, #24211d); padding: 0 30px 0 12px; font-size: 12px; }
 .field select:disabled { opacity: .55; cursor: not-allowed; }

@@ -15,10 +15,18 @@ public class Context {
     private final Map<String, String> durable = new HashMap<>();
     public int commits;
     public boolean failNextCommit;
+    public Error failNextGetAll;
     public void crash() { values.clear(); values.putAll(durable); }
     public String getString(String key, String fallback) { return values.getOrDefault(key, fallback); }
     public boolean contains(String key) { return values.containsKey(key); }
-    public Map<String, ?> getAll() { return new HashMap<>(values); }
+    public Map<String, ?> getAll() {
+      if (failNextGetAll != null) {
+        Error error = failNextGetAll;
+        failNextGetAll = null;
+        throw error;
+      }
+      return new HashMap<>(values);
+    }
     public Editor edit() {
       return new Editor() {
         private final Map<String, String> pending = new HashMap<>();

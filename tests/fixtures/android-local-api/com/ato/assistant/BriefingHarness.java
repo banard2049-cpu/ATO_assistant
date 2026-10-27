@@ -100,7 +100,75 @@ public final class BriefingHarness {
     check(briefing("").getJSONArray("snapshots").length() == 0, "Another profile read original profile history");
     JSONObject reopened = new JSONObject(new LocalCampaignApi(context).handleForJavascript(Uri.parse("http://localhost/briefing/api.php"), "GET", ""));
     check(reopened.getInt("status") == 200, "Reopened API cannot read briefing");
+    paginationAndProjection();
     System.out.println("Android briefing passed: " + checks + " checks");
+  }
+
+  private void paginationAndProjection() throws Exception {
+    request("api/campaign-state.php?action=login", "POST", "{\"username\":\"paging\"}", 200);
+    for (int day = 1; day <= 11; day++) day(String.valueOf(day), "ship", "c1");
+    JSONObject first = briefing("");
+    check(first.getJSONArray("snapshots").length() == 4 && "4".equals(first.getString("nextCursor")), "First page was not bounded to four days");
+    JSONObject second = briefing("?cursor=4&profile=ship&cycle=c1");
+    check(second.getJSONArray("snapshots").length() == 4 && "8".equals(second.getString("nextCursor")), "Second page missing");
+    JSONObject last = briefing("?cursor=8&profile=ship&cycle=c1");
+    check(last.getJSONArray("snapshots").length() == 2 && last.isNull("nextCursor"), "Last page did not terminate");
+    java.util.Set<String> seen = new java.util.HashSet<>();
+    for (JSONObject page : new JSONObject[] {first, second, last}) {
+      JSONArray entries = page.getJSONArray("snapshots");
+      for (int i = 0; i < entries.length(); i++) check(seen.add(snapshotDay(entries.getJSONObject(i), "ship", "c1")), "Pagination repeated a day");
+    }
+    check(seen.size() == 10 && !seen.contains("11"), "Pagination omitted a daily archive or fabricated today");
+    request("briefing/api.php?cursor=-1", "GET", "", 400);
+    request("briefing/api.php?cursor=invalid", "GET", "", 400);
+    request("briefing/api.php?cursor=2147483647", "GET", "", 400);
+
+    JSONObject campaign = new JSONObject(context.store.getString("campaign::paging", ""));
+    JSONObject currentState = campaign.getJSONObject("sections").getJSONObject("dashboard").getJSONObject("profiles")
+      .getJSONObject("ship").getJSONObject("cycles").getJSONObject("c1").getJSONObject("state");
+    currentState.put("notes", "TODAYS PRIVATE NOTES").put("history", "UNUSED CURRENT HISTORY");
+    context.store.edit().putString("campaign::paging", campaign.toString()).apply();
+    String target = "campaign::paging::daily::ship::c1::1::";
+    String originalKey = null;
+    for (String key : context.store.getAll().keySet()) if (key.startsWith(target)) originalKey = key;
+    JSONObject archive = new JSONObject(context.store.getString(originalKey, ""));
+    JSONObject sections = archive.getJSONObject("sections");
+    JSONObject state = sections.getJSONObject("dashboard").getJSONObject("profiles").getJSONObject("ship")
+      .getJSONObject("cycles").getJSONObject("c1").getJSONObject("state");
+    state.put("history", "UNUSED DASHBOARD HISTORY").put("dateNotes", new JSONObject().put("day:1", "preserved keyed note"))
+      .put("cardCounters", new JSONObject().put("storyCount", 3).put("ignored", "UNUSED COUNTER DATA"))
+      .put("surveyConstants", new JSONObject().put("hubs", new JSONObject().put("hub1", new JSONObject().put("box1", true)))
+        .put("activeHub", new JSONObject().put("itemId", "hub1").put("boxId", "box1").put("ignored", "UNUSED HUB DATA")))
+      .put("exploration", new JSONObject().put("drawStateByCycle", new JSONObject().put("c1", new JSONObject().put("history", new JSONArray()
+        .put(new JSONObject().put("day", "1").put("name", "preserved draw").put("ignored", "UNUSED DRAW DATA"))
+        .put(new JSONObject().put("day", "0").put("name", "PAST DRAW"))))));
+    state.getJSONObject("mapSnapshot").put("tileNotes", new JSONArray().put(new JSONObject().put("tileId", "T00").put("note", "preserved tile note").put("image", "UNUSED MAP IMAGE")));
+    sections.put("heroes", new JSONObject().put("users", new JSONObject().put("ship", new JSONObject().put("heroes", new JSONArray()
+      .put(new JSONObject().put("customName", "preserved hero").put("equipment", "UNUSED HERO DATA"))))));
+    sections.put("story", new JSONObject().put("users", new JSONObject().put("ship", new JSONObject().put("section", "7").put("title", "preserved story").put("body", "UNUSED STORY BODY"))));
+    sections.put("record", new JSONObject().put("inventory", "UNUSED INVENTORY"));
+    context.store.edit().putString(originalKey, archive.toString()).apply();
+    String projected = briefing("").toString();
+    for (String required : new String[] {"preserved keyed note", "preserved draw", "preserved tile note", "preserved hero", "preserved story", "box1", "storyCount"})
+      check(projected.contains(required), "Projection lost " + required);
+    check(!projected.contains("UNUSED") && !projected.contains("TODAYS PRIVATE NOTES") && !projected.contains("PAST DRAW"), "Projection leaked unrelated/current campaign data");
+
+    // A structurally incomplete highest revision must not suppress the valid day.
+    JSONObject broken = new JSONObject(archive.toString());
+    broken.getJSONObject("sectionRevisions").put("dashboard", 9999);
+    broken.getJSONObject("sections").getJSONObject("dashboard").getJSONObject("profiles").getJSONObject("ship")
+      .getJSONObject("cycles").getJSONObject("c1").put("state", new JSONObject().put("day", "2"));
+    context.store.edit().putString(target + "zzz-mismatched-day", broken.toString()).apply();
+    check(briefing("").toString().contains("preserved keyed note"), "Mismatched-day archive hid valid history");
+
+    int commits = context.store.commits;
+    context.store.failNextGetAll = new OutOfMemoryError("Simulated archive pressure");
+    JSONObject memoryError = request("briefing/api.php", "GET", "", 503);
+    check("LOCAL_MEMORY_LIMIT".equals(memoryError.getString("code")) && !memoryError.getBoolean("ok"), "Memory fallback was not valid JSON");
+    context.store.failNextGetAll = new StackOverflowError("Simulated malformed archive");
+    JSONObject structureError = request("briefing/api.php", "GET", "", 422);
+    check("INVALID_LOCAL_ARCHIVE".equals(structureError.getString("code")) && !structureError.getBoolean("ok"), "Structure fallback was not valid JSON");
+    check(briefing("").getJSONArray("snapshots").length() == 4 && commits == context.store.commits, "Bridge did not recover without save writes");
   }
 
   public static void main(String[] args) throws Exception { new BriefingHarness().run(args[0]); }

@@ -221,7 +221,7 @@
           .map((tokenId) => `<span>${escapeText(markerLabel(tokenId))}</span>`).join('');
       });
 
-      const latest = String(day.map?.latestRevealedTileId || '');
+      const latest = String(day?.map?.latestRevealedTileId || '');
       const target = (fresh.has(latest) && latest) || [...fresh].reverse().find((id) => visible.has(id)) || (visible.has(current) && current) || [...visible].pop();
       const position = positions.get(target);
       focusPoint = position ? { x: position.x + tileWidth / 2, y: position.y + tileWidth / 2 } : null;

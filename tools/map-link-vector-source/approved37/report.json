@@ -1,0 +1,1532 @@
+{
+  "purpose": "Hand-audited geometric/native-path samples; not full installation",
+  "installed": false,
+  "samples": 37,
+  "faces": 12,
+  "allFourDirectionsCoveredInEveryCycle": true,
+  "waveBandsPerWaveCell": 3,
+  "nativeDigitsAndFactions": true,
+  "runtimeImagesInVectors": 0,
+  "c4FrameInk": "two equal 2px black rules, gold band between them; both cells aligned to source",
+  "c4FactionPalette": {
+    "background": "#3b3733",
+    "frame": "#171713",
+    "band": "#b89b5a",
+    "ink": "#fdfaf4"
+  },
+  "c4FactionGlyphPlacement": "uniform 46px fit; centered on each dark inner field",
+  "arrowFootprints": "source bbox; symmetric five-straight-sided polygon with 2px inset rim",
+  "lockAndGreekSizing": "tight source ink bounds; padlocks centered inside their discs",
+  "sharedCompartmentEdges": "single pale rim retained; no dark support outlines",
+  "thinDarkOutlines": "removed from all plate and arrow rims; original C4 primary black rims retained",
+  "runtimeFontsInVectors": 0,
+  "sourceImageHashesPreserved": true,
+  "notes": [
+    "数字及派系沿用背面原生路径；外框、色格、锁、三层水波为规则几何。箭头重建为五条直线组成的左右对称五边形。",
+    "C4 按原图用两条等粗黑线夹黄色带；编号格与派系格等高，派系格仅内圈里面填深棕灰。",
+    "C4 四方向派系图案按同一 46 像素框等比放置，居中在深色内框内，下方不再缩小或偏下。",
+    "箭头保留源图外接框宽高和位置，尖点居中、两侧肩部等高，边框向内等距收缩；锁和 α/β 按源图墨迹范围适配。",
+    "锁图形保留原版宽高，整体墨迹的中心对齐圆圈中心。",
+    "白色外框、分格白边和内框均保留；链接牌及箭头不再附加细黑描边，C4 主黑框沿用原版。",
+    "α/β 使用 Times New Roman 字体轮廓；无字体文件依赖。",
+    "C5 040 A 的左下 050 为 β、右下 050 为 α；B 面实际没有顶部 030 链接。",
+    "12 张面的 37 个样例均由放大的原图逐项核对，仅供审阅，不写入游戏。"
+  ],
+  "records": [
+    {
+      "id": "c1-tile-027-front--up-1",
+      "key": "c1-tile-027-front",
+      "cycle": "c1",
+      "face": "A",
+      "direction": "up",
+      "panelId": "up-1",
+      "bbox": [
+        419,
+        23,
+        597,
+        144
+      ],
+      "bodyBBox": [
+        426,
+        68,
+        590,
+        137
+      ],
+      "number": "022",
+      "cells": [
+        {
+          "kind": "number",
+          "value": "022"
+        },
+        {
+          "kind": "faction",
+          "value": "minoans"
+        }
+      ],
+      "arrows": 1,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c1-tile-027-front.png",
+      "sourceSha256": "bb2ecfe2ef787bb76734192508f026995bfc0493cbcfeccca815481ef82d941c",
+      "vector": "vectors/c1-tile-027-front--up-1.svg",
+      "original": "sources/c1-tile-027-front--up-1.png",
+      "render": "renders/c1-tile-027-front--up-1.png"
+    },
+    {
+      "id": "c1-tile-027-front--left-1",
+      "key": "c1-tile-027-front",
+      "cycle": "c1",
+      "face": "A",
+      "direction": "left",
+      "panelId": "left-1",
+      "bbox": [
+        22,
+        470,
+        210,
+        552
+      ],
+      "bodyBBox": [
+        29,
+        477,
+        203,
+        545
+      ],
+      "number": "026",
+      "cells": [
+        {
+          "kind": "number",
+          "value": "026"
+        },
+        {
+          "kind": "faction",
+          "value": "minoans"
+        }
+      ],
+      "arrows": 0,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c1-tile-027-front.png",
+      "sourceSha256": "bb2ecfe2ef787bb76734192508f026995bfc0493cbcfeccca815481ef82d941c",
+      "vector": "vectors/c1-tile-027-front--left-1.svg",
+      "original": "sources/c1-tile-027-front--left-1.png",
+      "render": "renders/c1-tile-027-front--left-1.png"
+    },
+    {
+      "id": "c1-tile-027-front--down-1",
+      "key": "c1-tile-027-front",
+      "cycle": "c1",
+      "face": "A",
+      "direction": "down",
+      "panelId": "down-1",
+      "bbox": [
+        422,
+        879,
+        600,
+        999
+      ],
+      "bodyBBox": [
+        429,
+        886,
+        593,
+        954
+      ],
+      "number": "032",
+      "cells": [
+        {
+          "kind": "number",
+          "value": "032"
+        },
+        {
+          "kind": "faction",
+          "value": "minoans"
+        }
+      ],
+      "arrows": 1,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c1-tile-027-front.png",
+      "sourceSha256": "bb2ecfe2ef787bb76734192508f026995bfc0493cbcfeccca815481ef82d941c",
+      "vector": "vectors/c1-tile-027-front--down-1.svg",
+      "original": "sources/c1-tile-027-front--down-1.png",
+      "render": "renders/c1-tile-027-front--down-1.png"
+    },
+    {
+      "id": "c1-tile-003-front--right-1",
+      "key": "c1-tile-003-front",
+      "cycle": "c1",
+      "face": "A",
+      "direction": "right",
+      "panelId": "right-1",
+      "bbox": [
+        812,
+        469,
+        999,
+        553
+      ],
+      "bodyBBox": [
+        819,
+        476,
+        992,
+        546
+      ],
+      "number": "004",
+      "cells": [
+        {
+          "kind": "faction",
+          "value": "hornsworn"
+        },
+        {
+          "kind": "number",
+          "value": "004"
+        }
+      ],
+      "arrows": 0,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c1-tile-003-front.png",
+      "sourceSha256": "06389a2995739e3fee116b6aebc656ab514b2ad7b825e053ca6e7faa868fa004",
+      "vector": "vectors/c1-tile-003-front--right-1.svg",
+      "original": "sources/c1-tile-003-front--right-1.png",
+      "render": "renders/c1-tile-003-front--right-1.png"
+    },
+    {
+      "id": "c1-tile-003-front--left-1",
+      "key": "c1-tile-003-front",
+      "cycle": "c1",
+      "face": "A",
+      "direction": "left",
+      "panelId": "left-1",
+      "bbox": [
+        24,
+        471,
+        211,
+        553
+      ],
+      "bodyBBox": [
+        31,
+        478,
+        204,
+        546
+      ],
+      "number": "002",
+      "cells": [
+        {
+          "kind": "number",
+          "value": "002"
+        },
+        {
+          "kind": "faction",
+          "value": "hornsworn"
+        }
+      ],
+      "arrows": 0,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c1-tile-003-front.png",
+      "sourceSha256": "06389a2995739e3fee116b6aebc656ab514b2ad7b825e053ca6e7faa868fa004",
+      "vector": "vectors/c1-tile-003-front--left-1.svg",
+      "original": "sources/c1-tile-003-front--left-1.png",
+      "render": "renders/c1-tile-003-front--left-1.png"
+    },
+    {
+      "id": "c1-tile-003-front--down-1",
+      "key": "c1-tile-003-front",
+      "cycle": "c1",
+      "face": "A",
+      "direction": "down",
+      "panelId": "down-1",
+      "bbox": [
+        423,
+        878,
+        601,
+        1001
+      ],
+      "bodyBBox": [
+        430,
+        885,
+        594,
+        954
+      ],
+      "number": "008",
+      "cells": [
+        {
+          "kind": "number",
+          "value": "008"
+        },
+        {
+          "kind": "faction",
+          "value": "minoans"
+        }
+      ],
+      "arrows": 1,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c1-tile-003-front.png",
+      "sourceSha256": "06389a2995739e3fee116b6aebc656ab514b2ad7b825e053ca6e7faa868fa004",
+      "vector": "vectors/c1-tile-003-front--down-1.svg",
+      "original": "sources/c1-tile-003-front--down-1.png",
+      "render": "renders/c1-tile-003-front--down-1.png"
+    },
+    {
+      "id": "c2-tile-019-front--left-1",
+      "key": "c2-tile-019-front",
+      "cycle": "c2",
+      "face": "A",
+      "direction": "left",
+      "panelId": "left-1",
+      "bbox": [
+        36,
+        469,
+        360,
+        555
+      ],
+      "bodyBBox": [
+        43,
+        476,
+        353,
+        548
+      ],
+      "number": "018",
+      "cells": [
+        {
+          "kind": "number",
+          "value": "018"
+        },
+        {
+          "kind": "faction",
+          "value": "cyclopes"
+        },
+        {
+          "kind": "waves",
+          "value": "three"
+        }
+      ],
+      "arrows": 0,
+      "lock": true,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c2-tile-019-front.png",
+      "sourceSha256": "ed85023fbe3f33d2092d9db8031492e812789285a3627b5e44a0d2678738dcad",
+      "vector": "vectors/c2-tile-019-front--left-1.svg",
+      "original": "sources/c2-tile-019-front--left-1.png",
+      "render": "renders/c2-tile-019-front--left-1.png"
+    },
+    {
+      "id": "c2-tile-019-front--right-1",
+      "key": "c2-tile-019-front",
+      "cycle": "c2",
+      "face": "A",
+      "direction": "right",
+      "panelId": "right-1",
+      "bbox": [
+        800,
+        470,
+        987,
+        552
+      ],
+      "bodyBBox": [
+        807,
+        477,
+        980,
+        545
+      ],
+      "number": "020",
+      "cells": [
+        {
+          "kind": "faction",
+          "value": "helots"
+        },
+        {
+          "kind": "number",
+          "value": "020"
+        }
+      ],
+      "arrows": 0,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c2-tile-019-front.png",
+      "sourceSha256": "ed85023fbe3f33d2092d9db8031492e812789285a3627b5e44a0d2678738dcad",
+      "vector": "vectors/c2-tile-019-front--right-1.svg",
+      "original": "sources/c2-tile-019-front--right-1.png",
+      "render": "renders/c2-tile-019-front--right-1.png"
+    },
+    {
+      "id": "c2-tile-003-front--right-1",
+      "key": "c2-tile-003-front",
+      "cycle": "c2",
+      "face": "A",
+      "direction": "right",
+      "panelId": "right-1",
+      "bbox": [
+        800,
+        471,
+        987,
+        554
+      ],
+      "bodyBBox": [
+        807,
+        478,
+        980,
+        547
+      ],
+      "number": "004",
+      "cells": [
+        {
+          "kind": "faction",
+          "value": "cyclopes"
+        },
+        {
+          "kind": "number",
+          "value": "004"
+        }
+      ],
+      "arrows": 0,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c2-tile-003-front.png",
+      "sourceSha256": "97293253bed15d97dc79f65640a205b455f6402adb51afdc5108d5df78f37bbd",
+      "vector": "vectors/c2-tile-003-front--right-1.svg",
+      "original": "sources/c2-tile-003-front--right-1.png",
+      "render": "renders/c2-tile-003-front--right-1.png"
+    },
+    {
+      "id": "c2-tile-003-front--left-1",
+      "key": "c2-tile-003-front",
+      "cycle": "c2",
+      "face": "A",
+      "direction": "left",
+      "panelId": "left-1",
+      "bbox": [
+        36,
+        472,
+        223,
+        554
+      ],
+      "bodyBBox": [
+        43,
+        479,
+        216,
+        547
+      ],
+      "number": "002",
+      "cells": [
+        {
+          "kind": "number",
+          "value": "002"
+        },
+        {
+          "kind": "faction",
+          "value": "cyclopes"
+        }
+      ],
+      "arrows": 0,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c2-tile-003-front.png",
+      "sourceSha256": "97293253bed15d97dc79f65640a205b455f6402adb51afdc5108d5df78f37bbd",
+      "vector": "vectors/c2-tile-003-front--left-1.svg",
+      "original": "sources/c2-tile-003-front--left-1.png",
+      "render": "renders/c2-tile-003-front--left-1.png"
+    },
+    {
+      "id": "c2-tile-003-front--down-1",
+      "key": "c2-tile-003-front",
+      "cycle": "c2",
+      "face": "A",
+      "direction": "down",
+      "panelId": "down-1",
+      "bbox": [
+        424,
+        866,
+        602,
+        989
+      ],
+      "bodyBBox": [
+        431,
+        873,
+        595,
+        941
+      ],
+      "number": "011",
+      "cells": [
+        {
+          "kind": "number",
+          "value": "011"
+        },
+        {
+          "kind": "faction",
+          "value": "cyclopes"
+        }
+      ],
+      "arrows": 1,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c2-tile-003-front.png",
+      "sourceSha256": "97293253bed15d97dc79f65640a205b455f6402adb51afdc5108d5df78f37bbd",
+      "vector": "vectors/c2-tile-003-front--down-1.svg",
+      "original": "sources/c2-tile-003-front--down-1.png",
+      "render": "renders/c2-tile-003-front--down-1.png"
+    },
+    {
+      "id": "c2-tile-021-front--up-1",
+      "key": "c2-tile-021-front",
+      "cycle": "c2",
+      "face": "A",
+      "direction": "up",
+      "panelId": "up-1",
+      "bbox": [
+        323,
+        34,
+        700,
+        159
+      ],
+      "bodyBBox": [
+        330,
+        81,
+        619,
+        150
+      ],
+      "number": "014",
+      "cells": [
+        {
+          "kind": "number",
+          "value": "014"
+        },
+        {
+          "kind": "faction",
+          "value": "symmachy"
+        },
+        {
+          "kind": "waves",
+          "value": "three"
+        },
+        {
+          "kind": "greek",
+          "value": "alpha"
+        }
+      ],
+      "arrows": 1,
+      "lock": true,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c2-tile-021-front.png",
+      "sourceSha256": "89dad1008d704658aeb1b053fdb3fced0d174af36f92c70fc316e5edf2250b76",
+      "vector": "vectors/c2-tile-021-front--up-1.svg",
+      "original": "sources/c2-tile-021-front--up-1.png",
+      "render": "renders/c2-tile-021-front--up-1.png"
+    },
+    {
+      "id": "c2-tile-021-front--right-1",
+      "key": "c2-tile-021-front",
+      "cycle": "c2",
+      "face": "A",
+      "direction": "right",
+      "panelId": "right-1",
+      "bbox": [
+        736,
+        471,
+        987,
+        552
+      ],
+      "bodyBBox": [
+        743,
+        478,
+        980,
+        545
+      ],
+      "number": "022",
+      "cells": [
+        {
+          "kind": "greek",
+          "value": "alpha"
+        },
+        {
+          "kind": "faction",
+          "value": "symmachy"
+        },
+        {
+          "kind": "number",
+          "value": "022"
+        }
+      ],
+      "arrows": 0,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c2-tile-021-front.png",
+      "sourceSha256": "89dad1008d704658aeb1b053fdb3fced0d174af36f92c70fc316e5edf2250b76",
+      "vector": "vectors/c2-tile-021-front--right-1.svg",
+      "original": "sources/c2-tile-021-front--right-1.png",
+      "render": "renders/c2-tile-021-front--right-1.png"
+    },
+    {
+      "id": "c2-tile-021-front--left-1",
+      "key": "c2-tile-021-front",
+      "cycle": "c2",
+      "face": "A",
+      "direction": "left",
+      "panelId": "left-1",
+      "bbox": [
+        37,
+        472,
+        286,
+        553
+      ],
+      "bodyBBox": [
+        44,
+        479,
+        279,
+        546
+      ],
+      "number": "020",
+      "cells": [
+        {
+          "kind": "number",
+          "value": "020"
+        },
+        {
+          "kind": "faction",
+          "value": "helots"
+        },
+        {
+          "kind": "greek",
+          "value": "alpha"
+        }
+      ],
+      "arrows": 0,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c2-tile-021-front.png",
+      "sourceSha256": "89dad1008d704658aeb1b053fdb3fced0d174af36f92c70fc316e5edf2250b76",
+      "vector": "vectors/c2-tile-021-front--left-1.svg",
+      "original": "sources/c2-tile-021-front--left-1.png",
+      "render": "renders/c2-tile-021-front--left-1.png"
+    },
+    {
+      "id": "c2-tile-021-front--down-1",
+      "key": "c2-tile-021-front",
+      "cycle": "c2",
+      "face": "A",
+      "direction": "down",
+      "panelId": "down-1",
+      "bbox": [
+        346,
+        867,
+        651,
+        990
+      ],
+      "bodyBBox": [
+        353,
+        874,
+        644,
+        943
+      ],
+      "number": "028",
+      "cells": [
+        {
+          "kind": "number",
+          "value": "028"
+        },
+        {
+          "kind": "faction",
+          "value": "symmachy"
+        },
+        {
+          "kind": "waves",
+          "value": "three"
+        },
+        {
+          "kind": "greek",
+          "value": "beta"
+        }
+      ],
+      "arrows": 1,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c2-tile-021-front.png",
+      "sourceSha256": "89dad1008d704658aeb1b053fdb3fced0d174af36f92c70fc316e5edf2250b76",
+      "vector": "vectors/c2-tile-021-front--down-1.svg",
+      "original": "sources/c2-tile-021-front--down-1.png",
+      "render": "renders/c2-tile-021-front--down-1.png"
+    },
+    {
+      "id": "c3-tile-050-front--up-1",
+      "key": "c3-tile-050-front",
+      "cycle": "c3",
+      "face": "A",
+      "direction": "up",
+      "panelId": "up-1",
+      "bbox": [
+        423,
+        36,
+        601,
+        156
+      ],
+      "bodyBBox": [
+        430,
+        81,
+        594,
+        149
+      ],
+      "number": "051",
+      "cells": [
+        {
+          "kind": "number",
+          "value": "051"
+        },
+        {
+          "kind": "faction",
+          "value": "delphians"
+        }
+      ],
+      "arrows": 1,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c3-tile-050-front.png",
+      "sourceSha256": "e4ee1949a9bae55be688739d768f45901373abe77ef0d358d24a1bb49bae5f2d",
+      "vector": "vectors/c3-tile-050-front--up-1.svg",
+      "original": "sources/c3-tile-050-front--up-1.png",
+      "render": "renders/c3-tile-050-front--up-1.png"
+    },
+    {
+      "id": "c3-tile-050-front--left-1",
+      "key": "c3-tile-050-front",
+      "cycle": "c3",
+      "face": "A",
+      "direction": "left",
+      "panelId": "left-1",
+      "bbox": [
+        34,
+        470,
+        223,
+        553
+      ],
+      "bodyBBox": [
+        41,
+        477,
+        216,
+        546
+      ],
+      "number": "045",
+      "cells": [
+        {
+          "kind": "number",
+          "value": "045"
+        },
+        {
+          "kind": "faction",
+          "value": "delphians"
+        }
+      ],
+      "arrows": 0,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c3-tile-050-front.png",
+      "sourceSha256": "e4ee1949a9bae55be688739d768f45901373abe77ef0d358d24a1bb49bae5f2d",
+      "vector": "vectors/c3-tile-050-front--left-1.svg",
+      "original": "sources/c3-tile-050-front--left-1.png",
+      "render": "renders/c3-tile-050-front--left-1.png"
+    },
+    {
+      "id": "c3-tile-050-front--down-1",
+      "key": "c3-tile-050-front",
+      "cycle": "c3",
+      "face": "A",
+      "direction": "down",
+      "panelId": "down-1",
+      "bbox": [
+        422,
+        867,
+        601,
+        987
+      ],
+      "bodyBBox": [
+        429,
+        874,
+        594,
+        943
+      ],
+      "number": "049",
+      "cells": [
+        {
+          "kind": "number",
+          "value": "049"
+        },
+        {
+          "kind": "faction",
+          "value": "delphians"
+        }
+      ],
+      "arrows": 1,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c3-tile-050-front.png",
+      "sourceSha256": "e4ee1949a9bae55be688739d768f45901373abe77ef0d358d24a1bb49bae5f2d",
+      "vector": "vectors/c3-tile-050-front--down-1.svg",
+      "original": "sources/c3-tile-050-front--down-1.png",
+      "render": "renders/c3-tile-050-front--down-1.png"
+    },
+    {
+      "id": "c3-tile-005-front--up-1",
+      "key": "c3-tile-005-front",
+      "cycle": "c3",
+      "face": "A",
+      "direction": "up",
+      "panelId": "up-1",
+      "bbox": [
+        422,
+        35,
+        601,
+        157
+      ],
+      "bodyBBox": [
+        429,
+        80,
+        594,
+        150
+      ],
+      "number": "006",
+      "cells": [
+        {
+          "kind": "number",
+          "value": "006"
+        },
+        {
+          "kind": "faction",
+          "value": "delphians"
+        }
+      ],
+      "arrows": 1,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c3-tile-005-front.png",
+      "sourceSha256": "b95e4bf70a5f699c5fdd1d73beb0140bcd244140859b033c10baf20ab8cd9194",
+      "vector": "vectors/c3-tile-005-front--up-1.svg",
+      "original": "sources/c3-tile-005-front--up-1.png",
+      "render": "renders/c3-tile-005-front--up-1.png"
+    },
+    {
+      "id": "c3-tile-005-front--right-1",
+      "key": "c3-tile-005-front",
+      "cycle": "c3",
+      "face": "A",
+      "direction": "right",
+      "panelId": "right-1",
+      "bbox": [
+        800,
+        469,
+        988,
+        553
+      ],
+      "bodyBBox": [
+        807,
+        476,
+        981,
+        546
+      ],
+      "number": "012",
+      "cells": [
+        {
+          "kind": "faction",
+          "value": "twilightwatch"
+        },
+        {
+          "kind": "number",
+          "value": "012"
+        }
+      ],
+      "arrows": 0,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c3-tile-005-front.png",
+      "sourceSha256": "b95e4bf70a5f699c5fdd1d73beb0140bcd244140859b033c10baf20ab8cd9194",
+      "vector": "vectors/c3-tile-005-front--right-1.svg",
+      "original": "sources/c3-tile-005-front--right-1.png",
+      "render": "renders/c3-tile-005-front--right-1.png"
+    },
+    {
+      "id": "c3-tile-005-front--left-1",
+      "key": "c3-tile-005-front",
+      "cycle": "c3",
+      "face": "A",
+      "direction": "left",
+      "panelId": "left-1",
+      "bbox": [
+        37,
+        471,
+        224,
+        555
+      ],
+      "bodyBBox": [
+        44,
+        478,
+        217,
+        548
+      ],
+      "number": "002",
+      "cells": [
+        {
+          "kind": "number",
+          "value": "002"
+        },
+        {
+          "kind": "faction",
+          "value": "sunheirs"
+        }
+      ],
+      "arrows": 0,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c3-tile-005-front.png",
+      "sourceSha256": "b95e4bf70a5f699c5fdd1d73beb0140bcd244140859b033c10baf20ab8cd9194",
+      "vector": "vectors/c3-tile-005-front--left-1.svg",
+      "original": "sources/c3-tile-005-front--left-1.png",
+      "render": "renders/c3-tile-005-front--left-1.png"
+    },
+    {
+      "id": "c3-tile-005-front--down-1",
+      "key": "c3-tile-005-front",
+      "cycle": "c3",
+      "face": "A",
+      "direction": "down",
+      "panelId": "down-1",
+      "bbox": [
+        422,
+        867,
+        601,
+        988
+      ],
+      "bodyBBox": [
+        429,
+        874,
+        594,
+        944
+      ],
+      "number": "004",
+      "cells": [
+        {
+          "kind": "number",
+          "value": "004"
+        },
+        {
+          "kind": "faction",
+          "value": "delphians"
+        }
+      ],
+      "arrows": 1,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c3-tile-005-front.png",
+      "sourceSha256": "b95e4bf70a5f699c5fdd1d73beb0140bcd244140859b033c10baf20ab8cd9194",
+      "vector": "vectors/c3-tile-005-front--down-1.svg",
+      "original": "sources/c3-tile-005-front--down-1.png",
+      "render": "renders/c3-tile-005-front--down-1.png"
+    },
+    {
+      "id": "c4-tile-011-front--up-1",
+      "key": "c4-tile-011-front",
+      "cycle": "c4",
+      "face": "A",
+      "direction": "up",
+      "panelId": "up-1",
+      "bbox": [
+        419,
+        38,
+        600,
+        156
+      ],
+      "bodyBBox": [
+        426,
+        79,
+        593,
+        149
+      ],
+      "number": "020",
+      "cells": [
+        {
+          "kind": "number",
+          "value": "020"
+        },
+        {
+          "kind": "faction",
+          "value": "aristotelians"
+        }
+      ],
+      "arrows": 1,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c4-tile-011-front.png",
+      "sourceSha256": "011ca227cb985c405d10d5832fa43651dd92c04a1a5cfe0cdcef1814c06ae35a",
+      "vector": "vectors/c4-tile-011-front--up-1.svg",
+      "original": "sources/c4-tile-011-front--up-1.png",
+      "render": "renders/c4-tile-011-front--up-1.png"
+    },
+    {
+      "id": "c4-tile-011-front--left-1",
+      "key": "c4-tile-011-front",
+      "cycle": "c4",
+      "face": "A",
+      "direction": "left",
+      "panelId": "left-1",
+      "bbox": [
+        34,
+        468,
+        219,
+        548
+      ],
+      "bodyBBox": [
+        41,
+        475,
+        212,
+        541
+      ],
+      "number": "010",
+      "cells": [
+        {
+          "kind": "number",
+          "value": "010"
+        },
+        {
+          "kind": "faction",
+          "value": "aristotelians"
+        }
+      ],
+      "arrows": 0,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c4-tile-011-front.png",
+      "sourceSha256": "011ca227cb985c405d10d5832fa43651dd92c04a1a5cfe0cdcef1814c06ae35a",
+      "vector": "vectors/c4-tile-011-front--left-1.svg",
+      "original": "sources/c4-tile-011-front--left-1.png",
+      "render": "renders/c4-tile-011-front--left-1.png"
+    },
+    {
+      "id": "c4-tile-011-front--right-1",
+      "key": "c4-tile-011-front",
+      "cycle": "c4",
+      "face": "A",
+      "direction": "right",
+      "panelId": "right-1",
+      "bbox": [
+        801,
+        470,
+        984,
+        553
+      ],
+      "bodyBBox": [
+        808,
+        477,
+        977,
+        546
+      ],
+      "number": "012",
+      "cells": [
+        {
+          "kind": "faction",
+          "value": "aristotelians"
+        },
+        {
+          "kind": "number",
+          "value": "012"
+        }
+      ],
+      "arrows": 0,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c4-tile-011-front.png",
+      "sourceSha256": "011ca227cb985c405d10d5832fa43651dd92c04a1a5cfe0cdcef1814c06ae35a",
+      "vector": "vectors/c4-tile-011-front--right-1.svg",
+      "original": "sources/c4-tile-011-front--right-1.png",
+      "render": "renders/c4-tile-011-front--right-1.png"
+    },
+    {
+      "id": "c4-tile-011-front--down-1",
+      "key": "c4-tile-011-front",
+      "cycle": "c4",
+      "face": "A",
+      "direction": "down",
+      "panelId": "down-1",
+      "bbox": [
+        420,
+        867,
+        601,
+        986
+      ],
+      "bodyBBox": [
+        427,
+        874,
+        594,
+        944
+      ],
+      "number": "002",
+      "cells": [
+        {
+          "kind": "number",
+          "value": "002"
+        },
+        {
+          "kind": "faction",
+          "value": "aristotelians"
+        }
+      ],
+      "arrows": 1,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c4-tile-011-front.png",
+      "sourceSha256": "011ca227cb985c405d10d5832fa43651dd92c04a1a5cfe0cdcef1814c06ae35a",
+      "vector": "vectors/c4-tile-011-front--down-1.svg",
+      "original": "sources/c4-tile-011-front--down-1.png",
+      "render": "renders/c4-tile-011-front--down-1.png"
+    },
+    {
+      "id": "c5-tile-040-front--up-1",
+      "key": "c5-tile-040-front",
+      "cycle": "c5",
+      "face": "A",
+      "direction": "up",
+      "panelId": "up-1",
+      "bbox": [
+        422,
+        36,
+        663,
+        154
+      ],
+      "bodyBBox": [
+        429,
+        78,
+        656,
+        147
+      ],
+      "number": "030",
+      "cells": [
+        {
+          "kind": "number",
+          "value": "030"
+        },
+        {
+          "kind": "faction",
+          "value": "followersofarete"
+        },
+        {
+          "kind": "greek",
+          "value": "alpha"
+        }
+      ],
+      "arrows": 1,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c5-tile-040-front.png",
+      "sourceSha256": "a2e2dd0059deaf8fa69d2d67f9284ddf2a1ef50b653db52be9c5e27a6be91f95",
+      "vector": "vectors/c5-tile-040-front--up-1.svg",
+      "original": "sources/c5-tile-040-front--up-1.png",
+      "render": "renders/c5-tile-040-front--up-1.png"
+    },
+    {
+      "id": "c5-tile-040-front--left-1",
+      "key": "c5-tile-040-front",
+      "cycle": "c5",
+      "face": "A",
+      "direction": "left",
+      "panelId": "left-1",
+      "bbox": [
+        35,
+        469,
+        285,
+        551
+      ],
+      "bodyBBox": [
+        42,
+        476,
+        278,
+        544
+      ],
+      "number": "039",
+      "cells": [
+        {
+          "kind": "number",
+          "value": "039"
+        },
+        {
+          "kind": "faction",
+          "value": "followersofarete"
+        },
+        {
+          "kind": "greek",
+          "value": "beta"
+        }
+      ],
+      "arrows": 0,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c5-tile-040-front.png",
+      "sourceSha256": "a2e2dd0059deaf8fa69d2d67f9284ddf2a1ef50b653db52be9c5e27a6be91f95",
+      "vector": "vectors/c5-tile-040-front--left-1.svg",
+      "original": "sources/c5-tile-040-front--left-1.png",
+      "render": "renders/c5-tile-040-front--left-1.png"
+    },
+    {
+      "id": "c5-tile-040-front--down-1",
+      "key": "c5-tile-040-front",
+      "cycle": "c5",
+      "face": "A",
+      "direction": "down",
+      "panelId": "down-1",
+      "bbox": [
+        313,
+        869,
+        554,
+        987
+      ],
+      "bodyBBox": [
+        320,
+        876,
+        547,
+        944
+      ],
+      "number": "050",
+      "cells": [
+        {
+          "kind": "number",
+          "value": "050"
+        },
+        {
+          "kind": "faction",
+          "value": "outcastvanguard"
+        },
+        {
+          "kind": "greek",
+          "value": "beta"
+        }
+      ],
+      "arrows": 1,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c5-tile-040-front.png",
+      "sourceSha256": "a2e2dd0059deaf8fa69d2d67f9284ddf2a1ef50b653db52be9c5e27a6be91f95",
+      "vector": "vectors/c5-tile-040-front--down-1.svg",
+      "original": "sources/c5-tile-040-front--down-1.png",
+      "render": "renders/c5-tile-040-front--down-1.png"
+    },
+    {
+      "id": "c5-tile-040-front--down-2",
+      "key": "c5-tile-040-front",
+      "cycle": "c5",
+      "face": "A",
+      "direction": "down",
+      "panelId": "down-2",
+      "bbox": [
+        611,
+        869,
+        851,
+        987
+      ],
+      "bodyBBox": [
+        618,
+        876,
+        844,
+        944
+      ],
+      "number": "050",
+      "cells": [
+        {
+          "kind": "number",
+          "value": "050"
+        },
+        {
+          "kind": "faction",
+          "value": "outcastvanguard"
+        },
+        {
+          "kind": "greek",
+          "value": "alpha"
+        }
+      ],
+      "arrows": 1,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c5-tile-040-front.png",
+      "sourceSha256": "a2e2dd0059deaf8fa69d2d67f9284ddf2a1ef50b653db52be9c5e27a6be91f95",
+      "vector": "vectors/c5-tile-040-front--down-2.svg",
+      "original": "sources/c5-tile-040-front--down-2.png",
+      "render": "renders/c5-tile-040-front--down-2.png"
+    },
+    {
+      "id": "c5-tile-040-back--left-1",
+      "key": "c5-tile-040-back",
+      "cycle": "c5",
+      "face": "B",
+      "direction": "left",
+      "panelId": "left-1",
+      "bbox": [
+        35,
+        451,
+        293,
+        552
+      ],
+      "bodyBBox": [
+        42,
+        458,
+        286,
+        545
+      ],
+      "number": "039",
+      "cells": [
+        {
+          "kind": "number",
+          "value": "039"
+        },
+        {
+          "kind": "faction",
+          "value": "followersofarete"
+        },
+        {
+          "kind": "greek",
+          "value": "beta"
+        }
+      ],
+      "arrows": 0,
+      "lock": false,
+      "roof": true,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c5-tile-040-back.png",
+      "sourceSha256": "1d0754d06e328e4fa46792ab82f57a2d011138c933e9e485f5084e442ef9ec78",
+      "vector": "vectors/c5-tile-040-back--left-1.svg",
+      "original": "sources/c5-tile-040-back--left-1.png",
+      "render": "renders/c5-tile-040-back--left-1.png"
+    },
+    {
+      "id": "c5-tile-040-back--down-1",
+      "key": "c5-tile-040-back",
+      "cycle": "c5",
+      "face": "B",
+      "direction": "down",
+      "panelId": "down-1",
+      "bbox": [
+        391,
+        868,
+        632,
+        986
+      ],
+      "bodyBBox": [
+        398,
+        875,
+        625,
+        943
+      ],
+      "number": "050",
+      "cells": [
+        {
+          "kind": "number",
+          "value": "050"
+        },
+        {
+          "kind": "faction",
+          "value": "outcastvanguard"
+        },
+        {
+          "kind": "greek",
+          "value": "beta"
+        }
+      ],
+      "arrows": 1,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c5-tile-040-back.png",
+      "sourceSha256": "1d0754d06e328e4fa46792ab82f57a2d011138c933e9e485f5084e442ef9ec78",
+      "vector": "vectors/c5-tile-040-back--down-1.svg",
+      "original": "sources/c5-tile-040-back--down-1.png",
+      "render": "renders/c5-tile-040-back--down-1.png"
+    },
+    {
+      "id": "c5-tile-001-front--right-1",
+      "key": "c5-tile-001-front",
+      "cycle": "c5",
+      "face": "A",
+      "direction": "right",
+      "panelId": "right-1",
+      "bbox": [
+        800,
+        468,
+        989,
+        553
+      ],
+      "bodyBBox": [
+        807,
+        475,
+        982,
+        546
+      ],
+      "number": "002",
+      "cells": [
+        {
+          "kind": "faction",
+          "value": "outcastvanguard"
+        },
+        {
+          "kind": "number",
+          "value": "002"
+        }
+      ],
+      "arrows": 0,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c5-tile-001-front.png",
+      "sourceSha256": "9f9f89782204db6e05ea86e993d36ac29fc11473ef1012bc0361ef3ec32bc4dc",
+      "vector": "vectors/c5-tile-001-front--right-1.svg",
+      "original": "sources/c5-tile-001-front--right-1.png",
+      "render": "renders/c5-tile-001-front--right-1.png"
+    },
+    {
+      "id": "c5-tile-001-front--down-1",
+      "key": "c5-tile-001-front",
+      "cycle": "c5",
+      "face": "A",
+      "direction": "down",
+      "panelId": "down-1",
+      "bbox": [
+        422,
+        867,
+        601,
+        986
+      ],
+      "bodyBBox": [
+        429,
+        874,
+        594,
+        944
+      ],
+      "number": "011",
+      "cells": [
+        {
+          "kind": "number",
+          "value": "011"
+        },
+        {
+          "kind": "faction",
+          "value": "outcastvanguard"
+        }
+      ],
+      "arrows": 1,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c5-tile-001-front.png",
+      "sourceSha256": "9f9f89782204db6e05ea86e993d36ac29fc11473ef1012bc0361ef3ec32bc4dc",
+      "vector": "vectors/c5-tile-001-front--down-1.svg",
+      "original": "sources/c5-tile-001-front--down-1.png",
+      "render": "renders/c5-tile-001-front--down-1.png"
+    },
+    {
+      "id": "c5-tile-011-front--up-1",
+      "key": "c5-tile-011-front",
+      "cycle": "c5",
+      "face": "A",
+      "direction": "up",
+      "panelId": "up-1",
+      "bbox": [
+        423,
+        37,
+        601,
+        156
+      ],
+      "bodyBBox": [
+        430,
+        79,
+        594,
+        149
+      ],
+      "number": "001",
+      "cells": [
+        {
+          "kind": "number",
+          "value": "001"
+        },
+        {
+          "kind": "faction",
+          "value": "outcastvanguard"
+        }
+      ],
+      "arrows": 1,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c5-tile-011-front.png",
+      "sourceSha256": "15d7f72b73fb9efd537760c72ff86add60d99826baec6a3e801c4ba6c434a604",
+      "vector": "vectors/c5-tile-011-front--up-1.svg",
+      "original": "sources/c5-tile-011-front--up-1.png",
+      "render": "renders/c5-tile-011-front--up-1.png"
+    },
+    {
+      "id": "c5-tile-011-front--right-1",
+      "key": "c5-tile-011-front",
+      "cycle": "c5",
+      "face": "A",
+      "direction": "right",
+      "panelId": "right-1",
+      "bbox": [
+        801,
+        469,
+        989,
+        552
+      ],
+      "bodyBBox": [
+        808,
+        476,
+        982,
+        545
+      ],
+      "number": "012",
+      "cells": [
+        {
+          "kind": "faction",
+          "value": "outcastvanguard"
+        },
+        {
+          "kind": "number",
+          "value": "012"
+        }
+      ],
+      "arrows": 0,
+      "lock": false,
+      "roof": false,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c5-tile-011-front.png",
+      "sourceSha256": "15d7f72b73fb9efd537760c72ff86add60d99826baec6a3e801c4ba6c434a604",
+      "vector": "vectors/c5-tile-011-front--right-1.svg",
+      "original": "sources/c5-tile-011-front--right-1.png",
+      "render": "renders/c5-tile-011-front--right-1.png"
+    },
+    {
+      "id": "c5-tile-011-front--down-1",
+      "key": "c5-tile-011-front",
+      "cycle": "c5",
+      "face": "A",
+      "direction": "down",
+      "panelId": "down-1",
+      "bbox": [
+        425,
+        853,
+        608,
+        991
+      ],
+      "bodyBBox": [
+        432,
+        860,
+        601,
+        947
+      ],
+      "number": "021",
+      "cells": [
+        {
+          "kind": "number",
+          "value": "021"
+        },
+        {
+          "kind": "faction",
+          "value": "followersofarete"
+        }
+      ],
+      "arrows": 1,
+      "lock": false,
+      "roof": true,
+      "source": "output/map-originals-backup-20261024/map/images/hd1024/overlay/c5-tile-011-front.png",
+      "sourceSha256": "15d7f72b73fb9efd537760c72ff86add60d99826baec6a3e801c4ba6c434a604",
+      "vector": "vectors/c5-tile-011-front--down-1.svg",
+      "original": "sources/c5-tile-011-front--down-1.png",
+      "render": "renders/c5-tile-011-front--down-1.png"
+    }
+  ]
+}

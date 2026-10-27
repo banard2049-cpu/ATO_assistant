@@ -1,0 +1,28 @@
+{
+  "source": "D:\\desktop\\新建文件夹 (3)\\Aeon Trespass_ Odyssey (3458296558)\\Mods\\Workshop\\3458296558.json",
+  "summary": {
+    "objects": 4417,
+    "images": 832,
+    "tokenTileModelTextures": 263,
+    "unreferencedImages": 1,
+    "objectTypes": {
+      "Bag": 141,
+      "Card": 3291,
+      "Custom_PDF": 17,
+      "Custom_Dice": 21,
+      "Custom_Tile": 394,
+      "Custom_Token": 49,
+      "DeckCustom": 125,
+      "Deck": 200,
+      "CardCustom": 45,
+      "Notecard": 12,
+      "Infinite_Bag": 36,
+      "Custom_Model_Bag": 21,
+      "Custom_Assetbundle": 60,
+      "HandTrigger": 4,
+      "Custom_Model": 1
+    }
+  },
+  "inventory": "output\\map-marker-hd-review-20261026\\tokens\\inventory.json",
+  "tokenImages": 263
+}

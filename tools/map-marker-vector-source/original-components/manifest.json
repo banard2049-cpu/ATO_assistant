@@ -1,0 +1,535 @@
+{
+  "version": "20261026-original-apk-components2",
+  "policy": "Complete original token canvas or native Sprite canvas with eight-pixel transparent padding. Fixed original raster components, no tracing, no invented geometry, not a vector claim.",
+  "components": {
+    "oasis": {
+      "id": "oasis",
+      "kind": "original-raster-alpha",
+      "file": "tools/map-marker-vector-source/original-components/oasis.png",
+      "source": "output/map-marker-hd-review-20261026/apk-originals/sprites/ato_text_icons_01_50.png",
+      "sourceSha256": "7e68842cc36944393d65c4e27769e7780c9d51e2d57e4148194c4b1c969f88c2",
+      "sourceKind": "original-native-sprite-alpha",
+      "atlas": "output/map-marker-hd-review-20261026/apk-originals/ato_text_icons_01.png",
+      "spriteName": "ato_text_icons_01_50",
+      "spriteNativeRect": {
+        "x": 256.0,
+        "y": 128.0,
+        "width": 128.0,
+        "height": 128.0
+      },
+      "sha256": "e887198bcc2ceb4d0d445062911234d9015f13765fc13baf0245018629207fc0",
+      "width": 144,
+      "height": 144,
+      "inkBBox": [
+        28,
+        36,
+        116,
+        116
+      ],
+      "method": "white-remove-ring",
+      "removedIndependentComponents": [
+        {
+          "component": 1,
+          "pixels": 2810,
+          "kind": "independent-outer-frame-with-complete-alpha-fringe"
+        }
+      ],
+      "canvasCropped": false,
+      "nativeCanvasRetained": true,
+      "nativeCanvasOffset": [
+        8,
+        8
+      ],
+      "newSilhouetteInvented": false,
+      "nativeVector": false,
+      "transparentPadding": true,
+      "approvedForComposition": true,
+      "status": "source-contact-reviewed; final placement checked separately"
+    },
+    "silver_ruin": {
+      "id": "silver_ruin",
+      "kind": "original-raster-alpha",
+      "file": "tools/map-marker-vector-source/original-components/silver_ruin.png",
+      "source": "map/tokens/silver_remnant.png",
+      "sourceSha256": "b459757edf47d4a7cf9c708c6e841fa23b0888dc9a9d94dd054bc612d03e1761",
+      "sourceKind": "original-token-ink",
+      "atlas": null,
+      "spriteName": null,
+      "spriteNativeRect": null,
+      "sha256": "108793a171223cd3a7bcf5cd81e9f37a9785bd0c00735b6c6491d1aff729063d",
+      "width": 256,
+      "height": 256,
+      "inkBBox": [
+        73,
+        69,
+        188,
+        182
+      ],
+      "method": "token-neutral-ink",
+      "removedIndependentComponents": [
+        {
+          "kind": "separate ornamental token backing omitted; original full branch and gate retained"
+        }
+      ],
+      "canvasCropped": false,
+      "nativeCanvasRetained": true,
+      "nativeCanvasOffset": [
+        0,
+        0
+      ],
+      "newSilhouetteInvented": false,
+      "nativeVector": false,
+      "transparentPadding": true,
+      "approvedForComposition": true,
+      "status": "source-contact-reviewed; final placement checked separately"
+    },
+    "hourglass_icon": {
+      "id": "hourglass_icon",
+      "kind": "original-raster-alpha",
+      "file": "tools/map-marker-vector-source/original-components/hourglass_icon.png",
+      "source": "output/map-marker-hd-review-20261026/apk-originals/sprites/ato_text_icons_02_76.png",
+      "sourceSha256": "a5166a0acc2dba167569eabce24a6976291f2dffd55d3cc4834bfee7f6534e80",
+      "sourceKind": "original-native-sprite-alpha",
+      "atlas": "output/map-marker-hd-review-20261026/apk-originals/ato_text_icon_olds_02.png",
+      "spriteName": "ato_text_icons_02_76",
+      "spriteNativeRect": {
+        "x": 768.0,
+        "y": 256.0,
+        "width": 128.0,
+        "height": 128.0
+      },
+      "sha256": "dd8d10ca5acc9675ab10df7f6760449ac890e146c190e50d065ed08940f3c476",
+      "width": 144,
+      "height": 144,
+      "inkBBox": [
+        41,
+        30,
+        104,
+        115
+      ],
+      "method": "white-remove-ring",
+      "removedIndependentComponents": [
+        {
+          "component": 1,
+          "pixels": 3449,
+          "kind": "independent-outer-frame-with-complete-alpha-fringe"
+        }
+      ],
+      "canvasCropped": false,
+      "nativeCanvasRetained": true,
+      "nativeCanvasOffset": [
+        8,
+        8
+      ],
+      "newSilhouetteInvented": false,
+      "nativeVector": false,
+      "transparentPadding": true,
+      "approvedForComposition": true,
+      "status": "source-contact-reviewed; final placement checked separately"
+    },
+    "staff_icon": {
+      "id": "staff_icon",
+      "kind": "original-raster-alpha",
+      "file": "tools/map-marker-vector-source/original-components/staff_icon.png",
+      "source": "output/map-marker-hd-review-20261026/apk-originals/sprites/ato_text_icons_01_32.png",
+      "sourceSha256": "f639033fa65019ed8e59084c2298a3826d67e4d1aec78813313fa7e1bf436535",
+      "sourceKind": "original-native-sprite-alpha",
+      "atlas": "output/map-marker-hd-review-20261026/apk-originals/ato_text_icons_01.png",
+      "spriteName": "ato_text_icons_01_32",
+      "spriteNativeRect": {
+        "x": 0.0,
+        "y": 384.0,
+        "width": 128.0,
+        "height": 128.0
+      },
+      "sha256": "b3f8432f79309548829745443bbc38e2cbbfdd7b24b9f813d14a5dc22e7edeed",
+      "width": 144,
+      "height": 144,
+      "inkBBox": [
+        33,
+        36,
+        105,
+        101
+      ],
+      "method": "dark-on-white-disc",
+      "removedIndependentComponents": [],
+      "canvasCropped": false,
+      "nativeCanvasRetained": true,
+      "nativeCanvasOffset": [
+        8,
+        8
+      ],
+      "newSilhouetteInvented": false,
+      "nativeVector": false,
+      "transparentPadding": true,
+      "approvedForComposition": true,
+      "status": "source-contact-reviewed; final placement checked separately"
+    },
+    "spartan_stronghold": {
+      "id": "spartan_stronghold",
+      "kind": "original-raster-alpha",
+      "file": "tools/map-marker-vector-source/original-components/spartan_stronghold.png",
+      "source": "output/map-marker-hd-review-20261026/apk-originals/sprites/ato_text_icons_02_33.png",
+      "sourceSha256": "e6f077d4e90d271825fcab7a1c3e99bb75fb81251815da3d3df864226e203a5e",
+      "sourceKind": "original-native-sprite-alpha",
+      "atlas": "output/map-marker-hd-review-20261026/apk-originals/ato_text_icon_olds_02.png",
+      "spriteName": "ato_text_icons_02_33",
+      "spriteNativeRect": {
+        "x": 640.0,
+        "y": 1024.0,
+        "width": 128.0,
+        "height": 128.0
+      },
+      "sha256": "f45ec88af3119e055570a0265b8cb1245061141e2b66d8763b3fc3ce9f2e0ccc",
+      "width": 144,
+      "height": 144,
+      "inkBBox": [
+        20,
+        20,
+        121,
+        120
+      ],
+      "method": "white-keep-complete-logo",
+      "removedIndependentComponents": [],
+      "canvasCropped": false,
+      "nativeCanvasRetained": true,
+      "nativeCanvasOffset": [
+        8,
+        8
+      ],
+      "newSilhouetteInvented": false,
+      "nativeVector": false,
+      "transparentPadding": true,
+      "approvedForComposition": true,
+      "status": "source-contact-reviewed; final placement checked separately"
+    },
+    "daedalus_lighthouse": {
+      "id": "daedalus_lighthouse",
+      "kind": "original-raster-alpha",
+      "file": "tools/map-marker-vector-source/original-components/daedalus_lighthouse.png",
+      "source": "output/map-marker-hd-review-20261026/apk-originals/sprites/ato_text_icons_01_25.png",
+      "sourceSha256": "c8a8321cb2ce606c7d97c104fb91c09236ed91725ba7feead5dc0ad3612a3ddd",
+      "sourceKind": "original-native-sprite-alpha",
+      "atlas": "output/map-marker-hd-review-20261026/apk-originals/ato_text_icons_01.png",
+      "spriteName": "ato_text_icons_01_25",
+      "spriteNativeRect": {
+        "x": 128.0,
+        "y": 512.0,
+        "width": 128.0,
+        "height": 128.0
+      },
+      "sha256": "bfa61c178d64a7c82f9458674eabec9f3fbbdd0525b61343adbf0c4b46200779",
+      "width": 144,
+      "height": 144,
+      "inkBBox": [
+        37,
+        18,
+        111,
+        129
+      ],
+      "method": "white-keep-complete-logo",
+      "removedIndependentComponents": [],
+      "canvasCropped": false,
+      "nativeCanvasRetained": true,
+      "nativeCanvasOffset": [
+        8,
+        8
+      ],
+      "newSilhouetteInvented": false,
+      "nativeVector": false,
+      "transparentPadding": true,
+      "approvedForComposition": true,
+      "status": "source-contact-reviewed; final placement checked separately"
+    },
+    "wheel_icon": {
+      "id": "wheel_icon",
+      "kind": "original-raster-alpha",
+      "file": "tools/map-marker-vector-source/original-components/wheel_icon.png",
+      "source": "output/map-marker-hd-review-20261026/apk-originals/sprites/ato_text_icons_02_65.png",
+      "sourceSha256": "c6292f58156019d8319c2ea8dc885d407c0b1fb04010e85be9096b19d7b040bb",
+      "sourceKind": "original-native-sprite-alpha",
+      "atlas": "output/map-marker-hd-review-20261026/apk-originals/ato_text_icon_olds_02.png",
+      "spriteName": "ato_text_icons_02_65",
+      "spriteNativeRect": {
+        "x": 256.0,
+        "y": 384.0,
+        "width": 128.0,
+        "height": 128.0
+      },
+      "sha256": "f705c73503e95a3dbf41f56ab40ed67064fc6672da314da3a70f6b46e45f1952",
+      "width": 144,
+      "height": 144,
+      "inkBBox": [
+        8,
+        13,
+        136,
+        136
+      ],
+      "method": "white-keep-complete-logo",
+      "removedIndependentComponents": [],
+      "canvasCropped": false,
+      "nativeCanvasRetained": true,
+      "nativeCanvasOffset": [
+        8,
+        8
+      ],
+      "newSilhouetteInvented": false,
+      "nativeVector": false,
+      "transparentPadding": true,
+      "approvedForComposition": true,
+      "status": "source-contact-reviewed; final placement checked separately"
+    },
+    "wheel_icon_winged": {
+      "id": "wheel_icon_winged",
+      "kind": "original-raster-alpha",
+      "file": "tools/map-marker-vector-source/original-components/wheel_icon_winged.png",
+      "source": "output/map-marker-hd-review-20261026/apk-originals/sprites/ato_text_icons_02_64.png",
+      "sourceSha256": "359f8be5f092e91aa589864a2a2dc40925f315b3ffb4bf1b35f6a753638b8da6",
+      "sourceKind": "original-native-sprite-alpha",
+      "atlas": "output/map-marker-hd-review-20261026/apk-originals/ato_text_icon_olds_02.png",
+      "spriteName": "ato_text_icons_02_64",
+      "spriteNativeRect": {
+        "x": 128.0,
+        "y": 384.0,
+        "width": 128.0,
+        "height": 128.0
+      },
+      "sha256": "05dd167b0ea9e1b58dba1d0c7a6084483b9b9168c3c1c0ec49587e09a597dac4",
+      "width": 144,
+      "height": 144,
+      "inkBBox": [
+        8,
+        10,
+        136,
+        136
+      ],
+      "method": "white-keep-complete-logo",
+      "removedIndependentComponents": [],
+      "canvasCropped": false,
+      "nativeCanvasRetained": true,
+      "nativeCanvasOffset": [
+        8,
+        8
+      ],
+      "newSilhouetteInvented": false,
+      "nativeVector": false,
+      "transparentPadding": true,
+      "approvedForComposition": true,
+      "status": "source-contact-reviewed; final placement checked separately"
+    },
+    "smoking_bowl_icon": {
+      "id": "smoking_bowl_icon",
+      "kind": "original-raster-alpha",
+      "file": "tools/map-marker-vector-source/original-components/smoking_bowl_icon.png",
+      "source": "output/map-marker-hd-review-20261026/apk-originals/sprites/ato_text_icons_02_1.png",
+      "sourceSha256": "13debe9b5d5de51637340fe5fdbbf18cd40676afea817db06a88b4531425e202",
+      "sourceKind": "original-native-sprite-alpha",
+      "atlas": "output/map-marker-hd-review-20261026/apk-originals/ato_text_icon_olds_02.png",
+      "spriteName": "ato_text_icons_02_1",
+      "spriteNativeRect": {
+        "x": 128.0,
+        "y": 1536.0,
+        "width": 128.0,
+        "height": 128.0
+      },
+      "sha256": "b5c407a306dafa0108697780403e9c62434f24eb03c80a6feb082d34b36efd15",
+      "width": 144,
+      "height": 144,
+      "inkBBox": [
+        8,
+        8,
+        136,
+        136
+      ],
+      "method": "white-keep-complete-logo",
+      "removedIndependentComponents": [],
+      "canvasCropped": false,
+      "nativeCanvasRetained": true,
+      "nativeCanvasOffset": [
+        8,
+        8
+      ],
+      "newSilhouetteInvented": false,
+      "nativeVector": false,
+      "transparentPadding": true,
+      "approvedForComposition": true,
+      "status": "source-contact-reviewed; final placement checked separately"
+    },
+    "time_wound": {
+      "id": "time_wound",
+      "kind": "original-raster-alpha",
+      "file": "tools/map-marker-vector-source/original-components/time_wound.png",
+      "source": "output/map-marker-hd-review-20261026/apk-originals/sprites/ato_text_icons_01_28.png",
+      "sourceSha256": "4947dcd7242ee75a60837921e6f346b1cae267b477b225d5f17f8634fcb8bdfc",
+      "sourceKind": "original-native-sprite-alpha",
+      "atlas": "output/map-marker-hd-review-20261026/apk-originals/ato_text_icons_01.png",
+      "spriteName": "ato_text_icons_01_28",
+      "spriteNativeRect": {
+        "x": 512.0,
+        "y": 512.0,
+        "width": 128.0,
+        "height": 128.0
+      },
+      "sha256": "f4262e772b89ac4d1d4c0bca8425f41127ce73b02b6e2d1d70493788cf62d95b",
+      "width": 144,
+      "height": 144,
+      "inkBBox": [
+        32,
+        26,
+        113,
+        115
+      ],
+      "method": "white-remove-ring",
+      "removedIndependentComponents": [
+        {
+          "component": 1,
+          "pixels": 2771,
+          "kind": "independent-outer-frame-with-complete-alpha-fringe"
+        }
+      ],
+      "canvasCropped": false,
+      "nativeCanvasRetained": true,
+      "nativeCanvasOffset": [
+        8,
+        8
+      ],
+      "newSilhouetteInvented": false,
+      "nativeVector": false,
+      "transparentPadding": true,
+      "approvedForComposition": true,
+      "status": "source-contact-reviewed; final placement checked separately"
+    },
+    "time_portal": {
+      "id": "time_portal",
+      "kind": "original-raster-alpha",
+      "file": "tools/map-marker-vector-source/original-components/time_portal.png",
+      "source": "output/map-marker-hd-review-20261026/apk-originals/sprites/ato_text_icons_01_27.png",
+      "sourceSha256": "e360c26bc33849137460db8a8a5445526b100ae2028d771236b01fea7e1c8952",
+      "sourceKind": "original-native-sprite-alpha",
+      "atlas": "output/map-marker-hd-review-20261026/apk-originals/ato_text_icons_01.png",
+      "spriteName": "ato_text_icons_01_27",
+      "spriteNativeRect": {
+        "x": 384.0,
+        "y": 512.0,
+        "width": 128.0,
+        "height": 128.0
+      },
+      "sha256": "44510cb86380ed596fce1aace110994929a1e7c49020d933626c6e8f52a6db8f",
+      "width": 144,
+      "height": 144,
+      "inkBBox": [
+        28,
+        27,
+        117,
+        115
+      ],
+      "method": "white-remove-ring",
+      "removedIndependentComponents": [
+        {
+          "component": 1,
+          "pixels": 2708,
+          "kind": "independent-outer-frame-with-complete-alpha-fringe"
+        }
+      ],
+      "canvasCropped": false,
+      "nativeCanvasRetained": true,
+      "nativeCanvasOffset": [
+        8,
+        8
+      ],
+      "newSilhouetteInvented": false,
+      "nativeVector": false,
+      "transparentPadding": true,
+      "approvedForComposition": true,
+      "status": "source-contact-reviewed; final placement checked separately"
+    },
+    "time_portal_angular": {
+      "id": "time_portal_angular",
+      "kind": "original-raster-alpha",
+      "file": "tools/map-marker-vector-source/original-components/time_portal_angular.png",
+      "source": "output/map-marker-hd-review-20261026/apk-originals/sprites/ato_text_icons_01_26.png",
+      "sourceSha256": "f2e74a5ca8a7b9b66fbc0e945b6bc86b779aefcce3ccbc6416fcde186892730e",
+      "sourceKind": "original-native-sprite-alpha",
+      "atlas": "output/map-marker-hd-review-20261026/apk-originals/ato_text_icons_01.png",
+      "spriteName": "ato_text_icons_01_26",
+      "spriteNativeRect": {
+        "x": 256.0,
+        "y": 512.0,
+        "width": 128.0,
+        "height": 128.0
+      },
+      "sha256": "b53dd450b9878982ad029bfbab8ef0b93617e954826d5c8b1617916950e92aa3",
+      "width": 144,
+      "height": 144,
+      "inkBBox": [
+        39,
+        35,
+        109,
+        106
+      ],
+      "method": "white-remove-ring",
+      "removedIndependentComponents": [
+        {
+          "component": 1,
+          "pixels": 2612,
+          "kind": "independent-outer-frame-with-complete-alpha-fringe"
+        }
+      ],
+      "canvasCropped": false,
+      "nativeCanvasRetained": true,
+      "nativeCanvasOffset": [
+        8,
+        8
+      ],
+      "newSilhouetteInvented": false,
+      "nativeVector": false,
+      "transparentPadding": true,
+      "approvedForComposition": true,
+      "status": "source-contact-reviewed; final placement checked separately"
+    },
+    "city": {
+      "id": "city",
+      "kind": "original-raster-alpha",
+      "file": "tools/map-marker-vector-source/original-components/city.png",
+      "source": "output/map-marker-hd-review-20261026/apk-originals/sprites/ato_text_icons_01_39.png",
+      "sourceSha256": "3131ae4d0400270b2283dc205de170d7c60cbc00636aa1697fa3b9bae6583980",
+      "sourceKind": "original-native-sprite-alpha",
+      "atlas": "output/map-marker-hd-review-20261026/apk-originals/ato_text_icons_01.png",
+      "spriteName": "ato_text_icons_01_39",
+      "spriteNativeRect": {
+        "x": 896.0,
+        "y": 384.0,
+        "width": 128.0,
+        "height": 128.0
+      },
+      "sha256": "19a2e6b29c01c40f351814f8aedb379c1cdc922889b3f4d7d8c0880ba0a80419",
+      "width": 144,
+      "height": 144,
+      "inkBBox": [
+        39,
+        38,
+        104,
+        99
+      ],
+      "method": "white-remove-ring",
+      "removedIndependentComponents": [
+        {
+          "component": 1,
+          "pixels": 2810,
+          "kind": "independent-outer-frame-with-complete-alpha-fringe"
+        }
+      ],
+      "canvasCropped": false,
+      "nativeCanvasRetained": true,
+      "nativeCanvasOffset": [
+        8,
+        8
+      ],
+      "newSilhouetteInvented": false,
+      "nativeVector": false,
+      "transparentPadding": true,
+      "approvedForComposition": true,
+      "status": "source-contact-reviewed; final placement checked separately"
+    }
+  }
+}

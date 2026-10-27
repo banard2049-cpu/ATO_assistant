@@ -38,6 +38,8 @@ public final class MainActivity extends Activity {
   private static final int FILE_CHOOSER_REQUEST = 1001;
   private static final int ATOPACK_CHOOSER_REQUEST = 1002;
   private static final int EXPORT_CHOOSER_REQUEST = 1003;
+  private static final int BACKUPS_EXPORT_REQUEST = 1004;
+  private static final int BACKUPS_IMPORT_REQUEST = 1005;
   // 为旧页面保留崩溃标记；新版故事页使用逐条读取，无需关闭插图。
   private static volatile boolean rendererCrashedThisProcess;
   private final ExecutorService mixedMediaWorker = Executors.newSingleThreadExecutor();
@@ -64,6 +66,10 @@ public final class MainActivity extends Activity {
   private AtopackStore atopackStore;
   private LocalSecondScreenServer secondScreenServer;
   private LocalExportFile pendingExportFile;
+  private final Object backupsOperationLock = new Object();
+  private String backupsOperationUser;
+  private String backupsOperationAction;
+  private WebView backupsOperationOwner;
   private TextToSpeech storyTts;
   private volatile boolean storyTtsReady;
   private String storyTtsText = "";
@@ -423,6 +429,42 @@ public final class MainActivity extends Activity {
 
   @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     super.onActivityResult(requestCode, resultCode, data);
+    if (requestCode == BACKUPS_EXPORT_REQUEST || requestCode == BACKUPS_IMPORT_REQUEST) {
+      String action, account;
+      synchronized (backupsOperationLock) { action = backupsOperationAction; account = backupsOperationUser; }
+      if (action == null || account == null) return;
+      if (resultCode != RESULT_OK || data == null || data.getData() == null) {
+        org.json.JSONObject result = errorResult("已取消" + ("export".equals(action) ? "导出" : "导入"));
+        try { result.put("cancelled", true); } catch (org.json.JSONException ignored) { }
+        finishDailyBackups(result);
+        return;
+      }
+      Uri chosen = data.getData();
+      new Thread(() -> {
+        try {
+          org.json.JSONObject result;
+          if ("export".equals(action)) {
+            try (OutputStream output = getContentResolver().openOutputStream(chosen, "wt")) {
+              if (output == null) throw new java.io.IOException("无法打开所选文件。");
+              result = localApi.exportDailyBackups(account, output);
+            }
+          } else {
+            try (InputStream input = getContentResolver().openInputStream(chosen)) {
+              if (input == null) throw new java.io.IOException("无法打开所选压缩包。");
+              result = localApi.importDailyBackups(account, input);
+            }
+          }
+          finishDailyBackups(result);
+        } catch (OutOfMemoryError error) {
+          finishDailyBackups(errorResult("备份处理超出当前可用内存，请释放内存后重试。"));
+        } catch (StackOverflowError error) {
+          finishDailyBackups(errorResult("备份内容的嵌套层级过深，无法读取。"));
+        } catch (Exception error) {
+          finishDailyBackups(errorResult(error.getMessage() == null ? "每日备份处理失败。" : error.getMessage()));
+        }
+      }, "daily-backups-" + action).start();
+      return;
+    }
     if (requestCode == EXPORT_CHOOSER_REQUEST) {
       LocalExportFile file = pendingExportFile;
       if (resultCode != RESULT_OK || data == null || data.getData() == null) {
@@ -662,6 +704,58 @@ public final class MainActivity extends Activity {
       }
     }
 
+    @android.webkit.JavascriptInterface public boolean exportDailyBackups() {
+      return beginDailyBackups("export", owner);
+    }
+
+    @android.webkit.JavascriptInterface public boolean importDailyBackups() {
+      return beginDailyBackups("import", owner);
+    }
+  }
+
+  private boolean beginDailyBackups(String action, WebView owner) {
+    if (owner != webView || owner == retiringStoryWebView) return false;
+    String account = localApi.dailyBackupUser();
+    if (account.isEmpty()) return false;
+    synchronized (backupsOperationLock) {
+      if (backupsOperationAction != null) return false;
+      backupsOperationAction = action;
+      backupsOperationUser = account;
+      backupsOperationOwner = owner;
+    }
+    runOnUiThread(() -> {
+      try {
+        Intent intent = new Intent("export".equals(action) ? Intent.ACTION_CREATE_DOCUMENT : Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("application/zip");
+        if ("export".equals(action)) {
+          java.text.SimpleDateFormat format = new java.text.SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ROOT);
+          intent.putExtra(Intent.EXTRA_TITLE, "ATO-daily-backups-" + format.format(new java.util.Date()) + ".zip");
+        } else intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[] {"application/zip", "application/x-zip-compressed", "application/octet-stream"});
+        startActivityForResult(intent, "export".equals(action) ? BACKUPS_EXPORT_REQUEST : BACKUPS_IMPORT_REQUEST);
+      } catch (Exception error) {
+        finishDailyBackups(errorResult(error.getMessage() == null ? "无法打开系统文件选择器。" : error.getMessage()));
+      }
+    });
+    return true;
+  }
+
+  private void finishDailyBackups(org.json.JSONObject result) {
+    runOnUiThread(() -> {
+      WebView owner;
+      synchronized (backupsOperationLock) {
+        owner = backupsOperationOwner;
+        try {
+          result.put("action", backupsOperationAction);
+          for (String field : new String[] {"imported", "skipped", "total"}) if (!result.has(field)) result.put(field, 0);
+        } catch (org.json.JSONException ignored) { }
+        backupsOperationOwner = null;
+        backupsOperationUser = null;
+        backupsOperationAction = null;
+      }
+      if (isLiveView(owner) && owner != retiringStoryWebView)
+        owner.evaluateJavascript("window.ATOAndroidBackupsResult&&window.ATOAndroidBackupsResult(" + result + ")", null);
+    });
   }
 
   private void showFileExport(LocalExportFile file, WebView owner) {
