@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ATO 手机预览</title></head><body>
+<p>正在载入原页面…</p>
+<script>
+window.addEventListener('message', function receive(event) {
+  if (event.source !== parent || event.data?.type !== 'ato-preview:document') return;
+  window.removeEventListener('message', receive);
+  document.open(); document.write(event.data.html); document.close();
+});
+parent.postMessage({type:'ato-preview:boot'}, '*');
+</script></body></html>

@@ -1,0 +1,139 @@
+/* Layout-only overrides. Original artwork, game overlays and names are untouched. */
+.source-play-header{min-width:0;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:12}
+.source-play-header-line{display:flex;align-items:center;gap:8px;min-width:0;min-height:48px;padding:0 12px}
+.source-play-header-line>h1,.source-play-header-line>.brand{flex:1;min-width:0;margin:0}
+.source-play-header-line>h1{font:600 17px/1.4 'Songti SC',SimSun,Georgia,serif;color:var(--accent-strong);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:7px}
+.source-play-header .cycle-symbol{width:23px;height:26px;flex:0 0 23px;object-fit:contain}
+.source-play-header-line>button{flex-shrink:0;min-width:44px;min-height:44px;padding-inline:7px;font-size:12px}
+.source-play-empty-header{display:none!important}
+.source-play-tools-body{min-width:0}
+.source-play-tools .source-play-tools-body>aside{position:static;height:auto;min-height:0;max-height:none;min-width:0;border:0;padding:0;background:transparent;box-shadow:none}
+.source-play-tools [hidden],.source-play-header [hidden]{display:none!important}
+.source-play-tools :is(input:not([type=checkbox]):not([type=range]),select,textarea){min-width:0;max-width:100%}
+.source-play-tools .title-actions{display:flex;flex-wrap:wrap;width:100%;gap:8px;margin:18px 0 0;white-space:normal;overflow:visible}
+.source-play-tools .title-actions>*{max-width:100%;min-width:0;flex-shrink:1}
+.source-play-tools .title-actions .return-main-link{margin-left:0;order:0}
+.source-play-tools .sidebar-boss-search,.source-play-tools .boss-search-form,.source-play-tools .boss-search-results{min-width:0;max-width:100%}
+.source-play-tools .boss-search-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px}
+.source-play-tools .nav{grid-template-columns:minmax(0,1fr);gap:0}
+.source-play-tools .nav button{min-height:44px;white-space:normal;text-align:left}
+.source-play-tools .second-screen-mode-toggle,.source-play-tools .deck-order-toggle{display:flex;align-items:center;gap:7px;min-height:44px}
+.source-play-tools .second-screen-mode-toggle input,.source-play-tools .deck-order-toggle input{width:20px;flex:0 0 20px}
+
+/* Map: original cycle/zoom controls stay at the canvas; other tools move into the sheet. */
+body.source-map-layout{height:100vh;height:100dvh;min-height:0;overflow:hidden}
+body.source-map-layout main.app{height:100%;min-height:0;width:100%;max-width:100%;padding:0;display:flex;flex-direction:column;margin:0}
+body.source-map-layout .source-map-header{flex-shrink:0}
+.source-map-save-state{margin:0!important;padding:0 12px 5px;min-height:16px;font-size:10px!important;line-height:1.4;color:var(--muted)}
+body.source-map-layout .source-map-canvas-viewport{flex:1;min-height:0;max-height:none;width:calc(100% - 16px);margin:8px;border-radius:0;overflow:auto;overscroll-behavior:contain}
+.source-map-tools .topbar-tools{display:grid;justify-items:stretch;gap:14px;margin-bottom:16px}
+.source-map-tools .header-return-actions{display:flex;flex-wrap:wrap;gap:7px}
+.source-map-tools .header-return-actions>*{flex:1 1 135px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;margin:0;font-size:12px}
+.source-map-tools .cycle-tabs{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:6px}
+.source-map-tools .cycle-tabs button{min-width:0;flex:1 1 70px;min-height:44px;padding-inline:7px;font-size:12px}
+.source-map-tools .sticky-actions{position:static;display:grid;grid-template-columns:minmax(0,1fr);margin:0;padding:0;gap:16px;background:transparent}
+.source-map-tools .control-panel,.source-map-tools .token-panel{display:grid;grid-template-columns:minmax(0,1fr);padding:0;border:0;box-shadow:none;margin:0;min-width:0;gap:14px;background:transparent}
+.source-map-tools .tile-lookup,.source-map-tools .tile-lookup-row{display:grid;grid-template-columns:minmax(0,1fr);width:100%;min-width:0;gap:7px}
+.source-map-tools .tile-lookup-actions{display:flex;flex-wrap:wrap;gap:6px}
+.source-map-tools .tile-lookup-actions button{flex:1 1 75px;min-height:44px;font-size:12px;padding-inline:8px}
+.source-map-tools .zoom-control,.source-map-tools .zoom-row{width:100%;min-width:0}
+.source-map-tools .zoom-row{display:grid;grid-template-columns:minmax(0,1fr) 48px}
+.source-map-tools .toggle-row{display:grid;grid-template-columns:minmax(0,1fr);gap:4px}
+.source-map-tools .check-label{min-height:44px;display:flex;align-items:center;gap:7px;white-space:normal}
+.source-map-tools .map-actions,.source-map-tools .tool-cluster{display:flex;flex-wrap:wrap;gap:10px;min-width:0}
+.source-map-tools .action-group{display:flex;flex-wrap:wrap;align-items:center;gap:7px;width:100%;min-width:0;padding:10px 0;border-top:1px solid var(--line)}
+.source-map-tools .action-group button{min-height:44px;font-size:12px;padding-inline:10px}
+.source-map-tools .token-palette{display:flex;flex-wrap:wrap;gap:7px;min-width:0}
+.source-map-tools .token-palette button{min-width:44px;min-height:44px}
+.source-map-tools .map-status{min-width:0;white-space:normal;flex-wrap:wrap}
+.source-map-tools .titan-x-track-spaces{flex-wrap:wrap;min-width:0;max-width:100%}
+
+/* AIBP: only the list/settings move; every original card/control remains in main. */
+body.source-aibp-layout .app,body.source-aibp-layout.sidebar-collapsed .app{display:block;min-height:100vh;min-width:0;max-width:100%}
+body.source-aibp-layout main,body.source-aibp-layout.sidebar-collapsed main{padding:12px;min-width:0;max-width:100%;width:100%}
+.source-aibp-layout .source-aibp-header{margin:0;position:sticky;top:0}
+.source-aibp-layout .source-aibp-header #aibpTitle{font-size:17px;margin:0;gap:7px}
+.source-aibp-layout .source-aibp-current{overflow:visible;flex-wrap:wrap;padding:0 0 12px;gap:8px;margin-bottom:12px}
+.source-aibp-layout .apostle-title{display:flex;flex-wrap:wrap;align-items:center;white-space:normal;flex:1 1 100%;max-width:100%;gap:7px}
+.source-aibp-layout .apostle-title h2{font-size:23px;line-height:1.4;white-space:normal;overflow-wrap:anywhere;max-width:100%}
+.source-aibp-layout .apostle-level-select{max-width:100%;min-height:44px;font-size:13px}
+.source-aibp-layout .map-faction-status{white-space:normal;flex-wrap:wrap;max-width:100%}
+.source-aibp-layout .viewer,.source-aibp-layout.sidebar-collapsed .viewer{width:100%;max-width:100%;min-width:0;margin:0 0 16px;overflow:auto;justify-content:flex-start;scrollbar-width:thin;overscroll-behavior:contain}
+.source-aibp-layout .viewer::-webkit-scrollbar{display:block;height:5px}
+.source-aibp-layout .viewer::-webkit-scrollbar-thumb{background:var(--line)}
+.source-aibp-layout .viewer .section{flex-shrink:0}
+.source-aibp-layout .cards-panel,.source-aibp-layout .aibp-layout,.source-aibp-layout .card-column{min-width:0;max-width:100%}
+.source-aibp-layout .aibp-layout{grid-template-columns:minmax(0,1fr)}
+.source-aibp-layout .card-column{padding:12px}
+.source-aibp-layout .card-column-head{flex-wrap:wrap;gap:7px}
+.source-aibp-layout .segmented{display:flex;flex-wrap:wrap;gap:5px;max-width:100%}
+.source-aibp-layout .segmented button{min-height:44px;font-size:12px}
+.source-aibp-layout .draw-box{grid-template-columns:minmax(0,1fr)!important;padding:0 0 12px!important;gap:12px!important}
+.source-aibp-layout .draw-actions{display:flex!important;flex-wrap:wrap!important;gap:7px!important;min-width:0!important}
+.source-aibp-layout .draw-actions button{width:auto!important;flex:1 1 90px!important;min-width:0!important;min-height:44px!important;white-space:normal!important;font-size:12px!important;padding:7px 9px!important}
+.source-aibp-layout #drawAiButton,.source-aibp-layout #drawBpButton{min-height:44px!important;font-size:14px!important;flex-basis:100%!important;padding:8px 12px!important}
+.source-aibp-layout .draw-preview{justify-self:center!important;max-width:100%}
+.source-aibp-layout .card-grid{min-width:0;max-width:100%}
+.source-aibp-layout .battle-map-workspace{display:grid;grid-template-columns:minmax(0,1fr);min-width:0}
+.source-aibp-layout .battle-map-head,.source-aibp-layout .battle-map-head-actions{flex-wrap:wrap;min-width:0;gap:7px}
+.source-aibp-layout .battle-map-main,.source-aibp-layout .battle-map-side,.source-aibp-layout .battle-map-panel{min-width:0;max-width:100%}
+.source-aibp-layout .battle-map-toolbar{flex-wrap:wrap}
+.source-aibp-layout .battle-map-toolbar button,.source-aibp-layout .battle-map-add button{min-height:44px}
+.source-aibp-layout .battle-map-cards{max-width:100%;min-width:0}
+.source-aibp-layout .source-aibp-sidebar-toggle,.source-aibp-layout:not(.sidebar-collapsed) .source-aibp-sidebar-toggle{position:static;left:auto;top:auto;margin:0 0 8px;min-width:44px;min-height:44px;box-shadow:none}
+.source-aibp-tools .source-aibp-sidebar{width:100%;overflow:visible}
+.source-aibp-tools .source-aibp-sidebar:not([hidden]){min-height:0}
+.source-aibp-layout.sidebar-collapsed .source-aibp-tools .source-aibp-sidebar{display:none}
+
+/* Story: the complete original sidebar and reader options live in the sheet. */
+body.source-story-layout{display:block;min-width:0;max-width:100%;grid-template-columns:none}
+.source-story-layout .source-story-header .brand{display:flex;align-items:center;gap:7px;margin:0;min-width:0}
+.source-story-layout .source-story-header .brand>div:last-child{min-width:0}
+.source-story-layout .source-story-header .brand h1{font-size:17px;line-height:1.4;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;margin:0}
+.source-story-layout .source-story-header .mark{width:25px;height:28px;min-width:25px;border:0;background:transparent}
+.source-story-layout .source-story-header .mark .cycle-symbol{width:23px;height:26px}
+.source-story-layout .reader{margin:0;padding:16px;min-width:0;max-width:100%;width:100%}
+.source-story-layout .reader-head{display:block;min-width:0;gap:0}
+.source-story-layout .reader h2{font-size:25px;overflow-wrap:anywhere}
+.source-story-layout .story-text{font-size:16px;margin-top:20px;line-height:1.95;overflow-wrap:anywhere;min-width:0;max-width:100%}
+.source-story-layout .source-story-reader-transport{display:flex;flex-wrap:nowrap;align-items:center;justify-content:flex-end;gap:8px;min-width:0;height:47px;margin:0;padding:0 12px;border-top:1px solid var(--line);overflow-x:auto;white-space:nowrap}
+.source-story-layout .source-story-reader-transport button{min-height:44px;min-width:44px;font-size:12px;padding:7px 12px;flex-shrink:0}
+.source-story-layout .source-story-reader-transport .entry-badge{min-width:60px;flex-shrink:0;margin-left:auto;font-size:16px}
+.source-story-tools .source-story-sidebar{display:block;width:100%;max-width:100%;overflow:visible;color:var(--ink);--cycle-sidebar-text:var(--ink);--cycle-sidebar-muted:var(--muted);--cycle-sidebar-label:var(--muted);--cycle-sidebar-accent:var(--accent-strong);--cycle-sidebar-deep:var(--panel);--cycle-sidebar-line:var(--line);--cycle-sidebar-card:var(--panel);--cycle-sidebar-card-active:var(--accent-soft);--cycle-sidebar-card-hover:var(--accent-soft);--cycle-sidebar-card-line:var(--line);--cycle-sidebar-button:var(--accent-strong)}
+.source-story-tools .story-navigation{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:0 0 18px}
+.source-story-tools .home-link{width:100%;min-height:44px;margin:0}
+.source-story-tools .field{min-width:0}
+.source-story-tools .quick-row,.source-story-tools .memory-tools{display:flex;flex-wrap:wrap;gap:7px;min-width:0}
+.source-story-tools .quick-row button,.source-story-tools .memory-tools button{min-height:44px;flex:1 1 105px;padding-inline:9px}
+.source-story-tools .memory-item,.source-story-tools .memory-jump,.source-story-tools .result-item{min-width:0;max-width:100%;overflow-wrap:anywhere}
+.source-story-tools .memory-jump{white-space:normal}
+.source-story-tools .memory-remove{flex-shrink:0;min-width:44px;min-height:44px}
+.source-story-tools .source-story-reader-options{display:grid;gap:10px;border-top:1px solid var(--line);padding-top:18px;margin-top:18px;min-width:0}
+.source-story-reader-options .second-screen-mode-toggle{display:flex;align-items:center;gap:8px;min-height:44px;font-size:12px}
+.source-story-reader-options .second-screen-mode-toggle input{width:20px;flex:0 0 20px}
+.source-story-reader-options .entity-bio-toggle{min-height:44px}
+.source-story-reader-options #ttsSpeed{width:100%;min-height:44px}
+.source-story-tools #ttsStatusBox{position:static;inset:auto;z-index:auto;width:100%;max-width:100%;margin:18px 0 0;box-shadow:none;background:var(--panel);color:var(--ink);border-color:var(--line)}
+.source-story-tools #ttsStatusBox .tts-status-head{flex-wrap:wrap;gap:7px;border-color:var(--line)}
+.source-story-tools #ttsStatusBox .tts-status-head strong{color:var(--accent-strong)}
+.source-story-tools #ttsStatusBox .tts-status-actions{flex-wrap:wrap;min-width:0}
+.source-story-tools #ttsStatusBox .tts-status-actions button{min-height:44px;background:var(--panel);color:var(--accent-strong);border:1px solid var(--line)}
+.source-story-tools #ttsStatusBox .tts-quick-config{grid-template-columns:minmax(0,1fr);min-width:0}
+.source-story-tools #ttsStatusBox .tts-quick-field{min-width:0}
+.source-story-tools #ttsStatusBox .tts-quick-field select{max-width:100%;width:100%}
+.source-story-tools .cryptic-module,.source-story-tools .cryptic-body,.source-story-tools .cent-fields{min-width:0;max-width:100%}
+.source-story-tools .cryptic-tabs{flex-wrap:wrap;min-width:0}
+.source-story-tools .cryptic-tabs button{min-height:44px;min-width:0;font-size:12px;padding-inline:9px}
+.source-story-layout .story-text :is(img,video,canvas){max-width:100%}
+.source-story-layout .story-text table{max-width:100%}
+@media(max-width:375px){.source-play-header-line{gap:5px;padding-inline:10px}.source-play-header-line>h1,.source-story-layout .source-story-header .brand h1{font-size:16px}.source-story-layout .reader{padding:14px}.source-aibp-layout main,.source-aibp-layout.sidebar-collapsed main{padding:10px}}
+
+.source-map-cycles{display:flex;flex-wrap:nowrap;gap:0;padding:0 8px;height:44px;min-height:44px;overflow-x:auto;scrollbar-width:none;border-top:1px solid var(--line)}
+.source-map-cycles button{flex:1 0 58px;min-width:0;min-height:44px;padding:0 6px;border:0;font-size:12px;background:transparent;color:var(--accent-strong)}
+.source-map-cycles button.active{background:var(--accent-soft);color:var(--accent-strong);box-shadow:inset 0 -2px var(--accent)}
+.source-map-canvas-controls{display:flex;align-items:center;flex-shrink:0;min-height:52px;gap:8px;padding:4px 8px;border-top:1px solid var(--line);background:var(--panel)}
+.source-map-canvas-controls .zoom-control{display:flex;align-items:center;flex:1;min-width:0;gap:5px;font-size:10px;white-space:nowrap}
+.source-map-canvas-controls .zoom-row{display:flex;flex:1;min-width:0;gap:4px}
+.source-map-canvas-controls input{width:100%;min-width:30px;min-height:44px;padding:0}
+.source-map-canvas-controls output{min-width:40px;min-height:44px;padding:0 3px;font-size:11px}
+.source-map-canvas-controls button{min-height:44px;min-width:44px;flex-shrink:0;padding:0 8px;font-size:11px}

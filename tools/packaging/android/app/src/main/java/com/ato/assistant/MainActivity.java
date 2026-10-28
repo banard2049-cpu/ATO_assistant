@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
@@ -87,6 +88,9 @@ public final class MainActivity extends Activity {
   private String storyTtsSegmentId = "";
   private int storyTtsSegmentNumber;
   private boolean storyTtsPaused;
+  private volatile String mobileLayoutEnvironment = MobileLayoutEnvironment.UNAVAILABLE;
+  private boolean mobileLayoutUpdatePending;
+  private long backRequestGeneration;
 
   @Override public void onCreate(Bundle state) {
     super.onCreate(state);
@@ -114,6 +118,7 @@ public final class MainActivity extends Activity {
         right = insets.getSystemWindowInsetRight(); bottom = insets.getSystemWindowInsetBottom();
       }
       view.setPadding(left, top, right, bottom);
+      scheduleMobileLayoutEnvironmentUpdate();
       return insets;
     });
     LinearLayout toolbar = new LinearLayout(this);
@@ -136,8 +141,11 @@ public final class MainActivity extends Activity {
     toolbar.addView(add, new LinearLayout.LayoutParams(dp(48), dp(48)));
     layout.addView(toolbar);
     rootView = new FrameLayout(this);
+    rootView.addOnLayoutChangeListener((view, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) ->
+        scheduleMobileLayoutEnvironmentUpdate());
     layout.addView(rootView, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1));
     setContentView(layout);
+    updateMobileLayoutEnvironment();
     openNewTab();
 
     storyTts = new TextToSpeech(this, status -> {
@@ -182,6 +190,45 @@ public final class MainActivity extends Activity {
 
   private int dp(int value) {
     return Math.round(value * getResources().getDisplayMetrics().density);
+  }
+
+  /** Read window bounds independently of adjustResize and the keyboard inset. */
+  private void updateMobileLayoutEnvironment() {
+    float density = getResources().getDisplayMetrics().density;
+    String environment;
+    if (android.os.Build.VERSION.SDK_INT >= 30) {
+      android.view.WindowMetrics metrics = getWindowManager().getCurrentWindowMetrics();
+      android.graphics.Rect bounds = metrics.getBounds();
+      android.graphics.Insets bars = metrics.getWindowInsets().getInsetsIgnoringVisibility(
+          android.view.WindowInsets.Type.systemBars() | android.view.WindowInsets.Type.displayCutout());
+      environment = MobileLayoutEnvironment.forWindow(bounds.width(), bounds.height(),
+          bars.left, bars.top, bars.right, bars.bottom, dp(48), density);
+    } else {
+      // Configuration dimensions follow the activity's window (including
+      // multi-window resizing), but do not shrink when the IME opens.
+      Configuration configuration = getResources().getConfiguration();
+      environment = MobileLayoutEnvironment.forWindow(
+          Math.round(configuration.screenWidthDp * density), Math.round(configuration.screenHeightDp * density),
+          0, 0, 0, 0, dp(48), density);
+    }
+    if (environment.equals(mobileLayoutEnvironment)) return;
+    mobileLayoutEnvironment = environment;
+    for (PageTab tab : tabs) if (!tab.closed && tab.view != retiringStoryWebView)
+      tab.view.evaluateJavascript(MobileLayoutEnvironment.eventScript(environment), null);
+  }
+
+  private void scheduleMobileLayoutEnvironmentUpdate() {
+    if (rootView == null || mobileLayoutUpdatePending) return;
+    mobileLayoutUpdatePending = true;
+    rootView.post(() -> {
+      mobileLayoutUpdatePending = false;
+      if (!isFinishing() && !isDestroyed()) updateMobileLayoutEnvironment();
+    });
+  }
+
+  @Override public void onConfigurationChanged(Configuration configuration) {
+    super.onConfigurationChanged(configuration);
+    scheduleMobileLayoutEnvironmentUpdate();
   }
 
   private void updateTabs(boolean revealActive) {
@@ -323,6 +370,7 @@ public final class MainActivity extends Activity {
     view.setWebViewClient(new WebViewClient() {
       @Override public void onPageStarted(WebView view, String url, android.graphics.Bitmap favicon) {
         if (tab.closed || view != tab.view || view == retiringStoryWebView) return;
+        if (view == webView) backRequestGeneration++;
         // A navigation keeps the WebView but replaces its page. Stop the old page's scan.
         requests.incrementAndGet();
         tab.loginPage = false;
@@ -352,6 +400,7 @@ public final class MainActivity extends Activity {
           return;
         }
         super.onPageFinished(view, url);
+        view.evaluateJavascript(MobileLayoutEnvironment.eventScript(mobileLayoutEnvironment), null);
         // Navigation history only; story page resources are released by replacing its WebView.
         if (url != null && url.startsWith(ROOT + "index.html")) view.clearHistory();
       }
@@ -492,6 +541,25 @@ public final class MainActivity extends Activity {
 
   @Override public void onBackPressed() {
     if (webView == retiringStoryWebView && webView != null) return;
+    final WebView owner = webView;
+    if (owner == null) { performNativeBack(); return; }
+    final long generation = ++backRequestGeneration;
+    final java.util.concurrent.atomic.AtomicBoolean resolved = new java.util.concurrent.atomic.AtomicBoolean();
+    // Closing the page's tool sheet takes precedence over its history or tab.
+    // A non-responsive renderer must not prevent the normal Android Back path.
+    owner.evaluateJavascript(MobileLayoutEnvironment.BACK_SCRIPT, handled -> {
+      if (generation != backRequestGeneration || owner != webView || owner == retiringStoryWebView
+          || !resolved.compareAndSet(false, true)) return;
+      if (!"true".equals(handled)) performNativeBack();
+    });
+    rootView.postDelayed(() -> {
+      if (generation == backRequestGeneration && owner == webView && owner != retiringStoryWebView
+          && resolved.compareAndSet(false, true) && !isFinishing() && !isDestroyed()) performNativeBack();
+    }, 500);
+  }
+
+  private void performNativeBack() {
+    if (webView == retiringStoryWebView && webView != null) return;
     if (webView != null && webView.canGoBack()) {
       android.webkit.WebBackForwardList history = webView.copyBackForwardList();
       int previous = history.getCurrentIndex() - 1;
@@ -624,6 +692,11 @@ public final class MainActivity extends Activity {
       this.tab = tab;
       this.owner = owner;
       this.requests = requests;
+    }
+
+    @android.webkit.JavascriptInterface public String mobileLayoutEnvironment() {
+      return tab.closed || tab.view != owner || owner == retiringStoryWebView
+          ? MobileLayoutEnvironment.UNAVAILABLE : mobileLayoutEnvironment;
     }
 
     @android.webkit.JavascriptInterface public boolean openModuleTab(String url) {
