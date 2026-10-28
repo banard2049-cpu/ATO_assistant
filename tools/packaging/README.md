@@ -20,6 +20,14 @@ creates it through its volume/container startup; Android uses app-private storag
 Finished files are written to the repository's untracked `export` directory.
 The directory is created on demand and ignored in its entirety by Git.
 
+The eight-page compact layout is application code in `assets/mobile/`. It is
+enabled only when the installed host's `mobileLayoutEnvironment()` reports a
+portrait content area. Browser, LAN, second-screen and landscape views retain
+their original composition. The host excludes the keyboard from this geometry.
+Layout transactions move the existing controls and restore them on rotation;
+they do not replace business clients or storage. `tools/mobile-preview/` remains
+a development-only, memory-backed preview and is excluded from packaged output.
+
 Run `python tools/test_android_campaign_import.py` from the repository root to
 compile and test the local campaign API's full and partial imports, conflicts,
 backups and profile buckets without an Android SDK. It uses the cached JDK

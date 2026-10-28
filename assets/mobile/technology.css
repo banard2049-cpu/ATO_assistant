@@ -1,0 +1,61 @@
+/* Full-source mobile layout. No source controls or content are hidden. */
+html.ato-apk-portrait.source-technology-mobile,html.ato-apk-portrait.source-technology-mobile body{ height: 100%; }
+html.ato-apk-portrait.source-technology-mobile body{ margin: 0; min-width: 0; overflow: hidden; }
+html.ato-apk-portrait.source-technology-mobile .app{ height: 100dvh; min-height: 0; }
+html.ato-apk-portrait.source-technology-mobile .main{ height: 100%; min-height: 0; min-width: 0; }
+html.ato-apk-portrait.source-technology-mobile .page-heading{ display: flex; flex-wrap: nowrap; height: 48px; min-height: 48px; padding: 0 12px; gap: 6px; flex-shrink: 0; background: var(--panel); }
+html.ato-apk-portrait.source-technology-mobile .page-heading > div:first-child{ flex: 1; min-width: 0; }
+html.ato-apk-portrait.source-technology-mobile .page-heading h1{ margin: 0; gap: 7px; font-size: 17px; line-height: 1.3; white-space: nowrap; }
+html.ato-apk-portrait.source-technology-mobile .page-heading .cycle-symbol{ width: 22px; height: 26px; flex: 0 0 22px; }
+:where(html.ato-apk-portrait) .source-tech-heading-actions{ display: flex; align-items: center; flex: 0 0 auto; gap: 4px; min-width: 0; }
+html.ato-apk-portrait.source-technology-mobile .source-tech-heading-actions #cycleBadge{ display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 68px; border: 0; background: transparent; padding: 0 4px; font-size: 12px; color: var(--accent-strong); }
+html.ato-apk-portrait.source-technology-mobile .topbar{ position: static; display: flex; height: 47px; min-height: 47px; flex-shrink: 0; margin: 0; padding: 0 12px; gap: 0; overflow: auto; border-block: 1px solid var(--line); background: var(--panel); scrollbar-width: none; }
+html.ato-apk-portrait.source-technology-mobile .topbar::-webkit-scrollbar{ display: none; }
+html.ato-apk-portrait.source-technology-mobile .tabs{ display: flex; flex-wrap: nowrap; width: max-content; gap: 18px; height: 46px; align-items: stretch; }
+html.ato-apk-portrait.source-technology-mobile .tab{ flex-shrink: 0; min-height: 44px; padding: 0; font-size: 12px; line-height: 1.4; white-space: nowrap; }
+html.ato-apk-portrait.source-technology-mobile #mainView{ flex: 1; min-height: 0; width: 100%; padding: 14px 12px 24px; overflow: auto; }
+html.ato-apk-portrait.source-technology-mobile #mainView.tech-tree-view{ display: flex; padding: 0; overflow: hidden; }
+html.ato-apk-portrait.source-technology-mobile .tech-explorer{ display: flex; flex-direction: column; flex: 1; min-height: 0; height: 100%; width: 100%; position: relative; }
+html.ato-apk-portrait.source-technology-mobile .tech-board-toolbar{ display: flex; justify-content: center; position: absolute; inset: auto 8px 8px; padding: 0; margin: 0; z-index: 4; pointer-events: none; }
+html.ato-apk-portrait.source-technology-mobile .tech-board-controls{ display: flex; flex-wrap: nowrap; justify-content: center; max-width: 100%; gap: 0; background: var(--panel); border: 1px solid var(--line); box-shadow: 0 3px 12px rgb(0 0 0 / 10%); pointer-events: auto; }
+html.ato-apk-portrait.source-technology-mobile .tech-board-controls button{ min-width: 44px; width: auto; min-height: 44px; height: 44px; padding: 0 7px; flex-shrink: 0; border: 0; font-size: 11px; white-space: nowrap; }
+html.ato-apk-portrait.source-technology-mobile .tech-zoom-value{ display: inline-flex; align-items: center; justify-content: center; min-width: 34px; font-size: 10px; }
+html.ato-apk-portrait.source-technology-mobile .tech-board{ flex: 1; min-height: 0; height: auto; width: 100%; border: 0; padding-bottom: 60px; }
+html.ato-apk-portrait.source-technology-mobile .tech-discovery-message{ flex-shrink: 0; margin: 0; padding: 0 10px; max-height: 66px; overflow: auto; font-size: 11px; }
+html.ato-apk-portrait.source-technology-mobile .tech-discovery-message.has-discovery{ padding-block: 5px; padding-bottom: 58px; }
+html.ato-apk-portrait.source-technology-mobile .source-tech-tools .tools{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; margin: 0; gap: 10px; padding: 0; flex-wrap: wrap; }
+html.ato-apk-portrait.source-technology-mobile .source-tech-tools .tools > *{ min-width: 0; max-width: 100%; }
+html.ato-apk-portrait.source-technology-mobile .source-tech-tools .tools .search{ grid-column: 1 / -1; width: 100%; font-size: 16px; min-height: 44px; }
+html.ato-apk-portrait.source-technology-mobile .source-tech-tools .tools .tool-check{ grid-column: 1 / -1; display: flex; flex-wrap: wrap; white-space: normal; min-height: 44px; }
+html.ato-apk-portrait.source-technology-mobile .source-tech-tools .tools #count{ justify-self: start; text-align: left; grid-column: 1 / -1; }
+html.ato-apk-portrait.source-technology-mobile .source-tech-tools #returnMain{ width: 100%; min-height: 44px; margin-block: 12px; }
+html.ato-apk-portrait.source-technology-mobile .source-tech-tools #campaignSaveStatus{ display: block; min-width: 0; text-align: left; margin-top: 12px; }
+:where(html.ato-apk-portrait) .source-tech-summary-slot .tech-progress{ display: flex; flex-wrap: wrap; gap: 8px 15px; padding-top: 12px; font-size: 12px; }
+html.ato-apk-portrait.source-technology-mobile .source-tech-tools .gear-resource-sidebar{ position: static; top: auto; width: 100%; max-height: none; margin-top: 12px; border: 0; border-top: 1px solid var(--line); padding: 14px 0 0; overflow: visible; }
+html.ato-apk-portrait.source-technology-mobile .source-tech-tools .gear-resource-row{ min-width: 0; grid-template-columns: 28px minmax(0, 1fr) 36px 44px 44px; }
+html.ato-apk-portrait.source-technology-mobile .source-tech-tools .gear-resource-name{ overflow-wrap: anywhere; font-size: 12px; }
+html.ato-apk-portrait.source-technology-mobile .source-tech-tools .gear-resource-btn{ min-width: 44px; width: 44px; min-height: 44px; height: 44px; }
+html.ato-apk-portrait.source-technology-mobile .gear-layout{ display: block; width: 100%; min-width: 0; }
+html.ato-apk-portrait.source-technology-mobile .gear-content{ min-width: 0; padding: 0; overflow: visible; }
+html.ato-apk-portrait.source-technology-mobile .gear-page{ width: 100%; min-width: 0; height: auto; }
+:where(html.ato-apk-portrait) .source-gear-controls{ margin: 0 0 14px; border-bottom: 1px solid var(--line); }
+:where(html.ato-apk-portrait) .source-gear-controls > summary{ display: flex; align-items: center; min-height: 44px; cursor: pointer; color: var(--accent-strong); font-size: 13px; }
+html.ato-apk-portrait.source-technology-mobile .source-gear-controls .gear-filter-bar{ display: flex; flex-wrap: wrap; min-width: 0; padding: 10px 0 14px; gap: 12px; border: 0; }
+html.ato-apk-portrait.source-technology-mobile .source-gear-controls .gear-filter-bar label{ min-width: 0; max-width: 100%; }
+html.ato-apk-portrait.source-technology-mobile .source-gear-controls .arsenal-add{ display: grid; grid-template-columns: minmax(0, 1fr) 80px; width: 100%; min-width: 0; gap: 10px; }
+html.ato-apk-portrait.source-technology-mobile .source-gear-controls .arsenal-add-gear{ grid-column: 1 / -1; width: 100%; min-width: 0; }
+html.ato-apk-portrait.source-technology-mobile .source-gear-controls .arsenal-add select{ width: 100%; max-width: 100%; min-width: 0; }
+html.ato-apk-portrait.source-technology-mobile .gear-group-header{ flex-wrap: wrap; gap: 8px; }
+html.ato-apk-portrait.source-technology-mobile .gear-group-name{ overflow-wrap: anywhere; font-size: 18px; }
+html.ato-apk-portrait.source-technology-mobile .gear-items{ grid-template-columns: minmax(0, 1fr); gap: 14px; }
+html.ato-apk-portrait.source-technology-mobile .gear-item{ min-width: 0; padding: 10px 0; }
+html.ato-apk-portrait.source-technology-mobile .gear-item-main{ min-width: 0; }
+html.ato-apk-portrait.source-technology-mobile .gear-item-name{ overflow-wrap: anywhere; }
+html.ato-apk-portrait.source-technology-mobile .unlocked-columns{ grid-template-columns: minmax(0, 1fr); }
+html.ato-apk-portrait.source-technology-mobile .unlocked-modal{ max-width: 100%; max-height: calc(100dvh - 16px); grid-template-columns: minmax(0, 1fr); overflow: auto; }
+html.ato-apk-portrait.source-technology-mobile .unlocked-modal-panel{ min-width: 0; }
+html.ato-apk-portrait.source-technology-mobile .modal-actions{ flex-wrap: wrap; gap: 6px; }
+html.ato-apk-portrait.source-technology-mobile .modal-actions button{ flex: 1 1 120px; }
+
+
+@media(max-width:375px){html.ato-apk-portrait.source-technology-mobile .page-heading h1{font-size:16px}html.ato-apk-portrait.source-technology-mobile .tech-board-controls button{padding-inline:5px;font-size:10px}html.ato-apk-portrait.source-technology-mobile .tech-zoom-value{min-width:30px}}

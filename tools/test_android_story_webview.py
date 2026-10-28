@@ -18,9 +18,12 @@ def main() -> None:
     harness = PROJECT_ROOT / "tests/fixtures/android-story-webview/com/ato/assistant/StoryWebViewSessionHarness.java"
     policy = PROJECT_ROOT / "tools/packaging/android/app/src/main/java/com/ato/assistant/TabNavigationPolicy.java"
     policy_harness = PROJECT_ROOT / "tests/fixtures/android-story-webview/com/ato/assistant/TabNavigationPolicyHarness.java"
-    subprocess.run([str(javac), "-encoding", "UTF-8", "-d", str(directory), str(source), str(harness), str(policy), str(policy_harness)], check=True)
+    layout = PROJECT_ROOT / "tools/packaging/android/app/src/main/java/com/ato/assistant/MobileLayoutEnvironment.java"
+    layout_harness = PROJECT_ROOT / "tests/fixtures/android-story-webview/com/ato/assistant/MobileLayoutEnvironmentHarness.java"
+    subprocess.run([str(javac), "-encoding", "UTF-8", "-d", str(directory), str(source), str(harness), str(policy), str(policy_harness), str(layout), str(layout_harness)], check=True)
     subprocess.run([str(java), "-cp", str(directory), "com.ato.assistant.StoryWebViewSessionHarness"], check=True)
     subprocess.run([str(java), "-cp", str(directory), "com.ato.assistant.TabNavigationPolicyHarness"], check=True)
+    subprocess.run([str(java), "-cp", str(directory), "com.ato.assistant.MobileLayoutEnvironmentHarness"], check=True)
 
 
 if __name__ == "__main__":

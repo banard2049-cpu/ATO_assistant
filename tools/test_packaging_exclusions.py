@@ -148,6 +148,9 @@ def build_project(root: Path) -> None:
         "assets/campaign-session.js": "// session guard\n",
         "assets/campaign-notes.js": "// campaign journal\n",
         "assets/cycle-symbols.js": "// cycle symbols\n",
+        "assets/mobile/layout.js": "// installed APK layout\n",
+        "assets/mobile/common.css": "/* installed APK layout */\n",
+        "tools/mobile-preview/source-store.js": "// development-only memory store\n",
         # 科技卡分类编辑器是本机工具（在 tools/ 下），不随包发布；这里放一份真实科技页与
         # 编辑器页面，好让下面的检查真的走一遍「入口隐藏 + 编辑器不进包」。
         "technology/index.html": (ROOT / "technology/index.html").read_text(encoding="utf-8"),
@@ -285,7 +288,8 @@ def main() -> int:
 
     failures: list[str] = list(editor_failures)
 
-    for expected in ("LICENSE", "assets/bgm/bgm.js", "assets/bgm/manifest.js", "assets/bgm/README.md", "index.html"):
+    for expected in ("LICENSE", "assets/bgm/bgm.js", "assets/bgm/manifest.js", "assets/bgm/README.md", "index.html",
+                     "assets/mobile/layout.js", "assets/mobile/common.css"):
         if expected not in packaged:
             failures.append(f"应进包但缺失：{expected}")
 
@@ -335,7 +339,8 @@ def main() -> int:
         failures.append("排除规则误伤了密语字形清单：story/assets/cryptic/glyph-catalog.js")
 
     # 分类编辑器的旧地址只是本机兼容用的跳转页，连同 tools/ 下的一切都不进包。
-    for forbidden in ("tools/export_portable.py", "technology/tools/tech_card_property_editor.html", "data/ato-campaign-x.json", "story/data/storybook-data.js"):
+    for forbidden in ("tools/export_portable.py", "tools/mobile-preview/source-store.js",
+                      "technology/tools/tech_card_property_editor.html", "data/ato-campaign-x.json", "story/data/storybook-data.js"):
         if forbidden in packaged:
             failures.append(f"不应进包：{forbidden}")
         if not pc.excluded(Path(forbidden)):

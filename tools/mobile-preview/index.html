@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ATO · 手机体验预览</title>
+  <link rel="stylesheet" href="../../api/cycle-theme.css">
+  <link rel="stylesheet" href="workbench.css">
+</head>
+<body>
+  <aside class="workbench-sidebar">
+    <a class="brand" href="../../index.html"><span>ATO Assistant<small>手机端修改预览</small></span></a>
+    <div class="intro"><span class="eyebrow">手机体验 · 交互原型</span><h1>把屏幕，<br>留给内容。</h1><p>熟悉的界面，更轻的工具栏。<br>选择页面，在右侧点击体验。</p></div>
+    <nav id="pageNav" aria-label="预览页面"></nav>
+    <div class="sidebar-foot"><span class="preview-dot"></span>独立示例 · 所有修改仅在本次预览生效</div>
+  </aside>
+  <main class="workbench">
+    <header class="workbench-header"><div><span class="eyebrow">08 PAGES / ANDROID FIRST</span><h2 id="currentTitle">主控台</h2></div><a class="gallery-link" href="gallery.html">查看全部截图 <span aria-hidden="true">↗</span></a></header>
+    <div class="preview-controls" aria-label="设备预览设置">
+      <label>屏幕尺寸<select id="deviceSize"><option value="360,780">360 × 780</option><option value="390,844" selected>390 × 844</option><option value="430,932">430 × 932</option><option value="844,390">844 × 390 · 横屏</option></select></label>
+      <button id="rotateDevice" type="button" aria-label="旋转屏幕">↻ 旋转</button><button id="resetPreview" type="button">重置示例</button><a id="openScreen" href="screen.html?page=dashboard" target="_blank" rel="noopener">单独打开 ↗</a>
+    </div>
+    <div class="preview-stage" id="previewStage">
+      <div class="device-wrap" id="deviceWrap"><div class="device-frame" id="deviceFrame"><iframe id="phoneFrame" title="ATO 手机交互预览" src="screen.html?page=dashboard"></iframe></div></div>
+      <aside class="design-note"><span class="eyebrow">这页改了什么</span><p id="pageDescription"></p><div class="note-rule"></div><strong>工具，随需展开</strong><p>点右上角「工具」查看完整功能。关闭后，内容恢复整个可用区域。</p><span class="note-foot">原有 Android 标签栏单独模拟<br>原型未连接战役存档</span></aside>
+    </div>
+    <footer class="workbench-footer"><span>保留原有风格 / 完整保留功能 / 内容优先</span><span>ATO · MOBILE STUDY</span></footer>
+  </main>
+  <script src="identity.js"></script>
+  <script src="workbench.js"></script>
+</body>
+</html>

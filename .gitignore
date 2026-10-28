@@ -79,6 +79,8 @@
 # Shared application appearance controls and cross-module theme synchronization.
 !/assets/theme.js
 !/assets/theme.css
+# APK portrait layout code is application source, not a private game asset.
+!/assets/mobile/
 !/assets/card-art.css
 !/assets/card-art.js
 !/assets/fan-card-trims.js

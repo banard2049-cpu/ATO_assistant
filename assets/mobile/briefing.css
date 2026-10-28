@@ -1,0 +1,53 @@
+/* APK portrait-only replay geometry; all source export controls remain. */
+html.ato-apk-portrait.source-briefing-mobile body{ margin: 0; min-width: 0; }
+html.ato-apk-portrait.source-briefing-mobile .briefing-shell{ width: 100%; padding: 0 12px 24px; }
+html.ato-apk-portrait.source-briefing-mobile .briefing-head{ display: flex; align-items: center; justify-content: space-between; flex-wrap: nowrap; gap: 6px; height: 48px; min-height: 48px; padding: 0 12px; margin: 0 -12px; position: sticky; top: 0; z-index: 10; background: var(--panel); }
+html.ato-apk-portrait.source-briefing-mobile .head-title{ flex: 1; min-width: 0; }
+html.ato-apk-portrait.source-briefing-mobile .head-title h1{ margin: 0; gap: 7px; font-size: 17px; line-height: 1.3; white-space: nowrap; }
+html.ato-apk-portrait.source-briefing-mobile .head-title .cycle-symbol{ width: 22px; height: 26px; flex-basis: 22px; }
+:where(html.ato-apk-portrait) .source-briefing-heading-actions{ display: flex; align-items: center; gap: 4px; min-width: 0; }
+:where(html.ato-apk-portrait) .source-briefing-heading-actions .field{ width: 80px; min-width: 0; gap: 0; font-size: 0; }
+:where(html.ato-apk-portrait) .source-briefing-heading-actions .field select{ width: 80px; max-width: 80px; padding: 0 3px; border: 0; min-height: 44px; height: 44px; font-size: 12px; background: transparent; }
+:where(html.ato-apk-portrait) .source-briefing-navigation{ display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 47px; height: 47px; padding: 0 12px; margin: 0 -12px; border-block: 1px solid var(--line); position: sticky; top: 48px; z-index: 9; background: var(--panel); }
+:where(html.ato-apk-portrait) .source-briefing-navigation .replay-controls{ display: flex; flex-wrap: nowrap; gap: 0; min-width: 0; }
+:where(html.ato-apk-portrait) .source-briefing-navigation .playback-buttons{ display: flex; flex-wrap: nowrap; gap: 4px; }
+:where(html.ato-apk-portrait) .source-briefing-navigation .playback-buttons button{ min-height: 44px; height: 44px; min-width: 62px; padding: 0 10px; font-size: 12px; }
+:where(html.ato-apk-portrait) .source-briefing-navigation .day-index{ font-size: 11px; padding-left: 10px; flex-shrink: 0; white-space: nowrap; }
+html.ato-apk-portrait.source-briefing-mobile .briefing-body{ display: grid; grid-template-columns: minmax(0, 1fr); width: 100%; gap: 22px; padding-top: 14px; }
+html.ato-apk-portrait.source-briefing-mobile .replay{ min-width: 0; width: 100%; gap: 12px; }
+html.ato-apk-portrait.source-briefing-mobile .replay-head{ display: block; min-width: 0; }
+html.ato-apk-portrait.source-briefing-mobile .day-title{ font-size: 23px; }
+html.ato-apk-portrait.source-briefing-mobile .panes{ grid-template-columns: minmax(0, 1fr); }
+html.ato-apk-portrait.source-briefing-mobile .campaign-overview{ grid-template-columns: minmax(0, 1fr); gap: 14px; }
+html.ato-apk-portrait.source-briefing-mobile .card-spread{ grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+html.ato-apk-portrait.source-briefing-mobile .card-strip{ padding: 8px; flex-wrap: wrap; gap: 4px; }
+html.ato-apk-portrait.source-briefing-mobile .pane-head{ padding: 10px 12px; gap: 8px; }
+html.ato-apk-portrait.source-briefing-mobile .pane-head h3{ font-size: 19px; }
+html.ato-apk-portrait.source-briefing-mobile .pane-progress{ padding: 13px 12px; }
+html.ato-apk-portrait.source-briefing-mobile .map-canvas,
+html.ato-apk-portrait.source-briefing-mobile .tech-canvas{ min-height: 260px; height: clamp(280px, 45dvh, 420px); }
+html.ato-apk-portrait.source-briefing-mobile .zoom-controls{ flex-wrap: nowrap; gap: 3px; }
+html.ato-apk-portrait.source-briefing-mobile .zoom-controls button{ min-width: 44px; min-height: 44px; height: 44px; padding: 0 7px; }
+html.ato-apk-portrait.source-briefing-mobile .pane-foot{ padding: 10px 12px; }
+html.ato-apk-portrait.source-briefing-mobile .log-head{ flex-wrap: wrap; gap: 8px; }
+html.ato-apk-portrait.source-briefing-mobile .log-list{ max-height: none; overflow: visible; padding-right: 0; }
+html.ato-apk-portrait.source-briefing-mobile .log-item{ min-width: 0; }
+html.ato-apk-portrait.source-briefing-mobile .source-briefing-tools .head-side{ width: 100%; justify-items: stretch; gap: 12px; }
+html.ato-apk-portrait.source-briefing-mobile .source-briefing-tools .back-link{ width: fit-content; min-height: 44px; }
+html.ato-apk-portrait.source-briefing-mobile .source-briefing-tools .head-summary{ width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 0; }
+html.ato-apk-portrait.source-briefing-mobile .source-briefing-tools .head-summary > div{ min-width: 0; padding: 0 12px; }
+html.ato-apk-portrait.source-briefing-mobile .source-briefing-tools .head-summary > div:nth-child(odd){ border-left: 0; padding-left: 0; }
+html.ato-apk-portrait.source-briefing-mobile .source-briefing-tools .head-summary dd{ font-size: 27px; white-space: normal; }
+html.ato-apk-portrait.source-briefing-mobile .source-briefing-tools .briefing-toolbar,
+html.ato-apk-portrait.source-briefing-mobile .source-briefing-tools .backup-toolbar{ display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; width: 100%; padding-block: 14px; }
+html.ato-apk-portrait.source-briefing-mobile .source-briefing-tools .head-actions,
+html.ato-apk-portrait.source-briefing-mobile .source-briefing-tools .export-actions,
+html.ato-apk-portrait.source-briefing-mobile .source-briefing-tools .backup-actions{ display: flex; flex-wrap: wrap; gap: 10px; min-width: 0; }
+html.ato-apk-portrait.source-briefing-mobile .source-briefing-tools .export-actions > button,
+html.ato-apk-portrait.source-briefing-mobile .source-briefing-tools .backup-actions > button{ flex: 1 1 135px; min-height: 44px; }
+html.ato-apk-portrait.source-briefing-mobile .source-briefing-tools .export-description{ width: 100%; }
+html.ato-apk-portrait.source-briefing-mobile .source-briefing-tools #headSub{ margin: 8px 0 12px; }
+html.ato-apk-portrait.source-briefing-mobile .source-briefing-tools #speedSelect{ min-height: 44px; }
+html.ato-apk-portrait.source-briefing-mobile .card-preview-dialog{ max-width: calc(100vw - 16px); max-height: calc(100dvh - 16px); }
+
+@media(max-width:375px){html.ato-apk-portrait.source-briefing-mobile .head-title h1{font-size:16px}}

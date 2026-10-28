@@ -1,0 +1,169 @@
+/* APK portrait-only geometry. Browser and landscape selectors never match. */
+/* Layout-only overrides. Original artwork, game overlays and names are untouched. */
+:where(html.ato-apk-portrait) .source-play-header{min-width:0;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:12}
+:where(html.ato-apk-portrait) .source-play-header-line{display:flex;align-items:center;gap:8px;min-width:0;min-height:48px;padding:0 12px}
+:where(html.ato-apk-portrait) .source-play-header-line>h1,
+:where(html.ato-apk-portrait) .source-play-header-line>.brand{flex:1;min-width:0;margin:0}
+:where(html.ato-apk-portrait) .source-play-header-line>h1{font:600 17px/1.4 'Songti SC',SimSun,Georgia,serif;color:var(--accent-strong);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:7px}
+:where(html.ato-apk-portrait) .source-play-header .cycle-symbol{width:23px;height:26px;flex:0 0 23px;object-fit:contain}
+:where(html.ato-apk-portrait) .source-play-header-line>button{flex-shrink:0;min-width:44px;min-height:44px;padding-inline:7px;font-size:12px}
+:where(html.ato-apk-portrait) .source-play-empty-header{display:none!important}
+:where(html.ato-apk-portrait) .source-play-tools-body{min-width:0}
+:where(html.ato-apk-portrait) .source-play-tools .source-play-tools-body>aside{position:static;height:auto;min-height:0;max-height:none;min-width:0;border:0;padding:0;background:transparent;box-shadow:none}
+:where(html.ato-apk-portrait) .source-play-tools [hidden],
+:where(html.ato-apk-portrait) .source-play-header [hidden]{display:none!important}
+:where(html.ato-apk-portrait) .source-play-tools :is(input:not([type=checkbox]):not([type=range]),select,textarea){min-width:0;max-width:100%}
+:where(html.ato-apk-portrait) .source-play-tools .title-actions{display:flex;flex-wrap:wrap;width:100%;gap:8px;margin:18px 0 0;white-space:normal;overflow:visible}
+:where(html.ato-apk-portrait) .source-play-tools .title-actions>*{max-width:100%;min-width:0;flex-shrink:1}
+:where(html.ato-apk-portrait) .source-play-tools .title-actions .return-main-link{margin-left:0;order:0}
+:where(html.ato-apk-portrait) .source-play-tools .sidebar-boss-search,
+:where(html.ato-apk-portrait) .source-play-tools .boss-search-form,
+:where(html.ato-apk-portrait) .source-play-tools .boss-search-results{min-width:0;max-width:100%}
+:where(html.ato-apk-portrait) .source-play-tools .boss-search-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px}
+:where(html.ato-apk-portrait) .source-play-tools .nav{grid-template-columns:minmax(0,1fr);gap:0}
+:where(html.ato-apk-portrait) .source-play-tools .nav button{min-height:44px;white-space:normal;text-align:left}
+:where(html.ato-apk-portrait) .source-play-tools .second-screen-mode-toggle,
+:where(html.ato-apk-portrait) .source-play-tools .deck-order-toggle{display:flex;align-items:center;gap:7px;min-height:44px}
+:where(html.ato-apk-portrait) .source-play-tools .second-screen-mode-toggle input,
+:where(html.ato-apk-portrait) .source-play-tools .deck-order-toggle input{width:20px;flex:0 0 20px}
+
+/* Map: original cycle/zoom controls stay at the canvas; other tools move into the sheet. */
+:where(html.ato-apk-portrait) body.source-map-layout{height:100vh;height:100dvh;min-height:0;overflow:hidden}
+:where(html.ato-apk-portrait) body.source-map-layout main.app{height:100%;min-height:0;width:100%;max-width:100%;padding:0;display:flex;flex-direction:column;margin:0}
+:where(html.ato-apk-portrait) body.source-map-layout .source-map-header{flex-shrink:0}
+:where(html.ato-apk-portrait) .source-map-save-state{margin:0!important;padding:0 12px 5px;min-height:16px;font-size:10px!important;line-height:1.4;color:var(--muted)}
+:where(html.ato-apk-portrait) body.source-map-layout .source-map-canvas-viewport{flex:1;min-height:0;max-height:none;width:calc(100% - 16px);margin:8px;border-radius:0;overflow:auto;overscroll-behavior:contain}
+:where(html.ato-apk-portrait) .source-map-tools .topbar-tools{display:grid;justify-items:stretch;gap:14px;margin-bottom:16px}
+:where(html.ato-apk-portrait) .source-map-tools .header-return-actions{display:flex;flex-wrap:wrap;gap:7px}
+:where(html.ato-apk-portrait) .source-map-tools .header-return-actions>*{flex:1 1 135px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;margin:0;font-size:12px}
+:where(html.ato-apk-portrait) .source-map-tools .cycle-tabs{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:6px}
+:where(html.ato-apk-portrait) .source-map-tools .cycle-tabs button{min-width:0;flex:1 1 70px;min-height:44px;padding-inline:7px;font-size:12px}
+:where(html.ato-apk-portrait) .source-map-tools .sticky-actions{position:static;display:grid;grid-template-columns:minmax(0,1fr);margin:0;padding:0;gap:16px;background:transparent}
+:where(html.ato-apk-portrait) .source-map-tools .control-panel,
+:where(html.ato-apk-portrait) .source-map-tools .token-panel{display:grid;grid-template-columns:minmax(0,1fr);padding:0;border:0;box-shadow:none;margin:0;min-width:0;gap:14px;background:transparent}
+:where(html.ato-apk-portrait) .source-map-tools .tile-lookup,
+:where(html.ato-apk-portrait) .source-map-tools .tile-lookup-row{display:grid;grid-template-columns:minmax(0,1fr);width:100%;min-width:0;gap:7px}
+:where(html.ato-apk-portrait) .source-map-tools .tile-lookup-actions{display:flex;flex-wrap:wrap;gap:6px}
+:where(html.ato-apk-portrait) .source-map-tools .tile-lookup-actions button{flex:1 1 75px;min-height:44px;font-size:12px;padding-inline:8px}
+:where(html.ato-apk-portrait) .source-map-tools .zoom-control,
+:where(html.ato-apk-portrait) .source-map-tools .zoom-row{width:100%;min-width:0}
+:where(html.ato-apk-portrait) .source-map-tools .zoom-row{display:grid;grid-template-columns:minmax(0,1fr) 48px}
+:where(html.ato-apk-portrait) .source-map-tools .toggle-row{display:grid;grid-template-columns:minmax(0,1fr);gap:4px}
+:where(html.ato-apk-portrait) .source-map-tools .check-label{min-height:44px;display:flex;align-items:center;gap:7px;white-space:normal}
+:where(html.ato-apk-portrait) .source-map-tools .map-actions,
+:where(html.ato-apk-portrait) .source-map-tools .tool-cluster{display:flex;flex-wrap:wrap;gap:10px;min-width:0}
+:where(html.ato-apk-portrait) .source-map-tools .action-group{display:flex;flex-wrap:wrap;align-items:center;gap:7px;width:100%;min-width:0;padding:10px 0;border-top:1px solid var(--line)}
+:where(html.ato-apk-portrait) .source-map-tools .action-group button{min-height:44px;font-size:12px;padding-inline:10px}
+:where(html.ato-apk-portrait) .source-map-tools .token-palette{display:flex;flex-wrap:wrap;gap:7px;min-width:0}
+:where(html.ato-apk-portrait) .source-map-tools .token-palette button{min-width:44px;min-height:44px}
+:where(html.ato-apk-portrait) .source-map-tools .map-status{min-width:0;white-space:normal;flex-wrap:wrap}
+:where(html.ato-apk-portrait) .source-map-tools .titan-x-track-spaces{flex-wrap:wrap;min-width:0;max-width:100%}
+
+/* AIBP: only the list/settings move; every original card/control remains in main. */
+:where(html.ato-apk-portrait) body.source-aibp-layout .app,
+:where(html.ato-apk-portrait) body.source-aibp-layout.sidebar-collapsed .app{display:block;min-height:100vh;min-width:0;max-width:100%}
+:where(html.ato-apk-portrait) body.source-aibp-layout main,
+:where(html.ato-apk-portrait) body.source-aibp-layout.sidebar-collapsed main{padding:12px;min-width:0;max-width:100%;width:100%}
+:where(html.ato-apk-portrait) .source-aibp-layout .source-aibp-header{margin:0;position:sticky;top:0}
+:where(html.ato-apk-portrait) .source-aibp-layout .source-aibp-header #aibpTitle{font-size:17px;margin:0;gap:7px}
+:where(html.ato-apk-portrait) .source-aibp-layout .source-aibp-current{overflow:visible;flex-wrap:wrap;padding:0 0 12px;gap:8px;margin-bottom:12px}
+:where(html.ato-apk-portrait) .source-aibp-layout .apostle-title{display:flex;flex-wrap:wrap;align-items:center;white-space:normal;flex:1 1 100%;max-width:100%;gap:7px}
+:where(html.ato-apk-portrait) .source-aibp-layout .apostle-title h2{font-size:23px;line-height:1.4;white-space:normal;overflow-wrap:anywhere;max-width:100%}
+:where(html.ato-apk-portrait) .source-aibp-layout .apostle-level-select{max-width:100%;min-height:44px;font-size:13px}
+:where(html.ato-apk-portrait) .source-aibp-layout .map-faction-status{white-space:normal;flex-wrap:wrap;max-width:100%}
+:where(html.ato-apk-portrait) .source-aibp-layout .viewer,
+:where(html.ato-apk-portrait) .source-aibp-layout.sidebar-collapsed .viewer{width:100%;max-width:100%;min-width:0;margin:0 0 16px;overflow:auto;justify-content:flex-start;scrollbar-width:thin;overscroll-behavior:contain}
+:where(html.ato-apk-portrait) .source-aibp-layout .viewer::-webkit-scrollbar{display:block;height:5px}
+:where(html.ato-apk-portrait) .source-aibp-layout .viewer::-webkit-scrollbar-thumb{background:var(--line)}
+:where(html.ato-apk-portrait) .source-aibp-layout .viewer .section{flex-shrink:0}
+:where(html.ato-apk-portrait) .source-aibp-layout .cards-panel,
+:where(html.ato-apk-portrait) .source-aibp-layout .aibp-layout,
+:where(html.ato-apk-portrait) .source-aibp-layout .card-column{min-width:0;max-width:100%}
+:where(html.ato-apk-portrait) .source-aibp-layout .aibp-layout{grid-template-columns:minmax(0,1fr)}
+:where(html.ato-apk-portrait) .source-aibp-layout .card-column{padding:12px}
+:where(html.ato-apk-portrait) .source-aibp-layout .card-column-head{flex-wrap:wrap;gap:7px}
+:where(html.ato-apk-portrait) .source-aibp-layout .segmented{display:flex;flex-wrap:wrap;gap:5px;max-width:100%}
+:where(html.ato-apk-portrait) .source-aibp-layout .segmented button{min-height:44px;font-size:12px}
+:where(html.ato-apk-portrait) .source-aibp-layout .draw-box{grid-template-columns:minmax(0,1fr)!important;padding:0 0 12px!important;gap:12px!important}
+:where(html.ato-apk-portrait) .source-aibp-layout .draw-actions{display:flex!important;flex-wrap:wrap!important;gap:7px!important;min-width:0!important}
+:where(html.ato-apk-portrait) .source-aibp-layout .draw-actions button{width:auto!important;flex:1 1 90px!important;min-width:0!important;min-height:44px!important;white-space:normal!important;font-size:12px!important;padding:7px 9px!important}
+:where(html.ato-apk-portrait) .source-aibp-layout #drawAiButton,
+:where(html.ato-apk-portrait) .source-aibp-layout #drawBpButton{min-height:44px!important;font-size:14px!important;flex-basis:100%!important;padding:8px 12px!important}
+:where(html.ato-apk-portrait) .source-aibp-layout .draw-preview{justify-self:center!important;max-width:100%}
+:where(html.ato-apk-portrait) .source-aibp-layout .card-grid{min-width:0;max-width:100%}
+:where(html.ato-apk-portrait) .source-aibp-layout .battle-map-workspace{display:grid;grid-template-columns:minmax(0,1fr);min-width:0}
+:where(html.ato-apk-portrait) .source-aibp-layout .battle-map-head,
+:where(html.ato-apk-portrait) .source-aibp-layout .battle-map-head-actions{flex-wrap:wrap;min-width:0;gap:7px}
+:where(html.ato-apk-portrait) .source-aibp-layout .battle-map-main,
+:where(html.ato-apk-portrait) .source-aibp-layout .battle-map-side,
+:where(html.ato-apk-portrait) .source-aibp-layout .battle-map-panel{min-width:0;max-width:100%}
+:where(html.ato-apk-portrait) .source-aibp-layout .battle-map-toolbar{flex-wrap:wrap}
+:where(html.ato-apk-portrait) .source-aibp-layout .battle-map-toolbar button,
+:where(html.ato-apk-portrait) .source-aibp-layout .battle-map-add button{min-height:44px}
+:where(html.ato-apk-portrait) .source-aibp-layout .battle-map-cards{max-width:100%;min-width:0}
+:where(html.ato-apk-portrait) .source-aibp-layout .source-aibp-sidebar-toggle,
+:where(html.ato-apk-portrait) .source-aibp-layout:not(.sidebar-collapsed) .source-aibp-sidebar-toggle{position:static;left:auto;top:auto;margin:0 0 8px;min-width:44px;min-height:44px;box-shadow:none}
+:where(html.ato-apk-portrait) .source-aibp-tools .source-aibp-sidebar{width:100%;overflow:visible}
+:where(html.ato-apk-portrait) .source-aibp-tools .source-aibp-sidebar:not([hidden]){min-height:0}
+:where(html.ato-apk-portrait) .source-aibp-layout.sidebar-collapsed .source-aibp-tools .source-aibp-sidebar{display:none}
+
+/* Story: the complete original sidebar and reader options live in the sheet. */
+:where(html.ato-apk-portrait) body.source-story-layout{display:block;min-width:0;max-width:100%;grid-template-columns:none}
+:where(html.ato-apk-portrait) .source-story-layout .source-story-header .brand{display:flex;align-items:center;gap:7px;margin:0;min-width:0}
+:where(html.ato-apk-portrait) .source-story-layout .source-story-header .brand>div:last-child{min-width:0}
+:where(html.ato-apk-portrait) .source-story-layout .source-story-header .brand h1{font-size:17px;line-height:1.4;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;margin:0}
+:where(html.ato-apk-portrait) .source-story-layout .source-story-header .mark{width:25px;height:28px;min-width:25px;border:0;background:transparent}
+:where(html.ato-apk-portrait) .source-story-layout .source-story-header .mark .cycle-symbol{width:23px;height:26px}
+:where(html.ato-apk-portrait) .source-story-layout .reader{margin:0;padding:16px;min-width:0;max-width:100%;width:100%}
+:where(html.ato-apk-portrait) .source-story-layout .reader-head{display:block;min-width:0;gap:0}
+:where(html.ato-apk-portrait) .source-story-layout .reader h2{font-size:25px;overflow-wrap:anywhere}
+:where(html.ato-apk-portrait) .source-story-layout .story-text{font-size:16px;margin-top:20px;line-height:1.95;overflow-wrap:anywhere;min-width:0;max-width:100%}
+:where(html.ato-apk-portrait) .source-story-layout .source-story-reader-transport{display:flex;flex-wrap:nowrap;align-items:center;justify-content:flex-end;gap:8px;min-width:0;height:47px;margin:0;padding:0 12px;border-top:1px solid var(--line);overflow-x:auto;white-space:nowrap}
+:where(html.ato-apk-portrait) .source-story-layout .source-story-reader-transport button{min-height:44px;min-width:44px;font-size:12px;padding:7px 12px;flex-shrink:0}
+:where(html.ato-apk-portrait) .source-story-layout .source-story-reader-transport .entry-badge{min-width:60px;flex-shrink:0;margin-left:auto;font-size:16px}
+:where(html.ato-apk-portrait) .source-story-tools .source-story-sidebar{display:block;width:100%;max-width:100%;overflow:visible;color:var(--ink);--cycle-sidebar-text:var(--ink);--cycle-sidebar-muted:var(--muted);--cycle-sidebar-label:var(--muted);--cycle-sidebar-accent:var(--accent-strong);--cycle-sidebar-deep:var(--panel);--cycle-sidebar-line:var(--line);--cycle-sidebar-card:var(--panel);--cycle-sidebar-card-active:var(--accent-soft);--cycle-sidebar-card-hover:var(--accent-soft);--cycle-sidebar-card-line:var(--line);--cycle-sidebar-button:var(--accent-strong)}
+:where(html.ato-apk-portrait) .source-story-tools .story-navigation{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:0 0 18px}
+:where(html.ato-apk-portrait) .source-story-tools .home-link{width:100%;min-height:44px;margin:0}
+:where(html.ato-apk-portrait) .source-story-tools .field{min-width:0}
+:where(html.ato-apk-portrait) .source-story-tools .quick-row,
+:where(html.ato-apk-portrait) .source-story-tools .memory-tools{display:flex;flex-wrap:wrap;gap:7px;min-width:0}
+:where(html.ato-apk-portrait) .source-story-tools .quick-row button,
+:where(html.ato-apk-portrait) .source-story-tools .memory-tools button{min-height:44px;flex:1 1 105px;padding-inline:9px}
+:where(html.ato-apk-portrait) .source-story-tools .memory-item,
+:where(html.ato-apk-portrait) .source-story-tools .memory-jump,
+:where(html.ato-apk-portrait) .source-story-tools .result-item{min-width:0;max-width:100%;overflow-wrap:anywhere}
+:where(html.ato-apk-portrait) .source-story-tools .memory-jump{white-space:normal}
+:where(html.ato-apk-portrait) .source-story-tools .memory-remove{flex-shrink:0;min-width:44px;min-height:44px}
+:where(html.ato-apk-portrait) .source-story-tools .source-story-reader-options{display:grid;gap:10px;border-top:1px solid var(--line);padding-top:18px;margin-top:18px;min-width:0}
+:where(html.ato-apk-portrait) .source-story-reader-options .second-screen-mode-toggle{display:flex;align-items:center;gap:8px;min-height:44px;font-size:12px}
+:where(html.ato-apk-portrait) .source-story-reader-options .second-screen-mode-toggle input{width:20px;flex:0 0 20px}
+:where(html.ato-apk-portrait) .source-story-reader-options .entity-bio-toggle{min-height:44px}
+:where(html.ato-apk-portrait) .source-story-reader-options #ttsSpeed{width:100%;min-height:44px}
+:where(html.ato-apk-portrait) .source-story-tools #ttsStatusBox{position:static;inset:auto;z-index:auto;width:100%;max-width:100%;margin:18px 0 0;box-shadow:none;background:var(--panel);color:var(--ink);border-color:var(--line)}
+:where(html.ato-apk-portrait) .source-story-tools #ttsStatusBox .tts-status-head{flex-wrap:wrap;gap:7px;border-color:var(--line)}
+:where(html.ato-apk-portrait) .source-story-tools #ttsStatusBox .tts-status-head strong{color:var(--accent-strong)}
+:where(html.ato-apk-portrait) .source-story-tools #ttsStatusBox .tts-status-actions{flex-wrap:wrap;min-width:0}
+:where(html.ato-apk-portrait) .source-story-tools #ttsStatusBox .tts-status-actions button{min-height:44px;background:var(--panel);color:var(--accent-strong);border:1px solid var(--line)}
+:where(html.ato-apk-portrait) .source-story-tools #ttsStatusBox .tts-quick-config{grid-template-columns:minmax(0,1fr);min-width:0}
+:where(html.ato-apk-portrait) .source-story-tools #ttsStatusBox .tts-quick-field{min-width:0}
+:where(html.ato-apk-portrait) .source-story-tools #ttsStatusBox .tts-quick-field select{max-width:100%;width:100%}
+:where(html.ato-apk-portrait) .source-story-tools .cryptic-module,
+:where(html.ato-apk-portrait) .source-story-tools .cryptic-body,
+:where(html.ato-apk-portrait) .source-story-tools .cent-fields{min-width:0;max-width:100%}
+:where(html.ato-apk-portrait) .source-story-tools .cryptic-tabs{flex-wrap:wrap;min-width:0}
+:where(html.ato-apk-portrait) .source-story-tools .cryptic-tabs button{min-height:44px;min-width:0;font-size:12px;padding-inline:9px}
+:where(html.ato-apk-portrait) .source-story-layout .story-text :is(img,video,canvas){max-width:100%}
+:where(html.ato-apk-portrait) .source-story-layout .story-text table{max-width:100%}
+@media(max-width:375px){:where(html.ato-apk-portrait) .source-play-header-line{gap:5px;padding-inline:10px}:where(html.ato-apk-portrait) .source-play-header-line>h1,
+:where(html.ato-apk-portrait) .source-story-layout .source-story-header .brand h1{font-size:16px}:where(html.ato-apk-portrait) .source-story-layout .reader{padding:14px}:where(html.ato-apk-portrait) .source-aibp-layout main,
+:where(html.ato-apk-portrait) .source-aibp-layout.sidebar-collapsed main{padding:10px}}
+
+:where(html.ato-apk-portrait) .source-map-cycles{display:flex;flex-wrap:nowrap;gap:0;padding:0 8px;height:44px;min-height:44px;overflow-x:auto;scrollbar-width:none;border-top:1px solid var(--line)}
+:where(html.ato-apk-portrait) .source-map-cycles button{flex:1 0 58px;min-width:0;min-height:44px;padding:0 6px;border:0;font-size:12px;background:transparent;color:var(--accent-strong)}
+:where(html.ato-apk-portrait) .source-map-cycles button.active{background:var(--accent-soft);color:var(--accent-strong);box-shadow:inset 0 -2px var(--accent)}
+:where(html.ato-apk-portrait) .source-map-canvas-controls{display:flex;align-items:center;flex-shrink:0;min-height:52px;gap:8px;padding:4px 8px;border-top:1px solid var(--line);background:var(--panel)}
+:where(html.ato-apk-portrait) .source-map-canvas-controls .zoom-control{display:flex;align-items:center;flex:1;min-width:0;gap:5px;font-size:10px;white-space:nowrap}
+:where(html.ato-apk-portrait) .source-map-canvas-controls .zoom-row{display:flex;flex:1;min-width:0;gap:4px}
+:where(html.ato-apk-portrait) .source-map-canvas-controls input{width:100%;min-width:30px;min-height:44px;padding:0}
+:where(html.ato-apk-portrait) .source-map-canvas-controls output{min-width:40px;min-height:44px;padding:0 3px;font-size:11px}
+:where(html.ato-apk-portrait) .source-map-canvas-controls button{min-height:44px;min-width:44px;flex-shrink:0;padding:0 8px;font-size:11px}

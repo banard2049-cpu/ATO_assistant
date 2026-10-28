@@ -28,6 +28,15 @@ def environment() -> tuple[list[str], list[str]]:
     os.environ["GRADLE_USER_HOME"] = str(CACHE / "gradle-user")
     for name in ("ANDROID_USER_HOME", "ANDROID_AVD_HOME", "GRADLE_USER_HOME"):
         Path(os.environ[name]).mkdir(parents=True, exist_ok=True)
+    if os.name == "nt":
+        # QEMU loads shared emulator libraries from lib64, which the Windows
+        # loader does not search automatically. Keep this local to our process
+        # and its children rather than changing the user's system PATH.
+        emulator = SDK / "emulator"
+        runtime_paths = [emulator, emulator / "lib64",
+                         emulator / "lib64/gles_swiftshader", emulator / "lib64/vulkan"]
+        os.environ["PATH"] = os.pathsep.join(
+            [str(path) for path in runtime_paths if path.is_dir()] + [os.environ.get("PATH", "")])
     proxy = urlsplit(getproxies().get("https", ""))
     if proxy.hostname and proxy.port:
         sdk_args = ["--proxy=http", f"--proxy_host={proxy.hostname}", f"--proxy_port={proxy.port}"]
