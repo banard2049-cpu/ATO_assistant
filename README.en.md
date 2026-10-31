@@ -72,7 +72,7 @@ The portable build can update itself from inside the program: click "check for u
 
 Android cannot update incrementally; download the new APK from the release page and install it over the old one. For a Docker deployment run `docker compose pull && docker compose up -d`. Once the second screen is switched on in the dashboard, reach it at /ss/ on the current address.
 
-**When upgrading to 3.6.1, Docker users must first update `compose.yaml` (or `compose.legacy.yaml` for v1) from the same release tag, preserving custom ports and deployment settings, then pull and recreate the container.** The board and thumbnail now share the `app/ss/battle-board/` directory mount. The stable release updates `latest`; set `ATO_VERSION=3.6.1` in `.env` to pin this version. Also reimport the updated atopack generated on 2026-10-11. Update Android and Asset Studio before importing; Docker users extract resources into the host `app/` directory. A resource pack cannot update program code.
+**When upgrading to 3.6.1, Docker users must first update `compose.yaml` (or `compose.legacy.yaml` for v1) from the same release tag, preserving custom ports and deployment settings, then pull and recreate the container.** The board and thumbnail now share the `app/ss/battle-board/` directory mount. The stable release updates `latest`; set `ATO_VERSION=3.6.1` in `.env` for v2 or `ATO_IMAGE=ghcr.io/banard2049-cpu/ato_assistant:3.6.1` for v1 to pin this version. Also reimport the updated atopack generated on 2026-10-11. Update Android and Asset Studio before importing; Docker users extract resources into the host `app/` directory. A resource pack cannot update program code.
 
 ### Importing resources (.atopack)
 
@@ -118,7 +118,29 @@ mkdir -p data app/ss/battle-board
 docker-compose -f compose.legacy.yaml pull && docker-compose -f compose.legacy.yaml up -d
 ~~~
 
-Open `http://server-ip:8793/`. Updating still runs the `pull && up -d` above, and `docker-compose -f compose.legacy.yaml down` stops it. To pin a version, write `ATO_VERSION=<version from the release page>` in `.env` in the same directory and take the compatible configuration from that version tag. Every command carries `-f compose.legacy.yaml`, so an older tool does not read the `compose.yaml` that is meant for Compose v2 only.
+Open `http://server-ip:8793/`. Updating still runs the `pull && up -d` above, and `docker-compose -f compose.legacy.yaml down` stops it. To pin a version, write `ATO_IMAGE=ghcr.io/banard2049-cpu/ato_assistant:<version from the release page>` in `.env` in the same directory and take the compatible configuration from that version tag. This applies to the corrected v1 configuration in this repository; if a configuration from an older tag still has nested variables, change its `image` line to `${ATO_IMAGE:-ghcr.io/banard2049-cpu/ato_assistant:latest}`. The v1 configuration does not read `ATO_VERSION`. Every command carries `-f compose.legacy.yaml`, so an older tool does not read the `compose.yaml` that is meant for Compose v2 only.
+
+### Upgrading the battle-board mount
+
+`docker restart` restarts the existing container without reading changed Compose configuration. An error mentioning `/app/ss/battle-board.jpg` indicates the old container still has the single-file mount; deleting the host image does not update that mount, and Docker may create a directory at the missing file path.
+
+In the original installation directory, retain your project name and custom settings, remove the old `./app/ss/battle-board.jpg:/app/ss/battle-board.jpg` mount, and ensure the configuration includes `./app/ss/battle-board:/app/ss/battle-board:ro`. Check `docker-compose -f compose.legacy.yaml config` to confirm that the old mount is gone. Copy existing images without overwriting or deleting them, then recreate the container:
+
+~~~bash
+mkdir -p app/ss/battle-board
+if [ -f app/ss/battle-board.jpg ] && [ ! -e app/ss/battle-board/battle-board.jpg ]; then
+  cp -p app/ss/battle-board.jpg app/ss/battle-board/battle-board.jpg
+fi
+if [ -f app/ss/battle-board.jpg.preview.jpg ] && [ ! -e app/ss/battle-board/battle-board.jpg.preview.jpg ] &&
+   cmp -s app/ss/battle-board.jpg app/ss/battle-board/battle-board.jpg; then
+  cp -p app/ss/battle-board.jpg.preview.jpg app/ss/battle-board/battle-board.jpg.preview.jpg
+fi
+ls -l app/ss/battle-board/
+docker-compose -f compose.legacy.yaml pull
+docker-compose -f compose.legacy.yaml up -d --force-recreate
+~~~
+
+For Compose v2, use `docker compose` and `compose.yaml`. Retain any project name specified with `-p` or `COMPOSE_PROJECT_NAME` to avoid creating a separate project. Inspect the container's `Mounts` with `docker inspect <container-name>` to confirm the new directory target. The new directory needs `battle-board.jpg` and the AIBP thumbnail `battle-board.jpg.preview.jpg`; restore missing images from the current resource pack or generate the thumbnail as described above. Inspect any directory Docker created at the old image path before removing it.
 
 ### Image architectures and Raspberry Pi
 

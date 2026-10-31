@@ -9,7 +9,7 @@ version: "2.4"
 
 services:
   ato:
-    image: ${ATO_IMAGE:-ghcr.io/banard2049-cpu/ato_assistant:${ATO_VERSION:-latest}}
+    image: ${ATO_IMAGE:-ghcr.io/banard2049-cpu/ato_assistant:latest}
     ports:
       - "8793:8793"
     volumes:

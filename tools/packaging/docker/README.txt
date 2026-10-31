@@ -42,7 +42,9 @@ Stop:
 Update:
   For 3.6.1-rc.2, first replace compose.yaml (or compose.legacy.yaml) with the file
   from the same release tag, preserving your custom ports and deployment settings.
-  Set ATO_VERSION=3.6.1-rc.2 in .env; prereleases do not update latest.
+  Set ATO_VERSION=3.6.1-rc.2 in .env for v2, or
+  ATO_IMAGE=ghcr.io/banard2049-cpu/ato_assistant:3.6.1-rc.2 for v1;
+  prereleases do not update latest.
   Install the updated 2026-10-19 atopack into app/ using the current Asset Studio.
   Update the application and resource pack together: the program supplies the
   AI/BP shared-back mapping, while the pack supplies the corrected JPEGs and
@@ -72,9 +74,12 @@ No placeholder image is required. Visit http://127.0.0.1:8793/ (or use your serv
 
 Update: repeat the pull && up -d command above; up alone may reuse the old image.
 Stop: docker-compose -f compose.legacy.yaml down
-Pin a version: put ATO_VERSION=<release version> in .env and use the Compose file
+Pin a version: put ATO_IMAGE=ghcr.io/banard2049-cpu/ato_assistant:<release version>
+in .env (v1 does not read ATO_VERSION) and use the Compose file
 from that same release tag. Older images may not restore the program data hidden
 by newer aibp/ps mounts. The installer selects matching Compose and image versions.
+Older release tags may still contain nested variables: replace their image line
+with ${ATO_IMAGE:-ghcr.io/banard2049-cpu/ato_assistant:latest}.
 Always pass -f compose.legacy.yaml; compose.yaml requires Compose v2.
 
 Which parts live on the host
@@ -160,3 +165,25 @@ overwrites existing files in the new directory. For a manual upgrade or an old
 resource pack, put both files in the new directory yourself. On a source checkout,
 python tools/generate_aibp_previews.py also copies an old board to the new path
 when needed and generates the thumbnail (requires Pillow).
+
+A restart does not read the modified Compose configuration. In the original
+installation directory and project, confirm `docker-compose -f compose.legacy.yaml
+config` no longer lists the old file mount, then copy old files without overwriting:
+
+  mkdir -p app/ss/battle-board
+  if [ -f app/ss/battle-board.jpg ] && [ ! -e app/ss/battle-board/battle-board.jpg ]; then
+    cp -p app/ss/battle-board.jpg app/ss/battle-board/battle-board.jpg
+  fi
+  if [ -f app/ss/battle-board.jpg.preview.jpg ] && [ ! -e app/ss/battle-board/battle-board.jpg.preview.jpg ] &&
+     cmp -s app/ss/battle-board.jpg app/ss/battle-board/battle-board.jpg; then
+    cp -p app/ss/battle-board.jpg.preview.jpg app/ss/battle-board/battle-board.jpg.preview.jpg
+  fi
+  ls -l app/ss/battle-board/
+  docker-compose -f compose.legacy.yaml pull
+  docker-compose -f compose.legacy.yaml up -d --force-recreate
+
+For v2 use `docker compose` and `compose.yaml`. Retain any project name specified
+with -p or COMPOSE_PROJECT_NAME. Inspect `docker inspect <container-name>` Mounts
+to confirm the new directory target. Restore missing images from the resource
+pack or generate the thumbnail. Inspect any directory Docker created at the old
+image path before removing it.

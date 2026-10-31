@@ -80,7 +80,7 @@ AIBP 先显示轻量卡图，再在后台低优先级加载高清原图，解码
 
 Android 无法增量更新，请在发布页下载新的 APK 覆盖安装。Docker 部署执行 `docker compose pull && docker compose up -d`。第二屏幕在主控台开启后，通过当前地址的 /ss/ 访问。
 
-**升级到 3.6.1 时，Docker 用户需先更新同一版本的 `compose.yaml`（v1 使用 `compose.legacy.yaml`），保留自己的端口和部署配置，再拉取镜像并重建容器。** 新配置将版图原图和预览挂载在 `app/ss/battle-board/`；正式版会更新 `latest`；需要固定版本时，在 `.env` 设置 `ATO_VERSION=3.6.1`。请同时重新导入 2026-10-11 生成的新版 atopack；Android 和 Asset Studio 先更新程序，Docker 将资源解压到宿主机 `app/` 下。资料包本身不会更新程序代码。
+**升级到 3.6.1 时，Docker 用户需先更新同一版本的 `compose.yaml`（v1 使用 `compose.legacy.yaml`），保留自己的端口和部署配置，再拉取镜像并重建容器。** 新配置将版图原图和预览挂载在 `app/ss/battle-board/`；正式版会更新 `latest`；需要固定版本时，v2 在 `.env` 设置 `ATO_VERSION=3.6.1`；v1 设置 `ATO_IMAGE=ghcr.io/banard2049-cpu/ato_assistant:3.6.1`。请同时重新导入 2026-10-11 生成的新版 atopack；Android 和 Asset Studio 先更新程序，Docker 将资源解压到宿主机 `app/` 下。资料包本身不会更新程序代码。
 
 ### 导入资源（.atopack）
 
@@ -126,7 +126,29 @@ mkdir -p data app/ss/battle-board
 docker-compose -f compose.legacy.yaml pull && docker-compose -f compose.legacy.yaml up -d
 ~~~
 
-访问 `http://服务器IP:8793/`。更新仍执行上面的 `pull && up -d`，停止使用 `docker-compose -f compose.legacy.yaml down`。如需固定版本，在同目录的 `.env` 中写 `ATO_VERSION=<发布页上的版本号>`，并取该版本标签下的兼容配置。所有命令都带 `-f compose.legacy.yaml`，避免旧版工具读到仅供 Compose v2 使用的 `compose.yaml`。
+访问 `http://服务器IP:8793/`。更新仍执行上面的 `pull && up -d`，停止使用 `docker-compose -f compose.legacy.yaml down`。如需固定版本，在同目录的 `.env` 中写 `ATO_IMAGE=ghcr.io/banard2049-cpu/ato_assistant:<发布页上的版本号>`，并取该版本标签下的兼容配置；此写法适用于本仓库修复后的 v1 配置；旧版本标签中的配置若仍有嵌套变量，需将其 `image` 行改成 `${ATO_IMAGE:-ghcr.io/banard2049-cpu/ato_assistant:latest}`。v1 配置不读取 `ATO_VERSION`。所有命令都带 `-f compose.legacy.yaml`，避免旧版工具读到仅供 Compose v2 使用的 `compose.yaml`。
+
+### 旧版决战版图挂载升级排查
+
+`docker restart` 只重启已有容器，不会读取修改后的 Compose 文件。报错仍提到 `/app/ss/battle-board.jpg` 时，说明旧容器仍保留单文件挂载；删除宿主机图片不能更新挂载，Docker 还可能把缺失的文件路径创建成目录。
+
+在原安装目录（例如 `/opt/ATO`）确认使用原来的 Compose 项目名、文件和服务；保留自定义端口等设置，移除旧的 `./app/ss/battle-board.jpg:/app/ss/battle-board.jpg` 挂载，并确认新配置有 `./app/ss/battle-board:/app/ss/battle-board:ro`。检查 `docker-compose -f compose.legacy.yaml config` 的输出，确认没有旧挂载。先将真实图片复制到新目录（不会覆盖已有文件，也不会删除旧文件）：
+
+~~~bash
+mkdir -p app/ss/battle-board
+if [ -f app/ss/battle-board.jpg ] && [ ! -e app/ss/battle-board/battle-board.jpg ]; then
+  cp -p app/ss/battle-board.jpg app/ss/battle-board/battle-board.jpg
+fi
+if [ -f app/ss/battle-board.jpg.preview.jpg ] && [ ! -e app/ss/battle-board/battle-board.jpg.preview.jpg ] &&
+   cmp -s app/ss/battle-board.jpg app/ss/battle-board/battle-board.jpg; then
+  cp -p app/ss/battle-board.jpg.preview.jpg app/ss/battle-board/battle-board.jpg.preview.jpg
+fi
+ls -l app/ss/battle-board/
+docker-compose -f compose.legacy.yaml pull
+docker-compose -f compose.legacy.yaml up -d --force-recreate
+~~~
+
+Compose v2 将命令中的 `docker-compose` 替换为 `docker compose`，并使用对应的 `compose.yaml`。若项目名曾用 `-p` 或 `COMPOSE_PROJECT_NAME` 指定，运行时必须沿用，否则会创建另一个项目。重建后可用 `docker inspect ato_ato_1` 查看 `Mounts`（容器名按实际替换），确认目标是 `/app/ss/battle-board` 而不是旧文件路径。新目录应包含原图 `battle-board.jpg` 和 AIBP 使用的 `battle-board.jpg.preview.jpg`；缺图时从新版资料包恢复，或参照上文生成缩略图。不要把 Docker 自动创建的同名目录当作图片删除；先确认其内容。
 
 ### 镜像架构与树莓派
 
