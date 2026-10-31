@@ -21,7 +21,9 @@ jobs:
       - name: Install asset studio dependencies
         run: python -m pip install -r asset-studio/requirements.txt
       - name: Test Docker installation and resource mounts
-        run: python tools/test_docker_mounts.py
+        run: |
+          python tools/test_docker_mounts.py
+          python tools/test_legacy_compose_image.py
       - name: Test Docker package licensing
         run: python tools/test_docker_package_license.py
       - name: Build and start the Docker export

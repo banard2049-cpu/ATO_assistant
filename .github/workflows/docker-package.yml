@@ -32,7 +32,9 @@ jobs:
           python-version: "3.12"
 
       - name: Test Docker resource mounts
-        run: python tools/test_docker_mounts.py
+        run: |
+          python tools/test_docker_mounts.py
+          python tools/test_legacy_compose_image.py
 
       - name: Resolve image version
         id: release
