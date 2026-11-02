@@ -913,6 +913,16 @@ function openBattle(screen) {
   applyBattleLayout(scale / 100, rotation, boardVisible);
   renderLabyrinthTrack(state.labyrinthTrack);
   renderBossTokens(state.tokens || []);
+  renderCurrentPending(state);
+  elements.aiBacks.textContent = `${state.aiBacks || "空"} · ${Number(state.aiDeckCount || 0)} 张`;
+  elements.bpBacks.textContent = `${state.bpBacks || "空"} · ${Number(state.bpDeckCount || 0)} 张`;
+  elements.discardCounts.textContent = `AI ${Number(state.aiDiscardCount || 0)} / BP ${Number(state.bpDiscardCount || 0)}`;
+  const damage = state.damageSummary || {};
+  elements.damageSummary.textContent = aibpDamageSummaryText(damage);
+  renderImageList(elements.damageCards, state.damage || [], "暂无损伤");
+}
+
+function renderCurrentPending(state) {
   const pendingType = state.pendingType === "AI" || state.pendingType === "BP"
     ? state.pendingType
     : state.bpPending
@@ -920,14 +930,10 @@ function openBattle(screen) {
       : state.aiPending
         ? "AI"
         : "";
-  elements.currentPendingLabel.textContent = pendingType ? `当前 ${pendingType}` : "正在结算";
-  setCardImage(elements.currentPending, state.pendingCard || (pendingType === "AI" ? state.aiPending : state.bpPending), pendingType ? `未抽取 ${pendingType}` : "未抽取");
-  elements.aiBacks.textContent = `${state.aiBacks || "空"} · ${Number(state.aiDeckCount || 0)} 张`;
-  elements.bpBacks.textContent = `${state.bpBacks || "空"} · ${Number(state.bpDeckCount || 0)} 张`;
-  elements.discardCounts.textContent = `AI ${Number(state.aiDiscardCount || 0)} / BP ${Number(state.bpDiscardCount || 0)}`;
-  const damage = state.damageSummary || {};
-  elements.damageSummary.textContent = aibpDamageSummaryText(damage);
-  renderImageList(elements.damageCards, state.damage || [], "暂无损伤");
+  const pendingCard = state.pendingCard || (pendingType === "AI" ? state.aiPending : state.bpPending);
+  elements.currentPendingLabel.textContent = pendingCard ? `当前 ${pendingType}` : "AI 牌堆顶部";
+  setCardImage(elements.currentPending, pendingCard || state.aiDeckBack,
+    Number(state.aiDeckCount || 0) > 0 ? "暂无 AI 牌背" : "AI 牌堆为空");
 }
 
 function aibpDamageSummaryText(damage = {}) {

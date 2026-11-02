@@ -115,7 +115,7 @@ test('斯巴达要塞只在移动步骤提醒，已探索也显示且不提供�
   const { context: c } = harness(['getMoveMapReminders', 'getStepTrackReminders'], {
     todayTrackIcons: () => [], getStructureTechContext: () => null,
     currentMapTagSet: () => new Set(['spartan_stronghold']), currentMapTileLabel: () => '018',
-    getExploreMapReminders: () => [], getSurveyMapReminders: () => [], getDoomMapReminders: () => [],
+    getNegotiationReminders: () => [], getSurveyMapReminders: () => [], getDoomMapReminders: () => [],
     getStoryMapReminders: () => [], getExplorationStepTokenReminders: () => [], getNextBattleTerrainReminder: () => [],
   });
   const original = clone(c.state);

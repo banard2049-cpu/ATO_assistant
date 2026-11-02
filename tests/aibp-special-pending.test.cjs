@@ -22,10 +22,13 @@ function harness(boss) {
   const context = vm.createContext({
     window: { BattleTerrain: { normalizeBattleMap: () => ({}) } },
     currentApostle: boss, piles: { [boss]: state }, currentBpView: '', battleMapControl: null,
+    secondScreenCardBacksReady: false,
     levelRoman: { 1: 'I' }, extraGrid: { querySelectorAll: () => [] },
     ensurePiles() {}, rememberUndo() {}, savePiles() {}, renderAibpCards() {},
     openImageZoom() {}, normalizeDemidjinnAi() {},
     shuffleCards: cards => [...cards], cardSrc: card => `${card.type}-${card.index}.jpg`,
+    cardBackMappingSrc: () => null,
+    cardBackImageSrc: (card, src) => src.replace('.jpg', '_BACK.jpg'),
     bpDamageValue: () => 1, currentApostleLevel: () => 1, currentBpDamageView: () => '损伤',
     currentBpDamageSummary: () => ({ total: 0 }), currentBossWounds: () => 12,
     currentPanelCardTokens: () => [], currentBpNoticeImages: () => [],
@@ -86,4 +89,32 @@ test('automatically resolved Demidjinn AI O preserves a still-pending BP as the 
   assert.equal(state.AI.pending, null);
   assert.equal(snapshot().pendingType, 'BP');
   assert.deepEqual(snapshot().pendingCard, snapshot().bpPending);
+});
+
+test('second-screen snapshot includes the current AI deck top back and clears it when empty', () => {
+  const { state, snapshot } = harness('DEMIDJINN');
+  assert.equal(snapshot().aiDeckBack.src, 'AI-1_BACK.jpg');
+  state.AI.deck = [{ type: 'AI', level: 'II', index: 2 }];
+  assert.equal(snapshot().aiDeckBack.src, 'AI-2_BACK.jpg');
+  state.AI.deck = [];
+  assert.equal(snapshot().aiDeckBack, null);
+});
+
+test('second screen displays pending cards first, then the AI top back or empty state', () => {
+  const source = fs.readFileSync(path.join(__dirname, '../ss/app.js'), 'utf8').replace(/\r\n/g, '\n');
+  const elements = { currentPendingLabel: {}, currentPending: {} };
+  let displayed;
+  const context = vm.createContext({ elements, setCardImage: (target, card, emptyText) => { displayed = { card, emptyText }; } });
+  vm.runInContext(fn(source, 'renderCurrentPending', ''), context);
+  const back = { src: 'back.jpg' };
+  const pending = { src: 'bp.jpg' };
+  context.renderCurrentPending({ pendingType: 'BP', pendingCard: pending, aiDeckBack: back });
+  assert.equal(displayed.card, pending);
+  assert.equal(elements.currentPendingLabel.textContent, '当前 BP');
+  context.renderCurrentPending({ aiDeckBack: back });
+  assert.equal(displayed.card, back);
+  assert.equal(elements.currentPendingLabel.textContent, 'AI 牌堆顶部');
+  context.renderCurrentPending({});
+  assert.equal(displayed.card, undefined);
+  assert.equal(displayed.emptyText, 'AI 牌堆为空');
 });
