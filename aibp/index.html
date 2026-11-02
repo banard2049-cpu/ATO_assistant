@@ -3296,6 +3296,7 @@
     let aibpSectionRevision = 0;
     let secondScreenSnapshotTimer = null;
     let secondScreenSnapshotInFlight = false;
+    let secondScreenCardBacksReady = false;
     let secondScreenSnapshotQueued = false;
     // 两个 AIBP 页面同时打开时，用这份基线判断存档有没有被对方改过：
     // aibpPilesBaseline 是本页最后读到/写回的原文，aibpPilesExternalRaw 是 storage 事件里对方写入的原文。
@@ -3490,6 +3491,11 @@
     function buildSecondScreenSnapshot() {
       ensurePiles(currentApostle);
       const state = piles[currentApostle];
+      const aiTop = state.AI.deck?.[0];
+      const aiTopFront = aiTop ? cardSrc(aiTop) : "";
+      const aiTopMapping = aiTop ? cardBackMappingSrc(aiTop, aiTopFront) : null;
+      const aiTopBack = aiTop && (!aiTopMapping || secondScreenCardBacksReady)
+        ? { src: cardBackImageSrc(aiTop, aiTopFront), label: "牌顶 AI 背面" } : null;
       const damage = isChimera()
         ? [...(state.BP.damage1 || []), ...(state.BP.damage2 || [])]
         : currentApostle === "TITAN_X" && state.special?.titanX?.group
@@ -3546,6 +3552,7 @@
               ? state.BP.pending
               : (state.BP.pending || state.AI.pending)
         ),
+        aiDeckBack: aiTopBack,
         aiBacks: deckBackDisplayText(state.AI.deck || []),
         bpBacks: deckBackDisplayText(state.BP.deck || []),
         aiDeckCount: (state.AI.deck || []).length,
@@ -3673,6 +3680,14 @@
           secondScreenSnapshotQueued = false;
           try {
             reportSyncStatus("syncing");
+            // 共享牌背映射可能仍在加载，先解析它再生成快照，避免把推测的路径发到第二屏。
+            if (window.AibpCardBacks) {
+              ensurePiles(currentApostle);
+              const aiTop = piles[currentApostle].AI.deck?.[0];
+              if (aiTop && cardBackMappingSrc(aiTop, cardSrc(aiTop))) {
+                secondScreenCardBacksReady = await window.AibpCardBacks.ready().then(() => true, () => false);
+              }
+            }
             await postSecondScreenSnapshot(buildSecondScreenSnapshot());
             // 一次成功就是整条链的终点：重试只在本次调用里排队，成功了就不会再有更旧的重试
             // 覆盖这份最新快照（同一时刻只有一个在途请求，其它调用只会置 queued）。
