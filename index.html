@@ -6526,7 +6526,7 @@
         renderDashboardArchive(nextArchive);
         if ((flushQueuedSave || initializeEmptySection) && ownsDashboardWriteLease()) queueCampaignSave();
         else setCampaignSaveStatus("已同步", "saved");
-        // Load negotiation cards for explore reminders, then re-render flow.
+        // Load negotiation cards for development reminders, then re-render flow.
         loadNegotiationCards().then(() => renderFlow());
         refreshCachedArgoRecord();
       } catch (error) {
@@ -8605,6 +8605,8 @@
           text.appendChild(createExplorationTools());
           const explorationTechTools = createStructureTechActionTools("exploration");
           if (explorationTechTools) text.appendChild(explorationTechTools);
+        }
+        if (step.id === "development") {
           const negotiationReminder = text.querySelector(".step-track-reminder.negotiation");
           if (negotiationReminder) {
             const negotiationTools = createStructureTechActionTools("negotiation");
@@ -12973,7 +12975,7 @@
         + `<span>${value}</span></span>`;
     }
 
-    function getExploreMapReminders() {
+    function getNegotiationReminders() {
       const context = getStructureTechContext();
       if (!context || !window.ATO_STRUCTURE_TECH_RULES?.canNegotiate(context)) return [];
 
@@ -13204,9 +13206,6 @@
       if (stepId === "move") {
         return getMoveMapReminders();
       }
-      if (stepId === "explore") {
-        return getExploreMapReminders();
-      }
 
       if (stepId === "survey") {
         return getSurveyMapReminders();
@@ -13234,14 +13233,14 @@
       }
 
       if (stepId === "development") {
-        return icons
+        return [...getNegotiationReminders(), ...icons
           .filter((icon) => icon.className === "structure-tech" || icon.className === "battle-tech")
           .map((icon) => ({
             title: icon.label,
             tag: icon,
             desc: `时间表标记了今日${icon.label}突破，在发展阶段处理。`,
             className: `tech ${icon.className}`,
-          }));
+          }))];
       }
 
       return [];

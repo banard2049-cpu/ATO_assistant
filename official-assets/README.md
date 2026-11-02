@@ -20,3 +20,32 @@
 这也包括只有装饰图案的 AI III 特殊牌背。双面都有效果的卡保留官方背面，例如部分使徒的
 Routine 背面、乌尔-弗里斯的 Routine 背面，以及火卫一之龙带部位信息的 BP 背面。
 判定按已核对的卡面执行，不按 `_BACK` 后缀一概删除；未知卡面默认保留。
+
+## 勘误打印稿高清素材
+
+可用 `tools/import_official_errata_pdf.py` 导入已核对的 12 页 `ATO_errata.pdf`
+（需要 PyMuPDF 和 Pillow；脚本校验源文件 SHA-256，拒绝未经核对的其他排版）：
+
+```powershell
+python tools/import_official_errata_pdf.py --pdf "完整路径/ATO_errata.pdf" --apply
+```
+
+不加 `--apply` 时只提取预览。脚本按打印稿的实际裁切框去掉出血和裁切线，
+18 张完整位图按原生分辨率裁出，其余混合矢量文字的卡面以 600 DPI 合成。
+安装只替换清单已匹配的 24 张官方覆盖图，并先将整批原图备份到
+`official-assets/_backups/errata-20261031/`。逐图页码、裁切框、尺寸、前后哈希
+和对照图保存在 `output/errata-20261031/`。
+
+打印稿中的米诺斯血统（AG0143）和归来者完整面板（CK1279）暂无对应卡面目标，
+提取到 `unmapped-reference/`。第 12 页的 7 张早期装备规则版及背面提取到
+`optional-early-gear/`，供手动选择；它们不会自动覆盖现用平衡版装备。
+
+本地已按用户选择，将 CJ1539–CJ1545 的 7 张正面切换为早期版；平衡版原图单独备份到
+`official-assets/_backups/errata-20261031-early-gear/`。可用以下命令单独执行或重现该选择：
+
+```powershell
+python tools/import_official_errata_pdf.py --pdf "完整路径/ATO_errata.pdf" --early-gear --apply
+```
+
+这一步覆盖 7 个现有装备文件，包括 3 个同装备的编号副本；当前清单只直接引用其中
+4 个装备条目。装备清单没有背面引用，打印稿的 7 张背面仍保存在备用目录。

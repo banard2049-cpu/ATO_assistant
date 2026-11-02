@@ -48,7 +48,7 @@ function setup(extra = {}) {
   ctx.saveState = () => {};
   ctx.renderFlow = () => {};
   ctx.renderDateTrack = options => ctx.rendered.push(options || null);
-  ctx.getExploreMapReminders = () => [];
+  ctx.getNegotiationReminders = () => [];
   ctx.getSurveyMapReminders = () => [];
   ctx.getStoryMapReminders = () => [];
   ctx.getDoomMapReminders = () => [];

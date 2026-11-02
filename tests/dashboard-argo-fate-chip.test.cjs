@@ -1,7 +1,7 @@
 /*
  * 主控台两个标题行最右侧的「当前阿尔戈号命运」（图标 + 数字）回归：
  *   - 发展步骤的「科技航行能力 · 使用与时间线」折叠标题（<summary>）；
- *   - 探索步骤的「当前地点可谈判」提醒标题行。
+ *   - 发展步骤的「当前地点可谈判」提醒标题行。
  *
  * 数字口径与结构科技规则的 readStat() 一致：cycleStats[当前循环].fate 优先，顶层 fate
  * 只在记录表停在当前循环时兜底；没填或不是整数时显示「—」，不猜数值（和
@@ -137,4 +137,23 @@ test('科技面板的展开三角与标题同一行：summary 自己是 flex 行
   assert.match(head, /display:\s*flex/);
   assert.match(head, /flex:\s*1/, '标题行要占满剩余宽度，命运徽章才贴得住右端');
   assert.match(head, /min-width:\s*0/);
+});
+
+
+test('可谈判时提醒出现在发展步骤，探索步骤不显示', () => {
+  const c = harness();
+  c.todayTrackIcons = () => [{ label: '结构科技', className: 'structure-tech' }];
+  c.getStructureTechContext = () => ({ location: 'city' });
+  c.currentMapTileLabel = () => '测试城市';
+  c.window.ATO_STRUCTURE_TECH_RULES = { canNegotiate: () => true };
+  for (const name of ['getNegotiationReminders', 'getStepTrackReminders']) {
+    vm.runInContext(dashboardFunction(name), c);
+  }
+  assert.equal(c.getStepTrackReminders('explore').length, 0);
+  const development = c.getStepTrackReminders('development');
+  assert.equal(development.length, 2);
+  assert.equal(development[0].title, '当前地点可谈判');
+  assert.equal(development[1].title, '结构科技');
+  c.window.ATO_STRUCTURE_TECH_RULES.canNegotiate = () => false;
+  assert.equal(c.getStepTrackReminders('development').length, 1);
 });
