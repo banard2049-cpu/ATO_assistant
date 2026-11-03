@@ -1678,6 +1678,7 @@
     renderSpecials();
     renderBabelianBpControl();
     updateSpecialDrawUi();
+    renderEmptyDrawActions();
     renderPanelTokens();
   };
 
@@ -1688,6 +1689,7 @@
     }
     base.renderAibpCards();
     updateSpecialDrawUi();
+    renderEmptyDrawActions();
     renderSpecials();
     renderBabelianBpControl();
     renderPanelTokens();

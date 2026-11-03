@@ -296,6 +296,7 @@ function makeHarness(startApostle = "MIDASCORE", options = {}) {
       context.deckInfoSpecialsReady = Boolean(context.C45Specials);
     },
     renderDrawPreview() {},
+    renderEmptyDrawActions() {},
     drawAi(remember = true) {
       const pile = context.piles[context.currentApostle].AI;
       if (pile.pending || !pile.deck.length) return;
