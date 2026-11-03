@@ -6597,6 +6597,37 @@
       updateUndoButtons();
     }
 
+    function emptyDrawPile(type) {
+      const state = piles[currentApostle];
+      const pile = currentApostle === "DAHAKA" && state?.aibp ? state.aibp : state?.[type];
+      return pile && !pile.pending && !pile.deck.length && pile.discard.length ? pile : null;
+    }
+
+    function renderEmptyDrawActions() {
+      for (const [type, button, preview] of [["AI", drawAiButton, aiDrawPreview], ["BP", drawBpButton, bpDrawPreview]]) {
+        if (!emptyDrawPile(type)) continue;
+        button.textContent = "洗牌";
+        preview.classList.remove("has-card");
+        preview.textContent = "洗牌";
+        delete preview._aibpRenderSignature;
+        delete preview._aibpBackPreviewToken;
+      }
+    }
+
+    function drawOrShuffle(type) {
+      const pile = emptyDrawPile(type);
+      if (pile) {
+        rememberUndo(currentApostle, type);
+        pile.deck = shuffleCards(pile.discard);
+        pile.discard = [];
+        savePiles();
+        renderAibpCards();
+        updateUndoButtons();
+        return;
+      }
+      if (type === "AI") drawAi(); else drawBp();
+    }
+
     function renderDrawPreview() {
       ensurePiles(currentApostle);
       const aiPending = piles[currentApostle].AI.pending;
@@ -6652,6 +6683,7 @@
           bpDrawPreview.replaceChildren(imageOrMessage(cardSrc(bpPending), "抽取的 BP"));
         }
       }
+      renderEmptyDrawActions();
       if (activeAiComboZoom) {
         setImageZoomAiComboActions(activeAiComboZoom.apostle === currentApostle
           && sameCard(activeAiComboZoom.card, aiPending));
@@ -9355,12 +9387,12 @@
     tokenClearButton.addEventListener("click", clearTokenSelection);
     tokenSaveButton.addEventListener("click", saveTokenSelection);
     newCampaignButton.addEventListener("click", startNewCampaign);
-    drawAiButton.addEventListener("click", drawAi);
+    drawAiButton.addEventListener("click", () => drawOrShuffle("AI"));
     aiDrawPreview.addEventListener("click", (event) => {
       if (currentApostle === "DRAGON_OF_PHOBOS" && drawPileBackPreviewCard("AI")) return;
       if (!piles[currentApostle]?.AI?.pending) {
         event.stopPropagation();
-        drawAi();
+        drawOrShuffle("AI");
       }
     });
     undoAiButton.addEventListener("click", () => undoLastAibp("AI"));
@@ -9371,12 +9403,12 @@
     addOracleAiXButton.addEventListener("click", addOracleAiX);
     drawFlareButton.addEventListener("click", drawFlare);
     drawFeintButton.addEventListener("click", drawFeint);
-    drawBpButton.addEventListener("click", drawBp);
+    drawBpButton.addEventListener("click", () => drawOrShuffle("BP"));
     bpDrawPreview.addEventListener("click", (event) => {
       if (currentApostle === "DRAGON_OF_PHOBOS" && drawPileBackPreviewCard("BP")) return;
       if (!piles[currentApostle]?.BP?.pending) {
         event.stopPropagation();
-        drawBp();
+        drawOrShuffle("BP");
       }
     });
     undoBpButton.addEventListener("click", () => undoLastAibp("BP"));
