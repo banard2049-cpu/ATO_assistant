@@ -8,6 +8,7 @@ const source = fs.readFileSync(path.join(__dirname, '../aibp/index.html'), 'utf8
 function harness() {
   const opened = [];
   const ctx = vm.createContext({
+    window: {},
     currentApostle: 'DRAGON_OF_PHOBOS', level: 1, chimeraName: 'CHIMERA_METASTASIOS',
     piles: { DRAGON_OF_PHOBOS: { AI: { deck: [{ type: 'AI', level: 'I', index: 1 }], discard: [], pending: null } } },
     ensurePiles() {}, rememberUndo() {}, savePiles() {}, renderAibpCards() {},

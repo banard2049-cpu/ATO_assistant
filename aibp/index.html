@@ -1898,12 +1898,12 @@
     .image-zoom-content.has-side-notices {
       width: fit-content;
       max-width: min(96vw, 1880px);
-      grid-template-columns: minmax(260px, 400px) minmax(0, calc(90vh * 63 / 89)) minmax(260px, 400px);
-      gap: 6px;
+      grid-template-columns: minmax(0, max-content) minmax(0, max-content);
+      gap: 14px;
     }
 
     .image-zoom-content.has-side-notices > .image-zoom-card-stage {
-      grid-column: 2;
+      grid-column: 1;
     }
 
     .image-zoom-card-stage {
@@ -2041,24 +2041,43 @@
     }
 
     .image-zoom-content.has-side-notices .image-zoom-notice {
-      display: contents;
+      grid-column: 2;
+      grid-row: 1 / -1;
+      display: grid;
+      width: 100%;
+      grid-template-columns: minmax(0, 1fr);
+      align-self: center;
     }
 
     .image-zoom-content.has-side-notices .image-zoom-notice img {
       align-self: center;
-      max-height: 86vh;
+      width: auto;
+      max-width: 100%;
+      height: var(--image-zoom-half-card-height, calc(45vh - 6px));
+      max-height: var(--image-zoom-half-card-height, calc(45vh - 6px));
     }
 
     .image-zoom-content.has-side-notices .image-zoom-notice img:nth-child(1) {
       grid-column: 1;
-      grid-row: 1 / -1;
-      justify-self: end;
+      grid-row: 1;
+      justify-self: center;
     }
 
     .image-zoom-content.has-side-notices .image-zoom-notice img:nth-child(2) {
-      grid-column: 3;
-      grid-row: 1 / -1;
-      justify-self: start;
+      grid-column: 1;
+      grid-row: 2;
+      justify-self: center;
+    }
+
+    @media (min-width: 761px) {
+      .image-zoom-content.has-side-notices:has(.image-zoom-actions.show) {
+        grid-template-columns: minmax(0, max-content) minmax(0, max-content) 128px;
+      }
+
+      .image-zoom-content.has-side-notices > .image-zoom-action-stack {
+        grid-column: 3;
+        grid-row: 1 / -1;
+      }
     }
 
     .image-zoom-notice img {
@@ -2222,6 +2241,8 @@
       .image-zoom-content.has-side-notices .image-zoom-notice img:nth-child(1),
       .image-zoom-content.has-side-notices .image-zoom-notice img:nth-child(2) {
         grid-row: auto;
+        width: 100%;
+        height: auto;
         max-height: 52vh;
       }
 
@@ -2231,6 +2252,10 @@
 
       .image-zoom-content.has-side-notices .image-zoom-notice img:nth-child(2) {
         grid-column: 2;
+      }
+
+      .image-zoom-content.has-side-notices > .image-zoom-action-stack {
+        grid-column: 1 / -1;
       }
 
       .image-zoom-card-stage {
@@ -2339,7 +2364,7 @@
 
   </style>
   <link rel="stylesheet" href="c45_specials.css?v=20260926-titan-group-layout1">
-  <link rel="stylesheet" href="battle_map_control.css?v=20261012-side-width1">
+  <link rel="stylesheet" href="battle_map_control.css?v=20261104-keyword-sibling3">
   <link rel="stylesheet" href="../api/cycle-theme.css">
   <script src="../assets/theme.js?v=20261001" defer></script>
   <link rel="stylesheet" href="editorial.css?v=20261019-preview-click-draw1">
@@ -2347,6 +2372,11 @@
   <script src="../assets/fan-card-trims-data.js?v=20261020-fan-scan3" defer></script>
   <script src="../assets/fan-card-trims.js?v=20261020-title-guard1" defer></script>
   <script src="../assets/card-art.js?v=20261020-title-guard1" defer></script>
+  <link rel="stylesheet" href="keyword-search.css?v=11">
+  <script src="keyword-dictionary.js?v=3" defer></script>
+  <script src="keyword-search.js?v=14" defer></script>
+  <script src="card-keywords.js?v=11" defer></script>
+  <script src="draw-notice-layout.js?v=1" defer></script>
   <!-- Mobile composition is enabled only by the installed APK in portrait. -->
   <link rel="stylesheet" href="../assets/mobile/common.css?v=20261028-apk-portrait1">
   <link rel="stylesheet" href="../assets/mobile/play.css?v=20261028-apk-portrait1">
@@ -2400,6 +2430,7 @@
           </label>
           <span class="second-screen-sync-status" id="secondScreenSyncStatus" role="status" aria-live="polite"></span>
           <a class="return-main-link" href="../index.html">返回主控制台</a>
+          <button type="button" id="keywordButton">关键词查询</button>
           <button type="button" id="traitButton">Trait</button>
           <button type="button" id="tokenButton">Token</button>
           <button type="button" id="newCampaignButton">开启新战役</button>
@@ -2505,99 +2536,115 @@
         </div>
       </section>
 
-      <section class="battle-map-panel" id="battleMapControl" aria-label="决战版图控制">
-        <header class="battle-map-head">
-          <h3>决战版图</h3>
-          <div class="battle-map-head-actions">
-            <label class="battle-map-setup-control" data-battle-map-setup-control hidden>
-              战斗布局
-              <select data-battle-map-setup-select aria-label="战斗布局"></select>
-            </label>
-            <label><input type="checkbox" data-battle-map-starts-toggle checked>初始位置</label>
-            <button type="button" data-battle-map-coordinates-toggle aria-pressed="false">显示坐标</button>
-            <button type="button" data-battle-map-reset>重置版图</button>
-          </div>
-        </header>
-        <div class="battle-map-workspace">
-          <div class="battle-map-main">
-            <div class="battle-map-board" data-battle-map-board>
-              <img class="battle-map-board-image" src="../ss/battle-board/battle-board.jpg.preview.jpg" alt="决战版图" decoding="async" fetchpriority="low" onerror="this.hidden = true">
-              <div class="battle-map-terrain-layer" data-battle-map-terrain-layer></div>
-              <div class="battle-map-grid"></div>
-              <div class="battle-map-los-layer" data-battle-map-los-layer aria-hidden="true"></div>
-              <div class="battle-map-start-layer" data-battle-map-start-layer></div>
-              <div class="battle-map-coordinate-layer" data-battle-map-coordinate-layer aria-hidden="true"></div>
+      <div class="battle-map-layout">
+        <section class="battle-map-panel" id="battleMapControl" aria-label="决战版图控制">
+          <header class="battle-map-head">
+            <h3>决战版图</h3>
+            <div class="battle-map-head-actions">
+              <label class="battle-map-setup-control" data-battle-map-setup-control hidden>
+                战斗布局
+                <select data-battle-map-setup-select aria-label="战斗布局"></select>
+              </label>
+              <label><input type="checkbox" data-battle-map-starts-toggle checked>初始位置</label>
+              <button type="button" data-battle-map-coordinates-toggle aria-pressed="false">显示坐标</button>
+              <button type="button" data-battle-map-reset>重置版图</button>
             </div>
-            <section class="battle-map-cards" aria-label="当前地形卡">
-              <div class="battle-map-cards-head">
-                <h4>当前地形卡</h4>
-                <span data-battle-map-card-count>0 张</span>
+          </header>
+          <div class="battle-map-workspace">
+            <div class="battle-map-main">
+              <div class="battle-map-board" data-battle-map-board>
+                <img class="battle-map-board-image" src="../ss/battle-board/battle-board.jpg.preview.jpg" alt="决战版图" decoding="async" fetchpriority="low" onerror="this.hidden = true">
+                <div class="battle-map-terrain-layer" data-battle-map-terrain-layer></div>
+                <div class="battle-map-grid"></div>
+                <div class="battle-map-los-layer" data-battle-map-los-layer aria-hidden="true"></div>
+                <div class="battle-map-start-layer" data-battle-map-start-layer></div>
+                <div class="battle-map-coordinate-layer" data-battle-map-coordinate-layer aria-hidden="true"></div>
               </div>
-              <div class="battle-map-card-list" data-battle-map-card-list></div>
-              <p class="battle-map-card-empty" data-battle-map-card-empty hidden>当前版图没有对应的地形卡</p>
-            </section>
-          </div>
-          <div class="battle-map-side" role="region" aria-label="地形工具">
-            <div class="battle-map-toolbar">
-              <button type="button" data-battle-map-rotate-left disabled aria-label="逆时针旋转" title="逆时针旋转">↶ 左转</button>
-              <button type="button" data-battle-map-rotate-right disabled aria-label="顺时针旋转" title="顺时针旋转">↷ 右转</button>
-              <button type="button" data-battle-map-flip disabled aria-label="地形翻面" title="地形翻面">⇅ 翻面</button>
-              <button type="button" class="danger" data-battle-map-delete disabled aria-label="删除地形" title="删除地形">× 删除</button>
+              <section class="battle-map-cards" aria-label="当前地形卡">
+                <div class="battle-map-cards-head">
+                  <h4>当前地形卡</h4>
+                  <span data-battle-map-card-count>0 张</span>
+                </div>
+                <div class="battle-map-card-list" data-battle-map-card-list></div>
+                <p class="battle-map-card-empty" data-battle-map-card-empty hidden>当前版图没有对应的地形卡</p>
+              </section>
             </div>
-            <div class="battle-map-add">
-              <select data-battle-map-add-select aria-label="新增地形"></select>
-              <button type="button" data-battle-map-add>+ 新增地形</button>
-            </div>
-            <div class="battle-map-selection" data-battle-map-selection>双击地形选中，再次双击取消</div>
-            <div class="battle-map-los" data-battle-map-los-control>
-              <div class="battle-map-los-head">
-                <span>视线判断</span>
-                <button type="button" data-battle-map-los-toggle aria-pressed="false">开启</button>
+            <div class="battle-map-side" role="region" aria-label="地形工具">
+              <div class="battle-map-toolbar">
+                <button type="button" data-battle-map-rotate-left disabled aria-label="逆时针旋转" title="逆时针旋转">↶ 左转</button>
+                <button type="button" data-battle-map-rotate-right disabled aria-label="顺时针旋转" title="顺时针旋转">↷ 右转</button>
+                <button type="button" data-battle-map-flip disabled aria-label="地形翻面" title="地形翻面">⇅ 翻面</button>
+                <button type="button" class="danger" data-battle-map-delete disabled aria-label="删除地形" title="删除地形">× 删除</button>
               </div>
-              <div class="battle-map-los-body" data-battle-map-los-body hidden>
-                <label class="battle-map-los-field">
-                  视线来源
-                  <select data-battle-map-los-source aria-label="视线来源单位">
-                    <option value="apostle" selected>始徒</option>
-                    <option value="titan">泰坦（1 格）</option>
-                  </select>
-                </label>
-                <p class="battle-map-los-stats" data-battle-map-los-stats hidden></p>
-                <div class="battle-map-los-field" data-battle-map-los-reach-field hidden>
-                  <span>攻击距离（射程 = 移速 + 攻击距离）</span>
-                  <!-- 扁平步进器：不画浏览器原生的上下箭头，靠 −／+ 与直接输入。 -->
-                  <div class="battle-map-los-stepper">
-                    <button type="button" data-battle-map-los-reach-down aria-label="攻击距离 −1" title="攻击距离 −1">−</button>
-                    <input type="number" min="0" max="20" step="1" value="1" data-battle-map-los-reach aria-label="攻击距离">
-                    <button type="button" data-battle-map-los-reach-up aria-label="攻击距离 +1" title="攻击距离 +1">+</button>
-                    <span class="battle-map-los-stepper-unit" aria-hidden="true">格</span>
+              <div class="battle-map-add">
+                <select data-battle-map-add-select aria-label="新增地形"></select>
+                <button type="button" data-battle-map-add>+ 新增地形</button>
+              </div>
+              <div class="battle-map-selection" data-battle-map-selection>双击地形选中，再次双击取消</div>
+              <div class="battle-map-los" data-battle-map-los-control>
+                <div class="battle-map-los-head">
+                  <span>视线判断</span>
+                  <button type="button" data-battle-map-los-toggle aria-pressed="false">开启</button>
+                </div>
+                <div class="battle-map-los-body" data-battle-map-los-body hidden>
+                  <label class="battle-map-los-field">
+                    视线来源
+                    <select data-battle-map-los-source aria-label="视线来源单位">
+                      <option value="apostle" selected>始徒</option>
+                      <option value="titan">泰坦（1 格）</option>
+                    </select>
+                  </label>
+                  <p class="battle-map-los-stats" data-battle-map-los-stats hidden></p>
+                  <div class="battle-map-los-field" data-battle-map-los-reach-field hidden>
+                    <span>攻击距离（射程 = 移速 + 攻击距离）</span>
+                    <!-- 扁平步进器：不画浏览器原生的上下箭头，靠 −／+ 与直接输入。 -->
+                    <div class="battle-map-los-stepper">
+                      <button type="button" data-battle-map-los-reach-down aria-label="攻击距离 −1" title="攻击距离 −1">−</button>
+                      <input type="number" min="0" max="20" step="1" value="1" data-battle-map-los-reach aria-label="攻击距离">
+                      <button type="button" data-battle-map-los-reach-up aria-label="攻击距离 +1" title="攻击距离 +1">+</button>
+                      <span class="battle-map-los-stepper-unit" aria-hidden="true">格</span>
+                    </div>
                   </div>
+                  <label class="battle-map-los-field" data-battle-map-los-facing-field hidden>
+                    朝向（黄色箭头，盲区在其反向）
+                    <select data-battle-map-los-facing aria-label="朝向">
+                      <option value="auto">跟随初始朝向</option>
+                      <option value="0">朝上</option>
+                      <option value="90">朝右</option>
+                      <option value="180">朝下</option>
+                      <option value="270">朝左</option>
+                    </select>
+                  </label>
+                  <div class="battle-map-los-path-tools" data-battle-map-los-path-tools hidden>
+                    <button type="button" data-battle-map-los-path-source aria-pressed="true">设置始徒</button>
+                    <button type="button" data-battle-map-los-path-target aria-pressed="false" disabled>设置目标</button>
+                    <button type="button" data-battle-map-los-path-clear disabled>清除目标</button>
+                  </div>
+                  <p class="battle-map-los-path-summary" data-battle-map-los-path-summary hidden></p>
+                  <p class="battle-map-los-hint" data-battle-map-los-hint>点击版图选择来源位置，绿色为有视线，红色为被遮挡。</p>
+                  <label class="battle-map-los-opt"><input type="checkbox" data-battle-map-los-dim checked>暗化被遮挡格</label>
+                  <label class="battle-map-los-opt"><input type="checkbox" data-battle-map-los-range checked>显示射程与距离（紫框=移动后可攻击到，格内数字=到来源的格数）</label>
+                  <label class="battle-map-los-opt"><input type="checkbox" data-battle-map-los-elevated>高地（循环Ⅳ+，无视遮蔽与红线；泰坦踩上高地板块自动勾选、移下自动取消，也可手动调整）</label>
                 </div>
-                <label class="battle-map-los-field" data-battle-map-los-facing-field hidden>
-                  朝向（黄色箭头，盲区在其反向）
-                  <select data-battle-map-los-facing aria-label="朝向">
-                    <option value="auto">跟随初始朝向</option>
-                    <option value="0">朝上</option>
-                    <option value="90">朝右</option>
-                    <option value="180">朝下</option>
-                    <option value="270">朝左</option>
-                  </select>
-                </label>
-                <div class="battle-map-los-path-tools" data-battle-map-los-path-tools hidden>
-                  <button type="button" data-battle-map-los-path-source aria-pressed="true">设置始徒</button>
-                  <button type="button" data-battle-map-los-path-target aria-pressed="false" disabled>设置目标</button>
-                  <button type="button" data-battle-map-los-path-clear disabled>清除目标</button>
-                </div>
-                <p class="battle-map-los-path-summary" data-battle-map-los-path-summary hidden></p>
-                <p class="battle-map-los-hint" data-battle-map-los-hint>点击版图选择来源位置，绿色为有视线，红色为被遮挡。</p>
-                <label class="battle-map-los-opt"><input type="checkbox" data-battle-map-los-dim checked>暗化被遮挡格</label>
-                <label class="battle-map-los-opt"><input type="checkbox" data-battle-map-los-range checked>显示射程与距离（紫框=移动后可攻击到，格内数字=到来源的格数）</label>
-                <label class="battle-map-los-opt"><input type="checkbox" data-battle-map-los-elevated>高地（循环Ⅳ+，无视遮蔽与红线；泰坦踩上高地板块自动勾选、移下自动取消，也可手动调整）</label>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+        <section id="keywordPanel" class="keyword-panel" aria-label="关键词查询">
+          <details id="keywordSearchPanel" open>
+            <summary>查询关键词</summary>
+            <div class="keyword-panel-content">
+              <label for="keywordInput">输入中文或英文关键词</label>
+              <input id="keywordInput" type="search" autocomplete="off" placeholder="搜索关键词">
+              <div id="keywordResults" class="keyword-results" aria-live="polite">正在加载词典…</div>
+            </div>
+          </details>
+          <details class="card-keywords-panel" id="cardKeywordsPanel" open>
+            <summary>当前大卡与特性关键词</summary>
+            <div id="cardKeywordsSummary" class="keyword-panel-content">正在加载卡牌关键词…</div>
+          </details>
+        </section>
+      </div>
     </main>
   </div>
 
@@ -2722,6 +2769,7 @@
   <div class="image-zoom-overlay" id="imageZoomOverlay" aria-hidden="true">
     <button type="button" class="image-zoom-close" id="imageZoomClose" aria-label="关闭放大图">×</button>
     <div class="image-zoom-content">
+      <div class="image-zoom-keywords" id="imageZoomKeywords" hidden></div>
       <div class="image-zoom-card-stage">
         <img id="imageZoomImg" src="" alt="放大图片">
         <div class="image-zoom-card-tokens" id="imageZoomCardTokens"></div>
@@ -6139,6 +6187,7 @@
       savePiles();
       renderAibpCards();
       openImageZoom(cardSrc(card), "抽取的闪粉卡");
+      window.AibpCardKeywords?.showDraw(cardSrc(card));
     }
 
     function renderFeintButton() {
@@ -6179,6 +6228,7 @@
           card: clonePileState(card)
         }
       });
+      window.AibpCardKeywords?.showDraw(frontSrc);
     }
 
     function addLabyrinthaurosSpecialBp() {
@@ -8181,6 +8231,7 @@
 
     function openImageZoom(src, alt = "放大图片", onClose = null, options = {}) {
       if (!src) return;
+      window.AibpCardKeywords?.resetDraw();
       // 除面板切换本身以外，任何一次放大都不该留着上一张面板的切换状态。
       if (options.panelSwitch !== true) {
         panelZoomState = null;
@@ -8245,6 +8296,7 @@
     }
 
     function closeImageZoom() {
+      window.AibpCardKeywords?.resetDraw();
       const closeAction = zoomCloseAction;
       zoomCloseAction = null;
       imageZoomOverlay.classList.remove("show");
@@ -8294,6 +8346,7 @@
       openImageZoom(img.dataset.fullSrc || img.currentSrc || img.src, img.alt, null, {
         panel: img.classList.contains("panel-image"),
         aiComboActions: hasAiCombo() && Boolean(img.closest("#aiDrawPreview")),
+        noticeLayout: cardTokenType === "AI" && currentApostle === chimeraName ? "sides" : "",
         rotation: Number(img.dataset.rotate || 0),
         flipContext: flipContextFromImage(img),
         moveContext: moveContextFromImage(img),
@@ -8301,6 +8354,9 @@
         cardTokens: cardTokenType ? currentPanelCardTokens(cardTokenType) : [],
         noticeImages: isBpImage ? currentBpNoticeImages() : cardTokenType === "AI" ? currentAiNoticeImages() : []
       });
+      if (img.closest("#aiGrid, #bpGrid, #aiDrawPreview, #bpDrawPreview")) {
+        window.AibpCardKeywords?.showDraw(img.dataset.fullSrc || img.currentSrc || img.src);
+      }
     }
 
     function zoomCardTokenTypeFromImage(img) {
@@ -8825,6 +8881,7 @@
         cardTokens: currentPanelCardTokens("AI"),
         noticeImages: currentAiNoticeImages()
       });
+      window.AibpCardKeywords?.showDraw(cardSrc(drawnCard));
     }
 
     function drawBp() {
@@ -8858,6 +8915,7 @@
         cardTokens: currentPanelCardTokens("BP"),
         noticeImages: currentBpNoticeImages()
       });
+      window.AibpCardKeywords?.showDraw(cardSrc(bp.pending));
     }
 
     function removePendingFromDeck(type) {

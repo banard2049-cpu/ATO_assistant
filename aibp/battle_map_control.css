@@ -1,12 +1,21 @@
-.battle-map-panel {
-  width: 100%;
-  margin-top: 18px;
+.battle-map-layout {
+  max-width: 1560px;
+  margin: 18px auto 0;
   padding: 18px 10px 28px;
   border-top: 1px solid rgba(199, 173, 114, 0.24);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 420px;
+  gap: 14px;
+  align-items: start;
+}
+
+.battle-map-panel {
+  min-width: 0;
+  width: 100%;
 }
 
 .battle-map-head {
-  max-width: 1180px;
+  max-width: 1540px;
   margin: 0 auto 12px;
   display: flex;
   align-items: center;
@@ -59,10 +68,10 @@
 }
 
 .battle-map-workspace {
-  max-width: 1180px;
+  max-width: 1540px;
   margin: 0 auto;
   display: grid;
-  /* 右栏放视线判断与地形工具：工具按钮两列 + 攻击距离步进器都需要宽度。 */
+  /* 版图与视线/地形工具并排，关键词面板独立于版图。 */
   grid-template-columns: minmax(0, 1fr) 290px;
   gap: 14px;
   align-items: start;
@@ -668,6 +677,10 @@
   text-align: center;
 }
 
+@media (max-width: 1100px) {
+  .battle-map-layout { grid-template-columns: minmax(0, 1fr); }
+}
+
 @media (max-width: 900px) {
   .battle-map-workspace {
     grid-template-columns: minmax(0, 1fr);
@@ -684,7 +697,8 @@
 }
 
 @media (max-width: 620px) {
-  .battle-map-panel { padding-inline: 4px; }
+  .battle-map-layout { padding-inline: 4px; }
+  .battle-map-workspace { grid-template-columns: minmax(0, 1fr); }
   .battle-map-side { grid-template-columns: 1fr; }
   .battle-map-toolbar { justify-content: center; }
   .battle-map-card-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
