@@ -1,0 +1,494 @@
+{
+  "scope": "Visual review of the rules regions of 106 AI/BP fronts with no automatic dictionary match after three OCR passes. Added terms were checked against the pictured text; other cards are not claimed to be manually verified.",
+  "cardSpellings": [
+    {
+      "word": "Labyrinth",
+      "aliases": [
+        "迷宫 X",
+        "迷宫地形"
+      ]
+    },
+    {
+      "word": "Pull",
+      "aliases": [
+        "拉进 X"
+      ]
+    },
+    {
+      "word": "Harden",
+      "aliases": [
+        "Hardened"
+      ]
+    }
+  ],
+  "cards": {
+    "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_BP_III_001.jpg": {
+      "sha256": "129f430d69ff8d8212b511d4d57e6a87e15d7129d5c0c5d7014890f17c040f38",
+      "add": []
+    },
+    "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_BP_III_003.jpg": {
+      "sha256": "111402992bcd50304427d284af590d80fe2ebf6cae65018ed33187da8883df87",
+      "add": []
+    },
+    "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_BP_III_004.jpg": {
+      "sha256": "00ee6e0374b040a7f12c28e426df55e605036c02fd63dfa97e925610ee2f81cd",
+      "add": [
+        "Scale"
+      ]
+    },
+    "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_BP_III_006.jpg": {
+      "sha256": "3cdb6e7a3502b905e6b3c9ee2da0582d0b6e475fce48c898aa52705fc8e6369f",
+      "add": [
+        "Labyrinth"
+      ]
+    },
+    "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_BP_III_002.jpg": {
+      "sha256": "2172cec923c48567459948375c07c566572592ec8dc9458b0681100008b9f2d8",
+      "add": []
+    },
+    "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_BP_III_004.jpg": {
+      "sha256": "b2e1f656872f8071c07e16e8a84e2335ac55cdd3d19e8af7907a47d1bcf50868",
+      "add": []
+    },
+    "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_BP_II_001.jpg": {
+      "sha256": "2a125096c137f806cd16b160f7daed49bb04c9cf2c67a20c68a09fefddb0a836",
+      "add": []
+    },
+    "ps/CYCLONUS/CYCLONUS_BP_III_002.jpg": {
+      "sha256": "8b0a95f8b3de6bca0f20163b124b5d83ebb7df9f0ee100a29d06ec2da749138c",
+      "add": []
+    },
+    "ps/CYCLONUS/CYCLONUS_BP_III_003.jpg": {
+      "sha256": "5fa045540149f25086b973821366297c8ec463796e426c1cd92eacabb8c411c6",
+      "add": []
+    },
+    "ps/CYCLONUS/CYCLONUS_BP_III_005.jpg": {
+      "sha256": "813672f5d13086a2d73e90f3475d8fc75b040b99d03f9f5d838ded2add76d03d",
+      "add": []
+    },
+    "ps/CYCLONUS/CYCLONUS_BP_II_001.jpg": {
+      "sha256": "7a817ba0e1925ebe3f98290f50c9c3ce02c2aa5e020997ddbd76e1b1d738c778",
+      "add": [
+        "Harden"
+      ]
+    },
+    "ps/CYCLONUS/CYCLONUS_BP_II_003.jpg": {
+      "sha256": "a8c3581778145910f143f63c8dc887a8b57ae23de39cc88e49e3f21484152f12",
+      "add": []
+    },
+    "ps/CYCLONUS/CYCLONUS_BP_II_004.jpg": {
+      "sha256": "aa0f6bab678931a48c4b1074dbbf2141d84a36397bc7a76465a43541a596040b",
+      "add": []
+    },
+    "ps/CYCLONUS/CYCLONUS_BP_II_006.jpg": {
+      "sha256": "c89ed1605546cc4bfe6a65af5e1c8135354e9e7483140df91ba551a21c51c846",
+      "add": [
+        "Escalate"
+      ]
+    },
+    "ps/CYCLONUS/CYCLONUS_BP_I_004.jpg": {
+      "sha256": "0a45244aa7f570d2277e94b5bcd10fa2a6af4812e08be09143657d5449878242",
+      "add": []
+    },
+    "ps/CYCLONUS/CYCLONUS_BP_I_005.jpg": {
+      "sha256": "bc478e641dc03a480a80dfa20b78f1a5a491e11f4ec532b3b49805f8a1618670",
+      "add": [
+        "Escalate"
+      ]
+    },
+    "ps/DAHAKA/DAHAKA_AI_II_006.jpg": {
+      "sha256": "91720b6b58ed52630ce35e1d17794df3edeb7f24f4e6d693a00ef00c3ff72546",
+      "add": []
+    },
+    "ps/DAHAKA/DAHAKA_AI_I_003.jpg": {
+      "sha256": "99b1a03badacaa7e58b6e6c009451f51910de54c9974ad42bc44876cb47b0c6a",
+      "add": []
+    },
+    "ps/DEMIDJINN/DEMIDJINN_AI_III_001.jpg": {
+      "sha256": "8f6a4872b530886c40dfa93afa0350ea8b4ad5aef47046eea231e3855bda20c3",
+      "add": []
+    },
+    "ps/DEMIDJINN/DEMIDJINN_AI_III_003.jpg": {
+      "sha256": "f4f40dcbf5363afbf4fb633047f659797f8bd9762c306ab930556c8751a2ed0b",
+      "add": []
+    },
+    "ps/DEMIDJINN/DEMIDJINN_AI_III_006.jpg": {
+      "sha256": "f84826c38402d69477ce2ccc6a3f0819598553630a52107aa11a4008f12e25aa",
+      "add": []
+    },
+    "ps/DEMIDJINN/DEMIDJINN_AI_I_005.jpg": {
+      "sha256": "b77298af64bd81e34ff48e8a8115139c76f576972023ca2b197558beb9c284b0",
+      "add": []
+    },
+    "ps/DEMIDJINN/DEMIDJINN_BP_III_003.jpg": {
+      "sha256": "05713a4bd72eaad1eb439abed3eaaa7b3068171f9b048ab0e4b61c0d16f4c84c",
+      "add": []
+    },
+    "ps/DEMIDJINN/DEMIDJINN_BP_III_005.jpg": {
+      "sha256": "75e2451a8065a58d351ae87494a6b54a868347d62b7b3a9380248a1821ac5562",
+      "add": []
+    },
+    "ps/DEMIDJINN/DEMIDJINN_BP_I_002.jpg": {
+      "sha256": "7477d1a2dc4bb12084ad34f9ef796a135a396c947b33f50271afe85893e193a3",
+      "add": []
+    },
+    "ps/DEMIDJINN/DEMIDJINN_BP_I_004.jpg": {
+      "sha256": "2d1abb31934f942675476142fabff94542e7da32d62f3e9a79213c984d8e1216",
+      "add": []
+    },
+    "ps/HEKATON/HEKATON_AI_II_004.jpg": {
+      "sha256": "822bbed53d0673c0e219d32edade02c21a629d8237a514a2ece036c0044225e5",
+      "add": []
+    },
+    "ps/HEKATON/HEKATON_AI_I_003.jpg": {
+      "sha256": "e09cb0f4f6f6025a846f29c44ade9ff9159b3d94526ee0a1581f89ce16792d98",
+      "add": []
+    },
+    "ps/HEKATON/HEKATON_BP_II_003.jpg": {
+      "sha256": "83d142fbfc8a2d429e61af00b9e5fa5ad146131f7a2884e155527b7b6d6ece1e",
+      "add": []
+    },
+    "ps/HEKATON/HEKATON_BP_II_004.jpg": {
+      "sha256": "f43bbd0ca2b3879d5281fca82e0d016323608d90fc20c750f89b4010172642ef",
+      "add": []
+    },
+    "ps/HEKATON/HEKATON_BP_I_005.jpg": {
+      "sha256": "f70c4460c2e77ce412458f9540ff4a3879039e9935f54aaf03d730c78a6ae82b",
+      "add": [
+        "Knockdown"
+      ]
+    },
+    "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_AI_III_002.jpg": {
+      "sha256": "9703a96be8852d059cff2cbe60b25a05b7ed70c6e44e745a14aabf6f1a67b142",
+      "add": []
+    },
+    "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_AI_III_003.jpg": {
+      "sha256": "ce20870fb62cc1c27653f4632cff3d9df7753627cffb89d91e03c7f872b73dd0",
+      "add": [
+        "Knockdown"
+      ]
+    },
+    "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_AI_III_004.jpg": {
+      "sha256": "ba21372723258953cf8dfc1cd88a1482b0de582228ddd07b8e2b85fd2c06777f",
+      "add": []
+    },
+    "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_AI_II_003.jpg": {
+      "sha256": "61d7e04b182a103600ea0ae58f2765bcc440c53982d581911aa5a4c85d7d9182",
+      "add": []
+    },
+    "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_AI_I_004.jpg": {
+      "sha256": "fc9f97dbc0d0672801ca30e45e788814fdade9470cb81f070bf8d81384974476",
+      "add": []
+    },
+    "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_BP_III_001.jpg": {
+      "sha256": "559b5b52c7ca25154e00624ea05e9ee70a6b1c20cde4fa8946dc645bfc77089a",
+      "add": []
+    },
+    "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_BP_III_002.jpg": {
+      "sha256": "5a05254983e69c4b92cac3810fd413a34aef9ed3eb663e40dfcdea6454890e13",
+      "add": []
+    },
+    "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_BP_III_004.jpg": {
+      "sha256": "a7f257aa64897ab33d6f04b121ad9400eed37dadbd6269c9740f49285fe8a795",
+      "add": []
+    },
+    "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_BP_III_005.jpg": {
+      "sha256": "d4fa7c352ec34998fdf1f6aa8173076739fe45dd4ad50178da2c5eb99fa49d12",
+      "add": []
+    },
+    "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_BP_II_001.jpg": {
+      "sha256": "764bd7ed9d4e4ed23b96226b1f08ae9e39dcdc20339d94f867e2dfc10faf38e7",
+      "add": []
+    },
+    "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_BP_II_002.jpg": {
+      "sha256": "af2e845a74b47c7026f681c7a9ec82fa44fb380a38d29f51cfb34155efd8546d",
+      "add": []
+    },
+    "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_BP_II_003.jpg": {
+      "sha256": "4577b0367e5f667ee356cb8640b154a54962308c896a777959e4ac9e0c7c2155",
+      "add": [
+        "Knockdown"
+      ]
+    },
+    "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_BP_II_005.jpg": {
+      "sha256": "5866926c57d39c93c05f12c717a38598a66ff1ac41f8ee1412c18ae29b3de8a9",
+      "add": []
+    },
+    "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_BP_I_003.jpg": {
+      "sha256": "541110e5e57b2c7d9f60e751672594adf9fd081435f1223fc2f5ab50df72e0d8",
+      "add": [
+        "Knockdown"
+      ]
+    },
+    "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_BP_I_004.jpg": {
+      "sha256": "e8ceb81588561af995d213e189082a2e30e77071a4042d8e22dc4ecd30ba11cd",
+      "add": []
+    },
+    "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_AI_III_001.jpg": {
+      "sha256": "9040e5ca33a5793be3b44cea01028324db22a87aa2346953a014b732c6723dfa",
+      "add": []
+    },
+    "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_AI_III_005.jpg": {
+      "sha256": "137b07604b8e6d934da40f1dcac5fe1366f26fadf2cbc5e190e4144c6fb22c57",
+      "add": []
+    },
+    "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_AI_II_004.jpg": {
+      "sha256": "735663eac46a7eb6dddcbe6308f541c6dad0ad86ed2ec8e13582f02a231bc607",
+      "add": []
+    },
+    "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_AI_I_006.jpg": {
+      "sha256": "754e866638bd48fb00248dcfdafe90bcb756e25ff0516c883ae5ba9f4a655bc6",
+      "add": [
+        "Time-clocked"
+      ]
+    },
+    "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_AI_X_001.jpg": {
+      "sha256": "6e8a96475a82f07cfdf6bb6741fb82c6bb2d95be2a5efa29abe0a5c861759565",
+      "add": []
+    },
+    "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_BP_III_003.jpg": {
+      "sha256": "8b672525cae354c8b495e978c490c1484aa083a118d07a2da7edc0a2cec521cd",
+      "add": []
+    },
+    "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_BP_III_004.jpg": {
+      "sha256": "096245490480ea05b720e461702efdae7e01beacb33daa51c684fc0bc1314953",
+      "add": []
+    },
+    "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_BP_III_005.jpg": {
+      "sha256": "c6948a49573cbd5186ad070e595ea5b7b305135b0bdd02488c2a2d56452d3ffc",
+      "add": []
+    },
+    "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_BP_II_001.jpg": {
+      "sha256": "9b4d3b5293d284bdbd5a34882829c43d6f7df839baa44aff892192940eff79e6",
+      "add": []
+    },
+    "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_BP_II_003.jpg": {
+      "sha256": "89887af9e6b0bda9234800c589d9307f25204653594eb71db9668f76d42cedff",
+      "add": []
+    },
+    "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_BP_I_001.jpg": {
+      "sha256": "9312bc34b5d14250d64b02b3f15ff91d926a2beeaa5a47f8e5e1d7f9361bfd10",
+      "add": []
+    },
+    "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_BP_I_003.jpg": {
+      "sha256": "e1d4b9fea1443e08d1022201409ca2bd8898945c3056af0169673faba6b1b4f6",
+      "add": []
+    },
+    "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_BP_I_004.jpg": {
+      "sha256": "94d71b9af4f612071ce824b27a83a14abab7af637d7dec2d384098d1b5d975f1",
+      "add": []
+    },
+    "ps/ICARIAN_HARPY/ICARIAN_HARPY_BP_III_002.jpg": {
+      "sha256": "50f9dc06097119cf098c0b0c88f6d65973965cd6396bcf04e8855c4aeaee5ff0",
+      "add": [
+        "Pull"
+      ]
+    },
+    "ps/ICARIAN_HARPY/ICARIAN_HARPY_BP_II_001.jpg": {
+      "sha256": "9f59228d1cfeaf88066ed85d57f07945e63cef47f9ea31a9d904908300694d59",
+      "add": []
+    },
+    "ps/ICARIAN_HARPY/ICARIAN_HARPY_BP_II_003.jpg": {
+      "sha256": "f09f90425191e23581888df0e11afa2176a422ab79e3bdb5920e5376b4adc6b0",
+      "add": []
+    },
+    "ps/ICARIAN_HARPY/ICARIAN_HARPY_BP_I_005.jpg": {
+      "sha256": "50462895a2aca65c465fc561e93c84ba01cd51893dfded15c1f198d405e99ba3",
+      "add": [
+        "Time-clocked"
+      ]
+    },
+    "ps/LABYRINTHAUROS/LABYRINTHAUROS_AI_III_004.jpg": {
+      "sha256": "ca987e3048a7929968a9720b7d786e441c6d70d733027cf3acb54a962dc79e16",
+      "add": []
+    },
+    "ps/LABYRINTHAUROS/LABYRINTHAUROS_AI_I_004.jpg": {
+      "sha256": "3cbbe304648f6a1d6515f5e610ffe558bd1b78fde404f0de63c087507563969d",
+      "add": [
+        "Labyrinth"
+      ]
+    },
+    "ps/LABYRINTHAUROS/LABYRINTHAUROS_BP_III_001.jpg": {
+      "sha256": "1cef12e1cdb97d14ccb13c55e680eeb184bca0f20a2795733306cda710ab9400",
+      "add": []
+    },
+    "ps/LABYRINTHAUROS/LABYRINTHAUROS_BP_III_004.jpg": {
+      "sha256": "a7d35d46c91c75cbb90624d00b0c06814ff3adf23bf1ce092af05de84b155c7b",
+      "add": []
+    },
+    "ps/LABYRINTHAUROS/LABYRINTHAUROS_BP_II_001.jpg": {
+      "sha256": "bcccb5eb72f19d51cbba161700b43fb0e82d0c3463c56f89138b6842b99a1910",
+      "add": [
+        "Trample"
+      ]
+    },
+    "ps/LABYRINTHAUROS/LABYRINTHAUROS_BP_II_004.jpg": {
+      "sha256": "d1ac71c19acd2059d8a43c7c1d3cb3e8f3848f0ecf6c924f1f80cda9c65a70b8",
+      "add": [
+        "Trample"
+      ]
+    },
+    "ps/LABYRINTHAUROS/LABYRINTHAUROS_BP_II_006.jpg": {
+      "sha256": "0865310714b5111133fb110852590440f672150114efca1e42da412dee6b6811",
+      "add": []
+    },
+    "ps/LABYRINTHAUROS/LABYRINTHAUROS_BP_I_002.jpg": {
+      "sha256": "9d2cd4e36b8c7e6074a6608d2f3595d2203728a7166e06f89865471f4d07e4dc",
+      "add": [
+        "Trample"
+      ]
+    },
+    "ps/MEDUKETOS/MEDUKETOS_BP_III_006.jpg": {
+      "sha256": "74143a5407c1923e28436d16d2b4a358b52ca416b54ad33cca94a950250105f5",
+      "add": []
+    },
+    "ps/MIDASCORE/MIDASCORE_BP_III_003.jpg": {
+      "sha256": "751cdf1de903982f0c025c5a17e146ed7f9e9d8006e437e542072d9495e2dffd",
+      "add": []
+    },
+    "ps/MIDASCORE/MIDASCORE_BP_I_001.jpg": {
+      "sha256": "8c8f56ba8ba87346e1832e518217249a55adf0f5eb13f182c39ee00e0f45f617",
+      "add": []
+    },
+    "ps/MIDASCORE/MIDASCORE_BP_I_002.jpg": {
+      "sha256": "fcdbe2bdb21c439a834a4ffb1b82afac0295b491f897ebe6b1ecd74dd38385e9",
+      "add": []
+    },
+    "ps/SUN_DESCENDANT/SUN_DESCENDANT_BP_III_005.jpg": {
+      "sha256": "03a94a03251c2894c17d9c6170bb6a442aff8a0332db39340c8e911f578276a2",
+      "add": [
+        "Scale"
+      ]
+    },
+    "ps/SUN_DESCENDANT/SUN_DESCENDANT_BP_III_006.jpg": {
+      "sha256": "3ad8099682fe852e7d8572d8552f4f0a742e7308a940f76e9c940750b68412e2",
+      "add": [
+        "Scale"
+      ]
+    },
+    "ps/SUN_DESCENDANT/SUN_DESCENDANT_BP_I_002.jpg": {
+      "sha256": "e5b4240b4517f604274ad07e8ff3fa80d5df6769330ec48aec831ab7befe9eb7",
+      "add": [
+        "Scale"
+      ]
+    },
+    "ps/SUN_DESCENDANT/SUN_DESCENDANT_BP_I_004.jpg": {
+      "sha256": "3ef534fb89b2586af001e6a8898e7bbda64284c2b1b00d9f10e9e937152d031a",
+      "add": [
+        "Time-clocked"
+      ]
+    },
+    "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_AI_III_002.jpg": {
+      "sha256": "65b513fd9ea09b8330325d551ac390bd0aa6c9cc4c9bc7e4c4230ceb818f1a2c",
+      "add": []
+    },
+    "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_AI_III_003.jpg": {
+      "sha256": "06e616dfca9f2b4d9de74eda27b76053ba3a4e2ebc85957ba69314dcd6128098",
+      "add": []
+    },
+    "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_AI_I_001.jpg": {
+      "sha256": "1b504af1793daf5dc2784efb2062a57912bfe29ea99076a3afe3d315eb3fece2",
+      "add": []
+    },
+    "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_BP_III_002.jpg": {
+      "sha256": "8461029de54c619a750c3e73cf457f14d8a37beadf018554eb8d3946f72ffe03",
+      "add": []
+    },
+    "ps/THE_BURDEN/THE_BURDEN_AI_III_001.jpg": {
+      "sha256": "b23e328dc5244155df8915e99d4666b192f3fb00e4106e4525387d680165bd6b",
+      "add": []
+    },
+    "ps/THE_BURDEN/THE_BURDEN_AI_I_002.jpg": {
+      "sha256": "02cc0d15e5012753cbe7113d0a4f4df74dd1e01f160ceb88dc52648826f93e27",
+      "add": [
+        "Ambrosia"
+      ]
+    },
+    "ps/THE_BURDEN/THE_BURDEN_BP_III_002.jpg": {
+      "sha256": "94284fa8a11bf9160a4968d237e6f1f1a2ca19619289d73f2b6b18f697f402df",
+      "add": []
+    },
+    "ps/THE_BURDEN/THE_BURDEN_BP_II_001.jpg": {
+      "sha256": "09980b97dc3744b741920016eb08dcfb03632e7e9fb7777da7ffd31746e4ee5d",
+      "add": []
+    },
+    "ps/THE_BURDEN/THE_BURDEN_BP_II_005.jpg": {
+      "sha256": "4df8a2ce562cf11aa3f3a0c654da9245819d0509e8efcf13049bb3ef31871722",
+      "add": []
+    },
+    "ps/THE_BURDEN/THE_BURDEN_BP_I_001.jpg": {
+      "sha256": "4e6029eb096d3adc4c14895e7ead1b893cfe6d20f6cd8a0f446516ff243519a0",
+      "add": []
+    },
+    "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_BP_III_005.jpg": {
+      "sha256": "fa6308d65e8da7dc9f199901e54217049b1888f6706ac17feaa84be7bd669a70",
+      "add": []
+    },
+    "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_BP_I_002.jpg": {
+      "sha256": "13e66c53ca26d8dae6a18b4c754a76ef9e4ae0ee5ba725bfa8725bcd1a13edff",
+      "add": []
+    },
+    "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_BP_I_005.jpg": {
+      "sha256": "ada5642d936405d7942f8ea18bc3ae56ffc562bd9f860499530add7893a98166",
+      "add": [
+        "Harden"
+      ]
+    },
+    "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_BP_I_006.jpg": {
+      "sha256": "97a2d2c2c75b337d401b2898cb928918fbdd9d2b4d0bf5c1188eab21c77d0bba",
+      "add": []
+    },
+    "ps/TITAN_X/TITAN_X_AI_III_003.jpg": {
+      "sha256": "5a9f3b3627161bf4f391630ff8ac79c61ccb48a1d9dab4998c5933951c2670e5",
+      "add": []
+    },
+    "ps/TITAN_X/TITAN_X_AI_I_003.jpg": {
+      "sha256": "b53caa1a6a4cb47bc16ef16a0d34c138a1699831677b50c37eea8c37016dfec2",
+      "add": []
+    },
+    "ps/TITAN_X/TITAN_X_AI_O_001.jpg": {
+      "sha256": "e4c7a2e0f1e641f8f79e317e6e1f5eaaecb5d1a4633cf0c6fdc10978b206d912",
+      "add": []
+    },
+    "ps/TITAN_X/TITAN_X_BP_III_002.jpg": {
+      "sha256": "6f54437255bc1f5669fbad24b704a65328060222f6305a4e979e726a424a80ce",
+      "add": []
+    },
+    "ps/TITAN_X/TITAN_X_BP_III_003.jpg": {
+      "sha256": "58cd6a981b525b51236a746ecef1773f4161e0adb02d2e86efb7862b61cd9986",
+      "add": []
+    },
+    "ps/TITAN_X/TITAN_X_BP_III_004.jpg": {
+      "sha256": "11836c2fa6b350e7f723f862220fd6e4dd77b93a154cef6a4b9a037b75ca36d6",
+      "add": []
+    },
+    "ps/TITAN_X/TITAN_X_BP_III_006.jpg": {
+      "sha256": "9b2dd717627d7f89a96e4679b8a06ec7c492876d7793c30c0cf5270f189e9094",
+      "add": []
+    },
+    "ps/TITAN_X/TITAN_X_BP_II_001.jpg": {
+      "sha256": "e4655c0a8f3166708673c701cf1e26edc01883fbe7a0719ad0ae09b70bbcab3c",
+      "add": []
+    },
+    "ps/TITAN_X/TITAN_X_BP_II_007.jpg": {
+      "sha256": "a7bf3e68803e6fa85475ed835a4bf65dd3a3ec5c5c4559484fae4a08c808c13d",
+      "add": []
+    },
+    "ps/TITAN_X/TITAN_X_BP_I_003.jpg": {
+      "sha256": "93d6d011b192c89db0e4c6ba771345fb7dd0bb3da738e88034081705192a0541",
+      "add": []
+    },
+    "ps/UR_FLEECE/UR_FLEECE_BP_III_002.jpg": {
+      "sha256": "11f1fcd1339da0e2968297ba5270b1e2e7612c2f0b6aa149be8b80bc7be47ca1",
+      "add": []
+    },
+    "ps/UR_FLEECE/UR_FLEECE_BP_III_006.jpg": {
+      "sha256": "46628c0f9562c265b3ca95e7c40fae234dc1b397cac15aa5c7fd678b378528e8",
+      "add": []
+    },
+    "ps/UR_FLEECE/UR_FLEECE_BP_II_003.jpg": {
+      "sha256": "28841657084e57ef008185e7c5857e71e880225ab717ebd2b36e05feb5f7e3a1",
+      "add": []
+    }
+  }
+}
