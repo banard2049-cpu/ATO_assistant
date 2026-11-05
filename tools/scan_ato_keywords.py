@@ -1,8 +1,10 @@
-"""OCR local ATO cards and match dictionary terms and verified card spellings.
+"""Export visually reviewed ATO keywords, or generate OCR candidates.
 
-Requires Tesseract with eng and chi_sim. Cached OCR allows interrupted runs to
-resume. Results are candidates, not human-verified rules.
+Use --reviewed-only to export complete, image-bound visual reviews without
+running OCR or reading its cache. The optional OCR mode requires Tesseract with
+eng and chi_sim; exact visual reviews override its candidates.
 """
+import argparse
 import concurrent.futures
 import hashlib
 import html
@@ -125,40 +127,93 @@ def matches(text, terms):
     return list(dict.fromkeys(word for word, _ in terms if word in found))
 
 
-def main():
-    CACHE.mkdir(parents=True, exist_ok=True)
-    paths = [path for path in (BASE / 'ps').rglob('*') if path.is_file() and eligible(path)]
-    terms = load_terms()
-    cards = {}
-    errors = []
-    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:
-        futures = {pool.submit(ocr, path): path for path in paths}
-        for i, future in enumerate(concurrent.futures.as_completed(futures), 1):
-            try:
-                relative, text = future.result()
-                cards[relative] = matches(text, terms)
-            except Exception as error:
-                errors.append(str(error))
-            if i % 25 == 0:
-                print(f'{i}/{len(paths)}; errors {len(errors)}', flush=True)
-    if errors:
-        raise RuntimeError('\n'.join(errors))
-    review = json.loads((ROOT / 'tools' / 'ato-keyword-review.json').read_text(encoding='utf-8'))
-    for relative, checked in review['cards'].items():
-        image = BASE / relative
+def apply_verified_cards(cards, verified, base=BASE):
+    """Use exact, image-bound reviews after OCR, including reviewed removals.
+
+    Whole-card OCR also reads titles, italic flavor text, and card-type footers.
+    A matching word there need not mean the dictionary rule (Black March is
+    not Black X, for example). Exact reviews must therefore replace candidates,
+    rather than only adding terms to them. Never reuse a review on changed art.
+    """
+    for relative, checked in verified.items():
+        if relative not in cards:
+            raise RuntimeError(f'Reviewed card missing from scan: {relative}')
+        image = base / relative
         if hashlib.sha256(image.read_bytes()).hexdigest() != checked['sha256']:
+            raise RuntimeError(f'Reviewed card changed; recheck {relative} before applying corrections')
+        words = checked['words']
+        if not isinstance(words, list) or any(not isinstance(word, str) or not word for word in words):
+            raise RuntimeError(f'Invalid reviewed keywords: {relative}')
+        cards[relative] = list(dict.fromkeys(words))
+
+
+def apply_card_reviews(cards, review, base=BASE):
+    verified = review.get('verifiedCards', {})
+    for relative, checked in review.get('cards', {}).items():
+        # A newer exact review supersedes the legacy add-only review, including
+        # its old image hash. Otherwise updated artwork can never be re-reviewed.
+        if relative in verified:
+            continue
+        if hashlib.sha256((base / relative).read_bytes()).hexdigest() != checked['sha256']:
             raise RuntimeError(f'Reviewed card changed; recheck {relative} before applying corrections')
         for word in checked['add']:
             if word not in cards[relative]:
                 cards[relative].append(word)
+    apply_verified_cards(cards, verified, base)
+
+
+def reviewed_cards(paths, review, base=BASE):
+    """Export only complete visual reviews; never fall back to OCR."""
+    cards = {path.relative_to(base).as_posix(): [] for path in paths}
+    verified = review.get('verifiedCards', {})
+    missing = cards.keys() - verified.keys()
+    extra = verified.keys() - cards.keys()
+    if missing or extra:
+        raise RuntimeError(f'Visual review coverage differs from local images; missing: {sorted(missing)}; extra: {sorted(extra)}')
+    apply_verified_cards(cards, verified, base)
+    return cards
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--reviewed-only', action='store_true', help='Export complete visual reviews without OCR or OCR caches')
+    args = parser.parse_args(argv)
+    paths = sorted(path for path in (BASE / 'ps').rglob('*') if path.is_file() and eligible(path))
+    review = json.loads((ROOT / 'tools' / 'ato-keyword-review.json').read_text(encoding='utf-8'))
+    verified = review.get('verifiedCards', {})
+    errors = []
+    if args.reviewed_only:
+        cards = reviewed_cards(paths, review)
+    else:
+        CACHE.mkdir(parents=True, exist_ok=True)
+        terms = load_terms()
+        cards = {}
+        with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:
+            futures = {pool.submit(ocr, path): path for path in paths}
+            for i, future in enumerate(concurrent.futures.as_completed(futures), 1):
+                try:
+                    relative, text = future.result()
+                    cards[relative] = matches(text, terms)
+                except Exception as error:
+                    errors.append(str(error))
+                if i % 25 == 0:
+                    print(f'{i}/{len(paths)}; errors {len(errors)}', flush=True)
+    if errors:
+        raise RuntimeError('\n'.join(errors))
+    if not args.reviewed_only:
+        apply_card_reviews(cards, review)
     aibp = [path for path in paths if re.search(r'_(AI|BP)_', path.name)]
     fronts = [path for path in aibp if not path.stem.endswith('_BACK')]
     output = {
-        'method': 'Tesseract whole card eng+chi_sim psm 11 + enlarged AI/BP rules chi_sim+eng psm 6 + front lower rules chi_sim psm 6; longest parameterized dictionary matches with reviewed spelling/case corrections; not exhaustively human verified',
+        'method': ('Direct visual reading of every current local card image and enlarged rules panels; exact SHA-256-bound reviews; no OCR or OCR caches used'
+                   if args.reviewed_only else
+                   'Tesseract whole card eng+chi_sim psm 11 + enlarged AI/BP rules chi_sim+eng psm 6 + front lower rules chi_sim psm 6; longest parameterized dictionary candidates overridden by exact SHA-256-bound visual reviews of current local card images'),
         'coverage': {'images': len(cards), 'aibpImages': len(aibp), 'aibpFronts': len(fronts),
-                     'aibpBacks': len(aibp) - len(fronts), 'aibpFrontOcrPasses': 3, 'errors': 0,
+                     'aibpBacks': len(aibp) - len(fronts), 'aibpFrontOcrPasses': 0 if args.reviewed_only else 3, 'errors': 0,
                      'noMatchRuleRegionsVisuallyReviewed': len(review['cards']),
-                     'reviewedCardsWithCorrections': sum(bool(card['add']) for card in review['cards'].values())},
+                     'reviewedCardsWithCorrections': review.get('visualReview', {}).get('correctedCards',
+                         sum(bool(card['add']) for card in review['cards'].values())),
+                     'visuallyReviewedImages': len(verified)},
         'cards': dict(sorted(cards.items())),
     }
     (BASE / 'card-keywords.json').write_text(json.dumps(output, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')

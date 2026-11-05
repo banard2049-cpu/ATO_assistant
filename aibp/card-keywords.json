@@ -1,26 +1,29 @@
 {
-  "method": "Tesseract whole card eng+chi_sim psm 11 + enlarged AI/BP rules chi_sim+eng psm 6 + front lower rules chi_sim psm 6; longest parameterized dictionary matches with reviewed spelling/case corrections; not exhaustively human verified",
+  "method": "Direct visual reading of every current local card image and enlarged rules panels; exact SHA-256-bound reviews; no OCR or OCR caches used",
   "coverage": {
     "images": 1035,
     "aibpImages": 824,
     "aibpFronts": 677,
     "aibpBacks": 147,
-    "aibpFrontOcrPasses": 3,
+    "aibpFrontOcrPasses": 0,
     "errors": 0,
     "noMatchRuleRegionsVisuallyReviewed": 106,
-    "reviewedCardsWithCorrections": 22
+    "reviewedCardsWithCorrections": 13,
+    "visuallyReviewedImages": 1035
   },
   "cards": {
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS.jpg": [
       "Mazetouched",
       "击倒",
       "位移",
-      "希望"
+      "Despair",
+      "Labyrinth"
     ],
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_AI_III_001.jpg": [
       "Despair",
       "击倒",
-      "绝望"
+      "绝望",
+      "Labyrinth"
     ],
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_AI_III_002.jpg": [
       "Labyrinth",
@@ -28,7 +31,8 @@
     ],
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_AI_III_003.jpg": [
       "Despair",
-      "绝望"
+      "绝望",
+      "Labyrinth"
     ],
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_AI_III_004.jpg": [
       "Labyrinth",
@@ -48,17 +52,16 @@
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_AI_II_001.jpg": [
       "Despair",
       "绝望",
-      "攀爬",
       "击退 X"
     ],
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_AI_II_002.jpg": [
       "Labyrinth",
-      "绝望",
-      "攀爬"
+      "绝望"
     ],
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_AI_II_003.jpg": [
       "Despair",
-      "绝望"
+      "绝望",
+      "Labyrinth"
     ],
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_AI_II_004.jpg": [
       "Labyrinth",
@@ -70,7 +73,6 @@
       "绝望"
     ],
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_AI_II_006.jpg": [
-      "Light",
       "绝望",
       "击退 X"
     ],
@@ -91,30 +93,27 @@
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_AI_I_003.jpg": [
       "Despair",
       "击倒",
-      "绝望"
+      "绝望",
+      "Labyrinth"
     ],
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_AI_I_004.jpg": [
       "Despair",
       "绝望",
-      "攀爬",
       "击退 X"
     ],
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_AI_I_005.jpg": [
-      "绝望"
+      "绝望",
+      "Labyrinth"
     ],
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_AI_I_006.jpg": [
-      "绝望"
+      "绝望",
+      "Labyrinth"
     ],
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_AI_I_BACK.jpg": [],
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_BP_III_001.jpg": [],
-    "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_BP_III_002.jpg": [
-      "机会",
-      "深渊"
-    ],
+    "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_BP_III_002.jpg": [],
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_BP_III_003.jpg": [],
-    "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_BP_III_004.jpg": [
-      "Scale"
-    ],
+    "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_BP_III_004.jpg": [],
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_BP_III_005.jpg": [
       "击倒"
     ],
@@ -123,7 +122,6 @@
     ],
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_BP_III_BACK.jpg": [],
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_BP_II_001.jpg": [
-      "Scale",
       "击倒",
       "击退 X"
     ],
@@ -131,24 +129,20 @@
       "击倒",
       "破甲"
     ],
-    "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_BP_II_003.jpg": [
-      "Harden",
-      "硬化"
-    ],
+    "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_BP_II_003.jpg": [],
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_BP_II_004.jpg": [
       "Despair",
       "击退 X"
     ],
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_BP_II_005.jpg": [
-      "破甲"
+      "破甲",
+      "Knockdown"
     ],
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_BP_II_006.jpg": [
       "Labyrinth"
     ],
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_BP_II_BACK.jpg": [],
-    "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_BP_I_001.jpg": [
-      "翻滚"
-    ],
+    "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_BP_I_001.jpg": [],
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_BP_I_002.jpg": [
       "击倒"
     ],
@@ -164,7 +158,6 @@
     ],
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_BP_I_005.jpg": [
       "Mazetouched",
-      "攀爬",
       "破甲"
     ],
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_BP_I_006.jpg": [
@@ -177,13 +170,15 @@
       "绝望"
     ],
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_SIGNATURE_X_001.jpg": [
-      "绝望"
+      "绝望",
+      "Labyrinth"
     ],
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_SIGNATURE_X_001_BACK.jpg": [],
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_O_001.jpg": [
       "击倒",
       "绝望",
-      "希望"
+      "Displace",
+      "Labyrinth"
     ],
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_VI_001.jpg": [
       "绝望"
@@ -191,10 +186,13 @@
     "ps/CHIMERA_METASTASIOS/C.png": [],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS.jpg": [
       "神浆",
-      "位移"
+      "位移",
+      "Chasm",
+      "Knockdown"
     ],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_AI_III_001.jpg": [
-      "神浆"
+      "神浆",
+      "Pushback X"
     ],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_AI_III_002.jpg": [
       "Pushback",
@@ -202,15 +200,14 @@
     ],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_AI_III_003.jpg": [
       "Ambrosia",
-      "Pushback",
-      "攀爬"
+      "Pushback"
     ],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_AI_III_004.jpg": [
-      "神浆"
+      "神浆",
+      "Pushback X"
     ],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_AI_III_005.jpg": [
       "Pushback",
-      "攀爬",
       "神浆",
       "Pushback X"
     ],
@@ -222,8 +219,8 @@
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_AI_III_SPECIAL_BACK.jpg": [],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_AI_II_001.jpg": [
       "击倒",
-      "攀爬",
-      "神浆"
+      "神浆",
+      "Pushback X"
     ],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_AI_II_002.jpg": [
       "Ambrosia",
@@ -240,7 +237,6 @@
     ],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_AI_II_005.jpg": [
       "击倒",
-      "攀爬",
       "Pushback X"
     ],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_AI_II_006.jpg": [
@@ -262,7 +258,6 @@
     ],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_AI_I_004.jpg": [
       "击倒",
-      "攀爬",
       "Pushback X"
     ],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_AI_I_005.jpg": [
@@ -282,23 +277,18 @@
       "神浆"
     ],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_BP_III_002.jpg": [],
-    "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_BP_III_003.jpg": [
-      "击倒"
-    ],
+    "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_BP_III_003.jpg": [],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_BP_III_004.jpg": [],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_BP_III_005.jpg": [
       "Heal"
     ],
-    "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_BP_III_006.jpg": [
-      "翻滚"
-    ],
+    "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_BP_III_006.jpg": [],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_BP_III_BACK.jpg": [],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_BP_II_001.jpg": [],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_BP_II_002.jpg": [
       "破甲"
     ],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_BP_II_003.jpg": [
-      "攀爬",
       "破甲"
     ],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_BP_II_004.jpg": [
@@ -306,43 +296,34 @@
     ],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_BP_II_005.jpg": [
       "Ambrosia",
-      "攀爬",
       "神浆"
     ],
-    "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_BP_II_006.jpg": [
-      "攀爬"
-    ],
+    "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_BP_II_006.jpg": [],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_BP_II_BACK.jpg": [],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_BP_I_001.jpg": [
-      "攀爬",
       "神浆"
     ],
-    "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_BP_I_002.jpg": [
-      "攀爬"
-    ],
+    "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_BP_I_002.jpg": [],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_BP_I_003.jpg": [
-      "攀爬",
       "破甲"
     ],
-    "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_BP_I_004.jpg": [
-      "攀爬"
-    ],
-    "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_BP_I_005.jpg": [
-      "攀爬"
-    ],
+    "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_BP_I_004.jpg": [],
+    "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_BP_I_005.jpg": [],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_BP_I_006.jpg": [
       "Ambrosia",
       "神浆"
     ],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_BP_I_BACK.jpg": [],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_ROUTINE_X_001.jpg": [
-      "击倒"
+      "击倒",
+      "Displace"
     ],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_ROUTINE_X_001_BACK.jpg": [
       "Ambrosia"
     ],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_SIGNATURE_X_001.jpg": [
-      "神浆"
+      "神浆",
+      "Pushback X"
     ],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_SIGNATURE_X_001_BACK.jpg": [],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_II_001.jpg": [
@@ -357,26 +338,27 @@
       "顶推"
     ],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_O_001.jpg": [
-      "神浆"
+      "神浆",
+      "Displace",
+      "Knockdown",
+      "Pull"
     ],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_X_001.png": [
       "神浆"
     ],
     "ps/CHIMERA_METASTASIOS/G.png": [],
     "ps/CHIMERA_METASTASIOS/S.png": [],
-    "ps/CYCLONUS/CYCLONUS.jpg": [
-      "Break"
-    ],
+    "ps/CYCLONUS/CYCLONUS.jpg": [],
     "ps/CYCLONUS/CYCLONUS_AI_III_001.jpg": [
-      "撑跳",
-      "顶推 X"
+      "顶推 X",
+      "Forced Vault"
     ],
     "ps/CYCLONUS/CYCLONUS_AI_III_002.jpg": [
       "版边",
       "击退 X"
     ],
     "ps/CYCLONUS/CYCLONUS_AI_III_003.jpg": [
-      "撑跳"
+      "Forced Vault"
     ],
     "ps/CYCLONUS/CYCLONUS_AI_III_004.jpg": [
       "顶推 X"
@@ -398,9 +380,9 @@
       "顶推 X"
     ],
     "ps/CYCLONUS/CYCLONUS_AI_II_002.jpg": [
-      "撑跳",
       "击倒",
-      "顶推 X"
+      "顶推 X",
+      "Forced Vault"
     ],
     "ps/CYCLONUS/CYCLONUS_AI_II_003.jpg": [
       "拉近 X"
@@ -409,7 +391,6 @@
       "顶推 X"
     ],
     "ps/CYCLONUS/CYCLONUS_AI_II_005.jpg": [
-      "Trick",
       "拉近 X"
     ],
     "ps/CYCLONUS/CYCLONUS_AI_II_006.jpg": [
@@ -446,19 +427,15 @@
     "ps/CYCLONUS/CYCLONUS_BP_III_002.jpg": [],
     "ps/CYCLONUS/CYCLONUS_BP_III_003.jpg": [],
     "ps/CYCLONUS/CYCLONUS_BP_III_004.jpg": [
-      "机会"
+      "Harden"
     ],
     "ps/CYCLONUS/CYCLONUS_BP_III_005.jpg": [],
-    "ps/CYCLONUS/CYCLONUS_BP_III_006.jpg": [
-      "Ambrosia"
-    ],
+    "ps/CYCLONUS/CYCLONUS_BP_III_006.jpg": [],
     "ps/CYCLONUS/CYCLONUS_BP_III_BACK.jpg": [],
     "ps/CYCLONUS/CYCLONUS_BP_II_001.jpg": [
       "Harden"
     ],
-    "ps/CYCLONUS/CYCLONUS_BP_II_002.jpg": [
-      "神浆"
-    ],
+    "ps/CYCLONUS/CYCLONUS_BP_II_002.jpg": [],
     "ps/CYCLONUS/CYCLONUS_BP_II_003.jpg": [],
     "ps/CYCLONUS/CYCLONUS_BP_II_004.jpg": [],
     "ps/CYCLONUS/CYCLONUS_BP_II_005.jpg": [
@@ -476,9 +453,7 @@
     "ps/CYCLONUS/CYCLONUS_BP_I_002.jpg": [
       "击退"
     ],
-    "ps/CYCLONUS/CYCLONUS_BP_I_003.jpg": [
-      "精准"
-    ],
+    "ps/CYCLONUS/CYCLONUS_BP_I_003.jpg": [],
     "ps/CYCLONUS/CYCLONUS_BP_I_004.jpg": [],
     "ps/CYCLONUS/CYCLONUS_BP_I_005.jpg": [
       "Escalate"
@@ -495,20 +470,23 @@
     ],
     "ps/CYCLONUS/CYCLONUS_SIGNATURE_X_001_BACK.jpg": [],
     "ps/CYCLONUS/CYCLONUS_TR_IV_001.jpg": [],
-    "ps/CYCLONUS/CYCLONUS_TR_O_001.jpg": [],
+    "ps/CYCLONUS/CYCLONUS_TR_O_001.jpg": [
+      "Pushback",
+      "Pull",
+      "Knockback"
+    ],
     "ps/DAHAKA/DAHAKA.jpg": [
       "Crash",
       "版边",
       "冲撞",
-      "机会",
       "神浆"
     ],
     "ps/DAHAKA/DAHAKA_AI_III_001.jpg": [
       "Ambrosia",
-      "Midas"
+      "Midas",
+      "Float"
     ],
     "ps/DAHAKA/DAHAKA_AI_III_002.jpg": [
-      "Black",
       "Heal"
     ],
     "ps/DAHAKA/DAHAKA_AI_III_003.jpg": [
@@ -531,21 +509,21 @@
       "Reverse Unholy Alchemy"
     ],
     "ps/DAHAKA/DAHAKA_AI_II_002.jpg": [
-      "Ambrosia",
-      "Fire"
+      "Ambrosia"
     ],
     "ps/DAHAKA/DAHAKA_AI_II_003.jpg": [
       "Death X"
     ],
     "ps/DAHAKA/DAHAKA_AI_II_004.jpg": [
-      "Cloud",
       "Reverse Unholy Alchemy"
     ],
     "ps/DAHAKA/DAHAKA_AI_II_005.jpg": [
       "Ambrosia",
       "Reverse Unholy Alchemy"
     ],
-    "ps/DAHAKA/DAHAKA_AI_II_006.jpg": [],
+    "ps/DAHAKA/DAHAKA_AI_II_006.jpg": [
+      "Ambrosia"
+    ],
     "ps/DAHAKA/DAHAKA_AI_II_BACK.jpg": [],
     "ps/DAHAKA/DAHAKA_AI_I_001.jpg": [
       "Ambrosia",
@@ -559,9 +537,9 @@
     ],
     "ps/DAHAKA/DAHAKA_AI_I_003.jpg": [],
     "ps/DAHAKA/DAHAKA_AI_I_004.jpg": [
-      "Cloud",
       "Knockdown",
-      "Knockback X"
+      "Knockback X",
+      "Ambrosia"
     ],
     "ps/DAHAKA/DAHAKA_AI_I_005.jpg": [
       "Ambrosia",
@@ -569,7 +547,8 @@
       "Pushback X"
     ],
     "ps/DAHAKA/DAHAKA_AI_I_006.jpg": [
-      "Ambrosia"
+      "Ambrosia",
+      "Knockdown"
     ],
     "ps/DAHAKA/DAHAKA_AI_I_BACK.jpg": [],
     "ps/DAHAKA/DAHAKA_ROUTINE_X_001.jpg": [],
@@ -584,7 +563,9 @@
     ],
     "ps/DAHAKA/DAHAKA_TR_O_001_BACK.jpg": [],
     "ps/DAHAKA/DAHAKA_TR_O_002.jpg": [
-      "Break"
+      "Ambrosia",
+      "Board Edge",
+      "Heal"
     ],
     "ps/DEMIDJINN/DEMIDJINN.jpg": [
       "Wish Away",
@@ -592,11 +573,11 @@
       "冲撞",
       "晋升",
       "许愿消失X",
-      "愿望护甲"
+      "愿望护甲",
+      "Destructible"
     ],
     "ps/DEMIDJINN/DEMIDJINN_AI_III_001.jpg": [],
     "ps/DEMIDJINN/DEMIDJINN_AI_III_002.jpg": [
-      "Spiral",
       "Wish Away",
       "Midas X"
     ],
@@ -606,7 +587,6 @@
     ],
     "ps/DEMIDJINN/DEMIDJINN_AI_III_005.jpg": [
       "Reverse Unholy Alchemy",
-      "Spiral",
       "Midas X"
     ],
     "ps/DEMIDJINN/DEMIDJINN_AI_III_006.jpg": [],
@@ -621,33 +601,26 @@
       "Midas X"
     ],
     "ps/DEMIDJINN/DEMIDJINN_AI_II_003.jpg": [
-      "Spiral",
       "Wish Away",
       "Midas X"
     ],
     "ps/DEMIDJINN/DEMIDJINN_AI_II_004.jpg": [
-      "Spiral",
       "Wish Away"
     ],
-    "ps/DEMIDJINN/DEMIDJINN_AI_II_005.jpg": [
-      "Spiral"
-    ],
+    "ps/DEMIDJINN/DEMIDJINN_AI_II_005.jpg": [],
     "ps/DEMIDJINN/DEMIDJINN_AI_II_006.jpg": [
       "Ambrosia"
     ],
     "ps/DEMIDJINN/DEMIDJINN_AI_II_BACK.jpg": [],
     "ps/DEMIDJINN/DEMIDJINN_AI_I_001.jpg": [
-      "Spiral",
       "Wish Away",
       "Midas X"
     ],
     "ps/DEMIDJINN/DEMIDJINN_AI_I_002.jpg": [
       "Ambrosia",
-      "Spiral",
       "Wish Away"
     ],
     "ps/DEMIDJINN/DEMIDJINN_AI_I_003.jpg": [
-      "Spiral",
       "Wish Away"
     ],
     "ps/DEMIDJINN/DEMIDJINN_AI_I_004.jpg": [
@@ -655,13 +628,10 @@
     ],
     "ps/DEMIDJINN/DEMIDJINN_AI_I_005.jpg": [],
     "ps/DEMIDJINN/DEMIDJINN_AI_I_006.jpg": [
-      "Spiral",
       "Midas X"
     ],
     "ps/DEMIDJINN/DEMIDJINN_AI_I_BACK.jpg": [],
-    "ps/DEMIDJINN/DEMIDJINN_BP_III_001.jpg": [
-      "Break"
-    ],
+    "ps/DEMIDJINN/DEMIDJINN_BP_III_001.jpg": [],
     "ps/DEMIDJINN/DEMIDJINN_BP_III_002.jpg": [
       "Wish Away"
     ],
@@ -674,32 +644,24 @@
       "Wish Away"
     ],
     "ps/DEMIDJINN/DEMIDJINN_BP_III_BACK.jpg": [],
-    "ps/DEMIDJINN/DEMIDJINN_BP_II_001.jpg": [
-      "Break"
-    ],
+    "ps/DEMIDJINN/DEMIDJINN_BP_II_001.jpg": [],
     "ps/DEMIDJINN/DEMIDJINN_BP_II_002.jpg": [
       "Wish Away",
       "Midas X"
     ],
     "ps/DEMIDJINN/DEMIDJINN_BP_II_003.jpg": [
-      "Break",
       "Wish Away",
       "Midas X"
     ],
     "ps/DEMIDJINN/DEMIDJINN_BP_II_004.jpg": [
-      "Black",
       "Wish Away"
     ],
     "ps/DEMIDJINN/DEMIDJINN_BP_II_005.jpg": [
       "Wish Away"
     ],
-    "ps/DEMIDJINN/DEMIDJINN_BP_II_006.jpg": [
-      "Spiral"
-    ],
+    "ps/DEMIDJINN/DEMIDJINN_BP_II_006.jpg": [],
     "ps/DEMIDJINN/DEMIDJINN_BP_II_BACK.jpg": [],
     "ps/DEMIDJINN/DEMIDJINN_BP_I_001.jpg": [
-      "Abyss",
-      "Black",
       "Wish Away"
     ],
     "ps/DEMIDJINN/DEMIDJINN_BP_I_002.jpg": [],
@@ -709,7 +671,8 @@
     ],
     "ps/DEMIDJINN/DEMIDJINN_BP_I_004.jpg": [],
     "ps/DEMIDJINN/DEMIDJINN_BP_I_005.jpg": [
-      "Midas X"
+      "Midas X",
+      "Ambrosia"
     ],
     "ps/DEMIDJINN/DEMIDJINN_BP_I_006.jpg": [
       "Wish Away"
@@ -718,7 +681,6 @@
     "ps/DEMIDJINN/DEMIDJINN_ROUTINE_X_001.jpg": [],
     "ps/DEMIDJINN/DEMIDJINN_ROUTINE_X_001_BACK.jpg": [],
     "ps/DEMIDJINN/DEMIDJINN_SIGNATURE_X_001.jpg": [
-      "Spiral",
       "Wish Away"
     ],
     "ps/DEMIDJINN/DEMIDJINN_SIGNATURE_X_001_BACK.jpg": [],
@@ -729,7 +691,6 @@
     "ps/DEMIDJINN/DEMIDJINN_TR_O_001_BACK.jpg": [],
     "ps/DEMIDJINN/DEMIDJINN_TR_O_002.jpg": [
       "Board Edge",
-      "Hope",
       "Wish Away"
     ],
     "ps/DEMIDJINN/DEMIDJINN_WISH_III_001.jpg": [],
@@ -744,16 +705,14 @@
     ],
     "ps/DEMIDJINN/DEMIDJINN_WISH_IV_001_BACK.jpg": [],
     "ps/DEMIDJINN/DEMIDJINN_WISH_I_001.jpg": [
-      "Chasm",
-      "Dare"
+      "Chasm"
     ],
     "ps/DEMIDJINN/DEMIDJINN_WISH_I_001_BACK.jpg": [],
     "ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS.jpg": [
-      "Death",
-      "Truth",
       "版边",
       "消逝X",
-      "Vanish X"
+      "Vanish X",
+      "Light"
     ],
     "ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_AI_III_001.jpg": [
       "Ambrosia",
@@ -780,7 +739,6 @@
     ],
     "ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_AI_III_005.jpg": [
       "Despair",
-      "Hope",
       "Inkblot",
       "Vanish X"
     ],
@@ -844,7 +802,8 @@
     ],
     "ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_AI_I_005.jpg": [
       "Ambrosia",
-      "Vanish X"
+      "Vanish X",
+      "Despair"
     ],
     "ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_AI_I_006.jpg": [
       "Ambrosia",
@@ -864,7 +823,6 @@
     ],
     "ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_BP_III_002_BACK.jpg": [],
     "ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_BP_III_003.jpg": [
-      "Truth",
       "Vanish X"
     ],
     "ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_BP_III_003_BACK.jpg": [],
@@ -919,7 +877,9 @@
       "Ambrosia",
       "Despair"
     ],
-    "ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_BP_I_001_BACK.jpg": [],
+    "ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_BP_I_001_BACK.jpg": [
+      "Despair"
+    ],
     "ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_BP_I_002.jpg": [
       "Ambrosia",
       "Inkblot",
@@ -928,27 +888,28 @@
     ],
     "ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_BP_I_002_BACK.jpg": [],
     "ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_BP_I_003.jpg": [
-      "Break",
       "Despair"
     ],
     "ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_BP_I_003_BACK.jpg": [],
     "ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_BP_I_004.jpg": [
       "Vanish X"
     ],
-    "ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_BP_I_004_BACK.jpg": [],
+    "ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_BP_I_004_BACK.jpg": [
+      "Despair"
+    ],
     "ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_BP_I_005.jpg": [
       "Vanish",
       "Vanish X"
     ],
-    "ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_BP_I_005_BACK.jpg": [],
+    "ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_BP_I_005_BACK.jpg": [
+      "Despair"
+    ],
     "ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_BP_I_006.jpg": [
-      "Float",
       "Vanish",
       "Vanish X"
     ],
     "ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_BP_I_006_BACK.jpg": [],
     "ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_ROUTINE_X_001.jpg": [
-      "Black",
       "Light"
     ],
     "ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_ROUTINE_X_001_BACK.jpg": [],
@@ -976,17 +937,18 @@
       "Hope",
       "Light",
       "Opening",
-      "Hope X"
+      "Hope X",
+      "Vanish"
     ],
     "ps/HEKATON/HEKATON.jpg": [
       "版边",
       "无边限",
       "击退",
-      "击退 X"
+      "击退 X",
+      "Pushback X",
+      "Labyrinth"
     ],
     "ps/HEKATON/HEKATON_AI_III_001.jpg": [
-      "Death",
-      "绝望",
       "顶推 X"
     ],
     "ps/HEKATON/HEKATON_AI_III_002.jpg": [
@@ -997,8 +959,8 @@
       "击倒"
     ],
     "ps/HEKATON/HEKATON_AI_III_004.jpg": [
-      "撑跳",
-      "击倒"
+      "击倒",
+      "Forced Vault"
     ],
     "ps/HEKATON/HEKATON_AI_III_005.jpg": [
       "击倒",
@@ -1014,7 +976,6 @@
       "击退 X"
     ],
     "ps/HEKATON/HEKATON_AI_II_002.jpg": [
-      "致命",
       "顶推 X"
     ],
     "ps/HEKATON/HEKATON_AI_II_003.jpg": [
@@ -1037,7 +998,8 @@
     ],
     "ps/HEKATON/HEKATON_AI_I_003.jpg": [],
     "ps/HEKATON/HEKATON_AI_I_004.jpg": [
-      "击倒"
+      "击倒",
+      "Pushback X"
     ],
     "ps/HEKATON/HEKATON_AI_I_005.jpg": [
       "顶推 X"
@@ -1047,24 +1009,29 @@
     ],
     "ps/HEKATON/HEKATON_AI_I_BACK.jpg": [],
     "ps/HEKATON/HEKATON_BP_III_001.jpg": [
-      "击退 X"
+      "击退 X",
+      "Pushback X"
     ],
     "ps/HEKATON/HEKATON_BP_III_002.jpg": [
-      "击退 X"
+      "击退 X",
+      "Pushback X"
     ],
     "ps/HEKATON/HEKATON_BP_III_003.jpg": [
-      "顶推 X"
+      "顶推 X",
+      "Knockback X"
     ],
     "ps/HEKATON/HEKATON_BP_III_004.jpg": [
       "晋升 X",
-      "击退 X"
+      "击退 X",
+      "Pushback X"
     ],
     "ps/HEKATON/HEKATON_BP_III_005.jpg": [
       "击退 X",
       "顶推 X"
     ],
     "ps/HEKATON/HEKATON_BP_III_006.jpg": [
-      "击退 X"
+      "击退 X",
+      "Pushback X"
     ],
     "ps/HEKATON/HEKATON_BP_III_BACK.jpg": [],
     "ps/HEKATON/HEKATON_BP_II_001.jpg": [
@@ -1073,7 +1040,6 @@
       "顶推 X"
     ],
     "ps/HEKATON/HEKATON_BP_II_002.jpg": [
-      "Exposed",
       "击退 X",
       "顶推 X"
     ],
@@ -1084,7 +1050,8 @@
       "顶推 X"
     ],
     "ps/HEKATON/HEKATON_BP_II_006.jpg": [
-      "击退 X"
+      "击退 X",
+      "Pushback"
     ],
     "ps/HEKATON/HEKATON_BP_II_BACK.jpg": [],
     "ps/HEKATON/HEKATON_BP_I_001.jpg": [
@@ -1097,29 +1064,34 @@
       "顶推 X"
     ],
     "ps/HEKATON/HEKATON_BP_I_003.jpg": [
-      "顶推 X"
+      "顶推 X",
+      "Knockback X"
     ],
     "ps/HEKATON/HEKATON_BP_I_004.jpg": [
-      "顶推 X"
+      "顶推 X",
+      "Knockback X"
     ],
     "ps/HEKATON/HEKATON_BP_I_005.jpg": [
       "Knockdown"
     ],
     "ps/HEKATON/HEKATON_BP_I_006.jpg": [
-      "击倒",
-      "硬化"
+      "击倒"
     ],
     "ps/HEKATON/HEKATON_BP_I_BACK.jpg": [],
     "ps/HEKATON/HEKATON_ROUTINE_X_001.jpg": [],
     "ps/HEKATON/HEKATON_ROUTINE_X_001_BACK.jpg": [
       "击倒"
     ],
-    "ps/HEKATON/HEKATON_SIGNATURE_X_001.jpg": [],
-    "ps/HEKATON/HEKATON_SIGNATURE_X_001_BACK.jpg": [],
-    "ps/HEKATON/HEKATON_TR_O_001.jpg": [],
-    "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER.jpg": [
-      "希望"
+    "ps/HEKATON/HEKATON_SIGNATURE_X_001.jpg": [
+      "Knockback X"
     ],
+    "ps/HEKATON/HEKATON_SIGNATURE_X_001_BACK.jpg": [],
+    "ps/HEKATON/HEKATON_TR_O_001.jpg": [
+      "Knockback X",
+      "Obstacle",
+      "Pushback X"
+    ],
+    "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER.jpg": [],
     "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_AI_III_001.jpg": [
       "Ambrosia",
       "Knockdown",
@@ -1196,10 +1168,7 @@
     ],
     "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_BP_III_004.jpg": [],
     "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_BP_III_005.jpg": [],
-    "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_BP_III_006.jpg": [
-      "Black",
-      "硬化"
-    ],
+    "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_BP_III_006.jpg": [],
     "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_BP_III_BACK.jpg": [],
     "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_BP_II_001.jpg": [],
     "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_BP_II_002.jpg": [],
@@ -1210,12 +1179,11 @@
       "Ambrosia"
     ],
     "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_BP_II_005.jpg": [],
-    "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_BP_II_006.jpg": [
-      "精准"
-    ],
+    "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_BP_II_006.jpg": [],
     "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_BP_II_BACK.jpg": [],
     "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_BP_I_001.jpg": [
-      "击倒"
+      "击倒",
+      "Knockback X"
     ],
     "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_BP_I_002.jpg": [
       "机会",
@@ -1240,7 +1208,6 @@
     ],
     "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_FL_X_002.jpg": [
       "Ambrosia",
-      "燃烧",
       "神浆"
     ],
     "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_FL_X_003.jpg": [
@@ -1261,18 +1228,20 @@
       "Knockback X"
     ],
     "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_SIGNATURE_X_001_BACK.jpg": [],
-    "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_O_001.jpg": [],
+    "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_O_001.jpg": [
+      "Ambrosia",
+      "Board Edge",
+      "Boundless",
+      "Knockback X"
+    ],
     "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE-1.jpg": [
-      "Death",
-      "Quantum",
       "版边",
-      "量子"
+      "Indestructible"
     ],
     "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE.jpg": [
-      "Quantum",
       "版边",
-      "冲撞",
-      "量子"
+      "Indestructible",
+      "Crash"
     ],
     "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_AI_III_001.jpg": [],
     "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_AI_III_002.jpg": [
@@ -1286,12 +1255,10 @@
     ],
     "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_AI_III_005.jpg": [],
     "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_AI_III_006.jpg": [
-      "时光匿踪",
-      "延伸"
+      "时光匿踪"
     ],
     "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_AI_III_007.jpg": [
-      "时光匿踪",
-      "延伸"
+      "时光匿踪"
     ],
     "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_AI_III_BACK.jpg": [],
     "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_AI_III_SPECIAL_BACK.jpg": [],
@@ -1338,34 +1305,30 @@
     ],
     "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_AI_X_001.jpg": [],
     "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_AI_X_002.jpg": [
-      "版边"
+      "版边",
+      "Rewind"
     ],
     "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_BP_III_001.jpg": [
       "时光匿踪"
     ],
-    "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_BP_III_002.jpg": [
-      "Trap",
-      "希望"
-    ],
+    "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_BP_III_002.jpg": [],
     "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_BP_III_003.jpg": [],
     "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_BP_III_004.jpg": [],
     "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_BP_III_005.jpg": [],
     "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_BP_III_006.jpg": [
-      "变形",
       "回溯"
     ],
     "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_BP_III_BACK.jpg": [],
     "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_BP_II_001.jpg": [],
     "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_BP_II_002.jpg": [
-      "Quantum"
+      "Time-clocked"
     ],
     "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_BP_II_003.jpg": [],
     "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_BP_II_004.jpg": [
       "时光匿踪"
     ],
     "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_BP_II_005.jpg": [
-      "回溯",
-      "硬化"
+      "回溯"
     ],
     "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_BP_II_006.jpg": [
       "时光匿踪"
@@ -1396,21 +1359,19 @@
     ],
     "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_SIGNATURE_X_001_BACK.jpg": [],
     "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_TR_I_001.jpg": [],
-    "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_TR_V_001.jpg": [
-      "量子",
-      "希望"
-    ],
+    "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_TR_V_001.jpg": [],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY.jpg": [
-      "Death",
       "出血",
-      "希望"
+      "Pull",
+      "Ambrosia"
     ],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_AI_III_001.jpg": [
       "击倒"
     ],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_AI_III_002.jpg": [
       "Pull",
-      "击倒"
+      "击倒",
+      "Bleeding"
     ],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_AI_III_003.jpg": [
       "出血",
@@ -1425,10 +1386,12 @@
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_AI_III_005.jpg": [
       "出血",
       "击倒",
-      "出血 X"
+      "出血 X",
+      "Pushback"
     ],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_AI_III_006.jpg": [
-      "出血 X"
+      "出血 X",
+      "Pushback"
     ],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_AI_III_BACK.jpg": [],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_AI_III_SPECIAL_BACK.jpg": [],
@@ -1440,11 +1403,13 @@
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_AI_II_002.jpg": [
       "出血",
       "击倒",
-      "出血 X"
+      "出血 X",
+      "Pushback"
     ],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_AI_II_003.jpg": [
       "出血",
-      "出血 X"
+      "出血 X",
+      "Pushback"
     ],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_AI_II_004.jpg": [
       "出血",
@@ -1454,11 +1419,13 @@
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_AI_II_005.jpg": [
       "出血",
       "击倒",
-      "出血 X"
+      "出血 X",
+      "Pushback"
     ],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_AI_II_006.jpg": [
       "出血",
-      "出血 X"
+      "出血 X",
+      "Pushback"
     ],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_AI_II_BACK.jpg": [],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_AI_I_001.jpg": [
@@ -1472,7 +1439,8 @@
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_AI_I_003.jpg": [
       "出血",
       "击倒",
-      "出血 X"
+      "出血 X",
+      "Pushback"
     ],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_AI_I_004.jpg": [
       "出血",
@@ -1482,11 +1450,13 @@
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_AI_I_005.jpg": [
       "出血",
       "击倒",
-      "出血 X"
+      "出血 X",
+      "Pushback"
     ],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_AI_I_006.jpg": [
       "出血",
-      "出血 X"
+      "出血 X",
+      "Pushback"
     ],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_AI_I_BACK.jpg": [],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_BP_III_001.jpg": [
@@ -1495,9 +1465,7 @@
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_BP_III_002.jpg": [
       "Pull"
     ],
-    "ps/ICARIAN_HARPY/ICARIAN_HARPY_BP_III_003.jpg": [
-      "进化"
-    ],
+    "ps/ICARIAN_HARPY/ICARIAN_HARPY_BP_III_003.jpg": [],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_BP_III_004.jpg": [
       "出血"
     ],
@@ -1506,9 +1474,7 @@
       "顶推 X"
     ],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_BP_III_006.jpg": [
-      "出血",
-      "进化",
-      "精准"
+      "出血"
     ],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_BP_III_BACK.jpg": [],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_BP_II_001.jpg": [],
@@ -1536,10 +1502,11 @@
       "顶推 X"
     ],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_BP_I_002.jpg": [
-      "沉重"
+      "Pushback"
     ],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_BP_I_003.jpg": [
-      "击倒"
+      "击倒",
+      "Pushback"
     ],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_BP_I_004.jpg": [
       "出血",
@@ -1560,7 +1527,8 @@
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_SIGNATURE_X_001.jpg": [
       "出血",
       "出血 X",
-      "击退 X"
+      "击退 X",
+      "Pushback"
     ],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_SIGNATURE_X_001_BACK.jpg": [],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_I_001.jpg": [
@@ -1569,7 +1537,10 @@
     ],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_I_002.jpg": [],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_I_003.jpg": [],
-    "ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_O_001.jpg": [],
+    "ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_O_001.jpg": [
+      "Bleeding",
+      "Bleeding Limit"
+    ],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_X_001.jpg": [
       "出血"
     ],
@@ -1582,11 +1553,11 @@
       "践踏",
       "位移",
       "Labyrinth X",
-      "大迷宫 X"
+      "大迷宫 X",
+      "Crash"
     ],
     "ps/LABYRINTHAUROS/LABYRINTHAUROS_AI_III_001.jpg": [
       "Labyrinth",
-      "冲撞",
       "践踏",
       "Labyrinth X"
     ],
@@ -1612,7 +1583,6 @@
     "ps/LABYRINTHAUROS/LABYRINTHAUROS_AI_III_SPECIAL_BACK.jpg": [],
     "ps/LABYRINTHAUROS/LABYRINTHAUROS_AI_II_001.jpg": [
       "Labyrinth",
-      "冲锋",
       "践踏",
       "Labyrinth X",
       "大迷宫 X"
@@ -1634,7 +1604,6 @@
       "大迷宫 X"
     ],
     "ps/LABYRINTHAUROS/LABYRINTHAUROS_AI_II_005.jpg": [
-      "冲锋",
       "践踏",
       "Labyrinth X"
     ],
@@ -1648,7 +1617,6 @@
       "践踏"
     ],
     "ps/LABYRINTHAUROS/LABYRINTHAUROS_AI_I_002.jpg": [
-      "冲撞",
       "践踏",
       "击退 X"
     ],
@@ -1664,7 +1632,6 @@
     ],
     "ps/LABYRINTHAUROS/LABYRINTHAUROS_AI_I_006.jpg": [
       "Labyrinth",
-      "Trap",
       "践踏"
     ],
     "ps/LABYRINTHAUROS/LABYRINTHAUROS_AI_I_BACK.jpg": [],
@@ -1675,9 +1642,7 @@
     ],
     "ps/LABYRINTHAUROS/LABYRINTHAUROS_BP_III_003.jpg": [
       "Mazetouched",
-      "Retreat",
-      "迷宫印纹",
-      "攀爬"
+      "迷宫印纹"
     ],
     "ps/LABYRINTHAUROS/LABYRINTHAUROS_BP_III_004.jpg": [],
     "ps/LABYRINTHAUROS/LABYRINTHAUROS_BP_III_005.jpg": [
@@ -1685,7 +1650,6 @@
     ],
     "ps/LABYRINTHAUROS/LABYRINTHAUROS_BP_III_006.jpg": [
       "Labyrinth",
-      "变形",
       "Labyrinth X"
     ],
     "ps/LABYRINTHAUROS/LABYRINTHAUROS_BP_III_BACK.jpg": [],
@@ -1693,7 +1657,6 @@
       "Trample"
     ],
     "ps/LABYRINTHAUROS/LABYRINTHAUROS_BP_II_002.jpg": [
-      "暴露",
       "Labyrinth X"
     ],
     "ps/LABYRINTHAUROS/LABYRINTHAUROS_BP_II_003.jpg": [
@@ -1713,15 +1676,12 @@
     "ps/LABYRINTHAUROS/LABYRINTHAUROS_BP_I_002.jpg": [
       "Trample"
     ],
-    "ps/LABYRINTHAUROS/LABYRINTHAUROS_BP_I_003.jpg": [
-      "攀爬"
-    ],
+    "ps/LABYRINTHAUROS/LABYRINTHAUROS_BP_I_003.jpg": [],
     "ps/LABYRINTHAUROS/LABYRINTHAUROS_BP_I_004.jpg": [
       "Mazetouched",
       "迷宫印纹"
     ],
     "ps/LABYRINTHAUROS/LABYRINTHAUROS_BP_I_005.jpg": [
-      "变形",
       "击倒",
       "击退 X"
     ],
@@ -1733,21 +1693,27 @@
     "ps/LABYRINTHAUROS/LABYRINTHAUROS_ROUTINE_X_001.jpg": [],
     "ps/LABYRINTHAUROS/LABYRINTHAUROS_ROUTINE_X_001_BACK.jpg": [],
     "ps/LABYRINTHAUROS/LABYRINTHAUROS_SIGNATURE_X_001.jpg": [
-      "冲撞"
+      "Labyrinth",
+      "Trample"
     ],
     "ps/LABYRINTHAUROS/LABYRINTHAUROS_SIGNATURE_X_001_BACK.jpg": [],
-    "ps/LABYRINTHAUROS/LABYRINTHAUROS_TP_X_001.jpg": [
-      "Trap"
+    "ps/LABYRINTHAUROS/LABYRINTHAUROS_TP_X_001.jpg": [],
+    "ps/LABYRINTHAUROS/LABYRINTHAUROS_TR_O_001.jpg": [
+      "Displace",
+      "Knockdown",
+      "Labyrinth",
+      "Trample"
     ],
-    "ps/LABYRINTHAUROS/LABYRINTHAUROS_TR_O_001.jpg": [],
     "ps/LABYRINTHAUROS/MR.png": [
       "大迷宫 X"
     ],
     "ps/MEDUKETOS/MEDUKETOS.jpg": [
-      "Death",
       "冲撞",
       "击倒",
-      "神浆"
+      "神浆",
+      "Burn",
+      "Pain",
+      "Displace"
     ],
     "ps/MEDUKETOS/MEDUKETOS_AI_III_001.jpg": [
       "Ambrosia",
@@ -1755,9 +1721,9 @@
       "Light"
     ],
     "ps/MEDUKETOS/MEDUKETOS_AI_III_002.jpg": [
-      "Block",
       "Burn",
-      "Despair"
+      "Despair",
+      "Obstacle"
     ],
     "ps/MEDUKETOS/MEDUKETOS_AI_III_003.jpg": [
       "Ambrosia",
@@ -1773,7 +1739,8 @@
     ],
     "ps/MEDUKETOS/MEDUKETOS_AI_III_006.jpg": [
       "Ambrosia",
-      "Burn"
+      "Burn",
+      "Despair"
     ],
     "ps/MEDUKETOS/MEDUKETOS_AI_III_BACK.jpg": [],
     "ps/MEDUKETOS/MEDUKETOS_AI_III_SPECIAL_BACK.jpg": [],
@@ -1788,8 +1755,8 @@
       "Light X"
     ],
     "ps/MEDUKETOS/MEDUKETOS_AI_II_003.jpg": [
-      "Block",
-      "Despair"
+      "Despair",
+      "Obstacle"
     ],
     "ps/MEDUKETOS/MEDUKETOS_AI_II_004.jpg": [
       "Burn",
@@ -1840,8 +1807,6 @@
     "ps/MEDUKETOS/MEDUKETOS_BP_III_001.jpg": [
       "Ambrosia",
       "Burn",
-      "Light",
-      "Pull",
       "Skitter"
     ],
     "ps/MEDUKETOS/MEDUKETOS_BP_III_002.jpg": [
@@ -1859,7 +1824,6 @@
     ],
     "ps/MEDUKETOS/MEDUKETOS_BP_III_005.jpg": [
       "Ambrosia",
-      "Burn",
       "Retreat X"
     ],
     "ps/MEDUKETOS/MEDUKETOS_BP_III_006.jpg": [],
@@ -1867,8 +1831,6 @@
     "ps/MEDUKETOS/MEDUKETOS_BP_II_001.jpg": [
       "Ambrosia",
       "Burn",
-      "Death",
-      "Fire",
       "Knockdown",
       "Retreat X"
     ],
@@ -1880,9 +1842,6 @@
     ],
     "ps/MEDUKETOS/MEDUKETOS_BP_II_003.jpg": [
       "Ambrosia",
-      "Black Smoke",
-      "Death",
-      "Hide",
       "Knockdown",
       "Retreat X"
     ],
@@ -1896,7 +1855,8 @@
       "Ambrosia",
       "Burn",
       "Knockdown",
-      "Retreat X"
+      "Retreat X",
+      "Despair"
     ],
     "ps/MEDUKETOS/MEDUKETOS_BP_II_006.jpg": [
       "Skitter"
@@ -1909,7 +1869,6 @@
     ],
     "ps/MEDUKETOS/MEDUKETOS_BP_I_002.jpg": [
       "Ambrosia",
-      "Black",
       "Burn",
       "Despair",
       "Retreat X"
@@ -1920,24 +1879,19 @@
     ],
     "ps/MEDUKETOS/MEDUKETOS_BP_I_004.jpg": [
       "Ambrosia",
-      "Cloud",
       "Retreat X"
     ],
     "ps/MEDUKETOS/MEDUKETOS_BP_I_005.jpg": [
       "Burn",
-      "Hide",
       "Retreat X"
     ],
     "ps/MEDUKETOS/MEDUKETOS_BP_I_006.jpg": [
-      "Ambrosia",
       "Despair",
-      "Float",
       "Skitter"
     ],
     "ps/MEDUKETOS/MEDUKETOS_BP_I_BACK.jpg": [],
     "ps/MEDUKETOS/MEDUKETOS_ROUTINE_X_001.jpg": [
       "Ambrosia",
-      "Black",
       "Burn"
     ],
     "ps/MEDUKETOS/MEDUKETOS_ROUTINE_X_001_BACK.jpg": [],
@@ -1955,18 +1909,13 @@
       "扭曲光线"
     ],
     "ps/MEDUKETOS/MEDUKETOS_TR_I_003.jpg": [
-      "Hide",
       "Skitter",
       "光照X"
     ],
-    "ps/MEDUKETOS/MEDUKETOS_TR_I_004.jpg": [
-      "Light"
-    ],
+    "ps/MEDUKETOS/MEDUKETOS_TR_I_004.jpg": [],
     "ps/MEDUKETOS/MEDUKETOS_TR_O_001.jpg": [
-      "Black",
       "Chasm",
       "Elevated",
-      "Hope",
       "Skitter",
       "Light X"
     ],
@@ -1975,7 +1924,10 @@
       "浮空",
       "击倒",
       "位移",
-      "Airburst X"
+      "Airburst X",
+      "Midas",
+      "Goldthirst Curse",
+      "Windblight Curse"
     ],
     "ps/MIDASCORE/MIDASCORE_AI_III_001.jpg": [
       "Goldthirst Curse",
@@ -2025,7 +1977,6 @@
       "Midas X"
     ],
     "ps/MIDASCORE/MIDASCORE_AI_II_006.jpg": [
-      "Jump",
       "Knockdown",
       "Airburst X",
       "Midas X"
@@ -2108,12 +2059,9 @@
       "Airburst X"
     ],
     "ps/MIDASCORE/MIDASCORE_BP_I_004.jpg": [
-      "Carving",
       "Knockdown"
     ],
     "ps/MIDASCORE/MIDASCORE_BP_I_005.jpg": [
-      "Ambrosia",
-      "Harden",
       "Unholy Alchemy",
       "Midas X"
     ],
@@ -2141,72 +2089,64 @@
     "ps/MIDASCORE/MIDASCORE_TR_II_001.jpg": [
       "Chasm"
     ],
-    "ps/MIDASCORE/MIDASCORE_TR_I_001.jpg": [],
+    "ps/MIDASCORE/MIDASCORE_TR_I_001.jpg": [
+      "Midas"
+    ],
     "ps/MIDASCORE/MIDASCORE_TR_O_001.jpg": [
       "Displace",
       "Hermes Move",
-      "Hope",
       "Knockdown",
       "Midas",
       "Shifting",
       "Airburst X",
-      "Midas X"
+      "Midas X",
+      "Float"
     ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT.jpg": [
-      "Death",
       "Shaded",
       "版边",
       "冲撞",
       "高地",
       "击倒",
       "位移",
-      "希望",
       "障碍",
-      "遮阳"
+      "遮阳",
+      "Obscuring"
     ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_AI_III_001.jpg": [
       "高地"
     ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_AI_III_002.jpg": [
-      "攀爬",
-      "时光匿踪",
-      "延伸"
+      "时光匿踪"
     ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_AI_III_003.jpg": [
       "回溯",
-      "攀爬",
       "燃烧"
     ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_AI_III_004.jpg": [
       "时光匿踪",
       "死期 X"
     ],
-    "ps/SUN_DESCENDANT/SUN_DESCENDANT_AI_III_005.jpg": [
-      "攀爬"
-    ],
+    "ps/SUN_DESCENDANT/SUN_DESCENDANT_AI_III_005.jpg": [],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_AI_III_006.jpg": [
-      "Black",
-      "攀爬",
       "燃烧"
     ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_AI_III_BACK.jpg": [],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_AI_III_SPECIAL_BACK.jpg": [],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_AI_II_001.jpg": [
-      "Black",
       "击倒",
       "击退 X"
     ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_AI_II_002.jpg": [
-      "攀爬",
       "时光匿踪",
       "死期 X"
     ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_AI_II_003.jpg": [
-      "燃烧"
+      "燃烧",
+      "Shaded"
     ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_AI_II_004.jpg": [
       "回溯",
-      "攀爬",
       "燃烧"
     ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_AI_II_005.jpg": [
@@ -2215,31 +2155,25 @@
     ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_AI_II_006.jpg": [
       "回溯",
-      "攀爬",
       "燃烧"
     ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_AI_II_BACK.jpg": [],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_AI_I_001.jpg": [
-      "攀爬",
       "击退 X"
     ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_AI_I_002.jpg": [
       "击倒",
-      "攀爬",
       "击退 X"
     ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_AI_I_003.jpg": [
-      "Deny",
       "时光匿踪",
       "死期 X"
     ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_AI_I_004.jpg": [
       "回溯",
-      "攀爬",
       "燃烧"
     ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_AI_I_005.jpg": [
-      "Black",
       "击倒"
     ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_AI_I_006.jpg": [
@@ -2252,59 +2186,44 @@
       "时光匿踪"
     ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_BP_III_002.jpg": [
-      "攀爬",
       "时光匿踪"
     ],
-    "ps/SUN_DESCENDANT/SUN_DESCENDANT_BP_III_003.jpg": [
-      "攀爬"
-    ],
+    "ps/SUN_DESCENDANT/SUN_DESCENDANT_BP_III_003.jpg": [],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_BP_III_004.jpg": [
-      "Black"
+      "Rewind"
     ],
-    "ps/SUN_DESCENDANT/SUN_DESCENDANT_BP_III_005.jpg": [
-      "Scale"
-    ],
-    "ps/SUN_DESCENDANT/SUN_DESCENDANT_BP_III_006.jpg": [
-      "Scale"
-    ],
+    "ps/SUN_DESCENDANT/SUN_DESCENDANT_BP_III_005.jpg": [],
+    "ps/SUN_DESCENDANT/SUN_DESCENDANT_BP_III_006.jpg": [],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_BP_III_BACK.jpg": [],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_BP_II_001.jpg": [
       "回溯",
       "击退 X"
     ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_BP_II_002.jpg": [
-      "攀爬",
       "破甲",
       "时光匿踪"
     ],
-    "ps/SUN_DESCENDANT/SUN_DESCENDANT_BP_II_003.jpg": [
-      "Quantum",
-      "攀爬"
-    ],
+    "ps/SUN_DESCENDANT/SUN_DESCENDANT_BP_II_003.jpg": [],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_BP_II_004.jpg": [
       "击退 X"
     ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_BP_II_005.jpg": [
-      "攀爬",
       "破甲",
       "时光匿踪"
     ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_BP_II_006.jpg": [
       "回溯",
-      "攀爬",
       "时光匿踪"
     ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_BP_II_BACK.jpg": [],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_BP_I_001.jpg": [
-      "晋升",
-      "攀爬"
+      "晋升"
     ],
-    "ps/SUN_DESCENDANT/SUN_DESCENDANT_BP_I_002.jpg": [
-      "Scale"
-    ],
+    "ps/SUN_DESCENDANT/SUN_DESCENDANT_BP_I_002.jpg": [],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_BP_I_003.jpg": [
       "回溯",
-      "晋升"
+      "晋升",
+      "Time-clocked"
     ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_BP_I_004.jpg": [
       "Time-clocked"
@@ -2313,14 +2232,11 @@
       "死期 X"
     ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_BP_I_006.jpg": [
-      "回溯",
-      "精准",
-      "攀爬"
+      "回溯"
     ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_BP_I_BACK.jpg": [],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_ROUTINE_X_001.jpg": [
       "回溯",
-      "攀爬",
       "遮阳"
     ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_ROUTINE_X_001_BACK.jpg": [],
@@ -2330,20 +2246,23 @@
     ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_SIGNATURE_X_001_BACK.jpg": [],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_I_001.jpg": [],
-    "ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_O_001.jpg": [],
+    "ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_O_001.jpg": [
+      "Slippery",
+      "Chasm",
+      "Knockdown"
+    ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_X_001.jpg": [
-      "遮阳"
+      "遮阳",
+      "Rewind"
     ],
     "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY.jpg": [
       "击倒",
-      "机会",
-      "希望",
       "许愿消失X"
     ],
     "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_AI_III_001.jpg": [
-      "Black",
       "Midas",
-      "Wish Away X"
+      "Wish Away X",
+      "Ambrosia"
     ],
     "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_AI_III_002.jpg": [],
     "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_AI_III_003.jpg": [],
@@ -2352,7 +2271,8 @@
       "Wish Away X"
     ],
     "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_AI_III_005.jpg": [
-      "Ambrosia"
+      "Ambrosia",
+      "Knockdown"
     ],
     "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_AI_III_006.jpg": [
       "Midas X"
@@ -2426,10 +2346,7 @@
       "Reverse Unholy Alchemy",
       "Unholy Alchemy"
     ],
-    "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_BP_III_006.jpg": [
-      "Cursed",
-      "Truth"
-    ],
+    "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_BP_III_006.jpg": [],
     "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_BP_III_BACK.jpg": [],
     "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_BP_II_001.jpg": [
       "Ambrosia",
@@ -2447,7 +2364,6 @@
       "Midas X"
     ],
     "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_BP_II_005.jpg": [
-      "Black",
       "Midas X"
     ],
     "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_BP_II_006.jpg": [
@@ -2458,7 +2374,6 @@
     "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_BP_II_BACK.jpg": [],
     "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_BP_I_001.jpg": [
       "Ambrosia",
-      "Pull",
       "Midas X"
     ],
     "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_BP_I_002.jpg": [
@@ -2476,15 +2391,11 @@
     ],
     "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_BP_I_005.jpg": [
       "Ambrosia",
-      "Black",
       "Midas",
       "Midas X"
     ],
     "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_BP_I_006.jpg": [
       "Ambrosia",
-      "Break",
-      "Fire",
-      "Hope",
       "Midas X"
     ],
     "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_BP_I_BACK.jpg": [],
@@ -2502,7 +2413,6 @@
       "拉近 X"
     ],
     "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_O_001.jpg": [
-      "Hope",
       "Knockdown",
       "Midas",
       "Wish Away X"
@@ -2510,28 +2420,29 @@
     "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_VIII_001.jpg": [],
     "ps/THE_BURDEN/THE_BURDEN.jpg": [
       "Rewind",
-      "Spiral",
-      "Vault",
       "版边",
       "冲撞",
       "位移",
-      "希望",
       "障碍",
-      "击退 X"
+      "击退 X",
+      "Ambrosia",
+      "Kickback"
     ],
-    "ps/THE_BURDEN/THE_BURDEN_AI_III_001.jpg": [],
+    "ps/THE_BURDEN/THE_BURDEN_AI_III_001.jpg": [
+      "Kickback"
+    ],
     "ps/THE_BURDEN/THE_BURDEN_AI_III_002.jpg": [
       "回溯",
       "击倒",
       "神浆"
     ],
     "ps/THE_BURDEN/THE_BURDEN_AI_III_003.jpg": [
-      "Burden"
+      "Kickback"
     ],
     "ps/THE_BURDEN/THE_BURDEN_AI_III_004.jpg": [
-      "Jump",
       "击倒",
-      "神浆"
+      "神浆",
+      "Kickback"
     ],
     "ps/THE_BURDEN/THE_BURDEN_AI_III_005.jpg": [
       "Doomed",
@@ -2539,21 +2450,17 @@
       "击倒"
     ],
     "ps/THE_BURDEN/THE_BURDEN_AI_III_006.jpg": [
-      "Burden",
-      "Doomed"
+      "Doomed",
+      "Kickback"
     ],
-    "ps/THE_BURDEN/THE_BURDEN_AI_III_BACK.jpg": [
-      "Burden"
-    ],
-    "ps/THE_BURDEN/THE_BURDEN_AI_III_SPECIAL_BACK.jpg": [
-      "Burden"
-    ],
+    "ps/THE_BURDEN/THE_BURDEN_AI_III_BACK.jpg": [],
+    "ps/THE_BURDEN/THE_BURDEN_AI_III_SPECIAL_BACK.jpg": [],
     "ps/THE_BURDEN/THE_BURDEN_AI_II_001.jpg": [
-      "Jump",
-      "神浆"
+      "神浆",
+      "Kickback"
     ],
     "ps/THE_BURDEN/THE_BURDEN_AI_II_002.jpg": [
-      "Burden"
+      "Kickback"
     ],
     "ps/THE_BURDEN/THE_BURDEN_AI_II_003.jpg": [
       "回溯",
@@ -2561,132 +2468,115 @@
       "神浆"
     ],
     "ps/THE_BURDEN/THE_BURDEN_AI_II_004.jpg": [
-      "Burden",
-      "冲撞"
+      "Kickback"
     ],
     "ps/THE_BURDEN/THE_BURDEN_AI_II_005.jpg": [
-      "神浆"
+      "神浆",
+      "Kickback"
     ],
     "ps/THE_BURDEN/THE_BURDEN_AI_II_006.jpg": [
       "回溯",
       "击倒"
     ],
-    "ps/THE_BURDEN/THE_BURDEN_AI_II_BACK.jpg": [
-      "Burden"
-    ],
+    "ps/THE_BURDEN/THE_BURDEN_AI_II_BACK.jpg": [],
     "ps/THE_BURDEN/THE_BURDEN_AI_I_001.jpg": [
-      "Burden",
-      "冲撞"
+      "Kickback"
     ],
     "ps/THE_BURDEN/THE_BURDEN_AI_I_002.jpg": [
-      "Ambrosia"
+      "Ambrosia",
+      "Kickback"
     ],
     "ps/THE_BURDEN/THE_BURDEN_AI_I_003.jpg": [
       "回溯",
       "击倒"
     ],
     "ps/THE_BURDEN/THE_BURDEN_AI_I_004.jpg": [
-      "Jump",
-      "神浆"
+      "神浆",
+      "Kickback"
     ],
     "ps/THE_BURDEN/THE_BURDEN_AI_I_005.jpg": [
       "回溯",
       "击倒"
     ],
     "ps/THE_BURDEN/THE_BURDEN_AI_I_006.jpg": [
-      "Burden",
-      "Tilt",
-      "击退 X"
+      "击退 X",
+      "Kickback"
     ],
-    "ps/THE_BURDEN/THE_BURDEN_AI_I_BACK.jpg": [
-      "Burden"
-    ],
-    "ps/THE_BURDEN/THE_BURDEN_AI_O_001.jpg": [
-      "Hope"
-    ],
+    "ps/THE_BURDEN/THE_BURDEN_AI_I_BACK.jpg": [],
+    "ps/THE_BURDEN/THE_BURDEN_AI_O_001.jpg": [],
     "ps/THE_BURDEN/THE_BURDEN_BP_III_001.jpg": [
-      "机会",
-      "神浆"
+      "神浆",
+      "Harden"
     ],
     "ps/THE_BURDEN/THE_BURDEN_BP_III_002.jpg": [],
     "ps/THE_BURDEN/THE_BURDEN_BP_III_003.jpg": [
-      "Burden"
+      "Kickback"
     ],
-    "ps/THE_BURDEN/THE_BURDEN_BP_III_004.jpg": [
-      "Burden"
-    ],
+    "ps/THE_BURDEN/THE_BURDEN_BP_III_004.jpg": [],
     "ps/THE_BURDEN/THE_BURDEN_BP_III_005.jpg": [
-      "Burden",
-      "机会",
-      "致命"
+      "Harden"
     ],
     "ps/THE_BURDEN/THE_BURDEN_BP_III_006.jpg": [
-      "Burden",
-      "Harden",
-      "机会"
+      "Harden"
     ],
     "ps/THE_BURDEN/THE_BURDEN_BP_III_BACK.jpg": [],
     "ps/THE_BURDEN/THE_BURDEN_BP_II_001.jpg": [],
     "ps/THE_BURDEN/THE_BURDEN_BP_II_002.jpg": [
-      "Spiral",
-      "击倒"
+      "击倒",
+      "Kickback"
     ],
     "ps/THE_BURDEN/THE_BURDEN_BP_II_003.jpg": [
       "Ambrosia",
-      "Burden",
-      "Harden",
-      "机会"
+      "Harden"
     ],
     "ps/THE_BURDEN/THE_BURDEN_BP_II_004.jpg": [
-      "神浆"
+      "神浆",
+      "Kickback"
     ],
     "ps/THE_BURDEN/THE_BURDEN_BP_II_005.jpg": [],
     "ps/THE_BURDEN/THE_BURDEN_BP_II_006.jpg": [
-      "Burden",
-      "机会"
+      "Harden"
     ],
     "ps/THE_BURDEN/THE_BURDEN_BP_II_BACK.jpg": [],
-    "ps/THE_BURDEN/THE_BURDEN_BP_I_001.jpg": [],
+    "ps/THE_BURDEN/THE_BURDEN_BP_I_001.jpg": [
+      "Kickback"
+    ],
     "ps/THE_BURDEN/THE_BURDEN_BP_I_002.jpg": [
-      "机会"
+      "Harden"
     ],
     "ps/THE_BURDEN/THE_BURDEN_BP_I_003.jpg": [
-      "机会"
+      "Harden",
+      "Kickback"
     ],
     "ps/THE_BURDEN/THE_BURDEN_BP_I_004.jpg": [
-      "Burden",
       "神浆"
     ],
     "ps/THE_BURDEN/THE_BURDEN_BP_I_005.jpg": [
-      "Burden",
-      "稳定"
+      "Kickback"
     ],
-    "ps/THE_BURDEN/THE_BURDEN_BP_I_006.jpg": [
-      "精准"
-    ],
+    "ps/THE_BURDEN/THE_BURDEN_BP_I_006.jpg": [],
     "ps/THE_BURDEN/THE_BURDEN_BP_I_BACK.jpg": [],
-    "ps/THE_BURDEN/THE_BURDEN_ROUTINE_X_001.jpg": [
-      "Burden"
+    "ps/THE_BURDEN/THE_BURDEN_ROUTINE_X_001.jpg": [],
+    "ps/THE_BURDEN/THE_BURDEN_ROUTINE_X_001_BACK.jpg": [],
+    "ps/THE_BURDEN/THE_BURDEN_SIGNATURE_X_001.jpg": [
+      "Kickback"
     ],
-    "ps/THE_BURDEN/THE_BURDEN_ROUTINE_X_001_BACK.jpg": [
-      "Burden"
-    ],
-    "ps/THE_BURDEN/THE_BURDEN_SIGNATURE_X_001.jpg": [],
-    "ps/THE_BURDEN/THE_BURDEN_SIGNATURE_X_001_BACK.jpg": [
-      "Burden"
-    ],
+    "ps/THE_BURDEN/THE_BURDEN_SIGNATURE_X_001_BACK.jpg": [],
     "ps/THE_BURDEN/THE_BURDEN_TR_II_001.jpg": [],
-    "ps/THE_BURDEN/THE_BURDEN_TR_O_001.jpg": [],
-    "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN.jpg": [
-      "Break",
-      "火焰"
+    "ps/THE_BURDEN/THE_BURDEN_TR_O_001.jpg": [
+      "Chasm",
+      "Slippery",
+      "Board Edge",
+      "Boundless",
+      "Indestructible",
+      "Kickback"
     ],
+    "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN.jpg": [],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_AI_III_001.jpg": [
       "击倒",
       "击退 X"
     ],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_AI_III_002.jpg": [
-      "火焰",
       "击倒",
       "神浆",
       "击退 X"
@@ -2705,7 +2595,6 @@
       "击退 X"
     ],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_AI_III_006.jpg": [
-      "Black",
       "击倒",
       "燃烧",
       "神浆",
@@ -2719,10 +2608,10 @@
       "击退 X"
     ],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_AI_II_002.jpg": [
-      "击倒"
+      "击倒",
+      "Ambrosia"
     ],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_AI_II_003.jpg": [
-      "Fire",
       "击倒",
       "燃烧",
       "击退 X"
@@ -2737,7 +2626,6 @@
     ],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_AI_II_006.jpg": [
       "Ambrosia",
-      "Death",
       "神浆",
       "击退 X"
     ],
@@ -2752,7 +2640,6 @@
       "神浆"
     ],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_AI_I_003.jpg": [
-      "Fire",
       "击倒",
       "燃烧",
       "击退 X"
@@ -2773,27 +2660,24 @@
     ],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_AI_I_BACK.jpg": [],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_AI_O_001.jpg": [
-      "希望"
+      "Escalate"
     ],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_BP_III_001.jpg": [
       "Ambrosia",
       "神浆"
     ],
-    "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_BP_III_002.jpg": [
-      "火焰"
-    ],
+    "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_BP_III_002.jpg": [],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_BP_III_003.jpg": [
-      "Fire"
+      "Burn"
     ],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_BP_III_004.jpg": [
-      "Black",
-      "机会",
-      "神浆"
+      "Harden",
+      "Ambrosia Limit"
     ],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_BP_III_005.jpg": [],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_BP_III_006.jpg": [
       "Black",
-      "机会"
+      "Harden"
     ],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_BP_III_BACK.jpg": [],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_BP_II_001.jpg": [
@@ -2804,7 +2688,7 @@
       "击退 X"
     ],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_BP_II_003.jpg": [
-      "Black"
+      "Harden"
     ],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_BP_II_004.jpg": [
       "登升",
@@ -2817,15 +2701,13 @@
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_BP_II_006.jpg": [
       "Harden",
       "火焰",
-      "机会",
       "燃烧"
     ],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_BP_II_BACK.jpg": [],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_BP_I_001.jpg": [
-      "机会",
-      "精准",
       "破甲",
-      "晋升 X"
+      "晋升 X",
+      "Harden"
     ],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_BP_I_002.jpg": [],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_BP_I_003.jpg": [
@@ -2833,7 +2715,6 @@
     ],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_BP_I_004.jpg": [
       "Harden",
-      "机会",
       "神浆"
     ],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_BP_I_005.jpg": [
@@ -2841,29 +2722,28 @@
     ],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_BP_I_006.jpg": [],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_BP_I_BACK.jpg": [],
-    "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_ROUTINE_X_001.jpg": [],
+    "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_ROUTINE_X_001.jpg": [
+      "Knockback"
+    ],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_ROUTINE_X_001_BACK.jpg": [],
-    "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_SIGNATURE_X_001.jpg": [],
+    "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_SIGNATURE_X_001.jpg": [
+      "Knockback"
+    ],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_SIGNATURE_X_001_BACK.jpg": [],
-    "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TRII_002.jpg": [
-      "机会"
-    ],
+    "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TRII_002.jpg": [],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_II_001.jpg": [],
-    "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_II_002.jpg": [
-      "机会"
-    ],
+    "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_II_002.jpg": [],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_O_001.jpg": [
       "神浆"
     ],
     "ps/TITAN_X/TITAN_X.jpg": [
-      "Deadly",
       "版边",
       "无边限",
       "冲撞",
-      "致命"
+      "Pain",
+      "Indestructible"
     ],
     "ps/TITAN_X/TITAN_X_AI_III_001.jpg": [
-      "Deadly",
       "Death",
       "Death X",
       "Pain X"
@@ -2876,7 +2756,6 @@
     ],
     "ps/TITAN_X/TITAN_X_AI_III_003.jpg": [],
     "ps/TITAN_X/TITAN_X_AI_III_004.jpg": [
-      "Deadly",
       "Pain",
       "Pain X"
     ],
@@ -2893,20 +2772,16 @@
       "Death X"
     ],
     "ps/TITAN_X/TITAN_X_AI_II_002.jpg": [
-      "Deadly",
       "Pain",
       "Pain X"
     ],
-    "ps/TITAN_X/TITAN_X_AI_II_003.jpg": [
-      "Truth"
-    ],
+    "ps/TITAN_X/TITAN_X_AI_II_003.jpg": [],
     "ps/TITAN_X/TITAN_X_AI_II_004.jpg": [
       "Pain",
       "Pain X",
       "Pushback X"
     ],
     "ps/TITAN_X/TITAN_X_AI_II_005.jpg": [
-      "Deadly",
       "Knockdown",
       "Pain X"
     ],
@@ -2922,7 +2797,6 @@
       "Pain X"
     ],
     "ps/TITAN_X/TITAN_X_AI_I_002.jpg": [
-      "Deadly",
       "Pain",
       "Pain X"
     ],
@@ -2941,7 +2815,9 @@
       "Pain X"
     ],
     "ps/TITAN_X/TITAN_X_AI_I_BACK.jpg": [],
-    "ps/TITAN_X/TITAN_X_AI_O_001.jpg": [],
+    "ps/TITAN_X/TITAN_X_AI_O_001.jpg": [
+      "Escalate"
+    ],
     "ps/TITAN_X/TITAN_X_AI_O_001_BACK.jpg": [],
     "ps/TITAN_X/TITAN_X_BP_III_001.jpg": [
       "Pain X"
@@ -2959,24 +2835,17 @@
       "Pain X"
     ],
     "ps/TITAN_X/TITAN_X_BP_II_003.jpg": [
-      "Break",
       "Pain X"
     ],
-    "ps/TITAN_X/TITAN_X_BP_II_004.jpg": [
-      "机会"
-    ],
-    "ps/TITAN_X/TITAN_X_BP_II_005.jpg": [
-      "Exposed"
-    ],
+    "ps/TITAN_X/TITAN_X_BP_II_004.jpg": [],
+    "ps/TITAN_X/TITAN_X_BP_II_005.jpg": [],
     "ps/TITAN_X/TITAN_X_BP_II_006.jpg": [
       "Pain",
       "Pain X"
     ],
     "ps/TITAN_X/TITAN_X_BP_II_007.jpg": [],
     "ps/TITAN_X/TITAN_X_BP_II_BACK.jpg": [],
-    "ps/TITAN_X/TITAN_X_BP_I_001.jpg": [
-      "机会"
-    ],
+    "ps/TITAN_X/TITAN_X_BP_I_001.jpg": [],
     "ps/TITAN_X/TITAN_X_BP_I_002.jpg": [
       "Pain X"
     ],
@@ -2991,15 +2860,14 @@
       "Pain X"
     ],
     "ps/TITAN_X/TITAN_X_BP_I_006.jpg": [
-      "Opening",
       "Knockback X",
       "Pain X"
     ],
-    "ps/TITAN_X/TITAN_X_BP_I_007.jpg": [
-      "Break"
-    ],
+    "ps/TITAN_X/TITAN_X_BP_I_007.jpg": [],
     "ps/TITAN_X/TITAN_X_BP_I_BACK.jpg": [],
-    "ps/TITAN_X/TITAN_X_FEINT_X_001.jpg": [],
+    "ps/TITAN_X/TITAN_X_FEINT_X_001.jpg": [
+      "Pain"
+    ],
     "ps/TITAN_X/TITAN_X_FEINT_X_001_BACK.jpg": [],
     "ps/TITAN_X/TITAN_X_FEINT_X_002.jpg": [],
     "ps/TITAN_X/TITAN_X_FEINT_X_002_BACK.jpg": [],
@@ -3016,12 +2884,15 @@
     "ps/TITAN_X/TITAN_X_FEINT_X_006.jpg": [],
     "ps/TITAN_X/TITAN_X_FEINT_X_006_BACK.jpg": [],
     "ps/TITAN_X/TITAN_X_FEINT_X_007.jpg": [
-      "机会"
+      "机会",
+      "Closing"
     ],
     "ps/TITAN_X/TITAN_X_FEINT_X_007_BACK.jpg": [],
     "ps/TITAN_X/TITAN_X_FEINT_X_008.jpg": [],
     "ps/TITAN_X/TITAN_X_FEINT_X_008_BACK.jpg": [],
-    "ps/TITAN_X/TITAN_X_FEINT_X_009.jpg": [],
+    "ps/TITAN_X/TITAN_X_FEINT_X_009.jpg": [
+      "Escalate"
+    ],
     "ps/TITAN_X/TITAN_X_FEINT_X_009_BACK.jpg": [],
     "ps/TITAN_X/TITAN_X_FEINT_X_010.jpg": [],
     "ps/TITAN_X/TITAN_X_FEINT_X_010_BACK.jpg": [],
@@ -3036,7 +2907,8 @@
     "ps/TITAN_X/TITAN_X_SIGNATURE_X_001_BACK.jpg": [],
     "ps/TITAN_X/TITAN_X_TR_I_001.jpg": [],
     "ps/TITAN_X/TITAN_X_TR_O_001.jpg": [
-      "Truth"
+      "Ambrosia",
+      "Pain"
     ],
     "ps/UR_FLEECE/UR_FLEECE.jpg": [
       "版边",
@@ -3044,11 +2916,12 @@
       "击退",
       "拉近",
       "深渊",
-      "希望",
       "Knockback X",
       "击退 X",
       "Pull X",
-      "拉近 X"
+      "拉近 X",
+      "Ur-Knockback",
+      "Ur-Pull"
     ],
     "ps/UR_FLEECE/UR_FLEECE_2.jpg": [
       "版边",
@@ -3059,11 +2932,12 @@
       "Knockback X",
       "击退 X",
       "Pull X",
-      "拉近 X"
+      "拉近 X",
+      "Ur-Knockback",
+      "Ur-Pull"
     ],
     "ps/UR_FLEECE/UR_FLEECE_AI_III_001.jpg": [
       "Ambrosia",
-      "Black",
       "Despair"
     ],
     "ps/UR_FLEECE/UR_FLEECE_AI_III_002.jpg": [
@@ -3074,27 +2948,22 @@
     "ps/UR_FLEECE/UR_FLEECE_AI_III_003.jpg": [
       "Abyss",
       "Ambrosia",
-      "Black",
       "Despair"
     ],
     "ps/UR_FLEECE/UR_FLEECE_AI_III_004.jpg": [
       "Burn",
       "Despair",
-      "Fire",
       "Knockdown",
       "Ur-Pull",
       "Ur-Pull X"
     ],
     "ps/UR_FLEECE/UR_FLEECE_AI_III_005.jpg": [
-      "Abyss",
-      "Black",
       "Despair",
       "Ur-Knockback X"
     ],
     "ps/UR_FLEECE/UR_FLEECE_AI_III_006.jpg": [
       "Abyss",
       "Ambrosia",
-      "Black",
       "Despair",
       "Pull X"
     ],
@@ -3107,7 +2976,6 @@
     ],
     "ps/UR_FLEECE/UR_FLEECE_AI_II_002.jpg": [
       "Ambrosia",
-      "Black",
       "Burn",
       "Despair",
       "Light",
@@ -3115,12 +2983,10 @@
     ],
     "ps/UR_FLEECE/UR_FLEECE_AI_II_003.jpg": [
       "Ambrosia",
-      "Black",
       "Despair"
     ],
     "ps/UR_FLEECE/UR_FLEECE_AI_II_004.jpg": [
       "Ambrosia",
-      "Black",
       "Burn",
       "Despair",
       "Knockdown",
@@ -3133,10 +2999,8 @@
       "Ur-Pull X"
     ],
     "ps/UR_FLEECE/UR_FLEECE_AI_II_006.jpg": [
-      "Abyss",
       "Ambrosia",
       "Despair",
-      "Black X",
       "Ur-Knockback X"
     ],
     "ps/UR_FLEECE/UR_FLEECE_AI_II_BACK.jpg": [],
@@ -3152,14 +3016,11 @@
       "Light"
     ],
     "ps/UR_FLEECE/UR_FLEECE_AI_I_003.jpg": [
-      "Abyss",
       "Ambrosia",
-      "Black",
       "Despair"
     ],
     "ps/UR_FLEECE/UR_FLEECE_AI_I_004.jpg": [
       "Ambrosia",
-      "Black",
       "Burn",
       "Despair",
       "Knockdown",
@@ -3173,7 +3034,6 @@
     ],
     "ps/UR_FLEECE/UR_FLEECE_AI_I_006.jpg": [
       "Ambrosia",
-      "Black",
       "Despair",
       "Ur-Knockback X"
     ],
@@ -3184,9 +3044,7 @@
     ],
     "ps/UR_FLEECE/UR_FLEECE_AI_O_001_BACK.jpg": [],
     "ps/UR_FLEECE/UR_FLEECE_BP_III_001.jpg": [
-      "Ambrosia",
-      "Black",
-      "Truth"
+      "Ambrosia"
     ],
     "ps/UR_FLEECE/UR_FLEECE_BP_III_002.jpg": [],
     "ps/UR_FLEECE/UR_FLEECE_BP_III_003.jpg": [
@@ -3194,13 +3052,9 @@
     ],
     "ps/UR_FLEECE/UR_FLEECE_BP_III_004.jpg": [
       "Ambrosia",
-      "Burn",
-      "Light"
+      "Burn"
     ],
     "ps/UR_FLEECE/UR_FLEECE_BP_III_005.jpg": [
-      "Ambrosia",
-      "Black",
-      "Death",
       "Ur-Pull X"
     ],
     "ps/UR_FLEECE/UR_FLEECE_BP_III_006.jpg": [],
@@ -3216,8 +3070,7 @@
     ],
     "ps/UR_FLEECE/UR_FLEECE_BP_II_003.jpg": [],
     "ps/UR_FLEECE/UR_FLEECE_BP_II_004.jpg": [
-      "Ambrosia",
-      "Hide"
+      "Ambrosia"
     ],
     "ps/UR_FLEECE/UR_FLEECE_BP_II_005.jpg": [
       "Ambrosia",
@@ -3227,7 +3080,6 @@
     ],
     "ps/UR_FLEECE/UR_FLEECE_BP_II_006.jpg": [
       "Burn",
-      "Fire",
       "Ur-Pull",
       "Ur-Knockback X"
     ],
@@ -3248,25 +3100,18 @@
     ],
     "ps/UR_FLEECE/UR_FLEECE_BP_I_004.jpg": [
       "Abyss",
-      "Ambrosia",
-      "Black",
-      "Despair"
+      "Ambrosia"
     ],
     "ps/UR_FLEECE/UR_FLEECE_BP_I_005.jpg": [
-      "Burn",
-      "Harden"
+      "Burn"
     ],
     "ps/UR_FLEECE/UR_FLEECE_BP_I_006.jpg": [
       "Ambrosia",
       "Despair"
     ],
     "ps/UR_FLEECE/UR_FLEECE_BP_I_BACK.jpg": [],
-    "ps/UR_FLEECE/UR_FLEECE_ROUTINE_X_001.jpg": [
-      "Abyss"
-    ],
-    "ps/UR_FLEECE/UR_FLEECE_ROUTINE_X_001_BACK.jpg": [
-      "Black"
-    ],
+    "ps/UR_FLEECE/UR_FLEECE_ROUTINE_X_001.jpg": [],
+    "ps/UR_FLEECE/UR_FLEECE_ROUTINE_X_001_BACK.jpg": [],
     "ps/UR_FLEECE/UR_FLEECE_SIGNATURE_X_001.jpg": [
       "Ambrosia",
       "Despair",
@@ -3281,8 +3126,7 @@
     "ps/UR_FLEECE/UR_FLEECE_TR_I_002.jpg": [],
     "ps/UR_FLEECE/UR_FLEECE_TR_O_001.jpg": [
       "Abyss",
-      "Ambrosia",
-      "Black"
+      "Ambrosia"
     ],
     "ps/other/DW.jpg": [],
     "ps/other/SW.jpg": [],
@@ -3295,24 +3139,16 @@
       "Chasm"
     ],
     "ps/other/trait/C4_CURSED_TR_001.jpg": [
-      "Cursed",
       "希望"
     ],
     "ps/other/trait/C4_CURSED_TR_002.jpg": [],
-    "ps/other/trait/C4_CURSED_TR_003.jpg": [
-      "Cursed"
-    ],
-    "ps/other/trait/C4_CURSED_TR_004.jpg": [
-      "Cursed"
-    ],
+    "ps/other/trait/C4_CURSED_TR_003.jpg": [],
+    "ps/other/trait/C4_CURSED_TR_004.jpg": [],
     "ps/other/trait/C4_CURSED_TR_005.jpg": [
-      "Cursed",
       "击倒"
     ],
     "ps/other/trait/C4_CURSED_TR_006.jpg": [],
-    "ps/other/trait/C5_TR_001.jpg": [
-      "Quantum"
-    ],
+    "ps/other/trait/C5_TR_001.jpg": [],
     "ps/other/trait/C5_TR_002.jpg": [],
     "ps/other/trait/COMMON_TR_001.jpg": [
       "Inhabited",

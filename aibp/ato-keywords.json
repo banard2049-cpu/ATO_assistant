@@ -533,6 +533,10 @@
       "officialDefinition": "在移动（无论是否主动移动）开始时激活本能力。直到本次移动结束前，你可以忽略单块地形板块上的1格（包括障碍）。本能力无法在被击倒的情况下使用，即使是被动移动也是如此。可能的子类型："
     },
     {
+      "word": "Kickback",
+      "definition": "<font size=\"+2\">Kickback X:</font><br>Resolve as <a href=\"dic://Knockback\">Knockback</a> X, with these exceptions: when a Titan would enter a space occupied by an Obstacle Terrain tile or the Primordial, turn its movement 90 degrees along that object’s edge and continue the remaining movement. Prefer the direction towards the bottom of the Battle Board (the side numbered 1). If that direction is unavailable, turn towards the nearer end of the obstructing Terrain tile or Primordial. A single Kickback can change direction several times. If this movement would cause <a href=\"dic://Crash\">Crash</a>, resolve it only once, at the end of the entire Kickback, even if there would be several collisions.<hr><font size=\"+2\">踢飞 X:</font><br>按<a href=\"dic://击退\">击退</a>X结算，但泰坦将要进入障碍地形板块或始徒占据的格子时，改为将移动方向转动90度，沿该对象的边缘继续结算剩余格数。优先向版图底部（编号1的一侧）一侧转向；若无法向该方向转动，则向距离障碍地形或始徒的端部较近的一侧转向。一次踢飞可多次转向。若这次移动会造成<a href=\"dic://冲撞\">冲撞</a>，只在整次踢飞结束时结算一次，即使途中有多次碰撞。"
+    },
+    {
       "word": "Kickback Reduction",
       "definition": "<font size=\"+2\">Kickback <a href='dic://Reduction'>Reduction</a> X:</font><br>You may reduce suffered Kickback by up to X.<br><br>Related Keyword/Subtype also see:<br><a href='dic://Knockback%20Reduction'>Knockback Reduction X</a><br><a href='dic://Pull%20Reduction'>Pull Reduction X</a><br><a href='dic://Pushback%20Reduction'>Pushback Reduction X</a><br><a href='dic://Reduction'>Reduction X</a><br><a href='dic://Wish%20Away%20Reduction'>Wish Away Reduction X</a><hr><font size=\"+2\">踢飞<a href='dic://减低X'>减低X</a>:</font><br>你可降低至多X格受到的踢飞。<br><br>相关词条/亚型 请查看:<br><a href='dic://击退减低X'>击退减低X</a><br><a href='dic://拉近减低X'>拉近减低X</a><br><a href='dic://顶推减低X'>顶推减低X</a><br><a href='dic://减低X'>减低X</a><br><a href='dic://许愿消失减低X'>许愿消失减低X</a>"
     },
@@ -1773,6 +1777,10 @@
     {
       "word": "泰坦占有",
       "definition": "<font size=\"+2\">泰坦占有:</font><br>一旦某泰坦装备了此装备卡，该泰坦在接下来的所有战斗都必须装备此卡。但该泰坦仍可被不同阿尔戈英雄驾驶。<br><br>相关词条/亚型 请查看:<br><a href='dic://阿尔戈英雄占有'>阿尔戈英雄占有</a><hr><font size=\"+2\">Titan Possession:</font><br>Once you equip this Gear card on a Titan, you have to equip it on this Titan for every subsequent Battle. You may, however, junction this Titan with a different Argonaut.<br><br>Related Keyword/Subtype also see:<br><a href='dic://Argonaut%20Possession'>Argonaut Possession</a>"
+    },
+    {
+      "word": "踢飞",
+      "definition": "<font size=\"+2\">踢飞 X:</font><br>按<a href=\"dic://击退\">击退</a>X结算，但泰坦将要进入障碍地形板块或始徒占据的格子时，改为将移动方向转动90度，沿该对象的边缘继续结算剩余格数。优先向版图底部（编号1的一侧）一侧转向；若无法向该方向转动，则向距离障碍地形或始徒的端部较近的一侧转向。一次踢飞可多次转向。若这次移动会造成<a href=\"dic://冲撞\">冲撞</a>，只在整次踢飞结束时结算一次，即使途中有多次碰撞。<hr><font size=\"+2\">Kickback X:</font><br>Resolve as <a href=\"dic://Knockback\">Knockback</a> X, with these exceptions: when a Titan would enter a space occupied by an Obstacle Terrain tile or the Primordial, turn its movement 90 degrees along that object’s edge and continue the remaining movement. Prefer the direction towards the bottom of the Battle Board (the side numbered 1). If that direction is unavailable, turn towards the nearer end of the obstructing Terrain tile or Primordial. A single Kickback can change direction several times. If this movement would cause <a href=\"dic://Crash\">Crash</a>, resolve it only once, at the end of the entire Kickback, even if there would be several collisions."
     },
     {
       "word": "踢飞减低X",

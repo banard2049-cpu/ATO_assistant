@@ -1315,17 +1315,19 @@
     }
 
     .card-grid {
+      --pile-card-height: calc(var(--side-card-image-height) * 0.55);
+      --pile-card-width: calc(var(--pile-card-height) * 63 / 89);
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(var(--card-min), var(--card-max-width)));
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--pile-card-width)), var(--pile-card-width)));
       justify-content: start;
-      gap: 14px;
+      gap: 10px;
     }
 
     .card-grid img {
       width: 100%;
       height: auto;
-      max-width: var(--card-max-width);
-      max-height: var(--side-card-image-height);
+      max-width: var(--pile-card-width);
+      max-height: var(--pile-card-height);
       justify-self: center;
       object-fit: contain;
       background: #0b0b0a;
@@ -1797,7 +1799,7 @@
       border-radius: 999px;
       background: rgba(18, 80, 126, 0.2);
       color: #9bd7ff;
-      font-size: calc(32 * var(--panel-overlay-unit, 1px));
+      font-size: 0;
       font-weight: 900;
       line-height: 1;
       cursor: pointer;
@@ -1807,6 +1809,27 @@
 
     .critical-mass-slot.show {
       display: grid;
+    }
+
+    .critical-mass-slot::before,
+    .critical-mass-slot::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background: currentColor;
+      pointer-events: none;
+    }
+
+    .critical-mass-slot::before {
+      width: 32%;
+      height: calc(3 * var(--panel-overlay-unit, 1px));
+    }
+
+    .critical-mass-slot::after {
+      width: calc(3 * var(--panel-overlay-unit, 1px));
+      height: 32%;
     }
 
     /* 有两张完整面板的始徒（目前是乌尔-弗里斯）：普通状态下也能直接换大卡。 */
@@ -2367,15 +2390,15 @@
   <link rel="stylesheet" href="battle_map_control.css?v=20261104-keyword-sibling3">
   <link rel="stylesheet" href="../api/cycle-theme.css">
   <script src="../assets/theme.js?v=20261001" defer></script>
-  <link rel="stylesheet" href="editorial.css?v=20261019-preview-click-draw1">
+  <link rel="stylesheet" href="editorial.css?v=20261105-pile-row-alignment1">
   <link rel="stylesheet" href="../assets/card-art.css?v=20261017-fan-fringe5">
   <script src="../assets/fan-card-trims-data.js?v=20261020-fan-scan3" defer></script>
   <script src="../assets/fan-card-trims.js?v=20261020-title-guard1" defer></script>
   <script src="../assets/card-art.js?v=20261020-title-guard1" defer></script>
   <link rel="stylesheet" href="keyword-search.css?v=11">
   <script src="keyword-dictionary.js?v=3" defer></script>
-  <script src="keyword-search.js?v=14" defer></script>
-  <script src="card-keywords.js?v=11" defer></script>
+  <script src="keyword-search.js?v=15" defer></script>
+  <script src="card-keywords.js?v=13" defer></script>
   <script src="draw-notice-layout.js?v=1" defer></script>
   <!-- Mobile composition is enabled only by the installed APK in portrait. -->
   <link rel="stylesheet" href="../assets/mobile/common.css?v=20261028-apk-portrait1">
@@ -2488,7 +2511,9 @@
               </div>
               <div class="draw-preview" id="aiDrawPreview">未抽取 AI</div>
             </div>
-            <div class="card-grid" id="aiGrid"></div>
+            <div class="card-column-piles">
+              <div class="card-grid" id="aiGrid"></div>
+            </div>
           </div>
           <div class="card-column" id="bpColumn">
             <div class="card-column-head">
@@ -2522,16 +2547,18 @@
               <div class="draw-preview" id="bpDrawPreview">未抽取 BP</div>
               <div class="deck-info" id="deathblowBpStatus" role="status" hidden></div>
             </div>
-            <div class="babelian-bp-control" id="babelianFusionControl" hidden></div>
-            <div class="bp-combined-counter" id="bpCombinedControl" hidden>
-              <span class="bp-combined-title">累积强度</span>
-              <button type="button" class="bp-combined-adjust" data-combined-adjust="-1" aria-label="累积强度减一">−1</button>
-              <input id="bpCombinedTotal" type="number" min="0" step="1" value="0" aria-label="累积强度">
-              <button type="button" class="bp-combined-adjust" data-combined-adjust="1" aria-label="累积强度加一">+1</button>
-              <button type="button" class="bp-combined-adjust" data-combined-adjust="5" aria-label="累积强度加五">+5</button>
-              <button type="button" class="bp-combined-adjust bp-combined-reset" data-combined-adjust="clear">归零</button>
+            <div class="card-column-piles">
+              <div class="babelian-bp-control" id="babelianFusionControl" hidden></div>
+              <div class="bp-combined-counter" id="bpCombinedControl" hidden>
+                <span class="bp-combined-title">累积强度</span>
+                <button type="button" class="bp-combined-adjust" data-combined-adjust="-1" aria-label="累积强度减一">−1</button>
+                <input id="bpCombinedTotal" type="number" min="0" step="1" value="0" aria-label="累积强度">
+                <button type="button" class="bp-combined-adjust" data-combined-adjust="1" aria-label="累积强度加一">+1</button>
+                <button type="button" class="bp-combined-adjust" data-combined-adjust="5" aria-label="累积强度加五">+5</button>
+                <button type="button" class="bp-combined-adjust bp-combined-reset" data-combined-adjust="clear">归零</button>
+              </div>
+              <div class="card-grid" id="bpGrid"></div>
             </div>
-            <div class="card-grid" id="bpGrid"></div>
           </div>
         </div>
       </section>
@@ -3031,6 +3058,7 @@
     }
     const criticalMassTokenFile = "CM.jpg";
     const criticalMassPosition = { x: 50.7, y: 51.2 };
+    const chimeraCriticalMassPosition = { x: 50.8, y: 49.5 };
     const hekatonCriticalMassPosition = { x: 51.1, y: 34 };
     const oracleCriticalMassPosition = { x: 48.8, y: 47.4 };
     const c45PanelCounterPosition = { x: 96, y: 7.5 };
@@ -5053,6 +5081,7 @@
     }
 
     function currentCriticalMassPosition() {
+      if (currentApostle === chimeraName) return chimeraCriticalMassPosition;
       if (currentApostle === "HEKATON") return hekatonCriticalMassPosition;
       if (currentApostle === "HYPERTIME_ORACLE") return oracleCriticalMassPosition;
       return criticalMassPosition;

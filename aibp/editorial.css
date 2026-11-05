@@ -36,6 +36,17 @@ body:not(.sidebar-collapsed) .sidebar-toggle { left: 212px; top: 24px; }
 .card-column + .card-column { border-color: var(--line); }
 .card-column-head { border-bottom: 1px solid var(--line); padding-bottom: 12px; margin-bottom: 14px; }
 .draw-box { padding: 0 0 14px; border: 0; border-bottom: 1px solid var(--line); background: transparent; border-radius: 0; }
+/* Share header and draw rows so both pile separators stay level as controls wrap. */
+@media (min-width: 981px) {
+  html:not(.ato-apk-portrait) .aibp-layout:not(.ai-only) { grid-template-rows: auto auto minmax(0, 1fr); }
+  html:not(.ato-apk-portrait) .aibp-layout:not(.ai-only) > .card-column {
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: 1 / span 3;
+    grid-column: 1;
+  }
+  html:not(.ato-apk-portrait) .aibp-layout:not(.ai-only) > #bpColumn { grid-column: 2; }
+}
 .draw-actions button { min-height: 30px; }
 /* The existing draw layout explicitly fixes button radii with !important. */
 .draw-actions button, .draw-panel button { border-radius: 0 !important; }
