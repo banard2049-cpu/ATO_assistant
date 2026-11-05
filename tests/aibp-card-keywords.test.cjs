@@ -22,8 +22,52 @@ test('recovered card rules resolve to real bilingual entries, including manually
     const found = dictionary.unique(index.cards[src]);
     assert.ok(found.includes(dictionary.entryFor(keyword)), `${src}: ${keyword}`);
   }
-  assert.equal(index.coverage.aibpFrontOcrPasses, 3);
+  assert.equal(index.coverage.aibpFrontOcrPasses, 0);
   assert.equal(index.coverage.noMatchRuleRegionsVisuallyReviewed, 106);
+});
+
+test('visual reviews recover printed effects and exclude titles, flavor text, and unrelated homonyms', () => {
+  const records = JSON.parse(fs.readFileSync(path.join(__dirname, '../aibp/ato-keywords.json'), 'utf8')).entries;
+  const dictionary = model.build(records, html => ({ text: html, headings: [...html.matchAll(/<font size="\+2">(.*?)<\/font>/g)].map(match => match[1].replace(/<[^>]*>/g, '')) }));
+  const index = JSON.parse(fs.readFileSync(path.join(__dirname, '../aibp/card-keywords.json'), 'utf8'));
+  const ids = words => dictionary.unique(words).map(entry => entry.id).sort();
+  for (const [src, expected] of [
+    ['ps/HEKATON/HEKATON_AI_I_004.jpg', ['Knockdown', 'Pushback']],
+    ['ps/ALPHA_TEMENOS/ALPHA_TEMENOS_AI_II_002.jpg', ['Despair', 'Labyrinth']],
+    ['ps/CYCLONUS/CYCLONUS_AI_II_005.jpg', ['Pull']],
+    ['ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_BP_II_002.jpg', ['Time-clocked']],
+    ['ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_BP_I_001_BACK.jpg', ['Despair']],
+    ['ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_BP_III_003.jpg', ['Burn']],
+    ['ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_BP_III_004.jpg', ['Harden', 'Ambrosia Limit']],
+    ['ps/THE_BURDEN/THE_BURDEN_AI_I_004.jpg', ['Ambrosia', 'Kickback']],
+    ['ps/UR_FLEECE/UR_FLEECE_AI_III_001.jpg', ['Ambrosia', 'Despair']],
+    ['ps/UR_FLEECE/UR_FLEECE_AI_III_004.jpg', ['Burn', 'Despair', 'Knockdown', 'Ur-Pull']],
+    ['ps/UR_FLEECE/UR_FLEECE_BP_III_001.jpg', ['Ambrosia']],
+    ['ps/UR_FLEECE/UR_FLEECE_BP_I_005.jpg', ['Burn']],
+    ['ps/HEKATON/HEKATON_BP_II_006.jpg', ['Knockback', 'Pushback']],
+    ['ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE-1.jpg', ['Board Edge', 'Indestructible']],
+    ['ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE.jpg', ['Board Edge', 'Indestructible', 'Crash']],
+    ['ps/MIDASCORE/MIDASCORE_AI_II_006.jpg', ['Knockdown', 'Airburst', 'Midas']],
+    ['ps/LABYRINTHAUROS/LABYRINTHAUROS_TP_X_001.jpg', []],
+    ['ps/TITAN_X/TITAN_X_AI_O_001.jpg', ['Escalate']],
+    ['ps/ICARIAN_HARPY/ICARIAN_HARPY.jpg', ['Bleeding', 'Pull', 'Ambrosia']],
+    ['ps/other/trait/C4_CURSED_TR_003.jpg', []],
+    ['ps/other/trait/C5_TR_001.jpg', []],
+  ]) assert.deepEqual(ids(index.cards[src]), ids(expected), src);
+});
+
+test('generated card index includes the exact reviewed lists and complete review coverage', () => {
+  const review = JSON.parse(fs.readFileSync(path.join(__dirname, '../tools/ato-keyword-review.json'), 'utf8'));
+  const index = JSON.parse(fs.readFileSync(path.join(__dirname, '../aibp/card-keywords.json'), 'utf8'));
+  const verified = review.verifiedCards;
+  assert.deepEqual(Object.keys(verified).sort(), Object.keys(index.cards).sort());
+  assert.equal(index.coverage.visuallyReviewedImages, Object.keys(verified).length);
+  for (const [src, checked] of Object.entries(verified)) {
+    assert.match(checked.sha256, /^[a-f0-9]{64}$/, src);
+    assert.equal(checked.visualReviewRound, 2, src);
+    assert.ok(checked.evidence.trim(), src);
+    assert.deepEqual(index.cards[src], checked.words, src);
+  }
 });
 
 test('reopening AI/BP cards uses the full image path and retains keyword lookup', () => {

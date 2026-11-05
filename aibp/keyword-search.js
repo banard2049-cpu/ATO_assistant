@@ -152,7 +152,7 @@
     if (!loading) {
       loadError = false;
       render();
-      loading = fetch(new URL('ato-keywords.json?v=10', scriptUrl)).then(response => {
+      loading = fetch(new URL('ato-keywords.json?v=11', scriptUrl)).then(response => {
         if (!response.ok) throw new Error('Dictionary unavailable');
         return response.json();
       }).then(data => {

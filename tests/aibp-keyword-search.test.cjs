@@ -132,11 +132,11 @@ test('official definitions and names are searchable and missing text falls back 
   assert.equal(fallback.children[1].textContent, '攻击:\n造成伤害');
 });
 
-test('the supplied Eudic aliases merge without dropping any of the 433 headwords', () => {
+test('source aliases and the reviewed Kickback addition merge without dropping headwords', () => {
   const source = JSON.parse(fs.readFileSync(path.join(__dirname, '../aibp/ato-keywords.json'), 'utf8')).entries;
   const dictionary = model.build(source, parseDefinition);
-  assert.equal(source.length, 433);
-  assert.equal(dictionary.entries.length, 216);
+  assert.equal(source.length, 435);
+  assert.equal(dictionary.entries.length, 217);
   source.forEach(entry => assert.ok(dictionary.entryFor(entry.word), entry.word));
   assert.equal(dictionary.entryFor('Ambrosia'), dictionary.entryFor('神浆'));
   assert.equal(dictionary.entryFor('Pursuit'), dictionary.entryFor('追逐'));
@@ -145,4 +145,6 @@ test('the supplied Eudic aliases merge without dropping any of the 433 headwords
   assert.equal(dictionary.entryFor('无边限'), dictionary.entryFor('Boundless'));
   assert.equal(dictionary.entryFor('Boundless').title, '无边限 / Boundless');
   assert.equal(dictionary.unique(['无边限', 'Boundless']).length, 1);
+  assert.equal(dictionary.entryFor('Kickback'), dictionary.entryFor('踢飞'));
+  assert.notEqual(dictionary.entryFor('Kickback'), dictionary.entryFor('Kickback Reduction'));
 });

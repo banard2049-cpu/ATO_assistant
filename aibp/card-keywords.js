@@ -117,10 +117,10 @@
       summary.append(warning);
     }
     const hint = document.createElement('small');
-    hint.textContent = ' 基于扫描时的卡图自动识别，可能漏识或误识，请以当前卡面为准。';
+    hint.textContent = ' 关键词按现有卡图识别并人工校对，请以当前卡面为准。';
     summary.append(hint);
   }
-  const index = fetch(new URL('card-keywords.json?v=4', base)).then(response => {
+  const index = fetch(new URL('card-keywords.json?v=6', base)).then(response => {
     if (!response.ok) throw new Error('card keyword index unavailable');
     return response.json();
   });
