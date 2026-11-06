@@ -359,7 +359,7 @@
     if (!entityIndexPromise) {
       entityIndexPromise = new Promise((resolve, reject) => {
         const script = document.createElement("script");
-        script.src = "./data/entity-index.js?v=c4c5-20261006-r2";
+        script.src = "./data/entity-index.js?v=20261106-c123-matrix2";
         script.onload = () => {
           entityData = buildEntityData(window.STORY_ENTITY_INDEX, characterData);
           initEntities();

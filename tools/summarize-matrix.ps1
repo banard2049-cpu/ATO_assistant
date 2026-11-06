@@ -1,5 +1,6 @@
 ﻿# Summarize matrix choices via DeepSeek API
 # Usage: powershell -ExecutionPolicy Bypass -File tools\summarize-matrix.ps1
+# Draft output only; apply reviewed summaries to record/matrix-data.js.
 
 # ==================== Config ====================
 $DEEPSEEK_API_KEY = $env:DEEPSEEK_API_KEY
@@ -16,17 +17,12 @@ if (-not $DEEPSEEK_API_KEY) {
     throw "请先设置 DEEPSEEK_API_KEY 环境变量"
 }
 
-$html = Get-Content -Path "record\index.html" -Raw -Encoding UTF8
-$startMarker = "const choiceMatrixNotes = {"
-$startIdx = $html.IndexOf($startMarker)
-$endMarker = [char]10 + "    };"
-$endIdx = $html.IndexOf($endMarker, $startIdx)
-$block = $html.Substring($startIdx + $startMarker.Length - 1, $endIdx - $startIdx - $startMarker.Length + 3)
+$matrixSource = Get-Content -Path "record\matrix-data.js" -Raw -Encoding UTF8
+$matrixJson = $matrixSource -replace '^[\s\S]*?window\.ATO_MATRIX_DATA\s*=\s*', '' -replace ';\s*$', ''
+$matrixData = $matrixJson | ConvertFrom-Json
+$cells = @($matrixData.PSObject.Properties)
 
-$pattern = [regex]'"([A-Z]{1,2}\d{1,2})"\s*:\s*\[([\s\S]*?)\]'
-$allMatches = $pattern.Matches($block)
-
-Write-Host ("Total cells: " + $allMatches.Count)
+Write-Host ("Total cells: " + $cells.Count)
 
 $results = @{}
 if (Test-Path $OUTPUT_FILE) {
@@ -45,21 +41,15 @@ $done = 0
 $skipped = 0
 $errors = 0
 
-foreach ($m in $allMatches) {
-    $code = $m.Groups[1].Value
-    $notesRaw = $m.Groups[2].Value
+foreach ($cell in $cells) {
+    $code = $cell.Name
 
     if ($results.ContainsKey($code)) {
         $skipped++
         continue
     }
 
-    $notePattern = [regex]'"([^"]+)"'
-    $noteHits = $notePattern.Matches($notesRaw)
-    $notes = @()
-    foreach ($nm in $noteHits) {
-        $notes += $nm.Groups[1].Value
-    }
+    $notes = @($cell.Value.sources)
 
     if ($notes.Count -eq 0) {
         $skipped++
@@ -90,7 +80,7 @@ foreach ($m in $allMatches) {
         $results[$code] = $summary
         $done++
         $total = $done + $skipped
-        Write-Host ("[$total/" + $allMatches.Count + "] " + $code + ": " + $summary)
+        Write-Host ("[$total/" + $cells.Count + "] " + $code + ": " + $summary)
     } catch {
         $errors++
         $errMsg = $_.Exception.Message

@@ -8,6 +8,7 @@
  * - 一个格子有多个来源段落时全部总结
  *
  * 用法: node tools/run-summarize.js
+ * 输出为待审核草稿；审核后更新 record/matrix-data.js 中对应格子的 summary。
  */
 
 const fs = require("fs");
@@ -23,14 +24,13 @@ const SHORT_THRESHOLD = 200;
 // ================================================
 
 // --- 加载数据 ---
-const html = fs.readFileSync("record/index.html", "utf-8");
 const sbRaw = fs.readFileSync("story/data/storybook-data.js", "utf-8");
 
-// 解析 choiceMatrixNotes
-const notesStart = html.indexOf("const choiceMatrixNotes = {");
-const notesEnd = html.indexOf("\n    };", notesStart);
-const notesBlock = html.slice(notesStart + "const choiceMatrixNotes = ".length, notesEnd + 6);
-const choiceMatrixNotes = new Function("return " + notesBlock)();
+const matrixContext = { window: {} };
+vm.runInNewContext(fs.readFileSync("record/matrix-data.js", "utf-8"), matrixContext);
+const choiceMatrixNotes = Object.fromEntries(
+  Object.entries(matrixContext.window.ATO_MATRIX_DATA).map(([code, cell]) => [code, cell.sources]),
+);
 
 // 解析 storybook
 const sbCtx = { window: {} };

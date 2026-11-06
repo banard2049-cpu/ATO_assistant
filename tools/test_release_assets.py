@@ -131,7 +131,8 @@ def check_release_notes_files(failures: list[str]) -> None:
         # Apply the current section convention to new notes, preserving history.
         if path.name in {"v3.7.5-rc.1.md", "v3.7.5.md", "v3.8.0.md", "v3.8.14-rc.1.md", "v3.8.14-rc.2.md",
                          "v3.9.1-rc.1.md", "v3.9.1-rc.2.md", "v3.9.1-rc.3.md",
-                         "v3.9.1-rc.4.md", "v3.9.1-rc.5.md", "v3.9.1.md"}:
+                         "v3.9.1-rc.4.md", "v3.9.1-rc.5.md", "v3.9.1.md",
+                         "v3.9.3.md", "v3.9.4.md", "v3.9.5-rc.1.md", "v3.10.0.md", "v3.10.1.md"}:
             continue
         # Earlier announcements were intentionally brief; require the structured
         # format only for releases made after that convention was introduced.
