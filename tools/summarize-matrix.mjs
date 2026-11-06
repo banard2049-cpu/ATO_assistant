@@ -1,6 +1,7 @@
 /**
  * 调用 DeepSeek API 为抉择矩阵的每个格子生成一句话摘要
  * 用法: node tools/summarize-matrix.mjs
+ * 输出为待审核草稿；审核后更新 record/matrix-data.js 中对应格子的 summary。
  */
 
 // ==================== 配置 ====================
@@ -12,20 +13,18 @@ const DELAY_MS = 500; // 每次请求间隔
 // ================================================
 
 import { readFileSync, writeFileSync, existsSync } from "fs";
+import vm from "node:vm";
 
 if (!DEEPSEEK_API_KEY) {
   throw new Error("请先设置 DEEPSEEK_API_KEY 环境变量");
 }
 
 function extractNotes() {
-  const html = readFileSync("record/index.html", "utf-8");
-  const start = html.indexOf("const choiceMatrixNotes = {");
-  const end = html.indexOf("\n    };", start);
-  const block = html.slice(start + "const choiceMatrixNotes = ".length, end + 6);
-  // 安全解析：将 JS 对象字面量转为 JSON
-  // notes 里只有字符串数组，直接 eval 即可
-  const notes = new Function("return " + block)();
-  return notes;
+  const context = { window: {} };
+  vm.runInNewContext(readFileSync("record/matrix-data.js", "utf-8"), context);
+  return Object.fromEntries(
+    Object.entries(context.window.ATO_MATRIX_DATA).map(([code, cell]) => [code, cell.sources]),
+  );
 }
 
 async function callDeepSeek(code, notes) {

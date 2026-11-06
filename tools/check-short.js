@@ -1,13 +1,13 @@
 const fs = require("fs");
 const vm = require("vm");
 
-const html = fs.readFileSync("record/index.html", "utf-8");
 const sbRaw = fs.readFileSync("story/data/storybook-data.js", "utf-8");
 
-const notesStart = html.indexOf("const choiceMatrixNotes = {");
-const notesEnd = html.indexOf("\n    };", notesStart);
-const notesBlock = html.slice(notesStart + "const choiceMatrixNotes = ".length, notesEnd + 6);
-const choiceMatrixNotes = new Function("return " + notesBlock)();
+const matrixContext = { window: {} };
+vm.runInNewContext(fs.readFileSync("record/matrix-data.js", "utf-8"), matrixContext);
+const choiceMatrixNotes = Object.fromEntries(
+  Object.entries(matrixContext.window.ATO_MATRIX_DATA).map(([code, cell]) => [code, cell.sources]),
+);
 
 const sbCtx = { window: {} };
 vm.createContext(sbCtx);

@@ -148,7 +148,7 @@ python tools/icon-extract/check_extra.py oxygen                   # 回读比对
   （文字 / 输入框），直接塞一个 `<svg>` 会变成第三个网格项、把输入框挤到下一行。
 - **运行期由 JS 生成的标题**（`makeTrackTitle` 生成的船体/船员，以及 C2 的船员计数）：
   这些 DOM 在页面跑起来之前不存在，所以加了两个小钩子，路径数据放在
-  **`record/item-icons.js`**（受版本控制的独立文件，和 `matrix-summaries.js` 一样），
+  **`record/item-icons.js`**（受版本控制的独立文件，和 `matrix-data.js` 一样），
   不塞进 5800 行的内联脚本里。
 
   `makeTrackTitle` 里的钩子按**名字查表**（`RECORD_ITEM_ICONS[zh]`），不是靠调用点传参——
