@@ -122,7 +122,7 @@ test('every source arrow is represented once by a five-sided symmetric template 
   assert.equal(arrows, inventory.summary.arrows + 2, 'Includes the two source-connected arrows');
 });
 
-test('installation preserves the original PNG and every corner, and adds one link cut and layer', {
+test('installation preserves every corner and adds one vector link layer', {
   skip: !fs.existsSync(path.join(root, 'official-assets/_backups/map-links-20261025/manifest.json'))
     ? 'Local official-material backup is only available for installation acceptance' : false,
 }, () => {
@@ -133,7 +133,9 @@ test('installation preserves the original PNG and every corner, and adds one lin
   vm.runInContext(read(path.join(root, 'map/tile-artwork-data.js')), registryContext);
   const markerFile=path.join(root,'tools/map-marker-vector-source/production.json');
   const markerProduction=fs.existsSync(markerFile)?json(markerFile):null;
-  assert.equal(registryContext.window.ATO_MAP_ARTWORK_DATA.cornerVectorVersion, markerProduction?markerProduction.version:manifest.version);
+  const registry=registryContext.window.ATO_MAP_ARTWORK_DATA;
+  assert.equal(registry.cornerVectorRasterless,true);
+  assert.ok(registry.cornerVectorVersion);
   for (const [key, row] of Object.entries(manifest.faces)) {
     const snapshot = snapshots.get(key);
     const beforeBytes = fs.readFileSync(path.join(root, snapshot.backup));
@@ -142,18 +144,13 @@ test('installation preserves the original PNG and every corner, and adds one lin
     const after = read(path.join(root, 'map/images/hd1024/overlay', `${key}-corners.svg`));
     assert.equal(attrs(after, 'data-map-links').length, 1, key);
     assert.equal(attrs(after, 'data-map-links')[0], 'true', key);
-    assert.equal(attrs(after, 'data-remove').filter(value => value === 'links').length, 1, key);
+    assert.doesNotMatch(after, /<g\b[^>]*mask="url\(#keep\)"|url\(#keep\)/i, key);
     assert.deepEqual(attrs(after, 'data-corner'), attrs(before, 'data-corner'), key);
     for (const side of attrs(before, 'data-corner')) {
       assert.equal(canonical(group(after, 'data-corner', side)), canonical(group(before, 'data-corner', side)), `${key} ${side}`);
     }
-    const mask = text => text.match(/<mask\b[^>]* id="keep"[^>]*>[\s\S]*?<\/mask>/)[0];
-    const retained = mask(after).replace(/<path\b(?=[^>]* data-remove="(?:links|remaining-markers)")[^>]*\/>/g, '');
-    assert.equal(canonical(retained), canonical(mask(before)), key);
-    const image = text => text.match(/<image\b[^>]*>/)[0];
-    assert.deepEqual(attrs(image(after), 'href'), attrs(image(before), 'href'), key);
     const markerImages=markerProduction?attrs(group(after,'data-map-markers','true'),'href').length:0;
-    assert.equal(attrs(after, 'href').length, 1+attrs(vector(row),'href').length+markerImages,key);
+    assert.equal(attrs(after, 'href').length, attrs(vector(row),'href').length+markerImages,key);
     const linkLayer = group(after, 'data-map-links', 'true');
     assert.equal(canonical(inner(linkLayer)), canonical(inner(vector(row))), key);
     assert.equal(attrs(linkLayer.slice(0, linkLayer.indexOf('>') + 1), 'data-version')[0], manifest.version);

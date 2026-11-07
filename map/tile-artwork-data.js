@@ -521,7 +521,7 @@ window.ATO_MAP_ARTWORK_DATA = {
     "c2": "20261023-workshop-fronts1-b90-c110",
     "c3": "20261023-workshop-fronts1-b90-c110"
   },
-  "cornerVectorVersion": "20261027-fixed-marker-components6-layered-land",
+  "cornerVectorVersion": "20261108-rasterless1",
   "cornerVectorFiles": [
     "c1-tile-001-front",
     "c1-tile-002-front",
@@ -1034,5 +1034,6 @@ window.ATO_MAP_ARTWORK_DATA = {
     "c5-tile-079-front",
     "c5-tile-080-back",
     "c5-tile-080-front"
-  ]
+  ],
+  "cornerVectorRasterless": true
 };

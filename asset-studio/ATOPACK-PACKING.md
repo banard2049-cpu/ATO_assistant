@@ -197,6 +197,8 @@ python asset-studio/tools/build_official_pack.py \
 的 511 张正面 PNG；额外新版民间包显式使用 `--map-mask-version current`。
 底图与 7 张特殊牌背的 PNG 仍原样保存，两种版本的完整包均包含
 1535 个地图文件。SVG 的 MIME 为 `image/svg+xml`，不参与图片重编码。
+自 2026-11-08 起，完成的正面 SVG 不再保留被全画布遮罩隐藏的旧 PNG；
+若重建流程重新带入，先在工程根目录运行 `python tools/strip-map-overlay-raster.py` 再打包。
 素材库导入、安装、再次导出及 Android 导入同步支持新路径，并继续接受旧 PNG 包。
 Android 必须先更新到 v3.8.13，再导入本次资源包；新 APK 的白名单同时包含两代路径。
 
