@@ -609,14 +609,14 @@ class CoreTests(unittest.TestCase):
         empty = Database(self.root / "empty.sqlite3")
         result = ensure_fixed_catalog(empty)
         payload = fixed_catalog_payload()
-        # 3204 条：内置清单 2645（移除 26 张独立 AIBP 资源图和 2 张停用标记，新增
+        # 3206 条：内置清单 2645（移除 26 张独立 AIBP 资源图和 2 张停用标记，新增
         # C4 辉煌之城、悬空花园两枚大地图标记）+ 故事书配图 2（只剩后日奥德赛的两张章节配图，战斗版图
         # 52 条——C1/C3/C4 的 21 张 + C2 的 23 张扫描件 + C5 的 8 张版图块——已全部随文件
-        # 删除退场）+ 19 首主控台 BGM + 84 张密语字形 + 435 个混排素材（映射表 1 + 裁图 434）
+        # 删除退场）+ 19 首主控台 BGM + 84 张密语字形 + 437 个混排素材（映射表 1 + 裁图 436）
         # + 19 张记录表 Boss 头像（2026-10-22）。
         # 后四类都登记为「无需拍摄」（见 test_bgm_resources / test_cryptic_resources /
         # test_boss_avatars）。
-        self.assertEqual(3204, result["items"])
+        self.assertEqual(3206, result["items"])
         self.assertEqual(19, result["aibp_enemies"])
         self.assertEqual({"c1", "c1.5", "c2", "c2.5", "c3", "c4", "c5"}, {book["id"] for book in payload["source"]["stories"]})
         self.assertNotIn("apk", payload["source"])
@@ -655,12 +655,12 @@ class CoreTests(unittest.TestCase):
         ])
         # C5 补充页扫描（153-173）本轮随 story/images/c5/supplement-pages/ 一起删除，登记归零。
         self.assertEqual([], [item for item in payload["items"] if item["module"] == "故事书补充页"])
-        # 故事书混排素材：mapping.js 一份 + images/c1..c5/ 下 434 张裁图（PNG/SVG 混用），
+        # 故事书混排素材：mapping.js 一份 + images/c1..c5/ 下 436 张裁图（PNG/SVG 混用），
         # 全部 capture_required=False（私有素材，只随 .atopack 的 mixedMediaFiles 段分发）。
         mixed_media = [item for item in payload["items"] if item["module"] == "故事书混排素材"]
-        self.assertEqual(435, len(mixed_media))
+        self.assertEqual(437, len(mixed_media))
         self.assertEqual(1, sum(1 for item in mixed_media if item["subgroup"] == "映射表"))
-        self.assertEqual(434, sum(1 for item in mixed_media if item["subgroup"] == "书籍裁图"))
+        self.assertEqual(436, sum(1 for item in mixed_media if item["subgroup"] == "书籍裁图"))
         self.assertFalse(any(item["capture_required"] for item in mixed_media))
         self.assertEqual(
             {"common", "c1", "c2", "c3", "c4", "c5"},
@@ -697,7 +697,7 @@ class CoreTests(unittest.TestCase):
         #   另含 2026-10-22 补录的 19 张记录表 Boss 头像）
         # + 84 张密语字形（随 crypticFiles 段分发）
         # + 19 首主控台 BGM（随 bgmFiles 段分发）
-        # + 435 个混排素材（1 份映射表 + 434 张裁图，随 mixedMediaFiles 段分发）
+        # + 437 个混排素材（1 份映射表 + 436 张裁图，随 mixedMediaFiles 段分发）
         bgm_paths = {path for path in fixed_paths if path.startswith("assets/bgm/")}
         cryptic_paths = {path for path in fixed_paths if path.startswith("story/assets/cryptic/glyphs/")}
         mixed_media_paths = {
@@ -706,8 +706,8 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(3665, len(fixed_paths - bgm_paths - cryptic_paths - mixed_media_paths))
         self.assertEqual(19, len(bgm_paths))
         self.assertEqual(84, len(cryptic_paths))
-        self.assertEqual(435, len(mixed_media_paths))
-        self.assertEqual(4203, len(fixed_paths))
+        self.assertEqual(437, len(mixed_media_paths))
+        self.assertEqual(4205, len(fixed_paths))
         self.assertFalse(any(path.startswith("aibp/ps/other/resouce/") for path in fixed_paths))
         self.assertNotIn("aibp/ps/other/token/Ambrosia .png", fixed_paths)
         self.assertNotIn("aibp/ps/other/token/GF.jpg", fixed_paths)

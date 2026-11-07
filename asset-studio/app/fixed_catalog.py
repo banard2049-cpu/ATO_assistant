@@ -646,6 +646,10 @@ MIXED_MEDIA_BOOK_CROPS: dict[str, tuple[str, ...]] = {
         "icon-titan.svg",
         "icon-toughness.svg",
         "icon-underwater-city.svg",
+        # C5 扫描页第 42 页的两枚段首标记（(拇指) / (圈)）：story/assets/story-marks.js
+        # 按显示层图标引用，随混排素材通道分发。
+        "mark-circle-c5.png",
+        "mark-thumb-c5.png",
     ),
 }
 
@@ -1985,6 +1989,7 @@ def fixed_catalog_payload() -> dict[str, Any]:
         + hashlib.sha256(json.dumps(shared_backs, sort_keys=True).encode("utf-8")).hexdigest()[:12]
         + "+tone-baked-shared-backs-20261019"
         + "+record-boss-avatars-20261022"
+        + "+story-mark-icons-20261108"
     )
     return payload
 
