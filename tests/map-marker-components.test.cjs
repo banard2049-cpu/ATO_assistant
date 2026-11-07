@@ -31,10 +31,12 @@ test('Titan revision keeps all 123 centered and both alpha placements share the 
 });
 
 test('every map consumer refreshes the artwork registry to the installed component version',()=>{
-  const production=json(path.join(source,'production.json'));
+  const context=vm.createContext({window:{}});
+  vm.runInContext(fs.readFileSync(path.join(root,'map/tile-artwork-data.js'),'utf8'),context);
+  const version=context.window.ATO_MAP_ARTWORK_DATA.cornerVectorVersion;
   for(const relative of['map/index.html','briefing/index.html','tools/tag-editor.html']){
     const html=fs.readFileSync(path.join(root,relative),'utf8');
-    assert.equal(html.match(/tile-artwork-data\.js\?v=([^"\s]+)/)[1],production.version,relative);
+    assert.equal(html.match(/tile-artwork-data\.js\?v=([^"\s]+)/)[1],version,relative);
   }
 });
 
@@ -61,7 +63,8 @@ test('installed marker layers equal reviewed components and keep links, original
   const p=json(path.join(source,'production.json')),installation=json(path.join(out,'installation.json'));
   const backup=json(path.join(root,installation.backup)),saved=new Map(backup.files.map(r=>[r.source,r]));
   const context=vm.createContext({window:{}});vm.runInContext(fs.readFileSync(path.join(root,'map/tile-artwork-data.js'),'utf8'),context);
-  assert.equal(context.window.ATO_MAP_ARTWORK_DATA.cornerVectorVersion,p.version);
+  assert.equal(context.window.ATO_MAP_ARTWORK_DATA.cornerVectorVersion,installation.rasterlessVersion);
+  assert.equal(context.window.ATO_MAP_ARTWORK_DATA.cornerVectorRasterless,true);
   assert.equal(installation.records.length,511);
   for(const r of installation.records){
     const filename=`map/images/hd1024/overlay/${r.key}-corners.svg`,bytes=fs.readFileSync(path.join(root,filename));assert.equal(sha(bytes),r.sha256,r.key);
@@ -69,10 +72,8 @@ test('installed marker layers equal reviewed components and keep links, original
     const pure=fs.readFileSync(path.join(source,p.faces[r.key].vector),'utf8');
     assert.equal(canonical(inner(layer)),canonical(inner(pure)),r.key);
     assert.equal(attrs(svg,'data-map-markers').length,1,r.key);assert.equal(attrs(svg,'data-map-links').length,1,r.key);
-    assert.equal(attrs(svg,'data-remove').filter(x=>x==='remaining-markers').length,1,r.key);
+    assert.doesNotMatch(svg,/<g\b[^>]*mask="url\(#keep\)"|url\(#keep\)/i,r.key);
     const before=saved.get(filename);assert.ok(before,r.key);const old=fs.readFileSync(path.join(root,before.backup));assert.equal(sha(old),before.sha256,r.key);
-    const retained=s=>s.match(/<g mask="url\(#keep\)">[\s\S]*?<\/g>/)[0];
-    assert.equal(canonical(retained(svg)),canonical(retained(old.toString('utf8'))),r.key);
     const ids=attrs(svg,'id');assert.equal(new Set(ids).size,ids.length,`duplicate id ${r.key}`);
   }
 });

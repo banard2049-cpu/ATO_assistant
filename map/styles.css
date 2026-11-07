@@ -864,20 +864,27 @@ body.second-screen-map .tile-grid {
   pointer-events: none;
 }
 
+/* C5 unrevealed face reuses the shared card-back engraving and retints it the
+   same way C2/C3 do: deep blue underwater, the surface ocean's lighter blue. */
 .tile-c5-cover {
-  background: #7b8e99;
-  isolation: isolate;
+  background: #0d1b26;
   overflow: hidden;
 }
 
-.tile-c5-cover[data-c5-face="B"] {
-  background: #3e484d;
+.tile-c5-cover[data-c5-face="A"] {
+  background: #16334a;
 }
 
-.tile-c5-cover-base {
-  filter: grayscale(1);
-  mix-blend-mode: luminosity;
-  opacity: 0.16;
+.tile-c5-cover[data-c5-face="B"] {
+  background: #5f8297;
+}
+
+.tile-c5-cover[data-c5-face="A"] .tile-c5-cover-base {
+  filter: grayscale(1) sepia(1) saturate(2.4) hue-rotate(170deg) brightness(0.66) contrast(0.95);
+}
+
+.tile-c5-cover[data-c5-face="B"] .tile-c5-cover-base {
+  filter: grayscale(1) sepia(1) saturate(1.8) hue-rotate(160deg) brightness(1) contrast(0.92);
 }
 
 .tile-c5-cover-heading {
