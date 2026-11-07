@@ -940,10 +940,13 @@
         const button = document.createElement("button");
         button.type = "button";
         button.className = `result-item${activeEntry && entry.key === activeEntry.key ? " active" : ""}`;
+        // 预览里也不要露出 (拇指)/(圈)：正文已经把标记换成图标了。
+        const previewText = (window.ATO_STORY_MARKS?.strip?.(content.text) || content.text)
+          .replace(/\s+/g, " ").slice(0, 72);
         button.innerHTML = `
           <span class="result-id">${escapeHtml(title)}</span>
           <span class="result-section">${escapeHtml(entry.encounter ? `${entry.chapter} / ${entry.encounter}` : entry.chapter || "未命名模块")}</span>
-          <span class="result-preview">${escapeHtml(content.text.replace(/\s+/g, " ").slice(0, 72))}</span>
+          <span class="result-preview">${escapeHtml(previewText)}</span>
         `;
         button.addEventListener("click", () => showEntry(entry, true));
         fragment.appendChild(button);
@@ -3355,6 +3358,9 @@
       );
     }
     mixedMediaRuntime()?.mount?.(storyText, mixedMediaRender);
+    // 段首的 (拇指)/(圈) 换成原书图标。必须排在 mount 之后：混排渲染器要先按原始文本
+    // 做完字符定位（prepareHTML 校验的是源文字符数），改 DOM 才不会让图片挂不上。
+    window.ATO_STORY_MARKS?.decorate?.(storyText);
     annotateEntityTextNodes(storyText);
     refreshSecondScreenStoryContentToggle(Boolean(secondScreenStoryModeToggle?.checked));
   }

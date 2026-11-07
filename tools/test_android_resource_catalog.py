@@ -118,7 +118,7 @@ def check_catalog(catalog: dict) -> None:
     assert not retired, f"APK 名单里仍留着已删除的故事书扫描件：{retired[:3]}"
 
     # 混合媒体素材（story/assets/mixed-media/）：mapping.js 一份 + images/c1..c5/ 下
-    # 434 张裁图（渲染器 pathOK 同时收 PNG 与 SVG）。它们是私有素材，只随 .atopack 的
+    # 436 张裁图（渲染器 pathOK 同时收 PNG 与 SVG）。它们是私有素材，只随 .atopack 的
     # mixedMediaFiles 段分发，但安卓导入只认这份名单 —— 缺一项，资料包里对应的混排图
     # 就会被静默跳过。目标形状与 app/mixed_media_resources.py 的 allowed_target 同源。
     from app.mixed_media_resources import allowed_target as is_mixed_media_target
@@ -126,9 +126,9 @@ def check_catalog(catalog: dict) -> None:
     mixed_media = sorted(
         target for target in targets.values() if target.startswith("story/assets/mixed-media/")
     )
-    assert len(mixed_media) == 435, f"APK 名单里的混合媒体素材不是 435 个：{len(mixed_media)}"
+    assert len(mixed_media) == 437, f"APK 名单里的混合媒体素材不是 437 个：{len(mixed_media)}"
     assert sum(1 for target in mixed_media if target.endswith("/mapping.js")) == 1
-    assert sum(1 for target in mixed_media if "/images/" in target) == 434
+    assert sum(1 for target in mixed_media if "/images/" in target) == 436
     assert all(is_mixed_media_target(target) for target in mixed_media), (
         "APK 名单里有 app.mixed_media_resources 不认的混合媒体目标"
     )

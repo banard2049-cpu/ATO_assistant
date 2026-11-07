@@ -415,6 +415,8 @@ function renderMixedStoryBody(story, text) {
   if (c5Headings?.schema === 1 && typeof c5Headings.enhanceHTML === "function") {
     c5Headings.enhanceHTML(elements.storyBody, story.mixedMedia, text);
   }
+  // 段首 (拇指)/(圈) 换原书图标；与故事页同一套显示层处理，源文本不动。
+  window.ATO_STORY_MARKS?.decorate?.(elements.storyBody);
   elements.storyBody.scrollTop = 0;
   elements.storyBody.scrollLeft = 0;
 }
