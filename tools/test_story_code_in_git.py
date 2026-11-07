@@ -32,7 +32,6 @@ PAGES = [
     "aibp/index.html",
     "briefing/index.html",
     "hero/index.html",
-    "story/pharos-codes.html",
 ]
 
 REF = re.compile(r"""(?:src|href)\s*=\s*["']([^"']+)["']""", re.IGNORECASE)
