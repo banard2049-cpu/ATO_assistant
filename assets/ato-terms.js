@@ -343,24 +343,20 @@ window.ATO_TERMS = [
   { "from": "gods", "to": "众神", "scope": "[data-term-scope~=\"mnemos-tag\"]" },
 
   // C1-C3 record sheet backs (official simplified Chinese edition).
-  {
-    "from": "循环",
-    "to": "循环",
-    "scope": ".date-track-panel"
-  },
+  // 「Cycle」统一用官方 App 1.1.22 的「故事集」（lbl_cycle），与界面其他位置一致。
   {
     "from": "Cycle III 航行时间表",
-    "to": "循环纪 III 航行时间线",
+    "to": "故事集 III 航行时间线",
     "scope": ".date-track-panel"
   },
   {
     "from": "Cycle II 航行时间表",
-    "to": "循环纪 II 航行时间线",
+    "to": "故事集 II 航行时间线",
     "scope": ".date-track-panel"
   },
   {
     "from": "Cycle I 航行时间表",
-    "to": "循环纪 I 航行时间线",
+    "to": "故事集 I 航行时间线",
     "scope": ".date-track-panel"
   },
   {
@@ -2145,6 +2141,54 @@ window.ATO_TERMS = [
     "from": "金缮法洛斯",
     "to": "金缮航标"
   },
+  // 官方 App 1.1.22 中英表：lbl_C3DP「航标梦境」= Dreams of Pharos。
+  {
+    "from": "法洛斯之梦",
+    "to": "航标梦境"
+  },
+  // 休憩冒险（R&R）标题：故事书跳转器的入口层下拉菜单等处显示的是民间索引里的「中文 (English)」。
+  // 官方翻译下换成官方版故事书（storybook-official-data.js）同一条目的 officialTitle，
+  // 去掉英文原名，「（宿命的 (Fated)）」随整条标题一起换成官方的「（定数）」。
+  // 带英文原名的整条匹配，不会误改正文里的常用词（如「负担」）。
+  { "from": "每日渔获 (Catch of the Day)", "to": "今日渔获" },
+  { "from": "每日渔获 (Catch of the Day)（宿命的 (Fated)）", "to": "今日渔获（定数）" },
+  { "from": "阿尔戈英雄的服装 (Clothes Make the Argonaut)", "to": "人靠衣装" },
+  { "from": "阿尔戈英雄的服装 (Clothes Make the Argonaut)（宿命的 (Fated)）", "to": "人靠衣装（定数）" },
+  { "from": "与山羊有关的那件事 (The One with the Goats)", "to": "山羊问题" },
+  { "from": "末世否认者 (Eschaton Deniers)", "to": "末世否认者" },
+  { "from": "千秋盛宴(Fete for the Aeons)", "to": "千秋盛宴" },
+  { "from": "秘密仰慕者 (Secret Admirer)", "to": "暗恋者" },
+  { "from": "无结论的结果 (Inconclusive Outcome)", "to": "不确定结果" },
+  { "from": "正确结论 (Correct Conclusion)", "to": "正确结论" },
+  { "from": "错误结论 (Incorrect Conclusion)", "to": "错误结论" },
+  { "from": "利西斯特拉塔 (Lysistrata)", "to": "利西翠妲" },
+  { "from": "流浪狗 (The Stray)", "to": "流浪狗" },
+  { "from": "负担 (The Burden)", "to": "重负" },
+  { "from": "负担 (The Burden)（宿命的 (Fated)）", "to": "重负（定数）" },
+  { "from": "醉酒的奥德赛 (Drunken Odyssey)", "to": "醉酒之旅" },
+  { "from": "冰封的乡愁 (Frozen Nostalgia)", "to": "冰封的眷恋" },
+  { "from": "我终将回归之地 (A Place I’ll Return to Someday)", "to": "终有一日我会重返之地" },
+  { "from": "芝诺的诡计 (Zeno’s Scheme)", "to": "芝诺的诡计" },
+  { "from": "山羊的回归 (Return of the Goats)", "to": "山羊归来" },
+  { "from": "意想不到的副产品 (Unexpected Byproduct)", "to": "意外产物" },
+  { "from": "阿尔戈号的长女 (Firstborn of the Argo)", "to": "阿尔戈号的首个新生儿" },
+  { "from": "一次四分之一斯塔迪奥 (A Quarter Stadium at a Time)", "to": "四分之一场地" },
+  { "from": "消失的忧虑 (Vanishing Concerns)", "to": "失踪的麻烦" },
+  { "from": "船首像测量大赛 (Figurehead Measuring Contest)", "to": "艏像比拼" },
+  { "from": "阿尔戈节 (Argonalia)", "to": "阿尔戈农神节" },
+  // C2 民间索引没有英文原名，按中文标题匹配（这些标题在别处不出现）；
+  // 「治愈」「正确的结论」是常用说法，连同编号、且只在故事书跳转器显示标题的几处才换。
+  { "from": "1 治愈", "to": "1 奇偶游戏", "scope": "#encounterSelect, #entryTitle, #resultList, #memoryList" },
+  { "from": "穿着传统服装的贼", "to": "希顿小偷" },
+  { "from": "22 正确的结论", "to": "22 正确结论", "scope": "#encounterSelect, #entryTitle, #resultList, #memoryList" },
+  { "from": "坠星", "to": "流星雨" },
+  { "from": "新缪斯", "to": "新的缪斯" },
+  { "from": "犬儒学派的方法", "to": "第欧根尼方法" },
+  { "from": "阿尔戈英雄的史诗", "to": "阿尔戈英雄史诗" },
+  { "from": "奥吉亚斯难题", "to": "奥革阿斯困境" },
+  { "from": "皮克托丰狩猎", "to": "猎捕图形兽" },
+  { "from": "否认守望者", "to": "拒绝凝视者" },
+  { "from": "为了堕落者", "to": "悼念亡者" },
   {
     "from": "三幅节重写",
     "to": "三曲盘覆盖"
