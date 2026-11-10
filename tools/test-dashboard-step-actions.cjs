@@ -1,7 +1,7 @@
 // 步骤内操作按钮的行为约束：
 // 1) 宿敌控制按钮固定在「探索」步骤、紧跟在 Map 按钮后面（同一行 .step-actions），
 //    且不跟随第二屏幕开关，默认就显示；
-// 2) 第七步（灾祸 / 末日）在特殊事件后面给出「进入下一天」；
+// 2) 轮末步骤提供「进入下一天」；
 // 3) 步骤内的按钮共用同一套紧凑尺寸；
 // 4) 进入下一天一律把页面带回最顶端，但不做可见性判断；
 // 5) 日期轨的定位只滚动自己的列表，不碰页面滚动。
@@ -9,6 +9,7 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
+const test = require("node:test");
 const vm = require("node:vm");
 
 const root = path.resolve(__dirname, "..");
@@ -85,7 +86,10 @@ function buildContext(cycleConfig, spies = {}, options = {}) {
     },
     escapeHtml: (value) => String(value),
     renderC3SpecialButtons() {},
-    nextDay: () => { spies.nextDay = (spies.nextDay || 0) + 1; },
+    nextDay: async () => {
+      spies.nextDay = (spies.nextDay || 0) + 1;
+      return true;
+    },
     currentCycleConfig: () => cycleConfig,
     queueMicrotask() {},
     updateDashboardTitanXTrack() {},
@@ -93,7 +97,7 @@ function buildContext(cycleConfig, spies = {}, options = {}) {
   vm.runInContext(
     `let secondScreenEnabled = false;\n${[
       "createNemesisStepTools", "createMapStepStatus", "createMapStepTools",
-      "createNextDayStepButton", "scrollPageToTopAfterNextDay",
+      "createNextDayStepButton", "createRoundEndStepButton", "scrollPageToTopAfterNextDay",
     ]
       .map((name) => extractFunction(source, name))
       .join("\n")}`,
@@ -205,20 +209,20 @@ for (const secondScreen of [false, true]) {
   );
 }
 
-// 7) 第七步（灾祸 / 末日）在特殊事件后面给出进入下一天按钮。
-{
+// 7) 轮末步骤提供进入下一天按钮。
+test("轮末步骤的进入下一天按钮在日期保存后滚回顶部", async () => {
   const spies = {};
   const context = buildContext(mapCycle, spies);
-  const button = vm.runInContext('createNextDayStepButton("doom")', context);
-  assert.ok(button, "灾祸步骤缺少进入下一天按钮");
+  const button = vm.runInContext('createNextDayStepButton("end")', context);
+  assert.ok(button, "轮末步骤缺少进入下一天按钮");
   assert.equal(button.textContent, "进入下一天", "进入下一天按钮文案不对");
   assert.ok(button.className.includes("step-action-button"), "进入下一天按钮缺少行内按钮样式类");
   assert.equal(typeof button.listeners.click, "function", "进入下一天按钮没有绑定点击事件");
-  button.listeners.click();
+  await button.listeners.click();
   assert.equal(spies.nextDay, 1, "点进入下一天没有调用 nextDay()");
 
-  // 只有第七步有，别把按钮撒到其它步骤上。
-  for (const stepId of ["move", "explore", "survey", "encounter", "development", "story"]) {
+  // 只有轮末有，别把按钮撒到其它步骤上。
+  for (const stepId of ["move", "explore", "survey", "encounter", "development", "story", "doom"]) {
     assert.equal(
       vm.runInContext(`createNextDayStepButton(${JSON.stringify(stepId)})`, context),
       null,
@@ -226,25 +230,45 @@ for (const secondScreen of [false, true]) {
     );
   }
 
-  // 位置约束：排在特殊事件（links）后面，且在操作行入标题之前挂进去。
+  // 排在轮末标记按钮后面，并在操作行入标题之前挂进去。
   const attach = "if (stepNextDayButton) actions.appendChild(stepNextDayButton);";
   const attachIndex = source.indexOf(attach);
   const mountIndex = source.indexOf('text.querySelector(".step-title")?.appendChild(actions);');
-  const linkLoopIndex = source.indexOf("actions.appendChild(anchor);");
+  const roundEndIndex = source.indexOf("if (roundEndButton) actions.appendChild(roundEndButton);");
   assert.ok(attachIndex >= 0, "renderFlow 没有把进入下一天挂进行操作行");
-  assert.ok(linkLoopIndex >= 0 && linkLoopIndex < attachIndex, "进入下一天必须排在特殊事件链接之后");
-  assert.ok(attachIndex < mountIndex, "进入下一天必须在操作行入标题之前挂进去，否则不会出现在特殊事件右边");
+  assert.ok(roundEndIndex >= 0 && roundEndIndex < attachIndex, "进入下一天必须排在轮末标记之后");
+  assert.ok(attachIndex < mountIndex, "进入下一天必须在操作行入标题之前挂进去");
 
   // 点下去要既推进日期、又把页面带回最顶端。
   const scrollCalls = [];
   const wired = buildContext(mapCycle, {}, {
     window: { scrollTo: (options) => scrollCalls.push(options) },
   });
-  const wiredButton = vm.runInContext('createNextDayStepButton("doom")', wired);
-  wiredButton.listeners.click();
+  const wiredButton = vm.runInContext('createNextDayStepButton("end")', wired);
+  await wiredButton.listeners.click();
   assert.equal(scrollCalls.length, 1, "点进入下一天后没有把页面带回顶端");
   assert.equal(scrollCalls[0].top, 0, "点进入下一天后没有滚到最顶端");
-}
+});
+
+test("轮末按钮单独结算地图，进入下一天仍可自动结算", async () => {
+  const spies = {};
+  const context = buildContext(mapCycle, spies);
+  const status = {};
+  let settlements = 0;
+  context.document.querySelector = (selector) => selector === "#roundEndStatus" ? status : null;
+  context.campaignRestoreInFlight = false;
+  context.ownsDashboardWriteLease = () => true;
+  context.settleCurrentMapExploration = async () => { settlements += 1; return true; };
+  const steps = vm.runInContext(source.match(/const flowSteps = (\[[^]*?\n    \]);/)[1], context);
+  assert.deepEqual(Array.from(steps.slice(-2), (step) => step.id), ["doom", "end"]);
+  assert.match(steps.at(-1).desc, /进入下一天.*自动结算/);
+  const button = vm.runInContext('createRoundEndStepButton("end")', context);
+  assert.match(button.textContent, /已探索/);
+  await button.listeners.click();
+  assert.equal(settlements, 1);
+  assert.equal(spies.nextDay, undefined);
+  assert.match(status.textContent, /已探索/);
+});
 
 // 8) 宿敌按钮与进入下一天都走同一套行内按钮样式，避免两个按钮尺寸不一致。
 {

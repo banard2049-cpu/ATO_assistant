@@ -1135,7 +1135,7 @@ button.gear-group-name:hover {
   <script src="../map/map-tile-tags.js?v=20261013-corner-audit"></script>
   <script src="../map/map-data.js?v=20260730-cycle-labels"></script>
   <script src="negotiation-rules.js?v=20261019-negotiation-split1"></script>
-  <script src="voyage-action-rules.js?v=20261016-voyage3"></script>
+  <script src="voyage-action-rules.js?v=20261110-chronosail"></script>
   <script src="exploration-tech-rules.js?v=20261017-automation-audit4"></script>
   <script src="structure-tech-rules.js?v=20261019-tech-cache1"></script>
   <script src="structure-tech-client.js?v=20261019-negotiation-rows2"></script>
@@ -1273,7 +1273,9 @@ function getGearTechNodeKey(techId) {
   const fullName = gearProductionData.techCardNames[techId].trim();
   // Extract English name (everything before the first CJK character)
   const enName = fullName.replace(/[一-鿿㐀-䶿豈-﫿].*/g, '').trim();
-  return enName.toLowerCase();
+  // 官方卡名和科技树节点键不完全一致（罗马数字、个别历史拼写），必须过一遍 techKey()
+  // 才能落到同一个节点，否则齿轮页会把这张卡当成未解锁、卡图入口也找不到。
+  return techKey(enName);
 }
 
 function getGearName(gearId) {
@@ -1895,7 +1897,16 @@ function findGearTechCard(techId) {
   const key = getGearTechNodeKey(techId);
   if (!key) return null;
   const normalized = key.replace(/\s+/g, ' ').toLowerCase();
-  return (data.cards || []).find(card => String(card.key || '').trim().toLowerCase() === normalized) || null;
+  const cards = data.cards || [];
+  const exact = cards.find(card => String(card.key || '').trim().toLowerCase() === normalized);
+  if (exact) return exact;
+  // 重名科技（情报收集、秘术科技等）在字典里按循环存成 name@@pageKey，官方卡名只给
+  // 纯名字；优先取当前循环节点上的那张卡。
+  const page = data.pages.find(item => item.key === currentCycle);
+  const node = (page?.nodes || []).find(item => nodeKey(page.key, item).startsWith(normalized + '@@'));
+  return (node ? cardForNode(node) : null)
+    || cards.find(card => String(card.key || '').trim().toLowerCase().startsWith(normalized + '@@'))
+    || null;
 }
 function showGearTechCard(techId) {
   const card = findGearTechCard(techId);
@@ -3103,8 +3114,18 @@ function restoreTechnologyTab() {
 }
 function pageByKey(key) { return data.pages.find(p => p.key === key); }
 function rel(path) { return path || ''; }
+// 官方卡名（ato_gear_production.json 的 techCardNames）和科技树节点键不完全一致：
+// 罗马数字/阿拉伯数字、早期拼写差异、弯直撇号。别名一律在这里收口，凡是拿官方名
+// 找节点的代码都要过 techKey()。这份表要和 assets/jsave-import.js 的
+// TECH_NAME_ALIASES 保持一致（那边多一条重名科技的自映射，这里不需要）。
 const TECH_KEY_ALIASES = {
   'upstream navigation': 'up-stream navigation',
+  'excursion propylon ii': 'excursion propylon 2',
+  'hephaestan oxybeles': 'hephaestean oxybeles',
+  'rendezvous trireme': 'rendevous trireme',
+  'argo’s mission': "argo's mission",
+  'argo’s destiny': "argo's destiny",
+  'delphi peoples’ support': "delphi peoples' support",
 };
 function techKey(name) {
   const key = String(name || '').trim().toLowerCase();
@@ -4906,7 +4927,7 @@ loadDictionaryData().then(async (appData) => {
   boot(appData);
 }).catch(showLoadError);
 </script>
-  <script src="../assets/ato-terms.js?v=20261024-cyclopes-faction1"></script>
+  <script src="../assets/ato-terms.js?v=20261110-loop-terms"></script>
   <script src="../assets/english-terms.js?v=20261011-english4"></script>
   <script src="../assets/english-ui.js?v=20261011-english4"></script>
   <script src="../assets/english-language.js?v=20261011-english4"></script>

@@ -88,21 +88,39 @@ test('C5 supply migration, cycle isolation and official import keep the same val
   assert.equal(c.normalizeState(imported).cycleStats.c5.supply, '11');
 });
 
-test('supply controls preserve blank and clamp counts to nonnegative integers', () => {
-  const c = recordContext(); c.state = c.normalizeState({ cycle: 'c5' });
+function identityNumberControl(c, key) {
   const node = () => ({ dataset: {}, children: [], handlers: {}, append(...items) { this.children.push(...items); },
     addEventListener(type, handler) { this.handlers[type] = handler; }, removeAttribute() {} });
   const input = node(); input.value = ''; const label = node();
   input.closest = () => label; input.replaceWith = wrapper => { label.wrapper = wrapper; };
-  c.document = { querySelector: selector => selector.includes('"supply"') ? input : null, createElement: node };
+  c.document = { querySelector: selector => selector === `[data-cycle-bind="${key}"]` ? input : null, createElement: node };
   c.queueSave = () => {};
   vm.runInContext(extract('record/index.html', 'setupIdentityNumberFields'), c);
   c.setupIdentityNumberFields();
+  return { input, label };
+}
+
+test('supply controls preserve blank and clamp counts to nonnegative integers', () => {
+  const c = recordContext(); c.state = c.normalizeState({ cycle: 'c5' });
+  const { input, label } = identityNumberControl(c, 'supply');
   for (const [raw, expected] of [['3.8', '3'], ['-2', '0'], ['', '']]) {
     input.value = raw; input.handlers.input(); assert.equal(c.getCycleStat('supply'), expected);
   }
   label.wrapper.children[2].handlers.click(); assert.equal(c.getCycleStat('supply'), '1');
   label.wrapper.children[0].handlers.click(); assert.equal(c.getCycleStat('supply'), '0');
+});
+
+test('editing permanent loop length keeps the pre-edit base for older active loops', () => {
+  const c = recordContext();
+  c.state = c.normalizeState({ cycle: 'c3', cycleStats: { c3: { loopLength: '6' } } });
+  const { input } = identityNumberControl(c, 'loopLength');
+  for (const value of ['4', '5']) {
+    input.value = value;
+    input.handlers.input();
+    assert.equal(c.getCycleStat('loopLength'), value);
+    assert.equal(c.state.cycleStats.c3._legacyLoopBaseLength, 6);
+  }
+  assert.equal(c.normalizeState(clone(c.state)).cycleStats.c3._legacyLoopBaseLength, 6);
 });
 for (const cycle of ['c1', 'c2', 'c3', 'c4', 'c5']) test(`record ${cycle}: displaying a server snapshot does not change its merge values`, () => {
   const c = recordContext();

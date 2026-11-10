@@ -52,6 +52,12 @@ test('silo capacity follows available technology without clamping or overwriting
   ctx.technology.unlocked.push('advanced time solutions');
   ctx.record.explorationDelays = { disabledTechs: { c3: { 'advanced time solutions': {} } } };
   assert.equal(engine.status(ctx, '007').capacity, 3);
+  ctx.technology.unlocked.push('extinction protocols');
+  ctx.record.cycleStats.c3.frozenTime = '5';
+  assert.equal(engine.status(ctx, '007').capacity, 6);
+  assert.equal(engine.prepareOperation(ctx).record.cycleStats.c3.frozenTime, '6');
+  ctx.record.cycleStats.c3.frozenTime = '6';
+  assert.equal(engine.prepareOperation(ctx).operation.reason, 'full');
 });
 
 test('unavailable technology and a full silo consume the opportunity so later changes cannot backfill it', () => {

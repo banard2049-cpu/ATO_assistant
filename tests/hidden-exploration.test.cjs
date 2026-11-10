@@ -235,7 +235,7 @@ test('focus after spoiler confirmation preserves the picker when records are unc
   let renders = 0;
   let record = {crew: 5};
   const ctx = vm.createContext({
-    argoRecordRefreshInFlight: false, cachedArgoRecord: {crew: 5},
+    argoRecordRefreshInFlight: false, campaignSessionEpoch: 0, cachedArgoRecord: {crew: 5},
     state: {exploration: {}}, currentCycleConfig: () => ({id: 'c1'}),
     registerAutomaticExplorationDelays: async () => {},
     settleSingleExplorationEffects: async () => {},

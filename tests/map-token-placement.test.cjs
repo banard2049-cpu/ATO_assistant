@@ -85,16 +85,19 @@ test('loading duplicate last-visited markers retains one placement and preserves
   }
 });
 
-test('next day settles the tile under Argo from revealed to explored once', async () => {
-  const match = dashboardSource.match(/^    async function settleMapExplorationForNextDay\([^]*?^    }/m);
-  assert.ok(match, 'index.html must define settleMapExplorationForNextDay');
+test('round end settles only the tile under Argo from revealed to explored once', async () => {
+  const match = dashboardSource.match(/^    async function settleCurrentMapExploration\([^]*?^    }/m);
+  assert.ok(match, 'index.html must define settleCurrentMapExploration');
   const cycleState = {
-    currentTile: '030', explored: {}, previewRevealed: { '030': true },
+    currentTile: '030', explored: {}, previewRevealed: { '030': true, '031': true },
     latestRevealedTile: '030', exploredDays: { '030': 10 },
     tokens: { AG: '030', AD: '', hsCount: 0, markers: {}, edgeMarkers: {} },
   };
   let savedState = null;
   const context = vm.createContext({
+    mapCommandBusy: false,
+    settleExplorationPursuit: {},
+    settleExplorationDraw: {},
     structureTechTarget: () => ({ profileId: 'chosen', cycleId: 'c3', day: 10 }),
     assertStructureTechTarget() {},
     loadMapCommandState: async () => ({ state: { activeCycleId: 'c3', cycles: { c3: cycleState } }, revision: 3, profileId: 'chosen' }),
@@ -106,19 +109,27 @@ test('next day settles the tile under Argo from revealed to explored once', asyn
     syncDashboardMapSnapshot() {},
     mapCycleDefinition: () => ({ id: 'c3' }),
   });
-  vm.runInContext(match[0], context);
-  assert.equal(await context.settleMapExplorationForNextDay(), true);
+  const mark = dashboardSource.match(/^    function markCurrentMapTileExplored\([^]*?^    }/m);
+  vm.runInContext(`${mark[0]}\n${match[0]}`, context);
+  assert.equal(await context.settleCurrentMapExploration(), true);
   assert.equal(cycleState.explored['030'], true);
   assert.equal(cycleState.previewRevealed['030'], undefined);
+  assert.equal(cycleState.explored['031'], undefined);
+  assert.equal(cycleState.previewRevealed['031'], true);
   assert.equal(cycleState.latestRevealedTile, '');
   assert.equal(cycleState.exploredDays['030'], 10, 'the reveal day is kept for the rule reminders');
   assert.equal(savedState.cycles.c3, cycleState);
-  assert.equal(await context.settleMapExplorationForNextDay(), false, 'an already explored tile is not settled again');
+  assert.equal(await context.settleCurrentMapExploration(), false, 'an already explored tile is not settled again');
   // A legacy save may keep `latestRevealedTile` on an explored tile; the day
   // transition clears it so the free-progress reminder stops after that day.
   cycleState.latestRevealedTile = '030';
-  assert.equal(await context.settleMapExplorationForNextDay(), true);
+  assert.equal(await context.settleCurrentMapExploration(), true);
   assert.equal(cycleState.latestRevealedTile, '');
+  cycleState.currentTile = '';
+  savedState = null;
+  assert.equal(await context.settleCurrentMapExploration(), null);
+  assert.equal(savedState, null, 'missing position does not write a map');
+  assert.equal(context.mapCommandBusy, false);
 });
 
 test('a fresh reveal records the dashboard day, while revisits and legacy saves keep their state', () => {

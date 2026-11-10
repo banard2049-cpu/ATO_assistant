@@ -8,13 +8,14 @@ const copy = value => JSON.parse(JSON.stringify(value));
 
 function harness() {
   let server = { day: 1, completed: {}, events: [], notes: '' };
-  const backups = [], alerts = [];
+  const backups = [], alerts = [], settlementDays = [];
   const c = vm.createContext({
     state: copy(server), archive: { activeProfileId: 'p' }, campaignSessionEpoch: 1,
     campaignRestoreInFlight: false, ownsDashboardWriteLease: () => true,
     currentCycleConfig: () => ({ id: 'c1' }), dateTrackData: { c1: { entries: [{ day: 1 }, { day: 2 }, { day: 3 }] } },
     elements: { appShell: { inert: false } }, window: { alert: text => alerts.push(text) },
     saveState() {}, syncInputs() {}, renderFlow() {}, renderDateTrack() {},
+    settleCurrentMapExploration: async () => settlementDays.push(c.state.day),
     flushCampaignSave: async () => {
       if (server.day !== c.state.day) backups.push(copy(server));
       server = copy(c.state);
@@ -22,7 +23,7 @@ function harness() {
     },
   });
   vm.runInContext(nextDay, c);
-  return { c, backups, alerts, server: () => copy(server) };
+  return { c, backups, alerts, settlementDays, server: () => copy(server) };
 }
 
 test('the daily backup contains the last unsaved completion before its flags are cleared', async () => {
@@ -31,6 +32,7 @@ test('the daily backup contains the last unsaved completion before its flags are
   h.c.state.events.push({ id: 'today', done: true });
   h.c.state.notes = 'last edit';
   assert.equal(await h.c.nextDay(), true);
+  assert.deepEqual(h.settlementDays, [1]);
   assert.deepEqual(h.backups, [{ day: 1, completed: { explore: true }, events: [{ id: 'today', done: true }], notes: 'last edit' }]);
   assert.equal(h.server().day, 2);
   assert.deepEqual(h.server().completed, {});
@@ -45,6 +47,7 @@ test('failed closing-day save preserves the day and completion flags', async () 
   assert.equal(h.c.state.day, 1);
   assert.equal(h.c.state.completed.explore, true);
   assert.equal(h.backups.length, 0);
+  assert.deepEqual(h.settlementDays, []);
   assert.equal(h.alerts.length, 1);
   assert.equal(h.c.elements.appShell.inert, false);
 });

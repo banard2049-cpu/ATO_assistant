@@ -95,6 +95,41 @@ test('atomic submission guards written and read-only revisions and preserves exp
   assert.equal(f.state.dictionaries, 1);
 });
 
+test('Chronosail saves cost, doom, the new endpoint and the AA move in one retry-safe transaction', async (t) => {
+  const oldMap = globalThis.ATO_MAP_DATA;
+  globalThis.ATO_MAP_DATA = { cycles: [{ id: 'c3', tiles: [{ id: '007' }, { id: '008' }] }] };
+  t.after(() => { globalThis.ATO_MAP_DATA = oldMap; });
+  const f = fixture({
+    rules: require('../technology/structure-tech-rules.js'),
+    dictionary: require('../technology/tech_card_dictionary.min.json'),
+    loseResponse: true,
+  });
+  const sections = f.state.campaign.sections;
+  sections.dashboard.profiles.chosen.cycles.c3 = { state: {
+    day: 4, timeLoop: { endDay: 8, baseLength: 6, startDay: 2, settledDays: [] },
+    cardTracks: { doom: { doom: 2 } },
+  } };
+  sections.technology.users.chosen.unlocked = ['chronosail'];
+  sections.record.users.chosen = { cycle: 'c3', cycleStats: { c3: { fate: '3', loopLength: '6' } } };
+  sections.map.users.chosen.cycles.c3 = {
+    currentTile: '007', explored: {}, previewRevealed: { '007': true },
+    tokens: { AG: '007', markers: { '008': { token_2: true } } },
+  };
+  const target = { ...f.target, cycleId: 'c3', techKey: 'chronosail', actionId: 'voyage-chronosail' };
+  const result = await f.client.submit(target);
+  assert.equal(result.duplicate, true, 'the saved receipt recovers the lost response');
+  assert.equal(f.state.posts.length, 1);
+  assert.equal(f.state.posts[0].expectedRevisions.map, 0);
+  assert.deepEqual(Object.keys(f.state.posts[0].sections).sort(), ['dashboard', 'map', 'record']);
+  assert.equal(sections.record.users.chosen.cycleStats.c3.fate, '4');
+  assert.equal(sections.map.users.chosen.cycles.c3.currentTile, '008');
+  const saved = sections.dashboard.profiles.chosen.cycles.c3.state;
+  assert.equal(saved.cardTracks.doom.doom, 3);
+  assert.equal(saved.timeLoop.endDay, 10);
+  await f.client.submit(target);
+  assert.equal(f.state.posts.length, 1);
+});
+
 test('record conflicts rebase the charge onto the newest balance', async () => {
   let once = false;
   const f = fixture({ beforePost(state) {

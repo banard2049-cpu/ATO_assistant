@@ -411,7 +411,8 @@ button {
   gap: 6px 10px;
 }
 
-.step-actions a {
+.step-actions a,
+.step-actions button.round-end-mark-button {
   border: 0;
   border-radius: 0;
   padding-inline: 4px;
@@ -423,7 +424,8 @@ button {
   font-weight: 600;
 }
 
-.step-actions a:hover {
+.step-actions a:hover,
+.step-actions button.round-end-mark-button:hover {
   background: var(--accent-soft);
 }
 

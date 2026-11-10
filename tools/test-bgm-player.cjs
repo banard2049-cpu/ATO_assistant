@@ -28,7 +28,7 @@ const consoleSource = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
 
 test("清单：今日流程每一步都有阶段，且阶段曲目可解析", () => {
   const manifest = createHarness().sandbox.ATO_BGM_MANIFEST;
-  ["move", "explore", "survey", "encounter", "development", "story", "doom"].forEach((stepId) => {
+  ["move", "explore", "survey", "encounter", "development", "story", "doom", "end"].forEach((stepId) => {
     const key = manifest.flowStageMap[stepId];
     assert.ok(key, `缺少步骤映射：${stepId}`);
     assert.ok(manifest.stages[key], `映射的阶段不存在：${stepId} → ${key}`);

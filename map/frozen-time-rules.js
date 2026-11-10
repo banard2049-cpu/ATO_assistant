@@ -17,6 +17,7 @@
       const tags = options.tags || root.ATO_MAP_TILE_TAGS;
       const available = technology?.eligibility(ctx, 'time solutions');
       const advanced = technology?.eligibility(ctx, 'advanced time solutions');
+      const protocols = technology?.eligibility(ctx, 'extinction protocols');
       const raw = ctx.record?.cycleStats?.c3?.frozenTime
         ?? ((!ctx.record?.cycle || ctx.record.cycle === 'c3') ? ctx.record?.frozenTime : undefined) ?? 0;
       return {
@@ -28,7 +29,7 @@
         // New entries distinguish a fresh exploration from an old save's last revealed tile.
         newlyExplored: saved.latestRevealedTile === tileId && saved.explorationEntries?.[tileId] === true,
         receipt: ctx.record?.technologyActionReceipts?.[receiptId(tileId)] || null,
-        available, capacity: advanced?.ok ? 5 : 3,
+        available, capacity: protocols?.ok ? 6 : advanced?.ok ? 5 : 3,
         value: number(raw === '' ? 0 : raw),
       };
     }

@@ -30,6 +30,19 @@ const stepScope = '[data-term-scope~="step-constants"]';
 const bossScope = '#enemyTracks, .boss-search-results, #boss-title';
 const engine = createEngine(terms);
 
+test('轮回术语采用故事集 III 官方译名，民间译名仍可保留', () => {
+  const fan = createEngine(terms, false);
+  for (const [source, official] of [
+    ['轮回长度', '轮回时长'], ['轮回端点', '轮回结束'],
+    ['凝固时光', '冰封时间'], ['时光筒仓', '时间筒仓'],
+    ['轮回生存', '轮回求生'], ['时间之帆', '时光船帆'],
+    ['高级时间对策', '高级时间方案'], ['时间对策', '时间方案'],
+  ]) {
+    assert.equal(engine.translate(source), official);
+    assert.equal(fan.translate(source), source);
+  }
+});
+
 test('官方外交关系采用记录表卡面译名且只影响外交显示', () => {
   const scope='.diplomacy-row, .exploration-faction-status, .exploration-settle';
   const fan=createEngine(terms,false);
@@ -99,6 +112,18 @@ test('关掉官方翻译时原样返回', () => {
   const off = createEngine(terms, false);
   assert.equal(off.translate('Market Forces', [surveyScope]), 'Market Forces');
   assert.equal(off.translate('循环'), '循环');
+});
+
+test('轮末步骤采用官方译名，地图操作按钮保留「标记已探索」', () => {
+  const scope = '[data-term-scope~="step-name"]';
+  assert.equal(engine.translate('轮末', [scope]), '轮末步骤');
+  assert.equal(engine.translate('完成轮末', [scope]), '完成轮末步骤');
+  assert.equal(engine.translate('轮末结算'), '轮末结算');
+  assert.equal(engine.translate('标记已探索'), '标记已探索');
+  assert.equal(createEngine(terms, false).translate('轮末', [scope]), '轮末');
+  const dashboard = read('index.html');
+  assert.match(dashboard, /<span data-term-scope="step-name"/);
+  assert.doesNotMatch(dashboard, /<div class="step-title"[^>]*data-term-scope="step-name"/);
 });
 
 test('引擎不再用会连锁改写的 split/join 套用方式', () => {
