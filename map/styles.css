@@ -438,6 +438,22 @@ h1 {
   box-shadow: 0 0 0 2px rgba(166, 109, 29, 0.22);
 }
 
+button.mark-explored-button,
+button.mark-explored-button:hover {
+  background: transparent;
+  color: #000;
+  min-height: 34px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.mark-explored-button.active {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px rgba(166, 109, 29, 0.22);
+}
+
 .token-tool img {
   width: 26px;
   height: 26px;

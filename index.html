@@ -512,6 +512,20 @@
       font-weight: 900;
     }
 
+    .date-track-day.loop-end {
+      position: relative;
+      justify-self: start;
+    }
+
+    .date-track-day.loop-end::after {
+      content: "";
+      position: absolute;
+      inset: -3px -5px;
+      border: 1px solid var(--accent);
+      border-radius: 999px;
+      pointer-events: none;
+    }
+
     .date-track-event {
       grid-column: 3;
       color: var(--gold);
@@ -1322,6 +1336,41 @@
       color: var(--ink);
       font-size: 13px;
       font-weight: 900;
+    }
+
+    .app .survey-constants.time-loop-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px 12px;
+      padding: 6px 10px;
+    }
+
+    .time-loop-info {
+      flex: 1 1 auto;
+      min-width: 0;
+      color: var(--accent-strong);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .time-loop-timing {
+      color: #6b6b6b;
+    }
+
+    .time-loop-length,
+    .time-loop-date {
+      color: var(--accent-strong);
+      white-space: nowrap;
+    }
+
+    .time-loop-info .map-step-label {
+      margin-inline-start: 8px;
+    }
+
+    .time-loop-actions {
+      margin-inline-start: auto;
+      justify-content: flex-end;
     }
 
     .simple-constant-row {
@@ -2446,7 +2495,7 @@
       }
     }
   </style>
-  <link rel="stylesheet" href="./api/dashboard.css?v=20261020-acclimation-reminder2">
+  <link rel="stylesheet" href="./api/dashboard.css?v=20261110-round-end-action">
   <link rel="stylesheet" href="./assets/theme.css?v=20261007-misc-settings11">
   <script src="./story/data/english-source-data.js?v=20261011-english4"></script>
   <script src="./assets/theme.js?v=20261007-page-navigation1" defer></script>
@@ -2763,7 +2812,7 @@
   <script src="./assets/exploration-card-delays.js?v=20261013-automation5"></script>
   <script src="./assets/exploration-card-resources.js?v=20261018-card-audit1"></script>
   <script src="./technology/negotiation-rules.js?v=20261019-negotiation-split1"></script>
-  <script src="./technology/voyage-action-rules.js?v=20261016-voyage3"></script>
+  <script src="./technology/voyage-action-rules.js?v=20261110-chronosail"></script>
   <script src="./technology/exploration-tech-rules.js?v=20261017-automation-audit4"></script>
   <script src="./technology/structure-tech-rules.js?v=20261019-tech-cache1"></script>
   <script src="./technology/investigation-rules.js?v=20261018-dark-names1"></script>
@@ -2772,7 +2821,7 @@
   <script src="./map/titan-markers.js?v=20261016-map-titan1"></script>
   <script src="./map/titan-capture-rules.js?v=20261016-map-titan1"></script>
   <script src="./map/map-tile-tags.js?v=20261016-icon-scope"></script>
-  <script src="./map/frozen-time-rules.js?v=20261017-frozen-time1"></script>
+  <script src="./map/frozen-time-rules.js?v=20261110-silo6"></script>
   <script src="./map/map-data.js?v=20260730-cycle-labels"></script>
   <script src="./map/nemesis-path.js?v=20260924-shared"></script>
   <script src="./map/nemesis-battle.js?v=20261003-record"></script>
@@ -2787,7 +2836,7 @@
   <script src="./assets/jsave-import.js?v=20261014-record-tracks1"></script>
   <script src="./assets/record-attachments.js?v=20261009"></script>
   <script>window.ATO_BGM_CONFIG = { expect: "bgm21" };</script>
-  <script src="./assets/bgm/manifest.js?v=20261014-volume-bgm21"></script>
+  <script src="./assets/bgm/manifest.js?v=20261110-round-end-bgm21"></script>
   <script src="./assets/bgm/bgm.js?v=20261014-volume-bgm21"></script>
   <script>
     const legacyStorageKey = "ato-campaign-dashboard-v1";
@@ -2923,6 +2972,12 @@
         title: "灾祸",
         kind: "条件执行",
         desc: "如果本日有**灾祸事件**，或灾祸进程被触发，进行结算并记录后果。",
+      },
+      {
+        id: "end",
+        title: "轮末",
+        kind: "总是执行",
+        desc: "将**阿尔戈号所在的未探索板块**标记为已探索。直接点击「进入下一天」也会自动结算。",
       },
     ];
 
@@ -4982,7 +5037,7 @@
     }
 
     function normalizeState(value = {}, cycleId = "c2") {
-      const { cardCounters: legacyCardCounters, ...normalizedValue } = value;
+      const { cardCounters: legacyCardCounters, timeLoop, ...normalizedValue } = value;
       const day = normalizeCampaignDay(value === defaultState ? undefined : value.day, cycleId);
       const mapSnapshot = isPlainObject(value.mapSnapshot) ? { ...value.mapSnapshot } : (value.mapSnapshot ?? null);
       if (isPlainObject(mapSnapshot)) {
@@ -5005,6 +5060,18 @@
         ...defaultState,
         ...normalizedValue,
         day,
+        ...(cycleId === "c3" && Number.isSafeInteger(timeLoop?.endDay) ? {
+          timeLoop: {
+            endDay: timeLoop.endDay,
+            ...(Number.isSafeInteger(timeLoop.baseLength) && timeLoop.baseLength >= 0 ? { baseLength: timeLoop.baseLength } : {}),
+            ...(Number.isSafeInteger(timeLoop.startDay) ? { startDay: timeLoop.startDay } : {}),
+            ...(Number.isSafeInteger(timeLoop.estimatedStartDay) ? { estimatedStartDay: timeLoop.estimatedStartDay } : {}),
+            settledDays: (Array.isArray(timeLoop.settledDays) ? timeLoop.settledDays : [])
+              .filter(day => Number.isSafeInteger(day) && day >= 0),
+            settledEndDays: (Array.isArray(timeLoop.settledEndDays) ? timeLoop.settledEndDays
+              : Array.isArray(timeLoop.settledDays) ? timeLoop.settledDays : []).filter(Number.isSafeInteger),
+          },
+        } : {}),
         mapSnapshot,
         dateNotes: isPlainObject(value.dateNotes) ? cloneJson(value.dateNotes) : {},
         techAutomation: normalizeStructureTechAutomation(value.techAutomation),
@@ -6138,7 +6205,7 @@
       }
     }
 
-    function syncDashboardMapSnapshot(cycleId, cycle, cycleState) {
+    function syncDashboardMapSnapshot(cycleId, cycle, cycleState, dashboardState = state) {
       const current = cycle.tiles.find((tile) => tile.id === cycleState.currentTile);
       const adversary = cycle.tiles.find((tile) => tile.id === cycleState.tokens.AD);
       const latest = cycle.tiles.find((tile) => tile.id === cycleState.latestRevealedTile);
@@ -6162,9 +6229,9 @@
       const tileNotes = Object.entries(cycleState.tileNotes || {})
         .filter(([, note]) => String(note || "").trim())
         .map(([tileId, note]) => ({ tileId, tileLabel: tileLabel(tileId), note: String(note).trim() }));
-      state.location = current?.label || cycleState.currentTile || "";
-      state.mapSnapshot = {
-        ...(isPlainObject(state.mapSnapshot) ? state.mapSnapshot : {}),
+      dashboardState.location = current?.label || cycleState.currentTile || "";
+      dashboardState.mapSnapshot = {
+        ...(isPlainObject(dashboardState.mapSnapshot) ? dashboardState.mapSnapshot : {}),
         savedAt: new Date().toISOString(),
         cycleId,
         cycleLabel: cycle.label,
@@ -6214,8 +6281,8 @@
         // 保留上一次快照里的翻开日：地图页保存的旧存档可能没有该字段，缺了就会
         // 把“今天刚翻开”误判成“早已探索”。同一循环内合并，换循环时不串用。
         exploredDays: {
-          ...(isPlainObject(state.mapSnapshot?.exploredDays) && state.mapSnapshot.cycleId === cycleId
-            ? state.mapSnapshot.exploredDays : {}),
+          ...(isPlainObject(dashboardState.mapSnapshot?.exploredDays) && dashboardState.mapSnapshot.cycleId === cycleId
+            ? dashboardState.mapSnapshot.exploredDays : {}),
           ...(isPlainObject(cycleState.exploredDays) ? cycleState.exploredDays : {}),
         },
         exploredCount: exploredIds.length,
@@ -6224,10 +6291,12 @@
       for (const key of ["currentTileTags", "currentTileTagLabels", "currentTileFactions", "currentTileFactionLabels",
         "latestRevealedTileTags", "latestRevealedTileTagLabels", "currentTileIsLatestRevealed",
         "currentTileHasLastCityMarker", "currentTileHasLastOasisMarker", "currentTileHasLastSilverRuinMarker"]) {
-        state[`map${key[0].toUpperCase()}${key.slice(1)}`] = state.mapSnapshot[key];
+        dashboardState[`map${key[0].toUpperCase()}${key.slice(1)}`] = dashboardState.mapSnapshot[key];
       }
-      saveState();
-      renderFlow();
+      if (dashboardState === state) {
+        saveState();
+        renderFlow();
+      }
     }
 
     function mapDirectionalTarget(cycle, cycleState, direction) {
@@ -6303,7 +6372,7 @@
           syncMapCommandLandmarks(cycleId, cycleState, targetId);
           cycleState.currentTile = targetId;
           cycleState.tokens.AG = targetId;
-          // 进入板块只“揭示”，不直接算已探索；已探索由进入下一天统一结算。
+          // 进入板块时先揭示，等轮末或进入下一天再标记为已探索。
           if (!cycleState.explored[targetId]) {
             cycleState.previewRevealed ||= {};
             cycleState.previewRevealed[targetId] = true;
@@ -6327,8 +6396,8 @@
           } else {
             message = newlyExplored
               ? (cycleId === "c5"
-                ? `目标板块 ${targetId} 已按出发板块的 ${cycleState.tileVariants?.[targetId] === "alternate" ? "B" : "A"} 面揭示，进入下一天后转为已探索。`
-                : `目标板块 ${targetId} 已揭示，进入下一天后转为已探索。`)
+                ? `目标板块 ${targetId} 已按出发板块的 ${cycleState.tileVariants?.[targetId] === "alternate" ? "B" : "A"} 面揭示，可在轮末结算为已探索。`
+                : `目标板块 ${targetId} 已揭示，可在轮末结算为已探索。`)
               : `阿尔戈号已移动至 ${targetId}。`;
           }
         } else if (command === "move-special") {
@@ -6360,7 +6429,7 @@
               : `阿尔戈号经特殊连接移动至 ${value}，与宿敌相遇：已移除宿敌，请结算宿敌战斗。`;
           } else {
             message = newlyExplored
-              ? `目标板块 ${value} 已揭示，进入下一天后转为已探索。`
+              ? `目标板块 ${value} 已揭示，可在轮末结算为已探索。`
               : `阿尔戈号已通过特殊连接移动至 ${value}。`;
           }
         } else if (command === "flip-c5-tile") {
@@ -7679,18 +7748,34 @@
     }
 
     async function refreshCachedArgoRecord() {
-      if (argoRecordRefreshInFlight) return;
+      if (argoRecordRefreshInFlight) {
+        refreshCachedArgoRecord.pending = true;
+        return;
+      }
+      const profileId = archive.activeProfileId;
+      const sessionEpoch = campaignSessionEpoch;
       argoRecordRefreshInFlight = true;
       try {
         const localRecord = readLocalArgoRecord();
         let serverRecord = null;
         try {
-          const server = await readServerArgoRecord();
+          const server = await readServerArgoRecord(profileId);
           serverRecord = server.record;
         } catch (error) {
           console.warn(error);
         }
+        if (profileId !== archive.activeProfileId || sessionEpoch !== campaignSessionEpoch) return;
         const nextRecord = mergeArgoRecords(serverRecord, localRecord);
+        const loop = currentCycleConfig().id === "c3" ? state.timeLoop : null;
+        if (loop && loop.baseLength === undefined && serverRecord && ownsDashboardWriteLease()
+            && !mapCommandBusy && !nextDay.busy) {
+          const baseLength = window.ATO_VOYAGE_ACTION_RULES.loopBaseLength(
+            loop, c3LoopLength(serverRecord), serverRecord.cycleStats?.c3?._legacyLoopBaseLength);
+          if (baseLength !== null) {
+            loop.baseLength = baseLength;
+            saveState();
+          }
+        }
         // Closing a confirmation dialog can refocus the window. Do not rebuild
         // the card picker (and discard its open menus/draft) for unchanged data.
         if (!jsonEqual(cachedArgoRecord, nextRecord)) {
@@ -7699,6 +7784,10 @@
         }
       } finally {
         argoRecordRefreshInFlight = false;
+        if (refreshCachedArgoRecord.pending) {
+          refreshCachedArgoRecord.pending = false;
+          void refreshCachedArgoRecord();
+        }
       }
     }
 
@@ -8383,10 +8472,10 @@
       });
     }
 
-    // 第七步（灾祸 / 末日）在特殊事件后面补一个进入下一天，省得再回到顶部日期区。
+    // 在轮末提供进入下一天，完成当日流程后就近推进。
 
     function createNextDayStepButton(stepId) {
-      if (stepId !== "doom") return null;
+      if (stepId !== "end") return null;
       const button = document.createElement("button");
       button.type = "button";
       button.className = "step-action-button";
@@ -8396,6 +8485,146 @@
         if (await nextDay()) scrollPageToTopAfterNextDay();
       });
       return button;
+    }
+
+    function createRoundEndStepButton(stepId) {
+      if (stepId !== "end") return null;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "step-action-button round-end-mark-button";
+      button.textContent = "标记已探索";
+      button.dataset.englishText = "Mark current tile as explored";
+      if (currentCycleConfig().id === "c3" && state.timeLoop?.settledDays?.includes(Number(state.day))) {
+        button.disabled = true;
+        button.title = "本轮已在回溯前结算探索。";
+      }
+      button.addEventListener("click", async () => {
+        if (nextDay.busy || campaignRestoreInFlight || !ownsDashboardWriteLease()) return;
+        button.disabled = true;
+        try {
+          const result = await settleCurrentMapExploration();
+          if (result === null) throw new Error("请先在地图中设置阿尔戈号当前位置。");
+          const status = document.querySelector("#roundEndStatus");
+          if (status) status.textContent = result ? "当前位置已标记为已探索。" : "当前位置已经探索过了。";
+        } catch (error) {
+          window.alert(`轮末结算未完成：${error?.message || error}`);
+        } finally {
+          button.disabled = false;
+        }
+      });
+      return button;
+    }
+
+    function createC3TimeLoopTools() {
+      const loop = state.timeLoop;
+      const day = Number(state.day);
+      const length = c3LoopLength(cachedArgoRecord);
+      const endDay = c3LoopEndDay(loop);
+      const settled = loop?.settledDays?.includes(day);
+      const due = loop && endDay <= day && !settled;
+      const wrapper = document.createElement("div");
+      wrapper.className = "survey-constants time-loop-row";
+      const info = document.createElement("div");
+      info.className = "time-loop-info";
+      info.textContent = "轮回";
+      const messages = [];
+      if (loop) {
+        const startDay = loop.startDay ?? loop.settledDays?.at(-1);
+        const estimated = !Number.isSafeInteger(startDay);
+        const fromDay = estimated ? loop.estimatedStartDay : startDay;
+        const currentLength = Number.isSafeInteger(fromDay) ? Math.max(0, endDay - fromDay) : length;
+        const timing = document.createElement("span");
+        timing.className = "time-loop-timing";
+        timing.textContent = currentLength === null ? " · 本次轮回长度未知" : " · 本次轮回长度";
+        if (currentLength !== null) {
+          const duration = document.createElement("span");
+          duration.className = "time-loop-length";
+          duration.textContent = ` ${estimated ? "约 " : ""}${currentLength} 天`;
+          timing.appendChild(duration);
+        }
+        const nextLoopDay = Math.max(endDay, settled ? day + 1 : day);
+        timing.appendChild(document.createTextNode(" · 下次轮回在"));
+        const nextDate = document.createElement("span");
+        nextDate.className = "time-loop-date";
+        nextDate.textContent = `第 ${nextLoopDay} 天`;
+        timing.appendChild(nextDate);
+        info.appendChild(timing);
+        if (startDay === day) messages.push("轮回已结算 · 无可避免灾祸 +1");
+      }
+      if (!loop) messages.push("故事书指示时启用轮回");
+      if (due) messages.push("今日轮末结算");
+      if (messages.length) {
+        const status = document.createElement("span");
+        status.className = "map-step-label";
+        status.textContent = messages.join(" · ");
+        info.appendChild(status);
+      }
+      const actions = document.createElement("div");
+      actions.className = "map-step-group time-loop-actions";
+      if (loop) {
+        for (const [label, offset] of [["缩短 1 天", -1], ["延长 1 天", 1]]) {
+          const adjust = document.createElement("button");
+          adjust.type = "button";
+          adjust.className = "secondary step-action-button";
+          adjust.textContent = label;
+          adjust.addEventListener("click", async () => {
+            if (nextDay.busy || mapCommandBusy || campaignRestoreInFlight || !ownsDashboardWriteLease()) return;
+            adjust.disabled = true;
+            try {
+              await adjustC3TimeLoop(loop.endDay, offset);
+            } catch (error) {
+              window.alert(`轮回端点未调整：${error?.message || error}`);
+            } finally {
+              adjust.disabled = false;
+            }
+          });
+          actions.appendChild(adjust);
+        }
+      }
+      if (!loop || due) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "step-action-button";
+        button.textContent = loop ? "结算轮回" : "启用轮回";
+        button.dataset.englishText = loop ? "Resolve Loop" : "Activate Loops";
+        button.addEventListener("click", async () => {
+          if (nextDay.busy || campaignRestoreInFlight || !ownsDashboardWriteLease()) return;
+          button.disabled = true;
+          try {
+            await settleC3TimeLoop(!loop);
+          } catch (error) {
+            window.alert(`轮回未结算：${error?.message || error}`);
+          } finally {
+            button.disabled = false;
+          }
+        });
+        actions.appendChild(button);
+      }
+      if (!loop && length !== null) {
+        const resume = document.createElement("button");
+        resume.type = "button";
+        resume.className = "secondary step-action-button";
+        resume.textContent = "接续轮回";
+        resume.dataset.englishText = "Resume existing Loop";
+        resume.addEventListener("click", () => {
+          if (nextDay.busy || mapCommandBusy || campaignRestoreInFlight || !ownsDashboardWriteLease()) return;
+          const value = window.prompt("请输入已在时间表上圈出的轮回端点日期。");
+          if (value === null) return;
+          const endDay = Number(value);
+          if (!value.trim() || !Number.isSafeInteger(endDay) || endDay < day) {
+            window.alert("请输入今天或之后的轮回端点日期。");
+            return;
+          }
+          state.timeLoop = { endDay, baseLength: length, estimatedStartDay: endDay - length, settledDays: [], settledEndDays: [] };
+          saveState();
+          renderFlow();
+          renderDateTrack();
+        });
+        actions.appendChild(resume);
+      }
+      wrapper.appendChild(info);
+      wrapper.appendChild(actions);
+      return wrapper;
     }
 
     // 进入下一天会把勾选清空，接下来要从第一步（移动和时间表）重新开始，
@@ -8417,7 +8646,7 @@
       // 探索步骤不显示静态提示，这里只作为宿敌命令结果的反馈区（空着时不占位）。
 
       status.textContent = stepId === "move"
-        ? "移动到未揭示目标时，会先揭示该板块；结束当天（进入下一天）时，阿尔戈号所在板块才转为已探索。"
+        ? "移动到未揭示的板块时会先揭示它。轮末或进入下一天时，将阿尔戈号所在的板块标记为已探索。"
         : "";
       return status;
     }
@@ -8541,15 +8770,19 @@
         const text = document.createElement("div");
         const trackReminders = getStepTrackReminders(step.id);
         const titleText = step.id === "story" || step.id === "doom"
-          ? `<button type="button" class="flow-title-button" data-card-track-open="${step.id}">${escapeHtml(step.title)}</button>`
-          : `<span>${escapeHtml(step.title)}</span>`;
+          ? `<button type="button" class="flow-title-button" data-term-scope="step-name" data-card-track-open="${step.id}">${escapeHtml(step.title)}</button>`
+          : `<span data-term-scope="step-name"${step.id === "end" ? ' data-english-text="End Step"' : ""}>${escapeHtml(step.title)}</span>`;
+        const descLanguage = step.id === "end"
+          ? 'data-english-text="Mark the unexplored tile under the Argo as explored. Proceeding to the next day also does this automatically."'
+          : `data-english-source="${({ move: "lbl_MOVEMENT_desc", explore: "lbl_EXPLORATION_desc", survey: "lbl_EXPEDITION_desc", encounter: "lbl_ENCOUNTER_desc", development: "lbl_ADVANCEMENT_desc", story: "lbl_STORY_desc", doom: "lbl_DOOM_desc" })[step.id]}"`;
         text.innerHTML = `
-          <div class="step-title" data-term-scope="step-name">
+          <div class="step-title">
             <span class="step-index">${String(index + 1).padStart(2, "0")}</span>
             ${titleText}
             <span class="step-kind">${escapeHtml(step.kind)}</span>
           </div>
-          <p class="step-desc" data-english-source="${({ move: "lbl_MOVEMENT_desc", explore: "lbl_EXPLORATION_desc", survey: "lbl_EXPEDITION_desc", encounter: "lbl_ENCOUNTER_desc", development: "lbl_ADVANCEMENT_desc", story: "lbl_STORY_desc", doom: "lbl_DOOM_desc" })[step.id]}">${renderStepDesc(step.desc)}</p>
+          <p class="step-desc" ${descLanguage}>${renderStepDesc(step.desc)}</p>
+          ${step.id === "end" ? '<p class="step-desc" id="roundEndStatus" role="status"></p>' : ""}
           ${renderStepTrackReminders(trackReminders)}
         `;
         trackReminders.forEach((reminder, reminderIndex) => {
@@ -8587,11 +8820,12 @@
 
         const nemesisTools = createNemesisStepTools(step.id);
         if (nemesisTools) actions.appendChild(nemesisTools);
-        // 第七步（灾祸 / 末日）的进入下一天排在特殊事件右边。
-
+        const roundEndButton = createRoundEndStepButton(step.id);
+        if (roundEndButton) actions.appendChild(roundEndButton);
         const stepNextDayButton = createNextDayStepButton(step.id);
         if (stepNextDayButton) actions.appendChild(stepNextDayButton);
         if (actions.children.length) text.querySelector(".step-title")?.appendChild(actions);
+        if (step.id === "end" && currentCycleConfig().id === "c3") text.appendChild(createC3TimeLoopTools());
         const mapTools = createMapStepTools(step.id);
         if (mapTools) text.appendChild(mapTools);
         if (step.id === "move") {
@@ -8650,6 +8884,10 @@
       syncBgmStage();
       const delayRules = explorationDelayRules();
       const cycleId = currentCycleConfig().id;
+      if (cycleId === "c3" && state.timeLoop && elements.dateTrackList
+          && elements.dateTrackList.dataset.loopEndDay !== String(c3LoopEndDay(state.timeLoop))) {
+        renderDateTrack();
+      }
       const due = delayRules?.getQueue(cachedArgoRecord || {}, cycleId, ["waiting"])
         .filter((event) => event.kind === "tech-disable" && event.dueDay <= explorationDayNumber(state.day, cycleId)) || [];
       if (due.length && bgmFlowStepId() === "development" && !mutateExplorationRecord.busy && ownsDashboardWriteLease()) {
@@ -9172,15 +9410,15 @@
       else delete store[key];
     }
 
-    function explorationDashboardTracks(record) {
+    function explorationDashboardTracks(record, dashboardState = state) {
       const cycleId = currentCycleConfig().id;
       const knowledgeMinimum = typeof argoKnowledgeStart === "function" ? argoKnowledgeStart(cycleId) : 0;
       const totals = {
-        progress: Math.max(0, Number(state.cardTracks?.story?.progress || 0)),
-        doom: Math.max(0, Number(state.cardTracks?.doom?.doom || 0)),
-        knowledge: Math.max(knowledgeMinimum, Number(state.cardTracks?.inwardOdyssey?.position ?? knowledgeMinimum)),
+        progress: Math.max(0, Number(dashboardState.cardTracks?.story?.progress || 0)),
+        doom: Math.max(0, Number(dashboardState.cardTracks?.doom?.doom || 0)),
+        knowledge: Math.max(knowledgeMinimum, Number(dashboardState.cardTracks?.inwardOdyssey?.position ?? knowledgeMinimum)),
       };
-      const seen = state.exploration?.trackReceiptsByCycle?.[cycleId] || {};
+      const seen = dashboardState.exploration?.trackReceiptsByCycle?.[cycleId] || {};
       for (const item of record.explorationTrackTransactions || []) {
         if (item.cycleId === cycleId && !seen[item.id] && Object.prototype.hasOwnProperty.call(totals, item.type)) {
           totals[item.type] = Math.max(item.type === "knowledge" ? knowledgeMinimum : 0, totals[item.type] + item.amount);
@@ -9189,18 +9427,18 @@
       return totals;
     }
 
-    function syncExplorationDashboardTracks(record) {
+    function syncExplorationDashboardTracks(record, dashboardState = state) {
       const cycleId = currentCycleConfig().id;
-      const totals = explorationDashboardTracks(record);
-      state.exploration.trackReceiptsByCycle ||= {};
-      const seen = state.exploration.trackReceiptsByCycle[cycleId] ||= {};
+      const totals = explorationDashboardTracks(record, dashboardState);
+      const receipts = (dashboardState.exploration ||= {}).trackReceiptsByCycle ||= {};
+      const seen = receipts[cycleId] ||= {};
       const locations = { progress: ["story", "progress"], doom: ["doom", "doom"], knowledge: ["inwardOdyssey", "position"] };
       for (const item of record.explorationTrackTransactions || []) {
         if (item.cycleId !== cycleId || seen[item.id] || !locations[item.type]) continue;
         const [key, field] = locations[item.type];
-        state.cardTracks ||= {};
-        state.cardTracks[key] ||= { position: 0, progress: 0, doom: 0 };
-        state.cardTracks[key][field] = totals[item.type];
+        dashboardState.cardTracks ||= {};
+        dashboardState.cardTracks[key] ||= { position: 0, progress: 0, doom: 0 };
+        dashboardState.cardTracks[key][field] = totals[item.type];
         seen[item.id] = true;
       }
     }
@@ -12140,7 +12378,7 @@
       const capacity = document.createElement("p");
       capacity.className = "step-track-desc";
       capacity.textContent = `当前凝固时光：${info.value ?? "—"} / ${info.capacity}。`
-        + (info.available?.ok ? "时间对策已解锁；高级时间对策可将容量从 3 提高到 5。" : "时间对策尚未解锁或暂时禁用，不能获得凝固时光。");
+        + (info.available?.ok ? "时光筒仓上限按当前可用科技计算。" : "时间对策尚未解锁或暂时禁用，不能获得凝固时光。");
       box.appendChild(capacity);
       if (message?.error && !info.receipt && info.newlyExplored) {
         const retry = document.createElement("button");
@@ -12262,7 +12500,7 @@
       }
       renderDashboardArchive(merged.value, options);
       if (campaignHasUnsavedChanges()) queueCampaignSave();
-      else setCampaignSaveStatus("科技安排已保存", "saved");
+      else setCampaignSaveStatus(options.saveMessage || "科技安排已保存", "saved");
     }
 
     function createStructureTechActionTools(scope = "voyage") {
@@ -12277,7 +12515,7 @@
       const cached = scope === "negotiation" ? negotiationTechActionPanel : scope === "exploration" ? explorationTechActionPanel : structureTechActionPanel;
       const signature = JSON.stringify(context && [context.day, context.automation, context.automationsByCycle,
         context.technology, context.heroes, context.record, context.map,
-        [context.state.mapSnapshot, context.state.exploration, context.mapState]]);
+        [context.state.mapSnapshot, context.state.exploration, context.state.timeLoop, context.mapState]]);
       if (cached?.key === key && cached.signature === signature) return cached.element;
       const element = document.createElement(scope === "negotiation" ? "div" : "details");
       element.className = "structure-tech-tools";
@@ -12604,7 +12842,7 @@
 
     // 只滚动日期轨自己的列表把当天居中，绝不动整个页面：
 
-    // 日期轨在顶部 header 里，第七步的「进入下一天」在页面底部，
+    // 日期轨在顶部 header 里，轮末的「进入下一天」在页面底部，
 
     // 之前的 scrollIntoView 会把整页拽回顶部，用户点了以后就找不着原来的位置了。
 
@@ -12664,7 +12902,7 @@
 
     // 只为当天及科技安排的日期补行，不铺满中间的空白日期。这里返回的展示行不会
     // 写回官方 entries，因此未来科技排期不会让「进入下一天」跳过原有日期。
-    function trackEntriesForRender(track) {
+    function trackEntriesForRender(track, loopEndDay = state.timeLoop?.endDay) {
       const entries = track?.entries || [];
       const lastNumericDay = [...entries]
         .reverse()
@@ -12673,7 +12911,9 @@
         .find((value) => Number.isFinite(value));
       if (lastNumericDay === undefined) return entries;
       const technologyEvents = typeof structureTechEvents === "function" ? structureTechEvents().filter(event => !event.skipTimeline) : [];
-      const extraDays = new Set([state.day, ...technologyEvents.flatMap((event) => [event.dueDay,
+      const loop = state.timeLoop;
+      const loopEnds = loop?.settledEndDays ?? loop?.settledDays ?? [];
+      const extraDays = new Set([state.day, loopEndDay, ...loopEnds, ...technologyEvents.flatMap((event) => [event.dueDay,
         Number(event.cooldownUntilDay) > Number(event.createdDay) ? event.cooldownUntilDay : null])]
         .filter((day) => day !== null && day !== "" && Number.isSafeInteger(Number(day)) && Number(day) > lastNumericDay)
         .map(Number));
@@ -12989,8 +13229,7 @@
       }];
     }
 
-    // 当天翻开的板块要到“进入下一天”才算已探索：地图存档记下翻开时的游戏日，
-    // 提醒据此把“今天刚翻开”与“之前已探索”区分开，检定类科技只在后一天提示。
+    // 地图存档记下翻开时的游戏日，检定类科技只对以前翻开的已探索板块提示。
     function currentTileRevealDayState() {
       const snapshot = state.mapSnapshot;
       const tileId = snapshot?.currentTileId || "";
@@ -13089,7 +13328,7 @@
     function getStoryMapReminders() {
       const tags = currentMapTagSet();
       const reminders = [];
-      // 免费进展只跟着“最新揭示”走：进入下一天结算时会清掉 latest，所以只在翻开当天提示。
+      // 免费进展只跟着“最新揭示”走，轮末结算时会清掉 latest。
       if (tags.has("progress") && state.mapCurrentTileIsLatestRevealed) {
         reminders.push({
           title: "新探索板块放置进展",
@@ -13161,7 +13400,7 @@
 
     function getDoomMapReminders() {
       const tags = currentMapTagSet();
-      // 灾祸指示物在“翻开该板块”的当天放置；进入下一天后 latest 会被清掉。
+      // 灾祸指示物在“翻开该板块”的当天放置，轮末结算时会清掉 latest。
       if (!tags.has("calamity") || !state.mapCurrentTileIsLatestRevealed) return [];
       const saves = typeof structureSaveReminders === "function" ? structureSaveReminders([{ type: "doom", amount: 1 }]) : [];
       const saveHint = saves.map(reminder => {
@@ -13303,11 +13542,17 @@
       // One event scan for the whole track; asking per day cell rebuilt the
       // normalized event list (and its labels) dozens of times per render.
       const technologyEvents = typeof structureTechEvents === "function" ? structureTechEvents() : null;
-      trackEntriesForRender(track).forEach((entry) => {
+      const loop = config.id === "c3" ? state.timeLoop : null;
+      const loopEndDay = loop ? c3LoopEndDay(loop) : null;
+      if (loop) elements.dateTrackList.dataset.loopEndDay = String(loopEndDay);
+      const settledEndDays = loop?.settledEndDays ?? loop?.settledDays ?? [];
+      trackEntriesForRender(track, loopEndDay).forEach((entry) => {
         const eventText = entry.day == null ? "" : track.events[entry.day];
         const noteText = entry.day == null ? "" : state.dateNotes?.[dateNoteKey(entry.day)] || "";
         const technologyItems = entry.day == null || typeof structureTechTimelineItems !== "function" ? [] : structureTechTimelineItems(entry.day, technologyEvents);
         const icons = dateTrackIcons(entry, track);
+        const loopEnd = loop && entry.day != null && (entry.day === loopEndDay || settledEndDays.includes(entry.day));
+        if (loopEnd) icons.push({ label: "轮回端点", className: "loop-end" });
         const isCurrentDay = entry.day != null && String(entry.day) === String(state.day);
         const item = document.createElement("div");
         item.className = `date-track-item${isCurrentDay ? " current" : ""}${eventText ? " event" : ""}${noteText ? " noted" : ""}${entry.day == null ? " disabled" : ""}${entry.beyondTrack ? " beyond-track" : ""}${technologyItems.length ? " tech-scheduled" : ""}`;
@@ -13323,7 +13568,7 @@
           if (isCurrentDay) item.setAttribute("aria-current", "date");
         }
         item.innerHTML = `
-          <span class="date-track-day">${escapeHtml(formatTrackDay(entry))}</span>
+          <span class="date-track-day${loopEnd ? " loop-end" : ""}">${escapeHtml(formatTrackDay(entry))}</span>
           ${icons.length ? `<span class="date-track-icons">${icons.map((icon) => `<span class="date-track-icon ${icon.className}">${escapeHtml(icon.label)}</span>`).join("")}</span>` : ""}
           ${eventText ? `<span class="date-track-event">${escapeHtml(eventText)}</span>` : ""}
           ${noteText ? `<span class="date-track-note" data-term-ignore data-user-content>${escapeHtml(noteText)}</span>` : ""}
@@ -13421,33 +13666,36 @@
       renderDateTrack();
     }
 
-    // 这一天结束时，把阿尔戈号脚下的板块从“已揭示”结算为“已探索”。
-    // 地图页与主控台共用地图形状；写入走地图分区的原子保存，冲突时重读合并。
-    async function settleMapExplorationForNextDay() {
-      const target = structureTechTarget();
-      const commandState = await loadMapCommandState(target.profileId);
-      assertStructureTechTarget(target);
-      const baseState = cloneJson(commandState.state);
-      const { cycleId, cycle, cycleState } = currentMapCommandCycle(commandState);
-      const tileId = cycleState.currentTile;
-      if (!tileId) return false;
-      let changed = false;
-      if (!cycleState.explored[tileId]) {
-        cycleState.explored[tileId] = true;
-        changed = true;
+    function markCurrentMapTileExplored(cycleState, tileId = cycleState.currentTile) {
+      if (!tileId) return null;
+      const isLatest = cycleState.latestRevealedTile === tileId;
+      if (cycleState.explored[tileId] && !cycleState.previewRevealed?.[tileId] && !isLatest) return false;
+      cycleState.explored[tileId] = true;
+      if (cycleState.previewRevealed) delete cycleState.previewRevealed[tileId];
+      // 旧存档的“最新揭示”也可能是已探索板块。轮末一并清掉，结束免费进展提醒。
+      if (isLatest) cycleState.latestRevealedTile = "";
+      return true;
+    }
+
+    async function settleCurrentMapExploration() {
+      if (mapCommandBusy || settleExplorationPursuit.busy || settleExplorationDraw.busy) {
+        throw new Error("地图或探索正在结算，请稍候。");
       }
-      if (cycleState.previewRevealed?.[tileId]) {
-        delete cycleState.previewRevealed[tileId];
-        changed = true;
+      let commandState;
+      mapCommandBusy = true;
+      try {
+        const target = structureTechTarget();
+        commandState = await loadMapCommandState(target.profileId);
+        assertStructureTechTarget(target);
+        const baseState = cloneJson(commandState.state);
+        const { cycleState } = currentMapCommandCycle(commandState);
+        const changed = markCurrentMapTileExplored(cycleState);
+        if (!changed) return changed;
+        await saveMapCommandState(commandState, baseState);
+        assertStructureTechTarget(target);
+      } finally {
+        mapCommandBusy = false;
       }
-      // 旧存档里“最新揭示”可能早已是已探索板块；结束当天同样清掉，
-      // 否则免费进展提醒会一直挂在同一格上。
-      if (cycleState.latestRevealedTile === tileId) {
-        cycleState.latestRevealedTile = "";
-        changed = true;
-      }
-      if (!changed) return false;
-      await saveMapCommandState(commandState, baseState);
       const savedCycle = currentMapCommandCycle(commandState);
       const context = typeof getStructureTechContext === "function" ? getStructureTechContext() : null;
       if (context?.profileId === commandState.profileId) {
@@ -13456,6 +13704,119 @@
       }
       syncDashboardMapSnapshot(savedCycle.cycleId, savedCycle.cycle, savedCycle.cycleState);
       return true;
+    }
+
+    function c3LoopLength(record) {
+      return window.ATO_VOYAGE_ACTION_RULES.c3LoopLength(record);
+    }
+
+    function c3LoopEndDay(loop, record = cachedArgoRecord) {
+      return window.ATO_VOYAGE_ACTION_RULES.loopEndDay(loop, c3LoopLength(record), record?.cycleStats?.c3?._legacyLoopBaseLength);
+    }
+
+    async function commitC3TimeLoop(target, update, saveMessage) {
+      if (mapCommandBusy || settleExplorationPursuit.busy || settleExplorationDraw.busy) {
+        throw new Error("地图或探索正在结算，请稍候。");
+      }
+      let campaign;
+      let sections;
+      const day = Number(target.day);
+      mapCommandBusy = true;
+      try {
+        await beforeStructureTechSubmit(target);
+        campaign = await loadFullCampaign();
+        assertStructureTechTarget(target);
+        const dashboard = campaign?.sections?.dashboard;
+        const dashboardState = dashboard?.profiles?.[target.profileId]?.cycles?.c3?.state;
+        if (!dashboardState || Number(dashboardState.day) !== day || !Number.isSafeInteger(day)) {
+          throw new Error("无法核对当前轮回日期，请刷新存档后重试。");
+        }
+        const changes = update(campaign.sections, dashboardState, day);
+        if (changes === false) return false;
+        if (changes) {
+          sections = { dashboard, ...changes };
+          const expectedRevisions = Object.fromEntries(Object.keys(sections)
+            .map(section => [section, Number(campaign.sectionRevisions?.[section] || 0)]));
+          const saved = await importCampaignSections(sections, expectedRevisions);
+          assertStructureTechTarget(target);
+          campaign.sections = { ...campaign.sections, ...sections };
+          campaign.sectionRevisions = { ...campaign.sectionRevisions, ...saved.sections };
+        }
+      } finally {
+        mapCommandBusy = false;
+      }
+      await applyStructureTechCommit({ campaign }, target, { saveMessage });
+      campaignSyncChannel?.postMessage({ revision: campaign.sectionRevisions.dashboard });
+      if (!sections || sections.record) recordSyncChannel?.postMessage({ revision: campaign.sectionRevisions.record });
+      if (!sections || sections.map) structureTechMapSyncChannel?.postMessage({ revision: campaign.sectionRevisions.map });
+      return true;
+    }
+
+    async function adjustC3TimeLoop(expectedEndDay, offset) {
+      const target = structureTechTarget();
+      if (target.cycleId !== "c3") return;
+      const endDay = expectedEndDay + offset;
+      if (!Number.isSafeInteger(endDay)) throw new Error("调整后的日期超出可记录范围。");
+      await commitC3TimeLoop(target, (sections, dashboardState) => {
+        const loop = dashboardState.timeLoop;
+        if (loop?.endDay !== expectedEndDay) {
+          throw new Error("轮回端点已变更，请刷新并核对日期后重试。");
+        }
+        const record = window.ATO_STRUCTURE_TECH_CLIENT.profileSection(sections.record, target.profileId);
+        const length = c3LoopLength(record);
+        // 旧存档的首轮可能没有起点，移动端点前先保留估算起点。
+        if (loop.startDay === undefined && !loop.settledDays?.length && loop.estimatedStartDay === undefined) {
+          const start = c3LoopEndDay(loop, record) - length;
+          if (length !== null && Number.isSafeInteger(start)) loop.estimatedStartDay = start;
+        }
+        const baseLength = window.ATO_VOYAGE_ACTION_RULES.loopBaseLength(loop, length, record?.cycleStats?.c3?._legacyLoopBaseLength);
+        if (baseLength !== null) loop.baseLength = baseLength;
+        loop.endDay = endDay;
+        return {};
+      }, "本轮轮回端点已调整");
+    }
+
+    async function settleC3TimeLoop(starting = false) {
+      const target = structureTechTarget();
+      if (target.cycleId !== "c3") return false;
+      const currentDay = Number(target.day);
+      if (!starting) {
+        if (state.timeLoop?.settledDays?.includes(currentDay)) return true;
+        if (!state.timeLoop) return false;
+      }
+      return commitC3TimeLoop(target, (sections, dashboardState, day) => {
+        const loop = dashboardState.timeLoop;
+        const settledDays = Array.isArray(loop?.settledDays) ? loop.settledDays : [];
+        if (starting ? Boolean(loop) : settledDays.includes(day)) return null;
+        const profileSection = window.ATO_STRUCTURE_TECH_CLIENT.profileSection;
+        const record = profileSection(sections.record, target.profileId);
+        const endDay = c3LoopEndDay(loop, record);
+        if (!starting && (endDay === null || endDay > day)) return false;
+        const map = profileSection(sections.map, target.profileId);
+        const effect = window.ATO_VOYAGE_ACTION_RULES.prepareC3LoopEffect({
+          cycle: "c3", day, record, state: dashboardState, mapState: map, mapCycle: mapCycleDefinition("c3"),
+        }, { starting, roundEnd: !starting });
+        if (!effect.ok) throw new Error(effect.message);
+        const cycleState = effect.mapState.cycles.c3;
+        if (!starting) markCurrentMapTileExplored(cycleState, effect.departure);
+        syncDashboardMapSnapshot("c3", effect.cycle, cycleState, dashboardState);
+        dashboardState.timeLoop = effect.timeLoop;
+
+        const doom = explorationDashboardTracks(record, dashboardState).doom;
+        const result = explorationEffectRules().apply(record, "c3", [{ type: "doom", amount: 1 }], { stats: { doom } });
+        delete result.record.cycleStats?.c3?._legacyLoopBaseLength;
+        if (starting) {
+          const stats = result.record.cycleStats ||= {};
+          const cycleStats = stats.c3 ||= {};
+          cycleStats.loopLength = String(effect.length);
+          if (!result.record.cycle || result.record.cycle === "c3") result.record.loopLength = String(effect.length);
+        }
+        syncExplorationDashboardTracks(result.record, dashboardState);
+        return {
+          record: explorationRecordSection(sections.record, target.profileId, result.record),
+          map: explorationRecordSection(sections.map, target.profileId, effect.mapState),
+        };
+      }, "已保存");
     }
 
     async function nextDay() {
@@ -13475,8 +13836,8 @@
         if (sessionEpoch !== campaignSessionEpoch || !ownsDashboardWriteLease()
             || profileId !== archive.activeProfileId || cycleId !== currentCycleConfig().id
             || currentDay !== String(state.day)) throw new Error("当前账号、档案或日期已变更，请重试。");
-        // 结束当天：阿尔戈号所在的已揭示板块在进入下一天时转为已探索。
-        if (typeof settleMapExplorationForNextDay === "function") await settleMapExplorationForNextDay();
+        const loopSettled = cycleId === "c3" && typeof settleC3TimeLoop === "function" && await settleC3TimeLoop();
+        if (!loopSettled && typeof settleCurrentMapExploration === "function") await settleCurrentMapExploration();
         if (sessionEpoch !== campaignSessionEpoch || !ownsDashboardWriteLease()
             || profileId !== archive.activeProfileId || cycleId !== currentCycleConfig().id
             || currentDay !== String(state.day)) throw new Error("当前账号、档案或日期已变更，请重试。");
@@ -14252,7 +14613,7 @@
     setAuthMode("login");
     initAuth();
   </script>
-  <script src="./assets/ato-terms.js?v=20261024-cyclopes-faction1"></script>
+  <script src="./assets/ato-terms.js?v=20261110-loop-terms"></script>
   <script src="./assets/english-terms.js?v=20261011-english4"></script>
   <script src="./assets/english-ui.js?v=20261020-acclimation-reminder2"></script>
   <script src="./assets/english-language.js?v=20261011-english4"></script>

@@ -42,15 +42,15 @@
         description: '命运 +1；外交 7+ 成功后，可将 1 难民转为 1 船员；失败仍支付命运' }),
     ] },
     { key: 'time solutions', group: 'loop-length', groupTitle: '延长轮回', actions: [
-      mode('time', '凝固时光延长轮回', { cost: { frozenTime: -1 }, effects: { loopLength: 1 }, time: true,
-        description: '凝固时光 −1；当前轮回延长 1 天（凝固时光上限 3／高级时间对策解锁后 5）' }),
+      mode('time', '凝固时光延长轮回', { cost: { frozenTime: -1 }, loopDays: 1,
+        description: '凝固时光 −1；当前轮回延长 1 天' }),
     ] },
     { key: 'advanced time solutions', group: 'loop-length', groupTitle: '延长轮回', actions: [
-      mode('advanced-time-fate', '命运延长轮回', { cost: { fate: 2 }, effects: { loopLength: 1 }, time: true, description: '命运 +2；当前轮回延长 1 天；凝固时光上限 5' }),
-      mode('advanced-time-paradox', '悖论延长轮回', { cost: { paradox: 1 }, effects: { loopLength: 1 }, time: true, description: '悖论 +1；当前轮回延长 1 天；凝固时光上限 5' }),
+      mode('advanced-time-fate', '命运延长轮回', { cost: { fate: 2 }, loopDays: 1, description: '命运 +2；当前轮回延长 1 天' }),
+      mode('advanced-time-paradox', '悖论延长轮回', { cost: { paradox: 1 }, loopDays: 1, description: '悖论 +1；当前轮回延长 1 天' }),
     ] },
     { key: 'chronosail', group: 'loop-effect', groupTitle: '轮回效果', actions: [
-      mode('chronosail', '立即结算轮回效果', { cost: { fate: 1 }, manual: '立即手动结算当前轮回效果；系统仅已支付命运，没有自动结算轮回效果', description: '命运 +1；立即手动结算当前轮回效果' }),
+      mode('chronosail', '立即结算轮回效果', { cost: { fate: 1 }, resolveLoop: true, description: '命运 +1；立即回到 AA，获得 1 点无可避免灾祸并安排新端点' }),
     ] },
     { key: 'extinction contingency', group: 'fate', groupTitle: '调整命运', actions: [
       mode('contingency-crew', '船员换取命运降低', { cost: { crew: -1 }, effects: { fate: -2 }, description: '船员 −1；命运 −2' }),
@@ -82,6 +82,86 @@
     if (type === 'nymphCharges') return integer(record.nymphCharges);
     if (['crew', 'refugees'].includes(type) && cycle === 'c2') return counters(record)[type];
     return integer(record.cycleStats?.[cycle]?.[type] ?? (!record.cycle || record.cycle === cycle ? record[type] : undefined));
+  }
+  function loopBaseLength(loop, length, legacyBaseLength) {
+    if (Number.isSafeInteger(loop.baseLength) && loop.baseLength >= 0) return loop.baseLength;
+    // An already running first loop with a recorded start was initialized at six days.
+    if (Number.isSafeInteger(loop.startDay) && !loop.settledDays?.length) return 6;
+    return Number.isSafeInteger(legacyBaseLength) && legacyBaseLength >= 0 ? legacyBaseLength : length;
+  }
+  function loopEndDay(loop, length, legacyBaseLength) {
+    if (!loop || !Number.isSafeInteger(length) || length < 0) return loop?.endDay ?? null;
+    const endDay = loop.endDay + (length - loopBaseLength(loop, length, legacyBaseLength));
+    return Number.isSafeInteger(endDay) ? endDay : loop.endDay;
+  }
+  function c3LoopLength(record) {
+    const raw = record?.cycleStats?.c3?.loopLength
+      ?? (!record?.cycle || record.cycle === 'c3' ? record?.loopLength : null);
+    if (!(typeof raw === 'number' || (typeof raw === 'string' && raw.trim()))) return null;
+    const length = Number(raw);
+    return Number.isSafeInteger(length) && length >= 0 ? length : null;
+  }
+  function prepareC3LoopEffect(ctx, { starting = false, roundEnd = false } = {}) {
+    const day = integer(ctx.day);
+    if (cycleOf(ctx) !== 'c3' || day === null) return fail('INVALID_CONTEXT', '请先设置循环 III 的航行日期。');
+    const loop = ctx.state?.timeLoop;
+    if (!starting && !Number.isSafeInteger(loop?.endDay)) return fail('LOOP_NOT_ACTIVE', '请先在主控台的轮末启用或接续轮回。');
+    const length = starting ? 6 : c3LoopLength(ctx.record);
+    if (length === null || !Number.isSafeInteger(day + length)) return fail('INVALID_LOOP_LENGTH', '请先在记录表填写有效的永久轮回长度。');
+    const cycle = ctx.mapCycle || root.ATO_MAP_DATA?.cycles?.find(item => item.id === 'c3');
+    if (!cycle) return fail('MAP_UNAVAILABLE', 'C3 地图资料未加载，请刷新后重试。');
+    const mapState = copy(ctx.mapState || ctx.map || {});
+    const saved = mapState.cycles?.c3;
+    const anchors = cycle.tiles.filter(tile => saved?.tokens?.markers?.[tile.id]?.token_2);
+    if (anchors.length !== 1) return fail('INVALID_LOOP_ANCHOR', '请先在 C3 地图上确认唯一的阿里阿德涅之锚（AA）。');
+    const [anchor] = anchors;
+    const departure = saved.currentTile || saved.tokens.AG || '';
+    saved.explored ||= {};
+    saved.currentTile = saved.tokens.AG = anchor.id;
+    const settledDays = Array.isArray(loop?.settledDays) ? loop.settledDays : [];
+    const settledEndDays = Array.isArray(loop?.settledEndDays) ? loop.settledEndDays : settledDays;
+    const previousEndDay = loopEndDay(loop, length, ctx.record?.cycleStats?.c3?._legacyLoopBaseLength);
+    return { ok: true, mapState, cycle, anchor, departure, length, timeLoop: {
+      endDay: day + length, baseLength: length, startDay: day,
+      settledDays: roundEnd ? [...settledDays, day] : [...settledDays],
+      settledEndDays: roundEnd ? [...settledEndDays, previousEndDay] : [...settledEndDays],
+    } };
+  }
+  function syncC3LoopPosition(state, { mapState, cycle, anchor }) {
+    const saved = mapState.cycles.c3;
+    const tags = root.ATO_MAP_TILE_TAGS;
+    const entry = id => tags?.tiles?.[`c3:${id}`] || {};
+    const tagLabels = Object.fromEntries((tags?.tagDefinitions || []).map(tag => [tag.id, tag.label || tag.id]));
+    const factionLabels = { sunheirs: '太阳后裔', delphians: '德尔菲人', twilightWatch: '暮光守望', none: '无' };
+    const current = entry(anchor.id);
+    const latest = cycle.tiles.find(tile => tile.id === saved.latestRevealedTile);
+    const adversary = cycle.tiles.find(tile => tile.id === saved.tokens.AD);
+    const markers = saved.tokens.markers;
+    const exploredIds = cycle.tiles.filter(tile => saved.explored[tile.id]).map(tile => tile.id);
+    const position = {
+      currentTileTags: [...(current.tags || [])],
+      currentTileTagLabels: (current.tags || []).map(id => tagLabels[id] || id),
+      currentTileFactions: [...(current.factions || [])],
+      currentTileFactionLabels: (current.factions || []).map(id => factionLabels[id] || id),
+      latestRevealedTileTags: [...(entry(latest?.id).tags || [])],
+      latestRevealedTileTagLabels: (entry(latest?.id).tags || []).map(id => tagLabels[id] || id),
+      currentTileIsLatestRevealed: anchor.id === latest?.id,
+      currentTileHasLastCityMarker: Boolean(markers[anchor.id]?.last_city),
+      currentTileHasLastOasisMarker: false,
+      currentTileHasLastSilverRuinMarker: false,
+    };
+    state.location = anchor.label || anchor.id;
+    const previous = state.mapSnapshot?.cycleId === 'c3' ? state.mapSnapshot : {};
+    state.mapSnapshot = {
+      ...previous, ...position, savedAt: new Date().toISOString(), cycleId: 'c3', cycleLabel: cycle.label,
+      currentTileId: anchor.id, currentTileLabel: state.location, currentTileFace: '',
+      adversaryTileId: saved.tokens.AD || '', adversaryTileLabel: adversary?.label || saved.tokens.AD || '',
+      latestRevealedTileId: latest?.id || '', latestRevealedTileLabel: latest?.label || latest?.id || '',
+      exploredIds, exploredCount: exploredIds.length, totalTiles: cycle.tiles.length,
+      revealedIds: cycle.tiles.filter(tile => saved.explored[tile.id] || saved.previewRevealed?.[tile.id]).map(tile => tile.id),
+      exploredDays: { ...previous.exploredDays, ...saved.exploredDays },
+    };
+    for (const [name, value] of Object.entries(position)) state[`map${name[0].toUpperCase()}${name.slice(1)}`] = value;
   }
   function usedCards(ctx, type) {
     const record = ctx.record || {}, own = type === 'summon' ? 'nymphCards' : 'godforms', used = type === 'summon' ? 'nymphUsedCards' : 'godformUsedCards';
@@ -117,7 +197,9 @@
       const card = eligible.card || helpers.dictionaryCards(ctx, rule.key)[0];
       if (!card) continue;
       for (const action of rule.actions) {
-        const reason = eligible.message || (action.restore ? restoreReason(ctx, action.restore) : '');
+        const needsLoop = (action.loopDays || action.resolveLoop) && !Number.isSafeInteger(ctx.state?.timeLoop?.endDay);
+        const reason = eligible.message || (action.restore ? restoreReason(ctx, action.restore) : '')
+          || (needsLoop ? '请先在主控台的轮末启用或接续轮回。' : '');
         result.push({ ...copy(action), actionId: action.id, techKey: rule.key, title: helpers.titleFor(card), image: card.image?.back || '',
           groupKey: `voyage:${rule.group}`, groupTitle: rule.groupTitle, tier: rule.key === 'advanced time solutions' ? 2 : 1,
           choices: choicesFor(action, ctx, helpers), confirmations: [], available: !reason, disabled: Boolean(reason), reason,
@@ -151,19 +233,22 @@
     let record = draft.record;
     const automation = draft.automation, effects = [], payment = [], gains = [];
     if (action.check && !['success', 'failure'].includes(selection.checkResult)) return fail('CHECK_REQUIRED', '请选择玩家外交检定 7+ 的成功或失败结果。');
-    let targetLabel = '', manual = action.manual || '';
     if (action.recruitment && !['yes', 'no'].includes(selection.convertRefugee)) return fail('CHOICE_REQUIRED', '请选择检定成功后是否转换难民。');
-    if (action.time) {
-      const cap = helpers.eligibility(ctx, 'advanced time solutions').ok ? 5 : 3;
-      const frozen = rawStat(ctx, 'frozenTime');
-      if (frozen === null || frozen > cap) return fail('FROZEN_TIME_LIMIT', `请先核对凝固时光，当前时光筒仓上限为 ${cap}。`);
-      if (rawStat(ctx, 'loopLength') === null) return fail('UNKNOWN_STAT', '请先在记录表填写当前轮回长度。');
+    let adjustedEndDay;
+    if (action.loopDays) {
+      const endDay = ctx.state?.timeLoop?.endDay;
+      if (!Number.isSafeInteger(endDay)) return fail('LOOP_NOT_ACTIVE', '请先在主控台的轮末启用或接续轮回。');
+      adjustedEndDay = endDay + action.loopDays;
+      if (!Number.isSafeInteger(adjustedEndDay)) return fail('LOOP_DATE_LIMIT', '调整后的轮回端点超出可记录范围。');
     }
+    const loopEffect = action.resolveLoop ? prepareC3LoopEffect({ ...ctx, day }) : null;
+    if (loopEffect && !loopEffect.ok) return loopEffect;
     const restorationError = action.restore && restoreReason(ctx, action.restore);
     if (restorationError) return fail('INVALID_RESTORE', restorationError);
     if (['summon', 'godform'].includes(action.restore) && !usedCards(ctx, action.restore).includes(selection.restoreId)) return fail('INVALID_TARGET', '请选择当前仍然已用的召唤或神之形态。');
     for (const [type, amount] of Object.entries(action.cost || {})) effects.push({ type, amount, cost: true });
     for (const [type, amount] of Object.entries(action.effects || {})) effects.push({ type, amount });
+    if (loopEffect) effects.push({ type: 'doom', amount: 1 });
     if (action.recruitment && selection.checkResult === 'success' && selection.convertRefugee === 'yes') {
       // Free the refugee's place on the combined C2 crew track before adding the crew member.
       effects.push({ type: 'refugees', amount: -1, cost: true }, { type: 'crew', amount: 1 });
@@ -208,21 +293,43 @@
       const seen = (((state.exploration ||= {}).trackReceiptsByCycle ||= {})[cycle] ||= {});
       for (const item of record.explorationTrackTransactions || []) if (item.cycleId === cycle && item.type === 'doom') seen[item.id] = true;
     }
-    const pending = Boolean(manual), restored = action.restore === 'summon' ? `已恢复召唤：${cardLabel('summon', selection.restoreId)}；充能没有变化`
+    let loopLabel = '';
+    if (action.loopDays) {
+      const loop = { ...ctx.state.timeLoop };
+      const length = c3LoopLength(ctx.record);
+      const legacyBaseLength = ctx.record?.cycleStats?.c3?._legacyLoopBaseLength;
+      const previousEndDay = loopEndDay(loop, length, legacyBaseLength);
+      if (loop.startDay === undefined && !loop.settledDays?.length && loop.estimatedStartDay === undefined) {
+        if (length !== null && Number.isSafeInteger(previousEndDay - length)) loop.estimatedStartDay = previousEndDay - length;
+      }
+      const baseLength = loopBaseLength(loop, length, legacyBaseLength);
+      if (baseLength !== null) loop.baseLength = baseLength;
+      loop.endDay = adjustedEndDay;
+      (state ||= {}).timeLoop = loop;
+      const endDay = loopEndDay(loop, length);
+      loopLabel = `本轮延长 ${action.loopDays} 天，轮回端点改为第 ${endDay} 天`;
+      gains.push({ type: 'loop-end', label: loopLabel, amount: action.loopDays, endDay });
+    }
+    if (loopEffect) {
+      state.timeLoop = loopEffect.timeLoop;
+      syncC3LoopPosition(state, loopEffect);
+      delete record.cycleStats?.c3?._legacyLoopBaseLength;
+      loopLabel = `已回溯至 ${state.location}，下次轮回在第 ${state.timeLoop.endDay} 天`;
+    }
+    const restored = action.restore === 'summon' ? `已恢复召唤：${cardLabel('summon', selection.restoreId)}；充能没有变化`
       : action.restore === 'godform' ? `已恢复神之形态：${cardLabel('godform', selection.restoreId)}` : '';
-    const rewardLabel = [result.summary, action.check ? `玩家外交检定 7+：${selection.checkResult === 'success' ? '成功' : '失败'}` : '',
-      action.recruitment ? selection.checkResult === 'success' && selection.convertRefugee === 'yes' ? '1 难民已转为 1 船员' : '本次未转换难民' : '', restored, manual].filter(Boolean).join('；');
+    const rewardLabel = [result.summary, loopLabel, action.check ? `玩家外交检定 7+：${selection.checkResult === 'success' ? '成功' : '失败'}` : '',
+      action.recruitment ? selection.checkResult === 'success' && selection.convertRefugee === 'yes' ? '1 难民已转为 1 船员' : '本次未转换难民' : '', restored].filter(Boolean).join('；');
     const event = { id, techKey: rule.key, actionId: action.id, cycleId: cycle, stepId: 'timeline', immediate: true,
       label: `${helpers.titleFor(eligible.card)} · ${action.label}`, createdDay: day, dueDay: day, cooldownUntilDay: 0,
-      kind: pending ? 'reward' : 'cooldown', status: pending ? 'pending' : 'completed',
-      ...(!pending ? { skipTimeline: true, completedDay: day } : {}), rewardLabel, selection, targetLabel, payment, gains,
-      ...(manual ? { manual: true, manualInstructions: manual } : {}) };
+      kind: 'cooldown', status: 'completed', skipTimeline: true, completedDay: day,
+      rewardLabel, selection, targetLabel: '', payment, gains };
     automation.events[id] = event;
     const receipt = { id, request: draft.shape, techKey: rule.key, actionId: action.id, cycleId: cycle, createdDay: day,
-      status: event.status, payment: copy(payment), gains: copy(gains), ...(!pending ? { completedDay: day } : {}),
-      ...(manual ? { manualInstructions: manual, targetLabel } : {}) };
+      status: event.status, payment: copy(payment), gains: copy(gains), completedDay: day };
     (record.technologyActionReceipts ||= {})[id] = receipt;
-    return { ok: true, operation: event, event, receipt, record, automation, duplicate: false, ...(state ? { state } : {}) };
+    return { ok: true, operation: event, event, receipt, record, automation, duplicate: false, ...(state ? { state } : {}),
+      ...(loopEffect ? { mapState: loopEffect.mapState, readSections: ['map'] } : {}) };
   }
-  return { catalog: copy(catalog), listActions, prepareOperation };
+  return { catalog: copy(catalog), listActions, prepareOperation, loopBaseLength, loopEndDay, c3LoopLength, prepareC3LoopEffect };
 });

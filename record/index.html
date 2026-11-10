@@ -1626,7 +1626,7 @@
               <span class="item-label"><span class="item-icon" aria-hidden="true" style="--item-icon-w:14px;--item-icon-h:12px;--icon-src:url(../assets/icons/defectors.svg?v=apk-ui-a72da92bdf63)"></span>变节者</span>
               <input data-cycle-bind="renegade" type="number" min="0">
             </label>
-            <label data-cycle-field="c3"><span class="item-label"><span class="item-icon" aria-hidden="true" style="--item-icon-w:11px;--item-icon-h:15px;--icon-src:url(../assets/icons/loop-length.svg?v=apk-ui-a72da92bdf63)"></span>轮回长度</span><input data-cycle-bind="loopLength" type="number" min="0"></label>
+            <label data-cycle-field="c3"><span class="item-label"><span class="item-icon" aria-hidden="true" style="--item-icon-w:11px;--item-icon-h:15px;--icon-src:url(../assets/icons/loop-length.svg?v=apk-ui-a72da92bdf63)"></span><span data-english-text="Permanent Loop Length">永久轮回长度</span></span><input data-cycle-bind="loopLength" type="number" min="0" title="改动会移动当前轮回端点，并用于之后的轮回。"></label>
             <label data-cycle-field="c3"><span class="item-label"><span class="item-icon" aria-hidden="true" style="--item-icon-w:14px;--item-icon-h:12px;--icon-src:url(../assets/icons/frozen-time.svg?v=apk-ui-a72da92bdf63)"></span>凝固时光</span><input data-cycle-bind="frozenTime" type="number" min="0"></label>
             <label data-cycle-field="c3"><span class="item-label"><span class="item-icon" aria-hidden="true" style="--item-icon-w:12px;--item-icon-h:14px;--icon-src:url(../assets/icons/paradox.svg?v=apk-ui-a72da92bdf63)"></span>悖论</span><input data-cycle-bind="paradox" type="number" min="0" max="12"></label>
             <label data-cycle-field="c5">
@@ -3515,6 +3515,14 @@
 
         const sync = (value) => {
           const next = bindKey === "supply" && value === "" ? "" : clamp(value);
+          if (bindKey === "loopLength") {
+            const stats = currentCycleStats();
+            const previous = Number(stats.loopLength);
+            // Preserve the pre-edit base for loops saved before they recorded their own base.
+            if (String(stats.loopLength ?? "").trim() && Number.isSafeInteger(previous) && previous >= 0 && previous !== next) {
+              stats._legacyLoopBaseLength ??= previous;
+            }
+          }
           input.value = String(next);
           setCycleStat(bindKey, String(next));
           queueSave();
@@ -5633,7 +5641,7 @@
     serverStateBaseline = cloneJson(state);
     loadServerState();
   </script>
-  <script src="../assets/ato-terms.js?v=20261024-cyclopes-faction1"></script>
+  <script src="../assets/ato-terms.js?v=20261110-loop-terms"></script>
   <script src="../assets/english-terms.js?v=20261011-english4"></script>
   <script src="../assets/english-ui.js?v=20261014-record-tracks2"></script>
   <script src="../assets/english-language.js?v=20261011-english4"></script>

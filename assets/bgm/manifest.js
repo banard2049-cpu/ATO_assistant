@@ -50,6 +50,7 @@ window.ATO_BGM_MANIFEST = {
     development: "development",
     story: "story",
     doom: "doom",
+    end: "rest",
     rest: "rest",
   },
   defaultStage: "voyage",

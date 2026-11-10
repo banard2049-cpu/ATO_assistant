@@ -20,6 +20,7 @@ const edgeDirectionLabels = {
   left: "左",
 };
 const tokenAssets = [
+  { id: "mark_explored", label: "标记已探索" },
   { id: "AG", label: "AG进入", path: "./tokens/argo.png", unique: true },
   { id: "AD", label: "AD", path: "./tokens/adversary.png", unique: true },
   { id: "c11", label: "C11", path: "./tokens/c11.jpg", group: "c1", cycles: ["c1"], square: true },
@@ -1218,13 +1219,19 @@ function renderTokenPalette() {
   const renderTokenButton = (token) => {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = `token-tool${state.selectedToken === token.id ? " active" : ""}`;
+    button.className = token.id === "mark_explored"
+      ? `secondary mark-explored-button${state.selectedToken === token.id ? " active" : ""}`
+      : `token-tool${state.selectedToken === token.id ? " active" : ""}`;
+    button.setAttribute("aria-pressed", String(state.selectedToken === token.id));
     button.title = token.label;
     button.innerHTML = token.path
       ? `<img src="${escapeHtml(token.path)}" alt="${escapeHtml(token.label)}">`
       : `<span>${escapeHtml(token.label)}</span>`;
     button.addEventListener("click", () => {
       clearPendingAdversarySpawn();
+      if (token.id === "mark_explored" && state.selectedToken !== token.id) {
+        window.alert("此功能用于补标已探索的板块，正常游戏流程不需要使用。选中后双击板块，即可翻面并标记为已探索。");
+      }
       state.selectedToken = token.id;
       saveState();
       render();
@@ -1232,7 +1239,7 @@ function renderTokenPalette() {
     return button;
   };
 
-  tokenAssets.filter((token) => !token.group && tokenAvailableInCycle(token)).forEach((token) => {
+  tokenAssets.filter((token) => token.id !== "mark_explored" && !token.group && tokenAvailableInCycle(token)).forEach((token) => {
     fragment.appendChild(renderTokenButton(token));
   });
 
@@ -1270,6 +1277,7 @@ function renderTokenPalette() {
     fragment.appendChild(details);
   });
 
+  fragment.appendChild(renderTokenButton(tokenAssetById.mark_explored));
   elements.tokenPalette.appendChild(fragment);
 
   const selectedToken = tokenAssetById[state.selectedToken];
@@ -1783,7 +1791,15 @@ function placeToken(tileId) {
 
   const cycleState = activeCycleState();
 
-  if (tokenId === "AG") {
+  if (tokenId === "mark_explored") {
+    pushUndo();
+    cycleState.explored[tileId] = true;
+    if (cycleState.previewRevealed) delete cycleState.previewRevealed[tileId];
+    if (cycleState.exploredDays) delete cycleState.exploredDays[tileId];
+    if (cycleState.explorationEntries) delete cycleState.explorationEntries[tileId];
+    if (cycleState.latestRevealedTile === tileId) cycleState.latestRevealedTile = "";
+    state.showBack = false;
+  } else if (tokenId === "AG") {
     pushUndo();
     inheritCycleFiveTileFace(cycleState, tileId);
     syncDepartedLandmarkMarkers(cycleState, tileId);

@@ -2185,6 +2185,10 @@ window.ATO_TERMS = [
     "from": "轮回长度",
     "to": "轮回时长"
   },
+  // 故事集 III 规则书：轮回结束日期、时间筒仓及引入轮回的科技。
+  { "from": "轮回端点", "to": "轮回结束" },
+  { "from": "时光筒仓", "to": "时间筒仓" },
+  { "from": "轮回生存", "to": "轮回求生" },
   {
     "from": "冻土合金",
     "to": "北方乐土合金"
@@ -4107,6 +4111,11 @@ window.ATO_TERMS = [
   {
     "from": "灾祸",
     "to": "末日步骤",
+    "scope": "[data-term-scope~=\"step-name\"]"
+  },
+  {
+    "from": "轮末",
+    "to": "轮末步骤",
     "scope": "[data-term-scope~=\"step-name\"]"
   },
   {

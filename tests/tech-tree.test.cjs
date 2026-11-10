@@ -10,6 +10,11 @@ const source = fs.readFileSync(path.join(root, 'technology/index.html'), 'utf8')
 // 坐标重放科技树，两份页面共用一套布局。那个文件仍然保留 `const PAGE_METADATA = [...]`
 // 这个声明形式，所以下面按声明名读源码的逻辑不用改。
 const layoutSource = fs.readFileSync(path.join(root, 'technology/tech-page-layout.js'), 'utf8').replace(/\r\n/g, '\n');
+// 别名表直接取页面的 const 求值：以前这里是手抄副本，页面加了新别名（例如官方卡名
+// 「Excursion Propylon II」→ 节点键「excursion propylon 2」）后副本不会跟着变，
+// 引用解析就会静默失效。
+const aliasSource = source.slice(source.indexOf('const TECH_KEY_ALIASES = '), source.indexOf('function techKey('));
+assert.ok(aliasSource.includes('const TECH_KEY_ALIASES'), '缺少 TECH_KEY_ALIASES 的声明');
 const audited = JSON.parse(fs.readFileSync(path.join(root, 'tests/fixtures/technology-card-prerequisites.json'), 'utf8'));
 const sortedRefs = refs => Array.from(refs || [], value => value.toLowerCase().trim()).sort();
 const sortedGroups = raw => {
@@ -21,7 +26,6 @@ function context() {
   const scope = vm.createContext({
     currentCycle: 'cycle1', treeLanguage: 'zh', hideUnknownTech: true, selectedNodeId: null,
     unlocked: new Set(), conditionTicked: new Set(),
-    TECH_KEY_ALIASES: { 'upstream navigation': 'up-stream navigation' },
     // 页面通过 window.ATO_TECH_PAGE_LAYOUT 读布局文件，这里照浏览器那样把它挂上。
     window: {},
   });
@@ -30,10 +34,11 @@ function context() {
     'isUnlockableNode', 'isConditionSatisfied', 'hasPrintedConditionBox', 'conditionCells', 'isConditionTicked',
     'isConditionCellTicked', 'conditionCellKey', 'cardsForNode', 'isCoreNode', 'displayTechName', 'displayTechReferenceName', 'esc',
     'renderTechRefList', 'renderRequirementUnlockColumns', 'renderRequirementAnyGroups', 'renderConditionNotes', 'renderConditionToggle',
-    'treeTextUnits', 'treeTextRows', 'treeModuleSize', 'treeModuleHtml', 'treeNodeStatus', 'conditionCellCaption', 'conditionCellDisplayText'];
+    'treeTextUnits', 'treeTextRows', 'treeModuleSize', 'treeModuleHtml', 'treeNodeStatus', 'conditionCellCaption', 'conditionCellDisplayText',
+    'getGearTechNodeKey', 'cardForNode', 'findGearTechCard'];
   const declarations = ['PAGE_METADATA', 'PRINTED_CONDITION_BOXES', 'PRINTED_CONDITION_TEXT', 'CONDITION_TEXT_ZH'];
   const declarationSource = (name) => (name === 'PAGE_METADATA' ? layoutSource : source);
-  vm.runInContext(declarations.map(name => {
+  vm.runInContext(aliasSource + '\n' + declarations.map(name => {
     const text = declarationSource(name);
     const start = text.indexOf(`const ${name} =`);
     assert.ok(start >= 0, `缺少 ${name} 的声明`);
@@ -682,4 +687,22 @@ test('科技页不会再声明布局文件已经声明过的脚本级名字', ()
     }
   }
   assert.deepEqual(clashes, [], '内联脚本重复声明了布局文件的脚本级名字：' + clashes.join(', '));
+});
+
+test('官方科技卡名都能落到科技树节点，罗马数字与旧拼写由别名表归一', () => {
+  const c = context();
+  c.gearProductionData = JSON.parse(fs.readFileSync(path.join(root, 'technology/ato_gear_production.json'), 'utf8'));
+  // 官方英文名（techCardNames）是齿轮/产物记录的来源，科技树节点键来自页面自己的写法，
+  // 两者对不上就会出现「产物永远显示未解锁」「卡图入口找不到这张卡」。
+  const nodeKeys = new Set(c.data.pages.flatMap(page => page.nodes.map(node => c.nodeKey(page.key, node).replace(/@@.*$/, ''))));
+  const unresolved = Object.entries(c.gearProductionData.techCardNames)
+    .map(([techId, fullName]) => [techId, fullName.trim(), c.getGearTechNodeKey(techId)])
+    .filter(([, , key]) => !key || !nodeKeys.has(key));
+  assert.deepEqual(unresolved, [], '官方卡名解析不到节点键：' + JSON.stringify(unresolved));
+  assert.equal(c.getGearTechNodeKey('AA0041'), 'excursion propylon 2', '官方「Excursion Propylon II」落到节点键「excursion propylon 2」');
+  assert.equal(c.findGearTechCard('AA0041')?.key, 'excursion propylon 2');
+  // 重名科技按循环存成 name@@pageKey，官方名只给纯名字，取当前循环上的那张卡。
+  assert.equal(c.findGearTechCard('AA0031')?.key, 'intelligence gathering@@cycle1');
+  c.currentCycle = 'cycle3';
+  assert.equal(c.findGearTechCard('AA0031')?.key, 'intelligence gathering@@cycle3');
 });

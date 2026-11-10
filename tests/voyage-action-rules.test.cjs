@@ -106,47 +106,66 @@ test('recruitment always pays fate, converts only a successful opted-in check, a
   assert.equal(run(overfull, 'recruitment', { checkResult: 'success', convertRefugee: 'yes' }).code, 'CREW_LIMIT');
 });
 
-test('time solutions extend the recorded loop and enforce silo and payment caps without auto-granting abilities', () => {
+test('time solutions shift the active endpoint while preserving permanent length and enforcing costs', () => {
   const ctx = context('time solutions');
+  assert.equal(run(ctx, 'time').code, 'LOOP_NOT_ACTIVE');
+  const timeLoop = { endDay: 9, baseLength: 4, startDay: 1, settledDays: [1], settledEndDays: [1] };
+  ctx.state.timeLoop = timeLoop;
   const result = run(ctx, 'time');
   assert.equal(result.ok, true, result.message);
   assert.equal(stat(result, 'frozenTime'), '1');
-  assert.equal(stat(result, 'loopLength'), '6');
+  assert.equal(stat(result, 'loopLength'), '5');
+  assert.deepEqual(result.state.timeLoop, { ...timeLoop, endDay: 10 });
+  assert.equal(result.event.gains.find(gain => gain.type === 'loop-end').endDay, 11);
+  assert.equal(ctx.state.timeLoop.endDay, 9);
+  const legacy = { ...ctx, state: { ...ctx.state, timeLoop: { endDay: 9, settledDays: [] } } };
+  assert.deepEqual(run(legacy, 'time').state.timeLoop, { endDay: 10, baseLength: 5, estimatedStartDay: 4, settledDays: [] });
   assert.equal(result.record.frozenTimeLimit, undefined);
   for (const route of ['fate', 'paradox']) {
     const advanced = context('advanced time solutions');
+    advanced.state.timeLoop = timeLoop;
+    delete advanced.record.cycleStats.c3.frozenTime;
     const used = run(advanced, `advanced-time-${route}`);
     assert.equal(used.ok, true, used.message);
-    assert.equal(stat(used, 'loopLength'), '6');
+    assert.equal(stat(used, 'loopLength'), '5');
+    assert.equal(used.state.timeLoop.endDay, 10);
     assert.equal(stat(used, route), route === 'fate' ? '7' : '3');
     advanced.record.cycleStats.c3[route] = '12';
     assert.equal(run(advanced, `advanced-time-${route}`).code, 'COST_LIMIT');
   }
   const tooMany = copy(ctx); tooMany.record.cycleStats.c3.frozenTime = '4'; tooMany.technology.unlocked = ['time solutions'];
-  assert.equal(run(tooMany, 'time').code, 'FROZEN_TIME_LIMIT');
-  tooMany.technology.unlocked.push('advanced time solutions');
-  assert.equal(run(tooMany, 'time').ok, true);
-  tooMany.record.cycleStats.c3.frozenTime = '6';
-  assert.equal(run(tooMany, 'time').code, 'FROZEN_TIME_LIMIT');
+  assert.equal(stat(run(tooMany, 'time'), 'frozenTime'), '3', 'the silo cap governs gains, not spending');
   const noTime = copy(ctx); noTime.record.cycleStats.c3.frozenTime = '0';
   assert.equal(run(noTime, 'time').code, 'INSUFFICIENT_RESOURCES');
 });
 
-test('chronosail records an immediate manual task, can complete it, and cannot auto-settle it', () => {
-  const ctx = context('chronosail'), result = run(ctx, 'chronosail');
+test('chronosail immediately resets the endpoint and returns to AA without ending exploration', () => {
+  const ctx = context('chronosail');
+  assert.equal(run(ctx, 'chronosail').code, 'LOOP_NOT_ACTIVE');
+  ctx.state.timeLoop = { endDay: 9, baseLength: 5, startDay: 2, settledDays: [2], settledEndDays: [2] };
+  ctx.mapCycle = { id: 'c3', tiles: [{ id: '007', label: '007' }, { id: '008', label: '008' }] };
+  const map = { currentTile: '007', tokens: { AG: '007', AD: '008', markers: {} },
+    explored: {}, previewRevealed: { '007': true }, latestRevealedTile: '007' };
+  ctx.mapState = { cycles: { c3: map } };
+  assert.equal(run(ctx, 'chronosail').code, 'INVALID_LOOP_ANCHOR');
+  map.tokens.markers['008'] = { token_2: true };
+  const result = run(ctx, 'chronosail');
   assert.equal(result.ok, true, result.message);
   assert.equal(stat(result, 'fate'), '6');
-  assert.equal(result.event.status, 'pending');
-  assert.equal(result.event.dueDay, ctx.day);
-  assert.equal(result.event.immediate, true);
-  assert.match(result.event.rewardLabel, /没有自动结算轮回效果/);
+  assert.equal(result.state.cardTracks.doom.doom, 5);
+  assert.equal(result.event.status, 'completed');
+  assert.equal(result.event.skipTimeline, true);
+  assert.deepEqual(result.readSections, ['map']);
+  assert.deepEqual(result.state.timeLoop, { endDay: 10, baseLength: 5, startDay: 5, settledDays: [2], settledEndDays: [2] });
+  assert.equal(result.state.mapSnapshot.currentTileId, '008');
+  const moved = result.mapState.cycles.c3;
+  assert.equal(moved.tokens.AG, '008');
+  assert.equal(moved.tokens.AD, '008');
+  assert.equal(moved.explored['007'], undefined);
+  assert.equal(moved.latestRevealedTile, '007');
+  assert.equal(map.currentTile, '007');
   assert.equal(rules.autoSettleEvent(result.event), false);
-  const busy = run(next(ctx, result, { operationId: 'two' }), 'chronosail');
-  assert.equal(busy.code, 'ABILITY_BUSY');
-  const completed = rules.completeOperation(next(ctx, result));
-  assert.equal(completed.ok, true);
-  assert.equal(completed.event.status, 'completed');
-  assert.equal(stat(completed, 'fate'), '6');
+  assert.equal(run(next(ctx, result), 'chronosail').duplicate, true);
 });
 
 test('divine deals restore charge, summon and godform independently and reject stale or full targets', () => {
