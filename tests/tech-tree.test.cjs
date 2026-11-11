@@ -35,7 +35,7 @@ function context() {
     'isConditionCellTicked', 'conditionCellKey', 'cardsForNode', 'isCoreNode', 'displayTechName', 'displayTechReferenceName', 'esc',
     'renderTechRefList', 'renderRequirementUnlockColumns', 'renderRequirementAnyGroups', 'renderConditionNotes', 'renderConditionToggle',
     'treeTextUnits', 'treeTextRows', 'treeModuleSize', 'treeModuleHtml', 'treeNodeStatus', 'conditionCellCaption', 'conditionCellDisplayText',
-    'getGearTechNodeKey', 'cardForNode', 'findGearTechCard'];
+    'getGearTechNodeKey', 'getTechDisplayName', 'getUnlockedProductions', 'cardForNode', 'findGearTechCard'];
   const declarations = ['PAGE_METADATA', 'PRINTED_CONDITION_BOXES', 'PRINTED_CONDITION_TEXT', 'CONDITION_TEXT_ZH'];
   const declarationSource = (name) => (name === 'PAGE_METADATA' ? layoutSource : source);
   vm.runInContext(aliasSource + '\n' + declarations.map(name => {
@@ -57,6 +57,53 @@ function context() {
   scope.DISAMBIGUATED_TECH_NAMES = scope.computeDisambiguatedTechNames(scope.data.pages);
   return scope;
 }
+
+test('same-name production technologies unlock and open their own cycle recipes', () => {
+  const c = context();
+  c.gearProductionData = JSON.parse(fs.readFileSync(path.join(root, 'technology/ato_gear_production.json'), 'utf8'));
+  const ids = () => Array.from(c.getUnlockedProductions(), entry => entry.techId);
+  for (const [name, c3, c4, c5] of [
+    ['monomythological support', 'CA1594', 'DA2222', 'EA2790'],
+    ['cryptex technology', 'CA1580', 'DA2221', 'EA2789'],
+  ]) {
+    assert.ok(c.DISAMBIGUATED_TECH_NAMES.has(name));
+    c.unlocked = new Set([`${name}@@cycle3`]);
+    assert.ok(ids().includes(c3));
+    assert.ok(!ids().includes(c4));
+    assert.ok(!ids().includes(c5));
+    c.unlocked.add(`${name}@@cycle5`);
+    assert.ok(ids().includes(c5), '提前解锁的 C5 卡可用');
+    assert.ok(!ids().includes(c4));
+    const page = c.data.pages.find(item => item.key === 'cycle5');
+    const node = page.nodes.find(item => item.name.toLowerCase() === name);
+    assert.equal(c.findGearTechCard(c5), c.cardForNode(node), '卡图来自配方所属循环');
+  }
+  c.unlocked = new Set(['pursuer sighting']);
+  assert.ok(ids().includes('AA0020'), '非重名科技仍正常显示');
+});
+
+test('different Old Irem production technologies have distinct Chinese labels', () => {
+  const c = context();
+  c.gearProductionData = JSON.parse(fs.readFileSync(path.join(root, 'technology/ato_gear_production.json'), 'utf8'));
+  assert.equal(c.getTechDisplayName('DA2169'), '旧伊雷姆挖掘');
+  assert.equal(c.getTechDisplayName('DA2170'), '古伊赖姆开掘');
+  c.treeLanguage = 'en';
+  assert.equal(c.getTechDisplayName('DA2169'), 'Old Irem Dig');
+  assert.equal(c.getTechDisplayName('DA2170'), 'Old Irem Excavation');
+});
+
+test('every disambiguated production recipe has a matching node in its own cycle', () => {
+  const c = context();
+  c.gearProductionData = JSON.parse(fs.readFileSync(path.join(root, 'technology/ato_gear_production.json'), 'utf8'));
+  for (const entry of c.gearProductionData.techProduction) {
+    const key = c.getGearTechNodeKey(entry.techId);
+    if (!c.DISAMBIGUATED_TECH_NAMES.has(key)) continue;
+    const match = /^CYCLE_0*(\d+)$/i.exec(entry.cycle);
+    assert.ok(match, entry.techId);
+    const page = c.data.pages.find(item => item.key === `cycle${Number(match[1])}`);
+    assert.ok(page?.nodes.some(node => c.nodeKey(page.key, node) === `${key}@@${page.key}`), entry.techId);
+  }
+});
 
 test('unlocking a real technology discovers just the next reachable nodes and arrows', () => {
   const c = context(), page = c.data.pages[0];

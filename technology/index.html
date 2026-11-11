@@ -1299,6 +1299,8 @@ function getGearName(gearId) {
 
 function getTechDisplayName(techId) {
   if (!gearProductionData?.techCardNames?.[techId]) return techId;
+  // 两张 C4 卡在配方数据里都译为「旧伊雷姆挖掘」，按官方名称区分。
+  if (treeLanguage === 'zh' && techId === 'DA2170') return '古伊赖姆开掘';
   const fullName = gearProductionData.techCardNames[techId].trim();
   if (treeLanguage === 'zh') {
     const zh = fullName.replace(/^[^一-鿿㐀-䶿豈-﫿]*/, '').trim();
@@ -1752,11 +1754,12 @@ function getUnlockedProductions() {
   return gearProductionData.techProduction.filter(entry => {
     const nodeKeyStr = getGearTechNodeKey(entry.techId);
     if (!nodeKeyStr) return false;
-    // The tech name may be disambiguated across pages (stored as name@@pageKey).
-    // Match the plain key or any disambiguated variant so same-name production
-    // techs are recognised as unlocked.
-    return unlocked.has(nodeKeyStr)
-      || [...unlocked].some((key) => key.startsWith(nodeKeyStr + "@@"));
+    // 同名卡的配方按循环分别解锁，不能用其他循环的解锁记录放行本卡。
+    if (DISAMBIGUATED_TECH_NAMES.has(nodeKeyStr)) {
+      const match = String(entry.cycle || '').match(/^CYCLE_0*(\d+)$/i);
+      return !!match && unlocked.has(`${nodeKeyStr}@@cycle${Number(match[1])}`);
+    }
+    return unlocked.has(nodeKeyStr);
   });
 }
 function currentProductionCycle() {
@@ -1898,13 +1901,14 @@ function findGearTechCard(techId) {
   if (!key) return null;
   const normalized = key.replace(/\s+/g, ' ').toLowerCase();
   const cards = data.cards || [];
-  const exact = cards.find(card => String(card.key || '').trim().toLowerCase() === normalized);
-  if (exact) return exact;
-  // 重名科技（情报收集、秘术科技等）在字典里按循环存成 name@@pageKey，官方卡名只给
-  // 纯名字；优先取当前循环节点上的那张卡。
-  const page = data.pages.find(item => item.key === currentCycle);
+  // 重名科技的卡图也要按配方所属循环查找，可能与当前查看的循环不同。
+  const entry = gearProductionData?.techProduction?.find(item => item.techId === techId);
+  const cycleMatch = String(entry?.cycle || '').match(/^CYCLE_0*(\d+)$/i);
+  const pageKey = cycleMatch ? `cycle${Number(cycleMatch[1])}` : currentCycle;
+  const page = data.pages.find(item => item.key === pageKey);
   const node = (page?.nodes || []).find(item => nodeKey(page.key, item).startsWith(normalized + '@@'));
   return (node ? cardForNode(node) : null)
+    || cards.find(card => String(card.key || '').trim().toLowerCase() === normalized)
     || cards.find(card => String(card.key || '').trim().toLowerCase().startsWith(normalized + '@@'))
     || null;
 }
