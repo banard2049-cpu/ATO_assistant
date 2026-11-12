@@ -27,7 +27,8 @@ function savedCycle(tileId) {
 
 function harness() {
   const calls = { save: 0, render: 0 };
-  const ctx = vm.createContext({ window: { ATO_MAP_TILE_TAGS: tags }, state: {
+  const ctx = vm.createContext({ window: { ATO_MAP_TILE_TAGS: tags },
+    currentCycleConfig: () => ({ id: 'c3' }), getStructureTechContext: () => null, todayTrackIcons: () => [], state: {
     mapCurrentTileTags: ['calamity'], mapCurrentTileFactions: ['obsolete'],
     mapCurrentTileHasLastCityMarker: true, mapCurrentTileIsLatestRevealed: false,
     mapSnapshot: { currentTileTags: ['calamity'], currentTileFactions: ['obsolete'] },
@@ -35,7 +36,8 @@ function harness() {
   saveState() { calls.save++; }, renderFlow() { calls.render++; } });
   const labels = html.match(/^    const mapFactionLabelsByCycle = \{[^]*?^    };/m);
   vm.runInContext(labels[0], ctx);
-  for (const name of ['mapCommandTileEntry', 'syncMapCommandLandmarks', 'syncDashboardMapSnapshot']) {
+  for (const name of ['mapCommandTileEntry', 'syncMapCommandLandmarks', 'syncDashboardMapSnapshot',
+    'currentMapTagSet', 'currentMapTileLabel', 'getSurveyMapReminders', 'getStepTrackReminders']) {
     if (html.includes(`function ${name}(`)) vm.runInContext(fn(html, name), ctx);
   }
   return { ctx, calls };
@@ -91,6 +93,49 @@ test('revisits retain the latest revealed tile and marker locations follow saved
   assert.deepEqual(clone(ctx.state.mapCurrentTileTags), []);
   assert.deepEqual(clone(ctx.state.mapCurrentTileFactions), []);
   assert.equal(ctx.state.mapCurrentTileIsLatestRevealed, false);
+});
+
+for (const [tileId, adventure] of [['055', '中枢'], ['059', 'R&R']]) {
+  test(`C3 ${tileId} reminds in Expedition while unexplored, even if another tile was revealed later`, () => {
+    const { ctx } = harness();
+    const cycle = cycles.find(item => item.id === 'c3');
+    const saved = savedCycle(tileId);
+    saved.explored = {};
+    saved.previewRevealed = { [tileId]: true };
+
+    for (const latest of ['', '057', tileId]) {
+      saved.latestRevealedTile = latest;
+      ctx.syncDashboardMapSnapshot('c3', cycle, saved);
+      const reminders = ctx.getStepTrackReminders('survey');
+      assert.equal(reminders.length, 1);
+      assert.equal(reminders[0].tag.label, adventure);
+      assert.ok(reminders[0].desc.includes(tileId));
+    }
+
+    saved.explored[tileId] = true;
+    delete saved.previewRevealed[tileId];
+    ctx.syncDashboardMapSnapshot('c3', cycle, saved);
+    assert.equal(ctx.getStepTrackReminders('survey').length, 0);
+  });
+}
+
+test('Expedition uses the current map when the dashboard snapshot is stale', () => {
+  const { ctx } = harness();
+  const cycle = cycles.find(item => item.id === 'c3');
+  const snapshot = savedCycle('055');
+  snapshot.explored = {};
+  ctx.syncDashboardMapSnapshot('c3', cycle, snapshot);
+  const saved = { explored: [], tokens: { AG: '059' } };
+  ctx.getStructureTechContext = () => ({ map: { cycles: { c3: saved } } });
+
+  const reminders = ctx.getStepTrackReminders('survey');
+  assert.equal(reminders.length, 1);
+  assert.equal(reminders[0].tag.label, 'R&R');
+  assert.ok(reminders[0].desc.includes('059'));
+  saved.explored = { '059': true };
+  assert.equal(ctx.getStepTrackReminders('survey').length, 0);
+  saved.tokens.AG = '';
+  assert.equal(ctx.getStepTrackReminders('survey').length, 0);
 });
 
 test('a saved map snapshot refreshes scout placement and notes alongside its marker list', () => {

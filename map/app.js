@@ -232,6 +232,7 @@ let undoStack = [];
 const maxUndoSteps = 40;
 let shouldFocusArgoAfterRender = true;
 let focusArgoAttempts = 0;
+let argoFocusGeneration = 0;
 let secondScreenManualScroll = false;
 
 function isPlainObject(value) {
@@ -1444,16 +1445,14 @@ function renderTiles() {
   const visibleUnknownTileIds = state.hideUnknown ? visibleTileIdsForUnknownFilter(cycle, cycleState) : null;
 
   const tiles = cycle.tiles.filter((tile) => {
+    if (query && tileMatchesQuery(tile, query)) return true;
     const isSpawnCandidate = pendingAdversarySpawnCandidates.has(tile.id);
     const isAdversaryTile = cycleState.tokens.AD === tile.id;
     const isArgoTile = tile.id === effectiveArgoTileId;
     const hasNote = Boolean((cycleState.tileNotes?.[tile.id] || "").trim());
     const previewRevealed = tilePreviewRevealedByMarker(tile.id, cycleState);
-    const matchesQuery = !query || [tile.id, tile.label, tile.source].some((value) => {
-      return String(value || "").toLowerCase().includes(query);
-    });
     const matchesUnknownFilter = !visibleUnknownTileIds || visibleUnknownTileIds.has(tile.id) || isSpawnCandidate || isArgoTile || isAdversaryTile || hasNote || previewRevealed;
-    return (matchesQuery || isSpawnCandidate || isArgoTile || isAdversaryTile)
+    return (!query || isSpawnCandidate || isArgoTile || isAdversaryTile)
       && matchesUnknownFilter;
   });
 
@@ -1696,13 +1695,16 @@ function focusArgoIfNeeded() {
 }
 
 function scheduleArgoFocus() {
-  window.requestAnimationFrame(() => scrollArgoIntoView());
+  const generation = argoFocusGeneration;
+  const focus = () => scrollArgoIntoView(generation);
+  window.requestAnimationFrame(focus);
   [80, 180, 360, 720, 1200].forEach((delay) => {
-    window.setTimeout(scrollArgoIntoView, delay);
+    window.setTimeout(focus, delay);
   });
 }
 
-function scrollArgoIntoView() {
+function scrollArgoIntoView(generation) {
+  if (generation !== argoFocusGeneration) return;
   if (secondScreenMode && secondScreenManualScroll) return;
   const targetTileId = argoTileId();
   const currentTile = elements.tileGrid.querySelector(".tile-card.current")
@@ -1764,7 +1766,8 @@ function centerMapViewportOnArgo(tile = null) {
 function retryFocusArgo() {
   if (focusArgoAttempts <= 0) return;
   focusArgoAttempts -= 1;
-  window.setTimeout(scrollArgoIntoView, 80);
+  const generation = argoFocusGeneration;
+  window.setTimeout(() => scrollArgoIntoView(generation), 80);
 }
 
 function setCurrentTile(tileId, reveal = true, recordUndo = true) {
@@ -1947,10 +1950,31 @@ function markCurrentExplored() {
   render();
 }
 
+function tileMatchesQuery(tile, query) {
+  return [tile.id, tile.label, tile.source].some((value) => String(value || "").toLowerCase().includes(query));
+}
+
+function scrollToMapTile(tileId) {
+  const tile = [...elements.tileGrid.querySelectorAll(".tile-card[data-id]")]
+    .find((element) => element.dataset.id === tileId);
+  if (!tile) return;
+  // Discard pending Argo focus callbacks so they cannot scroll away from the lookup result.
+  shouldFocusArgoAfterRender = false;
+  focusArgoAttempts = 0;
+  argoFocusGeneration += 1;
+  tile.scrollIntoView({ block: "center", inline: "center" });
+}
+
 function searchTilesById() {
   state.query = elements.searchInput.value;
   saveState();
   renderTiles();
+  const query = state.query.trim().toLowerCase();
+  if (!query) return;
+  const tiles = activeCycle().tiles;
+  const match = tiles.find((tile) => tile.id.toLowerCase() === query)
+    || tiles.find((tile) => tileMatchesQuery(tile, query));
+  if (match) scrollToMapTile(match.id);
 }
 
 function clearSearchWhenInputEmpty() {
@@ -1975,20 +1999,21 @@ function revealTilePreviewById(face) {
   const cycleState = activeCycleState();
   if (cycleState.explored[tile.id]) {
     window.alert(`${tile.label} 已探索。`);
-    return;
+  } else {
+    pushUndo();
+    cycleState.previewRevealed ||= {};
+    if (state.activeCycleId === "c5" && (face === "underwater" || face === "surface")) {
+      cycleState.tileVariants ||= {};
+      if (face === "surface") cycleState.tileVariants[tile.id] = "alternate";
+      else delete cycleState.tileVariants[tile.id];
+    }
+    cycleState.previewRevealed[tile.id] = true;
   }
-  pushUndo();
-  cycleState.previewRevealed ||= {};
-  if (state.activeCycleId === "c5" && (face === "underwater" || face === "surface")) {
-    cycleState.tileVariants ||= {};
-    if (face === "surface") cycleState.tileVariants[tile.id] = "alternate";
-    else delete cycleState.tileVariants[tile.id];
-  }
-  cycleState.previewRevealed[tile.id] = true;
   state.query = "";
   elements.searchInput.value = "";
   saveState();
   render();
+  scrollToMapTile(tile.id);
 }
 
 function clearCycleExplored() {
