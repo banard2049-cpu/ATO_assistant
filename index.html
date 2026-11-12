@@ -2941,7 +2941,7 @@
         id: "survey",
         title: "考察",
         kind: "条件执行",
-        desc: "如果当前位置有**冒险或 R&R 图标**，查询冒险对照表并结算一段冒险。",
+        desc: "如果当前未探索的板块有**冒险或 R&R 图标**，查询冒险对照表并结算一段冒险。",
         links: [{ label: "打开 Story", href: "./story/index.html" }],
       },
       {
@@ -13169,26 +13169,44 @@
     }
 
     function getSurveyMapReminders() {
-      const tags = currentMapTagSet();
-      if (!state.mapCurrentTileIsLatestRevealed) return [];
+      const cycleId = currentCycleConfig().id;
+      const saved = getStructureTechContext()?.map?.cycles?.[cycleId];
+      const explored = saved?.explored;
+      let tags;
+      let location;
+      // PHP saves an empty set of explored tiles as [].
+      if (isPlainObject(explored) || (Array.isArray(explored) && explored.length === 0)) {
+        const tileId = saved.currentTile || saved.tokens?.AG;
+        if (!tileId || explored[tileId]) return [];
+        tags = new Set(mapCommandTileEntry(cycleId, tileId, saved).tags || []);
+        location = tileId;
+      } else {
+        const snapshot = state.mapSnapshot;
+        if (snapshot?.cycleId && snapshot.cycleId !== cycleId) return [];
+        const unexplored = Array.isArray(snapshot?.exploredIds)
+          ? Boolean(snapshot.currentTileId && !snapshot.exploredIds.includes(snapshot.currentTileId))
+          : state.mapCurrentTileIsLatestRevealed;
+        if (!unexplored) return [];
+        tags = currentMapTagSet();
+        location = currentMapTileLabel();
+      }
 
       const reminders = [];
-      const location = currentMapTileLabel();
 
       if (tags.has("central_adventure")) {
         reminders.push({
-          title: "当前最新揭示板块有中枢冒险",
+          title: "当前板块有中枢冒险",
           tag: { label: "中枢", className: "important" },
-          desc: `${location} 是最新揭示的板块，并带有中枢冒险标签，请在本步骤结算冒险中枢。`,
+          desc: `${location} 尚未探索，请在本步骤结算冒险中枢。`,
           className: "important",
         });
       }
 
       if (tags.has("rr_adventure")) {
         reminders.push({
-          title: "当前最新揭示板块有 R&R 冒险",
+          title: "当前板块有 R&R 冒险",
           tag: { label: "R&R", className: "battle-tech rr" },
-          desc: `${location} 是最新揭示的板块，并带有 R&R 冒险标签，请在本步骤结算 R&R。`,
+          desc: `${location} 尚未探索，请在本步骤结算 R&R。`,
           className: "rr",
         });
       }
@@ -14615,7 +14633,7 @@
   </script>
   <script src="./assets/ato-terms.js?v=20261110-loop-terms"></script>
   <script src="./assets/english-terms.js?v=20261011-english4"></script>
-  <script src="./assets/english-ui.js?v=20261020-acclimation-reminder2"></script>
+  <script src="./assets/english-ui.js?v=20261112-survey-reminders"></script>
   <script src="./assets/english-language.js?v=20261011-english4"></script>
   <script src="./assets/term-language.js?v=20261011-english4"></script>
   <script src="./assets/update/app-version.js?v=3.8.6-rc.1"></script>

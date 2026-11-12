@@ -5,16 +5,25 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const source = fs.readFileSync(path.join(__dirname, '../map/app.js'), 'utf8');
-const lookupSource = source.slice(source.indexOf('function searchTilesById()'), source.indexOf('function clearCycleExplored()'));
+const lookupSource = source.slice(source.indexOf('function tileMatchesQuery('), source.indexOf('function clearCycleExplored()'));
 
 function harness() {
   const cycleState = { explored: { '001': true }, previewRevealed: {} };
-  const calls = { saves: 0, renders: 0, undo: 0, alerts: [] };
+  const calls = { saves: 0, renders: 0, undo: 0, alerts: [], scrolled: [] };
+  const tiles = [{ id: '001', label: '001', source: 'T03' }, { id: 'T03', label: 'T03' }];
   const context = vm.createContext({
     state: { query: '' },
-    elements: { searchInput: { value: '' } },
-    activeCycle: () => ({ tiles: [{ id: '001', label: '001' }, { id: 'T03', label: 'T03' }] }),
+    elements: {
+      searchInput: { value: '' },
+      tileGrid: {
+        querySelectorAll: () => tiles.map(({ id }) => ({ dataset: { id }, scrollIntoView: () => calls.scrolled.push(id) })),
+      },
+    },
+    activeCycle: () => ({ tiles }),
     activeCycleState: () => cycleState,
+    shouldFocusArgoAfterRender: true,
+    focusArgoAttempts: 0,
+    argoFocusGeneration: 0,
     clearPendingAdversarySpawn() {},
     pushUndo: () => { calls.undo += 1; },
     saveState: () => { calls.saves += 1; },
@@ -32,6 +41,7 @@ test('search applies and clears a filter without revealing tiles', () => {
   context.searchTilesById();
   assert.equal(context.state.query, 'T03');
   assert.deepEqual(cycleState.previewRevealed, {});
+  assert.deepEqual(calls.scrolled, ['T03']);
   context.elements.searchInput.value = '';
   context.searchTilesById();
   assert.equal(context.state.query, '');
@@ -68,10 +78,11 @@ test('reveal uses the shared input and clears a previous search without marking 
   assert.equal(calls.undo, 1);
   assert.equal(calls.saves, 1);
   assert.equal(calls.renders, 1);
+  assert.deepEqual(calls.scrolled, ['T03']);
 });
 
-test('invalid and explored IDs preserve the input and existing search', () => {
-  for (const value of ['', '999', '001']) {
+test('invalid IDs preserve the input and existing search', () => {
+  for (const value of ['', '999']) {
     const { context, cycleState, calls } = harness();
     context.state.query = 'T03';
     context.elements.searchInput.value = value;
@@ -82,7 +93,20 @@ test('invalid and explored IDs preserve the input and existing search', () => {
     assert.equal(calls.saves, 0);
     assert.equal(calls.undo, 0);
     assert.equal(calls.alerts.length, 1);
+    assert.deepEqual(calls.scrolled, []);
   }
+});
+
+test('revealing an explored ID locates it without changing exploration state', () => {
+  const { context, cycleState, calls } = harness();
+  context.state.query = 'T03';
+  context.elements.searchInput.value = '001';
+  context.revealTilePreviewById();
+  assert.equal(context.state.query, '');
+  assert.deepEqual(cycleState.previewRevealed, {});
+  assert.deepEqual(cycleState.explored, { '001': true });
+  assert.equal(calls.undo, 0);
+  assert.deepEqual(calls.scrolled, ['001']);
 });
 
 test('Cycle V reveal buttons choose underwater or surface and preserve exploration state', () => {

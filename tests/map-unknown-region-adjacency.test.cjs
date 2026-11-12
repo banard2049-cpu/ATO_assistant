@@ -10,7 +10,7 @@ const appSource = fs.readFileSync(path.join(root, 'map/app.js'), 'utf8').replace
 function functionSource(name) {
   const start = appSource.indexOf(`function ${name}(`);
   assert.ok(start >= 0, `Missing ${name}`);
-  return appSource.slice(start, appSource.indexOf('\nfunction ', start + 1));
+  return appSource.slice(start, appSource.indexOf('\n}', start + 1) + 2);
 }
 
 const startTilesSource = appSource.match(/const alwaysVisibleStartTileIds = \{[^}]*\};/)?.[0];
@@ -34,7 +34,7 @@ function harness(cycleId, cycleState) {
   sandbox.activeCycleState = () => cycleState;
   vm.runInContext(startTilesSource, sandbox);
   for (const name of filterFunctions) vm.runInContext(functionSource(name), sandbox);
-  return { visible: sandbox.visibleTileIdsForUnknownFilter(cycle, cycleState) };
+  return { visible: sandbox.visibleTileIdsForUnknownFilter(cycle, cycleState), sandbox };
 }
 
 function savedCycle(overrides = {}) {
@@ -105,6 +105,69 @@ test('a revealed tile also displays walkable special-route endpoints', () => {
   assert.equal(visible.has('009'), true, 'normal neighbour');
   assert.equal(visible.has('043'), true, 'special route endpoint');
   assert.equal(visible.has('079'), false, 'unreachable distant tile stays hidden');
+});
+
+test('C3 search and reveal locate tile 333 with unknown regions hidden', () => {
+  const cycleState = savedCycle();
+  const { visible, sandbox } = harness('c3', cycleState);
+  assert.equal(visible.has('333'), false);
+
+  const scrolled = [];
+  const noop = () => {};
+  const tileGrid = {
+    style: { setProperty: noop },
+    set innerHTML(_value) { this.children = []; },
+    appendChild(fragment) { this.children = fragment.children; },
+    querySelectorAll() { return this.children; },
+  };
+  Object.assign(sandbox, {
+    elements: { tileGrid, searchInput: { value: '' } },
+    pendingAdversarySpawnCandidates: new Set(),
+    shouldFocusArgoAfterRender: true, focusArgoAttempts: 3, argoFocusGeneration: 0,
+    argoTileId: () => '', saveState: noop, renderSummary: noop,
+    clearPendingAdversarySpawn: noop, pushUndo: noop,
+    render: () => sandbox.renderTiles(),
+    tileTooltip: () => '', getTileTokens: () => [], getTileEdgeTokens: () => [],
+    renderVariantToggle: noop, renderTileNoteMarker: noop, renderTileTokens: noop,
+    renderTileEdgeTokens: noop, renderAdjacencyLabels: noop,
+    document: {
+      createDocumentFragment: () => ({ children: [], appendChild(node) { this.children.push(node); } }),
+      createElement: () => ({ style: {}, dataset: {}, scrollIntoView() { scrolled.push(this.dataset.id); } }),
+    },
+  });
+  Object.assign(sandbox.state, { hideUnknown: true, query: '', mapZoom: 100 });
+  for (const name of [
+    'renderTiles', 'displayLayout', 'tileAssets', 'escapeHtml', 'tileMatchesQuery',
+    'scrollToMapTile', 'searchTilesById', 'clearSearchWhenInputEmpty', 'revealTilePreviewById',
+  ]) {
+    vm.runInContext(functionSource(name), sandbox);
+  }
+
+  sandbox.elements.searchInput.value = '33';
+  sandbox.searchTilesById();
+  assert.equal(tileGrid.children.some(tile => tile.dataset.id === '333'), true);
+  assert.deepEqual(scrolled, [tileGrid.children[0].dataset.id]);
+
+  sandbox.elements.searchInput.value = ' 333 ';
+  sandbox.searchTilesById();
+  assert.deepEqual(tileGrid.children.map(tile => tile.dataset.id), ['333']);
+  assert.match(tileGrid.children[0].innerHTML, /c3-tile-333-back\.png/);
+  assert.equal(scrolled.at(-1), '333');
+  assert.deepEqual(cycleState.explored, {});
+  assert.deepEqual(cycleState.previewRevealed, {});
+  assert.equal(sandbox.state.hideUnknown, true);
+
+  sandbox.elements.searchInput.value = '';
+  sandbox.clearSearchWhenInputEmpty();
+  assert.equal(tileGrid.children.some(tile => tile.dataset.id === '333'), false);
+
+  sandbox.elements.searchInput.value = '333';
+  sandbox.revealTilePreviewById();
+  const revealed = tileGrid.children.find(tile => tile.dataset.id === '333');
+  assert.match(revealed.innerHTML, /c3-tile-333-front\.png/);
+  assert.equal(scrolled.at(-1), '333');
+  assert.equal(cycleState.previewRevealed['333'], true);
+  assert.deepEqual(cycleState.explored, {});
 });
 
 test('the cloud ship position is displayed without revealing or expanding the tile', () => {
