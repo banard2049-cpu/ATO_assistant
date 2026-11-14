@@ -280,7 +280,10 @@
       if (!trigger) return;
       const names = languageNames();
       const label = pickerLabel();
-      trigger.textContent = names[state.language];
+      // 按钮里可能有一个专门放文案的 span（杂项设置里三个下拉共用一套外观），
+      // 没有就直接写按钮本身。
+      const labelNode = trigger.querySelector("[data-picker-label]") || trigger;
+      labelNode.textContent = names[state.language];
       trigger.setAttribute("aria-label", label + (state.language === "en" ? ": " : "：") + names[state.language]);
       trigger.title = trigger.getAttribute("aria-label");
       if (menu) menu.setAttribute("aria-label", label);

@@ -100,6 +100,20 @@
       flex: 0 0 42px;
       object-fit: contain;
     }
+    .cycle-title .module-logo {
+      width: calc(1em * var(--logo-ratio, 1));
+      height: 1em;
+      flex: 0 0 auto;
+      background-color: currentColor;
+      -webkit-mask-image: var(--icon-src);
+      mask-image: var(--icon-src);
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      -webkit-mask-position: center;
+      mask-position: center;
+      -webkit-mask-size: contain;
+      mask-size: contain;
+    }
     .subtitle { margin-top: 8px; color: var(--muted); font-size: 15px; }
 
     .topbar-tools { display: grid; gap: 10px; justify-items: end; }
@@ -982,7 +996,7 @@
   <link rel="stylesheet" href="../api/cycle-theme.css">
   <link rel="stylesheet" href="./hero.css?v=20261015-hero-name">
   <script src="../story/data/english-source-data.js?v=20261011-english4"></script>
-  <script src="../assets/theme.js?v=20261001" defer></script>
+  <script src="../assets/theme.js?v=20261114-light-sidebar1" defer></script>
   <!-- Mobile composition is enabled only by the installed APK in portrait. -->
   <link rel="stylesheet" href="../assets/mobile/common.css?v=20261028-apk-portrait1">
   <link rel="stylesheet" href="../assets/mobile/record-hero.css?v=20261028-apk-portrait1">
@@ -993,7 +1007,7 @@
   <main class="app">
     <header class="topbar">
       <div>
-        <h1 id="heroTitle" class="cycle-title">英雄记录表</h1>
+        <h1 id="heroTitle" class="cycle-title">英雄</h1>
         <span id="saveStatus" class="save-status" aria-live="polite">正在检查 NAS 存档...</span>
       </div>
       <div class="topbar-tools">
@@ -1020,7 +1034,7 @@
     </div>
   </main>
 <!-- PLACEHOLDER_SCRIPT -->
-  <script src="../assets/cycle-symbols.js?v=20260918"></script>
+  <script src="../assets/cycle-symbols.js?v=20261115-module-logo"></script>
   <script src="../assets/campaign-notes.js?v=20261015"></script>
   <script>
     const fetch = window.ATO_CAMPAIGN_NOTES.createFetch(window.fetch.bind(window), {
@@ -1310,9 +1324,9 @@
       titleCycle = cycleId;
       syncTitleCycleUrl(cycleId);
       document.body.dataset.cycle = cycleId;
-      window.ATO_CYCLE_SYMBOLS?.prependTitleIcon(
+      window.ATO_CYCLE_SYMBOLS?.prependModuleLogo(
         document.querySelector("#heroTitle"),
-        titleCycle,
+        "argonauts",
         "../",
       );
     }
@@ -1725,7 +1739,7 @@
 
     function renderAll() {
       document.body.dataset.cycle = titleCycle;
-      window.ATO_CYCLE_SYMBOLS?.prependTitleIcon(document.querySelector("#heroTitle"), titleCycle, "../");
+      window.ATO_CYCLE_SYMBOLS?.prependModuleLogo(document.querySelector("#heroTitle"), "argonauts", "../");
       renderHeroContent();
     }
 

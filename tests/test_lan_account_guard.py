@@ -55,7 +55,7 @@ class AccountGuardTest(unittest.TestCase):
             raise RuntimeError('Isolated PHP server did not start')
         for account in ['audit_alpha', 'audit_bravo']:
             cls.request('?action=register', {'username': account, 'password': 'fixture-only'})
-            for section in ['map', 'record', 'technology', 'dashboard']:
+            for section in ['map', 'record', 'technology', 'dashboard', 'theatre']:
                 status, _ = cls.request(payload={
                     'section': section, 'userId': 'default', 'state': {'owner': account},
                     'expectedRevision': 0, 'expectedAccountId': account,
@@ -87,7 +87,7 @@ class AccountGuardTest(unittest.TestCase):
             return result.status, json.load(result)
 
     def test_old_login_cannot_overwrite_current_login_with_equal_revision(self):
-        for section in ['map', 'record', 'technology', 'dashboard']:
+        for section in ['map', 'record', 'technology', 'dashboard', 'theatre']:
             with self.subTest(section=section):
                 status, before = self.request('?section=' + section)
                 self.assertEqual(status, 200)
@@ -100,6 +100,8 @@ class AccountGuardTest(unittest.TestCase):
                 _, after = self.request('?section=' + section)
                 self.assertEqual(after['state'], before['state'])
                 self.assertEqual(after['revision'], before['revision'])
+                if section == 'theatre':
+                    self.assertEqual(after['state'], {'owner': 'audit_bravo'})
 
     def test_matching_login_can_save(self):
         _, before = self.request('?section=map')

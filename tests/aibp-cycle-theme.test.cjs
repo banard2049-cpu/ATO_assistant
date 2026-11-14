@@ -11,7 +11,7 @@ function setup(search = '') {
   let onMessage;
   const context = {
     document: { body: { dataset: {} }, querySelector: () => ({}) },
-    window: { location: { search }, ATO_CYCLE_SYMBOLS: { prependTitleIcon: (_target, cycle) => icons.push(cycle) } },
+    window: { location: { search }, ATO_CYCLE_SYMBOLS: { prependModuleLogo: (_target, logo) => icons.push(logo) } },
     URLSearchParams,
     BroadcastChannel: class {
       constructor(name) { assert.equal(name, 'ato-dashboard-cycle-v1'); }
@@ -26,16 +26,16 @@ function setup(search = '') {
 test('direct links use the requested cycle before campaign loading', () => {
   const { context, icons } = setup('?cycle=c5');
   assert.equal(context.document.body.dataset.cycle, 'c5');
-  assert.equal(icons.at(-1), 'c5');
+  assert.equal(icons.at(-1), 'evolution');
   assert.equal(setup('?cycle=invalid').context.document.body.dataset.cycle, 'c1');
 });
 
-test('dashboard notifications update both color theme and logo', () => {
+test('dashboard notifications update the color theme but keep the fixed module logo', () => {
   const { context, icons, message } = setup();
   for (const cycleId of ['c2', 'c3', 'c4', 'c5']) {
     message({ type: 'active-cycle-changed', cycleId });
     assert.equal(context.document.body.dataset.cycle, cycleId);
-    assert.equal(icons.at(-1), cycleId);
+    assert.equal(icons.at(-1), 'evolution');
   }
   message({ type: 'other', cycleId: 'c1' });
   message({ type: 'active-cycle-changed', cycleId: 'invalid' });

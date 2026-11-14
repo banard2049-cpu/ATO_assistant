@@ -1,4 +1,7 @@
 /* One reading page and continuous lists, using the console's cycle palette. */
+/* 侧栏走浅纸面：--cycle-sidebar* 全部映射回 --bg/--panel/--ink。assets/theme.js 只在
+   页面带 data-theme-dark-sidebar 时才写这套变量的深色内联值，所以固定配色也不会
+   把这里盖成深底；改那处逻辑时别让深色变量无条件写到 body 上。 */
 body[data-cycle], body {
   --cycle-sidebar: var(--bg);
   --cycle-sidebar-deep: var(--panel);
@@ -26,7 +29,7 @@ body { line-height: 1.6; grid-template-columns: clamp(270px, 25vw, 420px) minmax
   letter-spacing: .04em;
 }
 .brand h1 { font-size: 23px; }
-.mark { flex-shrink: 0; width: 40px; }
+.mark { flex-shrink: 0; width: 32px; }
 .story-navigation { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 24px; }
 .home-link { margin: 0; border-radius: 0; font-weight: 600; font-size: 12px; }
 .home-link:not(.record-link) { grid-column: 1 / -1; background: var(--accent-strong); color: #fff; border-color: var(--accent-strong); }

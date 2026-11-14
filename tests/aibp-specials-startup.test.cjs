@@ -22,7 +22,7 @@ function start(boss, state, { levelChange = false, undoHistory = {} } = {}) {
     window: { setTimeout() {} }, currentApostle: boss,
     piles: { [boss]: state }, undoStacks: undoHistory,
     localStorage: { getItem: () => null }, fetch: async () => ({ ok: false }),
-    document: { createElement: element, getElementById: element, querySelector: element },
+    document: { body: { dataset: {} }, createElement: element, getElementById: element, querySelector: element },
     ensurePiles: () => calls.ensures++,
     renderAibpCards() {
       calls.cards++;
@@ -30,6 +30,7 @@ function start(boss, state, { levelChange = false, undoHistory = {} } = {}) {
       calls.restrictions.push(context.window.C45Specials?.deathblowUnavailableReason());
     },
     renderExtraCards: () => calls.extras++, renderPanelTokens: () => calls.tokens++,
+    renderEmptyDrawActions() {},
     savePiles: () => calls.saves.push(clone({ ...context.piles, undoStacks: undoHistory })),
     applyCurrentApostleLevelBonuses() {
       if (!levelChange) return false;

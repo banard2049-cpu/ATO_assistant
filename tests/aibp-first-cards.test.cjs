@@ -457,7 +457,7 @@ test('grid rendering keeps existing tiles unless cards, view, or inventory actua
 test('startup and zoom are wired to early image loading and original image bytes', () => {
   assert.ok(html.indexOf('src="card-images.js') < html.indexOf('<style>'));
   assert.ok(html.includes('openImageZoom(img.dataset.fullSrc || img.currentSrc || img.src'));
-  assert.ok(html.includes('requestAnimationFrame(() => window.setTimeout(() => {\n      initializeBattleMap();'));
+  assert.match(html, /requestAnimationFrame\(\(\) => window\.setTimeout\(\(\) => \{\s+initializeBattleMap\(\);/);
   assert.match(html, /english-source-data\.js[^>]+defer/);
 });
 

@@ -37,6 +37,7 @@ function element() {
 function harness(level, damage = 0) {
   const frame = element(), marker = element(), button = element();
   const ctx = vm.createContext({
+    theatreRequest: null, theatreBattle: null,
     currentApostle: 'THE_NIETZSCJEAN', level, damage,
     piles: { THE_NIETZSCJEAN: { AI: { comboTrackIndex: 2 } } },
     nietzscheStateIndex: 2, cyclonusStateIndex: 0,

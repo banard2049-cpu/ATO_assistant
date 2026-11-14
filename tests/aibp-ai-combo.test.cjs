@@ -55,6 +55,7 @@ function harness(name, storage = new Map(), level = 1) {
     controls.imageZoomAiComboActions.append(button);
   }
   const ctx = vm.createContext({
+    theatreRequest: null, theatreBattle: null,
     ...controls, currentApostle: name, apostles: [name], piles: {}, storageKey: 'piles',
     undoStacks: {}, maxUndoSteps: 30, pendingUndoEntry: null, activeScry: null,
     currentAiView: '弃牌', currentBpView: '弃牌', undoAiButton: {}, undoBpButton: {},
@@ -80,6 +81,7 @@ function harness(name, storage = new Map(), level = 1) {
     panelWrap: { querySelector: () => null }, battleMapControl: { render() {} },
     ensurePiles() {}, scheduleSecondScreenSnapshot() {}, updateAiViewTabs() {}, updateBpViewTabs() {},
     renderExtraCards() {}, renderPanelTokens() {}, renderCombinedBpControl() {},
+    renderEmptyDrawActions() {},
     returnedBpPreviewCard: () => null, combinedBpNotice: () => '',
     setImageZoomBpActions() {}, setImageZoomFlipActions() {}, setImageZoomMoveActions() {},
     setImageZoomTokenActions() {}, setImageZoomCardTokens() {}, updatePanelZoomSwitch() {},

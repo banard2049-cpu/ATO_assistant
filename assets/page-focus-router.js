@@ -61,7 +61,8 @@
     if (path.endsWith("/hero/index.html") || path.endsWith("/hero")) return "hero";
     if (path.endsWith("/technology/index.html") || path.endsWith("/technology")) return "technology";
     if (path.endsWith("/story/index.html") || path.endsWith("/story")) return "story";
-    if (path.endsWith("/aibp/index.html") || path.endsWith("/aibp")) return "aibp";
+    if (path.endsWith("/theatre/index.html") || path.endsWith("/theatre")) return "theatre";
+    if (path.endsWith("/aibp/index.html") || path.endsWith("/aibp")) return url.searchParams.has("theatreBattle") ? "aibp-theatre" : "aibp";
     if (path.endsWith("/index.html") || !path.split("/").pop()?.includes(".")) return "dashboard";
     return "";
   }

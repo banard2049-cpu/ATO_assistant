@@ -105,7 +105,7 @@ public final class CampaignImportHarness {
         + "\"map\":{\"users\":{\"ship\":{\"cycles\":{\"c5\":{\"explored\":[1,2]}}}}},"
         + "\"record\":{\"users\":{\"ship\":{\"notes\":\"导入笔记\"}}},"
         + "\"technology\":{\"gear\":[\"test\"]},\"heroes\":{\"names\":[\"赫拉克勒斯\"]},"
-        + "\"aibp\":null,\"story\":null}";
+        + "\"aibp\":null,\"story\":null,\"theatre\":{\"wins\":{\"hekaton-5\":true}}}";
     JSONObject incoming = new JSONObject(full);
     JSONObject payload = new JSONObject().put("sections", incoming).put("expectedAccountId", "local");
     JSONObject expected = new JSONObject();
@@ -114,7 +114,7 @@ public final class CampaignImportHarness {
     int commits = context.store.commits;
     JSONObject result = request("?action=import-sections", "POST", payload.toString(), 200);
     check(context.store.commits == commits + 1, "Full import must commit only once");
-    check(result.getJSONObject("sections").length() == 7, "Full import must report all seven revisions");
+    check(result.getJSONObject("sections").length() == incoming.length(), "Full import must report each revision");
     JSONObject saved = campaign();
     for (String name : incoming.keySet()) {
       check(incoming.get(name).toString().equals(saved.getJSONObject("sections").get(name).toString()),
@@ -164,6 +164,8 @@ public final class CampaignImportHarness {
         .equals(saved.getJSONObject("sections").getJSONObject("dashboard").toString()), "Partial import changed dashboard");
     check(after.getJSONObject("sectionRevisions").getInt("dashboard") == 1, "Partial import changed unrelated revision");
     check(after.getJSONObject("sections").isNull("record"), "Partial import lost explicit null");
+    check(after.getJSONObject("sections").getJSONObject("theatre").similar(incoming.getJSONObject("theatre"))
+        && after.getJSONObject("sectionRevisions").getInt("theatre") == 1, "Partial import changed Theatre progress");
 
     // Batch writes use the same profile bucket migration as ordinary writes.
     request("?section=heroes", "POST", "{\"state\":{\"accounts\":{\"old\":{\"name\":\"keep\"}}}}", 200);

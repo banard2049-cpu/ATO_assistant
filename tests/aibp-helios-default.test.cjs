@@ -14,6 +14,7 @@ function entryFunction(name) {
 test("Helios defaults to C4 while explicit numeric levels keep the regular panel", () => {
   for (const [override, expected] of [[undefined, "c4"], ["normal", "c4"], ["c4", "c4"], [1, "normal"], [5, "normal"], ["10", "normal"]]) {
     const mode = vm.runInNewContext(`${entryFunction("heliosMode")}\nheliosMode();`, {
+      theatreBattle: null,
       apostleLevelOverrides: { HELIOS: override },
     });
     assert.equal(mode, expected);
@@ -24,6 +25,7 @@ test("Helios level selector shows the default C4 and preserves explicit numeric 
   for (const [override, expected] of [[undefined, "c4"], ["normal", "c4"], ["c4", "c4"], [5, "5"]]) {
     const select = { options: [{ value: "", textContent: "" }, { value: "5" }, { value: "c4" }] };
     vm.runInNewContext(`${entryFunction("heliosMode")}\n${entryFunction("renderApostleLevelSelectOptions")}\nrenderApostleLevelSelectOptions();`, {
+      theatreBattle: null,
       apostleLevelSelect: select, currentApostle: "HELIOS", heliosAccessGranted: true,
       apostleLevelOverrides: { HELIOS: override }, recordApostleLevels: {}, fixedLevelOneApostles: new Set(),
     });
@@ -37,6 +39,7 @@ test("Searching Helios opens C4 and persists it for the next visit", async () =>
   const overrides = {};
   const calls = [];
   const context = {
+    theatreRequest: null,
     SECRET_ENTRIES: { normal: { unlockKey: () => "unlocked", granted: () => true } },
     heliosSearchInFlight: false,
     readCurrentHeliosCampaign: async () => ({}),

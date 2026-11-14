@@ -13,7 +13,7 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 final class LocalCampaignApi {
-  private static final String[] SECTIONS = {"dashboard", "map", "record", "technology", "heroes", "aibp", "story"};
+  private static final String[] SECTIONS = {"dashboard", "map", "record", "technology", "heroes", "aibp", "story", "theatre"};
   private static final int BACKUP_COUNT = 10;
   private static final int BRIEFING_PAGE_DAYS = 4;
   private final SharedPreferences store;
@@ -454,6 +454,14 @@ final class LocalCampaignApi {
     put(response, "revision", revisions.optInt(section, 0));
     put(response, "updatedAt", campaign.opt("updatedAt"));
     put(response, "user", user());
+    if ("theatre".equals(section)) {
+      JSONObject dashboard = sections.optJSONObject("dashboard");
+      JSONObject profiles = dashboard == null ? null : dashboard.optJSONObject("profiles");
+      String profileId = dashboard == null ? "default" : dashboard.optString("activeProfileId", "default");
+      JSONObject profile = profiles == null ? null : profiles.optJSONObject(profileId);
+      if (profile == null && profiles != null && profiles.keys().hasNext()) profile = profiles.optJSONObject(profiles.keys().next());
+      put(response, "dashboardCycle", profile == null ? "unknown" : profile.optString("activeCycleId", "unknown"));
+    }
     return response;
   }
 
@@ -641,7 +649,7 @@ final class LocalCampaignApi {
 
   private void updateSection(JSONObject campaign, String section, Object state, String userId) throws JSONException {
     JSONObject sections = campaign.getJSONObject("sections");
-    if (!userId.isEmpty() && !"dashboard".equals(section)) {
+    if (!userId.isEmpty() && !"dashboard".equals(section) && !"theatre".equals(section)) {
       Object current = sections.opt(section);
       JSONObject bucket = current instanceof JSONObject ? (JSONObject) current : new JSONObject();
       JSONObject users = bucket.optJSONObject("users");
@@ -717,8 +725,10 @@ final class LocalCampaignApi {
       failure.put("code", "BACKUP_NOT_FOUND");
       throw new ApiException(404, failure);
     }
+    // Theatre wins and rewards carry across campaign days and playthroughs.
+    restored.getJSONObject("sections").put("theatre", campaign.getJSONObject("sections").get("theatre"));
     for (String section : SECTIONS) {
-      restored.getJSONObject("sectionRevisions").put(section, revisions.optInt(section, 0) + 1);
+      restored.getJSONObject("sectionRevisions").put(section, revisions.optInt(section, 0) + ("theatre".equals(section) ? 0 : 1));
     }
     restored.put("updatedAt", System.currentTimeMillis());
     saveCampaign(restored);

@@ -133,6 +133,14 @@
       left: 274px;
     }
 
+    body.sidebar-collapsed .sidebar-toggle {
+      top: 27px;
+      width: 28px;
+      height: 28px;
+      font-size: 16px;
+      border-radius: 7px;
+    }
+
     body.sidebar-collapsed .app {
       grid-template-columns: minmax(0, 1fr);
     }
@@ -149,6 +157,28 @@
       width: calc(100% + 40px);
       margin-left: -40px;
     }
+
+    body[data-theatre-battle] .app { grid-template-columns: minmax(0, 1fr); }
+    body[data-theatre-battle] aside,
+    body[data-theatre-battle] #sidebarToggle,
+    body[data-theatre-battle] .second-screen-mode-toggle,
+    body[data-theatre-battle] #newCampaignButton,
+    body[data-theatre-battle] .return-main-link,
+    #theatreBattleGate[hidden], #theatreBattleReturn[hidden] { display: none; }
+
+    .theatre-battle-notice {
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--gold);
+      background: var(--panel);
+      margin: 12px 0;
+      padding: 10px 14px;
+      line-height: 1.5;
+    }
+
+    .theatre-battle-notice a { color: var(--gold); }
+    .theatre-battle-notice p { margin: 4px 0; }
+    #theatreBattleGate { margin: 18px; }
+    body[data-theatre-battle="pending"] .app { display: none; }
 
     h1 {
       margin: 0 0 14px;
@@ -275,7 +305,8 @@
     }
 
     .title-actions button,
-    .title-actions .return-main-link {
+    .title-actions .return-main-link,
+    #theatreBattleReturn {
       display: inline-flex;
       flex: 0 0 auto;
       align-items: center;
@@ -359,7 +390,7 @@
       overflow-wrap: anywhere;
     }
 
-    .title-actions .return-main-link {
+    .title-actions .return-main-link, #theatreBattleReturn {
       border: 1px solid rgba(199, 173, 114, 0.42);
       background: var(--panel);
       color: var(--gold);
@@ -368,7 +399,7 @@
       white-space: nowrap;
     }
 
-    .title-actions .return-main-link:hover {
+    .title-actions .return-main-link:hover, #theatreBattleReturn:hover {
       border-color: var(--gold);
       background: #261a18;
     }
@@ -2389,7 +2420,7 @@
   <link rel="stylesheet" href="c45_specials.css?v=20260926-titan-group-layout1">
   <link rel="stylesheet" href="battle_map_control.css?v=20261104-keyword-sibling3">
   <link rel="stylesheet" href="../api/cycle-theme.css">
-  <script src="../assets/theme.js?v=20261001" defer></script>
+  <script src="../assets/theme.js?v=20261114-light-sidebar1" defer></script>
   <link rel="stylesheet" href="editorial.css?v=20261105-pile-row-alignment1">
   <link rel="stylesheet" href="../assets/card-art.css?v=20261017-fan-fringe5">
   <script src="../assets/fan-card-trims-data.js?v=20261020-fan-scan3" defer></script>
@@ -2404,9 +2435,20 @@
   <link rel="stylesheet" href="../assets/mobile/common.css?v=20261028-apk-portrait1">
   <link rel="stylesheet" href="../assets/mobile/play.css?v=20261028-apk-portrait1">
   <script src="../assets/mobile/layout.js?v=20261028-apk-portrait1" defer></script>
-  <script src="../assets/mobile/play.js?v=20261028-apk-portrait1" defer></script>
+  <script src="../assets/mobile/play.js?v=20261114-theatre-return" defer></script>
+  <script src="theatre-battle.js?v=2"></script>
+  <script src="../theatre/terms.js?v=2"></script>
 </head>
 <body>
+  <script>
+    if (new URLSearchParams(window.location.search).has("theatreBattle")) {
+      document.body.dataset.theatreBattle = "pending";
+    }
+  </script>
+  <section id="theatreBattleGate" class="theatre-battle-notice" hidden>
+    <p id="theatreBattleStatus" role="status">正在读取剧场战斗…</p>
+    <a href="../theatre/index.html"><span data-term-variant="fan" data-language-ignore>返回忆识剧场</span><span data-term-variant="official" data-language-ignore hidden>返回幻忆剧场</span><span data-term-variant="en" data-language-ignore hidden>Return to Mnestis Theatre</span></a>
+  </section>
   <button type="button" class="sidebar-toggle" id="sidebarToggle" aria-label="折叠左侧边栏" title="展开/折叠左侧边栏">×</button>
   <div class="app">
     <aside>
@@ -2457,6 +2499,7 @@
           <button type="button" id="traitButton">Trait</button>
           <button type="button" id="tokenButton">Token</button>
           <button type="button" id="newCampaignButton">开启新战役</button>
+          <a id="theatreBattleReturn" href="../theatre/index.html" hidden><span data-term-variant="fan" data-language-ignore>返回忆识剧场</span><span data-term-variant="official" data-language-ignore hidden>返回幻忆剧场</span><span data-term-variant="en" data-language-ignore hidden>Return to Mnestis Theatre</span></a>
         </div>
       </div>
 
@@ -2837,9 +2880,9 @@
 
   <script src="../assets/campaign-session.js?v=20260917"></script>
   <script src="../assets/campaign-notes.js?v=20261015-aibp-summary1"></script>
-  <script src="../assets/cycle-symbols.js?v=20260918"></script>
+  <script src="../assets/cycle-symbols.js?v=20261115-module-logo"></script>
   <script src="cycle-theme.js?v=20261001"></script>
-  <script src="../assets/page-focus-router.js?v=20261028-android-return1"></script>
+  <script src="../assets/page-focus-router.js?v=20261113-theatre"></script>
   <script src="../map/map-tile-tags.js"></script>
   <script src="ps/CHIMERA_METASTASIOS/bp_status_map.js"></script>
   <!-- Token 名单写在本页脚本里（tokenFileNames），不再加载 ps/other/token/token_manifest.js。 -->
@@ -2847,7 +2890,7 @@
   <script src="boss-levels-data.js?v=20261012-los-speed1"></script>
   <script src="../ss/terrain-data.js?v=20261023-hd1"></script>
   <script src="battle_los.js?v=20261012-los-speed1"></script>
-  <script src="battle_map_control.js?v=20261017-layout2"></script>
+  <script src="battle_map_control.js?v=20261113-theatre1"></script>
   <script src="b4d7e218.js?v=20260926-hidden-ready2"></script>
   <script src="c9f0a6d3.js?v=20261011-panel-trait1"></script>
   <script src="5158e31a.js?v=20261019-blackbeak-shared-backs2"></script>
@@ -2857,6 +2900,8 @@
   <script src="boss-trait-rules.js?v=20261010-traits-dialog2"></script>
   <script src="panel-overlay.js?v=20261013-panel-overlay1"></script>
   <script>
+    const theatreRequest = window.AIBP_THEATRE_BATTLE.parse(window.location.search);
+    let theatreBattle = null;
     const fetch = window.ATO_CAMPAIGN_NOTES.createFetch(window.fetch.bind(window), {
       source: "AIBP", context: () => ({ cycleId: linkedCycleId }),
     });
@@ -3175,7 +3220,7 @@
     function loadLabyrinthTrackIndex(name = currentApostle) {
       const track = labyrinthTrackFor(name);
       if (!track) return 0;
-      const stored = Number(localStorage.getItem(labyrinthTrackStorageKey(name)));
+      const stored = Number(theatreRequest ? piles[name]?.labyrinthTrackIndex : localStorage.getItem(labyrinthTrackStorageKey(name)));
       return Number.isInteger(stored) && stored >= 0 && stored < track.cells.length ? stored : 0;
     }
 
@@ -3197,7 +3242,7 @@
 
     const labyrinthTrackIndexes = {};
     labyrinthTrackApostles.forEach((name) => {
-      labyrinthTrackIndexes[name] = loadLabyrinthTrackIndex(name);
+      if (!theatreRequest) labyrinthTrackIndexes[name] = loadLabyrinthTrackIndex(name);
     });
     const chimeraBpViews = ["当前", "弃牌", "常规损伤堆", "第二损伤堆", "移除", "II", "III"];
     const cardCount = 6;
@@ -3345,6 +3390,7 @@
     }
 
     function initialApostle() {
+      if (theatreRequest) return apostles[0];
       const params = new URLSearchParams(window.location.search);
       const requested = normalizeApostleName(params.get("apostle") || decodeURIComponent(window.location.hash.replace(/^#/, "")));
       return requested !== "HELIOS" && apostles.includes(requested) ? requested : apostles[0];
@@ -3355,16 +3401,17 @@
     let heliosAccountId = "";
     let currentAiView = "弃牌";
     let currentBpView = "损伤";
-    let nietzscheStateIndex = Number(localStorage.getItem(nietzscheStateKey) || String(nietzscheDefaultStateIndex));
+    let nietzscheStateIndex = theatreRequest ? nietzscheDefaultStateIndex
+      : Number(localStorage.getItem(nietzscheStateKey) || String(nietzscheDefaultStateIndex));
     if (!Number.isInteger(nietzscheStateIndex) || nietzscheStateIndex < 0 || nietzscheStateIndex >= nietzscheAdvancedStates.length) {
       nietzscheStateIndex = nietzscheDefaultStateIndex;
     }
-    let cyclonusStateIndex = Number(localStorage.getItem(cyclonusStateKey) || "0");
+    let cyclonusStateIndex = theatreRequest ? 0 : Number(localStorage.getItem(cyclonusStateKey) || "0");
     if (!Number.isInteger(cyclonusStateIndex) || cyclonusStateIndex < 0 || cyclonusStateIndex >= cyclonusStates.length) {
       cyclonusStateIndex = 0;
     }
     const piles = {};
-    const storageKey = "aibp-apostle-viewer-piles-v3";
+    let storageKey = "aibp-apostle-viewer-piles-v3";
     const secondScreenSnapshotUrl = "../api/campaign-state.php?section=aibp";
     const secondScreenModeUrl = "../api/campaign-state.php?action=second-screen-mode";
     const secondScreenStatusUrl = "../api/campaign-state.php?action=second-screen-status";
@@ -3412,6 +3459,7 @@
     }
 
     function loadSavedPiles() {
+      if (theatreRequest && !theatreBattle) return;
       try {
         const raw = localStorage.getItem(storageKey);
         // 记下本页读到的原文：写回之前会拿它确认这段时间里没有别的页面改过存档。
@@ -3433,6 +3481,7 @@
           if (isPlainObject(history)) delete history.HELIOS;
         }
         Object.assign(piles, saved);
+        if (theatreBattle) delete labyrinthTrackIndexes[theatreBattle.boss];
         if (isPlainObject(history)) {
           apostles.forEach((name) => {
             if (Array.isArray(history[name])) {
@@ -3460,6 +3509,7 @@
     }
 
     function savePiles() {
+      if (theatreRequest && (!theatreBattle || campaignSession?.changed)) return;
       captureUndoEffects();
       // 牌堆、回溯记录和观星会话一起保存，刷新后仍能沿同一条时间线回退。
       const payload = JSON.stringify({ ...piles, undoStacks, ...(activeScry ? { activeScry } : {}) });
@@ -3503,6 +3553,7 @@
     });
 
     async function setSecondScreenMode(mode) {
+      if (theatreRequest) return false;
       try {
         const response = await fetch(secondScreenModeUrl, {
           method: "POST",
@@ -3517,7 +3568,7 @@
     window.AIBP_setSecondScreenMode = setSecondScreenMode;
 
     async function refreshSecondScreenModeToggle() {
-      if (!secondScreenBattleModeToggle) return;
+      if (theatreRequest || !secondScreenBattleModeToggle) return;
       try {
         const response = await fetch(secondScreenStatusUrl, { cache: "no-store" });
         const payload = await response.json().catch(() => null);
@@ -3810,6 +3861,7 @@
     }
 
     function scheduleSecondScreenSnapshot() {
+      if (theatreRequest) return;
       window.clearTimeout(secondScreenSnapshotTimer);
       secondScreenSnapshotTimer = window.setTimeout(() => { void sendSecondScreenSnapshot(); }, 180);
     }
@@ -4367,14 +4419,22 @@
         }
         if (!Array.isArray(piles[name].customTraits)) piles[name].customTraits = [];
         piles[name].traits = piles[name].traits.map((card) => {
+          // 反面大卡：老存档存的是 O 级，图片已按反面首次出现的等级重命名，这里迁过去。
+          // 放在最前，避免反面大卡（如 HEKATON 的 V/1）被下面的 V/1 → COMMON 规则误吞。
+          const back = window.AIBP_BOSS_TRAIT_RULES?.backCardFor(name, window.AIBP_BOSS_LEVEL_DATA);
+          if (back && card?.type === "TR" && !card.scope && card.level === "O" && Number(card.index) === back.index) {
+            return { ...card, level: back.level };
+          }
           // 超时光先知那张全幅特性卡实际印的是 V 级：老存档里的 O/1、IV/1 一并迁到 V/1。
           if (name === "HYPERTIME_ORACLE" && card?.type === "TR" && !card.scope && card.index === 1
             && (card.level === "O" || card.level === "IV")) {
             return { ...card, level: "V" };
           }
           // 通用特性以前存成 V/1；超时光先知自己也有 V/1 的特性卡，这里不能把它一起吞掉。
+          // 现在反面大卡也占 V/1（如 HEKATON），靠 sources.back 区分，避免误吞反面大卡。
           if (name !== "HYPERTIME_ORACLE"
-            && card?.type === "TR" && !card.scope && card.level === "V" && card.index === 1) {
+            && card?.type === "TR" && !card.scope && card.level === "V" && card.index === 1
+            && !(back && back.level === "V" && back.index === 1)) {
             return { ...card, level: "COMMON", scope: "common" };
           }
           return card;
@@ -4443,6 +4503,7 @@
     }
 
     function loadApostleLevelOverrides() {
+      if (theatreRequest) return {};
       try {
         const value = JSON.parse(localStorage.getItem(apostleLevelOverrideKey) || "{}");
         if (value?.HELIOS === "c3") {
@@ -4456,6 +4517,7 @@
     }
 
     function saveApostleLevelOverrides() {
+      if (theatreRequest) return;
       localStorage.setItem(apostleLevelOverrideKey, JSON.stringify(apostleLevelOverrides));
     }
 
@@ -4673,7 +4735,7 @@
     }
 
     async function refreshCampaignMapFactionState() {
-      if (campaignMapFactionRefreshInFlight) return;
+      if (theatreRequest || campaignMapFactionRefreshInFlight) return;
       campaignMapFactionRefreshInFlight = true;
       try {
         const response = await fetch(recordStorageUrl, { cache: "no-store" });
@@ -4688,6 +4750,7 @@
     }
 
     async function refreshRecordApostleLevels() {
+      if (theatreRequest) return;
       try {
         const previousLevel = currentApostleLevel();
         const response = await fetch(recordStorageUrl, { cache: "no-store" });
@@ -4716,10 +4779,12 @@
 
     // 记录当前模式，供旧版本兼容；默认 C4，手动数字等级由等级覆盖值保存。
     function storeHeliosMode(mode) {
+      if (theatreRequest) return;
       try { localStorage.setItem(heliosModeKey, mode); } catch { /* 隐私模式下忽略 */ }
     }
 
     function heliosMode() {
+      if (theatreBattle?.boss === "HELIOS") return "normal";
       const override = apostleLevelOverrides.HELIOS;
       if (override === "c4") return override;
       // Numeric levels explicitly select the regular panel; the default is the C4 setup.
@@ -4784,6 +4849,7 @@
     }
 
     function apostleLevelFor(name) {
+      if (theatreBattle?.boss === name) return theatreBattle.level;
       const override = Number(apostleLevelOverrides[name]);
       const upperLevel = name === "HELIOS" ? 10 : maxApostleLevel;
       if (override === 0 && apostleLevelOverrides[name] !== undefined
@@ -4844,6 +4910,11 @@
     // 其余 apostle 按原来的规则（隐藏 BOSS 的额外模式项单独处理）。
     function renderApostleLevelSelectOptions() {
       if (!apostleLevelSelect) return;
+      if (theatreBattle) {
+        apostleLevelSelect.value = String(theatreBattle.level);
+        apostleLevelSelect.disabled = true;
+        return;
+      }
       const blackbeak = currentApostle === "BLACKBEAK";
       const fixedAtOne = fixedLevelOneApostles.has(currentApostle);
       apostleLevelSelect.disabled = blackbeak;
@@ -6559,6 +6630,7 @@
     }
 
     function startNewCampaign() {
+      if (theatreRequest) return;
       if (!window.confirm("开启新战役会重置当前始徒的 AI/BP 牌堆、弃牌记录和战役标记。确定继续吗？")) return;
       ensurePiles(currentApostle);
       undoStacks[currentApostle] = [];
@@ -6881,6 +6953,7 @@
 
     function isCommonTraitAvailable(index, name = currentApostle) {
       if (index !== 2) return true;
+      if (theatreBattle) return theatreBattle.cycle === "c3";
       const track = apostleRecordTracks[name];
       const cycle = Array.isArray(track)
         ? track.find((entry) => entry.cycle === campaignMapFactionState.cycleId)?.cycle
@@ -6892,11 +6965,23 @@
       return cycleTraitCards.find((candidate) => candidate.scope === card?.scope && candidate.index === card?.index);
     }
 
+    function syncTheatreCursedTrait(pile) {
+      if (!theatreBattle?.trait) return false;
+      const cursed = pile.traits.filter((card) => card.scope === "c4-cursed");
+      if (cursed.length === 1 && cursed[0].index === theatreBattle.trait) return false;
+      pile.traits = pile.traits.filter((card) => card.scope !== "c4-cursed");
+      pile.traits.push({ type: "TR", level: "COMMON", scope: "c4-cursed", ext: "jpg", index: theatreBattle.trait });
+      return true;
+    }
+
     function availableCycleTraitCards(name = currentApostle) {
-      const cycle = name === "HELIOS" ? "c4"
+      const cycle = theatreBattle?.cycle || (name === "HELIOS" ? "c4"
         : name === "BLACKBEAK" ? "c5"
-          : apostleRecordTracks[name]?.cycle || "";
-      return cycleTraitCards.filter((card) => card.cycle === cycle || card.cycles?.includes(cycle));
+          : apostleRecordTracks[name]?.cycle || "");
+      return cycleTraitCards.filter((card) => {
+        if (theatreBattle && card.scope === "c4-cursed") return card.index === theatreBattle.trait;
+        return card.cycle === cycle || card.cycles?.includes(cycle);
+      });
     }
 
     function cycleTraitSrc(card) {
@@ -6958,13 +7043,20 @@
         && Number(card.index) === 1;
     }
 
+    // 反面大卡：boss 大卡的反面（sources.back），图片按反面首次出现的等级命名。
+    function isBackCard(apostle, card) {
+      if (!card || card.scope) return false;
+      const back = window.AIBP_BOSS_TRAIT_RULES?.backCardFor(apostle, window.AIBP_BOSS_LEVEL_DATA);
+      return !!back && card.level === back.level && Number(card.index) === back.index;
+    }
+
     function isLargeTraitCard(apostle, card) {
       if (card.scope === "custom") return false;
       // 人人为我虽归在 O 类特性中，仍使用普通尺寸卡。
       if (apostle === "THE_NIETZSCJEAN" && !card.scope && card.level === "O" && Number(card.index) === 2) return false;
-      return (card.level === "O" && !isDahakaFearfulHospitality(apostle, card))
-        || (apostle === "HYPERTIME_ORACLE" && card.level === "V")
-        || (apostle === "ICARIAN_HARPY" && card.level === "X" && card.index === 2);
+      // 反面大卡（boss 大卡的反面）按大卡渲染。
+      if (isBackCard(apostle, card)) return true;
+      return apostle === "ICARIAN_HARPY" && card.level === "X" && card.index === 2;
     }
 
     function isTraitRemovedByLevel(card) {
@@ -7076,6 +7168,11 @@
         const defaultShown = isDefaultShownTrait({ ...card, level: "COMMON", ext: "jpg" });
         const key = traitKey("COMMON", card.index, "jpg", card.scope);
         checkbox.checked = selected.has(key) || (defaultShown && !hidden.has(key));
+        if (theatreBattle && card.scope === "c4-cursed") {
+          checkbox.checked = true;
+          checkbox.disabled = true;
+          option.title = "本场抽取的诅咒特性";
+        }
         if (defaultShown) checkbox.dataset.defaultShown = "1";
         if (selected.has(key)) checkbox.dataset.traitSelected = "1";
 
@@ -7279,6 +7376,7 @@
           if (a.scope === "custom") return a.name.localeCompare(b.name) || a.id.localeCompare(b.id);
           return traitLevels.indexOf(a.level) - traitLevels.indexOf(b.level) || a.index - b.index || String(a.ext).localeCompare(String(b.ext));
         });
+      if (theatreBattle) syncTheatreCursedTrait(piles[currentApostle]);
       piles[currentApostle].hiddenTraits = Array.from(hidden).sort();
       piles[currentApostle].hiddenExtraCards = Array.from(hiddenExtra).sort();
       applyCurrentApostleLevelBonuses();
@@ -7291,6 +7389,7 @@
     // 「恢复默认」：清掉显式选择，默认显示的卡与额外卡恢复勾选（即解除隐藏）。
     function restoreDefaultTraits() {
       traitDialogGrid.querySelectorAll("input[type='checkbox']").forEach((input) => {
+        if (theatreBattle && input.dataset.scope === "c4-cursed") return;
         input.checked = Boolean(input.dataset.defaultShown || input.dataset.extraCardSrc) && !input.dataset.defaultHidden;
         // 默认卡本来就由特性区自动显示，恢复后不必在存档里留下显式条目。
         if (input.dataset.defaultShown) delete input.dataset.traitSelected;
@@ -7394,33 +7493,9 @@
         }
       });
       if (large.length === 0) return;
-      // 大卡占一整列（2行），小卡每2张占一列。
-      // 按顺序排列：大卡独占一列位，小卡两两成对填列。
-      const result = [];
-      let li = 0;
-      let si = 0;
-      // 保持原始相对顺序：遍历原始列表，遇到大卡就输出，遇到小卡攒够2张或到末尾再输出
-      const orig = children.slice();
-      const reordered = [];
-      let smallBuf = [];
-      for (const el of orig) {
-        if (el.classList.contains("panel-image") || el.classList.contains("rotated-card-thumb")) {
-          // 如果缓冲区有奇数张小卡，先把偶数张输出，留1张到大卡后面
-          if (smallBuf.length % 2 === 1) {
-            const leftover = smallBuf.pop();
-            reordered.push(...smallBuf);
-            smallBuf = [leftover];
-          } else {
-            reordered.push(...smallBuf);
-            smallBuf = [];
-          }
-          reordered.push(el);
-        } else {
-          smallBuf.push(el);
-        }
-      }
-      reordered.push(...smallBuf);
-      extraGrid.replaceChildren(...reordered);
+      // 大卡（反面大卡 / 全幅面板卡）统一排到最右侧（序列末尾），
+      // 小卡保持原始相对顺序在前、两两成对填列。
+      extraGrid.replaceChildren(...small, ...large);
     }
 
     function enableOptionalCardBack(img, frontSrc, card = null) {
@@ -7443,6 +7518,7 @@
     }
 
     function renderExtraCards() {
+      if (theatreRequest && !theatreBattle) return;
       if (aibpImageIndex === undefined) {
         const name = currentApostle;
         void loadAibpImageIndex().then(() => {
@@ -8632,7 +8708,9 @@
         const src = window.HeliosAssets.resolve(apostlePanelSrc(currentApostle, apostlePanelIndex(currentApostle)));
         if (window.AibpCardImages) window.AibpCardImages.setSource(img, src);
         else img.src = src;
-        try { localStorage.setItem("aibp-first-panel-v1", JSON.stringify({ name: currentApostle, src })); } catch {}
+        if (!theatreRequest) {
+          try { localStorage.setItem("aibp-first-panel-v1", JSON.stringify({ name: currentApostle, src })); } catch {}
+        }
       } else {
         renderPanelImage(`ps/${currentApostle}`, currentApostle);
         return;
@@ -8660,7 +8738,9 @@
         panelSrc = apostlePanelSrc(name, apostlePanelIndex(name));
       }
       const img = imageOrMessage(panelSrc, `${name} panel`, "panel-image");
-      try { localStorage.setItem("aibp-first-panel-v1", JSON.stringify({ name, src: panelSrc })); } catch {}
+      if (!theatreRequest) {
+        try { localStorage.setItem("aibp-first-panel-v1", JSON.stringify({ name, src: panelSrc })); } catch {}
+      }
       const frame = document.createElement("div");
       frame.className = "panel-frame";
       const overlay = document.createElement("div");
@@ -8735,11 +8815,12 @@
         ? helios[`${kind.toLowerCase()}Back`]
         : `${base}/${name}_${kind}_X_001_BACK.jpg`;
       const label = kind.toLowerCase();
-      const img = imageOrMessage(frontSrc, `${name} ${label}`, "side-card-image");
+      const showMnestis = Boolean(theatreBattle && kind === "ROUTINE" && backSrc);
+      const img = imageOrMessage(showMnestis ? backSrc : frontSrc, `${name} ${showMnestis ? "Mnestis Routine" : label}`, "side-card-image");
       img.id = `${kind.toLowerCase()}CardImage`;
       img.dataset.frontSrc = window.HeliosAssets.resolve(frontSrc);
       img.dataset.backSrc = window.HeliosAssets.resolve(backSrc);
-      img.dataset.face = "front";
+      img.dataset.face = showMnestis ? "back" : "front";
       img.title = "点击放大，放大后可翻面";
       wrap.replaceChildren(img);
     }
@@ -8751,7 +8832,12 @@
         const track = labyrinthTrackFor();
         const index = ((labyrinthTrackIndexes[currentApostle] || 0) + 1) % track.cells.length;
         labyrinthTrackIndexes[currentApostle] = index;
-        localStorage.setItem(labyrinthTrackStorageKey(), String(index));
+        if (theatreBattle) {
+          piles[currentApostle].labyrinthTrackIndex = index;
+          savePiles();
+        } else {
+          localStorage.setItem(labyrinthTrackStorageKey(), String(index));
+        }
         updateNietzscheStateUi(panelWrap.querySelector(".panel-state-marker"));
         scheduleSecondScreenSnapshot();
         return;
@@ -8759,13 +8845,13 @@
       if (isCyclonus()) {
         const index = piles[currentApostle]?.AI?.comboTrackIndex ?? cyclonusStateIndex;
         cyclonusStateIndex = (index + cyclonusStates.length - 1) % cyclonusStates.length;
-        localStorage.setItem(cyclonusStateKey, String(cyclonusStateIndex));
+        if (!theatreRequest) localStorage.setItem(cyclonusStateKey, String(cyclonusStateIndex));
       } else {
         const index = piles[currentApostle]?.AI?.comboTrackIndex ?? nietzscheStateIndex;
         const order = isAdvancedNietzscheTrack() ? [2, 0, 1, 3] : [2, 0, 1];
         const position = order.indexOf(index);
         nietzscheStateIndex = order[(Math.max(0, position) + 1) % order.length];
-        localStorage.setItem(nietzscheStateKey, String(nietzscheStateIndex));
+        if (!theatreRequest) localStorage.setItem(nietzscheStateKey, String(nietzscheStateIndex));
       }
       if (piles[currentApostle]?.AI) {
         piles[currentApostle].AI.comboTrackIndex = isCyclonus() ? cyclonusStateIndex : nietzscheStateIndex;
@@ -8781,7 +8867,7 @@
       HELIOS: {
         granted: () => heliosAccessGranted,
         config: () => window.HeliosConfig,
-        extraConfigs: () => (window.BlackbeakCardList ? [window.BlackbeakCardList] : []),
+        extraConfigs: () => (!theatreBattle && window.BlackbeakCardList ? [window.BlackbeakCardList] : []),
       },
       BLACKBEAK: {
         granted: () => blackbeakAccessGranted,
@@ -8823,6 +8909,7 @@
     }
 
     function renderApostle(name) {
+      if (theatreRequest && theatreBattle?.boss !== name) return;
       const request = ++heliosRenderRequest;
       const hidden = HIDDEN_BOSS[name];
       if (hidden && !hidden.granted()) return;
@@ -8841,6 +8928,7 @@
       currentApostle = name;
       activateHeliosMode();
       ensurePiles(name);
+      if (syncTheatreCursedTrait(piles[name])) savePiles();
       if (name === nietzscheName && syncNietzscheAllForOneTrait(piles[name], piles[name].battleMap?.setupId)) savePiles();
       applyCurrentApostleLevelBonuses();
       updateAiViewTabs();
@@ -9066,7 +9154,7 @@
       document.documentElement.style.setProperty("--panel-image-height", `${panelHeight}px`);
     }
 
-    apostles.forEach((name) => {
+    (theatreRequest ? [] : apostles).forEach((name) => {
       const button = document.createElement("button");
       button.type = "button";
       button.dataset.name = name;
@@ -9160,6 +9248,7 @@
     };
 
     async function searchSecret(mode) {
+      if (theatreRequest) return;
       if (mode === "titan-x-group") {
         bossSearchInput.value = "";
         bossSearchResults.replaceChildren();
@@ -9369,6 +9458,7 @@
     });
     secondScreenBattleModeToggle?.addEventListener("change", toggleSecondScreenBattleMode);
     apostleLevelSelect.addEventListener("change", () => {
+      if (theatreRequest) return;
       const level = Number(apostleLevelSelect.value);
       if (currentApostle === "HELIOS" && apostleLevelSelect.value === "c4") {
         apostleLevelOverrides[currentApostle] = apostleLevelSelect.value;
@@ -9404,6 +9494,8 @@
       openImageZoom,
       getApostle: () => currentApostle,
       getLevel: () => currentApostleLevel(),
+      getFixedSetup: () => theatreBattle
+        ? window.AIBP_THEATRE_BATTLE.setupId(window.BattleTerrain, currentApostle) : undefined,
       getSpecialSetup: () => currentApostle === "TITAN_X" && piles.TITAN_X?.special?.titanX?.group
         ? "all-good-things" : null,
       getMap: () => piles[currentApostle]?.battleMap || null,
@@ -9419,6 +9511,61 @@
       onLosChange: () => scheduleSecondScreenSnapshot(),
       });
       battleMapControl.render();
+    }
+
+    function showTheatreBattleGate(message) {
+      document.body.dataset.theatreBattle = "pending";
+      document.getElementById("theatreBattleStatus").textContent = message;
+      document.getElementById("theatreBattleGate").hidden = false;
+    }
+
+    let theatreVerificationInFlight = false;
+    async function verifyTheatreBattle() {
+      if (theatreVerificationInFlight) return;
+      theatreVerificationInFlight = true;
+      try {
+        if (!theatreRequest.valid) {
+          showTheatreBattleGate("剧场战斗链接无效。请从幻忆剧场重新打开。");
+          return;
+        }
+        const response = await window.fetch(`${recordStorageUrl}?section=theatre`, { cache: "no-store" });
+        const payload = campaignSession.accept(await response.json());
+        if (!response.ok) throw new Error("剧场战斗无法读取");
+        if (["c4", "c5"].includes(theatreRequest.cycle) && !["c4", "c5"].includes(payload.dashboardCycle)) {
+          theatreBattle = null;
+          showTheatreBattleGate("扩展剧场仅在主控台当前为循环 IV 或 V 时显示。");
+          return;
+        }
+        const verified = window.AIBP_THEATRE_BATTLE.verify(theatreRequest, payload, apostles);
+        if (!verified) {
+          theatreBattle = null;
+          showTheatreBattleGate("这场战斗已结算，或不属于当前账号。请返回幻忆剧场。");
+          return;
+        }
+        if (theatreBattle) return;
+        theatreBattle = verified;
+        storageKey = window.AIBP_THEATRE_BATTLE.storageKey(theatreBattle);
+        currentApostle = theatreBattle.boss;
+        heliosAccessGranted = currentApostle === "HELIOS";
+        window.AIBP_CYCLE_THEME?.setCycle(theatreBattle.cycle);
+        document.body.dataset.theatreBattle = theatreBattle.mode;
+        document.getElementById("theatreBattleGate").hidden = true;
+        const returnLink = document.getElementById("theatreBattleReturn");
+        returnLink.href = `../theatre/index.html?battle=${encodeURIComponent(theatreBattle.id)}`;
+        returnLink.hidden = false;
+        loadSavedPiles();
+        void loadAibpImageIndex();
+        renderApostle(currentApostle);
+        restoreScrySession();
+        initializeBattleMap();
+      } catch {
+        if (campaignSession.changed || !theatreBattle) {
+          theatreBattle = null;
+          showTheatreBattleGate("无法读取剧场战斗。请确认登录状态或返回幻忆剧场重试。");
+        }
+      } finally {
+        theatreVerificationInFlight = false;
+      }
     }
 
     sidebarToggle.addEventListener("click", () => {
@@ -9537,26 +9684,40 @@
       aibpImageIndexRevision += 1;
       flushOptionalImageChecks();
       optionalImageChecks.clear();
+      if (theatreRequest && !theatreBattle) return;
       renderExtraCards();
       renderAibpCards();
       if (traitDialog.open) renderTraitCandidates();
     });
-    loadSavedPiles();
-    void loadAibpImageIndex();
-    renderApostle(currentApostle);
-    restoreScrySession();
-    requestAnimationFrame(() => window.setTimeout(() => {
-      initializeBattleMap();
-      refreshRecordApostleLevels();
-      refreshSecondScreenModeToggle();
-      void readAibpSection().catch(() => {});
-    }, 0));
+    if (theatreRequest) {
+      showTheatreBattleGate("正在读取剧场战斗…");
+      document.addEventListener("DOMContentLoaded", verifyTheatreBattle, { once: true });
+      window.addEventListener("focus", verifyTheatreBattle);
+      if (typeof BroadcastChannel === "function") {
+        const dashboardChanges = new BroadcastChannel("ato-dashboard-sync-v1");
+        dashboardChanges.addEventListener("message", verifyTheatreBattle);
+      }
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) void verifyTheatreBattle();
+      });
+    } else {
+      loadSavedPiles();
+      void loadAibpImageIndex();
+      renderApostle(currentApostle);
+      restoreScrySession();
+      requestAnimationFrame(() => window.setTimeout(() => {
+        initializeBattleMap();
+        refreshRecordApostleLevels();
+        refreshSecondScreenModeToggle();
+        void readAibpSection().catch(() => {});
+      }, 0));
+    }
   </script>
   <script src="ps/other/resouce/bp_resource_map.js?v=20261017a" defer></script>
   <script src="ps/other/resouce/bp_resource_map_c1_c3.js?v=20261017a" defer></script>
   <script src="ps/other/resouce/bp_resource_map_c4_c5.js?v=20261018a" defer></script>
-  <script src="c45_specials.js?v=20261019-demidjinn-manual1" defer></script>
-  <script src="bp_loot_calculator_addon.js?v=20261018-shared-resource-icons2" defer></script>
+  <script src="c45_specials.js?v=20261113-theatre1" defer></script>
+  <script src="bp_loot_calculator_addon.js?v=20261113-theatre1" defer></script>
   <script src="../story/data/english-source-data.js?v=20261011-english4" defer></script>
   <script src="../assets/ato-terms.js?v=20261110-loop-terms" defer></script>
   <script src="../assets/english-terms.js?v=20261011-english4" defer></script>

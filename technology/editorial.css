@@ -3,6 +3,20 @@ body { --accent-2: var(--accent-strong); --surface: var(--bg); background: var(-
 .page-heading { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 16px 40px 14px; }
 .page-heading h1 { display: flex; align-items: center; gap: 12px; margin: 0; font: 600 32px/1.3 "Songti SC", "Noto Serif CJK SC", SimSun, Georgia, serif; letter-spacing: .06em; color: var(--accent-strong); }
 .page-heading .cycle-symbol { width: 30px; height: 34px; object-fit: contain; }
+.page-heading .module-logo {
+  width: calc(1em * var(--logo-ratio, 1));
+  height: 1em;
+  flex: 0 0 auto;
+  background-color: currentColor;
+  -webkit-mask-image: var(--icon-src);
+  mask-image: var(--icon-src);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
 .topbar { height: auto; min-height: 56px; display: flex; flex-wrap: nowrap; align-items: center; justify-content: flex-start; gap: 16px; margin: 0 40px; padding: 12px 0 16px; border-top: 1px solid var(--line); background: var(--bg); position: static; overflow-x: auto; }
 .topbar .campaign-save-status { flex-shrink: 0; min-width: 0; text-align: left; }
 body[data-theme-module="technology"] .topbar { background: var(--bg); }

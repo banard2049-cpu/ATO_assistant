@@ -197,7 +197,7 @@ def candidate_paths(root: Path):
         for path in sorted(folder.rglob("*")):
             target = path.relative_to(root).as_posix()
             if (path.is_file() and not path.is_symlink() and path.suffix.lower() in SUFFIXES
-                    and ".preview." not in path.name and "_TR_O_" not in path.name
+                    and ".preview." not in path.name and "_TR_" not in path.name
                     and (target.startswith("assets/exploration-cards/") or CARD.fullmatch(target))):
                 yield path, target
 

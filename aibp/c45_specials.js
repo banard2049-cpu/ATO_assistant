@@ -138,7 +138,7 @@
   }
 
   function startTitanXGroup() {
-    if (currentApostle !== "TITAN_X" || titanXGroup()) return;
+    if (document.body.dataset.theatreBattle || currentApostle !== "TITAN_X" || titanXGroup()) return;
     rememberUndo("TITAN_X", "AIBP");
     const state = piles.TITAN_X;
     const data = state.special.titanX;
@@ -319,6 +319,7 @@
   }
 
   async function refreshTitanRoster() {
+    if (document.body.dataset.theatreBattle) return;
     let localRecord = null;
     try {
       localRecord = JSON.parse(localStorage.getItem(RECORD_STORAGE_KEY) || "null");

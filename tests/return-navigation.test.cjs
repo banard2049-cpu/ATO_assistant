@@ -278,6 +278,16 @@ test('module pages count /x/ and /x/index.html as one page but keep the query', 
   assert.equal(context.samePageUrl('http://localhost/map/index.html', 'http://localhost/record/index.html'), false);
 });
 
+test('theatre has a dedicated module and its battles use a separate AIBP tab identity', () => {
+  const window = { location: { href: 'http://localhost/index.html' } };
+  const context = vm.createContext({ URL, window });
+  vm.runInContext(extract(read('assets/page-focus-router.js'), 'moduleFromUrl'), context);
+  assert.equal(context.moduleFromUrl('./theatre/'), 'theatre');
+  assert.equal(context.moduleFromUrl('./theatre/index.html'), 'theatre');
+  assert.equal(context.moduleFromUrl('./aibp/index.html?cycle=c1'), 'aibp');
+  assert.equal(context.moduleFromUrl('./aibp/index.html?cycle=c1&theatreBattle=fixture'), 'aibp-theatre');
+});
+
 test('router still focuses a live tab whose background heartbeat is stale', async () => {
   const { calls, context } = routerHarness({ module: 'record', state: 'stale' });
   const handled = await context.focusOrSync('http://localhost/record/index.html?cycle=c2', { insideGesture: true });

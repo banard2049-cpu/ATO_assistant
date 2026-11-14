@@ -133,6 +133,21 @@ h1 {
   object-fit: contain;
 }
 
+.cycle-title .module-logo {
+  width: calc(1em * var(--logo-ratio, 1));
+  height: 1em;
+  flex: 0 0 auto;
+  background-color: currentColor;
+  -webkit-mask-image: var(--icon-src);
+  mask-image: var(--icon-src);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
 .topbar p {
   margin-top: 8px;
   color: var(--muted);

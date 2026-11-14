@@ -511,15 +511,6 @@
         "removedConcepts": 0,
         "evidence": "所有在攀爬点的泰坦承受位移到后部并击倒；漏Displace。"
       },
-      "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_O_001.jpg": {
-        "added": [
-          "Pull"
-        ],
-        "removed": [],
-        "addedConcepts": 1,
-        "removedConcepts": 0,
-        "evidence": "抓紧FAIL位移到后部击倒；神浆相关规则。 VI贪食掩埋明确将每个泰坦拖拽X格至相邻，漏Pull。"
-      },
       "ps/DEMIDJINN/DEMIDJINN.jpg": {
         "added": [
           "Destructible"
@@ -619,6 +610,15 @@
         "addedConcepts": 1,
         "removedConcepts": 0,
         "evidence": "Attack正文Feint；紧接This card never escalates，明确修改晋升规则；后再抽AI并移除此卡。"
+      },
+      "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_V_001.jpg": {
+        "added": [
+          "Pull"
+        ],
+        "removed": [],
+        "addedConcepts": 1,
+        "removedConcepts": 0,
+        "evidence": "抓紧FAIL位移到后部击倒；神浆相关规则。 VI贪食掩埋明确将每个泰坦拖拽X格至相邻，漏Pull。"
       }
     }
   },
@@ -1042,18 +1042,6 @@
       "sha256": "c7ca15e5bf1317ce3458af6ae492f36660774845cd7e95d0e08b21b1005bf501",
       "words": [],
       "evidence": "已看整张装饰牌背，仅AI/BP/Signature及等级，无规则",
-      "visualReviewRound": 2
-    },
-    "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_O_001.jpg": {
-      "sha256": "94eceb3772c9742cc1dd56387e7c5c0bd54a792f5463d61e24fe50594ae42e37",
-      "words": [
-        "击倒",
-        "绝望",
-        "Displace",
-        "Labyrinth"
-      ],
-      "notes": "Displace and Labyrinth X printed; Hope only 希望终结 trait name",
-      "evidence": "IX绝望指示物；VP失败位移、击倒；迷宫X轨道（大卡已单独打开）",
       "visualReviewRound": 2
     },
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_VI_001.jpg": {
@@ -1502,18 +1490,6 @@
       "evidence": "正常顶推；路径其他泰坦冲撞；泰坦墙降低顶推。",
       "visualReviewRound": 2
     },
-    "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_O_001.jpg": {
-      "sha256": "446c27adf1d61b33e59cedff9a084a4856fe6e65bc10b49fed6dea8066ea7c6a",
-      "words": [
-        "神浆",
-        "Displace",
-        "Knockdown",
-        "Pull"
-      ],
-      "notes": "Visible printed rule omitted by OCR",
-      "evidence": "抓紧FAIL位移到后部击倒；神浆相关规则。 VI贪食掩埋明确将每个泰坦拖拽X格至相邻，漏Pull。",
-      "visualReviewRound": 2
-    },
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_X_001.png": {
       "sha256": "d2b642f7b778e8cb4d2f8596066f84bde1b67521765aae3a27edc074d4e6c33b",
       "words": [
@@ -1910,17 +1886,6 @@
       "evidence": "威胁区d10及危险；无词典关键词",
       "visualReviewRound": 2
     },
-    "ps/CYCLONUS/CYCLONUS_TR_O_001.jpg": {
-      "sha256": "31919998805c5f6139d901aebf02f02cade58ab166e0c5ae73ba0fda5f74d265",
-      "words": [
-        "Pushback",
-        "Pull",
-        "Knockback"
-      ],
-      "notes": "Printed 推斥和拖拽+1 / 所有击退+2 omitted by OCR.",
-      "evidence": "V推斥/拖拽+1，击退+2；其余无词典通用关键词（大卡单独打开）",
-      "visualReviewRound": 2
-    },
     "ps/DAHAKA/DAHAKA.jpg": {
       "sha256": "be3265b3bfc5045c755d8756d5128be1417daeb381f9e8bda7e6560a5b911083",
       "words": [
@@ -2159,17 +2124,6 @@
       "sha256": "c062f101c1fde103fed181a4a3f9046343c50da46f35e484f52d14c49bedb34a",
       "words": [],
       "evidence": "只有传递和弃精度token，无词典词",
-      "visualReviewRound": 2
-    },
-    "ps/DAHAKA/DAHAKA_TR_O_002.jpg": {
-      "sha256": "66d49cc124b16b0da626785f2e686f62301d13e72bbca9b90f3237320c666aa4",
-      "words": [
-        "Ambrosia",
-        "Board Edge",
-        "Heal"
-      ],
-      "notes": "Combo Break is combo action, not Break tokens; large-card rules explicitly Ambrosia, Board Edge, Heal 1",
-      "evidence": "单独原图看Forbidden Alchemy/Contaminated Cuts引用Ambrosia；Shadow Backstep引用Board Edge/Heal1",
       "visualReviewRound": 2
     },
     "ps/DEMIDJINN/DEMIDJINN.jpg": {
@@ -2574,16 +2528,6 @@
       "sha256": "1ca3da9180a6df026fc79a7711ab8df4e6e1b735422cb78ccd6d63fb0349aa39",
       "words": [],
       "evidence": "AI0装饰背面，无规则",
-      "visualReviewRound": 2
-    },
-    "ps/DEMIDJINN/DEMIDJINN_TR_O_002.jpg": {
-      "sha256": "fbb2e2b3cba777b7907c2fd29e52031020ea6fa195ff915a2fa1ab3fc6b5be51",
-      "words": [
-        "Board Edge",
-        "Wish Away"
-      ],
-      "notes": "End of Hope is a trait name, not Hope X tokens.",
-      "evidence": "单独图看：Wish Away；Board Edge；专属End of Hope非Hope",
       "visualReviewRound": 2
     },
     "ps/DEMIDJINN/DEMIDJINN_WISH_III_001.jpg": {
@@ -3205,26 +3149,6 @@
       "evidence": "每泰坦死亡，Vanish数值降低1。",
       "visualReviewRound": 2
     },
-    "ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_TR_O_001.jpg": {
-      "sha256": "6206bcb702e2b67bcb5521d454bba6af41cdd35b33a8aa40333db5429c2f0660",
-      "words": [
-        "Ambrosia",
-        "Black",
-        "Break",
-        "Chasm",
-        "Closing",
-        "Elevated",
-        "Fire",
-        "Hope",
-        "Light",
-        "Opening",
-        "Hope X",
-        "Vanish"
-      ],
-      "notes": "Relentless Anxiety explicitly references the Vanish ability; existing upper/lower level rules otherwise valid.",
-      "evidence": "V神浆；VI消失vanishes触发；VII Chasm/Elevated；IX Opening/Closing/Break/Fire/Black/Hope/Light。",
-      "visualReviewRound": 2
-    },
     "ps/HEKATON/HEKATON.jpg": {
       "sha256": "0b7dca1efdb0df4f7ccd20e8fd59fb2ef498e615b3b835b9b8ecce519a0ea33b",
       "words": [
@@ -3624,17 +3548,6 @@
       "sha256": "68b0ac2dff6deeacf71bf3e56be79d9f00b975d5e680bc4b535607ba19933c66",
       "words": [],
       "evidence": "已看整张装饰牌背，仅AI/BP/Signature名称和等级，无规则词",
-      "visualReviewRound": 2
-    },
-    "ps/HEKATON/HEKATON_TR_O_001.jpg": {
-      "sha256": "61066345512d96f91c443b92eaa1d433c406f090fa6a219ba74b887d89ba8c29",
-      "words": [
-        "Knockback X",
-        "Obstacle",
-        "Pushback X"
-      ],
-      "notes": "Visible printed rule omitted by OCR",
-      "evidence": "V伤口推斥3、失败击退5；VIII被推到障碍死亡（密集等级卡单独打开）",
       "visualReviewRound": 2
     },
     "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER.jpg": {
@@ -4037,18 +3950,6 @@
       "sha256": "d32b55c3110aeabbcdfc69749a0b4b8548cc4222c95f78871c08b73f8cdd6660",
       "words": [],
       "evidence": "装饰牌背：AI/BP/Signature等级与图案，没有规则文字。",
-      "visualReviewRound": 2
-    },
-    "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_O_001.jpg": {
-      "sha256": "1f780a4d041e952df3716a70ef36f02d781ce92fa20f6dbcef4caa7ced3ce095",
-      "words": [
-        "Ambrosia",
-        "Board Edge",
-        "Boundless",
-        "Knockback X"
-      ],
-      "notes": "Visible printed rule omitted by OCR",
-      "evidence": "III版边无垠；IV绝对击退7；VII每人神浆标记。",
       "visualReviewRound": 2
     },
     "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE-1.jpg": {
@@ -4910,16 +4811,6 @@
       "evidence": "Rapid Adaptation武器种类轨道，没有通用词典关键字；盾牌图标为武器类型。",
       "visualReviewRound": 2
     },
-    "ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_O_001.jpg": {
-      "sha256": "29e0cece5ecd49a1e6d8216c5b8ccb45274b5668d088b255ebb95d4ac89f27ee",
-      "words": [
-        "Bleeding",
-        "Bleeding Limit"
-      ],
-      "notes": "Level VI says bleeding4/3/2/2; VIII says bleeding limit -1. Printed synonym 流血 is not in dictionary aliases.",
-      "evidence": "单图放大：VI施加流血4/3/2/2；VIII流血上限-1；IX流血标记翻倍。",
-      "visualReviewRound": 2
-    },
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_X_001.jpg": {
       "sha256": "551ecae477f106851f739b43c385706fe6620f5cf6ca02a4c1096ee94fad4f60",
       "words": [
@@ -5336,18 +5227,6 @@
       "sha256": "d1f3cd50aea63db98c13c2d85a7824c0f248ef888503feb0cd4b7a9e4a44a5cf",
       "words": [],
       "evidence": "正文耐力检定、Dread状态；TRAP仅BP卡类型，不是词典Trap地形",
-      "visualReviewRound": 2
-    },
-    "ps/LABYRINTHAUROS/LABYRINTHAUROS_TR_O_001.jpg": {
-      "sha256": "0457ebb2bfec136d33e0463b0575f023e7cdc0d83f74365e31312b930c438686",
-      "words": [
-        "Displace",
-        "Knockdown",
-        "Labyrinth",
-        "Trample"
-      ],
-      "notes": "Visible printed rule omitted by OCR",
-      "evidence": "单独原图放大：迷宫X、践踏、移位、击倒；高等级改响应和地形规则",
       "visualReviewRound": 2
     },
     "ps/LABYRINTHAUROS/MR.png": {
@@ -5840,18 +5719,6 @@
       "evidence": "仅死亡降低扫描难度；Light只标题",
       "visualReviewRound": 2
     },
-    "ps/MEDUKETOS/MEDUKETOS_TR_O_001.jpg": {
-      "sha256": "d05f678774be32ba02c07d0fe4cee20c3c3cf91b5c326677d86bea91c53faee1",
-      "words": [
-        "Chasm",
-        "Elevated",
-        "Skitter",
-        "Light X"
-      ],
-      "notes": "Black Soup and End of Hope are trait names, not generic Black/Hope tokens.",
-      "evidence": "LightX；Skitter；Chasm keyword；allotherterrain Elevated（大卡单开）",
-      "visualReviewRound": 2
-    },
     "ps/MIDASCORE/MIDASCORE.jpg": {
       "sha256": "e4522f1218c9480e1eee3da5f11b6e597808c8cc32ee472ef491a30f1c6d8fef",
       "words": [
@@ -6289,22 +6156,6 @@
       "evidence": "每伤口及弃置Midas指示物时向特质放Midas。",
       "visualReviewRound": 2
     },
-    "ps/MIDASCORE/MIDASCORE_TR_O_001.jpg": {
-      "sha256": "3e8d1d805077721525bee82a40ef674705c6410215df8a6c8e487128ff53fde3",
-      "words": [
-        "Displace",
-        "Hermes Move",
-        "Knockdown",
-        "Midas",
-        "Shifting",
-        "Airburst X",
-        "Midas X",
-        "Float"
-      ],
-      "notes": "End of Hope is a trait name; Sound speed Impetus references floating Titans (Float Condition).",
-      "evidence": "VP Knockdown/Displace/Midas/Airburst；V Airburst3；VI Hermes Move；VII knocked down/floating；IX Shifting。",
-      "visualReviewRound": 2
-    },
     "ps/SUN_DESCENDANT/SUN_DESCENDANT.jpg": {
       "sha256": "77c86084908e7d4d2814d79047c30e9336b240ab1c190d6e9473debec9674208",
       "words": [
@@ -6723,17 +6574,6 @@
       "evidence": "命引之死Death by Fate为专属特性：命运伤害触发创伤、超过9抽硬币等；不是Death X死期。",
       "visualReviewRound": 2
     },
-    "ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_O_001.jpg": {
-      "sha256": "0c53e113ac81aa02b2d7329a47aa5eeef144d8106ef083f7128f2e7a8d9a7eec",
-      "words": [
-        "Slippery",
-        "Chasm",
-        "Knockdown"
-      ],
-      "notes": "VI slippery terrain, VIII not-knocked-down check, IX Chasm terrain missed by OCR.",
-      "evidence": "VI冰河时代使每格具有湿滑Slippery；VIII未被击倒则死亡；IX日全食使每格具有裂谷Chasm。黑色烈日/希望终结均为专属动作名。",
-      "visualReviewRound": 2
-    },
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_X_001.jpg": {
       "sha256": "cd3212a7d6a1bc7391553fa5fe51fe232f6f6d54045cd87d2018b7296f0276c8",
       "words": [
@@ -7144,9 +6984,14 @@
       "visualReviewRound": 2
     },
     "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_II_001.jpg": {
-      "sha256": "4dadd03a7a90a5e15fd188fe4322038f416c7434e0a8ac6a6c0bfa6fa2cfbb6d",
-      "words": [],
-      "evidence": "移除Irem Tower和战斗失败流程；月球呼唤无通用关键词。",
+      "sha256": "a2dc781c7fb1aed16afc59869e97779a420b71b4576113d15db74c8a9d930577",
+      "words": [
+        "Knockdown",
+        "Midas",
+        "Wish Away X"
+      ],
+      "notes": "End of Hope trait name is not Hope X.",
+      "evidence": "单独放大：VII Midas标记共享；VP失败Knockdown、Wish Away X。",
       "visualReviewRound": 2
     },
     "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_IX_001.jpg": {
@@ -7157,17 +7002,6 @@
         "拉近 X"
       ],
       "evidence": "轮开始拉近3；轮结束击退6。",
-      "visualReviewRound": 2
-    },
-    "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_O_001.jpg": {
-      "sha256": "a2dc781c7fb1aed16afc59869e97779a420b71b4576113d15db74c8a9d930577",
-      "words": [
-        "Knockdown",
-        "Midas",
-        "Wish Away X"
-      ],
-      "notes": "End of Hope trait name is not Hope X.",
-      "evidence": "单独放大：VII Midas标记共享；VP失败Knockdown、Wish Away X。",
       "visualReviewRound": 2
     },
     "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_VIII_001.jpg": {
@@ -7603,12 +7437,6 @@
       "visualReviewRound": 2
     },
     "ps/THE_BURDEN/THE_BURDEN_TR_II_001.jpg": {
-      "sha256": "aed09ba748dfbae16a75f2fae6a3ea8eab8f39fd3371adc990bf2e4e8c37874b",
-      "words": [],
-      "evidence": "特性加入和弃置Sisyphean特殊状态卡，并移除Sisyphean Task AI；无通用关键词。",
-      "visualReviewRound": 2
-    },
-    "ps/THE_BURDEN/THE_BURDEN_TR_O_001.jpg": {
       "sha256": "1b4fccbe31bb425ba5684c1ca579310406b08d836a4293a851639857a089aacb",
       "words": [
         "Chasm",
@@ -8052,9 +7880,11 @@
       "visualReviewRound": 2
     },
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_II_001.jpg": {
-      "sha256": "81d3f75db1585a7d1555ee3070224b39444614b1f839f8d7d6fb9aa49291deed",
-      "words": [],
-      "evidence": "禁用留一手，按时间轨道造成危险，未印通用词典词。",
+      "sha256": "09e2c476f0473f288cc5488249a1e45715b5689631d61e1cd5cb19ff7fcbd1ae",
+      "words": [
+        "神浆"
+      ],
+      "evidence": "背面单独放大：II暗影烈焰使不带神浆效果的攻击造成1神浆标记；其余Fire/Ambrosia为连招段名。",
       "visualReviewRound": 2
     },
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_II_002.jpg": {
@@ -8062,14 +7892,6 @@
       "words": [],
       "notes": "Critical opportunity / 关键机会 is not the Opening X keyword.",
       "evidence": "弱点格下强度转移规则；关键机会不是Opening指示物。",
-      "visualReviewRound": 2
-    },
-    "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_O_001.jpg": {
-      "sha256": "09e2c476f0473f288cc5488249a1e45715b5689631d61e1cd5cb19ff7fcbd1ae",
-      "words": [
-        "神浆"
-      ],
-      "evidence": "背面单独放大：II暗影烈焰使不带神浆效果的攻击造成1神浆标记；其余Fire/Ambrosia为连招段名。",
       "visualReviewRound": 2
     },
     "ps/TITAN_X/TITAN_X.jpg": {
@@ -8623,16 +8445,6 @@
       "evidence": "玩弄特性：始徒攻击骰数-1及每命中危险-1，解除希望灭绝特质；希望灭绝是Boss特质名，不是Hope X。",
       "visualReviewRound": 2
     },
-    "ps/TITAN_X/TITAN_X_TR_O_001.jpg": {
-      "sha256": "bc4f1fa93b0b9093365204258d90bdb1546923702eb2af05f0a403ca5a7fc403",
-      "words": [
-        "Ambrosia",
-        "Pain"
-      ],
-      "notes": "Truth of the Shoals is dedicated trait title, not Truth X. Actual rules give 1 Ambrosia and double Pain tokens, both missed.",
-      "evidence": "原图单独放大：III Nemesis Vow每泰坦获1 Ambrosia token；IV获得Pain tokens数量加倍；其他等级为重投限制、额外AI、区域大小、觉醒限制。",
-      "visualReviewRound": 2
-    },
     "ps/UR_FLEECE/UR_FLEECE.jpg": {
       "sha256": "f4898dd0996a738e0ff8d3b9ad0b0ee725902b9350796d2b042003023b0f1a57",
       "words": [
@@ -9135,16 +8947,6 @@
       "evidence": "只将始徒AT减1，无通用词典关键词。",
       "visualReviewRound": 2
     },
-    "ps/UR_FLEECE/UR_FLEECE_TR_O_001.jpg": {
-      "sha256": "78009422af9ac62e9ce77c755e5125d56a3dce1664a2519d028e7051f97ed58e",
-      "words": [
-        "Abyss",
-        "Ambrosia"
-      ],
-      "notes": "Black only occurs in Black March / Black Abyss names, not Black X.",
-      "evidence": "单独放大：II放置并获得Ambrosia；IV生成Black Abyss tile；Black March专名，不是Black。",
-      "visualReviewRound": 2
-    },
     "ps/other/DW.jpg": {
       "sha256": "7ef582f5ba9ba061997e2058c98bfbbf90b1c58bb9623a9f67d749937e15b97b",
       "words": [],
@@ -9257,6 +9059,186 @@
       "sha256": "af964e87b2eca7b391d55ca3213635f598a6f2295916b8898f0e37808513b63f",
       "words": [],
       "evidence": "空白特性卡模板，无规则正文。",
+      "visualReviewRound": 2
+    },
+    "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_II_001.jpg": {
+      "sha256": "94eceb3772c9742cc1dd56387e7c5c0bd54a792f5463d61e24fe50594ae42e37",
+      "words": [
+        "击倒",
+        "绝望",
+        "Displace",
+        "Labyrinth"
+      ],
+      "notes": "Displace and Labyrinth X printed; Hope only 希望终结 trait name",
+      "evidence": "IX绝望指示物；VP失败位移、击倒；迷宫X轨道（大卡已单独打开）",
+      "visualReviewRound": 2
+    },
+    "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_V_001.jpg": {
+      "sha256": "446c27adf1d61b33e59cedff9a084a4856fe6e65bc10b49fed6dea8066ea7c6a",
+      "words": [
+        "神浆",
+        "Displace",
+        "Knockdown",
+        "Pull"
+      ],
+      "notes": "Visible printed rule omitted by OCR",
+      "evidence": "抓紧FAIL位移到后部击倒；神浆相关规则。 VI贪食掩埋明确将每个泰坦拖拽X格至相邻，漏Pull。",
+      "visualReviewRound": 2
+    },
+    "ps/CYCLONUS/CYCLONUS_TR_V_001.jpg": {
+      "sha256": "31919998805c5f6139d901aebf02f02cade58ab166e0c5ae73ba0fda5f74d265",
+      "words": [
+        "Pushback",
+        "Pull",
+        "Knockback"
+      ],
+      "notes": "Printed 推斥和拖拽+1 / 所有击退+2 omitted by OCR.",
+      "evidence": "V推斥/拖拽+1，击退+2；其余无词典通用关键词（大卡单独打开）",
+      "visualReviewRound": 2
+    },
+    "ps/HEKATON/HEKATON_TR_V_001.jpg": {
+      "sha256": "61066345512d96f91c443b92eaa1d433c406f090fa6a219ba74b887d89ba8c29",
+      "words": [
+        "Knockback X",
+        "Obstacle",
+        "Pushback X"
+      ],
+      "notes": "Visible printed rule omitted by OCR",
+      "evidence": "V伤口推斥3、失败击退5；VIII被推到障碍死亡（密集等级卡单独打开）",
+      "visualReviewRound": 2
+    },
+    "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_II_001.jpg": {
+      "sha256": "1f780a4d041e952df3716a70ef36f02d781ce92fa20f6dbcef4caa7ced3ce095",
+      "words": [
+        "Ambrosia",
+        "Board Edge",
+        "Boundless",
+        "Knockback X"
+      ],
+      "notes": "Visible printed rule omitted by OCR",
+      "evidence": "III版边无垠；IV绝对击退7；VII每人神浆标记。",
+      "visualReviewRound": 2
+    },
+    "ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_VI_001.jpg": {
+      "sha256": "29e0cece5ecd49a1e6d8216c5b8ccb45274b5668d088b255ebb95d4ac89f27ee",
+      "words": [
+        "Bleeding",
+        "Bleeding Limit"
+      ],
+      "notes": "Level VI says bleeding4/3/2/2; VIII says bleeding limit -1. Printed synonym 流血 is not in dictionary aliases.",
+      "evidence": "单图放大：VI施加流血4/3/2/2；VIII流血上限-1；IX流血标记翻倍。",
+      "visualReviewRound": 2
+    },
+    "ps/LABYRINTHAUROS/LABYRINTHAUROS_TR_V_001.jpg": {
+      "sha256": "0457ebb2bfec136d33e0463b0575f023e7cdc0d83f74365e31312b930c438686",
+      "words": [
+        "Displace",
+        "Knockdown",
+        "Labyrinth",
+        "Trample"
+      ],
+      "notes": "Visible printed rule omitted by OCR",
+      "evidence": "单独原图放大：迷宫X、践踏、移位、击倒；高等级改响应和地形规则",
+      "visualReviewRound": 2
+    },
+    "ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_IV_001.jpg": {
+      "sha256": "0c53e113ac81aa02b2d7329a47aa5eeef144d8106ef083f7128f2e7a8d9a7eec",
+      "words": [
+        "Slippery",
+        "Chasm",
+        "Knockdown"
+      ],
+      "notes": "VI slippery terrain, VIII not-knocked-down check, IX Chasm terrain missed by OCR.",
+      "evidence": "VI冰河时代使每格具有湿滑Slippery；VIII未被击倒则死亡；IX日全食使每格具有裂谷Chasm。黑色烈日/希望终结均为专属动作名。",
+      "visualReviewRound": 2
+    },
+    "ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_TR_V_001.jpg": {
+      "sha256": "6206bcb702e2b67bcb5521d454bba6af41cdd35b33a8aa40333db5429c2f0660",
+      "words": [
+        "Ambrosia",
+        "Black",
+        "Break",
+        "Chasm",
+        "Closing",
+        "Elevated",
+        "Fire",
+        "Hope",
+        "Light",
+        "Opening",
+        "Hope X",
+        "Vanish"
+      ],
+      "notes": "Relentless Anxiety explicitly references the Vanish ability; existing upper/lower level rules otherwise valid.",
+      "evidence": "V神浆；VI消失vanishes触发；VII Chasm/Elevated；IX Opening/Closing/Break/Fire/Black/Hope/Light。",
+      "visualReviewRound": 2
+    },
+    "ps/MEDUKETOS/MEDUKETOS_TR_V_001.jpg": {
+      "sha256": "d05f678774be32ba02c07d0fe4cee20c3c3cf91b5c326677d86bea91c53faee1",
+      "words": [
+        "Chasm",
+        "Elevated",
+        "Skitter",
+        "Light X"
+      ],
+      "notes": "Black Soup and End of Hope are trait names, not generic Black/Hope tokens.",
+      "evidence": "LightX；Skitter；Chasm keyword；allotherterrain Elevated（大卡单开）",
+      "visualReviewRound": 2
+    },
+    "ps/MIDASCORE/MIDASCORE_TR_V_001.jpg": {
+      "sha256": "3e8d1d805077721525bee82a40ef674705c6410215df8a6c8e487128ff53fde3",
+      "words": [
+        "Displace",
+        "Hermes Move",
+        "Knockdown",
+        "Midas",
+        "Shifting",
+        "Airburst X",
+        "Midas X",
+        "Float"
+      ],
+      "notes": "End of Hope is a trait name; Sound speed Impetus references floating Titans (Float Condition).",
+      "evidence": "VP Knockdown/Displace/Midas/Airburst；V Airburst3；VI Hermes Move；VII knocked down/floating；IX Shifting。",
+      "visualReviewRound": 2
+    },
+    "ps/UR_FLEECE/UR_FLEECE_TR_II_001.jpg": {
+      "sha256": "78009422af9ac62e9ce77c755e5125d56a3dce1664a2519d028e7051f97ed58e",
+      "words": [
+        "Abyss",
+        "Ambrosia"
+      ],
+      "notes": "Black only occurs in Black March / Black Abyss names, not Black X.",
+      "evidence": "单独放大：II放置并获得Ambrosia；IV生成Black Abyss tile；Black March专名，不是Black。",
+      "visualReviewRound": 2
+    },
+    "ps/TITAN_X/TITAN_X_TR_II_001.jpg": {
+      "sha256": "bc4f1fa93b0b9093365204258d90bdb1546923702eb2af05f0a403ca5a7fc403",
+      "words": [
+        "Ambrosia",
+        "Pain"
+      ],
+      "notes": "Truth of the Shoals is dedicated trait title, not Truth X. Actual rules give 1 Ambrosia and double Pain tokens, both missed.",
+      "evidence": "原图单独放大：III Nemesis Vow每泰坦获1 Ambrosia token；IV获得Pain tokens数量加倍；其他等级为重投限制、额外AI、区域大小、觉醒限制。",
+      "visualReviewRound": 2
+    },
+    "ps/DAHAKA/DAHAKA_TR_II_002.jpg": {
+      "sha256": "66d49cc124b16b0da626785f2e686f62301d13e72bbca9b90f3237320c666aa4",
+      "words": [
+        "Ambrosia",
+        "Board Edge",
+        "Heal"
+      ],
+      "notes": "Combo Break is combo action, not Break tokens; large-card rules explicitly Ambrosia, Board Edge, Heal 1",
+      "evidence": "单独原图看Forbidden Alchemy/Contaminated Cuts引用Ambrosia；Shadow Backstep引用Board Edge/Heal1",
+      "visualReviewRound": 2
+    },
+    "ps/DEMIDJINN/DEMIDJINN_TR_V_002.jpg": {
+      "sha256": "fbb2e2b3cba777b7907c2fd29e52031020ea6fa195ff915a2fa1ab3fc6b5be51",
+      "words": [
+        "Board Edge",
+        "Wish Away"
+      ],
+      "notes": "End of Hope is a trait name, not Hope X tokens.",
+      "evidence": "单独图看：Wish Away；Board Edge；专属End of Hope非Hope",
       "visualReviewRound": 2
     }
   },

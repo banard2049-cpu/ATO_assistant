@@ -1,30 +1,81 @@
-.theme-controls { display: grid; gap: 12px; }
-.page-navigation-control { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 13px; font-weight: 600; }
-.settings-toggle-button { min-width: 112px; font-size: 13px; }
-/* One button shows the active language; the other choices live in a popup. */
-.settings-language-picker { position: relative; display: inline-flex; }
-.settings-language-picker > button::after { content: "\25be"; margin-left: 6px; font-size: 11px; }
-.settings-language-picker > button[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); }
-.settings-language-menu { position: absolute; top: calc(100% + 4px); right: 0; z-index: 40; display: grid; gap: 4px; padding: 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); box-shadow: 0 10px 24px rgb(0 0 0 / 18%); }
-.settings-language-menu[hidden] { display: none; }
-.settings-language-menu button { min-width: 132px; justify-content: flex-start; text-align: left; white-space: nowrap; }
-.settings-language-menu button[aria-checked="true"] { border-color: var(--accent-strong); background: var(--accent-strong); color: #fff; }
-.misc-settings-controls { display: grid; gap: 18px; }
-.misc-setting-group { display: grid; gap: 8px; }
+/* 杂项设置：每个模块之间用一条横线分隔，模块标题统一字号与字重。 */
+.misc-settings-controls { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; }
+.misc-setting-group { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 14px 0; border-top: 1px solid var(--line); min-width: 0; }
+.misc-setting-group:first-child { padding-top: 0; border-top: 0; }
+.misc-setting-group:last-child { padding-bottom: 0; }
+.misc-setting-group .theme-note,
+.misc-setting-group .misc-note { margin: 0; }
+/* api/dashboard.css 给 .app .second-screen-card 加过一条上边框，那是给"用户与存档"
+   面板里的资源包卡片用的；放进杂项设置后它会把标题和说明切成两段，这里按模块内部
+   不要横线处理。 */
+.misc-settings-panel .second-screen-card { border: 0; padding: 0; background: transparent; }
+.misc-settings-panel .second-screen-card > * + * { margin-top: 0; }
+/* 窄栏里「打开 ↗」会被拆成两行（文字一行、箭头一行），保持一行。 */
+.misc-settings-panel .second-screen-address .record-card-link { white-space: nowrap; }
 .misc-setting-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.misc-setting-group h3 { margin: 0; font-size: 14px; }
-.theme-controls label { display: grid; gap: 6px; font-size: 13px; font-weight: 600; }
-#themeModeSelect { width: 112px; min-width: 112px; min-height: 38px; padding: 0 10px; border: 1px solid var(--line); color: var(--accent); font-size: 13px; font-weight: 600; text-align: center; text-align-last: center; }
-#themeModeSelect option { color: var(--accent); font-size: 13px; font-weight: 600; text-align: center; }
+.misc-setting-heading h3,
+.theme-mode-row > label,
+.page-navigation-control > span { margin: 0; color: var(--ink); font-size: 14px; font-weight: 800; line-height: 1.35; white-space: nowrap; }
+.page-navigation-control { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.settings-toggle-button { min-width: 112px; font-size: 13px; }
+/* 右侧控件统一：同宽、同高、同字号，下拉框与按钮看起来是一个尺寸。
+   select 自己不带 font-family，Windows 上会退到系统 UI 字体；字重则被
+   api/dashboard.css 的 `.app :is(input:not(...)…, textarea, select)` 压成 500
+   （那条规则里三个 :not([type]) 让它的特异性到 0,4,1）。这里多带一层
+   .misc-setting-group 才压得住，否则下拉框永远比按钮细一档。 */
+.app .misc-settings-panel .misc-setting-group :is(.misc-select, .settings-toggle-button, .page-navigation-control > button, .settings-language-picker > button) {
+  width: 112px; min-width: 112px; max-width: 112px; min-height: 38px;
+  padding: 0 8px; font-family: inherit; font-size: 13px; font-weight: 700; line-height: 1.2;
+  /* 同一条 dashboard 规则还把 select 的 color 钉成 --ink，导致「界面配色」「宿敌结算」
+     两个下拉框的字和箭头是黑的（Chrome 的 select 箭头跟着 color 走），必须在这里一起拿回来。 */
+  color: var(--accent);
+}
+/* 下拉按钮：界面配色与宿敌结算共用同一套样式。 */
+.misc-select { border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--accent); text-align: center; text-align-last: center; }
+.misc-select option { color: var(--accent); font-size: 13px; font-weight: 700; text-align: center; }
+/* 翻译：触发按钮和弹出菜单跟「界面配色」「宿敌结算」两个下拉框统一外观
+   （同宽同高、同字号字重、同 accent 文字、箭头画法一致，菜单项居中）。
+   api/dashboard.css 的 `.app button.secondary`（0,2,1）会盖掉面板按钮的背景和边框，
+   所以这里统一带 .app .misc-settings-panel 前缀。 */
+.settings-language-picker { position: relative; display: inline-flex; }
+/* 界面配色 / 宿敌结算用同一套弹出菜单，原生 select 只留作数据源，不占布局。 */
+.misc-picker > .misc-select { position: absolute; top: 0; left: 0; width: 1px; height: 1px; min-height: 0; padding: 0; border: 0; opacity: 0; pointer-events: none; }
+.app .misc-settings-panel .settings-language-picker > button { display: flex; align-items: center; justify-content: center; gap: 6px; background: var(--panel); }
+/* 长标签（固定循环 III / Resolve automatically）只占一行，超出用省略号，箭头永远在右端。 */
+.settings-language-picker > button > [data-picker-label] {
+  flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center;
+}
+.settings-language-picker > button::after {
+  content: ""; flex: 0 0 auto; width: 5px; height: 5px; margin: -3px 1px 0 0;
+  border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg); pointer-events: none;
+}
+.settings-language-picker > button[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); }
+.settings-language-menu {
+  position: absolute; top: calc(100% + 5px); right: 0; z-index: 40;
+  display: grid; gap: 2px; width: 100%; min-width: 112px; padding: 4px;
+  border: 1px solid var(--line); border-radius: 6px; background: var(--panel);
+  box-shadow: 0 10px 24px rgb(0 0 0 / 14%);
+  max-height: min(70vh, 280px); overflow-y: auto;
+}
+.settings-language-menu[hidden] { display: none; }
+.app .misc-settings-panel .settings-language-menu button {
+  width: 100%; min-width: 0; min-height: 30px; padding: 0 6px;
+  justify-content: center; text-align: center; white-space: nowrap;
+  border: 0; border-radius: 4px; background: transparent;
+  color: var(--accent); font-size: 13px; font-weight: 700; line-height: 1.2;
+}
+.app .misc-settings-panel .settings-language-menu button:hover { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); }
+.app .misc-settings-panel .settings-language-menu button[aria-checked="true"] { border-color: var(--accent); background: var(--accent); color: #fff; }
 .theme-mode-row { display: grid; grid-template-columns: max-content 112px; justify-content: space-between; gap: 12px; align-items: center; }
-.theme-controls .theme-mode-row label { display: block; white-space: nowrap; }
-.theme-controls .theme-mode-row select { width: 100%; }
 .theme-custom-controls { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 12px; align-items: end; }
 .theme-custom-controls[hidden] { display: none; }
-.theme-controls input[type="color"] { width: 44px; height: 40px; padding: 3px; cursor: pointer; }
+.theme-custom-controls label { display: grid; gap: 6px; font-size: 13px; font-weight: 700; }
+.theme-custom-controls input[type="color"] { width: 44px; height: 40px; padding: 3px; cursor: pointer; }
 .theme-rgb { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .theme-rgb input { width: 100%; min-width: 0; }
-.theme-note { color: var(--muted); font-size: 12px; line-height: 1.6; }
+.theme-note,
+.misc-note { color: var(--muted); font-size: 12px; line-height: 1.6; }
 body[data-theme-module="technology"] :is(.topbar, .tab, .tool-btn, .tool-check, .search, .cycle-select, .account-select, .tree-wrap) { background: var(--panel); }
 body[data-theme-module="technology"] :is(.tab.active, .tool-btn.active, .tool-btn.return-main) { background: var(--accent-strong); border-color: var(--accent-strong); color: #fff; }
 body[data-theme-module="technology"] .tool-btn.return-main:hover { background: var(--accent); }

@@ -253,7 +253,8 @@ test('the language picker shows the active language and opens a popup', () => {
   assert.match(source, /trigger\.setAttribute\("aria-haspopup", "menu"\)/);
   assert.match(source, /const openMenu = \(\) => \{/);
   assert.match(source, /const closeMenu = \(\) => \{/);
-  assert.match(source, /trigger\.textContent = names\[state\.language\]/);
+  assert.match(source, /const labelNode = trigger\.querySelector\("\[data-picker-label\]"\) \|\| trigger;/);
+  assert.match(source, /labelNode\.textContent = names\[state\.language\]/);
   assert.match(source, /option\.setAttribute\("aria-checked", String\(language === state\.language\)\)/);
   assert.match(source, /menu\.querySelector\(`\[data-term-language-option="\$\{language\}"\]`\)/);
   assert.doesNotMatch(source, /updateButtons|languageButtons/);

@@ -125,8 +125,13 @@
     }
 
     function currentMap() {
+      const map = options.getMap();
+      const fixedSetup = options.getFixedSetup?.();
+      if (fixedSetup && map?.setupId !== fixedSetup) {
+        return window.BattleTerrain.createBattleMap(options.getApostle(), options.getLevel(), fixedSetup);
+      }
       return window.BattleTerrain.normalizeBattleMap(
-        options.getMap(),
+        map,
         options.getApostle(),
         options.getLevel()
       );
@@ -167,7 +172,9 @@
     }
 
     function availableSetupOptions() {
-      return window.BattleTerrain.getSetupOptions(options.getApostle(), options.getSpecialSetup?.());
+      const choices = window.BattleTerrain.getSetupOptions(options.getApostle(), options.getSpecialSetup?.());
+      const fixedSetup = options.getFixedSetup?.();
+      return fixedSetup ? choices.filter((choice) => choice.id === fixedSetup) : choices;
     }
 
     function renderSetupOptions(map) {
@@ -886,7 +893,7 @@
       commit(window.BattleTerrain.createBattleMap(
         options.getApostle(),
         options.getLevel(),
-        setupControl.hidden ? undefined : setupSelect.value
+        options.getFixedSetup?.() || (setupControl.hidden ? undefined : setupSelect.value)
       ));
     });
 
@@ -924,7 +931,7 @@
         commit(window.BattleTerrain.createBattleMap(
           options.getApostle(),
           options.getLevel(),
-          setupControl.hidden ? undefined : setupSelect.value
+          options.getFixedSetup?.() || (setupControl.hidden ? undefined : setupSelect.value)
         ));
       },
     };

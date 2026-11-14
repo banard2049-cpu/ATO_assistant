@@ -2490,6 +2490,7 @@ Add these script tags after the main viewer script:
   }
 
   function init() {
+    if (typeof location !== "undefined" && new URLSearchParams(location.search).has("theatreBattle")) return;
     injectStyles();
     installButton();
 

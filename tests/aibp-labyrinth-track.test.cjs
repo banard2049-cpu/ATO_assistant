@@ -49,7 +49,7 @@ function sliceBetween(startMarker, endMarker) {
 // 轨道配置 + 初始化 + 和它相关的那几个函数，一起丢进 vm 里跑。
 const trackBlock = sliceBetween(
   "    const labyrinthTrackApostles = new Set(",
-  "    labyrinthTrackApostles.forEach((name) => {\n      labyrinthTrackIndexes[name] = loadLabyrinthTrackIndex(name);\n    });"
+  "    labyrinthTrackApostles.forEach((name) => {\n      if (!theatreRequest) labyrinthTrackIndexes[name] = loadLabyrinthTrackIndex(name);\n    });"
 );
 
 function trackScope({ currentApostle = "LABYRINTHAUROS", stored = {} } = {}) {
@@ -103,7 +103,8 @@ function trackScope({ currentApostle = "LABYRINTHAUROS", stored = {} } = {}) {
       storage: __storage,
     };`
   ].join("\n");
-  const context = { window: {}, __storage: storage, __marker: marker, __button: button, __storageRef: storage, __snapshots: 0 };
+  const context = { window: {}, theatreRequest: null, theatreBattle: null,
+    __storage: storage, __marker: marker, __button: button, __storageRef: storage, __snapshots: 0 };
   vm.createContext(context);
   vm.runInContext(readText("aibp/panel-overlay.js"), context);
   vm.runInContext(script, context);

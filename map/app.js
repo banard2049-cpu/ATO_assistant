@@ -1675,7 +1675,7 @@ function renderTileEdgeTokens(edgeTokens) {
 function render() {
   document.body.dataset.cycle = state.activeCycleId;
   renderCycleTabs();
-  window.ATO_CYCLE_SYMBOLS?.prependTitleIcon(document.querySelector("#mapTitle"), state.activeCycleId, "../");
+  window.ATO_CYCLE_SYMBOLS?.prependModuleLogo(document.querySelector("#mapTitle"), "map", "../");
   renderTokenPalette();
   renderControls();
   renderUndoControl();

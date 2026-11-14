@@ -19,6 +19,8 @@ function entryFunction(name) {
 
 function load(context, names) {
   context.window ||= {};
+  context.theatreRequest = null;
+  context.theatreBattle = null;
   context.window.AIBP_BOSS_TRAIT_RULES = require('../aibp/boss-trait-rules.js');
   for (const name of names) vm.runInContext(entryFunction(name), context);
 }

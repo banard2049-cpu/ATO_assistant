@@ -27,6 +27,7 @@ function initialState() {
 }
 function harness(storage = new Map()) {
   const ctx = vm.createContext({
+    theatreRequest: null, theatreBattle: null,
     structuredClone, piles: { TEST: initialState(), OTHER: initialState() },
     apostles: ['TEST', 'OTHER', 'DAHAKA'], undoStacks: {}, maxUndoSteps: 30,
     pendingUndoEntry: null, currentApostle: 'TEST', currentAiView: '弃牌', currentBpView: '弃牌',

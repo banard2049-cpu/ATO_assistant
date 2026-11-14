@@ -26,6 +26,7 @@ function harness() {
   };
   const dialog = { open: false, showModal() { this.open = true; }, close() { this.open = false; } };
   const context = vm.createContext({
+    theatreRequest: null, theatreBattle: null,
     currentApostle: 'HEKATON', piles: { HEKATON: { tokens: [] } },
     nonStackingTokenFiles: new Set(), storageKey: 'test-piles', undoStacks: {}, activeScry: null,
     ensurePiles() {}, createTokenStackId: () => `custom-${++sequence}`,
