@@ -97,7 +97,7 @@ function loadUpdater({ base, sessionId, release, compare, raw }) {
   const fetchStub = async (input, init = {}) => {
     const url = String(input);
     if (url.startsWith(REPO_API)) {
-      if (url.includes('/releases/latest')) return jsonResponse(200, release);
+      if (url.includes('/releases')) return jsonResponse(200, [release]);
       if (url.includes('/compare/')) return jsonResponse(200, compare);
       return jsonResponse(404, {});
     }

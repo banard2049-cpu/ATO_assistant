@@ -1,7 +1,9 @@
 (() => {
   const REPO = "https://api.github.com/repos/banard2049-cpu/ATO_assistant";
   const RAW = "https://raw.githubusercontent.com/banard2049-cpu/ATO_assistant";
-  const API = "https://api.github.com/repos/banard2049-cpu/ATO_assistant/releases/latest";
+  // 拉全部正式版发布，而不是只取 latest：这样能把「当前版本 → 最新版」之间
+  // 每一个版本的公告都展示出来，而不是只看到最新一个版本的说明。
+  const API = "https://api.github.com/repos/banard2049-cpu/ATO_assistant/releases?per_page=100";
   const RELEASES = "https://github.com/banard2049-cpu/ATO_assistant/releases";
   const CACHE = "ato-update-cache-v1";
   const SKIPPED = "ato-update-skipped-v1";
@@ -31,6 +33,32 @@
   function validRelease(release) {
     return release && !release.draft && !release.prerelease
       && parseVersion(release.tag_name) && !parseVersion(release.tag_name).prerelease;
+  }
+  // 版本号字符串按数字排序：3.10.2 > 3.9.9 > 3.9.4 这样的自然顺序，不是字典序。
+  function versionKey(value) {
+    const p = parseVersion(value);
+    if (!p) return null;
+    return p.numbers.map((n) => String(n).padStart(8, "0")).join(".");
+  }
+  // 从全部正式版发布里，筛出「比 current 新、且不超过 latest」的那些，按版本升序返回。
+  // latest 取发布列表里最大的正式版（GitHub 列表本身按发布时间倒序，但不保证和版本号顺序一致）。
+  function collectChanges(current, releases) {
+    const currentKey = versionKey(current);
+    if (!currentKey) return [];
+    const formal = releases.filter(validRelease);
+    if (formal.length === 0) return [];
+    let latest = formal[0];
+    for (const r of formal) {
+      if (isNewer(r.tag_name, latest.tag_name)) latest = r;
+    }
+    const latestKey = versionKey(latest.tag_name);
+    if (!latestKey) return [];
+    return formal
+      .filter((r) => {
+        const k = versionKey(r.tag_name);
+        return k && k > currentKey && k <= latestKey;
+      })
+      .sort((a, b) => versionKey(a.tag_name).localeCompare(versionKey(b.tag_name)));
   }
   function header(response, name) {
     return response && response.headers && typeof response.headers.get === "function"
@@ -63,7 +91,7 @@
   }
   // CommonJS export supports tests without loading the dashboard or contacting GitHub.
   if (typeof module !== "undefined" && module.exports) {
-    module.exports = { parseVersion, isNewer, validRelease, rateLimitNotice, messageFor, TIMEOUT, RETRY_DELAY };
+    module.exports = { parseVersion, isNewer, validRelease, versionKey, collectChanges, rateLimitNotice, messageFor, TIMEOUT, RETRY_DELAY };
     return;
   }
   const button = document.querySelector("#checkUpdateButton");
@@ -97,37 +125,49 @@
   }
   void refreshSupport();
 
-  function show(release, manual) {
+  function show(releases, manual) {
     panel.hidden = true;
+    const formal = releases.filter(validRelease);
+    if (formal.length === 0) {
+      status.textContent = NO_RELEASE;
+      return;
+    }
+    let latest = formal[0];
+    for (const r of formal) if (isNewer(r.tag_name, latest.tag_name)) latest = r;
+    const changes = collectChanges(current, releases);
     // 只有「服务端支持 + 确实有新版本」才亮出一键更新的按钮；否则用户点下去只会
     // 收到一句拒绝，不如一开始就不出现。
     void (support.supported ? Promise.resolve(support) : refreshSupport()).then((value) => {
       const usable = !updating && !reloadRequired && !value.needsRecovery
-        && Boolean(value && value.supported) && isNewer(release.tag_name, current);
+        && Boolean(value && value.supported) && changes.length > 0;
       if (applyButton) applyButton.hidden = !usable;
-      if (applyTarget) applyTarget.textContent = release.tag_name;
+      if (applyTarget) applyTarget.textContent = latest.tag_name;
       if (rollbackButton) rollbackButton.hidden = !(value && value.canRollback);
     });
     if (!parseVersion(current)) {
-      status.textContent = `当前为本地开发版，最新正式版为 ${release.tag_name}。`;
+      status.textContent = `当前为本地开发版，最新正式版为 ${latest.tag_name}。`;
       return;
     }
-    if (!isNewer(release.tag_name, current)) {
+    if (changes.length === 0) {
       status.textContent = "当前已是最新版本。";
       return;
     }
-    const skipped = read(SKIPPED) === release.tag_name;
-    status.textContent = `发现新版本 ${release.tag_name}${skipped ? "（已跳过，可手动查看）" : ""}。`;
+    const skipped = read(SKIPPED) === latest.tag_name;
+    status.textContent = `发现新版本 ${latest.tag_name}${skipped ? "（已跳过，可手动查看）" : ""}。`;
     if (skipped && !manual) return;
-    shownTag = release.tag_name;
+    shownTag = latest.tag_name;
     document.querySelector("#updateHeading").textContent = `发现新版本 ${shownTag}`;
     document.querySelector("#updateVersions").textContent = `${current} → ${shownTag}`;
-    // Release notes are external content: display as plain text, never as HTML.
-    document.querySelector("#updateReport").textContent = release.body || "此版本未提供更新说明，请前往 GitHub 查看。";
+    // 把「当前版本 → 最新版」之间每个正式版的公告按版本升序拼在一起，让用户一次看清
+    // 从自己现在的版本一路到最新版都改了什么。公告是外部内容，一律按纯文本展示，不注入 HTML。
+    const report = changes
+      .map((r) => `【${r.tag_name}】\n${String(r.body || "").trim() || "（此版本未提供说明）"}`)
+      .join("\n\n");
+    document.querySelector("#updateReport").textContent = report;
     document.querySelector("#updateGithubLink").href = `${RELEASES}/tag/${encodeURIComponent(shownTag)}`;
     panel.hidden = false;
   }
-  async function fetchRelease(signal) {
+  async function fetchReleases(signal) {
     let response;
     try {
       response = await fetch(API, {
@@ -142,14 +182,14 @@
     if (notice) throw failure("ratelimit", notice);
     if (response.status === 404) throw failure("empty", NO_RELEASE);
     if (!response.ok) throw failure("http", `HTTP ${response.status}`, response.status);
-    let release;
+    let releases;
     try {
-      release = await response.json();
+      releases = await response.json();
     } catch {
       throw failure("network", "invalid json");
     }
-    if (!validRelease(release)) throw failure("empty", NO_RELEASE);
-    return release;
+    if (!Array.isArray(releases)) throw failure("empty", NO_RELEASE);
+    return releases;
   }
   // 代理出口 IP 的额度是按小时窗口恢复的，也可能轮换到另一个出口，所以失败后再试一次值得。
   async function loadRelease() {
@@ -159,7 +199,7 @@
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), TIMEOUT);
       try {
-        return await fetchRelease(controller.signal);
+        return await fetchReleases(controller.signal);
       } catch (error) {
         lastError = error;
         // 404、HTTP 错误这类结果重试也不会改变，只有网络、超时、限流值得再试。
@@ -173,17 +213,22 @@
   async function check(manual = false) {
     if (busy || updating || reloadRequired) return;
     const cached = read(CACHE);
-    if (!manual && cached && Date.now() - cached.at >= 0 && Date.now() - cached.at < INTERVAL && validRelease(cached.release)) {
-      show(cached.release, false);
+    if (!manual && cached && Date.now() - cached.at >= 0 && Date.now() - cached.at < INTERVAL && Array.isArray(cached.releases)) {
+      show(cached.releases, false);
       return;
     }
     busy = true;
     button.disabled = true;
     status.textContent = "正在检查更新…";
     try {
-      const release = await loadRelease();
-      write(CACHE, { at: Date.now(), release: { tag_name: release.tag_name, body: String(release.body || "") } });
-      show(release, manual);
+      const releases = await loadRelease();
+      // 只缓存解析出的元数据，缓存体积可控；公告正文按需随每次响应回来。
+      const slim = releases.map((r) => ({
+        tag_name: r.tag_name, body: String(r.body || ""),
+        draft: Boolean(r.draft), prerelease: Boolean(r.prerelease),
+      }));
+      write(CACHE, { at: Date.now(), releases: slim });
+      show(releases, manual);
     } catch (error) {
       status.textContent = messageFor(error);
     } finally {

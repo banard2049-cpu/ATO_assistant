@@ -4,7 +4,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 const test = require('node:test');
 const scriptPath = path.join(__dirname, '..', 'assets', 'update', 'update-check.js');
-const { isNewer, validRelease, rateLimitNotice, messageFor, RETRY_DELAY } = require(scriptPath);
+const { isNewer, validRelease, versionKey, collectChanges, rateLimitNotice, messageFor, RETRY_DELAY } = require(scriptPath);
 const source = fs.readFileSync(scriptPath, 'utf8');
 
 function response(status, { body = {}, headers = {} } = {}) {
@@ -17,7 +17,11 @@ function response(status, { body = {}, headers = {} } = {}) {
   };
 }
 
-function setup({ version = '1.2.9', release = { tag_name: 'v1.2.10', body: '<script>bad()</script>\n修复说明' }, storage = new Map(), fail = false, handler = null } = {}) {
+function releaseObj(tag, body) {
+  return { tag_name: tag, body, draft: false, prerelease: false };
+}
+// releases 是数组；默认只有「比当前版本新」的一个正式版。
+function setup({ version = '1.2.9', releases = [releaseObj('v1.2.10', '<script>bad()</script>\n修复说明')], storage = new Map(), fail = false, handler = null } = {}) {
   const nodes = new Map();
   function node(id) {
     if (!nodes.has(id)) nodes.set(id, { hidden: true, textContent: '', handlers: {}, addEventListener(type, fn) { this.handlers[type] = fn; } });
@@ -34,7 +38,7 @@ function setup({ version = '1.2.9', release = { tag_name: 'v1.2.10', body: '<scr
       requests += 1;
       if (handler) return handler(requests);
       if (fail) throw new Error('offline');
-      return response(200, { body: release });
+      return response(200, { body: releases });
     },
   };
   vm.runInNewContext(source, context);
@@ -56,7 +60,7 @@ test('版本比较按数字处理，正式版高于同版本预发布版', () =>
 test('新版本显示更新报告和固定仓库链接，跳过可持久化且手动检查可重看', async () => {
   const first = setup(); await settle();
   assert.equal(first.node('#updateNotice').hidden, false);
-  assert.equal(first.node('#updateReport').textContent, '<script>bad()</script>\n修复说明');
+  assert.equal(first.node('#updateReport').textContent, '【v1.2.10】\n<script>bad()</script>\n修复说明');
   assert.equal(first.node('#updateReport').innerHTML, undefined);
   assert.equal(first.node('#updateGithubLink').href, 'https://github.com/banard2049-cpu/ATO_assistant/releases/tag/v1.2.10');
   first.node('#skipUpdateButton').handlers.click();
@@ -67,7 +71,7 @@ test('新版本显示更新报告和固定仓库链接，跳过可持久化且�
   assert.equal(second.requests(), 1);
   assert.equal(second.node('#updateNotice').hidden, false);
   first.storage.delete('ato-update-cache-v1');
-  const third = setup({ storage: first.storage, release: { tag_name: 'v1.2.11' } }); await settle();
+  const third = setup({ storage: first.storage, releases: [releaseObj('v1.2.11', '')] }); await settle();
   assert.equal(third.node('#updateNotice').hidden, false);
 });
 test('最新版本、离线失败和未知本地版本不会误报可更新', async () => {
@@ -121,7 +125,7 @@ test('限流 403 会重试一次：仍限流则说明原因，重试成功则正
   assert.match(always.node('#updateStatus').textContent, /限流/);
   assert.match(always.node('#updateStatus').textContent, /分钟后/);
   assert.equal(always.node('#updateNotice').hidden, true);
-  const recovered = setup({ handler: (attempt) => (attempt === 1 ? limited() : response(200, { body: { tag_name: 'v1.2.10', body: '修复说明' } })) });
+  const recovered = setup({ handler: (attempt) => (attempt === 1 ? limited() : response(200, { body: [releaseObj('v1.2.10', '修复说明')] })) });
   await settleAfterRetry();
   assert.equal(recovered.requests(), 2);
   assert.match(recovered.node('#updateStatus').textContent, /发现新版本 v1\.2\.10/);
@@ -132,4 +136,31 @@ test('404/无正式版不会重试', async () => {
   await settleAfterRetry();
   assert.equal(empty.requests(), 1);
   assert.match(empty.node('#updateStatus').textContent, /暂无正式版发布/);
+});
+test('多版本：提醒时展示当前版本到最新版之间所有正式版公告，按版本升序', async () => {
+  const releases = [
+    releaseObj('v1.2.12', '修复C'),
+    releaseObj('v1.2.11', '修复B'),
+    { tag_name: 'v1.2.11-rc.1', body: '预发布', draft: false, prerelease: true },
+    releaseObj('v1.2.10', '修复A'),
+    releaseObj('v1.2.9', '旧版本，不应出现'),
+  ];
+  const s = setup({ version: '1.2.9', releases }); await settle();
+  assert.equal(s.node('#updateNotice').hidden, false);
+  assert.equal(s.node('#updateVersions').textContent, '1.2.9 → v1.2.12');
+  // 只包含比当前版本新的正式版，且按版本升序；预发布和旧版本被排除。
+  assert.equal(s.node('#updateReport').textContent,
+    '【v1.2.10】\n修复A\n\n【v1.2.11】\n修复B\n\n【v1.2.12】\n修复C');
+});
+test('collectChanges 按数字排序版本，正确处理 3.10.x 与 3.9.x', () => {
+  assert.ok(versionKey('v3.10.2') > versionKey('v3.9.9'));
+  const releases = [
+    releaseObj('v3.10.1', 'a'),
+    releaseObj('v3.9.5', 'old'),
+    releaseObj('v3.10.2', 'b'),
+    releaseObj('v3.11.0', 'c'),
+    { tag_name: 'v3.10.2-rc.1', body: 'x', draft: false, prerelease: true },
+  ];
+  const changes = collectChanges('3.9.4', releases);
+  assert.deepEqual(changes.map((r) => r.tag_name), ['v3.9.5', 'v3.10.1', 'v3.10.2', 'v3.11.0']);
 });
