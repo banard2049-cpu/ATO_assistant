@@ -232,6 +232,7 @@ function makeHarness(startApostle = "MIDASCORE", options = {}) {
     panelTokenRenders: 0,
     timers: [],
     document: {
+      body: new FakeElement(),
       createElement() {
         return new FakeElement();
       },

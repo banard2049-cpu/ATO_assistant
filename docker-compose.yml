@@ -39,6 +39,7 @@ services:
       - ./ss:/var/www/html/ss
       - ./story:/var/www/html/story
       - ./technology:/var/www/html/technology
+      - ./theatre:/var/www/html/theatre
       # 账号、存档、session 与备份的持久化目录（entrypoint 会建目录并 chown 给 www-data）。
       - ./data:/var/www/html/data
     entrypoint: /bin/sh -c "mkdir -p /var/www/html/data && chown -R 33:33 /var/www/html/data && apache2-foreground"

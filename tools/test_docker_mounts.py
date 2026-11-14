@@ -82,6 +82,7 @@ ROOT_APP_PATHS = (
     "ss",             # 第二屏
     "story",
     "technology",
+    "theatre",        # 忆识剧场（aibp/index.html 经 ../theatre/terms.js 引用）
     "data",           # 账号/存档/session/备份（entrypoint 会建目录并 chown）
 )
 # 宿主机上可能还不存在、由 Docker/entrypoint 建出来的挂载源（别的都必须真在仓库里，
