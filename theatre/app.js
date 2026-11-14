@@ -859,6 +859,18 @@
     const value = input.type === 'checkbox' ? input.checked : input.type === 'number' ? Number(input.value) : input.value;
     delete input.dataset.dirty;
     if (value === before) return;
+    // 剧透保护：勾选超过当前战役进度的循环为「已完成」，会提前解锁该循环的
+    // 始徒与挑战。先确认玩家确实完成了，避免误勾导致剧透。
+    if (input.type === 'checkbox' && path[0] === 'completed' && value === true) {
+      const targetIndex = rules.cycles.indexOf(path[1]);
+      const currentIndex = rules.cycles.indexOf(dashboardCycle);
+      if (targetIndex >= 0 && currentIndex >= 0 && targetIndex > currentIndex) {
+        if (!confirm(`当前战役进度在${cycleName(dashboardCycle)}，勾选「${cycleName(path[1])}已完成」会提前解锁该循环的始徒与挑战，可能造成严重剧透。确认确实已完成这个循环吗？`)) {
+          input.checked = before;
+          return;
+        }
+      }
+    }
     void mutate(next => {
       const parent = getParent(next);
       if (parent[key] !== before && parent[key] !== value) {

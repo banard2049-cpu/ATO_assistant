@@ -2902,6 +2902,8 @@
   <script>
     const theatreRequest = window.AIBP_THEATRE_BATTLE.parse(window.location.search);
     let theatreBattle = null;
+    // 剧场战斗下允许临时切换等级查看（不写回持久化的等级覆盖）。
+    let theatreLevelOverride = null;
     const fetch = window.ATO_CAMPAIGN_NOTES.createFetch(window.fetch.bind(window), {
       source: "AIBP", context: () => ({ cycleId: linkedCycleId }),
     });
@@ -4849,7 +4851,7 @@
     }
 
     function apostleLevelFor(name) {
-      if (theatreBattle?.boss === name) return theatreBattle.level;
+      if (theatreBattle?.boss === name) return theatreLevelOverride ?? theatreBattle.level;
       const override = Number(apostleLevelOverrides[name]);
       const upperLevel = name === "HELIOS" ? 10 : maxApostleLevel;
       if (override === 0 && apostleLevelOverrides[name] !== undefined
@@ -4911,8 +4913,16 @@
     function renderApostleLevelSelectOptions() {
       if (!apostleLevelSelect) return;
       if (theatreBattle) {
-        apostleLevelSelect.value = String(theatreBattle.level);
-        apostleLevelSelect.disabled = true;
+        // 剧场战斗下等级选择器保持可用，可临时切换查看该始徒其它等级；
+        // 默认落在剧场传入的等级，切换后的临时覆盖值只影响本次查看。
+        apostleLevelSelect.disabled = false;
+        Array.from(apostleLevelSelect.options).forEach((option, index) => {
+          if (index === 0) return;
+          option.hidden = option.value === "c4" || option.value === "0" || option.value === "10";
+          option.disabled = option.hidden;
+        });
+        apostleLevelSelect.options[0].textContent = `剧场 · ${levelRoman[theatreBattle.level] || theatreBattle.level}`;
+        apostleLevelSelect.value = String(theatreLevelOverride ?? theatreBattle.level);
         return;
       }
       const blackbeak = currentApostle === "BLACKBEAK";
@@ -9458,8 +9468,20 @@
     });
     secondScreenBattleModeToggle?.addEventListener("change", toggleSecondScreenBattleMode);
     apostleLevelSelect.addEventListener("change", () => {
-      if (theatreRequest) return;
+      if (theatreRequest && !theatreBattle) return;
       const level = Number(apostleLevelSelect.value);
+      if (theatreBattle) {
+        // 剧场战斗下的等级切换是临时查看，只改本次会话的展示，不写回覆盖存档。
+        theatreLevelOverride = level >= 1 && level <= maxApostleLevel ? level : null;
+        renderApostleTitle();
+        applyCurrentApostleLevelBonuses();
+        renderCriticalMassSlot();
+        renderExtraCards();
+        renderAibpCards();
+        renderPanelTokens();
+        battleMapControl?.render();
+        return;
+      }
       if (currentApostle === "HELIOS" && apostleLevelSelect.value === "c4") {
         apostleLevelOverrides[currentApostle] = apostleLevelSelect.value;
       } else if (apostleLevelSelect.value === "0" && levelBonusFor(currentApostle, 0)) {
