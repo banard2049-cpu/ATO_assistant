@@ -21,6 +21,16 @@ test('module links open native tabs with cycle parameters intact', () => {
   assert.equal(opened,'file:///android_asset/web/story/index.html?cycle=c2&book=c2');
   assert.equal(event.prevented,true); assert.equal(h.window.location.href,'file:///android_asset/web/index.html?cycle=c1');
 });
+
+test('theatre and its AIBP launch use native tabs', () => {
+  const opened = [];
+  const h = setup(url => { opened.push(url); return true; });
+  for (const path of ['theatre/index.html', 'aibp/index.html?theatreBattle=fixture&cycle=c2']) {
+    h.click('file:///android_asset/web/' + path);
+  }
+  assert.deepEqual(opened, ['file:///android_asset/web/theatre/index.html', 'file:///android_asset/web/aibp/index.html?theatreBattle=fixture&cycle=c2']);
+  assert.equal(h.window.location.href, 'file:///android_asset/web/index.html?cycle=c1');
+});
 test('other local links and old bridges continue in current page', () => {
   const h=setup(undefined); h.click('file:///android_asset/web/story/index.html');
   assert.equal(h.window.location.href,'file:///android_asset/web/story/index.html');

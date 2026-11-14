@@ -195,6 +195,7 @@
 
   function firstCards() {
     const params = new URLSearchParams(root.location.search);
+    if (params.has("theatreBattle")) return [];
     let requested;
     try { requested = params.get("apostle") || decodeURIComponent(root.location.hash.slice(1)); } catch {}
     let name = String(requested || "HEKATON").trim().toUpperCase().replace(/[\s-]+/g, "_");

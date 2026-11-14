@@ -1,5 +1,5 @@
 // 赫利俄斯的背面大卡不再按等级顶掉正面面板：面板永远取正面，背面作为可选的 TR O
-// 特性卡出现在 Trait 选择里（与别的始徒 *_TR_O_001 同类，默认不显示）。
+// 特性卡出现在 Trait 选择里（默认不显示；其余始徒的反面大卡已按反面首次出现的等级命名）。
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');

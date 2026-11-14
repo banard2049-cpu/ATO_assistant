@@ -70,6 +70,7 @@
     const {header, line} = chrome(ctx, 'aibp', title, app, main);
     const toggle = $('#sidebarToggle');
     const sheet = tools(ctx, 'aibp', '始徒 · 工具', line, [toggle, sidebar, $('.title-actions')]);
+    if (document.body.hasAttribute('data-theatre-battle')) ctx.move($('#theatreBattleReturn'), line);
     closeBeforeOverlay(ctx, sheet, '#traitButton, #tokenButton, #newCampaignButton');
     ctx.class(sidebar, 'source-aibp-sidebar');
     ctx.class(toggle, 'source-aibp-sidebar-toggle');

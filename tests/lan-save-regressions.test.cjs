@@ -115,7 +115,7 @@ function techContext(extra={}) {
     campaignSession:session(),campaignStorageAvailable:false,campaignReconnectInFlight:false,
     campaignSaveQueuedBeforeReady:true,campaignSaveInFlight:false,campaignSavePending:false,
     campaignTechRevision:1,campaignTechLoaded:true,campaignTechConflict:false,
-    campaignTechBaseState:{unlocked:['base'],conditions:[]},campaignReconnectDelay:2000,
+    campaignTechBaseState:{unlocked:['base'],conditions:[]},campaignReconnectDelay:2000,technologySyncChannel:null,
     CAMPAIGN_STORAGE_URL:'/api',CAMPAIGN_TECH_URL:'/api?section=technology',activeAccountId:'A',accounts:{A:{}},
     TECH_STATE_FIELD_LABELS:{unlocked:'科技',conditions:'条件'},isPlainObject,
     setCampaignSaveStatus:noop,scheduleCampaignReconnect:noop,queueCampaignTechnologySave:noop,

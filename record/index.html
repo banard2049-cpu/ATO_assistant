@@ -119,6 +119,11 @@
       line-height: 1.08;
     }
 
+    /* 标题「阿尔戈号」整体缩小：文字 + 等高 logo 一并变小 */
+    #recordTitle {
+      font-size: clamp(22px, 3vw, 32px);
+    }
+
     .cycle-title {
       display: inline-flex;
       align-items: center;
@@ -130,6 +135,20 @@
       height: 42px;
       flex: 0 0 42px;
       object-fit: contain;
+    }
+    .cycle-title .module-logo {
+      width: calc(1em * var(--logo-ratio, 1));
+      height: 1em;
+      flex: 0 0 auto;
+      background-color: currentColor;
+      -webkit-mask-image: var(--icon-src);
+      mask-image: var(--icon-src);
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      -webkit-mask-position: center;
+      mask-position: center;
+      -webkit-mask-size: contain;
+      mask-size: contain;
     }
 
     .subtitle {
@@ -1529,7 +1548,7 @@
   <link rel="stylesheet" href="../api/cycle-theme.css">
   <link rel="stylesheet" href="./record.css?v=20261019-titan-no-dividers1">
   <script src="../story/data/english-source-data.js?v=20261011-english4"></script>
-  <script src="../assets/theme.js?v=20261001" defer></script>
+  <script src="../assets/theme.js?v=20261114-light-sidebar1" defer></script>
   <link rel="stylesheet" href="../assets/card-art.css?v=20261017-corners1">
   <script src="../assets/card-art.js?v=20261017-corners1" defer></script>
   <!-- Mobile composition is enabled only by the installed APK in portrait. -->
@@ -1542,7 +1561,7 @@
   <main class="app">
     <header class="topbar">
       <div>
-        <h1 id="recordTitle" class="cycle-title">阿尔戈号记录表</h1>
+        <h1 id="recordTitle" class="cycle-title">阿尔戈号</h1>
         <span id="saveStatus" class="save-status" aria-live="polite">正在检查 NAS 存档...</span>
       </div>
       <div class="topbar-tools">
@@ -1854,7 +1873,7 @@
   <script src="./mark-notes.js"></script>
   <script src="./item-icons.js?v=apk-ui-a72da92bdf63"></script>
   <script src="./matrix-data.js?v=20261106-c123-fixes2"></script>
-  <script src="../assets/cycle-symbols.js?v=20260918"></script>
+  <script src="../assets/cycle-symbols.js?v=20261115-module-logo"></script>
   <script src="../assets/campaign-session.js?v=20260917"></script>
   <script src="../assets/campaign-notes.js?v=20261015"></script>
   <script src="../assets/record-attachments.js?v=20261009"></script>
@@ -3813,7 +3832,7 @@
     function renderAll() {
       document.body.dataset.cycle = state.cycle;
       renderCycleOptions();
-      window.ATO_CYCLE_SYMBOLS?.prependTitleIcon(document.querySelector("#recordTitle"), state.cycle, "../");
+      window.ATO_CYCLE_SYMBOLS?.prependModuleLogo(document.querySelector("#recordTitle"), "argo", "../");
       document.querySelectorAll("[data-bind]").forEach((input) => {
         input.value = getBindValue(input.dataset.bind);
       });

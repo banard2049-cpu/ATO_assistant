@@ -1066,7 +1066,7 @@ button.gear-group-name:hover {
 <link rel="stylesheet" href="../assets/card-art.css?v=20261017-corners1">
 <script src="../assets/card-art.js?v=20261017-corners1" defer></script>
   <script src="../story/data/english-source-data.js?v=20261011-english4"></script>
-  <script src="../assets/theme.js?v=20261001" defer></script>
+  <script src="../assets/theme.js?v=20261114-light-sidebar1" defer></script>
   <link rel="stylesheet" href="trade-planner.css?v=20261019-negotiation-layout1">
   <!-- Mobile composition is enabled only by the installed APK in portrait. -->
   <link rel="stylesheet" href="../assets/mobile/common.css?v=20261028-apk-portrait1">
@@ -1123,7 +1123,7 @@ button.gear-group-name:hover {
   <script src="../assets/page-focus-router.js?v=20261028-android-return1"></script>
   <script src="../assets/campaign-session.js?v=20260917"></script>
   <script src="../assets/campaign-notes.js?v=20261015"></script>
-  <script src="../assets/cycle-symbols.js?v=20260918"></script>
+  <script src="../assets/cycle-symbols.js?v=20261115-module-logo"></script>
   <script src="tech-page-layout.js?v=20261027-card-prerequisites"></script>
   <script src="tech-tree.js?v=20261001-c4-gutters"></script>
   <script src="structure-card-types.js?v=20261004-large"></script>
@@ -3033,6 +3033,7 @@ const gearCraftOperations = new Map();
 const gearRecordSyncChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('ato-record-sync-v1') : null;
 const structureTechMapSyncChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('ato-map-sync-v1') : null;
 const dashboardSyncChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('ato-dashboard-sync-v1') : null;
+const technologySyncChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('ato-technology-sync-v1') : null;
 let gearOnlyCurrentCycle = true;
 let gearOnlyCraftable = false;
 let gearGroupByPart = false;
@@ -3793,6 +3794,7 @@ async function saveCampaignTechnologySection() {
       if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
       campaignTechRevision = Math.max(0, Number(payload.revision || campaignTechRevision));
       campaignTechBaseState = sectionState;
+      technologySyncChannel?.postMessage({ revision: campaignTechRevision });
       conflictRetries = 0;
     } while (campaignSavePending);
     campaignSaveQueuedBeforeReady = false;
@@ -4468,7 +4470,7 @@ function updateTechnologyTheme() {
   const cycleId = MAIN_CYCLE_BY_TECH_CYCLE[currentCycle] || 'c1';
   if (document.body.dataset.cycle === cycleId) return;
   document.body.dataset.cycle = cycleId;
-  window.ATO_CYCLE_SYMBOLS?.prependTitleIcon(document.querySelector('#technologyTitle'), cycleId, '../');
+  window.ATO_CYCLE_SYMBOLS?.prependModuleLogo(document.querySelector('#technologyTitle'), 'technology', '../');
 }
 function renderCycleButton() {
   updateTechnologyTheme();

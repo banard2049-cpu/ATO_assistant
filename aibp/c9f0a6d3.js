@@ -75,7 +75,7 @@
       return modes[mode].panel;
     },
     cards(mode, type, level) { return modes[mode]?.decks[type]?.[level] || []; },
-    // 背面大卡（sources.back）与其他始徒的 *_TR_O_001 同类，因此按 TR O 特性卡处理：
+    // 背面大卡（sources.back）与其他始徒的反面大卡同类，因此按 TR O 特性卡处理：
     // 默认不显示，玩家在 Trait 选择里勾选后才进特性区。图片本身是横向大卡旋转 90°
     // 存放的，显示时要用 rotate 转回来。
     traitCandidates(mode) {

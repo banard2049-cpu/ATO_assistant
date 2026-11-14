@@ -1,7 +1,7 @@
 {
   "method": "Direct visual reading of every current local card image and enlarged rules panels; exact SHA-256-bound reviews; no OCR or OCR caches used",
   "coverage": {
-    "images": 1035,
+    "images": 1032,
     "aibpImages": 824,
     "aibpFronts": 677,
     "aibpBacks": 147,
@@ -9,7 +9,7 @@
     "errors": 0,
     "noMatchRuleRegionsVisuallyReviewed": 106,
     "reviewedCardsWithCorrections": 13,
-    "visuallyReviewedImages": 1035
+    "visuallyReviewedImages": 1032
   },
   "cards": {
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS.jpg": [
@@ -174,12 +174,6 @@
       "Labyrinth"
     ],
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_SIGNATURE_X_001_BACK.jpg": [],
-    "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_O_001.jpg": [
-      "击倒",
-      "绝望",
-      "Displace",
-      "Labyrinth"
-    ],
     "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_VI_001.jpg": [
       "绝望"
     ],
@@ -337,12 +331,6 @@
       "冲撞",
       "顶推"
     ],
-    "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_O_001.jpg": [
-      "神浆",
-      "Displace",
-      "Knockdown",
-      "Pull"
-    ],
     "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_X_001.png": [
       "神浆"
     ],
@@ -470,11 +458,6 @@
     ],
     "ps/CYCLONUS/CYCLONUS_SIGNATURE_X_001_BACK.jpg": [],
     "ps/CYCLONUS/CYCLONUS_TR_IV_001.jpg": [],
-    "ps/CYCLONUS/CYCLONUS_TR_O_001.jpg": [
-      "Pushback",
-      "Pull",
-      "Knockback"
-    ],
     "ps/DAHAKA/DAHAKA.jpg": [
       "Crash",
       "版边",
@@ -562,11 +545,6 @@
       "Precise"
     ],
     "ps/DAHAKA/DAHAKA_TR_O_001_BACK.jpg": [],
-    "ps/DAHAKA/DAHAKA_TR_O_002.jpg": [
-      "Ambrosia",
-      "Board Edge",
-      "Heal"
-    ],
     "ps/DEMIDJINN/DEMIDJINN.jpg": [
       "Wish Away",
       "版边",
@@ -689,10 +667,6 @@
     "ps/DEMIDJINN/DEMIDJINN_TR_I_001.jpg": [],
     "ps/DEMIDJINN/DEMIDJINN_TR_O_001.jpg": [],
     "ps/DEMIDJINN/DEMIDJINN_TR_O_001_BACK.jpg": [],
-    "ps/DEMIDJINN/DEMIDJINN_TR_O_002.jpg": [
-      "Board Edge",
-      "Wish Away"
-    ],
     "ps/DEMIDJINN/DEMIDJINN_WISH_III_001.jpg": [],
     "ps/DEMIDJINN/DEMIDJINN_WISH_III_001_BACK.jpg": [],
     "ps/DEMIDJINN/DEMIDJINN_WISH_II_001.jpg": [
@@ -926,20 +900,6 @@
     "ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_TR_I_003.jpg": [
       "Vanish"
     ],
-    "ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_TR_O_001.jpg": [
-      "Ambrosia",
-      "Black",
-      "Break",
-      "Chasm",
-      "Closing",
-      "Elevated",
-      "Fire",
-      "Hope",
-      "Light",
-      "Opening",
-      "Hope X",
-      "Vanish"
-    ],
     "ps/HEKATON/HEKATON.jpg": [
       "版边",
       "无边限",
@@ -1086,11 +1046,6 @@
       "Knockback X"
     ],
     "ps/HEKATON/HEKATON_SIGNATURE_X_001_BACK.jpg": [],
-    "ps/HEKATON/HEKATON_TR_O_001.jpg": [
-      "Knockback X",
-      "Obstacle",
-      "Pushback X"
-    ],
     "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER.jpg": [],
     "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_AI_III_001.jpg": [
       "Ambrosia",
@@ -1228,12 +1183,6 @@
       "Knockback X"
     ],
     "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_SIGNATURE_X_001_BACK.jpg": [],
-    "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_O_001.jpg": [
-      "Ambrosia",
-      "Board Edge",
-      "Boundless",
-      "Knockback X"
-    ],
     "ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE-1.jpg": [
       "版边",
       "Indestructible"
@@ -1537,10 +1486,6 @@
     ],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_I_002.jpg": [],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_I_003.jpg": [],
-    "ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_O_001.jpg": [
-      "Bleeding",
-      "Bleeding Limit"
-    ],
     "ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_X_001.jpg": [
       "出血"
     ],
@@ -1698,12 +1643,6 @@
     ],
     "ps/LABYRINTHAUROS/LABYRINTHAUROS_SIGNATURE_X_001_BACK.jpg": [],
     "ps/LABYRINTHAUROS/LABYRINTHAUROS_TP_X_001.jpg": [],
-    "ps/LABYRINTHAUROS/LABYRINTHAUROS_TR_O_001.jpg": [
-      "Displace",
-      "Knockdown",
-      "Labyrinth",
-      "Trample"
-    ],
     "ps/LABYRINTHAUROS/MR.png": [
       "大迷宫 X"
     ],
@@ -1913,12 +1852,6 @@
       "光照X"
     ],
     "ps/MEDUKETOS/MEDUKETOS_TR_I_004.jpg": [],
-    "ps/MEDUKETOS/MEDUKETOS_TR_O_001.jpg": [
-      "Chasm",
-      "Elevated",
-      "Skitter",
-      "Light X"
-    ],
     "ps/MIDASCORE/MIDASCORE.jpg": [
       "冲撞",
       "浮空",
@@ -2092,16 +2025,6 @@
     "ps/MIDASCORE/MIDASCORE_TR_I_001.jpg": [
       "Midas"
     ],
-    "ps/MIDASCORE/MIDASCORE_TR_O_001.jpg": [
-      "Displace",
-      "Hermes Move",
-      "Knockdown",
-      "Midas",
-      "Shifting",
-      "Airburst X",
-      "Midas X",
-      "Float"
-    ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT.jpg": [
       "Shaded",
       "版边",
@@ -2246,11 +2169,6 @@
     ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_SIGNATURE_X_001_BACK.jpg": [],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_I_001.jpg": [],
-    "ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_O_001.jpg": [
-      "Slippery",
-      "Chasm",
-      "Knockdown"
-    ],
     "ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_X_001.jpg": [
       "遮阳",
       "Rewind"
@@ -2406,16 +2324,15 @@
       "Wish Away X"
     ],
     "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_SIGNATURE_X_001_BACK.jpg": [],
-    "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_II_001.jpg": [],
+    "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_II_001.jpg": [
+      "Knockdown",
+      "Midas",
+      "Wish Away X"
+    ],
     "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_IX_001.jpg": [
       "拉近",
       "击退 X",
       "拉近 X"
-    ],
-    "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_O_001.jpg": [
-      "Knockdown",
-      "Midas",
-      "Wish Away X"
     ],
     "ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_VIII_001.jpg": [],
     "ps/THE_BURDEN/THE_BURDEN.jpg": [
@@ -2562,8 +2479,7 @@
       "Kickback"
     ],
     "ps/THE_BURDEN/THE_BURDEN_SIGNATURE_X_001_BACK.jpg": [],
-    "ps/THE_BURDEN/THE_BURDEN_TR_II_001.jpg": [],
-    "ps/THE_BURDEN/THE_BURDEN_TR_O_001.jpg": [
+    "ps/THE_BURDEN/THE_BURDEN_TR_II_001.jpg": [
       "Chasm",
       "Slippery",
       "Board Edge",
@@ -2731,11 +2647,10 @@
     ],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_SIGNATURE_X_001_BACK.jpg": [],
     "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TRII_002.jpg": [],
-    "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_II_001.jpg": [],
-    "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_II_002.jpg": [],
-    "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_O_001.jpg": [
+    "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_II_001.jpg": [
       "神浆"
     ],
+    "ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_II_002.jpg": [],
     "ps/TITAN_X/TITAN_X.jpg": [
       "版边",
       "无边限",
@@ -2906,10 +2821,6 @@
     ],
     "ps/TITAN_X/TITAN_X_SIGNATURE_X_001_BACK.jpg": [],
     "ps/TITAN_X/TITAN_X_TR_I_001.jpg": [],
-    "ps/TITAN_X/TITAN_X_TR_O_001.jpg": [
-      "Ambrosia",
-      "Pain"
-    ],
     "ps/UR_FLEECE/UR_FLEECE.jpg": [
       "版边",
       "无边限",
@@ -3124,10 +3035,6 @@
       "神浆"
     ],
     "ps/UR_FLEECE/UR_FLEECE_TR_I_002.jpg": [],
-    "ps/UR_FLEECE/UR_FLEECE_TR_O_001.jpg": [
-      "Abyss",
-      "Ambrosia"
-    ],
     "ps/other/DW.jpg": [],
     "ps/other/SW.jpg": [],
     "ps/other/trait/C45_COMMON_TR_001.jpg": [
@@ -3156,6 +3063,96 @@
     ],
     "ps/other/trait/COMMON_TR_002.jpg": [],
     "ps/other/trait/custom_trait_blank.jpg": [],
-    "ps/other/trait/custom_trait_blank.png": []
+    "ps/other/trait/custom_trait_blank.png": [],
+    "ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_II_001.jpg": [
+      "击倒",
+      "绝望",
+      "Displace",
+      "Labyrinth"
+    ],
+    "ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_V_001.jpg": [
+      "神浆",
+      "Displace",
+      "Knockdown",
+      "Pull"
+    ],
+    "ps/CYCLONUS/CYCLONUS_TR_V_001.jpg": [
+      "Pushback",
+      "Pull",
+      "Knockback"
+    ],
+    "ps/HEKATON/HEKATON_TR_V_001.jpg": [
+      "Knockback X",
+      "Obstacle",
+      "Pushback X"
+    ],
+    "ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_II_001.jpg": [
+      "Ambrosia",
+      "Board Edge",
+      "Boundless",
+      "Knockback X"
+    ],
+    "ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_VI_001.jpg": [
+      "Bleeding",
+      "Bleeding Limit"
+    ],
+    "ps/LABYRINTHAUROS/LABYRINTHAUROS_TR_V_001.jpg": [
+      "Displace",
+      "Knockdown",
+      "Labyrinth",
+      "Trample"
+    ],
+    "ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_IV_001.jpg": [
+      "Slippery",
+      "Chasm",
+      "Knockdown"
+    ],
+    "ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_TR_V_001.jpg": [
+      "Ambrosia",
+      "Black",
+      "Break",
+      "Chasm",
+      "Closing",
+      "Elevated",
+      "Fire",
+      "Hope",
+      "Light",
+      "Opening",
+      "Hope X",
+      "Vanish"
+    ],
+    "ps/MEDUKETOS/MEDUKETOS_TR_V_001.jpg": [
+      "Chasm",
+      "Elevated",
+      "Skitter",
+      "Light X"
+    ],
+    "ps/MIDASCORE/MIDASCORE_TR_V_001.jpg": [
+      "Displace",
+      "Hermes Move",
+      "Knockdown",
+      "Midas",
+      "Shifting",
+      "Airburst X",
+      "Midas X",
+      "Float"
+    ],
+    "ps/UR_FLEECE/UR_FLEECE_TR_II_001.jpg": [
+      "Abyss",
+      "Ambrosia"
+    ],
+    "ps/TITAN_X/TITAN_X_TR_II_001.jpg": [
+      "Ambrosia",
+      "Pain"
+    ],
+    "ps/DAHAKA/DAHAKA_TR_II_002.jpg": [
+      "Ambrosia",
+      "Board Edge",
+      "Heal"
+    ],
+    "ps/DEMIDJINN/DEMIDJINN_TR_V_002.jpg": [
+      "Board Edge",
+      "Wish Away"
+    ]
   }
 }

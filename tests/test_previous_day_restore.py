@@ -31,6 +31,18 @@ class PreviousDayRestoreTest(unittest.TestCase):
     def campaign(self):
         return self.request()[1]['campaign']
 
+    def test_theatre_read_uses_the_dashboard_cycle_without_changing_progress_revision(self):
+        self.save('theatre', {'completed': {'c4': True}})
+        revisions = []
+        for cycle in ('c3', 'c4', 'c5', 'c1'):
+            self.save('dashboard', {'activeProfileId': 'p', 'profiles': {'p': {'activeCycleId': cycle}}})
+            status, body = self.request('?section=theatre')
+            self.assertEqual(status, 200, body)
+            self.assertEqual(body['dashboardCycle'], cycle)
+            self.assertEqual(body['state'], {'completed': {'c4': True}})
+            revisions.append(body['revision'])
+        self.assertEqual(len(set(revisions)), 1)
+
     def restore(self, day, **overrides):
         campaign = self.campaign()
         current = campaign['sections']['dashboard']['profiles']['p']['cycles']['c2']['state']['day']
@@ -45,16 +57,19 @@ class PreviousDayRestoreTest(unittest.TestCase):
         self.save('dashboard', self.dashboard(1, 'previous'))
         for section in sections:
             self.save(section, {'value': section + '-previous'})
+        self.save('theatre', {'wins': {'hekaton-5': True}})
         previous = self.campaign()
         self.save('dashboard', self.dashboard(2, 'today'))
         for section in sections:
             self.save(section, {'value': section + '-today'})
+        theatre = {'wins': {'hekaton-5': True, 'labyrinthauros-5': True}}
+        self.save('theatre', theatre)
         before = self.campaign()
         status, result = self.restore(1)
         self.assertEqual(status, 200, result)
-        self.assertEqual(result['campaign']['sections'], previous['sections'])
+        self.assertEqual(result['campaign']['sections'], {**previous['sections'], 'theatre': theatre})
         for section, revision in before['sectionRevisions'].items():
-            self.assertEqual(result['campaign']['sectionRevisions'][section], revision + 1)
+            self.assertEqual(result['campaign']['sectionRevisions'][section], revision + (section != 'theatre'))
         status, result = self.request(payload={
             'section': 'map', 'state': {'value': 'stale'},
             'expectedRevision': before['sectionRevisions']['map'],

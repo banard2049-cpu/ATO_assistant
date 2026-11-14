@@ -53,6 +53,7 @@ test("黑喙随命与标志卡正反面沿用追踪者卡图", () => {
   for (const kind of ["ROUTINE", "SIGNATURE"]) {
     let rendered;
     const context = {
+      theatreBattle: null,
       window: { ...windowStub, HeliosAssets: { resolve: (src) => src } },
       imageOrMessage: (src) => ({ src, dataset: {} }),
       wrap: { replaceChildren: (img) => { rendered = img; } },
@@ -140,6 +141,7 @@ test("黑喙第五张闪粉可抽取、弃置并参与重洗", () => {
   const state = makeState();
   const drawn = [];
   const context = {
+    window: {},
     currentApostle: "BLACKBEAK", hermesianName: "HERMESIAN_PURSUER",
     piles: { BLACKBEAK: state }, ensurePiles() {}, rememberUndo() {},
     savePiles() {}, renderAibpCards() {}, shuffleCards: (cards) => [...cards],
@@ -179,6 +181,7 @@ test("牌底 AI 抽取与刷新后的弃置不会留下重复卡", () => {
   const state = makeState();
   const bottomIndex = state.AI.deck.at(-1).index;
   const context = {
+    window: {},
     currentApostle: "BLACKBEAK", piles: { BLACKBEAK: state },
     ensurePiles() {}, rememberUndo() {}, savePiles() {}, renderAibpCards() {},
     cardSrc: (card) => card.src, openImageZoom() {},
@@ -253,7 +256,8 @@ test("刷新后 Trait 等待解密，切换隐藏 Boss 不会误用其他资源�
       extraConfigs: () => [blackbeak] } },
     ensurePiles: () => { throw new Error("不应在解密前渲染 Trait"); },
   };
-  vm.runInNewContext(`${entryFunction("hiddenBossImagesReady")}\n${entryFunction("renderExtraCards")}\nrenderExtraCards();`, context);
+  vm.runInNewContext(`${entryFunction("hiddenBossImagesReady")}\n${entryFunction("renderExtraCards")}\nrenderExtraCards();`,
+    Object.assign(context, { theatreRequest: null, theatreBattle: null }));
   const first = { panel: blackbeak.extraCards[0].src };
   await api.ready(first);
   assert.equal(api.isReady(first), true);
@@ -290,7 +294,8 @@ test("万事皆休通过 Boss 搜索开启，不显示普通入口按钮", async
     renderApostle: (name) => calls.push(name),
     window: { C45Specials: { startTitanXGroup: () => calls.push("group") } },
   };
-  await vm.runInNewContext(`${entryFunction("searchSecret")}\nsearchSecret("titan-x-group");`, context);
+  await vm.runInNewContext(`${entryFunction("searchSecret")}\nsearchSecret("titan-x-group");`,
+    Object.assign(context, { theatreRequest: null }));
   assert.deepEqual(calls, ["TITAN_X", "group"]);
   assert.equal(context.bossSearchInput.value, "");
   assert.doesNotMatch(fs.readFileSync(path.join(aibpDir, "c45_specials.js"), "utf8"), /data-action="start-titan-x-group"/);

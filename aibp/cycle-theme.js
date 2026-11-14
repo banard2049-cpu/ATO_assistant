@@ -4,7 +4,7 @@
   function setCycle(cycleId) {
     if (!cycles.includes(cycleId)) return;
     document.body.dataset.cycle = cycleId;
-    window.ATO_CYCLE_SYMBOLS?.prependTitleIcon(document.querySelector("#aibpTitle"), cycleId, "../");
+    window.ATO_CYCLE_SYMBOLS?.prependModuleLogo(document.querySelector("#aibpTitle"), "evolution", "../");
   }
   window.AIBP_CYCLE_THEME = Object.freeze({ setCycle });
   const linkedCycle = new URLSearchParams(window.location.search).get("cycle");

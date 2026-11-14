@@ -6,11 +6,11 @@ const vm = require('node:vm');
 const { normalize, palette, luminance } = require('../assets/theme.js');
 const source = fs.readFileSync(path.join(__dirname, '../assets/theme.js'), 'utf8');
 
-function page(cycle = 'c1', saved = null, storageFails = false) {
+function page(cycle = 'c1', saved = null, storageFails = false, attributes = []) {
   const properties = new Map(), listeners = {}, channels = {}, writes = new Map();
   let observer;
   const body = {
-    dataset: { cycle }, hasAttribute: () => false,
+    dataset: { cycle }, hasAttribute: name => attributes.includes(name),
     style: { setProperty: (key, value) => properties.set(key, value), removeProperty: key => properties.delete(key) },
   };
   const context = {
@@ -44,6 +44,22 @@ test('automatic mode follows content cycle; fixed mode never changes campaign cy
   p.api.set({ mode: 'auto' });
   assert.equal(p.properties.get('--accent'), '#06243d');
   assert.equal(p.properties.has('--cycle-sidebar'), false);
+});
+
+test('fixed cycles never push the dark sidebar palette onto light-chrome modules', () => {
+  // 故事书用 story/assets/editorial.css 把侧栏重绘成 --bg 的浅纸面；内联的
+  // --cycle-sidebar* 优先级最高，一旦写进去，固定配色就会把侧栏压成深色。
+  for (const mode of ['c1', 'c2', 'c3', 'c4', 'c5']) {
+    const story = page('c3');
+    story.api.set({ mode });
+    assert.equal(story.properties.has('--cycle-sidebar'), false, `${mode} 不应给故事书写深色侧栏`);
+    assert.equal(story.properties.has('--cycle-sidebar-text'), false, `${mode} 不应给故事书写深色侧栏文字`);
+  }
+  // 显式声明要深色底栏的主控台仍然拿得到整套变量。
+  const consolePage = page('c3', null, false, ['data-theme-dashboard', 'data-theme-dark-sidebar']);
+  consolePage.api.set({ mode: 'c3' });
+  assert.equal(consolePage.properties.get('--cycle-sidebar'), palette(normalize({ mode: 'c3' }), 'c3')['--cycle-sidebar']);
+  assert.equal(consolePage.properties.get('--cycle-sidebar-text'), palette(normalize({ mode: 'c3' }), 'c3')['--cycle-sidebar-text']);
 });
 
 test('a new module restores preferences and open modules accept live updates', () => {

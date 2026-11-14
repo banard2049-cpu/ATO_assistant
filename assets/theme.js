@@ -64,6 +64,11 @@
   let settings = parse(read(storageKey));
   let dashboardCycle = read(cycleStorageKey) || "c1";
   const dashboard = document.body.hasAttribute("data-theme-dashboard");
+  // 深色侧栏（--cycle-sidebar*）是主控台那种「深底栏 + 浅正文」的装饰，只在页面
+  // 显式声明 data-theme-dark-sidebar 时才写内联变量。故事书这类把侧栏重绘成浅纸面
+  // 的模块（story/assets/editorial.css 里 --cycle-sidebar: var(--bg)）不能拿到深色值：
+  // 内联样式优先级最高，固定配色时会把浅色映射整个盖掉。
+  const darkSidebar = document.body.hasAttribute("data-theme-dark-sidebar");
   const channel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-theme-v1") : null;
   const cycleChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-dashboard-cycle-v1") : null;
   const modeSelect = document.querySelector("#themeModeSelect");
@@ -117,8 +122,14 @@
     colors["--surface"] = colors["--bg"];
     colors["--paper"] = colors["--panel"];
     for (const [name, value] of Object.entries(colors)) {
-      if (settings.mode === "auto" && name.startsWith("--cycle-sidebar")) document.body.style.removeProperty(name);
-      else document.body.style.setProperty(name, value);
+      // 只有声明要用深色侧栏的页面才接收这套变量，其余页面一律清掉，交给各自的
+      // CSS 决定侧栏底色（故事书用的是 --bg 的浅纸面）。
+      if (name.startsWith("--cycle-sidebar")) {
+        if (darkSidebar) document.body.style.setProperty(name, value);
+        else document.body.style.removeProperty(name);
+        continue;
+      }
+      document.body.style.setProperty(name, value);
     }
     document.body.dataset.atoTheme = settings.mode;
     document.body.dataset.themeCycle = settings.mode === "auto" ? cycle : settings.mode;

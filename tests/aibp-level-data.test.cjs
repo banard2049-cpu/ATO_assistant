@@ -18,6 +18,7 @@ function harness(boss = 'HEKATON', level = 1) {
   const calls = { promotions: 0, saves: 0 };
   let nextId = 0;
   const ctx = vm.createContext({
+    theatreBattle: null,
     window: { AIBP_BOSS_LEVEL_DATA: clone(data), AIBP_BOSS_TRAIT_RULES: require('../aibp/boss-trait-rules.js'), C45SpecialsReady: true },
     currentApostle: boss, piles: { [boss]: state }, burdenName: 'THE_BURDEN',
     c45LevelBonusApostles: new Set(['MIDASCORE', 'DEMIDJINN', 'THE_BABELIAN_LUNACY', 'DAHAKA', 'DRAGON_OF_PHOBOS', 'MEDUKETOS', 'UR_FLEECE', 'TITAN_X']),
@@ -251,6 +252,7 @@ test('Hekaton level zero adds AT-minus and preserves manual AT-minus after level
 
 test('level zero is selectable and persisted only for a Boss with a recorded level zero', () => {
   const ctx = vm.createContext({
+    theatreBattle: null,
     window: { AIBP_BOSS_LEVEL_DATA: data }, currentApostle: 'HEKATON',
     apostleLevelOverrides: { HEKATON: 0 }, recordApostleLevels: {},
     fixedLevelOneApostles: new Set(), maxApostleLevel: 9, levelRoman: {},

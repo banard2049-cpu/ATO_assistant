@@ -150,10 +150,20 @@ public final class DailyBackupArchiveHarness {
     }
     check(briefing(destinationApi, "").getJSONArray("snapshots").length() == 0, "Account history leaked");
     login(destinationApi, "destination");
-    destination.store.edit().putString("campaign::destination", campaign("ship", "c1", "81", 20, "current").toString()).commit();
+    JSONObject current = campaign("ship", "c1", "81", 20, "current");
+    JSONObject theatre = new JSONObject().put("wins", new JSONObject().put("hekaton-5", true));
+    current.getJSONObject("sections").put("theatre", theatre);
+    current.getJSONObject("sectionRevisions").put("theatre", 3);
+    destination.store.edit().putString("campaign::destination", current.toString()).commit();
     JSONObject restored = request(destinationApi, "?action=restore-previous-day", new JSONObject().put("expectedAccountId", "destination")
       .put("profileId", "ship").put("cycleId", "c1").put("currentDay", "81").put("day", "80").put("expectedRevision", 20).toString());
     check(restored.toString().contains("day eighty"), "Restore previous day did not read file-backed imported backup");
+    JSONObject restoredCampaign = restored.getJSONObject("campaign");
+    check(restoredCampaign.getJSONObject("sections").getJSONObject("theatre").similar(theatre)
+      && restoredCampaign.getJSONObject("sectionRevisions").getInt("theatre") == 3, "Day rewind changed Theatre progress");
+    JSONObject theatreRead = request(destinationApi, "?section=theatre", null);
+    check(theatreRead.getString("dashboardCycle").equals("c1") && theatreRead.getInt("revision") == 3,
+      "Theatre reads the current dashboard cycle independently of Theatre progress");
     System.out.println("Android daily backup ZIP passed: " + checks + " checks; export=" + exported);
   }
 

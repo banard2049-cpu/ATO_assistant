@@ -1625,6 +1625,20 @@
       background: rgba(30, 38, 35, 0.42);
     }
 
+    #theatreRestoreDialog {
+      width: min(28rem, calc(100vw - 28px));
+      padding: 18px;
+    }
+
+    #theatreRestoreDialog h2 { margin: 0 0 8px; font-size: 20px; }
+    #theatreRestoreDialog p { margin: 0 0 16px; }
+    #theatreRestoreDialog .theatre-restore-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: end;
+      gap: 8px;
+    }
+
     .card-track-shell {
       display: grid;
       grid-template-rows: auto minmax(0, 1fr);
@@ -2198,12 +2212,11 @@
       width: 19px;
       height: 19px;
       padding: 0;
-      accent-color: var(--done);
+      accent-color: var(--accent);
     }
 
     .second-screen-subtoggle {
-      padding-top: 9px;
-      border-top: 1px solid var(--line);
+      padding-top: 0;
       font-size: 13px;
       font-weight: 850;
     }
@@ -2221,12 +2234,14 @@
 
     .second-screen-scale {
       display: grid;
-      grid-template-columns: auto minmax(120px, 1fr) 54px;
+      grid-template-columns: auto minmax(0, 1fr) 54px;
       align-items: center;
       gap: 9px;
       color: var(--muted);
       font-size: 12px;
       font-weight: 850;
+      white-space: nowrap;
+      min-width: 0;
     }
 
     .second-screen-scale input {
@@ -2242,7 +2257,7 @@
     }
 
     .second-screen-scale.with-rotation {
-      grid-template-columns: auto minmax(120px, 1fr) 54px 38px 38px;
+      grid-template-columns: auto minmax(0, 1fr) 54px 38px 38px;
     }
 
     .second-screen-scale .second-screen-icon-button {
@@ -2495,10 +2510,11 @@
       }
     }
   </style>
-  <link rel="stylesheet" href="./api/dashboard.css?v=20261110-round-end-action">
-  <link rel="stylesheet" href="./assets/theme.css?v=20261007-misc-settings11">
+  <link rel="stylesheet" href="./api/dashboard.css?v=20261114-theatre-nav">
+  <link rel="stylesheet" href="./assets/theme.css?v=20261114-misc-settings21">
   <script src="./story/data/english-source-data.js?v=20261011-english4"></script>
-  <script src="./assets/theme.js?v=20261007-page-navigation1" defer></script>
+  <script src="./assets/theme.js?v=20261114-light-sidebar1" defer></script>
+  <script src="./assets/misc-picker.js?v=20261114-misc-picker2" defer></script>
   <link rel="stylesheet" href="./assets/update/update-check.css?v=2">
   <link rel="stylesheet" href="./assets/card-art.css?v=20261017-fan-fringe5">
   <script src="./assets/fan-card-trims-data.js?v=20261020-fan-scan3" defer></script>
@@ -2564,6 +2580,7 @@
         <a class="record-card-link technology-card-link" href="./technology/index.html"><span class="nav-icon" aria-hidden="true" style="--nav-icon-w:14px;--nav-icon-h:18px;--icon-src:url(../assets/icons/technology.svg?v=apk-ui-a72da92bdf63)"></span>科技</a>
         <a class="record-card-link" href="./map/index.html" data-cycle-link><span class="nav-icon" aria-hidden="true" style="--nav-icon-w:16px;--nav-icon-h:16px;--icon-src:url(../assets/icons/map.svg?v=apk-ui-a72da92bdf63)"></span>地图</a>
         <a class="record-card-link" href="./story/index.html" data-cycle-link data-story-book-link><span class="nav-icon" aria-hidden="true" style="--nav-icon-w:16px;--nav-icon-h:16px;--icon-src:url(../assets/icons/story.svg?v=apk-ui-a72da92bdf63)"></span>故事书</a>
+        <a id="theatreLink" class="record-card-link" href="./theatre/index.html" data-cycle-link hidden><span class="nav-icon" aria-hidden="true" style="--nav-icon-w:15px;--nav-icon-h:17px;--icon-src:url(../assets/icons/theatre-nav.svg?v=apk117)"></span><span data-term-variant="fan" data-language-ignore>忆识剧场</span><span data-term-variant="official" data-language-ignore hidden>幻忆剧场</span><span data-term-variant="en" data-language-ignore hidden>Mnestis Theatre</span></a>
       </nav>
       <label class="title-cycle-control">
         当前 Cycle
@@ -2659,18 +2676,22 @@
         <section class="panel misc-settings-panel" aria-label="杂项设置">
           <div class="panel-head"><h2>杂项设置</h2></div>
           <div class="panel-body misc-settings-controls">
-            <div class="theme-controls">
+            <div class="misc-setting-group">
               <div class="theme-mode-row">
-                <label for="themeModeSelect">界面配色</label>
-                <select id="themeModeSelect" data-dashboard-readonly-allowed>
-                  <option value="auto">自动</option>
-                  <option value="c1">固定循环 I</option>
-                  <option value="c2">固定循环 II</option>
-                  <option value="c3">固定循环 III</option>
-                  <option value="c4">固定循环 IV</option>
-                  <option value="c5">固定循环 V</option>
-                  <option value="custom">自定义 RGB</option>
-                </select>
+                <label for="themeModeToggle">界面配色</label>
+                <div class="settings-language-picker misc-picker" data-misc-picker>
+                  <button id="themeModeToggle" type="button" class="secondary settings-toggle-button" aria-haspopup="menu" aria-expanded="false" aria-label="界面配色" title="界面配色" data-dashboard-readonly-allowed><span data-picker-label>自动</span></button>
+                  <div id="themeModeMenu" class="settings-language-menu" role="menu" aria-label="界面配色" hidden></div>
+                  <select id="themeModeSelect" class="misc-select" hidden data-dashboard-readonly-allowed>
+                    <option value="auto">自动</option>
+                    <option value="c1">固定循环 I</option>
+                    <option value="c2">固定循环 II</option>
+                    <option value="c3">固定循环 III</option>
+                    <option value="c4">固定循环 IV</option>
+                    <option value="c5">固定循环 V</option>
+                    <option value="custom">自定义 RGB</option>
+                  </select>
+                </div>
               </div>
               <div id="themeCustomControls" class="theme-custom-controls" hidden>
                 <label for="themeColorInput">颜色<input id="themeColorInput" type="color" value="#7f4b26" data-dashboard-readonly-allowed></label>
@@ -2681,6 +2702,8 @@
                 </div>
               </div>
               <p class="theme-note">同步当前浏览器中的所有模块。自定义颜色会自动生成背景、边框和按钮配色。</p>
+            </div>
+            <div class="misc-setting-group">
               <div class="page-navigation-control">
                 <span>页面跳转</span>
                 <button id="pageNavigationModeToggle" type="button" class="secondary settings-toggle-button" aria-pressed="false" data-dashboard-readonly-allowed>多页跳转</button>
@@ -2690,15 +2713,16 @@
             <div class="misc-setting-group">
               <div class="misc-setting-heading">
                 <h3>宿敌结算</h3>
+                <div class="settings-language-picker misc-picker" data-misc-picker>
+                  <button id="pursuitSettlementToggle" type="button" class="secondary settings-toggle-button" aria-haspopup="menu" aria-expanded="false" aria-label="探索抽卡后的宿敌处理" title="自动：结算探索卡时按追踪标记自动生成或移动宿敌。手动：只在探索步骤显示追踪标记数量与明细，不自动结算宿敌；宿敌未引入时，追踪标记忽略。" data-dashboard-readonly-allowed><span data-picker-label>自动结算</span></button>
+                  <div id="pursuitSettlementMenu" class="settings-language-menu" role="menu" aria-label="探索抽卡后的宿敌处理" hidden></div>
+                  <select id="pursuitSettlementMode" class="misc-select" hidden data-dashboard-readonly-allowed>
+                    <option value="auto">自动结算</option>
+                    <option value="manual">手动结算</option>
+                  </select>
+                </div>
               </div>
-              <div class="second-screen-card">
-                <label for="pursuitSettlementMode">探索抽卡后的宿敌处理</label>
-                <select id="pursuitSettlementMode" data-dashboard-readonly-allowed>
-                  <option value="auto">自动结算</option>
-                  <option value="manual">手动结算</option>
-                </select>
-                <p class="second-screen-hint">自动：结算探索卡时按追踪标记自动生成或移动宿敌。手动：只在探索步骤显示追踪标记数量与明细，不自动结算宿敌。宿敌未引入时，追踪标记忽略。</p>
-              </div>
+              <p class="misc-note">自动：按追踪标记生成或移动宿敌。手动：只显示标记，由你自行结算。</p>
             </div>
             <div class="misc-setting-group">
               <div class="misc-setting-heading second-screen-heading">
@@ -2734,14 +2758,14 @@
                   <button id="secondScreenRotateButton" type="button" class="secondary second-screen-icon-button" aria-label="逆时针旋转第二屏幕左侧区域，当前 0 度" title="当前 0°，点击逆时针旋转 90°">↺</button>
                   <button id="secondScreenSwapButton" type="button" class="secondary second-screen-icon-button" aria-label="交换第二屏幕左右区域" title="交换 Boss/AIBP 与决战版图的位置">⇄</button>
                 </div>
-                <p id="secondScreenHint" class="second-screen-hint">打开后，同一局域网设备可通过专用网址查看地图或决战版图。</p>
+                <p id="secondScreenHint" class="second-screen-hint">打开后，局域网设备可通过网址查看地图、决战版图或故事。</p>
               </div>
             </div>
             <div class="misc-setting-group">
               <div class="misc-setting-heading">
                 <h3>翻译</h3>
                 <div class="settings-language-picker" data-language-ignore>
-                  <button id="termLanguageToggle" class="secondary settings-toggle-button" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="界面语言" title="界面语言" data-term-toggle data-dashboard-readonly-allowed>民间翻译</button>
+                  <button id="termLanguageToggle" class="secondary settings-toggle-button" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="界面语言" title="界面语言" data-term-toggle data-dashboard-readonly-allowed><span data-picker-label>民间翻译</span></button>
                   <div id="termLanguageMenu" class="settings-language-menu" role="menu" aria-label="界面语言" hidden>
                     <button type="button" role="menuitemradio" aria-checked="false" class="secondary" data-term-language-option="fan" data-dashboard-readonly-allowed>民间翻译</button>
                     <button type="button" role="menuitemradio" aria-checked="false" class="secondary" data-term-language-option="official" data-dashboard-readonly-allowed>官方翻译</button>
@@ -2800,7 +2824,19 @@
     </div>
   </dialog>
 
-  <script src="./assets/page-focus-router.js?v=20261028-android-return1"></script>
+  <dialog id="theatreRestoreDialog" class="card-track-dialog" aria-labelledby="theatreRestoreTitle" aria-describedby="theatreRestoreDescription">
+    <form method="dialog">
+      <h2 id="theatreRestoreTitle">导入幻忆剧场进度</h2>
+      <p id="theatreRestoreDescription">导入战役时可以保留当前账号的幻忆剧场进度，也可以用备份中的剧场记录替换它。</p>
+      <div class="theatre-restore-actions">
+        <button type="submit" value="cancel" class="secondary">取消导入</button>
+        <button type="submit" value="restore" class="secondary">恢复备份剧场</button>
+        <button type="submit" value="keep" autofocus>保留当前剧场</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="./assets/page-focus-router.js?v=20261113-theatre"></script>
   <script src="./assets/story-doom-card-data.js?v=20261014-card-face-audit2"></script>
   <script src="./assets/exploration-card-tags.js?v=20261018-card-audit1"></script>
   <script src="./assets/exploration-card-rules.js?v=20261018-card-audit1"></script>
@@ -2826,7 +2862,7 @@
   <script src="./map/nemesis-path.js?v=20260924-shared"></script>
   <script src="./map/nemesis-battle.js?v=20261003-record"></script>
   <script src="./assets/exploration-pursuit.js?v=20261016-voyage3"></script>
-  <script src="./assets/cycle-symbols.js?v=20260918"></script>
+  <script src="./assets/cycle-symbols.js?v=20261115-module-logo"></script>
   <!-- 官方 App 存档（.jsave）→ ATO sections 的转换器；「导入存档」按内容判定后走它。
 
        jsave-tables.js 是官方枚举/卡名数据表，必须在转换器之前加载；
@@ -3961,6 +3997,7 @@
     const dashboardCycleChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-dashboard-cycle-v1") : null;
     const dashboardWriterChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-dashboard-writer-v1") : null;
     const recordSyncChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-record-sync-v1") : null;
+    const technologySyncChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-technology-sync-v1") : null;
     const heroMnemosSyncChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-hero-mnemos-sync-v1") : null;
     const constantToolsOpen = {};
     const surveyConstantInteractionVersions = new Map();
@@ -4769,26 +4806,28 @@
       }
 
       const hint = enabled && !preferred
-        ? "第二屏幕服务已开启，但未检测到 Wi-Fi 或有线局域网地址。请先连接局域网后刷新状态。"
+        ? "已开启，但没检测到局域网地址，请连上 Wi-Fi 后刷新。"
         : enabled
         ? payload.displayMode === "blank"
-          ? "第二屏幕已开启，当前暂时不显示内容。"
+          ? "已开启，当前暂无内容。"
           : payload.displayMode === "story"
-          ? "第二屏幕已开启，当前正在显示故事书阅读文本。"
+          ? "已开启，正在显示故事书文本。"
           : battleBoardVisible
-            ? "第二屏幕已开启。AIBP 开启新战役时显示决战版图，战利品写入记录表后恢复地图。"
-            : "第二屏幕已开启。战斗期间显示 AIBP 镜像和当前地形卡，决战版图状态仍会保留。"
-        : "打开后，同一局域网设备可通过专用网址查看地图、决战版图或故事文本。";
+            ? "已开启：新战役时显示决战版图，写入战利品后恢复地图。"
+            : "已开启：战斗中显示 AIBP 镜像与地形卡。"
+        : "打开后，局域网设备可通过网址查看地图、决战版图或故事。";
       // 安卓版把整个应用都开放给局域网，且和这台手机共用登录态（可读可写，登录/退出只在本机）；
 
       // 便携版 / Docker 的局域网入口本来就是完整站点，别的设备要自己登录后才能用。
 
+      // 这段说明只挂在主控台地址输入框的悬停提示上，不再拼进第二屏幕那句话——那句保持一行。
       const lanHint = lanConsoleUrl
         ? payload.lanSharedAccount
-          ? " 同一局域网的设备也可以打开主控台地址浏览和修改主控台与各模块（登录态跟着这台手机走，登录/退出仍在本机操作）。"
-          : " 同一局域网的设备也可以打开主控台地址浏览主控台与各模块（在那台设备上登录后使用）。"
+          ? "局域网设备也可打开主控台地址；登录态跟着这台手机走，登录/退出仍在本机操作。"
+          : "局域网设备也可打开主控台地址；在那台设备上登录后使用。"
         : "";
-      elements.secondScreenHint.textContent = hint + lanHint;
+      if (elements.lanConsoleUrl) elements.lanConsoleUrl.title = lanHint;
+      elements.secondScreenHint.textContent = hint;
     }
 
     async function loadSecondScreenStatus() {
@@ -7053,6 +7092,7 @@
     }
 
     function renderCycles() {
+      renderTheatreLink();
       elements.cycleSelect.innerHTML = "";
       cycleConfigs.forEach((cycle) => {
         const option = document.createElement("option");
@@ -7076,6 +7116,16 @@
         }
         link.href = url.href;
       });
+    }
+
+    function renderTheatreLink() {
+      const link = document.getElementById("theatreLink");
+      if (!link) return;
+      const knowledge = Number(state.cardTracks?.inwardOdyssey?.position ?? 0);
+      const context = getStructureTechContext();
+      const unlocked = context ? context.technology?.unlocked : state.unlockedTech?.unlockedKeys;
+      const hasTheatre = Array.isArray(unlocked) && unlocked.includes("mnestis theater");
+      link.hidden = !sessionUser || !(knowledge >= 20 || hasTheatre);
     }
 
     function switchCycle(cycleId) {
@@ -8739,6 +8789,7 @@
     }
 
     function renderFlow() {
+      renderTheatreLink();
       elements.flowList.innerHTML = "";
       const fragment = document.createDocumentFragment();
 
@@ -12429,6 +12480,7 @@
           structureTechContextRevision = revision;
           structureTechContextError = "";
           cachedArgoRecord = context.record;
+          renderTheatreLink();
           if (!jsonEqual(before, getStructureTechContext())) renderFlow();
           return getStructureTechContext();
         } catch (error) {
@@ -14060,7 +14112,7 @@
     // top-level profiles/legacyDashboard copies of the same file. This is the
     // server-side state only: data that lives purely in the browser (for example
     // the AIBP piles kept in localStorage) is deliberately not part of it.
-    const backupSectionIds = ["dashboard", "map", "record", "technology", "heroes", "aibp", "story"];
+    const backupSectionIds = ["dashboard", "map", "record", "technology", "heroes", "aibp", "story", "theatre"];
 
     // 固定使用北京时间，不受浏览器或服务器所在时区影响；保留明确的 UTC+8 偏移。
     function beijingTimestamp(value = Date.now()) {
@@ -14096,7 +14148,7 @@
         ]));
         const payload = {
           app: "ATO Campaign Save Package",
-          version: 3,
+          version: 4,
           exportedAt: beijingTimestamp(),
           activeProfileId: dashboardSnapshot?.activeProfileId ?? archive.activeProfileId,
           profiles: dashboardSnapshot?.profiles ?? archive.profiles,
@@ -14137,7 +14189,19 @@
 
     // 局部导入语义一致，不会把没转换的分区清空。
 
-    async function applyImportedSections({ sections, dashboardImport, isFullBackup, recordAttachmentBlobs, incompleteBackup = false }) {
+    function chooseTheatreRestore() {
+      const dialog = document.getElementById("theatreRestoreDialog");
+      if (typeof dialog?.showModal !== "function") {
+        return Promise.resolve(window.confirm("恢复备份里的幻忆剧场进度？取消将保留当前剧场并继续导入战役。") ? "restore" : "keep");
+      }
+      return new Promise((resolve) => {
+        dialog.returnValue = "cancel";
+        dialog.addEventListener("close", () => resolve(dialog.returnValue), { once: true });
+        dialog.showModal();
+      });
+    }
+
+    async function applyImportedSections({ sections, dashboardImport, isFullBackup, recordAttachmentBlobs, incompleteBackup = false, includesTheatre = false }) {
       // 校验先于归一化和任何服务端读写，避免 {} / 无关 JSON 被补成空档后覆盖现有档案。
 
       function isLegacyDashboardState(value) {
@@ -14246,6 +14310,7 @@
           });
 
       const importEntries = backupSectionIds
+        .filter((section) => section !== "theatre")
         .map((section) => [section, section === "dashboard" ? nextArchive : sections?.[section]])
         .filter(([, sectionState]) => sectionState !== undefined && (isFullBackup || sectionState !== null));
       // 覆盖警告必须在 flushCampaignSave() 之前：那一步会真的往服务端写。这里只读一次
@@ -14253,12 +14318,28 @@
       // 服务端存档，用户点「取消」时整段返回，连待写入的防抖保存都不会发生。
 
       const importedRecord = importEntries.find(([section]) => section === "record")?.[1];
+      const theatreAccountId = includesTheatre ? sessionUser?.id : "";
+      const currentBeforeImport = importedRecord !== undefined || includesTheatre ? await loadFullCampaign() : null;
       const notesWarning = importedRecord === undefined
         ? ""
-        : notesOverwriteWarning(importedRecord, await loadFullCampaign());
+        : notesOverwriteWarning(importedRecord, currentBeforeImport);
       if (notesWarning && !window.confirm(notesWarning)) {
         window.alert("已取消导入：没有写入任何分区，服务器仍是导入前的状态。\n建议先点「导出存档」备份当前存档，再重试导入。");
         return;
+      }
+      let restoreTheatre = false;
+      if (includesTheatre) {
+        const choice = await chooseTheatreRestore();
+        if (choice === "cancel") return;
+        if (!theatreAccountId || theatreAccountId !== sessionUser?.id) throw accountMismatchError();
+        restoreTheatre = choice === "restore";
+        if (restoreTheatre) {
+          if (sections.theatre !== null && !isPlainObject(sections.theatre)) {
+            throw new Error("文件中的幻忆剧场记录格式无效。");
+          }
+          if (!currentBeforeImport) throw new Error("无法读取当前幻忆剧场进度，请恢复连接后重试。");
+          importEntries.push(["theatre", sections.theatre]);
+        }
       }
       // 先等这次防抖保存落盘：否则它的定时器会在导入之后触发，把导入前的内存状态
 
@@ -14273,11 +14354,12 @@
         await window.ATO_RECORD_ATTACHMENTS.createClient("./api/campaign-state.php", () => sessionUser?.id || "")
           .restoreBlobs(importedRecord, recordAttachmentBlobs);
       }
+      if (includesTheatre && theatreAccountId !== sessionUser?.id) throw accountMismatchError();
       const result = await importCampaignSections(
         Object.fromEntries(importEntries),
         Object.fromEntries(importEntries.map(([section]) => [
           section,
-          Math.max(0, Number(currentRevisions[section] ?? 0)),
+          Math.max(0, Number((section === "theatre" ? currentBeforeImport.sectionRevisions : currentRevisions)?.[section] ?? 0)),
         ]))
       );
       // 服务器已经整份写入，这一页这时才切到导入后的状态：失败时本页与服务器都保持原样。
@@ -14289,6 +14371,15 @@
       campaignSectionBaseline = cloneJson(archive);
       campaignServerBaseline = cloneJson(archive);
       campaignSyncChannel?.postMessage({ revision: campaignSectionRevision });
+      if (restoreTheatre && typeof BroadcastChannel === "function") {
+        try {
+          const channel = new BroadcastChannel("ato-theatre-v1");
+          channel.postMessage({ type: "restored", revision: result.sections?.theatre, accountId: theatreAccountId });
+          channel.close();
+        } catch (error) {
+          console.warn(error);
+        }
+      }
       renderDashboardArchive(archive);
       window.alert(incompleteBackup
         ? "已恢复旧备份中包含的状态。该文件导出时未读取到完整存档，未包含的模块已保留当前数据。"
@@ -14342,7 +14433,9 @@
           const isFullBackup = imported.app === "ATO Campaign Save Package" && Number(imported.version) >= 3 && !incompleteBackup;
           const sections = imported.sections || imported.campaign?.sections || null;
           const dashboardImport = sections?.dashboard || imported.legacyDashboard || imported;
-          return await applyImportedSections({ sections, dashboardImport, isFullBackup, incompleteBackup, recordAttachmentBlobs: imported.recordAttachmentBlobs });
+          const includesTheatre = isFullBackup && Number(imported.version) >= 4
+            && sections !== null && Object.prototype.hasOwnProperty.call(sections, "theatre");
+          return await applyImportedSections({ sections, dashboardImport, isFullBackup, incompleteBackup, includesTheatre, recordAttachmentBlobs: imported.recordAttachmentBlobs });
         } catch (error) {
           if (error?.code === "SAVE_CONFLICT" && error.sections) {
             const detail = Object.entries(error.sections)
@@ -14590,6 +14683,7 @@
     dashboardControlObserver.observe(elements.cardTrackDialog, { childList: true, subtree: true });
     listenForExternalCampaignSync(campaignSyncChannel, () => syncDashboardFromExternalUpdate());
     listenForExternalCampaignSync(structureTechMapSyncChannel, () => refreshStructureTechContext().catch(() => {}));
+    listenForExternalCampaignSync(technologySyncChannel, () => refreshStructureTechContext().catch(() => {}));
     dashboardWriterChannel?.addEventListener("message", (event) => {
       const message = event.data || {};
       if (message.pageId === dashboardPageId) return;
@@ -14635,7 +14729,7 @@
   <script src="./assets/english-terms.js?v=20261011-english4"></script>
   <script src="./assets/english-ui.js?v=20261112-survey-reminders"></script>
   <script src="./assets/english-language.js?v=20261011-english4"></script>
-  <script src="./assets/term-language.js?v=20261011-english4"></script>
+  <script src="./assets/term-language.js?v=20261114-picker-label1"></script>
   <script src="./assets/update/app-version.js?v=3.8.6-rc.1"></script>
   <script src="./assets/update/update-check.js?v=3"></script>
 </body>

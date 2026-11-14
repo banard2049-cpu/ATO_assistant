@@ -6,14 +6,14 @@ const vm = require('node:vm');
 
 const source = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 const attachmentSource = fs.readFileSync(path.join(__dirname, '../assets/record-attachments.js'), 'utf8');
-const sections = ['dashboard', 'map', 'record', 'technology', 'heroes', 'aibp', 'story'];
+const sections = ['dashboard', 'map', 'record', 'technology', 'heroes', 'aibp', 'story', 'theatre'];
 const copy = value => JSON.parse(JSON.stringify(value));
 const dashboard = {
   activeProfileId: 'default',
   profiles: { default: { id: 'default', activeCycleId: 'c2', cycles: { c2: { id: 'c2', state: { day: 5 } } } } },
 };
 
-function harness({ offline = false, flushed = true, invalidCampaign } = {}) {
+function harness({ offline = false, flushed = true, invalidCampaign, theatreChoice = 'keep' } = {}) {
   const downloads = [], alerts = [], reads = [], writes = [];
   let server = {
     updatedAt: '2026-12-31T18:04:05.123Z',
@@ -34,6 +34,7 @@ function harness({ offline = false, flushed = true, invalidCampaign } = {}) {
     normalizeArchive: copy,
     currentCycle: () => context.archive.profiles.default.cycles.c2,
     renderDashboardArchive() {},
+    chooseTheatreRestore: async () => theatreChoice,
     stopForAccountMismatch() {}, accountMismatchError: () => new Error('ACCOUNT_MISMATCH'),
     downloadJsonPayload: async payload => downloads.push(copy(payload)),
     fetch: async () => {
@@ -93,11 +94,34 @@ test('a successful full export preserves all server sections', async () => {
   await app.context.exportState();
   assert.equal(app.downloads.length, 1);
   assert.deepEqual(app.downloads[0].sections, app.server().sections);
+  assert.equal(app.downloads[0].version, 4);
   assert.equal(app.downloads[0].source.serverIncluded, true);
   assert.match(app.downloads[0].exportedAt, /\+08:00$/);
   assert.equal(app.downloads[0].source.serverUpdatedAt, '2027-01-01T02:04:05.123+08:00');
   assert.equal(app.context.elements.exportButton.textContent, '已下载');
   assert.equal(app.alerts.length, 0);
+});
+
+test('theatre restoration requires an explicit choice from a complete v4 backup', async () => {
+  const theatre = { wins: { 'hekaton-5': true } };
+  const backup = { app: 'ATO Campaign Save Package', version: 4, sections: { dashboard, theatre } };
+  const keep = harness();
+  await keep.import(backup);
+  assert.deepEqual(keep.server().sections.theatre, { saved: 'theatre' });
+  assert.equal(Object.hasOwn(keep.writes[0], 'theatre'), false);
+
+  const restore = harness({ theatreChoice: 'restore' });
+  await restore.import(backup);
+  assert.deepEqual(restore.server().sections.theatre, theatre);
+  assert.equal(restore.server().sectionRevisions.theatre, 4);
+
+  const cancel = harness({ theatreChoice: 'cancel' });
+  await cancel.import(backup);
+  assert.equal(cancel.writes.length, 0);
+
+  const old = harness({ theatreChoice: 'restore' });
+  await old.import({ ...backup, version: 3 });
+  assert.deepEqual(old.server().sections.theatre, { saved: 'theatre' });
 });
 
 test('legacy offline full packages restore available state without clearing unread modules', async () => {

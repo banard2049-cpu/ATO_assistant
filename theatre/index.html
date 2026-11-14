@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>忆识剧场 · ATO 助手</title>
+  <link rel="stylesheet" href="../api/cycle-theme.css">
+  <link rel="stylesheet" href="./theatre.css?v=21">
+  <script src="../assets/theme.js?v=20261114-light-sidebar1" defer></script>
+  <script src="../assets/page-focus-router.js?v=theatre1" defer></script>
+  <script src="../assets/campaign-session.js" defer></script>
+  <script src="./catalog.js?v=3" defer></script>
+  <script src="../aibp/boss-search.js?v=20261011-boss-language1" defer></script>
+  <script src="./terms.js?v=4" defer></script>
+  <script src="./state.js?v=5" defer></script>
+  <script src="./graph.js?v=9" defer></script>
+  <script src="./app.js?v=30" defer></script>
+</head>
+<body data-cycle="c1">
+  <main>
+    <header class="masthead">
+      <div>
+        <h1><span class="title-icon" aria-hidden="true"></span><span data-theatre-term="theatre">忆识剧场</span></h1>
+        <p id="save-status" class="save-status" role="status">正在读取剧场存档…</p>
+      </div>
+      <a class="control" href="../index.html">返回主控台</a>
+    </header>
+
+    <section id="spoilers" class="paper spoiler" hidden aria-labelledby="spoiler-title">
+      <h2 id="spoiler-title">进入剧场前</h2>
+      <p id="spoiler-text"></p>
+      <button id="reveal" class="primary">查看剧场</button>
+    </section>
+
+    <div id="workspace" hidden>
+      <section id="active" class="paper active" hidden aria-label="当前剧场战斗"></section>
+      <div id="content" class="content">
+        <div class="tree-column">
+          <section id="tree" aria-labelledby="tree-title">
+            <div class="tree-tools paper">
+              <div class="tree-heading"><h2 id="tree-title" data-theatre-term="tree">知识之树</h2><span id="progress"></span></div>
+              <div class="tool-buttons" aria-label="知识之树显示选项">
+                <button id="tree-list" aria-pressed="false">列表</button>
+                <button id="tree-graph" aria-pressed="true">树图</button>
+                <span id="zoom-tools" class="zoom-tools">
+                  <button id="zoom-out" aria-label="缩小知识之树">−</button>
+                  <button id="zoom-in" aria-label="放大知识之树">＋</button>
+                  <button id="fit">总览</button>
+                </span>
+              </div>
+              <details class="node-legend">
+                <summary>节点图例</summary>
+                <div id="node-legend-items"></div>
+              </details>
+            </div>
+            <div id="tree-board" class="tree-board paper" tabindex="0" aria-label="知识之树，可拖动或滚动">
+              <div id="graph-size"><div id="graph"></div></div>
+            </div>
+            <div id="node-list" class="paper node-list" hidden></div>
+          </section>
+          <aside id="node-detail" class="paper node-detail" aria-label="战斗详情"></aside>
+        </div>
+        <section id="sheet" class="paper sheet" aria-labelledby="sheet-title"></section>
+      </div>
+      <dialog id="manual" aria-labelledby="manual-title">
+        <form id="manual-form" method="dialog">
+          <header class="section-heading"><h2 id="manual-title">补录战绩</h2><button value="cancel" formnovalidate aria-label="关闭补录">关闭</button></header>
+          <p></p>
+          <label>战绩来源<select id="manual-source"><option value="normal">剧场 · 普通</option><option value="cursed">剧场 · 诅咒</option><option value="campaign">战役 · 已击败等级</option></select></label>
+          <label><span data-theatre-term="boss">始徒</span><select id="manual-boss"></select></label>
+          <label>等级<select id="manual-level"></select></label>
+          <label>记录方式<select id="manual-action"><option value="add">标为已胜利</option><option value="remove">撤销补录</option></select></label>
+          <button id="manual-submit" class="primary" value="save">保存战绩</button>
+        </form>
+      </dialog>
+    </div>
+  </main>
+</body>
+</html>

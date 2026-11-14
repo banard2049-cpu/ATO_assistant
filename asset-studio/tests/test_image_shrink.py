@@ -170,8 +170,8 @@ class KeepPatternTests(unittest.TestCase):
         self.assertTrue(matches_any("ss/battle-board.jpg", ["ss/battle-board.jpg"]))
         self.assertTrue(matches_any("SS/Battle-Board.JPG", ["ss/battle-board.jpg"]))
         self.assertTrue(matches_any("aibp/ps/THE_BURDEN/THE_BURDEN.jpg", ["aibp/ps/*/*.jpg"]))
-        self.assertTrue(matches_any("aibp/ps/THE_BURDEN/THE_BURDEN_TR_O_001.jpg", ["aibp/ps/*/*_TR_O_001.jpg"]))
-        self.assertFalse(matches_any("aibp/ps/THE_BURDEN/THE_BURDEN_AI_I_001.jpg", ["aibp/ps/*/*_TR_O_001.jpg"]))
+        self.assertTrue(matches_any("aibp/ps/THE_BURDEN/THE_BURDEN_TR_II_001.jpg", ["aibp/ps/*/*_TR_II_001.jpg"]))
+        self.assertFalse(matches_any("aibp/ps/THE_BURDEN/THE_BURDEN_AI_I_001.jpg", ["aibp/ps/*/*_TR_II_001.jpg"]))
         self.assertFalse(matches_any("ss/battle-board.jpg", []))
         self.assertFalse(matches_any("ss/battle-board.jpg", None))
         self.assertFalse(matches_any("ss/battle-board.jpg", ["ss/other.jpg"]))
@@ -201,8 +201,8 @@ class KeepPatternTests(unittest.TestCase):
         ):
             self.assertTrue(matches_any(name, patterns), name)
         for trait in (
-            "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_O_001.jpg",
-            "aibp/ps/THE_BURDEN/THE_BURDEN_TR_O_001.jpg",
+            "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_II_001.jpg",
+            "aibp/ps/THE_BURDEN/THE_BURDEN_TR_II_001.jpg",
         ):
             self.assertTrue(matches_any(trait, patterns), trait)
         for map_image in (

@@ -34,7 +34,7 @@
       "cycle": "c1",
       "sources": {
         "front": "aibp/ps/HEKATON/HEKATON.jpg",
-        "back": "aibp/ps/HEKATON/HEKATON_TR_O_001.jpg"
+        "back": "aibp/ps/HEKATON/HEKATON_TR_V_001.jpg"
       },
       "notes": "",
       "levels": {
@@ -189,7 +189,7 @@
           "traitChanges": "滞星；希望终结；百臂巨人的天罚",
           "notes": "",
           "source": {
-            "card": "aibp/ps/HEKATON/HEKATON_TR_O_001.jpg",
+            "card": "aibp/ps/HEKATON/HEKATON_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 12
           }
@@ -215,7 +215,7 @@
           "traitChanges": "百臂之墙",
           "notes": "",
           "source": {
-            "card": "aibp/ps/HEKATON/HEKATON_TR_O_001.jpg",
+            "card": "aibp/ps/HEKATON/HEKATON_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 13
           }
@@ -241,7 +241,7 @@
           "traitChanges": "百拳摧城",
           "notes": "原图该行误印为 VIII，按位于 VI 与 VIII 之间记 VII",
           "source": {
-            "card": "aibp/ps/HEKATON/HEKATON_TR_O_001.jpg",
+            "card": "aibp/ps/HEKATON/HEKATON_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 14
           }
@@ -267,7 +267,7 @@
           "traitChanges": "超音速拳击",
           "notes": "",
           "source": {
-            "card": "aibp/ps/HEKATON/HEKATON_TR_O_001.jpg",
+            "card": "aibp/ps/HEKATON/HEKATON_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 15
           }
@@ -293,7 +293,7 @@
           "traitChanges": "铁石心肠；百万吨级",
           "notes": "",
           "source": {
-            "card": "aibp/ps/HEKATON/HEKATON_TR_O_001.jpg",
+            "card": "aibp/ps/HEKATON/HEKATON_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 16
           }
@@ -306,7 +306,7 @@
       "cycle": "c1",
       "sources": {
         "front": "aibp/ps/LABYRINTHAUROS/LABYRINTHAUROS.jpg",
-        "back": "aibp/ps/LABYRINTHAUROS/LABYRINTHAUROS_TR_O_001.jpg"
+        "back": "aibp/ps/LABYRINTHAUROS/LABYRINTHAUROS_TR_V_001.jpg"
       },
       "notes": "",
       "levels": {
@@ -435,7 +435,7 @@
           "traitChanges": "希望终结；迷阵超活跃护甲；有利位置修正",
           "notes": "",
           "source": {
-            "card": "aibp/ps/LABYRINTHAUROS/LABYRINTHAUROS_TR_O_001.jpg",
+            "card": "aibp/ps/LABYRINTHAUROS/LABYRINTHAUROS_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 21
           }
@@ -461,7 +461,7 @@
           "traitChanges": "光速者",
           "notes": "",
           "source": {
-            "card": "aibp/ps/LABYRINTHAUROS/LABYRINTHAUROS_TR_O_001.jpg",
+            "card": "aibp/ps/LABYRINTHAUROS/LABYRINTHAUROS_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 22
           }
@@ -487,7 +487,7 @@
           "traitChanges": "外次元践踏",
           "notes": "",
           "source": {
-            "card": "aibp/ps/LABYRINTHAUROS/LABYRINTHAUROS_TR_O_001.jpg",
+            "card": "aibp/ps/LABYRINTHAUROS/LABYRINTHAUROS_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 23
           }
@@ -513,7 +513,7 @@
           "traitChanges": "裂隙建造者",
           "notes": "",
           "source": {
-            "card": "aibp/ps/LABYRINTHAUROS/LABYRINTHAUROS_TR_O_001.jpg",
+            "card": "aibp/ps/LABYRINTHAUROS/LABYRINTHAUROS_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 24
           }
@@ -539,7 +539,7 @@
           "traitChanges": "铁石心肠；终结伊始",
           "notes": "",
           "source": {
-            "card": "aibp/ps/LABYRINTHAUROS/LABYRINTHAUROS_TR_O_001.jpg",
+            "card": "aibp/ps/LABYRINTHAUROS/LABYRINTHAUROS_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 25
           }
@@ -552,7 +552,7 @@
       "cycle": "c1",
       "sources": {
         "front": "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER.jpg",
-        "back": "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_O_001.jpg"
+        "back": "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_II_001.jpg"
       },
       "notes": "展翅的末日规定移动力为∞；保留面板的带星号数值。",
       "levels": {
@@ -603,7 +603,7 @@
           "traitChanges": "迷幻蛾翅；移除玩弄",
           "notes": "",
           "source": {
-            "card": "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_O_001.jpg",
+            "card": "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 27
           }
@@ -629,7 +629,7 @@
           "traitChanges": "鸟巢之战",
           "notes": "",
           "source": {
-            "card": "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_O_001.jpg",
+            "card": "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 28
           }
@@ -655,7 +655,7 @@
           "traitChanges": "黑暗同行",
           "notes": "攻击前，对身后2行中的泰坦绝对击退7",
           "source": {
-            "card": "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_O_001.jpg",
+            "card": "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 29
           }
@@ -681,7 +681,7 @@
           "traitChanges": "终结伊始",
           "notes": "",
           "source": {
-            "card": "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_O_001.jpg",
+            "card": "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 30
           }
@@ -707,7 +707,7 @@
           "traitChanges": "怪笑",
           "notes": "",
           "source": {
-            "card": "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_O_001.jpg",
+            "card": "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 31
           }
@@ -733,7 +733,7 @@
           "traitChanges": "报应誓约",
           "notes": "",
           "source": {
-            "card": "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_O_001.jpg",
+            "card": "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 32
           }
@@ -759,7 +759,7 @@
           "traitChanges": "短兵相接",
           "notes": "",
           "source": {
-            "card": "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_O_001.jpg",
+            "card": "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 33
           }
@@ -785,7 +785,7 @@
           "traitChanges": "铁石心肠；猎头者",
           "notes": "",
           "source": {
-            "card": "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_O_001.jpg",
+            "card": "aibp/ps/HERMESIAN_PURSUER/HERMESIAN_PURSUER_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 34
           }
@@ -798,7 +798,7 @@
       "cycle": "c1",
       "sources": {
         "front": "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS.jpg",
-        "back": "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_O_001.jpg"
+        "back": "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_II_001.jpg"
       },
       "notes": " 其他核对来源：ALPHA_TEMENOS_TR_VI_001.jpg",
       "levels": {
@@ -849,7 +849,7 @@
           "traitChanges": "虚无蜗牛；有利位置修正",
           "notes": "每伤口累积标记，下次AI攻击增加等量危险",
           "source": {
-            "card": "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_O_001.jpg",
+            "card": "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 36
           }
@@ -875,7 +875,7 @@
           "traitChanges": "迷宫蠕虫",
           "notes": "",
           "source": {
-            "card": "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_O_001.jpg",
+            "card": "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 37
           }
@@ -901,7 +901,7 @@
           "traitChanges": "共赢独亡",
           "notes": "泰坦回合开始无相邻泰坦时：获得2危险与2命运",
           "source": {
-            "card": "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_O_001.jpg",
+            "card": "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 38
           }
@@ -927,7 +927,7 @@
           "traitChanges": "终结伊始",
           "notes": "",
           "source": {
-            "card": "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_O_001.jpg",
+            "card": "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 39
           }
@@ -953,7 +953,7 @@
           "traitChanges": "无望之歌",
           "notes": "",
           "source": {
-            "card": "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_O_001.jpg",
+            "card": "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 40
           }
@@ -979,7 +979,7 @@
           "traitChanges": "惧怕之歌",
           "notes": "",
           "source": {
-            "card": "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_O_001.jpg",
+            "card": "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 41
           }
@@ -1005,7 +1005,7 @@
           "traitChanges": "百臂巨人的末日",
           "notes": "",
           "source": {
-            "card": "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_O_001.jpg",
+            "card": "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 42
           }
@@ -1031,7 +1031,7 @@
           "traitChanges": "绝望交响曲；铁石心肠",
           "notes": "",
           "source": {
-            "card": "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_O_001.jpg",
+            "card": "aibp/ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 43
           }
@@ -1044,7 +1044,7 @@
       "cycle": "c2",
       "sources": {
         "front": "aibp/ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS.jpg",
-        "back": "aibp/ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_O_001.jpg"
+        "back": "aibp/ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_V_001.jpg"
       },
       "notes": "",
       "levels": {
@@ -1173,7 +1173,7 @@
           "traitChanges": "希望终结；黑色之雨；有利位置修正",
           "notes": "",
           "source": {
-            "card": "aibp/ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_O_001.jpg",
+            "card": "aibp/ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 48
           }
@@ -1199,7 +1199,7 @@
           "traitChanges": "贪食拖拽",
           "notes": "",
           "source": {
-            "card": "aibp/ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_O_001.jpg",
+            "card": "aibp/ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 49
           }
@@ -1225,7 +1225,7 @@
           "traitChanges": "原初等离子",
           "notes": "满足其武器条件时另有AT力场+2",
           "source": {
-            "card": "aibp/ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_O_001.jpg",
+            "card": "aibp/ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 50
           }
@@ -1251,7 +1251,7 @@
           "traitChanges": "活体要塞",
           "notes": "",
           "source": {
-            "card": "aibp/ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_O_001.jpg",
+            "card": "aibp/ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 51
           }
@@ -1277,7 +1277,7 @@
           "traitChanges": "铁石心肠；三点六；终结伊始",
           "notes": "",
           "source": {
-            "card": "aibp/ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_O_001.jpg",
+            "card": "aibp/ps/CHIMERA_METASTASIOS/CHIMERA_METASTASIOS_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 52
           }
@@ -1290,7 +1290,7 @@
       "cycle": "c2",
       "sources": {
         "front": "aibp/ps/CYCLONUS/CYCLONUS.jpg",
-        "back": "aibp/ps/CYCLONUS/CYCLONUS_TR_O_001.jpg"
+        "back": "aibp/ps/CYCLONUS/CYCLONUS_TR_V_001.jpg"
       },
       "notes": "",
       "levels": {
@@ -1419,7 +1419,7 @@
           "traitChanges": "希望终结；超侵袭",
           "notes": "希望终结；超侵袭",
           "source": {
-            "card": "aibp/ps/CYCLONUS/CYCLONUS_TR_O_001.jpg",
+            "card": "aibp/ps/CYCLONUS/CYCLONUS_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 57
           }
@@ -1445,7 +1445,7 @@
           "traitChanges": "无眼巨人",
           "notes": "无限巨人",
           "source": {
-            "card": "aibp/ps/CYCLONUS/CYCLONUS_TR_O_001.jpg",
+            "card": "aibp/ps/CYCLONUS/CYCLONUS_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 58
           }
@@ -1471,7 +1471,7 @@
           "traitChanges": "绯红潮汐",
           "notes": "",
           "source": {
-            "card": "aibp/ps/CYCLONUS/CYCLONUS_TR_O_001.jpg",
+            "card": "aibp/ps/CYCLONUS/CYCLONUS_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 59
           }
@@ -1497,7 +1497,7 @@
           "traitChanges": "终结伊始",
           "notes": "",
           "source": {
-            "card": "aibp/ps/CYCLONUS/CYCLONUS_TR_O_001.jpg",
+            "card": "aibp/ps/CYCLONUS/CYCLONUS_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 60
           }
@@ -1523,7 +1523,7 @@
           "traitChanges": "铁石心肠；鞭刑塔魔击",
           "notes": "铁石心肠；IX级区域攻击特质（见卡图）",
           "source": {
-            "card": "aibp/ps/CYCLONUS/CYCLONUS_TR_O_001.jpg",
+            "card": "aibp/ps/CYCLONUS/CYCLONUS_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 61
           }
@@ -1536,7 +1536,7 @@
       "cycle": "c2",
       "sources": {
         "front": "aibp/ps/THE_BURDEN/THE_BURDEN.jpg",
-        "back": "aibp/ps/THE_BURDEN/THE_BURDEN_TR_O_001.jpg"
+        "back": "aibp/ps/THE_BURDEN/THE_BURDEN_TR_II_001.jpg"
       },
       "notes": "",
       "levels": {
@@ -1587,7 +1587,7 @@
           "traitChanges": "难以推动的巨石",
           "notes": "",
           "source": {
-            "card": "aibp/ps/THE_BURDEN/THE_BURDEN_TR_O_001.jpg",
+            "card": "aibp/ps/THE_BURDEN/THE_BURDEN_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 63
           }
@@ -1613,7 +1613,7 @@
           "traitChanges": "我们的纽带",
           "notes": "",
           "source": {
-            "card": "aibp/ps/THE_BURDEN/THE_BURDEN_TR_O_001.jpg",
+            "card": "aibp/ps/THE_BURDEN/THE_BURDEN_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 64
           }
@@ -1639,7 +1639,7 @@
           "traitChanges": "夏尔巴人克星",
           "notes": "1–7列每命中另+2危险；8–15列每命中另+1危险",
           "source": {
-            "card": "aibp/ps/THE_BURDEN/THE_BURDEN_TR_O_001.jpg",
+            "card": "aibp/ps/THE_BURDEN/THE_BURDEN_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 65
           }
@@ -1665,7 +1665,7 @@
           "traitChanges": "白雪溜冰团；终结伊始",
           "notes": "",
           "source": {
-            "card": "aibp/ps/THE_BURDEN/THE_BURDEN_TR_O_001.jpg",
+            "card": "aibp/ps/THE_BURDEN/THE_BURDEN_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 66
           }
@@ -1691,7 +1691,7 @@
           "traitChanges": "滑坡",
           "notes": "踢退+3",
           "source": {
-            "card": "aibp/ps/THE_BURDEN/THE_BURDEN_TR_O_001.jpg",
+            "card": "aibp/ps/THE_BURDEN/THE_BURDEN_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 67
           }
@@ -1717,7 +1717,7 @@
           "traitChanges": "疯狂山脉",
           "notes": "",
           "source": {
-            "card": "aibp/ps/THE_BURDEN/THE_BURDEN_TR_O_001.jpg",
+            "card": "aibp/ps/THE_BURDEN/THE_BURDEN_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 68
           }
@@ -1743,7 +1743,7 @@
           "traitChanges": "时间锋迫近",
           "notes": "",
           "source": {
-            "card": "aibp/ps/THE_BURDEN/THE_BURDEN_TR_O_001.jpg",
+            "card": "aibp/ps/THE_BURDEN/THE_BURDEN_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 69
           }
@@ -1769,7 +1769,7 @@
           "traitChanges": "铁石心肠；操控游戏",
           "notes": "",
           "source": {
-            "card": "aibp/ps/THE_BURDEN/THE_BURDEN_TR_O_001.jpg",
+            "card": "aibp/ps/THE_BURDEN/THE_BURDEN_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 70
           }
@@ -1782,7 +1782,7 @@
       "cycle": "c2",
       "sources": {
         "front": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN.jpg",
-        "back": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_O_001.jpg"
+        "back": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_II_001.jpg"
       },
       "notes": "",
       "levels": {
@@ -1833,7 +1833,7 @@
           "traitChanges": "暗影烈焰；以众敌一；时不我待",
           "notes": "",
           "source": {
-            "card": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_O_001.jpg",
+            "card": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 72
           }
@@ -1859,7 +1859,7 @@
           "traitChanges": "无暇战技",
           "notes": "",
           "source": {
-            "card": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_O_001.jpg",
+            "card": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 73
           }
@@ -1885,7 +1885,7 @@
           "traitChanges": "决裂姿态",
           "notes": "",
           "source": {
-            "card": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_O_001.jpg",
+            "card": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 74
           }
@@ -1911,7 +1911,7 @@
           "traitChanges": "懦夫的命运；终结伊始",
           "notes": "",
           "source": {
-            "card": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_O_001.jpg",
+            "card": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 75
           }
@@ -1937,7 +1937,7 @@
           "traitChanges": "从不失手",
           "notes": "",
           "source": {
-            "card": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_O_001.jpg",
+            "card": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 76
           }
@@ -1963,7 +1963,7 @@
           "traitChanges": "格杀勿论",
           "notes": "",
           "source": {
-            "card": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_O_001.jpg",
+            "card": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 77
           }
@@ -1989,7 +1989,7 @@
           "traitChanges": "铁石心肠",
           "notes": "",
           "source": {
-            "card": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_O_001.jpg",
+            "card": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 78
           }
@@ -2015,7 +2015,7 @@
           "traitChanges": "凡间之神",
           "notes": "",
           "source": {
-            "card": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_O_001.jpg",
+            "card": "aibp/ps/THE_NIETZSCJEAN/THE_NIETZSCJEAN_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 79
           }
@@ -2274,7 +2274,7 @@
       "cycle": "c3",
       "sources": {
         "front": "aibp/ps/ICARIAN_HARPY/ICARIAN_HARPY.jpg",
-        "back": "aibp/ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_O_001.jpg"
+        "back": "aibp/ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_VI_001.jpg"
       },
       "notes": "",
       "levels": {
@@ -2429,7 +2429,7 @@
           "traitChanges": "失血",
           "notes": "",
           "source": {
-            "card": "aibp/ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_O_001.jpg",
+            "card": "aibp/ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_VI_001.jpg",
             "sheet": "等级属性",
             "row": 94
           }
@@ -2455,7 +2455,7 @@
           "traitChanges": "无新增",
           "notes": "",
           "source": {
-            "card": "aibp/ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_O_001.jpg",
+            "card": "aibp/ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_VI_001.jpg",
             "sheet": "等级属性",
             "row": 95
           }
@@ -2481,7 +2481,7 @@
           "traitChanges": "铁石心肠；心脏滴血",
           "notes": "",
           "source": {
-            "card": "aibp/ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_O_001.jpg",
+            "card": "aibp/ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_VI_001.jpg",
             "sheet": "等级属性",
             "row": 96
           }
@@ -2507,7 +2507,7 @@
           "traitChanges": "终结伊始；血管破裂；完蛋",
           "notes": "",
           "source": {
-            "card": "aibp/ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_O_001.jpg",
+            "card": "aibp/ps/ICARIAN_HARPY/ICARIAN_HARPY_TR_VI_001.jpg",
             "sheet": "等级属性",
             "row": 97
           }
@@ -2520,7 +2520,7 @@
       "cycle": "c3",
       "sources": {
         "front": "aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT.jpg",
-        "back": "aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_O_001.jpg"
+        "back": "aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_IV_001.jpg"
       },
       "notes": "",
       "levels": {
@@ -2623,7 +2623,7 @@
           "traitChanges": "超频",
           "notes": "",
           "source": {
-            "card": "aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_O_001.jpg",
+            "card": "aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_IV_001.jpg",
             "sheet": "等级属性",
             "row": 101
           }
@@ -2649,7 +2649,7 @@
           "traitChanges": "终结伊始；叫骂取乐",
           "notes": "",
           "source": {
-            "card": "aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_O_001.jpg",
+            "card": "aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_IV_001.jpg",
             "sheet": "等级属性",
             "row": 102
           }
@@ -2675,7 +2675,7 @@
           "traitChanges": "冰河时代",
           "notes": "",
           "source": {
-            "card": "aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_O_001.jpg",
+            "card": "aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_IV_001.jpg",
             "sheet": "等级属性",
             "row": 103
           }
@@ -2701,7 +2701,7 @@
           "traitChanges": "黑色烈日",
           "notes": "",
           "source": {
-            "card": "aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_O_001.jpg",
+            "card": "aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_IV_001.jpg",
             "sheet": "等级属性",
             "row": 104
           }
@@ -2727,7 +2727,7 @@
           "traitChanges": "不跪则死",
           "notes": "",
           "source": {
-            "card": "aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_O_001.jpg",
+            "card": "aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_IV_001.jpg",
             "sheet": "等级属性",
             "row": 105
           }
@@ -2753,7 +2753,7 @@
           "traitChanges": "铁石心肠；日全食",
           "notes": "",
           "source": {
-            "card": "aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_O_001.jpg",
+            "card": "aibp/ps/SUN_DESCENDANT/SUN_DESCENDANT_TR_IV_001.jpg",
             "sheet": "等级属性",
             "row": 106
           }
@@ -2766,7 +2766,7 @@
       "cycle": "c4",
       "sources": {
         "front": "aibp/ps/MIDASCORE/MIDASCORE.jpg",
-        "back": "aibp/ps/MIDASCORE/MIDASCORE_TR_O_001.jpg"
+        "back": "aibp/ps/MIDASCORE/MIDASCORE_TR_V_001.jpg"
       },
       "notes": "高等级依据Mod大卡反面，英文特质名保留原文。",
       "levels": {
@@ -2895,7 +2895,7 @@
           "traitChanges": "End of Hope；Aggressive Expansion",
           "notes": "原生物轮开始执行 Airburst 3",
           "source": {
-            "card": "aibp/ps/MIDASCORE/MIDASCORE_TR_O_001.jpg",
+            "card": "aibp/ps/MIDASCORE/MIDASCORE_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 111
           }
@@ -2921,7 +2921,7 @@
           "traitChanges": "Loss of Liquidity",
           "notes": "每个非武器装备上的米达斯标记使移动与赫尔墨斯移动−1；本回合不移动则死亡",
           "source": {
-            "card": "aibp/ps/MIDASCORE/MIDASCORE_TR_O_001.jpg",
+            "card": "aibp/ps/MIDASCORE/MIDASCORE_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 112
           }
@@ -2947,7 +2947,7 @@
           "traitChanges": "Soundspeed Impetus",
           "notes": "穿过或停在倒地/浮空泰坦上，该泰坦死亡",
           "source": {
-            "card": "aibp/ps/MIDASCORE/MIDASCORE_TR_O_001.jpg",
+            "card": "aibp/ps/MIDASCORE/MIDASCORE_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 113
           }
@@ -2973,7 +2973,7 @@
           "traitChanges": "Beginning of the End；Debts of Succession",
           "notes": "获得米达斯标记数量翻倍",
           "source": {
-            "card": "aibp/ps/MIDASCORE/MIDASCORE_TR_O_001.jpg",
+            "card": "aibp/ps/MIDASCORE/MIDASCORE_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 114
           }
@@ -2999,7 +2999,7 @@
           "traitChanges": "Ruthless；Refuse Credit",
           "notes": "禁用地形 Shifting；移动摧毁伊利昂塔",
           "source": {
-            "card": "aibp/ps/MIDASCORE/MIDASCORE_TR_O_001.jpg",
+            "card": "aibp/ps/MIDASCORE/MIDASCORE_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 115
           }
@@ -3012,7 +3012,7 @@
       "cycle": "c4",
       "sources": {
         "front": "aibp/ps/DEMIDJINN/DEMIDJINN.jpg",
-        "back": "aibp/ps/DEMIDJINN/DEMIDJINN_TR_O_002.jpg"
+        "back": "aibp/ps/DEMIDJINN/DEMIDJINN_TR_V_002.jpg"
       },
       "notes": "高等级依据Mod大卡反面，英文特质名保留原文。",
       "levels": {
@@ -3141,7 +3141,7 @@
           "traitChanges": "End of Hope；Djinnian Determination",
           "notes": "执行许愿消失前，转向最近棋盘边缘",
           "source": {
-            "card": "aibp/ps/DEMIDJINN/DEMIDJINN_TR_O_002.jpg",
+            "card": "aibp/ps/DEMIDJINN/DEMIDJINN_TR_V_002.jpg",
             "sheet": "等级属性",
             "row": 120
           }
@@ -3167,7 +3167,7 @@
           "traitChanges": "Endless Escalator；Imminent Destruction",
           "notes": "无尽阶梯最底层泰坦死亡；泰坦本回合未攻击，回合结束解算顶层AI",
           "source": {
-            "card": "aibp/ps/DEMIDJINN/DEMIDJINN_TR_O_002.jpg",
+            "card": "aibp/ps/DEMIDJINN/DEMIDJINN_TR_V_002.jpg",
             "sheet": "等级属性",
             "row": 121
           }
@@ -3193,7 +3193,7 @@
           "traitChanges": "Wishtanglement",
           "notes": "特定愿望状态传播给其他泰坦",
           "source": {
-            "card": "aibp/ps/DEMIDJINN/DEMIDJINN_TR_O_002.jpg",
+            "card": "aibp/ps/DEMIDJINN/DEMIDJINN_TR_V_002.jpg",
             "sheet": "等级属性",
             "row": 122
           }
@@ -3219,7 +3219,7 @@
           "traitChanges": "Beginning of the End；Djinnian Precision",
           "notes": "许愿消失必须针对距离恰为许愿消失值的伊利昂塔",
           "source": {
-            "card": "aibp/ps/DEMIDJINN/DEMIDJINN_TR_O_002.jpg",
+            "card": "aibp/ps/DEMIDJINN/DEMIDJINN_TR_V_002.jpg",
             "sheet": "等级属性",
             "row": 123
           }
@@ -3245,7 +3245,7 @@
           "traitChanges": "Ruthless；Flickering Wishes",
           "notes": "每次双方攻击后触发全场愿望",
           "source": {
-            "card": "aibp/ps/DEMIDJINN/DEMIDJINN_TR_O_002.jpg",
+            "card": "aibp/ps/DEMIDJINN/DEMIDJINN_TR_V_002.jpg",
             "sheet": "等级属性",
             "row": 124
           }
@@ -3258,7 +3258,7 @@
       "cycle": "c4",
       "sources": {
         "front": "aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY.jpg",
-        "back": "aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_O_001.jpg"
+        "back": "aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_II_001.jpg"
       },
       "notes": "高等级依据Mod大卡反面，英文特质名保留原文。 其他核对来源：THE_BABELIAN_LUNACY_TR_II_001.jpg；THE_BABELIAN_LUNACY_TR_VIII_001.jpg；THE_BABELIAN_LUNACY_TR_IX_001.jpg",
       "levels": {
@@ -3309,7 +3309,7 @@
           "traitChanges": "Moon Call；Amongst the Bleached Bones；Built for Eternity；True Babylon",
           "notes": "无尽阶梯18格；使用非自选语言说话每词+1命运",
           "source": {
-            "card": "aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_O_001.jpg",
+            "card": "aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 126
           }
@@ -3335,7 +3335,7 @@
           "traitChanges": "One Fool at a Time",
           "notes": "泰坦进入无尽阶梯后，阶梯入口消失",
           "source": {
-            "card": "aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_O_001.jpg",
+            "card": "aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 127
           }
@@ -3361,7 +3361,7 @@
           "traitChanges": "Thread Lightly",
           "notes": "攀升检定失败抽奥波尔",
           "source": {
-            "card": "aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_O_001.jpg",
+            "card": "aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 128
           }
@@ -3387,7 +3387,7 @@
           "traitChanges": "Beginning of the End",
           "notes": "",
           "source": {
-            "card": "aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_O_001.jpg",
+            "card": "aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 129
           }
@@ -3413,7 +3413,7 @@
           "traitChanges": "Endless Escalator",
           "notes": "无尽阶梯最底层泰坦死亡",
           "source": {
-            "card": "aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_O_001.jpg",
+            "card": "aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 130
           }
@@ -3439,7 +3439,7 @@
           "traitChanges": "Fate of a Debtor",
           "notes": "一名泰坦获得米达斯标记，其他泰坦获得相同数量",
           "source": {
-            "card": "aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_O_001.jpg",
+            "card": "aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 131
           }
@@ -3465,7 +3465,7 @@
           "traitChanges": "Built to Be Broken；Total Eclipse",
           "notes": "造成伤口失败，锁住最高未锁阶梯层，该层泰坦死亡",
           "source": {
-            "card": "aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_O_001.jpg",
+            "card": "aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 132
           }
@@ -3491,7 +3491,7 @@
           "traitChanges": "God’s Breath；Ruthless",
           "notes": "",
           "source": {
-            "card": "aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_O_001.jpg",
+            "card": "aibp/ps/THE_BABELIAN_LUNACY/THE_BABELIAN_LUNACY_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 133
           }
@@ -3504,7 +3504,7 @@
       "cycle": "c4",
       "sources": {
         "front": "aibp/ps/DAHAKA/DAHAKA.jpg",
-        "back": "aibp/ps/DAHAKA/DAHAKA_TR_O_002.jpg"
+        "back": "aibp/ps/DAHAKA/DAHAKA_TR_II_002.jpg"
       },
       "notes": "高等级依据Mod大卡反面，英文特质名保留原文。",
       "levels": {
@@ -3555,7 +3555,7 @@
           "traitChanges": "Winnowing；移除 Shackles of Regret",
           "notes": "移除恐惧的款待，加入 Trojan Ire 与 The Oar",
           "source": {
-            "card": "aibp/ps/DAHAKA/DAHAKA_TR_O_002.jpg",
+            "card": "aibp/ps/DAHAKA/DAHAKA_TR_II_002.jpg",
             "sheet": "等级属性",
             "row": 135
           }
@@ -3581,7 +3581,7 @@
           "traitChanges": "Land That Knows Nothing of the Sea",
           "notes": "获得 The Oar 后立即翻面",
           "source": {
-            "card": "aibp/ps/DAHAKA/DAHAKA_TR_O_002.jpg",
+            "card": "aibp/ps/DAHAKA/DAHAKA_TR_II_002.jpg",
             "sheet": "等级属性",
             "row": 136
           }
@@ -3607,7 +3607,7 @@
           "traitChanges": "Forbidden Alchemy",
           "notes": "获得神浆标记数量翻倍",
           "source": {
-            "card": "aibp/ps/DAHAKA/DAHAKA_TR_O_002.jpg",
+            "card": "aibp/ps/DAHAKA/DAHAKA_TR_II_002.jpg",
             "sheet": "等级属性",
             "row": 137
           }
@@ -3633,7 +3633,7 @@
           "traitChanges": "Beginning of the End；Bane of Odysseus",
           "notes": "未通过 Trojan Ire 卡的条件则死亡",
           "source": {
-            "card": "aibp/ps/DAHAKA/DAHAKA_TR_O_002.jpg",
+            "card": "aibp/ps/DAHAKA/DAHAKA_TR_II_002.jpg",
             "sheet": "等级属性",
             "row": 138
           }
@@ -3659,7 +3659,7 @@
           "traitChanges": "Contaminated Cuts",
           "notes": "泰坦回合结束获得等同神浆标记数的危险",
           "source": {
-            "card": "aibp/ps/DAHAKA/DAHAKA_TR_O_002.jpg",
+            "card": "aibp/ps/DAHAKA/DAHAKA_TR_II_002.jpg",
             "sheet": "等级属性",
             "row": 139
           }
@@ -3685,7 +3685,7 @@
           "traitChanges": "Shadow Backstep",
           "notes": "暗影步穿过棋盘边缘，治疗1",
           "source": {
-            "card": "aibp/ps/DAHAKA/DAHAKA_TR_O_002.jpg",
+            "card": "aibp/ps/DAHAKA/DAHAKA_TR_II_002.jpg",
             "sheet": "等级属性",
             "row": 140
           }
@@ -3711,7 +3711,7 @@
           "traitChanges": "The Dragon Does Not Sleep",
           "notes": "增加连击轨道；除非破坏连击，否则AI不能被打断攻击",
           "source": {
-            "card": "aibp/ps/DAHAKA/DAHAKA_TR_O_002.jpg",
+            "card": "aibp/ps/DAHAKA/DAHAKA_TR_II_002.jpg",
             "sheet": "等级属性",
             "row": 141
           }
@@ -3737,7 +3737,7 @@
           "traitChanges": "Ruthless；Incorporeal Wraith",
           "notes": "只能通过打断攻击造成伤口；BP使用较高的AT值",
           "source": {
-            "card": "aibp/ps/DAHAKA/DAHAKA_TR_O_002.jpg",
+            "card": "aibp/ps/DAHAKA/DAHAKA_TR_II_002.jpg",
             "sheet": "等级属性",
             "row": 142
           }
@@ -3750,7 +3750,7 @@
       "cycle": "c5",
       "sources": {
         "front": "aibp/ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS.jpg",
-        "back": "aibp/ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_TR_O_001.jpg"
+        "back": "aibp/ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_TR_V_001.jpg"
       },
       "notes": "高等级依据Mod大卡反面，英文特质名保留原文。",
       "levels": {
@@ -3879,7 +3879,7 @@
           "traitChanges": "Psychosomatic Poisoning；End of Hope",
           "notes": "获得状态卡、带状态卡开始回合时获得1神浆标记",
           "source": {
-            "card": "aibp/ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_TR_O_001.jpg",
+            "card": "aibp/ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 147
           }
@@ -3905,7 +3905,7 @@
           "traitChanges": "Relentless Anxiety；Deeper Depths",
           "notes": "消逝后立刻抽AI；开战氧气标记−1",
           "source": {
-            "card": "aibp/ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_TR_O_001.jpg",
+            "card": "aibp/ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 148
           }
@@ -3931,7 +3931,7 @@
           "traitChanges": "Original Trench",
           "notes": "普通棋盘格具有裂隙；其他地形视为高地",
           "source": {
-            "card": "aibp/ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_TR_O_001.jpg",
+            "card": "aibp/ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 149
           }
@@ -3957,7 +3957,7 @@
           "traitChanges": "Beginning of the End",
           "notes": "",
           "source": {
-            "card": "aibp/ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_TR_O_001.jpg",
+            "card": "aibp/ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 150
           }
@@ -3983,7 +3983,7 @@
           "traitChanges": "Dragon of the Lightless Void；Ruthless",
           "notes": "使用开/闭及破/火/黑/希望标记数量受 Light X 限制",
           "source": {
-            "card": "aibp/ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_TR_O_001.jpg",
+            "card": "aibp/ps/DRAGON_OF_PHOBOS/DRAGON_OF_PHOBOS_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 151
           }
@@ -3996,7 +3996,7 @@
       "cycle": "c5",
       "sources": {
         "front": "aibp/ps/MEDUKETOS/MEDUKETOS.jpg",
-        "back": "aibp/ps/MEDUKETOS/MEDUKETOS_TR_O_001.jpg"
+        "back": "aibp/ps/MEDUKETOS/MEDUKETOS_TR_V_001.jpg"
       },
       "notes": "高等级依据Mod大卡反面，英文特质名保留原文。",
       "levels": {
@@ -4125,7 +4125,7 @@
           "traitChanges": "Candle in the Dark；End of Hope",
           "notes": "光照X小于等级一半向上取整时，Skitter失去特殊标记",
           "source": {
-            "card": "aibp/ps/MEDUKETOS/MEDUKETOS_TR_O_001.jpg",
+            "card": "aibp/ps/MEDUKETOS/MEDUKETOS_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 156
           }
@@ -4151,7 +4151,7 @@
           "traitChanges": "Black Soup；Deeper Depths",
           "notes": "泰坦轮未找到美杜莎刻托，所有泰坦死亡；开战氧气标记−1",
           "source": {
-            "card": "aibp/ps/MEDUKETOS/MEDUKETOS_TR_O_001.jpg",
+            "card": "aibp/ps/MEDUKETOS/MEDUKETOS_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 157
           }
@@ -4177,7 +4177,7 @@
           "traitChanges": "Original Trench",
           "notes": "普通棋盘格具有裂隙；其他地形视为高地",
           "source": {
-            "card": "aibp/ps/MEDUKETOS/MEDUKETOS_TR_O_001.jpg",
+            "card": "aibp/ps/MEDUKETOS/MEDUKETOS_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 158
           }
@@ -4203,7 +4203,7 @@
           "traitChanges": "Beginning of the End",
           "notes": "",
           "source": {
-            "card": "aibp/ps/MEDUKETOS/MEDUKETOS_TR_O_001.jpg",
+            "card": "aibp/ps/MEDUKETOS/MEDUKETOS_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 159
           }
@@ -4229,7 +4229,7 @@
           "traitChanges": "Three Seconds；Ruthless",
           "notes": "忽略微波攻击前的特殊标记",
           "source": {
-            "card": "aibp/ps/MEDUKETOS/MEDUKETOS_TR_O_001.jpg",
+            "card": "aibp/ps/MEDUKETOS/MEDUKETOS_TR_V_001.jpg",
             "sheet": "等级属性",
             "row": 160
           }
@@ -4242,7 +4242,7 @@
       "cycle": "c5",
       "sources": {
         "front": "aibp/ps/UR_FLEECE/UR_FLEECE.jpg",
-        "back": "aibp/ps/UR_FLEECE/UR_FLEECE_TR_O_001.jpg"
+        "back": "aibp/ps/UR_FLEECE/UR_FLEECE_TR_II_001.jpg"
       },
       "notes": "I级两张正面版式数值一致，II–IX级依据Mod独立卡背；全等级生命值99。 其他核对来源：UR_FLEECE_2.jpg",
       "levels": {
@@ -4293,7 +4293,7 @@
           "traitChanges": "Psychosomatic Poisoning；Argo’s Parting Gift；All for All；移除 Just a Memory",
           "notes": "新增内容参见秘密牌堆15、卡309及322",
           "source": {
-            "card": "aibp/ps/UR_FLEECE/UR_FLEECE_TR_O_001.jpg",
+            "card": "aibp/ps/UR_FLEECE/UR_FLEECE_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 162
           }
@@ -4319,7 +4319,7 @@
           "traitChanges": "Mortal Embers",
           "notes": "禁用凡性柴薪特质",
           "source": {
-            "card": "aibp/ps/UR_FLEECE/UR_FLEECE_TR_O_001.jpg",
+            "card": "aibp/ps/UR_FLEECE/UR_FLEECE_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 163
           }
@@ -4345,7 +4345,7 @@
           "traitChanges": "Darkest Before Dawn",
           "notes": "每4个伤口生成额外黑暗深渊地块，双重伤口计2",
           "source": {
-            "card": "aibp/ps/UR_FLEECE/UR_FLEECE_TR_O_001.jpg",
+            "card": "aibp/ps/UR_FLEECE/UR_FLEECE_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 164
           }
@@ -4371,7 +4371,7 @@
           "traitChanges": "Beginning of the End",
           "notes": "",
           "source": {
-            "card": "aibp/ps/UR_FLEECE/UR_FLEECE_TR_O_001.jpg",
+            "card": "aibp/ps/UR_FLEECE/UR_FLEECE_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 165
           }
@@ -4397,7 +4397,7 @@
           "traitChanges": "Deeper Depths",
           "notes": "开战氧气标记−1",
           "source": {
-            "card": "aibp/ps/UR_FLEECE/UR_FLEECE_TR_O_001.jpg",
+            "card": "aibp/ps/UR_FLEECE/UR_FLEECE_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 166
           }
@@ -4423,7 +4423,7 @@
           "traitChanges": "Contagious Fear",
           "notes": "一名泰坦获得负面状态，其他泰坦获得同一状态",
           "source": {
-            "card": "aibp/ps/UR_FLEECE/UR_FLEECE_TR_O_001.jpg",
+            "card": "aibp/ps/UR_FLEECE/UR_FLEECE_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 167
           }
@@ -4449,7 +4449,7 @@
           "traitChanges": "Unfathomable Depths；移除 Deeper Depths",
           "notes": "开战氧气标记−2（替代此前−1）",
           "source": {
-            "card": "aibp/ps/UR_FLEECE/UR_FLEECE_TR_O_001.jpg",
+            "card": "aibp/ps/UR_FLEECE/UR_FLEECE_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 168
           }
@@ -4475,7 +4475,7 @@
           "traitChanges": "End of an Age；Ruthless",
           "notes": "不能觉醒",
           "source": {
-            "card": "aibp/ps/UR_FLEECE/UR_FLEECE_TR_O_001.jpg",
+            "card": "aibp/ps/UR_FLEECE/UR_FLEECE_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 169
           }
@@ -4488,7 +4488,7 @@
       "cycle": "c5",
       "sources": {
         "front": "aibp/ps/TITAN_X/TITAN_X.jpg",
-        "back": "aibp/ps/TITAN_X/TITAN_X_TR_O_001.jpg"
+        "back": "aibp/ps/TITAN_X/TITAN_X_TR_II_001.jpg"
       },
       "notes": "高等级依据Mod大卡反面，英文特质名保留原文。",
       "levels": {
@@ -4539,7 +4539,7 @@
           "traitChanges": "Dazzling Speed；移除 Toying",
           "notes": "位于正面时不能重掷攻击骰或闪避骰",
           "source": {
-            "card": "aibp/ps/TITAN_X/TITAN_X_TR_O_001.jpg",
+            "card": "aibp/ps/TITAN_X/TITAN_X_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 171
           }
@@ -4565,7 +4565,7 @@
           "traitChanges": "Nemesis Vow",
           "notes": "佯攻卡揭示前，每名泰坦获得1神浆标记",
           "source": {
-            "card": "aibp/ps/TITAN_X/TITAN_X_TR_O_001.jpg",
+            "card": "aibp/ps/TITAN_X/TITAN_X_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 172
           }
@@ -4591,7 +4591,7 @@
           "traitChanges": "Truth of the Shoals",
           "notes": "获得疼痛标记数量翻倍",
           "source": {
-            "card": "aibp/ps/TITAN_X/TITAN_X_TR_O_001.jpg",
+            "card": "aibp/ps/TITAN_X/TITAN_X_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 173
           }
@@ -4617,7 +4617,7 @@
           "traitChanges": "Beginning of the End；Play for Keeps",
           "notes": "使用半个战斗棋盘，14×10格",
           "source": {
-            "card": "aibp/ps/TITAN_X/TITAN_X_TR_O_001.jpg",
+            "card": "aibp/ps/TITAN_X/TITAN_X_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 174
           }
@@ -4643,7 +4643,7 @@
           "traitChanges": "You Cannot Advance",
           "notes": "选目标时若无平局，AI/招牌同时针对所有泰坦",
           "source": {
-            "card": "aibp/ps/TITAN_X/TITAN_X_TR_O_001.jpg",
+            "card": "aibp/ps/TITAN_X/TITAN_X_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 175
           }
@@ -4669,7 +4669,7 @@
           "traitChanges": "Flawless Form",
           "notes": "仅自然10闪避成功",
           "source": {
-            "card": "aibp/ps/TITAN_X/TITAN_X_TR_O_001.jpg",
+            "card": "aibp/ps/TITAN_X/TITAN_X_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 176
           }
@@ -4695,7 +4695,7 @@
           "traitChanges": "Just Fold",
           "notes": "使用四分之一战斗棋盘，7×10格（替代半个棋盘）",
           "source": {
-            "card": "aibp/ps/TITAN_X/TITAN_X_TR_O_001.jpg",
+            "card": "aibp/ps/TITAN_X/TITAN_X_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 177
           }
@@ -4721,7 +4721,7 @@
           "traitChanges": "End of an Age；Ruthless",
           "notes": "不能觉醒",
           "source": {
-            "card": "aibp/ps/TITAN_X/TITAN_X_TR_O_001.jpg",
+            "card": "aibp/ps/TITAN_X/TITAN_X_TR_II_001.jpg",
             "sheet": "等级属性",
             "row": 178
           }

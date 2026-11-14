@@ -78,6 +78,7 @@ function panelScope(currentApostle) {
   ].join("\n");
   const opened = [];
   const context = {
+    theatreRequest: null,
     currentApostle,
     window: { HeliosAssets: { resolve: (src) => src } },
     panelWrap: {
@@ -131,33 +132,48 @@ test("老存档里的 O/1、IV/1 迁到 V/1，且先知自己的 V/1 不再被�
     }
   }
   const callback = indexSource.slice(start, index + 1);
-  const migrate = (name) => vm.runInNewContext(`(name) => (${callback})`, {})(name);
+  const window = {
+    AIBP_BOSS_TRAIT_RULES: require("../aibp/boss-trait-rules.js"),
+    AIBP_BOSS_LEVEL_DATA: require("../aibp/boss-levels-data.js"),
+  };
+  const migrate = (name) => vm.runInNewContext(`(name) => (${callback})`, { window })(name);
 
   assert.equal(migrate("HYPERTIME_ORACLE")({ type: "TR", level: "O", index: 1 }).level, "V");
   assert.equal(migrate("HYPERTIME_ORACLE")({ type: "TR", level: "IV", index: 1 }).level, "V");
   const oracleV = migrate("HYPERTIME_ORACLE")({ type: "TR", level: "V", index: 1 });
   assert.equal(oracleV.level, "V", "先知的 V/1 不能被通用特性规则吞掉");
   assert.equal(oracleV.scope || "", "");
-  // 别的使徒那条「V/1 = 通用特性」的老规则还要照旧生效。
-  const hekatonV = migrate("HEKATON")({ type: "TR", level: "V", index: 1 });
-  assert.equal(hekatonV.level, "COMMON");
-  assert.equal(hekatonV.scope, "common");
-  assert.equal(migrate("HEKATON")({ type: "TR", level: "V", index: 2 }).level, "V");
+  // 反面大卡迁到对应等级，且不被 V/1 → COMMON 吞掉。
+  const hekatonBack = migrate("HEKATON")({ type: "TR", level: "O", index: 1 });
+  assert.equal(hekatonBack.level, "V", "百臂巨人反面大卡 O/1 迁到 V/1");
+  assert.equal(hekatonBack.scope || "", "");
+  const hekatonBackV = migrate("HEKATON")({ type: "TR", level: "V", index: 1 });
+  assert.equal(hekatonBackV.level, "V", "已迁到 V/1 的反面大卡不能再被 V/1 → COMMON 吞掉");
+  // 反面大卡不是 V/1 的使徒，那条「V/1 = 通用特性」的老规则照旧生效。
+  const burdenV = migrate("THE_BURDEN")({ type: "TR", level: "V", index: 1 });
+  assert.equal(burdenV.level, "COMMON");
+  assert.equal(burdenV.scope, "common");
+  assert.equal(migrate("THE_BURDEN")({ type: "TR", level: "V", index: 2 }).level, "V");
 });
 
-test("先知 V 级特性卡按大卡渲染，IV 级不再是大卡", () => {
-  const context = {};
+test("反面大卡按 sources.back 识别为大卡，IV 级与普通 O 级卡不再是", () => {
+  const context = { window: {
+    AIBP_BOSS_TRAIT_RULES: require("../aibp/boss-trait-rules.js"),
+    AIBP_BOSS_LEVEL_DATA: require("../aibp/boss-levels-data.js"),
+  } };
   vm.createContext(context);
   vm.runInContext(
-    `${functionSource("isDahakaFearfulHospitality")}\n${functionSource("isLargeTraitCard")}\n`
+    `${functionSource("isDahakaFearfulHospitality")}\n${functionSource("isBackCard")}\n${functionSource("isLargeTraitCard")}\n`
     + "globalThis.__isLarge = isLargeTraitCard;",
     context
   );
   assert.equal(context.__isLarge("HYPERTIME_ORACLE", { level: "V", index: 1 }), true);
   assert.equal(context.__isLarge("HYPERTIME_ORACLE", { level: "IV", index: 1 }), false);
-  assert.equal(context.__isLarge("HEKATON", { level: "V", index: 1 }), false);
-  assert.equal(context.__isLarge("DAHAKA", { level: "O", index: 1 }), false);
-  assert.equal(context.__isLarge("HEKATON", { level: "O", index: 1 }), true);
+  assert.equal(context.__isLarge("HEKATON", { level: "V", index: 1 }), true, "百臂巨人反面大卡 V/1 是大卡");
+  assert.equal(context.__isLarge("HEKATON", { level: "II", index: 1 }), false);
+  assert.equal(context.__isLarge("DAHAKA", { level: "II", index: 2 }), true, "达哈卡反面大卡 II/2 是大卡");
+  assert.equal(context.__isLarge("DAHAKA", { level: "O", index: 1 }), false, "达哈卡恐惧款待 O/1 不是大卡");
+  assert.equal(context.__isLarge("HEKATON", { level: "O", index: 1 }), false, "O/1 已不再是反面大卡");
 });
 
 test("UR 面板默认显示大卡 2，候补表按「默认在前」排列", () => {

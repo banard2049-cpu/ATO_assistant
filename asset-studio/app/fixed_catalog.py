@@ -130,14 +130,14 @@ CYCLE_TRAIT_CARDS = (
 
 # Boss 大卡的等级反面；半灯神和达哈卡的 O_001 是其他卡，等级面用 O_002。
 BOSS_LEVEL_BACK_CARDS = (
-    ("MIDASCORE", "MIDASCORE_TR_O_001"),
-    ("DEMIDJINN", "DEMIDJINN_TR_O_002"),
-    ("THE_BABELIAN_LUNACY", "THE_BABELIAN_LUNACY_TR_O_001"),
-    ("DAHAKA", "DAHAKA_TR_O_002"),
-    ("DRAGON_OF_PHOBOS", "DRAGON_OF_PHOBOS_TR_O_001"),
-    ("MEDUKETOS", "MEDUKETOS_TR_O_001"),
-    ("TITAN_X", "TITAN_X_TR_O_001"),
-    ("UR_FLEECE", "UR_FLEECE_TR_O_001"),
+    ("MIDASCORE", "MIDASCORE_TR_V_001"),
+    ("DEMIDJINN", "DEMIDJINN_TR_V_002"),
+    ("THE_BABELIAN_LUNACY", "THE_BABELIAN_LUNACY_TR_II_001"),
+    ("DAHAKA", "DAHAKA_TR_II_002"),
+    ("DRAGON_OF_PHOBOS", "DRAGON_OF_PHOBOS_TR_V_001"),
+    ("MEDUKETOS", "MEDUKETOS_TR_V_001"),
+    ("TITAN_X", "TITAN_X_TR_II_001"),
+    ("UR_FLEECE", "UR_FLEECE_TR_II_001"),
 )
 
 TERRAIN_CARD_STEMS = (
@@ -1478,6 +1478,50 @@ def fixed_catalog_payload() -> dict[str, Any]:
         )
         item["faces"] = {"front": "aibp/ps/HYPERTIME_ORACLE/HYPERTIME_ORACLE_TR_V_001.jpg"}
 
+    # C1–C3 使徒的 Trait 正面卡在旧 APK 里统一用 `_TR_O_001`（O = Original 占位），
+    # 但工程目录已按每张卡首次出现的真实等级重命名（与 boss-levels-data.js 的 back
+    # 字段、pack-shrink-keep.txt 的 keep 名单一致）。这里把旧 `_TR_O_001` 条目迁移到
+    # 对应等级文件名，否则打包会因找不到 `_TR_O_001.jpg` 而失败。
+    # C4 的 DAHAKA / DEMIDJINN 仍保留真实的 `_TR_O_001.jpg`（那是另一张卡，不在此列）。
+    _trait_o_migration = {
+        "ALPHA_TEMENOS": "ALPHA_TEMENOS_TR_II_001",
+        "HEKATON": "HEKATON_TR_V_001",
+        "HERMESIAN_PURSUER": "HERMESIAN_PURSUER_TR_II_001",
+        "LABYRINTHAUROS": "LABYRINTHAUROS_TR_V_001",
+        "CHIMERA_METASTASIOS": "CHIMERA_METASTASIOS_TR_V_001",
+        "CYCLONUS": "CYCLONUS_TR_V_001",
+        "THE_BURDEN": "THE_BURDEN_TR_II_001",
+        "THE_NIETZSCJEAN": "THE_NIETZSCJEAN_TR_II_001",
+        "ICARIAN_HARPY": "ICARIAN_HARPY_TR_VI_001",
+        "SUN_DESCENDANT": "SUN_DESCENDANT_TR_IV_001",
+    }
+    # 目标等级文件若已在清单里（THE_NIETZSCJEAN / THE_BURDEN 的 _TR_II_001 旧 APK 就
+    # 收过），则直接退掉重复的 _TR_O_001 条目；否则把它迁移到等级命名。
+    _migration_targets = set(_trait_o_migration.values())
+    for item in payload["items"]:
+        old_number = str(item.get("number") or "")
+        if not old_number.endswith("_TR_O_001"):
+            continue
+        enemy = old_number[: -len("_TR_O_001")]
+        new_number = _trait_o_migration.get(enemy)
+        if new_number is None:
+            continue
+        if new_number in _migration_targets and any(
+            other is not item and str(other.get("number") or "") == new_number
+            for other in payload["items"]
+        ):
+            # 已有同名的等级条目，这条旧的 O_001 直接退场。
+            item["number"] = None
+            continue
+        item["number"] = new_number
+        item["name"] = new_number.replace("_", " ")
+        item["id"] = make_id(
+            item["cycle"], "aibp", f"{enemy} / Trait",
+            item["number"], item["name"],
+        )
+        item["faces"] = {"front": f"aibp/ps/{enemy}/{new_number}.jpg"}
+    payload["items"] = [it for it in payload["items"] if it.get("number") is not None]
+
     # 尼采超人的 THE_NIETZSCJEAN_TRII_002 是清单里的笔误条目：它与 _TR_II_002 逐字节
     # 相同，应用侧也从不按这个名字取图（traitFileName 永远拼出 `_TR_<等级>_<编号>`），
     # 留着只会让资料包多带一张重复图，所以整条退场。
@@ -1990,6 +2034,7 @@ def fixed_catalog_payload() -> dict[str, Any]:
         + "+tone-baked-shared-backs-20261019"
         + "+record-boss-avatars-20261022"
         + "+story-mark-icons-20261108"
+        + "+c1-c3-trait-level-fronts-20261115"
     )
     return payload
 

@@ -170,6 +170,9 @@ __pycache__/
 Thumbs.db
 desktop.ini
 
+# WorkBuddy 本地工作记忆/日志（不含在源码发布里）
+/.workbuddy/
+
 # 官方 APK 解包产物（不进仓库，500MB+）
 /app-extract/
 

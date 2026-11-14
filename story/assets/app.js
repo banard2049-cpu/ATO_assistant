@@ -600,7 +600,7 @@
     const cycleId = String(book?.id || "").replace(/\.5$/, "");
     const themedCycle = ["c1", "c2", "c3", "c4", "c5"].includes(cycleId) ? cycleId : "";
     if (document.body.dataset.cycle !== themedCycle) document.body.dataset.cycle = themedCycle;
-    window.ATO_CYCLE_SYMBOLS?.setBrandMark(storyMark, cycleId, "../");
+    window.ATO_CYCLE_SYMBOLS?.setModuleLogo(storyMark, "story", "../../");
     document.querySelectorAll("[data-cycle-link]").forEach((link) => {
       const url = new URL(link.getAttribute("href"), window.location.href);
       if (cycleId) url.searchParams.set("cycle", cycleId);

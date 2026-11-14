@@ -40,6 +40,16 @@
   const ruleKey = title => `level-trait:${canonical(title)}`;
   const titleForCard = (apostle, card) => card?.scope === "c45-common" && Number(card.index) === 2
     ? "累累白骨之间" : !card?.scope ? cards[apostle]?.[`${card.level}_${Number(card.index)}`] || "" : "";
+  // 反面大卡：boss-levels-data 里 sources.back 指向的那张 TR 卡。图片文件名
+  // {NAME}_TR_{LEVEL}_{index}.{ext} 的 LEVEL 就是反面首次出现的等级（数据里 source.card
+  // 从正面切到反面的那个等级）。HELIOS/BLACKBEAK 等隐藏 boss 的 back 不是 ps 路径，返回 null。
+  function backCardFor(apostle, data) {
+    const back = data?.bosses?.[apostle]?.sources?.back;
+    if (typeof back !== "string") return null;
+    const match = back.match(/\/([A-Z][A-Z0-9_]+)_TR_([A-Z]+)_(\d+)\.(jpg|png|jpeg)$/i);
+    if (!match) return null;
+    return { type: "TR", level: match[2].toUpperCase(), index: Number(match[3]), ext: match[4].toLowerCase(), scope: "" };
+  }
   const isRemoved = (apostle, level, card, group = false) => {
     // Retired asset: ignore stale image inventories as well as saved selections.
     if (apostle === "HYPERTIME_ORACLE" && !card?.scope && card?.level === "IV" && Number(card?.index) === 1) return true;
@@ -160,7 +170,7 @@
       option.append(checkbox, text); grid.appendChild(option);
     }
   }
-  const api = { removals, cards, effects, canonical, ruleKey, titleForCard, isRemoved, defaultShown, stateFor,
+  const api = { removals, cards, effects, canonical, ruleKey, titleForCard, backCardFor, isRemoved, defaultShown, stateFor,
     tokenEffects, additionalCards, renderSummary, appendOptions };
   root.AIBP_BOSS_TRAIT_RULES = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;

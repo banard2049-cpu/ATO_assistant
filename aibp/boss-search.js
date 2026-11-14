@@ -95,7 +95,8 @@
         span.dataset.termVariant = variant;
         span.setAttribute("data-language-ignore", "");
         span.hidden = variant !== language;
-        span.textContent = label;
+        span.textContent = root.document.body?.dataset?.theatreBattle && root.ATO_THEATRE_TERMS
+          ? root.ATO_THEATRE_TERMS.boss(id, variant, names.en) : label;
         return span;
       });
       element.replaceChildren(...variants, suffix);

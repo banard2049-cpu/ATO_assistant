@@ -172,8 +172,8 @@ body {
 }
 
 .mark {
-  width: 48px;
-  height: 48px;
+  width: 32px;
+  height: 32px;
   display: grid;
   place-items: center;
   color: var(--cycle-sidebar-accent);
@@ -182,9 +182,23 @@ body {
 }
 
 .mark .cycle-symbol {
-  width: 40px;
-  height: 40px;
+  width: 26px;
+  height: 26px;
   object-fit: contain;
+}
+
+.mark .module-logo {
+  width: 26px;
+  height: 26px;
+  background-color: currentColor;
+  -webkit-mask-image: var(--icon-src);
+  mask-image: var(--icon-src);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
 }
 
 h1,

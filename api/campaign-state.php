@@ -42,7 +42,7 @@ session_start();
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 
-$allowedSections = ['dashboard', 'map', 'record', 'technology', 'heroes', 'aibp', 'story'];
+$allowedSections = ['dashboard', 'map', 'record', 'technology', 'heroes', 'aibp', 'story', 'theatre'];
 $usersFile = $dataDir . DIRECTORY_SEPARATOR . 'ato-users.json';
 $secondScreensFile = $dataDir . DIRECTORY_SEPARATOR . 'ato-second-screens.json';
 // 必须比 php.ini 的 post_max_size（默认 8M）小：请求体一旦超过 post_max_size，
@@ -110,6 +110,7 @@ function default_campaign(): array {
       'heroes' => null,
       'aibp' => null,
       'story' => null,
+      'theatre' => null,
     ],
     'sectionRevisions' => [
       'dashboard' => 0,
@@ -119,6 +120,7 @@ function default_campaign(): array {
       'heroes' => 0,
       'aibp' => 0,
       'story' => 0,
+      'theatre' => 0,
     ],
   ];
 }
@@ -650,7 +652,7 @@ function section_has_user_buckets($section): bool {
 }
 
 function update_campaign_section(array $campaign, string $section, $state, ?string $userId): array {
-  if ($userId === null || $section === 'dashboard') {
+  if ($userId === null || $section === 'dashboard' || $section === 'theatre') {
     $campaign['sections'][$section] = $state;
     return $campaign;
   }
@@ -1178,10 +1180,12 @@ if ($action === 'restore-previous-day') {
     respond(404, ['ok' => false, 'code' => 'BACKUP_NOT_FOUND', 'error' => '没有找到前一天（Day ' . $payload['day'] . '）的可用备份。']);
   }
   $restored['sections'] += default_campaign()['sections'];
+  // Theatre wins and rewards carry across campaign days and playthroughs.
+  $restored['sections']['theatre'] = $campaign['sections']['theatre'];
   $restored['sectionRevisions'] = [];
   // Never roll revision counters back: stale pages must conflict with the restored save.
   foreach ($allowedSections as $name) {
-    $restored['sectionRevisions'][$name] = (int) ($campaign['sectionRevisions'][$name] ?? 0) + 1;
+    $restored['sectionRevisions'][$name] = (int) ($campaign['sectionRevisions'][$name] ?? 0) + ($name === 'theatre' ? 0 : 1);
   }
   prepare_campaign_backups($saveFile, $campaign, $restored, $backupCount);
   write_campaign($saveFile, $restored);
@@ -1200,7 +1204,7 @@ if ($method === 'GET') {
       'revision' => (int) ($campaign['sectionRevisions'][$section] ?? 0),
       'updatedAt' => $campaign['updatedAt'],
       'user' => public_user($user),
-    ]);
+    ] + ($section === 'theatre' ? ['dashboardCycle' => campaign_game_day($campaign)['parts'][1]] : []));
   }
   respond(200, ['ok' => true, 'exists' => is_file($saveFile), 'campaign' => $campaign, 'user' => public_user($user)]);
 }

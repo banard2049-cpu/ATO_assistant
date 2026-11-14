@@ -274,8 +274,11 @@ public final class MainActivity extends Activity {
     if (url == null || !url.startsWith(ROOT)) return "";
     String path = url.substring(ROOT.length()).split("[?#]", 2)[0];
     if (path.isEmpty() || path.equals("index.html")) return "dashboard";
-    for (String module : new String[]{"story", "map", "record", "hero", "technology", "aibp", "briefing"})
-      if (path.equals(module + "/") || path.equals(module + "/index.html")) return module;
+    for (String module : new String[]{"story", "map", "record", "hero", "technology", "aibp", "briefing", "theatre"}) {
+      if (!path.equals(module + "/") && !path.equals(module + "/index.html")) continue;
+      if ("aibp".equals(module) && Uri.parse(url).getQueryParameterNames().contains("theatreBattle")) return "aibp-theatre";
+      return module;
+    }
     return "";
   }
 
@@ -289,7 +292,7 @@ public final class MainActivity extends Activity {
         // replacing or silently reusing an existing reader's current position.
         if (TabNavigationPolicy.canReuse(module, currentUrl, url)) {
           selectTab(tab);
-          if ("dashboard".equals(module)) {
+          if ("dashboard".equals(module) || "theatre".equals(module)) {
             // Saved module data may have changed while the console was hidden.
             // Refresh its existing page in place rather than reloading it.
             tab.view.evaluateJavascript("window.dispatchEvent(new CustomEvent('ato-module-sync-request'))", null);
