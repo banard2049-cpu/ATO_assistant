@@ -32,8 +32,9 @@ function ui({ local, remote, timer = setTimeout }) {
         if (params.get('action') === 'prepare') return response({ ok: true, endpoint: './api/fixture-runner.php' });
         return local(params, options);
       }
-      return remote ? remote(url, options) : response(url.includes('/compare/')
-        ? { status: 'ahead', files: [] } : { tag_name: 'v2.2.0' });
+      if (remote) return remote(url, options);
+      return response(url.includes('/compare/')
+        ? { status: 'ahead', files: [] } : [{ tag_name: 'v2.2.0' }]);
     },
   });
   return { node, requests };
@@ -45,7 +46,7 @@ async function settle(check) {
 
 test('还原入口不依赖 GitHub 发布提示，当前已最新也可还原', async () => {
   const { node } = ui({ local: () => response({ supported: true, canRollback: true }),
-    remote: () => response({ tag_name: 'v2.1.9' }) });
+    remote: () => response([{ tag_name: 'v2.1.9' }]) });
   await settle(() => !node('#rollbackUpdateButton').hidden);
   assert.equal(node('#updateNotice').hidden, true);
   const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
@@ -111,7 +112,7 @@ test('下载失败的取消请求完成前不能再次更新，取消绑定自�
     assert.equal(params.get('plan'), 'owned');
     return new Promise(resolve => { finishCancel = () => resolve(response({ ok: true })); });
   }, remote: url => response(url.includes('/compare/') ? { status: 'ahead', files: [] }
-      : url.includes('raw.githubusercontent') ? {} : { tag_name: 'v2.2.0' }, url.includes('raw.githubusercontent') ? 404 : 200) });
+      : url.includes('raw.githubusercontent') ? {} : [{ tag_name: 'v2.2.0' }], url.includes('raw.githubusercontent') ? 404 : 200) });
   await settle(() => !node('#applyUpdateButton').hidden);
   node('#applyUpdateButton').click();
   await settle(() => finishCancel);
@@ -129,7 +130,7 @@ test('更新过程中锁定目标版本，检查更新不能改写下载目标',
     : { ok: true, target: 'v2.2.0', applied: 1 }), remote: url => {
     if (url.includes('/compare/')) return new Promise(resolve => { finishCompare = () => resolve(response({ status: 'ahead', files: [] })); });
     if (url.includes('raw.githubusercontent')) return { ...response({}), arrayBuffer: async () => new ArrayBuffer(0) };
-    return response({ tag_name: ++releases === 1 ? 'v2.2.0' : 'v2.3.0' });
+    return response([{ tag_name: ++releases === 1 ? 'v2.2.0' : 'v2.3.0' }]);
   } });
   await settle(() => !node('#applyUpdateButton').hidden);
   node('#applyUpdateButton').click();
@@ -146,7 +147,7 @@ test('比较接口超时恢复按钮，允许重试', async () => {
     timer: (fn, ms) => setTimeout(fn, ms === 30000 ? 5 : ms),
     remote: (url, options) => url.includes('/compare/') ? new Promise((resolve, reject) => {
       options.signal.addEventListener('abort', () => reject(new Error('aborted')));
-    }) : response({ tag_name: 'v2.2.0' }) });
+    }) : response([{ tag_name: 'v2.2.0' }]) });
   await settle(() => !node('#applyUpdateButton').hidden);
   node('#applyUpdateButton').click();
   await new Promise(resolve => setTimeout(resolve, 20));

@@ -14,10 +14,11 @@
   const term = key => terms.ui(key, language);
   const cycleName = cycle => `${term('cycle')} ${rules.roman[Number(cycle.slice(1))]}`;
   const modeName = mode => ({ normal: `${term('tree')} · 普通`, cursed: `${term('tree')} · 诅咒`, custom: '自定义重打' })[mode];
-  const sheetOrder = ['HEKATON', 'LABYRINTHAUROS', 'ALPHA_TEMENOS', 'CYCLONUS', 'CHIMERA_METASTASIOS', 'THE_NIETZSCJEAN',
-    'HYPERTIME_ORACLE', 'ICARIAN_HARPY', 'SUN_DESCENDANT', 'HERMESIAN_PURSUER', 'THE_BURDEN',
-    'MIDASCORE', 'DEMIDJINN', 'THE_BABELIAN_LUNACY', 'DRAGON_OF_PHOBOS', 'MEDUKETOS', 'UR_FLEECE',
-    'DAHAKA', 'TITAN_X', 'HELIOS'];
+  const sheetOrder = ['HEKATON', 'LABYRINTHAUROS', 'ALPHA_TEMENOS', 'HERMESIAN_PURSUER',
+    'CYCLONUS', 'CHIMERA_METASTASIOS', 'THE_NIETZSCJEAN', 'THE_BURDEN',
+    'HYPERTIME_ORACLE', 'ICARIAN_HARPY', 'SUN_DESCENDANT',
+    'MIDASCORE', 'DEMIDJINN', 'THE_BABELIAN_LUNACY', 'DAHAKA', 'HELIOS',
+    'DRAGON_OF_PHOBOS', 'MEDUKETOS', 'UR_FLEECE', 'TITAN_X'];
   const statusText = { locked: '锁定', ready: '可挑战', won: '已胜利', cursed: '可打诅咒', both: '双模式已胜' };
   const cardWidth = 120;
   const cardHeight = 31;
@@ -168,6 +169,13 @@
     if (win?.cursed) return 'both';
     if (win?.normal) return node.cursed && !rules.blockers(state, node).length ? 'cursed' : 'won';
     return rules.blockers(state, node).length ? 'locked' : 'ready';
+  }
+
+  // List view floats still-fightable bosses to the top so the next challenge is
+  // easy to spot: ready and cursed-pending rank before won, both and locked.
+  function listRank(node) {
+    const status = availability(node);
+    return status === 'ready' || status === 'cursed' ? 0 : 1;
   }
 
   function nodeButton(node, className = '', style = '') {
@@ -394,6 +402,15 @@
     const parent = positions.get('CHIMERA_METASTASIOS:9');
     const child = positions.get('CYCLONUS:9');
     if (parent && child) parent.x = child.x;
+    // HYPERTIME_ORACLE:5 (超时间流神谕者 V) otherwise drifts to the far right of
+    // the same row as THE_BURDEN:2 (巨石 II). Tuck it directly above the Burden
+    // so the branch reads as one column instead of a trailing arm.
+    const oracle5 = positions.get('HYPERTIME_ORACLE:5');
+    const burden2 = positions.get('THE_BURDEN:2');
+    if (oracle5 && burden2) {
+      oracle5.x = burden2.x;
+      oracle5.y = burden2.y - rowStep;
+    }
     const values = [...positions.values()];
     return {
       width: Math.ceil(Math.max(...values.map(point => point.x)) + cardWidth + gutter),
@@ -486,8 +503,12 @@
     if (display === 'list') {
       $('graph').replaceChildren();
       $('node-list').innerHTML = nodes.length ? rules.cycles.filter(cycle => nodes.some(node => node.cycle === cycle))
-        .map(cycle => `<section><h2>${cycleName(cycle)}</h2>
-        <div class="node-list-grid">${nodes.filter(node => node.cycle === cycle).map(node => nodeButton(node)).join('')}</div></section>`).join('')
+        .map(cycle => {
+          const cycleNodes = nodes.filter(node => node.cycle === cycle)
+            .sort((a, b) => listRank(a) - listRank(b) || a.level - b.level);
+          return `<section><h2>${cycleName(cycle)}</h2>
+        <div class="node-list-grid">${cycleNodes.map(node => nodeButton(node)).join('')}</div></section>`;
+        }).join('')
         : `<p class="muted">在右侧勾选某个循环的「已完成」，即可解锁该循环的始徒节点。</p>`;
       return;
     }
