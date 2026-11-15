@@ -5,16 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>忆识剧场 · ATO 助手</title>
   <link rel="stylesheet" href="../api/cycle-theme.css">
-  <link rel="stylesheet" href="./theatre.css?v=21">
+  <link rel="stylesheet" href="./theatre.css?v=25">
   <script src="../assets/theme.js?v=20261114-light-sidebar1" defer></script>
   <script src="../assets/page-focus-router.js?v=theatre1" defer></script>
   <script src="../assets/campaign-session.js" defer></script>
-  <script src="./catalog.js?v=3" defer></script>
+  <script src="./catalog.js?v=5" defer></script>
   <script src="../aibp/boss-search.js?v=20261011-boss-language1" defer></script>
-  <script src="./terms.js?v=4" defer></script>
-  <script src="./state.js?v=5" defer></script>
-  <script src="./graph.js?v=9" defer></script>
-  <script src="./app.js?v=30" defer></script>
+  <script src="./terms.js?v=5" defer></script>
+  <script src="./state.js?v=6" defer></script>
+  <script src="../technology/gear-inventory.js?v=20261002" defer></script>
+  <script src="./arsenal.js?v=1" defer></script>
+  <script src="./graph.js?v=11" defer></script>
+  <script src="./app.js?v=34" defer></script>
 </head>
 <body data-cycle="c1">
   <main>
@@ -71,6 +73,12 @@
           <label>等级<select id="manual-level"></select></label>
           <label>记录方式<select id="manual-action"><option value="add">标为已胜利</option><option value="remove">撤销补录</option></select></label>
           <button id="manual-submit" class="primary" value="save">保存战绩</button>
+        </form>
+      </dialog>
+      <dialog id="reward-preview" aria-labelledby="reward-preview-title">
+        <form method="dialog">
+          <header class="section-heading"><h2 id="reward-preview-title"></h2><button>关闭</button></header>
+          <img id="reward-preview-image" alt="">
         </form>
       </dialog>
     </div>

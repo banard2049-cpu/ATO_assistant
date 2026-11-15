@@ -64,11 +64,13 @@
   };
 
   const index = language => language === 'official' ? 1 : language === 'en' ? 2 : 0;
+  const skyseerGear = [['天涯', '摘天之盔', 'Skyreach'], ['揽月', '视野边界', 'Horizon’s Edge']];
   const api = {
     ui: (key, language) => ui[key][index(language)],
     boss,
     material: (cycle, kind, language, english) => materials[cycle]?.[kind]?.[index(language)] || english,
     loot: (reward, language) => (language === 'official' && officialLoot[`${reward.deck}:${reward.card}`]) || reward.name,
+    skyseerGear: (card, language) => skyseerGear[card][index(language)],
   };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.ATO_THEATRE_TERMS = api;

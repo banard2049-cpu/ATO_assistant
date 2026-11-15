@@ -237,31 +237,45 @@
   };
 
   // Core Rulebook p. 71 and Cycle IV Storybook p. 16.
-  const loot = Object.fromEntries(Object.entries({
-    HEKATON: [[2, 10, "Shieldblade"]],
-    LABYRINTHAUROS: [[2, 12, "Mazemace"], [2, 13, "Glimmer Shroud"]],
-    ALPHA_TEMENOS: [[5, 46, "Pyramidion"]],
-    HERMESIAN_PURSUER: [[2, 17, "Nail Spear"], [2, 18, "Vulture Mask"]],
-    CYCLONUS: [[5, 47, "Right Maulfist"], [5, 48, "Left Maulfist"]],
-    CHIMERA_METASTASIOS: [[5, 50, "Muck Virus"], [5, 49, "Remembrance"], [5, 51, "Jaws of the Lion"]],
+  const lootCards = {
+    HEKATON: [[2, 10, "Shieldblade", "AJ0257"]],
+    LABYRINTHAUROS: [[2, 12, "Mazemace", "AJ0259"], [2, 13, "Glimmer Shroud", "AJ0260"]],
+    ALPHA_TEMENOS: [[5, 46, "Pyramidion", "BJ0858"]],
+    HERMESIAN_PURSUER: [[2, 17, "Nail Spear", "AJ0273"], [2, 18, "Vulture Mask", "AJ0274"]],
+    CYCLONUS: [[5, 47, "Right Maulfist", "BJ0940"], [5, 48, "Left Maulfist", "BJ0941"]],
+    CHIMERA_METASTASIOS: [[5, 50, "Muck Virus", "BJ0943"], [5, 49, "Remembrance", "BJ0942"], [5, 51, "Jaws of the Lion", "BJ0944"]],
     THE_NIETZSCJEAN: [
-      [5, 175, "Umbral Virus"], [5, 178, "Fumeblade"], [5, 177, "Necroxiphos"],
-      [5, 176, "Elephantine Armor"], [5, 53, "Cowl of Char"], [5, 54, "The End"],
+      [5, 175, "Umbral Virus", "BJ0954"], [5, 178, "Fumeblade", "BJ0958"], [5, 177, "Necroxiphos", "BJ0957"],
+      [5, 176, "Elephantine Armor", "BJ0955"], [5, 53, "Cowl of Char", "BJ0956"], [5, 54, "The End", "BJ0959"],
     ],
-    THE_BURDEN: [[5, 52, "Leg Khopesh"], [5, 60, "Sisyphus’s Burden"]],
-    HYPERTIME_ORACLE: [[8, 84, "Eye of the Watcher"], [8, 85, "Paradox"]],
-    ICARIAN_HARPY: [[8, 86, "Right Talon of Doom"], [8, 87, "Spherecast"]],
-    SUN_DESCENDANT: [[8, 88, "Icarus Lot"], [8, 89, "Icarus’s Fall"]],
-    MIDASCORE: [[11, 189, "Auric Cloak"], [11, 190, "Golden Harp"], [11, 191, "Bihorn Lance"]],
-    DEMIDJINN: [[11, 194, "Pocket Wishlamp"], [11, 193, "Djinn Cloak"], [11, 192, "Wishblade"]],
-    DAHAKA: [[11, 197, "Shadowcleaver"], [11, 196, "Dahaka Mask"], [11, 195, "Dahaka Blade"]],
-    THE_BABELIAN_LUNACY: [[11, 198, "Molten Gold Kalasiris"], [11, 199, "Outrigger Bodysuit"], [11, 200, "Bailout"]],
-    HELIOS: [[11, 203, "Godhand"], [11, 204, "Luminous Beacon"], [11, 205, "Divine Lure"]],
-    DRAGON_OF_PHOBOS: [[18, 283, "Phobos Whip"], [18, 284, "Grin Mask"], [18, 282, "Claw Cracker"]],
-    MEDUKETOS: [[18, 286, "Veilwrappings"], [18, 287, "Microwave Shieldscale"], [18, 285, "Oculus Headlamp"]],
-    TITAN_X: [[18, 290, "Japetus Helm"], [18, 289, "Synergic Armor"], [18, 288, "Pilfered Blade"]],
-    UR_FLEECE: [[18, 291, "Flame-Hardened Plate"], [18, 293, "Headdress of the Deep"], [18, 292, "Strungstring"]],
-  }).map(([boss, cards]) => [boss, cards.map(([deck, card, name]) => ({ deck, card, name }))]));
+    THE_BURDEN: [[5, 52, "Leg Khopesh", "BJ0945"], [5, 60, "Sisyphus’s Burden", "BJ0970"]],
+    HYPERTIME_ORACLE: [[8, 84, "Eye of the Watcher", "CJ1502"], [8, 85, "Paradox", "CJ1503"]],
+    ICARIAN_HARPY: [[8, 86, "Right Talon of Doom", "CJ1516"], [8, 87, "Spherecast", "CJ1517"]],
+    SUN_DESCENDANT: [[8, 88, "Icarus Lot", "CJ1527"], [8, 89, "Icarus’s Fall", "CJ1528"]],
+    MIDASCORE: [[11, 189, "Auric Cloak", "DJ2358"], [11, 190, "Golden Harp", "DJ2359"], [11, 191, "Bihorn Lance", "DJ2360"]],
+    DEMIDJINN: [[11, 194, "Pocket Wishlamp", "DJ2363"], [11, 193, "Djinn Cloak", "DJ2362"], [11, 192, "Wishblade", "DJ2361"]],
+    DAHAKA: [[11, 197, "Shadowcleaver", "DJ2366"], [11, 196, "Dahaka Mask", "DJ2365"], [11, 195, "Dahaka Blade", "DJ2364"]],
+    THE_BABELIAN_LUNACY: [[11, 198, "Molten Gold Kalasiris", "DJ2367"], [11, 199, "Outrigger Bodysuit", "DJ2368"], [11, 200, "Bailout", "DJ2369"]],
+    HELIOS: [[11, 203, "Godhand", "DJ2382"], [11, 204, "Luminous Beacon", "DJ2383"], [11, 205, "Divine Lure", "DJ2384"]],
+    DRAGON_OF_PHOBOS: [[18, 283, "Phobos Whip", "EJ2967"], [18, 284, "Grin Mask", "EJ2968"], [18, 282, "Claw Cracker", "EJ2966"]],
+    MEDUKETOS: [[18, 286, "Veilwrappings", "EJ2970"], [18, 287, "Microwave Shieldscale", "EJ2791"], [18, 285, "Oculus Headlamp", "EJ2969"]],
+    TITAN_X: [[18, 290, "Japetus Helm", "EJ2974"], [18, 289, "Synergic Armor", "EJ2973"], [18, 288, "Pilfered Blade", "EJ2972"]],
+    UR_FLEECE: [[18, 291, "Flame-Hardened Plate", "EJ2975"], [18, 293, "Headdress of the Deep", "EJ2977"], [18, 292, "Strungstring", "EJ2976"]],
+  };
+  const loot = Object.fromEntries(Object.entries(lootCards)
+    .map(([boss, cards]) => [boss, cards.map(([deck, card, name]) => ({ deck, card, name }))]));
+
+  const rewardKey = ({ deck, card }) => `${deck}:${card}`;
+
+  function rewardGear(node, win) {
+    const reward = win?.reward;
+    if (!win?.normal || reward?.carry !== true || reward.type !== node?.reward?.type) return [];
+    // Skyseer unlocks a Titan separately from its two pieces of gear.
+    if (reward.type === "skyseer") return ["ZJ1240", "ZJ1239"];
+    if (reward.type !== "loot") return [];
+    const card = lootCards[node.boss]?.find(([deck, number]) => deck === reward.deck && number === reward.card);
+    return card ? [card[3]] : [];
+  }
 
   const cycleMaterials = Object.fromEntries([
     ["c1", "Labyrinthized"], ["c2", "Excavated"], ["c3", "Accursed"],
@@ -274,5 +288,5 @@
     "Reap the Ashes", "Inverted Battle", "Years to Rust",
   ];
 
-  return { nodes, byId, bosses, loot, expansionRepeats, expansionBranchAnchors, cycleMaterials, cursedTraits };
+  return { nodes, byId, bosses, loot, rewardKey, rewardGear, expansionRepeats, expansionBranchAnchors, cycleMaterials, cursedTraits };
 });

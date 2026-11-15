@@ -609,16 +609,11 @@ class CoreTests(unittest.TestCase):
         empty = Database(self.root / "empty.sqlite3")
         result = ensure_fixed_catalog(empty)
         payload = fixed_catalog_payload()
-        # 3203 条：内置清单 2642（移除 26 张独立 AIBP 资源图和 2 张停用标记，新增
-        # C4 辉煌之城、悬空花园两枚大地图标记；再退掉 3 张重复的 `_TR_O_001` 条目——THE_BURDEN /
-        # THE_NIETZSCJEAN / THE_BABELIAN_LUNACY 旧 APK 已同时收过同名 `_TR_II_001`，
-        # 反面大卡重命名到等级后 O_001 退场，不重复登记）+ 故事书配图 2（只剩后日奥德赛的两张章节配图，战斗版图
-        # 52 条——C1/C3/C4 的 21 张 + C2 的 23 张扫描件 + C5 的 8 张版图块——已全部随文件
-        # 删除退场）+ 19 首主控台 BGM + 84 张密语字形 + 437 个混排素材（映射表 1 + 裁图 436）
-        # + 19 张记录表 Boss 头像（2026-10-22）。
-        # 后四类都登记为「无需拍摄」（见 test_bgm_resources / test_cryptic_resources /
-        # test_boss_avatars）。
-        self.assertEqual(3203, result["items"])
+        self.assertEqual(len(payload["items"]), result["items"])
+        reward_manifest = Path(__file__).resolve().parents[2] / "theatre" / "reward-images.json"
+        reward_paths = {path for paths in json.loads(reward_manifest.read_text(encoding="utf-8")).values() for path in paths}
+        reward_targets = [path for item in payload["items"] for path in item["faces"].values() if path in reward_paths]
+        self.assertCountEqual(reward_paths, reward_targets)
         self.assertEqual(19, result["aibp_enemies"])
         self.assertEqual({"c1", "c1.5", "c2", "c2.5", "c3", "c4", "c5"}, {book["id"] for book in payload["source"]["stories"]})
         self.assertNotIn("apk", payload["source"])
@@ -702,16 +697,18 @@ class CoreTests(unittest.TestCase):
         # + 84 张密语字形（随 crypticFiles 段分发）
         # + 19 首主控台 BGM（随 bgmFiles 段分发）
         # + 437 个混排素材（1 份映射表 + 436 张裁图，随 mixedMediaFiles 段分发）
+        # + 76 张剧场奖励卡图，另有 23 张复用已登记的装备卡图。
+        # + 28 张军械库装备卡图。
         bgm_paths = {path for path in fixed_paths if path.startswith("assets/bgm/")}
         cryptic_paths = {path for path in fixed_paths if path.startswith("story/assets/cryptic/glyphs/")}
         mixed_media_paths = {
             path for path in fixed_paths if path.startswith("story/assets/mixed-media/")
         }
-        self.assertEqual(3662, len(fixed_paths - bgm_paths - cryptic_paths - mixed_media_paths))
+        self.assertEqual(3766, len(fixed_paths - bgm_paths - cryptic_paths - mixed_media_paths))
         self.assertEqual(19, len(bgm_paths))
         self.assertEqual(84, len(cryptic_paths))
         self.assertEqual(437, len(mixed_media_paths))
-        self.assertEqual(4202, len(fixed_paths))
+        self.assertEqual(4306, len(fixed_paths))
         self.assertFalse(any(path.startswith("aibp/ps/other/resouce/") for path in fixed_paths))
         self.assertNotIn("aibp/ps/other/token/Ambrosia .png", fixed_paths)
         self.assertNotIn("aibp/ps/other/token/GF.jpg", fixed_paths)

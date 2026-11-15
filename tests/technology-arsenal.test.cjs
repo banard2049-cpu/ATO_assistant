@@ -183,6 +183,7 @@ function catalogContext() {
   const production = require('../technology/ato_gear_production.json');
   return context(['normalizeGearId', 'getGearName', 'getTechDisplayName', 'gearPart', 'gearPartMatchesFilter', 'productionRecordCycle', 'arsenalCatalog', 'arsenalItemMatchesFilters'], {
     window: { ATO_GEAR_INVENTORY: inventory }, gearProductionData: production,
+    gearCardDetails: require('../technology/gear_card_images.json').cards,
     gearPartLabels: require('../technology/gear_part_labels.json').labels,
     treeLanguage: 'zh', TITAN_NAMES_ZH: { tt_earthshaker: '撼地者' },
     PRODUCTION_CYCLE_TO_RECORD_CYCLE: { CYCLE_01: 'c1', CYCLE_02: 'c2', CYCLE_03: 'c3', CYCLE_04: 'c4', CYCLE_05: 'c5' },
@@ -218,6 +219,46 @@ test('manual entry includes the complete gear dictionary, including equipment wi
   assert.equal(c.arsenalItemMatchesFilters(loot, 'aj0257'), true);
   c.arsenalCycleFilter = 'c2';
   assert.equal(c.arsenalItemMatchesFilters(loot, ''), false);
+});
+
+test('all campaign-eligible Theatre gear uses the same card image in the arsenal', () => {
+  const c = catalogContext();
+  const { loot, rewardKey } = require('../theatre/catalog.js');
+  const terms = require('../theatre/terms.js');
+  const rewardImages = require('../theatre/reward-images.json');
+  const { images } = require('../technology/gear_card_images.json');
+  const lookup = context(['gearImageSrc'], { gearCardImages: images });
+  const arsenal = new Map(c.arsenalCatalog().map(item => [item.gearId, item]));
+  const rewards = Object.values(loot).flat();
+  const paths = [...rewards.flatMap(reward => rewardImages[rewardKey(reward)]), ...rewardImages.skyseer];
+  for (const imagePath of paths) {
+    const id = path.basename(imagePath, '.jpg').toUpperCase();
+    assert.ok(arsenal.has(id), id);
+    assert.equal('technology/' + lookup.gearImageSrc(id), imagePath);
+  }
+  assert.deepEqual(clone(arsenal.get('ZJ1239').cycles), ['c1']);
+  assert.deepEqual(clone(arsenal.get('ZJ1240').cycles), ['c1']);
+  assert.equal(inventory.adjust({}, 'ZJ1240', 1).ZJ1240.quantity, 1);
+  for (const reward of rewards) {
+    const id = path.basename(rewardImages[rewardKey(reward)][0], '.jpg').toUpperCase();
+    for (const language of ['fan', 'official', 'en']) {
+      const name = terms.loot(reward, language).toLowerCase();
+      assert.ok(c.arsenalItemMatchesFilters(arsenal.get(id), name), name);
+    }
+  }
+  for (const name of ['天涯', '摘天之盔', 'skyreach']) assert.ok(c.arsenalItemMatchesFilters(arsenal.get('ZJ1240'), name), name);
+});
+
+test('campaign reward variants can be found under their own cycles and names', () => {
+  const c = catalogContext();
+  const arsenal = new Map(c.arsenalCatalog().map(item => [item.gearId, item]));
+  c.arsenalCycleFilter = 'c4';
+  assert.ok(c.arsenalItemMatchesFilters(arsenal.get('ZJ2573'), '盖亚神盾'));
+  assert.ok(c.arsenalItemMatchesFilters(arsenal.get('ZJ2574'), 'blades of rage'));
+  assert.equal(c.arsenalItemMatchesFilters(arsenal.get('ZJ3000'), 'pantheon'), false);
+  c.arsenalCycleFilter = 'c5';
+  assert.ok(c.arsenalItemMatchesFilters(arsenal.get('ZJ3000'), 'pantheon'));
+  assert.equal(arsenal.get('ZJ3000').part.key, 'arm_all_h');
 });
 
 test('non-manufacturable gear can be added, reloaded and adjusted without changing manufacturing totals', async () => {
@@ -314,7 +355,8 @@ test('hand-count filters include flexible weapons and the all-weapons filter ret
   assert.ok(one.has('AJ0156') && two.has('AJ0156') && !three.has('AJ0156'));
   for (const set of [one, two, three]) assert.ok(set.has('BJ0970'));
   const all = ids('arm');
-  assert.equal(all.size, 257);
+  assert.equal(all.size, 267);
+  assert.ok(two.has('ZJ1239') && !all.has('ZJ1240'));
   for (const set of [one, two, three]) for (const id of set) assert.ok(all.has(id));
   assert.equal(all.has('CJ1521'), false);
   c.arsenalPartFilter = 'arm_2h'; c.arsenalCycleFilter = 'c1';

@@ -4,7 +4,7 @@
     "D:\\files\\My Games\\Tabletop Simulator\\Mods\\Workshop\\(Don)Aeon Trespass Odyssey.json",
     "D:\\files\\My Games\\Tabletop Simulator\\Mods\\Workshop\\3458296558.json"
   ],
-  "count": 437,
+  "count": 496,
   "images": {
     "AJ0156": "images/gear_cards/aj0156.jpg",
     "AJ0160": "images/gear_cards/aj0160.jpg",
@@ -161,6 +161,7 @@
     "BJ0959": "images/gear_cards/bj0959.jpg",
     "BJ0960": "images/gear_cards/bj0960.jpg",
     "BJ0961": "images/gear_cards/bj0961.jpg",
+    "BJ0962": "images/gear_cards/bj0962.jpg",
     "BJ0963": "images/gear_cards/bj0963.jpg",
     "BJ0964": "images/gear_cards/bj0964.jpg",
     "BJ0965": "images/gear_cards/bj0965.jpg",
@@ -243,6 +244,8 @@
     "CJ1510": "images/gear_cards/cj1510.jpg",
     "CJ1512": "images/gear_cards/cj1512.jpg",
     "CJ1514": "images/gear_cards/cj1514.jpg",
+    "CJ1516": "images/gear_cards/cj1516.jpg",
+    "CJ1517": "images/gear_cards/cj1517.jpg",
     "CJ1518": "images/gear_cards/cj1518.jpg",
     "CJ1519": "images/gear_cards/cj1519.jpg",
     "CJ1521": "images/gear_cards/cj1521.jpg",
@@ -339,6 +342,21 @@
     "DJ2350": "images/gear_cards/dj2350.jpg",
     "DJ2351": "images/gear_cards/dj2351.jpg",
     "DJ2353": "images/gear_cards/dj2353.jpg",
+    "DJ2355": "images/gear_cards/dj2355.jpg",
+    "DJ2356": "images/gear_cards/dj2356.jpg",
+    "DJ2357": "images/gear_cards/dj2357.jpg",
+    "DJ2358": "images/gear_cards/dj2358.jpg",
+    "DJ2359": "images/gear_cards/dj2359.jpg",
+    "DJ2360": "images/gear_cards/dj2360.jpg",
+    "DJ2361": "images/gear_cards/dj2361.jpg",
+    "DJ2362": "images/gear_cards/dj2362.jpg",
+    "DJ2363": "images/gear_cards/dj2363.jpg",
+    "DJ2364": "images/gear_cards/dj2364.jpg",
+    "DJ2365": "images/gear_cards/dj2365.jpg",
+    "DJ2366": "images/gear_cards/dj2366.jpg",
+    "DJ2367": "images/gear_cards/dj2367.jpg",
+    "DJ2368": "images/gear_cards/dj2368.jpg",
+    "DJ2369": "images/gear_cards/dj2369.jpg",
     "DJ2370": "images/gear_cards/dj2370.jpg",
     "DJ2371": "images/gear_cards/dj2371.jpg",
     "DJ2372": "images/gear_cards/dj2372.jpg",
@@ -349,6 +367,16 @@
     "DJ2377": "images/gear_cards/dj2377.jpg",
     "DJ2378": "images/gear_cards/dj2378.jpg",
     "DJ2379": "images/gear_cards/dj2379.jpg",
+    "DJ2380": "images/gear_cards/dj2380.jpg",
+    "DJ2381": "images/gear_cards/dj2381.jpg",
+    "DJ2382": "images/gear_cards/dj2382.jpg",
+    "DJ2383": "images/gear_cards/dj2383.jpg",
+    "DJ2384": "images/gear_cards/dj2384.jpg",
+    "DJ2385": "images/gear_cards/dj2385.jpg",
+    "DJ2386": "images/gear_cards/dj2386.jpg",
+    "EJ2391": "images/gear_cards/ej2391.jpg",
+    "EJ2534": "images/gear_cards/ej2534.jpg",
+    "EJ2791": "images/gear_cards/ej2791.jpg",
     "EJ2795": "images/gear_cards/ej2795.jpg",
     "EJ2797": "images/gear_cards/ej2797.jpg",
     "EJ2799": "images/gear_cards/ej2799.jpg",
@@ -433,6 +461,21 @@
     "EJ2958": "images/gear_cards/ej2958.jpg",
     "EJ2959": "images/gear_cards/ej2959.jpg",
     "EJ2961": "images/gear_cards/ej2961.jpg",
+    "EJ2962": "images/gear_cards/ej2962.jpg",
+    "EJ2963": "images/gear_cards/ej2963.jpg",
+    "EJ2964": "images/gear_cards/ej2964.jpg",
+    "EJ2965": "images/gear_cards/ej2965.jpg",
+    "EJ2966": "images/gear_cards/ej2966.jpg",
+    "EJ2967": "images/gear_cards/ej2967.jpg",
+    "EJ2968": "images/gear_cards/ej2968.jpg",
+    "EJ2969": "images/gear_cards/ej2969.jpg",
+    "EJ2970": "images/gear_cards/ej2970.jpg",
+    "EJ2972": "images/gear_cards/ej2972.jpg",
+    "EJ2973": "images/gear_cards/ej2973.jpg",
+    "EJ2974": "images/gear_cards/ej2974.jpg",
+    "EJ2975": "images/gear_cards/ej2975.jpg",
+    "EJ2976": "images/gear_cards/ej2976.jpg",
+    "EJ2977": "images/gear_cards/ej2977.jpg",
     "EJ2978": "images/gear_cards/ej2978.jpg",
     "EJ2979": "images/gear_cards/ej2979.jpg",
     "EJ2980": "images/gear_cards/ej2980.jpg",
@@ -442,7 +485,23 @@
     "EJ2986": "images/gear_cards/ej2986.jpg",
     "EJ2988": "images/gear_cards/ej2988.jpg",
     "EJ2990": "images/gear_cards/ej2990.jpg",
-    "EJ2991": "images/gear_cards/ej2991.jpg"
+    "EJ2991": "images/gear_cards/ej2991.jpg",
+    "EJ2992": "images/gear_cards/ej2992.jpg",
+    "EJ2993": "images/gear_cards/ej2993.jpg",
+    "EJ2994": "images/gear_cards/ej2994.jpg",
+    "EJ2995": "images/gear_cards/ej2995.jpg",
+    "ZJ1239": "images/gear_cards/zj1239.jpg",
+    "ZJ1240": "images/gear_cards/zj1240.jpg",
+    "ZJ2570": "images/gear_cards/zj2570.jpg",
+    "ZJ2571": "images/gear_cards/zj2571.jpg",
+    "ZJ2572": "images/gear_cards/zj2572.jpg",
+    "ZJ2573": "images/gear_cards/zj2573.jpg",
+    "ZJ2574": "images/gear_cards/zj2574.jpg",
+    "ZJ2996": "images/gear_cards/zj2996.jpg",
+    "ZJ2997": "images/gear_cards/zj2997.jpg",
+    "ZJ2998": "images/gear_cards/zj2998.jpg",
+    "ZJ2999": "images/gear_cards/zj2999.jpg",
+    "ZJ3000": "images/gear_cards/zj3000.jpg"
   },
   "cards": {
     "AJ0156": {
@@ -651,7 +710,10 @@
     },
     "AJ0257": {
       "src": "images/gear_cards/aj0257.jpg",
-      "title": "Shieldblade"
+      "title": "Shieldblade",
+      "aliases": [
+        "盾刃"
+      ]
     },
     "AJ0258": {
       "src": "images/gear_cards/aj0258.jpg",
@@ -659,11 +721,17 @@
     },
     "AJ0259": {
       "src": "images/gear_cards/aj0259.jpg",
-      "title": "Mazemace"
+      "title": "Mazemace",
+      "aliases": [
+        "迷阵重头锤"
+      ]
     },
     "AJ0260": {
       "src": "images/gear_cards/aj0260.jpg",
-      "title": "Glimmer Shroud"
+      "title": "Glimmer Shroud",
+      "aliases": [
+        "幽光裹尸布"
+      ]
     },
     "AJ0261": {
       "src": "images/gear_cards/aj0261.jpg",
@@ -699,7 +767,10 @@
     },
     "AJ0273": {
       "src": "images/gear_cards/aj0273.jpg",
-      "title": "Nail Spear"
+      "title": "Nail Spear",
+      "aliases": [
+        "爪钉矛"
+      ]
     },
     "AJ0274": {
       "src": "images/gear_cards/aj0274.jpg",
@@ -795,7 +866,10 @@
     },
     "BJ0858": {
       "src": "images/gear_cards/bj0858.jpg",
-      "title": "Pyramidion"
+      "title": "Pyramidion",
+      "aliases": [
+        "小金字塔"
+      ]
     },
     "BJ0859": {
       "src": "images/gear_cards/bj0859.jpg",
@@ -995,27 +1069,45 @@
     },
     "BJ0940": {
       "src": "images/gear_cards/bj0940.jpg",
-      "title": "Right Maulfist"
+      "title": "Right Maulfist",
+      "aliases": [
+        "右槌拳"
+      ]
     },
     "BJ0941": {
       "src": "images/gear_cards/bj0941.jpg",
-      "title": "Left Maulfist"
+      "title": "Left Maulfist",
+      "aliases": [
+        "左槌拳"
+      ]
     },
     "BJ0942": {
       "src": "images/gear_cards/bj0942.jpg",
-      "title": "Remembrance"
+      "title": "Remembrance",
+      "aliases": [
+        "纪念品"
+      ]
     },
     "BJ0943": {
       "src": "images/gear_cards/bj0943.jpg",
-      "title": "Muck Virus"
+      "title": "Muck Virus",
+      "aliases": [
+        "淤泥病毒"
+      ]
     },
     "BJ0944": {
       "src": "images/gear_cards/bj0944.jpg",
-      "title": "Jaws of the Lion"
+      "title": "Jaws of the Lion",
+      "aliases": [
+        "雄狮蛮颚"
+      ]
     },
     "BJ0945": {
       "src": "images/gear_cards/bj0945.jpg",
-      "title": "Leg Spear/Leg Kopesh"
+      "title": "Leg Spear/Leg Kopesh",
+      "aliases": [
+        "腿部镰状剑"
+      ]
     },
     "BJ0946": {
       "src": "images/gear_cards/bj0946.jpg",
@@ -1035,27 +1127,45 @@
     },
     "BJ0954": {
       "src": "images/gear_cards/bj0954.jpg",
-      "title": "Umbral Carapace/Umbral Virus"
+      "title": "Umbral Carapace/Umbral Virus",
+      "aliases": [
+        "本影病毒"
+      ]
     },
     "BJ0955": {
       "src": "images/gear_cards/bj0955.jpg",
-      "title": "Elephantine Armor"
+      "title": "Elephantine Armor",
+      "aliases": [
+        "巨象护甲"
+      ]
     },
     "BJ0956": {
       "src": "images/gear_cards/bj0956.jpg",
-      "title": "Cowl of Char"
+      "title": "Cowl of Char",
+      "aliases": [
+        "焦炭僧袍"
+      ]
     },
     "BJ0957": {
       "src": "images/gear_cards/bj0957.jpg",
-      "title": "Necroxiphos/Necrotic Virus"
+      "title": "Necroxiphos/Necrotic Virus",
+      "aliases": [
+        "骨疽曲刃剑"
+      ]
     },
     "BJ0958": {
       "src": "images/gear_cards/bj0958.jpg",
-      "title": "Fumeblade"
+      "title": "Fumeblade",
+      "aliases": [
+        "烟熏之刃"
+      ]
     },
     "BJ0959": {
       "src": "images/gear_cards/bj0959.jpg",
-      "title": "The End"
+      "title": "The End",
+      "aliases": [
+        "终末"
+      ]
     },
     "BJ0960": {
       "src": "images/gear_cards/bj0960.jpg",
@@ -1064,6 +1174,10 @@
     "BJ0961": {
       "src": "images/gear_cards/bj0961.jpg",
       "title": "Context"
+    },
+    "BJ0962": {
+      "src": "images/gear_cards/bj0962.jpg",
+      "title": "Immeasurable Weight"
     },
     "BJ0963": {
       "src": "images/gear_cards/bj0963.jpg",
@@ -1095,7 +1209,11 @@
     },
     "BJ0970": {
       "src": "images/gear_cards/bj0970.jpg",
-      "title": "Sisyphus's Burden"
+      "title": "Sisyphus's Burden",
+      "aliases": [
+        "Sisyphus’s Burden",
+        "西西弗斯的巨石"
+      ]
     },
     "BJ0971": {
       "src": "images/gear_cards/bj0971.jpg",
@@ -1359,7 +1477,10 @@
     },
     "CJ1502": {
       "src": "images/gear_cards/cj1502.jpg",
-      "title": "Eye of the Watcher"
+      "title": "Eye of the Watcher",
+      "aliases": [
+        "守望者之眼"
+      ]
     },
     "CJ1503": {
       "src": "images/gear_cards/cj1503.jpg",
@@ -1393,6 +1514,20 @@
       "src": "images/gear_cards/cj1514.jpg",
       "title": "Descender/Devolver"
     },
+    "CJ1516": {
+      "src": "images/gear_cards/cj1516.jpg",
+      "title": "Right Talon Of Doom /  Icarian Katar",
+      "aliases": [
+        "末日右爪"
+      ]
+    },
+    "CJ1517": {
+      "src": "images/gear_cards/cj1517.jpg",
+      "title": "Spherecast / Searing Pillar",
+      "aliases": [
+        "投影球体"
+      ]
+    },
     "CJ1518": {
       "src": "images/gear_cards/cj1518.jpg",
       "title": "Sunreach"
@@ -1415,11 +1550,18 @@
     },
     "CJ1527": {
       "src": "images/gear_cards/cj1527.jpg",
-      "title": "Icarus Lot"
+      "title": "Icarus Lot",
+      "aliases": [
+        "伊卡洛斯之运"
+      ]
     },
     "CJ1528": {
       "src": "images/gear_cards/cj1528.jpg",
-      "title": "Icarus's Fall"
+      "title": "Icarus's Fall",
+      "aliases": [
+        "Icarus’s Fall",
+        "伊卡洛斯之坠"
+      ]
     },
     "CJ1529": {
       "src": "images/gear_cards/cj1529.jpg",
@@ -1777,6 +1919,66 @@
       "src": "images/gear_cards/dj2353.jpg",
       "title": "Anticurse Armor"
     },
+    "DJ2355": {
+      "src": "images/gear_cards/dj2355.jpg",
+      "title": "Salt Blade"
+    },
+    "DJ2356": {
+      "src": "images/gear_cards/dj2356.jpg",
+      "title": "The Open Wound"
+    },
+    "DJ2357": {
+      "src": "images/gear_cards/dj2357.jpg",
+      "title": "Babelian Lance"
+    },
+    "DJ2358": {
+      "src": "images/gear_cards/dj2358.jpg",
+      "title": "Auric Cloak"
+    },
+    "DJ2359": {
+      "src": "images/gear_cards/dj2359.jpg",
+      "title": "Golden Harp"
+    },
+    "DJ2360": {
+      "src": "images/gear_cards/dj2360.jpg",
+      "title": "Bihorn Lance"
+    },
+    "DJ2361": {
+      "src": "images/gear_cards/dj2361.jpg",
+      "title": "Wishblade"
+    },
+    "DJ2362": {
+      "src": "images/gear_cards/dj2362.jpg",
+      "title": "Djinn Cloak"
+    },
+    "DJ2363": {
+      "src": "images/gear_cards/dj2363.jpg",
+      "title": "Pocket Wishlamp"
+    },
+    "DJ2364": {
+      "src": "images/gear_cards/dj2364.jpg",
+      "title": "Dahaka Blade/Dahaka Blade (Blindspot/Cloud)"
+    },
+    "DJ2365": {
+      "src": "images/gear_cards/dj2365.jpg",
+      "title": "Dahaka Mask"
+    },
+    "DJ2366": {
+      "src": "images/gear_cards/dj2366.jpg",
+      "title": "Shadowcleaver"
+    },
+    "DJ2367": {
+      "src": "images/gear_cards/dj2367.jpg",
+      "title": "Molten Gold Kalasiris"
+    },
+    "DJ2368": {
+      "src": "images/gear_cards/dj2368.jpg",
+      "title": "Outrigger Bodysuit"
+    },
+    "DJ2369": {
+      "src": "images/gear_cards/dj2369.jpg",
+      "title": "Bailout"
+    },
     "DJ2370": {
       "src": "images/gear_cards/dj2370.jpg",
       "title": "Auris Kalaharis"
@@ -1816,6 +2018,46 @@
     "DJ2379": {
       "src": "images/gear_cards/dj2379.jpg",
       "title": "Curseblade"
+    },
+    "DJ2380": {
+      "src": "images/gear_cards/dj2380.jpg",
+      "title": "Regret"
+    },
+    "DJ2381": {
+      "src": "images/gear_cards/dj2381.jpg",
+      "title": "The Capital"
+    },
+    "DJ2382": {
+      "src": "images/gear_cards/dj2382.jpg",
+      "title": "Godhand"
+    },
+    "DJ2383": {
+      "src": "images/gear_cards/dj2383.jpg",
+      "title": "Luminous Beacon"
+    },
+    "DJ2384": {
+      "src": "images/gear_cards/dj2384.jpg",
+      "title": "Divine Lure"
+    },
+    "DJ2385": {
+      "src": "images/gear_cards/dj2385.jpg",
+      "title": "Airsac Mine"
+    },
+    "DJ2386": {
+      "src": "images/gear_cards/dj2386.jpg",
+      "title": "Lesser Saphos/Greater Saphos"
+    },
+    "EJ2391": {
+      "src": "images/gear_cards/ej2391.jpg",
+      "title": "Oxygen Destroyer"
+    },
+    "EJ2534": {
+      "src": "images/gear_cards/ej2534.jpg",
+      "title": "Heir Apparent"
+    },
+    "EJ2791": {
+      "src": "images/gear_cards/ej2791.jpg",
+      "title": "Microwave Shieldscale"
     },
     "EJ2795": {
       "src": "images/gear_cards/ej2795.jpg",
@@ -2153,6 +2395,72 @@
       "src": "images/gear_cards/ej2961.jpg",
       "title": "Argocryptex Delta"
     },
+    "EJ2962": {
+      "src": "images/gear_cards/ej2962.jpg",
+      "title": "Self-Inflicted"
+    },
+    "EJ2963": {
+      "src": "images/gear_cards/ej2963.jpg",
+      "title": "Light Of Eos"
+    },
+    "EJ2964": {
+      "src": "images/gear_cards/ej2964.jpg",
+      "title": "Eternal Vow"
+    },
+    "EJ2965": {
+      "src": "images/gear_cards/ej2965.jpg",
+      "title": "Will Anthropos"
+    },
+    "EJ2966": {
+      "src": "images/gear_cards/ej2966.jpg",
+      "title": "Claw Cracker"
+    },
+    "EJ2967": {
+      "src": "images/gear_cards/ej2967.jpg",
+      "title": "Phobos Whip"
+    },
+    "EJ2968": {
+      "src": "images/gear_cards/ej2968.jpg",
+      "title": "Grinmask",
+      "aliases": [
+        "Grin Mask"
+      ]
+    },
+    "EJ2969": {
+      "src": "images/gear_cards/ej2969.jpg",
+      "title": "Oculus Headlamp"
+    },
+    "EJ2970": {
+      "src": "images/gear_cards/ej2970.jpg",
+      "title": "Veilwrappings"
+    },
+    "EJ2972": {
+      "src": "images/gear_cards/ej2972.jpg",
+      "title": "Pilfered Blade"
+    },
+    "EJ2973": {
+      "src": "images/gear_cards/ej2973.jpg",
+      "title": "Synergic Armor"
+    },
+    "EJ2974": {
+      "src": "images/gear_cards/ej2974.jpg",
+      "title": "Iapetus Helm",
+      "aliases": [
+        "Japetus Helm"
+      ]
+    },
+    "EJ2975": {
+      "src": "images/gear_cards/ej2975.jpg",
+      "title": "Flame-Hardened Plate"
+    },
+    "EJ2976": {
+      "src": "images/gear_cards/ej2976.jpg",
+      "title": "Strungstring"
+    },
+    "EJ2977": {
+      "src": "images/gear_cards/ej2977.jpg",
+      "title": "Headdress Of The Deep"
+    },
     "EJ2978": {
       "src": "images/gear_cards/ej2978.jpg",
       "title": "Dark Exemplar"
@@ -2192,6 +2500,70 @@
     "EJ2991": {
       "src": "images/gear_cards/ej2991.jpg",
       "title": "Deadalive Spear"
+    },
+    "EJ2992": {
+      "src": "images/gear_cards/ej2992.jpg",
+      "title": "Typhonic Cryptex"
+    },
+    "EJ2993": {
+      "src": "images/gear_cards/ej2993.jpg",
+      "title": "Dodonna Cryptex"
+    },
+    "EJ2994": {
+      "src": "images/gear_cards/ej2994.jpg",
+      "title": "Hunter Killer"
+    },
+    "EJ2995": {
+      "src": "images/gear_cards/ej2995.jpg",
+      "title": "Big Boy Mazey"
+    },
+    "ZJ1239": {
+      "src": "images/gear_cards/zj1239.jpg",
+      "title": "Horizon's Edge"
+    },
+    "ZJ1240": {
+      "src": "images/gear_cards/zj1240.jpg",
+      "title": "Skyreach"
+    },
+    "ZJ2570": {
+      "src": "images/gear_cards/zj2570.jpg",
+      "title": "First Blade (Wished)"
+    },
+    "ZJ2571": {
+      "src": "images/gear_cards/zj2571.jpg",
+      "title": "Slushbane (Wished)"
+    },
+    "ZJ2572": {
+      "src": "images/gear_cards/zj2572.jpg",
+      "title": "Midashield (Wished)"
+    },
+    "ZJ2573": {
+      "src": "images/gear_cards/zj2573.jpg",
+      "title": "Gaiaegis (Wished)"
+    },
+    "ZJ2574": {
+      "src": "images/gear_cards/zj2574.jpg",
+      "title": "Blades of Rage (Wished)"
+    },
+    "ZJ2996": {
+      "src": "images/gear_cards/zj2996.jpg",
+      "title": "Bow of Artemis (Mnestis-generated)"
+    },
+    "ZJ2997": {
+      "src": "images/gear_cards/zj2997.jpg",
+      "title": "Damocles Crown (Mnestis-generated)"
+    },
+    "ZJ2998": {
+      "src": "images/gear_cards/zj2998.jpg",
+      "title": "Atlantean Gun (Mnestis-generated)"
+    },
+    "ZJ2999": {
+      "src": "images/gear_cards/zj2999.jpg",
+      "title": "Poseidonis (Mnestis-generated)"
+    },
+    "ZJ3000": {
+      "src": "images/gear_cards/zj3000.jpg",
+      "title": "Pantheon (Mnestis-generated)"
     }
   }
 }

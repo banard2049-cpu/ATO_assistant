@@ -2,219 +2,50 @@
 
 **中文** | [English](README.en.md)
 
-ATO Assistant 是一个用于《Aeon Trespass: Odyssey》（简称 ATO）战役流程的本地 Web 工具，包含战役主控台、AIBP、故事、地图、阿尔戈号记录表、科技/装备、战役简报和第二屏幕。
+《Aeon Trespass: Odyssey》的本地战役助手。玩家可以在主控台管理战役进度，打开战斗工具（AIBP）、故事书、地图、阿尔戈号记录表和军械库。
 
-仓库只发布程序和公开占位数据。图片、音频、完整故事文本以及个人存档需要自行准备，不会放进 Git 仓库。
+## 安装
 
-## 界面语言
+从 [GitHub Releases](https://github.com/banard2049-cpu/ATO_assistant/releases) 下载适合你的安装包。
 
-主控台的语言选择按钮只显示当前语言，点击后从弹出菜单里选民间翻译、官方中文或 English；选择会同步到其他模块，并在刷新后保留。英文游戏名称和定数框标题使用原版 App、TTS 或数据中已有的英文原名，工具自身的按钮和状态提示另行提供英文文案。
-
-英文规则和故事正文需要本地原文数据。没有原文的内容会显示缺失提示或段落引用。个人笔记、自定义名称和卡牌图片保留原内容。
-
-主控台的「战役日志」会自动追加记录表的资源、矩阵、冒险与外交变化，科技解锁和装备库存变化，英雄技能与回忆变化，以及 AIBP 抽牌、损伤、标记和故事阅读记录。打开和收到新记录时会自动显示末尾的最新内容。每条带来源、循环和已有的战役天数，与模块数据一起保存；语言、筛选、图片显示和标记拖动不会写入。手写内容可以继续编辑，记录表与英雄自己的笔记仍在各自页面保留。
-
-## 从 GitHub Release 启动（推荐）
-
-请从 [Releases](https://github.com/banard2049-cpu/ATO_assistant/releases) 下载对应版本，不要下载源码 ZIP。
-
-### Windows
-
-下载 ATO-Assistant-Portable-<版本>-windows-x64.zip，完整解压后双击 start-ato-portable.bat。
-
-### macOS
-
-- Apple Silicon：下载 ATO-Assistant-Portable-<版本>-macos-arm64.zip
-- Intel：下载 ATO-Assistant-Portable-<版本>-macos-x64.zip
-
-完整解压后双击 start-ato-portable.command。如果系统阻止脚本，右键选择“打开”。
-
-### Android
-
-下载 ATO-Assistant-<版本>.apk 并安装。若系统阻止安装，请允许当前浏览器或文件管理器安装未知来源应用。
-
-安卓版顶部使用可横向滚动的页面标签：点标签切换，点标签上的「×」关闭，点「＋」打开新的主控台。主控台的模块链接会打开或切换到对应标签。每个页面保留自己的浏览位置和返回历史，标签数量不设固定上限。切换页面会停止故事朗读；应用重启后从主控台重新开始。
-
-安装的 APK 在可用内容区域高于宽时，8 个页面自动使用紧凑竖屏布局，原有功能收进各页「工具」面板；横屏恢复原布局。浏览器和局域网入口沿用原布局。切换布局不刷新页面，保留当前输入；弹出键盘不会改变竖横屏判断。工具面板可点关闭、遮罩或 Android 返回键关闭，返回键优先关闭面板。页面名称、图标、规则、存档和原生功能继续沿用现有实现。
-
-在主控台开启第二屏幕后，手机就同时是一个局域网服务器：同一网段的设备除了用专用网址看第二屏幕（`/ss/`），还可以打开**主控台地址**（第二屏地址去掉 `/ss/`，也就是根地址）使用主控台与其他模块。主控台里的第二屏幕卡片会直接给出这个地址和「复制网址」按钮。
-
-- 局域网里**读和写都开放**：改的是手机上的那份存档，和便携版多设备编辑一样按 section 版本号检测冲突，版本对不上会回 409、页面自己重读重试。
-- **登录、注册、退出只能在手机上操作**：这三个请求不在局域网转发，免得别的设备把手机上的登录态换掉或退出。局域网页面用的就是手机上的账号，所以也不需要登录。
-- 便携版 / Docker 的局域网入口本来就是完整站点，别的设备打开根地址登录后可以正常使用（提示文案会相应写成「登录后使用」）。
-- 局域网地址只在开启第二屏幕期间有效；关掉第二屏幕（或退出登录）会同时关闭这个入口。用不到时就关掉它，同一网段的其他设备也就访问不到了。
-
-### 存档和本地图片
-
-Windows/macOS 首次启动会创建空的 data/ 目录，战役存档保存在这里。后来下载的图片请放回对应目录：
-
-~~~text
-aibp/ps/
-assets/
-hero/assets/
-map/images/
-map/tokens/
-record/assets/
-ss/terrain/
-ss/terrain-cards/
-story/images/
-technology/images/
-~~~
-
-AIBP 先显示轻量卡图，再在后台低优先级加载高清原图，解码完成后自动替换；后台加载失败时保留轻量图。点击放大始终读取原图。新导出的资料包会自动附带 `*.preview.jpg`；旧资料包仍能使用原图。在源码目录自行添加或替换卡图后，可运行 `python tools/generate_aibp_previews.py` 生成或更新轻量图（需要 Pillow），不会修改原图。图片清单会在后台更新，通常无需等待清单才能显示已缓存的卡牌。
-
-首屏的面板、随命卡和标志卡会在主程序依赖脚本之前创建，主程序初始化后复用已显示的图片。决战版图原图 `battle-board.jpg` 与缩略图 `battle-board.jpg.preview.jpg` 都放在 `ss/battle-board/`。AIBP 固定使用最长边 1024 像素的缩略图，不加载高清版图；第二屏继续使用原图。上述生成命令和资料包导出会生成缩略图；生成命令也能将旧路径 `ss/battle-board.jpg` 复制到新目录。缺少缩略图时，AIBP 仍显示格线及地形操作，可运行生成命令补齐底图。
-
-已有 `.atopack` 资料包时见下节「导入资源」：解压后把内容拖进便携包，图片就会落到上面这些目录。
-
-### 更新版本
-
-便携版可以直接在程序里更新：主控台底部点「检查更新」，发现新版本后会出现「一键更新」按钮，只下载这次真正变动的程序文件（通常几十 KB 到几百 KB），不用重新下载整个安装包。
-
-- 只更新**程序代码**。`data/` 存档、本地图片、`.atopack` 资源包和内置 PHP 运行时都不会动；PHP 运行时升级仍然需要下载完整安装包。
-- 必须**在这台电脑上**打开的程序里操作（局域网设备上的第二屏不能触发更新），并且需要先登录。
-- 更新完成后刷新页面即可生效。如果新版本有问题，同一个位置有「还原上一版」可以退回。
-- 下载或校验失败可以重试；若提示程序文件写入中断，请先「还原上一版」再更新。即使 GitHub 暂时不可用，还原入口仍可使用。程序还原不会撤销你的战役存档修改。
-- 2.1.9 及更早的便携版还没有这个功能，需要手动下载一次新版完整包，之后就能一键更新。
-- 不想用它也可以照旧：解压到新的目录并保留旧目录中的 `data/` 和本地图片目录。
-
-Android 无法增量更新，请在发布页下载新的 APK 覆盖安装。Docker 部署执行 `docker compose pull && docker compose up -d`。第二屏幕在主控台开启后，通过当前地址的 /ss/ 访问。
-
-**升级到 3.6.1 时，Docker 用户需先更新同一版本的 `compose.yaml`（v1 使用 `compose.legacy.yaml`），保留自己的端口和部署配置，再拉取镜像并重建容器。** 新配置将版图原图和预览挂载在 `app/ss/battle-board/`；正式版会更新 `latest`；需要固定版本时，v2 在 `.env` 设置 `ATO_VERSION=3.6.1`；v1 设置 `ATO_IMAGE=ghcr.io/banard2049-cpu/ato_assistant:3.6.1`。请同时重新导入 2026-10-11 生成的新版 atopack；Android 和 Asset Studio 先更新程序，Docker 将资源解压到宿主机 `app/` 下。资料包本身不会更新程序代码。
-
-### 导入资源（.atopack）
-
-图片资产不必一张张下载，也不必装素材库：拿到 `.atopack` 资料包后解压、拖进去就行。
-
-1. 把 `.atopack` 改名成 `.zip`，或用 7-Zip 等归档工具直接解开（它本身就是 ZIP，只是换了扩展名）。
-2. 打开解出来的文件夹，把里面的目录（`aibp/`、`map/`、`record/`、`ss/`、`story/`、`technology/`、`hero/`、`assets/` 等）整个拖进便携包根目录。
-3. 系统提示合并 / 覆盖同名文件夹时选覆盖，然后重新启动。
-
-包内保留项目相对路径，按上述方式复制后即可使用图片和故事数据。根目录的 `manifest.json` 是包清单，留着不影响运行。
-
-Android 在界面里使用「从 .atopack 导入资源」。Docker / NAS 将解压后的这些目录复制到安装目录的 `app/` 下，然后刷新页面；容器里的只读素材目录需要在宿主机上填充，网页没有资料包导入入口。平铺的 `assets/bgm/*.mp3` 也会直接生效。
-
-需要拍摄、整理或导出素材时，使用 [素材库工具](asset-studio/README.md)。
-
-## Docker（服务器 / NAS）
-
-GHCR 镜像公开可用。已安装 `docker compose`（Compose v2.17+）时，SSH 登录服务器后执行这一行即可；只有 `docker-compose` 的系统请用下方兼容配置：
-
-~~~
-curl -fsSL https://raw.githubusercontent.com/banard2049-cpu/ATO_assistant/main/tools/install-docker.sh | bash
-~~~
-
-访问 http://服务器IP:8793/。更新：
-
-~~~bash
-docker compose pull
-docker compose up -d
-~~~
-
-新增素材挂载还需要同步新版 `compose.yaml`（旧版工具同步 `compose.legacy.yaml`）：`pull` 只更新镜像，不会更新宿主机上的 Compose 文件。例如界面图标必须有 `./app/assets/icons:/app/assets/icons:ro` 这一条；更新配置后执行 `up -d` 重建容器，将图标放到 `app/assets/icons/`。
-
-Compose 默认在启动时拉取镜像（`ATO_PULL_POLICY=always`）；本地构建使用 `never`。需要固定版本时，在 `.env` 写上 `ATO_VERSION=<发布页上的版本号>`，再运行安装脚本，它会同时取该版本的 Compose 配置与镜像。手动部署也必须使用同一版本标签下的 Compose 文件；旧镜像可能缺少新版素材挂载所需的启动还原逻辑，不能只改镜像版本号。
-
-### 旧版 docker-compose（含 32 位系统）
-
-使用 [compose.legacy.yaml](tools/packaging/docker/compose.legacy.yaml)，要求 `docker-compose` 1.21.0 或更新的 v1 版本（可用 `docker-compose version` 查看）。它使用 `version: "2.4"`，移除了 v1 不支持的 `pull_policy` / `bind.create_host_path`，保留相同的端口、存档和全部素材挂载。
-
-把这份文件复制到安装目录，与 `data/`、`app/` 同级，然后在该目录执行。决战版图原图和缩略图放在 `app/ss/battle-board/`，使用目录挂载，无需预先创建图片占位文件。
-
-~~~bash
-mkdir -p data app/ss/battle-board
-docker-compose -f compose.legacy.yaml pull && docker-compose -f compose.legacy.yaml up -d
-~~~
-
-访问 `http://服务器IP:8793/`。更新仍执行上面的 `pull && up -d`，停止使用 `docker-compose -f compose.legacy.yaml down`。如需固定版本，在同目录的 `.env` 中写 `ATO_IMAGE=ghcr.io/banard2049-cpu/ato_assistant:<发布页上的版本号>`，并取该版本标签下的兼容配置；此写法适用于本仓库修复后的 v1 配置；旧版本标签中的配置若仍有嵌套变量，需将其 `image` 行改成 `${ATO_IMAGE:-ghcr.io/banard2049-cpu/ato_assistant:latest}`。v1 配置不读取 `ATO_VERSION`。所有命令都带 `-f compose.legacy.yaml`，避免旧版工具读到仅供 Compose v2 使用的 `compose.yaml`。
-
-### 旧版决战版图挂载升级排查
-
-`docker restart` 只重启已有容器，不会读取修改后的 Compose 文件。报错仍提到 `/app/ss/battle-board.jpg` 时，说明旧容器仍保留单文件挂载；删除宿主机图片不能更新挂载，Docker 还可能把缺失的文件路径创建成目录。
-
-在原安装目录（例如 `/opt/ATO`）确认使用原来的 Compose 项目名、文件和服务；保留自定义端口等设置，移除旧的 `./app/ss/battle-board.jpg:/app/ss/battle-board.jpg` 挂载，并确认新配置有 `./app/ss/battle-board:/app/ss/battle-board:ro`。检查 `docker-compose -f compose.legacy.yaml config` 的输出，确认没有旧挂载。先将真实图片复制到新目录（不会覆盖已有文件，也不会删除旧文件）：
-
-~~~bash
-mkdir -p app/ss/battle-board
-if [ -f app/ss/battle-board.jpg ] && [ ! -e app/ss/battle-board/battle-board.jpg ]; then
-  cp -p app/ss/battle-board.jpg app/ss/battle-board/battle-board.jpg
-fi
-if [ -f app/ss/battle-board.jpg.preview.jpg ] && [ ! -e app/ss/battle-board/battle-board.jpg.preview.jpg ] &&
-   cmp -s app/ss/battle-board.jpg app/ss/battle-board/battle-board.jpg; then
-  cp -p app/ss/battle-board.jpg.preview.jpg app/ss/battle-board/battle-board.jpg.preview.jpg
-fi
-ls -l app/ss/battle-board/
-docker-compose -f compose.legacy.yaml pull
-docker-compose -f compose.legacy.yaml up -d --force-recreate
-~~~
-
-Compose v2 将命令中的 `docker-compose` 替换为 `docker compose`，并使用对应的 `compose.yaml`。若项目名曾用 `-p` 或 `COMPOSE_PROJECT_NAME` 指定，运行时必须沿用，否则会创建另一个项目。重建后可用 `docker inspect ato_ato_1` 查看 `Mounts`（容器名按实际替换），确认目标是 `/app/ss/battle-board` 而不是旧文件路径。新目录应包含原图 `battle-board.jpg` 和 AIBP 使用的 `battle-board.jpg.preview.jpg`；缺图时从新版资料包恢复，或参照上文生成缩略图。不要把 Docker 自动创建的同名目录当作图片删除；先确认其内容。
-
-### 镜像架构与树莓派
-
-公开镜像按 `linux/amd64` 与 `linux/arm/v7` 两个架构发布，同一个标签同时指向两份，Docker 会按本机架构自动挑，不需要写 `--platform`。**32 位 Raspberry Pi OS 用的就是 `linux/arm/v7`**，树莓派 3/4/5 装 32 位系统时也可使用该镜像；只有 `docker-compose` 时按上面的兼容配置启动，有 Compose v2.17+ 时可使用一键安装命令。
-
-其它架构没有预构建应用镜像时，一键安装脚本会取对应版本源码，先用发布导出器准备完整的 `app/` 构建目录，再在本机构建。`linux/arm64` 可使用这条路径；其它架构还需要 PHP 与 Python 基础镜像支持本机架构。脚本在 `.env` 保存准确的本地镜像标签及 `ATO_PULL_POLICY=never`，后续 `docker compose up -d` 可直接启动。以后升级重跑一次安装命令。
-
-64-bit Raspberry Pi OS 属于 `linux/arm64`，走的就是上面这条本地构建路径；想省掉自己构建，装 32 位系统用现成的 `linux/arm/v7` 镜像更省事。
-
-安装脚本默认从 GitHub 取最新 tag 的源码。固定源码版本时可在安装目录的 `.env` 里写 `ATO_VERSION=<发布页上的版本号>`；构建仍需能访问源码与基础镜像。使用自建镜像时同时设置 `ATO_IMAGE=ato-assistant:local` 和 `ATO_PULL_POLICY=never`；两份 Compose 配置都支持 `ATO_IMAGE`。
-
-一键安装默认使用执行命令时的当前文件夹；也可以通过 `ATO_DIR=/path/to/dir` 指定安装目录。脚本会建好挂载目录 `app/ss/battle-board/`，将旧路径的版图及匹配缩略图复制进来（保留旧文件，不覆盖新目录里的文件），并下载 [Docker 完整说明](tools/packaging/docker/README.txt) 到安装目录。BGM 可放在 `app/assets/bgm/audio/`，资料包平铺到 `app/assets/bgm/` 的音频同样实时可用，无需重跑安装脚本。
-
-data/ 和 app/ 下的本地素材目录会挂载到容器，拉取新镜像不会删除它们。
-
-**容器里只有素材是本地的，程序一律来自镜像**，所以 `docker compose pull` 能完整更新（包括第二屏前端和 BGM 播放器）。宿主机上的对应位置：
-
-| 放什么 | 宿主机位置 |
+| 平台 | 安装方式 |
 | --- | --- |
-| 决战版图原图与缩略图 | `app/ss/battle-board/`（同一目录挂载，内含 `battle-board.jpg` 与 `battle-board.jpg.preview.jpg`） |
-| 第二屏地形图 / 地形卡 | `app/ss/terrain/`、`app/ss/terrain-cards/` |
-| 主控台背景音乐 | `app/assets/bgm/`（资料包平铺音频）或 `app/assets/bgm/audio/`（同名时优先使用；文件名见 [bgm 说明](assets/bgm/README.md)） |
-| 主控台界面图标 | `app/assets/icons/`（资料包提供的 SVG 图标；只读挂载） |
-| 循环标记 / 探索卡 / 故事与厄运卡 | `app/assets/cycle-symbols/`、`app/assets/exploration-cards/`、`app/assets/story-doom-cards/` |
-| 其它本地图片 | `app/map/images/`、`app/technology/images/`、`app/story/images/` 等（见 `compose.yaml`） |
-| 私有故事书数据 | `app/story/data/`（只读挂载） |
-| 巴别语 / 塞壬语密语字形 | `app/story/assets/cryptic/glyphs/`（资料包的 PNG 字形；只读挂载，缺少时密语键盘为空） |
+| Windows | 下载 `ATO-Assistant-Portable-<版本>-windows-x64.zip`，完整解压后双击 `start-ato-portable.bat`。 |
+| macOS | Apple Silicon 下载 `macos-arm64.zip`，Intel 下载 `macos-x64.zip`。完整解压后双击 `start-ato-portable.command`。如果系统阻止打开，右键选择「打开」。 |
+| Android | 下载并安装 `ATO-Assistant-<版本>.apk`。如系统提示，允许当前浏览器或文件管理器安装未知来源的应用。 |
 
-`app/ss/` 下的 `index.html` / `app.js` / `styles.css` / `terrain-data.js` 是镜像提供的程序文件，宿主机上的同名旧副本不会生效，可以直接删掉。
+### Docker / NAS
 
-## 素材库工具
+在安装目录运行以下命令。需要 Docker Compose v2.17 或更高版本。
 
-asset-studio/ 是独立的素材拍摄、导入和分享工具。完整说明见 [asset-studio/README.md](asset-studio/README.md)。
+```bash
+curl -fsSL https://raw.githubusercontent.com/banard2049-cpu/ATO_assistant/main/tools/install-docker.sh | bash
+```
 
-## 记录表图片附件
+在浏览器打开 `http://服务器IP:8793/`。旧版 Compose 和其它部署方式见 [Docker 安装说明](tools/packaging/docker/README.txt)。
 
-阿尔戈号记录表的「计数标记」点击标题右侧「＋」添加名称和数量，直接修改数字或用「− / ＋」调整，数量最低为 0，各循环独立保存。旧存档中的计数标记文字会自动移到对应循环的「战役笔记」开头，保留原有笔记。
+## 导入资料包
 
-阿尔戈号记录表的「战役笔记」下方支持图片附件，点击标题右侧的「＋」展开相册、文件和拍照菜单，也可拖入图片、在战役笔记中粘贴截图。点击缩略图可放大，直接编辑图片下方的名称即可改名，点击「删除」移除当前循环的附件。
+卡图、音乐和完整故事正文由 `.atopack` 资料包提供。
 
-图片按当前登录账号和循环保存，自动转换为 JPG，最长边不超过 2048 像素，每张不超过 768 KB。便携版 / NAS 的图片保存在 `data/record-attachments/`，Android 保存在应用私有目录；日常存档只记录图片引用。主控台「导出存档」和记录表单独导出都会将图片一起放入 JSON 备份，导入时自动恢复。手动迁移 `data/` 时需复制整个目录。删除附件只移除当前记录中的引用，图片文件保留供历史备份恢复。
+- **Android** 在主控台点「从 .atopack 导入资源」，选择对应文件。
+- **Windows / macOS** 用解压工具打开 `.atopack`（也可以先改名为 `.zip`），把解出的资源目录合并到便携版根目录，然后刷新页面。
+- **Docker / NAS** 同样解压后，把资源目录合并到宿主机安装目录的 `app/`，然后刷新页面。
 
-手机浏览器使用系统的相册、文件和相机入口，具体选择界面由设备决定；Android 应用使用系统相机拍摄，无需广泛访问相册的权限。浏览器无法读取的 HEIC 等格式请先转换为 JPG 或 PNG。
+## 开始游玩
 
-## 故事书密语记录
+1. 首次打开时注册一个本地账号，然后登录。可在主控台切换界面语言。
+2. 选择战役和循环，按主控台上的流程游玩。接续已有战役时，使用「导入存档」载入 ATO 助手的 `.json` 备份或官方 App 的 `.jsave`。
+3. 需要另一台设备显示战斗时，在主控台开启「第二屏幕」，再用同一局域网内的设备打开显示的网址。
 
-故事书左侧栏最下方可展开「密语记录」小模块，切换百臂巨人语、巴别语、塞壬语。百臂巨人语支持 16 个方块符号和手动数字对应；巴别语与塞壬语支持点选原始字形、编辑字符对应、键盘录入已记字符、添加空格与换行、选择连续字符记成词组，以及保存和载入记录。字符对应、词组笔记、输入和记录随当前战役的记录表保存，也包含在完整状态备份里；已保存记录保留原始字形与保存时已记下的字符读法，保存时还没对应的字符会在之后记下对应时自动补全显示（词组含义按当前词组笔记重新生成），保存下来的空格、标点与分词保持不变，载入时也会带上补全后的读法。
+## 更新与备份
 
-巴别语与塞壬语默认为空白字符对应，可主动用 [Babelian & Siren Translator 仓库](https://github.com/HUAHUOOo/Babelian-Siren-Translator) 的参考表补齐未知字符，已有手工对应保留。「连字成词」支持手工调整空格、标点和离线分词建议，不更改原文字母或未知标记。塞壬语按玩家确认的螺旋读序手工录入，键盘对照方向只辅助辨认字形，不推断螺旋几何。字形、词频与算法来源见 [素材说明](story/assets/cryptic/NOTICE.md)。
+更新或迁移前，在主控台点「导出存档」。便携版和 Docker 的本地存档位于安装目录的 `data/`。
 
-## 战役简报
+- **便携版** 登录后，在本机主控台点「检查更新」，再点「一键更新」。
+- **Android** 从发布页下载新版 APK 并覆盖安装。
+- **Docker / NAS** 在安装目录执行 `docker compose pull && docker compose up -d`。
 
-briefing/ 是独立的战役简报工具，用同一条日期轴回放**地图翻开**与**科技树点亮**，并逐日列出当天发生的事。
+## 许可
 
-- 数据只有一个来源：`data/backups/<账号>/daily/` 里的每日存档备份。进入下一天时保留的那份快照当作「那天的结束状态」，相邻两天相减就是当天的新增（翻开的板块、点亮的科技、故事/定数推进、英雄增减、地图流水）。
-- 简报覆盖哪几天，取决于备份还在不在。系统保留策略之外没有备份的日期会显示「无记录」，差分跨过它直接对比前后两份。
-- 备份里只有状态，所以这里只报**净变化**；装备库存与资源收支保存在存档的 `record` 模块里（科技页负责读写），简报目前还没有为它们做差分展示，所以这里看不到这两项。
-- 入口在主控台右侧「用户与存档」面板的存档操作里（简报读的是每日备份，所以跟存档放在一起）。
-- 「导出全部备份」把当前账号下所有战役、循环、日期及各次修订的每日存档打包为 ZIP；「导入备份压缩包」校验完整压缩包后合并历史，跳过重复内容，保留已有备份和当前存档。Android、Windows/macOS 便携版与 Docker/NAS 使用同一种格式，可互相迁移；导入的战役可在简报的循环下拉框中选择。压缩包包含每日存档原始数据，图片附件的独立文件仍需随完整存档另外迁移。
-- 简报按每批 4 天读取历史；备份压缩包通过文件流传输，Android 导入的历史独立存放在应用私有文件目录，避免把整包内容同时载入内存。
-- 「导出 GIF / PDF」把地图回放与科技树回放各导出一张 GIF，并把逐日记录排成 PDF，打成一个 zip 下载。逐帧渲染与 GIF 编码都在浏览器里做（内置 PHP 是精简构建，没有 GD/Imagick，服务器端画不了图；浏览器也不能自己编码 GIF，用的是随源码发布的 MIT 编码器 `assets/vendor/gifenc.js`），所以几十天的循环要跑几十秒，进度显示在标题下面。
-
-## 许可与素材声明
-
-本项目源代码自本次许可变更起以 [PolyForm Noncommercial License 1.0.0](LICENSE) 发布，SPDX 标识为 `PolyForm-Noncommercial-1.0.0`。允许个人、教育、研究、公益等非商业用途使用、修改和分发；商业用途不在该许可范围内，需要事先取得版权方的单独授权。分发时必须同时提供许可证文本或其官方 URL，并保留许可证中的 `Required Notice`。
-
-许可证只覆盖本仓库的程序代码，不覆盖游戏素材。本项目不包含官方游戏素材授权。使用者需要自行确保本地图片、故事文本和音频的来源与使用方式符合相关授权要求。
-
-便携版 ZIP、Android APK 与 Docker 镜像里包含的第三方运行时、库及依赖不适用本项目的 PolyForm Noncommercial 许可证，仍分别由其自身许可证（PHP License 3.01 等）管辖。
+程序代码采用 [PolyForm Noncommercial License 1.0.0](LICENSE)。游戏素材和第三方组件适用各自的许可。

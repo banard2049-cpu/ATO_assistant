@@ -1221,6 +1221,7 @@ const TITAN_NAMES_ZH = {
 
 let gearProductionData = null;
 let gearCardImages = {};
+let gearCardDetails = {};
 let gearPartLabels = {};
 
 async function loadGearProductionData() {
@@ -1237,10 +1238,12 @@ async function loadGearProductionData() {
     if (imagesResponse.ok) {
       const payload = await imagesResponse.json();
       gearCardImages = payload?.images || {};
+      gearCardDetails = payload?.cards || {};
     }
   } catch (e) {
     console.warn('Failed to load gear card images:', e);
     gearCardImages = {};
+    gearCardDetails = {};
   }
   try {
     const labelsResponse = await fetch(GEAR_PART_LABELS_URL, { cache: 'no-cache' });
@@ -2134,10 +2137,11 @@ function arsenalCatalog() {
   const catalog = new Map();
   // The complete card dictionary also includes loot and starting equipment.
   // Their card IDs identify the cycle even when there is no production recipe.
+  const cardCycles = { A: 'c1', B: 'c2', C: 'c3', D: 'c4', E: 'c5' };
   for (const rawId of Object.keys(gearProductionData?.gearCards || {})) {
     const gearId = window.ATO_GEAR_INVENTORY.gearKey(rawId);
     if (!gearId) continue;
-    const cycle = { A: 'c1', B: 'c2', C: 'c3', D: 'c4', E: 'c5' }[gearId[0]];
+    const cycle = gearProductionData?.gearCycles?.[gearId] || cardCycles[gearId[0]];
     catalog.set(gearId, { gearId, cycles: cycle ? [cycle] : [], techIds: [] });
   }
   for (const entry of gearProductionData?.techProduction || []) {
@@ -2157,11 +2161,13 @@ function arsenalCatalog() {
   return [...catalog.values()].map(item => {
     const name = getGearName(item.gearId);
     const part = gearPart(item.gearId);
+    const card = gearCardDetails[item.gearId];
+    const searchNames = [name, gearProductionData?.gearCards?.[item.gearId], card?.title, ...(card?.aliases || [])];
     return {
       ...item, name, part,
       ...(inventory[item.gearId] || { quantity: 0, manufactured: 0 }),
       recorded: Object.prototype.hasOwnProperty.call(inventory, item.gearId),
-      searchText: `${item.gearId} ${name} ${gearProductionData?.gearCards?.[item.gearId] || ''} ${part.label} ${item.techIds.map(getTechDisplayName).join(' ')}`.toLowerCase(),
+      searchText: [item.gearId, ...searchNames, part.label, ...item.techIds.map(getTechDisplayName)].join(' ').toLowerCase(),
     };
   }).sort((a, b) => a.gearId.localeCompare(b.gearId));
 }

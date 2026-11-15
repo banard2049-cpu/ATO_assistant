@@ -129,12 +129,20 @@
     return state;
   }
 
-  function rewardFor(node, roll) {
+  function availableLoot(state, boss) {
+    const claimed = new Set(Object.values(state.wins)
+      .map(win => win.reward)
+      .filter(reward => reward?.type === 'loot')
+      .map(reward => catalog.rewardKey(reward)));
+    return (catalog.loot[boss] || []).filter(reward => !claimed.has(catalog.rewardKey(reward)));
+  }
+
+  function rewardFor(state, node, roll) {
     const reward = node.reward;
     if (!reward) return null;
     if (reward.type !== 'loot') return normalizeReward(reward);
-    const pool = catalog.loot[node.boss] || [];
-    if (!pool.length) throw new Error('这场战斗的必得战利品清单缺失。');
+    const pool = availableLoot(state, node.boss);
+    if (!pool.length) return null;
     return normalizeReward({ ...pool[Math.floor(roll * pool.length)], type: 'loot', carry: true });
   }
 
@@ -155,7 +163,7 @@
       if (first) {
         const hold = state.hold[node.cycle];
         if (battle.mode === 'normal') {
-          const reward = rewardFor(node, roll);
+          const reward = rewardFor(state, node, roll);
           state.wins[idOnTree] = { normal: true, cursed: false, reward, earned: true };
         } else {
           win.cursed = true;
@@ -187,5 +195,5 @@
   }
 
   return { cycles, editions, roman, byId, keyFor, editionFor, canShowEdition, battleTarget, normalize, blockers,
-    canReplay, start, settle, setRecordedWin };
+    canReplay, start, settle, setRecordedWin, availableLoot };
 });
