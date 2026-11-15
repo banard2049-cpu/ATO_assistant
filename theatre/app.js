@@ -7,6 +7,8 @@
   const $ = id => document.getElementById(id);
   const api = '../api/campaign-state.php?section=theatre';
   const session = window.ATO_CAMPAIGN_SESSION.create();
+  const arsenal = window.ATO_THEATRE_ARSENAL;
+  const arsenalStore = arsenal.create(session, fetch);
   const returnId = new URLSearchParams(location.search).get('battle');
   const mobile = matchMedia('(max-width: 760px)');
   let language = 'fan';
@@ -22,13 +24,19 @@
   const statusText = { locked: '锁定', ready: '可挑战', won: '已胜利', cursed: '可打诅咒', both: '双模式已胜' };
   const cardWidth = 120;
   const cardHeight = 31;
-  const routesByEdition = {};
-  const graphLayouts = { all: combinedLayout() };
+  const graph = window.ATO_THEATRE_GRAPH;
+  const layoutTree = graph.createTreeLayout(catalog.nodes, cardWidth, cardHeight);
   const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
   })[char]);
 
   let state = rules.normalize(null);
+  let rewardImages = {};
+  let arsenalSnapshot = null;
+  let arsenalReading = false;
+  let arsenalSaving = false;
+  let arsenalRefreshPending = false;
+  let arsenalError = '';
   let revision = 0;
   let dashboardCycle = '';
   let loaded = false;
@@ -49,11 +57,13 @@
   let dashboardChannel;
   let cycleChannel;
   let languageChannel;
+  let recordChannel;
   try {
     channel = new BroadcastChannel('ato-theatre-v1');
     dashboardChannel = new BroadcastChannel('ato-dashboard-sync-v1');
     cycleChannel = new BroadcastChannel('ato-dashboard-cycle-v1');
     languageChannel = new BroadcastChannel('ato-term-language');
+    recordChannel = new BroadcastChannel('ato-record-sync-v1');
   } catch { /* Recheck on focus. */ }
   // A cycle's own nodes only appear once that cycle itself is ticked complete:
   // finishing c1 unlocks c1's bosses (not c2's), and so on. Until then its
@@ -224,226 +234,23 @@
     ];
     const cycles = rules.cycles;
     $('node-legend-items').innerHTML = entries.map(([icon, label]) => example(iconBadge(icon, label), label)).join('') + cycles.map(cycle =>
-      example(materialBadge(cycle, 'tear') + materialBadge(cycle, 'core'), `${cycleName(cycle)}的${term('material')}与${term('core')}`)).join('')
-      + `<span class="legend-item"><i class="legend-branch" aria-hidden="true"></i>跨版本依赖</span>`;
+      example(materialBadge(cycle, 'tear') + materialBadge(cycle, 'core'), `${cycleName(cycle)}的${term('material')}与${term('core')}`)).join('');
   }
 
-  // --- theatre layout: begin ---
-  function compactLayout(key) {
-    const nodes = catalog.nodes.filter(node => node.edition === key).map(node => [node.id, node.position]);
-    if (key === 'expansion') nodes.push(...Object.entries(catalog.expansionRepeats));
-    nodes.sort((a, b) => a[1].y - b[1].y || a[1].x - b[1].x);
-    const left = Math.min(...nodes.map(([, point]) => point.x));
-    const prerequisites = new Map(catalog.nodes.map(node => [node.id, node.prerequisites]));
-    const remaining = new Map(nodes);
-    const positions = new Map();
-    const gutter = 18;
-    const rowStep = cardHeight + 14;
-    const nearby = (a, b) => Math.abs(a - b) < cardWidth + 16;
-    while (remaining.size) {
-      const [id, point] = [...remaining].find(([id]) => prerequisites.get(id).every(from => !remaining.has(from)));
-      const x = gutter + (point.x - left) * (key === 'core' ? 15 : 20);
-      const occupied = new Set([...positions.values()].filter(point => nearby(point.x, x)).map(point => point.row));
-      let row = 1 + Math.max(-1, ...prerequisites.get(id).map(from => positions.get(from)?.row ?? -1));
-      while (occupied.has(row)) row++;
-      positions.set(id, { x, row });
-      remaining.delete(id);
+  let cachedGraph;
+  function graphLayout() {
+    const key = rules.cycles.map(cycle => cycleUnlocked(cycle) ? 1 : 0).join('');
+    if (cachedGraph?.key !== key) {
+      const visible = new Set(catalog.nodes.filter(visibleNode).map(node => node.id));
+      const layout = layoutTree(visible);
+      const { positions, links } = layout;
+      const paths = graph.buildConnections(positions, cardWidth, cardHeight, links);
+      cachedGraph = { key, layout: { ...layout, paths } };
     }
-
-    // Keep shorter branches close to their join instead of leaving gaps mid-branch.
-    const ordered = [...positions].sort((a, b) => b[1].row - a[1].row);
-    for (const [index, [id, point]] of ordered.entries()) {
-      const children = ordered.slice(0, index).filter(([other]) => prerequisites.get(other).includes(id));
-      if (!children.length) continue;
-      const below = ordered.slice(0, index).filter(([, other]) => nearby(point.x, other.x));
-      point.row = Math.min(...children.concat(below).map(([, other]) => other.row)) - 1;
-    }
-    for (const point of positions.values()) point.y = gutter + point.row * rowStep;
-    const values = [...positions.values()];
-    const width = Math.ceil(Math.max(...values.map(point => point.x)) + cardWidth + gutter);
-    const height = Math.ceil(Math.max(...values.map(point => point.y)) + cardHeight + gutter);
-    return { width, height, positions };
+    return cachedGraph.layout;
   }
 
-  function middle(values) {
-    if (!values.length) return null;
-    const sorted = [...values].sort((a, b) => a - b);
-    const half = Math.floor(sorted.length / 2);
-    return sorted.length % 2 ? sorted[half] : (sorted[half - 1] + sorted[half]) / 2;
-  }
-
-  // The combined I–V sheet keeps the vertical rhythm each spread already had, then
-  // re-slots the columns: every card is pulled towards the middle of its
-  // prerequisites and successors, so a boss stays a readable ladder and the long
-  // cross-edition detours disappear.
-  function combinedLayout() {
-    const core = compactLayout('core');
-    const expansion = compactLayout('expansion');
-    const gutter = 18;
-    const columnStep = cardWidth + 16;
-    const rowStep = cardHeight + 14;
-    // How hard a card is dragged back onto its own boss's column.
-    const ladderPull = 1.1;
-    const orderingPasses = 8;
-    const straightenPasses = 20;
-    const prerequisites = new Map(catalog.nodes.map(node => [node.id, node.prerequisites]));
-    const successors = new Map(catalog.nodes.map(node => [node.id, []]));
-    for (const node of catalog.nodes) for (const from of node.prerequisites) successors.get(from).push(node.id);
-    const ladders = new Map();
-    for (const node of catalog.nodes) {
-      if (!ladders.has(node.boss)) ladders.set(node.boss, []);
-      ladders.get(node.boss).push(node.id);
-    }
-
-    // Vertical slot of each card: the two spreads are one long climb, so core
-    // (cycles I–III) keeps the top of the sheet and expansion (IV–V) starts below
-    // it. Sharing a single row grid would drag the late cycles up beside the
-    // opening ones.
-    const seed = core.width + 96;
-    const spreadGap = 2;
-    const coreRows = Math.max(...[...core.positions.values()].map(point => point.row)) + spreadGap + 1;
-    const rows = new Map();
-    const reading = new Map();
-    for (const [id, point] of core.positions) { rows.set(id, point.row); reading.set(id, point.x); }
-    for (const [id, point] of expansion.positions) {
-      if (catalog.byId[id].edition !== 'expansion') continue;
-      rows.set(id, point.row + coreRows);
-      reading.set(id, point.x + seed);
-    }
-    const lifted = Math.min(...rows.values());
-    if (lifted < 0) for (const [id, value] of rows) rows.set(id, value - lifted);
-    const lastRow = Math.max(...rows.values());
-    const lines = Array.from({ length: lastRow + 1 }, () => []);
-    for (const node of catalog.nodes) lines[rows.get(node.id)].push(node.id);
-    for (const line of lines) line.sort((a, b) => reading.get(a) - reading.get(b));
-
-    const column = new Map();
-    for (const line of lines) line.forEach((id, index) => column.set(id, index * columnStep));
-    const ladderColumn = new Map();
-    const refreshLadders = () => {
-      for (const [boss, ids] of ladders) ladderColumn.set(boss, middle(ids.map(id => column.get(id))));
-    };
-    refreshLadders();
-
-    const separate = line => {
-      let cursor = -Infinity;
-      for (const id of line) {
-        const next = Math.max(column.get(id), cursor);
-        column.set(id, next);
-        cursor = next + columnStep;
-      }
-    };
-    for (const line of lines) separate(line);
-
-    const sortLine = (line, weight) => line.map((id, index) => ({ id, index, score: weight(id) }))
-      .sort((a, b) => a.score - b.score || a.index - b.index).map(entry => entry.id);
-    const pull = (id, values) => middle(values) ?? column.get(id);
-
-    for (let pass = 0; pass < orderingPasses; pass++) {
-      for (let row = 1; row <= lastRow; row++) {
-        lines[row] = sortLine(lines[row], id => pull(id, prerequisites.get(id).map(from => column.get(from))));
-      }
-      for (let row = lastRow - 1; row >= 0; row--) {
-        lines[row] = sortLine(lines[row], id => pull(id, successors.get(id).map(to => column.get(to))));
-      }
-      refreshLadders();
-    }
-
-    for (let pass = 0; pass < straightenPasses; pass++) {
-      for (let row = 0; row <= lastRow; row++) {
-        const line = lines[row];
-        for (let index = 0; index < line.length; index++) {
-          const id = line[index];
-          const near = [...prerequisites.get(id), ...successors.get(id)].map(other => column.get(other));
-          const aim = pull(id, near) + (ladderColumn.get(catalog.byId[id].boss) - column.get(id)) * ladderPull;
-          const low = index > 0 ? column.get(line[index - 1]) + columnStep : -Infinity;
-          const high = index + 1 < line.length ? column.get(line[index + 1]) - columnStep : Infinity;
-          const clamped = Math.min(Math.max(aim, low), high);
-          column.set(id, column.get(id) + (clamped - column.get(id)) * .6);
-        }
-        separate(line);
-      }
-      refreshLadders();
-    }
-
-    // Land on the card grid and re-space so nothing can overlap.
-    for (const id of column.keys()) column.set(id, Math.round(column.get(id) / columnStep) * columnStep);
-    for (const line of lines) separate(line);
-
-    // Then lift cards onto their boss's own column whenever the row has a free
-    // slot, so each ladder reads as one vertical run instead of a staircase.
-    const occupied = new Set(catalog.nodes.map(node => `${rows.get(node.id)}:${Math.round(column.get(node.id) / columnStep)}`));
-    for (let pass = 0; pass < 3; pass++) {
-      for (const ids of ladders.values()) {
-        const aim = Math.round(middle(ids.map(id => column.get(id))) / columnStep) * columnStep;
-        for (const id of ids) {
-          const row = rows.get(id);
-          const from = `${row}:${Math.round(column.get(id) / columnStep)}`;
-          const to = `${row}:${aim / columnStep}`;
-          if (column.get(id) === aim || occupied.has(to)) continue;
-          occupied.delete(from);
-          occupied.add(to);
-          column.set(id, aim);
-        }
-      }
-    }
-
-    const left = Math.min(...column.values());
-    const positions = new Map();
-    for (const node of catalog.nodes) {
-      positions.set(node.id, {
-        x: Math.round(column.get(node.id) - left) + gutter,
-        y: gutter + rows.get(node.id) * rowStep,
-      });
-    }
-    // A child whose only prerequisite is a single node should sit directly above
-    // it, not be dragged across the sheet by its own boss's ladder column.
-    // CYCLONUS:9 depends solely on CHIMERA_METASTASIOS:9, so keep them stacked.
-    const parent = positions.get('CHIMERA_METASTASIOS:9');
-    const child = positions.get('CYCLONUS:9');
-    if (parent && child) parent.x = child.x;
-    // HYPERTIME_ORACLE:5 (超时间流神谕者 V) otherwise drifts to the far right of
-    // the same row as THE_BURDEN:2 (巨石 II). Tuck it directly above the Burden
-    // so the branch reads as one column instead of a trailing arm.
-    const oracle5 = positions.get('HYPERTIME_ORACLE:5');
-    const burden2 = positions.get('THE_BURDEN:2');
-    if (oracle5 && burden2) {
-      oracle5.x = burden2.x;
-      oracle5.y = burden2.y - rowStep;
-    }
-    const values = [...positions.values()];
-    return {
-      width: Math.ceil(Math.max(...values.map(point => point.x)) + cardWidth + gutter),
-      height: Math.ceil(Math.max(...values.map(point => point.y)) + cardHeight + gutter),
-      positions,
-    };
-  }
-  // --- theatre layout: end ---
-
-  // The route cache is keyed by which cycles are open, so unlocking one rebuilds
-  // the wiring instead of reusing paths into hidden cards.
-  function visibleKey() {
-    return rules.cycles.map(cycle => cycleUnlocked(cycle) ? 1 : 0).join('');
-  }
-
-  function graphConnections(positions) {
-    const key = visibleKey();
-    if (!routesByEdition[key]) {
-      const links = catalog.nodes.filter(visibleNode).flatMap(target => target.prerequisites
-        .filter(id => visibleNode(rules.byId.get(id)) && (positions.has(id) || positions.has(target.id)))
-        .map(id => [id, target.id]));
-      // Cross-edition runs (core → expansion) should drop down their own column
-      // and only cross at the target's row, instead of shooting sideways to the
-      // nearest left corridor.
-      const verticalFirst = new Set(links.map(([from, to], index) => {
-        const a = catalog.byId[from], b = catalog.byId[to];
-        return a && b && a.edition !== b.edition ? index : -1;
-      }).filter(index => index >= 0));
-      const paths = window.ATO_THEATRE_GRAPH.buildConnections(positions, cardWidth, cardHeight, links,
-        { allowUp: true, verticalFirst });
-      routesByEdition[key] = { links, paths };
-    }
-    const { links, paths } = routesByEdition[key];
+  function graphConnections({ links, paths }) {
     return paths.map(({ d, links: indexes, arrow }) => {
       const dependencies = indexes.map(index => links[index]);
       const marked = dependencies.some(([from, to]) => selected === from || selected === to);
@@ -453,40 +260,6 @@
       const head = arrow ? ` marker-end="url(#${marker})"` : '';
       return { marked, html: `<path class="${className}" d="${d}"${head}/>` };
     }).sort((a, b) => Number(a.marked) - Number(b.marked)).map(path => path.html).join('');
-  }
-
-  // The base layout is built for all five cycles. Drawing it whole while only the
-  // first cycle is open would leave the board mostly blank, so trim the canvas to
-  // the cards that are actually on show and keep the corner margin intact.
-  let trimmed = null;
-  function graphLayout() {
-    const key = visibleKey();
-    if (trimmed?.key === key) return trimmed.layout;
-    const all = graphLayouts.all;
-    const ids = [...all.positions.keys()].filter(id => visibleNode(rules.byId.get(id)));
-    // Nothing unlocked yet (no cycle ticked complete): keep a small valid
-    // layout instead of feeding Infinity into the canvas size, so the empty
-    // hint inside the (overflow-clipped) graph still has room to show.
-    if (!ids.length) {
-      trimmed = { key, layout: { width: 460, height: 48, positions: new Map() } };
-      return trimmed.layout;
-    }
-    const points = ids.map(id => all.positions.get(id));
-    const left = Math.min(...points.map(point => point.x));
-    const top = Math.min(...points.map(point => point.y));
-    const edge = 18;
-    const positions = new Map(ids.map(id => {
-      const point = all.positions.get(id);
-      return [id, { x: point.x - left + edge, y: point.y - top + edge }];
-    }));
-    const values = [...positions.values()];
-    const layout = {
-      width: Math.ceil(Math.max(...values.map(point => point.x)) + cardWidth + edge),
-      height: Math.ceil(Math.max(...values.map(point => point.y)) + cardHeight + edge),
-      positions,
-    };
-    trimmed = { key, layout };
-    return layout;
   }
 
   function renderTree() {
@@ -512,15 +285,15 @@
         : `<p class="muted">在右侧勾选某个循环的「已完成」，即可解锁该循环的始徒节点。</p>`;
       return;
     }
-    const { width, height, positions } = graphLayout();
+    const layout = graphLayout();
+    const { width, height, positions } = layout;
     $('graph').style.width = `${width}px`;
     $('graph').style.height = `${height}px`;
-    // The 9px head sits on the 7px wire and its tip stops half a pixel inside the
-    // card, so the point stays sharp but never leaves a hairline gap above it.
+    // The arrow's tip sits just inside the card so it touches the border.
     const arrowHeads = [['', '--edge-ink'], ['-met', '--done'], ['-selected', '--accent-strong']].map(([suffix, color]) =>
       `<marker id="tree-arrow${suffix}" markerUnits="userSpaceOnUse" markerWidth="6" markerHeight="9" refX="6" refY="4.5" orient="auto"><path fill="var(${color})" d="M0 0 L6 4.5 L0 9 Z"/></marker>`).join('');
     $('graph').innerHTML = `<svg class="connectors" width="${width}" height="${height}" aria-hidden="true">
-      <defs>${arrowHeads}</defs>${graphConnections(positions)}</svg>`
+      <defs>${arrowHeads}</defs>${graphConnections(layout)}</svg>`
       + (nodes.length ? [...positions].sort((a, b) => a[1].y - b[1].y || a[1].x - b[1].x)
         .map(([id, { x, y }]) => nodeButton(rules.byId.get(id), 'graph-node', `left:${x}px;top:${y}px;width:${cardWidth}px;height:${cardHeight}px`)).join('')
         : `<p class="muted tree-empty">在右侧勾选某个循环的「已完成」，即可解锁该循环的始徒节点。</p>`);
@@ -637,6 +410,106 @@
     return `秘密牌库 ${reward.deck} · ${reward.card}`;
   }
 
+  function arsenalActions(node, win, gear) {
+    const controls = gear.map((gearId, index) => {
+      const added = arsenal.wasAdded(arsenalSnapshot, node.id, gearId);
+      const waiting = arsenalSaving || arsenalReading;
+      const title = win.reward.type === 'skyseer' ? terms.skyseerGear(index, language) : '';
+      const text = added ? '已添加到军械库' : '添加到军械库';
+      const disabled = added || waiting ? 'disabled' : '';
+      return `<div class="reward-arsenal-item">${title ? `<span>${escape(title)}</span>` : ''}
+        <button type="button" data-add-reward-gear="${gearId}" ${title ? `aria-label="${text} · ${escape(title)}"` : ''} ${disabled}>${text}</button></div>`;
+    }).join('');
+    const status = arsenalSaving ? '正在添加到军械库…' : arsenalError;
+    return `${controls}<p class="reward-arsenal-status" role="status"${status ? '' : ' hidden'}>${escape(status)}</p>`;
+  }
+
+  function updateArsenalActions() {
+    const target = $('reward-arsenal');
+    if (!target) return;
+    const node = rules.byId.get(selected);
+    const win = state.wins[selected];
+    target.innerHTML = arsenalActions(node, win, catalog.rewardGear(node, win));
+  }
+
+  async function refreshArsenal() {
+    if (session.changed) return;
+    if (arsenalSaving || arsenalReading) { arsenalRefreshPending = true; return; }
+    arsenalRefreshPending = false;
+    if (!$('reward-arsenal')) { arsenalSnapshot = null; arsenalError = ''; return; }
+    arsenalReading = true;
+    updateArsenalActions();
+    try {
+      arsenalSnapshot = await arsenalStore.read();
+      arsenalError = '';
+    } catch {
+      if (session.changed) freeze();
+      else arsenalError = '暂时无法读取军械库，可重试添加。';
+    } finally {
+      arsenalReading = false;
+      updateArsenalActions();
+      if (arsenalRefreshPending) void refreshArsenal();
+    }
+  }
+
+  async function addRewardGear(gearId) {
+    if (arsenalSaving || arsenalReading) return;
+    const nodeId = selected;
+    const node = rules.byId.get(nodeId);
+    if (!visibleNode(node) || !catalog.rewardGear(node, state.wins[nodeId]).includes(gearId)
+        || arsenal.wasAdded(arsenalSnapshot, nodeId, gearId)) return;
+    arsenalSaving = true;
+    arsenalError = '';
+    updateArsenalActions();
+    let saved = false;
+    try {
+      const { snapshot, revision } = await arsenalStore.add(nodeId, gearId, arsenalSnapshot?.profileId);
+      arsenalSnapshot = snapshot;
+      if (revision !== undefined) recordChannel?.postMessage({ revision });
+      saved = true;
+    } catch (error) {
+      if (session.changed) freeze();
+      else arsenalError = error.message || '无法保存军械库，请重试。';
+    } finally {
+      arsenalSaving = false;
+      updateArsenalActions();
+      if ((!saved || arsenalRefreshPending) && !session.changed) {
+        const message = arsenalError;
+        await refreshArsenal();
+        if (message) {
+          arsenalError = message;
+          updateArsenalActions();
+        }
+      }
+    }
+  }
+
+  function renderReward(node, win) {
+    if (win?.reward) {
+      const label = rewardLabel(win.reward);
+      const skyseer = win.reward.type === 'skyseer';
+      const gear = catalog.rewardGear(node, win);
+      const paths = rewardImages[skyseer ? 'skyseer' : catalog.rewardKey(win.reward)] || [];
+      const carryNote = !win.reward.carry ? '' : gear.length ? ' · 可带回战役' : ' · 可带回战役，请手动登记';
+      const images = paths.map((path, index) => {
+        const name = skyseer ? terms.skyseerGear(index, language) : paths.length > 1 ? `${label}（${index + 1}/${paths.length}）` : label;
+        return `<button type="button" class="reward-card" data-reward-card aria-label="放大卡牌图 · ${escape(name)}">
+          <img src="../${escape(path)}" alt="${escape(name)}" decoding="async">
+        </button>`;
+      }).join('');
+      return `<p>已获得 ${escape(label)}${carryNote}</p>
+        ${images ? `<div class="reward-cards">${images}</div>` : ''}
+        ${gear.length ? `<div id="reward-arsenal">${arsenalActions(node, win, gear)}</div>` : ''}`;
+    }
+    if (node.reward?.type === 'loot' && (!win?.normal || win.earned)) {
+      return rules.availableLoot(state, node.boss).length ? `<p>${term('loot')} · 可带回战役</p>`
+        : `<p class="muted">该${term('boss')}的${term('loot')}已领完。</p>`;
+    }
+    if (win?.normal) return '<p class="muted">首胜已记录</p>';
+    return ['secret', 'skyseer'].includes(node.reward?.type)
+      ? `<details><summary>查看秘密${term('reward')}</summary><p>普通首胜后揭示。</p></details>` : '';
+  }
+
   function renderDetail() {
     const node = rules.byId.get(selected);
     const target = $('node-detail');
@@ -659,10 +532,7 @@
       ? '<li class="muted">还有需要在后续循环查看的前置战斗。</li>' : '');
     const nextNodes = catalog.nodes.filter(candidate => visibleNode(candidate) && candidate.prerequisites.includes(node.id));
     const nextLinks = nextNodes.map(candidate => `<li><button data-node="${candidate.id}" data-follow>${escape(titleFor(candidate))}</button></li>`).join('');
-    const secret = node.reward?.type === 'secret' || node.reward?.type === 'skyseer';
-    const reward = win?.reward ? `<p>已获得 ${escape(rewardLabel(win.reward))}${win.reward.carry ? ' · 可带回战役，请手动登记' : ''}</p>`
-      : win?.normal ? '<p class="muted">首胜已记录</p>' : node.reward?.type === 'loot' ? `<p>${term('loot')} · 可带回战役</p>`
-        : secret ? `<details><summary>查看秘密${term('reward')}</summary><p>普通首胜后揭示。</p></details>` : '';
+    const reward = renderReward(node, win);
     const normal = !win?.normal && !missing.length;
     const cursed = node.cursed && win?.normal && !win.cursed && !missing.length;
     const actions = `<div class="detail-actions">
@@ -688,6 +558,7 @@
           ${reward}${node.cursed ? `<p class="muted">诅咒首胜仅获得本节点标注的${term('material')}。</p>` : ''}
         </section>
       </div>`;
+    if (!arsenalSnapshot && !arsenalError && $('reward-arsenal')) void refreshArsenal();
   }
 
   function battleHref(battle) {
@@ -836,11 +707,24 @@
     const button = event.target.closest('button');
     if (!button) return;
     if (Object.hasOwn(button.dataset, 'closeDetail')) { selected = ''; renderDetail(); return; }
-    if (button.dataset.node) selectNode(button.dataset.node, Object.hasOwn(button.dataset, 'follow'));
+    if (Object.hasOwn(button.dataset, 'rewardCard')) {
+      const image = button.querySelector('img');
+      const preview = $('reward-preview-image');
+      $('reward-preview-title').textContent = image.alt;
+      preview.alt = image.alt;
+      preview.src = image.src;
+      $('reward-preview').showModal();
+    } else if (button.dataset.addRewardGear) {
+      void addRewardGear(button.dataset.addRewardGear);
+    } else if (button.dataset.node) selectNode(button.dataset.node, Object.hasOwn(button.dataset, 'follow'));
     else if (button.dataset.start) startBattle(rules.byId.get(selected), button.dataset.start);
     else if (button.id === 'open-manual') configureManual();
     else if (Object.hasOwn(button.dataset, 'openReplay')) configureManual(true);
   });
+  $('node-detail').addEventListener('error', event => {
+    const button = event.target.closest('[data-reward-card]');
+    if (button) button.hidden = true;
+  }, true);
   $('tree-list').onclick = () => { display = 'list'; manualDisplay = true; renderTree(); };
   // Switching back to the tree keeps the size the reader last chose; 总览 is
   // there when they actually want the whole sheet at once.
@@ -948,7 +832,12 @@
   channel?.addEventListener('message', event => {
     if (!session.changed && event.data?.accountId === session.accountId && event.data?.revision > revision) void refresh();
   });
-  dashboardChannel?.addEventListener('message', () => void refresh());
+  function refreshFromCampaign() {
+    void refreshArsenal();
+    void refresh();
+  }
+  dashboardChannel?.addEventListener('message', refreshFromCampaign);
+  recordChannel?.addEventListener('message', () => void refreshArsenal());
   cycleChannel?.addEventListener('message', event => {
     if (event.data?.type === 'active-cycle-changed') void refresh();
   });
@@ -962,8 +851,12 @@
   });
   languageChannel?.addEventListener('message', event => setTermLanguage(event.data?.language));
   render();
-  window.addEventListener('focus', () => void refresh());
-  window.addEventListener('ato-module-sync-request', () => void refresh());
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) void refresh(); });
+  window.addEventListener('focus', refreshFromCampaign);
+  window.addEventListener('ato-module-sync-request', refreshFromCampaign);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshFromCampaign(); });
+  fetch('./reward-images.json').then(response => response.ok ? response.json() : {}).then(images => {
+    rewardImages = images;
+    if (loaded && revealed && selected && !session.changed) renderDetail();
+  }).catch(() => { /* Reward labels are available without the artwork. */ });
   void refresh();
 })();

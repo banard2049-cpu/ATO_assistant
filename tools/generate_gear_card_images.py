@@ -122,7 +122,7 @@ def card_position(card_id, deck_id, width, height):
     return index % width, index // width
 
 
-def crop_card(face_path, out_path, col, row, columns, rows):
+def crop_card_face(face_path, col, row, columns, rows):
     with Image.open(face_path) as image:
         card_w = image.width // columns
         card_h = image.height // rows
@@ -130,7 +130,11 @@ def crop_card(face_path, out_path, col, row, columns, rows):
         upper = row * card_h
         right = image.width if col == columns - 1 else left + card_w
         lower = image.height if row == rows - 1 else upper + card_h
-        card = image.crop((left, upper, right, lower)).convert("RGB")
+        return image.crop((left, upper, right, lower)).convert("RGB")
+
+
+def crop_card(face_path, out_path, col, row, columns, rows):
+    with crop_card_face(face_path, col, row, columns, rows) as card:
         card.save(out_path, optimize=True)
 
 
@@ -144,8 +148,13 @@ def main():
         workshop_data = json.load(file)
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    manifest = {}
-    cards = {}
+    reward_images = json.loads((ROOT / "theatre/reward-images.json").read_text(encoding="utf-8"))
+    shared_paths = {path.removeprefix("technology/") for paths in reward_images.values() for path in paths}
+    previous = json.loads(MANIFEST_PATH.read_text(encoding="utf-8")) if MANIFEST_PATH.is_file() else {}
+    # Theatre artwork also comes from numbered decks in the expansion workshop.
+    # Keep the shared assets when rebuilding the manifest from the core workshop.
+    cards = {gear_id: card for gear_id, card in previous.get("cards", {}).items() if card["src"] in shared_paths}
+    manifest = {gear_id: card["src"] for gear_id, card in cards.items()}
     missing_images = []
     duplicate_names = []
 
@@ -185,9 +194,15 @@ def main():
         src = f"images/gear_cards/{out_name}"
         manifest[gear_id] = src
         cards[gear_id] = {
+            **previous.get("cards", {}).get(gear_id, {}),
             "src": src,
             "title": nickname.strip(),
         }
+
+    for gear_id, card in previous.get("cards", {}).items():
+        if gear_id in gear_names and gear_id not in cards:
+            cards[gear_id] = card
+            manifest[gear_id] = card["src"]
 
     with MANIFEST_PATH.open("w", encoding="utf-8") as file:
         json.dump(

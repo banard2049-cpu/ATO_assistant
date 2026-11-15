@@ -50,7 +50,6 @@ input[type="number"] { width: 7ch; }
 .node-legend summary { width: fit-content; cursor: pointer; }
 #node-legend-items { display: flex; flex-wrap: wrap; gap: 5px 10px; padding-block: 5px 2px; }
 .legend-item { display: inline-flex; align-items: center; gap: 3px; }
-.legend-branch { width: 18px; border-top: 2px dashed var(--muted); }
 .tree-board { --edge-ink: #847465; width: 100%; height: max(320px, calc(100dvh - 165px)); overflow: auto; contain: inline-size paint; overscroll-behavior: contain; cursor: grab; background-color: var(--bg); }
 .tree-board.dragging { cursor: grabbing; user-select: none; }
 #graph-size { position: relative; overflow: clip; }
@@ -118,6 +117,11 @@ input[type="number"] { width: 7ch; }
 .detail-col { min-width: 0; padding: 6px 8px; border-left: 2px solid var(--node-color, var(--accent)); background: var(--bg); }
 .detail-col h3 { font-size: 14px; }
 .detail-col h4 { margin: 6px 0 2px; font-size: 12px; color: var(--muted); }
+.reward-cards { display: flex; flex-wrap: wrap; gap: 6px; }
+.reward-card { padding: 0; border-radius: 4px; cursor: zoom-in; }
+.reward-card img { display: block; width: 86px; height: auto; aspect-ratio: 2 / 3; object-fit: contain; }
+.reward-arsenal-item { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-top: 6px; }
+.reward-arsenal-status { margin-top: 4px; }
 .node-detail .status { font-size: 15px; font-weight: 700; margin: 2px 0 6px; }
 .node-detail .status-ready { color: var(--done); }
 .node-detail .status-won, .node-detail .status-both { color: var(--done); }
@@ -156,6 +160,8 @@ dialog { width: min(480px, calc(100% - 24px)); color: var(--ink); background: va
 dialog::backdrop { background: rgb(20 15 12 / 45%); }
 dialog form, dialog label { display: grid; gap: 8px; }
 dialog form { gap: 10px; }
+#reward-preview { width: min(520px, calc(100% - 24px)); }
+#reward-preview-image { display: block; width: auto; max-width: 100%; max-height: 74dvh; margin-inline: auto; object-fit: contain; }
 @media (min-width: 761px) and (max-width: 1160px) { .tracks { grid-template-columns: 1fr; } }
 @media (max-width: 760px) {
   .content { grid-template-columns: minmax(0, 1fr); }

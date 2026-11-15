@@ -1924,6 +1924,35 @@ def fixed_catalog_payload() -> dict[str, Any]:
         faces={"front": "technology/images/gear_cards/cj1475.jpg"},
     ))
 
+    theatre_manifest = Path(__file__).resolve().parents[2] / "theatre" / "reward-images.json"
+    theatre_rewards = json.loads(theatre_manifest.read_text(encoding="utf-8"))
+    for order, (key, paths) in enumerate(theatre_rewards.items()):
+        for index, path in enumerate(paths, start=1):
+            label = "天寻者装备" if key == "skyseer" else f"秘密牌库 {key.replace(':', ' · ')}"
+            if len(paths) > 1:
+                label += f"（{index}/{len(paths)}）"
+            number = Path(path).stem
+            additions.append(CatalogItem(
+                id=make_id("common", "剧场", "奖励卡牌", number, label),
+                cycle="common", module="剧场", subgroup="奖励卡牌",
+                name=label, number=number, sort_order=58_000 + order * 2 + index,
+                faces={"front": path}, capture_required=False,
+            ))
+
+    technology = theatre_manifest.parents[1] / "technology"
+    gear_manifest = technology / "gear_card_images.json"
+    gear_images = json.loads(gear_manifest.read_text(encoding="utf-8"))["cards"]
+    gear_cycles = json.loads((technology / "ato_gear_production.json").read_text(encoding="utf-8")).get("gearCycles", {})
+    for order, (number, card) in enumerate(gear_images.items()):
+        cycle = gear_cycles.get(number) or {"A": "c1", "B": "c2", "C": "c3", "D": "c4", "E": "c5"}.get(number[0], "common")
+        label = card["title"]
+        additions.append(CatalogItem(
+            id=make_id(cycle, "装备卡", "装备卡", number, label),
+            cycle=cycle, module="装备卡", subgroup="装备卡",
+            name=label, number=number, sort_order=59_000 + order,
+            faces={"front": f"technology/{card['src']}"}, capture_required=False,
+        ))
+
     # 主控台 BGM：不进程序包，由使用者在根目录 assets/bgm/ 自备（见 assets/bgm/README.md）。
     # 这里只登记条目，capture_required=False 表示不需要拍摄；音频随 .atopack 的
     # bgmFiles 段分发（app/bgm_resources.py）。
@@ -2035,6 +2064,10 @@ def fixed_catalog_payload() -> dict[str, Any]:
         + "+record-boss-avatars-20261022"
         + "+story-mark-icons-20261108"
         + "+c1-c3-trait-level-fronts-20261115"
+        + "+theatre-reward-images-"
+        + hashlib.sha256(theatre_manifest.read_bytes()).hexdigest()[:12]
+        + "+arsenal-gear-images-"
+        + hashlib.sha256(gear_manifest.read_bytes()).hexdigest()[:12]
     )
     return payload
 
