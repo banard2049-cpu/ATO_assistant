@@ -3,3 +3,5 @@
 *.cmd -text whitespace=cr-at-eol
 *.command text eol=lf
 *.sh text eol=lf
+# Map artwork manifests pin the generator inputs by their exact bytes.
+tools/map_*.py text eol=lf

@@ -3,12 +3,91 @@ name: Resource import regressions
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      suites: ${{ steps.scope.outputs.suites }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github
+      - name: Select regression suites
+        id: scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          import subprocess
+
+          package_suites = {"docker", "resources", "map", "battle", "story", "record", "campaign"}
+          all_suites = package_suites | {"android"}
+          modules = {
+              "aibp": {"battle", "map", "resources", "campaign"},
+              "briefing": {"map", "record", "android", "campaign"},
+              "hero": {"campaign"},
+              "map": {"map", "battle", "resources", "campaign"},
+              "record": {"record", "campaign"},
+              "ss": {"story", "map", "battle", "campaign"},
+              "story": {"story", "resources", "campaign"},
+              "technology": {"campaign"},
+              "theatre": {"campaign"},
+          }
+
+          def select_suites():
+              base = os.environ.get("BASE_SHA", "")
+              if (os.environ["GITHUB_EVENT_NAME"] == "workflow_dispatch"
+                      or os.environ["GITHUB_REF_TYPE"] == "tag"
+                      or not re.fullmatch(r"[0-9a-f]{40}", base)
+                      or base == "0" * 40):
+                  return all_suites
+              try:
+                  # HEAD is the tested tree, including the merge result for a PR.
+                  if subprocess.run(["git", "cat-file", "-e", base + "^{commit}"],
+                                    stderr=subprocess.DEVNULL).returncode:
+                      subprocess.run(["git", "fetch", "--no-tags", "--depth=1", "--filter=blob:none",
+                                      "origin", base], check=True)
+                  paths = subprocess.check_output(
+                      ["git", "diff", "--name-only", "--no-renames", "-z", base, "HEAD", "--"])
+              except subprocess.CalledProcessError:
+                  return all_suites
+
+              selected = set()
+              for raw in paths.split(b"\0"):
+                  if not raw:
+                      continue
+                  path = os.fsdecode(raw)
+                  directory, _, _ = path.partition("/")
+                  if path in {"README.md", "README.en.md"} or (directory == "release-notes" and path.endswith(".md")):
+                      continue
+                  if path.startswith(("tools/packaging/android/", "tools/test_android_")) or path == "tools/export_android.py":
+                      selected.update({"android", "resources", "campaign"})
+                  elif directory in modules:
+                      selected.update(modules[directory])
+                  else:
+                      # Shared code, build configuration, and unknown paths get the full run.
+                      return all_suites
+              return selected
+
+          selected = select_suites()
+          if selected & package_suites:
+              selected = selected | {"packages"}
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              print("suites=" + json.dumps(sorted(selected)), file=output)
+          print("Selected suites: " + ", ".join(sorted(selected)))
+          PY
+
   packages:
+    needs: changes
+    if: contains(fromJSON(needs.changes.outputs.suites), 'packages')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,50 +98,64 @@ jobs:
         with:
           node-version: "22"
       - name: Install asset studio dependencies
+        if: contains(fromJSON(needs.changes.outputs.suites), 'docker') || contains(fromJSON(needs.changes.outputs.suites), 'resources') || contains(fromJSON(needs.changes.outputs.suites), 'map')
         run: python -m pip install -r asset-studio/requirements.txt
       - name: Test Docker installation and resource mounts
+        if: contains(fromJSON(needs.changes.outputs.suites), 'docker')
         run: |
           python tools/test_docker_mounts.py
           python tools/test_legacy_compose_image.py
       - name: Test Docker package licensing
+        if: contains(fromJSON(needs.changes.outputs.suites), 'docker')
         run: python tools/test_docker_package_license.py
       - name: Build and start the Docker export
+        if: contains(fromJSON(needs.changes.outputs.suites), 'docker')
         run: python tools/test_docker_runtime.py
       - name: Test cryptic package exports and partial imports
+        if: contains(fromJSON(needs.changes.outputs.suites), 'resources')
         working-directory: asset-studio
         run: python -m unittest tests.test_core tests.test_cryptic_resources tests.test_fan_pack tests.test_hostile_pack_safety tests.test_install_target_safety tests.test_bgm_resources tests.test_icon_resources tests.test_map_resources tests.test_official_assets tests.test_official_pack tests.test_release_packs tests.test_image_shrink
       - name: Test layered maps, icon scope and card artwork
+        if: contains(fromJSON(needs.changes.outputs.suites), 'map')
         run: |
           python -m pip install numpy==2.2.6
           node --test tests/map-tile-artwork.test.cjs tests/map-layered-consumers.test.cjs tests/map-tile-icon-tags.test.cjs tests/map-frozen-time.test.cjs tests/map-unknown-region-adjacency.test.cjs tests/c4-cloud-ship.test.cjs tests/card-art.test.cjs tests/fan-card-trims.test.cjs
           python -m unittest discover -s tests -p test_fan_card_trims.py
       - name: Test battle layout controls and second screen
+        if: contains(fromJSON(needs.changes.outputs.suites), 'battle')
         run: |
           node tools/test-ss-terrain-data.cjs
           node tools/test-aibp-battle-map-control.cjs
           node tools/test-second-screen-los-mirror.cjs
       - name: Test Android resource catalog and coverage
+        if: contains(fromJSON(needs.changes.outputs.suites), 'resources')
         run: |
           python tools/test_android_resource_catalog.py
           python tools/test_android_resource_catalog_coverage.py
       - name: Test story page code is committed to git
+        if: contains(fromJSON(needs.changes.outputs.suites), 'story')
         # 页面引用的代码必须在仓库里（renderer.js / styles.css / story-tables.js 曾整批漏提交，
         # 导致干净检出构建的 APK、镜像与便携包都缺这些文件）；私有素材则必须不进仓库。
         run: python tools/test_story_code_in_git.py
       - name: Test C5 headings and story rendering without private resources
+        if: contains(fromJSON(needs.changes.outputs.suites), 'story')
         run: node --test story/tests/c5-heading-compat.test.cjs story/tests/mixed-media.test.cjs story/tests/story-pipe-tables.test.cjs story/tests/story-pipe-tables-second-screen.test.cjs story/tests/story-battle-reward-tables.test.cjs story/tests/story-dice-tables.test.cjs
       - name: Test hidden exploration and music playback
+        if: contains(fromJSON(needs.changes.outputs.suites), 'campaign') || contains(fromJSON(needs.changes.outputs.suites), 'story')
         run: |
           node --test tests/exploration-selection.test.cjs
           node tests/hidden-exploration.test.cjs
           node tools/test-bgm-player.cjs
           node tools/test-story-bgm.cjs
       - name: Test record attachment storage and backups
+        if: contains(fromJSON(needs.changes.outputs.suites), 'record')
         run: |
           node tests/record-attachments.test.cjs
           python -m unittest discover -s tests -p test_record_attachments.py
 
   android-import:
+    needs: changes
+    if: contains(fromJSON(needs.changes.outputs.suites), 'android')
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -86,6 +179,8 @@ jobs:
         run: python tools/test_android_atopack_import.py
 
   campaign-settlement:
+    needs: changes
+    if: contains(fromJSON(needs.changes.outputs.suites), 'campaign')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

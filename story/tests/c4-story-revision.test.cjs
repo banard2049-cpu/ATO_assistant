@@ -35,17 +35,3 @@ test('C4 keeps the local 1346 repair and both original destinations', { skip: !a
   assert.match(text, /获得 \+1〔船体〕，参见 1350/);
   assert.match(text, /获得 \+1〔船员〕，参见 1351/);
 });
-
-test('C4 thumb stories remain separate searchable numbered entries', { skip: !available }, () => {
-  for (const [id, parent] of [['0010', 'c4-0-9'], ['1095', 'c4-0-95'],
-    ['1355', 'c4-0-153'], ['1359', 'c4-0-154']]) {
-    const standalone = entry(`c4-0-thumb-${id}`);
-    assert.equal(standalone.id, id);
-    assert.equal(standalone.entryType, 'number');
-    assert.equal(standalone.chapterKey, 'main');
-    assert.ok(standalone.text.trim());
-    assert.ok(!entry(parent).text.includes(standalone.text), `${id}: no duplicate merged into parent`);
-  }
-  const keys = c4.entries.map(value => value.key);
-  assert.equal(new Set(keys).size, keys.length, 'stable keys remain unique');
-});

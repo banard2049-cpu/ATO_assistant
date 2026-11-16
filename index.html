@@ -1639,6 +1639,40 @@
       gap: 8px;
     }
 
+    #mnemosChoiceDialog {
+      width: min(34rem, calc(100vw - 28px));
+      padding: 18px;
+      overflow-wrap: anywhere;
+    }
+
+    #mnemosChoiceDialog h2 { margin: 0 0 8px; font-size: 20px; }
+    #mnemosChoiceDialog p { margin: 0 0 12px; }
+    #mnemosChoiceRows { display: grid; gap: 10px; }
+    #mnemosChoiceRows p { margin: 0; }
+    #mnemosChoiceRows fieldset {
+      min-width: 0;
+      margin: 0;
+      padding: 4px 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+    #mnemosChoiceRows legend { font-weight: 800; }
+    #mnemosChoiceRows label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 40px;
+      cursor: pointer;
+    }
+    #mnemosChoiceRows input { width: auto; flex: none; accent-color: var(--accent); }
+    #mnemosChoiceDialog .mnemos-choice-actions {
+      display: flex;
+      justify-content: end;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    #mnemosChoiceConfirm:disabled { opacity: .5; cursor: default; }
+
     .card-track-shell {
       display: grid;
       grid-template-rows: auto minmax(0, 1fr);
@@ -2836,6 +2870,19 @@
     </form>
   </dialog>
 
+  <dialog id="mnemosChoiceDialog" class="card-track-dialog" aria-labelledby="mnemosChoiceTitle" aria-describedby="mnemosChoiceInstructions">
+    <form method="dialog">
+      <h2 id="mnemosChoiceTitle">选择回忆卡</h2>
+      <p id="mnemosChoiceSource"></p>
+      <p id="mnemosChoiceInstructions">请由对应玩家为每位同进度的英雄选一张卡增加 1 个回忆节点。</p>
+      <div id="mnemosChoiceRows"></div>
+      <div class="mnemos-choice-actions">
+        <button type="submit" value="cancel" class="secondary" formnovalidate>取消</button>
+        <button id="mnemosChoiceConfirm" type="submit" value="confirm" disabled>确认增加</button>
+      </div>
+    </form>
+  </dialog>
+
   <script src="./assets/page-focus-router.js?v=20261113-theatre"></script>
   <script src="./assets/story-doom-card-data.js?v=20261014-card-face-audit2"></script>
   <script src="./assets/exploration-card-tags.js?v=20261018-card-audit1"></script>
@@ -4001,6 +4048,7 @@
     const heroMnemosSyncChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel("ato-hero-mnemos-sync-v1") : null;
     const constantToolsOpen = {};
     const surveyConstantInteractionVersions = new Map();
+    let mnemosTagApplication = Promise.resolve();
     let surveyConstantMnemosSyncPending = 0;
     let surveyConstantExternalSyncDeferred = false;
     let authMode = "login";
@@ -7264,7 +7312,11 @@
         // Progress changes apply only to heroes still present in this snapshot.
         const hero = next.heroes.find((candidate) => candidate?.id === change.heroId);
         if (!hero) return;
-        const field = change.type === "fated" ? "fatedProgress" : "mnemosProgress";
+        const fated = change.type === "fated";
+        const cards = fated ? hero.fatedMnemos : hero.mnemos;
+        const groups = fated ? HERO_MNEMOS_GROUPS : HERO_CYCLES;
+        if (!groups.some((cycleId) => cards?.[cycleId]?.includes(change.cardId))) return;
+        const field = fated ? "fatedProgress" : "mnemosProgress";
         if (!isPlainObject(hero[field])) hero[field] = {};
         const current = Math.max(0, Number(hero[field][change.cardId] || 0));
         hero[field][change.cardId] = Math.min(change.max, current + 1);
@@ -7283,8 +7335,71 @@
       };
     }
 
-    async function applyMnemosTagToHeroes(tagId, hubTitle, boxLabel) {
+    function chooseMnemosProgress(source, rows) {
+      const dialog = document.getElementById("mnemosChoiceDialog");
+      if (typeof dialog?.showModal !== "function") {
+        window.alert("当前浏览器不支持 dialog 弹窗。请使用新版 Chrome / Edge。");
+        return null;
+      }
+      const form = dialog.querySelector("form");
+      const rowList = document.getElementById("mnemosChoiceRows");
+      const submit = document.getElementById("mnemosChoiceConfirm");
+      document.getElementById("mnemosChoiceSource").textContent = source;
+      rowList.replaceChildren();
+
+      rows.forEach(({ name, cards }, index) => {
+        if (cards.length === 1) {
+          const line = document.createElement("p");
+          line.textContent = `${name} · ${cards[0].label}`;
+          rowList.append(line);
+          return;
+        }
+        const group = document.createElement("fieldset");
+        const legend = document.createElement("legend");
+        legend.textContent = name;
+        group.append(legend);
+        cards.forEach(({ label, change }) => {
+          const option = document.createElement("label");
+          const radio = document.createElement("input");
+          radio.type = "radio";
+          radio.name = `mnemos-${index}`;
+          radio.value = change.cardId;
+          radio.required = true;
+          option.append(radio, label);
+          group.append(option);
+        });
+        rowList.append(group);
+      });
+
+      submit.disabled = true;
+      form.onchange = () => { submit.disabled = !form.matches(":valid"); };
+      dialog.returnValue = "cancel";
+      return new Promise((resolve) => {
+        dialog.addEventListener("close", () => {
+          if (dialog.returnValue !== "confirm") return resolve(null);
+          const selected = new FormData(form);
+          const changes = rows.map(({ cards }, index) => cards.length === 1
+            ? cards[0].change
+            : cards.find(({ change }) => change.cardId === selected.get(`mnemos-${index}`))?.change);
+          resolve(changes.every(Boolean) ? changes : null);
+        }, { once: true });
+        dialog.showModal();
+      });
+    }
+
+    function applyMnemosTagToHeroes(tagId, hubTitle, boxLabel) {
       const target = heroProgressTarget();
+      // Each confirmation should see the progress saved by any earlier adventure.
+      mnemosTagApplication = mnemosTagApplication
+        .then(() => confirmMnemosTagForHeroes(tagId, hubTitle, boxLabel, target))
+        .catch((error) => {
+          console.warn(error);
+          window.alert(`无法增加回忆进度：${error?.message || error}`);
+        });
+      return mnemosTagApplication;
+    }
+
+    async function confirmMnemosTagForHeroes(tagId, hubTitle, boxLabel, target) {
       let heroState;
       try {
         heroState = await readLatestHeroState(target);
@@ -7299,36 +7414,33 @@
       const proposals = [];
 
       heroState.heroes.forEach(hero => {
-        hero.mnemosProgress = hero.mnemosProgress || {};
-        // Find best mnemos card with this tag
-        let bestMnemos = null;
+        const bestMnemos = new Set();
         let bestProgress = -1;
         HERO_CYCLES.forEach(cycleId => {
           (hero.mnemos?.[cycleId] || []).forEach(mId => {
             const cardTags = MNEMOS_CARD_TAGS[mId];
             if (cardTags && cardTags.includes(tagId)) {
-              const progress = hero.mnemosProgress[mId] || 0;
-              if (progress < mnemosTrackLength(mId) && progress > bestProgress) {
+              const progress = Math.max(0, Number(hero.mnemosProgress?.[mId]) || 0);
+              if (progress < mnemosTrackLength(mId) && progress >= bestProgress) {
+                if (progress > bestProgress) bestMnemos.clear();
                 bestProgress = progress;
-                bestMnemos = mId;
+                bestMnemos.add(mId);
               }
             }
           });
         });
-        if (bestMnemos) {
-          proposals.push({ hero, type: "mnemos", cardId: bestMnemos, current: hero.mnemosProgress[bestMnemos] || 0 });
+        if (bestMnemos.size) {
+          proposals.push({ hero, type: "mnemos", cardIds: [...bestMnemos], current: bestProgress });
         }
 
         // Find best fated card with this tag
-        hero.fatedMnemos = hero.fatedMnemos || {};
-        hero.fatedProgress = hero.fatedProgress || {};
         let bestFated = null;
         let bestFatedProg = -1;
         HERO_MNEMOS_GROUPS.forEach(cycleId => {
-          (hero.fatedMnemos[cycleId] || []).forEach(fId => {
+          (hero.fatedMnemos?.[cycleId] || []).forEach(fId => {
             const cardTags = FATED_CARD_TAGS[fId];
             if (cardTags && cardTags.includes(tagId)) {
-              const progress = hero.fatedProgress[fId] || 0;
+              const progress = Math.max(0, Number(hero.fatedProgress?.[fId]) || 0);
               if (progress < 3 && progress > bestFatedProg) {
                 bestFatedProg = progress;
                 bestFated = fId;
@@ -7337,7 +7449,7 @@
           });
         });
         if (bestFated) {
-          proposals.push({ hero, type: "fated", cardId: bestFated, current: hero.fatedProgress[bestFated] || 0 });
+          proposals.push({ hero, type: "fated", cardIds: [bestFated], current: bestFatedProg });
         }
       });
 
@@ -7350,22 +7462,27 @@
         return found ? found[1] : (hero.playerName || "英雄");
       };
 
-      const lines = proposals.map(p => {
-        const name = heroDisplayName(p.hero);
-        const cardName = p.type === "mnemos" ? (MNEMOS_CARD_NAMES[p.cardId] || p.cardId) : (FATED_CARD_NAMES[p.cardId] || p.cardId);
-        const label = p.type === "mnemos" ? "回忆" : "宿命";
-        const max = p.type === "mnemos" ? mnemosTrackLength(p.cardId) : 3;
-        return `${name}「${cardName}」(${label}) ${p.current} → ${p.current + 1}/${max}`;
-      });
-      const confirmMsg = `定数框标签【${tagZh}】\n来源：${hubTitle} · ${boxLabel}\n\n以下英雄将获得回忆节点：\n${lines.join("\n")}\n\n确认增加？`;
-      if (!confirm(confirmMsg)) return;
-
-      const progressChanges = proposals.map((proposal) => ({
-        heroId: proposal.hero.id,
-        type: proposal.type,
-        cardId: proposal.cardId,
-        max: proposal.type === "mnemos" ? mnemosTrackLength(proposal.cardId) : 3,
+      const rows = proposals.map(({ hero, type, cardIds, current }) => ({
+        name: heroDisplayName(hero),
+        cards: cardIds.map((cardId) => {
+          const fated = type === "fated";
+          const cardName = (fated ? FATED_CARD_NAMES[cardId] : MNEMOS_CARD_NAMES[cardId]) || cardId;
+          const max = fated ? 3 : mnemosTrackLength(cardId);
+          return {
+            label: `「${cardName}」(${fated ? "宿命" : "回忆"}) ${current} → ${current + 1}/${max}`,
+            change: { heroId: hero.id, type, cardId, max },
+          };
+        }),
       }));
+      let progressChanges;
+      if (rows.some(({ cards }) => cards.length > 1)) {
+        progressChanges = await chooseMnemosProgress(`定数框标签【${tagZh}】 · ${hubTitle} · ${boxLabel}`, rows);
+      } else {
+        const lines = rows.map(({ name, cards }) => `${name}${cards[0].label}`);
+        const confirmMsg = `定数框标签【${tagZh}】\n来源：${hubTitle} · ${boxLabel}\n\n以下英雄将获得回忆节点：\n${lines.join("\n")}\n\n确认增加？`;
+        if (confirm(confirmMsg)) progressChanges = rows.map(({ cards }) => cards[0].change);
+      }
+      if (!progressChanges) return;
       // Only publish confirmed progress. A failed write must not look like a
       // successful local update that the next server read silently removes.
       await saveHeroMnemosToServer(heroState, progressChanges, target);
@@ -14727,7 +14844,7 @@
   </script>
   <script src="./assets/ato-terms.js?v=20261110-loop-terms"></script>
   <script src="./assets/english-terms.js?v=20261011-english4"></script>
-  <script src="./assets/english-ui.js?v=20261112-survey-reminders"></script>
+  <script src="./assets/english-ui.js?v=20261116-mnemos-choice"></script>
   <script src="./assets/english-language.js?v=20261011-english4"></script>
   <script src="./assets/term-language.js?v=20261114-picker-label1"></script>
   <script src="./assets/update/app-version.js?v=3.8.6-rc.1"></script>

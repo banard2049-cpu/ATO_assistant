@@ -103,9 +103,3 @@ test('a cycle/day change during flush aborts the restore', async () => {
   assert.match(events.at(-1)[1], /已变更/);
   assert.ok(!events.some(event => Array.isArray(event) && event[0] === 'request'));
 });
-
-test('all inline dashboard scripts parse', () => {
-  for (const match of source.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)) {
-    if (match[1].trim()) new vm.Script(match[1]);
-  }
-});

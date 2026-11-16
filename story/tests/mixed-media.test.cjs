@@ -25,6 +25,18 @@ function fn(source, name, indent = '  ') {
   assert.ok(end > match.index, `missing end ${name}`);
   return source.slice(match.index, end + indent.length + 2);
 }
+const mainAdapter = new vm.Script([
+  'mixedMediaRuntime', 'mixedMediaContext', 'renderMixedStoryText', 'storyTablesRender',
+  'normalizeTableCell', 'isTableCellCandidate', 'parseBattleTable', 'renderBattleTable',
+  'isSectionSubheading', 'prepareSectionedMedia', 'renderSectionedStory',
+  'renderBattleSectionedStory', 'renderHtmlStory', 'renderAiTranslatedSupplement',
+  'translatedSupplementUsesPlainLayout', 'renderStory',
+].map(name => fn(mainSource, name)).join('\n'), { filename: 'story/assets/app.js' });
+const secondAdapter = new vm.Script([
+  'mixedMediaRuntime', 'renderMixedStoryBody', 'storyTablesHtml', 'escapeStoryText',
+  'storyScanImages', 'hasStorySnapshot', 'openStory',
+].map(name => fn(ssSource, name, '')).join('\n'), { filename: 'ss/app.js' });
+
 function mainPage(h, api, book, variant = 'fan') {
   const page = vm.createContext({
     window: { ATO_MIXED_MEDIA: api }, storyVersion: variant === 'official' ? '官方版' : '民间版',
@@ -36,13 +48,7 @@ function mainPage(h, api, book, variant = 'fan') {
     refreshSecondScreenStoryContentToggle() {}, secondScreenStoryModeToggle: { checked: false },
     battleAibpLink: () => '',
   });
-  for (const name of ['mixedMediaRuntime', 'mixedMediaContext', 'renderMixedStoryText', 'storyTablesRender',
-    'normalizeTableCell', 'isTableCellCandidate', 'parseBattleTable', 'renderBattleTable',
-    'isSectionSubheading', 'prepareSectionedMedia', 'renderSectionedStory',
-    'renderBattleSectionedStory', 'renderHtmlStory', 'renderAiTranslatedSupplement',
-    'translatedSupplementUsesPlainLayout', 'renderStory']) {
-    vm.runInContext(fn(mainSource, name), page);
-  }
+  mainAdapter.runInContext(page);
   return page;
 }
 function secondPage(h, api) {
@@ -54,9 +60,7 @@ function secondPage(h, api) {
     document: h.document, elements, activeMode: 'map', storyRenderKey: '', storyRendered: false,
     mixedStoryGeneration: 0, latestStoryScreen: null, fitStoryTextToViewport() {},
   });
-  for (const name of ['mixedMediaRuntime', 'renderMixedStoryBody', 'storyTablesHtml', 'escapeStoryText', 'storyScanImages', 'hasStorySnapshot', 'openStory']) {
-    vm.runInContext(fn(ssSource, name, ''), page);
-  }
+  secondAdapter.runInContext(page);
   return page;
 }
 const tick = async () => { for (let i = 0; i < 8; i++) await Promise.resolve(); };
@@ -211,22 +215,28 @@ test('all local mappings match exact source fingerprints and available assets', 
 });
 
 test('all mapped entries use real main and second-screen branches without dropping planned graphics', { skip: !local }, async () => {
-  const rows = ledgers.flatMap(k => mapping[k]), groups = new Map();
-  for (const row of rows) {
-    const identity = `${row.book}|${row.variant}|${row.key}`;
-    groups.set(identity, (groups.get(identity) || 0) + 1);
+  const groups = new Map();
+  for (const ledger of ledgers) {
+    for (const row of mapping[ledger]) {
+      const identity = `${row.book}|${row.variant}|${row.key}`;
+      if (!groups.has(identity)) groups.set(identity, Object.fromEntries(ledgers.map(name => [name, []])));
+      groups.get(identity)[ledger].push(row);
+    }
   }
-  let tested = 0, mainCount = 0, secondCount = 0;
-  for (const [identity, expected] of groups) {
+  let mainCount = 0, secondCount = 0;
+  for (const [identity, rows] of groups) {
     const [bookId, variant, key] = identity.split('|'), book = fan.books.find(b => b.id === bookId);
     const source = book.entries.find(e => e.key === key);
     const off = official.books.find(b => b.id === bookId)?.entries.find(e => e.key === key);
     const entry = variant === 'official' ? { ...source, ...off, key, text: off.officialText,
       title: off.officialTitle || source?.title || off.id,
       chapterKey: source?.chapterKey || off.chapterKey || 'main' } : source;
+    const expected = ledgers.reduce((count, ledger) => count + rows[ledger].length, 0);
+    // The preceding test builds the full index. Each adapter only needs the current entry's rows.
+    const entryMapping = { ...mapping, ...rows };
     for (const screen of ['main', 'second']) {
       const h = harness(); h.env.location.href = `https://qa.invalid/ato/${screen === 'main' ? 'story' : 'ss'}/index.html`;
-      const api = create(mapping, h.env);
+      const api = create(entryMapping, h.env);
       const page = screen === 'main' ? mainPage(h, api, book, variant) : secondPage(h, api);
       if (screen === 'main') page.renderStory(entry);
       else page.openStory({ story: { id: entry.id, title: entry.title, text: entry.text,
@@ -241,8 +251,7 @@ test('all mapped entries use real main and second-screen branches without droppi
       api.dispose(h.container);
       if (screen === 'main') mainCount += images.length; else secondCount += images.length;
     }
-    tested++;
   }
   assert.equal(mainCount, 10814); assert.equal(secondCount, 10814);
-  console.log(`Mixed-media branch audit: ${tested} entry variants, main ${mainCount}, second ${secondCount}`);
+  console.log(`Mixed-media branch audit: ${groups.size} entry variants, main ${mainCount}, second ${secondCount}`);
 });

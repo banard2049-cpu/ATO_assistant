@@ -52,13 +52,15 @@ function harness(cycle, adventures = []) {
     'mergeArgoRecords', 'normalizeRecordCrewCounters', 'syncAdventureActionToArgoRecord',
     'syncSurveyAdventureToArgoRecord', 'normalizeAdventureTitle', 'recordAdventureIndex',
     'markRecordAdventure', 'recordAdventureMiddleSlots', 'appendRecordSyncLog', 'adventureSlotLabel',
-    'setSurveyConstant', 'heroProgressTarget', 'assertHeroProgressTarget', 'applyMnemosTagToHeroes', 'currentPharosDreamConstants', 'findSimpleConstantRow',
+    'setSurveyConstant', 'heroProgressTarget', 'assertHeroProgressTarget', 'applyMnemosTagToHeroes', 'confirmMnemosTagForHeroes',
+    'currentPharosDreamConstants', 'findSimpleConstantRow',
     'simpleConstantSlotIds', 'ensureTodaySimpleConstants', 'pharosDreamsDayKey', 'ensureTodayPharosDreams',
     'setSimpleConstant', 'setPharosDreamConstant', 'latestSimpleAdventureRecordAction',
     'beginSurveyConstantInteraction', 'surveyConstantInteractionIsCurrent',
     'beginSurveyConstantMnemosSync', 'finishSurveyConstantMnemosSync', 'restoreSurveyConstantHubSelection'];
   vm.runInContext(['surveyConstantData', 'pharosDreamConstants'].map(declaration).join('\n')
     + '\nlet surveyConstantInteractionVersions = new Map();'
+    + '\nlet mnemosTagApplication = Promise.resolve();'
     + '\nlet surveyConstantMnemosSyncPending = 0;'
     + '\nlet surveyConstantExternalSyncDeferred = false;\n'
     + names.map(name => extract(source, name)).join('\n'), c);

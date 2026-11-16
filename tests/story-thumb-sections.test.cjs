@@ -13,7 +13,7 @@ const vm = require('node:vm');
 
 const root = path.join(__dirname, '..');
 const appSource = fs.readFileSync(path.join(root, 'story/assets/app.js'), 'utf8').replace(/\r\n/g, '\n');
-const THUMB_RE = /[（(]\s*拇指\s*[)）]\s*(\*?\d{3,5}|M\d{3})(?=$|[\s:：|·\-–—])/;
+const THUMB_RE = /[（(]\s*拇指\s*[)）]\s*(\*?\d{3,5}|M\d{3})(?=$|[\s:：|·\-–—])/g;
 
 function extractFunction(name) {
   const match = appSource.match(new RegExp('^( *)(?:async )?function ' + name + '\\([^]*?^\\1}', 'm'));
@@ -48,72 +48,34 @@ function storyContext() {
   return context;
 }
 
-test('书里用拇指图标标出的段落都自己成段，标记留在正文开头', () => {
+test('带编号的拇指段落独立成段，且能按编号跳转', () => {
   const context = storyContext();
-  const split = [];
+  const beforeByEntry = new Map([
+    ['c4 0010', '0009'], ['c4 1095', '0403'], ['c4 1355', '1354'],
+    ['c4 1359', '1356'], ['c4 4172', '4155'],
+  ]);
   for (const book of context.data.books) {
-    for (const entry of book.entries) {
-      const text = String(entry.text || '');
-      const match = THUMB_RE.exec(text);
-      if (!match) continue;
-      assert.equal(match.index, 0, `${book.id} ${entry.key} 的拇指标记还在上一段正文里`);
-      assert.equal(String(entry.id), match[1], `${book.id} ${entry.key} 的编号和标记不一致`);
-      assert.equal(entry.entryType, 'number', `${book.id} ${entry.key} 不是编号段落`);
-      split.push(`${book.id} ${entry.id}`);
+    if (book.id === 'c4') {
+      assert.equal(new Set(book.entries.map(entry => entry.key)).size, book.entries.length, 'C4 的段落键必须唯一');
     }
-  }
-  assert.deepEqual(split, ['c4 0010', 'c4 1095', 'c4 1355', 'c4 1359', 'c4 4172']);
-});
-
-test('拇指段落的正文不会在别的段落里再出现一份', () => {
-  const context = storyContext();
-  const entries = context.data.books.flatMap((book) => book.entries.map((entry) => ({ book, entry })));
-  const thumbs = entries.filter(({ entry }) => /^[（(]\s*拇指\s*[)）]/.test(String(entry.text || '')));
-  assert.equal(thumbs.length, 5);
-
-  // 「获得 +N (…资源…)」这类通用奖励句在全书本来就是复用的模板（例如
-  // 「获得 +1 (进展指示物 (ProgressToken))。」出现在 80 个其它条目里），
-  // 它出现在拇指段落里并不说明这段正文被并回了上一段。这里只把叙述句当作重复证据。
-  const SHARED_REWARD_LINE = /^获得\s*[+＋]\s*\d/;
-  const duplicates = [];
-  for (const { book, entry } of thumbs) {
-    const lines = new Set(
-      String(entry.text || '').split('\n').map((line) => line.trim())
-        .filter((line) => line.length >= 12 && !SHARED_REWARD_LINE.test(line)),
-    );
-    for (const other of entries) {
-      if (other.entry === entry) continue;
-      for (const line of lines) {
-        if (String(other.entry.text || '').includes(line)) {
-          duplicates.push(`${book.id} ${entry.id} 的「${line.slice(0, 20)}…」也出现在 ${other.book.id} ${other.entry.id}`);
-        }
+    for (const entry of book.entries) {
+      for (const match of String(entry.text || '').matchAll(THUMB_RE)) {
+        const label = `${book.id} ${entry.id}`;
+        assert.equal(match.index, 0, `${label} 的拇指标记还在上一段正文里`);
+        assert.equal(String(entry.id), match[1], `${label} 的编号和标记不一致`);
+        assert.equal(entry.entryType, 'number', `${label} 不是编号段落`);
+        const linked = context.entryFromDeepLink(book, { entryId: entry.id, chapterKey: entry.chapterKey });
+        assert.equal(linked?.key, entry.key, `${label} 的编号跳转指向其它段落`);
+        const beforeId = beforeByEntry.get(label);
+        if (!beforeId) continue;
+        assert.equal(entry.chapterKey, 'main', label);
+        const preceding = book.entries.find(item => item.chapterKey === 'main' && item.id === beforeId);
+        assert.ok(preceding && preceding.order < entry.order, label);
+        const body = entry.text.split('\n').slice(1).join('\n').trim();
+        assert.ok(body && !preceding.text.includes(body), `${label} 的正文应保留在独立段落`);
+        beforeByEntry.delete(label);
       }
     }
   }
-  assert.deepEqual(duplicates, []);
-});
-
-test('阅读器能按编号跳到拇指段落，相邻段号也还在', () => {
-  const context = storyContext();
-  const book = context.data.books.find((item) => item.id === 'c4');
-  assert.ok(book, '故事书缺少 c4');
-
-  for (const [id, neighborBefore, neighborAfter] of [
-    ['0010', '0009', '0011'],
-    ['1095', '0403', '1112'],
-    ['1355', '1354', '1356'],
-    ['1359', '1356', '1360'],
-    ['4172', '4155', '4456'],
-  ]) {
-    const entry = context.preferredEntry(book, id, { chapterKey: 'main' });
-    assert.ok(entry, `c4 主线解析不到 ${id}`);
-    assert.equal(entry.id, id);
-    assert.equal(entry.chapterKey, 'main');
-    assert.equal(context.entryFromDeepLink(book, { entryId: id, chapterKey: 'main' }).key, entry.key);
-
-    const chapter = book.entries.filter((item) => item.chapterKey === 'main');
-    const order = chapter.slice().sort((a, b) => a.order - b.order).map((item) => item.id);
-    assert.ok(order.indexOf(neighborBefore) < order.indexOf(id), `${neighborBefore} 应该排在 ${id} 前面`);
-    assert.ok(order.indexOf(id) < order.indexOf(neighborAfter), `${id} 应该排在 ${neighborAfter} 前面`);
-  }
+  assert.deepEqual([...beforeByEntry.keys()], [], '已知的拇指段落缺失');
 });

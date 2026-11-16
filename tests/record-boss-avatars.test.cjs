@@ -90,31 +90,11 @@ function harness() {
   return { context, requests, makeTitle: context.makeTrackTitle };
 }
 
-test('mapped boss rows use the boss avatar file', () => {
+test('boss avatars load their own files, fall back to the title on error, and do not retry missing files', () => {
   const h = harness();
   const title = h.makeTitle('赫卡同', 'Hekaton', { bossKey: 'hekaton' });
   const icon = title.children[0];
-  assert.equal(icon.tagName, 'img');
-  assert.equal(icon.className, 'track-boss-avatar');
-  assert.equal(icon.src, './assets/boss-avatars/HEKATON.png');
-  assert.equal(icon.alt, '');
-  assert.equal(icon.loading, 'lazy');
-  assert.equal(h.requests.length, 1);
-  assert.ok(title.classList.contains('with-icon'));
-});
-
-test('a boss key without an avatar file renders the name only', () => {
-  const h = harness();
-  const title = h.makeTitle('无名者', 'Nameless', { bossKey: 'notInAvatarMap' });
-  assert.ok(!title.classList.contains('with-icon'), '没有头像就不该启用图标列');
-  assert.ok(title.children.every(child => child.tagName !== 'img'));
-  assert.equal(h.requests.length, 0, '没有映射就不该发图片请求');
-});
-
-test('a missing boss avatar is removed without an error placeholder and is not requested again', () => {
-  const h = harness();
-  const title = h.makeTitle('赫卡同', 'Hekaton', { bossKey: 'hekaton' });
-  const icon = title.children[0];
+  assert.equal(icon.src.split('?')[0], './assets/boss-avatars/HEKATON.png');
   assert.equal(icon.style.visibility, 'hidden', '加载完成前不显示');
   icon.fire('error');
   assert.ok(!title.classList.contains('with-icon'), '缺图后标题退回纯文字');
@@ -124,22 +104,23 @@ test('a missing boss avatar is removed without an error placeholder and is not r
   assert.ok(!again.classList.contains('with-icon'));
   assert.ok(again.children.every(child => child.tagName !== 'img'));
   assert.equal(h.requests.length, 1, '重绘不再请求已知缺失的头像');
-});
-
-test('a loaded boss avatar becomes visible and other bosses are unaffected', () => {
-  const h = harness();
-  const missing = h.makeTitle('赫卡同', 'Hekaton', { bossKey: 'hekaton' });
-  missing.children[0].fire('error');
   const loaded = h.makeTitle('达哈卡', 'Dahaka', { bossKey: 'dahaka' });
-  const icon = loaded.children[0];
-  assert.equal(icon.src, './assets/boss-avatars/DAHAKA.png');
-  icon.fire('load');
-  assert.equal(icon.style.visibility, '');
+  const loadedIcon = loaded.children[0];
+  assert.equal(loadedIcon.tagName, 'img');
+  assert.equal(loadedIcon.className, 'track-boss-avatar');
+  assert.equal(loadedIcon.src.split('?')[0], './assets/boss-avatars/DAHAKA.png');
+  assert.equal(loadedIcon.alt, '');
+  loadedIcon.fire('load');
+  assert.equal(loadedIcon.style.visibility, '');
   assert.ok(loaded.classList.contains('with-icon'));
 });
 
-test('rows without a bossKey keep the existing faction icon / item glyph behavior', () => {
+test('unmapped bosses show their name and faction rows keep their own icon', () => {
   const h = harness();
+  const unmapped = h.makeTitle('无名者', 'Nameless', { bossKey: 'notInAvatarMap' });
+  assert.ok(!unmapped.classList.contains('with-icon'));
+  assert.ok(unmapped.children.every(child => child.tagName !== 'img'));
+  assert.equal(h.requests.length, 0);
   const faction = h.makeTitle('迈诺斯', 'Minoans', { icon: './assets/ally/MINOANS.png' });
   const icon = faction.children[0];
   assert.equal(icon.className, 'track-faction-icon');

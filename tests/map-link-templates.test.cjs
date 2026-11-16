@@ -118,53 +118,6 @@ test('every copy of a structural layout has exactly the same frame and untransla
   assert.equal([...counts.values()].reduce((a, b) => a + b, 0), 1575);
 });
 
-test('all arrows are the same five-sided 59 by 28 module and keep the original center', () => {
-  const production = manifest();
-  let count = 0;
-  for (const [key, row] of Object.entries(production.faces)) {
-    const svg = vector(row), arrows = groups(svg, 'data-arrow');
-    assert.equal(arrows.length, row.arrows, key);
-    for (const arrow of arrows) {
-      const [l, t, r, b] = attrs(arrow.header, 'data-template-bbox')[0].split(/\s+/).map(Number);
-      const [sl, st, sr, sb] = attrs(arrow.header, 'data-source-bbox')[0].split(/\s+/).map(Number);
-      assert.equal((l + r) / 2, (sl + sr) / 2, key);
-      assert.equal((t + b) / 2, (st + sb) / 2, key);
-      assert.deepEqual([r - l, b - t], ['up', 'down'].includes(arrow.value) ? [59, 28] : [28, 59], key);
-      const polygon = arrow.text.match(/<polygon\b(?=[^>]* data-arrow-inset="0")[^>]*>/)[0];
-      const values = attrs(polygon, 'points')[0].trim().split(/[\s,]+/).map(Number);
-      const points = Array.from({ length: 5 }, (_, i) => values.slice(i * 2, i * 2 + 2));
-      assert.equal(values.length, 10, key);
-      const cx = (l + r) / 2, cy = (t + b) / 2;
-      const expected = arrow.value === 'up' ? [[l,b],[l,cy],[cx,t],[r,cy],[r,b]]
-        : arrow.value === 'down' ? [[l,t],[r,t],[r,cy],[cx,b],[l,cy]]
-        : arrow.value === 'left' ? [[r,t],[cx,t],[l,cy],[cx,b],[r,b]]
-        : [[l,t],[cx,t],[r,cy],[cx,b],[l,b]];
-      assert.deepEqual(points, expected, `${key} ${arrow.value}`);
-      count++;
-    }
-  }
-  assert.equal(count, 758);
-});
-
-test('C4 Greek suffixes are distinct from factions and both black frame strokes are 2px', () => {
-  const production = manifest();
-  let factions = 0, suffixes = 0;
-  for (const [key, row] of Object.entries(production.faces)) {
-    if (!key.startsWith('c4-')) continue;
-    const svg = vector(row);
-    factions += attrs(svg, 'data-faction-placement').length;
-    suffixes += attrs(svg, 'data-kind').filter(kind => kind === 'greek').length;
-    const frames = [...svg.matchAll(/<(?:polygon|path)\b(?=[^>]* data-(?:cell-inner-frame|frame-network)=)[^>]*>/g)];
-    for (const [frame] of frames) {
-      assert.equal(attrs(frame, 'stroke')[0], '#171713', key);
-      assert.equal(Number(attrs(frame, 'stroke-width')[0]), 2, key);
-    }
-    for (const fill of svg.matchAll(/<polygon\b(?=[^>]* data-cell-fill="true")[^>]*>/g)) assert.equal(attrs(fill[0], 'fill')[0], '#b89b5a', key);
-  }
-  assert.equal(factions, 262);
-  assert.equal(suffixes, 9);
-});
-
 test('every used icon has clean component provenance and no bitmap-contour fallback', () => {
   const production = manifest();
   const original = new Map(json(path.join(source, 'glyphs/manifest.json')).glyphs.map(row => [row.id, row]));

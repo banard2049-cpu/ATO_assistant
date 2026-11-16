@@ -122,14 +122,46 @@ test('下载失败的取消请求完成前不能再次更新，取消绑定自�
   assert.match(node('#applyUpdateStatus').textContent, /HTTP 404/);
 });
 
-test('更新过程中锁定目标版本，检查更新不能改写下载目标', async () => {
+test('更新锁定目标版本，按服务端计划上传文件并支持还原', async () => {
   let finishCompare;
   let releases = 0;
-  const { node, requests } = ui({ local: params => response(params.get('action') === 'status' ? { supported: true }
-    : params.get('action') === 'begin' ? { ok: true, planId: 'a', fileCount: 1, downloads: [{ path: 'x.js', sha: 'sha' }] }
-    : { ok: true, target: 'v2.2.0', applied: 1 }), remote: url => {
-    if (url.includes('/compare/')) return new Promise(resolve => { finishCompare = () => resolve(response({ status: 'ahead', files: [] })); });
-    if (url.includes('raw.githubusercontent')) return { ...response({}), arrayBuffer: async () => new ArrayBuffer(0) };
+  const bytes = Uint8Array.of(1, 2, 3).buffer;
+  const actions = [];
+  let installed = false;
+  const { node, requests } = ui({ local: (params, options) => {
+    const action = params.get('action');
+    if (action === 'status') return response({ supported: true, canRollback: installed, backupId: 'backup-a' });
+    actions.push(action);
+    if (action === 'begin') {
+      const body = JSON.parse(options.body);
+      assert.equal(body.target, 'v2.2.0');
+      assert.deepEqual(body.files.map(file => file.filename), ['x.js', 'data/local.json']);
+      return response({ ok: true, planId: 'a', fileCount: 1, downloads: [{ path: 'x.js', sha: 'sha' }] });
+    }
+    if (action === 'stage') {
+      assert.equal(params.get('plan'), 'a');
+      assert.equal(params.get('path'), 'x.js');
+      assert.equal(params.get('sha'), 'sha');
+      assert.equal(options.method, 'POST');
+      assert.equal(options.body, bytes);
+      return response({ ok: true });
+    }
+    if (action === 'commit') {
+      assert.equal(params.get('plan'), 'a');
+      installed = true;
+      return response({ ok: true, target: 'v2.2.0', applied: 1 });
+    }
+    assert.equal(action, 'rollback');
+    assert.equal(JSON.parse(options.body).backupId, 'backup-a');
+    return response({ ok: true, from: 'v2.1.9' });
+  }, remote: url => {
+    if (url.includes('/compare/')) return new Promise(resolve => {
+      finishCompare = () => resolve(response({ status: 'ahead', files: [
+        { filename: 'x.js', status: 'added', sha: 'sha' },
+        { filename: 'data/local.json', status: 'modified', sha: 'other' },
+      ] }));
+    });
+    if (url.includes('raw.githubusercontent')) return { ...response({}), arrayBuffer: async () => bytes };
     return response([{ tag_name: ++releases === 1 ? 'v2.2.0' : 'v2.3.0' }]);
   } });
   await settle(() => !node('#applyUpdateButton').hidden);
@@ -138,8 +170,14 @@ test('更新过程中锁定目标版本，检查更新不能改写下载目标',
   node('#checkUpdateButton').click();
   finishCompare();
   await settle(() => !node('#reloadUpdateButton').hidden);
+  assert.deepEqual(actions, ['begin', 'stage', 'commit']);
+  assert.match(node('#applyUpdateStatus').textContent, /已更新到 v2.2.0/);
   assert.equal(releases, 1);
   assert.ok(requests.some(url => url.includes('/v2.2.0/x.js')));
+  assert.ok(requests.every(url => !url.includes('/data/local.json')));
+  node('#rollbackUpdateButton').click();
+  await settle(() => /已还原到 v2.1.9/.test(node('#applyUpdateStatus').textContent));
+  assert.deepEqual(actions, ['begin', 'stage', 'commit', 'rollback']);
 });
 
 test('比较接口超时恢复按钮，允许重试', async () => {
