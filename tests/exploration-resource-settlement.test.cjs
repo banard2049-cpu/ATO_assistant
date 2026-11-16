@@ -2084,7 +2084,7 @@ test('a legacy local resource settlement also migrates and recovers its missing 
 });
 
 // ---- 一键结算：记录表效果 -------------------------------------------------------
-test('record-sheet effects settle in one click, and only Titan choices stay per-row', async () => {
+test('record-sheet effects settle and undo in one write each', async () => {
   const titanEntry = { id: '6433', name: 'Untamed Titan', day: 12 };
   const batch = settleHarness({ diplomacyBonus: 2, fullRecord: { cycle: 'c1', resources: {}, fate: '0' } });
   const block = batch.ctx.createExplorationSettleBlock(titanEntry);
@@ -2100,6 +2100,9 @@ test('record-sheet effects settle in one click, and only Titan choices stay per-
   assert.deepEqual(batch.alerts, []);
   const after = batch.ctx.createExplorationSettleBlock(titanEntry);
   assert.equal(after.buttons.filter((button) => button.textContent === '自动结算').length, 0, '结算后按钮消失');
+  await clickAndWait(buttonNamed(after, '撤销记录表效果'));
+  assert.equal(batch.written.length, 2, '撤销也要写一次');
+  assert.deepEqual(batch.alerts, []);
 });
 
 test('a Titan-loss row keeps its own controls instead of joining the one-click batch', () => {
@@ -2334,20 +2337,6 @@ test('the development step exposes the due-tech repair button', () => {
 });
 
 // ---- 记录表效果：一键结算 / 撤销 -------------------------------------------------
-test('record-sheet effects can be settled in one click and undone', async () => {
-  const harness = settleHarness({
-    diplomacyBonus: 2, fullRecord: { cycle: 'c1', resources: {}, fate: '0' },
-  });
-  const entry = { id: '6433', name: 'Untamed Titan', day: 12 };
-  const block = harness.ctx.createExplorationSettleBlock(entry);
-  await clickAndWait(buttonNamed(block, '自动结算'));
-  assert.equal(harness.written.length, 1);
-  const applied = harness.ctx.createExplorationSettleBlock(entry);
-  await clickAndWait(buttonNamed(applied, '撤销记录表效果'));
-  assert.equal(harness.written.length, 2, '撤销也要写一次');
-  assert.deepEqual(harness.alerts, []);
-});
-
 test('a Titan loss needs an explicit choice before it can write', async () => {
   const titans = [
     { id: 'dream', name: 'Dream', count: 2, limit: 2, crippled: false },

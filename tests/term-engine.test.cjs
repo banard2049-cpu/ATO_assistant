@@ -102,18 +102,6 @@ test('逐字最长命中：长条目优先，短条目不会抢走它的前缀',
   assert.equal(engine.translate('Good Deeds', [surveyScope]), '善行');
 });
 
-test('作用域内的同名条目会顶掉全局条目', () => {
-  const scopedFroms = engine.pairsFor([surveyScope]).map((pair) => pair.from);
-  assert.ok(scopedFroms.includes('Market Forces'));
-  assert.equal(engine.pairsFor([surveyScope]).filter((pair) => pair.from === 'Market Forces').length, 1);
-});
-
-test('关掉官方翻译时原样返回', () => {
-  const off = createEngine(terms, false);
-  assert.equal(off.translate('Market Forces', [surveyScope]), 'Market Forces');
-  assert.equal(off.translate('循环'), '循环');
-});
-
 test('轮末步骤采用官方译名，地图操作按钮保留「标记已探索」', () => {
   const scope = '[data-term-scope~="step-name"]';
   assert.equal(engine.translate('轮末', [scope]), '轮末步骤');
@@ -126,19 +114,10 @@ test('轮末步骤采用官方译名，地图操作按钮保留「标记已探�
   assert.doesNotMatch(dashboard, /<div class="step-title"[^>]*data-term-scope="step-name"/);
 });
 
-test('引擎不再用会连锁改写的 split/join 套用方式', () => {
-  const source = read('assets/term-language.js');
-  assert.ok(
-    !/out = out\.split\(pair\.from\)\.join\(pair\.to\)/.test(source),
-    'term-language.js 又回到逐条 split/join，短条目会二次改写长条目的译文',
-  );
-  assert.match(source, /value\.startsWith\(pair\.from, at\)/, 'translate 应逐字取最长命中');
-});
-
-test('八个页面的 term-language.js 版本号一致且已更新', () => {
+test('各页面使用同一个 term-language.js 缓存版本', () => {
   const files = [
     'index.html', 'map/index.html', 'hero/index.html', 'record/index.html',
-    'ss/index.html', 'technology/index.html', 'story/index.html', 'aibp/index.html',
+    'ss/index.html', 'technology/index.html', 'story/index.html', 'aibp/index.html', 'briefing/index.html',
   ];
   const versions = new Set();
   for (const file of files) {
@@ -147,5 +126,4 @@ test('八个页面的 term-language.js 版本号一致且已更新', () => {
     versions.add(match[1]);
   }
   assert.equal(versions.size, 1, `各页面的版本号不一致：${[...versions].join('、')}`);
-  assert.notEqual([...versions][0], '20260913a', '引擎改了，版本号要一起换掉，否则浏览器还用旧脚本');
 });

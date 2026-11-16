@@ -91,6 +91,7 @@ test('every source arrow is represented once by a five-sided symmetric template 
   for (const face of inventory.faces) {
     const svg = vector(manifest.faces[face.key]);
     const starts = [...svg.matchAll(/<g\b[^>]* data-arrow="(up|down|left|right)"[^>]*>/g)];
+    assert.equal(starts.length, manifest.faces[face.key].arrows, face.key);
     const footprints = [];
     for (const match of starts) {
       const header = match[0], direction = match[1];
@@ -157,12 +158,14 @@ test('installation preserves every corner and adds one vector link layer', {
   }
 });
 
-test('C4 keeps two equal black frame strokes with gold between them', () => {
+test('C4 keeps distinct Greek suffixes and factions inside black and gold frames', () => {
   const manifest = production();
-  let panels = 0;
+  let panels = 0, factions = 0, suffixes = 0;
   for (const [key, row] of Object.entries(manifest.faces)) {
     if (!key.startsWith('c4-')) continue;
     const svg = vector(row);
+    factions += attrs(svg, 'data-faction-placement').length;
+    suffixes += attrs(svg, 'data-kind').filter(kind => kind === 'greek').length;
     const frames = [...svg.matchAll(/<(?:polygon|path)\b(?=[^>]* data-(?:cell-inner-frame|frame-network|joined-frame|shared-rim)=)[^>]*>/g)];
     assert.ok(frames.length, key);
     for (const [frame] of frames) {
@@ -174,4 +177,6 @@ test('C4 keeps two equal black frame strokes with gold between them', () => {
     panels += row.panels;
   }
   assert.equal(panels, 262);
+  assert.equal(factions, 262);
+  assert.equal(suffixes, 9);
 });

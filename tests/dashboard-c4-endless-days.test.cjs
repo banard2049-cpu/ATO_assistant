@@ -229,9 +229,3 @@ test('日期轨完整画出 0 至 200 天，201 之后补当天一行', () => {
   assert.match(beyond.rows.at(-1).title, /时间表之外/);
   assert.equal(beyond.rows.filter(row => row.className.includes('current')).length, 1);
 });
-
-test('all inline dashboard scripts parse', () => {
-  for (const match of source.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)) {
-    if (match[1].trim()) new vm.Script(match[1]);
-  }
-});

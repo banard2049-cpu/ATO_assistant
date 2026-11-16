@@ -7,7 +7,7 @@ const vm = require('node:vm');
 const source = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8').replace(/\r\n/g, '\n');
 const clone = value => JSON.parse(JSON.stringify(value));
 const functions = ['heroProgressTarget', 'assertHeroProgressTarget', 'readLatestHeroState',
-  'applyMnemosTagToHeroes', 'applyHeroProgressChanges', 'saveHeroMnemosToServer'].map(name => {
+  'applyMnemosTagToHeroes', 'confirmMnemosTagForHeroes', 'applyHeroProgressChanges', 'saveHeroMnemosToServer'].map(name => {
   const match = source.match(new RegExp('^    (?:async )?function ' + name + '\\([^]*?^    }', 'm'));
   assert.ok(match, name);
   return match[0];
@@ -27,7 +27,7 @@ function harness(initial, beforePost = () => {}) {
     accountMismatchError: () => Object.assign(new Error('Account changed'), { code: 'ACCOUNT_MISMATCH' }),
     window: { alert: message => alerts.push(message) }, confirm: () => true,
     MNEMOS_TAG_ZH: {}, HERO_CYCLES: ['c1'], HERO_MNEMOS_GROUPS: ['c1'],
-    MNEMOS_CARD_TAGS: { c1_00: ['voyage'] }, FATED_CARD_TAGS: {},
+    MNEMOS_CARD_TAGS: { c1_00: ['voyage'], c1_01: ['voyage'] }, FATED_CARD_TAGS: { fm_a: ['fate'] },
     MNEMOS_CARD_NAMES: {}, FATED_CARD_NAMES: {}, mnemosTrackLength: () => 10,
     localStorage: { setItem: (key, value) => caches.push(JSON.parse(value)) }, HERO_STORAGE_KEY: 'heroes',
     heroMnemosSyncChannel: { postMessage: value => broadcasts.push(value) },
@@ -46,9 +46,63 @@ function harness(initial, beforePost = () => {}) {
       return { ok: true, status: 200, json: async () => ({ ok: true, revision, user: { id: 'owner' } }) };
     },
   });
-  vm.runInContext(functions, scope);
+  vm.runInContext('let mnemosTagApplication = Promise.resolve();\n' + functions, scope);
   return { scope, posts, warnings, alerts, caches, broadcasts, saved: () => clone(server) };
 }
+
+test('tied regular Mnemos cards let each player choose one, with Fated rewards included', async () => {
+  const initial = clone(promptSnapshot);
+  const first = initial.heroes[0];
+  first.mnemos.c1.push('c1_01');
+  first.mnemosProgress.c1_01 = 2;
+  initial.heroes.push({ ...clone(first), id: 'B', fatedMnemos: {} });
+  const h = harness(initial);
+  h.scope.FATED_CARD_TAGS.fm_a.push('voyage');
+  h.scope.confirm = () => assert.fail('tied cards must use the card picker');
+  h.scope.chooseMnemosProgress = (source, rows) => {
+    assert.deepEqual(clone(rows.map(row => row.cards.map(card => card.change.cardId))),
+      [['c1_00', 'c1_01'], ['fm_a'], ['c1_00', 'c1_01']]);
+    return [rows[0].cards[1].change, rows[1].cards[0].change, rows[2].cards[0].change];
+  };
+  await h.scope.applyMnemosTagToHeroes('voyage', 'hub', 'box');
+  const [a, b] = h.saved().heroes;
+  assert.deepEqual(a.mnemosProgress, { c1_00: 2, c1_01: 3 });
+  assert.deepEqual(a.fatedProgress, { fm_a: 2 });
+  assert.deepEqual(b.mnemosProgress, { c1_00: 3, c1_01: 2 });
+  assert.equal(h.posts.length, 1);
+});
+
+test('canceling a tied selection skips all rewards, and queued rewards use the latest progress', async () => {
+  const initial = clone(promptSnapshot);
+  initial.heroes[0].mnemos.c1.push('c1_01');
+  initial.heroes[0].mnemosProgress.c1_01 = 2;
+  const h = harness(initial);
+  h.scope.FATED_CARD_TAGS.fm_a.push('voyage');
+  h.scope.chooseMnemosProgress = () => null;
+  await h.scope.applyMnemosTagToHeroes('voyage', 'hub', 'box');
+  assert.equal(h.posts.length, 0);
+
+  let prompts = 0;
+  h.scope.chooseMnemosProgress = (source, rows) => {
+    prompts++;
+    return [rows[0].cards[1].change, rows[1].cards[0].change];
+  };
+  const first = h.scope.applyMnemosTagToHeroes('voyage', 'hub', 'box');
+  const second = h.scope.applyMnemosTagToHeroes('voyage', 'hub', 'box');
+  await Promise.all([first, second]);
+  assert.equal(prompts, 1);
+  assert.deepEqual(h.saved().heroes[0].mnemosProgress, { c1_00: 2, c1_01: 4 });
+  assert.deepEqual(h.saved().heroes[0].fatedProgress, { fm_a: 3 });
+});
+
+test('a card removed before confirmation is not written back as stray progress', async () => {
+  const latest = clone(promptSnapshot);
+  latest.heroes[0].mnemos.c1 = [];
+  latest.heroes[0].mnemosProgress = {};
+  const h = harness(latest);
+  assert.equal(await h.scope.saveHeroMnemosToServer(promptSnapshot, progress), true);
+  assert.deepEqual(h.saved(), latest);
+});
 
 for (const type of ['mnemos', 'fated']) test(`${type} progress never restores a hero retired after the prompt`, async () => {
   const retired = { ...clone(hero), retireReason: 'dead', retiredAt: '2026-10-18' };

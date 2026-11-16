@@ -11,8 +11,8 @@ function extract(name) {
   return match[0];
 }
 
-test('dashboard, record and map subscriptions ignore their own commit but still refresh external and legacy updates', () => {
-  const calls = { dashboard: 0, record: 0, map: 0 };
+test('dashboard subscriptions ignore their own commit and refresh external and legacy updates', () => {
+  const calls = [];
   const listeners = {};
   const channel = name => ({ addEventListener(type, callback) {
     assert.equal(type, 'message'); listeners[name] = callback;
@@ -20,22 +20,24 @@ test('dashboard, record and map subscriptions ignore their own commit but still 
   const context = vm.createContext({
     dashboardPageId: 'this-console',
     campaignSyncChannel: channel('dashboard'), recordSyncChannel: channel('record'),
-    structureTechMapSyncChannel: channel('map'),
-    syncDashboardFromExternalUpdate: () => { calls.dashboard++; },
-    refreshCachedArgoRecord: () => { calls.record++; },
-    refreshStructureTechContext: async () => { calls.map++; },
+    structureTechMapSyncChannel: channel('map'), technologySyncChannel: channel('technology'),
+    syncDashboardFromExternalUpdate: () => calls.push('dashboard'),
+    refreshCachedArgoRecord: () => calls.push('record'),
+    refreshStructureTechContext: async () => calls.push('technology'),
   });
   const subscriptions = source.match(/^    listenForExternalCampaignSync\([^\n]+/gm);
-  assert.equal(subscriptions.length, 3);
   vm.runInContext(extract('listenForExternalCampaignSync') + '\n' + subscriptions.join('\n'), context);
-  for (const listener of Object.values(listeners)) listener({ data: { source: 'structure-tech', pageId: 'this-console', revision: 5 } });
-  assert.deepEqual(calls, { dashboard: 0, record: 0, map: 0 }, 'the committed response already updates this console');
-  for (const listener of Object.values(listeners)) {
+  for (const [channel, refresh] of Object.entries({ dashboard: 'dashboard', record: 'record', map: 'technology', technology: 'technology' })) {
+    const listener = listeners[channel];
+    assert.equal(typeof listener, 'function', channel);
+    calls.length = 0;
+    listener({ data: { source: 'structure-tech', pageId: 'this-console', revision: 5 } });
+    assert.deepEqual(calls, [], channel);
     listener({ data: { source: 'structure-tech', pageId: 'other-console', revision: 6 } });
     listener({ data: { revision: 7 } });
     listener({ data: null });
+    assert.deepEqual(calls, [refresh, refresh, refresh], channel);
   }
-  assert.deepEqual(calls, { dashboard: 3, record: 3, map: 3 }, 'external and older senders must remain observable');
   context.listenForExternalCampaignSync(null, () => assert.fail('absent channels do not refresh'));
 });
 
