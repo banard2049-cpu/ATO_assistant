@@ -734,18 +734,22 @@
       ]
     },
     "AJ0261": {
+      "ascended": true,
       "src": "images/gear_cards/aj0261.jpg",
       "title": "Pursuer Imperative"
     },
     "AJ0262": {
+      "ascended": true,
       "src": "images/gear_cards/aj0262.jpg",
       "title": "Mothlame"
     },
     "AJ0264": {
+      "ascended": true,
       "src": "images/gear_cards/aj0264.jpg",
       "title": "Hermes Tatters"
     },
     "AJ0266": {
+      "ascended": true,
       "src": "images/gear_cards/aj0266.jpg",
       "title": "Trireme Breastplate"
     },
@@ -766,6 +770,7 @@
       "title": "Ancient Siren Panoply Armor"
     },
     "AJ0273": {
+      "ascended": true,
       "src": "images/gear_cards/aj0273.jpg",
       "title": "Nail Spear",
       "aliases": [
@@ -773,6 +778,7 @@
       ]
     },
     "AJ0274": {
+      "ascended": true,
       "src": "images/gear_cards/aj0274.jpg",
       "title": "Vulture Mask"
     },
@@ -797,6 +803,7 @@
       "title": "Yarn Talisman"
     },
     "AJ0282": {
+      "ascended": true,
       "src": "images/gear_cards/aj0282.jpg",
       "title": "Mazey, The Labyrinthian Dog"
     },
@@ -1103,6 +1110,7 @@
       ]
     },
     "BJ0945": {
+      "ascended": true,
       "src": "images/gear_cards/bj0945.jpg",
       "title": "Leg Spear/Leg Kopesh",
       "aliases": [
@@ -1110,18 +1118,22 @@
       ]
     },
     "BJ0946": {
+      "ascended": true,
       "src": "images/gear_cards/bj0946.jpg",
       "title": "Faceshield"
     },
     "BJ0948": {
+      "ascended": true,
       "src": "images/gear_cards/bj0948.jpg",
       "title": "Roll Breakers"
     },
     "BJ0950": {
+      "ascended": true,
       "src": "images/gear_cards/bj0950.jpg",
       "title": "Pithos Armor"
     },
     "BJ0952": {
+      "ascended": true,
       "src": "images/gear_cards/bj0952.jpg",
       "title": "Squat Armor"
     },
@@ -1188,18 +1200,22 @@
       "title": "Maw of Byzantion"
     },
     "BJ0965": {
+      "ascended": true,
       "src": "images/gear_cards/bj0965.jpg",
       "title": "Pursuer Ultimatum"
     },
     "BJ0966": {
+      "ascended": true,
       "src": "images/gear_cards/bj0966.jpg",
       "title": "Hermes Cape"
     },
     "BJ0967": {
+      "ascended": true,
       "src": "images/gear_cards/bj0967.jpg",
       "title": "Repurposed Cryptex"
     },
     "BJ0968": {
+      "ascended": true,
       "src": "images/gear_cards/bj0968.jpg",
       "title": "Conquerer Nail"
     },
@@ -1208,6 +1224,7 @@
       "title": "Archon Pauldron"
     },
     "BJ0970": {
+      "ascended": true,
       "src": "images/gear_cards/bj0970.jpg",
       "title": "Sisyphus's Burden",
       "aliases": [
@@ -1216,6 +1233,7 @@
       ]
     },
     "BJ0971": {
+      "ascended": true,
       "src": "images/gear_cards/bj0971.jpg",
       "title": "Sisyphus's Triumph"
     },
@@ -1400,18 +1418,22 @@
       "title": "Scaling Gear Protype"
     },
     "CJ1477": {
+      "ascended": true,
       "src": "images/gear_cards/cj1477.jpg",
       "title": "Homeric Engine"
     },
     "CJ1478": {
+      "ascended": true,
       "src": "images/gear_cards/cj1478.jpg",
       "title": "Agathos Agitator"
     },
     "CJ1479": {
+      "ascended": true,
       "src": "images/gear_cards/cj1479.jpg",
       "title": "Kakos Implant"
     },
     "CJ1480": {
+      "ascended": true,
       "src": "images/gear_cards/cj1480.jpg",
       "title": "Aristeia Inducer"
     },
@@ -1592,30 +1614,37 @@
       "title": "Shellusalem"
     },
     "CJ1536": {
+      "ascended": true,
       "src": "images/gear_cards/cj1536.jpg",
       "title": "Argocryptex Alpha"
     },
     "CJ1537": {
+      "ascended": true,
       "src": "images/gear_cards/cj1537.jpg",
       "title": "Argocryptex Beta"
     },
     "CJ1538": {
+      "ascended": true,
       "src": "images/gear_cards/cj1538.jpg",
       "title": "Argocryptex Gamma"
     },
     "CJ1539": {
+      "ascended": true,
       "src": "images/gear_cards/cj1539.jpg",
       "title": "Visage"
     },
     "CJ1540": {
+      "ascended": true,
       "src": "images/gear_cards/cj1540.jpg",
       "title": "Icebreakers"
     },
     "CJ1542": {
+      "ascended": true,
       "src": "images/gear_cards/cj1542.jpg",
       "title": "Pithos Linothorax"
     },
     "CJ1544": {
+      "ascended": true,
       "src": "images/gear_cards/cj1544.jpg",
       "title": "Spherical Armor"
     },
@@ -1768,10 +1797,12 @@
       "title": "Igniter Sling"
     },
     "DJ2300": {
+      "ascended": true,
       "src": "images/gear_cards/dj2300.jpg",
       "title": "Stillsuit"
     },
     "DJ2302": {
+      "ascended": true,
       "src": "images/gear_cards/dj2302.jpg",
       "title": "Solidifier"
     },
@@ -2000,6 +2031,7 @@
       "title": "Dahakandys"
     },
     "DJ2375": {
+      "ascended": true,
       "src": "images/gear_cards/dj2375.jpg",
       "title": "Immortal Armor"
     },
@@ -2008,6 +2040,7 @@
       "title": "Immortal Cestus"
     },
     "DJ2377": {
+      "ascended": true,
       "src": "images/gear_cards/dj2377.jpg",
       "title": "Dahaka Predestinator"
     },
@@ -2028,18 +2061,22 @@
       "title": "The Capital"
     },
     "DJ2382": {
+      "ascended": true,
       "src": "images/gear_cards/dj2382.jpg",
       "title": "Godhand"
     },
     "DJ2383": {
+      "ascended": true,
       "src": "images/gear_cards/dj2383.jpg",
       "title": "Luminous Beacon"
     },
     "DJ2384": {
+      "ascended": true,
       "src": "images/gear_cards/dj2384.jpg",
       "title": "Divine Lure"
     },
     "DJ2385": {
+      "ascended": true,
       "src": "images/gear_cards/dj2385.jpg",
       "title": "Airsac Mine"
     },
@@ -2514,14 +2551,17 @@
       "title": "Hunter Killer"
     },
     "EJ2995": {
+      "ascended": true,
       "src": "images/gear_cards/ej2995.jpg",
       "title": "Big Boy Mazey"
     },
     "ZJ1239": {
+      "ascended": true,
       "src": "images/gear_cards/zj1239.jpg",
       "title": "Horizon's Edge"
     },
     "ZJ1240": {
+      "ascended": true,
       "src": "images/gear_cards/zj1240.jpg",
       "title": "Skyreach"
     },

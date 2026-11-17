@@ -40,11 +40,9 @@ html.ato-apk-portrait.source-technology-mobile .gear-content{ min-width: 0; padd
 html.ato-apk-portrait.source-technology-mobile .gear-page{ width: 100%; min-width: 0; height: auto; }
 :where(html.ato-apk-portrait) .source-gear-controls{ margin: 0 0 14px; border-bottom: 1px solid var(--line); }
 :where(html.ato-apk-portrait) .source-gear-controls > summary{ display: flex; align-items: center; min-height: 44px; cursor: pointer; color: var(--accent-strong); font-size: 13px; }
-html.ato-apk-portrait.source-technology-mobile .source-gear-controls .gear-filter-bar{ display: flex; flex-wrap: wrap; min-width: 0; padding: 10px 0 14px; gap: 12px; border: 0; }
+html.ato-apk-portrait.source-technology-mobile .source-gear-controls .gear-filter-bar{ min-width: 0; padding: 10px 0 14px; border: 0; }
+html.ato-apk-portrait.source-technology-mobile .source-gear-controls .gear-filter-bar:not(.arsenal-toolbar){ gap: 12px; }
 html.ato-apk-portrait.source-technology-mobile .source-gear-controls .gear-filter-bar label{ min-width: 0; max-width: 100%; }
-html.ato-apk-portrait.source-technology-mobile .source-gear-controls .arsenal-add{ display: grid; grid-template-columns: minmax(0, 1fr) 80px; width: 100%; min-width: 0; gap: 10px; }
-html.ato-apk-portrait.source-technology-mobile .source-gear-controls .arsenal-add-gear{ grid-column: 1 / -1; width: 100%; min-width: 0; }
-html.ato-apk-portrait.source-technology-mobile .source-gear-controls .arsenal-add select{ width: 100%; max-width: 100%; min-width: 0; }
 html.ato-apk-portrait.source-technology-mobile .gear-group-header{ flex-wrap: wrap; gap: 8px; }
 html.ato-apk-portrait.source-technology-mobile .gear-group-name{ overflow-wrap: anywhere; font-size: 18px; }
 html.ato-apk-portrait.source-technology-mobile .gear-items{ grid-template-columns: minmax(0, 1fr); gap: 14px; }
