@@ -5,6 +5,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const inventory = require('../technology/gear-inventory.js');
 const loadout = require('../technology/arsenal-loadout.js');
+const ascensionCore = require('../technology/ascension-core.js');
 const source = fs.readFileSync(path.join(__dirname, '../technology/index.html'), 'utf8').replace(/\r\n/g, '\n');
 const clone = value => JSON.parse(JSON.stringify(value));
 const noop = () => {};
@@ -57,18 +58,22 @@ test('ascension transfers one copy per cycle and keeps manufacturing history on 
 });
 
 function craftContext({ conflict = false, fail = false, remoteMissing = false, loseResponse = false, malformedResponse = false,
-  offlineRecovery = false, initialRecord = { resources: { material: 10 }, arsenal: {} } } = {}) {
+  offlineRecovery = false, initialRecord = { resources: { material: 10 }, arsenal: {} }, initialTheatre = null,
+  failTheatre = false } = {}) {
   let server = clone(initialRecord);
+  let theatre = clone(initialTheatre);
+  let theatreRevision = 1;
   let revision = 1;
   let posts = 0;
   const warnings = [];
-  const c = context(['recordStateFromCampaign', 'readLatestRecordState', 'mutateCampaignRecordState', 'resourceAmount', 'evaluateCraftOption', 'gearCraftOperationKey', 'craftGear'], {
-    window: { ATO_GEAR_INVENTORY: inventory },
+  const c = context(['recordStateFromCampaign', 'readLatestRecordState', 'mutateCampaignRecordState', 'resourceAmount', 'evaluateCraftOption', 'gearCraftOperationKey', 'craftGear',
+    'readTheatreRecord', 'writeTheatreRecord', 'changeAscensionCore', 'ascensionCoreBalance', 'ascendArsenalGear'], {
+    window: { ATO_GEAR_INVENTORY: inventory, ATO_ASCENSION_CORE: ascensionCore },
     isPlainObject: value => !!value && typeof value === 'object' && !Array.isArray(value),
     normalizeCraftRecordResources: clone,
     activeAccountId: 'A', campaignTechLoaded: true,
-    CAMPAIGN_STORAGE_URL: '/api', CAMPAIGN_RECORD_URL: '/api?section=record',
-    campaignSession: { accountId: 'login-A', accept: value => value },
+    CAMPAIGN_STORAGE_URL: '/api', CAMPAIGN_RECORD_URL: '/api?section=record', CAMPAIGN_THEATRE_URL: '/api?section=theatre',
+    campaignSession: { accountId: 'login-A', changed: false, accept: value => value },
     gearRecordState: clone(server), gearRecordError: '', gearRecordRevision: 1,
     gearMutationInFlight: false, gearRecordSyncChannel: { postMessage: noop },
     gearCraftOperations: new Map(),
@@ -77,7 +82,20 @@ function craftContext({ conflict = false, fail = false, remoteMissing = false, l
     arsenalMessage: '', arsenalMessageError: false,
     alert: message => warnings.push(message), confirm: () => true,
     loadGearRecordState: noop, renderGearInventoryView: noop,
-    fetch: async (_url, options) => {
+    fetch: async (url, options) => {
+      if (String(url).includes('section=theatre')) {
+        if (!options?.method) {
+          return { ok: true, status: 200, json: async () => ({ ok: true, state: clone(theatre), revision: theatreRevision }) };
+        }
+        const payload = JSON.parse(options.body);
+        assert.equal(payload.section, 'theatre');
+        assert.equal(payload.expectedAccountId, 'login-A');
+        if (failTheatre) return { ok: false, status: 500, json: async () => ({ ok: false, error: '剧场保存失败' }) };
+        if (payload.expectedRevision !== theatreRevision) return { ok: false, status: 409, json: async () => ({ code: 'SAVE_CONFLICT' }) };
+        theatre = payload.state;
+        theatreRevision++;
+        return { ok: true, status: 200, json: async () => ({ ok: true, revision: theatreRevision }) };
+      }
       if (!options?.method) {
         if (offlineRecovery && posts > 0) throw new Error('offline');
         const state = clone(server);
@@ -103,12 +121,13 @@ function craftContext({ conflict = false, fail = false, remoteMissing = false, l
       return { ok: true, status: 200, json: async () => ({ ok: true, revision }) };
     },
   });
-  return { c, warnings, server: () => server, posts: () => posts, reconnect: () => { offlineRecovery = false; } };
+  return { c, warnings, server: () => server, theatre: () => theatre, posts: () => posts, reconnect: () => { offlineRecovery = false; } };
 }
 
 test('retrying an ascension with a lost response transfers only one copy', async () => {
-  const { c, server, posts, reconnect } = craftContext({
+  const { c, server, theatre, posts, reconnect } = craftContext({
     initialRecord: { resources: { material: 10 }, arsenal: { AJ0160: { quantity: 2 } } },
+    initialTheatre: { hold: { c1: { core: { count: 2, notes: '' } } } },
     loseResponse: true, offlineRecovery: true,
   });
   context(['ascendArsenalGear'], c);
@@ -125,6 +144,47 @@ test('retrying an ascension with a lost response transfers only one copy', async
     'AJ0160@c2': { quantity: 1, manufactured: 0 },
   });
   assert.deepEqual(server().resources, { material: 10 });
+  // 两次调用只消耗一件对应故事集的升华核心（重试读到收据就不再扣）。
+  assert.equal(theatre().hold.c1.core.count, 1);
+  assert.match(c.arsenalMessage, /消耗迷纹登升核心 ×1/);
+});
+
+test('登升会消耗装备当前故事集的升华核心，余额不足时拒绝登升', async () => {
+  const { c, server, theatre, posts } = craftContext({
+    initialRecord: { resources: { material: 10 }, arsenal: { AJ0160: { quantity: 2 } } },
+    initialTheatre: { hold: { c1: { core: { count: 1, notes: '' } } } },
+  });
+  context(['ascendArsenalGear'], c);
+  c.window.ATO_ARSENAL_LOADOUT = loadout;
+  c.gearAscensionOperations = new Map();
+  const item = { gearId: 'AJ0160', originCycle: 'c1', name: '装备' };
+
+  await c.ascendArsenalGear(item, 'c2', c.gearCraftOperationKey('ascension:AJ0160'));
+  assert.equal(theatre().hold.c1.core.count, 0);
+  assert.equal(server().arsenal['AJ0160@c2'].quantity, 1);
+
+  // 核心用完了：第二件拒绝登升，军械库不动，也不再弹一次保存。
+  c.gearAscensionOperations = new Map();
+  const before = posts();
+  await assert.rejects(c.ascendArsenalGear({ ...item, gearId: 'AJ0160' }, 'c2', c.gearCraftOperationKey('ascension:AJ0160-2')), /缺少迷纹登升核心/);
+  assert.equal(posts(), before);
+  assert.equal(server().arsenal.AJ0160.quantity, 1);
+  assert.equal(theatre().hold.c1.core.count, 0);
+});
+
+test('装备没能保存时把扣掉的升华核心退回', async () => {
+  const { c, theatre } = craftContext({
+    initialRecord: { resources: { material: 10 }, arsenal: { AJ0160: { quantity: 1 } } },
+    initialTheatre: { hold: { c2: { core: { count: 1, notes: '备注' } } } },
+    fail: true,
+  });
+  context(['ascendArsenalGear'], c);
+  c.window.ATO_ARSENAL_LOADOUT = loadout;
+  c.gearAscensionOperations = new Map();
+  await assert.rejects(c.ascendArsenalGear({ gearId: 'AJ0160', originCycle: 'c2', name: '装备' }, 'c3',
+    c.gearCraftOperationKey('ascension:AJ0160@c2')), /保存失败/);
+  assert.equal(theatre().hold.c2.core.count, 1);
+  assert.equal(theatre().hold.c2.core.notes, '备注');
 });
 
 test('manufacturing atomically deducts materials and records one finished item', async () => {

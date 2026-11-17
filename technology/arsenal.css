@@ -72,6 +72,8 @@ body[data-theme-module="technology"] .arsenal-toolbar .tool-btn:hover:not(:disab
 .arsenal-detail-card .arsenal-card-face { display: block; max-width: 100%; max-height: 64dvh; object-fit: contain; }
 .arsenal-detail-card .arsenal-ascension-badge { width: 36px; height: 36px; }
 .arsenal-detail-card .arsenal-ascension-badge img { width: 26px; height: 26px; }
+.arsenal-detail-core { margin: 8px 0 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.arsenal-detail-core [data-core-balance] { color: var(--accent-strong); }
 .arsenal-card-fallback:not([hidden]) {
   display: grid; place-items: center; width: min(64vw, 236px); aspect-ratio: 63 / 88;
   border: 1px solid var(--line); color: var(--muted); background: var(--accent-soft);
