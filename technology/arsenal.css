@@ -1,14 +1,18 @@
-.arsenal-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+.arsenal-toolbar { display: flex; flex-wrap: nowrap; align-items: center; gap: 8px; min-width: 0; overflow-x: auto; }
+.arsenal-toolbar > label { flex: 0 0 auto; }
 .arsenal-toolbar label { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 750; white-space: nowrap; }
-.arsenal-toolbar select, .arsenal-add select, .arsenal-add input {
+.arsenal-toolbar select, .arsenal-add input:not([type="checkbox"]) {
   min-width: 0; max-width: 100%; height: 34px; box-sizing: border-box;
   border: 1px solid var(--line); border-radius: 0;
   padding: 6px 8px; background: var(--panel); color: var(--ink); font: inherit;
 }
-.arsenal-add { display: flex; flex: 1; flex-wrap: wrap; align-items: center; gap: 8px; min-width: min(360px, 100%); margin: 0; }
-.arsenal-add .arsenal-add-gear { flex: 1; min-width: min(180px, 100%); }
-.arsenal-add-gear select { flex: 1; width: 160px; }
-.arsenal-add input { width: 56px; }
+.arsenal-add { display: flex; flex: 1 0 auto; flex-wrap: nowrap; align-items: center; gap: 8px; margin: 0; }
+.arsenal-add :is(.arsenal-add-gear, .arsenal-add-search) { flex: 1 0 auto; }
+.arsenal-add-gear select, .arsenal-add-search input { flex: 1; width: 108px; }
+.arsenal-add:has(#arsenalShowEntryNames:checked) .arsenal-add-gear select { width: 160px; }
+.arsenal-toolbar [data-arsenal-filter="part"] { width: 104px; }
+.arsenal-toolbar [data-arsenal-filter="cycle"] { width: 88px; }
+.arsenal-add input[type="number"] { width: 48px; }
 .arsenal-toolbar .tool-btn {
   display: inline-flex; align-items: center; justify-content: center; align-self: center;
   flex: 0 0 auto; height: 34px; min-height: 34px; box-sizing: border-box;
@@ -18,11 +22,61 @@
 body[data-theme-module="technology"] .arsenal-add .tool-btn[type="submit"] { background: var(--accent-soft); color: var(--accent-strong); border-color: var(--line); }
 body[data-theme-module="technology"] .arsenal-toolbar .tool-btn:hover:not(:disabled) { background: var(--accent-strong); color: var(--panel); border-color: var(--accent-strong); }
 .arsenal-toolbar .tool-btn:disabled { opacity: .5; cursor: not-allowed; }
-.arsenal-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: 0 0 12px; color: var(--muted); font-size: 11px; line-height: 1.5; }
-.arsenal-summary { margin-left: auto; font-weight: 750; }
+.arsenal-page.is-loadout-open { width: 100%; }
+.arsenal-workspace { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; }
+.arsenal-browse { min-width: 0; }
+.arsenal-browse-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 12px; margin-bottom: 12px; }
+.arsenal-browse-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; }
+.arsenal-browse-header h2 { margin: 0; color: var(--accent-strong); font: 600 18px/1.4 "Songti SC", SimSun, Georgia, serif; }
+.arsenal-browse-header span { color: var(--muted); font-size: 11px; }
+.arsenal-browse-scroll { min-width: 0; }
+.is-loadout-open .arsenal-browse { border: 1px solid var(--line); background: var(--panel); }
+.is-loadout-open .arsenal-browse-header { margin-bottom: 0; padding: 8px 14px; min-height: 44px; border-bottom: 1px solid var(--line); }
+.is-loadout-open .arsenal-browse-scroll { padding: 10px 12px; }
+.is-loadout-open .arsenal-items { grid-template-columns: repeat(auto-fill, minmax(min(132px, 100%), 1fr)); gap: 8px; }
+.is-loadout-open .arsenal-item { padding: 8px; }
+@media (min-width: 1000px) {
+  .is-loadout-open .arsenal-workspace { grid-template-columns: minmax(0, 1fr) minmax(280px, .38fr); gap: 16px; }
+  .is-loadout-open .arsenal-browse { position: sticky; top: 12px; }
+  .is-loadout-open .arsenal-browse-scroll { max-height: calc(100dvh - 80px); overflow-y: auto; }
+}
+.arsenal-browse-heading > .arsenal-loadout { margin: 0; background: var(--accent-soft); }
+.arsenal-browse-heading > .arsenal-loadout > summary { min-height: 36px; padding: 6px 10px; gap: 9px; font-family: inherit; font-size: 13px; font-weight: 750; }
+.arsenal-browse-heading > .arsenal-loadout > summary::after { width: 6px; height: 6px; flex-basis: 6px; margin: 0 2px 2px 0; }
+.arsenal-browse-heading > .arsenal-loadout > summary:hover { color: var(--panel); background: var(--accent-strong); }
+.arsenal-browse-heading > .arsenal-loadout > summary:focus-visible { outline-offset: -3px; }
 .arsenal-message { margin-bottom: 12px; color: var(--accent-strong); font-size: 12px; line-height: 1.5; }
 .arsenal-message.error { color: var(--ink); border-left: 2px solid var(--accent); padding-left: 8px; }
 .arsenal-item .gear-card-thumb { max-height: 220px; }
+.arsenal-thumbnail-card, .arsenal-detail-card { position: relative; }
+.arsenal-thumbnail-card { display: block; width: fit-content; max-width: 100%; height: 100%; margin-inline: auto; }
+.gear-card-thumb .arsenal-thumbnail-card .arsenal-card-face { width: auto; max-width: 100%; }
+.gear-card-thumb.empty .arsenal-thumbnail-card { display: grid; place-items: center; width: 100%; }
+.arsenal-page .gear-card-thumb.empty { cursor: pointer; }
+.arsenal-ascension-badge {
+  position: absolute; z-index: 1; inset: 2px 2px auto auto; pointer-events: none;
+  display: grid; place-items: center; width: 28px; height: 28px;
+  background: #281a2a; border: 1px solid #d6ae6b; border-radius: 0;
+}
+.arsenal-ascension-badge img { width: 20px; height: 20px; object-fit: contain; background: transparent; }
+.arsenal-detail {
+  box-sizing: border-box; width: min(94vw, 480px); max-height: 92dvh; overflow: auto;
+  padding: 14px; border: 1px solid var(--line); color: var(--ink); background: var(--panel);
+}
+.arsenal-detail::backdrop { background: #000a; }
+.arsenal-detail header, .arsenal-detail-actions {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+}
+.arsenal-detail h3, .arsenal-detail form { margin: 0; }
+.arsenal-detail-card { width: fit-content; max-width: 100%; margin: 14px auto; }
+.arsenal-detail-card .arsenal-card-face { display: block; max-width: 100%; max-height: 64dvh; object-fit: contain; }
+.arsenal-detail-card .arsenal-ascension-badge { width: 36px; height: 36px; }
+.arsenal-detail-card .arsenal-ascension-badge img { width: 26px; height: 26px; }
+.arsenal-card-fallback:not([hidden]) {
+  display: grid; place-items: center; width: min(64vw, 236px); aspect-ratio: 63 / 88;
+  border: 1px solid var(--line); color: var(--muted); background: var(--accent-soft);
+}
+.arsenal-detail-status:not(:empty) { margin-top: 8px; }
 .arsenal-item-meta { color: var(--muted); font-size: 11px; line-height: 1.6; margin-bottom: 8px; overflow-wrap: anywhere; }
 .arsenal-quantity { display: flex; align-items: center; gap: 10px; margin-top: auto; padding-top: 8px; }
 .arsenal-quantity-value { flex: 1; text-align: center; font-size: 14px; font-weight: 850; color: var(--accent-strong); }
@@ -31,3 +85,265 @@ body[data-theme-module="technology"] .arsenal-toolbar .tool-btn:hover:not(:disab
 .arsenal-quantity .gear-resource-btn:disabled { opacity: .45; cursor: not-allowed; }
 .gear-stock { color: var(--accent-strong); font-size: 11px; font-weight: 750; }
 .arsenal-items { padding-top: 10px; }
+
+.arsenal-loadout {
+  position: relative;
+  margin: 0 0 18px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+}
+.arsenal-loadout > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+  padding: 8px 14px;
+  list-style: none;
+  color: var(--accent-strong);
+  font: 600 18px/1.4 "Songti SC", SimSun, Georgia, serif;
+  cursor: pointer;
+}
+.arsenal-loadout > summary::-webkit-details-marker { display: none; }
+.arsenal-loadout > summary::after {
+  content: "";
+  flex: 0 0 8px;
+  width: 8px;
+  height: 8px;
+  margin-inline-end: 4px;
+  border: solid currentColor;
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
+}
+.arsenal-loadout[open] > summary {
+  min-height: 54px;
+  padding-inline-end: 170px;
+  border-bottom: 1px solid var(--line);
+  background: var(--accent-soft);
+}
+.arsenal-loadout[open] > summary::after { transform: rotate(225deg); }
+.arsenal-loadout[open] > summary::after { position: absolute; inset: 23px 16px auto auto; }
+.arsenal-loadout > .arsenal-loadout-save-all { position: absolute; top: 5px; inset-inline-end: 38px; height: 44px; white-space: nowrap; }
+.arsenal-loadout-body { display: grid; gap: 12px; min-width: 0; padding: 14px; }
+.arsenal-loadout-view { position: absolute; top: 9px; inset-inline-start: 112px; display: flex; gap: 4px; }
+.arsenal-loadout[open] > summary { min-width: 0; }
+.arsenal-loadout-view .arsenal-loadout-slot { min-width: 36px; }
+@media (max-width: 600px) {
+  .arsenal-loadout[open] > summary { font-size: 13px; padding-inline: 6px; }
+  .arsenal-loadout-view { top: 5px; inset-inline-start: 65px; gap: 2px; }
+  .arsenal-loadout-view .arsenal-loadout-slot { min-width: 20px; padding-inline: 2px; }
+  .arsenal-loadout > .arsenal-loadout-save-all { inset-inline-end: 20px; padding-inline: 3px; font-size: 10px; }
+  .arsenal-loadout[open] > summary::after { inset-inline-end: 6px; }
+}
+.arsenal-loadout-fields { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.arsenal-loadout-overview { display: grid; gap: 12px; }
+.arsenal-loadout-player { min-width: 0; border: 1px solid var(--line); padding: 10px; }
+.arsenal-loadout-player { container-type: inline-size; }
+.arsenal-loadout-side-actions { margin-inline-start: auto; flex: 0 0 auto; flex-wrap: nowrap; }
+.arsenal-loadout-main-actions { flex-wrap: nowrap; overflow-x: auto; margin-bottom: 6px; padding: 2px 2px 5px; }
+.arsenal-loadout-main-actions strong, .arsenal-loadout-side-actions .tool-btn { flex: 0 0 auto; white-space: nowrap; }
+.arsenal-loadout-preset > .tool-btn { flex: 0 0 auto; white-space: nowrap; }
+.arsenal-loadout-preset { flex: 0 0 auto; flex-wrap: nowrap; }
+.arsenal-loadout-main-actions .arsenal-loadout-preset label { flex: 0 0 auto; white-space: nowrap; }
+.arsenal-loadout-preset select { width: 124px; }
+.arsenal-loadout-preset input { width: 104px; }
+/* Registered as a length so the clamp-free value inherits as an absolute length
+   and every card grid inside a group measures the same card. */
+@property --loadout-card-width {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 124px;
+}
+.arsenal-loadout-sections {
+  --loadout-field-height: 36px;
+  /* 与右侧军械库卡图同尺寸：卡宽 124 → 卡图约 110×173；军械库在 1356 宽窗口下是 113×178。 */
+  --loadout-card-width: 124px;
+  --loadout-card-gap: 8px;
+  --loadout-group-inset: 12px; /* .arsenal-loadout-equipped 的 5px×2 内边距 + 1px×2 虚线边框 */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 10px;
+}
+.arsenal-loadout-sections:not(:has(.arsenal-loadout-side-row > .arsenal-loadout-group)) .arsenal-loadout-sides { display: none; }
+.arsenal-loadout-main {
+  /* 主装备栏按自己的卡片列数取宽度，剩余宽度全给针对配装。 */
+  flex: 0 0 auto;
+  width: calc(max(2, var(--main-card-count, 4)) * (var(--loadout-card-width) + var(--loadout-card-gap)) - var(--loadout-card-gap) + var(--loadout-group-inset));
+  max-width: 100%;
+}
+.arsenal-loadout-sides {
+  /* 换行基准 = 整栏所需宽度（各组卡宽之和 + 组间间距）。剩余宽度放不下整栏时整栏折到下一行，
+     而不是把某一组里的卡片压成两排。 */
+  flex: 1 1 calc(var(--side-total-cards, 2) * (var(--loadout-card-width) + var(--loadout-card-gap)) - var(--loadout-card-gap) + var(--side-count, 1) * var(--loadout-group-inset));
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.arsenal-loadout-side-row { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: flex-end; gap: 8px; min-width: 0; }
+.arsenal-loadout-side-row:empty { display: none; }
+.arsenal-loadout-side-row > .arsenal-loadout-group {
+  /* 每组宽度正好放进自己的卡片，多出来的宽度留给行尾，卡片就不会被挤到第二行。 */
+  flex: 0 1 auto;
+  width: calc(max(1, var(--side-cards, 1)) * (var(--loadout-card-width) + var(--loadout-card-gap)) - var(--loadout-card-gap) + var(--loadout-group-inset));
+  max-width: 100%;
+  min-width: 0;
+  container-name: loadout-side;
+  container-type: inline-size;
+}
+.arsenal-loadout-side-fields { flex-wrap: nowrap; gap: 4px; }
+.arsenal-loadout-side-fields input { flex: 1 1 0; width: 0; box-sizing: border-box; }
+.arsenal-loadout-side-fields .tool-btn { flex: 0 0 auto; white-space: nowrap; }
+.arsenal-loadout-side-fields [data-loadout-delete-side] { flex-basis: 30px; width: 30px; padding: 0; font-size: 16px; line-height: 1; }
+.arsenal-loadout-titan-field select, .arsenal-loadout-side-fields :is(input, button) { box-sizing: border-box; height: var(--loadout-field-height); }
+.arsenal-loadout-titan-field select { width: 100%; }
+.arsenal-loadout-side-fields[data-active-side="true"] input { border-color: var(--accent-strong); }
+.arsenal-loadout-equipped[tabindex] { cursor: pointer; }
+.arsenal-loadout-group { display: grid; align-content: start; min-width: 0; gap: 6px; }
+.arsenal-loadout-group > .arsenal-loadout-slot { justify-self: start; }
+.arsenal-loadout-group[data-selected="true"] > .arsenal-loadout-equipped { border-color: var(--accent); }
+.arsenal-loadout-fields label {
+  display: flex;
+  flex: 0 1 300px;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 750;
+}
+.arsenal-loadout-fields :is(select, input) {
+  flex: 1;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 36px;
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+}
+.arsenal-loadout-slot, .arsenal-loadout .tool-btn, .arsenal-item .arsenal-loadout-add {
+  min-height: 36px;
+  padding: 6px 11px;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--panel);
+  color: var(--accent-strong);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.4;
+  cursor: pointer;
+}
+.arsenal-loadout-slot { min-width: 56px; }
+.arsenal-loadout-slot[aria-pressed="true"] {
+  border-color: var(--accent-strong);
+  color: var(--panel);
+  background: var(--accent-strong);
+}
+body[data-theme-module="technology"] :is(.arsenal-loadout-fields .tool-btn, .arsenal-item .arsenal-loadout-add) {
+  background: var(--accent-soft);
+}
+.arsenal-loadout-slot:enabled:hover, .arsenal-loadout .tool-btn:enabled:hover, .arsenal-item .arsenal-loadout-add:enabled:hover {
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
+  color: var(--panel);
+}
+.arsenal-loadout :is(.arsenal-loadout-slot, .tool-btn):disabled, .arsenal-item .arsenal-loadout-add:disabled { opacity: .5; cursor: not-allowed; }
+.arsenal-loadout :is(summary, button, select, input):focus-visible, .arsenal-item .arsenal-loadout-add:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.arsenal-loadout-equipped {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  align-content: start;
+  min-width: 0;
+  min-height: 76px;
+  padding: 10px 5px;
+  border: 1px dashed var(--line);
+}
+.arsenal-loadout-card-grid { display: grid; grid-template-columns: repeat(auto-fill, min(var(--loadout-card-width), 100%)); gap: var(--loadout-card-gap); }
+.arsenal-loadout-card { position: relative; width: 100%; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.arsenal-loadout-card .gear-card-thumb { display: block; flex: none; margin: 0; }
+.arsenal-loadout-card .arsenal-thumbnail-card,
+.arsenal-loadout-card .gear-card-thumb .arsenal-thumbnail-card .arsenal-card-face { display: block; width: 100%; height: 100%; object-fit: contain; }
+.arsenal-loadout-card .gear-card-thumb.empty {
+  display: grid;
+  place-items: center;
+  background: var(--accent-soft);
+  color: var(--muted);
+}
+.arsenal-loadout-counts { display: flex; flex-wrap: nowrap; gap: 3px; min-width: 0; color: var(--muted); font: 600 10px/1.4 system-ui, sans-serif; font-variant-numeric: tabular-nums; }
+.arsenal-loadout-count { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 2px; white-space: nowrap; color: var(--accent-strong); }
+.arsenal-loadout-count b { font: inherit; }
+.arsenal-loadout-count svg { width: 13px; height: 13px; overflow: hidden; clip-path: circle(50%); }
+.arsenal-loadout-remove { position: absolute; inset-block-start: 2px; inset-inline-end: 2px; width: 26px; height: 26px; padding: 0; border: 1px solid var(--line); background: var(--panel); color: var(--ink); font-size: 18px; line-height: 1; cursor: pointer; opacity: 0; }
+.arsenal-loadout-card:is(:hover, :focus-within) .arsenal-loadout-remove { opacity: 1; }
+.arsenal-loadout-empty, .arsenal-loadout-status, .arsenal-loadout-availability {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.arsenal-loadout-empty { grid-column: 1 / -1; align-self: center; padding: 12px 2px; }
+.arsenal-loadout-status.error { padding-inline-start: 8px; border-inline-start: 2px solid var(--accent); color: var(--ink); }
+.arsenal-loadout-status:empty { display: none; }
+.arsenal-page .arsenal-loadout-drag-over {
+  border-color: var(--accent);
+  outline: 1px solid var(--accent);
+  background: var(--accent-soft);
+}
+.arsenal-item .arsenal-loadout-availability { display: block; margin-block: 8px 4px; }
+.arsenal-item .arsenal-loadout-add { width: 100%; margin-top: 4px; }
+.arsenal-page [data-loadout-drag][draggable="true"], .arsenal-page [data-loadout-drag][draggable="true"] .gear-card-thumb:not(.empty) { cursor: grab; }
+.arsenal-page [data-loadout-drag][draggable="true"]:active { cursor: grabbing; }
+
+@container loadout-side (max-width: 160px) {
+  .arsenal-loadout-equipped { padding-inline: 4px; }
+}
+@container loadout-side (max-width: 130px) {
+  .arsenal-loadout-side-fields [data-loadout-delete-side] { width: 30px; min-width: 30px; padding: 0; }
+  .arsenal-loadout-equipped { padding-inline: 3px; }
+  .arsenal-loadout-counts { gap: 1px; font-size: 8px; }
+  .arsenal-loadout-count { gap: 1px; }
+  .arsenal-loadout-count svg { width: 9px; height: 9px; }
+}
+@container loadout-side (max-width: 90px) {
+  .arsenal-loadout-side-fields [data-loadout-delete-side] { width: 26px; min-width: 26px; padding: 0; }
+  .arsenal-loadout-equipped { padding-inline: 2px; }
+  .arsenal-loadout-counts { gap: 0; font-size: 7px; }
+  .arsenal-loadout-count { gap: 0; }
+  .arsenal-loadout-count svg { width: 7px; height: 7px; }
+}
+@container (max-width: 720px) {
+  .arsenal-loadout-sections { flex-direction: column; align-items: stretch; }
+  .arsenal-loadout-main { width: auto; }
+  .arsenal-loadout-sides { flex-basis: auto; }
+}
+/* 容器窄到放不下军械库尺寸的卡片时，等比缩小，避免整栏溢出。 */
+@container (max-width: 560px) {
+  .arsenal-loadout-sections { --loadout-card-width: 100px; }
+}
+@container (max-width: 460px) {
+  .arsenal-loadout-sections { --loadout-card-width: 84px; --loadout-card-gap: 6px; }
+}
+@container (max-width: 420px) {
+  .arsenal-loadout-side-row { display: grid; }
+  .arsenal-loadout-side-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 600px) {
+  .arsenal-loadout > summary, .arsenal-loadout-body { padding-inline: 10px; }
+  .arsenal-loadout-slot { min-width: 0; padding-inline: 4px; }
+  .arsenal-loadout-fields label { flex: 1 1 165px; }
+}
+@media (max-width: 600px), (pointer: coarse) {
+  .arsenal-loadout-sections { --loadout-field-height: 44px; }
+  .arsenal-browse-heading > .arsenal-loadout > summary { min-height: 44px; }
+  .arsenal-loadout-remove { opacity: 1; width: 32px; height: 32px; }
+  .arsenal-loadout-slot, .arsenal-loadout-fields :is(select, input), .arsenal-loadout .tool-btn, .arsenal-item .arsenal-loadout-add { min-height: 44px; }
+}

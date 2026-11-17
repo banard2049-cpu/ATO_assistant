@@ -4,6 +4,7 @@ const vm = require('node:vm');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const inventory = require('../technology/gear-inventory.js');
+const loadout = require('../technology/arsenal-loadout.js');
 const source = fs.readFileSync(path.join(__dirname, '../technology/index.html'), 'utf8').replace(/\r\n/g, '\n');
 const clone = value => JSON.parse(JSON.stringify(value));
 const noop = () => {};
@@ -38,8 +39,26 @@ test('inventory rejects invalid mutations and safely normalizes old or malformed
   assert.throws(() => inventory.adjust({}, 'AJ0160', -1, true));
 });
 
-function craftContext({ conflict = false, fail = false, remoteMissing = false, loseResponse = false, malformedResponse = false, offlineRecovery = false } = {}) {
-  let server = { resources: { material: 10 }, arsenal: {} };
+test('ascension transfers one copy per cycle and keeps manufacturing history on the original card', () => {
+  const start = { AJ0160: { quantity: 2, manufactured: 5 } };
+  const c2 = inventory.ascend(start, 'AJ0160', 'c1');
+  assert.deepEqual(c2, {
+    AJ0160: { quantity: 1, manufactured: 5 },
+    'AJ0160@c2': { quantity: 1, manufactured: 0 },
+  });
+  assert.equal(start.AJ0160.quantity, 2);
+  assert.deepEqual(inventory.normalize(c2), c2);
+  const c3 = inventory.ascend(c2, '1xaj0160@C2', 'c1');
+  assert.equal(c3['AJ0160@c2'].quantity, 0);
+  assert.equal(c3['AJ0160@c3'].quantity, 1);
+  assert.throws(() => inventory.ascend(c3, 'AJ0160', 'c1', 1), /主要配装/);
+  assert.throws(() => inventory.ascend(c3, 'AJ0160@c2', 'c1'), /没有库存/);
+  assert.throws(() => inventory.ascend(c3, 'AJ0160@c5', 'c1'), /无法再登升/);
+});
+
+function craftContext({ conflict = false, fail = false, remoteMissing = false, loseResponse = false, malformedResponse = false,
+  offlineRecovery = false, initialRecord = { resources: { material: 10 }, arsenal: {} } } = {}) {
+  let server = clone(initialRecord);
   let revision = 1;
   let posts = 0;
   const warnings = [];
@@ -86,6 +105,27 @@ function craftContext({ conflict = false, fail = false, remoteMissing = false, l
   });
   return { c, warnings, server: () => server, posts: () => posts, reconnect: () => { offlineRecovery = false; } };
 }
+
+test('retrying an ascension with a lost response transfers only one copy', async () => {
+  const { c, server, posts, reconnect } = craftContext({
+    initialRecord: { resources: { material: 10 }, arsenal: { AJ0160: { quantity: 2 } } },
+    loseResponse: true, offlineRecovery: true,
+  });
+  context(['ascendArsenalGear'], c);
+  c.window.ATO_ARSENAL_LOADOUT = loadout;
+  c.gearAscensionOperations = new Map();
+  const item = { gearId: 'AJ0160', originCycle: 'c1', name: '装备' };
+  const key = c.gearCraftOperationKey('ascension:AJ0160');
+  await assert.rejects(c.ascendArsenalGear(item, 'c2', key), /response lost/);
+  reconnect();
+  await c.ascendArsenalGear(item, 'c2', key);
+  assert.equal(posts(), 1);
+  assert.deepEqual(server().arsenal, {
+    AJ0160: { quantity: 1, manufactured: 0 },
+    'AJ0160@c2': { quantity: 1, manufactured: 0 },
+  });
+  assert.deepEqual(server().resources, { material: 10 });
+});
 
 test('manufacturing atomically deducts materials and records one finished item', async () => {
   const { c, server, warnings } = craftContext();
@@ -179,6 +219,32 @@ test('pending manufacture button remains actionable after the saved stock is dep
   assert.doesNotMatch(html, / disabled/);
 });
 
+test('a lost loadout save response is recovered from the record without writing twice', async () => {
+  const initialRecord = {
+    resources: { material: 10 },
+    arsenal: { AJ0163: { quantity: 1, manufactured: 3 } },
+    titans: [{ id: 'dream', name: '梦行者', count: 1 }],
+  };
+  const { c, server, posts } = craftContext({ loseResponse: true, initialRecord });
+  context(['arsenalLoadoutDraft', 'loadGearRecordState', 'saveArsenalLoadout'], c);
+  c.window.ATO_ARSENAL_LOADOUT = loadout;
+  Object.assign(c, { arsenalLoadoutEditor: null, gearRecordLoadInFlight: false, campaignStorageAvailable: false,
+    refreshExplorationTechLockDisplay: noop });
+  const editor = c.arsenalLoadoutDraft();
+  assert.deepEqual(clone(editor.baseline), loadout.normalize(null));
+  editor.draft.slots[0] = { titanId: 'dream', equipment: ['AJ0163'] };
+  const names = new Map([['AJ0163', 'Club']]);
+  await c.saveArsenalLoadout(editor, names);
+  assert.equal(posts(), 1);
+  assert.deepEqual(server(), { ...initialRecord, arsenalLoadouts: clone(editor.draft) });
+  assert.deepEqual(clone(editor.baseline), clone(editor.draft));
+  assert.match(editor.notice, /配装已保存/);
+  assert.equal(editor.error, '');
+  assert.equal(c.gearMutationInFlight, false);
+  await c.saveArsenalLoadout(editor, names);
+  assert.equal(posts(), 1);
+});
+
 function catalogContext() {
   const production = require('../technology/ato_gear_production.json');
   return context(['normalizeGearId', 'getGearName', 'getTechDisplayName', 'gearPart', 'gearPartMatchesFilter', 'productionRecordCycle', 'arsenalCatalog', 'arsenalItemMatchesFilters'], {
@@ -246,7 +312,7 @@ test('all campaign-eligible Theatre gear uses the same card image in the arsenal
       assert.ok(c.arsenalItemMatchesFilters(arsenal.get(id), name), name);
     }
   }
-  for (const name of ['天涯', '摘天之盔', 'skyreach']) assert.ok(c.arsenalItemMatchesFilters(arsenal.get('ZJ1240'), name), name);
+  for (const name of ['揽月', '摘天之盔', 'skyreach']) assert.ok(c.arsenalItemMatchesFilters(arsenal.get('ZJ1240'), name), name);
 });
 
 test('campaign reward variants can be found under their own cycles and names', () => {
@@ -289,6 +355,116 @@ test('category and cycle filters combine with Chinese, English and ID searches',
   assert.equal(c.arsenalItemMatchesFilters(gear, ''), false);
   c.arsenalPartFilter = ''; c.arsenalCycleFilter = 'c2';
   assert.equal(c.arsenalItemMatchesFilters(gear, ''), false);
+});
+
+test('the arsenal opens a draft from the active profile and renders retained gear and available stock', () => {
+  const c = catalogContext();
+  context(['arsenalItemIsAvailable', 'arsenalEntryOptions', 'arsenalMessageHtml', 'arsenalThumbnailHtml', 'arsenalGearNames', 'arsenalLoadoutDraft', 'arsenalLoadoutCards',
+    'renderArsenalLoadout', 'arsenalItemHtml', 'bindArsenalLoadout', 'renderArsenalPage'], c);
+  c.window.ATO_ARSENAL_LOADOUT = loadout;
+  const control = { addEventListener: noop };
+  const panel = { querySelectorAll: () => [], querySelector: () => control };
+  Object.assign(c, {
+    ARSENAL_SIDE_LIMIT: 4,
+    activeAccountId: 'A', campaignSession: { accountId: 'login-A' }, arsenalLoadoutEditor: null,
+    mainView: { classList: { remove: noop }, querySelectorAll: () => [],
+      querySelector: selector => selector === '.arsenal-loadout' ? panel : control },
+    data: { pages: [] }, search: { value: '' }, count: {}, currentTab: 'arsenal',
+    arsenalOnlyAvailable: false, arsenalSelectedGear: '', arsenalAddQuantity: 1, arsenalMessage: '',
+    arsenalEntryQuery: '', arsenalShowEntryNames: false,
+    gearMutationInFlight: false, gearRecordLoadInFlight: false, gearRecordError: '', gearImageSrc: id => `cards/${id}.jpg`,
+    renderCycleButton: noop, requestGearRecordState: noop, esc: String,
+  });
+  c.gearRecordState = {
+    titans: [{ id: 'dream', name: '梦行者', count: 2 }],
+    arsenal: { AJ0160: { quantity: 0, manufactured: 2 }, AJ0163: { quantity: 1, manufactured: 1 },
+      AJ0257: { quantity: 1 }, 'T:tt_earthshaker': { quantity: 1 } },
+    arsenalLoadouts: { slots: [{ titanId: 'dream', equipment: ['AJ0163'] }], presets: [] },
+  };
+  assert.equal(c.arsenalLoadoutDraft().open, false);
+  c.renderArsenalPage();
+  assert.match(c.mainView.innerHTML, /class="gear-page arsenal-page"/);
+  assert.doesNotMatch(c.mainView.innerHTML, /data-gear-id="AJ0160"/);
+  assert.match(c.mainView.innerHTML, /<option value="AJ0160"/);
+  assert.equal(c.count.textContent, '军械库 3 种 / 3 件');
+  c.arsenalLoadoutDraft().open = true;
+  c.renderArsenalPage();
+  const html = c.mainView.innerHTML;
+  assert.match(html, /class="gear-page arsenal-page is-loadout-open"/);
+  assert.deepEqual([...html.matchAll(/data-loadout-main="(\d+)"/g)].map(match => match[1]), ['0', '1', '2', '3']);
+  assert.doesNotMatch(html, />主要装备<\/button>/);
+  assert.equal((html.match(/class="arsenal-loadout-player"/g) || []).length, 4);
+  assert.equal((html.match(/data-loadout-titan=/g) || []).length, 4);
+  assert.match(html, /<option value="dream"\s+selected>梦行者/);
+  assert.match(html, /data-loadout-save\s+disabled/);
+  assert.match(html, /data-loadout-remove="AJ0163"/);
+  assert.match(html, /aria-label="手数 1" title="手数 1"><svg viewBox="10 34 78 78"[^>]*><image href="cards\/AJ0163.jpg"[^]*?<\/svg><b>×1<\/b>/);
+  assert.doesNotMatch(html, /arsenal-loadout-card-name/);
+  assert.match(html, /data-loadout-add="AJ0163"\s+disabled/);
+  assert.match(html, /data-loadout-add="AJ0257"\s*>/);
+  assert.doesNotMatch(html, /data-loadout-add="T:tt_earthshaker"/);
+
+  c.activeAccountId = 'B';
+  c.gearRecordState = { titans: [{ id: 'own', name: '守战者', count: 1 }], arsenal: {} };
+  c.renderArsenalPage();
+  assert.match(c.mainView.innerHTML, /<option value="own"\s*>守战者/);
+  assert.doesNotMatch(c.mainView.innerHTML, /value="dream"|data-loadout-remove="AJ0163"/);
+});
+
+test('manual entry shows only IDs by default and searches names and aliases after opt-in', () => {
+  const c = catalogContext();
+  context(['arsenalItemIsAvailable', 'arsenalEntryOptions'], c);
+  Object.assign(c, { arsenalOnlyAvailable: false, arsenalEntryQuery: '  aj0257  ', arsenalShowEntryNames: false, arsenalSelectedGear: 'AJ0160' });
+  const catalog = c.arsenalCatalog();
+  const options = () => c.arsenalEntryOptions(catalog, (id, label) => `${id}:${label}`);
+  assert.equal(options().html, 'AJ0257:AJ0257');
+  assert.equal(c.arsenalSelectedGear, 'AJ0257');
+  c.arsenalEntryQuery = 'shieldblade';
+  assert.equal(options().empty, true);
+  assert.equal(c.arsenalSelectedGear, '');
+  c.arsenalShowEntryNames = true;
+  assert.match(options().html, /AJ0257:护盾之刃 · AJ0257/);
+  c.arsenalEntryQuery = '护盾之刃';
+  assert.match(options().html, /AJ0257:护盾之刃 · AJ0257/);
+  c.arsenalCycleFilter = 'c2';
+  assert.equal(options().empty, true);
+});
+
+test('usable gear includes current and future tiers plus the previous cycle’s printed Ascended gear', () => {
+  const c = catalogContext();
+  context(['arsenalItemIsAvailable', 'arsenalEntryOptions', 'arsenalCoreBadge', 'arsenalThumbnailHtml'], c);
+  Object.assign(c, {
+    arsenalOnlyAvailable: true, arsenalEntryQuery: '', arsenalShowEntryNames: false, arsenalSelectedGear: '',
+    currentRecordCycleForGear: () => 'c2', gearImageSrc: id => `cards/${id}.jpg`, esc: String,
+  });
+  Object.assign(c.gearRecordState.arsenal, {
+    'AJ0160@c2': { quantity: 1 }, 'AJ0160@c3': { quantity: 1 },
+  });
+  const catalog = c.arsenalCatalog();
+  const mothlame = catalog.find(item => item.gearId === 'AJ0262');
+  assert.equal(mothlame.originCycle, 'c1');
+  assert.deepEqual(clone(mothlame.cycles), ['c1']);
+  assert.equal(mothlame.ascendedCycle, '');
+  assert.ok(inventory.isAvailable(mothlame, 'c1'));
+  const usable = new Set(catalog.filter(c.arsenalItemIsAvailable).map(item => item.gearId));
+  for (const id of ['BJ0827', 'AJ0262', 'AJ0273', 'ZJ1239', 'ZJ1240', 'CJ1477', 'EJ2995', 'AJ0160@c2', 'AJ0160@c3']) {
+    assert.ok(usable.has(id), id);
+  }
+  assert.ok(!usable.has('AJ0160'));
+  const options = c.arsenalEntryOptions(catalog, (id, label) => `${id}:${label}\n`).html;
+  assert.match(options, /AJ0160@c2:AJ0160 · 登升至循环 2/);
+  assert.match(options, /CJ1477:CJ1477/);
+  assert.match(options, /AJ0160@c3:AJ0160 · 登升至循环 3/);
+  assert.match(options, /AJ0160:AJ0160/);
+  assert.match(c.arsenalThumbnailHtml('AJ0160@c2', '装备'), /cards\/AJ0160.jpg.*theatre-core.svg/);
+  assert.match(c.arsenalThumbnailHtml('AJ0262', '蛾锦'), /arsenal-thumbnail-card.*theatre-core.svg/);
+  c.currentRecordCycleForGear = () => 'c3';
+  const shownInC3 = new Set(catalog.filter(c.arsenalItemIsAvailable).map(item => item.gearId));
+  assert.ok(shownInC3.has('AJ0160@c3'));
+  assert.ok(shownInC3.has('BJ0948'));
+  assert.ok(!shownInC3.has('AJ0160@c2'));
+  assert.ok(!shownInC3.has('AJ0262'));
+  assert.ok(!shownInC3.has('AJ0273'));
 });
 
 test('every equipment card has an explicit icon-verified category in both languages', () => {

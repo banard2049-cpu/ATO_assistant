@@ -1062,7 +1062,7 @@ button.gear-group-name:hover {
 <link rel="stylesheet" href="../assets/theme.css?v=20261001">
 <link rel="stylesheet" href="editorial.css?v=20261001-cycle-menu">
 <link rel="stylesheet" href="tech-tree.css?v=20261002-content-paper">
-<link rel="stylesheet" href="arsenal.css?v=20261002-centered-buttons">
+<link rel="stylesheet" href="arsenal.css?v=20261118-loadout-card-match">
 <link rel="stylesheet" href="../assets/card-art.css?v=20261017-corners1">
 <script src="../assets/card-art.js?v=20261017-corners1" defer></script>
   <script src="../story/data/english-source-data.js?v=20261011-english4"></script>
@@ -1070,7 +1070,7 @@ button.gear-group-name:hover {
   <link rel="stylesheet" href="trade-planner.css?v=20261019-negotiation-layout1">
   <!-- Mobile composition is enabled only by the installed APK in portrait. -->
   <link rel="stylesheet" href="../assets/mobile/common.css?v=20261028-apk-portrait1">
-  <link rel="stylesheet" href="../assets/mobile/technology.css?v=20261028-apk-portrait1">
+  <link rel="stylesheet" href="../assets/mobile/technology.css?v=20261117-toolbar1">
   <script src="../assets/mobile/layout.js?v=20261028-apk-portrait1" defer></script>
   <script src="../assets/mobile/technology.js?v=20261028-apk-portrait1" defer></script>
 </head>
@@ -1139,7 +1139,8 @@ button.gear-group-name:hover {
   <script src="exploration-tech-rules.js?v=20261017-automation-audit4"></script>
   <script src="structure-tech-rules.js?v=20261117-resource-types1"></script>
   <script src="structure-tech-client.js?v=20261019-negotiation-rows2"></script>
-<script src="gear-inventory.js?v=20261002"></script>
+<script src="gear-inventory.js?v=20261117-future-gear"></script>
+<script src="arsenal-loadout.js?v=20261118-save-all-loadouts1"></script>
 <script>
 const TECH_DICTIONARY_URL = 'tech_card_dictionary.min.json';
 const fetch = window.ATO_CAMPAIGN_NOTES.createFetch(window.fetch.bind(window), {
@@ -1152,7 +1153,12 @@ const fetch = window.ATO_CAMPAIGN_NOTES.createFetch(window.fetch.bind(window), {
         if (node) return `${displayTechReferenceName(node)}${key.slice(nodeKey(page.key, node).length)}`;
       }
     }
-    if (path.includes('arsenal') && window.ATO_GEAR_INVENTORY.gearKey(key)) return getGearName(key);
+    if (path.includes('arsenal') && window.ATO_GEAR_INVENTORY.gearKey(key)) {
+      const inventory = window.ATO_GEAR_INVENTORY;
+      const cycle = inventory.ascendedCycle(key);
+      const name = getGearName(inventory.baseGearId(key));
+      return cycle ? `${name} · 登升至循环 ${cycle.slice(1)}` : name;
+    }
     if (path.includes('resources')) return RECORD_RESOURCE_LABELS[key.replace(/^c[1-5]-/, '')];
   },
 });
@@ -1629,7 +1635,7 @@ async function mutateCampaignRecordState(mutator, operation = null) {
     if (latest.userId !== userId) throw new Error('当前档案已切换，请重新操作');
     if (operation && latest.state._gearCraftReceipts?.[operation.id]) return adopt(latest.state, latest.revision);
     const next = mutator(JSON.parse(JSON.stringify(latest.state)));
-    if (next == null) return null;
+    if (next == null) return adopt(latest.state, latest.revision);
     if (operation) {
       next._gearCraftReceipts ||= {};
       next._gearCraftReceipts[operation.id] = { gearId: operation.gearId };
@@ -2133,20 +2139,21 @@ function renderGearInventoryView() {
 }
 
 function arsenalCatalog() {
-  const inventory = window.ATO_GEAR_INVENTORY.normalize(gearRecordState?.arsenal);
+  const model = window.ATO_GEAR_INVENTORY;
+  const inventory = model.normalize(gearRecordState?.arsenal);
   const catalog = new Map();
   // The complete card dictionary also includes loot and starting equipment.
   // Their card IDs identify the cycle even when there is no production recipe.
   const cardCycles = { A: 'c1', B: 'c2', C: 'c3', D: 'c4', E: 'c5' };
   for (const rawId of Object.keys(gearProductionData?.gearCards || {})) {
-    const gearId = window.ATO_GEAR_INVENTORY.gearKey(rawId);
+    const gearId = model.gearKey(rawId);
     if (!gearId) continue;
     const cycle = gearProductionData?.gearCycles?.[gearId] || cardCycles[gearId[0]];
     catalog.set(gearId, { gearId, cycles: cycle ? [cycle] : [], techIds: [] });
   }
   for (const entry of gearProductionData?.techProduction || []) {
     for (const gear of entry.produces || []) {
-      const gearId = window.ATO_GEAR_INVENTORY.gearKey(gear.gearId);
+      const gearId = model.gearKey(gear.gearId);
       if (!gearId) continue;
       if (!catalog.has(gearId)) catalog.set(gearId, { gearId, cycles: [], techIds: [] });
       const item = catalog.get(gearId);
@@ -2156,18 +2163,27 @@ function arsenalCatalog() {
     }
   }
   for (const gearId of Object.keys(inventory)) {
-    if (!catalog.has(gearId)) catalog.set(gearId, { gearId, cycles: [], techIds: [] });
+    if (catalog.has(gearId)) continue;
+    const base = catalog.get(model.baseGearId(gearId));
+    const cycle = model.ascendedCycle(gearId);
+    catalog.set(gearId, { gearId, cycles: cycle ? [cycle] : [], techIds: base?.techIds || [] });
   }
   return [...catalog.values()].map(item => {
-    const name = getGearName(item.gearId);
-    const part = gearPart(item.gearId);
-    const card = gearCardDetails[item.gearId];
-    const searchNames = [name, gearProductionData?.gearCards?.[item.gearId], card?.title, ...(card?.aliases || [])];
+    const baseGearId = model.baseGearId(item.gearId);
+    const name = getGearName(baseGearId);
+    const part = gearPart(baseGearId);
+    const card = gearCardDetails[baseGearId];
+    const originCycle = gearProductionData?.gearCycles?.[baseGearId] || cardCycles[baseGearId[0]]
+      || catalog.get(baseGearId)?.cycles[0];
+    const ascendedCycle = model.ascendedCycle(item.gearId);
+    const searchNames = [name, gearProductionData?.gearCards?.[baseGearId], card?.title, ...(card?.aliases || [])];
+    const entrySearchText = [item.gearId, ...searchNames].join(' ').toLowerCase();
     return {
-      ...item, name, part,
+      ...item, baseGearId, name, part, originCycle, ascendedCycle, printedAscended: card?.ascended === true,
       ...(inventory[item.gearId] || { quantity: 0, manufactured: 0 }),
       recorded: Object.prototype.hasOwnProperty.call(inventory, item.gearId),
-      searchText: [item.gearId, ...searchNames, part.label, ...item.techIds.map(getTechDisplayName)].join(' ').toLowerCase(),
+      entrySearchText,
+      searchText: [entrySearchText, part.label, ...item.techIds.map(getTechDisplayName)].join(' ').toLowerCase(),
     };
   }).sort((a, b) => a.gearId.localeCompare(b.gearId));
 }
@@ -2178,39 +2194,526 @@ function arsenalItemMatchesFilters(item, query) {
     && (!query || item.searchText.includes(query));
 }
 
+function arsenalItemIsAvailable(item) {
+  return !arsenalOnlyAvailable || window.ATO_GEAR_INVENTORY.isAvailable(item, currentRecordCycleForGear());
+}
+
+function arsenalEntryOptions(catalog, optionHtml) {
+  const query = arsenalEntryQuery.trim().toLowerCase();
+  const matches = catalog.filter(item => arsenalItemMatchesFilters(item, '') && (!query
+    || (arsenalShowEntryNames ? item.entrySearchText : item.gearId.toLowerCase()).includes(query)));
+  if (!matches.some(item => item.gearId === arsenalSelectedGear)) arsenalSelectedGear = matches[0]?.gearId || '';
+  const html = matches.length ? matches.map(item => {
+    const label = arsenalShowEntryNames ? `${item.name} · ${item.baseGearId}` : item.baseGearId;
+    const ascension = item.ascendedCycle ? ` · 登升至循环 ${item.ascendedCycle.slice(1)}` : '';
+    return optionHtml(item.gearId, label + ascension, arsenalSelectedGear);
+  }).join('')
+    : optionHtml('', '没有符合筛选条件的装备', '');
+  return { html, empty: !matches.length };
+}
+
 function arsenalMessageHtml() {
   return arsenalMessage ? `<div class="arsenal-message ${arsenalMessageError ? 'error' : ''}" role="status">${esc(arsenalMessage)}</div>` : '';
 }
 
-function arsenalItemHtml(item) {
-  const image = gearImageSrc(item.gearId);
-  const thumbnail = image
-    ? `<button type="button" class="gear-card-thumb" data-gear-img="${esc(image)}" data-gear-name="${esc(item.name)}" title="查看 ${esc(item.name)}"><img src="${esc(image)}" alt="${esc(item.name)}" loading="lazy"></button>`
-    : `<div class="gear-card-thumb empty">${esc(item.gearId)}</div>`;
-  return `<article class="gear-item arsenal-item" data-gear-id="${esc(item.gearId)}">
-    ${thumbnail}<div class="gear-item-name">${esc(item.name)}</div>
-    <div class="arsenal-item-meta">${esc(item.gearId)} · ${esc(item.part.label)}<br>${esc(item.cycles.map(cycle => cycle.replace('c', '循环 ')).join(' / ') || '循环未分类')} · 累计制造 ${item.manufactured} 件</div>
+function arsenalCoreBadge() {
+  return '<span class="arsenal-ascension-badge" title="已登升"><img src="../assets/icons/theatre-core.svg?v=apk117" alt="已登升" draggable="false"></span>';
+}
+
+function arsenalThumbnailHtml(gearId, name) {
+  const inventory = window.ATO_GEAR_INVENTORY;
+  const baseGearId = inventory.baseGearId(gearId);
+  const image = gearImageSrc(baseGearId);
+  const badge = inventory.ascendedCycle(gearId) || gearCardDetails[baseGearId]?.ascended ? arsenalCoreBadge() : '';
+  return `<button type="button" class="gear-card-thumb${image ? '' : ' empty'}" data-arsenal-details="${esc(gearId)}" title="查看 ${esc(name)}"><span class="arsenal-thumbnail-card">${image
+    ? `<img class="arsenal-card-face" src="${esc(image)}" alt="${esc(name)}" loading="lazy" draggable="false">`
+    : esc(baseGearId)}${badge}</span></button>`;
+}
+
+function showArsenalGearDetails(item, disabled) {
+  const inventory = window.ATO_GEAR_INVENTORY;
+  const target = item.part.key === 'titan' ? '' : inventory.nextCycle(item.ascendedCycle || item.originCycle);
+  const operationKey = campaignSession.changed ? null : gearCraftOperationKey(`ascension:${item.gearId}`);
+  const pending = gearAscensionOperations.has(operationKey);
+  const buttonLabel = `登升 1 件至循环 ${target.slice(1)}`;
+  const src = gearImageSrc(item.baseGearId);
+  const dialog = document.createElement('dialog');
+  dialog.className = 'arsenal-detail';
+  dialog.setAttribute('aria-labelledby', 'arsenalDetailName');
+  dialog.innerHTML = `<header><h3 id="arsenalDetailName">${esc(item.name)}</h3>
+    <form method="dialog"><button class="tool-btn" type="submit" autofocus>关闭</button></form></header>
+    <div class="arsenal-detail-card">
+      ${src ? `<img class="arsenal-card-face" src="${esc(src)}" alt="${esc(item.name)}">` : ''}
+      <span class="arsenal-card-fallback" ${src ? 'hidden' : ''}>${esc(item.baseGearId)}</span>
+      ${item.ascendedCycle || item.printedAscended ? arsenalCoreBadge() : ''}
+    </div>
+    <div class="arsenal-detail-actions">
+      <span>${item.ascendedCycle ? `登升至循环 ${esc(item.ascendedCycle.slice(1))} · ` : ''}现有 ${item.quantity} 件</span>
+      ${target ? `<button class="tool-btn" type="button" data-arsenal-ascend ${disabled || !operationKey || (!item.quantity && !pending) ? 'disabled' : ''}>${pending ? '重试登升' : buttonLabel}</button>` : ''}
+    </div>
+    <div class="arsenal-detail-status" role="status"></div>`;
+  const face = dialog.querySelector('.arsenal-card-face');
+  const showFallback = () => {
+    face.remove();
+    dialog.querySelector('.arsenal-card-fallback').hidden = false;
+  };
+  if (face?.complete && !face.naturalWidth) showFallback();
+  else face?.addEventListener('error', showFallback, { once: true });
+  const button = dialog.querySelector('[data-arsenal-ascend]');
+  button?.addEventListener('click', async () => {
+    if (gearMutationInFlight) return;
+    button.disabled = true;
+    const status = dialog.querySelector('[role="status"]');
+    status.textContent = '正在保存登升…';
+    try {
+      await ascendArsenalGear(item, target, operationKey);
+      dialog.close();
+    } catch (error) {
+      status.textContent = String(error.message || error);
+      button.textContent = gearAscensionOperations.has(operationKey) ? '重试登升' : buttonLabel;
+      button.disabled = false;
+    }
+  });
+  dialog.addEventListener('close', () => dialog.remove(), { once: true });
+  document.body.appendChild(dialog);
+  dialog.showModal();
+}
+
+async function ascendArsenalGear(item, target, operationKey) {
+  if (!gearRecordState || gearRecordError || campaignSession.changed) throw new Error('军械库尚未连接，请刷新后重试。');
+  const inventory = window.ATO_GEAR_INVENTORY;
+  const loadouts = window.ATO_ARSENAL_LOADOUT;
+  const operation = gearAscensionOperations.get(operationKey) || {
+    id: window.crypto?.randomUUID?.() || `ascend-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    userId: activeAccountId, accountId: campaignSession.accountId, gearId: item.gearId,
+  };
+  gearMutationInFlight = true;
+  try {
+    await mutateCampaignRecordState(record => {
+      const reserved = loadouts.equipmentCounts(loadouts.normalize(record.arsenalLoadouts).slots).get(item.gearId) || 0;
+      record.arsenal = inventory.ascend(record.arsenal, item.gearId, item.originCycle, reserved);
+      gearAscensionOperations.set(operationKey, operation);
+      return record;
+    }, operation);
+    gearAscensionOperations.delete(operationKey);
+    arsenalMessage = `${item.name} 已登升 1 件至循环 ${target.slice(1)}。`;
+    arsenalMessageError = false;
+  } finally {
+    gearMutationInFlight = false;
+    renderGearInventoryView();
+  }
+}
+
+function arsenalGearNames(catalog) {
+  return new Map(catalog.map(({ gearId, baseGearId }) => [gearId, gearCardDetails[baseGearId]?.title
+    || gearProductionData?.gearCards?.[baseGearId]?.split(/[一-鿿㐀-䶿豈-﫿]/)[0].trim() || baseGearId]));
+}
+
+function arsenalLoadoutDraft() {
+  const model = window.ATO_ARSENAL_LOADOUT;
+  const saved = model.normalize(gearRecordState?.arsenalLoadouts);
+  const scope = JSON.stringify([campaignSession.changed ? null : campaignSession.accountId, activeAccountId]);
+  if (arsenalLoadoutEditor?.scope !== scope) {
+    arsenalLoadoutEditor = { scope, open: false, index: 0, sideId: '', presetFields: saved.slots.map(() => ({ id: '', name: '' })),
+      error: '', notice: '', baseline: saved, draft: model.normalize(saved) };
+  } else if (JSON.stringify(arsenalLoadoutEditor.draft) === JSON.stringify(arsenalLoadoutEditor.baseline)) {
+    arsenalLoadoutEditor.baseline = saved;
+    arsenalLoadoutEditor.draft = model.normalize(saved);
+  }
+  if (!arsenalLoadoutEditor.draft.slots[arsenalLoadoutEditor.index].sides?.some(side => side.id === arsenalLoadoutEditor.sideId)) arsenalLoadoutEditor.sideId = '';
+  return arsenalLoadoutEditor;
+}
+
+function restoreArsenalLoadoutFocus(control) {
+  const attribute = control?.getAttributeNames().find(name => name.startsWith('data-loadout-'));
+  if (!attribute) return;
+  const value = control.getAttribute(attribute);
+  const group = control.closest('[data-loadout-drop]')?.dataset;
+  const owner = control.closest('[data-preset-player]')?.dataset.presetPlayer;
+  const replacement = [...mainView.querySelectorAll(`[${attribute}]`)].find(item => {
+    const parent = item.closest('[data-loadout-drop]')?.dataset;
+    return item.getAttribute(attribute) === value && !item.disabled && item.dataset.sideId === control.dataset.sideId
+      && item.closest('[data-preset-player]')?.dataset.presetPlayer === owner
+      && parent?.loadoutDrop === group?.loadoutDrop && parent?.sideId === group?.sideId;
+  });
+  const fallback = mainView.querySelector(`[data-loadout-main="${arsenalLoadoutEditor.index}"]`);
+  (replacement || fallback)?.focus({ preventScroll: true });
+}
+
+function arsenalLoadoutCards(equipment, index, sideId, disabled, empty, sideName = '') {
+  const inventory = window.ATO_GEAR_INVENTORY;
+  const handRanges = { arm_1h: [1, 1], arm_2h: [2, 2], arm_3h: [3, 3], arm_1_2h: [1, 2], arm_all_h: [1, 3] };
+  const counts = { armor: 0, attachment: 0, aid: 0 };
+  let minHands = 0, maxHands = 0, unknownHands = 0;
+  for (const gearId of equipment) {
+    const category = gearPart(inventory.baseGearId(gearId)).key;
+    const range = handRanges[category];
+    if (range) {
+      minHands += range[0];
+      maxHands += range[1];
+    } else if (category === 'arm') {
+      unknownHands += 1;
+    } else if (Object.hasOwn(counts, category)) {
+      counts[category] += 1;
+    }
+  }
+  const hands = (minHands === maxHands ? String(minHands) : `${minHands}–${maxHands}`) + (unknownHands ? '+?' : '');
+  // Use the printed category emblems and crop from the TTS loadout panel.
+  const stats = [
+    ['手数', hands, 'AJ0163', unknownHands ? `，${unknownHands} 件武器未标注手数` : ''],
+    ['防具', counts.armor, 'AJ0160'],
+    ['助具', counts.aid, 'AJ0199'],
+    ['附件', counts.attachment, 'AJ0277', '', '6 30 78 78'],
+  ];
+  return `<div class="arsenal-loadout-equipped" data-loadout-drop="${index}" data-side-id="${esc(sideId)}"${sideId ? '' : ` data-loadout-main="${index}"`} role="group" aria-label="${esc(sideId ? sideName || '针对配装' : '主要装备')}"${disabled ? '' : ' tabindex="0"'}>
+    <div class="arsenal-loadout-counts" aria-label="装备属性计数">
+      ${stats.map(([label, value, gearId, note = '', crop = '10 34 78 78']) => {
+        const description = esc(`${label} ${value}${note}`);
+        const image = gearImageSrc(gearId);
+        const icon = image ? `<svg viewBox="${crop}" aria-hidden="true" focusable="false"><image href="${esc(image)}" width="470" height="740"/></svg>` : '';
+        return `<span class="arsenal-loadout-count" role="img" aria-label="${description}" title="${description}">${icon}<b>×${value}</b></span>`;
+      }).join('')}
+    </div>
+    <div class="arsenal-loadout-card-grid">${equipment.length ? equipment.map(gearId => {
+      const name = getGearName(inventory.baseGearId(gearId));
+      return `<article class="arsenal-loadout-card" data-loadout-drag="${esc(gearId)}" data-loadout-from="${index}" data-side-id="${esc(sideId)}" data-loadout-before="${esc(gearId)}" draggable="${!disabled}">
+        ${arsenalThumbnailHtml(gearId, name)}
+        <button type="button" class="arsenal-loadout-remove" data-loadout-remove="${esc(gearId)}" aria-label="卸下 ${esc(name)}" title="卸下" ${disabled ? 'disabled' : ''}>×</button>
+      </article>`;
+    }).join('') : `<p class="arsenal-loadout-empty">${empty}</p>`}</div>
+  </div>`;
+}
+
+function renderArsenalLoadout(editor, gearNames, disabled, optionHtml) {
+  const model = window.ATO_ARSENAL_LOADOUT;
+  const { slots, presets } = editor.draft;
+  const visibleSlots = editor.visibleSlots ?? slots.map((_, index) => index);
+  const roster = Array.isArray(gearRecordState?.titans) ? gearRecordState.titans.filter(titan => titan?.id && Number(titan.count ?? 1) > 0)
+    : Number(gearRecordState?.titan) > 0 ? [{ id: 'legacy-titan', name: '泰坦', count: Number(gearRecordState.titan) }] : [];
+  const dirty = JSON.stringify(editor.draft) !== JSON.stringify(editor.baseline);
+  const warning = model.validate(editor.draft, gearRecordState, gearNames);
+  const status = editor.error || warning || editor.notice || (dirty ? '配装有未保存的改动。' : '');
+  const disable = disabled ? 'disabled' : '';
+  const rows = slots.map((player, index) => {
+    const isTarget = index === editor.index;
+    const fields = editor.presetFields[index];
+    const available = presets.filter(preset => preset.owner === index || preset.owner === undefined);
+    const selected = available.find(preset => preset.id === fields.id);
+    const ownsPreset = selected?.owner === index;
+    const changed = JSON.stringify(player) !== JSON.stringify(editor.baseline.slots[index]);
+    const sides = player.sides || [];
+    const atSideLimit = sides.length >= ARSENAL_SIDE_LIMIT;
+    // 主装备栏按自己的卡片数占宽（不设 4 张上限，否则多出来的卡会被挤到下一行）。
+    const mainCards = Math.max(2, player.equipment.length);
+    // 针对栏的换行基准取所有针对卡片的总宽度：剩余宽度放不下整栏时整栏折到下一行，
+    // 而不是把某一组里的卡挤成两排。
+    const sideTotalCards = sides.reduce((total, side) => total + Math.max(1, side.equipment.length), 0);
+    return `<section class="arsenal-loadout-player" ${visibleSlots.includes(index) ? '' : 'hidden'} aria-label="${index + 1} 号配装">
+      <div class="arsenal-loadout-fields arsenal-loadout-main-actions">
+        <strong>${index + 1} 号</strong>
+            <div class="arsenal-loadout-fields arsenal-loadout-preset" data-preset-player="${index}">
+              <label>配装方案 <select data-loadout-preset="${index}" ${disable}>${optionHtml('', '新方案', selected?.id || '')}${available.map(preset => optionHtml(preset.id, preset.name, selected?.id)).join('')}</select></label>
+              <label>方案名称 <input data-loadout-name="${index}" type="text" maxlength="60" value="${esc(fields.name)}" ${disable}></label>
+              <button type="button" class="tool-btn" data-loadout-apply-preset ${disabled || !selected ? 'disabled' : ''}>载入方案</button>
+              <button type="button" class="tool-btn" data-loadout-store-preset ${disable}>${ownsPreset ? '更新方案' : '存为方案'}</button>
+              ${ownsPreset ? `<button type="button" class="tool-btn" data-loadout-delete-preset ${disable}>删除方案</button>` : ''}
+              <button type="button" class="tool-btn" data-loadout-save ${disabled || !changed ? 'disabled' : ''}>保存配装</button>
+              ${changed ? `<button type="button" class="tool-btn" data-loadout-reset ${disable}>恢复已保存配装</button>` : ''}
+            </div>
+        <div class="arsenal-loadout-fields arsenal-loadout-side-actions">
+          <strong>针对配装</strong><button type="button" class="tool-btn" data-loadout-create-side="${index}" ${atSideLimit ? 'disabled title="最多四组针对配装"' : disable}>新增针对</button>
+        </div>
+      </div>
+      <div class="arsenal-loadout-sections" style="--side-count:${sides.length};--main-card-count:${mainCards};--side-total-cards:${Math.max(1, sideTotalCards)}">
+        <div class="arsenal-loadout-group arsenal-loadout-main" data-selected="${isTarget && !editor.sideId}">
+          <div class="arsenal-loadout-fields arsenal-loadout-titan-field">
+            <select data-loadout-titan="${index}" aria-label="选择泰坦" ${disable}>
+              ${optionHtml('', '选择泰坦', player.titanId)}
+              ${roster.map(titan => optionHtml(String(titan.id), `${titan.name || '泰坦'} · ${titan.count ?? 1} 架${titan.crippled ? ' · 残废' : ''}`, player.titanId)).join('')}
+              ${player.titanId && !roster.some(titan => String(titan.id) === player.titanId) ? optionHtml(player.titanId, '泰坦已不在记录表', player.titanId) : ''}
+            </select>
+          </div>
+          ${arsenalLoadoutCards(player.equipment, index, '', disabled, '添加或拖入装备。')}
+        </div>
+        <div class="arsenal-loadout-sides">
+          <div class="arsenal-loadout-side-row" data-side-row="${index}">
+          ${sides.map(side => {
+            const selected = isTarget && editor.sideId === side.id;
+            return `<div class="arsenal-loadout-group" data-selected="${selected}" style="--side-cards:${Math.max(1, side.equipment.length)}">
+              <div class="arsenal-loadout-fields arsenal-loadout-side-fields" data-active-side="${selected}">
+                <input type="text" data-loadout-side-name="${esc(side.id)}" data-slot="${index}" aria-label="针对名称" placeholder="针对名称" maxlength="60" value="${esc(side.name)}" ${disable}>
+                <button type="button" class="tool-btn" data-loadout-delete-side="${esc(side.id)}" data-slot="${index}" title="删除 ${esc(side.name || '针对配装')}" aria-label="删除 ${esc(side.name || '针对配装')}" ${disable}>×</button>
+              </div>
+              ${arsenalLoadoutCards(side.equipment, index, side.id, disabled, '添加或拖入装备。', side.name)}
+            </div>`;
+          }).join('')}
+          </div>
+        </div>
+      </div>
+    </section>`;
+  }).join('');
+  return `<details class="arsenal-loadout" ${editor.open ? 'open' : ''}>
+    <summary>泰坦配装</summary>
+    ${editor.open ? `<button type="button" class="tool-btn arsenal-loadout-save-all" data-loadout-save-all ${disabled || !dirty || warning ? 'disabled' : ''}>存档所有配装</button>` : ''}
+    ${editor.open ? `<div class="arsenal-loadout-view" role="group" aria-label="显示配装栏位">
+      ${[0, 1, 2, 3, 'all'].map(view => `<button type="button" class="arsenal-loadout-slot" data-loadout-view="${view}" aria-pressed="${view === 'all' ? visibleSlots.length === slots.length : visibleSlots.includes(view)}">${view === 'all' ? '全' : view + 1}</button>`).join('')}
+    </div>` : ''}
+    <div class="arsenal-loadout-body">
+      <div class="arsenal-loadout-fields">
+        <span class="arsenal-loadout-status${editor.error || warning ? ' error' : ''}" role="status">${esc(status)}</span>
+      </div>
+      <div class="arsenal-loadout-overview">${rows}</div>
+    </div>
+  </details>`;
+}
+
+function arsenalItemHtml(item, loadout) {
+  const remaining = loadout ? Math.max(0, item.quantity - (loadout.allocated.get(item.gearId) || 0)) : 0;
+  const canDrag = loadout && item.part.key !== 'titan' && !loadout.disabled;
+  const canAdd = canDrag && (loadout.side ? !loadout.side.equipment.includes(item.gearId)
+    : remaining > 0 && !window.ATO_ARSENAL_LOADOUT.canEquip(loadout.slot, item.gearId, loadout.gearNames));
+  return `<article class="gear-item arsenal-item" data-gear-id="${esc(item.gearId)}" ${canDrag ? `data-loadout-drag="${esc(item.gearId)}" draggable="true"` : ''}>
+    ${arsenalThumbnailHtml(item.gearId, item.name)}<div class="gear-item-name">${esc(item.name)}</div>
+    <div class="arsenal-item-meta">${esc(item.baseGearId)} · ${esc(item.part.label)}<br>${item.ascendedCycle
+      ? `登升至循环 ${esc(item.ascendedCycle.slice(1))}`
+      : `${esc(item.cycles.map(cycle => cycle.replace('c', '循环 ')).join(' / ') || '循环未分类')} · 累计制造 ${item.manufactured} 件`}</div>
     <div class="arsenal-quantity">
       <button type="button" class="gear-resource-btn" data-arsenal-gear="${esc(item.gearId)}" data-arsenal-delta="-1" aria-label="减少 ${esc(item.name)}" ${gearMutationInFlight || item.quantity === 0 ? 'disabled' : ''}>−</button>
       <span class="arsenal-quantity-value">现有 ${item.quantity} 件</span>
       <button type="button" class="gear-resource-btn" data-arsenal-gear="${esc(item.gearId)}" data-arsenal-delta="1" aria-label="增加 ${esc(item.name)}" ${gearMutationInFlight ? 'disabled' : ''}>+</button>
     </div>
+    ${loadout && item.part.key !== 'titan' ? `<div class="arsenal-loadout-availability">未分配 ${remaining} / ${item.quantity}</div><button type="button" class="tool-btn arsenal-loadout-add" data-loadout-add="${esc(item.gearId)}" ${canAdd ? '' : 'disabled'}>${loadout.side ? '加入针对配装' : '加入配装'}</button>` : ''}
   </article>`;
+}
+
+function bindArsenalLoadout(editor, gearNames) {
+  const panel = mainView.querySelector('.arsenal-loadout');
+  const model = window.ATO_ARSENAL_LOADOUT;
+  const currentSlot = () => editor.draft.slots[editor.index];
+  const edit = change => {
+    if (gearMutationInFlight || gearRecordError || !gearRecordState || campaignSession.changed) return;
+    const control = document.activeElement;
+    editor.error = '';
+    editor.notice = '';
+    try { change(); }
+    catch (error) { editor.error = error.message; }
+    renderArsenalPage();
+    restoreArsenalLoadoutFocus(control);
+  };
+  const move = (gearId, from, to, fromSide, toSide, beforeGearId) => edit(() => {
+    editor.draft.slots = model.editEquipment(editor.draft.slots, { gearId, from, to, fromSide, toSide, beforeGearId }, gearRecordState, gearNames);
+  });
+  panel.querySelector('summary').addEventListener('click', event => {
+    event.preventDefault();
+    editor.open = !editor.open;
+    renderArsenalPage();
+    mainView.querySelector('.arsenal-loadout > summary').focus({ preventScroll: true });
+  });
+  panel.querySelector('[data-loadout-save-all]')?.addEventListener('click', () => {
+    void saveArsenalLoadout(editor, gearNames, null);
+  });
+  for (const button of panel.querySelectorAll('[data-loadout-view]')) {
+    button.addEventListener('click', () => {
+      const view = button.dataset.loadoutView;
+      const all = editor.draft.slots.map((_, index) => index);
+      const visible = editor.visibleSlots ?? all;
+      const index = Number(view);
+      if (view === 'all') editor.visibleSlots = all;
+      else if (visible.length === all.length) editor.visibleSlots = [index];
+      else if (!visible.includes(index)) editor.visibleSlots = [...visible, index];
+      else if (visible.length > 1) editor.visibleSlots = visible.filter(item => item !== index);
+      if (!(editor.visibleSlots ?? all).includes(editor.index)) {
+        editor.index = editor.visibleSlots[0];
+        editor.sideId = '';
+      }
+      renderArsenalPage();
+      restoreArsenalLoadoutFocus(button);
+    });
+  }
+  for (const area of panel.querySelectorAll('[data-loadout-drop]')) {
+    const selectArea = () => edit(() => {
+      editor.index = Number(area.dataset.loadoutDrop);
+      editor.sideId = area.dataset.sideId;
+    });
+    area.addEventListener('click', event => {
+      if (!event.target.closest('button')) selectArea();
+    });
+    area.addEventListener('keydown', event => {
+      if (event.target !== area || !['Enter', ' '].includes(event.key)) return;
+      event.preventDefault();
+      selectArea();
+    });
+  }
+  for (const select of panel.querySelectorAll('[data-loadout-titan]')) {
+    select.addEventListener('change', () => edit(() => {
+      editor.draft.slots[Number(select.dataset.loadoutTitan)].titanId = select.value;
+    }));
+  }
+  for (const button of panel.querySelectorAll('[data-loadout-create-side]')) {
+    button.addEventListener('click', () => {
+      const index = Number(button.dataset.loadoutCreateSide);
+      if ((editor.draft.slots[index].sides?.length || 0) >= ARSENAL_SIDE_LIMIT) return;
+      edit(() => {
+        editor.index = index;
+        editor.sideId = window.crypto?.randomUUID?.() || `side-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        (currentSlot().sides ||= []).push({ id: editor.sideId, name: '', equipment: [] });
+      });
+      mainView.querySelector(`[data-slot="${editor.index}"][data-loadout-side-name="${CSS.escape(editor.sideId)}"]`)?.focus();
+    });
+  }
+  for (const input of panel.querySelectorAll('[data-loadout-side-name]')) {
+    input.addEventListener('input', () => {
+      const side = editor.draft.slots[Number(input.dataset.slot)].sides.find(item => item.id === input.dataset.loadoutSideName);
+      side.name = input.value;
+      const index = Number(input.dataset.slot);
+      panel.querySelector(`[data-loadout-drop="${index}"][data-side-id="${CSS.escape(side.id)}"]`)?.setAttribute('aria-label', side.name || '针对配装');
+      const draft = model.normalize(editor.draft);
+      panel.querySelector(`[data-preset-player="${index}"] [data-loadout-save]`).disabled =
+        JSON.stringify(draft.slots[index]) === JSON.stringify(editor.baseline.slots[index]);
+      panel.querySelector('[data-loadout-save-all]').disabled = JSON.stringify(draft) === JSON.stringify(editor.baseline)
+        || Boolean(model.validate(draft, gearRecordState, gearNames));
+    });
+  }
+  for (const button of panel.querySelectorAll('[data-loadout-delete-side]')) {
+    button.addEventListener('click', () => edit(() => {
+      const slot = editor.draft.slots[Number(button.dataset.slot)];
+      slot.sides = slot.sides.filter(side => side.id !== button.dataset.loadoutDeleteSide);
+      if (!slot.sides.length) delete slot.sides;
+    }));
+  }
+  for (const button of panel.querySelectorAll('[data-loadout-remove]')) {
+    button.addEventListener('click', () => {
+      const group = button.closest('[data-loadout-drop]').dataset;
+      move(button.dataset.loadoutRemove, Number(group.loadoutDrop), null, group.sideId);
+    });
+  }
+  for (const button of mainView.querySelectorAll('[data-loadout-add]')) {
+    button.addEventListener('click', () => move(button.dataset.loadoutAdd, null, editor.index, '', editor.sideId));
+  }
+  mainView.querySelector('[data-entry-add-side]')?.addEventListener('click', () => {
+    const id = mainView.querySelector('#arsenalAddGear').value;
+    if (id && !id.startsWith('T:')) move(id, null, editor.index, '', editor.sideId);
+  });
+  for (const controls of panel.querySelectorAll('[data-preset-player]')) {
+    const index = Number(controls.dataset.presetPlayer), fields = editor.presetFields[index];
+    const selectedPreset = () => editor.draft.presets.find(preset => preset.id === fields.id && (preset.owner === index || preset.owner === undefined));
+    const bind = (attribute, event, callback) => controls.querySelector(`[data-loadout-${attribute}]`)?.addEventListener(event, callback);
+    bind('preset', 'change', event => edit(() => {
+      fields.id = event.target.value;
+      fields.name = selectedPreset()?.name || '';
+    }));
+    bind('name', 'input', event => { fields.name = event.target.value; });
+    bind('apply-preset', 'click', () => edit(() => {
+      const preset = selectedPreset();
+      if (preset) editor.draft.slots[index] = model.normalize({ slots: [preset] }).slots[0];
+      if (editor.index === index) editor.sideId = '';
+    }));
+    bind('store-preset', 'click', () => {
+      const name = fields.name.trim();
+      if (!name || name.length > 60) return edit(() => { throw new Error('请输入 1～60 字的方案名称。'); });
+      const id = selectedPreset()?.owner === index ? fields.id : (window.crypto?.randomUUID?.() || `preset-${Date.now()}-${Math.random().toString(16).slice(2)}`);
+      void saveArsenalLoadout(editor, gearNames, index, { id, preset: { ...editor.draft.slots[index], name } });
+    });
+    bind('delete-preset', 'click', () => void saveArsenalLoadout(editor, gearNames, index, { id: fields.id }));
+    bind('save', 'click', () => void saveArsenalLoadout(editor, gearNames, index));
+    bind('reset', 'click', () => edit(() => {
+      const latest = model.normalize(gearRecordState.arsenalLoadouts);
+      editor.baseline.slots[index] = latest.slots[index];
+      editor.draft.slots[index] = model.normalize(latest).slots[index];
+      if (editor.index === index) editor.sideId = '';
+    }));
+  }
+
+  if (!editor.open || gearMutationInFlight || gearRecordError || !gearRecordState) return;
+  let dragged = null;
+  for (const card of mainView.querySelectorAll('[data-loadout-drag]')) {
+    card.addEventListener('dragstart', event => {
+      const { loadoutDrag: gearId, loadoutFrom: from } = card.dataset;
+      dragged = { gearId, from: from === undefined ? null : Number(from), sideId: card.dataset.sideId };
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', gearId);
+    });
+    card.addEventListener('dragend', () => {
+      dragged = null;
+      mainView.querySelectorAll('.arsenal-loadout-drag-over').forEach(target => target.classList.remove('arsenal-loadout-drag-over'));
+    });
+  }
+  for (const target of mainView.querySelectorAll('[data-loadout-drop], [data-loadout-return]')) {
+    const raw = target.dataset.loadoutDrop;
+    const to = raw === undefined ? null : Number(raw);
+    const accepts = () => dragged && (to !== null || dragged.from !== null);
+    target.addEventListener('dragover', event => {
+      if (!accepts()) return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'move';
+      target.classList.add('arsenal-loadout-drag-over');
+    });
+    target.addEventListener('dragleave', event => {
+      if (!target.contains(event.relatedTarget)) target.classList.remove('arsenal-loadout-drag-over');
+    });
+    target.addEventListener('drop', event => {
+      if (!accepts()) return;
+      event.preventDefault();
+      move(dragged.gearId, dragged.from, to, dragged.sideId, target.dataset.sideId,
+        event.target.closest('[data-loadout-before]')?.dataset.loadoutBefore);
+    });
+  }
+}
+
+async function saveArsenalLoadout(editor, gearNames, index = editor.index, presetChange = null) {
+  if (gearMutationInFlight || !gearRecordState || gearRecordError || campaignSession.changed) return;
+  gearMutationInFlight = true;
+  editor.error = '';
+  editor.notice = '';
+  renderGearInventoryView();
+  const model = window.ATO_ARSENAL_LOADOUT;
+  const all = index === null;
+  const slot = all || presetChange ? null : editor.draft.slots[index];
+  const adopt = saved => {
+    const latest = model.normalize(saved.arsenalLoadouts);
+    editor.draft.slots = editor.draft.slots.map((draft, i) => {
+      const useSaved = all || (i === index && slot) || JSON.stringify(draft) === JSON.stringify(editor.baseline.slots[i]);
+      return useSaved ? model.normalize({ slots: [latest.slots[i]] }).slots[0] : draft;
+    });
+    editor.draft.presets = latest.presets;
+    editor.baseline.presets = model.normalize(latest).presets;
+    editor.baseline.slots = latest.slots.map((savedSlot, i) => JSON.stringify(editor.draft.slots[i]) === JSON.stringify(savedSlot)
+      ? savedSlot : editor.baseline.slots[i]);
+    if (presetChange) editor.presetFields[index] = presetChange.preset
+      ? { id: presetChange.id, name: presetChange.preset.name } : { id: '', name: '' };
+    editor.notice = all ? '所有配装已存档。' : presetChange ? (presetChange.preset ? '方案已保存。' : '方案已删除。') : '配装已保存。';
+  };
+  const update = record => all ? model.saveAllSlots(record, editor.baseline, editor.draft, gearNames)
+    : model.saveSlot(record, editor.baseline, index, slot, presetChange, gearNames);
+  try {
+    adopt(await mutateCampaignRecordState(update));
+  } catch (error) {
+    await loadGearRecordState();
+    editor.error = `配装保存失败：${String(error.message || error)}`;
+    if (!gearRecordError && gearRecordState) {
+      try { if (update(gearRecordState) === null) { adopt(gearRecordState); editor.error = ''; } } catch { /* Keep the original failure. */ }
+    }
+  } finally {
+    gearMutationInFlight = false;
+    renderGearInventoryView();
+  }
 }
 
 function renderArsenalPage() {
   currentTab = 'arsenal';
   mainView.classList.remove('tech-tree-view');
+  const browseScroll = mainView.querySelector('.arsenal-browse-scroll')?.scrollTop || 0;
+  const sideScroll = new Map([...mainView.querySelectorAll('[data-side-row]')].map(row => [row.dataset.sideRow, row.scrollLeft]));
+  const controlsScroll = [...mainView.querySelectorAll('.arsenal-loadout-main-actions')].map(row => row.scrollLeft);
   renderCycleButton();
   requestGearRecordState();
   const catalog = arsenalCatalog();
   const query = search.value.trim().toLowerCase();
-  const choices = catalog.filter(item => arsenalItemMatchesFilters(item, query));
-  const recorded = catalog.filter(item => item.recorded);
-  const visible = choices.filter(item => item.recorded && (!arsenalOnlyStock || item.quantity > 0));
-  const totalQuantity = recorded.reduce((sum, item) => sum + item.quantity, 0);
+  const stocked = catalog.filter(item => item.quantity > 0);
+  const visible = stocked.filter(item => arsenalItemMatchesFilters(item, query) && arsenalItemIsAvailable(item));
+  const totalQuantity = stocked.reduce((sum, item) => sum + item.quantity, 0);
   const visibleQuantity = visible.reduce((sum, item) => sum + item.quantity, 0);
-  count.textContent = `军械库 ${recorded.length} 种 / ${totalQuantity} 件`;
+  count.textContent = `军械库 ${stocked.length} 种 / ${totalQuantity} 件`;
   const parts = [
     ['arm_1h', '单手武器'], ['arm_2h', '双手武器'], ['arm_3h', '三手武器'],
     ['arm_1_2h', '单手 / 双手武器'], ['arm_all_h', '可变手数武器'],
@@ -2219,61 +2722,123 @@ function renderArsenalPage() {
   ];
   const filterParts = [['arm', '全部武器'], ...parts.filter(([key]) => key !== 'arm')];
   const optionHtml = (value, label, selected) => `<option value="${esc(value)}" ${value === selected ? 'selected' : ''}>${esc(label)}</option>`;
-  if (!choices.some(item => item.gearId === arsenalSelectedGear)) arsenalSelectedGear = choices[0]?.gearId || '';
-  const unavailable = gearMutationInFlight || !gearRecordState || Boolean(gearRecordError);
-  let html = `<div class="gear-page arsenal-page"><div class="gear-filter-bar arsenal-toolbar">
+  const entryOptions = arsenalEntryOptions(catalog, optionHtml);
+  const entryPlaceholder = () => arsenalShowEntryNames ? '搜索装备名称或编号' : '搜索装备编号';
+  const unavailable = gearMutationInFlight || !gearRecordState || Boolean(gearRecordError) || campaignSession.changed;
+  const editor = arsenalLoadoutDraft();
+  const gearNames = arsenalGearNames(catalog);
+  const activeSlot = editor.draft.slots[editor.index];
+  const activeSide = editor.open ? activeSlot.sides?.find(side => side.id === editor.sideId) : null;
+  const sideButtonDisabled = () => unavailable || !arsenalSelectedGear || arsenalSelectedGear.startsWith('T:')
+    || activeSide.equipment.includes(arsenalSelectedGear);
+  const loadout = editor.open ? { slot: activeSlot, side: activeSide, disabled: unavailable, gearNames,
+    allocated: window.ATO_ARSENAL_LOADOUT.equipmentCounts(editor.draft.slots) } : null;
+  let html = `<div class="gear-page arsenal-page${editor.open ? ' is-loadout-open' : ''}"><div class="gear-filter-bar arsenal-toolbar">
     <label>装备分类 <select data-arsenal-filter="part" aria-label="装备分类">${optionHtml('', '全部分类', arsenalPartFilter)}${filterParts.map(([key, label]) => optionHtml(key, label, arsenalPartFilter)).join('')}</select></label>
     <label>所属循环 <select data-arsenal-filter="cycle" aria-label="所属循环">${optionHtml('', '全部循环', arsenalCycleFilter)}${data.pages.map(page => optionHtml(MAIN_CYCLE_BY_TECH_CYCLE[page.key], page.label, arsenalCycleFilter)).join('')}</select></label>
-    <label class="gear-filter-option"><input type="checkbox" data-arsenal-filter="stock" ${arsenalOnlyStock ? 'checked' : ''}>只显示有库存</label>
+    <label class="gear-filter-option"><input type="checkbox" data-arsenal-filter="available" ${arsenalOnlyAvailable ? 'checked' : ''}>仅显示可用装备</label>
     <form class="arsenal-add">
-    <label class="arsenal-add-gear">补录装备 <select id="arsenalAddGear" aria-label="补录装备" ${unavailable || !choices.length ? 'disabled' : ''}>${choices.length ? choices.map(item => optionHtml(item.gearId, `${item.name} · ${item.gearId}`, arsenalSelectedGear)).join('') : '<option value="">没有符合筛选条件的装备</option>'}</select></label>
+    <label class="arsenal-add-search">搜索补录装备 <input id="arsenalAddSearch" type="search" autocomplete="off" spellcheck="false" placeholder="${entryPlaceholder()}" value="${esc(arsenalEntryQuery)}"></label>
+    <label class="gear-filter-option"><input type="checkbox" id="arsenalShowEntryNames" ${arsenalShowEntryNames ? 'checked' : ''}>补录显示装备名</label>
+    <label class="arsenal-add-gear">补录装备 <select id="arsenalAddGear" aria-label="补录装备" ${unavailable || entryOptions.empty ? 'disabled' : ''}>${entryOptions.html}</select></label>
     <label>数量 <input id="arsenalAddQuantity" type="number" min="1" max="${Number.MAX_SAFE_INTEGER}" step="1" value="${arsenalAddQuantity}" required ${unavailable ? 'disabled' : ''}></label>
-    <button type="submit" class="tool-btn" ${unavailable || !choices.length ? 'disabled' : ''}>加入军械库</button>
+    <button type="submit" class="tool-btn" ${unavailable || entryOptions.empty ? 'disabled' : ''}>加入军械库</button>
+    ${activeSide ? `<button type="button" class="tool-btn" data-entry-add-side ${sideButtonDisabled() ? 'disabled' : ''}>加入针对配装</button>` : ''}
     <button type="button" class="tool-btn" data-arsenal-refresh ${gearRecordLoadInFlight || gearMutationInFlight ? 'disabled' : ''}>刷新</button>
     </form>
-  </div><div class="arsenal-meta"><span>制造自动入库；所有装备均可补录，手动增减仅调整库存。</span><span class="arsenal-summary">显示 ${visible.length}/${recorded.length} 种 · ${visibleQuantity} 件</span></div>`;
+  </div>`;
   html += gearMutationInFlight ? '<div class="arsenal-message" role="status">正在保存军械库...</div>' : arsenalMessageHtml();
+  const loadoutPanel = renderArsenalLoadout(editor, gearNames, unavailable, optionHtml);
+  html += `<div class="arsenal-workspace">${editor.open ? loadoutPanel : ''}
+    <section class="arsenal-browse" data-loadout-return aria-labelledby="arsenalBrowseTitle">
+      <header class="arsenal-browse-header">
+        <div class="arsenal-browse-heading">${editor.open ? '' : loadoutPanel}<h2 id="arsenalBrowseTitle">装备浏览</h2></div>
+        <span>显示 ${visible.length}/${stocked.length} 种 · ${visibleQuantity} 件</span>
+      </header>
+      <div class="arsenal-browse-scroll">`;
   if (gearRecordError) html += `<div class="gear-empty">军械库读取失败：${esc(gearRecordError)}。请点击刷新重试。</div>`;
   else if (!gearRecordState) html += '<div class="gear-empty">正在读取军械库...</div>';
-  else if (!recorded.length) html += '<div class="gear-empty">军械库还没有装备。在“装备制造”中制造，或在上方补录已有装备。</div>';
+  else if (!stocked.length) html += '<div class="gear-empty">军械库还没有装备。在“装备制造”中制造，或在上方补录已有装备。</div>';
   else if (!visible.length) html += '<div class="gear-empty">没有符合当前筛选条件的装备。</div>';
   else {
     html += '<div class="gear-content">';
     for (const [key, label] of parts) {
       const items = visible.filter(item => item.part.key === key);
       if (!items.length) continue;
-      html += `<section class="gear-group"><div class="gear-group-header"><span class="gear-group-name">${label}</span><span class="gear-group-count">${items.length} 种 · ${items.reduce((sum, item) => sum + item.quantity, 0)} 件</span></div><div class="gear-items arsenal-items">${items.map(arsenalItemHtml).join('')}</div></section>`;
+      html += `<section class="gear-group"><div class="gear-group-header"><span class="gear-group-name">${label}</span><span class="gear-group-count">${items.length} 种 · ${items.reduce((sum, item) => sum + item.quantity, 0)} 件</span></div><div class="gear-items arsenal-items">${items.map(item => arsenalItemHtml(item, loadout)).join('')}</div></section>`;
     }
     html += '</div>';
   }
-  mainView.innerHTML = html + '</div>';
+  mainView.innerHTML = html + '</div></section></div></div>';
+  mainView.querySelector('.arsenal-browse-scroll').scrollTop = browseScroll;
+  mainView.querySelectorAll('.arsenal-loadout-main-actions').forEach((row, index) => { row.scrollLeft = controlsScroll[index] || 0; });
+  for (const row of mainView.querySelectorAll('[data-side-row]')) {
+    row.scrollLeft = sideScroll.get(row.dataset.sideRow) || 0;
+    const selected = row.querySelector('[data-selected="true"]');
+    if (selected) {
+      const rowBounds = row.getBoundingClientRect(), groupBounds = selected.getBoundingClientRect();
+      if (groupBounds.left < rowBounds.left) row.scrollLeft += groupBounds.left - rowBounds.left;
+      else if (groupBounds.right > rowBounds.right) row.scrollLeft += groupBounds.right - rowBounds.right;
+    }
+  }
+  bindArsenalLoadout(editor, gearNames);
   mainView.querySelectorAll('[data-arsenal-filter]').forEach(input => input.addEventListener('change', () => {
     if (input.dataset.arsenalFilter === 'part') arsenalPartFilter = input.value;
     if (input.dataset.arsenalFilter === 'cycle') arsenalCycleFilter = input.value;
-    if (input.dataset.arsenalFilter === 'stock') arsenalOnlyStock = input.checked;
+    if (input.dataset.arsenalFilter === 'available') arsenalOnlyAvailable = input.checked;
     renderArsenalPage();
   }));
   mainView.querySelector('[data-arsenal-refresh]').addEventListener('click', () => void loadGearRecordState());
-  mainView.querySelector('#arsenalAddGear').addEventListener('change', event => { arsenalSelectedGear = event.target.value; });
+  const addGear = mainView.querySelector('#arsenalAddGear');
+  const entrySearch = mainView.querySelector('#arsenalAddSearch');
+  const addButton = mainView.querySelector('.arsenal-add button[type="submit"]');
+  const addSideButton = mainView.querySelector('[data-entry-add-side]');
+  const refreshEntryOptions = () => {
+    const options = arsenalEntryOptions(catalog, optionHtml);
+    addGear.innerHTML = options.html;
+    addGear.disabled = addButton.disabled = unavailable || options.empty;
+    if (activeSide && addSideButton) addSideButton.disabled = sideButtonDisabled();
+  };
+  entrySearch.addEventListener('input', () => {
+    arsenalEntryQuery = entrySearch.value;
+    refreshEntryOptions();
+  });
+  entrySearch.addEventListener('keydown', event => { if (event.key === 'Enter') event.preventDefault(); });
+  mainView.querySelector('#arsenalShowEntryNames').addEventListener('change', event => {
+    arsenalShowEntryNames = event.target.checked;
+    entrySearch.placeholder = entryPlaceholder();
+    refreshEntryOptions();
+  });
+  addGear.addEventListener('change', event => {
+    arsenalSelectedGear = event.target.value;
+    if (activeSide && addSideButton) addSideButton.disabled = sideButtonDisabled();
+  });
   mainView.querySelector('#arsenalAddQuantity').addEventListener('input', event => {
     const value = Number(event.target.value);
     arsenalAddQuantity = Number.isSafeInteger(value) && value > 0 ? value : 1;
   });
   mainView.querySelector('.arsenal-add').addEventListener('submit', event => {
     event.preventDefault();
-    const gearId = mainView.querySelector('#arsenalAddGear').value;
+    if (addGear.disabled) return;
+    const gearId = addGear.value;
     const quantity = Number(mainView.querySelector('#arsenalAddQuantity').value);
     void adjustArsenal(gearId, quantity);
   });
   mainView.querySelectorAll('[data-arsenal-delta]').forEach(button => button.addEventListener('click', () => {
     void adjustArsenal(button.dataset.arsenalGear, Number(button.dataset.arsenalDelta));
   }));
-  mainView.querySelectorAll('.gear-card-thumb[data-gear-img]').forEach(button => {
-    button.addEventListener('click', () => showGearImageModal(button.dataset.gearImg, button.dataset.gearName));
-    button.querySelector('img').addEventListener('error', () => {
+  mainView.querySelectorAll('[data-arsenal-details]').forEach(button => {
+    const item = catalog.find(gear => gear.gearId === button.dataset.arsenalDetails);
+    if (!item) return;
+    button.addEventListener('click', () => showArsenalGearDetails(item, unavailable));
+    const face = button.querySelector('.arsenal-card-face');
+    const showFallback = () => {
+      face.remove();
       button.classList.add('empty');
-      button.textContent = button.dataset.gearName;
-    }, { once: true });
+      button.querySelector('.arsenal-thumbnail-card').prepend(document.createTextNode(item.baseGearId));
+    };
+    if (face?.complete && !face.naturalWidth) showFallback();
+    else face?.addEventListener('error', showFallback, { once: true });
   });
 }
 
@@ -2292,7 +2857,7 @@ async function adjustArsenal(gearId, delta) {
       recordState.arsenal = window.ATO_GEAR_INVENTORY.adjust(recordState.arsenal, gearId, delta);
       return recordState;
     });
-    arsenalMessage = `${getGearName(gearId)} 的数量已保存。`;
+    arsenalMessage = `${getGearName(window.ATO_GEAR_INVENTORY.baseGearId(gearId))} 的数量已保存。`;
     arsenalMessageError = false;
   } catch (error) {
     arsenalMessage = `军械库保存失败：${String(error.message || error)}`;
@@ -3036,6 +3601,7 @@ let gearRecordLoadInFlight = false;
 let gearRecordError = '';
 let gearCraftPlans = new Map();
 const gearCraftOperations = new Map();
+const gearAscensionOperations = new Map();
 const gearRecordSyncChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('ato-record-sync-v1') : null;
 const structureTechMapSyncChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('ato-map-sync-v1') : null;
 const dashboardSyncChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('ato-dashboard-sync-v1') : null;
@@ -3046,11 +3612,15 @@ let gearGroupByPart = false;
 let gearMutationInFlight = false;
 let arsenalPartFilter = '';
 let arsenalCycleFilter = '';
-let arsenalOnlyStock = false;
+let arsenalOnlyAvailable = true;
 let arsenalSelectedGear = '';
+let arsenalEntryQuery = '';
+let arsenalShowEntryNames = false;
 let arsenalAddQuantity = 1;
 let arsenalMessage = '';
 let arsenalMessageError = false;
+let arsenalLoadoutEditor = null;
+const ARSENAL_SIDE_LIMIT = 4;
 
 function isPlainObject(value) {
   return value && typeof value === 'object' && !Array.isArray(value);
@@ -3716,6 +4286,7 @@ async function loadCampaignTechnologySection() {
       gearRecordState = latestRecord.state;
       gearRecordRevision = latestRecord.revision;
       gearRecordError = '';
+      renderGearInventoryView();
       refreshExplorationTechLockDisplay();
     }
     if (flushQueuedSave) queueCampaignTechnologySave();
@@ -4941,7 +5512,7 @@ loadDictionaryData().then(async (appData) => {
 </script>
   <script src="../assets/ato-terms.js?v=20261110-loop-terms"></script>
   <script src="../assets/english-terms.js?v=20261011-english4"></script>
-  <script src="../assets/english-ui.js?v=20261011-english4"></script>
+  <script src="../assets/english-ui.js?v=20261118-save-all-loadouts1"></script>
   <script src="../assets/english-language.js?v=20261011-english4"></script>
   <script src="../assets/term-language.js?v=20261114-picker-label1"></script>
 </body>

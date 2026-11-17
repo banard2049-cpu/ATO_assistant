@@ -64,7 +64,8 @@
   };
 
   const index = language => language === 'official' ? 1 : language === 'en' ? 2 : 0;
-  const skyseerGear = [['天涯', '摘天之盔', 'Skyreach'], ['揽月', '视野边界', 'Horizon’s Edge']];
+  // 顺序与 reward-images.json 的 skyseer 一致：0 = ZJ1240 Skyreach（头盔），1 = ZJ1239 Horizon's Edge（镰刀）。
+  const skyseerGear = [['揽月', '摘天之盔', 'Skyreach'], ['天涯', '视野边界', 'Horizon’s Edge']];
   const api = {
     ui: (key, language) => ui[key][index(language)],
     boss,
