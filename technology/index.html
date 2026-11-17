@@ -1062,7 +1062,7 @@ button.gear-group-name:hover {
 <link rel="stylesheet" href="../assets/theme.css?v=20261001">
 <link rel="stylesheet" href="editorial.css?v=20261001-cycle-menu">
 <link rel="stylesheet" href="tech-tree.css?v=20261002-content-paper">
-<link rel="stylesheet" href="arsenal.css?v=20261118-loadout-card-match">
+<link rel="stylesheet" href="arsenal.css?v=20261118-ascend-core1">
 <link rel="stylesheet" href="../assets/card-art.css?v=20261017-corners1">
 <script src="../assets/card-art.js?v=20261017-corners1" defer></script>
   <script src="../story/data/english-source-data.js?v=20261011-english4"></script>
@@ -1140,6 +1140,7 @@ button.gear-group-name:hover {
   <script src="structure-tech-rules.js?v=20261117-resource-types1"></script>
   <script src="structure-tech-client.js?v=20261019-negotiation-rows2"></script>
 <script src="gear-inventory.js?v=20261117-future-gear"></script>
+<script src="ascension-core.js?v=20261118-core-cost1"></script>
 <script src="arsenal-loadout.js?v=20261118-save-all-loadouts1"></script>
 <script>
 const TECH_DICTIONARY_URL = 'tech_card_dictionary.min.json';
@@ -2236,6 +2237,8 @@ function showArsenalGearDetails(item, disabled) {
   const operationKey = campaignSession.changed ? null : gearCraftOperationKey(`ascension:${item.gearId}`);
   const pending = gearAscensionOperations.has(operationKey);
   const buttonLabel = `登升 1 件至循环 ${target.slice(1)}`;
+  const coreCycle = item.ascendedCycle || item.originCycle;
+  const coreName = target ? window.ATO_ASCENSION_CORE.name(coreCycle) : '';
   const src = gearImageSrc(item.baseGearId);
   const dialog = document.createElement('dialog');
   dialog.className = 'arsenal-detail';
@@ -2251,6 +2254,7 @@ function showArsenalGearDetails(item, disabled) {
       <span>${item.ascendedCycle ? `登升至循环 ${esc(item.ascendedCycle.slice(1))} · ` : ''}现有 ${item.quantity} 件</span>
       ${target ? `<button class="tool-btn" type="button" data-arsenal-ascend ${disabled || !operationKey || (!item.quantity && !pending) ? 'disabled' : ''}>${pending ? '重试登升' : buttonLabel}</button>` : ''}
     </div>
+    ${target ? `<p class="arsenal-detail-core">登升需消耗 ${esc(coreName)} ×1<span data-core-balance></span></p>` : ''}
     <div class="arsenal-detail-status" role="status"></div>`;
   const face = dialog.querySelector('.arsenal-card-face');
   const showFallback = () => {
@@ -2260,6 +2264,18 @@ function showArsenalGearDetails(item, disabled) {
   if (face?.complete && !face.naturalWidth) showFallback();
   else face?.addEventListener('error', showFallback, { once: true });
   const button = dialog.querySelector('[data-arsenal-ascend]');
+  const balanceNote = dialog.querySelector('[data-core-balance]');
+  // 余额读的是幻忆记录表，读不到时既不拦人也不假装有货，交给登升时的校验兜底。
+  if (target && balanceNote) {
+    void ascensionCoreBalance(coreCycle).then(balance => {
+      if (!dialog.isConnected || balance == null) return;
+      balanceNote.textContent = ` · 幻忆记录表余额 ${balance}`;
+      if (balance < 1 && !pending) {
+        button.disabled = true;
+        balanceNote.textContent += '，请先在剧场货舱里登记';
+      }
+    });
+  }
   button?.addEventListener('click', async () => {
     if (gearMutationInFlight) return;
     button.disabled = true;
@@ -2279,24 +2295,80 @@ function showArsenalGearDetails(item, disabled) {
   dialog.showModal();
 }
 
+// 升华核心的余额记在幻忆记录表（theatre section）的剧场货舱里，军械库只读取和扣减，
+// 不另存一份，避免同一个数字要在两处维护。
+async function readTheatreRecord() {
+  const response = await fetch(CAMPAIGN_THEATRE_URL, { cache: 'no-store' });
+  const payload = campaignSession.accept(await response.json().catch(() => null));
+  if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+  return { state: payload.state || {}, revision: Math.max(0, Number(payload.revision) || 0) };
+}
+async function writeTheatreRecord(state, expectedRevision) {
+  const response = await fetch(CAMPAIGN_THEATRE_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ section: 'theatre', state, expectedRevision, expectedAccountId: campaignSession.accountId }),
+  });
+  const payload = campaignSession.accept(await response.json().catch(() => null));
+  if (response.status === 409 && payload?.code === 'SAVE_CONFLICT') return { conflict: true };
+  if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+  return { revision: Math.max(0, Number(payload.revision) || expectedRevision + 1) };
+}
+// delta < 0 扣一件（余额不足会抛错），delta > 0 退回一件。
+async function changeAscensionCore(cycle, delta) {
+  const core = window.ATO_ASCENSION_CORE;
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const latest = await readTheatreRecord();
+    const next = delta < 0 ? core.spend(latest.state, cycle) : core.refund(latest.state, cycle);
+    const saved = await writeTheatreRecord(next, latest.revision);
+    if (!saved.conflict) return saved.revision;
+  }
+  throw new Error('幻忆记录表正在另一页面更新，请稍后重试。');
+}
+async function ascensionCoreBalance(cycle) {
+  try {
+    return window.ATO_ASCENSION_CORE.amount((await readTheatreRecord()).state, cycle);
+  } catch {
+    return null;
+  }
+}
+
 async function ascendArsenalGear(item, target, operationKey) {
   if (!gearRecordState || gearRecordError || campaignSession.changed) throw new Error('军械库尚未连接，请刷新后重试。');
   const inventory = window.ATO_GEAR_INVENTORY;
   const loadouts = window.ATO_ARSENAL_LOADOUT;
+  // 规则书：升华一张独特装备卡牌要花费一个对应故事集的升华核心（迷宫升华核心把
+  // 故事集 I 升到 II，以此类推），所以扣的是装备当前所在故事集的核心。
+  const coreCycle = item.ascendedCycle || item.originCycle;
+  const coreName = window.ATO_ASCENSION_CORE.name(coreCycle);
   const operation = gearAscensionOperations.get(operationKey) || {
     id: window.crypto?.randomUUID?.() || `ascend-${Date.now()}-${Math.random().toString(16).slice(2)}`,
-    userId: activeAccountId, accountId: campaignSession.accountId, gearId: item.gearId,
+    userId: activeAccountId, accountId: campaignSession.accountId, gearId: item.gearId, coreCycle,
   };
   gearMutationInFlight = true;
   try {
-    await mutateCampaignRecordState(record => {
-      const reserved = loadouts.equipmentCounts(loadouts.normalize(record.arsenalLoadouts).slots).get(item.gearId) || 0;
-      record.arsenal = inventory.ascend(record.arsenal, item.gearId, item.originCycle, reserved);
-      gearAscensionOperations.set(operationKey, operation);
-      return record;
-    }, operation);
+    // 上一次可能已经把装备写进记录表却丢了响应，收据在就不要再扣一次核心。
+    const before = await readLatestRecordState();
+    if (!before.state._gearCraftReceipts?.[operation.id]) await changeAscensionCore(coreCycle, -1);
+    try {
+      await mutateCampaignRecordState(record => {
+        const reserved = loadouts.equipmentCounts(loadouts.normalize(record.arsenalLoadouts).slots).get(item.gearId) || 0;
+        record.arsenal = inventory.ascend(record.arsenal, item.gearId, item.originCycle, reserved);
+        gearAscensionOperations.set(operationKey, operation);
+        return record;
+      }, operation);
+    } catch (error) {
+      // 装备没落库就把核心退回；确认不了时不下结论，交给玩家重试后核对。
+      try {
+        const latest = await readLatestRecordState();
+        if (!latest.state._gearCraftReceipts?.[operation.id]) await changeAscensionCore(coreCycle, 1);
+      } catch {
+        throw new Error(`${error.message || error} 本次登升状态未确认，请重试；若仍失败，请在幻忆记录表里核对${coreName}余额。`);
+      }
+      throw error;
+    }
     gearAscensionOperations.delete(operationKey);
-    arsenalMessage = `${item.name} 已登升 1 件至循环 ${target.slice(1)}。`;
+    arsenalMessage = `${item.name} 已登升 1 件至循环 ${target.slice(1)}，消耗${coreName} ×1。`;
     arsenalMessageError = false;
   } finally {
     gearMutationInFlight = false;
@@ -3331,6 +3403,7 @@ const CAMPAIGN_STORAGE_URL = '../api/campaign-state.php';
 const CAMPAIGN_TECH_URL = `${CAMPAIGN_STORAGE_URL}?section=technology`;
 const CAMPAIGN_DASHBOARD_URL = `${CAMPAIGN_STORAGE_URL}?section=dashboard`;
 const CAMPAIGN_RECORD_URL = `${CAMPAIGN_STORAGE_URL}?section=record`;
+const CAMPAIGN_THEATRE_URL = `${CAMPAIGN_STORAGE_URL}?section=theatre`;
 const MAIN_CYCLE_BY_TECH_CYCLE = { cycle1: 'c1', cycle2: 'c2', cycle3: 'c3', cycle4: 'c4', cycle5: 'c5' };
 const TECH_CYCLE_BY_MAIN_CYCLE = { c1: 'cycle1', c2: 'cycle2', c3: 'cycle3', c4: 'cycle4', c5: 'cycle5' };
 const PRODUCTION_CYCLE_TO_RECORD_CYCLE = {
@@ -5512,7 +5585,7 @@ loadDictionaryData().then(async (appData) => {
 </script>
   <script src="../assets/ato-terms.js?v=20261110-loop-terms"></script>
   <script src="../assets/english-terms.js?v=20261011-english4"></script>
-  <script src="../assets/english-ui.js?v=20261118-save-all-loadouts1"></script>
+  <script src="../assets/english-ui.js?v=20261118-ascend-core1"></script>
   <script src="../assets/english-language.js?v=20261011-english4"></script>
   <script src="../assets/term-language.js?v=20261114-picker-label1"></script>
 </body>
