@@ -36,6 +36,22 @@ test('implicit quantities on either alternative and output choices are independe
   assert.deepEqual(gains.map((item) => item.gains[0]), [{ resource: 'cyclopeanMetal', amount: 1 }, { resource: 'chimericTar', amount: 1 }]);
 });
 
+test('Theban Trader trades Raw Ambrosia and limits the Friendly reward to Mortal or Primordial resources', () => {
+  const menu = options.merchant(dataset.cards['c1:13400']);
+  const [reward] = menu.rewards;
+  assert.deepEqual(reward.choices, ['trireme', 'monument', 'armament', 'muscleCluster', 'infusedMechanism', 'calcifiedKnuckle', 'fleshyMantle']);
+  assert.ok(menu.trades.some(trade => trade.costs[0].resource === 'rawAmbrosia'));
+  assert.ok(menu.trades.some(trade => trade.gains[0].resource === 'rawAmbrosia'));
+
+  const record = { resources: { 'c1-rawAmbrosia': 4 } };
+  assert.throws(() => options.claimMerchantReward(record, 'c1', '13400', reward.id, 'rawAmbrosia', dataset), /请选择该商人提供的奖励资源/);
+  for (const resource of ['trireme', 'muscleCluster']) {
+    const result = options.claimMerchantReward(record, 'c1', '13400', reward.id, resource, dataset);
+    assert.equal(result.record.resources[key('c1', resource)], 1);
+    assert.deepEqual(options.undoMerchantReward(result.record, result.receipt), record);
+  }
+});
+
 test('trades count exchange categories, allow unlimited quantities, and persist the five-category limit', () => {
   const menu = options.merchant(dataset.cards['c1:13400']);
   const initial = { resources: Object.fromEntries(Object.keys(dataset.cycles.c1.resources).map((id) => [key('c1', id), 100])),

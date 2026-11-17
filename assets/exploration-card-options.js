@@ -6,6 +6,7 @@
   "use strict";
 
   const MERCHANTS = { c1: "13400", c2: "13640", c3: "13537", c4: "9328", c5: "10309" };
+  const AMBROSIA_RESOURCES = new Set(["rawAmbrosia", "violentAmbrosia", "frozenAmbrosia", "mutableAmbrosia", "oxidizedAmbrosia"]);
   const RESOURCE_NAMES = {
     "trireme": "trireme", "monument": "monument", "armament": "armament", "raw ambrosia": "rawAmbrosia",
     "muscle cluster": "muscleCluster", "infused mechanism": "infusedMechanism", "calcified knuckle bone": "calcifiedKnuckle", "fleshy mantle": "fleshyMantle",
@@ -76,11 +77,12 @@
       if (!item.badge && /^Trading:\s*You may exchange \(up to 5 times\):\s*$/i.test(item.text || "")) manualIndexes.push(index);
     });
     const offered = [...new Set(trades.flatMap(trade => [...trade.costs, ...trade.gains].map(item => item.resource)))];
+    const rewardChoices = offered.filter(resource => !AMBROSIA_RESOURCES.has(resource));
     const rewards = (card.manual || []).flatMap((item, index) => {
       const match = String(item.text || "").match(/^选择并获得(\d+)个商人提供的凡间或始祖资源[。.]?$/)
         || String(item.text || "").match(/^Gain (\d+) Mortal or Primordial resource chosen from the ones offered by the Trader[.]?$/i);
       return match ? [{ id: `manual:${index}`, manualIndex: index, text: item.text, badge: item.badge || "", condition: item.condition || null,
-        amount: Number(match[1]), choices: offered }] : [];
+        amount: Number(match[1]), choices: rewardChoices }] : [];
     });
     return { cardId: String(card.cardId || card.id), cycleId: card.cycleId, trades, rewards, limit: 5, manualIndexes: manualIndexes.sort((a, b) => a - b) };
   }

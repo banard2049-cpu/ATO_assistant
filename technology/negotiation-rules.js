@@ -160,7 +160,7 @@
     return integer(scoped ?? (!ctx.record?.cycle || ctx.record.cycle === cycleOf(ctx) ? ctx.record?.[type] : undefined) ?? 0);
   }
   function resourceFields(ctx, action, helpers) {
-    const cycle = cycleOf(ctx), entries = helpers.tradeResources[cycle].slice(0, 4).map(([id, label]) => [`${cycle}-${id}`, label]);
+    const cycle = cycleOf(ctx), entries = helpers.mortalResources[cycle].map(([id, label]) => [`${cycle}-${id}`, label]);
     if (action.contacts) entries.push(['fearEssence', '恐惧精华'], ['mazeFragment', '迷宫碎片']);
     return entries.map(([storageKey, label]) => {
       const stock = integer(ctx.record?.resources?.[storageKey] ?? 0) ?? 0;
@@ -180,8 +180,8 @@
   function describeParts(action) {
     const costs = [], effects = [];
     if (action.fate) costs.push(`命运 +${action.fate}`);
-    if (action.mortal) costs.push(`任选 ${action.mortal} 个凡人资源`);
-    if (action.contacts) costs.push('凡人资源／恐惧精华／迷宫碎片（数量=当地外交）');
+    if (action.mortal) costs.push(`任选 ${action.mortal} 个凡间资源`);
+    if (action.contacts) costs.push('凡间资源／恐惧精华／迷宫碎片（数量=当地外交）');
     if (action.sacrifice) costs.push('失去 1 泰坦或 1 祭司');
     if (action.sow) costs.push(`需播种标记至少 ${action.sow}`);
     else if (action.oasisAt) costs.push(`绿洲分支需播种标记至少 ${action.oasisAt}`);
@@ -283,6 +283,9 @@
     if (fate) deltas.push({ type: 'fate', amount: fate, cost: true });
     if (action.mortal || action.contacts) {
       const fields = resourceFields(ctx, action, helpers), amount = action.contacts ? relation(ctx, faction) : action.mortal;
+      if (Object.entries(selection).some(([id, value]) => id.startsWith('pay:') && integer(value) !== 0 && !fields.some(field => field.id === id))) {
+        return fail('INVALID_PAYMENT', '所选资源不能用于本次谈判。');
+      }
       let total = 0;
       for (const field of fields) {
         const value = integer(selection[field.id] ?? 0), before = integer(record.resources?.[field.storageKey] ?? 0);
