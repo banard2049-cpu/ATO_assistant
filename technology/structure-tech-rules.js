@@ -23,14 +23,20 @@
     orphan: "DMT的孤儿", aster: "阿斯特", dastan: "达斯坦", aktisaeos: "阿克提赛俄斯",
     oleander: "欧利安德", omorfos: "欧莫弗斯",
   };
-  // These are the printed structural-technology menus, using the same record
-  // storage keys as exploration-card trades. Each alternative is its own route.
+  const mortalResources = {
+    c1: [["trireme", "船材"], ["monument", "石筑"], ["armament", "军备"]],
+    c2: [["warTrireme", "舰材"], ["relief", "岩雕"], ["warMachine", "战械"]],
+    c3: [["hyperboreanAlloy", "冻土合金"], ["sirenshell", "塞壬壳"], ["daedalusMakina", "代达罗斯器械"]],
+    c4: [["cursedDerelict", "诅咒船骇"], ["imperialScroll", "帝国卷轴"], ["babylonianContraption", "巴比伦装置"]],
+    c5: [["atlanteanTekne", "亚特兰提斯仪器"], ["orichalcumChunk", "山铜块"], ["liquidAether", "液态以太"]],
+  };
+  // Printed trade menus list mortal resources, Ambrosia, then Primordial resources.
   const tradeResources = {
-    c1: [["trireme", "船材"], ["monument", "石筑"], ["armament", "军备"], ["rawAmbrosia", "神浆原液"], ["muscleCluster", "肌肉簇"], ["infusedMechanism", "浸液机件"], ["calcifiedKnuckle", "钙化指节骨"], ["fleshyMantle", "血肉块"]],
-    c2: [["warTrireme", "舰材"], ["relief", "岩雕"], ["warMachine", "战械"], ["violentAmbrosia", "不稳定神浆"], ["cyclopeanMetal", "独眼巨人甲胄"], ["chimericTar", "奇美拉焦油"], ["blackChain", "黑色锁链"], ["supersolidRelief", "超固体块"]],
-    c3: [["hyperboreanAlloy", "冻土合金"], ["sirenshell", "塞壬壳"], ["daedalusMakina", "代达罗斯器械"], ["frozenAmbrosia", "凝固神浆"], ["clothflesh", "肉布"], ["razorclaw", "利爪"], ["eyesCluster", "眼球簇"], ["icarianFeather", "伊卡洛斯之羽"]],
-    c4: [["cursedDerelict", "诅咒船骇"], ["imperialScroll", "帝国卷轴"], ["babylonianContraption", "巴比伦装置"], ["mutableAmbrosia", "易变神浆"], ["cursedBloatsack", "诅咒胀囊"], ["wishEmbryo", "愿望胚胎"], ["livingGold", "活化黄金"], ["oldIremFragment", "旧伊雷姆碎片"]],
-    c5: [["atlanteanTekne", "亚特兰提斯仪器"], ["orichalcumChunk", "山铜块"], ["liquidAether", "液态以太"], ["oxidizedAmbrosia", "氧化神浆"], ["hydradynamicScales", "流线鳞片"], ["photophobicFlesh", "畏光怪肉"], ["amygdalanExtract", "杏仁体提取物"], ["microwaveCell", "微波细胞"]],
+    c1: [...mortalResources.c1, ["rawAmbrosia", "神浆原液"], ["muscleCluster", "肌肉簇"], ["infusedMechanism", "浸液机件"], ["calcifiedKnuckle", "钙化指节骨"], ["fleshyMantle", "血肉块"]],
+    c2: [...mortalResources.c2, ["violentAmbrosia", "不稳定神浆"], ["cyclopeanMetal", "独眼巨人甲胄"], ["chimericTar", "奇美拉焦油"], ["blackChain", "黑色锁链"], ["supersolidRelief", "超固体块"]],
+    c3: [...mortalResources.c3, ["frozenAmbrosia", "凝固神浆"], ["clothflesh", "肉布"], ["razorclaw", "利爪"], ["eyesCluster", "眼球簇"], ["icarianFeather", "伊卡洛斯之羽"]],
+    c4: [...mortalResources.c4, ["mutableAmbrosia", "易变神浆"], ["cursedBloatsack", "诅咒胀囊"], ["wishEmbryo", "愿望胚胎"], ["livingGold", "活化黄金"], ["oldIremFragment", "旧伊雷姆碎片"]],
+    c5: [...mortalResources.c5, ["oxidizedAmbrosia", "氧化神浆"], ["hydradynamicScales", "流线鳞片"], ["photophobicFlesh", "畏光怪肉"], ["amygdalanExtract", "杏仁体提取物"], ["microwaveCell", "微波细胞"]],
   };
   function tradeRoutes(cycle) {
     const resource = tradeResources[cycle].map(([id, label]) => ({ resource: id, storageKey: `${cycle}-${id}`, label }));
@@ -818,7 +824,7 @@
     return root.ATO_EXPLORATION_TECH_RULES || (typeof require === "function" ? require("./exploration-tech-rules.js") : null);
   }
   function negotiationHelpers() {
-    return { eligibility, getAvailability, dictionaryCards, dayOf, tradeResources, prepareTrades, heroItems, heroTitle, titanItems, titleFor, saveReminders };
+    return { eligibility, getAvailability, dictionaryCards, dayOf, tradeResources, mortalResources, prepareTrades, heroItems, heroTitle, titanItems, titleFor, saveReminders };
   }
   function canNegotiate(ctx = {}) { return Boolean(negotiationRules()?.canNegotiate(ctx, negotiationHelpers())); }
   // Alliance Contacts pays one resource per point of the chosen faction's

@@ -111,6 +111,7 @@ def check_release_notes_files(failures: list[str]) -> None:
             "v3.8.12.md": "修正了地图和地图标记。",
             "v3.8.13.md": "修正探索卡加卡时会放回已移除卡牌的错误。\n\n更新资源包。",
             "v3.9.0.md": "科技卡修正。\n\n地图矢量化。",
+            "v3.11.5.md": "修正神浆归类",
         }
         if path.name in short_notices:
             if text.strip() != short_notices[path.name]:
@@ -132,7 +133,9 @@ def check_release_notes_files(failures: list[str]) -> None:
         if path.name in {"v3.7.5-rc.1.md", "v3.7.5.md", "v3.8.0.md", "v3.8.14-rc.1.md", "v3.8.14-rc.2.md",
                          "v3.9.1-rc.1.md", "v3.9.1-rc.2.md", "v3.9.1-rc.3.md",
                          "v3.9.1-rc.4.md", "v3.9.1-rc.5.md", "v3.9.1.md",
-                         "v3.9.3.md", "v3.9.4.md", "v3.9.5-rc.1.md", "v3.10.0.md", "v3.10.1.md"}:
+                         "v3.9.3.md", "v3.9.4.md", "v3.9.5-rc.1.md", "v3.10.0.md", "v3.10.1.md",
+                         "v3.10.3.md", "v3.10.4.md", "v3.10.5.md", "v3.10.6-rc.1.md", "v3.10.6.md",
+                         "v3.11.3.md", "v3.11.4.md"}:
             continue
         # Earlier announcements were intentionally brief; require the structured
         # format only for releases made after that convention was introduced.

@@ -8,6 +8,7 @@ const dictionary = require('../technology/tech_card_dictionary.min.json');
 const copy = value => JSON.parse(JSON.stringify(value));
 const factions = { c1: 'minoians', c2: 'helots', c3: 'sunheirs', c4: 'wasters', c5: 'followersOfArete' };
 const other = { c1: 'labyrinthians', c2: 'cyclopes', c3: 'delphians', c4: 'aristotelians', c5: 'cycladeanProtectorate' };
+const ambrosiaKeys = { c1: 'c1-rawAmbrosia', c2: 'c2-violentAmbrosia', c3: 'c3-frozenAmbrosia', c4: 'c4-mutableAmbrosia', c5: 'c5-oxidizedAmbrosia' };
 function fixture(key, actionIndex = 0) {
   const card = dictionary.cards.find(card => card.key === key);
   assert.ok(card, key);
@@ -63,7 +64,7 @@ test('negotiation rows split printed payments from gains for the timeline tech l
   assert.equal(rhetoric.effectLabel, '遣散陌生人');
   assert.equal(rhetoric.effectDetail, '陌生人 -1');
   const diplomacy = action('diplomatic relations', 'negotiate-diplomacy');
-  assert.match(diplomacy.costLabel, /任选 4 个凡人资源/);
+  assert.match(diplomacy.costLabel, /任选 4 个凡间资源/);
   assert.doesNotMatch(diplomacy.costLabel, /外交 \+1/);
   assert.equal(diplomacy.effectDetail, '当地派系外交 +1');
   const relief = action('refugee relief effort', 'negotiate-refugees');
@@ -106,6 +107,15 @@ test('town trade uses the printed better rates, live stock, one fate and at most
     assert.equal(result.event.status, 'completed');
     const four = { trades: action.tradeRoutes.slice(0, 4).map(route => ({ routeId: route.id, count: 1 })) };
     assert.equal(execute(ctx, 0, four).code, 'TRADE_LIMIT');
+    const ambrosia = ambrosiaKeys[ctx.cycle];
+    for (const side of ['costs', 'gains']) {
+      const route = action.tradeRoutes.find(item => item[side][0].storageKey === ambrosia);
+      assert.ok(route, `${key} has a printed route with Ambrosia in ${side}`);
+      const exchange = execute(ctx, 0, { trades: [{ routeId: route.id, count: 1 }] });
+      const delta = route[side][0].amount * (side === 'costs' ? -1 : 1);
+      assert.equal(exchange.ok, true, exchange.message);
+      assert.equal(exchange.record.resources[ambrosia], ctx.record.resources[ambrosia] + delta);
+    }
     ctx.record.resources[action.tradeRoutes[0].costs[0].storageKey] = 0;
     assert.equal(execute(ctx).code, 'INSUFFICIENT_RESOURCES');
   }
@@ -150,6 +160,42 @@ test('diplomacy requires the correct local faction, exact mixed payment, and res
   const contacts = fixture('alliance contacts');
   contacts.record.diplomacy['c2-helots'] = '7';
   assert.equal(execute(contacts).code, 'DIPLOMACY_CONDITION');
+});
+
+test('negotiations that cost mortal resources reject every cycle’s Ambrosia and accept mixed eligible payments', () => {
+  for (const [key, index, amount, mortal] of [
+    ['diplomatic relations', 0, 4, ['trireme', 'monument', 'armament']],
+    ['alliance contacts', 0, 4, ['warTrireme', 'relief', 'warMachine']],
+    ['delphian diplomatic relations', 0, 4, ['hyperboreanAlloy', 'sirenshell', 'daedalusMakina']],
+    ['plutocratic diplomacy', 0, 6, ['cursedDerelict', 'imperialScroll', 'babylonianContraption']],
+    ['grassroots diplomacy', 0, 4, ['atlanteanTekne', 'orichalcumChunk', 'liquidAether']],
+    ['grassroots diplomacy', 1, 12, ['atlanteanTekne', 'orichalcumChunk', 'liquidAether']],
+  ]) {
+    const ctx = fixture(key, index), { action } = choices(ctx, index);
+    const eligible = mortal.map(id => `${ctx.cycle}-${id}`);
+    const contacts = key === 'alliance contacts';
+    if (contacts) eligible.push('fearEssence', 'mazeFragment');
+    const mixed = { [`pay:${eligible[0]}`]: 2,
+      ...(contacts ? { 'pay:fearEssence': 1, 'pay:mazeFragment': 1 } : { [`pay:${eligible[1]}`]: amount - 2 }) };
+    const label = `${key}/${index}`;
+    const ambrosia = ambrosiaKeys[ctx.cycle];
+    const ambrosiaField = `pay:${ambrosia}`;
+    assert.deepEqual(action.choices.filter(item => item.type === 'number').map(item => item.id),
+      eligible.map(id => `pay:${id}`), label);
+
+    const before = copy(ctx);
+    assert.ok(before.record.resources[ambrosia] >= amount, label);
+    assert.equal(execute(ctx, index, { [`pay:${eligible[0]}`]: 0, [ambrosiaField]: amount }).code, 'INVALID_PAYMENT', label);
+    assert.equal(execute(ctx, index, { ...mixed, [ambrosiaField]: 1 }).code, 'INVALID_PAYMENT', label);
+    assert.deepEqual(copy(ctx), before, label);
+
+    const result = execute(ctx, index, { ...mixed, [ambrosiaField]: 0 });
+    assert.equal(result.ok, true, `${label}: ${result.message}`);
+    assert.equal(result.record.resources[ambrosia], before.record.resources[ambrosia], label);
+    for (const id of eligible) {
+      assert.equal(result.record.resources[id], before.record.resources[id] - (mixed[`pay:${id}`] || 0), `${label}: ${id}`);
+    }
+  }
 });
 
 test('refugee relief reads the relation tier and C2 counters without spending normal crew', () => {

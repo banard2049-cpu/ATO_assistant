@@ -613,7 +613,7 @@ test('Alliance Contacts turns its resource payment into clickable tiles', async 
       const f = negotiationFixture('alliance contacts');
       const record = f.state.campaign.sections.record.users.chosen;
       record.diplomacy = { 'c2-helots': '3' };
-      Object.assign(record.resources, { 'c2-warTrireme': 8, fearEssence: 5, mazeFragment: 1 });
+      Object.assign(record.resources, { 'c2-warTrireme': 8, 'c2-violentAmbrosia': 8, fearEssence: 5, mazeFragment: 1 });
       const panel = f.client.createActionPanel({ ...f.target, scope: 'negotiation' });
       await panel.ready;
       const use = findNode(panel, node => node.className === 'structure-tech-action-use');
@@ -622,8 +622,8 @@ test('Alliance Contacts turns its resource payment into clickable tiles', async 
         'bare number inputs give way to the resource tiles');
       const tiles = findNodes(panel, node => node.className === 'structure-tech-resource-tile');
       assert.deepEqual(tiles.map(node => node.name), ['choice:pay:c2-warTrireme', 'choice:pay:c2-relief',
-        'choice:pay:c2-warMachine', 'choice:pay:c2-violentAmbrosia', 'choice:pay:fearEssence', 'choice:pay:mazeFragment']);
-      const trireme = tiles[0], fragments = tiles[5], total = findNode(panel, node => node.className === 'structure-tech-resource-payment-total');
+        'choice:pay:c2-warMachine', 'choice:pay:fearEssence', 'choice:pay:mazeFragment']);
+      const trireme = tiles[0], fragments = tiles[4], total = findNode(panel, node => node.className === 'structure-tech-resource-payment-total');
       assert.equal(total.textContent, '已投入 0 / 3');
       trireme.listeners.click();
       trireme.listeners.click();
@@ -655,6 +655,7 @@ test('Alliance Contacts turns its resource payment into clickable tiles', async 
       assert.equal(f.state.posts.length, 1);
       const saved = f.state.campaign.sections.record.users.chosen;
       assert.equal(saved.resources['c2-warTrireme'], 6);
+      assert.equal(saved.resources['c2-violentAmbrosia'], 8);
       assert.equal(saved.resources.mazeFragment, 0);
       assert.equal(saved.diplomacy['c2-helots'], '4');
     });
