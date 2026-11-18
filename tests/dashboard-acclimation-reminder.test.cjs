@@ -1,6 +1,4 @@
-// 主控制台：今日流程顶部的「扎根」提醒。
-// 每个循环只有 Day 18 / 36 / 54 三次 Acclimation；提醒和科技到期提醒放在同一位置，
-// 使用同一套提醒条样式，并在当天给出原卡 / 换成 的角标列表。
+// 主控制台：探索步骤后的「扎根」提醒，使用科技到期提醒条的样式。
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
@@ -44,12 +42,11 @@ function setup({ day = 18, applied = false } = {}) {
   return { ctx, elements, rule };
 }
 
-test('扎根提醒放在今日流程顶部，和科技到期提醒同列', () => {
-  const reminder = source.indexOf('id="acclimationReminder"');
-  const due = source.indexOf('id="structureTechDue"');
-  const flowList = source.indexOf('id="flowList"');
-  assert.ok(reminder >= 0 && due > reminder && flowList > due);
-  const markup = source.slice(reminder, due);
+test('扎根提醒紧接探索步骤，复用科技到期提醒的样式', () => {
+  const renderFlow = extractFunction('renderFlow');
+  assert.match(renderFlow, /fragment\.appendChild\(item\);\s+if \(step\.id === "explore"\) fragment\.appendChild\(elements\.acclimationReminder\);/);
+  const markup = source.match(/<section id="acclimationReminder"[\s\S]*?<\/section>/)?.[0];
+  assert.ok(markup);
   assert.match(markup, /class="structure-tech-due acclimation-reminder"/);
   assert.match(markup, /class="structure-tech-due-item acclimation-reminder-item"/);
   assert.match(markup, /id="acclimationReminderText"/);

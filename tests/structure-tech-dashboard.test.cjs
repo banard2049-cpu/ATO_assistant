@@ -27,6 +27,8 @@ class Element {
 function harness(names, extra = {}) {
   const calls = { render: 0, track: 0, queued: 0, saves: 0, alerts: [], panels: [], timeouts: [] };
   const due = new Element('div');
+  const immediateDue = new Element('div');
+  const dueContainers = { '#structureTechDue': due, '#structureTechImmediateDue': immediateDue };
   const automation = { version: 1, events: {} };
   const archive = { activeProfileId: 'A', profiles: { A: { cycles: { c2: { state: { day: 12, techAutomation: automation, notes: 'original' } } } } } };
   const context = vm.createContext({
@@ -37,7 +39,7 @@ function harness(names, extra = {}) {
       setTimeout: (callback, delay) => { calls.timeouts.push({ callback, delay }); return calls.timeouts.length; },
       alert: message => calls.alerts.push(message) },
     document: { createElement: tag => new Element(tag), createDocumentFragment: () => new Element('fragment'),
-      querySelector: selector => selector === '#structureTechDue' ? due : null },
+      querySelector: selector => dueContainers[selector] || null },
     state: archive.profiles.A.cycles.c2.state, archive,
     cycleId: 'c2', currentCycleConfig() { return { id: context.cycleId }; },
     sessionUser: { id: 'owner' }, campaignSessionEpoch: 1,
@@ -64,7 +66,7 @@ function harness(names, extra = {}) {
     ...extra,
   });
   vm.runInContext(names.map(extract).join('\n'), context);
-  return { context, calls, due };
+  return { context, calls, due, immediateDue };
 }
 const targeting = ['structureTechTarget', 'assertStructureTechTarget', 'beforeStructureTechSubmit'];
 const dueList = ['getStructureTechContext', 'structureTechEvents', 'structureTechTarget', 'structureTechAutoKey', 'structureTechAutoLabel', 'autoCompleteStructureTechEvents', 'renderStructureTechDue'];
@@ -324,19 +326,30 @@ test('科技排期先flush本地修改，并在flush后重新验证日期和编�
   await assert.rejects(c.beforeStructureTechSubmit(target), error => error.code === 'ACCOUNT_MISMATCH');
 });
 
-test('逾期科技事项在后续日期持续提示，已完成与纯冷却不进入待办', () => {
-  const { context: c, due } = harness([...dueList]);
-  c.state.techAutomation.events = { pending: event('pending'), done: event('done', { status: 'completed' }),
+test('科技时间线待办显示在发展步骤，探索科技即时提醒仍可单独处理', () => {
+  assert.match(extract('renderFlow'), /step\.id === "development" \? '<div id="structureTechDue"/);
+  const { context: c, due, immediateDue } = harness([...dueList]);
+  c.state.techAutomation.events = {
+    tomb: event('tomb', { stepId: 'timeline', techKey: 'mnestis thesis', actionId: 'reflect', label: '阿尔戈英雄陵墓', dueDay: 12 }),
+    legacy: event('legacy', { label: '旧存档的科技待办' }),
+    immediate: event('immediate', { stepId: 'explore', techKey: 'odyssey training', label: '奥德赛训练', skipTimeline: true, dueDay: 12 }),
+    done: event('done', { status: 'completed' }),
     cooldown: event('cooldown', { kind: 'cooldown', cooldownUntilDay: 10 }) };
   c.renderStructureTechDue();
-  assert.equal(due.children.length, 1);
-  assert.match(due.children[0].children[0].textContent, /逾期.*Day 10/);
+  assert.equal(due.children.length, 2);
+  assert.match(due.children[0].children[0].textContent, /逾期.*Day 10.*旧存档的科技待办/);
+  assert.match(due.children[1].children[0].textContent, /今日.*Day 12.*阿尔戈英雄陵墓/);
+  assert.equal(due.children[1].children[1].children[0].textContent, '已手动结算');
+  assert.equal(immediateDue.children.length, 1);
+  assert.match(immediateDue.children[0].children[0].textContent, /奥德赛训练/);
   c.state.day = 40;
   c.renderStructureTechDue();
-  assert.equal(due.children.length, 1);
-  c.state.techAutomation.events.pending.status = 'completed';
+  assert.match(due.children[1].children[0].textContent, /逾期.*Day 12.*阿尔戈英雄陵墓/);
+  c.state.techAutomation.events.tomb.status = 'completed';
+  c.state.techAutomation.events.legacy.status = 'completed';
   c.renderStructureTechDue();
   assert.equal(due.hidden, true);
+  assert.equal(immediateDue.hidden, false);
 });
 
 test('登记完成沿用事件id并传日期和上下文校验，结束后恢复所有待办按钮', async () => {

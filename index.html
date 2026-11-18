@@ -2544,7 +2544,7 @@
       }
     }
   </style>
-  <link rel="stylesheet" href="./api/dashboard.css?v=20261114-theatre-nav">
+  <link rel="stylesheet" href="./api/dashboard.css?v=20261118-development-events">
   <link rel="stylesheet" href="./assets/theme.css?v=20261114-misc-settings21">
   <script src="./story/data/english-source-data.js?v=20261011-english4"></script>
   <script src="./assets/theme.js?v=20261114-light-sidebar1" defer></script>
@@ -2640,8 +2640,8 @@
           </div>
         </div>
         <div class="panel-body">
-          <!-- 扎根（Acclimation）一年只有三天，错过当前日期就无法补做。和科技到期
-               提醒放在同一位置、同一套提醒条样式，避免错过当天。 -->
+          <div id="structureTechImmediateDue" class="structure-tech-due" aria-live="polite" hidden></div>
+          <div id="flowList" class="flow-list"></div>
           <section id="acclimationReminder" class="structure-tech-due acclimation-reminder" aria-live="polite" hidden>
             <div class="structure-tech-due-item acclimation-reminder-item">
               <span id="acclimationReminderText"></span>
@@ -2650,8 +2650,6 @@
               </div>
             </div>
           </section>
-          <div id="structureTechDue" class="structure-tech-due" aria-live="polite" hidden></div>
-          <div id="flowList" class="flow-list"></div>
         </div>
       </section>
 
@@ -8951,6 +8949,7 @@
           </div>
           <p class="step-desc" ${descLanguage}>${renderStepDesc(step.desc)}</p>
           ${step.id === "end" ? '<p class="step-desc" id="roundEndStatus" role="status"></p>' : ""}
+          ${step.id === "development" ? '<div id="structureTechDue" class="structure-tech-due" aria-live="polite" hidden></div>' : ""}
           ${renderStepTrackReminders(trackReminders)}
         `;
         trackReminders.forEach((reminder, reminderIndex) => {
@@ -9043,6 +9042,7 @@
         }
         item.append(checkbox, text);
         fragment.appendChild(item);
+        if (step.id === "explore") fragment.appendChild(elements.acclimationReminder);
       });
 
       elements.flowList.appendChild(fragment);
@@ -12843,11 +12843,12 @@
     }
 
     function renderStructureTechDue() {
-      const container = document.querySelector("#structureTechDue");
-      if (!container) return;
-      container.replaceChildren();
+      const development = document.querySelector("#structureTechDue");
+      const immediate = document.querySelector("#structureTechImmediateDue");
+      if (!development || !immediate) return;
+      development.replaceChildren();
+      immediate.replaceChildren();
       const events = structureTechEvents().filter(event => event.kind !== "cooldown" && event.status !== "completed" && event.due);
-      const automatic = events.filter(event => event.auto);
       const target = structureTechTarget();
       const message = structureTechAutoMessage?.key === structureTechAutoKey(target) ? structureTechAutoMessage.text : "";
       if (message) {
@@ -12855,9 +12856,8 @@
         status.className = "structure-tech-due-status";
         status.setAttribute("role", "status");
         status.textContent = message;
-        container.appendChild(status);
+        development.appendChild(status);
       }
-      container.hidden = !events.length && !message;
       for (const event of events) {
         const row = document.createElement("div");
         row.className = `structure-tech-due-item${event.overdue ? " overdue" : ""}`;
@@ -12904,9 +12904,12 @@
           }
         }
         row.append(label, actions);
+        const container = event.stepId === "explore" ? immediate : development;
         container.appendChild(row);
       }
-      if (automatic.length) window.setTimeout(() => void autoCompleteStructureTechEvents(), 0);
+      development.hidden = !development.children.length;
+      immediate.hidden = !immediate.children.length;
+      if (events.some(event => event.auto)) window.setTimeout(() => void autoCompleteStructureTechEvents(), 0);
     }
 
     function getBriefingHref() {
@@ -13822,7 +13825,7 @@
       if (focusCurrentDay) keepCurrentDateVisible();
     }
 
-    // 今日流程顶部的扎根提醒：和科技到期提醒使用同一套提醒条。
+    // 探索步骤后的扎根提醒使用科技到期提醒条的样式。
     // 只在当前日期刚好有 Acclimation 规则时出现；已扎根后保留当天一条作确认。
     function renderAcclimationReminder() {
       const box = elements.acclimationReminder;

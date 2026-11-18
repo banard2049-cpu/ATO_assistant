@@ -793,8 +793,7 @@ button {
   font-weight: 500;
 }
 
-/* 今日流程顶部的扎根提醒：直接复用科技到期提醒条的样式（.structure-tech-due），
-   只在已扎根后把整条压灰，避免处理完还一直抢眼。 */
+/* 已扎根后将提醒显示为灰色。 */
 .app .acclimation-reminder.applied .structure-tech-due-item {
   border-left-color: var(--line);
   background: var(--panel);
@@ -1073,6 +1072,7 @@ button {
 }
 
 .app .structure-tech-due { display: grid; gap: 8px; margin-bottom: 16px; }
+.app .flow-list .structure-tech-due { margin: 12px 0 0; }
 .app .structure-tech-due[hidden] { display: none; }
 .app .structure-tech-due-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid var(--line); border-left: 3px solid var(--accent); padding: 10px 12px; background: var(--accent-soft); font-size: 13px; }
 .app .structure-tech-due-item.overdue { border-left-color: #a33627; }
