@@ -107,7 +107,8 @@
   const rollbackButton = document.querySelector("#rollbackUpdateButton");
   const APPLY_API = "./api/app-update.php";
   const current = window.ATO_APP_VERSION || "local";
-  document.querySelector("#appVersionLabel").textContent = `当前版本：${current}`;
+  const hasReleaseVersion = Boolean(parseVersion(current));
+  document.querySelector("#appVersionLabel").textContent = `当前版本：${hasReleaseVersion ? current : "本地开发版"}`;
   let busy = false;
   let shownTag = "";
   let updating = false;
@@ -144,7 +145,7 @@
       if (applyTarget) applyTarget.textContent = latest.tag_name;
       if (rollbackButton) rollbackButton.hidden = !(value && value.canRollback);
     });
-    if (!parseVersion(current)) {
+    if (!hasReleaseVersion) {
       status.textContent = `当前为本地开发版，最新正式版为 ${latest.tag_name}。`;
       return;
     }
@@ -455,6 +456,8 @@
   if (reloadButton) reloadButton.addEventListener("click", () => { window.location.reload(); });
   if (rollbackButton) rollbackButton.addEventListener("click", () => { void rollbackUpdate(); });
 
-  void check();
-  setInterval(() => { if (!document.hidden) void check(); }, INTERVAL);
+  if (hasReleaseVersion) {
+    void check();
+    setInterval(() => { if (!document.hidden) void check(); }, INTERVAL);
+  }
 })();

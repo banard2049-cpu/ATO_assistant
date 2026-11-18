@@ -80,8 +80,13 @@ if errorlevel 1 (
   pause
   exit /b 1
 )
-start "" "http://127.0.0.1:11451/"
-echo ATO_assistant 已启动：http://127.0.0.1:11451/
+set "ATO_URL=http://127.0.0.1:11451/"
+call :open_when_ready
+if errorlevel 1 (
+  pause
+  exit /b 1
+)
+echo ATO_assistant 已启动：%ATO_URL%
 echo 以后可在本目录运行 docker compose down 停止。
 pause
 exit /b 0
@@ -91,7 +96,6 @@ echo ATO_assistant 正在启动：%ATO_URL%
 for /f "delims=" %%V in ('"%PHP_BIN%" -r "echo PHP_VERSION;"') do set "PHP_VERSION=%%V"
 echo 使用 PHP：%PHP_BIN%（%PHP_VERSION%）
 echo 关闭此窗口或按 Ctrl-C 即可停止。
-start "" "%ATO_URL%"
 rem The built-in server would publish data\ (account hashes, campaign saves,
 rem sessions, backups) as static files; router.php rejects those requests.
 rem session.save_path must be absolute (PHP's built-in server chdir's to the
@@ -116,6 +120,7 @@ rem The file sits in data\, which router.php keeps off HTTP.
 set "ATO_SESSION_INI=%CD%\data\ato-session.ini"
 "%PHP_BIN%" -r "$d=getcwd().'/data/ato-session.ini';$q=chr(34);$s=php_ini_loaded_file();$x=['session.save_path = '.$q.str_replace(chr(92),'/',getcwd()).'/data/sessions'.$q,'post_max_size = 12M','display_errors = 0','log_errors = 1','display_startup_errors = 0'];file_put_contents($d,($s?file_get_contents($s):'').implode(PHP_EOL,$x).PHP_EOL);"
 if not exist "%ATO_SESSION_INI%" goto :session_ini_failed
+call :open_when_ready background
 "%PHP_BIN%" -c "%ATO_SESSION_INI%" -S 0.0.0.0:8793 -t "%CD%" "%CD%\router.php"
 if errorlevel 1 pause
 exit /b 0
@@ -124,6 +129,22 @@ exit /b 0
 echo 无法写入 data\ato-session.ini。请把本目录放到可写位置后再启动。
 pause
 exit /b 1
+
+:open_when_ready
+rem Check a small ATO asset over HTTP while PHP runs in the foreground.
+set "ATO_BROWSER_START="
+if "%~1"=="background" set ATO_BROWSER_START=start "" /b
+set "ATO_READY_ERROR=等待网页响应超时："
+%ATO_BROWSER_START% powershell.exe -NoProfile -NonInteractive -Command ^
+  "$elapsed = [Diagnostics.Stopwatch]::StartNew(); do {" ^
+  "$request = [Net.WebRequest]::Create($env:ATO_URL + 'assets/update/app-version.js');" ^
+  "$request.Proxy = $null; $request.Timeout = 1000; $request.AllowAutoRedirect = $false;" ^
+  "try { $response = $request.GetResponse(); $ready = [int]$response.StatusCode -eq 200; $response.Close();" ^
+  "if ($ready) { Start-Process -ErrorAction Stop $env:ATO_URL; exit 0 }" ^
+  "} catch [Net.WebException] { if ($_.Exception.Response) { $_.Exception.Response.Close() } };" ^
+  "Start-Sleep -Milliseconds 250 } while ($elapsed.Elapsed.TotalSeconds -lt 30);" ^
+  "Write-Warning ($env:ATO_READY_ERROR + $env:ATO_URL); exit 1"
+exit /b %ERRORLEVEL%
 
 :try_php
 if defined PHP_BIN exit /b 0

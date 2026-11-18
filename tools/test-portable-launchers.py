@@ -42,7 +42,7 @@ with socket.socket() as _probe:
     PORT = _probe.getsockname()[1]
 source = source.replace("8793", str(PORT))
 if WINDOWS:
-    source = source.replace('start "" "%ATO_URL%"', 'rem Browser disabled in test')
+    source = source.replace('call :open_when_ready', 'rem Browser disabled in test')
     source = source.replace('-S 0.0.0.0:%ATO_PORT% -t "%CD%"', '-f probe.php')
 else:
     source = source.replace('(sleep 1; open "$URL") >/dev/null 2>&1 &', ':')

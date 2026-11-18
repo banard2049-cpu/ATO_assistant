@@ -74,7 +74,7 @@ test('新版本显示更新报告和固定仓库链接，跳过可持久化且�
   const third = setup({ storage: first.storage, releases: [releaseObj('v1.2.11', '')] }); await settle();
   assert.equal(third.node('#updateNotice').hidden, false);
 });
-test('最新版本、离线失败和未知本地版本不会误报可更新', async () => {
+test('最新版本和离线失败不会误报可更新', async () => {
   const latest = setup({ version: '1.2.10' }); await settle();
   assert.equal(latest.node('#updateNotice').hidden, true);
   assert.match(latest.node('#updateStatus').textContent, /最新/);
@@ -82,7 +82,15 @@ test('最新版本、离线失败和未知本地版本不会误报可更新', as
   assert.match(offline.node('#updateStatus').textContent, /无法检查/);
   assert.equal(offline.requests(), 2);
   assert.equal(offline.node('#checkUpdateButton').disabled, false);
-  const local = setup({ version: 'local' }); await settle();
+});
+test('源码版只在手动检查时查询正式版', async () => {
+  const window = {};
+  vm.runInNewContext(fs.readFileSync(path.join(path.dirname(scriptPath), 'app-version.js'), 'utf8'), { window });
+  const local = setup({ version: window.ATO_APP_VERSION }); await settle();
+  assert.equal(local.requests(), 0);
+  assert.match(local.node('#appVersionLabel').textContent, /开发版/);
+  await local.node('#checkUpdateButton').handlers.click();
+  assert.equal(local.requests(), 1);
   assert.equal(local.node('#updateNotice').hidden, true);
   assert.match(local.node('#updateStatus').textContent, /开发版/);
 });

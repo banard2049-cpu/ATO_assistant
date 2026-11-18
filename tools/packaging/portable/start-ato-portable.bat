@@ -20,7 +20,6 @@ if not exist "data\sessions\" goto :invalid_sessions
 
 echo ATO Portable is starting: %ATO_URL%
 echo Close this window or press Ctrl-C to stop it.
-start "" "%ATO_URL%"
 rem PHP's built-in server changes the working directory to the requested
 rem script's directory, so a relative session.save_path resolved to
 rem api\data\sessions and every login session was silently dropped.  The value
@@ -55,10 +54,24 @@ rem working directory change.
 set "ATO_SESSION_INI=%CD%\data\ato-session.ini"
 "%PHP_BIN%" -r "$d=getcwd().'/data/ato-session.ini';$q=chr(34);$s=php_ini_loaded_file();$x=['session.save_path = '.$q.str_replace(chr(92),'/',getcwd()).'/data/sessions'.$q,'post_max_size = 12M','display_errors = 0','log_errors = 1','display_startup_errors = 0'];file_put_contents($d,($s?file_get_contents($s):'').implode(PHP_EOL,$x).PHP_EOL);"
 if not exist "%ATO_SESSION_INI%" goto :invalid_session_ini
+call :open_when_ready
 "%PHP_BIN%" -c "%ATO_SESSION_INI%" -S 0.0.0.0:%ATO_PORT% -t "%CD%" "%CD%\router.php"
 set "ATO_EXIT_CODE=%ERRORLEVEL%"
 if not "%ATO_EXIT_CODE%"=="0" pause
 exit /b %ATO_EXIT_CODE%
+
+:open_when_ready
+rem Check a small ATO asset over HTTP while PHP runs in the foreground.
+start "" /b powershell.exe -NoProfile -NonInteractive -Command ^
+  "$elapsed = [Diagnostics.Stopwatch]::StartNew(); do {" ^
+  "$request = [Net.WebRequest]::Create($env:ATO_URL + 'assets/update/app-version.js');" ^
+  "$request.Proxy = $null; $request.Timeout = 1000; $request.AllowAutoRedirect = $false;" ^
+  "try { $response = $request.GetResponse(); $ready = [int]$response.StatusCode -eq 200; $response.Close();" ^
+  "if ($ready) { Start-Process -ErrorAction Stop $env:ATO_URL; exit 0 }" ^
+  "} catch [Net.WebException] { if ($_.Exception.Response) { $_.Exception.Response.Close() } };" ^
+  "Start-Sleep -Milliseconds 250 } while ($elapsed.Elapsed.TotalSeconds -lt 30);" ^
+  "Write-Warning ('Timed out waiting for ATO Assistant at ' + $env:ATO_URL); exit 1"
+exit /b %ERRORLEVEL%
 
 :missing_php
 echo Portable PHP runtime is missing: "%PHP_BIN%"
