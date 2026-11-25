@@ -44,14 +44,3 @@ test('余额不足或循环无效时拒绝登升', () => {
   assert.throws(() => core.spend(sheet({ c1: 1 }), 'c9'), /没有可用的登升核心/);
   assert.throws(() => core.spend(sheet({ c1: 1 }), ''), /没有可用的登升核心/);
 });
-
-test('退回核心时补齐缺失的字段', () => {
-  const state = sheet({ c4: 1 });
-  assert.equal(core.amount(core.refund(state, 'c4'), 'c4'), 2);
-  const empty = core.refund({}, 'c5');
-  assert.equal(core.amount(empty, 'c5'), 1);
-  assert.equal(typeof empty.hold.c5.core.notes, 'string');
-  assert.equal(core.amount(state, 'c4'), 1);
-  const untouched = {};
-  assert.equal(core.refund(untouched, 'c9'), untouched);
-});

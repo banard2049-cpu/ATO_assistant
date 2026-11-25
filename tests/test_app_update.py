@@ -2,8 +2,8 @@
 
 需要 PATH 上有 PHP。测试把 api/app-update.php 与 api/app-update-policy.php 复制到
 tmp/ 下的临时安装目录，用 127.0.0.1 上的内置服务器发真实 HTTP 请求；安装目录、
-data/、用户素材都是合成的，仓库里真实的 data/ 不会被碰。全程不需要外网：文件内容
-由测试自己扮演浏览器 POST 给 stage 接口（真实运行时这一步由浏览器完成）。
+data/、用户素材都是合成的，仓库里真实的 data/ 不会被碰。临时副本从独立的 GitHub
+响应样本读取发布清单，测试再扮演浏览器把下载内容 POST 给 stage 接口。全程不需要外网。
 
 覆盖：
   1. 排除规则与 tools/packaging/package_common.py 的 excluded() 逐条一致——两边
@@ -43,6 +43,48 @@ import package_common  # noqa: E402  (路径要先插进 sys.path)
 
 def git_blob_sha(content: bytes) -> str:
     return hashlib.sha1(b'blob ' + str(len(content)).encode('ascii') + b'\x00' + content).hexdigest()
+
+
+def fixture_commit(tag: str) -> str:
+    return hashlib.sha1(f'test commit {tag}'.encode()).hexdigest()
+
+
+def github_release_responses(current, tag, files):
+    commit = fixture_commit(tag)
+    annotation = hashlib.sha1(f'test annotated tag {tag}'.encode()).hexdigest()
+    encoded_tag = urllib.parse.quote(tag, safe='')
+    encoded_base = urllib.parse.quote('v' + current.removeprefix('v'), safe='')
+    return {
+        f'releases/tags/{encoded_tag}': {
+            'tag_name': tag, 'draft': False, 'prerelease': False,
+            'published_at': '2026-01-01T00:00:00Z',
+        },
+        f'git/ref/tags/{encoded_tag}': {
+            'ref': f'refs/tags/{tag}', 'object': {'type': 'tag', 'sha': annotation},
+        },
+        f'git/tags/{annotation}': {
+            'sha': annotation, 'object': {'type': 'commit', 'sha': commit},
+        },
+        f'compare/{encoded_base}...{commit}': {'status': 'ahead', 'files': files},
+    }
+
+
+def install_fixture_transport(root):
+    policy = root / 'api/app-update-policy.php'
+    source = policy.read_text(encoding='utf-8')
+    signature = 'function ato_update_github_json('
+    if source.count(signature) != 1:
+        raise AssertionError('Expected one GitHub transport in app-update-policy.php')
+    source = source.replace(signature, 'function unused_production_github_json(')
+    policy.write_text(source + '''
+
+function ato_update_github_json(string $endpoint): ?array
+{
+    $fixture = json_decode((string) file_get_contents(dirname(__DIR__) . '/data/github-update-fixture.json'), true);
+    $scenario = $_COOKIE['ato_update_fixture_scenario'] ?? 'normal';
+    return $fixture[$scenario][$endpoint] ?? null;
+}
+''', encoding='utf-8')
 
 
 def free_port() -> int:
@@ -267,6 +309,8 @@ class AppUpdateTest(unittest.TestCase):
 
         shutil.copyfile(ROOT / 'api' / 'app-update.php', self.root / 'api' / 'app-update.php')
         shutil.copyfile(ROOT / 'api' / 'app-update-policy.php', self.root / 'api' / 'app-update-policy.php')
+        shutil.copyfile(ROOT / 'router.php', self.root / 'router.php')
+        install_fixture_transport(self.root)
 
         # 程序文件（本次会被更新）
         self.write('index.html', b'<!doctype html><title>old</title>\n')
@@ -288,7 +332,7 @@ class AppUpdateTest(unittest.TestCase):
         self.port = free_port()
         self.log = (self.root / 'server.log').open('wb')
         self.server = subprocess.Popen(
-            [self.php, '-S', f'127.0.0.1:{self.port}', '-t', str(self.root)],
+            [self.php, '-S', f'127.0.0.1:{self.port}', '-t', str(self.root), str(self.root / 'router.php')],
             stdout=self.log, stderr=self.log, cwd=str(self.root),
             creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0,
         )
@@ -371,7 +415,7 @@ class AppUpdateTest(unittest.TestCase):
         'story/keep.bak': b'no\n',
     }
 
-    def compare_payload(self, extra=None):
+    def compare_fixture(self, extra=None):
         files = [
             {'filename': 'index.html', 'status': 'modified', 'sha': git_blob_sha(self.NEW_FILES['index.html'])},
             {'filename': 'assets/update/update-check.js', 'status': 'modified',
@@ -397,8 +441,13 @@ class AppUpdateTest(unittest.TestCase):
             files.extend(extra)
         return {'current': '2.1.9', 'target': 'v9.9.9', 'files': files}
 
-    def begin(self, payload=None):
-        status, result = self.request('?action=begin', method='POST', body=payload or self.compare_payload())
+    def begin(self, metadata=None, *, client_fields=None, github_available=True):
+        metadata = metadata or self.compare_fixture()
+        current, target = metadata['current'], metadata['target']
+        responses = github_release_responses(current, target, metadata['files']) if github_available else {}
+        self.write('data/github-update-fixture.json', json.dumps({'normal': responses}).encode('utf-8'))
+        body = {'current': current, 'target': target, **(client_fields or {})}
+        status, result = self.request('?action=begin', method='POST', body=body)
         if status == 200:
             self.plan_id = result['planId']
         return status, result
@@ -440,13 +489,15 @@ class AppUpdateTest(unittest.TestCase):
         status, payload = self.request('?action=status', cookie=False)
         self.assertEqual(status, 401)
         self.assertEqual(payload['code'], 'AUTH_REQUIRED')
-        status, payload = self.request('?action=begin', method='POST', body=self.compare_payload(), cookie=False)
+        status, payload = self.request('?action=begin', method='POST',
+                                       body={'current': '2.1.9', 'target': 'v9.9.9'}, cookie=False)
         self.assertEqual(status, 401)
 
     def test_begin_filters_paths_the_package_never_ships(self):
         self.wait_ready()
         status, payload = self.begin()
         self.assertEqual(status, 200, payload)
+        self.assertEqual(payload['commit'], fixture_commit('v9.9.9'))
         planned = {entry['path']: entry['sha'] for entry in payload['downloads']}
         self.assertEqual(set(planned), set(self.NEW_FILES))
         self.assertEqual(planned['index.html'], git_blob_sha(self.NEW_FILES['index.html']))
@@ -462,7 +513,7 @@ class AppUpdateTest(unittest.TestCase):
         self.wait_ready()
         for name in ('../outside.txt', '..\\outside.txt', 'C:/windows/system32/x.dll',
                      'assets/../data/ato-users.json', 'nul.txt', 'assets/x.js.'):
-            status, payload = self.begin(self.compare_payload(extra=[
+            status, payload = self.begin(self.compare_fixture(extra=[
                 {'filename': name, 'status': 'added', 'sha': git_blob_sha(b'x')},
             ]))
             self.assertEqual(status, 409, name)
@@ -488,6 +539,53 @@ class AppUpdateTest(unittest.TestCase):
         status, payload = self.begin({'current': 'local', 'target': 'v9.9.9', 'files': []})
         self.assertEqual(status, 400)
         self.assertEqual(payload['code'], 'BAD_VERSION')
+
+    def test_browser_file_list_is_ignored(self):
+        self.wait_ready()
+        client_files = [{'filename': 'assets/client-only.js', 'status': 'added', 'sha': git_blob_sha(b'// client sample\n')}]
+        status, plan = self.begin(client_fields={'files': client_files})
+        self.assertEqual(status, 200, plan)
+        self.assertEqual({entry['path'] for entry in plan['downloads']}, set(self.NEW_FILES))
+        self.assertFalse(self.exists('assets/client-only.js'))
+
+    def test_official_release_unavailable_leaves_installation_untouched(self):
+        self.wait_ready()
+        status, result = self.begin(github_available=False)
+        self.assertEqual((status, result['code']), (502, 'RELEASE_UNVERIFIED'))
+        self.assertFalse(self.request('?action=status')[1]['canCommit'])
+        self.assertEqual(self.read('index.html'), b'<!doctype html><title>old</title>\n')
+
+    def test_legacy_plan_cannot_be_staged_or_committed(self):
+        self.wait_ready()
+        plan = self.stage_all()
+        path = self.root / 'data' / 'update-staging' / plan['planId'] / 'plan.json'
+        legacy = json.loads(path.read_bytes())
+        legacy['version'] = 1
+        del legacy['commit']
+        path.write_text(json.dumps(legacy), encoding='utf-8')
+        self.assertFalse(self.request('?action=status')[1]['canCommit'])
+        self.assertEqual(self.stage('index.html', self.NEW_FILES['index.html'])[0], 409)
+        self.assertEqual(self.request('?action=commit', method='POST')[0], 409)
+        self.assertEqual(self.read('index.html'), b'<!doctype html><title>old</title>\n')
+
+    def test_legacy_runner_cannot_be_executed(self):
+        self.wait_ready()
+        runner = self.write('api/.ato-update-' + 'a' * 32 + '.php', b'<?php echo "stale fixture runner";')
+        names = [runner.name]
+        if os.name == 'nt':
+            import ctypes
+
+            short_path = ctypes.create_unicode_buffer(32768)
+            size = ctypes.windll.kernel32.GetShortPathNameW(str(runner), short_path, len(short_path))
+            if 0 < size < len(short_path) and Path(short_path.value).name != runner.name:
+                names.append(Path(short_path.value).name)
+        for name in names:
+            with self.subTest(name=name):
+                path = urllib.parse.quote(f'api/{name}')
+                request = urllib.request.Request(f'http://127.0.0.1:{self.port}/{path}')
+                with self.assertRaises(urllib.error.HTTPError) as denied:
+                    urllib.request.urlopen(request, timeout=3)
+                self.assertEqual(denied.exception.code, 403)
 
     def test_stage_rejects_unplanned_and_mismatched_content(self):
         self.wait_ready()
@@ -567,8 +665,7 @@ class AppUpdateTest(unittest.TestCase):
         self.assertFalse(self.exists('assets/renamed/new.js'))
         self.assertEqual(self.read('data/ato-users.json'), b'{"users":["private"]}\n')
 
-    def test_stage_accepts_git_blob_or_plain_sha1(self):
-        """两种内容摘要都接受：不把整套校验押在接口的 sha 语义上。"""
+    def test_stage_requires_git_blob_digest(self):
         self.wait_ready()
         content = b'// digest forms\n'
         status, plan = self.begin({
@@ -580,14 +677,12 @@ class AppUpdateTest(unittest.TestCase):
             ],
         })
         self.assertEqual(status, 200, plan)
-        for entry in plan['downloads']:
-            status, staged = self.stage(entry['path'], content, entry['sha'])
-            self.assertEqual(status, 200, staged)
-        status, applied = self.request('?action=commit', method='POST')
-        self.assertEqual(status, 200, applied)
-        self.assertEqual(applied['applied'], 2)
-        self.assertEqual(self.read('assets/digest-blob.js'), content)
-        self.assertEqual(self.read('assets/digest-plain.js'), content)
+        digests = {entry['path']: entry['sha'] for entry in plan['downloads']}
+        status, staged = self.stage('assets/digest-blob.js', content, digests['assets/digest-blob.js'])
+        self.assertEqual(status, 200, staged)
+        status, result = self.stage('assets/digest-plain.js', content, digests['assets/digest-plain.js'])
+        self.assertEqual((status, result['code']), (502, 'CHECKSUM_MISMATCH'))
+        self.assertFalse(self.request('?action=status')[1]['canCommit'])
 
     def test_commit_without_plan_and_cancel(self):
         self.wait_ready()
@@ -612,8 +707,8 @@ class AppUpdateTest(unittest.TestCase):
         status, payload = self.request('?action=begin', method='GET')
         self.assertEqual(status, 405)
 
-    def stage_all(self, payload=None, contents=None):
-        status, plan = self.begin(payload)
+    def stage_all(self, metadata=None, contents=None):
+        status, plan = self.begin(metadata)
         self.assertEqual(status, 200, plan)
         for entry in plan['downloads']:
             status, staged = self.stage(entry['path'], (contents or self.NEW_FILES)[entry['path']], entry['sha'])
@@ -622,7 +717,7 @@ class AppUpdateTest(unittest.TestCase):
 
     def test_stale_page_and_version_changed_during_download(self):
         self.wait_ready()
-        stale = self.compare_payload()
+        stale = self.compare_fixture()
         stale['current'] = '2.1.8'
         status, result = self.begin(stale)
         self.assertEqual((status, result['code']), (409, 'VERSION_CHANGED'))
@@ -678,7 +773,8 @@ class AppUpdateTest(unittest.TestCase):
         self.assertIn(b'new', self.read('index.html'))
         self.assertTrue(self.request('?action=status')[1]['needsRecovery'])
         for action in ('commit', 'begin'):
-            status, result = self.request('?action=' + action, method='POST', body=self.compare_payload())
+            status, result = self.request('?action=' + action, method='POST',
+                                          body={'current': '2.1.9', 'target': 'v9.9.9'})
             self.assertEqual((status, result['code']), (409, 'RECOVERY_REQUIRED'))
         (self.root / 'assets/update/update-check.js').rmdir()
         status, result = self.request('?action=rollback', method='POST')
@@ -738,7 +834,7 @@ class AppUpdateTest(unittest.TestCase):
 
     def test_updater_can_replace_itself_and_restore_itself_on_windows(self):
         self.wait_ready()
-        original = {name: self.read(name) for name in ('api/app-update.php', 'api/app-update-policy.php')}
+        original = {name: self.read(name) for name in ('api/app-update.php', 'api/app-update-policy.php', 'router.php')}
         contents = {name: data + b'\n// updated fixture\n' for name, data in original.items()}
         self.stage_all({'current': '2.1.9', 'target': 'v9.9.9', 'files': [
             {'filename': name, 'status': 'modified', 'sha': git_blob_sha(data)} for name, data in contents.items()

@@ -421,5 +421,5 @@
     return descriptors.length ? { status: "ready", ...descriptors[0] } : { status: "manual", effects: [], manualIndexes: [], dynamic: true, manualFallback: "请先记录本循环的陌生人、船员和阿尔戈号命运" };
   }
 
-  return { contextForRecord, conditionFromBadge, conditionMet, simpleConditionalEffects, planStrangers };
+  return { contextForRecord, recordedNumber, conditionFromBadge, conditionMet, simpleConditionalEffects, planStrangers };
 });

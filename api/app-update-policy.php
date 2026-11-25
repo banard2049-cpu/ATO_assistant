@@ -192,6 +192,51 @@ function ato_update_git_blob_sha(string $content): string
     return hash('sha1', 'blob ' . strlen($content) . "\x00" . $content);
 }
 
+/** Fetch JSON from the fixed release repository with normal OS TLS validation. */
+function ato_update_github_json(string $endpoint): ?array
+{
+    $url = 'https://api.github.com/repos/banard2049-cpu/ATO_assistant/' . $endpoint;
+    $limit = 8 * 1024 * 1024;
+    $nullDevice = PHP_OS_FAMILY === 'Windows' ? 'NUL' : '/dev/null';
+    $windowsRoot = getenv('SystemRoot');
+    $curl = PHP_OS_FAMILY === 'Windows'
+        ? (is_string($windowsRoot) && $windowsRoot !== '' ? $windowsRoot . '\\System32\\curl.exe' : '')
+        : '/usr/bin/curl';
+    if ($curl !== '' && is_file($curl) && function_exists('proc_open')) {
+        // Stock Windows portable PHP does not load OpenSSL. System curl uses
+        // the OS CA store. Disable curlrc and redirects, and pass argv directly.
+        $process = @proc_open([
+            $curl, '--disable', '--silent', '--fail', '--proto', '=https',
+            '--connect-timeout', '4', '--max-time', '7', '--max-filesize', (string) $limit,
+            '--user-agent', 'ATO-Assistant-Updater', '--header', 'Accept: application/vnd.github+json',
+            '--write-out', "%{http_code}", '--', $url,
+        ], [0 => ['file', $nullDevice, 'r'], 1 => ['pipe', 'w'], 2 => ['file', $nullDevice, 'w']],
+            $pipes, null, null, ['bypass_shell' => true]);
+        if (!is_resource($process)) return null;
+        $raw = stream_get_contents($pipes[1], $limit + 4);
+        fclose($pipes[1]);
+        if (proc_close($process) !== 0 || !is_string($raw) || substr($raw, -3) !== '200') return null;
+        $raw = substr($raw, 0, -3);
+    } else {
+        if (!in_array('https', stream_get_wrappers(), true)) return null;
+        $context = stream_context_create([
+            'http' => ['follow_location' => 0, 'timeout' => 7, 'header' => [
+                'User-Agent: ATO-Assistant-Updater', 'Accept: application/vnd.github+json',
+            ]],
+            'ssl' => ['verify_peer' => true, 'verify_peer_name' => true],
+        ]);
+        $stream = @fopen($url, 'rb', false, $context);
+        if ($stream === false) return null;
+        $status = stream_get_meta_data($stream)['wrapper_data'][0] ?? '';
+        $raw = str_starts_with($status, 'HTTP/') && preg_match('/^HTTP\/\S+ 200\b/', $status) === 1
+            ? stream_get_contents($stream, $limit + 1) : false;
+        fclose($stream);
+    }
+    if (!is_string($raw) || strlen($raw) > $limit) return null;
+    $result = json_decode($raw, true);
+    return is_array($result) ? $result : null;
+}
+
 /** 读取本机安装版本（发布构建会覆写这个文件）。 */
 function ato_update_local_version(string $root): ?string
 {

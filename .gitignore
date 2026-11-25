@@ -70,6 +70,9 @@
 !/assets/exploration-pursuit.js
 !/assets/exploration-card-resources.js
 !/assets/exploration-card-tags.js
+!/assets/exploration-card-translations-data.js
+!/assets/exploration-card-translations.js
+!/assets/exploration-card-translations.css
 !/assets/page-focus-router.js
 !/assets/campaign-session.js
 !/assets/campaign-notes.js

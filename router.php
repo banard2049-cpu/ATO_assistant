@@ -41,6 +41,14 @@ if (is_string($envDataDir) && $envDataDir !== '') {
 $privateFiles = ['.htaccess', 'tools/xfyun-long-tts.config.json'];
 
 $documentRoot = realpath((string) ($_SERVER['DOCUMENT_ROOT'] ?? __DIR__)) ?: __DIR__;
+$documentRootPrefix = strtolower(rtrim($documentRoot, "\\/") . DIRECTORY_SEPARATOR);
+
+$isRetiredUpdater = static function (string $relative): bool {
+  // Old runners embed the obsolete updater. Reject both their URL spelling
+  // and their real path so Windows short names resolve to the same rule.
+  return str_starts_with($relative, 'api/.ato-update-')
+    && !preg_match('/\Aapi\/\.ato-update-v2-[0-9a-f]{32}\.php\z/', $relative);
+};
 
 // The built-in server resolves the request itself and reports the path it
 // served in SCRIPT_NAME/PATH_INFO; REQUEST_URI keeps whatever bytes the client
@@ -111,13 +119,21 @@ foreach ($candidates as $candidate) {
   $relative = strtolower(implode('/', $segments));
   if (in_array($relative, $privateFiles, true)
       || (strtolower($segments[0]) === 'tools'
-          && str_ends_with($relative, '.config.json'))) {
+          && str_ends_with($relative, '.config.json'))
+      || $isRetiredUpdater($relative)) {
     $isPrivate = true;
     break;
   }
 
   $resolved = realpath($documentRoot . DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $segments));
   if ($resolved === false) continue;
+  if (str_starts_with(strtolower($resolved), $documentRootPrefix)) {
+    $resolvedRelative = strtolower(str_replace(DIRECTORY_SEPARATOR, '/', substr($resolved, strlen($documentRootPrefix))));
+    if ($isRetiredUpdater($resolvedRelative)) {
+      $isPrivate = true;
+      break;
+    }
+  }
   foreach ($privateDirectories as $name) {
     $directory = realpath($documentRoot . DIRECTORY_SEPARATOR . $name);
     if ($directory === false) continue;

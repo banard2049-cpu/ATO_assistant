@@ -19,7 +19,6 @@
     c5: '月陨登升核心',
   };
 
-  const isObject = value => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
   const amount = value => {
     const number = Number(value);
     return Number.isFinite(number) && number > 0 ? Math.floor(number) : 0;
@@ -43,17 +42,5 @@
     return state;
   }
 
-  // 登升没能落库时把核心退回。余额字段缺失时按 0 起算。
-  function refund(theatreState, cycle) {
-    if (!CYCLES.includes(cycle)) return theatreState;
-    const state = JSON.parse(JSON.stringify(isObject(theatreState) ? theatreState : {}));
-    state.hold ||= {};
-    state.hold[cycle] ||= {};
-    state.hold[cycle].core ||= { count: 0, notes: '' };
-    if (typeof state.hold[cycle].core.notes !== 'string') state.hold[cycle].core.notes = '';
-    state.hold[cycle].core.count = amountIn(state, cycle) + 1;
-    return state;
-  }
-
-  return { CYCLES, NAMES, name, amount: amountIn, spend, refund };
+  return { CYCLES, NAMES, name, amount: amountIn, spend };
 });

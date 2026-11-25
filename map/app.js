@@ -229,6 +229,7 @@ let pendingAdversarySpawnCandidates = new Set();
 let editingNoteTileId = "";
 let tileClickTimer = 0;
 let undoStack = [];
+let pendingMapUndo = null;
 const maxUndoSteps = 40;
 let shouldFocusArgoAfterRender = true;
 let focusArgoAttempts = 0;
@@ -284,6 +285,25 @@ function mergeValues(base, local, remote, conflicts, path) {
 function mergeMapStates(base, local, remote) {
   const conflicts = [];
   const merged = mergeValues(isPlainObject(base) ? base : {}, local, remote, conflicts, "state");
+  // The tile buckets can merge cleanly while two writers independently move
+  // the same unique marker. Detect the whole-location conflict before
+  // normalization would silently choose one of the resulting placements.
+  for (const cycleId of Object.keys(merged?.cycles || {})) {
+    const baseMarkers = base?.cycles?.[cycleId]?.tokens?.markers;
+    const localMarkers = local?.cycles?.[cycleId]?.tokens?.markers;
+    const remoteMarkers = remote?.cycles?.[cycleId]?.tokens?.markers;
+    if (deepEqualValue(baseMarkers, localMarkers) || deepEqualValue(baseMarkers, remoteMarkers)
+      || deepEqualValue(localMarkers, remoteMarkers)) continue;
+    for (const { id, unique } of tokenAssets) {
+      if (!unique) continue;
+      const baseTile = findMapMarkerTile(baseMarkers, id);
+      const localTile = findMapMarkerTile(localMarkers, id);
+      const remoteTile = findMapMarkerTile(remoteMarkers, id);
+      if (baseTile !== localTile && baseTile !== remoteTile && localTile !== remoteTile) {
+        conflicts.push("state.cycles." + cycleId + ".tokens.markers." + id);
+      }
+    }
+  }
   return { merged, conflicts };
 }
 
@@ -291,21 +311,85 @@ function noteMapMergeConflict(conflicts) {
   console.warn("地图存档冲突：以下内容被其他页面同时改动，本页未覆盖服务端版本", conflicts);
 }
 
-function pushUndo() {
-  undoStack.push({
+function captureMapUndoState() {
+  return {
     state: cloneValue(state),
     pendingAdversarySpawnCandidates: [...pendingAdversarySpawnCandidates],
-  });
+  };
+}
+
+function pushUndo() {
+  pendingMapUndo = captureMapUndoState();
+}
+
+function finishMapUndo() {
+  if (!pendingMapUndo) return null;
+  const before = pendingMapUndo;
+  pendingMapUndo = null;
+  const after = captureMapUndoState();
+  if (deepEqualValue(before, after)) return null;
+  const snapshot = { before, after };
+  undoStack.push(snapshot);
   if (undoStack.length > maxUndoSteps) undoStack.shift();
   renderUndoControl();
+  return snapshot;
+}
+
+// A unique marker is one location even though the save stores it per tile.
+// Undoing an old move must not recreate that marker beside its newer location.
+function findMapMarkerTile(markers, id) {
+  return Object.keys(markers || {}).find((tile) => markers[tile]?.[id]);
+}
+
+function preserveMovedUniqueMarkers(after, current, restored) {
+  for (const { id, unique } of tokenAssets) {
+    if (!unique) continue;
+    const currentTile = findMapMarkerTile(current, id);
+    if (currentTile === findMapMarkerTile(after, id)) continue;
+    for (const [tile, markers] of Object.entries(restored)) {
+      if (tile === currentTile || !markers[id]) continue;
+      delete markers[id];
+      if (!Object.keys(markers).length) delete restored[tile];
+    }
+  }
+}
+
+function reverseMapUndo(before, after, current, path = []) {
+  if (deepEqualValue(before, after)) return cloneValue(current);
+  if (deepEqualValue(after, current)) return cloneValue(before);
+  const tileTokenPath = path[0] === "cycles" && path[2] === "tokens";
+  if (tileTokenPath && path[3] === "edgeMarkers" && path.length === 6 && Array.isArray(current)) {
+    const oldDirections = before || [];
+    const changedDirections = after || [];
+    const restored = current.filter((direction) => oldDirections.includes(direction) || !changedDirections.includes(direction));
+    restored.push(...oldDirections.filter((direction) => !changedDirections.includes(direction) && !restored.includes(direction)));
+    return restored.length ? restored : undefined;
+  }
+  if (isPlainObject(current) && (before === undefined || isPlainObject(before)) && (after === undefined || isPlainObject(after))) {
+    // Sparse tile records can be inserted or removed by either writer. Reverse
+    // their changed keys so a sibling added to the same tile survives.
+    const keys = new Set([...Object.keys(before || {}), ...Object.keys(after || {}), ...Object.keys(current)]);
+    const entries = [...keys].map((key) => [key, reverseMapUndo(before?.[key], after?.[key], current[key], [...path, key])]);
+    const restored = Object.fromEntries(entries.filter(([, value]) => value !== undefined));
+    if (tileTokenPath && path[3] === "markers" && path.length === 4) preserveMovedUniqueMarkers(after, current, restored);
+    return Object.keys(restored).length || before !== undefined ? restored : undefined;
+  }
+  // Current and recorded values differ at this field. Keep the newer edit.
+  return cloneValue(current);
 }
 
 function undoLastChange() {
   const snapshot = undoStack.pop();
   if (!snapshot) return;
-  state = cloneValue(snapshot.state);
-  pendingAdversarySpawnCandidates = new Set(snapshot.pendingAdversarySpawnCandidates || []);
-  saveState();
+  snapshot.undone = true;
+  const restored = reverseMapUndo(snapshot.before.state, snapshot.after.state, state);
+  const candidates = reverseMapUndo(snapshot.before.pendingAdversarySpawnCandidates,
+    snapshot.after.pendingAdversarySpawnCandidates, [...pendingAdversarySpawnCandidates]);
+  pendingAdversarySpawnCandidates = new Set(candidates);
+  if (!deepEqualValue(state, restored)) {
+    state = restored;
+    saveState();
+  }
   render();
 }
 
@@ -719,8 +803,9 @@ function syncDepartedLandmarkMarkers(cycleState, nextTileId) {
 }
 
 function saveState() {
-  if (secondScreenMode) return;
-  queueCampaignSave();
+  const undo = finishMapUndo();
+  if (!secondScreenMode) queueCampaignSave();
+  return undo;
 }
 
 let secondScreenMapModeBusy = false;
@@ -2217,8 +2302,12 @@ function clearPendingAdversarySpawn() {
 }
 
 async function triggerAdversaryBattle(recordUndo = false) {
+  const moveUndo = finishMapUndo();
   const cycleId = state.activeCycleId;
   const profileId = mapStateProfileId;
+  const encounter = activeCycleState();
+  const argoTile = encounter.currentTile;
+  const adversaryTile = encounter.tokens.AD;
   let battleUrl;
   try {
     battleUrl = await adversaryBattleUrl(cycleId, profileId);
@@ -2234,13 +2323,28 @@ async function triggerAdversaryBattle(recordUndo = false) {
     return;
   }
   const cycleState = activeCycleState();
-  if (recordUndo) pushUndo();
+  if (moveUndo?.undone || cycleState.currentTile !== argoTile || cycleState.tokens.AD !== adversaryTile) {
+    // The move may have been undone while the battle was loading.
+    if (moveUndo) saveState();
+    return;
+  }
+  if (moveUndo && undoStack.at(-1) === moveUndo && deepEqualValue(moveUndo.after, captureMapUndoState())) {
+    // Keep the move and removal in one undo when nothing changed while the
+    // battle loaded. Otherwise record just the removal from the newer state.
+    undoStack.pop();
+    pendingMapUndo = moveUndo.before;
+  } else if (recordUndo || moveUndo) {
+    pushUndo();
+  }
   cycleState.tokens.AD = "";
   if (state.activeCycleId === "c5") cycleState.titanXTrackPosition = null;
-  saveState();
+  const encounterUndo = saveState();
   // Flush the queued save before leaving the page so the adversary removal
   // and current position are persisted (no debounce window loss).
-  if (!await flushCampaignMapSave()) {
+  const saved = await flushCampaignMapSave();
+  if (encounterUndo?.undone || state.activeCycleId !== cycleId || mapStateProfileId !== profileId
+    || activeCycleState().currentTile !== argoTile || activeCycleState().tokens.AD) return;
+  if (!saved) {
     window.alert(campaignSession.changed || mapSaveConflict
       ? "地图尚未保存：登录账号已切换或存档存在冲突，请查看页面保存提示。"
       : "地图尚未保存，已保留当前修改并等待服务恢复。");
