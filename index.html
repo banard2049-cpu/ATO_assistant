@@ -2551,6 +2551,7 @@
   <script src="./assets/misc-picker.js?v=20261114-misc-picker2" defer></script>
   <link rel="stylesheet" href="./assets/update/update-check.css?v=2">
   <link rel="stylesheet" href="./assets/card-art.css?v=20261017-fan-fringe5">
+  <link rel="stylesheet" href="./assets/exploration-card-translations.css?v=5">
   <script src="./assets/fan-card-trims-data.js?v=20261020-fan-scan3" defer></script>
   <script src="./assets/fan-card-trims.js?v=20261020-title-guard1" defer></script>
   <script src="./assets/card-art.js?v=20261020-title-guard1" defer></script>
@@ -2887,11 +2888,13 @@
   <script src="./assets/exploration-card-rules.js?v=20261018-card-audit1"></script>
   <script src="./assets/exploration-card-resource-rules.js?v=20261013-automation5"></script>
   <script src="./assets/exploration-card-effects.js?v=20261018-card-audit1"></script>
-  <script src="./assets/exploration-card-conditions.js?v=20261018-card-audit1"></script>
+  <script src="./assets/exploration-card-conditions.js?v=20261018-card-audit2"></script>
   <script src="./assets/exploration-card-options.js?v=20261117-resource-types1"></script>
   <script src="./assets/exploration-card-choices.js?v=20261013-next-choices12"></script>
   <script src="./assets/exploration-card-delays.js?v=20261013-automation5"></script>
   <script src="./assets/exploration-card-resources.js?v=20261018-card-audit1"></script>
+  <script src="./assets/exploration-card-translations-data.js?v=3"></script>
+  <script src="./assets/exploration-card-translations.js?v=6"></script>
   <script src="./technology/negotiation-rules.js?v=20261117-resource-types1"></script>
   <script src="./technology/voyage-action-rules.js?v=20261110-chronosail"></script>
   <script src="./technology/exploration-tech-rules.js?v=20261017-automation-audit4"></script>
@@ -6019,12 +6022,13 @@
           preview.appendChild(previewHeading);
           preview.addEventListener("toggle", () => {
             previewHeading.textContent = preview.open ? "收起卡图" : "展开卡图";
-            if (!preview.open || preview.querySelector('[role="img"]')) return;
+            if (!preview.open || preview.querySelector(".exploration-library-preview")) return;
             const face = document.createElement("div");
             face.className = "exploration-library-preview";
             face.setAttribute("role", "img");
             face.setAttribute("aria-label", getExplorationCardLabel(cardId));
             face.style.cssText = getExplorationCardImageStyle(cardId);
+            window.ATO_EXPLORATION_TRANSLATION_PREVIEW?.bind(face, currentCycleConfig().id, cardId, explorationTranslationContext);
             preview.appendChild(face);
           });
           item.append(label, preview);
@@ -9115,12 +9119,13 @@
             preview.appendChild(previewHeading);
             preview.addEventListener("toggle", () => {
               previewHeading.textContent = preview.open ? "收起卡图" : "展开卡图";
-              if (!preview.open || preview.querySelector('[role="img"]')) return;
+              if (!preview.open || preview.querySelector(".exploration-library-preview")) return;
               const face = document.createElement("div");
               face.className = "exploration-library-preview";
               face.setAttribute("role", "img");
               face.setAttribute("aria-label", card.name);
               face.style.cssText = getExplorationCardImageStyle(card.id);
+              window.ATO_EXPLORATION_TRANSLATION_PREVIEW?.bind(face, currentCycleConfig().id, card.id, explorationTranslationContext);
               preview.appendChild(face);
             });
             item.append(label, preview);
@@ -9146,6 +9151,11 @@
       const rules = explorationResourceRules();
       if (!rules) return null;
       return rules.getCard(explorationResourceDataset(), currentCycleConfig().id, cardId);
+    }
+
+    function explorationTranslationContext(cycleId, cardId) {
+      if (cycleId !== currentCycleConfig().id) return null;
+      return explorationSettlementContext(explorationCardResources(cardId));
     }
 
     // Named factions on cards override the local faction (rulebook P15/P23).
@@ -12028,6 +12038,7 @@
         drawnFace.setAttribute("aria-label", `${entry.name} #${entry.id}`);
         drawnFace.setAttribute("role", "img");
         drawnFace.style.cssText = getExplorationCardImageStyle(entry.id);
+        window.ATO_EXPLORATION_TRANSLATION_PREVIEW?.bind(drawnFace, currentCycleConfig().id, entry.id, explorationTranslationContext);
         if (options.interactive) {
           const cycleId = currentCycleConfig().id;
           const rotate = { c1: "13400", c2: "13640", c3: "13537" }[cycleId] === entry.id;
@@ -12112,6 +12123,7 @@
           preview.setAttribute("role", "img");
           preview.setAttribute("aria-label", card.name);
           preview.style.cssText = getExplorationCardImageStyle(card.id);
+          window.ATO_EXPLORATION_TRANSLATION_PREVIEW?.bind(preview, currentCycleConfig().id, card.id, explorationTranslationContext);
           const checkbox = document.createElement("input");
           checkbox.type = "checkbox";
           checkbox.value = card.id;
@@ -12708,6 +12720,7 @@
             const image = document.createElement("img");
             image.src = `./assets/exploration-cards/${target.cycleId}/${cardId}.png`;
             image.alt = `探索卡 ${cardId}`;
+            window.ATO_EXPLORATION_TRANSLATION_PREVIEW?.bind(image, target.cycleId, cardId, explorationTranslationContext);
             return image;
           },
           beforeSubmit: () => beforeStructureTechSubmit(target), assertContext: () => assertStructureTechTarget(target),
@@ -14851,6 +14864,6 @@
   <script src="./assets/english-language.js?v=20261011-english4"></script>
   <script src="./assets/term-language.js?v=20261114-picker-label1"></script>
   <script src="./assets/update/app-version.js?v=2"></script>
-  <script src="./assets/update/update-check.js?v=4"></script>
+  <script src="./assets/update/update-check.js?v=5"></script>
 </body>
 </html>

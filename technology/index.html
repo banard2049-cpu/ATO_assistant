@@ -1572,7 +1572,11 @@ function recordStateFromCampaign(campaign) {
   const dashboard = campaign?.sections?.dashboard;
   const userId = campaignTechLoaded ? activeAccountId : (dashboard?.activeProfileId || 'default');
   const recordSection = campaign?.sections?.record;
-  const userState = recordSection?.users?.[userId] || (recordSection?.users ? null : recordSection);
+  const bucketed = isPlainObject(recordSection) && ('users' in recordSection || 'accounts' in recordSection);
+  const users = recordSection?.users;
+  const userState = bucketed
+    ? (users && Object.hasOwn(users, userId) ? users[userId] : recordSection.accounts?.[userId])
+    : recordSection;
   const state = isPlainObject(userState) ? JSON.parse(JSON.stringify(userState)) : {};
   state.resources = normalizeCraftRecordResources(state.resources);
   state.arsenal = window.ATO_GEAR_INVENTORY.normalize(state.arsenal);
@@ -1582,21 +1586,26 @@ function recordStateFromCampaign(campaign) {
     revision: Math.max(0, Number(campaign?.sectionRevisions?.record || 0)),
   };
 }
-async function readLatestRecordState() {
+async function readLatestCampaign() {
   const response = await fetch(CAMPAIGN_STORAGE_URL, { cache: 'no-store' });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   const payload = campaignSession.accept(await response.json());
   if (!payload.ok) throw new Error(payload.error || '读取记录表失败');
-  return recordStateFromCampaign(payload.campaign || {});
+  return payload.campaign || {};
+}
+async function readLatestRecordState() {
+  return recordStateFromCampaign(await readLatestCampaign());
 }
 async function loadGearRecordState() {
   if (gearRecordLoadInFlight) return;
   gearRecordLoadInFlight = true;
   gearRecordError = '';
   const profileId = activeAccountId;
+  const revisionBeforeRead = gearRecordRevision;
   try {
     const latest = await readLatestRecordState();
     if (activeAccountId !== profileId || latest.userId !== profileId) return;
+    if (gearRecordUserId === profileId && latest.revision < gearRecordRevision) return;
     gearRecordUserId = latest.userId;
     gearRecordState = latest.state;
     gearRecordRevision = latest.revision;
@@ -1604,7 +1613,7 @@ async function loadGearRecordState() {
       void writeSnapshotToMainArchive(unlockedTechSnapshot()).catch(error => console.warn('科技临时禁用同步：', error));
     }
   } catch (error) {
-    if (activeAccountId === profileId) gearRecordError = String(error.message || error);
+    if (activeAccountId === profileId && gearRecordRevision === revisionBeforeRead) gearRecordError = String(error.message || error);
   } finally {
     gearRecordLoadInFlight = false;
     renderGearInventoryView();
@@ -1671,6 +1680,20 @@ async function mutateCampaignRecordState(mutator, operation = null) {
 }
 function gearCraftOperationKey(planKey) {
   return JSON.stringify([campaignSession.accountId, activeAccountId, planKey]);
+}
+function pendingGearAscension(key) {
+  if (!key) return null;
+  if (gearAscensionOperations.has(key)) return gearAscensionOperations.get(key);
+  try { return window.sessionStorage.getItem(`ato-gear-ascension-v1:${key}`); } catch { return null; }
+}
+function rememberGearAscension(key, id) {
+  if (id) gearAscensionOperations.set(key, id);
+  else gearAscensionOperations.delete(key);
+  const storageKey = `ato-gear-ascension-v1:${key}`;
+  try {
+    if (id) window.sessionStorage.setItem(storageKey, id);
+    else window.sessionStorage.removeItem(storageKey);
+  } catch { /* In-memory retries still work when session storage is unavailable. */ }
 }
 async function craftGear(planKey, optionIndex) {
   if (gearMutationInFlight) return;
@@ -2234,8 +2257,8 @@ function arsenalThumbnailHtml(gearId, name) {
 function showArsenalGearDetails(item, disabled) {
   const inventory = window.ATO_GEAR_INVENTORY;
   const target = item.part.key === 'titan' ? '' : inventory.nextCycle(item.ascendedCycle || item.originCycle);
-  const operationKey = campaignSession.changed ? null : gearCraftOperationKey(`ascension:${item.gearId}`);
-  const pending = gearAscensionOperations.has(operationKey);
+  const operationKey = campaignSession.changed || !campaignSession.accountId ? null : gearCraftOperationKey(`ascension:${item.gearId}`);
+  const pending = pendingGearAscension(operationKey);
   const buttonLabel = `登升 1 件至循环 ${target.slice(1)}`;
   const coreCycle = item.ascendedCycle || item.originCycle;
   const coreName = target ? window.ATO_ASCENSION_CORE.name(coreCycle) : '';
@@ -2286,7 +2309,7 @@ function showArsenalGearDetails(item, disabled) {
       dialog.close();
     } catch (error) {
       status.textContent = String(error.message || error);
-      button.textContent = gearAscensionOperations.has(operationKey) ? '重试登升' : buttonLabel;
+      button.textContent = pendingGearAscension(operationKey) ? '重试登升' : buttonLabel;
       button.disabled = false;
     }
   });
@@ -2295,81 +2318,105 @@ function showArsenalGearDetails(item, disabled) {
   dialog.showModal();
 }
 
-// 升华核心的余额记在幻忆记录表（theatre section）的剧场货舱里，军械库只读取和扣减，
-// 不另存一份，避免同一个数字要在两处维护。
-async function readTheatreRecord() {
-  const response = await fetch(CAMPAIGN_THEATRE_URL, { cache: 'no-store' });
-  const payload = campaignSession.accept(await response.json().catch(() => null));
-  if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
-  return { state: payload.state || {}, revision: Math.max(0, Number(payload.revision) || 0) };
-}
-async function writeTheatreRecord(state, expectedRevision) {
-  const response = await fetch(CAMPAIGN_THEATRE_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ section: 'theatre', state, expectedRevision, expectedAccountId: campaignSession.accountId }),
-  });
-  const payload = campaignSession.accept(await response.json().catch(() => null));
-  if (response.status === 409 && payload?.code === 'SAVE_CONFLICT') return { conflict: true };
-  if (!response.ok || !payload?.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
-  return { revision: Math.max(0, Number(payload.revision) || expectedRevision + 1) };
-}
-// delta < 0 扣一件（余额不足会抛错），delta > 0 退回一件。
-async function changeAscensionCore(cycle, delta) {
-  const core = window.ATO_ASCENSION_CORE;
-  for (let attempt = 0; attempt < 4; attempt += 1) {
-    const latest = await readTheatreRecord();
-    const next = delta < 0 ? core.spend(latest.state, cycle) : core.refund(latest.state, cycle);
-    const saved = await writeTheatreRecord(next, latest.revision);
-    if (!saved.conflict) return saved.revision;
-  }
-  throw new Error('幻忆记录表正在另一页面更新，请稍后重试。');
-}
 async function ascensionCoreBalance(cycle) {
   try {
-    return window.ATO_ASCENSION_CORE.amount((await readTheatreRecord()).state, cycle);
+    const response = await fetch(CAMPAIGN_THEATRE_URL, { cache: 'no-store' });
+    const payload = campaignSession.accept(await response.json());
+    return response.ok && payload?.ok ? window.ATO_ASCENSION_CORE.amount(payload.state, cycle) : null;
   } catch {
     return null;
   }
 }
 
 async function ascendArsenalGear(item, target, operationKey) {
-  if (!gearRecordState || gearRecordError || campaignSession.changed) throw new Error('军械库尚未连接，请刷新后重试。');
+  if (gearMutationInFlight) return;
+  if (!gearRecordState || gearRecordError || campaignSession.changed || !campaignSession.accountId) {
+    throw new Error('军械库尚未连接，请刷新后重试。');
+  }
+  const { gearId } = item;
+  const userId = activeAccountId;
+  const accountId = campaignSession.accountId;
+  if (!userId || operationKey !== gearCraftOperationKey(`ascension:${gearId}`)) {
+    throw new Error('当前档案或登录账号已切换，请重新操作');
+  }
   const inventory = window.ATO_GEAR_INVENTORY;
   const loadouts = window.ATO_ARSENAL_LOADOUT;
-  // 规则书：升华一张独特装备卡牌要花费一个对应故事集的升华核心（迷宫升华核心把
-  // 故事集 I 升到 II，以此类推），所以扣的是装备当前所在故事集的核心。
-  const coreCycle = item.ascendedCycle || item.originCycle;
-  const coreName = window.ATO_ASCENSION_CORE.name(coreCycle);
-  const operation = gearAscensionOperations.get(operationKey) || {
-    id: window.crypto?.randomUUID?.() || `ascend-${Date.now()}-${Math.random().toString(16).slice(2)}`,
-    userId: activeAccountId, accountId: campaignSession.accountId, gearId: item.gearId, coreCycle,
-  };
+  const core = window.ATO_ASCENSION_CORE;
+  const coreCycle = inventory.ascendedCycle(gearId) || item.originCycle;
+  const pendingOperationId = pendingGearAscension(operationKey);
+  const operationId = pendingOperationId || window.crypto?.randomUUID?.() || `ascend-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const hasReceipt = record => record._gearCraftReceipts?.[operationId]?.gearId === gearId;
+  async function readLatest() {
+    const campaign = await readLatestCampaign();
+    const record = recordStateFromCampaign(campaign);
+    const profiles = campaign.sections?.dashboard?.profiles;
+    if (campaignSession.accountId !== accountId || activeAccountId !== userId || record.userId !== userId
+      || (profiles && (userId !== 'default' || Object.keys(profiles).length) && !Object.hasOwn(profiles, userId))) {
+      throw new Error('当前档案或登录账号已切换，请重新操作');
+    }
+    return {
+      record: record.state,
+      theatre: campaign.sections?.theatre,
+      revisions: {
+        dashboard: campaign.sectionRevisions?.dashboard ?? 0,
+        record: record.revision,
+        theatre: campaign.sectionRevisions?.theatre ?? 0,
+      },
+    };
+  }
   gearMutationInFlight = true;
   try {
-    // 上一次可能已经把装备写进记录表却丢了响应，收据在就不要再扣一次核心。
-    const before = await readLatestRecordState();
-    if (!before.state._gearCraftReceipts?.[operation.id]) await changeAscensionCore(coreCycle, -1);
-    try {
-      await mutateCampaignRecordState(record => {
-        const reserved = loadouts.equipmentCounts(loadouts.normalize(record.arsenalLoadouts).slots).get(item.gearId) || 0;
-        record.arsenal = inventory.ascend(record.arsenal, item.gearId, item.originCycle, reserved);
-        gearAscensionOperations.set(operationKey, operation);
-        return record;
-      }, operation);
-    } catch (error) {
-      // 装备没落库就把核心退回；确认不了时不下结论，交给玩家重试后核对。
+    let committed;
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const latest = await readLatest();
+      if (hasReceipt(latest.record)) { committed = latest; break; }
+      const { record, revisions } = latest;
+      const reserved = loadouts.equipmentCounts(loadouts.normalize(record.arsenalLoadouts).slots).get(gearId) || 0;
+      record.arsenal = inventory.ascend(record.arsenal, gearId, item.originCycle, reserved);
+      const theatre = core.spend(latest.theatre, coreCycle);
+      record._gearCraftReceipts = { ...record._gearCraftReceipts, [operationId]: { gearId } };
+      // Save inventory, debit, and receipt together. Keep the operation ID in
+      // this tab across a reload if the server's response never arrives.
+      rememberGearAscension(operationKey, operationId);
       try {
-        const latest = await readLatestRecordState();
-        if (!latest.state._gearCraftReceipts?.[operation.id]) await changeAscensionCore(coreCycle, 1);
-      } catch {
-        throw new Error(`${error.message || error} 本次登升状态未确认，请重试；若仍失败，请在幻忆记录表里核对${coreName}余额。`);
+        const response = await fetch(`${CAMPAIGN_STORAGE_URL}?action=import-sections`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, expectedAccountId: accountId, expectedRevisions: revisions, sections: { record, theatre } }),
+        });
+        const payload = campaignSession.accept(await response.json().catch(() => null));
+        if (response.status === 409 && payload?.code === 'SAVE_CONFLICT') continue;
+        if (!response.ok || !payload?.ok) {
+          if (!pendingOperationId && payload?.ok === false && response.status >= 400 && response.status < 500) {
+            rememberGearAscension(operationKey, null);
+          }
+          throw new Error(payload?.error || `HTTP ${response.status}`);
+        }
+        if (!Number.isSafeInteger(payload.sections?.record) || !Number.isSafeInteger(payload.sections?.theatre)) {
+          throw new Error('无法确认登升保存结果，请重试登升。');
+        }
+        committed = { record, revisions: payload.sections };
+      } catch (error) {
+        const recovered = await readLatest().catch(() => null);
+        if (!recovered || !hasReceipt(recovered.record)) throw error;
+        committed = recovered;
       }
-      throw error;
+      break;
     }
-    gearAscensionOperations.delete(operationKey);
-    arsenalMessage = `${item.name} 已登升 1 件至循环 ${target.slice(1)}，消耗${coreName} ×1。`;
-    arsenalMessageError = false;
+    if (!committed) throw new Error('保存记录表失败：并发冲突重试次数过多');
+    rememberGearAscension(operationKey, null);
+    if (!campaignSession.changed && campaignSession.accountId === accountId && activeAccountId === userId) {
+      if (gearRecordUserId !== userId || committed.revisions.record >= gearRecordRevision) {
+        gearRecordUserId = userId;
+        gearRecordState = committed.record;
+        gearRecordRevision = committed.revisions.record;
+        gearRecordError = '';
+      }
+      gearRecordSyncChannel?.postMessage({ revision: gearRecordRevision });
+      gearTheatreSyncChannel?.postMessage({ type: 'saved', accountId, revision: committed.revisions.theatre });
+      arsenalMessage = `${item.name} 已登升 1 件至循环 ${target.slice(1)}，消耗${core.name(coreCycle)} ×1。`;
+      arsenalMessageError = false;
+    }
   } finally {
     gearMutationInFlight = false;
     renderGearInventoryView();
@@ -3676,6 +3723,7 @@ let gearCraftPlans = new Map();
 const gearCraftOperations = new Map();
 const gearAscensionOperations = new Map();
 const gearRecordSyncChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('ato-record-sync-v1') : null;
+const gearTheatreSyncChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('ato-theatre-v1') : null;
 const structureTechMapSyncChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('ato-map-sync-v1') : null;
 const dashboardSyncChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('ato-dashboard-sync-v1') : null;
 const technologySyncChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('ato-technology-sync-v1') : null;
@@ -4354,7 +4402,8 @@ async function loadCampaignTechnologySection() {
     campaignReconnectTimer = null;
     if (!adoptTechnologyCampaign(payload.campaign || {}, flushQueuedSave)) return;
     const latestRecord = recordStateFromCampaign(payload.campaign || {});
-    if (latestRecord.userId === activeAccountId) {
+    if (latestRecord.userId === activeAccountId
+      && (gearRecordUserId !== activeAccountId || latestRecord.revision >= gearRecordRevision)) {
       gearRecordUserId = latestRecord.userId;
       gearRecordState = latestRecord.state;
       gearRecordRevision = latestRecord.revision;

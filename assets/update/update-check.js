@@ -1,5 +1,4 @@
 (() => {
-  const REPO = "https://api.github.com/repos/banard2049-cpu/ATO_assistant";
   const RAW = "https://raw.githubusercontent.com/banard2049-cpu/ATO_assistant";
   // 拉全部正式版发布，而不是只取 latest：这样能把「当前版本 → 最新版」之间
   // 每一个版本的公告都展示出来，而不是只看到最新一个版本的说明。
@@ -295,7 +294,7 @@
           ? { Accept: "application/json" }
           : { Accept: "application/json", "Content-Type": "application/json" },
         body: body === undefined ? undefined : JSON.stringify(body),
-      }, false, action === "commit" || action === "rollback" ? 120000 : 30000);
+      }, false, action === "commit" || action === "rollback" ? 120000 : action === "begin" ? 55000 : 30000);
     } catch (error) {
       throw new Error(`无法确认本地服务的操作结果：${error.message || "连接中断"}。请检查当前版本或还原入口后再操作。`);
     }
@@ -305,34 +304,8 @@
     }
     return data;
   }
-  // 取文件这一步必须由浏览器做：便携包里那份 PHP 没有加载 openssl，自己连不上
-  // GitHub；而浏览器本来就在访问 api.github.com，也会走用户配好的代理或 VPN。
-  async function loadCompare(target) {
-    let result;
-    try {
-      result = await request(`${REPO}/compare/v${encodeURIComponent(current.replace(/^v/, ""))}...${encodeURIComponent(target)}`, {
-        credentials: "omit", cache: "no-store",
-        headers: { Accept: "application/vnd.github+json" },
-      });
-    } catch {
-      throw new Error("无法访问 api.github.com，请检查网络或代理后重试。");
-    }
-    const { response, data } = result;
-    const notice = rateLimitNotice(response.status, header(response, "x-ratelimit-remaining"), header(response, "x-ratelimit-reset"), Date.now());
-    if (notice) throw new Error(notice);
-    if (response.status === 404) {
-      throw new Error(`找不到当前版本对应的发布标签 v${current}，无法增量更新，请手动下载完整安装包。`);
-    }
-    if (!response.ok) throw new Error(`GitHub 返回 HTTP ${response.status}，暂时无法更新。`);
-    if (!data || typeof data !== "object") throw new Error("GitHub 返回的版本差异无法解析。");
-    if (data.status !== "ahead" && data.status !== "identical") {
-      throw new Error("当前版本与最新版不在同一条线上（可能改过程序文件），请下载完整安装包。");
-    }
-    if (!Array.isArray(data.files)) throw new Error("GitHub 返回的文件清单不完整，请稍后重试。");
-    return data.files;
-  }
-  function rawUrl(path, target) {
-    return `${RAW}/${encodeURIComponent(target)}/${path.split("/").map(encodeURIComponent).join("/")}`;
+  function rawUrl(path, commit) {
+    return `${RAW}/${encodeURIComponent(commit)}/${path.split("/").map(encodeURIComponent).join("/")}`;
   }
   async function applyUpdate() {
     if (updating || busy || reloadRequired || !shownTag) return;
@@ -344,29 +317,20 @@
     if (applyButton) applyButton.disabled = true;
     if (rollbackButton) rollbackButton.disabled = true;
     if (reloadButton) reloadButton.hidden = true;
-    setApplyStatus("正在获取版本差异…");
+    setApplyStatus("正在验证发布版本…");
     try {
-      const files = await loadCompare(target);
-      // 服务端拿着这份差异再筛一遍：发布包里没有的路径会被剔除，真正要下载的
-      // 清单由它给出，客户端不自己决定写哪些文件。
-      const plan = await postAction("begin", {
-        current,
-        target,
-        files: files.map((file) => ({
-          filename: String(file.filename || ""),
-          status: String(file.status || ""),
-          sha: String(file.sha || ""),
-          previous_filename: String(file.previous_filename || ""),
-        })),
-      });
+      const plan = await postAction("begin", { current, target });
       planId = plan.planId;
+      if (typeof plan.commit !== "string" || !/^[0-9a-f]{40}$/.test(plan.commit)) {
+        throw new Error("本机更新服务没有返回已验证的发布提交，请下载完整安装包。");
+      }
       const total = plan.fileCount;
       for (let index = 0; index < plan.downloads.length; index++) {
         const entry = plan.downloads[index];
         setApplyStatus(`正在下载 ${index + 1}/${total}：${entry.path}`);
         let downloaded;
         try {
-          downloaded = await request(rawUrl(entry.path, target), { cache: "no-store", credentials: "omit" }, true);
+          downloaded = await request(rawUrl(entry.path, plan.commit), { cache: "no-store", credentials: "omit" }, true);
         } catch {
           throw new Error(`下载 ${entry.path} 失败：无法访问 raw.githubusercontent.com，请检查网络或代理。`);
         }

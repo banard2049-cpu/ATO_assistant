@@ -132,7 +132,7 @@ test('map collision reads the battle before removing the nemesis and saves befor
   const cycleState = { tokens: { AD: '001' } };
   const ctx = vm.createContext({
     state: { activeCycleId: 'c2' }, mapStateProfileId: 'original',
-    activeCycleState: () => cycleState, render: noop, pushUndo: noop,
+    activeCycleState: () => cycleState, render: noop, pushUndo: noop, finishMapUndo: noop,
     adversaryBattleUrl: async (cycle, profile) => { sequence.push(`read:${cycle}:${profile}`); return '/story?book=c4'; },
     saveState: () => sequence.push('queue-save'),
     flushCampaignMapSave: async () => { sequence.push('save'); assert.equal(cycleState.tokens.AD, ''); return true; },
@@ -150,7 +150,7 @@ test('map collision retains its nemesis when its record cannot be read or the cy
     const cycleState = { tokens: { AD: '001' } };
     const ctx = vm.createContext({
       state: { activeCycleId: 'c2' }, mapStateProfileId: 'original',
-      activeCycleState: () => cycleState, render: noop, pushUndo: noop,
+      activeCycleState: () => cycleState, render: noop, pushUndo: noop, finishMapUndo: noop,
       saveState: () => saves++, window: { location: {}, alert: noop },
       adversaryBattleUrl: async () => {
         if (kind === 'failure') throw new Error('offline');
@@ -200,7 +200,7 @@ test('Android nemesis encounter saves the map then opens the exact battle in a n
   const ctx = vm.createContext({
     URL,
     state: { activeCycleId: 'c2' }, mapStateProfileId: 'original',
-    activeCycleState: () => cycleState, render: () => sequence.push('render'), pushUndo: noop,
+    activeCycleState: () => cycleState, render: () => sequence.push('render'), pushUndo: noop, finishMapUndo: noop,
     adversaryBattleUrl: async () => target,
     saveState: () => sequence.push('queue-save'),
     flushCampaignMapSave: async () => { sequence.push('save'); return true; },
@@ -220,7 +220,7 @@ test('Android encounter does not navigate after a failed map save', async () => 
   const cycleState = { tokens: { AD: '001' } };
   const ctx = vm.createContext({
     URL, state: { activeCycleId: 'c2' }, mapStateProfileId: 'original',
-    activeCycleState: () => cycleState, render: noop, pushUndo: noop, saveState: noop,
+    activeCycleState: () => cycleState, render: noop, pushUndo: noop, finishMapUndo: noop, saveState: noop,
     adversaryBattleUrl: async () => '../story/index.html?entry=123',
     flushCampaignMapSave: async () => false,
     campaignSession: { changed: false }, mapSaveConflict: false,

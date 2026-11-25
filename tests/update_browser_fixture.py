@@ -1,13 +1,11 @@
 """Disposable manual-browser fixture. Run python -B tests/update_browser_fixture.py.
 
-Copies tracked application files into tmp, adds synthetic GitHub responses to the
-copied dashboard, and runs real PHP APIs. Never serves the working installation.
+Copies tracked application files into tmp, supplies synthetic GitHub responses to
+both the browser and copied PHP updater, and runs the real local APIs.
 Stop with Ctrl+C. Fixture files remain under tmp for inspecting test evidence.
 """
-import hashlib
 import json
 import os
-from pathlib import Path
 import shutil
 import socket
 import subprocess
@@ -15,7 +13,13 @@ import time
 import urllib.request
 import uuid
 
-ROOT = Path(__file__).resolve().parents[1]
+from test_app_update import (
+    ROOT,
+    fixture_commit,
+    github_release_responses,
+    git_blob_sha,
+    install_fixture_transport,
+)
 
 
 def main():
@@ -34,27 +38,37 @@ def main():
         shutil.copyfile(source, target)
     (fixture / 'runtime/php').mkdir(parents=True)
     (fixture / 'data').mkdir()
+    install_fixture_transport(fixture)
     (fixture / 'data/browser-test-sentinel.txt').write_text('synthetic save: preserve me', encoding='utf-8')
     (fixture / 'assets/update-fixture-blocked.js').mkdir()
     (fixture / 'assets/update-fixture-old.js').write_text('// old module\n', encoding='utf-8')
     (fixture / 'tools').mkdir()
     shutil.copyfile(ROOT / 'tools/matrix.html', fixture / 'tools/matrix.html')
+    tag = 'v9.9.9'
+    commit = fixture_commit(tag)
     shim = '''<script>
     (() => {
       const originalFetch = window.fetch.bind(window);
       window.fetch = (input, init) => {
         const url = String(input);
-        if (url.startsWith('https://api.github.com/repos/banard2049-cpu/ATO_assistant') ||
-            url.startsWith('https://raw.githubusercontent.com/banard2049-cpu/ATO_assistant/')) {
-          const scenario = document.querySelector('#fixtureScenario')?.value || 'normal';
-          const kind = url.includes('/releases/latest') ? 'release' : url.includes('/compare/') ? 'compare' : 'raw';
-          const path = kind === 'raw' ? decodeURIComponent(url.split('/v9.9.9/')[1] || '') : '';
-          return originalFetch('/fixture.php?kind=' + kind + '&scenario=' + scenario + '&path=' + encodeURIComponent(path), init);
+        const scenario = document.querySelector('#fixtureScenario')?.value || 'normal';
+        if (url.includes('/api/app-update.php?action=begin')) {
+          document.cookie = 'ato_update_fixture_scenario=' + encodeURIComponent(scenario) + '; Path=/; SameSite=Lax';
+        }
+        if (url.startsWith('https://api.github.com/repos/banard2049-cpu/ATO_assistant/releases')) {
+          return originalFetch('/fixture.php?kind=release&scenario=' + encodeURIComponent(scenario), init);
+        }
+        const rawBase = 'https://raw.githubusercontent.com/banard2049-cpu/ATO_assistant/';
+        const rawPrefix = rawBase + '__FIXTURE_COMMIT__' + '/';
+        if (url.startsWith(rawBase)) {
+          if (!url.startsWith(rawPrefix)) return Promise.reject(new Error('Expected the verified release commit'));
+          const path = decodeURIComponent(url.slice(rawPrefix.length));
+          return originalFetch('/fixture.php?kind=raw&scenario=' + encodeURIComponent(scenario) + '&path=' + encodeURIComponent(path), init);
         }
         return originalFetch(input, init);
       };
     })();
-    </script>'''
+    </script>'''.replace('__FIXTURE_COMMIT__', commit)
     controls = '''<label style="display:block;padding:12px;background:#483e20;color:white" for="fixtureScenario">隔离测试场景</label>
     <select id="fixtureScenario" style="margin:12px">
       <option value="normal">正常更新</option><option value="checksum">下载内容损坏</option>
@@ -66,13 +80,24 @@ def main():
     contents = {'assets/update-fixture-new.js': '// browser fixture updated\n'}
     for name in ['api/app-update.php', 'api/app-update-policy.php', 'assets/update/update-check.js']:
         contents[name] = (fixture / name).read_text(encoding='utf-8') + '\n// browser fixture version\n'
-    files = [{'filename': name, 'status': 'modified', 'sha': hashlib.sha1(
-        b'blob ' + str(len(text.encode())).encode() + b'\0' + text.encode()).hexdigest()} for name, text in contents.items()]
+    files = [{'filename': name, 'status': 'modified', 'sha': git_blob_sha(text.encode())} for name, text in contents.items()]
     files.append({'filename': 'assets/update-fixture-old.js', 'status': 'removed'})
-    blocked = b'// blocked\n'
-    manifest = {'contents': contents, 'files': files, 'blocked': {
+    blocked = {
         'filename': 'assets/update-fixture-blocked.js', 'status': 'added',
-        'sha': hashlib.sha1(b'blob ' + str(len(blocked)).encode() + b'\0' + blocked).hexdigest()}}
+        'sha': git_blob_sha(b'// blocked\n'),
+    }
+    current = (fixture / 'assets/update/app-version.js').read_text(encoding='utf-8').split('"')[1]
+    normal = github_release_responses(current, tag, files)
+    responses = {
+        'normal': normal,
+        'checksum': normal,
+        'apply-failure': github_release_responses(current, tag, [*files, blocked]),
+        'offline': {},
+    }
+    (fixture / 'data/github-update-fixture.json').write_text(json.dumps(responses), encoding='utf-8')
+    manifest = {'contents': contents, 'release': {
+        **normal[f'releases/tags/{tag}'], 'body': '隔离测试版本：下载、校验、写入、删除、自更新、还原。',
+    }}
     (fixture / 'data/fixture.json').write_text(json.dumps(manifest), encoding='utf-8')
     (fixture / 'fixture.php').write_text('''<?php
     $fixture = json_decode(file_get_contents(__DIR__ . '/data/fixture.json'), true);
@@ -87,10 +112,8 @@ def main():
       exit;
     }
     header('Content-Type: application/json');
-    if ($kind === 'release') { echo json_encode(['tag_name'=>'v9.9.9', 'body'=>'隔离测试版本：下载、校验、写入、删除、自更新、还原。']); exit; }
-    $files = $fixture['files'];
-    if ($scenario === 'apply-failure') $files[] = $fixture['blocked'];
-    echo json_encode(['status'=>'ahead','files'=>$files]);
+    if ($kind === 'release') { echo json_encode([$fixture['release']]); exit; }
+    http_response_code(404);
     ''', encoding='utf-8')
     with socket.socket() as sock:
         sock.bind(('127.0.0.1', 0))

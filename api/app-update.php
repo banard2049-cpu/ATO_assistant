@@ -3,25 +3,17 @@ declare(strict_types=1);
 
 // 应用内一键更新：只替换「程序代码」，不碰运行时、data/、本地素材。
 //
-// 为什么网络请求由浏览器发，而不是 PHP 自己发
-//   便携包里那份 PHP 运行时是按官方 ZIP 原样发布的：没有 php.ini，openssl 与
-//   curl 都没加载（extension_dir 还指向构建机上的 C:\php\ext）。也就是说 PHP 自己
-//   连不上 https://api.github.com。要在服务端发请求，就得改启动脚本去加载 openssl，
-//   那只对新下载的包有效，而且照样绕不过用户的代理/VPN 设置。
-//   浏览器本来就在访问 api.github.com（检查更新那条路），也自然走用户配好的代理，
-//   所以：浏览器负责取文件，服务端只负责校验和落盘。PHP 全程不碰网络。
-//
-// 服务端仍然是权威
+// 服务端校验发布来源，浏览器按计划下载文件。
 //   * 只接受本机回环 + 已登录用户的请求；
-//   * 文件清单先送进 begin 由服务端筛一遍：路径规范化、按打包器同一套规则剔除
+//   * 服务端从官方仓库读取发布记录、标签指向的提交和文件差异，再按打包规则剔除
 //     发布包里没有的路径（tools/、data/、tests/、asset-studio/、本地素材、
-//     *.atopack、BGM 音频……），客户端拿到的才是真正要下载的清单；
+//     *.atopack、BGM 音频……）；
 //   * 每个文件的内容用 GitHub 给的 git blob sha 校验后才进暂存；
 //   * 全部暂存校验通过才动安装目录，动之前先备份，失败可以还原。
 //
 // 调用顺序（全部为 POST，除 status）：
 //   status   能力探测
-//   begin    提交版本差异，服务端给出下载/删除清单
+//   begin    提交目标版本，服务端核实后给出下载/删除清单
 //   stage    逐个上传文件内容（?path=&sha=，正文为原始字节）
 //   commit   落盘
 //   rollback 还原最近一次备份
@@ -38,6 +30,8 @@ const ATO_UPDATE_MAX_FILE_BYTES = 8388608;
 // 一次更新的总量上限。
 const ATO_UPDATE_MAX_TOTAL_BYTES = 33554432;
 const ATO_UPDATE_VERSION_RELATIVE = 'assets/update/app-version.js';
+const ATO_UPDATE_PLAN_VERSION = 2;
+const ATO_UPDATE_RUNNER_PREFIX = '.ato-update-v2-';
 
 // API 响应必须是合法 JSON，即使运行时写不了盘：把 PHP 警告赶进日志，不要混进正文。
 ini_set('display_errors', '0');
@@ -198,17 +192,33 @@ function ato_update_require_version(string $root, string $expected): void
   }
 }
 
-/**
- * 内容是否与 GitHub 给出的摘要一致。
- *
- * GitHub compare 的 files[].sha 是文件的 git blob 摘要（"blob <长度>\0<内容>" 的
- * sha1）。这里同时接受内容本身的 sha1：两种都是内容摘要，任一命中都能证明拿到的
- * 字节就是发布版本里的那一份，同时避免把整套校验押在「接口返回的一定是 blob 摘要」
- * 这一个假设上。都不是则一律拒绝。
- */
-function ato_update_digest_matches(string $content, string $sha): bool
+function ato_update_verified_plan(?array $plan): bool
 {
-  return ato_update_git_blob_sha($content) === $sha || hash('sha1', $content) === $sha;
+  return ($plan['version'] ?? null) === ATO_UPDATE_PLAN_VERSION
+    && is_string($plan['commit'] ?? null) && preg_match('/\A[0-9a-f]{40}\z/', $plan['commit']) === 1;
+}
+
+/** Resolve the published tag itself, including annotated tags, to a fixed commit. */
+function ato_update_release_commit(string $tag): string
+{
+  $release = ato_update_github_json('releases/tags/' . rawurlencode($tag));
+  if (($release['tag_name'] ?? null) !== $tag || ($release['draft'] ?? null) !== false
+      || ($release['prerelease'] ?? null) !== false || empty($release['published_at'])) {
+    respond(502, ['ok' => false, 'code' => 'RELEASE_UNVERIFIED',
+      'error' => '本机服务无法验证这个 GitHub 正式发布版本，请检查连接或下载完整安装包。']);
+  }
+  $ref = ato_update_github_json('git/ref/tags/' . rawurlencode($tag));
+  $object = ($ref['ref'] ?? null) === 'refs/tags/' . $tag ? ($ref['object'] ?? null) : null;
+  for ($depth = 0; $depth <= 2 && is_array($object); $depth++) {
+    $sha = $object['sha'] ?? null;
+    if (!is_string($sha) || preg_match('/\A[0-9a-f]{40}\z/', $sha) !== 1) break;
+    if (($object['type'] ?? null) === 'commit') return $sha;
+    if (($object['type'] ?? null) !== 'tag' || $depth === 2) break;
+    $annotation = ato_update_github_json('git/tags/' . $sha);
+    $object = ($annotation['sha'] ?? null) === $sha ? ($annotation['object'] ?? null) : null;
+  }
+  respond(502, ['ok' => false, 'code' => 'RELEASE_UNVERIFIED',
+    'error' => '无法确认发布标签对应的提交，请稍后重试或下载完整安装包。']);
 }
 
 /** 暂存文件是否仍然和计划一致（大小 + 摘要）。 */
@@ -218,7 +228,7 @@ function ato_update_staged_is_valid(string $stageDir, array $entry): bool
   if (!is_file($path)) return false;
   $content = @file_get_contents($path);
   if ($content === false) return false;
-  return strlen($content) === (int) $entry['bytes'] && ato_update_digest_matches($content, (string) $entry['sha']);
+  return strlen($content) === (int) $entry['bytes'] && ato_update_git_blob_sha($content) === $entry['sha'];
 }
 
 function ato_update_latest_backup(string $backupRoot): ?string
@@ -262,11 +272,15 @@ $needsRecovery = ($latestBackupPlan['state'] ?? '') === 'applying';
 // Windows 内置服务器会占用当前请求的 PHP 文件。提交/还原通过一次性的
 // 执行副本完成，避免更新器无法替换自己；上一请求留下的副本在下次访问时清理。
 foreach (glob(__DIR__ . DIRECTORY_SEPARATOR . '.ato-update-*.php') ?: [] as $runner) {
-  if ($runner !== __FILE__ && (is_file($runner . '.done') || @filemtime($runner) < time() - 3600)) {
+  if ($runner !== __FILE__ && (!str_starts_with(basename($runner), ATO_UPDATE_RUNNER_PREFIX)
+      || is_file($runner . '.done') || @filemtime($runner) < time() - 3600)) {
     if (@unlink($runner)) @unlink($runner . '.done');
   }
 }
-if (str_starts_with(basename(__FILE__), '.ato-update-')) {
+if (str_starts_with(basename(__FILE__), ATO_UPDATE_RUNNER_PREFIX)) {
+  if (!in_array($action, ['commit', 'rollback'], true)) {
+    respond(405, ['ok' => false, 'error' => 'Unsupported action.']);
+  }
   register_shutdown_function(static function (): void { @file_put_contents(__FILE__ . '.done', ''); });
 }
 
@@ -277,7 +291,7 @@ if ($action === 'status') {
   $plan = $stageDir === null ? null : ato_update_read_plan($stageDir);
   $staged = 0;
   $planned = 0;
-  if (is_array($plan)) {
+  if (ato_update_verified_plan($plan)) {
     foreach ($plan['downloads'] ?? [] as $entry) {
       $planned++;
       if (is_array($entry) && isset($entry['bytes']) && ato_update_staged_is_valid($stageDir, $entry)) $staged++;
@@ -289,7 +303,7 @@ if ($action === 'status') {
     'code' => $support[0] ?? null,
     'reason' => $support[1] ?? null,
     'version' => ato_update_local_version($root),
-    'canCommit' => is_array($plan) && !$needsRecovery && $staged === $planned,
+    'canCommit' => ato_update_verified_plan($plan) && !$needsRecovery && $staged === $planned,
     'canRollback' => $latestBackup !== null,
     'backupId' => $latestBackup === null ? null : basename($latestBackup),
     'rollbackVersion' => $latestBackupPlan['from'] ?? null,
@@ -321,7 +335,7 @@ if ($action === 'prepare') {
     respond(500, ['ok' => false, 'code' => 'PREPARE_FAILED', 'error' => '更新程序格式不兼容，请下载完整安装包。']);
   }
   $combined = substr_replace($main, $policy, $offset, strlen($marker));
-  $name = '.ato-update-' . bin2hex(random_bytes(16)) . '.php';
+  $name = ATO_UPDATE_RUNNER_PREFIX . bin2hex(random_bytes(16)) . '.php';
   if (!ato_update_write_atomic(__DIR__ . DIRECTORY_SEPARATOR . $name, $combined)) {
     respond(500, ['ok' => false, 'code' => 'PREPARE_FAILED', 'error' => '无法创建更新执行副本，请检查 api 目录权限和磁盘空间。']);
   }
@@ -329,8 +343,6 @@ if ($action === 'prepare') {
 }
 
 // ------------------------------------------------------------------ begin ---
-// 浏览器把 GitHub compare 的结果原样送进来，服务端筛出「发布包里真实存在的
-// 路径」，返回真正要下载的清单。排除规则只有这一处实现（和打包器一致）。
 if ($action === 'begin') {
   if ($needsRecovery) {
     respond(409, ['ok' => false, 'code' => 'RECOVERY_REQUIRED', 'error' => '上次更新尚未完成，请先还原上一版再重试。']);
@@ -339,16 +351,30 @@ if ($action === 'begin') {
   if ($body === null) {
     respond(400, ['ok' => false, 'code' => 'BAD_REQUEST', 'error' => '请求内容不是合法的 JSON。']);
   }
-  $current = (string) ($body['current'] ?? '');
-  $tag = (string) ($body['target'] ?? '');
-  if (ato_update_parse_version($current) === null || ato_update_parse_version($tag) === null) {
+  $current = $body['current'] ?? null;
+  $tag = $body['target'] ?? null;
+  $targetVersion = is_string($tag) ? ato_update_parse_version($tag) : null;
+  if (!is_string($current) || ato_update_parse_version($current) === null
+      || $targetVersion === null || $targetVersion['prerelease'] !== '') {
     respond(400, ['ok' => false, 'code' => 'BAD_VERSION', 'error' => '版本号格式不正确，已停止更新。']);
   }
   if (!ato_update_is_newer($tag, $current)) {
     respond(409, ['ok' => false, 'code' => 'ALREADY_LATEST', 'error' => '当前已经是最新版本。']);
   }
   ato_update_require_version($root, $current);
-  $changed = is_array($body['files'] ?? null) ? $body['files'] : [];
+  set_time_limit(45);
+  $commit = ato_update_release_commit($tag);
+  $baseTag = 'v' . ltrim($current, 'v');
+  $compare = ato_update_github_json('compare/' . rawurlencode($baseTag) . '...' . $commit);
+  if (!is_array($compare['files'] ?? null) || !array_is_list($compare['files'])) {
+    respond(502, ['ok' => false, 'code' => 'COMPARE_UNVERIFIED',
+      'error' => '本机服务无法从 GitHub 确认版本差异，请检查连接或下载完整安装包。']);
+  }
+  if (!in_array($compare['status'] ?? null, ['ahead', 'identical'], true)) {
+    respond(409, ['ok' => false, 'code' => 'DIVERGED_RELEASE',
+      'error' => '当前版本与目标发布版本不在同一条线上，请下载完整安装包。']);
+  }
+  $changed = $compare['files'];
   if (count($changed) >= ATO_UPDATE_COMPARE_FILE_LIMIT) {
     respond(409, [
       'ok' => false, 'code' => 'TOO_MANY_FILES',
@@ -359,7 +385,9 @@ if ($action === 'begin') {
   $downloads = [];
   $deletions = [];
   foreach ($changed as $file) {
-    if (!is_array($file)) continue;
+    if (!is_array($file) || !is_string($file['filename'] ?? null) || !is_string($file['status'] ?? null)) {
+      respond(502, ['ok' => false, 'code' => 'COMPARE_UNVERIFIED', 'error' => 'GitHub 返回的文件清单不完整，已停止更新。']);
+    }
     $name = (string) ($file['filename'] ?? '');
     $safe = ato_update_normalize_relative($name);
     if ($safe === null) {
@@ -393,15 +421,17 @@ if ($action === 'begin') {
   $deletions = array_keys(array_diff_key($deletions, $downloads));
 
   ato_update_remove_tree($stagingRoot);
-  $stageDir = $stagingRoot . DIRECTORY_SEPARATOR . $tag;
+  $planId = bin2hex(random_bytes(16));
+  $stageDir = $stagingRoot . DIRECTORY_SEPARATOR . $planId;
   if (!@mkdir($stageDir . DIRECTORY_SEPARATOR . 'files', 0770, true) && !is_dir($stageDir . DIRECTORY_SEPARATOR . 'files')) {
     respond(500, ['ok' => false, 'code' => 'STAGING_FAILED', 'error' => '无法写入暂存目录 data/update-staging，请检查磁盘空间和权限。']);
   }
   $plan = [
-    'version' => 1,
-    'id' => bin2hex(random_bytes(16)),
+    'version' => ATO_UPDATE_PLAN_VERSION,
+    'id' => $planId,
     'current' => $current,
     'target' => $tag,
+    'commit' => $commit,
     'downloads' => [],
     'deletions' => $deletions,
     'createdAt' => time(),
@@ -420,6 +450,7 @@ if ($action === 'begin') {
     'planId' => $plan['id'],
     'current' => $current,
     'target' => $tag,
+    'commit' => $commit,
     'downloads' => $plan['downloads'],
     'deletions' => $deletions,
     'fileCount' => count($plan['downloads']),
@@ -436,9 +467,8 @@ if ($action === 'stage') {
   }
   $plan = ato_update_read_plan($stageDir);
   ato_update_require_plan_id($plan);
-  if ($plan === null) {
-    ato_update_remove_tree($stagingRoot);
-    respond(409, ['ok' => false, 'code' => 'NO_PLAN', 'error' => '更新计划已损坏，请重新执行「一键更新」。']);
+  if (!ato_update_verified_plan($plan)) {
+    respond(409, ['ok' => false, 'code' => 'NO_PLAN', 'error' => '更新计划需要重新验证，请重新执行「一键更新」。']);
   }
   $declared = (string) ($_GET['path'] ?? '');
   // PHP 已经解码了查询参数；再次解码会破坏文件名中的 %20 等字面文本。
@@ -469,7 +499,7 @@ if ($action === 'stage') {
   if (strlen($content) > ATO_UPDATE_MAX_FILE_BYTES) {
     respond(413, ['ok' => false, 'code' => 'FILE_TOO_LARGE', 'error' => "文件 {$path} 超过单个文件上限，无法自动更新。"]);
   }
-  if (!ato_update_digest_matches($content, $sha)) {
+  if (ato_update_git_blob_sha($content) !== $sha) {
     respond(502, [
       'ok' => false, 'code' => 'CHECKSUM_MISMATCH',
       'error' => "文件 {$path} 校验失败（内容与发布版本不一致），已取消更新，安装目录未改动。",
@@ -520,7 +550,7 @@ if ($action === 'commit') {
   }
   $stageDir = ato_update_stage_dir($stagingRoot);
   $plan = $stageDir === null ? null : ato_update_read_plan($stageDir);
-  if ($plan === null) {
+  if (!ato_update_verified_plan($plan)) {
     respond(409, ['ok' => false, 'code' => 'NO_PLAN', 'error' => '还没有下载好的更新，请先执行「一键更新」。']);
   }
   ato_update_require_plan_id($plan);

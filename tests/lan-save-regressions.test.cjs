@@ -27,13 +27,16 @@ function context(file, names, vars) {
   return c;
 }
 function mapContext(extra={}) {
-  return context('map/app.js', ['deepEqualValue','mergeValues','mergeMapStates','saveCampaignMapSection','applyServerMapState','pickServerMapState','loadCampaignMapSectionState'], {
+  return context('map/app.js', ['deepEqualValue','mergeValues','mergeMapStates','saveCampaignMapSection','applyServerMapState','pickServerMapState','loadCampaignMapSectionState',
+    'captureMapUndoState','pushUndo','finishMapUndo','findMapMarkerTile','preserveMovedUniqueMarkers','reverseMapUndo','undoLastChange','renderUndoControl','saveState','triggerAdversaryBattle'], {
     cloneValue:clone,isPlainObject,normalizeState:clone,setCampaignSaveStatus:noop,noteMapMergeConflict:noop,
     scheduleReconnectAttempt:noop,campaignSession:session(),campaignStorageAvailable:true,campaignSaveInFlight:false,
     campaignSavePending:false,campaignSaveQueuedBeforeReady:false,campaignReconnectDelay:2000,mapSaveConflict:false,
     campaignStorageUrl:'/api',mapStateProfileId:'A',mapStateLoadedFromServer:true,mapSectionRevision:1,
     mapStateBaseline:{position:0,hideUnknown:true},state:{position:1,hideUnknown:true},
-    focusArgoAfterNextRender:noop,render:noop,scoutMapSyncChannel:null,...extra,
+    focusArgoAfterNextRender:noop,render:noop,scoutMapSyncChannel:null,
+    pendingMapUndo:null,pendingAdversarySpawnCandidates:new Set(),undoStack:[],maxUndoSteps:40,
+    elements:{undoButton:{}},secondScreenMode:false,queueCampaignSave:noop,tokenAssets:[{id:'hs',unique:true}],...extra,
   });
 }
 test('session guard rejects a changed login on reads, errors and subsequent writes', ()=>{
@@ -100,6 +103,143 @@ test('map reconnect retains its original profile even without local edits',()=>{
   c.applyServerMapState({users:{A:{position:4},B:{position:9}}},'B',false);
   assert.equal(c.mapStateProfileId,'A');
   assert.equal(c.state.position,4);
+});
+test('undoing a saved map note keeps another page’s movement already synced into the map', async () => {
+  let server = {cycles:{c1:{currentTile:'001',tokens:{AG:'001'},tileNotes:{}}}};
+  let revision = 1;
+  const c = mapContext({state:clone(server),mapStateBaseline:clone(server), fetch:async(url,options)=>{
+    const write = JSON.parse(options.body);
+    assert.equal(write.expectedRevision, revision);
+    server = write.state;
+    return response(200,{ok:true,revision:++revision});
+  }});
+  c.pushUndo();
+  c.state.cycles.c1.tileNotes['001'] = 'local note';
+  c.saveState();
+  assert.equal(await c.saveCampaignMapSection(), true);
+
+  server.cycles.c1.currentTile = server.cycles.c1.tokens.AG = '002';
+  c.mapSectionRevision = ++revision;
+  c.applyServerMapState({users:{A:server}}, 'A', false);
+  c.undoLastChange();
+  assert.equal(await c.saveCampaignMapSection(), true);
+  assert.deepEqual(server.cycles.c1, {currentTile:'002',tokens:{AG:'002'},tileNotes:{}});
+});
+test('undo keeps newer fields from a save-conflict merge and does not absorb later local preferences', async () => {
+  const initial = {position:'001',zoom:100,tileNotes:{}};
+  let server = {...clone(initial),position:'002'};
+  let revision = 2;
+  const c = mapContext({state:clone(initial),mapStateBaseline:clone(initial), fetch:async(url,options)=>{
+    if (!options?.method) return response(200,{ok:true,state:{users:{A:server}},revision});
+    const write = JSON.parse(options.body);
+    if (write.expectedRevision !== revision) return response(409,{code:'SAVE_CONFLICT',revision});
+    server = write.state;
+    return response(200,{ok:true,revision:++revision});
+  }});
+  c.pushUndo();
+  c.state.tileNotes['001'] = 'local note';
+  c.saveState();
+  c.state.zoom = 120;
+  c.saveState();
+  assert.equal(await c.saveCampaignMapSection(), true);
+  assert.equal(c.state.position, '002');
+
+  c.undoLastChange();
+  assert.equal(await c.saveCampaignMapSection(), true);
+  assert.deepEqual(server, {position:'002',zoom:120,tileNotes:{}});
+});
+test('undo preserves a newer edit to the same note without scheduling a save', () => {
+  let saves = 0;
+  const c = mapContext({state:{tileNotes:{'001':'original'}}, queueCampaignSave:()=>saves++});
+  c.pushUndo();
+  c.state.tileNotes['001'] = 'local note';
+  c.saveState();
+  c.applyServerMapState({users:{A:{tileNotes:{'001':'newer note'}}}}, 'A', false);
+  c.undoLastChange();
+  assert.equal(c.state.tileNotes['001'], 'newer note');
+  assert.equal(saves, 1);
+});
+test('undo preserves other changes to the same tile and a newer unique marker location', () => {
+  const map = (markers, edgeMarkers) => ({cycles:{c1:{tokens:{markers,edgeMarkers}}}});
+  const c = mapContext({state:map({'001':{hs:true}}, {})});
+  c.pushUndo();
+  c.state = map({'002':{hs:true,ENGIN:true}}, {'002':{sandstorm:['up']}});
+  c.saveState();
+  const updated = map({'002':{night_nymph:true,ENGIN:true},'003':{hs:true}}, {'002':{sandstorm:['up','right']}});
+  c.applyServerMapState({users:{A:updated}}, 'A', false);
+  c.undoLastChange();
+  assert.deepEqual(clone(c.state), map({'002':{night_nymph:true},'003':{hs:true}}, {'002':{sandstorm:['right']}}));
+});
+test('undo cannot overwrite a newer unique marker move or removal before the map reads it', async () => {
+  const map = markers => ({cycles:{c1:{tokens:{markers}}}});
+  for (const newerMarkers of [{ '003': { hs: true } }, {}]) {
+    let server = map({ '001': { hs: true } });
+    let revision = 1;
+    const c = mapContext({ state:clone(server), mapStateBaseline:clone(server), async fetch(url, options) {
+      if (!options?.method) return response(200,{ok:true,state:{users:{A:server}},revision});
+      const write = JSON.parse(options.body);
+      if (write.expectedRevision !== revision) return response(409,{code:'SAVE_CONFLICT',revision});
+      server = write.state;
+      return response(200,{ok:true,revision:++revision});
+    } });
+    c.pushUndo();
+    c.state.cycles.c1.tokens.markers = { '002': { hs: true } };
+    c.saveState();
+    assert.equal(await c.saveCampaignMapSection(), true);
+
+    server = map(newerMarkers);
+    revision += 1;
+    c.undoLastChange();
+    assert.equal(await c.saveCampaignMapSection(), false);
+    assert.equal(c.mapSaveConflict, true);
+    assert.deepEqual(server, map(newerMarkers));
+  }
+});
+test('undo keeps an encounter move grouped, and can cancel the move while the battle is loading', async () => {
+  for (const cancelMove of [false,true]) {
+    const initial = {activeCycleId:'c1',cycles:{c1:{currentTile:'001',tokens:{AG:'001',AD:'002'}}}};
+    let loaded;
+    const c = mapContext({state:clone(initial), window:{location:{},alert:noop},
+      adversaryBattleUrl:()=>new Promise(resolve=>{loaded=resolve;}),flushCampaignMapSave:async()=>true,
+    });
+    c.activeCycleState = () => c.state.cycles.c1;
+    c.pushUndo();
+    c.state.cycles.c1.currentTile = c.state.cycles.c1.tokens.AG = '002';
+    const encounter = c.triggerAdversaryBattle();
+    if (cancelMove) c.undoLastChange();
+    loaded('/battle');
+    await encounter;
+    if (cancelMove) {
+      assert.equal(c.window.location.href, undefined);
+    } else {
+      assert.equal(c.state.cycles.c1.tokens.AD, '');
+      assert.equal(c.window.location.href, '/battle');
+      assert.equal(c.undoStack.length, 1);
+      c.undoLastChange();
+    }
+    assert.deepEqual(clone(c.state), initial);
+  }
+});
+test('undo cancels an encounter while its map save is in flight', async () => {
+  const initial = {activeCycleId:'c1',cycles:{c1:{currentTile:'001',tokens:{AG:'001',AD:'002'}}}};
+  let finishSave;
+  let notifySaving;
+  const saving = new Promise(resolve => { notifySaving = resolve; });
+  const c = mapContext({
+    state:clone(initial), window:{location:{},alert:noop},
+    adversaryBattleUrl:async()=>'/battle',
+    flushCampaignMapSave:()=>new Promise(resolve => { finishSave = resolve; notifySaving(); }),
+  });
+  c.activeCycleState = () => c.state.cycles.c1;
+  c.pushUndo();
+  c.state.cycles.c1.currentTile = c.state.cycles.c1.tokens.AG = '002';
+  const encounter = c.triggerAdversaryBattle();
+  await saving;
+  c.undoLastChange();
+  finishSave(true);
+  await encounter;
+  assert.equal(c.window.location.href, undefined);
+  assert.deepEqual(clone(c.state), initial);
 });
 test('map identity mismatch aborts before revision conflict retry',async()=>{
   let calls=0;
