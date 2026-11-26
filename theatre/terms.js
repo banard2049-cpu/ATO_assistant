@@ -36,6 +36,13 @@
     const battleName = (bossSearch || root.AIBP_BOSS_SEARCH)?.entries.find(entry => entry.id === id)?.names;
     return battleName?.[language === 'official' ? 'official' : 'fan'] || expansionName;
   }
+  function bossNameTranslator(language) {
+    if (language !== 'official') return text => text;
+    const replacements = [...Object.keys(expansionBosses), 'HERMESIAN_PURSUER']
+      .map(id => [boss(id, 'fan', ''), boss(id, language, '')])
+      .filter(([fan, localized]) => fan && localized && fan !== localized);
+    return text => replacements.reduce((line, [from, to]) => line.replaceAll(from, to), text);
+  }
   const ui = {
     theatre: ['忆识剧场', '幻忆剧场', 'Mnestis Theatre'],
     tree: ['知识之树', '知识之树', 'Tree of Knowledge'],
@@ -69,6 +76,7 @@
   const api = {
     ui: (key, language) => ui[key][index(language)],
     boss,
+    bossNameTranslator,
     material: (cycle, kind, language, english) => materials[cycle]?.[kind]?.[index(language)] || english,
     loot: (reward, language) => (language === 'official' && officialLoot[`${reward.deck}:${reward.card}`]) || reward.name,
     skyseerGear: (card, language) => skyseerGear[card][index(language)],

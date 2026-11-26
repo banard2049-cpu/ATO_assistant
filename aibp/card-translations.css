@@ -1,0 +1,36 @@
+.card-translation-toggle {
+  position: fixed;
+  z-index: 1001;
+  top: 18px;
+  right: 70px;
+  min-width: 64px;
+  min-height: 42px;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+.card-translation-face {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.card-translation-toggle[hidden],
+.card-translation-face[hidden] {
+  display: none;
+}
+
+/* 中文卡面用替换内容的方式叠在原来的 img 上：大图、Trait 区、当前/弃牌/损伤牌堆、
+   第二屏都走同一个类，脚本画好一张就加一张。 */
+.card-translation-painted {
+  content: var(--card-translation-image, normal);
+}
+
+@media (max-width: 760px) {
+  .image-zoom-overlay:has(> .card-translation-toggle:not([hidden])) {
+    padding: 66px 12px 12px;
+  }
+}

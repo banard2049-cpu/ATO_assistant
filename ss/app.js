@@ -871,6 +871,10 @@ function openBattle(screen) {
   const rotation = [0, 90, 180, 270].includes(Number(screen.battleRotation)) ? Number(screen.battleRotation) : 0;
   const boardVisible = screen.battleBoardVisible !== false;
   const swapped = Boolean(screen.battleSwapped);
+  // 中文卡面跟着主控台走：开关随同步快照带过来（第二屏可能是另一台设备），
+  // 这里只改显示，不写回本机偏好。
+  window.AibpCardTranslations?.setEnabled(state.cardTranslation === true,
+    { persist: false, announce: false });
   const map = window.BattleTerrain.normalizeBattleMap(state.battleMap, state.apostle, state.level);
   elements.battleView.classList.toggle("board-hidden", !boardVisible);
   elements.battleView.classList.toggle("swapped", boardVisible && swapped);

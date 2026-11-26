@@ -57,6 +57,7 @@
   const gap = 10;
   let panel, closeButton, heading, subtitle, content, observer;
   let anchor = null;
+  let renderActive;
   let mode = "";
   let leaveTimer;
 
@@ -86,6 +87,7 @@
   }
 
   function setIconText(node, text, lookup) {
+    text = lookup.bossNames?.(text) ?? text;
     let end = 0;
     for (const match of text.matchAll(lookup.pattern)) {
       const name = match[0];
@@ -139,6 +141,18 @@
 
     observer = new MutationObserver(() => {
       if (anchor && !anchor.isConnected) close();
+    });
+    const languageObserver = new MutationObserver(records => {
+      const wasOfficial = records[0].oldValue === "official";
+      const isOfficial = document.documentElement.dataset.atoLanguage === "official";
+      if (!renderActive || wasOfficial === isOfficial) return;
+      const scrollTop = content.scrollTop;
+      renderActive();
+      position();
+      content.scrollTop = scrollTop;
+    });
+    languageObserver.observe(document.documentElement, {
+      attributes: true, attributeOldValue: true, attributeFilter: ["data-ato-language"],
     });
     document.addEventListener("toggle", (event) => {
       if (anchor && event.target.tagName === "DETAILS" && !event.target.open && event.target.contains(anchor)) close();
@@ -279,7 +293,10 @@
   }
 
   function render(card, lookup, thresholdMet) {
-    heading.textContent = card.zh;
+    const language = root.ATO_LANGUAGE?.get() || document.documentElement.dataset.atoLanguage;
+    const bossNames = root.ATO_THEATRE_TERMS?.bossNameTranslator?.(language);
+    lookup = { ...lookup, bossNames };
+    heading.textContent = bossNames?.(card.zh) ?? card.zh;
     subtitle.textContent = card.code ? card.en + " · " + card.code : card.en;
     // Older transcriptions can include the printed footer among the rule rows.
     let footerStart = card.rules.length;
@@ -339,6 +356,7 @@
     observer.disconnect();
     const previous = anchor;
     anchor = null;
+    renderActive = null;
     mode = "";
     previous.setAttribute("aria-expanded", "false");
     if (panel.popover) panel.hidePopover();
@@ -351,7 +369,8 @@
     if (anchor !== face) {
       close();
       anchor = face;
-      render(card, lookup, getThresholdMatcher());
+      renderActive = () => render(card, lookup, getThresholdMatcher());
+      renderActive();
       face.setAttribute("aria-expanded", "true");
       panel.hidden = false;
       if (panel.popover) panel.showPopover();
