@@ -327,7 +327,18 @@ h1 {
   background: var(--panel);
 }
 
+body:has(.battle-view:not([hidden])) {
+  background: #000;
+}
+
 .battle-view {
+  color-scheme: dark;
+  --bg: #000;
+  --panel: #000;
+  --ink: #f4f4f4;
+  --muted: #b8b8b8;
+  --line: #424242;
+  --gold: #e7bd7a;
   --battle-scale: 1;
   --battle-safe-height: 100vh;
   --battle-safe-width: 100vw;
@@ -354,6 +365,7 @@ h1 {
   grid-template-columns: minmax(260px, 1fr) minmax(260px, var(--battle-board-column));
   overflow: hidden;
   background: var(--bg);
+  color: var(--ink);
 }
 
 .battle-view.swapped {

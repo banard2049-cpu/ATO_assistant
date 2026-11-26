@@ -71,6 +71,8 @@
 
 .exploration-translation-condition {
   display: inline-block;
+  box-sizing: border-box;
+  max-inline-size: 100%;
   border-radius: 4px;
   padding: 1px 6px;
   margin-right: 6px;
@@ -145,14 +147,19 @@
 }
 
 .exploration-translation-branches > .has-condition {
-  display: grid;
-  grid-template-columns: max-content minmax(0, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   gap: 6px;
 }
 
 .exploration-translation-branches > .has-condition > .exploration-translation-condition {
   margin-right: 0;
+}
+
+.exploration-translation-branches > .has-condition > .exploration-translation-rule-text {
+  flex: 1 1 10em;
+  min-inline-size: 0;
 }
 
 .exploration-translation .is-threshold-met {
@@ -169,7 +176,7 @@
 
 .exploration-translation-icon-label {
   display: inline-block;
-  white-space: nowrap;
+  max-inline-size: 100%;
 }
 
 .exploration-translation-icon {

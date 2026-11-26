@@ -2431,13 +2431,15 @@
   <script src="keyword-search.js?v=15" defer></script>
   <script src="card-keywords.js?v=13" defer></script>
   <script src="draw-notice-layout.js?v=1" defer></script>
+  <link rel="stylesheet" href="card-translations.css?v=7">
+  <script src="card-translations.js?v=23" defer></script>
   <!-- Mobile composition is enabled only by the installed APK in portrait. -->
   <link rel="stylesheet" href="../assets/mobile/common.css?v=20261028-apk-portrait1">
   <link rel="stylesheet" href="../assets/mobile/play.css?v=20261028-apk-portrait1">
   <script src="../assets/mobile/layout.js?v=20261028-apk-portrait1" defer></script>
   <script src="../assets/mobile/play.js?v=20261114-theatre-return" defer></script>
   <script src="theatre-battle.js?v=2"></script>
-  <script src="../theatre/terms.js?v=2"></script>
+  <script src="../theatre/terms.js?v=6"></script>
 </head>
 <body>
   <script>
@@ -2838,10 +2840,13 @@
 
   <div class="image-zoom-overlay" id="imageZoomOverlay" aria-hidden="true">
     <button type="button" class="image-zoom-close" id="imageZoomClose" aria-label="关闭放大图">×</button>
+    <button type="button" id="imageZoomTranslationToggle" class="card-translation-toggle" hidden data-language-ignore
+      aria-label="中文卡文" aria-pressed="false" aria-controls="imageZoomTranslationFace">中文</button>
     <div class="image-zoom-content">
       <div class="image-zoom-keywords" id="imageZoomKeywords" hidden></div>
       <div class="image-zoom-card-stage">
         <img id="imageZoomImg" src="" alt="放大图片">
+        <canvas id="imageZoomTranslationFace" class="card-translation-face" role="img" lang="zh-Hans" data-language-ignore hidden></canvas>
         <div class="image-zoom-card-tokens" id="imageZoomCardTokens"></div>
       </div>
       <div class="image-zoom-notice" id="imageZoomNotice"></div>
@@ -3721,6 +3726,8 @@
         los: battleMapControl?.getLosSnapshot() || { active: false },
         // 大迷宫轨道红圈：第二屏照同一份百分比坐标画在 boss 大卡上。
         labyrinthTrack: isLabyrinthTrackApostle() ? currentPanelState() : null,
+        // 中文卡面开关：第二屏常常是另一台设备，读不到本机 localStorage，只能随快照带过去。
+        cardTranslation: window.AibpCardTranslations?.enabled() === true,
         updatedAt: new Date().toISOString(),
       };
     }
@@ -9466,6 +9473,8 @@
       renderAibpCards();
       scheduleSecondScreenSnapshot();
     });
+    // 切换中文卡面时立刻把开关推给第二屏，不然要等下一次牌堆变化才同步。
+    window.addEventListener("aibp-card-translation-change", () => scheduleSecondScreenSnapshot());
     secondScreenBattleModeToggle?.addEventListener("change", toggleSecondScreenBattleMode);
     apostleLevelSelect.addEventListener("change", () => {
       if (theatreRequest && !theatreBattle) return;
