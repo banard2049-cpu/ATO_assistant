@@ -16,10 +16,16 @@ function fixture(options = {}) {
   const session = scope.window.ATO_CAMPAIGN_SESSION.create();
   const response = (status, payload) => ({status, ok: status === 200, json: async () => copy(payload)});
   const store = create({...options, session, request: async options => {
-    if (!options?.method) return response(200, {ok: true, user: {id: account}, campaign: {
-      sections: {dashboard: {activeProfileId: active, profiles}, record: {users: {A: copy(record), B: {notes: 'other campaign'}}}},
-      sectionRevisions: {record: revision},
-    }});
+    if (!options?.method) {
+      const stored = copy(record);
+      const mapping = stored.centimanes.mapping;
+      // PHP encodes consecutive zero-based keys as a JSON array.
+      if (Object.keys(mapping).every((key, index) => key === String(index))) stored.centimanes.mapping = Object.values(mapping);
+      return response(200, {ok: true, user: {id: account}, campaign: {
+        sections: {dashboard: {activeProfileId: active, profiles}, record: {users: {A: stored, B: {notes: 'other campaign'}}}},
+        sectionRevisions: {record: revision},
+      }});
+    }
     const body = JSON.parse(options.body); posts.push(body);
     if (beforePost) await beforePost(body);
     if (body.expectedAccountId !== account) return response(409, {code: 'ACCOUNT_MISMATCH'});
@@ -33,9 +39,24 @@ function fixture(options = {}) {
     setBeforePost(fn) {beforePost = fn;}, deleteProfile() {delete profiles.A;}};
 }
 (async () => {
-  let f = fixture(); await f.store.sync();
+  let f = fixture(workspace); await f.store.sync();
+  let local = f.store.snapshot().state;
+  local.centimanes.draft = [0, 1, 3, 15];
+  local.centimanes = cent.saveReading(local.centimanes, {id: 'cent-unsolved'});
+  f.store.change(local); await f.store.sync();
+  for (const [index, digit] of [[0, '0'], [1, '4'], [3, '7']]) {
+    local = f.store.snapshot().state;
+    local.centimanes.mapping[index] = digit;
+    f.store.change(local); await f.store.sync();
+  }
+  await f.store.sync();
+  const learned = f.store.snapshot().state.centimanes;
+  assert.deepEqual(learned.mapping, {0: '0', 1: '4', 3: '7'}, 'Saving a later glyph keeps the earlier mappings');
+  assert.deepEqual(cent.recordView(learned.records['cent-unsolved'], learned.mapping).digits, ['0', '4', '7', '']);
+
+  f = fixture(); await f.store.sync();
   assert.equal(f.posts.length, 0, 'Reading an empty module must not create or rewrite the record');
-  let local = f.store.snapshot().state; local.mapping[0] = '0'; local.draft = [0, 0]; f.store.change(local);
+  local = f.store.snapshot().state; local.mapping[0] = '0'; local.draft = [0, 0]; f.store.change(local);
   f.editRemote(record => {record.notes = 'new story note'; record.resources.iron = 8; record.centimanes.mapping[1] = '4';});
   f.setActive('B'); await f.store.sync();
   assert.equal(f.record.notes, 'new story note'); assert.equal(f.record.resources.iron, 8);
