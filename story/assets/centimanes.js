@@ -17,9 +17,11 @@
 
   function normalize(value) {
     const result = { version: 1, mapping: {}, draft: glyphs(value?.draft), records: {} };
-    if (plain(value?.mapping)) {
+    const mapping = value?.mapping;
+    // PHP can return a JSON array when the glyph indexes start at zero and are consecutive.
+    if (mapping && typeof mapping === "object") {
       for (let index = 0; index < 16; index++) {
-        const number = digit(value.mapping[index]);
+        const number = digit(mapping[index]);
         if (number !== "") result.mapping[index] = number;
       }
     }
