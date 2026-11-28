@@ -17,6 +17,7 @@
   const wordSegmenter = typeof Intl.Segmenter === "function"
     ? new Intl.Segmenter("zh-Hans", { granularity: "word" }) : null;
   const translatedBoss = /^ps\/(?:MIDASCORE|DEMIDJINN|THE_BABELIAN_LUNACY|DAHAKA|DRAGON_OF_PHOBOS|MEDUKETOS|UR_FLEECE|TITAN_X)\//i;
+  const fanPanelBack = /^ps\/([A-Z][A-Z0-9_]+)\/\1_TR_(?:II|IV|V|VI)_001\.jpg$/i;
   const sealedImage = /^ps\/other\/3b6e9d20\/[a-f0-9]+\.bin$/i;
   let loading;
   let source = null;
@@ -29,7 +30,6 @@
   const paintedImages = new WeakMap();
   const cardCache = new Map();
   const paintQueue = [];
-  let paintedCount = 0;
   let paintFrame = null;
   let scanFrame = null;
 
@@ -50,7 +50,7 @@
   }
 
   function loadCards() {
-    loading ??= fetch(new URL("card-translations.json?v=19", base)).then(response => {
+    loading ??= fetch(new URL("card-translations.json?v=40", base)).then(response => {
       if (!response.ok) throw new Error("Card translations unavailable");
       return response.json();
     }).catch(() => {
@@ -66,7 +66,7 @@
     if (url.protocol === "blob:") return url.href;
     if (url.origin !== base.origin || !url.pathname.startsWith(base.pathname)) return null;
     const path = url.pathname.slice(base.pathname.length).replace(/\.preview\.jpg$/i, "");
-    return translatedBoss.test(path) || sealedImage.test(path) ? path : null;
+    return translatedBoss.test(path) || fanPanelBack.test(path) || sealedImage.test(path) ? path : null;
   }
 
   function currentSource() {
@@ -78,6 +78,19 @@
     const original = Object.keys(cards).find(path =>
       sealedImage.test(path) && window.HeliosAssets?.resolve(path) === key);
     return cards[original];
+  }
+
+  // 术语覆盖跟随界面语言，英文卡面汉化沿用独立的中文开关。
+  function fanOnly(cardPatches) {
+    return cardPatches?.[0]?.fanOnly === true;
+  }
+
+  function fanTextChanged(patch) {
+    return Boolean(patch?.fanOnly && patch.sourceText && patch.sourceText !== patch.text);
+  }
+
+  function shouldPaint(cardPatches, language) {
+    return Boolean(cardPatches?.length && (fanOnly(cardPatches) ? language === "fan" : preferChinese));
   }
 
   function localizeBossNames(cardPatches, language) {
@@ -92,7 +105,7 @@
 
   function translationLanguage() {
     const language = window.ATO_LANGUAGE?.get() || document.documentElement?.dataset?.atoLanguage;
-    return language === "official" ? "official" : "fan";
+    return language || "fan";
   }
 
   function pixelRect(box, { width, height }) {
@@ -222,7 +235,7 @@
 
   // Preserve the existing texture. Replace the ink inside each calibrated
   // text strip using nearby pixels with the same paper tone.
-  function coverText(context, original, rect, ink, calibrated = false) {
+  function coverText(context, original, rect, ink, calibrated = false, scanned = false) {
     const { left, top, right, bottom } = rect;
     const width = right - left;
     const height = bottom - top;
@@ -247,7 +260,12 @@
     samples.sort((a, b) => pixels[a + channel] - pixels[b + channel]);
     const neutralSamples = red ? samples.filter(point => pixels[point] - pixels[point + 1] <= 13) : [];
     const referencePool = neutralSamples.length ? neutralSamples : samples;
-    const reference = referencePool[Math.floor((referencePool.length - 1) * (dark ? .24 : red ? .50 : .80))];
+    // Use a less extreme paper sample on the halftone scans, where the
+    // background itself spans a wider range of shades than a flat print.
+    const shadowQuantile = scanned ? .38 : .24;
+    const highlightQuantile = scanned ? .62 : .80;
+    const paperQuantile = red ? .50 : dark ? shadowQuantile : highlightQuantile;
+    const reference = referencePool[Math.floor((referencePool.length - 1) * paperQuantile)];
     const tone = pixels[reference + channel];
     const warmth = pixels[reference] - pixels[reference + 1];
     for (let x = 0; x < width; x++) {
@@ -289,6 +307,65 @@
     return dark;
   }
 
+  function coverFanLine(context, original, { left, top, right, bottom }, ink) {
+    const width = right - left;
+    const height = bottom - top;
+    if (width < 1 || height < 1) return;
+    const strip = context.createImageData(width, height);
+    const pixels = original.data;
+    const light = ink === "light";
+    const step = 12;
+    const backgrounds = [];
+    for (let x = left; x < right + step; x += step) {
+      const samples = [];
+      // Sample the paper inside the row. Its color can differ from the bands
+      // immediately above and below, particularly on the scanned panels.
+      const center = Math.min(x, right - 1);
+      for (let sx = Math.max(left, center - step); sx < Math.min(right, center + step + 1); sx += 2) {
+        for (let sy = Math.max(0, top - 2); sy < Math.min(original.height, bottom + 2); sy++) {
+          samples.push((sy * original.width + sx) * 4);
+        }
+      }
+      samples.sort((a, b) => pixels[a + 1] - pixels[b + 1]);
+      const reference = samples[Math.floor((samples.length - 1) * (light ? .30 : .70))];
+      const tone = pixels[reference + 1];
+      const warmth = pixels[reference] - tone;
+      const nearby = samples.filter(point => {
+        const row = Math.floor(point / 4 / original.width);
+        return (row < top || row >= bottom) && Math.abs(pixels[point + 1] - tone) <= 28
+          && Math.abs(pixels[point] - pixels[point + 1] - warmth) <= 14;
+      });
+      const paper = nearby.length >= 8 ? nearby : samples.filter(point =>
+        Math.abs(pixels[point + 1] - tone) <= 14
+        && Math.abs(pixels[point] - pixels[reference]) <= 18
+        && Math.abs(pixels[point + 2] - pixels[reference + 2]) <= 18);
+      const low = pixels[paper[Math.floor((paper.length - 1) * .12)] + 1];
+      const high = pixels[paper[Math.floor((paper.length - 1) * .88)] + 1];
+      backgrounds.push({ paper, threshold: light ? high : low, textured: high - low >= 12 });
+    }
+    for (let x = left; x < right; x++) {
+      const column = x - left;
+      const sample = Math.floor(column / step);
+      for (let y = top; y < bottom; y++) {
+        const source = (y * original.width + x) * 4;
+        const target = ((y - top) * width + x - left) * 4;
+        const seed = (Math.imul(x, 73856093) ^ Math.imul(y, 19349663)) >>> 0;
+        const { paper, threshold, textured } = backgrounds[sample + Number((seed >>> 16) % step < column % step)];
+        const donor = paper[seed % paper.length];
+        // The scan's halftone belongs to the paper. Keep most of its low
+        // contrast detail while replacing the stronger strokes in this row.
+        const contrast = (pixels[source + 1] - threshold) * (light ? 1 : -1);
+        const minimum = textured ? 0 : .5;
+        const blend = minimum + (1 - minimum) * Math.min(1, Math.max(0, contrast / 13));
+        for (let channel = 0; channel < 3; channel++) {
+          strip.data[target + channel] = pixels[source + channel] * (1 - blend) + pixels[donor + channel] * blend;
+        }
+        strip.data[target + 3] = pixels[source + 3];
+      }
+    }
+    context.putImageData(strip, left, top);
+  }
+
   function lineTokens(input, boundaries) {
     const tokens = [];
     const parts = input.matchAll(/(?:[A-Za-z0-9]+(?:[.+/-][A-Za-z0-9]+)*\+?|[^\s])(?:[，。！？、；：）」』】％]+)?|\s+/gu);
@@ -306,7 +383,7 @@
     return tokens;
   }
 
-  function wrapTokens(context, words, strips, horizontalScale) {
+  function wrapTokens(context, words, strips, horizontalScale, fitInk) {
     let index = 0;
     const result = [];
     for (const strip of strips) {
@@ -314,7 +391,8 @@
       while (index < words.length) {
         const next = line + words[index];
         const metrics = context.measureText(next.trim());
-        if (metrics.width * horizontalScale > strip.right - strip.left - 2
+        const width = fitInk ? textInkWidth(context, metrics) : metrics.width;
+        if (width * horizontalScale > strip.right - strip.left - 2
           || inkHeight(metrics) > strip.bottom - strip.top) break;
         line = next;
         index++;
@@ -325,24 +403,31 @@
     return null;
   }
 
-  function wrapInStrips(context, input, strips, horizontalScale = 1) {
+  function wrapInStrips(context, input, strips, horizontalScale = 1, fitInk = false) {
     if (wordSegmenter && strips.length > 1) {
       const boundaries = new Set(Array.from(wordSegmenter.segment(input), word => word.index));
-      const wrapped = wrapTokens(context, lineTokens(input, boundaries), strips, horizontalScale);
+      const wrapped = wrapTokens(context, lineTokens(input, boundaries), strips, horizontalScale, fitInk);
       if (wrapped) return wrapped;
     }
     // Retain the complete translation even in a narrow slot for a long term.
-    return wrapTokens(context, lineTokens(input), strips, horizontalScale);
+    return wrapTokens(context, lineTokens(input), strips, horizontalScale, fitInk);
   }
 
   function setFont(context, patch, size) {
     const flavor = patch.kind === "flavor";
     const weight = patch.bold ? 700 : patch.kind === "heading" ? 600 : 400;
-    context.font = `${flavor ? "italic " : ""}${weight} ${size}px ${flavor ? flavorFont : fontFamily}`;
+    const family = flavor || (patch.fanOnly && (weight === 400 || patch.kind === "heading")) ? flavorFont : fontFamily;
+    context.font = `${flavor ? "italic " : ""}${weight} ${size}px ${family}`;
   }
 
   function inkHeight(metrics) {
     return metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+  }
+
+  function textInkWidth(context, metrics) {
+    const { actualBoundingBoxLeft: left, actualBoundingBoxRight: right } = metrics;
+    if (!Number.isFinite(left) || !Number.isFinite(right)) return metrics.width;
+    return context.textAlign === "center" ? 2 * Math.max(left, right) : Math.max(0, left) + right;
   }
 
   function bodySize(context, placements) {
@@ -363,16 +448,116 @@
     return minimum;
   }
 
-  function layoutText(context, patch, strips, bodyFontSize) {
+  function printedInkRows(original, { left, top, right, bottom }, ink) {
+    const height = bottom - top;
+    if (height < 7 || right <= left) return { top, bottom };
+    const bins = new Uint32Array(256);
+    const { width, data } = original;
+    const light = ink === "light";
+    for (let y = top; y < bottom; y++) {
+      for (let x = left; x < right; x++) bins[data[(y * width + x) * 4 + 1]]++;
+    }
+    const quantile = proportion => {
+      const rank = (right - left) * height * proportion;
+      let count = 0;
+      for (let tone = 0; tone < bins.length; tone++) {
+        count += bins[tone];
+        if (count >= rank) return tone;
+      }
+      return 255;
+    };
+    const paper = quantile(light ? .30 : .70);
+    const stroke = quantile(light ? .94 : .06);
+    const contrast = Math.abs(stroke - paper);
+    if (contrast < 20) return { top, bottom };
+    const threshold = Math.min(55, Math.max(14, contrast * .57));
+    const rows = new Uint16Array(height);
+    for (let y = top; y < bottom; y++) {
+      for (let x = left; x < right; x++) {
+        const tone = data[(y * width + x) * 4 + 1];
+        if ((light ? tone - paper : paper - tone) > threshold) rows[y - top]++;
+      }
+    }
+    // A screened background can contribute ink-like pixels in every row.
+    const counts = Array.from(rows).sort((a, b) => a - b);
+    const background = counts[Math.floor((height - 1) * .20)];
+    const minimum = Math.max(2, Math.ceil(background + (counts.at(-1) - background) * .18));
+    const first = rows.findIndex(count => count >= minimum);
+    const last = rows.findLastIndex(count => count >= minimum);
+    if (first < 0 || last - first + 1 < height * .55) return { top, bottom };
+    return { top: top + first, bottom: top + last + 1 };
+  }
+
+  function fanTextSize(context, patch, strips, sourceRows) {
+    const sourceHeights = (sourceRows?.map(({ top, bottom }) => bottom - top) ?? patch.lines.map(([, top, , bottom]) =>
+      (bottom - top) * context.canvas.height / 10000)).sort((a, b) => a - b);
+    const sourceHeight = sourceHeights[Math.floor(sourceHeights.length / 2)];
+    const slotHeight = Math.min(...strips.map(strip => strip.bottom - strip.top));
+    setFont(context, patch, 100);
+    const glyphHeight = inkHeight(context.measureText(patch.text)) || 100;
+    const target = Math.min(sourceHeight, slotHeight - 1);
+    let size = Math.round(target * Math.min(2, 100 / glyphHeight));
+    while (size > 7) {
+      setFont(context, patch, size);
+      if (inkHeight(context.measureText(patch.text)) <= target) return size;
+      size--;
+    }
+    return 7;
+  }
+
+  function fanBodySize(context, placements) {
+    const body = placements.filter(({ patch }) => patch.kind === "body");
+    const rows = body.flatMap(({ sourceRows }) => sourceRows || []);
+    const heights = rows.filter(row => row.right - row.left >= context.canvas.width * .12)
+      .map(({ top, bottom }) => bottom - top).sort((a, b) => a - b);
+    if (!heights.length) return null;
+    setFont(context, { kind: "body", fanOnly: true }, 100);
+    const glyphHeight = inkHeight(context.measureText("每次结算泰坦受到的损伤")) || 100;
+    let size = Math.max(7, Math.round(heights[Math.floor(heights.length / 2)] * 100 / glyphHeight));
+    context.textAlign = "left";
+    context.textBaseline = "alphabetic";
+    // Fit the available slots once for the card so every body row uses one size.
+    for (const { patch, strips } of body) {
+      const runs = patch.text.split("\n");
+      if (runs.length > 1 && runs.length !== strips.length) continue;
+      setFont(context, patch, size);
+      while (size > 7 && !fanLines(context, runs, strips)) setFont(context, patch, --size);
+    }
+    return size;
+  }
+
+  function fanLines(context, runs, strips) {
+    if (runs.length === 1 && strips.length > 1) return wrapInStrips(context, runs[0], strips, 1, true);
+    return runs.every((run, index) => {
+      const strip = strips[index];
+      const ink = context.measureText(run);
+      return textInkWidth(context, ink) <= strip.right - strip.left - 2 && inkHeight(ink) <= strip.bottom - strip.top;
+    }) ? runs : null;
+  }
+
+  function layoutText(context, patch, strips, bodyFontSize, sourceRows) {
     const title = patch.kind === "heading";
     const caption = patch.kind === "caption";
     const center = patch.kind === "center" || (title && strips[0].left > context.canvas.width * .17);
     const availableHeight = Math.max(...strips.map(strip => strip.bottom - strip.top));
-    let size = title || caption ? Math.round(availableHeight * .89) : bodyFontSize;
+    const preferred = patch.kind === "body" ? bodyFontSize : null;
+    let size = patch.fanOnly ? preferred ?? fanTextSize(context, patch, strips, sourceRows)
+      : title || caption ? Math.round(availableHeight * .89) : bodyFontSize;
+    context.textBaseline = "alphabetic";
+    context.textAlign = center ? "center" : "left";
     setFont(context, patch, size);
     let horizontalScale = 1;
-    let lines = wrapInStrips(context, patch.text, strips);
-    if (title || caption) {
+    let lines = null;
+    if (patch.fanOnly) {
+      // Explicit breaks pair text runs with calibrated slots around printed icons.
+      const runs = patch.text.split("\n");
+      if (runs.length > 1 && runs.length !== strips.length) return null;
+      lines = fanLines(context, runs, strips);
+      while (!lines && preferred == null && size > 7) {
+        setFont(context, patch, --size);
+        lines = fanLines(context, runs, strips);
+      }
+    } else if (!(lines = wrapInStrips(context, patch.text, strips)) && (title || caption)) {
       const minimum = caption ? Math.round(availableHeight * .55) : Math.round(bodyFontSize * .72);
       while (!lines && size > minimum) {
         setFont(context, patch, --size);
@@ -401,11 +586,17 @@
       const metrics = context.measureText(line);
       const width = strip.right - strip.left;
       const height = strip.bottom - strip.top;
-      const y = (height - inkHeight(metrics)) / 2 + metrics.actualBoundingBoxAscent;
+      const sourceRow = sourceRows?.[index];
+      const ink = inkHeight(metrics);
+      const centeredTop = (height - ink) / 2;
+      const lineTop = sourceRow
+        ? Math.max(0, Math.min(height - ink, (sourceRow.top + sourceRow.bottom - ink) / 2 - strip.top))
+        : centeredTop;
+      const y = lineTop + metrics.actualBoundingBoxAscent;
       const overhang = center ? 0 : Math.max(0, metrics.actualBoundingBoxLeft || 0);
       const paintedWidth = Math.max(metrics.width, center ? 2 * Math.max(metrics.actualBoundingBoxLeft || 0,
         metrics.actualBoundingBoxRight || 0) : overhang + (metrics.actualBoundingBoxRight || 0));
-      const scale = Math.min(horizontalScale, (width - 2) / Math.max(1, paintedWidth));
+      const scale = patch.fanOnly ? 1 : Math.min(horizontalScale, (width - 2) / Math.max(1, paintedWidth));
       const x = center ? width / 2 : 1 + overhang * scale;
       return { line, strip, x, y, scale, font: context.font, center };
     }).filter(Boolean);
@@ -468,6 +659,10 @@
 
   function paintTranslation(image, face, patches, rotated = false) {
     if (!readyToPaint(image)) return false;
+    // Fan-only backs are already printed in Chinese. Touch only the lines whose
+    // terminology actually changes, and leave every unchanged line untouched.
+    const visiblePatches = patches.filter(patch => !patch.fanOnly || fanTextChanged(patch));
+    if (!visiblePatches.length) return false;
     const width = rotated ? image.naturalHeight : image.naturalWidth;
     const height = rotated ? image.naturalWidth : image.naturalHeight;
     const scale = Math.min(1, 1600 / width, 1900 / height);
@@ -486,9 +681,9 @@
       }
       const original = context.getImageData(0, 0, face.width, face.height);
       const rectFor = box => pixelRect(box, original);
-      const guards = patches.filter(patch => patch.kind === "card-title" || patch.kind === "guard")
+      const guards = visiblePatches.filter(patch => patch.kind === "card-title" || patch.kind === "guard")
         .flatMap(patch => patch.lines.map(rectFor));
-      const retainedGraphics = patches.filter(patch => patch.kind === "guard" && patch.preserve)
+      const retainedGraphics = visiblePatches.filter(patch => patch.kind === "guard" && patch.preserve)
         .flatMap(patch => patch.lines.map((box, index) => {
           const source = rectFor(box);
           const [x = box[0], y = box[1]] = patch.moveTo?.[index] ?? [];
@@ -496,7 +691,7 @@
           return { left, top, right: left + source.right - source.left,
             bottom: top + source.bottom - source.top, source };
         }));
-      const placements = patches.filter(patch => patch.kind !== "card-title" && patch.kind !== "guard")
+      const placements = visiblePatches.filter(patch => patch.kind !== "card-title" && patch.kind !== "guard")
         .map(patch => ({ patch, strips: (patch.slots ?? patch.lines).map(box => {
           const rect = rectFor(box);
           if (patch.exact || patch.slots) return { ...clearOfGuards(rect, retainedGraphics), exact: true };
@@ -507,6 +702,15 @@
       separateRows(placements.flatMap(({ strips }) => strips));
       for (const placement of placements) {
         placement.strips = placement.strips.filter(strip => strip.bottom - strip.top >= 7 && strip.right - strip.left >= 4);
+        // The erase boxes also record the original text baselines.
+        if (placement.patch.fanOnly) {
+          const { patch, strips } = placement;
+          placement.sourceRows = patch.lines.map(box => {
+            const rect = rectFor(box);
+            return { ...rect, ...printedInkRows(original, rect, patch.ink) };
+          });
+          if (patch.kind !== "body" && patch.lines.length !== strips.length) placement.sourceRows = undefined;
+        }
       }
       const active = placements.filter(({ strips }) => strips.length);
       const rows = active.flatMap(({ strips }) => strips).concat(guards);
@@ -518,20 +722,36 @@
           }
         }
       }
-      const size = bodySize(context, active);
+      const size = fanOnly(visiblePatches) ? fanBodySize(context, active) : bodySize(context, active);
       const rendered = [];
-      for (const { patch, strips } of active) {
-        const text = layoutText(context, patch, strips, size);
+      for (const placement of active) {
+        const { patch, strips, sourceRows } = placement;
+        const text = layoutText(context, patch, strips, size, sourceRows);
         if (!text) continue;
         rendered.push({ patch, strips, text });
       }
       // Erase translated text before drawing any of the new glyphs. A rule
       // can consume fewer printed rows in Chinese, including around a badge.
       for (const { patch, strips } of rendered) {
-        // With calibrated slots, lines only cover the source ink. The
-        // translation can use blank paper without erasing that larger area.
-        for (const box of patch.slots ? patch.lines : []) {
-          coverText(context, original, rectFor(box), patch.ink, true);
+        const fullLineRewrite = fanTextChanged(patch);
+        if (fullLineRewrite) {
+          // The source boxes cover complete printed text runs and leave
+          // separate gaps for embedded graphics.
+          const padding = Math.max(1, Math.round(original.width * .0015));
+          for (const box of patch.lines) {
+            const rect = rectFor(box);
+            coverFanLine(context, original, {
+              left: Math.max(0, rect.left - padding),
+              top: Math.max(0, rect.top - 1),
+              right: Math.min(original.width, rect.right + padding),
+              bottom: Math.min(original.height, rect.bottom + 1),
+            }, patch.ink);
+          }
+        } else {
+          // English translation overlays still erase only their calibrated ink.
+          for (const box of patch.slots ? patch.lines : []) {
+            coverText(context, original, rectFor(box), patch.ink, true, patch.fanOnly);
+          }
         }
         for (const box of patch.erase ?? []) {
           let mask = rectFor(box);
@@ -539,11 +759,11 @@
             && (patch.kind === "body" || patch.kind === "flavor")) {
             mask = clearOfBanners(original, clearOfGuards(mask, guards));
           }
-          coverText(context, original, mask, patch.eraseInk ?? patch.ink, Boolean(patch.slots));
+          coverText(context, original, mask, patch.eraseInk ?? patch.ink, Boolean(patch.slots), patch.fanOnly);
         }
         for (const strip of strips) {
-          strip.dark = patch.slots ? patch.ink === "light"
-            : coverText(context, original, { ...strip, right: strip.eraseRight }, patch.ink);
+          strip.dark = fullLineRewrite || patch.slots ? patch.ink === "light"
+            : coverText(context, original, { ...strip, right: strip.eraseRight }, patch.ink, false, patch.fanOnly);
         }
       }
       // Clear moved icons before restoring the original pixels at their translated positions.
@@ -555,7 +775,7 @@
           source.left, source.top, source.right - source.left, source.bottom - source.top);
       }
       rendered.forEach(({ text }) => text.forEach(line => drawText(context, line)));
-      const titles = patches.filter(patch => patch.kind === "card-title")
+      const titles = visiblePatches.filter(patch => patch.kind === "card-title")
         .flatMap(patch => layoutCardTitle(context, original, patch));
       titles.forEach(line => drawText(context, line));
       face.setAttribute("aria-label", [...titles.map(({ line }) => line),
@@ -569,13 +789,14 @@
   function updateView() {
     if (!overlay || !image || !toggle || !face) return;
     const available = Boolean(patches?.length && readyToPaint(image));
-    if (available && preferChinese && paintedSource !== source
+    const wanted = available && shouldPaint(patches, localizedLanguage);
+    if (wanted && paintedSource !== source
       && paintTranslation(image, face, patches, image.parentElement.classList.contains("rotated-card"))) {
       paintedSource = source;
     }
-    const showChinese = available && preferChinese && paintedSource === source;
+    const showChinese = wanted && paintedSource === source;
     face.hidden = !showChinese;
-    toggle.hidden = !available;
+    toggle.hidden = !available || fanOnly(patches);
     toggle.textContent = showChinese ? "原图" : "中文";
     toggle.setAttribute("aria-pressed", String(showChinese));
     if (showChinese) image.setAttribute("aria-hidden", "true");
@@ -636,12 +857,10 @@
     while (cardCache.size > cacheLimit) cardCache.delete(cardCache.keys().next().value);
   }
 
-  function translatedCardUrl(cardImage, key, language, rotated, cards) {
+  function translatedCardUrl(cardImage, key, language, rotated, cardPatches) {
     const cacheKey = `${key}|${language}|${rotated ? "rotated" : "flat"}`;
     const stored = cardCache.get(cacheKey);
     if (stored !== undefined) return stored;
-    const cardPatches = patchesFor(cards, key);
-    if (!cardPatches?.length) return "";
     const url = translatedPreviewImage(cardImage, localizeBossNames(cardPatches, language), rotated);
     if (!url) return "";
     rememberCard(cacheKey, url);
@@ -654,23 +873,16 @@
     cardImage.classList.remove(paintedClass);
     cardImage.style.removeProperty(previewImageProperty);
     paintedImages.delete(cardImage);
-    paintedCount = Math.max(0, paintedCount - 1);
   }
 
   // 卡牌出现在大图、Trait 区、当前/弃牌/损伤牌堆、第二屏……所有位置共用这一层：
   // 只要这张图在 card-translations.json 里有译文，就换成画好的中文图。
   function refreshPageTranslations() {
     if (!hasPage) return;
-    if (!preferChinese) {
-      // 关掉中文时不做整页扫描，只有确实换过图才需要擦回去。
-      if (!paintedCount) return;
-      for (const cardImage of document.querySelectorAll("img")) unpaint(cardImage);
-      paintedCount = 0;
-      return;
-    }
     const language = translationLanguage();
+    const selector = preferChinese || language === "fan" ? "img" : `img.${paintedClass}`;
     const candidates = [];
-    for (const cardImage of document.querySelectorAll("img")) {
+    for (const cardImage of document.querySelectorAll(selector)) {
       // 放大浮层的主图自己用 canvas 叠一层中文，不在这里换图。
       const key = !cardImage.closest(".image-zoom-card-stage") ? translationKey(cardImage) : null;
       if (!key) {
@@ -679,20 +891,26 @@
       }
       const painted = paintedImages.get(cardImage);
       if (painted && painted.src === cardImage.src && painted.language === language
-        && cardImage.classList.contains(paintedClass)) continue;
+        && shouldPaint(painted.cardPatches, language) && cardImage.classList.contains(paintedClass)) continue;
+      unpaint(cardImage);
+      if (!preferChinese && (language !== "fan" || !fanPanelBack.test(key))) continue;
       if (!readyToPaint(cardImage)) continue;
       candidates.push({ cardImage, key, src: cardImage.src });
     }
     if (!candidates.length) return;
     void loadCards().then(cards => {
-      if (!cards || !preferChinese) return;
-      for (const candidate of candidates) enqueuePaint(candidate, cards);
+      if (!cards) return;
+      const language = translationLanguage();
+      for (const candidate of candidates) {
+        const cardPatches = patchesFor(cards, candidate.key);
+        if (shouldPaint(cardPatches, language)) enqueuePaint({ ...candidate, cardPatches });
+      }
     });
   }
 
-  function enqueuePaint(candidate, cards) {
+  function enqueuePaint(candidate) {
     if (paintQueue.some(item => item.cardImage === candidate.cardImage && item.src === candidate.src)) return;
-    paintQueue.push({ ...candidate, cards });
+    paintQueue.push(candidate);
     schedulePaint();
   }
 
@@ -717,16 +935,15 @@
   function paintNext() {
     const item = paintQueue.shift();
     if (!item) return;
-    const { cardImage, key, src, cards } = item;
-    if (preferChinese && cardImage.isConnected && cardImage.src === src) {
-      const language = translationLanguage();
-      const url = translatedCardUrl(cardImage, key, language, cardImage.dataset.rotate === "-90", cards);
+    const { cardImage, key, src, cardPatches } = item;
+    const language = translationLanguage();
+    if (shouldPaint(cardPatches, language) && cardImage.isConnected && cardImage.src === src) {
+      const url = translatedCardUrl(cardImage, key, language, cardImage.dataset.rotate === "-90", cardPatches);
       if (url) {
         // 只替换绘制内容：缩放、翻面、快照仍然读原图地址。
-        if (!cardImage.classList.contains(paintedClass)) paintedCount += 1;
         cardImage.style.setProperty(previewImageProperty, `url("${url}")`);
         cardImage.classList.add(paintedClass);
-        paintedImages.set(cardImage, { src, language });
+        paintedImages.set(cardImage, { src, language, cardPatches });
       }
     }
     schedulePaint();

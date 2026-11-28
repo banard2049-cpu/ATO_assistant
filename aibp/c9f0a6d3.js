@@ -47,8 +47,8 @@
       panelHigh: root.HeliosAssets.path("9a10b8d7/27f3ab90.png"),
       decks: oldHaunt,
       extras: [
-        ["无情之日", "Y", "card107_00_F.jpg", "card107_00_B_shared.jpg"],
-        ["有利位置 VP", "Y", "card114_00_F.jpg", "card114_00_B.jpg"],
+        ["无情太阳", "Y", "card107_00_F.jpg", "card107_00_B_shared.jpg"],
+        ["日蚀点", "Y", "card114_00_F.jpg", "card114_00_B.jpg"],
       ],
     },
     c4: {
@@ -57,11 +57,11 @@
       decks: oldHaunt,
       extras: [
         ["战斗设置", "Y", "card114_03_B.jpg", "card114_03_F.jpg"],
-        ["有利位置 / 旧伤", "Y", "card114_00_F.jpg", "card114_00_B.jpg"],
-        ["Glass It All / 所需地形", "Y", "card114_01_F.jpg", "card114_01_B.jpg"],
-        ["God Among Men / 版图", "Y", "card114_02_F.jpg", "card114_02_B.jpg"],
-        ["Pitiless Sun / 版图", "Y", "card114_04_F.jpg", "card114_04_B.jpg"],
-        ["无情之日", "Y", "card107_00_F.jpg", "card107_00_B_shared.jpg"],
+        ["日蚀点 / 旧伤", "Y", "card114_00_F.jpg", "card114_00_B.jpg"],
+        ["尽数琉璃化 / 所需地形", "Y", "card114_01_F.jpg", "card114_01_B.jpg"],
+        ["以神临人 / 版图", "Y", "card114_02_F.jpg", "card114_02_B.jpg"],
+        ["无悯太阳 / 版图", "Y", "card114_04_F.jpg", "card114_04_B.jpg"],
+        ["无情太阳", "Y", "card107_00_F.jpg", "card107_00_B_shared.jpg"],
       ],
     },
   };
