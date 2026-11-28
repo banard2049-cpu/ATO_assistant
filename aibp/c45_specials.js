@@ -1194,7 +1194,7 @@
     const state = piles.TITAN_X;
     const card = state?.special?.titanX?.kratosReminder;
     if (!card) return;
-    openImageZoom(cardSrc(card), "心理游戏（奎托斯池提醒）");
+    openImageZoom(cardSrc(card), "心理博弈（奎托斯池提醒）");
     const button = document.createElement("button");
     button.type = "button";
     button.textContent = "弃置";

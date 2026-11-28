@@ -27,8 +27,7 @@ function styles() {
   };
 }
 
-function cardImage(key, { rotate = '' } = {}) {
-  const src = `https://ato.test/aibp/${key}`;
+function cardImage(key, { rotate = '', src = `https://ato.test/aibp/${key}` } = {}) {
   return {
     src,
     complete: true,
@@ -43,6 +42,8 @@ function cardImage(key, { rotate = '' } = {}) {
     closest: () => null,
     addEventListener() {},
     setAttribute() {},
+    removeAttribute() {},
+    parentElement: { classList: classes() },
   };
 }
 
@@ -67,16 +68,26 @@ function canvasContext() {
   return context;
 }
 
-function harness(images) {
+function harness(images, { zoomImage, sealed = {} } = {}) {
   const frames = [];
   const stored = new Map();
   const state = { exports: 0 };
+  const languageNode = { dataset: {} };
+  const languageObservers = [];
+  const zoom = zoomImage ? {
+    imageZoomOverlay: { classList: classes() },
+    imageZoomImg: zoomImage,
+    imageZoomTranslationToggle: { addEventListener() {}, setAttribute() {} },
+    imageZoomTranslationFace: { getContext: canvasContext, setAttribute() {} },
+  } : {};
+  zoom.imageZoomOverlay?.classList.add('show');
   const sandbox = vm.createContext({
     URL,
     fetch: () => Promise.resolve({ ok: true, json: async () => cards }),
     window: {
       addEventListener() {},
       dispatchEvent() {},
+      HeliosAssets: { resolve: path => sealed[path] || path },
       localStorage: {
         getItem: key => stored.get(key) ?? null,
         setItem: (key, value) => stored.set(key, value),
@@ -86,10 +97,11 @@ function harness(images) {
     CustomEvent: class {},
     document: {
       body: {},
-      documentElement: { dataset: {} },
+      documentElement: languageNode,
       currentScript: { src: 'https://ato.test/aibp/card-translations.js' },
-      getElementById: () => null,
-      querySelectorAll: selector => (selector === 'img' ? images : []),
+      getElementById: id => zoom[id] || null,
+      querySelectorAll: selector => selector === 'img' ? images
+        : images.filter(image => image.classList.contains(selector.split('.')[1])),
       addEventListener() {},
       createElement: () => {
         const context = canvasContext();
@@ -107,11 +119,20 @@ function harness(images) {
         };
       },
     },
-    MutationObserver: class { observe() {} },
+    MutationObserver: class {
+      constructor(callback) { this.callback = callback; }
+      observe(target) { if (target === languageNode) languageObservers.push(this.callback); }
+    },
     HTMLImageElement: class {},
   });
   vm.runInContext(script, sandbox);
-  return { api: sandbox.window.AibpCardTranslations, frames, stored, state };
+  return {
+    api: sandbox.window.AibpCardTranslations, frames, stored, state, zoom,
+    setLanguage(language) {
+      languageNode.dataset.atoLanguage = language;
+      for (const callback of languageObservers) callback();
+    },
+  };
 }
 
 const settle = () => new Promise(resolve => setImmediate(resolve));
@@ -181,4 +202,55 @@ test('旋转的 Trait 缩略图按自己的方向导出', async () => {
   h.api.setEnabled(true);
   await flush(h);
   assert.equal(trait.classList.contains('card-translation-painted'), true);
+});
+
+test('民间术语跟随界面版本，在缩略图和放大图上独立于英文卡面的中文开关', async () => {
+  const path = 'ps/ALPHA_TEMENOS/ALPHA_TEMENOS_TR_II_001.jpg';
+  const back = cardImage(`${path}.preview.jpg`);
+  const zoomImage = cardImage(path);
+  const english = cardImage('ps/MIDASCORE/MIDASCORE_AI_III_001.jpg');
+  const h = harness([back, english], { zoomImage });
+  const painted = image => image.classList.contains('card-translation-painted');
+  const face = h.zoom.imageZoomTranslationFace;
+  const toggle = h.zoom.imageZoomTranslationToggle;
+  await flush(h);
+  assert.equal(h.api.keyFor(back), path);
+  assert.equal(painted(back), true);
+  assert.equal(painted(english), false);
+  assert.equal(face.hidden, false);
+  assert.equal(toggle.hidden, true);
+
+  h.api.setEnabled(true);
+  h.setLanguage('official');
+  await flush(h);
+  assert.equal(painted(back), false);
+  assert.equal(painted(english), true);
+  assert.equal(face.hidden, true);
+
+  h.setLanguage('en');
+  await flush(h);
+  assert.equal(painted(back), false);
+  assert.equal(face.hidden, true);
+
+  h.setLanguage('fan');
+  h.api.setEnabled(false);
+  await flush(h);
+  assert.equal(painted(back), true);
+  assert.equal(painted(english), false);
+  assert.equal(face.hidden, false);
+});
+
+test('旧日幽魂的实际卡图 blob 地址以原卡路径查找译文', async () => {
+  const path = 'ps/other/3b6e9d20/e2cc96fa.bin';
+  const src = 'blob:https://ato.test/old-haunt';
+  const card = cardImage(path, { src });
+  const h = harness([card], { zoomImage: cardImage(path, { src }), sealed: { [path]: src } });
+  await flush(h);
+  assert.equal(h.zoom.imageZoomTranslationToggle.hidden, false);
+  assert.equal(h.zoom.imageZoomTranslationFace.hidden, true);
+  h.api.setEnabled(true);
+  await flush(h);
+  assert.equal(card.src, src);
+  assert.equal(card.classList.contains('card-translation-painted'), true);
+  assert.equal(h.zoom.imageZoomTranslationFace.hidden, false);
 });

@@ -2432,7 +2432,7 @@
   <script src="card-keywords.js?v=13" defer></script>
   <script src="draw-notice-layout.js?v=1" defer></script>
   <link rel="stylesheet" href="card-translations.css?v=7">
-  <script src="card-translations.js?v=23" defer></script>
+  <script src="card-translations.js?v=45" defer></script>
   <!-- Mobile composition is enabled only by the installed APK in portrait. -->
   <link rel="stylesheet" href="../assets/mobile/common.css?v=20261028-apk-portrait1">
   <link rel="stylesheet" href="../assets/mobile/play.css?v=20261028-apk-portrait1">
@@ -2897,7 +2897,7 @@
   <script src="battle_los.js?v=20261012-los-speed1"></script>
   <script src="battle_map_control.js?v=20261113-theatre1"></script>
   <script src="b4d7e218.js?v=20260926-hidden-ready2"></script>
-  <script src="c9f0a6d3.js?v=20261011-panel-trait1"></script>
+  <script src="c9f0a6d3.js?v=20261127-card-labels1"></script>
   <script src="5158e31a.js?v=20261019-blackbeak-shared-backs2"></script>
   <script src="7c2e9a40.js?v=20260926-group-trait1"></script>
   <script src="boss-search.js?v=20261011-boss-language1"></script>
@@ -4167,7 +4167,7 @@
       const prefix = `ps/${name}/${name}_`;
       return [...aibpImageIndex].flatMap((src) => {
         if (!src.startsWith(prefix)) return [];
-        const match = src.slice(prefix.length).match(/^(TR|AI|BP)_([A-Z]+)_(\d+)\.(jpg|png|jpeg)$/i);
+        const match = src.slice(prefix.length).match(/^(TR|AI|BP|STATUS)_([A-Z]+)_(\d+)\.(jpg|png|jpeg)$/i);
         return match ? [{ src, type: match[1].toUpperCase(), level: match[2].toUpperCase(),
           index: Number(match[3]), ext: match[4] }] : [];
       });
@@ -7104,7 +7104,7 @@
       return new Set((piles[currentApostle].hiddenExtraCards || []).map((key) => String(key)));
     }
 
-    // 特性区里不属于特性、却会一并显示的额外卡：AI/BP 的 O/X 卡图、泰坦X 组特性、黑喙固定卡。
+    // 特性区也显示 O/X 级的 AI、BP 和状态卡、泰坦 X 组特性及黑喙固定卡。
     // HELIOS 的额外卡随模式切换，与其他默认卡一样可在 Trait 选择中取消。
     function traitAreaExtraCards(name = currentApostle) {
       if (name === "HELIOS") return window.HeliosConfig.extras(heliosMode());
@@ -7122,7 +7122,7 @@
         cards.push({ src: titanXGroupTrait.src, label: titanXGroupTrait.label || "泰坦X 组特性" });
       }
       cards.push(...indexedAibpCards(name)
-        .filter((card) => ["AI", "BP"].includes(card.type) && ["O", "X"].includes(card.level))
+        .filter((card) => ["O", "X"].includes(card.level) && card.type !== "TR")
         .map((card) => ({ src: card.src, label: `${card.type} ${card.level} ${card.index}`,
           defaultHidden: name === "HYPERTIME_ORACLE" && card.type === "AI" && card.level === "X" })));
       return cards;
@@ -7604,7 +7604,7 @@
             className: "c45-active-feint-trait" });
         });
         const reminder = piles.TITAN_X.special?.titanX?.kratosReminder;
-        if (reminder) candidates.push({ src: cardSrc(reminder), alt: "心理游戏（奎托斯池提醒）",
+        if (reminder) candidates.push({ src: cardSrc(reminder), alt: "心理博弈（奎托斯池提醒）",
           className: "c45-kratos-reminder-trait", kratosReminder: true });
       }
 
@@ -9747,7 +9747,7 @@
   <script src="ps/other/resouce/bp_resource_map.js?v=20261017a" defer></script>
   <script src="ps/other/resouce/bp_resource_map_c1_c3.js?v=20261017a" defer></script>
   <script src="ps/other/resouce/bp_resource_map_c4_c5.js?v=20261018a" defer></script>
-  <script src="c45_specials.js?v=20261113-theatre1" defer></script>
+  <script src="c45_specials.js?v=20261127-card-titles1" defer></script>
   <script src="bp_loot_calculator_addon.js?v=20261113-theatre1" defer></script>
   <script src="../story/data/english-source-data.js?v=20261011-english4" defer></script>
   <script src="../assets/ato-terms.js?v=20261110-loop-terms" defer></script>

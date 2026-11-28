@@ -215,6 +215,7 @@ function extraCardsContext(apostle, { blackbeak = null, titanXGroup = false, hel
 
 function renderHarness(hiddenTraits = [], hiddenExtraCards = [], indexedSources = null, { apostle = 'HEKATON', level = 3, traits = [], selectedExtraCards = [], activeFeints = [], kratosReminder = null } = {}) {
   const existing = new Set(['ps/HEKATON/HEKATON_TR_I_003.jpg', 'ps/HEKATON/HEKATON_AI_O_001.jpg']);
+  if (apostle === 'MIDASCORE') existing.add('ps/MIDASCORE/MIDASCORE_STATUS_X_001.jpg');
   if (apostle === 'UR_FLEECE') existing.add('ps/UR_FLEECE/UR_FLEECE_TR_I_002.jpg');
   if (apostle === 'TITAN_X') [3, 4, 6, 7, 9].forEach(index =>
     existing.add(`ps/TITAN_X/TITAN_X_FEINT_X_${String(index).padStart(3, '0')}.jpg`));
@@ -282,7 +283,7 @@ test('泰坦 X Trait 区显示当前生效变招，替换或结束后不保留�
   assert.deepEqual(renderHarness([], [], null, options), []);
 });
 
-test('心理游戏提醒与生效变招同时显示，未放入奎托斯池时不显示', () => {
+test('心理博弈提醒与生效变招同时显示，未放入奎托斯池时不显示', () => {
   const options = { apostle: 'TITAN_X', activeFeints: [{ type: 'FEINT', level: 'X', index: 9 }] };
   const active = 'ps/TITAN_X/TITAN_X_FEINT_X_009.jpg';
   const reminder = 'ps/TITAN_X/TITAN_X_FEINT_X_006.jpg';
@@ -313,6 +314,13 @@ test('特性区不再自动显示被取消的 AI/BP 额外卡', () => {
   const aiSrc = 'ps/HEKATON/HEKATON_AI_O_001.jpg';
   assert.ok(renderHarness().includes(aiSrc), '默认应该自动显示 AI O 1');
   assert.ok(!renderHarness([], [aiSrc]).includes(aiSrc), '取消后不该再出现');
+});
+
+test('迈达狮的状态卡随其他额外卡显示，也可以隐藏', () => {
+  const status = 'ps/MIDASCORE/MIDASCORE_STATUS_X_001.jpg';
+  const options = { apostle: 'MIDASCORE' };
+  assert.deepEqual(renderHarness([], [], null, options), [status]);
+  assert.deepEqual(renderHarness([], [status], null, options), []);
 });
 
 test('先知 AI X 默认隐藏，手动选择后显示，取消后隐藏', () => {
